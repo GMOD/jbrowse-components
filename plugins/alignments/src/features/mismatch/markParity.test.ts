@@ -1,16 +1,10 @@
-import { bpAtPx, bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
+import { backToFront } from '../pileupShape.ts'
+import { MISMATCH_MARK } from './mark.ts'
 
-import { drawMismatches } from './drawCanvas.ts'
-import { hitTestMismatch } from './hitTest.ts'
-
-import type {
-  DrawBlock,
-  RenderState,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
+import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { MismatchUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // Draw against hit test for the `cell` shape, which is where the two are easiest
 // to pair wrong: the painter floors one-sidedly into a base's own cell and the
@@ -21,10 +15,8 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 const START = 1000
 const END = 1010
-const BP_LENGTH = END - START
-const BLOCK_WIDTH = 200
 // 20 px/bp, so a one-base error is 20px rather than a rounding tolerance.
-const BP_PER_PX = BP_LENGTH / BLOCK_WIDTH
+const BLOCK_WIDTH = 200
 const FEATURE_HEIGHT = 10
 
 const MISMATCHES: MismatchUploadData = {
@@ -50,6 +42,7 @@ function state(): RenderState {
     canvasHeight: 500,
     mismatchAlpha: false,
     filterMismatchesByFrequency: true,
+    showMismatches: true,
     colors: {
       colorBaseA: rgb(0, 1, 0),
       colorBaseC: rgb(0, 0, 1),
@@ -61,27 +54,13 @@ function state(): RenderState {
   } as unknown as RenderState
 }
 
-function block(reversed: boolean): DrawBlock {
-  return { start: START, end: END, screenStartPx: 0, reversed }
-}
-
-function bounds(reversed: boolean) {
+function block(reversed: boolean): RenderBlock {
   return {
+    displayedRegionIndex: 0,
     start: START,
     end: END,
     screenStartPx: 0,
     screenEndPx: BLOCK_WIDTH,
-    reversed,
-  }
-}
-
-function resolvedBlock(reversed: boolean): ResolvedBlock {
-  return {
-    rpcData: MISMATCHES as PileupDataResult,
-    bpRange: [START, END],
-    blockStartPx: 0,
-    blockWidth: BLOCK_WIDTH,
-    refName: 'ctgA',
     reversed,
   }
 }
@@ -112,30 +91,21 @@ function oneMismatch(index: number): MismatchUploadData {
 
 function drawnCell(index: number, reversed: boolean) {
   const { ctx, rects } = recordingCtx()
-  drawMismatches(
-    ctx,
-    oneMismatch(index),
-    block(reversed),
-    BP_LENGTH,
-    BLOCK_WIDTH,
-    state(),
-  )
+  MISMATCH_MARK.paintBlock(ctx, oneMismatch(index), block(reversed), state())
   return rects[0]!
 }
 
-function coordsAt(
-  canvasX: number,
-  row: number,
-  reversed: boolean,
-): CigarCoords {
-  return {
-    bpPerPx: BP_PER_PX,
-    genomicPos: bpAtPxExact(canvasX, bounds(reversed)),
-    basePos: bpAtPx(canvasX, bounds(reversed)),
-    row,
-    adjustedY: row * FEATURE_HEIGHT,
-    yWithinRow: 1,
-  }
+// The mark's own hit test, one pixel into `row`.
+function hitAt(canvasX: number, row: number, reversed: boolean) {
+  return MISMATCH_MARK.hitNearest!(
+    MISMATCHES,
+    block(reversed),
+    state(),
+    canvasX,
+    row * FEATURE_HEIGHT + 1,
+    backToFront(0, MISMATCHES.mismatchYs.length),
+    Infinity,
+  )
 }
 
 describe.each([false, true])('reversed: %s', reversed => {
@@ -143,11 +113,7 @@ describe.each([false, true])('reversed: %s', reversed => {
     let hits = 0
     for (let row = 0; row < 2; row++) {
       for (let x = 0; x < BLOCK_WIDTH; x += 0.5) {
-        const hit = hitTestMismatch(
-          resolvedBlock(reversed),
-          coordsAt(x, row, reversed),
-          true,
-        )
+        const hit = hitAt(x, row, reversed)
         if (hit) {
           hits++
           const cell = drawnCell(hit.index, reversed)
@@ -163,10 +129,10 @@ describe.each([false, true])('reversed: %s', reversed => {
 
   test.each([0, 1, 2])('cell %i answers at its own middle', index => {
     const cell = drawnCell(index, reversed)
-    const hit = hitTestMismatch(
-      resolvedBlock(reversed),
-      coordsAt(cell.x + cell.w / 2, MISMATCHES.mismatchYs[index]!, reversed),
-      true,
+    const hit = hitAt(
+      cell.x + cell.w / 2,
+      MISMATCHES.mismatchYs[index]!,
+      reversed,
     )
     expect(hit?.index).toBe(index)
   })

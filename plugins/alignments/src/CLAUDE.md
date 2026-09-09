@@ -9,25 +9,27 @@ beside it rather than inside the single display that mounts them. Other plugins
 keep shaders display-local and are right to: theirs have one consumer.
 
 **A pass directory holds the canonical file set** — `extract.ts` (worker),
-`buildArrays.ts` (worker), `packGpu.ts` (GPU instances), `drawCanvas.ts`
-(Canvas2D), `hitTest.ts`, `types.ts`. Not every pass needs all six, but a pass
-that has one of these spells it that way, so `features/` can be read as the pass
-list. Every `PileupLayerId` maps to exactly one directory; four ids are
-abbreviations of theirs (`connLine`, `linkedReadLine`, `mod`, `perBaseQual`),
-`skip` and `deletion` are both `features/gap/`, and `GPU_PILEUP_PASS` is where
-the mapping is written down.
+`buildArrays.ts` (worker), `mark.ts` (the pass: packer, painter, hit test),
+`types.ts`. Not every pass needs all four, but a pass that has one of these
+spells it that way, so `features/` can be read as the pass list.
+`renderers/pileupMarks.ts` is the list itself, `PILEUP_MARKS`, in paint order:
+every entry is a render-core `defineMark`, and both renderers and the hit chain
+walk that one list, so a mark cannot be added to one backend alone or gated on
+one alone. `arcs/` is a band of its own with the six-file set, drawn through
+`drawMarks`.
 
-**`mark.ts` is the seventh, and where a converted pass keeps its geometry.** The
-arrays, the selection, the drawn-alpha and click-significance gates and the span
-— or, for a mark on a bp edge, the drawn width and hit tolerance that stand in
-for one — are declared once (`features/mark.ts`, `PileupMark`); the packer, the
-painter and the hit test derive from it, and `paintMarks` / `findMarkAt` own the
-projection and the row scan. Nine passes are converted: `gap`, `mismatch`,
-`perBaseQuality`, `perBaseLetter`, `softclipBases`, `insertion`, `clip`,
-`overlap` and `modification` — the last two have no `findMarkAt` hit test, and
-`modification`'s stays a Flatbush query because the INDEX is the part a row scan
-cannot supply. `arcs` has its own, for a band-local path rather than a pileup
-span.
+**`pileupShape` is the one shape every row-instanced pass is an instance of.**
+`features/pileupShape.ts` states the projection, the reversed-block edge
+ordering, the row band, the sub-pixel widening and the row scan once; a pass's
+`mark.ts` hands it a shader, a packer and rule CODES — `Fade`, `Hit`, `Band`,
+`Point`, `Paint` — plus a `channels` lens over its arrays and an `enabled` gate.
+Ten passes are instances: `gap` (twice), `mismatch`, `perBaseQuality`,
+`perBaseLetter`, `softclipBases`, `insertion`, `clip`, `overlap`,
+`modification`. `read`, `connectingLines` and `linkedReads` are plugin-local
+`MarkShape`s over their own painters: a read's instance is a segment and its
+colour a per-read function of the scheme, and the two lines carry two rows per
+instance. `modification`'s hit test stays a Flatbush query because the INDEX is
+the part a row scan cannot supply.
 
 **A mark is DATA: channels plus rule codes, and no member takes an index.** The
 arrays come back from one `channels(data)` per region, in one field order for
@@ -38,11 +40,14 @@ megamorphic — 94 ms of gap paint against 45, 59 of mismatch against 19, at 100
 instances. So a new rule is a `Fade`/`Hit`/`Band`/`Paint` code and a case in the
 walker, never a function on the mark.
 
-A pass with all three consumers and no `mark.ts` states its geometry three times
-— `agent-docs/ideas/one-mark-declaration-per-feature.md` says which of the rest
-fit the shape and which deliberately do not, including why `connectingLines`
-needs a decision about `paintMarks`'s 1px span floor before it can take one.
-That doc predates the data form and still describes the members as callbacks.
+**The draw gate and the hit gate are one `enabled`.** The hit chain
+(`hitTestPipeline.ts`) asks each mark's `hitNearest` with the section's
+`RenderState`, and `defineMark` answers nothing for a mark whose `enabled` says
+no — so a layer switched off cannot stay hoverable over blank pixels, and a
+drawn one cannot go inert, without the paint going with it. What the chain still
+owns is ORDER and ZOOM: which mark is asked first, and which candidate set
+(`insertionsOfSize`, `clipsOfKind`), is priority the marks cannot express, and
+the per-base steps drop out above `SNP_HIT_MAX_BP_PER_PX` there.
 
 **A mark that shares an array declares its own slice of it** (`channels`'
 `start`/`end`). The three interbase marks are the case: the worker lays that
@@ -70,13 +75,13 @@ separate letters-past-the-alignment-end pass; it consumes the `sequence` field
 place.
 
 `features/gap/` is the converse — one directory, one shader, one worker array,
-and TWO layers, because `skip` and `deletion` answer to different settings
-(PILEUP_LAYERS says why). Splitting the layer rather than branching inside it is
-what keeps `HIT_GATES` able to describe each half: a layer is gated or it isn't,
-and one that is half-gated fits none of its four stories. The two packers take
-their own kind out of `gapTypes`, so **a mark added to that array has to pick a
-pass** — a third gap type packed by neither is uploaded by nothing and drawn by
-nothing, silently.
+and TWO marks, because `skip` and `deletion` answer to different settings
+(`gap/mark.ts` says why). Splitting the mark rather than branching inside it is
+what lets `enabled` be one answer per mark: a mark is gated or it isn't, and a
+half-gated one would need the gate re-stated per instance. Each mark's
+`channels` takes its own kind out of `gapTypes`, so **a mark added to that array
+has to pick a pass** — a third gap type packed by neither is uploaded by nothing
+and drawn by nothing, silently.
 
 ## Strand comes from `strand`; `flags` answers everything else
 

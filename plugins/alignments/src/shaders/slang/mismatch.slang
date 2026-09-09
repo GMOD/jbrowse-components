@@ -34,7 +34,7 @@ struct Instance {
 
 float3 baseColor(uint b, Uniforms u) {
   // Non-A/C/G/T bases (e.g. N) hit `default` and use the dedicated N color,
-  // matching the Canvas2D path (drawMismatches / drawSoftclipBases) and MAF's
+  // matching the Canvas2D path (`buildBaseCssMap`, every base-cell mark) and MAF's
   // resolveCellColor. During show-modifications, writeUniforms swaps colorBaseN
   // to grey along with ACGT.
   switch (b) {
@@ -49,7 +49,7 @@ float3 baseColor(uint b, Uniforms u) {
 // Alpha multiplier for a mismatch of this per-base Phred quality: 1 when the
 // setting is off, 1 when the base carries no quality (QUAL_UNAVAILABLE), and a
 // linear ramp to OPAQUE_QUAL otherwise. `//! js-export`ed:
-// features/mismatch/drawCanvas.ts carried the same three-way conditional under a
+// features/mismatch/mark.ts carried the same three-way conditional under a
 // "Mirrors the GPU mismatch.slang path" comment, which is the whole setting's
 // behavior kept in agreement by eye.
 //

@@ -157,29 +157,34 @@ read `configuredFeatureHeight` (`resolveConf`, promotable). `fittedHeightPx` is
 a **pitch**, `featureHeight` a **body**; the volatile bridging them breaks a
 MobX cycle, so don't collapse it.
 
-## Hit-testing: every draw gate needs a matching hit gate
+## Hit-testing: the mark's `enabled` is the hit gate too
 
-`PILEUP_LAYERS` settings are repaint-tier and the arrays are fetched either way,
-so a layer switched off keeps its marks hoverable over blank pixels unless
-`performHitTest` gates too. `HIT_GATES` (`hitTestGateParity.test.ts`) is
-exhaustive over `PileupLayerId`, so a new layer is a compile error until it
-states one of four stories: gated on a named `HitTestOptions` flag, empty of
-data when its setting is off, unconditionally drawn, or a decoration
-`hitTestFeature` already answers for.
+`PILEUP_MARKS` settings are repaint-tier and the arrays are fetched either way,
+so a mark switched off would keep its instances hoverable over blank pixels if
+the hit test read a gate of its own. It reads none: `performHitTest` asks each
+mark's `hitNearest` with the section's `RenderState` (`HitTestOptions.state`),
+and `defineMark` answers nothing while `enabled(state)` is false. A new mark
+therefore has its hit gate the moment it has a draw gate, and a layer whose data
+is empty with its setting off (`softclipBases`) still declares the setting as
+`enabled`, so the two cannot be told apart by which test happens to see data.
 
-**Zoom is the second gate axis, and `HIT_GATES` cannot see it.** That record
-varies settings; `performHitTest` also drops the per-base tests above
-`SNP_HIT_MAX_BP_PER_PX`. So a layer filed as `alwaysDrawn` can still go inert on
-zoom alone — which `clip` did, drawing a fixed 1px bar at every zoom while
-answering nothing past 25 bp/px. The whole CIGAR priority chain therefore lives
-in `hitTestCigarItem`, which takes `bpPerPx` and decides the regime itself; the
-zoomed-out steps used to be spelled a second time at the call site and clips
-were missing from the copy.
+**Zoom is the second gate axis, and a mark cannot see it.** `performHitTest`
+drops the per-base steps above `SNP_HIT_MAX_BP_PER_PX`, so a mark drawn at every
+zoom can still go inert on zoom alone — which `clip` did, drawing a fixed 1px
+bar at every zoom while answering nothing past 25 bp/px. The whole CIGAR
+priority chain therefore lives in `hitTestCigarItem`, which takes `bpPerPx` and
+decides the regime itself; the zoomed-out steps used to be spelled a second time
+at the call site and clips were missing from the copy. The chain also owns which
+candidate set a mark is asked over — `insertionsOfSize` puts a large insertion
+above a mismatch and a small one below, `clipsOfKind` puts a softclip above a
+hardclip — since a priority between two rules is not a thing one mark's scan can
+express.
 
-The converse gap is a layer with no hit test: `readPositions` carries the read's
-TRUE aligned extent, so `hitTestFeature` misses what `drawSoftclipBases` paints
-past the alignment end — and a miss clears the selection and falls through to
-the **browser's** context menu.
+The converse gap is a mark with no hit test: `readPositions` carries the read's
+TRUE aligned extent, so `hitTestFeature` misses what the softclip-bases mark
+paints past the alignment end — and a miss clears the selection and falls
+through to the **browser's** context menu. `hitTestSoftclipBase` asks that mark
+and answers the READ.
 
 **The geometry comes from the shader, like the painters'.** A hit test is a
 third consumer of `//! js-export`ed scalars, not a third description of the

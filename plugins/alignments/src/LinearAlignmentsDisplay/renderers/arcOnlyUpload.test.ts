@@ -3,11 +3,12 @@ import { MockHal } from '@jbrowse/render-core/hal'
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { ARC_SHAPE_ARC } from '../../features/arcs/shapes.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
+import { READ_MARK } from '../../features/read/mark.ts'
 import {
   ALIGNMENTS_PASSES,
   ARC_PASSES,
-  GPU_PILEUP_PASS,
   GpuAlignmentsRenderer,
+  PILEUP_PASSES,
 } from './GpuAlignmentsRenderer.ts'
 import { ALIGNMENTS_COVERAGE_MARKS } from './coverageMarks.ts'
 
@@ -128,10 +129,7 @@ describe('an arc-only change uploads only the arc passes', () => {
         1,
       ),
     )
-    expect(uploadedPasses(hal)).toEqual([
-      GPU_PILEUP_PASS.read.id,
-      ...ARC_PASS_IDS,
-    ])
+    expect(uploadedPasses(hal)).toEqual([READ_MARK.pass.id, ...ARC_PASS_IDS])
     expect(hal.callsOf('deleteRegion')).toHaveLength(0)
   })
 })
@@ -147,7 +145,7 @@ describe('a band switched off leaves nothing drawable', () => {
         count: 0,
       })
     }
-    expect(hal.getBufferCount(0, GPU_PILEUP_PASS.read.id)).toBe(1)
+    expect(hal.getBufferCount(0, READ_MARK.pass.id)).toBe(1)
   })
 })
 
@@ -159,7 +157,7 @@ describe('a new layout run still rebuilds the whole region', () => {
     expect(hal.callsOf('deleteRegion')).toHaveLength(1)
     expect(new Set(uploadedPasses(hal))).toEqual(
       new Set([
-        ...Object.values(GPU_PILEUP_PASS).map(pass => pass.id),
+        ...PILEUP_PASSES.map(pass => pass.id),
         ...ALIGNMENTS_COVERAGE_MARKS.map(m => m.pass.id),
         ...ARC_PASS_IDS,
       ]),

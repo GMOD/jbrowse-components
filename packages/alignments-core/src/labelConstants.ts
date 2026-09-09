@@ -261,13 +261,12 @@ function drawSerif(
   ctx.fill()
 }
 
+// The context members the marker and its caps touch — a structural subset both
+// `Ctx2D` and render-core's `MarkContext2D` satisfy, so the pileup's insertion
+// mark can hand its painter's context straight through.
 interface DrawCtx {
   fillStyle: string | CanvasGradient | CanvasPattern
-  font: string
-  textAlign: string
-  textBaseline: string
   fillRect(x: number, y: number, w: number, h: number): void
-  fillText(text: string, x: number, y: number, maxWidth?: number): void
   beginPath(): void
   moveTo(x: number, y: number): void
   lineTo(x: number, y: number): void

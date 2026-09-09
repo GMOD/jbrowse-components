@@ -1,8 +1,8 @@
 // One 1bp-wide pileup quad per instance, colored by a per-instance ABGR u32
 // packed on the main thread. Shared by two passes that are byte-for-byte the
 // same draw:
-//   - modification    (features/modification/packGpu.ts)
-//   - perBaseQuality  (features/perBaseQuality/packGpu.ts)
+//   - modification    (features/modification/mark.ts)
+//   - perBaseQuality  (features/perBaseQuality/mark.ts)
 // Both pack ABGR on the CPU so the GPU and Canvas2D paths share the exact
 // color (mod palette / quality ramp) with no UBO palette lookup. They stay
 // separate GPU pipelines (distinct instance buffers, distinct pass ids) but

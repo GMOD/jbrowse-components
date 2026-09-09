@@ -1,16 +1,10 @@
-import { bpAtPx, bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
+import { makeTestRenderState } from '../../LinearAlignmentsDisplay/testUtils.ts'
+import { backToFront } from '../pileupShape.ts'
+import { SOFTCLIP_BASES_MARK } from './mark.ts'
 
-import { drawSoftclipBases } from './drawCanvas.ts'
-import { hitTestSoftclipBase } from './hitTest.ts'
-
-import type {
-  DrawBlock,
-  RenderState,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
 import type { SoftclipBasesUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // Draw against hit test, on the layer whose whole reason to have a hit test is
 // that something IS painted where `hitTestFeature` finds nothing: the clipped
@@ -21,9 +15,7 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 const START = 1000
 const END = 1010
-const BP_LENGTH = END - START
 const BLOCK_WIDTH = 200
-const BP_PER_PX = BP_LENGTH / BLOCK_WIDTH
 const FEATURE_HEIGHT = 10
 
 const CELLS: SoftclipBasesUploadData = {
@@ -34,53 +26,24 @@ const CELLS: SoftclipBasesUploadData = {
   softclipBaseBases: new Uint8Array([65, 67, 71, 84]),
 }
 
-const RPC_DATA = {
-  ...CELLS,
-  softclipBaseReadIndices: new Uint32Array([0, 0, 0, 1]),
-  readKeys: ['read-a', 'read-b'],
-  readIdPrefix: undefined,
-} as unknown as PileupDataResult
+// The read each cell belongs to, which is what the hit chain answers with
+// (`softclipBaseReadIndices`); the mark answers the cell.
+const READ_OF = ['read-a', 'read-a', 'read-a', 'read-b']
 
-function state(): RenderState {
+const STATE = makeTestRenderState({
+  showSoftClipping: true,
+  featureHeight: FEATURE_HEIGHT,
+  featureSpacing: 0,
+  canvasHeight: 500,
+})
+
+function block(reversed: boolean): RenderBlock {
   return {
-    featureHeight: FEATURE_HEIGHT,
-    featureSpacing: 0,
-    pileupTopOffset: 0,
-    scrollTop: 0,
-    canvasHeight: 500,
-    showModifications: false,
-    colors: {
-      colorBaseA: [0, 1, 0],
-      colorBaseC: [0, 0, 1],
-      colorBaseG: [1, 0.65, 0],
-      colorBaseT: [1, 0, 0],
-      colorBaseN: [0.4, 0.3, 0.2],
-      colorMutedSnpBase: [0.5, 0.5, 0.5],
-    },
-  } as unknown as RenderState
-}
-
-function block(reversed: boolean): DrawBlock {
-  return { start: START, end: END, screenStartPx: 0, reversed }
-}
-
-function bounds(reversed: boolean) {
-  return {
+    displayedRegionIndex: 0,
     start: START,
     end: END,
     screenStartPx: 0,
     screenEndPx: BLOCK_WIDTH,
-    reversed,
-  }
-}
-
-function resolvedBlock(reversed: boolean): ResolvedBlock {
-  return {
-    rpcData: RPC_DATA,
-    bpRange: [START, END],
-    blockStartPx: 0,
-    blockWidth: BLOCK_WIDTH,
-    refName: 'ctgA',
     reversed,
   }
 }
@@ -109,34 +72,22 @@ function oneCell(index: number): SoftclipBasesUploadData {
 
 function drawnCell(index: number, reversed: boolean) {
   const { ctx, rects } = recordingCtx()
-  drawSoftclipBases(
-    ctx,
-    oneCell(index),
-    block(reversed),
-    BP_LENGTH,
-    BLOCK_WIDTH,
-    state(),
-  )
+  SOFTCLIP_BASES_MARK.paintBlock(ctx, oneCell(index), block(reversed), STATE)
   return rects[0]!
 }
 
-function coordsAt(
-  canvasX: number,
-  row: number,
-  reversed: boolean,
-): CigarCoords {
-  return {
-    bpPerPx: BP_PER_PX,
-    genomicPos: bpAtPxExact(canvasX, bounds(reversed)),
-    basePos: bpAtPx(canvasX, bounds(reversed)),
-    row,
-    adjustedY: row * FEATURE_HEIGHT,
-    yWithinRow: 1,
-  }
+function hitAt(canvasX: number, canvasY: number, reversed: boolean) {
+  const i = SOFTCLIP_BASES_MARK.hitNearest!(
+    CELLS,
+    block(reversed),
+    STATE,
+    canvasX,
+    canvasY,
+    backToFront(0, CELLS.softclipBaseYs.length),
+    Infinity,
+  )?.index
+  return i === undefined ? undefined : READ_OF[i]
 }
-
-// The read each cell belongs to, which is what the hit answers with.
-const READ_OF = ['read-a', 'read-a', 'read-a', 'read-b']
 
 describe.each([false, true])('reversed: %s', reversed => {
   test('every hit lands inside a cell the painter drew for that read', () => {
@@ -147,11 +98,7 @@ describe.each([false, true])('reversed: %s', reversed => {
     let hits = 0
     for (let row = 0; row < 2; row++) {
       for (let x = 0; x < BLOCK_WIDTH; x += 0.5) {
-        const hit = hitTestSoftclipBase(
-          resolvedBlock(reversed),
-          coordsAt(x, row, reversed),
-          FEATURE_HEIGHT,
-        )
+        const hit = hitAt(x, row * FEATURE_HEIGHT + 1, reversed)
         if (hit) {
           hits++
           // The answer is a READ, so the containment is against every cell that
@@ -160,7 +107,7 @@ describe.each([false, true])('reversed: %s', reversed => {
           // overlaps abutting cells by half a pixel.
           const covering = cells.filter(
             (cell, i) =>
-              READ_OF[i] === hit.id &&
+              READ_OF[i] === hit &&
               CELLS.softclipBaseYs[i] === row &&
               x >= cell.x &&
               x < cell.x + cell.w,
@@ -177,25 +124,27 @@ describe.each([false, true])('reversed: %s', reversed => {
 
   test.each([0, 1, 2, 3])('cell %i answers its own read', index => {
     const cell = drawnCell(index, reversed)
-    const hit = hitTestSoftclipBase(
-      resolvedBlock(reversed),
-      coordsAt(cell.x + cell.w / 2, CELLS.softclipBaseYs[index]!, reversed),
-      FEATURE_HEIGHT,
+    const row = CELLS.softclipBaseYs[index]!
+    expect(hitAt(cell.x + cell.w / 2, row * FEATURE_HEIGHT + 1, reversed)).toBe(
+      READ_OF[index],
     )
-    expect(hit?.id).toBe(READ_OF[index])
   })
 })
 
-// The band guard is the pileup's question, not the mark's, and it stays outside
-// `findMarkAt`: below the row's body the cursor is in the inter-row gap, where
-// nothing is painted.
+// Below the row's body the cursor is in the inter-row gap, where nothing is
+// painted, and the shape's row scan declines it before asking any cell.
 test('a cursor in the inter-row gap answers nothing', () => {
+  const spaced = makeTestRenderState({ ...STATE, featureSpacing: 4 })
   const cell = drawnCell(0, false)
   expect(
-    hitTestSoftclipBase(
-      resolvedBlock(false),
-      { ...coordsAt(cell.x + 1, 0, false), yWithinRow: FEATURE_HEIGHT + 1 },
-      FEATURE_HEIGHT,
+    SOFTCLIP_BASES_MARK.hitNearest!(
+      CELLS,
+      block(false),
+      spaced,
+      cell.x + 1,
+      FEATURE_HEIGHT + 1,
+      backToFront(0, CELLS.softclipBaseYs.length),
+      Infinity,
     ),
   ).toBeUndefined()
 })

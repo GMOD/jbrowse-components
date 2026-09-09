@@ -12,7 +12,7 @@ import hpmath;
 public static const uint VERTS_PER_INSTANCE = 6u;
 
 // Tint strength of the connector. Exported so features/connectingLines/
-// drawCanvas.ts (Canvas2D + SVG export) strokes at the same opacity.
+// mark.ts (Canvas2D + SVG export) strokes at the same opacity.
 static const float CONNECTING_LINE_ALPHA = 0.45;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;

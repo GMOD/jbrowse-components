@@ -2,14 +2,12 @@ import {
   GAP_DELETION,
   GAP_SKIP,
 } from '../../shaders/slang/gap.consts.generated.ts'
-import { drawDeletions, drawSkips } from './drawCanvas.ts'
+import { DELETION_MARK, SKIP_MARK } from './mark.ts'
 
-import type {
-  DrawBlock,
-  RenderState,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { GapTypeCode, GapUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 function recordingCtx() {
   const rects: { x: number; w: number }[] = []
@@ -32,6 +30,7 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
     featureSpacing: 0,
     canvasHeight: 1000,
     filterMismatchesByFrequency: false,
+    showMismatches: true,
     pileupTopOffset: 0,
     colors: {
       colorDeletion: [0.5, 0.5, 0.5],
@@ -53,17 +52,22 @@ function oneGap(start: number, end: number, type: GapTypeCode): GapUploadData {
 // bp 1000..1100 across 100px => 1 px/bp. A 1bp gap is exactly 1px, a sub-bp one
 // is not expressible — so widen the block instead to get a sub-pixel gap: at
 // bpLength 400 over 100px the view is 4bp/px and a 1bp gap spans 0.25px.
-const BLOCK: DrawBlock = { start: 1000, end: 1400, screenStartPx: 0 }
-const BP_LENGTH = 400
-const BLOCK_WIDTH = 100
+const BLOCK: RenderBlock = {
+  displayedRegionIndex: 0,
+  start: 1000,
+  end: 1400,
+  screenStartPx: 0,
+  screenEndPx: 100,
+  reversed: false,
+}
 
-// Each kind is its own draw layer now, so the fixture's own `gapTypes` picks
-// which one to call. Handing it to the other draws nothing — pinned by
-// `each layer draws only its own kind` below.
-function rectFor(gap: GapUploadData, block: DrawBlock = BLOCK) {
-  const draw = gap.gapTypes[0] === GAP_SKIP ? drawSkips : drawDeletions
+// Each kind is its own mark, so the fixture's own `gapTypes` picks which one
+// to paint. Handing it to the other draws nothing — pinned by `each mark draws
+// only its own kind` below.
+function rectFor(gap: GapUploadData, block: RenderBlock = BLOCK) {
+  const mark = gap.gapTypes[0] === GAP_SKIP ? SKIP_MARK : DELETION_MARK
   const { ctx, rects } = recordingCtx()
-  draw(ctx, gap, block, BP_LENGTH, BLOCK_WIDTH, baseState())
+  mark.paintBlock(ctx, gap, block, baseState())
   return rects[0]!
 }
 
@@ -110,11 +114,11 @@ test('a gap wider than a pixel keeps its own edges', () => {
 })
 
 // The two kinds share one worker array and one shader, and are split only by
-// which layer draws them — `deletion` gated on showMismatches, `skip` not. So
-// each function has to take its own kind out of the array and leave the other:
+// which mark draws them — `deletion` gated on showMismatches, `skip` not. So
+// each mark has to take its own kind out of the array and leave the other:
 // a skip drawn by the deletion pass would come back with showMismatches off,
 // and a deletion drawn by the skip pass would never leave.
-describe('each layer draws only its own kind', () => {
+describe('each mark draws only its own kind', () => {
   const both: GapUploadData = {
     gapPositions: new Uint32Array([1040, 1060, 1100, 1200]),
     gapYs: new Uint16Array([0, 0]),
@@ -122,18 +126,18 @@ describe('each layer draws only its own kind', () => {
     gapFrequencies: new Uint8Array([255, 255]),
   }
 
-  function drawnWidths(draw: typeof drawSkips) {
+  function drawnWidths(mark: typeof SKIP_MARK) {
     const { ctx, rects } = recordingCtx()
-    draw(ctx, both, BLOCK, BP_LENGTH, BLOCK_WIDTH, baseState())
+    mark.paintBlock(ctx, both, BLOCK, baseState())
     return rects.map(r => r.w)
   }
 
   // bp 1040..1060 is 20bp at 4bp/px => 5px. bp 1100..1200 is 100bp => 25px.
   test('deletions', () => {
-    expect(drawnWidths(drawDeletions)).toEqual([5])
+    expect(drawnWidths(DELETION_MARK)).toEqual([5])
   })
 
   test('skips', () => {
-    expect(drawnWidths(drawSkips)).toEqual([25])
+    expect(drawnWidths(SKIP_MARK)).toEqual([25])
   })
 })

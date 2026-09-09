@@ -10,8 +10,8 @@ import { MockHal } from '@jbrowse/render-core/hal'
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import {
   ALIGNMENTS_PASSES,
-  GPU_PILEUP_PASS,
   GpuAlignmentsRenderer,
+  PILEUP_PASSES,
 } from './GpuAlignmentsRenderer.ts'
 import { ALIGNMENTS_COVERAGE_MARKS } from './coverageMarks.ts'
 
@@ -141,15 +141,15 @@ describe('every drawn pass is also uploaded', () => {
     // Guards the guard: if a future field rename empties an array, the
     // assertions below would pass vacuously by uploading nothing at all.
     expect(uploadedPasses().size).toBe(
-      Object.keys(GPU_PILEUP_PASS).length + ALIGNMENTS_COVERAGE_MARKS.length,
+      PILEUP_PASSES.length + ALIGNMENTS_COVERAGE_MARKS.length,
     )
   })
 
   it('every pileup-layer pass gets a buffer', () => {
     const uploaded = uploadedPasses()
-    for (const [layer, pass] of Object.entries(GPU_PILEUP_PASS)) {
-      expect({ layer, uploaded: uploaded.has(pass.id) }).toEqual({
-        layer,
+    for (const pass of PILEUP_PASSES) {
+      expect({ layer: pass.id, uploaded: uploaded.has(pass.id) }).toEqual({
+        layer: pass.id,
         uploaded: true,
       })
     }

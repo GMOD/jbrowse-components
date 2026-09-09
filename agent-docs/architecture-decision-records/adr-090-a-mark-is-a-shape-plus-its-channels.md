@@ -19,8 +19,9 @@ As accepted: `packages/render-core/src/marks/bar.ts` and
 [ADR-089](adr-089-a-track-type-is-a-spec-the-factory-composes-the-stack.md)
 left a third party writing a Canvas2D `paint` and, for the GPU, a `.slang`
 shader plus a `gpu` block: a pass, a packer and a uniforms function. That is
-three spellings of one drawing, and
-[ideas/one-mark-declaration-per-feature](../ideas/one-mark-declaration-per-feature.md)
+three spellings of one drawing, and the alignments pileup's `PileupMark`
+(since folded into render-core's marks,
+[ADR-106](adr-106-a-display-declares-its-marks.md))
 had already shown inside alignments that one declaration can drive the pack,
 the paint and the hit test, LOC-neutral, and find a live GPU/Canvas2D
 divergence on the way.

@@ -69,9 +69,9 @@ interface ComputeVisibleLabelsParams {
   height: number
   featureHeight: number
   featureSpacing: number
-  // Gates the three label groups whose LAYERS answer to it — deletion,
+  // Gates the three label groups whose MARKS answer to it — deletion,
   // insertion, mismatch — and no more. `clip` is unconditional in
-  // PILEUP_LAYERS and `softclipBases` is gated on `showSoftClipping`, so
+  // PILEUP_MARKS and `softclipBases` is gated on `showSoftClipping`, so
   // gating the whole pass left those two drawn and unlabelled.
   showMismatches: boolean
   // "Fade low quality mismatches". The SNP letter has to honor it as well as the
@@ -423,7 +423,7 @@ export function computeVisibleLabels(
             continue
           }
 
-          // The letter carries the same quality fade `drawMismatches` /
+          // The letter carries the same quality fade the mismatch mark /
           // mismatch.slang put on the box under it. Without this, "Fade low
           // quality mismatches" drew a 20%-alpha box under a fully opaque
           // letter — and letters only appear at base-level zoom, so the setting

@@ -92,7 +92,8 @@ no subpath up on its own yet. Since 2026-09-09 that promise includes the mark
 layer: the example declares a `MarkShape` and a `defineMark` over
 `@jbrowse/render-core/marks`, `marks/backend`, `marks/hit`, `marks/colorFill`
 and `marks/drawAgainstHit`, so `defineMark`'s option set — `channels`,
-`params`, `bufferOf`, `band`, `texture` — and `MarkShape`'s members are
+`params`, `bufferOf`, `band`, `texture`, `enabled` — `MarkShape`'s members,
+the `barMark` shape and the frame plan (`planMarks`, `drawPlannedPasses`) are
 third-party ABI now, not in-tree convention. `component_tests` stays out — those six are
 build-integration smoke suites and import no core subpath at all.
 

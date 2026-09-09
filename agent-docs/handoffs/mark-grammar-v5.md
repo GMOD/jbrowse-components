@@ -1,6 +1,6 @@
 ---
 name: mark-grammar-v5
-description: The 2026-09-09 mark/grammar pass for v5 — what landed (the example plugin on the mark layer, the quantitative class from config, the declared encoding and LinearMarkDisplay, the frame plan, the legend deriving from colour scales) and the six threads still open, each with its first move — the pileup conversion parked on wip/pileup-marks-conversion, legend pass two over gwas/wiggle/alignments/synteny, Manhattan and the example onto the encoder, the guides made config-first, the y axis on the chrome, and two checks nobody has run in a browser. Read before touching render-core marks, LegendMixin, plugins/marks or the alignments pileup passes.
+description: The 2026-09-09 mark/grammar pass for v5 — what landed (the example plugin on the mark layer, the quantitative class from config, the declared encoding and LinearMarkDisplay, the frame plan, the legend deriving from colour scales, the pileup on the mark list) and the five threads still open, each with its first move — legend pass two over gwas/wiggle/alignments/synteny, Manhattan and the example onto the encoder, the guides made config-first, the y axis on the chrome, and two checks nobody has run in a browser. Read before touching render-core marks, LegendMixin, plugins/marks or the alignments pileup passes.
 ---
 
 # Mark grammar for v5
@@ -18,22 +18,23 @@ adopted (ADR-106 §"The ladder").
 
 ## Open threads, first move each
 
-1. **The pileup onto render-core marks.** Mechanism landed and measured
-   (plan walk 0.46x of today's loop). The conversion is on the branch
-   `wip/pileup-marks-conversion` (`c49e3b5d57`): production code typechecks,
-   four feature suites green, ~15 test files still reference removed
-   signatures. First move: `git worktree add .claude/worktrees/pileup-marks
-   wip/pileup-marks-conversion`, rebase onto main (render-core marks moved
-   under it: `enabled`, `planMarks`, `barMark`), then work the test list at the
-   top of `ideas/one-mark-declaration-per-feature.md` §"Status, 2026-09-09".
-   Oracle: every parity suite there, unchanged. Do not land it red.
+1. **The pileup onto render-core marks — landed 2026-09-09** (the commit
+   beside this edit). `PILEUP_MARKS` over `features/pileupShape.ts`, both
+   renderers on `planMarks`, `hitTestCigarItem` asking the marks with the
+   section's `RenderState`; every parity suite green, `pnpm test-related
+   --with-web` 676 suites green. What it did not do: run
+   `sweepDrawAgainstHit` over the pileup shapes — the sweep wants `{ count }`
+   channels and pixel-box containment, and `pileupShape`'s `hitNearest` is
+   bp-containment (a widened sub-pixel span answers inside its bp, not its
+   1px rect), so the per-feature `markParity` suites stay the one-directional
+   gate. A sweep variant taking a containment rule is the first move if one
+   is wanted.
 2. **Legend pass two** (ADR-108 §Consequences). gwas: Manhattan's `legend`
    getter becomes `colorScales` (LD bins, field categories) and
    `ManhattanLegend` / `SvgManhattanLegend` go. Wiggle: `ScoreLegend.tsx` and
    the multi-wiggle `legendItems.ts` become scales. Alignments:
    `shared/legendUtils.ts` becomes `colorScales` and `PileupComponent` /
-   `renderSvg.tsx` stop placing it — do this with or after thread 1, not
-   before, since both touch `PileupComponent`. Synteny-core's
+   `renderSvg.tsx` stop placing it — unblocked now that thread 1 is in. Synteny-core's
    `TrackColorsMixin` / `ColorByLegend` / `SVGColorByLegend` with the dotplot
    and linear synteny views' legends, which are view-level and need the chrome
    equivalent for a view. Each migration: delete the component, its SVG twin
@@ -69,12 +70,7 @@ adopted (ADR-106 §"The ladder").
 
 ## Records this pass left stale on purpose
 
-- `ideas/one-mark-declaration-per-feature.md` is now a record with one open
-  item (thread 1); move it to `reference/` or delete it when that lands.
 - `reference/SESSION_SPEC_FORMAT.md` §"The assessment" still lists "Marks as a
   published unit. Run and reversed" and "A uniform `encoding` block" as
   declined; both now point at ADR-106 and ADR-107 for the class they were
   reopened for. The general reader-level grammar stays declined.
-- `PLUGIN_ABI_STABILITY.md` says `defineMark`'s option set is third-party ABI
-  (landed with the example); `enabled`, `planMarks` and `barMark` joined that
-  set the same day and are not yet listed there.

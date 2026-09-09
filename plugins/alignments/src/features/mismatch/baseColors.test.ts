@@ -62,7 +62,7 @@ describe('per-base canvas palette', () => {
   })
 
   // Read through the tuple table rather than off a fallback helper, because the
-  // table is what `drawMismatches` indexes for a faded mark — the branch that
+  // table is what the mismatch mark indexes for a faded mark — the branch that
   // used to re-spell the fallback with a `??` of its own.
   test('the fallback tuple is the muted color under modifications', () => {
     expect(buildBaseTupleMap(state(true))[IUPAC_R]).toEqual([0.5, 0.5, 0.5])

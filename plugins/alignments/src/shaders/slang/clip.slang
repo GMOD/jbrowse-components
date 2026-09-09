@@ -3,7 +3,7 @@
 //
 // The bar is a FIXED 1 CSS px straddling the boundary, at every zoom — not a
 // floor on some wider span, because a clip is a boundary rather than an extent
-// and has no width of its own to widen. `drawClipBars` (features/clip) spells
+// and has no width of its own to widen. `CLIP_MARK` (features/clip) spells
 // the same mark as `fillRect(x - 0.5, y, 1, fH)`.
 //! targets: wgsl, glsl
 
@@ -28,7 +28,7 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float2 local = quadLocal(vid);
 
   // Sub-pixel alpha: at <1 px/bp, thinly-supported clip boundaries fade out.
-  // Mirrors the Canvas2D drawClipBars path.
+  // Mirrors the Canvas2D clip mark.
   float alpha = frequencyFade(u.pxPerBp, inst.frequency, u);
   if (alpha <= 0.0) { return discardVertex(); }
 

@@ -5,7 +5,7 @@ import { makeTestRenderState } from '../testUtils.ts'
 import { drawAlignmentsToCtx } from './Canvas2DAlignmentsRenderer.ts'
 import {
   ALIGNMENTS_PASSES,
-  GPU_PILEUP_PASS,
+  PILEUP_PASSES,
   GpuAlignmentsRenderer,
 } from './GpuAlignmentsRenderer.ts'
 
@@ -117,7 +117,7 @@ test('the GPU uploads the depth-bar pass and no pileup pass', () => {
     hal.calls.filter(c => c.method === 'uploadBuffer').map(c => c.args[1]),
   )
   expect(uploaded).toEqual(new Set(['coverage']))
-  for (const pass of Object.values(GPU_PILEUP_PASS)) {
+  for (const pass of PILEUP_PASSES) {
     expect(uploaded.has(pass.id)).toBe(false)
   }
 })

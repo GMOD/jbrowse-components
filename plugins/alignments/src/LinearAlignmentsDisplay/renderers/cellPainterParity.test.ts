@@ -1,20 +1,22 @@
-import { drawMismatches } from '../../features/mismatch/drawCanvas.ts'
-import { drawModifications } from '../../features/modification/drawCanvas.ts'
-import { drawPerBaseLetter } from '../../features/perBaseLetter/drawCanvas.ts'
-import { drawPerBaseQuality } from '../../features/perBaseQuality/drawCanvas.ts'
-import { drawSoftclipBases } from '../../features/softclipBases/drawCanvas.ts'
+import { MISMATCH_MARK } from '../../features/mismatch/mark.ts'
+import { MODIFICATION_MARK } from '../../features/modification/mark.ts'
+import { PER_BASE_LETTER_MARK } from '../../features/perBaseLetter/mark.ts'
+import { PER_BASE_QUALITY_MARK } from '../../features/perBaseQuality/mark.ts'
+import { SOFTCLIP_BASES_MARK } from '../../features/softclipBases/mark.ts'
+import { makeTestRenderState } from '../testUtils.ts'
 
-import type { DrawBlock, RenderState } from './rendererTypes.ts'
+import type { PileupMark } from './pileupMarks.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
-// The five Canvas2D painters that fill one rect per base. They share a single
-// geometry rule via makePileupCellMapper; this file pins all five to it at once.
-// Testing them one at a time is what let the reversed-block bug live in every
-// one of them — each looked locally reasonable, and no test compared them.
+// The five marks that fill one rect per base. They are one `cell` pivot in
+// `pileupShape` now, so what this pins is that each of the five DECLARES it —
+// a mark rebuilt on `span` would resolve two edges and land a base off on a
+// reversed block — and which of them take the seam fudge. Testing them one at a
+// time is what let the reversed-block bug live in every one of them.
 //
-// Layers whose marks are NOT 1bp cells are deliberately absent: spans (read,
-// gap, overlap) resolve two edges, and boundary marks (insertion, clip bars)
-// center on a bp edge. Both are orientation-safe by construction.
+// Spans (read, gap, overlap) and boundary marks (insertion, clip bars) are
+// deliberately absent: both are orientation-safe by construction.
 
 const START = 1000
 const END = 1010
@@ -41,67 +43,31 @@ function recordingCtx() {
       fillRect(x: number, _y: number, w: number) {
         rects.push({ x, w })
       },
-      fillText() {},
-      measureText: () => ({ width: 0 }),
-      save() {},
-      restore() {},
-      font: '',
-      textAlign: '' as CanvasTextAlign,
-      textBaseline: '' as CanvasTextBaseline,
     } as unknown as Ctx2D,
   }
 }
 
-const rgb = (r: number, g: number, b: number): [number, number, number] => [
-  r,
-  g,
-  b,
-]
+const STATE = makeTestRenderState({
+  showMismatches: true,
+  showModifications: true,
+  showPerBaseQuality: true,
+  showPerBaseLetter: true,
+  showSoftClipping: true,
+  canvasWidth: BLOCK_WIDTH,
+  canvasHeight: 500,
+})
 
-function state(): RenderState {
-  return {
-    featureHeight: 10,
-    featureSpacing: 1,
-    pileupTopOffset: 0,
-    scrollTop: 0,
-    canvasWidth: BLOCK_WIDTH,
-    canvasHeight: 500,
-    colorScheme: 0,
-    showModifications: false,
-    mismatchAlpha: false,
-    filterMismatchesByFrequency: false,
-    colors: {
-      colorBaseA: rgb(0, 1, 0),
-      colorBaseC: rgb(0, 0, 1),
-      colorBaseG: rgb(1, 0.65, 0),
-      colorBaseT: rgb(1, 0, 0),
-      colorBaseN: rgb(0.4, 0.3, 0.2),
-      colorMutedSnpBase: rgb(0.5, 0.5, 0.5),
-    },
-  } as unknown as RenderState
-}
-
-type Painter = (
-  ctx: Ctx2D,
-  region: never,
-  block: DrawBlock,
-  bpLength: number,
-  fullBlockWidth: number,
-  state: RenderState,
-) => void
-
-// One mark of each kind, at TEST_BP on row 0. `contiguous` mirrors the painter's
-// makePileupCellMapper argument: base walls take the half-pixel seam fudge,
-// sparse marks don't.
-const PAINTERS: {
+// One mark of each kind, at TEST_BP on row 0. `contiguous` is the shape's own
+// setting: base walls take the half-pixel seam fudge, sparse marks don't.
+const MARKS: {
   name: string
-  draw: Painter
+  mark: PileupMark
   region: unknown
   contiguous: boolean
 }[] = [
   {
     name: 'mismatch',
-    draw: drawMismatches,
+    mark: MISMATCH_MARK,
     contiguous: false,
     region: {
       mismatchPositions: new Uint32Array([TEST_BP]),
@@ -113,7 +79,7 @@ const PAINTERS: {
   },
   {
     name: 'modification',
-    draw: drawModifications,
+    mark: MODIFICATION_MARK,
     contiguous: false,
     region: {
       modificationPositions: new Uint32Array([TEST_BP]),
@@ -123,7 +89,7 @@ const PAINTERS: {
   },
   {
     name: 'perBaseQuality',
-    draw: drawPerBaseQuality,
+    mark: PER_BASE_QUALITY_MARK,
     contiguous: true,
     region: {
       perBaseQualPositions: new Uint32Array([TEST_BP]),
@@ -133,7 +99,7 @@ const PAINTERS: {
   },
   {
     name: 'perBaseLetter',
-    draw: drawPerBaseLetter,
+    mark: PER_BASE_LETTER_MARK,
     contiguous: true,
     region: {
       perBaseLetterPositions: new Uint32Array([TEST_BP]),
@@ -143,7 +109,7 @@ const PAINTERS: {
   },
   {
     name: 'softclipBases',
-    draw: drawSoftclipBases,
+    mark: SOFTCLIP_BASES_MARK,
     contiguous: true,
     region: {
       softclipBasePositions: new Uint32Array([TEST_BP]),
@@ -153,21 +119,22 @@ const PAINTERS: {
   },
 ]
 
-function cellFor(p: (typeof PAINTERS)[number], reversed: boolean) {
+function cellFor(p: (typeof MARKS)[number], reversed: boolean) {
   const { ctx, rects } = recordingCtx()
-  p.draw(
-    ctx,
-    p.region as never,
-    { start: START, end: END, screenStartPx: 0, reversed },
-    BP_LENGTH,
-    BLOCK_WIDTH,
-    state(),
-  )
+  const block: RenderBlock = {
+    displayedRegionIndex: 0,
+    start: START,
+    end: END,
+    screenStartPx: 0,
+    screenEndPx: BLOCK_WIDTH,
+    reversed,
+  }
+  p.mark.paintBlock(ctx, p.region as never, block, STATE)
   expect(rects).toHaveLength(1)
   return rects[0]!
 }
 
-describe.each(PAINTERS)('$name cell geometry', p => {
+describe.each(MARKS)('$name cell geometry', p => {
   test('forward block: cell covers its own base', () => {
     expect(cellFor(p, false).x).toBeCloseTo(FORWARD_LEFT)
   })
@@ -183,12 +150,9 @@ describe.each(PAINTERS)('$name cell geometry', p => {
   })
 })
 
-// The point of the shared mapper: one bp resolves to one x, whatever the layer.
-// A painter that re-derives geometry locally drifts from the rest here even if
-// its own suite still passes.
-describe('all 1bp-cell painters agree', () => {
+describe('all 1bp-cell marks agree', () => {
   test.each([false, true])('same left edge for one bp (reversed=%s)', rev => {
-    const xs = PAINTERS.map(p => cellFor(p, rev).x)
+    const xs = MARKS.map(p => cellFor(p, rev).x)
     for (const x of xs) {
       expect(x).toBeCloseTo(xs[0]!)
     }

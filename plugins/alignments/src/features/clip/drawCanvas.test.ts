@@ -1,11 +1,14 @@
-import { drawSoftclips } from './drawCanvas.ts'
+import {
+  makeTestPalette,
+  makeTestRenderState,
+} from '../../LinearAlignmentsDisplay/testUtils.ts'
+import { INTERBASE_SOFTCLIP } from '../../shared/types.ts'
+import { CLIP_MARK } from './mark.ts'
 
-import type {
-  DrawBlock,
-  RenderState,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { InterbaseUploadData } from '../../shared/uploadTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // Records the fillStyle in effect at each fillRect, so we can read back the
 // exact CSS color (and its alpha) the clip bar drew with.
@@ -26,58 +29,25 @@ function recordingCtx() {
   return { ctx, fills }
 }
 
-// Only the fields drawClipBars reads matter; the rest are inert defaults.
 function baseState(overrides: Partial<RenderState> = {}): RenderState {
-  return {
-    scrollTop: 0,
-    colorScheme: 0,
-    featureHeight: 10,
+  return makeTestRenderState({
     featureSpacing: 0,
-    coverageHeight: 0,
-    coverageYOffset: 0,
-    coverageMinDepth: undefined,
-    coverageMaxDepth: undefined,
-    coverageScaleType: 0 as const,
-    coverageSymlogConstant: 1,
-    coverageSnpMinFrequency: 0,
-    showMismatches: true,
-    filterMismatchesByFrequency: false,
-    mismatchAlpha: false,
-    showSoftClipping: false,
-    showInterbaseIndicators: false,
-    showModifications: false,
-    showPerBaseQuality: false,
-    showPerBaseLetter: false,
     canvasWidth: 100,
-    canvasHeight: 100,
-    selectedChainReadIds: [],
-    colors: {
-      colorSoftclip: [1, 0, 0],
-    } as RenderState['colors'],
-    chainMode: false,
-    showLinkedReadLines: false,
-    collapseGroupRows: false,
-    readConnectionsLineWidth: 1,
-    readConnections: 'off',
-    readConnectionsDown: false,
-    readConnectionsHeight: 0,
-    pileupTopOffset: 0,
-    coverageTopOffset: 0,
-    sections: [],
-    showOutline: false,
+    colors: makeTestPalette({ colorSoftclip: [1, 0, 0] }),
     ...overrides,
-  }
+  })
 }
 
 // The merged interbase array with one entry, in the softclip slice: the worker
-// lays it out as (insertions, softclips, hardclips) and `SOFTCLIP_MARK` reads
-// the counts to find its own half.
+// lays it out as (insertions, softclips, hardclips) and the clip mark reads
+// the counts to find its own slice.
 function oneSoftclip(frequency: number): InterbaseUploadData {
   return {
     interbasePositions: new Uint32Array([100]),
     interbaseYs: new Uint16Array([0]),
     interbaseLengths: new Uint32Array([5]),
     interbaseFrequencies: new Uint8Array([frequency]),
+    interbaseTypes: new Uint8Array([INTERBASE_SOFTCLIP]),
     numInsertions: 0,
     numSoftclips: 1,
     numHardclips: 0,
@@ -86,32 +56,28 @@ function oneSoftclip(frequency: number): InterbaseUploadData {
 
 // bp 100..1100 across 100px => pxPerBp 0.1, so the sub-pixel frequency fade
 // branch fires. frequencyAlpha(0.1, freq) = 0.1 + freq * 0.9.
-const ZOOMED_OUT: DrawBlock = { start: 100, end: 1100, screenStartPx: 0 }
-const ZOOMED_OUT_BP_LENGTH = 1000
+const ZOOMED_OUT: RenderBlock = {
+  displayedRegionIndex: 0,
+  start: 100,
+  end: 1100,
+  screenStartPx: 0,
+  screenEndPx: 100,
+  reversed: false,
+}
 // bp 100..110 across 100px => pxPerBp 10, above the fade threshold.
-const ZOOMED_IN: DrawBlock = { start: 100, end: 110, screenStartPx: 0 }
-const ZOOMED_IN_BP_LENGTH = 10
-const BLOCK_WIDTH = 100
+const ZOOMED_IN: RenderBlock = { ...ZOOMED_OUT, end: 110 }
 
 function drawOne(
   state: RenderState,
   frequency: number,
-  block: DrawBlock = ZOOMED_OUT,
-  bpLength: number = ZOOMED_OUT_BP_LENGTH,
+  block: RenderBlock = ZOOMED_OUT,
 ) {
   const { ctx, fills } = recordingCtx()
-  drawSoftclips(
-    ctx,
-    oneSoftclip(frequency),
-    block,
-    bpLength,
-    BLOCK_WIDTH,
-    state,
-  )
+  CLIP_MARK.paintBlock(ctx, oneSoftclip(frequency), block, state)
   return fills[0]
 }
 
-describe('drawClipBars frequency fade', () => {
+describe('clip bar frequency fade', () => {
   test('filtering on, zoomed out: a low-frequency clip fades to pxPerBp', () => {
     expect(drawOne(baseState({ filterMismatchesByFrequency: true }), 0)).toBe(
       'rgba(255,0,0,0.1)',
@@ -134,12 +100,7 @@ describe('drawClipBars frequency fade', () => {
 
   test('zoomed in past 1px/bp: no fade regardless of frequency', () => {
     expect(
-      drawOne(
-        baseState({ filterMismatchesByFrequency: true }),
-        0,
-        ZOOMED_IN,
-        ZOOMED_IN_BP_LENGTH,
-      ),
+      drawOne(baseState({ filterMismatchesByFrequency: true }), 0, ZOOMED_IN),
     ).toBe('rgb(255,0,0)')
   })
 })

@@ -759,7 +759,7 @@ function runHoisted(hal: TimingHal, reps: number) {
 }
 
 // -------------------------------------------------------- arm "pokegate"
-// `poke` plus the gate loop today's GPU section block actually runs —
+// `poke` plus the gate loop the GPU section block ran before `planMarks` —
 // `for (const layer of PILEUP_LAYERS) if (layer.enabled(state))`, thirteen
 // closures over one call site. Every arm here would carry the same loop after a
 // conversion, so it is a constant on both sides of every write delta; isolating

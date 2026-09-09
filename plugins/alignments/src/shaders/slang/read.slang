@@ -89,7 +89,7 @@ static const float PAIR_MIN_SPAN_PX = 10.0;
 // glyph is repainted at READ_OUTLINE_SHADE of its own fill. No second colour, no
 // geometry, and it can never leave the read.
 //
-// Exported because `features/read/drawCanvas.ts` has to reproduce it with a
+// Exported because `features/read/mark.ts` has to reproduce it with a
 // stroke, and the three numbers were stated twice with three different answers:
 // it stroked `rgba(0,0,0,0.3)` at width 0.5 CENTRED on the boundary, against
 // this 1 px band inside it, and gated on width alone where this gates on both
@@ -200,7 +200,7 @@ float3 categoryPaletteColor(uint cat, Uniforms u) {
 // cluttering the view. Paired reads whose mates have collapsed together on
 // screen drop the arrow entirely — at that zoom it is noise.
 //
-// `//! js-export`ed: features/read/drawCanvas.ts carried a five-argument copy
+// `//! js-export`ed: features/read/mark.ts carried a five-argument copy
 // of exactly this, under a "Mirror of read.slang `showChev`" comment, and an
 // arrow drawn by one backend but not the other is a difference between what is
 // on screen and what an SVG export contains.

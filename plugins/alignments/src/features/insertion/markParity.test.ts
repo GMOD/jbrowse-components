@@ -1,18 +1,17 @@
 import { bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
 
 import * as insertionShader from '../../shaders/slang/insertion.generated.ts'
-import { drawInsertions } from './drawCanvas.ts'
-import { hitTestLargeInsertion, hitTestSmallInsertion } from './hitTest.ts'
-import { packInsertions } from './packGpu.ts'
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from '../../shared/types.ts'
+import { INSERTION_MARK, insertionsOfSize } from './mark.ts'
 
-import type {
-  DrawBlock,
-  RenderState,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
+import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { InterbaseUploadData } from '../../shared/uploadTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // Draw against hit test, and pack against draw, for the first `point` mark.
 //
@@ -44,55 +43,43 @@ const EPS = 1e-9
 // count-label box 28px wide), and a small one the worker zeroed — drawn at the
 // fade's floor and deliberately inert.
 const NUM_INSERTIONS = 3
-const DATA = {
+const DATA: InterbaseUploadData = {
   interbasePositions: new Uint32Array([1040, 1150, 1260, 1300, 1340]),
   interbaseYs: new Uint16Array([0, 1, 2, 3, 4]),
   interbaseLengths: new Uint32Array([3, 100, 3, 7, 7]),
   interbaseFrequencies: new Uint8Array([255, 255, 0, 255, 255]),
-  interbaseSequences: ['ACG', '', 'TTT', '', ''],
+  interbaseTypes: new Uint8Array([
+    INTERBASE_INSERTION,
+    INTERBASE_INSERTION,
+    INTERBASE_INSERTION,
+    INTERBASE_SOFTCLIP,
+    INTERBASE_HARDCLIP,
+  ]),
   numInsertions: NUM_INSERTIONS,
   numSoftclips: 1,
   numHardclips: 1,
-} as unknown as PileupDataResult
+}
 
-function state(): RenderState {
+function state(filterByFrequency = true): RenderState {
   return {
     scrollTop: 0,
     featureHeight: FEATURE_HEIGHT,
     featureSpacing: 0,
     canvasHeight: 1000,
-    filterMismatchesByFrequency: true,
+    filterMismatchesByFrequency: filterByFrequency,
+    showMismatches: true,
     pileupTopOffset: 0,
     colors: { colorInsertion: [0.75, 0, 0.75] } as RenderState['colors'],
   } as RenderState
 }
 
-function block(reversed: boolean): DrawBlock {
+function block(reversed: boolean): RenderBlock {
   return {
-    start: BLOCK_START,
-    end: BLOCK_START + BP_LENGTH,
-    screenStartPx: 0,
-    reversed,
-  }
-}
-
-function bounds(reversed: boolean) {
-  return {
+    displayedRegionIndex: 0,
     start: BLOCK_START,
     end: BLOCK_START + BP_LENGTH,
     screenStartPx: 0,
     screenEndPx: BLOCK_WIDTH,
-    reversed,
-  }
-}
-
-function resolvedBlock(reversed: boolean): ResolvedBlock {
-  return {
-    rpcData: DATA,
-    bpRange: [BLOCK_START, BLOCK_START + BP_LENGTH],
-    blockStartPx: 0,
-    blockWidth: BLOCK_WIDTH,
-    refName: 'ctgA',
     reversed,
   }
 }
@@ -129,7 +116,7 @@ function recordingCtx() {
 
 function painted(reversed: boolean, data: InterbaseUploadData = DATA) {
   const { ctx, rects } = recordingCtx()
-  drawInsertions(ctx, data, block(reversed), BP_LENGTH, BLOCK_WIDTH, state())
+  INSERTION_MARK.paintBlock(ctx, data, block(reversed), state())
   return rects
 }
 
@@ -142,6 +129,7 @@ function oneInsertion(index: number): InterbaseUploadData {
     interbaseYs: DATA.interbaseYs.slice(index, index + 1),
     interbaseLengths: DATA.interbaseLengths.slice(index, index + 1),
     interbaseFrequencies: DATA.interbaseFrequencies.slice(index, index + 1),
+    interbaseTypes: DATA.interbaseTypes.slice(index, index + 1),
     numInsertions: 1,
     numSoftclips: 0,
     numHardclips: 0,
@@ -152,41 +140,30 @@ function drawnRect(index: number, reversed: boolean) {
   return painted(reversed, oneInsertion(index))[0]
 }
 
-function coordsAt(
-  canvasX: number,
-  row: number,
-  reversed: boolean,
-): CigarCoords {
-  const genomicPos = bpAtPxExact(canvasX, bounds(reversed))
-  return {
-    bpPerPx: BP_PER_PX,
-    genomicPos,
-    basePos: Math.floor(genomicPos),
-    row,
-    adjustedY: row * FEATURE_HEIGHT,
-    yWithinRow: 1,
-  }
-}
-
 // The pipeline's two slots, in `hitTestCigarItem`'s order: a large insertion's
 // box outranks a mismatch, a small one's bar loses to it, and between them they
-// answer for every insertion exactly once.
+// answer for every insertion exactly once. The slot is the candidate set.
 function hitAt(
   canvasX: number,
   row: number,
   reversed: boolean,
   filterByFrequency = true,
 ) {
-  const resolved = resolvedBlock(reversed)
-  const coords = coordsAt(canvasX, row, reversed)
-  return (
-    hitTestLargeInsertion(resolved, coords, FEATURE_HEIGHT) ??
-    hitTestSmallInsertion(resolved, coords, FEATURE_HEIGHT, filterByFrequency)
-  )
+  const at = (size: 'large' | 'small') =>
+    INSERTION_MARK.hitNearest!(
+      DATA,
+      block(reversed),
+      state(filterByFrequency),
+      canvasX,
+      row * FEATURE_HEIGHT + 1,
+      insertionsOfSize(DATA, size, 1 / BP_PER_PX),
+      Infinity,
+    )
+  return at('large') ?? at('small')
 }
 
 function packed() {
-  const u32 = new Uint32Array(packInsertions(DATA))
+  const u32 = new Uint32Array(INSERTION_MARK.pass.pack(DATA) as ArrayBuffer)
   const s32 = insertionShader.INSTANCE_STRIDE_WORDS
   const F = insertionShader.INSTANCE_OFFSET_U32
   const out: { position: number; y: number; length: number }[] = []
@@ -246,7 +223,7 @@ describe.each([false, true])('reversed: %s', reversed => {
     expect(rects).toHaveLength(NUM_INSERTIONS)
     for (const [i, instance] of instances.entries()) {
       const rect = rects[i]!
-      expect(bpAtPxExact(rect.x + rect.w / 2, bounds(reversed))).toBeCloseTo(
+      expect(bpAtPxExact(rect.x + rect.w / 2, block(reversed))).toBeCloseTo(
         instance.position,
         9,
       )

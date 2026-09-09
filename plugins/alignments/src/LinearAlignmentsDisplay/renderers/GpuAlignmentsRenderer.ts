@@ -1,33 +1,22 @@
-import { normalizedRgbToABGR } from '@jbrowse/core/util/colorBits'
 import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
-import { devicePxBand, getDpr } from '@jbrowse/render-core/canvas2dUtils'
+import { devicePxBand } from '@jbrowse/render-core/canvas2dUtils'
 import {
   COVERAGE_BAND_UNIFORMS_SIZE_BYTES,
   COVERAGE_BAR_PASS,
 } from '@jbrowse/render-core/coverageBand'
 import { uploadPass } from '@jbrowse/render-core/instancePass'
-import { drawMarks, uploadMarks } from '@jbrowse/render-core/marks/backend'
+import { planMarks } from '@jbrowse/render-core/marks'
+import {
+  drawMarks,
+  drawPlannedPasses,
+  uploadMarks,
+} from '@jbrowse/render-core/marks/backend'
 import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
-import { CLIP_PASS } from '../../features/clip/packGpu.ts'
-import { CONN_LINE_PASS } from '../../features/connectingLines/packGpu.ts'
-import { DELETION_PASS, SKIP_PASS } from '../../features/gap/packGpu.ts'
-import { INSERTION_PASS } from '../../features/insertion/packGpu.ts'
-import { LINKED_READ_LINE_PASS } from '../../features/linkedReads/packGpu.ts'
-import { effectiveBaseColors } from '../../features/mismatch/baseColors.ts'
-import { MISMATCH_PASS } from '../../features/mismatch/packGpu.ts'
-import { MODIFICATION_PASS } from '../../features/modification/packGpu.ts'
-import { OVERLAP_PASS } from '../../features/overlap/packGpu.ts'
-import { PER_BASE_LETTER_PASS } from '../../features/perBaseLetter/packGpu.ts'
-import { PER_BASE_QUALITY_PASS } from '../../features/perBaseQuality/packGpu.ts'
-import { READ_PASS } from '../../features/read/packGpu.ts'
-import { SOFTCLIP_BASES_PASS } from '../../features/softclipBases/packGpu.ts'
-import { LINKED_READ_SLOT_KEYS } from '../../shaders/palettes.ts'
+import { READ_MARK } from '../../features/read/mark.ts'
 import * as flatQuadShader from '../../shaders/slang/flatQuad.generated.ts'
-import * as readShader from '../../shaders/slang/read.generated.ts'
-import { READ_COLOR_CATEGORY, readCategoryPaletteKeys } from '../colorUtils.ts'
 import {
   getSelectionBounds,
   toClipRect,
@@ -38,40 +27,37 @@ import {
   ALIGNMENTS_COVERAGE_MARKS,
   type AlignmentsCoverageRegion,
 } from './coverageMarks.ts'
-import { PILEUP_LAYERS } from './pileupLayers.ts'
+import { PILEUP_MARKS } from './pileupMarks.ts'
+import {
+  pileupUniformViews,
+  writePileupFrame,
+  writePileupPalette,
+} from './pileupUniforms.ts'
 import {
   lazyReadIdToIndex,
   sectionRegionKey,
   sectionRenderState,
-  shouldOutlineReads,
 } from './rendererTypes.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsPackData } from '../../features/arcs/packGpu.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { CoverageRegionFields } from '../../features/coverage/types.ts'
-import type { ReadColorCategory } from '../colorUtils.ts'
 import type { ChainBoundsRegion } from '../components/chainOverlayUtils.ts'
-import type { PileupLayerId } from './pileupLayers.ts'
+import type { PileupUniformViews } from './pileupUniforms.ts'
 import type {
   AlignmentsRenderingBackend,
   AlignmentsSources,
   ArcBand,
-  ColorPalette,
-  RGBColor,
   RenderBlock,
   RenderState,
 } from './rendererTypes.ts'
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { GpuHal, PipelineDescriptor } from '@jbrowse/render-core/hal'
 import type { InstancePass } from '@jbrowse/render-core/instancePass'
+import type { MarkPlan } from '@jbrowse/render-core/marks'
 
-// Shader strides — every pileup pass shares the same Uniforms struct (see
-// shaders/slang/alignmentsUniforms.slang) so we use any module's offsets.
-const U = readShader.UNIFORM_OFFSET_F32
-const UI = readShader.UNIFORM_OFFSET_I32
-const UU = readShader.UNIFORM_OFFSET_U32
-const USLOTS = readShader.UNIFORM_SLOT_ARRAYS
+export { PALETTE_UNIFORM_FIELDS } from './pileupUniforms.ts'
 
 // The selection-frame overlay: the one pass with no feature folder and no
 // packer, because its instances aren't a region's data — they are four quads
@@ -82,176 +68,6 @@ const FLAT_QUAD_PASS = slangPass({
   id: PASS_FLAT_QUAD,
   mod: flatQuadShader,
 })
-
-// Fill the per-frame UBO slots. Pure — mutates only the given typed-array
-// views. Every field here corresponds to a `u.fieldName` in
-// alignmentsUniforms.slang; adding a new field means updating both.
-function fillFrameUniforms(
-  f: Float32Array,
-  i: Int32Array,
-  state: RenderState,
-  frame: BlockFrame,
-) {
-  // Set on every frame, not just the arc passes: a zero here would divide by
-  // zero in strokeCoverage for anything else that antialiases a stroke.
-  f[U.devicePixelRatio] = getDpr()
-  f[U.bpHi] = frame.bpHi
-  f[U.bpLo] = frame.bpLo
-  // Keep bpLen POSITIVE for reversed regions — this plugin applies the flip via
-  // the separate `reversed` uniform (flipX in the shaders), NOT by negating the
-  // span length. So bpToClipX stays monotonic and span shaders (mismatch/gap/
-  // overlap/read) need no abs/min/max. If you ever bake reversal into bpLen (as
-  // wiggle/manhattan/variants do), all of those break at once.
-  f[U.bpLen] = frame.clippedBpEnd - frame.clippedBpStart
-  f[U.hpZero] = 0
-  f[U.canvasW] = frame.canvasW
-  f[U.pxPerBp] = frame.canvasW / (frame.clippedBpEnd - frame.clippedBpStart)
-  f[U.canvasH] = state.canvasHeight
-  // The pileup top in scrolled px: pileupY and the connecting/linked-read
-  // shaders all read this as rangeY0 (via pileupRowCenterPx).
-  f[U.rangeY0] = state.scrollTop
-  f[U.covOffset] = state.pileupTopOffset
-  f[U.featHeight] = state.featureHeight
-  f[U.featSpacing] = state.featureSpacing
-  // The coverage band's own slots are NOT here: its marks write render-core's
-  // `CoverageBandUniforms` into their own buffer before each of their passes.
-  i[UI.filterMismatchesByFrequency] = state.filterMismatchesByFrequency ? 1 : 0
-  i[UI.mismatchAlpha] = state.mismatchAlpha ? 1 : 0
-  i[UI.colorScheme] = state.colorScheme
-  // Chevron gating only — chain mode's effect on read COLOR is now resolved on
-  // the CPU into `readColorCategories`, so the shader no longer branches on it
-  // for fills. The bezier connection overlay is orthogonal to chain layout.
-  i[UI.chainMode] = state.chainMode ? 1 : 0
-  // The frame-level half of the outline gate, which the uniform is the natural
-  // home for: `featSize.y` is `u.featHeight` for every read, so deciding it once
-  // here is what makes the shader's own y test redundant rather than a second
-  // opinion. Shared with the Canvas2D painter — see `shouldOutlineReads`.
-  i[UI.showStroke] = shouldOutlineReads(state) ? 1 : 0
-  f[U.reversed] = frame.reversed ? 1 : 0
-}
-
-// Which ColorPalette entry backs each NAMED shader color uniform — the ones a
-// pass reads by name (`u.colorBaseA` in snpCoverage, `u.colorInsertion` in
-// insertion). The indexed palettes are separate and written below.
-//
-// EVERY ENTRY IS A MARK, none a read fill: a read's colour is its RC_* category
-// and reaches the GPU through `readCategoryColor` (see alignmentsUniforms.slang).
-// This table carried the sixteen read-fill slots for as long as read.slang's
-// `cat == RC_X` chain read them, and then for a while after it did not — the
-// walk below runs once per region, per track, per frame, so they were packed and
-// stored every one of those with nothing left to read them.
-export const PALETTE_UNIFORM_FIELDS = {
-  colorBaseA: 'colorBaseA',
-  colorBaseC: 'colorBaseC',
-  colorBaseG: 'colorBaseG',
-  colorBaseT: 'colorBaseT',
-  colorBaseN: 'colorBaseN',
-  colorInsertion: 'colorInsertion',
-  colorDeletion: 'colorDeletion',
-  colorSkip: 'colorSkip',
-  colorSoftclip: 'colorSoftclip',
-  colorHardclip: 'colorHardclip',
-  colorConnectingLine: 'colorConnectingLine',
-  colorOverlap: 'colorOverlap',
-  colorOverlapTint: 'colorOverlapTint',
-} satisfies Record<string, keyof ColorPalette>
-
-// Pack every palette color into the UBO. Pure — writes through the given views
-// only, no rendering side effects.
-//
-// Two representations on purpose. The NAMED colors are packed ABGR u32, one
-// slot each, which is how every color travels through this renderer. The two
-// INDEXED palettes are `float4[]` in the shader and so are written as four
-// floats per slot, through the generated setter: std140 pads an array element to
-// 16 bytes whatever it holds, so one packed colour per element would occupy the
-// same space. Four to a `uint4` element would not, and compiles — measured and
-// declined, see colorPack.slang.
-function packRgb(rgb: RGBColor) {
-  return normalizedRgbToABGR(rgb[0], rgb[1], rgb[2])
-}
-
-// The two tables above resolved to `[uboWordIndex, paletteKey]` once at module
-// load, because `writeUniforms` calls the writer below per BLOCK FRAME — once
-// per region, per track, per frame. As `Object.entries` loop headers they
-// allocated a pair array per field on every one of those calls, and each field
-// then cost a string-keyed lookup (`UU[...]`, `READ_COLOR_CATEGORY[...]`) to
-// reach a word index that never changes.
-//
-// The palette VALUES are still read per frame, from the live `ColorPalette`: it
-// is themed and the modifications-mode mute rewrites five slots afterwards, so
-// only the indices are constant. See `writeUniforms` before reaching for the
-// larger version that memoizes the block.
-type PaletteKey = keyof ColorPalette
-
-const PALETTE_UBO_SLOTS: readonly (readonly [number, PaletteKey])[] =
-  Object.entries(PALETTE_UNIFORM_FIELDS).map(
-    ([uniform, key]) => [UU[uniform as keyof typeof UU], key] as const,
-  )
-
-const READ_CATEGORY_UBO_SLOTS: readonly (readonly [number, PaletteKey])[] =
-  Object.entries(readCategoryPaletteKeys).map(
-    ([category, key]) =>
-      [READ_COLOR_CATEGORY[category as ReadColorCategory], key] as const,
-  )
-
-// Takes the shader's own generated setter, which writes every component of an
-// element — so the alpha lane cannot be left out here. The shaders read `.xyz`
-// and set their own, which is what made the fourth store look optional, and a
-// uniform slot left unwritten keeps whatever the last block render put there.
-//
-// Module-level rather than a closure inside the writer, for the reason the slot
-// tables are: it was rebuilt per block frame.
-function writePaletteSlots(
-  f: Float32Array,
-  c: ColorPalette,
-  set: (
-    f32: Float32Array,
-    i: number,
-    v0: number,
-    v1: number,
-    v2: number,
-    v3: number,
-  ) => void,
-  slotCount: number,
-  keys: readonly PaletteKey[],
-) {
-  for (let i = 0; i < slotCount; i++) {
-    const rgb = c[keys[i]!]
-    set(f, i, rgb[0], rgb[1], rgb[2], 1)
-  }
-}
-
-function writePaletteToUbo(u: Uint32Array, f: Float32Array, c: ColorPalette) {
-  for (const [slot, key] of PALETTE_UBO_SLOTS) {
-    u[slot] = packRgb(c[key])
-  }
-  // Driven by the SHADER's slot count, not the palette's, so a palette that
-  // fell out of step leaves an undefined behind here rather than silently
-  // painting stale colors in the slots it didn't reach. arcYScale.test.ts pins
-  // the two lengths equal. `LINKED_READ_SLOT_KEYS` is the slot table's own
-  // resolution through `swatchPaletteKeys`, which is what
-  // `buildLinkedReadColorPalette` (the Canvas2D, SVG and overlay path) also
-  // reads — so this writes the same colours without materializing the array
-  // that function returns. Resolved against `c`, the themed palette: these used
-  // to be module constants, which is how a dark-mode pileup ended up with
-  // dimmed reads under undimmed arcs. The arc palette is the arc band's, and
-  // travels in `ArcBandUniforms`.
-  writePaletteSlots(
-    f,
-    c,
-    readShader.setUniformLinkedReadColor,
-    USLOTS.linkedReadColor.length,
-    LINKED_READ_SLOT_KEYS,
-  )
-  // One color per read category, indexed by the RC_* the CPU classifier baked
-  // into each instance. read.slang used to branch through 17 `cat == RC_X` arms
-  // to reach the same named colors; this is that mapping, from the one table
-  // the legend also reads.
-  for (const [slot, key] of READ_CATEGORY_UBO_SLOTS) {
-    const rgb = c[key]
-    readShader.setUniformReadCategoryColor(f, slot, rgb[0], rgb[1], rgb[2], 1)
-  }
-}
 
 // Pure LocalRegion constructor — the shape a region with no pileup feed gets
 // (arcs whose mate is off-screen bring their own region key).
@@ -329,19 +145,6 @@ interface UploadedRegion {
   arcLineWidth: number
 }
 
-// Per-block inputs collected before each writeUniforms call. Keeping them
-// in one record avoids a 10-arg method signature and lets downstream
-// overlay passes refer to the same frame without recomputation.
-interface BlockFrame {
-  region: LocalRegion
-  bpHi: number
-  bpLo: number
-  clippedBpStart: number
-  clippedBpEnd: number
-  canvasW: number
-  reversed: boolean
-}
-
 // Per-region data not tracked by the HAL. Extends ChainBoundsRegion so
 // `getChainBounds` accepts it directly, and the band region so the coverage
 // marks' params read the peaks off it; the buffers themselves are references
@@ -362,36 +165,14 @@ const OVERLAY_REGION = 999999
 // below take one.
 type DevBand = ReturnType<typeof devicePxBand>
 
-// A pass over one region's pileup payload. Each `features/*/packGpu.ts` states
-// its own narrow input (`GapUploadData`); the wide payload is accepted here
-// because a packer of a supertype satisfies a registry of the subtype.
-type PileupPass = InstancePass<PileupDataResult>
-
-// Each pileup layer's GPU pass — which is also its upload, because an
-// `InstancePass` carries the packer that fills it. The z-order and visibility
-// gating live in the shared `PILEUP_LAYERS` list (also driving the Canvas2D
-// renderer); this map resolves each layer to the pass that draws it.
-//
-// It used to be two maps: this one holding a pass ID string and a second
-// holding an upload function, both `Record<PileupLayerId, …>`. A layer wired
-// into the first and missed in the second compiles, registers, draws — and
-// paints nothing, because the pass has no buffer, silently and on the GPU
-// backend only. Two maps could disagree; one cannot.
-export const GPU_PILEUP_PASS: Record<PileupLayerId, PileupPass> = {
-  connLine: CONN_LINE_PASS,
-  linkedReadLine: LINKED_READ_LINE_PASS,
-  read: READ_PASS,
-  overlap: OVERLAP_PASS,
-  mod: MODIFICATION_PASS,
-  perBaseQual: PER_BASE_QUALITY_PASS,
-  skip: SKIP_PASS,
-  deletion: DELETION_PASS,
-  mismatch: MISMATCH_PASS,
-  insertion: INSERTION_PASS,
-  clip: CLIP_PASS,
-  softclipBases: SOFTCLIP_BASES_PASS,
-  perBaseLetter: PER_BASE_LETTER_PASS,
-}
+/**
+ * The pileup band's passes, in `PILEUP_MARKS` order — each mark's own, which
+ * is also its upload, because an `InstancePass` carries the packer that fills
+ * it.
+ */
+export const PILEUP_PASSES: InstancePass<PileupDataResult>[] = PILEUP_MARKS.map(
+  m => m.pass,
+)
 
 // The arc band's four passes, in the paint order `ARC_BAND_MARKS` states — and
 // stated there rather than here because each pass's Canvas2D twin and uniform
@@ -410,12 +191,12 @@ const EMPTY_ARCS = emptyArcsUploadData()
 // would have drawn.
 const EMPTY_ARC_PACK: ArcsPackData = { arcs: EMPTY_ARCS, baseWidth: 0 }
 
-// Everything the HAL compiles, derived from the three registries above plus the
+// Everything the HAL compiles, derived from the three mark lists plus the
 // packer-less overlay pass, so that registering a pass is not a fourth wiring
-// point a new layer can be missed from. `drawPass` on an unregistered id draws
+// point a new mark can be missed from. `drawPass` on an unregistered id draws
 // nothing and throws nothing.
 export const ALIGNMENTS_PASSES: PipelineDescriptor[] = [
-  ...Object.values(GPU_PILEUP_PASS),
+  ...PILEUP_PASSES,
   ...ALIGNMENTS_COVERAGE_MARKS.map(m => m.pass),
   ...ARC_PASSES,
   FLAT_QUAD_PASS,
@@ -488,9 +269,7 @@ export class GpuAlignmentsRenderer
   implements AlignmentsRenderingBackend
 {
   private uData: ArrayBuffer
-  private uF32: Float32Array
-  private uU32: Uint32Array
-  private uI32: Int32Array
+  private uViews: PileupUniformViews
   // The arc band's UBO, its own `ArcBandUniforms` struct rather than a patched
   // copy of this one. It was the copy: a memcpy of the whole pileup block with
   // the band-sensitive slots poked on top, so a slot the poke forgot redrew with
@@ -515,9 +294,7 @@ export class GpuAlignmentsRenderer
     // `setErrorHandler` that routes a HAL over-limit allocation to renderError.
     super(hal)
     this.uData = this.uniformData
-    this.uF32 = new Float32Array(this.uData)
-    this.uU32 = new Uint32Array(this.uData)
-    this.uI32 = new Int32Array(this.uData)
+    this.uViews = pileupUniformViews(this.uData)
   }
 
   release() {}
@@ -642,7 +419,7 @@ export class GpuAlignmentsRenderer
         (prev.tagColors !== data.readTagColors ||
           prev.colorCategories !== data.readColorCategories)
       ) {
-        uploadPass(this.hal, idx, GPU_PILEUP_PASS.read, data)
+        uploadPass(this.hal, idx, READ_MARK.pass, data)
       }
       if (prev.arcs !== arcs || prev.arcLineWidth !== arcLineWidth) {
         // A band switched off uploads the empty feed rather than skipping the
@@ -654,12 +431,9 @@ export class GpuAlignmentsRenderer
     } else {
       this.hal.deleteRegion(idx)
       if (data) {
-        // Every pileup layer and every coverage-band mark, by construction — the
-        // registry is exhaustive over its key set and each pass carries its own
-        // packer. Uploads are unconditional: a layer's gate belongs to the DRAW.
-        for (const pass of Object.values(GPU_PILEUP_PASS)) {
-          uploadPass(this.hal, idx, pass, data)
-        }
+        // Every pileup mark and every coverage-band mark. Uploads are
+        // unconditional: a mark's gate belongs to the DRAW.
+        uploadMarks(this.hal, idx, PILEUP_MARKS, data)
         uploadMarks(this.hal, idx, ALIGNMENTS_COVERAGE_MARKS, data)
       }
       // The arc band packs from its own input — a separate RPC result, absent
@@ -708,33 +482,18 @@ export class GpuAlignmentsRenderer
     }
   }
 
-  // The colour half of the UBO, which is frame-constant: every input is
-  // display-wide (`sectionRenderState` overrides two Y offsets and nothing
-  // else), so this is ~60 slot writes that produce identical bytes for every
-  // block and every section. It ran inside that loop — up to 120 times a frame
-  // at MAX_GROUPS, and again on every frame of a pan.
-  //
-  // Hoisting works because the CPU-side `uData` persists between `writeUniforms`
-  // calls and the arc band no longer clobbers it. The palette slots and the
-  // per-frame ones are disjoint by construction: each is one field of the
-  // generated struct, at one offset, in one of the three views.
-  private writePalette(state: RenderState) {
-    writePaletteToUbo(this.uU32, this.uF32, state.colors)
-    // Overwrite the five base slots `writePaletteToUbo` just filled from the raw
-    // palette with the resolved ones — unconditional, because
-    // `effectiveBaseColors` is where the modifications-mode mute is decided for
-    // both backends. Written here rather than inside `writePaletteToUbo`
-    // because that takes a `ColorPalette` and the mute needs `RenderState`.
-    const base = effectiveBaseColors(state)
-    this.uU32[UU.colorBaseA] = packRgb(base.A)
-    this.uU32[UU.colorBaseC] = packRgb(base.C)
-    this.uU32[UU.colorBaseG] = packRgb(base.G)
-    this.uU32[UU.colorBaseT] = packRgb(base.T)
-    this.uU32[UU.colorBaseN] = packRgb(base.N)
-  }
-
-  private writeUniforms(state: RenderState, frame: BlockFrame) {
-    fillFrameUniforms(this.uF32, this.uI32, state, frame)
+  // The colour half of the UBO is frame-constant — every input is display-wide
+  // (`sectionRenderState` overrides two Y offsets and nothing else) — so it is
+  // written once ahead of the block loop rather than up to 120 times a frame
+  // at MAX_GROUPS. The palette slots and the per-section ones are disjoint by
+  // construction, each one field of the generated struct; `uData` persists
+  // between the writes and the arc band writes its own struct.
+  private writeUniforms(
+    state: RenderState,
+    clip: BlockClipResult,
+    block: RenderBlock,
+  ) {
+    writePileupFrame(this.uViews, clip, block, state)
     this.hal.writeUniforms(this.uData)
   }
 
@@ -751,7 +510,11 @@ export class GpuAlignmentsRenderer
     this.hal.beginFrame(0, 0, 0, 0)
 
     // Once, ahead of the loop. Nothing below rewrites these slots.
-    this.writePalette(state)
+    writePileupPalette(this.uViews, state)
+    // Which pileup marks draw this frame, asked once: the gates read the
+    // display-wide state, and per section block the walk is the plan's
+    // `drawPass` list against the section's own write.
+    const pileup = planMarks(PILEUP_MARKS, state)
 
     let hasDrawn = false
     for (const block of blocks) {
@@ -761,7 +524,7 @@ export class GpuAlignmentsRenderer
         // Section 0's region key equals the raw region index, so the ungrouped
         // (single-section) case reproduces the prior draw exactly.
         for (let s = 0; s < state.sections.length; s++) {
-          if (this.drawSection(block, clip, state, s, scale.y, bufH)) {
+          if (this.drawSection(block, clip, state, pileup, s, scale.y, bufH)) {
             hasDrawn = true
           }
         }
@@ -794,6 +557,7 @@ export class GpuAlignmentsRenderer
     block: RenderBlock,
     clip: BlockClipResult,
     state: RenderState,
+    pileup: MarkPlan<PileupDataResult, RenderState>,
     sectionIdx: number,
     // The canvas's ACTUAL vertical scale, not `getDpr()` — every band offset
     // below is a device-px rect inside `bufH`, and the two part company once
@@ -808,16 +572,6 @@ export class GpuAlignmentsRenderer
       return false
     }
 
-    const clippedBpStart = clip.bpStartHi + clip.bpStartLo
-    const frame: BlockFrame = {
-      region,
-      bpHi: clip.bpStartHi,
-      bpLo: clip.bpStartLo,
-      clippedBpStart,
-      clippedBpEnd: clippedBpStart + clip.clippedLengthBp,
-      canvasW: clip.scissorW,
-      reversed: block.reversed,
-    }
     const sectionState = sectionRenderState(state, sec)
     this.hal.setViewport(clip.pxX, 0, clip.pxW, bufH)
 
@@ -842,25 +596,21 @@ export class GpuAlignmentsRenderer
       )
     }
 
-    this.writeUniforms(sectionState, frame)
+    this.writeUniforms(sectionState, clip, block)
 
     // Pileup passes are skipped when the band collapses to zero height
     // (read-cloud draws no stacked pileup); the arc band below is
     // decoupled and still draws.
-    const pileup = devicePxBand(
+    const band = devicePxBand(
       sec.pileupClipTop,
       sec.pileupClipHeight,
       scaleY,
       bufH,
     )
-    if (pileup.height > 0) {
-      this.hal.setScissor(clip.pxX, pileup.top, clip.pxW, pileup.height)
-      for (const layer of PILEUP_LAYERS) {
-        if (layer.enabled(state)) {
-          this.hal.drawPass(GPU_PILEUP_PASS[layer.id].id, regionKey)
-        }
-      }
-      this.renderFeatureOverlays(block, sectionState, frame, clip, pileup, bufH)
+    if (band.height > 0) {
+      this.hal.setScissor(clip.pxX, band.top, clip.pxW, band.height)
+      drawPlannedPasses(this.hal, pileup, regionKey)
+      this.renderFeatureOverlays(block, sectionState, region, clip, band, bufH)
     }
 
     // Up- and down-mode arcs both draw here, after the pileup, in their own
@@ -925,17 +675,16 @@ export class GpuAlignmentsRenderer
   private renderFeatureOverlays(
     block: RenderBlock,
     state: RenderState,
-    frame: BlockFrame,
+    region: LocalRegion,
     clip: BlockClipResult,
     pileup: DevBand,
     bufH: number,
   ) {
-    const { region, clippedBpStart, clippedBpEnd } = frame
-
     // Chain selection supersedes single-read; shared with the Canvas2D renderer.
     const bounds = getSelectionBounds(state, region)
     if (bounds) {
-      const bpLen = clippedBpEnd - clippedBpStart
+      const clippedBpStart = clip.bpStartHi + clip.bpStartLo
+      const bpLen = clip.clippedLengthBp
       const quads: number[] = []
       pushSelectionFrame(
         quads,

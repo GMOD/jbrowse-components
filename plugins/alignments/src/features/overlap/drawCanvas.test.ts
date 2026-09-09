@@ -4,12 +4,10 @@ import {
   makeTestPalette,
   makeTestRenderState,
 } from '../../LinearAlignmentsDisplay/testUtils.ts'
-import { drawOverlaps } from './drawCanvas.ts'
+import { OVERLAP_MARK } from './mark.ts'
 
-import type {
-  DrawBlock,
-  RenderState,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // The two layouts that put more than one feature on a row mean different things
 // by an overlap, so this pass draws them differently — and the branch is the
@@ -25,16 +23,21 @@ function draw(
   fullBlockWidth = 1000,
 ) {
   const ctx = new SvgCanvas()
-  const block: DrawBlock = { start: 0, end: 100, screenStartPx: 0 }
-  drawOverlaps(
+  const block: RenderBlock = {
+    displayedRegionIndex: 0,
+    start: 0,
+    end: 100,
+    screenStartPx: 0,
+    screenEndPx: fullBlockWidth,
+    reversed: false,
+  }
+  OVERLAP_MARK.paintBlock(
     ctx,
     {
       overlapPositions: Uint32Array.from(spans.flat()),
       overlapYs: new Uint16Array(spans.length),
     },
     block,
-    100,
-    fullBlockWidth,
     makeTestRenderState({ colors: palette, featureSpacing: 0, ...state }),
   )
   return ctx.getSerializedSvg()
@@ -82,11 +85,9 @@ test('sub-3px rows draw nothing in either layout', () => {
   }
 })
 
-// The other half of `shouldDrawOverlaps`, and the half only this test sees: the
-// renderer reaches this pass through a PILEUP_LAYERS entry gated on the same
-// predicate, so a regression here is invisible from there. One feature per row
-// means an overlap span is a read overlapping itself, and painting it reads as
-// depth that isn't there.
+// The other half of `shouldDrawOverlaps`, the mark's own `enabled`. One feature
+// per row means an overlap span is a read overlapping itself, and painting it
+// reads as depth that isn't there.
 test('and neither layout means nothing to draw at any height', () => {
   expect(draw(WIDE, {})).not.toContain('<rect')
 })

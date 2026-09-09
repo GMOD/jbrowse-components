@@ -60,7 +60,7 @@ function baseTable<T>(state: BaseColorState, of: (c: RGBColor) => T): T[] {
 }
 
 // Memo shared by both tables, since a caller wanting one of them at a given
-// palette is about to want the other: `drawMismatches` reads the CSS entry for
+// palette is about to want the other: the mismatch mark reads the CSS entry for
 // an opaque mismatch and the tuple entry for a faded one, and which it needs is
 // per mismatch.
 let tableMemo:
@@ -117,7 +117,7 @@ export function buildBaseCssMap(state: BaseColorState): string[] {
 }
 
 // The same table as RGB tuples, for the one draw that applies a per-mark alpha
-// (`drawMismatches`, through `rgba255`). A table rather than the five-entry map
+// (the mismatch mark, through `rgba255`). A table rather than the five-entry map
 // it used to be, so the faded branch stops re-spelling the fallback with a `??`
 // — the exact thing the CSS table exists to prevent, left in the one call site
 // that needed both.
@@ -126,7 +126,7 @@ export function buildBaseTupleMap(state: BaseColorState): RGBColor[] {
 }
 
 // The same table again as `rgba255` prefixes, for the one draw that applies a
-// per-mark alpha (`drawMismatches`). Rejoining a prefix with the alpha is what
+// per-mark alpha (`pileupShape`'s painter). Rejoining a prefix with the alpha is what
 // keeps a faded cell to one number conversion instead of four.
 export function buildBaseFadeCssMap(state: BaseColorState): string[] {
   return baseTables(state).faded

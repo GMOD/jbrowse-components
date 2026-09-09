@@ -4,14 +4,12 @@ import { buildReadColorCategories } from '../../LinearAlignmentsDisplay/colorUti
 import { colorSchemeIndexFor } from '../../LinearAlignmentsDisplay/constants.ts'
 import { shouldOutlineReads } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
-import { drawReads, showChevron } from './drawCanvas.ts'
+import { READ_MARK, showChevron } from './mark.ts'
 
-import type {
-  DrawBlock,
-  RenderState,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { ColorSchemeType } from '../../shared/types.ts'
-import type { ChevronFrame } from './drawCanvas.ts'
+import type { ChevronFrame } from './mark.ts'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // The three roles these cases actually assert on; every other slot is
 // makeTestPalette's zero. Spelled out in full here until the helper existed,
@@ -83,13 +81,16 @@ function draw(
     colorByType?: ColorSchemeType
   } = {},
   fullBlockWidth = 1000,
-  blockOverrides: Partial<DrawBlock> = {},
+  blockOverrides: Partial<RenderBlock> = {},
 ) {
   const ctx = new SvgCanvas()
-  const block: DrawBlock = {
+  const block: RenderBlock = {
+    displayedRegionIndex: 0,
     start: 0,
     end: 100,
     screenStartPx: 0,
+    screenEndPx: fullBlockWidth,
+    reversed: false,
     ...blockOverrides,
   }
   const colorScheme = colorSchemeIndexFor(colorByType)
@@ -100,7 +101,7 @@ function draw(
     ...base,
     readColorCategories: buildReadColorCategories(base, colorByType),
   }
-  drawReads(ctx, region, block, 100, fullBlockWidth, {
+  READ_MARK.paintBlock(ctx, region, block, {
     featureHeight: 10,
     featureSpacing: 0,
     pileupTopOffset: 0,
@@ -236,11 +237,18 @@ describe('drawReads visible-row-band cull', () => {
     ...base,
     readColorCategories: buildReadColorCategories(base, 'strand'),
   }
-  const block: DrawBlock = { start: 0, end: 100, screenStartPx: 0 }
+  const block: RenderBlock = {
+    displayedRegionIndex: 0,
+    start: 0,
+    end: 100,
+    screenStartPx: 0,
+    screenEndPx: 1000,
+    reversed: false,
+  }
   // rowHeight 10 => 1000 rows span 10000px of content.
   const count = (over: Partial<RenderState>) => {
     const ctx = new SvgCanvas()
-    drawReads(ctx, region, block, 100, 1000, {
+    READ_MARK.paintBlock(ctx, region, block, {
       featureHeight: 10,
       featureSpacing: 0,
       pileupTopOffset: 0,

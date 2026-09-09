@@ -1,16 +1,18 @@
 import { coverageBinAt, hitCoverageBand } from '@jbrowse/alignments-core'
 import { bpAtPx, bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
 
-import { hitTestClip } from '../../features/clip/hitTest.ts'
-import { hitTestGap } from '../../features/gap/hitTest.ts'
+import { CLIP_MARK, clipHit, clipsOfKind } from '../../features/clip/mark.ts'
+import { DELETION_MARK, SKIP_MARK, gapHit } from '../../features/gap/mark.ts'
 import {
-  hitTestLargeInsertion,
-  hitTestSmallInsertion,
-} from '../../features/insertion/hitTest.ts'
-import { hitTestMismatch } from '../../features/mismatch/hitTest.ts'
+  INSERTION_MARK,
+  insertionHit,
+  insertionsOfSize,
+} from '../../features/insertion/mark.ts'
+import { MISMATCH_MARK, mismatchHit } from '../../features/mismatch/mark.ts'
 import { hitTestModification } from '../../features/modification/hitTest.ts'
+import { backToFront } from '../../features/pileupShape.ts'
 import { hitTestFeature } from '../../features/read/hitTest.ts'
-import { hitTestSoftclipBase } from '../../features/softclipBases/hitTest.ts'
+import { SOFTCLIP_BASES_MARK } from '../../features/softclipBases/mark.ts'
 import { isWithinReadBand } from '../../shared/hitTestTypes.ts'
 import { readIdAt } from '../../shared/readIdentity.ts'
 import { interbaseTypeName } from '../../shared/types.ts'
@@ -20,13 +22,16 @@ import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { CoverageHitResult } from '../../features/coverage/types.ts'
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
 import type { ModificationHitResult } from '../../features/modification/hitTest.ts'
-import type { ChevronFrame } from '../../features/read/drawCanvas.ts'
+import type { ChevronFrame } from '../../features/read/mark.ts'
 import type {
   CigarCoords,
   CigarHitResult,
   ResolvedBlock,
 } from '../../shared/hitTestTypes.ts'
+import type { PileupMark } from '../renderers/pileupMarks.ts'
+import type { RenderState } from '../renderers/rendererTypes.ts'
 import type { ArcMarkHit } from './arcHitTest.ts'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export type HitTestResult =
   | { type: 'indicator'; hit: IndicatorHitResult; resolved: ResolvedBlock }
@@ -189,50 +194,54 @@ function hitTestChain(
 }
 
 export interface HitTestOptions {
-  showInterbaseIndicators: boolean
-  // The coverage band's reserved height — 0 when the band is off, which is the
+  /**
+   * The hovered section's render state — the display's, with the section's
+   * own `pileupTopOffset` and `coverageTopOffset` in place. The marks read
+   * their gates and their geometry off it, which is what makes the draw gate
+   * and the hit gate one: a mark `enabled` says no to answers no hover.
+   */
+  state: RenderState
+  // The hovered section's coverage band — 0 when the band is off, which is the
   // whole gate: the coverage and interbase tests answer nothing in a 0px band.
   coverageHeight: number
   // Autoscaled coverage domain max (global across groups), needed to reproduce
   // the interbase histogram bar heights for hit-testing. Undefined until the
   // debounced autoscale resolves.
   coverageMaxDepth: number | undefined
-  // The band's allele-fraction floor, so the zoomed-out tooltip snap can't name
-  // a segment the band hid. Not a gate on whether the coverage test runs — the
-  // grey depth bar is ungated and stays hoverable at every setting.
-  coverageSnpMinFrequency: number
-  topOffset: number
-  // Screen-px Y of this section's coverage band top. 0 for the ungrouped
-  // sticky-at-top coverage; a stacked group's scrolled coverage top otherwise.
-  // Subtracted from canvasY so the coverage/indicator strip tests are
-  // section-local.
-  coverageTopOffset: number
-  featureHeight: number
-  featureSpacing: number
-  scrollTop: number
-  isChainMode: boolean
-  // Mirrors the draw-time alpha gate: when true, a low-frequency mark fades
-  // (and stops being clickable) once it goes sub-pixel; when false every mark
-  // draws opaque and stays clickable at every zoom. All four fading marks read
-  // it through `passesFrequencyGate` — mismatch, small insertion, clip and
-  // deletion — each against its OWN sub-pixel test, which for a deletion is its
-  // reference span rather than one base.
-  filterMismatchesByFrequency: boolean
-  // Mirrors the `deletion` / `mismatch` / `insertion` draw layers, which are
-  // the three PILEUP_LAYERS entries gated on this flag. The arrays are fetched
-  // either way (it is a repaint-tier setting, not an `rpcProps` one), so
-  // without this the marks stayed hoverable, clickable and right-clickable
-  // while nothing was drawn for them — and `hitTestGap` went on intercepting
-  // the whole deletion span, making a read that draws as solid body
-  // unselectable across it. Two layers are deliberately absent: `clip` and
-  // `skip` both draw unconditionally, so their hit tests must too.
-  showMismatches: boolean
   // False when this section's pileup band is collapsed to zero height
   // (`showPileup` off, or a collapsed group): reads are laid out but not drawn,
   // so the per-read/cigar/modification tests must be skipped to avoid resolving
   // a hover over the empty band. Coverage/indicator tests still run.
   pileupVisible: boolean
-  colorScheme: number
+}
+
+// What a pileup mark's `hitNearest` is asked over: the block as a `RenderBlock`,
+// which is the bounds `bpAtPx` reads and nothing else of it.
+function markBlock(resolved: ResolvedBlock): RenderBlock {
+  return { displayedRegionIndex: 0, ...boundsOf(resolved) }
+}
+
+// The instance of `mark` under the cursor among `candidates`, or undefined.
+// `Infinity` because a pileup shape's rule is containment (a span, a cell, a
+// point's declared tolerance) and it answers nothing outside it; the distance
+// it reports is to the ink, which is how a centerline hits across its row.
+function markHit(
+  mark: PileupMark,
+  resolved: ResolvedBlock,
+  state: RenderState,
+  xPx: number,
+  yPx: number,
+  candidates: Iterable<number>,
+) {
+  return mark.hitNearest!(
+    resolved.rpcData,
+    markBlock(resolved),
+    state,
+    xPx,
+    yPx,
+    candidates,
+    Infinity,
+  )?.index
 }
 
 // A deletion/skip under the cursor, dropped when it is narrower than
@@ -240,21 +249,33 @@ export interface HitTestOptions {
 // and zoomed out it is `bpPerPx`, i.e. keep only what still spans a pixel.
 //
 // That length rule applies to both gap kinds and is about resolvability alone.
-// The frequency gate `hitTestGap` runs is the separate significance question
-// every other mark test asks, and it reaches only deletions — see it for why.
+// The frequency gate is the marks' own significance question, and it reaches
+// only deletions — `gap/mark.ts` says why.
+//
+// One scan per mark, and the LARGER index wins: both marks read one array in
+// one order, so a later entry is the one painted on top — the topmost rule,
+// applied across the two marks as well as within each. `DELETION_MARK` answers
+// nothing while its layer is off (`enabled`), so an undrawn deletion neither
+// intercepts the whole span of a read that paints solid across it nor masks a
+// skip beneath it on the same row.
 function hitTestSignificantGap(
   resolved: ResolvedBlock,
-  coords: CigarCoords,
+  state: RenderState,
+  xPx: number,
+  yPx: number,
   minLength: number,
-  includeDeletions: boolean,
-  filterMismatchesByFrequency: boolean,
 ) {
-  const gap = hitTestGap(
-    resolved,
-    coords,
-    includeDeletions,
-    filterMismatchesByFrequency,
-  )
+  const data = resolved.rpcData
+  const all = () => backToFront(0, data.gapYs.length)
+  const skip = markHit(SKIP_MARK, resolved, state, xPx, yPx, all())
+  const deletion = markHit(DELETION_MARK, resolved, state, xPx, yPx, all())
+  const i =
+    skip === undefined
+      ? deletion
+      : deletion === undefined
+        ? skip
+        : Math.max(skip, deletion)
+  const gap = i === undefined ? undefined : gapHit(data, i)
   return gap && gap.length >= minLength ? gap : undefined
 }
 
@@ -265,59 +286,97 @@ function hitTestSignificantGap(
 //  4. gaps (deletions/skips spanning the read body)
 //  5. clips (interbase bars at alignment edges; softclip wins over hardclip)
 //
-// Steps 1-3 are `showMismatches` layers and vanish with them; step 5 draws
-// unconditionally and so stays. Step 4 is half of each, because its two marks
-// are now two layers: `showMismatches` off leaves the intron centerlines drawn
-// and hittable while the deletion bars go, so the gap test still runs and
-// `hitTestGap` is told which kinds it may answer with. Callers have already
-// checked `isWithinReadBand`.
+// Each step asks a pileup mark, and the mark's `enabled` is the gate: steps
+// 1-3 and the deletion half of 4 vanish with `showMismatches` because their
+// marks do, and the skip centerlines and clips stay because theirs are
+// unconditional. Callers have already checked `isWithinReadBand`.
 //
 // Above `SNP_HIT_MAX_BP_PER_PX` the per-base steps drop out — a mismatch or a
 // thin insertion is narrower than the cursor by then — leaving the marks that
 // still read at that zoom: a large insertion, and a deletion at least a pixel
-// wide. Clips stay in at EVERY zoom, because their layer draws at every zoom:
-// `drawClipBars` paints a fixed 1px bar whatever `bpPerPx` is. What thins them
-// instead is `hitTestClip`'s own `passesFrequencyGate` — the significance gate
-// every other mark test applies, which drops a clip the worker zeroed rather
-// than one the shader merely faded.
+// wide. Clips stay in at EVERY zoom, because their mark draws at every zoom: a
+// fixed 1px bar whatever `bpPerPx` is. What thins them instead is the mark's
+// own frequency gate, which drops a clip the worker zeroed rather than one the
+// shader merely faded.
 //
 // The whole chain lives here for that last reason. The zoomed-out steps used to
 // be spelled a second time at the call site, and clips were simply absent from
-// the copy — so above 25 bp/px an opaque clip bar answered nothing, and a hover
-// fell through to the read body. `HIT_GATES` files `clip` as `alwaysDrawn`,
-// whose contract is that the hit test is ungated too; the parity test could not
-// catch the drift because it varies settings, never zoom.
+// the copy — so above 25 bp/px an opaque clip bar answered nothing.
 function hitTestCigarItem(
   resolved: ResolvedBlock,
-  coords: CigarCoords,
-  featureHeight: number,
+  state: RenderState,
+  xPx: number,
+  yPx: number,
   bpPerPx: number,
-  { filterMismatchesByFrequency, showMismatches }: HitTestOptions,
 ): CigarHitResult | undefined {
+  const data = resolved.rpcData
   const perBase = bpPerPx <= SNP_HIT_MAX_BP_PER_PX
-  const mismatchMarks = showMismatches
-    ? (hitTestLargeInsertion(resolved, coords, featureHeight) ??
-      (perBase
-        ? (hitTestMismatch(resolved, coords, filterMismatchesByFrequency) ??
-          hitTestSmallInsertion(
-            resolved,
-            coords,
-            featureHeight,
-            filterMismatchesByFrequency,
-          ))
-        : undefined))
-    : undefined
-  return (
-    mismatchMarks ??
-    hitTestSignificantGap(
-      resolved,
-      coords,
-      perBase ? 0 : bpPerPx,
-      showMismatches,
-      filterMismatchesByFrequency,
-    ) ??
-    hitTestClip(resolved, coords, filterMismatchesByFrequency)
+  const pxPerBp = 1 / bpPerPx
+  const at = (mark: PileupMark, candidates: Iterable<number>) =>
+    markHit(mark, resolved, state, xPx, yPx, candidates)
+  const large = at(INSERTION_MARK, insertionsOfSize(data, 'large', pxPerBp))
+  if (large !== undefined) {
+    return insertionHit(data, large)
+  }
+  if (perBase) {
+    const mismatch = at(MISMATCH_MARK, backToFront(0, data.mismatchYs.length))
+    if (mismatch !== undefined) {
+      return mismatchHit(data, mismatch)
+    }
+    const small = at(INSERTION_MARK, insertionsOfSize(data, 'small', pxPerBp))
+    if (small !== undefined) {
+      return insertionHit(data, small)
+    }
+  }
+  const gap = hitTestSignificantGap(
+    resolved,
+    state,
+    xPx,
+    yPx,
+    perBase ? 0 : bpPerPx,
   )
+  if (gap) {
+    return gap
+  }
+  const clip =
+    at(CLIP_MARK, clipsOfKind(data, 'soft')) ??
+    at(CLIP_MARK, clipsOfKind(data, 'hard'))
+  return clip === undefined ? undefined : clipHit(data, clip)
+}
+
+// The read behind a drawn soft-clip base cell.
+//
+// `readPositions` carries the read's TRUE aligned extent — the soft-clip
+// expansion is applied to the layout's extents only, never written back — so
+// `hitTestFeature` finds nothing over the clipped tail even though the
+// softclip-bases mark paints a full-height cell per clipped base there. Without
+// this the visible clipped run answered no hover, cleared the selection on
+// click, and fell through to the browser's own context menu on right-click.
+//
+// Answers the READ, like `hitTestFeature`: the cells are that read's unaligned
+// tail, so the tooltip/details/menu should describe it. The clip itself is
+// already reachable — the clip mark covers the bar at the alignment edge, and
+// the cigar chain runs first.
+function hitTestSoftclipBase(
+  resolved: ResolvedBlock,
+  state: RenderState,
+  xPx: number,
+  yPx: number,
+): { id: string; index: number } | undefined {
+  const data = resolved.rpcData
+  const i = markHit(
+    SOFTCLIP_BASES_MARK,
+    resolved,
+    state,
+    xPx,
+    yPx,
+    backToFront(0, data.softclipBaseYs.length),
+  )
+  const readIdx = i === undefined ? undefined : data.softclipBaseReadIndices[i]!
+  const id = readIdx === undefined ? undefined : readIdAt(data, readIdx)
+  return id === undefined || readIdx === undefined
+    ? undefined
+    : { id, index: readIdx }
 }
 
 function boundsOf(resolved: ResolvedBlock) {
@@ -359,20 +418,17 @@ export function performHitTest(
   resolved: ResolvedBlock,
   options: HitTestOptions,
 ): HitTestResult {
+  const { state, coverageHeight, coverageMaxDepth, pileupVisible } = options
   const {
     showInterbaseIndicators,
-    coverageHeight,
-    coverageMaxDepth,
     coverageSnpMinFrequency,
-    topOffset,
     coverageTopOffset,
     featureHeight,
     featureSpacing,
     scrollTop,
-    isChainMode,
-    pileupVisible,
+    chainMode,
     colorScheme,
-  } = options
+  } = state
 
   // Coverage/indicator strip tests are relative to this section's coverage top
   // (0 = the ungrouped sticky band at the canvas top).
@@ -438,18 +494,18 @@ export function performHitTest(
     bpPerPx,
     featureHeight,
     featureSpacing,
-    topOffset,
+    topOffset: state.pileupTopOffset,
     scrollTop,
   })
 
   // Every per-read test below is confined to a drawn read body. Asked once
-  // here for the two branches that used to spell it separately (hitTestCigarItem
-  // internally, the zoomed-out branch inline); the tests that are exported and
-  // unit-tested on their own — hitTestFeature, hitTestModification,
-  // hitTestSoftclipBase — keep their own guard.
+  // here for the two branches that used to spell it separately; the tests that
+  // are exported and unit-tested on their own — hitTestFeature,
+  // hitTestModification — keep their own guard, and the marks reject the
+  // inter-row gap themselves.
   const chevrons: ChevronFrame = {
     pxPerBp: 1 / bpPerPx,
-    chainMode: isChainMode,
+    chainMode,
     colorScheme,
     featureHeight,
   }
@@ -470,10 +526,10 @@ export function performHitTest(
     // drops the chain highlight, purely because of zoom.
     const cigarHit = hitTestCigarItem(
       resolved,
-      coords,
-      featureHeight,
+      state,
+      canvasX,
+      canvasY,
       bpPerPx,
-      options,
     )
     if (modificationHit) {
       return {
@@ -502,8 +558,8 @@ export function performHitTest(
   // answers.
   const hit =
     hitTestFeature(resolved, coords, chevrons) ??
-    hitTestSoftclipBase(resolved, coords, featureHeight) ??
-    (isChainMode
+    hitTestSoftclipBase(resolved, state, canvasX, canvasY) ??
+    (chainMode
       ? hitTestChain(coords, resolved.rpcData, featureHeight)
       : undefined)
   return hit ? { type: 'feature', hit, resolved } : { type: 'none' }

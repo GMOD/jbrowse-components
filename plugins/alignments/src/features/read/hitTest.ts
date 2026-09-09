@@ -7,11 +7,11 @@ import {
   isWithinReadBand,
 } from '../../shared/hitTestTypes.ts'
 import { readIdAt } from '../../shared/readIdentity.ts'
-import { showChevron } from './drawCanvas.ts'
+import { showChevron } from './mark.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
-import type { ChevronFrame } from './drawCanvas.ts'
+import type { ChevronFrame } from './mark.ts'
 
 function firstSegmentOf(segmentReadIndices: Uint32Array, read: number) {
   let lo = 0

@@ -22,7 +22,7 @@
 // ground and made depth read as nothing at all.
 //
 // Both fade with on-screen width so sub-pixel overlaps (zoomed out) disappear.
-// Source of truth for both: features/overlap/drawCanvas.ts (Canvas2D) runs the
+// Source of truth for both: features/overlap/mark.ts (Canvas2D) runs the
 // generated `overlapFade`/`overlapAlpha` below, so the two paths cannot drift.
 //! targets: wgsl, glsl
 //! js-export: overlapAlpha, overlapFade
@@ -52,7 +52,7 @@ float overlapFade(float pxWidth) {
 }
 
 // Collapsed-rows tint strength at this on-screen width. `//! js-export`ed:
-// drawCanvas.ts had the same product of a constant and a smoothstep, plus its
+// mark.ts had the same product of a constant and a smoothstep, plus its
 // own hand-written `smoothstep`, which is two chances to drift over one number.
 float overlapAlpha(float pxWidth) {
   return OVERLAP_ALPHA * overlapFade(pxWidth);

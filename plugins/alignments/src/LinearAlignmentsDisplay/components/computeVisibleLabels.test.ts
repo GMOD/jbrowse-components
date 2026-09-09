@@ -122,7 +122,7 @@ test('without the insertion all three SNP letters render', () => {
   expect(mismatchTexts(makeRpcData(threeMismatches))).toEqual(['A', 'C', 'G'])
 })
 
-// "Fade low quality mismatches" fades the SNP box (drawMismatches /
+// "Fade low quality mismatches" fades the SNP box (the mismatch mark /
 // mismatch.slang). The letter drawn on top has to fade with it, or the setting
 // is a no-op at the only zoom letters appear at.
 describe('SNP letters carry the per-base quality fade', () => {
@@ -378,7 +378,7 @@ test('the (S<len>) summary still renders when no per-base clip data', () => {
 })
 
 // `showMismatches` gated the whole pass, and only three of the five layers it
-// labels answer to it: `clip` is unconditional in PILEUP_LAYERS and
+// labels answer to it: `clip` is unconditional in PILEUP_MARKS and
 // `softclipBases` is gated on `showSoftClipping`. So the bars and the
 // base-coloured cells went on drawing with mismatches off while their text
 // disappeared.

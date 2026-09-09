@@ -4,32 +4,21 @@ import {
   spanRect,
   withClip,
 } from '@jbrowse/render-core/canvas2dUtils'
+import { planMarks } from '@jbrowse/render-core/marks'
 import { Canvas2DRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
 
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
-import { drawHardclips, drawSoftclips } from '../../features/clip/drawCanvas.ts'
-import { drawConnectingLines } from '../../features/connectingLines/drawCanvas.ts'
 import { emptyConnectingLinesUploadData } from '../../features/connectingLines/types.ts'
-import { drawDeletions, drawSkips } from '../../features/gap/drawCanvas.ts'
-import { drawInsertions } from '../../features/insertion/drawCanvas.ts'
-import { drawLinkedReadLines } from '../../features/linkedReads/drawCanvas.ts'
 import { emptyLinkedReadLinesUploadData } from '../../features/linkedReads/types.ts'
-import { drawMismatches } from '../../features/mismatch/drawCanvas.ts'
-import { drawModifications } from '../../features/modification/drawCanvas.ts'
-import { drawOverlaps } from '../../features/overlap/drawCanvas.ts'
 import { emptyOverlapsUploadData } from '../../features/overlap/types.ts'
-import { drawPerBaseLetter } from '../../features/perBaseLetter/drawCanvas.ts'
-import { drawPerBaseQuality } from '../../features/perBaseQuality/drawCanvas.ts'
 import {
   buildReadFields,
   emptyReadFields,
 } from '../../features/read/buildRegion.ts'
-import { drawReads } from '../../features/read/drawCanvas.ts'
-import { drawSoftclipBases } from '../../features/softclipBases/drawCanvas.ts'
 import { getSelectionBounds } from '../components/chainOverlayUtils.ts'
 import { paintArcBand } from './arcMarks.ts'
 import { ALIGNMENTS_COVERAGE_MARKS } from './coverageMarks.ts'
-import { PILEUP_LAYERS } from './pileupLayers.ts'
+import { PILEUP_MARKS } from './pileupMarks.ts'
 import {
   bpToScreenX,
   pileupRowY,
@@ -50,12 +39,10 @@ import type { PerBaseLetterUploadData } from '../../features/perBaseLetter/types
 import type { PerBaseQualityUploadData } from '../../features/perBaseQuality/types.ts'
 import type { ReadRegionFields } from '../../features/read/buildRegion.ts'
 import type { InterbaseUploadData } from '../../shared/uploadTypes.ts'
-import type { PileupLayerId } from './pileupLayers.ts'
 import type {
   AlignmentsRenderingBackend,
   AlignmentsSources,
   CigarUploadData,
-  DrawBlock,
   RenderBlock,
   RenderState,
   SectionRender,
@@ -88,11 +75,9 @@ export interface Canvas2DRegionData
 
 // Builds all CIGAR-derived canvas fields. The merged interbase array travels
 // whole, with the three counts that partition it as
-// [insertions | softclips | hardclips]: the insertion and clip painters read it
-// through their marks, which declare their own slice of it, so the packer, the
-// painter and the hit test now bound their walks by one expression rather than
-// three. The nine pre-sliced views this used to hand the painters were that
-// third expression.
+// [insertions | softclips | hardclips]: the insertion and clip marks declare
+// their own slice of it, so the packer, the painter and the hit test bound
+// their walks by one expression rather than three.
 function buildCigarFields(data: CigarUploadData) {
   return {
     // gap positions store [start, end] pairs
@@ -109,6 +94,7 @@ function buildCigarFields(data: CigarUploadData) {
     interbaseYs: data.interbaseYs,
     interbaseLengths: data.interbaseLengths,
     interbaseFrequencies: data.interbaseFrequencies,
+    interbaseTypes: data.interbaseTypes,
     numInsertions: data.numInsertions,
     numSoftclips: data.numSoftclips,
     numHardclips: data.numHardclips,
@@ -133,6 +119,7 @@ const EMPTY_PILEUP_FIELDS: Canvas2DRegionData = {
   interbaseYs: new Uint16Array(0),
   interbaseLengths: new Uint32Array(0),
   interbaseFrequencies: new Uint8Array(0),
+  interbaseTypes: new Uint8Array(0),
   numInsertions: 0,
   numSoftclips: 0,
   numHardclips: 0,
@@ -288,39 +275,6 @@ export class Canvas2DAlignmentsRenderer
   }
 }
 
-type PileupDrawFn = (
-  ctx: Ctx2D,
-  region: Canvas2DRegionData,
-  block: DrawBlock,
-  bpLength: number,
-  fullBlockWidth: number,
-  state: RenderState,
-) => void
-
-// Each pileup layer's Canvas2D draw function. The z-order and gating live in the
-// shared `PILEUP_LAYERS` list (also driving the GPU renderer); this map resolves
-// each layer to its draw call. Typed `Record<PileupLayerId, …>` so a layer can't
-// be added to the shared list without wiring its draw here. The GPU `clip` pass
-// covers both soft- and hard-clip bars, so the canvas `clip` entry draws both.
-const CANVAS_PILEUP_DRAW: Record<PileupLayerId, PileupDrawFn> = {
-  connLine: drawConnectingLines,
-  linkedReadLine: drawLinkedReadLines,
-  read: drawReads,
-  overlap: drawOverlaps,
-  mod: drawModifications,
-  perBaseQual: drawPerBaseQuality,
-  skip: drawSkips,
-  deletion: drawDeletions,
-  mismatch: drawMismatches,
-  insertion: drawInsertions,
-  clip: (ctx, region, block, bpLength, fullBlockWidth, state) => {
-    drawSoftclips(ctx, region, block, bpLength, fullBlockWidth, state)
-    drawHardclips(ctx, region, block, bpLength, fullBlockWidth, state)
-  },
-  softclipBases: drawSoftclipBases,
-  perBaseLetter: drawPerBaseLetter,
-}
-
 /**
  * Pure draw entry point. Takes any 2D-canvas-like context (real
  * CanvasRenderingContext2D or SvgCanvas) plus a prepared regions map and
@@ -350,11 +304,11 @@ export function drawAlignmentBlocks(
   // frame it should paint, blank included, and `drawSection` carries why.
   let painted = false
 
-  // Which layers draw this frame, resolved once. The gates read the
+  // Which marks draw this frame, resolved once. The gates read the
   // display-wide `state` (the show flags are the same in every section), so
   // asking them per section per block re-answered one question up to 120 times
   // a frame at MAX_GROUPS.
-  const layers = PILEUP_LAYERS.filter(l => l.enabled(state))
+  const pileup = planMarks(PILEUP_MARKS, state)
   const sectionStates = state.sections.map(sec =>
     sectionRenderState(state, sec),
   )
@@ -387,7 +341,7 @@ export function drawAlignmentBlocks(
         )
       return found.length > 0 ? found : undefined
     },
-    (sections, block, { fullBlockWidth, bpLength, scissorX, scissorW }) => {
+    (sections, block, { scissorX, scissorW }) => {
       // Every block reaching here has a section with a region, which is the
       // GPU's test too.
       painted = true
@@ -418,18 +372,10 @@ export function drawAlignmentBlocks(
           scissorW,
           sec.pileupClipHeight,
           () => {
-            // Pileup layers in z-order, ordered by the shared PILEUP_LAYERS list
-            // (the GPU renderer iterates the same list) and gated above. The
-            // draw fns take the per-section `sectionState`.
-            for (const layer of layers) {
-              CANVAS_PILEUP_DRAW[layer.id](
-                ctx,
-                region,
-                block,
-                bpLength,
-                fullBlockWidth,
-                sectionState,
-              )
+            // The pileup marks in `PILEUP_MARKS` order — the GPU renderer draws
+            // the same plan — with the per-section `sectionState`.
+            for (const mark of pileup.marks) {
+              mark.paintBlock(ctx, region, block, sectionState)
             }
             drawSelectionOverlays(ctx, region, block, sectionState)
           },

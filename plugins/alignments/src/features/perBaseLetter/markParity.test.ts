@@ -1,11 +1,12 @@
+import { makeTestRenderState } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { frequencyFadeGate } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
 import { qualityFade } from '../../shaders/slang/mismatch.js.generated.ts'
-import { Fade } from '../mark.ts'
 import { PER_BASE_LETTER_MARK } from './mark.ts'
-import { packPerBaseLetter } from './packGpu.ts'
 
 import type { PerBaseLetterUploadData } from './types.ts'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // Pack against draw, on the layer where the two could actually disagree:
 // per-base lettering borrows mismatch.slang, which applies a frequency fade AND
@@ -31,11 +32,17 @@ const DATA: PerBaseLetterUploadData = {
 // Zoomed out far enough that the frequency fade bites if the packer left it to
 // the default: at 4 bp/px a base covers a quarter of a pixel.
 const PX_PER_BP = 0.25
-
-const CHANNELS = PER_BASE_LETTER_MARK.channels(DATA)
+const BLOCK: RenderBlock = {
+  displayedRegionIndex: 0,
+  start: 1000,
+  end: 1400,
+  screenStartPx: 0,
+  screenEndPx: 400 * PX_PER_BP,
+  reversed: false,
+}
 
 function instances() {
-  const buf = packPerBaseLetter(DATA)
+  const buf = PER_BASE_LETTER_MARK.pass.pack(DATA) as ArrayBuffer
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
   const s32 = mismatchShader.INSTANCE_STRIDE_WORDS
@@ -64,18 +71,50 @@ function shaderAlpha(
   )
 }
 
-// The mark declares one number for every instance whatever the settings, so
-// what the shader has to reproduce is that number — under both advanced fades,
-// which is the combination the packer's zero default failed.
+// The fills the painter set, under the same two settings.
+function paintedFills(mismatchAlpha: boolean, filterByFrequency: boolean) {
+  const fills: string[] = []
+  let fill = ''
+  const ctx = {
+    set fillStyle(v: string) {
+      fill = v
+    },
+    get fillStyle() {
+      return fill
+    },
+    fillRect() {
+      fills.push(fill)
+    },
+  } as unknown as Ctx2D
+  PER_BASE_LETTER_MARK.paintBlock(
+    ctx,
+    DATA,
+    BLOCK,
+    makeTestRenderState({
+      showPerBaseLetter: true,
+      mismatchAlpha,
+      filterMismatchesByFrequency: filterByFrequency,
+    }),
+  )
+  return fills
+}
+
+// The mark paints every base opaque whatever the settings, so what the shader
+// has to reproduce is that — under both advanced fades, which is the
+// combination the packer's zero default failed.
 test.each([
   ['both fades off', false, false],
   ['frequency filtering on', false, true],
   ['fade by base quality on', true, false],
   ['both on', true, true],
 ])(
-  'the shader resolves the mark alpha with %s',
+  'the shader resolves the painted alpha with %s',
   (_name, mismatchAlpha, filterByFrequency) => {
-    expect(PER_BASE_LETTER_MARK.fade).toBe(Fade.opaque)
+    const fills = paintedFills(mismatchAlpha, filterByFrequency)
+    expect(fills).toHaveLength(DATA.perBaseLetterYs.length)
+    for (const fill of fills) {
+      expect(fill).toMatch(/^rgb\(/)
+    }
     for (const instance of instances()) {
       expect(shaderAlpha(instance, mismatchAlpha, filterByFrequency)).toBe(1)
     }
@@ -84,6 +123,6 @@ test.each([
 
 test('every instance is the base the mark declares', () => {
   for (const [i, instance] of instances().entries()) {
-    expect(instance.position).toBe(CHANNELS.positions[i * CHANNELS.stride])
+    expect(instance.position).toBe(DATA.perBaseLetterPositions[i])
   }
 })

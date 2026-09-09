@@ -1,16 +1,13 @@
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { bpAtPx } from '@jbrowse/render-core/canvas2dUtils'
 
+import { makeTestRenderState } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import * as packedColorQuad from '../../shaders/slang/packedColorQuad.generated.ts'
-import { drawPerBaseQuality } from './drawCanvas.ts'
-import { packPerBaseQuality } from './packGpu.ts'
+import { PER_BASE_QUALITY_MARK } from './mark.ts'
 
-import type {
-  DrawBlock,
-  RenderState,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { PerBaseQualityUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // Pack against draw, which is the third pairing and the one this layer can be
 // held to: there is no hit test over these cells (the read body's answers), so
@@ -24,7 +21,6 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 const START = 1000
 const END = 1010
-const BP_LENGTH = END - START
 const BLOCK_WIDTH = 200
 const FEATURE_HEIGHT = 10
 
@@ -34,22 +30,16 @@ const DATA: PerBaseQualityUploadData = {
   perBaseQualScores: new Uint8Array([0, 20, 40, 255]),
 }
 
-function state(): RenderState {
-  return {
-    featureHeight: FEATURE_HEIGHT,
-    featureSpacing: 0,
-    pileupTopOffset: 0,
-    scrollTop: 0,
-    canvasHeight: 500,
-  } as unknown as RenderState
-}
+const STATE = makeTestRenderState({
+  showPerBaseQuality: true,
+  featureHeight: FEATURE_HEIGHT,
+  featureSpacing: 0,
+  canvasHeight: 500,
+})
 
-function block(reversed: boolean): DrawBlock {
-  return { start: START, end: END, screenStartPx: 0, reversed }
-}
-
-function bounds(reversed: boolean) {
+function block(reversed: boolean): RenderBlock {
   return {
+    displayedRegionIndex: 0,
     start: START,
     end: END,
     screenStartPx: 0,
@@ -77,19 +67,14 @@ function recordingCtx() {
 
 function painted(reversed: boolean) {
   const { ctx, fills } = recordingCtx()
-  drawPerBaseQuality(
-    ctx,
-    DATA,
-    block(reversed),
-    BP_LENGTH,
-    BLOCK_WIDTH,
-    state(),
-  )
+  PER_BASE_QUALITY_MARK.paintBlock(ctx, DATA, block(reversed), STATE)
   return fills
 }
 
 function packed() {
-  const u32 = new Uint32Array(packPerBaseQuality(DATA))
+  const u32 = new Uint32Array(
+    PER_BASE_QUALITY_MARK.pass.pack(DATA) as ArrayBuffer,
+  )
   const s32 = packedColorQuad.INSTANCE_STRIDE_WORDS
   const F = packedColorQuad.INSTANCE_OFFSET_U32
   const out: { position: number; y: number; css: string }[] = []
@@ -115,7 +100,7 @@ describe.each([false, true])('reversed: %s', reversed => {
       const fill = fills[i]!
       // The centre of the drawn cell, back through the pivot the painter used.
       // A one-base disagreement is a 20px error here, not a rounding one.
-      expect(bpAtPx(fill.x + fill.w / 2, bounds(reversed))).toBe(
+      expect(bpAtPx(fill.x + fill.w / 2, block(reversed))).toBe(
         instance.position,
       )
       expect(instance.y).toBe(DATA.perBaseQualYs[i]!)

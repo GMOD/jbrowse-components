@@ -1,6 +1,9 @@
 import { spanLeft, strokeRectInside } from '@jbrowse/render-core/canvas2dUtils'
+import { defineMark } from '@jbrowse/render-core/marks'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { readColorFromCategoryIndex } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { writePileupUniforms } from '../../LinearAlignmentsDisplay/renderers/pileupUniforms.ts'
 import {
   bpToScreenX,
   pileupRowOffCanvas,
@@ -12,18 +15,22 @@ import {
   READ_OUTLINE_PX,
   READ_OUTLINE_SHADE,
 } from '../../shaders/slang/read.consts.generated.ts'
+import * as readShader from '../../shaders/slang/read.generated.ts'
 import { showChevron as shaderShowChevron } from '../../shaders/slang/read.js.generated.ts'
 import { CHEVRON_PX } from '../../shaders/slang/readChevron.generated.ts'
 import { chevronCapsEdge } from '../../shaders/slang/readChevron.js.generated.ts'
 
-import type {
-  DrawBlock,
-  RenderState,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { InsertSizeBand } from '../../shared/insertSizeStats.ts'
-import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { MarkContext2D, MarkShape } from '@jbrowse/render-core/marks'
 
-interface DrawReadsRegion {
+/**
+ * What the read mark reads: the per-read arrays every CIGAR, coverage and
+ * highlight path also walks, plus the per-exon segments (reads split at CIGAR
+ * N/skip) that are the pass's instances. Each segment carries its parent read
+ * index so per-read color, strand and flags resolve through it.
+ */
+export interface ReadMarkRegion {
   readPositions: Uint32Array
   readYs: Uint16Array
   readStrands: Int8Array
@@ -35,11 +42,52 @@ interface DrawReadsRegion {
   readInsertSizes: Float32Array
   readInterchrom: Uint8Array
   insertSizeStats?: InsertSizeBand
-  // Per-exon segments: reads split at CIGAR N/skip. Each segment carries its
-  // parent read index so per-read color/strand/flags resolve via readIndex.
   segmentPositions: Uint32Array
   segmentReadIndices: Uint32Array
   segmentEdgeFlags: Uint8Array
+}
+
+// Pure: pack per-segment instances for the read pass. Hot loop over thousands
+// of segments — all host-object property accesses are hoisted to locals so V8
+// reads through typed-array views directly.
+export function packReadSegments(data: ReadMarkRegion): ArrayBuffer {
+  const n = data.segmentReadIndices.length
+  const stride32 = readShader.INSTANCE_STRIDE_WORDS
+  const F_F32 = readShader.INSTANCE_OFFSET_F32
+  const F_I32 = readShader.INSTANCE_OFFSET_I32
+  const F_U32 = readShader.INSTANCE_OFFSET_U32
+  const buf = new ArrayBuffer(n * readShader.INSTANCE_STRIDE_BYTES)
+  const u32 = new Uint32Array(buf)
+  const f32 = new Float32Array(buf)
+  const i32 = new Int32Array(buf)
+  const tagColors = data.readTagColors
+  const hasTagColors = tagColors.length > 0
+  const colorCategories = data.readColorCategories
+  const interchrom = data.readInterchrom
+  const readYs = data.readYs
+  const readFlags = data.readFlags
+  const readMapqs = data.readMapqs
+  const readInsertSizes = data.readInsertSizes
+  const readStrands = data.readStrands
+  const segmentPositions = data.segmentPositions
+  const segmentReadIndices = data.segmentReadIndices
+  const segmentEdgeFlags = data.segmentEdgeFlags
+  for (let j = 0; j < n; j++) {
+    const ri = segmentReadIndices[j]!
+    const o = j * stride32
+    u32[o + F_U32.startOff] = segmentPositions[j * 2]!
+    u32[o + F_U32.endOff] = segmentPositions[j * 2 + 1]!
+    u32[o + F_U32.y] = readYs[ri]!
+    u32[o + F_U32.flags] = readFlags[ri]!
+    u32[o + F_U32.mapq] = readMapqs[ri]!
+    f32[o + F_F32.insertSize] = readInsertSizes[ri]!
+    i32[o + F_I32.strand] = readStrands[ri]!
+    u32[o + F_U32.tagColor] = hasTagColors ? tagColors[ri]! : 0
+    u32[o + F_U32.edgeFlags] = segmentEdgeFlags[j]!
+    u32[o + F_U32.interchrom] = interchrom[ri]!
+    u32[o + F_U32.colorCategory] = colorCategories[ri]!
+  }
+  return buf
 }
 
 // Chevron geometry + gating. An arrowhead protrudes past the read's leading
@@ -127,7 +175,7 @@ function chevronApexX(capsEdge: number, xStart: number, xEnd: number) {
 // Both stay far inside the `w > 2` gate: the corner term is under 0.15 px for
 // every height the outline is drawn at.
 function traceReadArrow(
-  ctx: Ctx2D,
+  ctx: MarkContext2D,
   xL: number,
   xR: number,
   y: number,
@@ -168,14 +216,20 @@ function traceReadArrow(
   ctx.closePath()
 }
 
-export function drawReads(
-  ctx: Ctx2D,
-  region: DrawReadsRegion,
-  block: DrawBlock,
-  bpLength: number,
-  fullBlockWidth: number,
+function drawReads(
+  ctx: MarkContext2D,
+  region: ReadMarkRegion,
+  block: {
+    start: number
+    end: number
+    screenStartPx: number
+    screenEndPx: number
+    reversed: boolean
+  },
   state: RenderState,
 ) {
+  const bpLength = block.end - block.start
+  const fullBlockWidth = block.screenEndPx - block.screenStartPx
   const fH = state.featureHeight
   const chevronFrame: ChevronFrame = {
     pxPerBp: fullBlockWidth / bpLength,
@@ -291,3 +345,29 @@ export function drawReads(
     }
   }
 }
+
+/**
+ * The read body: one "home plate" pentagon or rect per exon segment, in the
+ * category colour the classification pass decided, outlined when the row is
+ * tall enough. A hand-tuned glyph rather than a `pileupShape` — its instance
+ * is a segment, its colour a per-read function of the scheme, and its hit test
+ * answers the READ (`hitTestFeature`), which is why the shape declares no
+ * `hitNearest`: a segment index is not what a hover over a read means.
+ */
+const readShape: MarkShape<ReadMarkRegion, RenderState> = {
+  id: 'read',
+  pass: {
+    ...slangPass({ id: 'read', mod: readShader }),
+    pack: packReadSegments,
+  },
+  writeUniforms: writePileupUniforms,
+  paintBlock(ctx, region, block, _frame, state) {
+    drawReads(ctx, region, block, state)
+  },
+}
+
+export const READ_MARK = defineMark({
+  shape: readShape,
+  channels: (data: ReadMarkRegion) => data,
+  params: (state: RenderState) => state,
+})

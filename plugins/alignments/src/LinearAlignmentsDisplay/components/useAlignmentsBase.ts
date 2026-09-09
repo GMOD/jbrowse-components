@@ -66,13 +66,6 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
 
   const { mismatchContrastMap: contrastMap } = model
 
-  const {
-    featureHeight,
-    featureSpacing,
-    showInterbaseIndicators,
-    isChainMode,
-  } = model
-
   function runHitTest(canvasX: number, canvasY: number) {
     const picked = resolveSectionForCanvasY(canvasY)
     const resolved = picked
@@ -102,22 +95,18 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
       arc ??
       (picked && resolved
         ? performHitTest(canvasX, canvasY, resolved, {
-            showInterbaseIndicators,
-            // The hovered section's own coverage band (gated to 0 when off),
-            // in the section frame `coverageTopOffset` puts the cursor in.
+            // The render state the marks draw by, with the hovered section's
+            // offsets in place — the frame `coverageTopOffset` puts the cursor
+            // in, and the pileup top its rows are counted from.
+            state: {
+              ...model.renderState,
+              pileupTopOffset: picked.section.topOffset,
+              coverageTopOffset: picked.coverageTopOffset,
+            },
+            // The hovered section's own coverage band (gated to 0 when off).
             coverageHeight: picked.section.coverageHeight,
             coverageMaxDepth: model.coverageDomain?.[1],
-            coverageSnpMinFrequency: model.coverageSnpMinFrequency,
-            topOffset: picked.section.topOffset,
-            coverageTopOffset: picked.coverageTopOffset,
-            featureHeight,
-            featureSpacing,
-            scrollTop: model.scrollTop,
-            isChainMode,
-            filterMismatchesByFrequency: model.filterMismatchesByFrequency,
-            showMismatches: model.showMismatches,
             pileupVisible: picked.section.pileupHeight > 0,
-            colorScheme: model.colorSchemeIndex,
           })
         : { type: 'none' })
     return { resolved, picked, result }

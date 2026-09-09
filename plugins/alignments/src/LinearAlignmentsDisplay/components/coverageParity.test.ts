@@ -233,8 +233,8 @@ function recordingCtx() {
 }
 
 // A "every drawn pass is registered in ALIGNMENTS_PASSES" pair of cases stood
-// here. `ALIGNMENTS_PASSES` is now BUILT from `GPU_PILEUP_PASS` and the
-// coverage marks rather than hand-listed alongside them, so a drawn pass is a
+// here. `ALIGNMENTS_PASSES` is now BUILT from the three mark lists rather than
+// hand-listed alongside them, so a drawn pass is a
 // registered pass by construction and the cases could no longer fail.
 
 describe('coverage packing parity between GPU and Canvas2D', () => {

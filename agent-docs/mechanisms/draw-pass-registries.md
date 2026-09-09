@@ -28,26 +28,24 @@ Alignments is the one renderer that doesn't inherit it, because bands and
 sections make it extend `GpuRenderingBackendBase` directly.
 
 **3. The id registry.** A shared ordered list carrying z-order and, where the
-marks are settings-gated, an `enabled(state)` — `PILEUP_LAYERS` — resolved by
-an exhaustive `Record<LayerId, …>` per consumer, and with pass registration
-derived from the registry rather than re-listed. **Conditional; see the
-precondition below.** A display on render-core's mark list has this for free:
-the list is the order, each mark carries both backends, and `createMarkBackend`
-registers the passes off it (canvas `LinearBasicDisplay` moved there from a
-glyph-layer registry, and the alignments coverage band from a five-layer
-registry plus two records to `coverageBandMarks`, whose shapes gate through
-`paintsBlock`).
+marks are settings-gated, an `enabled(state)`, with pass registration derived
+from the registry rather than re-listed. **Conditional; see the precondition
+below.** A display on render-core's mark list has this for free: the list is
+the order, each mark carries both backends, and `createMarkBackend` or
+`planMarks` registers and resolves the passes off it (canvas
+`LinearBasicDisplay` moved there from a glyph-layer registry, the alignments
+coverage band from a five-layer registry plus two records to
+`coverageBandMarks`, and the alignments pileup from `PILEUP_LAYERS` plus a
+`Record<PileupLayerId, …>` per consumer to `PILEUP_MARKS`).
 
-**4. `HIT_GATES`.** A second exhaustive record over the same ids forcing every
-drawn layer to state a hit-testing story, checked against each layer's actual
-`enabled` behaviour rather than its word (`hitTestGateParity.test.ts`).
-**Alignments-only, and it should stay that way**: a display on the mark list
-has the property structurally rather than by table, because `defineMark` runs
-one mark's three gates — `channels` answering undefined, the `band`, and
-`paintsBlock` — over the GPU draw, the Canvas2D paint and `hitNearest` alike.
-What is left for a record is the pileup's thirteen hand-driven passes, whose
-gates live in the renderers rather than in a mark. Don't build a `HIT_GATES`
-for a mark display; it would restate what `defineMark` already enforces.
+**4. A hit-gate record.** The pileup carried a second exhaustive record over
+its layer ids (`HIT_GATES`) forcing every drawn layer to state a hit-testing
+story, checked against each layer's actual `enabled` behaviour. **Retired with
+the registry**: a display on the mark list has the property structurally
+rather than by table, because `defineMark` runs one mark's gates — `enabled`,
+`channels` answering undefined, the `band`, and `paintsBlock` — over the GPU
+draw, the Canvas2D paint and `hitNearest` alike. Don't build one for a mark
+display; it would restate what `defineMark` already enforces.
 
 ## A registry is two maps over one list, never a table of uniform rows
 
@@ -80,7 +78,7 @@ Fail 1 or 2 and there is no list. Fail 3 and there is nothing to drift against.
 
 | Display | Marks | Ordered | Per-mark gate | Consumers | Verdict |
 | --- | --- | --- | --- | --- | --- |
-| alignments pileup | 13 | yes | yes | GPU, Canvas2D, hit (+SVG free) | `PILEUP_LAYERS` |
+| alignments pileup | 13 | yes | yes | GPU, Canvas2D, hit (+SVG free) | `PILEUP_MARKS`, a mark list on `planMarks` |
 | alignments coverage | 5 | yes | yes | GPU, Canvas2D | `ALIGNMENTS_COVERAGE_MARKS`, a mark list MAF declares too |
 | alignments arcs | 4 | yes | band-level only | GPU, `drawArcs` | list + `flatPaintOrder.test.ts` |
 | alignments SVG overlays | 3 | yes | upstream geometry | overlay, `*Svg` export | order stated twice, below threshold |
@@ -98,7 +96,7 @@ Two of the three registries in tree aren't. `rowLayout`
 more general shape:
 
 - **It is a function of state.** `reversed` reorders the stack, so the list is
-  computed rather than constant — something `PILEUP_LAYERS` cannot express.
+  computed rather than constant — something a constant mark list cannot express.
 - **One consumer is layout height, not a backend.** `rowCount` is
   `rowLayout(...).length`, so the model's height, the painter's loop and the
   hover's mouse-y lookup index one list. The count used to be a third encoding,

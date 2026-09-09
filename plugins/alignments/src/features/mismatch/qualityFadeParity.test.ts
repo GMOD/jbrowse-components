@@ -3,7 +3,7 @@ import { qualityFade } from '../../shaders/slang/mismatch.js.generated.ts'
 
 // The retirement gate for mismatch.slang's `//! js-export` (adr-051).
 //
-// `retiredQualAlpha` is the hand-written twin drawMismatches carried, under the
+// `retiredQualAlpha` is the hand-written twin the mismatch painter carried, under the
 // comment "Mirrors the GPU mismatch.slang path". It stays here as a fixture so
 // the generated function is proved against what actually shipped rather than
 // against a fresh reading of the shader — which is the same reading that would

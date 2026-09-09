@@ -1,20 +1,14 @@
-import { bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
-
 import {
   GAP_DELETION,
   GAP_SKIP,
 } from '../../shaders/slang/gap.consts.generated.ts'
-import { drawDeletions, drawSkips } from './drawCanvas.ts'
-import { hitTestGap } from './hitTest.ts'
+import { backToFront } from '../pileupShape.ts'
+import { DELETION_MARK, SKIP_MARK, gapHit } from './mark.ts'
 
-import type {
-  DrawBlock,
-  RenderState,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
+import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { GapUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // Draw against hit test, which is the gate this repo did not have: every parity
 // mechanism in GPU_RENDERING.md and CROSS_BACKEND_GATE.md compares the GPU with
@@ -32,7 +26,6 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 const BLOCK_START = 1000
 const BP_LENGTH = 400
 const BLOCK_WIDTH = 100
-const BP_PER_PX = BP_LENGTH / BLOCK_WIDTH
 const FEATURE_HEIGHT = 10
 // The projection and its inverse are two float expressions of one line, so an
 // edge sample lands an ulp either side of it.
@@ -58,13 +51,17 @@ const GAPS: GapUploadData = {
   gapFrequencies: new Uint8Array([255, 0, 255, 0]),
 }
 
-function state(): RenderState {
+function state(
+  showMismatches = true,
+  filterMismatchesByFrequency = true,
+): RenderState {
   return {
     scrollTop: 0,
     featureHeight: FEATURE_HEIGHT,
     featureSpacing: 0,
     canvasHeight: 1000,
-    filterMismatchesByFrequency: true,
+    filterMismatchesByFrequency,
+    showMismatches,
     pileupTopOffset: 0,
     colors: {
       colorDeletion: [0.5, 0.5, 0.5],
@@ -73,24 +70,13 @@ function state(): RenderState {
   } as RenderState
 }
 
-function block(reversed: boolean): DrawBlock {
+function block(reversed: boolean): RenderBlock {
   return {
+    displayedRegionIndex: 0,
     start: BLOCK_START,
     end: BLOCK_START + BP_LENGTH,
     screenStartPx: 0,
-    reversed,
-  }
-}
-
-function resolvedBlock(reversed: boolean): ResolvedBlock {
-  return {
-    // The gap arrays are the only ones either consumer reads, as the fixtures in
-    // hitTestPipeline.test.ts state a partial payload the same way.
-    rpcData: GAPS as PileupDataResult,
-    bpRange: [BLOCK_START, BLOCK_START + BP_LENGTH],
-    blockStartPx: 0,
-    blockWidth: BLOCK_WIDTH,
-    refName: 'ctgA',
+    screenEndPx: BLOCK_WIDTH,
     reversed,
   }
 }
@@ -130,31 +116,40 @@ function oneGap(index: number): GapUploadData {
 
 function drawnRect(index: number, reversed: boolean) {
   const { ctx, rects } = recordingCtx()
-  const draw = GAPS.gapTypes[index] === GAP_SKIP ? drawSkips : drawDeletions
-  draw(ctx, oneGap(index), block(reversed), BP_LENGTH, BLOCK_WIDTH, state())
+  const mark = GAPS.gapTypes[index] === GAP_SKIP ? SKIP_MARK : DELETION_MARK
+  mark.paintBlock(ctx, oneGap(index), block(reversed), state())
   return rects[0]
 }
 
-function coordsAt(
+// The hit chain's gap step: one scan per mark, the larger index winning, with
+// `showMismatches` taking the deletion mark's answer with it (`enabled`).
+function hitTestGap(
   canvasX: number,
   row: number,
   reversed: boolean,
-): CigarCoords {
-  const bounds = {
-    start: BLOCK_START,
-    end: BLOCK_START + BP_LENGTH,
-    screenStartPx: 0,
-    screenEndPx: BLOCK_WIDTH,
-    reversed,
-  }
-  return {
-    bpPerPx: BP_PER_PX,
-    genomicPos: bpAtPxExact(canvasX, bounds),
-    basePos: Math.floor(bpAtPxExact(canvasX, bounds)),
-    row,
-    adjustedY: row * FEATURE_HEIGHT,
-    yWithinRow: 1,
-  }
+  includeDeletions: boolean,
+  filterByFrequency: boolean,
+) {
+  const s = state(includeDeletions, filterByFrequency)
+  const at = (mark: typeof SKIP_MARK) =>
+    mark.hitNearest!(
+      GAPS,
+      block(reversed),
+      s,
+      canvasX,
+      row * FEATURE_HEIGHT + 1,
+      backToFront(0, GAPS.gapYs.length),
+      Infinity,
+    )?.index
+  const skip = at(SKIP_MARK)
+  const deletion = at(DELETION_MARK)
+  const i =
+    skip === undefined
+      ? deletion
+      : deletion === undefined
+        ? skip
+        : Math.max(skip, deletion)
+  return i === undefined ? undefined : gapHit(GAPS, i)
 }
 
 describe.each([false, true])('reversed: %s', reversed => {
@@ -162,12 +157,7 @@ describe.each([false, true])('reversed: %s', reversed => {
     let hits = 0
     for (let row = 0; row < GAPS.gapYs.length; row++) {
       for (let x = 0; x <= BLOCK_WIDTH; x += 0.25) {
-        const hit = hitTestGap(
-          resolvedBlock(reversed),
-          coordsAt(x, row, reversed),
-          true,
-          true,
-        )
+        const hit = hitTestGap(x, row, reversed, true, true)
         if (hit) {
           hits++
           const rect = drawnRect(hit.index, reversed)
@@ -196,8 +186,9 @@ describe.each([false, true])('reversed: %s', reversed => {
   ])('a drawn %s is hittable at the center of its bar', (_name, index) => {
     const rect = drawnRect(index, reversed)!
     const hit = hitTestGap(
-      resolvedBlock(reversed),
-      coordsAt(rect.x + rect.w / 2, GAPS.gapYs[index]!, reversed),
+      rect.x + rect.w / 2,
+      GAPS.gapYs[index]!,
+      reversed,
       true,
       true,
     )
@@ -210,29 +201,20 @@ describe.each([false, true])('reversed: %s', reversed => {
 // answer nothing, or a read that draws solid across it is unselectable there.
 test('a deletion below the frequency threshold is drawn and not hittable', () => {
   expect(drawnRect(3, false)).toBeDefined()
-  expect(
-    hitTestGap(resolvedBlock(false), coordsAt(75.1, 3, false), true, true),
-  ).toBeUndefined()
+  expect(hitTestGap(75.1, 3, false, true, true)).toBeUndefined()
 })
 
 // The same deletion with the toggle off: nothing is thresholded, so it is back.
 test('with frequency filtering off it answers again', () => {
-  expect(
-    hitTestGap(resolvedBlock(false), coordsAt(75.1, 3, false), true, false)
-      ?.index,
-  ).toBe(3)
+  expect(hitTestGap(75.1, 3, false, true, false)?.index).toBe(3)
 })
 
-// `showMismatches` off takes the deletion layer with it, and the hit test has to
-// go with the paint: both come off `gapMark({ deletions, skips: true })`.
-test('an undrawn deletion layer answers nothing while introns still do', () => {
+// `showMismatches` off takes the deletion mark with it, and the hit test has to
+// go with the paint: both read the mark's one `enabled`.
+test('an undrawn deletion mark answers nothing while introns still do', () => {
   const { ctx, rects } = recordingCtx()
-  drawSkips(ctx, GAPS, block(false), BP_LENGTH, BLOCK_WIDTH, state())
+  SKIP_MARK.paintBlock(ctx, GAPS, block(false), state())
   expect(rects).toHaveLength(1)
-  expect(
-    hitTestGap(resolvedBlock(false), coordsAt(50, 2, false), false, true),
-  ).toBeUndefined()
-  expect(
-    hitTestGap(resolvedBlock(false), coordsAt(30, 1, false), false, true)?.type,
-  ).toBe('skip')
+  expect(hitTestGap(50, 2, false, false, true)).toBeUndefined()
+  expect(hitTestGap(30, 1, false, false, true)?.type).toBe('skip')
 })

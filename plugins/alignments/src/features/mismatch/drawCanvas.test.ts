@@ -1,12 +1,10 @@
 import { QUAL_UNAVAILABLE } from '../../shaders/slang/mismatch.consts.generated.ts'
-import { drawMismatches } from './drawCanvas.ts'
+import { MISMATCH_MARK } from './mark.ts'
 
-import type {
-  DrawBlock,
-  RenderState,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { MismatchUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // Records the fillStyle in effect at each fillRect, so we can read back the
 // exact CSS color (and its alpha) the mismatch drew with, plus the rect's
@@ -30,8 +28,8 @@ function recordingCtx() {
   return { ctx, fills, rects }
 }
 
-// Full RenderState with a red 'A' base color. Only the fields drawMismatches
-// reads matter; the rest are inert defaults. colors is populated just enough for
+// Full RenderState with a red 'A' base color. Only the fields the mismatch
+// mark reads matter; the rest are inert defaults. colors is populated just enough for
 // the base palette builders: base A, the muted-modifications color, and
 // colorBaseN — which backs the non-A/C/G/T fallback and so is resolved eagerly
 // when buildBaseCssMap prefills its table (a real palette always carries it).
@@ -99,13 +97,18 @@ function oneMismatch(qual: number): MismatchUploadData {
 
 // bp 100..110 across 100px => pxPerBp 10, so the frequency-fade branch (pxPerBp
 // < 1) never fires and only the quality fade is under test.
-const BLOCK: DrawBlock = { start: 100, end: 110, screenStartPx: 0 }
-const BP_LENGTH = 10
-const BLOCK_WIDTH = 100
+const BLOCK: RenderBlock = {
+  displayedRegionIndex: 0,
+  start: 100,
+  end: 110,
+  screenStartPx: 0,
+  screenEndPx: 100,
+  reversed: false,
+}
 
 function drawOne(state: RenderState, qual: number) {
   const { ctx, fills } = recordingCtx()
-  drawMismatches(ctx, oneMismatch(qual), BLOCK, BP_LENGTH, BLOCK_WIDTH, state)
+  MISMATCH_MARK.paintBlock(ctx, oneMismatch(qual), BLOCK, state)
   return fills[0]
 }
 
@@ -114,19 +117,12 @@ function drawOne(state: RenderState, qual: number) {
 // painter that treats it as the left edge lands a full base off once a base is
 // wider than a pixel — invisible zoomed out (width floors to 1px), glaring
 // zoomed in. makePileupCellMapper owns that pivot for every 1bp-cell painter.
-describe('drawMismatches cell geometry', () => {
+describe('mismatch cell geometry', () => {
   // BLOCK is bp 100..110 across 100px => 10 px/bp, so bp 100 owns [0,10]
   // forward. Reversed, bp 100 is the rightmost base and owns [90,100].
-  const cellFor = (block: DrawBlock) => {
+  const cellFor = (block: RenderBlock) => {
     const { ctx, rects } = recordingCtx()
-    drawMismatches(
-      ctx,
-      oneMismatch(60),
-      block,
-      BP_LENGTH,
-      BLOCK_WIDTH,
-      baseState(),
-    )
+    MISMATCH_MARK.paintBlock(ctx, oneMismatch(60), block, baseState())
     return rects[0]!
   }
 
@@ -143,7 +139,7 @@ describe('drawMismatches cell geometry', () => {
   })
 })
 
-describe('drawMismatches quality fade', () => {
+describe('mismatch quality fade', () => {
   test('mismatchAlpha off: base is fully opaque regardless of quality', () => {
     expect(drawOne(baseState({ mismatchAlpha: false }), 10)).toBe(
       'rgb(255,0,0)',
@@ -170,8 +166,8 @@ describe('drawMismatches quality fade', () => {
   test('mismatchAlpha on: Phred 0 fades all the way out', () => {
     // The worst score the file can carry, faded to nothing — and skipped rather
     // than filled at alpha 0, which is the same pixels for one fillStyle set and
-    // one fillRect fewer. `paintMarks` drops a zero-alpha mark for every feature,
-    // as the gap painter always did. It used to share the sentinel's value and so
+    // one fillRect fewer. The pileup shape drops a zero-alpha mark for every
+    // feature, as the gap painter always did. It used to share the sentinel's value and so
     // came out fully opaque — see qualityFadeParity.
     expect(drawOne(baseState({ mismatchAlpha: true }), 0)).toBeUndefined()
   })
@@ -180,7 +176,7 @@ describe('drawMismatches quality fade', () => {
 // Deep-coverage scroll cost guard: the per-base mismatch pass must fill only the
 // rows that reach the canvas band, not every fetched mismatch. Drops off if the
 // pileupRowOffCanvas guard is removed.
-describe('drawMismatches visible-row-band cull', () => {
+describe('mismatch visible-row-band cull', () => {
   const rows = 1000
   // one 'A' mismatch per row, all at bp 100 (inside BLOCK); rowHeight 10.
   const deep: MismatchUploadData = {
@@ -192,7 +188,7 @@ describe('drawMismatches visible-row-band cull', () => {
   }
   const count = (state: RenderState) => {
     const { ctx, fills } = recordingCtx()
-    drawMismatches(ctx, deep, BLOCK, BP_LENGTH, BLOCK_WIDTH, state)
+    MISMATCH_MARK.paintBlock(ctx, deep, BLOCK, state)
     return fills.length
   }
 

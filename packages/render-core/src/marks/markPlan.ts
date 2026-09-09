@@ -7,7 +7,7 @@ import type { Mark, MarkFrame, PlannedPass } from './types.ts'
  * `drawMarks` asks every mark's gate, lens and staged compare per block, which
  * is the right shape for a display that stages its uniforms through the marks
  * — and at 120 section blocks a frame it is the whole cost the pileup measured
- * and declined (`agent-docs/ideas/one-mark-declaration-per-feature.md`). A
+ * and declined (`benches/pileupUniformWrite.bench.ts` has the table). A
  * display that writes the uniforms itself, once per section, has nothing left
  * for the per-block walk to decide: `planMarks` answers the frame question
  * once, `drawPlannedPasses` issues a `drawPass` per planned mark against

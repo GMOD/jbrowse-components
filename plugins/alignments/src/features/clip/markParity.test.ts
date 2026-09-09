@@ -1,18 +1,17 @@
 import { bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
 
 import * as clipShader from '../../shaders/slang/clip.generated.ts'
-import { drawHardclips, drawSoftclips } from './drawCanvas.ts'
-import { hitTestClip } from './hitTest.ts'
-import { packClips } from './packGpu.ts'
+import {
+  INTERBASE_HARDCLIP,
+  INTERBASE_INSERTION,
+  INTERBASE_SOFTCLIP,
+} from '../../shared/types.ts'
+import { CLIP_MARK, clipHit, clipsOfKind } from './mark.ts'
 
-import type {
-  DrawBlock,
-  RenderState,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
+import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { InterbaseUploadData } from '../../shared/uploadTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // Draw against hit test for the second `point` mark, and the same shape as
 // insertion's: **everything hittable is drawn, within the tolerance the mark
@@ -28,7 +27,6 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 const BLOCK_START = 1000
 const BP_LENGTH = 400
 const BLOCK_WIDTH = 100
-const BP_PER_PX = BP_LENGTH / BLOCK_WIDTH
 const FEATURE_HEIGHT = 10
 // The mark's tolerance in px at this zoom, which is the bp floor's other side:
 // `max(0.5 bp, 3 px)` is 3px wherever bpPerPx >= 1/6, and 4 is well past that.
@@ -44,23 +42,31 @@ const EPS = 1e-9
 const INS_END = 1
 const SC_END = 4
 const HC_END = 6
-const DATA = {
+const DATA: InterbaseUploadData = {
   interbasePositions: new Uint32Array([1040, 1120, 1200, 1280, 1320, 1280]),
   interbaseYs: new Uint16Array([0, 1, 2, 3, 4, 3]),
   interbaseLengths: new Uint32Array([3, 20, 15, 12, 8, 9]),
   interbaseFrequencies: new Uint8Array([255, 255, 0, 255, 255, 255]),
+  interbaseTypes: new Uint8Array([
+    INTERBASE_INSERTION,
+    INTERBASE_SOFTCLIP,
+    INTERBASE_SOFTCLIP,
+    INTERBASE_SOFTCLIP,
+    INTERBASE_HARDCLIP,
+    INTERBASE_HARDCLIP,
+  ]),
   numInsertions: INS_END,
   numSoftclips: SC_END - INS_END,
   numHardclips: HC_END - SC_END,
-} as unknown as PileupDataResult
+}
 
-function state(): RenderState {
+function state(filterByFrequency = true): RenderState {
   return {
     scrollTop: 0,
     featureHeight: FEATURE_HEIGHT,
     featureSpacing: 0,
     canvasHeight: 1000,
-    filterMismatchesByFrequency: true,
+    filterMismatchesByFrequency: filterByFrequency,
     pileupTopOffset: 0,
     colors: {
       colorSoftclip: [1, 0, 0],
@@ -69,32 +75,13 @@ function state(): RenderState {
   } as RenderState
 }
 
-function block(reversed: boolean): DrawBlock {
+function block(reversed: boolean): RenderBlock {
   return {
-    start: BLOCK_START,
-    end: BLOCK_START + BP_LENGTH,
-    screenStartPx: 0,
-    reversed,
-  }
-}
-
-function bounds(reversed: boolean) {
-  return {
+    displayedRegionIndex: 0,
     start: BLOCK_START,
     end: BLOCK_START + BP_LENGTH,
     screenStartPx: 0,
     screenEndPx: BLOCK_WIDTH,
-    reversed,
-  }
-}
-
-function resolvedBlock(reversed: boolean): ResolvedBlock {
-  return {
-    rpcData: DATA,
-    bpRange: [BLOCK_START, BLOCK_START + BP_LENGTH],
-    blockStartPx: 0,
-    blockWidth: BLOCK_WIDTH,
-    refName: 'ctgA',
     reversed,
   }
 }
@@ -106,15 +93,20 @@ interface Rect {
   h: number
 }
 
+// Records the fill in effect at each bar, since one mark paints both kinds and
+// the colour is what tells them apart.
 function recordingCtx() {
-  const rects: Rect[] = []
+  const rects: (Rect & { fill: string })[] = []
+  let fill = ''
   const ctx = {
-    set fillStyle(_v: string) {},
+    set fillStyle(v: string) {
+      fill = v
+    },
     get fillStyle() {
-      return ''
+      return fill
     },
     fillRect(x: number, y: number, w: number, h: number) {
-      rects.push({ x, y, w, h })
+      rects.push({ x, y, w, h, fill })
     },
   } as unknown as Ctx2D
   return { ctx, rects }
@@ -122,9 +114,9 @@ function recordingCtx() {
 
 function painted(reversed: boolean, data: InterbaseUploadData = DATA) {
   const { ctx, rects } = recordingCtx()
-  drawSoftclips(ctx, data, block(reversed), BP_LENGTH, BLOCK_WIDTH, state())
-  const softCount = rects.length
-  drawHardclips(ctx, data, block(reversed), BP_LENGTH, BLOCK_WIDTH, state())
+  CLIP_MARK.paintBlock(ctx, data, block(reversed), state())
+  // Opaque or faded — index 2 is a zeroed softclip and paints at the floor.
+  const softCount = rects.filter(r => /^rgba?\(255,0,0[,)]/.test(r.fill)).length
   return { rects, softCount }
 }
 
@@ -136,6 +128,7 @@ function oneClip(index: number): InterbaseUploadData {
     interbaseYs: DATA.interbaseYs.slice(index, index + 1),
     interbaseLengths: DATA.interbaseLengths.slice(index, index + 1),
     interbaseFrequencies: DATA.interbaseFrequencies.slice(index, index + 1),
+    interbaseTypes: DATA.interbaseTypes.slice(index, index + 1),
     numInsertions: 0,
     numSoftclips: soft ? 1 : 0,
     numHardclips: soft ? 0 : 1,
@@ -146,24 +139,29 @@ function drawnRect(index: number, reversed: boolean) {
   return painted(reversed, oneClip(index)).rects[0]
 }
 
-function coordsAt(
+// The hit chain's clip step: the softclips' candidate set, then the hardclips'.
+function hitTestClip(
   canvasX: number,
   row: number,
   reversed: boolean,
-): CigarCoords {
-  const genomicPos = bpAtPxExact(canvasX, bounds(reversed))
-  return {
-    bpPerPx: BP_PER_PX,
-    genomicPos,
-    basePos: Math.floor(genomicPos),
-    row,
-    adjustedY: row * FEATURE_HEIGHT,
-    yWithinRow: 1,
-  }
+  filterByFrequency: boolean,
+) {
+  const at = (kind: 'soft' | 'hard') =>
+    CLIP_MARK.hitNearest!(
+      DATA,
+      block(reversed),
+      state(filterByFrequency),
+      canvasX,
+      row * FEATURE_HEIGHT + 1,
+      clipsOfKind(DATA, kind),
+      Infinity,
+    )?.index
+  const i = at('soft') ?? at('hard')
+  return i === undefined ? undefined : clipHit(DATA, i)
 }
 
 function packed() {
-  const buf = packClips(DATA)
+  const buf = CLIP_MARK.pass.pack(DATA) as ArrayBuffer
   const u32 = new Uint32Array(buf)
   const f32 = new Float32Array(buf)
   const s32 = clipShader.INSTANCE_STRIDE_WORDS
@@ -191,11 +189,7 @@ describe.each([false, true])('reversed: %s', reversed => {
     let hits = 0
     for (let row = 0; row < DATA.interbaseYs.length; row++) {
       for (let x = 0; x <= BLOCK_WIDTH; x += 0.25) {
-        const hit = hitTestClip(
-          resolvedBlock(reversed),
-          coordsAt(x, row, reversed),
-          true,
-        )
+        const hit = hitTestClip(x, row, reversed, true)
         if (hit) {
           hits++
           // The sub-range bound, swept: the insertion at index 0 shares this
@@ -226,8 +220,9 @@ describe.each([false, true])('reversed: %s', reversed => {
   ])('a drawn %s is hittable at the center of its bar', (_name, index) => {
     const rect = drawnRect(index, reversed)!
     const hit = hitTestClip(
-      resolvedBlock(reversed),
-      coordsAt(rect.x + rect.w / 2, DATA.interbaseYs[index]!, reversed),
+      rect.x + rect.w / 2,
+      DATA.interbaseYs[index]!,
+      reversed,
       true,
     )
     expect(hit?.index).toBe(index)
@@ -238,8 +233,9 @@ describe.each([false, true])('reversed: %s', reversed => {
   test('a softclip outranks a hardclip at the same row and position', () => {
     const rect = drawnRect(3, reversed)!
     const hit = hitTestClip(
-      resolvedBlock(reversed),
-      coordsAt(rect.x + rect.w / 2, DATA.interbaseYs[3]!, reversed),
+      rect.x + rect.w / 2,
+      DATA.interbaseYs[3]!,
+      reversed,
       true,
     )
     expect(hit?.type).toBe('softclip')
@@ -256,7 +252,7 @@ describe.each([false, true])('reversed: %s', reversed => {
     expect(softCount).toBe(SC_END - INS_END)
     for (const [i, instance] of instances.entries()) {
       const rect = rects[i]!
-      expect(bpAtPxExact(rect.x + rect.w / 2, bounds(reversed))).toBeCloseTo(
+      expect(bpAtPxExact(rect.x + rect.w / 2, block(reversed))).toBeCloseTo(
         instance.position,
         9,
       )
@@ -272,22 +268,10 @@ describe.each([false, true])('reversed: %s', reversed => {
 test('a clip below the frequency threshold is drawn and not hittable', () => {
   const rect = drawnRect(2, false)!
   expect(rect).toBeDefined()
-  expect(
-    hitTestClip(
-      resolvedBlock(false),
-      coordsAt(rect.x + rect.w / 2, 2, false),
-      true,
-    ),
-  ).toBeUndefined()
+  expect(hitTestClip(rect.x + rect.w / 2, 2, false, true)).toBeUndefined()
 })
 
 test('with frequency filtering off it answers again', () => {
   const rect = drawnRect(2, false)!
-  expect(
-    hitTestClip(
-      resolvedBlock(false),
-      coordsAt(rect.x + rect.w / 2, 2, false),
-      false,
-    )?.index,
-  ).toBe(2)
+  expect(hitTestClip(rect.x + rect.w / 2, 2, false, false)?.index).toBe(2)
 })

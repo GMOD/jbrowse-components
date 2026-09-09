@@ -7,7 +7,7 @@
 // `line-list` instance, and a GPU line list is 1 px wide whatever you ask for:
 // WebGPU has no line-width parameter at all, and WebGL2 requires only 1.0 (its
 // `lineWidth()` is capped there on essentially every implementation). Meanwhile
-// `features/linkedReads/drawCanvas.ts` strokes 1.5 px, so every connector was
+// `features/linkedReads/mark.ts` strokes 1.5 px, so every connector was
 // half a pixel thinner on both GPU backends than in Canvas2D and the SVG export
 // — over long diagonals across the whole pileup, which is a lot of pixels.
 //
@@ -40,7 +40,7 @@ import hpmath;
 public static const uint VERTS_PER_INSTANCE = 6u;
 
 // Connector opacity: the lines cross the pileup, so they stay translucent enough
-// to read the reads underneath. Exported so features/linkedReads/drawCanvas.ts
+// to read the reads underneath. Exported so features/linkedReads/mark.ts
 // (Canvas2D + SVG export) strokes the same alpha.
 static const float LINKED_READ_LINE_ALPHA = 0.8;
 
@@ -120,7 +120,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
 float4 fs_main(VsOut fragIn) : SV_Target {
   // `local` is already in the segment's own frame, so the diagonal costs
   // nothing here — this is the same measurement arcFlat.slang makes of its
-  // horizontal one, and the same BUTT caps its drawCanvas strokes. The ramp is
+  // horizontal one, and the same BUTT caps its painter strokes. The ramp is
   // a constant number of device pixels rather than a derivative
   // (aaHalfPx).
   float alpha = buttSegmentCoverage(

@@ -10,6 +10,7 @@ import {
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
 } from '../../shared/types.ts'
+import { makeTestRenderState } from '../testUtils.ts'
 import {
   SNP_HIT_MAX_BP_PER_PX,
   contextMenuTargetForHit,
@@ -18,6 +19,7 @@ import {
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
+import type { RenderState } from '../renderers/rendererTypes.ts'
 import type { HitTestOptions } from './hitTestPipeline.ts'
 
 function countType(types: Uint8Array, code: number) {
@@ -109,22 +111,35 @@ function makeResolved(
   }
 }
 
-const ZOOMED_OUT_OPTS: HitTestOptions = {
-  showInterbaseIndicators: true,
-  coverageHeight: 50,
-  coverageMaxDepth: undefined,
-  coverageSnpMinFrequency: 0,
-  topOffset: 50,
-  coverageTopOffset: 0,
-  featureHeight: 10,
-  featureSpacing: 2,
-  scrollTop: 0,
-  isChainMode: false,
-  filterMismatchesByFrequency: true,
-  showMismatches: true,
-  pileupVisible: true,
-  colorScheme: 0,
+// The section's render state is what the marks read their gates off, so a
+// test that turns a layer off does it there.
+function opts(
+  state: Partial<RenderState> = {},
+  rest: Partial<Omit<HitTestOptions, 'state'>> = {},
+): HitTestOptions {
+  return {
+    state: makeTestRenderState({
+      showInterbaseIndicators: true,
+      coverageSnpMinFrequency: 0,
+      pileupTopOffset: 50,
+      coverageTopOffset: 0,
+      featureHeight: 10,
+      featureSpacing: 2,
+      scrollTop: 0,
+      chainMode: false,
+      filterMismatchesByFrequency: true,
+      showMismatches: true,
+      colorScheme: 0,
+      ...state,
+    }),
+    coverageHeight: 50,
+    coverageMaxDepth: undefined,
+    pileupVisible: true,
+    ...rest,
+  }
 }
+
+const ZOOMED_OUT_OPTS = opts()
 
 test('SNP_HIT_MAX_BP_PER_PX is 25', () => {
   expect(SNP_HIT_MAX_BP_PER_PX).toBe(25)
@@ -147,10 +162,12 @@ describe('coverage hit — fires at all zoom levels', () => {
       coverageStartPos: 9900,
     })
     // the band being off is its reserved height being 0 — there is no flag
-    const result = performHitTest(100, 30, resolved, {
-      ...ZOOMED_OUT_OPTS,
-      coverageHeight: 0,
-    })
+    const result = performHitTest(
+      100,
+      30,
+      resolved,
+      opts({}, { coverageHeight: 0 }),
+    )
     expect(result.type).toBe('none')
   })
 })
@@ -173,10 +190,12 @@ describe('indicator hit — fires at all zoom levels', () => {
         { position: 10000, colorType: 1 },
       ]),
     })
-    const result = performHitTest(100, 3, resolved, {
-      ...ZOOMED_OUT_OPTS,
-      showInterbaseIndicators: false,
-    })
+    const result = performHitTest(
+      100,
+      3,
+      resolved,
+      opts({ showInterbaseIndicators: false }),
+    )
     expect(result.type).toBe('none')
   })
 })
@@ -315,10 +334,12 @@ describe('detailed hit tests still fire when bpPerPx <= threshold', () => {
   })
 
   it('low-frequency mismatch stays clickable when frequency filtering is off', () => {
-    const result = performHitTest(100, 60, lowFreqMismatchZoomedOut(), {
-      ...ZOOMED_OUT_OPTS,
-      filterMismatchesByFrequency: false,
-    })
+    const result = performHitTest(
+      100,
+      60,
+      lowFreqMismatchZoomedOut(),
+      opts({ filterMismatchesByFrequency: false }),
+    )
     expect(result.type).toBe('cigar')
     if (result.type === 'cigar') {
       expect(result.hit.type).toBe('mismatch')
@@ -374,10 +395,12 @@ describe('detailed hit tests still fire when bpPerPx <= threshold', () => {
   })
 
   it('low-frequency small insertion stays clickable when frequency filtering is off', () => {
-    const result = performHitTest(100, 60, lowFreqInsertionZoomedOut(), {
-      ...ZOOMED_OUT_OPTS,
-      filterMismatchesByFrequency: false,
-    })
+    const result = performHitTest(
+      100,
+      60,
+      lowFreqInsertionZoomedOut(),
+      opts({ filterMismatchesByFrequency: false }),
+    )
     expect(result.type).toBe('cigar')
     if (result.type === 'cigar') {
       expect(result.hit.type).toBe('insertion')
@@ -560,7 +583,7 @@ describe('reversed block resolves the base actually painted under the cursor', (
 // sat on mate 2, so the tooltip, feature details, and context menu all named the
 // wrong read.
 describe('chain mode resolves the read under the cursor, not the chain first read', () => {
-  const CHAIN_OPTS: HitTestOptions = { ...ZOOMED_OUT_OPTS, isChainMode: true }
+  const CHAIN_OPTS = opts({ chainMode: true })
 
   // One chain, two mates on row 0: mate1 [0,2000], mate2 [16000,18000].
   // 200px over [0,20000] → bpPerPx=100, so x=5 → bp 500, x=170 → bp 17000,
@@ -635,15 +658,13 @@ describe('chain mode resolves the read under the cursor, not the chain first rea
   })
 })
 
-// `deletion` / `mismatch` / `insertion` are the three PILEUP_LAYERS entries
+// `deletion` / `mismatch` / `insertion` are the three PILEUP_MARKS entries
 // gated on showMismatches, and the flag is a repaint-tier setting — the arrays
-// are still fetched. So without a matching gate here the marks stayed hoverable,
-// clickable and right-clickable while nothing was drawn for them.
+// are still fetched. The mark's `enabled` is the hit gate too; without one the
+// marks stayed hoverable, clickable and right-clickable while nothing was drawn
+// for them.
 describe('showMismatches off stops hit-testing the layers it stops drawing', () => {
-  const NO_MISMATCHES: HitTestOptions = {
-    ...ZOOMED_OUT_OPTS,
-    showMismatches: false,
-  }
+  const NO_MISMATCHES = opts({ showMismatches: false })
 
   // bpPerPx=1 (bpRange [0,200] over 200px) — the zoomed-in branch.
   function zoomedIn(rpcOverrides: Partial<PileupDataResult> = {}) {
@@ -755,8 +776,8 @@ describe('showMismatches off stops hit-testing the layers it stops drawing', () 
     expect(off.type === 'cigar' && off.hit.type).toBe('skip')
   })
 
-  // Clips draw unconditionally (PILEUP_LAYERS gates them on `() => true`), so
-  // they must stay hittable — the gate covers the mark layers, not this one.
+  // Clips draw unconditionally (`CLIP_MARK` declares no `enabled`), so they
+  // must stay hittable — the gate covers the mismatch marks, not this one.
   it('a soft clip stays hittable', () => {
     const resolved = zoomedIn({
       interbasePositions: new Uint32Array([100]),
@@ -775,10 +796,13 @@ describe('showMismatches off stops hit-testing the layers it stops drawing', () 
 
 // `readPositions` carries the read's TRUE aligned extent — soft-clip expansion
 // is applied to the layout's extents and never written back — so hitTestFeature
-// finds nothing over the clipped tail that drawSoftclipBases paints. Left
+// finds nothing over the clipped tail the softclip-bases mark paints. Left
 // unhandled, the visible run answered no hover, cleared the selection on click,
 // and fell through to the browser's own context menu on right-click.
 describe('soft-clipped bases resolve to their read', () => {
+  // The worker only fills `softclipBasePositions` with the setting on, and the
+  // mark reads the same setting as its gate.
+  const SOFTCLIP_OPTS = opts({ showSoftClipping: true })
   // bpPerPx=1; read aligned over [0,100], 20 clipped bases drawn at [100,120).
   function clippedRead() {
     return {
@@ -798,7 +822,7 @@ describe('soft-clipped bases resolve to their read', () => {
 
   it('hovering past the alignment end still names the read', () => {
     // x=110 → bp 110, outside readPositions [0,100] but inside the clipped run
-    const result = performHitTest(110, 60, clippedRead(), ZOOMED_OUT_OPTS)
+    const result = performHitTest(110, 60, clippedRead(), SOFTCLIP_OPTS)
     expect(result.type).toBe('feature')
     if (result.type === 'feature') {
       expect(result.hit).toStrictEqual({ id: 'read1', index: 0 })
@@ -806,7 +830,7 @@ describe('soft-clipped bases resolve to their read', () => {
   })
 
   it('the aligned body still wins where the two could overlap', () => {
-    const result = performHitTest(50, 60, clippedRead(), ZOOMED_OUT_OPTS)
+    const result = performHitTest(50, 60, clippedRead(), SOFTCLIP_OPTS)
     expect(result.type).toBe('feature')
     if (result.type === 'feature') {
       expect(result.hit).toStrictEqual({ id: 'read1', index: 0 })
@@ -814,14 +838,14 @@ describe('soft-clipped bases resolve to their read', () => {
   })
 
   it('past the end of the clipped run is still a miss', () => {
-    expect(performHitTest(130, 60, clippedRead(), ZOOMED_OUT_OPTS).type).toBe(
+    expect(performHitTest(130, 60, clippedRead(), SOFTCLIP_OPTS).type).toBe(
       'none',
     )
   })
 
   it('another row is a miss', () => {
     // canvasY=72 → adjustedY=22 → row 1; the clip bases are all on row 0
-    expect(performHitTest(110, 72, clippedRead(), ZOOMED_OUT_OPTS).type).toBe(
+    expect(performHitTest(110, 72, clippedRead(), SOFTCLIP_OPTS).type).toBe(
       'none',
     )
   })
@@ -853,10 +877,12 @@ describe('clip hit gates on frequency like every other mark', () => {
   })
 
   it('but stays hittable with frequency filtering off', () => {
-    const result = performHitTest(100, 60, lowFreqClip(), {
-      ...ZOOMED_OUT_OPTS,
-      filterMismatchesByFrequency: false,
-    })
+    const result = performHitTest(
+      100,
+      60,
+      lowFreqClip(),
+      opts({ filterMismatchesByFrequency: false }),
+    )
     expect(result.type).toBe('cigar')
     if (result.type === 'cigar') {
       expect(result.hit.type).toBe('softclip')
@@ -904,10 +930,12 @@ describe('deletion hit gates on frequency like every other mark', () => {
   })
 
   it('and it stays hittable with frequency filtering off', () => {
-    const result = performHitTest(100, 60, deletion(0), {
-      ...ZOOMED_OUT_OPTS,
-      filterMismatchesByFrequency: false,
-    })
+    const result = performHitTest(
+      100,
+      60,
+      deletion(0),
+      opts({ filterMismatchesByFrequency: false }),
+    )
     expect(result.type).toBe('cigar')
     if (result.type === 'cigar') {
       expect(result.hit.type).toBe('deletion')
@@ -955,14 +983,14 @@ describe('deletion hit gates on frequency like every other mark', () => {
   })
 })
 
-// `clip` is the one PILEUP_LAYERS entry with `enabled: () => true`, and
-// `drawClipBars` honours that literally: a fixed 1px bar at every zoom, opaque
-// unless the worker zeroed its frequency. The priority chain used to be spelled
-// twice — once in `hitTestCigarItem` for the zoomed-in branch, once inline for
-// the zoomed-out one — and clips were absent from the second copy, so above
+// `clip` is a PILEUP_MARKS entry with no `enabled`, and the mark honours that
+// literally: a fixed 1px bar at every zoom, opaque unless the worker zeroed its
+// frequency. The priority chain used to be spelled twice — once in
+// `hitTestCigarItem` for the zoomed-in branch, once inline for the zoomed-out
+// one — and clips were absent from the second copy, so above
 // `SNP_HIT_MAX_BP_PER_PX` a drawn bar answered nothing and the hover fell
-// through to the read body. `hitTestGateParity.test.ts` cannot see this: it
-// varies settings, never zoom.
+// through to the read body. A mark's gate cannot see this: zoom is the chain's
+// axis, not the mark's.
 describe('clips stay hittable when zoomed out, as they stay drawn', () => {
   // ZOOMED_OUT_OPTS' block is [0,20000] over 200px → bpPerPx=100, four times
   // SNP_HIT_MAX_BP_PER_PX. canvasX=100 → genomicPos=10000; canvasY=60 → row 0.
@@ -1005,10 +1033,12 @@ describe('clips stay hittable when zoomed out, as they stay drawn', () => {
   // Clips are not a `showMismatches` layer, so the flag that silences the mark
   // layers must leave them alone at this zoom exactly as it does zoomed in.
   it('and is unaffected by showMismatches, which does not gate its layer', () => {
-    const result = performHitTest(100, 60, clipAtCursor(INTERBASE_SOFTCLIP), {
-      ...ZOOMED_OUT_OPTS,
-      showMismatches: false,
-    })
+    const result = performHitTest(
+      100,
+      60,
+      clipAtCursor(INTERBASE_SOFTCLIP),
+      opts({ showMismatches: false }),
+    )
     expect(result.type).toBe('cigar')
     if (result.type === 'cigar') {
       expect(result.hit.type).toBe('softclip')
@@ -1026,11 +1056,7 @@ describe('clips stay hittable when zoomed out, as they stay drawn', () => {
 // reverse-strand read's head sits before its START, which on a reversed block
 // is screen-RIGHT of the body. Chain mode keeps the head drawn at this zoom.
 describe('the strand arrowhead answers a hover on a reversed block', () => {
-  const ARROW_OPTS: HitTestOptions = {
-    ...ZOOMED_OUT_OPTS,
-    isChainMode: true,
-    colorScheme: 1,
-  }
+  const ARROW_OPTS = opts({ chainMode: true, colorScheme: 1 })
   // Reversed: x=0 is bp 20000, so bp 9000 (the read's start) is x=110 and the
   // head runs to x=118.
   function reversedBlock(): ResolvedBlock {

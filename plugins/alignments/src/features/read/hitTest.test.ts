@@ -10,7 +10,7 @@ import { hitTestFeature } from './hitTest.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { CigarCoords, ResolvedBlock } from '../../shared/hitTestTypes.ts'
-import type { ChevronFrame } from './drawCanvas.ts'
+import type { ChevronFrame } from './mark.ts'
 
 const FEATURE_HEIGHT = 10
 

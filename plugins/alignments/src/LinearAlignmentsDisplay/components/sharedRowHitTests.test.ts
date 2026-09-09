@@ -3,6 +3,7 @@ import {
   INTERBASE_INSERTION,
   INTERBASE_SOFTCLIP,
 } from '../../shared/types.ts'
+import { makeTestRenderState } from '../testUtils.ts'
 import { performHitTest } from './hitTestPipeline.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -100,21 +101,17 @@ function makeResolved(overrides: Partial<PileupDataResult>): ResolvedBlock {
 }
 
 const OPTS: HitTestOptions = {
-  showInterbaseIndicators: false,
+  state: makeTestRenderState({
+    pileupTopOffset: 50,
+    featureHeight: 10,
+    featureSpacing: 2,
+    showMismatches: true,
+    showSoftClipping: true,
+  }),
   // 0 = the coverage band is off, so the row tests own every y
   coverageHeight: 0,
   coverageMaxDepth: undefined,
-  coverageSnpMinFrequency: 0,
-  topOffset: 50,
-  coverageTopOffset: 0,
-  featureHeight: 10,
-  featureSpacing: 2,
-  scrollTop: 0,
-  isChainMode: false,
-  filterMismatchesByFrequency: false,
-  showMismatches: true,
   pileupVisible: true,
-  colorScheme: 0,
 }
 
 function hover(resolved: ResolvedBlock) {

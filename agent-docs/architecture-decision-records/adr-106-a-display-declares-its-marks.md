@@ -112,14 +112,14 @@ cannot is layout, tiering, fetch shape and per-display meaning.
 
 ## What the mark layer deliberately does not hold
 
-- **The alignments pileup, for now.** `plugins/alignments/src/features/mark.ts`
-  is a second mark system over the same word, data-coded for a walker over ten
-  marks. The 2026-09-05 measurement that kept it out is answered by the frame
-  plan above, so the fold is unblocked; the conversion itself is parked on the
-  branch `wip/pileup-marks-conversion` (production code typechecks, ~15 test
-  files still reference removed signatures) and
-  `ideas/one-mark-declaration-per-feature.md` lists what remains. The arc and
-  coverage bands in the same plugin are on render-core's marks.
+- **A second mark vocabulary.** The alignments pileup carried one
+  (`features/mark.ts`, data-coded for a walker over ten marks) until the frame
+  plan answered the measurement that kept it out; it is now `PILEUP_MARKS`, a
+  `defineMark` list over one plugin-local `MarkShape` factory
+  (`features/pileupShape.ts`) that keeps the rule CODES — `Fade`, `Hit`,
+  `Band`, `Point`, `Paint` — as the shape's parameterization. The codes stay
+  data for the reason the old file gave: a callback per rule on ten marks over
+  one walker was megamorphic.
 - **Text.** Every label is an overlay canvas painted by a per-display function
   that the export calls unchanged; `INTERACTION_PERF.md` measured that a
   `fillText` inside the frame loop flushes style recalc, and the positioned-label
@@ -161,5 +161,6 @@ cannot is layout, tiering, fetch shape and per-display meaning.
   plugin-local form on purpose: a third party with a shape the library lacks
   needs exactly that path, and the config form covers the bars.
 - **Fold the pileup's `PileupMark` into `MarkShape` in the same pass.** The
-  mechanism landed and measured; the conversion is a 46-file change parked
-  behind its parity suites rather than landed red.
+  mechanism landed and measured on 2026-09-09; the conversion was parked
+  behind its parity suites rather than landed red, and landed the same day
+  once they were green.

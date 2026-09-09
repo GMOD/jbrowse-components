@@ -13,14 +13,12 @@ import { makeTestPalette } from '../../LinearAlignmentsDisplay/testUtils.ts'
 import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { LINKED_READ_LINE_ALPHA } from '../../shaders/slang/linkedReadLine.consts.generated.ts'
-import { drawLinkedReadLines } from './drawCanvas.ts'
+import { LINKED_READ_LINE_MARK } from './mark.ts'
 
-import type {
-  DrawBlock,
-  RenderState,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { LinkedReadLinesUploadData } from './types.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // Real distinguishable colors, so "which slot did it read" is answerable from
 // the stroke string. makeTestPalette's default is all-zero, where every slot
@@ -55,7 +53,14 @@ function recordingCtx() {
   return { ctx, strokes }
 }
 
-const BLOCK: DrawBlock = { start: 1000, end: 1400, screenStartPx: 0 }
+const BLOCK: RenderBlock = {
+  displayedRegionIndex: 0,
+  start: 1000,
+  end: 1400,
+  screenStartPx: 0,
+  screenEndPx: 100,
+  reversed: false,
+}
 
 function state(): RenderState {
   return {
@@ -64,6 +69,7 @@ function state(): RenderState {
     featureSpacing: 0,
     canvasHeight: 1000,
     pileupTopOffset: 0,
+    showLinkedReadLines: true,
     colors: STOCK,
   } as RenderState
 }
@@ -79,7 +85,7 @@ function oneLine(colorType: number): LinkedReadLinesUploadData {
 
 function strokeFor(colorType: number) {
   const { ctx, strokes } = recordingCtx()
-  drawLinkedReadLines(ctx, oneLine(colorType), BLOCK, 400, 100, state())
+  LINKED_READ_LINE_MARK.paintBlock(ctx, oneLine(colorType), BLOCK, state())
   return strokes[0]!
 }
 

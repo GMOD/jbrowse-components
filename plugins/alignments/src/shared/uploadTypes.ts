@@ -33,16 +33,17 @@ export interface ReadUploadData {
 }
 
 // The merged interbase array plus the three counts that partition it. Its own
-// interface because it is what the insertion and clip marks read, and all three
-// of their consumers now read the same one: the GPU packer, the Canvas2D
-// painter (`Canvas2DRegionData` extends this rather than carrying nine
-// pre-sliced fields) and the hit test. Each mark states its own slice through
-// `rangeStart`/`rangeEnd` — see `features/mark.ts`.
+// interface because it is what the insertion and clip marks read, through one
+// `channels` lens each for the packer, the painter and the hit test. Each mark
+// states its own slice as the lens's `start`/`end`.
 export interface InterbaseUploadData {
   interbasePositions: Uint32Array
   interbaseYs: Uint16Array
   interbaseLengths: Uint32Array
   interbaseFrequencies: Uint8Array
+  // 1=insertion, 2=softclip, 3=hardclip (`INTERBASE_*`), the byte the clip
+  // mark's kind and colour read.
+  interbaseTypes: Uint8Array
   numInsertions: number
   numSoftclips: number
   numHardclips: number
@@ -58,7 +59,6 @@ export interface CigarUploadData extends InterbaseUploadData {
   mismatchBases: Uint8Array
   mismatchFrequencies: Uint8Array
   mismatchQuals: Uint8Array
-  interbaseTypes: Uint8Array
   softclipBasePositions: Uint32Array
   softclipBaseYs: Uint16Array
   softclipBaseBases: Uint8Array

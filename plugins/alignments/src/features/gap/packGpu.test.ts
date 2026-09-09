@@ -4,9 +4,11 @@ import {
 } from '../../shaders/slang/gap.consts.generated.ts'
 import * as gapShader from '../../shaders/slang/gap.generated.ts'
 import { DELETION_MARK, SKIP_MARK } from './mark.ts'
-import { packGaps } from './packGpu.ts'
 
 import type { GapUploadData } from './types.ts'
+
+const packGaps = (data: GapUploadData, mark: typeof SKIP_MARK) =>
+  mark.pass.pack(data) as ArrayBuffer
 
 const s32 = gapShader.INSTANCE_STRIDE_WORDS
 const { startOff, endOff, y, gapType } = gapShader.INSTANCE_OFFSET_U32
@@ -52,8 +54,8 @@ test('each pass allocates exactly its own kind', () => {
 
 // The two buffers replaced one, so between them they must still hold every gap
 // exactly once. A kind packed by neither pass uploads nowhere and draws
-// nothing, and nothing else in the wiring would say so — `GPU_PILEUP_PASS` is
-// exhaustive over LAYERS, not over `gapTypes`.
+// nothing, and nothing else in the wiring would say so — `PILEUP_MARKS` is a
+// list of marks, not of `gapTypes`.
 test('the two passes partition the array', () => {
   const packed = [
     ...instances(packGaps(GAPS, SKIP_MARK)),

@@ -60,7 +60,7 @@ the Canvas2D calls the painter actually issues.
 <!-- prettier-ignore -->
 | Renderer | Pass · shader | Shape modules | Blend | Painter reads | Draws with | Tier | Reason |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| alignments | `connLine` · connectingLine | hpmath, colorPack | default | arrays | moveTo/lineTo/stroke | B | 1 px row-centred quad, uniform colour; no AA, no fade. Canvas2D strokes what the GPU fills — SVG emits `<path>` where B would emit `<rect>` (see ideas/one-mark-declaration-per-feature §connectingLines) |
+| alignments | `connLine` · connectingLine | hpmath, colorPack | default | arrays | moveTo/lineTo/stroke | B | 1 px row-centred quad, uniform colour; no AA, no fade. Canvas2D strokes what the GPU fills — SVG emits `<path>` where B would emit `<rect>` (`features/connectingLines/mark.ts` keeps the floorless stroke, twinned with the floorless shader) |
 | alignments | `linkedReadLine` · linkedReadLine | capsule (frame only), antialias, hpmath, colorPack | default | arrays | lineWidth + moveTo/lineTo/stroke | B | oriented segment between two rows, analytic butt-cap AA only; colour is a uniform slot via exported `linkedReadColorSlot` |
 | alignments | `read` · read | hpmath, colorPack | default | arrays | fillRect, pentagon path + fill, strokeRectInside | A | body rect + chevron cap is a Canvas2D path, but the colour is a uniform-array index (`readCategoryColor[colorCategory]`, `hueRampHalfSat` → `float3`) and the outline is a per-fragment rule; 11 fields, hand-tuned glyph. `showChevron` exported already |
 | alignments | `overlap` · overlap | hpmath, colorPack | default | arrays | fillRect (`paintMarks` span) | B | full-row span quad, uniform colour, alpha from exported `overlapFade`/`overlapAlpha`; vertex fold at alpha 0 |
@@ -220,16 +220,16 @@ absolute cumBp on Canvas2D and from window-relative f32 on the GPU; B would
 move the painter to the GPU's precision, which may be fine and is a decision.
 
 **The alignments pileup is where B collides with something already built.**
-[ideas/one-mark-declaration-per-feature](one-mark-declaration-per-feature.md)
-spent August making the pack, the paint and the hit test of nine pileup
-features derive from one `PileupMark` — and it found a live GPU/Canvas2D bug
-by doing so. Tier B derives the paint from the packed buffer instead. Both are
-"one source", but they are different sources, and the hit test cannot follow B:
-`findMarkAt` scans the mark's row array, and the packed buffer has no feature
+`features/pileupShape.ts` makes the pack, the paint and the hit test of the
+pileup's marks derive from one declaration (ADR-106) — and building it found a
+live GPU/Canvas2D bug on the way. Tier B derives the paint from the packed
+buffer instead. Both are "one source", but they are different sources, and the
+hit test cannot follow B: `hitNearest` scans the mark's row array, and the
+packed buffer has no feature
 index in it. For the 12 pileup B rows the choice is therefore not "hand-written
 vs generated" but "mark-derived vs buffer-derived", and a painter reading the
 buffer while the hit test reads the mark is the two-description drift that
-`hitTestGateParity.test.ts` exists to catch. B fits the pileup only if
+the per-feature `markParity` suites exist to catch. B fits the pileup only if
 `paintMarks` itself becomes the buffer interpreter, taking the mark's `pack` as
 the join. That is a design question this census does not settle; it does mean
 the pileup is not the place to start.

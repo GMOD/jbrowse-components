@@ -1,9 +1,9 @@
 import { QUAL_UNAVAILABLE } from '../../shaders/slang/mismatch.consts.generated.ts'
 import * as mismatchShader from '../../shaders/slang/mismatch.generated.ts'
-import { packSoftclipBases } from '../softclipBases/packGpu.ts'
+import { SOFTCLIP_BASES_MARK } from '../softclipBases/mark.ts'
 import { buildMismatchArrays } from './buildArrays.ts'
 import { emitMismatch } from './extract.ts'
-import { packMismatches } from './packGpu.ts'
+import { MISMATCH_MARK } from './mark.ts'
 
 import type { CigarUploadData } from '../../shared/uploadTypes.ts'
 import type { MismatchData } from '../../shared/webglRpcTypes.ts'
@@ -34,7 +34,7 @@ describe('mismatch quality plumbing', () => {
     expect(Array.from(mismatchQuals)).toEqual([12])
   })
 
-  test('packMismatches writes the raw quality into the qual instance slot', () => {
+  test('the mismatch mark packs the raw quality into the qual instance slot', () => {
     const data: MismatchUploadData = {
       mismatchPositions: new Uint32Array([100]),
       mismatchYs: new Uint16Array([0]),
@@ -42,7 +42,7 @@ describe('mismatch quality plumbing', () => {
       mismatchFrequencies: new Uint8Array([255]),
       mismatchQuals: new Uint8Array([37]),
     }
-    const f32 = new Float32Array(packMismatches(data))
+    const f32 = new Float32Array(MISMATCH_MARK.pass.pack(data) as ArrayBuffer)
     expect(f32[mismatchShader.INSTANCE_OFFSET_F32.qual]).toBe(37)
   })
 
@@ -70,7 +70,9 @@ describe('mismatch quality plumbing', () => {
       softclipBaseYs: new Uint16Array([0]),
       softclipBaseBases: new Uint8Array([65]),
     } as CigarUploadData
-    const f32 = new Float32Array(packSoftclipBases(data))
+    const f32 = new Float32Array(
+      SOFTCLIP_BASES_MARK.pass.pack(data) as ArrayBuffer,
+    )
     expect(f32[mismatchShader.INSTANCE_OFFSET_F32.qual]).toBe(QUAL_UNAVAILABLE)
   })
 })

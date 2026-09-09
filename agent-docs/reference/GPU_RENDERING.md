@@ -433,8 +433,9 @@ touching either path, preserve whichever of these the display uses:
   second shape traced around the first. A Canvas2D-vs-GPU pixel diff cannot see
   that second shape at all — it draws nothing — which is the same blind spot
   `reversedGlyphDirection.test.ts` records for the reversed-strand case. (The
-  other axis, a layer drawn but not hoverable, is `hitTestGateParity.test.ts`;
-  it is about gates, not geometry.) A predicate no draw path reaches has to be
+  other axis, a layer drawn but not hoverable, is `defineMark`'s: one `enabled`
+  gates the paint and the `hitNearest` alike, so it is about gates, not
+  geometry.) A predicate no draw path reaches has to be
   authored in a `module` shader: slangc eliminates it before the emitter runs
   otherwise.
 - **One draw helper, both consumers.** Marker/glyph geometry and color math that
@@ -449,8 +450,8 @@ touching either path, preserve whichever of these the display uses:
   trusting it.** Multi-layer displays list layers/z-order/gating once and map
   each id to a per-backend mechanism through a `Record<LayerId, …>`, which makes
   a half-added layer a compile error; `coverageParity.test.ts` cross-checks
-  output. Alignments has `PILEUP_LAYERS` for its pileup band; its coverage band
-  is a mark list (`ALIGNMENTS_COVERAGE_MARKS`), the same mechanism with the
+  output. Alignments' three bands are three mark lists (`PILEUP_MARKS`,
+  `ALIGNMENTS_COVERAGE_MARKS`, `ARC_BAND_MARKS`), the same mechanism with the
   per-backend record folded into each shape. Two bands with different draw
   signatures is a reason for a second list, never for a second backend keeping
   its own.
@@ -470,8 +471,8 @@ touching either path, preserve whichever of these the display uses:
   id, layer→upload fn, and the packer — only two of them keyed by the layer
   union.
 
-  Keying the third is the weaker fix: two exhaustive `Record<PileupLayerId, …>`
-  still state the correspondence twice, and two statements can disagree. **The
+  Keying the third is the weaker fix: two exhaustive records over the layer
+  ids still state the correspondence twice, and two statements can disagree. **The
   one that holds is to make the pass and its packer one object** —
   `{ ...slangPass({…}), pack }`, the `InstancePass` type in
   `@jbrowse/render-core/instancePass`. No constructor wraps that spread, since it
@@ -1734,9 +1735,9 @@ Named here in the standard vocabulary so the reach lands on the reason.
 allocate transient render targets when a frame has many of both, with
 dependencies between them. Ours has one render pass, one color attachment, no
 offscreen targets, and no pass that consumes another's output. Ordering is a
-static z-ordered list beside the renderers that read it (`PILEUP_LAYERS` is the
-largest, at 12 entries with per-layer `enabled` gates; the coverage band's mark
-list is the other), and resource lifetime is `RegionRegistry`'s. The nearest proposal to a
+static z-ordered mark list beside the renderers that read it (`PILEUP_MARKS` is
+the largest, at 13 entries with per-mark `enabled` gates; the coverage band's
+is the other), and resource lifetime is `RegionRegistry`'s. The nearest proposal to a
 frame graph — a unified GPU/Canvas2D "layer manifest" driving draw dispatch from
 a table — was declined 2026-06 and has since been overturned for both of those
 bands, which is a narrower thing than a frame graph and worth not confusing with
@@ -1796,8 +1797,8 @@ the wiggle center line, and nothing passes `blend: false`. Blending only
 composes correctly in draw order, back to front. A
 depth test rejects a fragment by its Z, which is exactly the fragment a
 translucent mark behind it was meant to show through; it would break the
-painter's-algorithm compositing the z-ordered pass lists (`PILEUP_LAYERS`, the
-coverage band's mark list) exist to define. What early-Z would save is the overdraw of
+painter's-algorithm compositing the z-ordered mark lists (`PILEUP_MARKS`, the
+coverage band's) exist to define. What early-Z would save is the overdraw of
 fully opaque marks, and there the rasterizer already discards a quad only a few
 pixels wide about as cheaply (see "GPU-driven culling"). Order is the
 correctness mechanism here; a depth buffer trades it for a saving nothing has
