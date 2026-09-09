@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prefer-path2d -- every path here is one instance's own coordinates, built once and stroked once */
 import { defineMark } from '@jbrowse/render-core/marks'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
