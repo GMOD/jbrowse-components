@@ -130,7 +130,7 @@ to exist under the lane's assembly name.
 
 ## The alignment track
 
-One `SyntenyTrack` names hg38 and every haplotype, and its adapter is an
+One `SyntenyTrack` names hg38 and every haplotype, and its adapter is a
 `MultiGenomeIndexedPAFAdapter` over the index. The PAF names every sequence
 PanSN-style, `HG01109#1#<contig>`, while the assemblies are named `HG01109.1`,
 and `assemblyNameToPanSN` is the map between the two, with GRCh38 as `GRCh38#0`.

@@ -38,6 +38,8 @@ limit rather than a settled design. We welcome your [feedback](/contact).
   use `RgfaTabixAdapter`; every other track here is a URL you can paste
 - htslib (`bgzip`, `tabix`), to query the hosted indexes from the command line
   as the sections below do
+- `gfatools`, for the handful of commands that go to the GFA itself rather than
+  to our projections of it
 
 Nothing here builds a graph file.
 [Preparing your own graph](/docs/tutorials/pangenome_prepare_graph) is the page
@@ -117,9 +119,10 @@ prebuilt and host, with the build script in
 
 ## The GraphGenomeView plugin
 
-It is beta and not in the [plugin store](/docs/user_guides/plugin_store) yet, so
-it loads by URL. In JBrowse Web that is a `plugins` array at the top level of
-`config.json`, beside `assemblies` and `tracks` (see
+GraphGenomeView is beta and not in the
+[plugin store](/docs/user_guides/plugin_store) yet, so it loads by URL. In
+JBrowse Web that is a `plugins` array at the top level of `config.json`, beside
+`assemblies` and `tracks` (see
 [configuring plugins](/docs/config_guides/plugins)):
 
 <!-- GRAPH_PLUGIN_CONFIG START -->

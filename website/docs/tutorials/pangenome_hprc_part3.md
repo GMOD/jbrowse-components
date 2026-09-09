@@ -33,9 +33,8 @@ limit rather than a settled design. We welcome your [feedback](/contact).
   for the tracks that use `GbzBaseSyntenyAdapter` and `RgfaTabixAdapter`; every
   other track here is a URL you can paste
 - htslib (`bgzip`, `tabix`), to slice the annotations the lanes carry
-- `bedtools`, for the repeat-density lanes
-- UCSC's `bedGraphToBigWig`, for the repeat-density lanes
-- UCSC's `bigBedToBed`, for the repeat-density lanes
+- `bedtools`, and UCSC's `bedGraphToBigWig` and `bigBedToBed`, for the
+  repeat-density lanes
 
 Both UCSC binaries are
 [single-binary downloads](https://hgdownload.soe.ucsc.edu/admin/exe/), and
@@ -176,12 +175,13 @@ carry it, 36 samples are homozygous for it and 124 are homozygous reference.
 bcftools view -r chr1:196753075-196753075 -Oz -o cfhr_site.vcf.gz "$WAVE"
 ```
 
-It then walks the homozygous samples in callset order and keeps a haplotype only
-if three things hold: its alignment in the window sits on one contig, release 2
-annotated it, and its own CAT annotation agrees with the genotype it was picked
-on, meaning no _CFHR3_ or _CFHR1_ on a carrier and both on a non-carrier. The
-third is the control, since the callset and the annotation are separate products
-of the release, and a lane is drawn only where the two say the same thing.
+The script then walks the homozygous samples in callset order and keeps a
+haplotype only if three things hold: its alignment in the window sits on one
+contig, release 2 annotated it, and its own CAT annotation agrees with the
+genotype it was picked on, meaning no _CFHR3_ or _CFHR1_ on a carrier and both
+on a non-carrier. The third is the control, since the callset and the annotation
+are separate products of the release, and a lane is drawn only where the two say
+the same thing.
 
 That last check is the one that costs: a CAT annotation is ~110 MB, whole
 genome, and ships no index, so the shortlist is fetched concurrently
@@ -721,10 +721,11 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_repeat_density.sh out
 ```
 
-It writes the twelve bigWigs (six classes x two assemblies, genome-wide) and
-prints the per-class table the section above quotes, so the numbers come out of
-the same run that builds the lanes. The first run downloads ~500 MB and
-re-running skips what is already built, so an interrupted run resumes.
+`build_repeat_density.sh` writes the twelve bigWigs (six classes x two
+assemblies, genome-wide) and prints the per-class table the section above
+quotes, so the numbers come out of the same run that builds the lanes. The first
+run downloads ~500 MB and re-running skips what is already built, so an
+interrupted run resumes.
 
 The [haplotype-walk lanes](#walks-from-the-graph) need one file HPRC does not
 publish, the companion index that names the walks in its gbz-base database:
@@ -734,8 +735,8 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_hprc_gbz_index.sh out
 ```
 
-It downloads the 5.5 GB `.gbz`, builds `gbz-haplotype-index` from source and
-runs the one command
+`build_hprc_gbz_index.sh` downloads the 5.5 GB `.gbz`, builds
+`gbz-haplotype-index` from source and runs the one command
 [Preparing your own graph](/docs/tutorials/pangenome_prepare_graph#every-haplotypes-walk-a-gbz-base-database)
 shows, which takes about a quarter of an hour on 24 cores. The database it
 accompanies is read straight from HPRC's bucket and never downloaded.
