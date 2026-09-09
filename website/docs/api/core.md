@@ -127,6 +127,17 @@ escape, three orders of magnitude slower per feature.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+## GLYPH_CODES
+
+The `point` shape's glyph code for each name an encoding can say.
+
+```js
+// type signature
+Record<GlyphName, number>
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/glyphNames.ts)
+
 ## GlyphEncoding
 
 A GlyphName, a `jexl:` expression over `feature` returning one, or
