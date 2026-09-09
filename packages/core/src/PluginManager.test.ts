@@ -4,7 +4,10 @@ import Plugin from './Plugin.ts'
 import PluginManager from './PluginManager.ts'
 import { ConfigurationSchema } from './configuration/index.ts'
 import DisplayType from './pluggableElementTypes/DisplayType.ts'
+import TrackType from './pluggableElementTypes/TrackType.ts'
 import ViewType from './pluggableElementTypes/ViewType.ts'
+
+import type { AnyReactComponentType } from './util/index.ts'
 
 // Two separately-built copies of one plugin: what a product that bundles a
 // plugin gets when a config also names its hosted url. They are different
@@ -310,4 +313,39 @@ describe('an unloaded lazy state model', () => {
     await pm.getViewType('LazyView').loadStateModel()
     expect(members()).toEqual(['EagerView', 'LazyView'])
   })
+})
+
+// A display that reads a field every feature adapter serves belongs to more
+// than one track type, and `trackType` says so as a list. The one reader is
+// `addTrackType`, which attaches the display to each named track.
+test('a display naming several track types attaches to each of them', () => {
+  const ReactComponent = (() => null) as unknown as AnyReactComponentType
+  const pm = new PluginManager([])
+  pm.addDisplayType(
+    () =>
+      new DisplayType({
+        name: 'SharedDisplay',
+        configSchema: ConfigurationSchema('SharedDisplay', {}),
+        stateModel: types.model('SharedDisplay', {}),
+        trackType: ['TrackA', 'TrackB'],
+        viewType: 'SomeView',
+        ReactComponent,
+      }),
+  )
+  for (const name of ['TrackA', 'TrackB', 'TrackC']) {
+    pm.addTrackType(
+      () =>
+        new TrackType({
+          name,
+          configSchema: ConfigurationSchema(name, {}),
+          stateModel: types.model(name, {}),
+        }),
+    )
+  }
+  pm.createPluggableElements()
+  const displaysOf = (name: string) =>
+    pm.getTrackType(name).displayTypes.map(d => d.name)
+  expect(displaysOf('TrackA')).toEqual(['SharedDisplay'])
+  expect(displaysOf('TrackB')).toEqual(['SharedDisplay'])
+  expect(displaysOf('TrackC')).toEqual([])
 })

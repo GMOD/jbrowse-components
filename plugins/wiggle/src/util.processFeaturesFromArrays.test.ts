@@ -269,6 +269,18 @@ describe('processFeaturesFromArrays', () => {
     expect(Array.from(raw.maxScores!)).toEqual([5, 9])
   })
 
+  // The display's `scoreField` slot names which field a fallback adapter's
+  // features plot; `score` stays the default so every existing config reads
+  // as before, and a feature with nothing in the named field plots at 0.
+  test('featuresToRaw plots the named scoreField, a missing one as 0', () => {
+    const features = [
+      { get: (k: string) => ({ start: 0, end: 10, score: 5, fst: 0.25 })[k] },
+      { get: (k: string) => ({ start: 10, end: 20, score: 7 })[k] },
+    ]
+    expect(Array.from(featuresToRaw(features).scores)).toEqual([5, 7])
+    expect(Array.from(featuresToRaw(features, 'fst').scores)).toEqual([0.25, 0])
+  })
+
   test('empty input produces empty arrays', () => {
     const result = processFeaturesFromArrays(
       {

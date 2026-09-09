@@ -156,3 +156,38 @@ test('per-feature r² evaluator fills the r² array (LD coloring)', () => {
   expect(r.r2s![0]).toBe(1)
   expect(r.r2s![1]).toBeCloseTo(0.4)
 })
+
+test('scoreField reads another feature field as y, skipping features without one', () => {
+  const withFst = (id: string, start: number, fst: number) =>
+    new SimpleFeature({
+      uniqueId: id,
+      refName: '1',
+      start,
+      end: start + 1,
+      score: 1000,
+      fst,
+    })
+  const r = buildManhattanResult({
+    features: [
+      withFst('a', 10, 0.2),
+      feature('b', 20, 7),
+      withFst('c', 30, 0.9),
+    ],
+    evalColor: constColor(0),
+    scoreField: 'fst',
+  })
+  expect(Array.from(r.positions)).toEqual([10, 30])
+  expect(r.scores[0]).toBeCloseTo(0.2)
+  expect(r.scores[1]).toBeCloseTo(0.9)
+  expect(r.scoreMax).toBeCloseTo(0.9)
+})
+
+test('the category table the color evaluator filled rides in the payload', () => {
+  const categories = [{ value: 'CEU', color: '#4e79a7' }]
+  const r = buildManhattanResult({
+    features: [feature('a', 0, 1)],
+    evalColor: constColor(0),
+    categories,
+  })
+  expect(r.categories).toBe(categories)
+})
