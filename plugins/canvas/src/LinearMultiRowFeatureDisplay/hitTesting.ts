@@ -5,7 +5,6 @@ import {
 } from '@jbrowse/core/util/rowStackGeometry'
 import { treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 
-import { blockScreenRect } from './rendering/blockScreenRect.ts'
 import { regionWithDeltas } from './rendering/featurePainting.ts'
 import { MULTI_ROW_MARK } from './rendering/multiRowMarks.ts'
 import { rowBand } from './rendering/rowBand.ts'
@@ -17,6 +16,7 @@ import type {
 } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { MultiRowSource } from './rowSources.ts'
 import type { ContextMenuAnchor } from '@jbrowse/core/ui'
+import type { MarkInstance } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export interface MultiRowHit {
@@ -56,8 +56,8 @@ interface HitTestView {
 
 /**
  * Callers pass `self` straight in so MobX tracks exactly what each function
- * below reads; building an argument object instead would make
- * `highlightedBlockRect` depend on the whole encoded map.
+ * below reads; building an argument object instead would make `hoverInk`
+ * depend on the whole encoded map.
  */
 export interface MultiRowHitTestSlice {
   showTree: boolean
@@ -202,26 +202,36 @@ export function contextTargetAtPixel(
 }
 
 /**
- * The row is resolved off the live order rather than trusted from the hit, so a
- * row since filtered away draws no box.
+ * The instance a hit names in the live encoding, resolved by row name and
+ * feature id rather than trusted from the hit, so a reorder moves the box
+ * and a row since filtered away lights nothing. The walk is the row's own
+ * bucket, which is a handful of channels.
  */
-export function hitBlockRect(
+export function hitInstance(
   self: Pick<
     MultiRowHitTestSlice,
-    'rowIndexByValue' | 'renderBlocks' | 'effectiveRowHeight' | 'rowProportion'
+    'rowIndexByValue' | 'drawnRegionData' | 'encodedChannels'
   >,
   hit: MultiRowHit | undefined,
-) {
+): MarkInstance | undefined {
   const rowIndex = hit && self.rowIndexByValue.get(hit.rowName)
-  return hit && rowIndex !== undefined
-    ? blockScreenRect({
-        hit,
-        rowIndex,
-        blocks: self.renderBlocks,
-        rowHeight: self.effectiveRowHeight,
-        rowProportion: self.rowProportion,
-      })
-    : undefined
+  const region = hit && self.drawnRegionData.get(hit.regionIndex)
+  const encoded = hit && self.encodedChannels.get(hit.regionIndex)
+  if (rowIndex === undefined || !region || !encoded) {
+    return undefined
+  }
+  const lo = encoded.rowStart[rowIndex]
+  const hi = encoded.rowStart[rowIndex + 1]
+  if (lo === undefined || hi === undefined) {
+    return undefined
+  }
+  for (let k = lo; k < hi; k++) {
+    const index = encoded.rowIndices[k]!
+    if (region.featureIds[encoded.featureIndex[index]!] === hit.id) {
+      return { mark: 0, index }
+    }
+  }
+  return undefined
 }
 
 /** The row a hit sits on, off the live order — resolved the way the box is. */

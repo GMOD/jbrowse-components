@@ -15,7 +15,6 @@ import { observer } from 'mobx-react'
 import DensityBandOverlay from '../../shared/DensityBandOverlay.tsx'
 import { MULTI_ROW_MARKS } from '../rendering/multiRowMarks.ts'
 import { SEPARATOR_OPACITY } from '../rendering/rowBand.ts'
-import MultiRowHoverHighlight from './MultiRowHoverHighlight.tsx'
 import MultiRowIndelGlyphOverlay from './MultiRowIndelGlyphOverlay.tsx'
 import MultiRowTooltip from './MultiRowTooltip.tsx'
 
@@ -83,7 +82,6 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
           />
         </svg>
       ) : null}
-      <MultiRowHoverHighlight model={model} />
       {/* Capture gates read this subtree as the doneness signal: `sources`
           derives from fetched features, so it cannot exist before the data has
           loaded and been binned into rows. */}

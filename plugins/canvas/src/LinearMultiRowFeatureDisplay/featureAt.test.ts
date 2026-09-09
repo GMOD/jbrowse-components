@@ -355,12 +355,12 @@ describe('featureAt', () => {
     )
     display.setHoveredFeature(display.featureAt(350, 75))
     expect(display.hoveredRow?.name).toBe('b')
-    const before = display.highlightedBlockRect
+    const [before] = display.hoverInk
 
     display.setLayout([{ name: 'b' }, { name: 'a' }])
 
     expect(display.hoveredRow?.name).toBe('b')
-    expect(display.highlightedBlockRect?.top).toBeLessThan(before!.top)
+    expect(display.hoverInk[0]!.top).toBeLessThan(before!.top)
   })
 
   // The bound is the sidebar's interactive edge, not where labels are drawn

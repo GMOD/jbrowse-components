@@ -98,7 +98,8 @@ function assert(cond: boolean, message: string) {
   }
 }
 
-const MULTIROW_HIGHLIGHT = '[data-testid="multirow_hover_highlight"]'
+const MULTIROW_HIGHLIGHT =
+  '[data-testid="multirow-display"] [data-testid="chrome-hover"]'
 
 export const suite: TestSuite = {
   name: 'cursor-guides',

@@ -23,6 +23,7 @@ import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
 import { createEncodeMemo } from '@jbrowse/render-core/encodeMemo'
 import { installUpload } from '@jbrowse/render-core/installUpload'
+import { inkOfInstances } from '@jbrowse/render-core/marks'
 import {
   ContextMenuMixin,
   RowHeightMixin,
@@ -53,7 +54,7 @@ import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
 import {
   contextTargetAtPixel,
   featureAtPixel,
-  hitBlockRect,
+  hitInstance,
   hitRow,
 } from './hitTesting.ts'
 import {
@@ -68,6 +69,7 @@ import {
   resolveConfiguredLegend,
 } from './rendering/colorLegend.ts'
 import { buildMultiRowChannels } from './rendering/multiRowChannels.ts'
+import { MULTI_ROW_MARKS } from './rendering/multiRowMarks.ts'
 import { rowOrderByValueAt } from './rowOrderByValueAt.ts'
 import {
   applyRowGroups,
@@ -93,6 +95,10 @@ import type { MultiRowSource, RowGroup } from './rowSources.ts'
 import type { LegendItem, MenuItem } from '@jbrowse/core/ui'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Region } from '@jbrowse/core/util'
+import type {
+  HighlightRect,
+  HighlightStyle,
+} from '@jbrowse/display-kit/highlightHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
@@ -767,15 +773,29 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * Screen box of the block to mark. The hover drops when a right-click menu
-       * opens, else its tooltip sticks under the menu, so the menu's own feature
-       * stands in.
+       * The box of the block to mark, for the chrome's highlight. The hover
+       * drops when a right-click menu opens, else its tooltip sticks under the
+       * menu, so the menu's own feature stands in.
        */
-      get highlightedBlockRect() {
-        return hitBlockRect(
-          self,
-          self.hoveredFeature ?? self.contextMenuInfo?.hit,
-        )
+      get hoverInk(): HighlightRect[] {
+        const hit = self.hoveredFeature ?? self.contextMenuInfo?.hit
+        const instance = hitInstance(self, hit)
+        return hit && instance
+          ? inkOfInstances(
+              MULTI_ROW_MARKS,
+              self.renderBlocks,
+              index => self.encodedChannels.get(index),
+              self.renderState,
+              index => (index === hit.regionIndex ? [instance] : undefined),
+            )
+          : []
+      },
+      /**
+       * #getter
+       * A wash and a border: the block colours are the data.
+       */
+      get highlightStyle(): HighlightStyle {
+        return 'box'
       },
 
       /**
