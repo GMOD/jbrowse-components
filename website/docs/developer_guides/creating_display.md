@@ -71,9 +71,10 @@ config schema.
 
 The display owns view-specific state, menu items, overlays, and the drawing
 itself. A rendering backend is built, never registered: the plugin ABI has no
-rendering-backend element type, so the display calls `createRenderingBackend`,
-which walks the WebGPU → WebGL2 → Canvas2D ladder, or `createCanvas2DBackend`
-when it ships no shader path.
+rendering-backend element type, so the display declares what it draws as a mark
+list and its component calls `createMarkBackend`, which walks the WebGPU →
+WebGL2 → Canvas2D ladder over that list — or `createCanvas2DBackend` for a
+drawing that is not instances of a shape.
 
 ## Display foundations
 
@@ -119,7 +120,7 @@ already do this?"
 | `TrackHeightMixin()` | Internal vertical scroll. `scrollableHeight` (default `Infinity` = doesn't scroll). Brings the clamped `setScrollTop` and the autorun that re-clamps when content shrinks | `LinearAlignmentsDisplay`, `LinearArcDisplay`, `LinearCanvasBaseDisplay`, `LinearHicDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMultiRowFeatureDisplay`, `LinearPairedArcDisplay`, `LinearReferenceSequenceDisplay`, `LinearScoreDisplay`, `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel`, `MultiWaySyntenyDisplay`, `SharedLDModel` |
 | `LegendMixin()` | A legend the user can turn off. A promotable `showLegend` config slot, whose `promotedBase` sets whether this display type's legend is on by default. Brings the resolved `showLegend` getter, the `showLegendDisplayTypeDefault` pin, `setShowLegend`, and `legendCheckboxItem(self)`, the "Show legend" row a track menu lists | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay`, `LinearHicDisplay`, `LinearMafDisplay`, `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel`, `MultiWaySyntenyDisplay`, `SharedLDModel` |
 | `ContextMenuMixin()` | The right-click state of a display whose menu acts on a | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay`, `LinearMafDisplay`, `LinearManhattanDisplay`, `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel` |
-| `StoredHoverMixin()` | A stored hover. The hit type, as the type parameter. Brings the `hoveredFeature` getter `BaseDisplay` declares as a hook, `setHoveredFeature`, and the `clearHoveredFeature` the foundations' viewport-change reaction calls | `LinearManhattanDisplay`, `LinearMultiRowFeatureDisplay`, `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel` |
+| `StoredHoverMixin()` | A stored hover. The hit type, as the type parameter. Brings the `hoveredFeature` getter `BaseDisplay` declares as a hook, `setHoveredFeature`, and the `clearHoveredFeature` the foundations' viewport-change reaction calls | `LinearManhattanDisplay`, `LinearMultiRowFeatureDisplay`, `LinearScoreDisplay`, `LinearWiggleDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel` |
 | `TreeSidebarMixin()` | Row set with a dendrogram sidebar. `sources` (the display rows, named), the three `treeSidebarConfigSchemaFields` slots, plus the `run` callback naming its own clustering RPC and the `sortRows` callback naming what a row carries at a column. Brings `layout` / `clusterTree` / `clusterProvenance` / `treeAreaWidth` / `subtreeFilter`, the `showTree` / `showBranchLength` / `showRowLabels` getters and setters over those slots, the `runClustering` / `clusterRegion` and `sortRowsBy` declarative launch specs `setupTreeSidebarAutoruns` consumes, the `root`, `willClearTree` and `rowOrderIsCustom` getters, and the tree-hover and canvas-ref volatiles the shared sidebar draws through | `LinearMafDisplay`, `LinearMultiRowFeatureDisplay`, `MultiLinearWiggleDisplay`, `MultiSampleVariantBaseModel` |
 | `RowHeightMixin()` | The two-valued row height every multi-row display has. A `rowHeightConfigSchemaFields` slot whose `0` means fit-to-display-height, and an `autoRowHeight` getter saying what that fit divides. Brings the raw `rowHeight` getter, `setRowHeight`, and the resolved `effectiveRowHeight` every consumer reads | `LinearMafDisplay`, `LinearMultiRowFeatureDisplay`, `MultiSampleVariantBaseModel` |
 | `HeightModeMixin()` | Track-height strategy; the one row that must compose **after** `TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the raw slot). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight`, and the grow-exit bake reaction that writes the grown height into the slot when the mode leaves grow | `LinearAlignmentsDisplay`, `LinearCanvasBaseDisplay` |
@@ -133,13 +134,13 @@ leaves grow mode inert. The mixin reports that at attach.
 
 ## Walkthroughs
 
-Two end-to-end guides build the same display, differing only in the renderer.
-Start with the first:
+Two end-to-end guides build the same display, differing only in whether the
+display writes a shape of its own. Start with the first:
 
-- [](/docs/developer_guides/plotting_features) - fetch in a worker, draw with
-  Canvas2D. Right for gene-scale tracks.
-- [](/docs/developer_guides/creating_gpu_display) - the same display with a
-  `.slang` shader behind it, for roughly ≳100K features per frame.
+- [](/docs/developer_guides/plotting_features) - fetch in a worker, declare a
+  mark over a shared shape. Most displays stop here.
+- [](/docs/developer_guides/creating_gpu_display) - the same display over a
+  shape of its own: a `.slang`, a uniform write, a painter and a hit test.
 
 Both are build-step plugins; [](/docs/developer_guides/simple_plugin) covers the
 scaffold and build setup they assume.

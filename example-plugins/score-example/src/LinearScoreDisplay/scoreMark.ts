@@ -10,7 +10,6 @@ import { scoreBarHeightPx } from './shaders/score.js.generated.ts'
 
 import type { MarkShape } from '@jbrowse/render-core/marks'
 
-// #region channels
 // The shape's own vocabulary: parallel typed arrays plus a count. A display
 // binds its payload's arrays to these lanes in `defineMark`.
 export interface ScoreChannels {
@@ -27,9 +26,7 @@ export interface ScoreParams {
   // painter unpacks it
   color: number
 }
-// #endregion
 
-// #region shape
 // One box per instance: startBp..endBp wide, grown up from the canvas bottom to
 // score x canvasHeight. The shader owns the geometry; the painter and the hit
 // test read its generated twin (`scoreBarHeightPx`) and constant
@@ -91,4 +88,3 @@ export const scoreMark: MarkShape<ScoreChannels, ScoreParams> = {
     })
   },
 }
-// #endregion

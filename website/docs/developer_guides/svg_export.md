@@ -252,13 +252,18 @@ document-global, and a duplicate renders the second group unclipped.
 
 ## Reusing on-screen drawing code
 
-**The GPU shader path is an accelerator, the Canvas2D draw function is the
-source of truth, and SVG export runs it.** A shader-only tweak therefore leaves
-the export unchanged.
+**The GPU shader path is an accelerator, the Canvas2D painter is the source of
+truth, and SVG export runs it.** A shader-only tweak therefore leaves the export
+unchanged.
 
-Write drawing functions against `Ctx2D` and call them from both the on-screen
-renderer and `renderSvg` — the sequence body above calls the same
-`drawSequenceBlocks` its Canvas2D renderer does:
+A display on the mark layer gets this for nothing: `paintMarkBlocks` runs each
+mark's `paintBlock` against the SVG context, so its body is one call over the
+same list the on-screen backend draws —
+`example-plugins/score-example/src/LinearScoreDisplay/renderSvg.tsx` is the
+whole of one. A display with no shape writes its drawing function against
+`Ctx2D` and calls it from both the on-screen renderer and `renderSvg` — the
+sequence body above calls the same `drawSequenceBlocks` its Canvas2D renderer
+does:
 
 <!-- include: packages/core/src/util/paintLayer.tsx#ctx2d -->
 

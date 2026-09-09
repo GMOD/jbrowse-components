@@ -1,18 +1,19 @@
 ---
 title: Plotting features in a custom display
 description:
-  Build a plugin that fetches features in a worker and plots them on the main
-  thread with Canvas2D, no shaders required
+  Build a plugin that fetches features in a worker and declares what it draws as
+  a mark list, which every backend and the SVG export draw
 guide_category: Plugins
 sidebar_label: Plotting features
 ---
 
-**TL;DR:** A custom display that fetches features in a worker and draws them
-with Canvas2D, no shaders required. Right for gene-scale tracks (hundreds to
-thousands of features per frame); move to
-[](/docs/developer_guides/creating_gpu_display) only when a profile shows
-Canvas2D can't hold 60fps (roughly ≳100K features per frame). Both paths share
-the same model, fetch chain, and lifecycle.
+**TL;DR:** A custom display that fetches features in a worker and declares what
+it draws as a list of **marks** — a shape bound to the display's payload. With
+one of the two shared shapes you write no shader, no painter and no hit test;
+`createMarkBackend` turns the list into the WebGPU, WebGL2 and Canvas2D
+backends, and the same painter is the SVG export. Only a drawing neither shared
+shape fits needs a shape of its own, which is
+[](/docs/developer_guides/creating_gpu_display).
 
 A [build-step plugin](/docs/developer_guides/simple_plugin), not a
 [no-build](/docs/developer_guides/no_build_plugin) one: it bundles
@@ -22,20 +23,21 @@ than [`@jbrowse/core`](/docs/developer_guides/imports_and_reexports), so pin the
 versions you develop against. `@jbrowse/render-core` first publishes in the next
 release; until then, build against a `jbrowse-components` checkout.
 
-<Figure src="/img/gwas/manhattan.png" caption="A real feature-plotting display built the way this guide describes: plugins/gwas/src/LinearManhattanDisplay fetches scored points in a worker as typed arrays and plots them per block on the main thread. Each point is a GWAS variant positioned by genome coordinate (X) and −log₁₀(p-value) (Y); the tall peak on hg19 chr2 is a strong association."/>
+<Figure src="/img/gwas/manhattan.png" caption="A real feature-plotting display built the way this guide describes: plugins/gwas/src/LinearManhattanDisplay fetches scored points in a worker as typed arrays and declares one mark over the shared point shape. Each point is a GWAS variant positioned by genome coordinate (X) and −log₁₀(p-value) (Y); the tall peak on hg19 chr2 is a strong association."/>
 
 ## Rendering across two threads
 
 Rendering splits across two threads:
 
-<Figure caption="The worker fetches and packs, the main thread stores per region and draws. The pure draw function backs both the canvas and SVG export." src="/img/feature_plotting_threads.png" />
+<Figure caption="The worker fetches and packs, the main thread stores per region and draws. The shape's painter backs both the Canvas2D fallback and the SVG export." src="/img/feature_plotting_threads.png" />
 
 The worker returns compact data, never pixels, with all genomic positions
 absolute (not region-relative). The model owns the fetched data (`rpcDataMap`),
 a cheap per-frame `renderState`, and the fetch/draw wiring; mixins supply the
-fetch and draw lifecycles. The renderer paints the visible blocks with an
-ordinary `CanvasRenderingContext2D`, and the same pure draw function backs SVG
-export.
+fetch and draw lifecycles. The mark list says which of the payload's arrays feed
+which lane of a shape, and the backend built from it paints the visible blocks —
+on the GPU where there is one, through the shape's Canvas2D painter where there
+is not, and through that same painter for SVG export.
 
 Three terms recur below (the
 [architecture spec's vocabulary](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#vocabulary)
@@ -50,15 +52,17 @@ is fuller):
   `rpcDataMap.get(block.displayedRegionIndex)`.
 
 The simplest complete in-tree reference is
-`plugins/sequence/src/LinearReferenceSequenceDisplay/`, a Canvas2D-only display
-whose renderer is ~30 lines; this guide mirrors its shape.
+`plugins/gwas/src/LinearManhattanDisplay/`, whose whole drawing is one mark over
+the shared `pointMark`; this guide mirrors its shape.
 
 ## Files to create
 
 `example-plugins/score-example/` is the finished plugin — a standalone package
 CI installs from a packed tarball and asserts renders, so it stays buildable
-against the published packages. It ships both renderers, so the `[GPU only]`
-rows are the ones a Canvas2D display skips:
+against the published packages. It draws a box whose height is the feature's
+score, which neither shared shape does, so it carries a shape of its own
+(`scoreMark.ts` and `shaders/`); a display on `spanMark` or `pointMark` has
+neither file:
 
 <!-- EXAMPLE_PLUGIN_TREE START -->
 
@@ -67,17 +71,16 @@ src/
   index.ts                       the plugin class; installs the display, the RPC method and the feature panel
   LinearScoreDisplay/
     configSchema.ts              config slots (color, scoreColumn)
-    index.ts                     registers the display type
-    model.ts                     MST model: rpcDataMap, renderState, fetchNeeded, startRenderingBackend
+    findScoreHit.ts              the display's hit walk: hands every instance of each block to the mark's `hitNearest`
+    index.ts                     registers the display type; the model and the component both load lazily
+    model.ts                     MST model: rpcDataMap, renderState, fetchNeeded, startRenderingBackend, renderSvg
+    renderSvg.tsx                SVG export: the mark list painted through renderDisplaySvg
+    scoreMark.ts                 the `score` shape: score.slang's pass, its uniform write, its painter (also the SVG export) and its hit test
+    scoreMarks.ts                ScoreRenderState, the mark list (one `score` mark over the RPC payload) and the backend type
     components/
-      Canvas2DScoreRenderer.ts   extends Canvas2DPerRegionRenderingBackend; the SVG-export path too
-      GpuScoreRenderer.ts        [GPU only] extends GpuPerRegionRenderingBackend; packs instances, writes uniforms
-      ScoreDisplayComponent.tsx  React: DisplayChrome wrapping the canvas
-      ScoreRendererFactory.ts    the factory DisplayChrome calls; picks GPU or Canvas2D
-      drawScore.ts               pure draw function over a Ctx2D
-      scoreTypes.ts              ScoreRenderState and the backend type
-      shaders/
-        score.slang              [GPU only] vertex + fragment for one pass; compiled by gen:shaders
+      ScoreDisplayComponent.tsx  React: DisplayChrome wrapping the canvas; builds the backend from the mark list
+    shaders/
+      score.slang                the `score` shape's shader: one box per feature, compiled by gen:shaders
   ScoreFeaturePanel/
     index.tsx                    adds a panel to the feature details widget
   ScoreRPC/
@@ -173,9 +176,10 @@ export default class GetScoreData extends RpcMethodType<'GetScoreData'> {
 ## Step 3: The MST model
 
 Compose `MultiRegionDisplayMixin` (which brings the fetch autoruns **and** the
-render lifecycle) and `TrackHeightMixin`. You supply four things: a place to
-store fetched data (`rpcDataMap`), a per-frame `renderState`, a `fetchNeeded`
-action, and a `startRenderingBackend` action.
+render lifecycle), `TrackHeightMixin`, and `StoredHoverMixin` for the hover the
+component stores. You supply four things: a place to store fetched data
+(`rpcDataMap`), a per-frame `renderState`, a `fetchNeeded` action, and a
+`startRenderingBackend` action; the `renderSvg` action at the end is the export.
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts -->
 
@@ -183,26 +187,27 @@ action, and a `startRenderingBackend` action.
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView } from '@jbrowse/core/util'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 
 import type { ScoreRegionData } from '../ScoreRPC/rpcTypes.ts'
-import type {
-  ScoreRenderState,
-  ScoreRenderingBackend,
-} from './components/scoreTypes.ts'
 import type { LinearScoreDisplayConfigModel } from './configSchema.ts'
+import type { ScoreHit } from './findScoreHit.ts'
+import type { ScoreRenderState, ScoreRenderingBackend } from './scoreMarks.ts'
 import type { Region } from '@jbrowse/core/util'
+import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearScoreDisplay
  * #displayFoundation MultiRegionDisplayMixin
- * The worked-example score display: one value per feature, drawn as a scatter
+ * The worked-example score display: one value per feature, drawn as a box
  * along the genome. The developer guides walk through this model.
  *
  * #example
@@ -236,6 +241,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
+      StoredHoverMixin<ScoreHit>((a, b) => a.start === b.start),
       types.model({
         type: types.literal('LinearScoreDisplay'),
         configuration: ConfigurationReference(configSchema),
@@ -258,12 +264,14 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
         return { scoreColumn: getConf(self, 'scoreColumn') }
       },
       // recomputed cheaply every frame without fetching; carries the canvas
-      // dimensions (required) plus whatever the draw path reads
+      // dimensions (required) plus whatever the marks read. The color is
+      // resolved to the packed form here, once, so the uniform write and the
+      // painter are handed the same number
       get renderState(): ScoreRenderState {
         return {
           canvasWidth: self.canvasWidthPx,
           canvasHeight: self.height,
-          color: getConf(self, 'color'),
+          color: cssColorToABGR(getConf(self, 'color')),
         }
       },
     }))
@@ -294,21 +302,33 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
           onResult: (_idx, result) => result,
         })
       },
-      // called once by DisplayChrome when the backend is created. Streams each
-      // region into the backend and draws every frame from renderState. This is
-      // the only part of the model that knows a backend exists, and it is
-      // identical whether that backend is the GPU or the Canvas2D one.
+      // called once by DisplayChrome when the backend is created, and again
+      // after a context loss. One installer streams each region into the
+      // backend and draws every frame from renderState; it is the only part of
+      // the model that knows a backend exists, and it is the same whether that
+      // backend is the GPU or the Canvas2D one.
       startRenderingBackend(backend: ScoreRenderingBackend) {
         installUpload(self, backend, {
           cells: () => self.rpcDataMap,
-          render: (b, regions) => {
-            if (regions.size === 0) {
-              return false // keep the loading overlay up until data lands
-            }
-            b.renderBlocks(self.renderBlocks, regions, self.renderState)
-            return true
-          },
+          render: b =>
+            b.renderBlocks(
+              self.renderBlocks,
+              self.rpcDataMap,
+              self.renderState,
+            ),
         })
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * The SVG export, lazily loaded with the mark list it paints through.
+       * Its own block: the export reads `self` as the slice `renderSvg.tsx`
+       * declares, and MST does not type a block's own members onto its `self`
+       */
+      async renderSvg(opts?: ExportSvgDisplayOptions) {
+        const { renderSvg } = await import('./renderSvg.tsx')
+        return renderSvg(self, opts)
       },
     }))
 }
@@ -322,134 +342,104 @@ export type LinearScoreDisplayModel = Instance<LinearScoreDisplayStateModel>
 (`fetchNeeded`, `rpcProps`, cancellation, `regionTooLarge`) is documented in
 full in [the data fetching pipeline](/docs/developer_guides/data_fetching).
 
-## Step 4: The renderer
+## Step 4: The mark list
 
-The renderer has two parts: a **pure draw function** that paints blocks into any
-2D context, and a thin backend class that the lifecycle drives. Keeping the draw
-logic pure means SVG export reuses it unchanged (see
-[](/docs/developer_guides/svg_export)).
+A **shape** owns geometry and picking: one `.slang` shader and its packer, one
+uniform write, one Canvas2D painter (which is also the SVG export) and one hit
+test, all reading the same channel arrays. A **mark** binds a shape to this
+display through two lenses: `channels` names which of the payload's arrays feed
+which of the shape's lanes, and `params` names which render-state values reach
+its uniforms. That declaration is the whole of the renderer:
 
-<!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/drawScore.ts -->
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/scoreMarks.ts#marks -->
 
 ```ts
-import {
-  bpToScreenPx,
-  forEachClippedBlock,
-} from '@jbrowse/render-core/canvas2dUtils'
-
-import type { ScoreRegionData } from '../../ScoreRPC/rpcTypes.ts'
-import type { ScoreRenderState } from './scoreTypes.ts'
-import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
-import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-
-// Pure draw function: paints the visible blocks into any 2D context. Ctx2D =
-// CanvasRenderingContext2D | SvgCanvas, so the same implementation backs both
-// on-screen Canvas2D rendering and SVG export.
-export function drawScoreBlocks(
-  ctx: Ctx2D,
-  regions: ReadonlyMap<number, ScoreRegionData>,
-  blocks: RenderBlock[],
-  state: ScoreRenderState,
-) {
-  const { canvasWidth, canvasHeight, color } = state
-  ctx.fillStyle = color
-  forEachClippedBlock(
-    ctx,
-    blocks,
-    canvasWidth,
-    canvasHeight,
-    block => regions.get(block.displayedRegionIndex),
-    (data, block) => {
-      const { start, end, screenStartPx, screenEndPx, reversed } = block
-      for (let i = 0; i < data.numFeatures; i++) {
-        const left = bpToScreenPx(
-          data.starts[i]!,
-          start,
-          end,
-          screenStartPx,
-          screenEndPx,
-          reversed,
-        )
-        const right = bpToScreenPx(
-          data.ends[i]!,
-          start,
-          end,
-          screenStartPx,
-          screenEndPx,
-          reversed,
-        )
-        const h = data.scores[i]! * canvasHeight
-        ctx.fillRect(
-          Math.min(left, right),
-          canvasHeight - h,
-          Math.abs(right - left) || 1,
-          h,
-        )
-      }
-    },
-  )
-}
+// What this display draws, as a declaration: which of the payload's arrays
+// feed which of the shape's lanes, and which of the render state's values reach
+// its uniforms. Both are lenses that run once per block per frame. The pass and
+// its packer, the painter (which is also the SVG export) and the hit test all
+// come from the shape.
+export const SCORE_MARKS = [
+  defineMark({
+    shape: scoreMark,
+    channels: (d: ScoreRegionData) => ({
+      startBp: d.starts,
+      endBp: d.ends,
+      score: d.scores,
+      count: d.numFeatures,
+    }),
+    params: (s: ScoreRenderState) => ({ color: s.color }),
+  }),
+]
 ```
 
-<!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/Canvas2DScoreRenderer.ts -->
+The example's `scoreMark` is its own, because a box grown from the bottom to a
+value is neither of the shared shapes. Most displays are one of them, and name
+it in place of `scoreMark` with nothing else to write:
+
+- **`spanMark`** — a coloured rectangle from `x` to `x2` on the band of `row`:
+  features laid into rows, MAF's alignment cells, anything that is a box on a
+  row.
+- **`pointMark`** — a glyph at `x` on a linear `domain` of `y`, widening to a
+  bar where `x2 - x` is wider than the glyph: a scatter plot, Manhattan's
+  points, any datum placed by a value.
+
+Manhattan's whole drawing, over `pointMark`:
+
+<!-- include: plugins/gwas/src/LinearManhattanDisplay/manhattanMarks.ts -->
 
 ```ts
-import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+import { defineMark, pointMark } from '@jbrowse/render-core/marks'
 
-import { drawScoreBlocks } from './drawScore.ts'
+import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
+import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 
-import type { ScoreRegionData } from '../../ScoreRPC/rpcTypes.ts'
-import type { ScoreRenderState } from './scoreTypes.ts'
-import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-
-// The base class owns renderBlocks (DPR-aware canvas sizing, then calls draw);
-// this subclass implements only the pure paint step. Runs both as the WebGPU/
-// WebGL2 fallback and as the SVG-export path.
-export class Canvas2DScoreRenderer extends Canvas2DPerRegionRenderingBackend<
-  ScoreRegionData,
-  ScoreRenderState
-> {
-  protected draw(
-    blocks: RenderBlock[],
-    regions: ReadonlyMap<number, ScoreRegionData>,
-    state: ScoreRenderState,
-  ) {
-    drawScoreBlocks(this.ctx, regions, blocks, state)
-  }
-}
-```
-
-Export the factory `DisplayChrome` will call from the same file. A Canvas2D-only
-display returns its backend through `createCanvas2DBackend`, skipping
-`createRenderingBackend`'s WebGPU→WebGL2→Canvas2D ladder, which is the whole
-difference from the GPU path's factory. `plugins/sequence` does exactly this:
-
-<!-- include: plugins/sequence/src/LinearReferenceSequenceDisplay/components/Canvas2DSequenceRenderer.ts#factory -->
-
-```ts
-// A Canvas2D-only display needs no separate factory file and no HAL ladder:
-// createCanvas2DBackend just wraps the backend in the Promise DisplayChrome
-// awaits. Swap in createRenderingBackend (and its createGpuBackend option) only
-// once a profile shows Canvas2D can't hold 60fps.
-export function SequenceRenderer(canvas: HTMLCanvasElement) {
-  return createCanvas2DBackend(canvas, c => new Canvas2DSequenceRenderer(c))
-}
+/**
+ * What this display draws, as a declaration: one `point` mark, its channels
+ * read straight off the RPC result's parallel arrays.
+ *
+ * The GPU pass and its packer, the Canvas2D painter (which is also the SVG
+ * export) and the hit-test geometry all come from `pointMark`; what is written
+ * here is only which of this display's arrays feed which lane, and which of its
+ * render-state values reach the shape's uniforms.
+ */
+export const MANHATTAN_MARKS = [
+  defineMark({
+    shape: pointMark,
+    channels: (d: ManhattanRpcResult) => ({
+      x: d.positions,
+      x2: d.ends,
+      y: d.scores,
+      color: d.colors,
+      glyph: d.glyphs,
+      count: d.numFeatures,
+    }),
+    params: (s: ManhattanRenderState) => ({
+      domain: s.domainY,
+      diameterPx: s.pointDiameterPx,
+    }),
+  }),
+]
 ```
 
 `ScoreRenderState` must include `canvasWidth` and `canvasHeight` (the
-`FrameDimensions` the base class needs to size the backing store); add whatever
-else your draw function reads:
+`FrameDimensions` the backend needs to size the backing store); add whatever
+else the shape's `params` read. A shape takes packed colours and the display
+resolves them, so the colour is stored here as the number the shader's uniform
+takes, resolved once in the model:
 
-<!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/scoreTypes.ts#render-state -->
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/scoreMarks.ts#render-state -->
 
 ```ts
 // Recomputed cheaply every frame without fetching. Carries the canvas
-// dimensions (required by the base class to size the backing store) plus the
-// one setting the draw path reads.
+// dimensions (required, to size the backing store) plus the one setting the
+// drawing reads.
 export interface ScoreRenderState {
   canvasWidth: number
   canvasHeight: number
-  color: string
+  // packed ABGR (`cssColorToABGR`), resolved once in the model so both backends
+  // are handed the same number
+  color: number
 }
 ```
 
@@ -457,18 +447,32 @@ export interface ScoreRenderState {
 
 `DisplayChrome` wraps your canvas with shared status chrome (loading scrim,
 error bar, "region too large" banner) and wires the rendering-backend factory
-and WebGL/WebGPU context-loss recovery. You give it your factory and render the
-`<canvas>` from the `canvasRef` it hands back.
+and WebGL/WebGPU context-loss recovery. You give it a factory and render the
+`<canvas>` from the `canvasRef` it hands back. The factory is
+`createMarkBackend` over the list — WebGPU, then WebGL2, then Canvas2D — and its
+import is the one place the display reaches the GPU stack, which is why it sits
+on the lazily loaded component and not on the model:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/ScoreDisplayComponent.tsx -->
 
 ```tsx
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
+import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { observer } from 'mobx-react'
 
-import { ScoreRenderer } from './ScoreRendererFactory.ts'
+import { findScoreHit } from '../findScoreHit.ts'
+import { SCORE_MARKS } from '../scoreMarks.ts'
 
 import type { LinearScoreDisplayModel } from '../model.ts'
+
+// The only import on the mark path that reaches the HAL. It lives here, on the
+// lazily loaded component, and not in the model: a state model is eager, so
+// naming the backend there would load the GPU stack at plugin install.
+// createMarkBackend tries WebGPU, then WebGL2, then Canvas2D, and every backend
+// walks the same mark list.
+function createScoreBackend(canvas: HTMLCanvasElement) {
+  return createMarkBackend(canvas, SCORE_MARKS)
+}
 
 // DisplayChrome supplies the display's chrome (loading scrim, error bar,
 // region-too-large banner) and WebGL/WebGPU context-loss recovery, and is the
@@ -479,18 +483,51 @@ const ScoreDisplayComponent = observer(function ScoreDisplayComponent({
 }: {
   model: LinearScoreDisplayModel
 }) {
+  const { hoveredFeature } = model
   return (
     <DisplayChrome
       model={model}
-      factory={ScoreRenderer}
+      factory={createScoreBackend}
       testid="score-display"
       style={{ width: '100%', height: model.height }}
+      // measured against the chrome container, which the canvas fills, so the
+      // pointer lands in canvas px with no offset
+      onPointerPosition={state => {
+        model.setHoveredFeature(
+          state
+            ? findScoreHit(
+                state.x,
+                state.y,
+                model.renderBlocks,
+                model.rpcDataMap,
+                model.renderState,
+              )
+            : undefined,
+        )
+      }}
     >
       {({ canvasRef }) => (
-        <canvas
-          ref={canvasRef}
-          style={{ width: '100%', height: '100%', display: 'block' }}
-        />
+        <>
+          <canvas
+            ref={canvasRef}
+            style={{ width: '100%', height: '100%', display: 'block' }}
+          />
+          {hoveredFeature ? (
+            <div
+              style={{
+                position: 'absolute',
+                left: hoveredFeature.x + 6,
+                top: hoveredFeature.y - 6,
+                pointerEvents: 'none',
+                fontSize: 11,
+                background: 'rgba(255,255,255,0.85)',
+                padding: '0 3px',
+              }}
+            >
+              {hoveredFeature.score.toFixed(2)}
+            </div>
+          ) : null}
+        </>
       )}
     </DisplayChrome>
   )
@@ -509,7 +546,6 @@ import { lazy } from 'react'
 import { DisplayType } from '@jbrowse/core/pluggableElementTypes'
 
 import { configSchema } from './configSchema.ts'
-import { modelFactory } from './model.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -522,7 +558,10 @@ export default function LinearScoreDisplayF(pluginManager: PluginManager) {
     return new DisplayType({
       name: 'LinearScoreDisplay',
       configSchema,
-      stateModel: modelFactory(configSchema),
+      // a thunk, so the model and everything it names load when a track first
+      // shows this display or a session names it, not at plugin install
+      stateModel: () =>
+        import('./model.ts').then(m => m.modelFactory(configSchema)),
       displayName: 'Score display (example)',
       trackType: 'FeatureTrack',
       viewType: 'LinearGenomeView',
@@ -532,6 +571,12 @@ export default function LinearScoreDisplayF(pluginManager: PluginManager) {
 }
 ```
 
+Both the model and the component load late. A state model is eager — anything
+registered at plugin install loads everything it names by value — so the
+`stateModel` thunk keeps the display's mixins and `installUpload` out of every
+host's startup bundle until a track first shows the display or a session names
+it.
+
 Register the RPC method in the same plugin's `install()` with
 `pluginManager.addRpcMethod(() => new GetScoreData(pluginManager))`, and see
 [custom track and display types](/docs/developer_guides/creating_display) for
@@ -539,36 +584,157 @@ how displays attach to a track type.
 
 ## Hit-testing (clicks and hovers)
 
-Hit-testing is plugin-owned and runs on the main thread, separately from
-rendering. Build a spatial index (e.g.
+Where the ink is stays with the shape: its `hitNearest` measures the cursor
+against the same rect its painter fills, and the shared shapes carry one. The
+display's part is the walk — which blocks, which candidates — and what to do
+with the answer:
+
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/findScoreHit.ts#hit -->
+
+```ts
+// Where the ink is stays with the shape: `hitNearest` measures the cursor
+// against the same rect `paintBlock` fills. This display has no spatial index,
+// so it hands in every instance of every block under the cursor; one with a
+// worker-built index would hand in what the index answered.
+export function findScoreHit(
+  xPx: number,
+  yPx: number,
+  blocks: RenderBlock[],
+  regions: ReadonlyMap<number, ScoreRegionData>,
+  state: ScoreRenderState,
+): ScoreHit | undefined {
+  let bestDistSq = HIT_RADIUS_PX ** 2
+  let best: ScoreHit | undefined
+  for (const block of blocks) {
+    const data = regions.get(block.displayedRegionIndex)
+    if (data) {
+      const hit = MARK.hitNearest?.(
+        data,
+        block,
+        state,
+        xPx,
+        yPx,
+        everyInstance(data.numFeatures),
+        bestDistSq,
+      )
+      if (hit) {
+        bestDistSq = hit.distSq
+        best = {
+          start: data.starts[hit.index]!,
+          end: data.ends[hit.index]!,
+          score: data.scores[hit.index]!,
+          x: hit.x,
+          y: hit.y,
+        }
+      }
+    }
+  }
+  return best
+}
+```
+
+The component hands `DisplayChrome`'s `onPointerPosition` to it and stores the
+hit through `StoredHoverMixin` (composed in Step 3), whose `hoveredFeature` the
+body reads back. A display with many features per block builds a spatial index
+(e.g.
 [`Flatbush`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/flatbush/index.ts))
-from `rpcDataMap` in a cached view, and query it from your React mouse handlers
-against the cursor's `(x, y)`. `plugins/gwas`'s `findManhattanHit.ts` is a
-worked example.
+from `rpcDataMap` in a cached view and hands `hitNearest` what the index
+answered instead of every instance; `plugins/gwas`'s `findManhattanHit.ts` does
+that.
 
 ## SVG export
 
-`drawScoreBlocks` takes a `Ctx2D`, so SVG export calls it with an `SvgCanvas`
-and emits vector output from the same code. Add a `renderSvg` action per
-[](/docs/developer_guides/svg_export).
+The export comes with the mark: `paintMarkBlocks` runs each mark's painter
+against the SVG context, and `renderDisplaySvg` owns the readiness gate and the
+terminal states around it.
 
-## Moving to the GPU path
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/renderSvg.tsx#render-svg -->
 
-Everything above carries over unchanged — model, fetch chain, `renderState`,
-hit-testing, and the Canvas2D renderer, which SVG export keeps using either way.
-You add a `.slang` shader and a GPU renderer, and move the factory from
-`createCanvas2DBackend` to `createRenderingBackend`. See
+```tsx
+export async function renderSvg(
+  model: ScoreSvgModel,
+  opts?: ExportSvgDisplayOptions,
+) {
+  return renderDisplaySvg(model, opts, ScoreSvgBody)
+}
+
+// The same painter the Canvas2D backend runs, handed an SVG context. The
+// export's width is the shell's, not the on-screen renderState's, which
+// subtracts the track outline the export does not draw.
+function ScoreSvgBody({
+  model,
+  height,
+  canvasWidth,
+  renderBlocks,
+  opts,
+}: LgvSvgBodyProps<ScoreSvgModel>) {
+  const state = { ...model.renderState, canvasWidth, canvasHeight: height }
+  return (
+    <SvgClipRect
+      id={`score-clip-${svgNodeId(model)}`}
+      width={canvasWidth}
+      height={height}
+    >
+      <PaintLayer
+        width={canvasWidth}
+        height={height}
+        opts={opts}
+        paint={ctx => {
+          paintMarkBlocks(
+            ctx,
+            SCORE_MARKS,
+            model.rpcDataMap,
+            renderBlocks,
+            state,
+          )
+        }}
+      />
+    </SvgClipRect>
+  )
+}
+```
+
+The model's `renderSvg` action loads it lazily.
+[](/docs/developer_guides/svg_export) has the pipeline.
+
+## A display with no shape at all
+
+A drawing that is not instances of a shape — the reference sequence's letters —
+skips the mark layer, writes a Canvas2D backend by hand and returns it through
+`createCanvas2DBackend`, with no shader and no GPU ladder. `plugins/sequence` is
+the one in-tree display still built that way:
+
+<!-- include: plugins/sequence/src/LinearReferenceSequenceDisplay/components/Canvas2DSequenceRenderer.ts#factory -->
+
+```ts
+// A Canvas2D-only display needs no separate factory file and no HAL ladder:
+// createCanvas2DBackend just wraps the backend in the Promise DisplayChrome
+// awaits. Swap in createRenderingBackend (and its createGpuBackend option) only
+// once a profile shows Canvas2D can't hold 60fps.
+export function SequenceRenderer(canvas: HTMLCanvasElement) {
+  return createCanvas2DBackend(canvas, c => new Canvas2DSequenceRenderer(c))
+}
+```
+
+## Writing your own shape
+
+Everything above carries over unchanged — model, fetch chain, `renderState`, the
+mark list, the component and the SVG export. What changes is the `shape` the
+mark names: a `.slang`, a uniform write, a painter and a hit test of your own,
+held to each other by a sweep test. See
 [](/docs/developer_guides/creating_gpu_display).
 
 ## In-tree references
 
-- `plugins/sequence/src/LinearReferenceSequenceDisplay/` - the simplest
-  Canvas2D-only display (this guide mirrors it)
 - `plugins/gwas/src/LinearManhattanDisplay/` - a real feature-plotting display
-  (scored scatter) that ships both renderers behind one model, plus hit-testing
-  and LD coloring
+  (scored scatter) on the shared `pointMark`, plus an indexed hit test and LD
+  coloring (this guide mirrors it)
+- `plugins/variants/src/LinearMultiSampleVariantDisplay/` - a display that keeps
+  a shape of its own (`cellMark.ts`) beside its shader
 - `plugins/canvas/src/LinearBasicDisplay/` - the fullest reference: the generic
-  feature display with the dual GPU + Canvas2D path
+  feature display, five marks over one payload
+- `plugins/sequence/src/LinearReferenceSequenceDisplay/` - the one Canvas2D-only
+  display, with no shape
 
 ## See also
 

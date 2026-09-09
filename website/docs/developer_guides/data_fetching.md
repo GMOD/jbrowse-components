@@ -9,8 +9,7 @@ guide_category: Core concepts
 installs the autoruns that manage fetch lifecycle, cancellation, and cache
 invalidation. You override `fetchNeeded` (usually via `fetchEachRegion`) and
 declare `rpcProps` as the cache key. This chain is the thing to understand for
-writing a non-GPU display, and for debugging unexpected refetches in any
-display.
+writing a display, and for debugging unexpected refetches in any display.
 
 The exceptions are displays whose data isn't partitioned by region at all; they
 compose `GlobalFetchMixin` and install their own fetch autorun. See
@@ -235,8 +234,8 @@ rpcProps() {
 ```
 
 **Do not include** values that change every frame (scroll position, zoom level).
-Those belong in `renderState` (for GPU displays) or re-read inside the work
-callback. Putting them in `rpcProps` causes a refetch on every pixel of scroll.
+Those belong in `renderState` or re-read inside the work callback. Putting them
+in `rpcProps` causes a refetch on every pixel of scroll.
 
 **Do not include** the fetch results themselves. Putting derived cell data or
 computed arrays in `rpcProps` creates an infinite fetch loop because storing

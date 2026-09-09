@@ -346,35 +346,42 @@ by the `render` callback.
 
 ## RenderingBackend interfaces per plugin
 
-Each plugin defines its own `RenderingBackend` type and a factory that produces
-either a GPU or a Canvas2D implementation:
+Each plugin specializes `PerRegionRenderingBackend` on its own payload and
+render state, declares what it draws as a mark list, and its component builds
+the backend from that list — one call, both implementations:
 
 ```ts
-export function XxxRenderer(canvas: HTMLCanvasElement) {
-  return createRenderingBackend<XxxRenderingBackend>(canvas, {
-    passes: XXX_PASSES,
-    createGpuBackend: hal => new GpuXxxRenderer(hal),
-    createCanvas2DBackend: c => new Canvas2DXxxRenderer(c),
-  })
-}
+export type XxxRenderingBackend = PerRegionRenderingBackend<XxxData, XxxRenderState>
+
+export const XXX_MARKS = [
+  defineMark({ shape: xxxShape, channels: d => …, params: s => … }),
+]
+
+// in the lazily loaded component, the one import that reaches the HAL
+const createXxxBackend = (canvas: HTMLCanvasElement) =>
+  createMarkBackend(canvas, XXX_MARKS)
 ```
 
-`createRenderingBackend` calls `createGpuHal`; if a HAL is returned the GPU
-backend is constructed, otherwise Canvas2D. The two factories are **named
-options, not positional args**, on purpose: both are single-arg
-`x => new Backend(x)` lambdas, so positionally they're trivially swappable by
-mistake.
+`createMarkBackend` is `createRenderingBackend` over `GpuMarkBackend` and
+`Canvas2DMarkBackend`, which walk the same list; `createRenderingBackend` calls
+`createGpuHal`, and if a HAL is returned the GPU backend is constructed,
+otherwise Canvas2D. The shape a mark names is either one of the two shared ones
+(`spanMark`, `pointMark`) or the display's own `MarkShape` beside its shader —
+§"Shared per-region streamed contract" below has the members and
+`example-plugins/score-example` is the worked third-party form. Alignments is
+the one display still calling `createRenderingBackend` with renderer classes
+of its own, for the sectioned frame scaffold its pileup needs.
 
 ### Canvas2D is the floor; GPU is the optional accelerator
 
-Every display that draws to a canvas **must** ship a Canvas2D draw function
+Every display that draws to a canvas **must** ship a Canvas2D painter
 regardless — SVG export goes through it (see
-[SVG_EXPORT.md](SVG_EXPORT.md)). The GPU shader
-path is an *optional accelerator* for displays whose feature counts demand it
-(≳100K features/frame — [RFC-001 §3a](RFC-001-community-plugin-api.md)). So a display whose data is always
-gene-scale / low-density / text can be **Canvas2D-only**: it writes no `.slang`,
-no `GpuXxxRenderer`, no pass list. Its factory skips the HAL ladder and returns
-the Canvas2D backend directly:
+[SVG_EXPORT.md](SVG_EXPORT.md)). A shape's `paintBlock` is that painter, so a
+display on the mark layer has it by construction and gets the GPU path with
+it. A drawing that is not instances of a shape — the reference sequence's
+letters — is **Canvas2D-only**: no shape, no `.slang`, a hand-written
+`Canvas2DPerRegionRenderingBackend` subclass, and a factory that skips the HAL
+ladder:
 
 ```ts
 export function XxxRenderer(canvas: HTMLCanvasElement) {
@@ -384,9 +391,8 @@ export function XxxRenderer(canvas: HTMLCanvasElement) {
 
 The backend plugs into the same `RenderLifecycleMixin` / `DisplayChrome`
 machinery — the lifecycle is backend-agnostic, so nothing downstream knows
-there's no HAL. Reference: `plugins/sequence`'s `SequenceRenderer`. Start here for
-any new display; promote to the dual-path `createRenderingBackend` only when a
-profile shows Canvas2D can't hold 60fps at the display's real feature counts.
+there's no HAL. Reference: `plugins/sequence`'s `SequenceRenderer`, the last
+hand-written Canvas2D backend in tree.
 
 ### Keeping the two backends in parity
 
@@ -1946,13 +1952,18 @@ The public
 [GPU displays guide](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/creating_gpu_display.md)
 walks this checklist step by step (and
 [Plotting features](https://github.com/GMOD/jbrowse-components/blob/main/website/docs/developer_guides/plotting_features.md)
-does the Canvas2D-only version); keep them in step with any change here.
+does the shared-shape version); keep them in step with any change here.
 
 - **Types** — `MyData`, `MyRenderState`, `MyRenderingBackend`.
-- **Shader** — author `my.slang`; `pnpm gen:shaders` emits `my.generated.ts`.
-- **Renderers + factory** — `createRenderingBackend<MyRenderingBackend>` from
-  `packages/render-core/src/createRenderingBackend.ts`. Use `slangPass()` to build
-  the `PipelineDescriptor`.
+- **Shape** — `spanMark` or `pointMark` where one fits. Otherwise a
+  `MarkShape` of your own beside `my.slang` (`pnpm gen:shaders` emits
+  `my.generated.ts`; `slangPass()` builds the `PipelineDescriptor`): its
+  `writeUniforms`, its `paintBlock` (also the SVG export) and its `hitNearest`,
+  held to each other by a `sweepDrawAgainstHit` test.
+- **Marks + backend** — `defineMark({ shape, channels, params })`, one per
+  shape, and `createMarkBackend(canvas, MARKS)` from
+  `@jbrowse/render-core/marks/backend`, imported from the lazily loaded
+  component and nowhere else.
 - **MST model:**
   - Compose `MultiRegionDisplayMixin()` for LGV-family per-region displays (brings
     in `RenderLifecycleMixin`, `FetchMixin`, `RegionTooLargeMixin`, the five fetch
@@ -1983,7 +1994,7 @@ does the Canvas2D-only version); keep them in step with any change here.
     buffers from settings.
 - **React component** — `observer()`. Render the canvas through the shared
   `DisplayChrome` (from `@jbrowse/plugin-linear-genome-view`), passing the model
-  and the renderer `factory`. `DisplayChrome` calls `useRenderingBackend`
+  and the backend `factory`. `DisplayChrome` calls `useRenderingBackend`
   internally and owns the render-error / region-too-large / error-bar / loading
   overlays, so the component only lays out its own canvas(es) via the render-prop
   child:
@@ -1991,7 +2002,7 @@ does the Canvas2D-only version); keep them in step with any change here.
   return (
     <DisplayChrome
       model={model}
-      factory={MyRenderer}
+      factory={createMyBackend}
       testid="my-display"
       style={{ width, height }}
     >

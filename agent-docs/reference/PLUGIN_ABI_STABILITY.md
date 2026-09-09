@@ -88,7 +88,12 @@ it imports is exactly what core is promising third parties — which is why
 `generateExports.mjs` scans that directory alongside `packages plugins
 products`. Adding it changed nothing on the day: every subpath `score-example`
 reaches has at least eight in-repo importers besides it, so the exemplar holds
-no subpath up on its own yet. `component_tests` stays out — those six are
+no subpath up on its own yet. Since 2026-09-09 that promise includes the mark
+layer: the example declares a `MarkShape` and a `defineMark` over
+`@jbrowse/render-core/marks`, `marks/backend`, `marks/hit`, `marks/colorFill`
+and `marks/drawAgainstHit`, so `defineMark`'s option set — `channels`,
+`params`, `bufferOf`, `band`, `texture` — and `MarkShape`'s members are
+third-party ABI now, not in-tree convention. `component_tests` stays out — those six are
 build-integration smoke suites and import no core subpath at all.
 
 **One surface still has no check at all: the props of an exported component.**
