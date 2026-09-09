@@ -50,8 +50,7 @@ adopted (ADR-106 §"The ladder").
    for a second pull.
 4. **The guides, config first — landed 2026-09-09** (same commits). Both
    developer guides open on the `marks` entry and link the config page as
-   rung one; the config page links back up the ladder. Not done: a figure of
-   the ladder, and the plotting guide's `Figure` captions still say "packs".
+   rung one; the config page links back up the ladder. Not done: a figure of the ladder.
 5. **The y axis on the chrome**, the legend's pattern again: four displays
    place `YScaleBarOverlay` by hand on screen and in SVG (gwas, both wiggles,
    the alignments coverage band; `LinearMarkDisplay` copied Manhattan's). A

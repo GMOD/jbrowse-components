@@ -41,7 +41,7 @@ release; until then, build against a `jbrowse-components` checkout.
 
 Rendering splits across two threads:
 
-<Figure caption="The worker fetches and packs, the main thread stores per region and draws. The shape's painter backs both the Canvas2D fallback and the SVG export." src="/img/feature_plotting_threads.png" />
+<Figure caption="The worker fetches and encodes, the main thread stores per region and draws. The shape's painter backs both the Canvas2D fallback and the SVG export." src="/img/feature_plotting_threads.png" />
 
 The worker returns compact data, never pixels, with all genomic positions
 absolute (not region-relative). The model owns the fetched data (`rpcDataMap`),
