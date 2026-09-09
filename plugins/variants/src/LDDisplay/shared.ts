@@ -5,10 +5,11 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { reservedPx } from '@jbrowse/core/util/bandLayout'
+import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
 import { runLazyAfterAttach } from '@jbrowse/core/util/lazyAfterAttach'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin, {
-  gradientSvgLegendWidth,
+  svgLegendGutterWidth,
 } from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import {
@@ -26,6 +27,11 @@ import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 import { bandPairIndex } from '../VariantRPC/ldBand.ts'
 import { clampLineZoneHeight } from '../shared/constants.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
+import {
+  generateLDColorRamp,
+  ldColorStops,
+  ldMetricLabel,
+} from './components/ldColorRamp.ts'
 import { toLDUploadData } from './components/ldRenderingBackendTypes.ts'
 import { buildLDTrackMenuItems } from './trackMenuItems.ts'
 
@@ -39,6 +45,7 @@ import type {
 } from './components/ldRenderingBackendTypes.ts'
 import type { LDDisplayConfigSchema } from './configSchemaLDTrack.ts'
 import type { LDRpcProps } from './ldFetchPhases.ts'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
@@ -224,6 +231,28 @@ export default function sharedModelFactory(
        */
       get effectiveLdMetric(): LDMetric {
         return self.rpcData?.metric ?? getConf(self, 'ldMetric')
+      },
+      /**
+       * #getter
+       * `LegendMixin`'s hook: the metric's ramp, read out of the same 256-entry
+       * LUT the cells are painted through (and the GPU samples as its ramp
+       * texture), one stop per source-table knot. Derived rather than restated,
+       * so the key cannot stop describing the plot beside it.
+       */
+      get colorScales(): ColorScale[] {
+        const metric = this.effectiveLdMetric
+        return [
+          {
+            kind: 'ramp',
+            id: 'ld',
+            title: ldMetricLabel(metric),
+            domain: [0, 1],
+            stops: stopsFromRampLut(
+              generateLDColorRamp(metric),
+              ldColorStops(metric).length,
+            ),
+          },
+        ]
       },
       /**
        * #getter
@@ -599,13 +628,11 @@ export default function sharedModelFactory(
       return {
         /**
          * #method
-         * How much room the SVG export's container reserves to the right of
-         * the plot for this display's legend (it maxes this across tracks),
-         * via the shared helper — see `gradientSvgLegendWidth` for why it
-         * reserves on the setting alone.
+         * The triangle fills its band, so the export parks the key beside it —
+         * see `svgLegendGutterWidth` for why it reserves on the setting alone.
          */
         svgLegendWidth(): number {
-          return gradientSvgLegendWidth(self)
+          return svgLegendGutterWidth(self)
         },
         /**
          * #method

@@ -10,7 +10,6 @@ import { observer } from 'mobx-react'
 
 import Crosshairs from './Crosshairs.tsx'
 import FocalSnpHighlight from './FocalSnpHighlight.tsx'
-import LDColorLegend from './LDColorLegend.tsx'
 import LDColumnZone from './LDColumnZone.tsx'
 import { LDRenderer } from './LDRenderer.ts'
 import LDStatusBar from './LDStatusBar.tsx'
@@ -82,7 +81,6 @@ const LDCanvas = observer(function LDCanvas({
       : undefined
   const view = model.view
   const {
-    showLegend,
     // The metric the loaded values ACTUALLY have, not the one asked for: a
     // file with no D' column downgrades a 'dprime' request to r², and one with
     // no R2 column the other way. The cells already follow the data (the ramp
@@ -177,9 +175,6 @@ const LDCanvas = observer(function LDCanvas({
           y={mouseState.clientY}
           ldMetric={effectiveLdMetric}
         />
-      ) : null}
-      {showLegend ? (
-        <LDColorLegend ldMetric={effectiveLdMetric} idSuffix={model.id} />
       ) : null}
       <LDStatusBar model={model} />
       <LDColumnZone model={model} />
