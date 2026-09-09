@@ -34,7 +34,7 @@ function payload(categories?: ManhattanCategory[]): ManhattanRpcResult {
 
 function labels(items: MenuItem[]): string[] {
   return items.flatMap(i => [
-    'label' in i ? i.label : '',
+    'label' in i && typeof i.label === 'string' ? i.label : '',
     ...('subMenu' in i ? labels(resolveSubMenu(i)) : []),
   ])
 }
@@ -102,7 +102,7 @@ describe('LinearManhattanDisplay field coloring', () => {
       expect.arrayContaining(['Color by', 'Single color', 'Field...']),
     )
     const colorBy = items.find(i => 'label' in i && i.label === 'Color by')!
-    const ld = resolveSubMenu(colorBy).find(
+    const ld = ('subMenu' in colorBy ? resolveSubMenu(colorBy) : []).find(
       i => 'label' in i && i.label === 'LD to index SNP',
     )
     expect(ld && 'disabled' in ld ? ld.disabled : undefined).toBe(true)

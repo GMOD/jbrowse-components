@@ -48,9 +48,9 @@ test('a FeatureTrack offers the Manhattan display and paints it', async () => {
     { type: 'LinearManhattanDisplay' },
     'manhattan-display',
   )
-  expect(track.compatibleDisplays.map(d => d.type)).toContain(
-    'LinearManhattanDisplay',
-  )
+  expect(
+    track.compatibleDisplays.map((d: { type: string }) => d.type),
+  ).toContain('LinearManhattanDisplay')
   expect(display.type).toBe('LinearManhattanDisplay')
   await waitFor(() => {
     expect(display.domain).toBeDefined()
