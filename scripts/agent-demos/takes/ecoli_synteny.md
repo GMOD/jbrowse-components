@@ -115,15 +115,16 @@ ranking and should say which it ranked by.
 
 ## Verified before this was written
 
-| Claim                                               | How                                                                                                               |
-| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| Both configs hosted, with a symbol-named gene track | fetched both; 10 tracks each, `*-ncbiGene` is a bigGenePred read directly and its names are `espF`, `escG`, `eae` |
-| No alignment between them exists                    | neither config names the other strain                                                                             |
-| The whole pipeline is seconds                       | 1.3 s download, 3.3 s `asm20` at `-t 8`, 0.8 s `make-pif`, on a machine at load 3                                 |
-| The merged config validates                         | `products/jbrowse-cli/dist/bin.js validate`, once the text-search entries are dropped                             |
-| Synteny, dotplot and the LEE zoom all draw          | captured against the repo `jbrowse-web` build through `products/jbrowse-capture`                                  |
-| The islands are preset-robust                       | asm5/asm10/asm20 all put stx2, stx1 and LEE at the same coordinates ±50 bp                                        |
-| The gene names are in the app, not just the GFF     | the bigBed's `geneName2` column, read straight off the hosted file                                                |
+| Claim                                               | How                                                                                                                                 |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Both configs hosted, with a symbol-named gene track | fetched both; 10 tracks each, `*-ncbiGene` is a bigGenePred read directly and its names are `espF`, `escG`, `eae`                   |
+| No alignment between them exists                    | neither config names the other strain                                                                                               |
+| The whole pipeline is seconds                       | 1.3 s download, 3.3 s `asm20` at `-t 8`, 0.8 s `make-pif`, on a machine at load 3                                                   |
+| The merged config validates                         | `products/jbrowse-cli/dist/bin.js validate`, once the text-search entries are dropped                                               |
+| Synteny, dotplot and the LEE zoom all draw          | captured against the repo `jbrowse-web` build through `products/jbrowse-capture`                                                    |
+| The islands are preset-robust                       | asm5/asm10/asm20 all put stx2, stx1 and LEE at the same coordinates ±50 bp                                                          |
+| The gene names are in the app, not just the GFF     | the bigBed's `geneName2` column, read straight off the hosted file                                                                  |
+| Turn one's whole-genome frame reads                 | re-run from the FASTAs on 2026-09-09 and captured: one pink band of collinear ribbons with the islands standing out as white wedges |
 
 One thing that will mislead anyone checking this outside the repo: on the
 **released** build at `jbrowse.org/code/jb2/latest` the dotplot does not
@@ -132,6 +133,13 @@ plots nothing against `NC_002695v2` axes and reports every feature as "not
 plotted, fell outside of range" behind a warnings banner. The linear synteny
 view of the same track draws fine, which makes it look like bad data rather than
 a build difference. The repo build draws both.
+
+**Collapse the two panels or the placeholder is the picture.** With no tracks
+on, each genome row draws a "No tracks active / OPEN TRACK SELECTOR" block in
+its own middle, dead centre of the frame the ribbons want. The launch dialog's
+checkbox is `collapseEmptyRows`; a session spec written by hand needs
+`scalebarOnly: true` on each inner view instead, and then the rows are their
+rulers and the ribbon band fills the view.
 
 ## Open
 

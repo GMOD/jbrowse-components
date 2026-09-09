@@ -1,6 +1,6 @@
 ---
 name: record-ecoli-synteny-take
-description: The E. coli synteny take is written, verified from the CLI and never shot — four turns that align two strains with minimap2 on camera and land on the LEE island. Everything it needs is in the tree; what is missing is a recording session on a Mac with the grants. Read before filming any agent-client clip, and before reaching for the Claude-app harness, which was tried and judged not showcase material.
+description: The E. coli synteny take is written, verified from the CLI on two machines and never shot — four turns that align two strains with minimap2 on camera and land on the LEE island. Everything it needs is in the tree; what is missing is a recording session on a Mac with the grants. Read before filming any agent-client clip, and before reaching for the Claude-app harness, which was tried and judged not showcase material.
 ---
 
 # Record the E. coli synteny take
@@ -37,7 +37,8 @@ gives the TUI harness real text state, which is the whole difference.
 
 ## Before filming
 
-Established on 2026-09-08, so a recorder need not rediscover it:
+Established on 2026-09-08, so a recorder need not rediscover it, except the last
+line, which is 2026-09-09:
 
 - **Quit `/Applications/JBrowse 2.app`.** It is 4.3.0, which serves no MCP
   bridge at all, and the harness's own guard only connect-tests the socket — so
@@ -59,6 +60,12 @@ Established on 2026-09-08, so a recorder need not rediscover it:
   what a viewer would type and what `docs topic:"hosted-data"` exists to answer.
 - Check the account's weekly usage before a four-turn take: it was flagged as
   approaching its limit on 2026-09-08.
+- **The take's numbers hold on a second machine.** A fresh run of its own
+  commands on Linux gives the same 83 records, the same 4.04 Mb of matched
+  bases, the same 19 islands of 10 kb or more totalling 703,048 bp, and the LEE
+  island at the coordinates the plan prints. What is machine-dependent is the
+  wall clock the plan quotes for `minimap2`, which was 5.4 s here against the
+  3.3 s the Mac measured — the take is still inside its turn either way.
 
 ## What is still open
 
@@ -66,9 +73,6 @@ Established on 2026-09-08, so a recorder need not rediscover it:
   against "take me to the most interesting one"; the take module currently asks
   the second, because it puts the LEE island on camera rather than ending on a
   list. Worth deciding from the first take rather than in advance.
-- **Whether the whole-genome view reads at all at this window size.** The plan
-  turns the gene tracks off for turn one and collapses the empty rows, which is
-  right for the ribbons, but no frame of it has been seen.
 - **The clip's name and frame.** `mcp/agent_ecoli_take1` follows the four
   already registered; `width`/`height` in `externalClips` come from the encode,
   not from a guess.
