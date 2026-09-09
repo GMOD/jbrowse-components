@@ -56,12 +56,13 @@ export interface PileupLayer {
 // shape rather than from a layer list, and `flatPaintOrder.test.ts` is what pins
 // the Canvas2D path to `ARC_PASSES`' order instead.
 //
-// These thirteen stay a list rather than becoming thirteen more marks, and
-// `StagedUniforms` did not change that: the mark walk alone costs 1.29x
-// (+10.2us/frame) over this loop at MAX_GROUPS, and the cheapest writer that
-// could stand in for the per-frame `writePalette` adds another 1.36x.
-// `agent-docs/ideas/one-mark-declaration-per-feature.md` has the table;
-// `benches/pileupUniformWrite.bench.ts` takes it again.
+// These thirteen are still a list rather than thirteen render-core marks, and
+// the cost that kept them one is gone: `planMarks` resolves a mark list's
+// gates once per frame and `drawPlannedPasses` is this loop without the
+// thirteen closure calls, measured at 0.46-0.52x of this block at MAX_GROUPS
+// (`benches/pileupUniformWrite.bench.ts`, the `plan` arm). What remains is the
+// conversion itself — `agent-docs/ideas/one-mark-declaration-per-feature.md`
+// §"Status, 2026-09-09" has the numbers and where it stands.
 export const PILEUP_LAYERS: PileupLayer[] = [
   { id: 'connLine', enabled: s => s.chainMode },
   { id: 'linkedReadLine', enabled: s => s.showLinkedReadLines },

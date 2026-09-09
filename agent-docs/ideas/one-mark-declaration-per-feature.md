@@ -1,6 +1,6 @@
 ---
 name: one-mark-declaration-per-feature
-description: A feature is written three times — packGpu, drawCanvas, hitTest — across 3,335 lines in plugins/alignments alone, and nothing gated draw against hit test the way CI gates GPU against Canvas2D. features/mark.ts is the generalization of arcs/mark.ts, nine features are converted and writing one mark's alpha down found a live GPU/Canvas2D bug; what the three shapes needed, where it stops (coverage, modification's hit test, and connectingLines, declined 2026-09-08 because a chain's span is anchored and paintMarks' pivot is centred), and the two things it must not do.
+description: A feature is written three times — packGpu, drawCanvas, hitTest — across 3,335 lines in plugins/alignments alone, and nothing gated draw against hit test the way CI gates GPU against Canvas2D. features/mark.ts is the generalization of arcs/mark.ts, nine features are converted and writing one mark's alpha down found a live GPU/Canvas2D bug; what the three shapes needed, where it stops (coverage and modification's hit test), and the two things it must not do. The fold into render-core's marks was blocked on a per-block walk cost until 2026-09-09, when planMarks measured under today's loop; the fold itself is parked on a branch.
 ---
 
 # A feature declares its mark once
@@ -448,6 +448,68 @@ beside it, control at 1.00-1.01x on every row. Threshold: 10 us/frame.
 So the walk and the cheapest legal writer together are ~1.4x on today's section
 block. At 8 x 1, the ungrouped default, every arm but the generated packer is
 under 1 us/frame, so `MAX_GROUPS` is the whole of what fails.
+
+### Status, 2026-09-09: the walk cost is gone, the fold is parked on a branch
+
+The measurement above priced `drawMarks`' per-block walk — `band`, `channels`,
+`params`, `paintsBlock` and the staged compare, thirteen times per section
+block. None of that varies per block for the pileup: its gates read the
+display-wide state. render-core's mark layer now has a frame-scoped form for
+exactly that (`packages/render-core/src/marks/markPlan.ts`): `defineMark` takes
+`enabled(state)`, the one gate `drawRegion`, `paintBlock` and `hitNearest`
+share; `planMarks(marks, state)` resolves it once per frame into the enabled
+marks and their `{ id, bufferOf }` passes; `drawPlannedPasses(hal, plan,
+regionKey)` is a `drawPass` per planned pass against whatever the caller
+staged — no mark writes, no lens, no gate. The thirteen `drawMarks` /
+`createMarkBackend` consumers are unchanged; a mark with a `band` or a
+`paintsBlock` refuses the plan form, since a plan neither scissors nor asks
+the block anything.
+
+Re-measured on the same bench with the `plan` arm beside `preseed`, min of 25
+rounds, three runs per grouping, control 0.98-1.04x on every row, load average
+5.3-5.8 on 16 cores (the box never went quieter; the ratios held across the
+three runs):
+
+| grouping | pokegate (today) | preseed | plan | plan / pokegate |
+| --- | ---: | ---: | ---: | ---: |
+| 3 x 40 | 17.7-18.9 us | 22.5-25.2 us (1.27-1.32x) | 8.5-9.2 us | 0.46-0.52x |
+| 8 x 40 | 45.7-51.8 us | 59.9-67.8 us (1.29-1.33x) | 20.2-23.7 us | 0.44-0.46x |
+| 8 x 1 | 1.8-2.0 us | 2.2-2.3 us (1.17-1.19x) | 1.4 us | 0.73-0.75x |
+
+The plan walk is UNDER today's section block at every grouping: it removes the
+thirteen `layer.enabled(state)` closure calls per block and adds two field
+reads per planned pass. The 10 us/frame threshold is cleared with a negative
+delta (-9.5 to -10.0 us at 3 x 40), so the blocker this section stated no
+longer stands.
+
+**The conversion itself is parked, unfinished, on `wip/pileup-marks-conversion`
+(c49e3b5d57)**, stopped on budget rather than on a finding. What that branch
+holds: `features/pileupShape.ts`, one `MarkShape` factory over the `PileupMark`
+codes (`Fade`, `Hit`, `Band`, `Point`, `Paint` survive as the shape's
+parameterization; `channels` gains `keys`, the per-instance colour key the
+packer and painter both read); every `PileupMark` as a `defineMark` with
+`enabled` — `span` over gap.slang and overlap.slang, `cell` over mismatch.slang
+and packedColorQuad.slang, `point` over insertion.slang and clip.slang, with
+the insertion's size slot and the clip's soft-before-hard priority moved to the
+hit chain's candidate sets (`insertionsOfSize`, `clipsOfKind`) and the clip's
+two colours keyed by the `interbaseTypes` byte the worker already ships;
+`read`, `connectingLines` and `linkedReads` as plugin-local shapes over their
+own painters (the connecting line keeps its floorless stroke, twinned with the
+floorless shader, so the anchored-pivot question dissolves); `PILEUP_LAYERS`
+replaced by `PILEUP_MARKS`, both renderers on `planMarks`, and
+`hitTestCigarItem` walking the marks with `HitTestOptions` carrying the
+section's `RenderState` so the draw gate and the hit gate are one `enabled`.
+Production code typechecks on that branch. What is left is mechanical: ~15
+test files still call the removed `drawX`/`packX`/`hitTestX` signatures and the
+old `HitTestOptions` shape (`hitTestGateParity`, `hitTestPipeline`,
+`sharedRowHitTests`, `cellPainterParity`, the per-feature `markParity`,
+`drawCanvas` and `packGpu` tests, and the three renderer tests naming
+`GPU_PILEUP_PASS`), plus `sweepDrawAgainstHit` over each pileup shape, the
+doc updates this section would then retire, and `pnpm gen:shaders` for the
+shader comments that name the deleted files. Four of the feature suites were
+adapted and green there (gap and mismatch `drawCanvas`/`markParity`, gap
+`packGpu`, insertion `markParity`); the clip `markParity` fixture still counts
+its soft bars by a fill the mark no longer sets per kind.
 
 ## Where this sits
 

@@ -66,6 +66,20 @@
 // into one parameterized function: a shared driver makes the call site
 // polymorphic and hands all arms one set of inline caches, which has scored a
 // byte-identical control at 1.14x in this repo's sibling benches.
+//
+// MEASURED 2026-09-09, min of 25 rounds, three runs each, load average 5.3-5.8
+// on 16 cores (the box never went quieter), control 0.98-1.04x on every row.
+// us/frame, `vs poke` in parentheses; `pokegate` is today's section block.
+//
+//   grouping   poke   pokegate       preseed        plan           plan/pokegate
+//   3 x 40     7.3-8.1  17.7-18.9 (2.4x)  22.5-25.2 (3.1x)  8.5-9.2 (1.1-1.25x)  0.46-0.52x
+//   8 x 40    18.3-21.3  45.7-51.8 (2.4x)  59.9-67.8 (3.2x)  20.2-23.7 (1.1x)     0.44-0.46x
+//   8 x 1      1.1-1.2   1.8-2.0 (1.7x)    2.2-2.3 (2.0x)    1.4-1.4 (1.25x)      0.73-0.75x
+//
+// The plan-form walk is under today's block loop at every grouping — it removes
+// the thirteen closure calls per section block and adds two field reads per
+// planned pass — where `preseed` was 1.27-1.32x of it. `total`, `template`,
+// `pokeview` and `hoisted` moved nowhere from the 2026-09-05 table.
 
 import {
   UNIFORMS_SIZE_BYTES,
