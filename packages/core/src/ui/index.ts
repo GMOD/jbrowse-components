@@ -182,7 +182,6 @@ export {
 } from './legendSpec.ts'
 export type {
   LegendItem,
-  LegendMark,
   LegendSection,
   LegendSpec,
   LegendSwatch,

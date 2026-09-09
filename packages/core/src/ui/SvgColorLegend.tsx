@@ -19,7 +19,7 @@ export const LEGEND_SWATCH = 10
 // narrow right-side gutter reserved for the small dismiss "×"
 const DISMISS_GUTTER = 11
 
-// A row's marks, with the flat `color` shorthand read as the single filled
+// A row's swatches, with the flat `color` shorthand read as the single
 // square it has always drawn.
 function entrySwatches(entry: ColorLegendEntry): LegendSwatch[] {
   return (
@@ -77,8 +77,8 @@ export default function SvgColorLegend({
     entries.length > fit ? `+${entries.length - shown.length} more` : undefined
 
   // Labels line up across rows, so the swatch column is sized by the row with
-  // the most marks — otherwise a two-mark row shoves its own label out of the
-  // column the others share. One mark reproduces the original 16px inset.
+  // the most swatches — otherwise a two-box row shoves its own label out of the
+  // column the others share. One box reproduces the original 16px inset.
   const swatchColumns = Math.max(1, ...shown.map(e => entrySwatches(e).length))
   const textLeft =
     SWATCH_LEFT + swatchColumns * (LEGEND_SWATCH + SWATCH_GAP) + 2
@@ -120,7 +120,7 @@ export default function SvgColorLegend({
             {entry.marker ??
               entrySwatches(entry).map((swatch, i) => (
                 <LegendSwatchGlyph
-                  key={`${swatch.color}-${swatch.mark ?? 'fill'}`}
+                  key={swatch.color}
                   swatch={swatch}
                   size={LEGEND_SWATCH}
                   x={SWATCH_LEFT + i * (LEGEND_SWATCH + SWATCH_GAP)}

@@ -165,8 +165,7 @@ const useStyles = makeStyles()(theme => ({
 const DEFAULT_MAX_ITEMS = 12
 const DEFAULT_MAX_WIDTH = 200
 
-// Side of one mark. The old fixed color box's size, kept so a legend of plain
-// fills is pixel-identical to what shipped before marks existed.
+// Side of one swatch box.
 const SWATCH = 12
 
 // The spec itself lives in core beside SvgColorLegend, so the export legends can
@@ -174,7 +173,6 @@ const SWATCH = 12
 // here because every display already imports it from this plugin.
 export type {
   LegendItem,
-  LegendMark,
   LegendSection,
   LegendSpec,
   LegendSwatch,
@@ -197,7 +195,7 @@ const LegendItemList = observer(function LegendItemList({
   const shown = collapsible && !expanded ? items.slice(0, maxItems) : items
   const hiddenCount = items.length - maxItems
   // Every row reserves the widest row's swatch column, so labels stay in one
-  // vertical line whether a row draws one mark or two — and so a color-less
+  // vertical line whether a row draws one box or two — and so a color-less
   // heading row indents like the swatches it heads, as the fixed-size box it
   // replaces used to.
   const columns = Math.max(1, ...shown.map(i => legendSwatches(i).length))
@@ -211,11 +209,7 @@ const LegendItemList = observer(function LegendItemList({
               style={{ minWidth: columns * SWATCH + (columns - 1) * 2 }}
             >
               {legendSwatches(item).map(swatch => (
-                <svg
-                  key={`${swatch.color}-${swatch.mark ?? 'fill'}`}
-                  width={SWATCH}
-                  height={SWATCH}
-                >
+                <svg key={swatch.color} width={SWATCH} height={SWATCH}>
                   <LegendSwatchGlyph swatch={swatch} size={SWATCH} />
                 </svg>
               ))}

@@ -1479,18 +1479,14 @@ export function stateModelFactory(
        * one flat color keys nothing and the identity ramp is not a row list
        */
       get ribbonLegend(): LegendItem[] {
-        return ribbonColorKey(
-          self.ribbonColorBy,
-          self.drawCurves,
-          self.ribbonLabels,
-        )
+        return ribbonColorKey(self.ribbonColorBy, self.ribbonLabels)
       },
     }))
     .views(self => ({
       /**
        * #getter
        * the two color vocabularies as their own sections, so each is titled and
-       * dismissed on its own, and neither claims the other's marks. Empty
+       * dismissed on its own, and neither claims the other's colors. Empty
        * sections are dropped here rather than by the two renderers, so
        * `hasLegendKey` and the box agree about whether there is a key
        */

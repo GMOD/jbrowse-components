@@ -4,7 +4,7 @@ import { categoricalColor, colorSchemes } from '@jbrowse/synteny-core'
 import type { Span } from './layoutMultiWay.ts'
 import type { GlyphHit } from './multiwayRenderTypes.ts'
 import type { MultiWayRibbonColorBy } from './ribbonColorModes.ts'
-import type { LegendItem, LegendMark } from '@jbrowse/core/ui'
+import type { LegendItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { CategoricalMode } from '@jbrowse/synteny-core'
 
@@ -65,27 +65,22 @@ export function laneColorKey(
  * row list cannot state — that one wants the gradient bar Hi-C and LD draw, and
  * does not have it here.
  *
- * Drawn as the connector they are rather than as a filled square, so a reader
- * looking for the color can tell which of the two things on screen — a glyph or
- * a ribbon — the row is about.
+ * The ribbon rows sit in their own titled section, which is what tells a reader
+ * whether a color belongs to a glyph or to a ribbon.
  */
 export function ribbonColorKey(
   colorBy: MultiWayRibbonColorBy,
-  drawCurves: boolean,
   labels?: CategoricalMode,
 ): LegendItem[] {
-  const mark: LegendMark = drawCurves ? 'curve' : 'line'
   if (colorBy === 'strand') {
     return [
       {
         label: 'Same orientation as lane above',
         color: colorSchemes.strand.posColor,
-        mark,
       },
       {
         label: 'Inverted vs lane above',
         color: colorSchemes.strand.negColor,
-        mark,
       },
     ]
   }
@@ -96,7 +91,6 @@ export function ribbonColorKey(
       ...shown.map(label => ({
         label,
         color: categoricalColor(labels, label),
-        mark,
       })),
       ...(rest > 0 ? [{ label: `+${rest} more` }] : []),
     ]

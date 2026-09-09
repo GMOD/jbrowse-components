@@ -41,28 +41,22 @@ describe('FloatingLegend', () => {
     expect(queryByText('item12')).toBeNull()
   })
 
-  // A display drawing bodies and connectors at once keys colors from both, and
-  // a square for each says a color exists without saying what shape to find.
-  it('draws a row as the mark it names, and both marks when it has two', () => {
+  // A row two vocabularies produced shows both colors, so the box count is the
+  // count of colors drawn rather than of rows.
+  it('draws one box per color, both of them when a row has two', () => {
     const { container } = render(
       <FloatingLegend
         items={[
           { color: '#aaa', label: 'LR - Normal pair orientation' },
-          { color: '#f00', label: 'Long insert', mark: 'curve' },
+          { color: '#f00', label: 'Long insert' },
           {
             label: 'Short insert',
-            swatches: [
-              { color: '#ffc0cb' },
-              { color: '#ff3a8c', mark: 'curve' },
-            ],
+            swatches: [{ color: '#ffc0cb' }, { color: '#ff3a8c' }],
           },
         ]}
       />,
     )
-    // two fills (the grey, and the pale half of short insert) and two arcs
-    expect(container.querySelectorAll('rect')).toHaveLength(2)
-    expect(container.querySelectorAll('path')).toHaveLength(2)
-    // …the two arcs being one row's own mark and one row's second mark
+    expect(container.querySelectorAll('rect')).toHaveLength(4)
     expect(container.querySelectorAll('svg')).toHaveLength(4)
   })
 

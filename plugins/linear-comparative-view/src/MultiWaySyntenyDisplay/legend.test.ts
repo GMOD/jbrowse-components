@@ -82,39 +82,32 @@ test('a gene straddling the left edge is still named', () => {
   ).toEqual([{ label: 'atpA', color: '#f00' }])
 })
 
-test('the ribbon key is the strand pair, drawn as the connector it is', () => {
-  expect(ribbonColorKey('strand', false).map(i => i.mark)).toEqual([
-    'line',
-    'line',
+test('the ribbon key is the strand pair, in two colors', () => {
+  expect(ribbonColorKey('strand').map(i => i.label)).toEqual([
+    'Same orientation as lane above',
+    'Inverted vs lane above',
   ])
-  expect(ribbonColorKey('strand', true).map(i => i.mark)).toEqual([
-    'curve',
-    'curve',
-  ])
-  expect(new Set(ribbonColorKey('strand', false).map(i => i.color)).size).toBe(
-    2,
-  )
+  expect(new Set(ribbonColorKey('strand').map(i => i.color)).size).toBe(2)
 })
 
 // One flat color keys nothing, and a continuous ramp is not a row list.
 test('the other two ribbon modes key nothing', () => {
-  expect(ribbonColorKey('default', false)).toEqual([])
-  expect(ribbonColorKey('identity', false)).toEqual([])
+  expect(ribbonColorKey('default')).toEqual([])
+  expect(ribbonColorKey('identity')).toEqual([])
 })
 
 // A text column keys one row per label, with the file color where the file
 // gave one, and past the readable cap says how many it left out.
 test('an attribute ribbon mode keys a row per label', () => {
-  const rows = ribbonColorKey('attribute:group', true, {
+  const rows = ribbonColorKey('attribute:group', {
     attribute: 'group',
     labels: ['B1', 'A1a'],
     colors: { A1a: '#4DB5E3' },
   })
   expect(rows.map(r => r.label)).toEqual(['B1', 'A1a'])
-  expect(rows.map(r => r.mark)).toEqual(['curve', 'curve'])
   expect(rows[1]!.color).toBe('#4DB5E3')
-  expect(ribbonColorKey('attribute:group', false)).toEqual([])
-  const many = ribbonColorKey('attribute:group', false, {
+  expect(ribbonColorKey('attribute:group')).toEqual([])
+  const many = ribbonColorKey('attribute:group', {
     attribute: 'group',
     labels: Array.from({ length: 33 }, (_, i) => `L${i}`),
     colors: {},

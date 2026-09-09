@@ -734,15 +734,14 @@ describe('getArcLegendItems', () => {
     ).toEqual(['rgb(255,0,128)'])
   })
 
-  // Every row is a plain color box — an arc bucket is keyed by its color and
-  // its wording, not by a glyph shaped like the connector.
+  // An arc bucket is keyed by its color and its wording, in one plain box.
   test('keys arc colors as plain swatches', () => {
     expect(
       getArcLegendItems(
         new Set<ReadColorCategory>(['longInsert']),
         makeTestPalette(),
-      ).map(i => i.mark),
-    ).toEqual([undefined])
+      ),
+    ).toEqual([{ color: expect.any(String), label: 'Long insert' }])
   })
 
   test('takes no per-scheme rewording — an arc never produces a strand bucket', () => {
