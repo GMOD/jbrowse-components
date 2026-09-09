@@ -49,7 +49,10 @@ export type {
 // no UI toolkit, and it is chrome by the definition this package uses — a thing
 // a display draws that is not its data. `@jbrowse/plugin-linear-genome-view`
 // re-exports it, so its published name is unchanged.
-export { default as FloatingLegend } from './FloatingLegend.tsx'
+export {
+  default as FloatingLegend,
+  FLOATING_LEGEND_TOP_PX,
+} from './FloatingLegend.tsx'
 export type { LegendItem, LegendSection } from './FloatingLegend.tsx'
 
 // The <svg> counterpart of that legend, for a display whose key is drawn by an

@@ -31,8 +31,7 @@ function makeModel(args?: {
     rowHeightTooSmallForScalebar: rowHeight < 70,
     numSources: 2,
     numRows: 2,
-    scoreRamp: undefined,
-    symlogConstant: 0,
+    scoreRampApplies: false,
     showRowLabels: args?.showRowLabels ?? true,
   }
 }
@@ -97,7 +96,7 @@ test('the per-row axes inset their end labels', () => {
   ])
 })
 
-test('no axis drawn (score legend only) leaves the labels at the offset', () => {
+test('no axis drawn (score caption only) leaves the labels at the offset', () => {
   const svg = render({
     model: makeModel({ isDensityMode: true }),
     scalebarLeft: 50,

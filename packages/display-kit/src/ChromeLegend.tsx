@@ -1,4 +1,4 @@
-import { FloatingLegend } from '@jbrowse/display-ui'
+import { FLOATING_LEGEND_TOP_PX, FloatingLegend } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
 import type { LegendHost } from './legendHost.ts'
@@ -19,7 +19,7 @@ const ChromeLegend = observer(function ChromeLegend({
     <FloatingLegend
       sections={legendSpec.sections}
       title={legendSpec.title}
-      top={legendTop}
+      top={FLOATING_LEGEND_TOP_PX + (legendTop ?? 0)}
       onDismiss={() => {
         model.setShowLegend(false)
       }}

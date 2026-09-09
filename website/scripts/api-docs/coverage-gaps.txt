@@ -67,7 +67,7 @@ plugins/grid-bookmark/src/index.ts rubberBandMenuItems
 plugins/linear-comparative-view/src/SyntenyFeatureDetail/index.ts level
 plugins/linear-comparative-view/src/SyntenyFeatureDetail/index.ts type
 plugins/wiggle/src/shared/wiggleDisplayViews.ts renderState
-plugins/wiggle/src/shared/wiggleDisplayViews.ts scoreRamp
+plugins/wiggle/src/shared/wiggleDisplayViews.ts scoreColorScale
 plugins/wiggle/src/shared/wiggleDisplayViews.ts sharedGpuProps
 plugins/wiggle/src/shared/wiggleDisplayViews.ts sharedRpcProps
 plugins/wiggle/src/shared/wiggleDisplayViews.ts ticks

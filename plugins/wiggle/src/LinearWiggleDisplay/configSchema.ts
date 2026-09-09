@@ -94,6 +94,17 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     ...wiggleConfigSchemaFields,
     /**
      * #slot
+     */
+    showLegend: {
+      type: 'maybeBoolean',
+      description:
+        'Draw the score color ramp in density mode. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track',
+      // Promotable: read through LegendMixin's resolved `showLegend` getter
+      // (resolveConf), never raw.
+      promotedBase: true,
+    },
+    /**
+     * #slot
      * Not in the shared wiggle fields: `MultiLinearWiggleDisplay` spreads those
      * and stacks a plot box per row, so one rule list has no single axis to sit
      * on there.

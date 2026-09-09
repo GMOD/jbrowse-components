@@ -1,4 +1,5 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { clusterLayout } from '@jbrowse/tree-sidebar'
 import { ThemeProvider } from '@mui/material'
 import { renderToString } from 'react-dom/server'
@@ -101,7 +102,6 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
   return {
     id: 'test',
     height: 100,
-    symlogConstant: 0,
     // rows edge-to-edge over the full height, two of them
     plotGeometry: { yTop: 0, plotHeight: 100, numRows: 2, tickHeight: 50 },
     error: undefined,
@@ -135,10 +135,6 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     hierarchy: undefined,
     clusterProvenance: undefined,
     sources: [{ name: 'a' }, { name: 'b' }],
-    legendItems: [
-      { color: '#0068d1', label: 'a' },
-      { color: '#0068d1', label: 'b' },
-    ],
     isOverlay: false,
     isDensityMode: false,
     effectiveRowHeight: 50,
@@ -148,12 +144,32 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     rowHeightTooSmallForScalebar: false,
     numSources: 2,
     numRows: 2,
-    scoreRamp: undefined,
+    scoreRampApplies: false,
     showRowSeparators: false,
     showRowLabels: true,
     showCrossHatches: false,
-    hasOverlayLegend: false,
     ...overrides,
+  }
+}
+
+// The members `renderDisplaySvg` detects a `LegendMixin` host by, over one
+// source key; the fixture is a plain object, so they are spelled out.
+function withKey(showLegend: boolean, legendTop = 0) {
+  return {
+    showLegend,
+    legendTop,
+    legendSpec: legendSpecOf([
+      {
+        kind: 'categorical',
+        id: 'sources',
+        entries: [
+          { value: 'a', label: 'a', color: '#f00' },
+          { value: 'b', label: 'b', color: '#00f' },
+        ],
+      },
+    ]),
+    setShowLegend() {},
+    dismissLegendSection() {},
   }
 }
 
@@ -250,39 +266,30 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
     expect(html).toContain('ctgA')
   })
 
-  // On screen the same `legendItems` go to FloatingLegend; here they are drawn
-  // inline. Both read hasOverlayLegend, so a legend the user dismissed stays out
-  // of the export rather than reappearing in the figure.
+  // The key is the chrome's, off `legendSpec`, and both surfaces read
+  // `showLegend`, so a legend the user dismissed stays out of the export
+  // rather than reappearing in the figure.
   it('draws the overlay color key only when it applies', async () => {
     const shown = render(
-      await renderSvg(makeModel({ isOverlay: true, hasOverlayLegend: true })),
+      await renderSvg(makeModel({ isOverlay: true, ...withKey(true) })),
     )
     expect(shown).toContain('>a</text>')
     const dismissed = render(
-      await renderSvg(makeModel({ isOverlay: true, hasOverlayLegend: false })),
+      await renderSvg(makeModel({ isOverlay: true, ...withKey(false) })),
     )
     // overlay draws no row labels, so with the key off there is no 'a' anywhere
     expect(dismissed).not.toContain('>a</text>')
   })
 
-  // Both legends are pinned to the content's right edge and both draw from
-  // y=0, so the density case — which is exactly when a short-rowed track gets
-  // BOTH a score legend and a color key — used to print the key on top of the
-  // score range.
-  it('stacks the color key below the score legend rather than over it', async () => {
+  // The caption and the key are pinned to the content's right edge and both
+  // draw from y=0, so a density track whose rows carry their own colors —
+  // which is exactly when a short-rowed track gets BOTH — used to print the
+  // key on top of the score range. `legendTop` is the model's clearance; the
+  // shell honours it.
+  it('stacks the color key below the score caption rather than over it', async () => {
     const html = render(
-      await renderSvg(
-        makeModel({
-          isDensityMode: true,
-          hasOverlayLegend: true,
-          legendItems: [
-            { color: '#f00', label: 'a' },
-            { color: '#00f', label: 'b' },
-          ],
-        }),
-      ),
+      await renderSvg(makeModel({ isDensityMode: true, ...withKey(true, 16) })),
     )
-    // the score range text legend, then the key pushed clear of its 16px band
     expect(html).toContain('[0, 10]')
     expect(html).toContain('<g transform="translate(0 16)">')
   })

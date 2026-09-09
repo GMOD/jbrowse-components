@@ -1,5 +1,4 @@
 /* eslint-disable react-refresh/only-export-components */
-import { SvgColorLegend, legendEntries } from '@jbrowse/core/ui'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import {
@@ -17,14 +16,10 @@ import {
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import { WIGGLE_MARKS } from '../shared/wiggleMarks.ts'
 import MultiWiggleOverlayLines from './MultiWiggleOverlayLines.tsx'
-import MultiWiggleSvgScales, {
-  scoreLegendReservedPx,
-} from './MultiWiggleSvgScales.tsx'
+import MultiWiggleSvgScales from './MultiWiggleSvgScales.tsx'
 
-import type { ScoreRamp } from '../shared/ScoreLegend.tsx'
 import type { WiggleGpuProps } from '../shared/buildSourceRenderData.ts'
 import type { WigglePlotGeometry } from '../shared/wiggleDisplayViews.ts'
-import type { LegendItem } from '@jbrowse/core/ui'
 import type {
   LgvSvgBodyProps,
   LgvSvgExportable,
@@ -62,8 +57,7 @@ export interface RenderSvgModel extends LgvSvgExportable {
   hierarchy?: ClusterHierarchyNode
   clusterProvenance?: ClusterProvenance
 
-  // read by MultiWiggleSvgScales (row labels, per-row axes, score legend)
-  symlogConstant: number
+  // read by MultiWiggleSvgScales (row labels, per-row axes, score caption)
   sources: {
     name: string
     label?: string
@@ -71,10 +65,6 @@ export interface RenderSvgModel extends LgvSvgExportable {
     labelColor?: string
     group?: string
   }[]
-  // the color key, already collapsed and color-resolved by the model — never
-  // rebuilt from `sources` here, so the export can't key a different list than
-  // the one `overlayLegendApplies` counted
-  legendItems: LegendItem[]
   isOverlay: boolean
   isDensityMode: boolean
   effectiveRowHeight: number
@@ -84,16 +74,12 @@ export interface RenderSvgModel extends LgvSvgExportable {
   rowHeightTooSmallForScalebar: boolean
   numSources: number
   numRows: number
-  scoreRamp: ScoreRamp | undefined
+  scoreRampApplies: boolean
 
   // read by MultiWiggleOverlayLines
   showRowSeparators: boolean
   showRowLabels: boolean
   showCrossHatches: boolean
-
-  // the overlay color key, which reads `hasOverlayLegend` so a dismissed legend
-  // stays out of the export too
-  hasOverlayLegend: boolean
 }
 
 export async function renderSvg(
@@ -104,7 +90,7 @@ export async function renderSvg(
 }
 
 function MultiWiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
-  const { model, view, height, canvasWidth } = props
+  const { model, view, canvasWidth } = props
   const { rpcDataMap, renderState } = model
 
   // No data-size gate: renderState is always defined (a [0,1] stub until
@@ -131,7 +117,6 @@ function MultiWiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
 
   const gpuProps = model.gpuProps()
   const legendRight = svgLegendRightPx(view, canvasWidth)
-  const legendTop = scoreLegendReservedPx(model)
 
   return (
     <WiggleFamilySvgFrame
@@ -163,22 +148,6 @@ function MultiWiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
             scalebarLeft={scalebarLeft}
             labelOffset={labelOffset}
           />
-          {/* The color key, drawn inline here; on screen the same `legendItems`
-              go to `FloatingLegend` instead (which portals above the
-              inter-region masks the flat export SVG doesn't have). Both read
-              `hasOverlayLegend`, so a dismissed legend stays out of the export,
-              and both push it below the score legend by the same
-              `scoreLegendReservedPx`. */}
-          {model.hasOverlayLegend ? (
-            <g transform={`translate(0 ${legendTop})`}>
-              <SvgColorLegend
-                entries={legendEntries({ items: model.legendItems })}
-                canvasWidth={legendRight}
-                maxHeight={height - legendTop}
-                testid="multiwiggle-color-legend"
-              />
-            </g>
-          ) : null}
           {labelOffset && hierarchy ? (
             <>
               <SvgTreePath hierarchy={hierarchy} />

@@ -8,6 +8,9 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost } from '@jbrowse/core/util'
+import LegendMixin, {
+  legendCheckboxItem,
+} from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
@@ -43,6 +46,7 @@ import type { WiggleHoveredFeature } from '../util.ts'
 import type { WiggleDisplayModel } from './components/wiggleDisplayTypes.ts'
 import type { LinearWiggleDisplayConfigSchema } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -91,6 +95,7 @@ export default function stateModelFactory(
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
       WiggleCommonMixin(),
+      LegendMixin(),
       StoredHoverMixin<WiggleHoveredFeature>(),
       types.model({
         /**
@@ -169,12 +174,20 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * Single-wiggle density always draws from posColor (the config doc for
-       * `color` says so), so with bicolor off there is only one side to
-       * describe and the plain [min, max] text stays the honest legend.
+       * Density spends color on the score, so its key is always the ramp.
        */
       get scoreRampApplies() {
-        return self.isDensityMode && self.useBicolor
+        return self.isDensityMode
+      },
+
+      /**
+       * #getter
+       * Single-wiggle density always draws from posColor (the config doc for
+       * `color` says so), so with bicolor off both sides of the pivot fade
+       * white → posColor and the ramp says exactly that.
+       */
+      get densityNegColor(): string {
+        return self.useBicolor ? self.negColor : self.posColor
       },
 
       /**
@@ -220,6 +233,15 @@ export default function stateModelFactory(
     }))
     .views(self => wiggleDisplayViews(self))
     .views(self => ({
+      /**
+       * #getter
+       * `LegendMixin`'s hook: the density ramp, and nothing outside density,
+       * where score is height and the axis is the key.
+       */
+      get colorScales(): ColorScale[] {
+        return self.scoreColorScale ? [self.scoreColorScale] : []
+      },
+
       /**
        * #method
        * `useBicolor` is a fetch key because the worker is what splits the
@@ -269,8 +291,8 @@ export default function stateModelFactory(
       gpuProps() {
         // The one color the plot draws in when bicolor is off. Density
         // ignores the `color` slot and always draws from posColor (see that
-        // slot's config doc, and `scoreRamp`, which describes no negative
-        // side there).
+        // slot's config doc, and `densityNegColor`, which says the same
+        // for the key).
         const solidColor = self.isDensityMode ? self.posColor : self.color
         return {
           ...self.sharedGpuProps(),
@@ -334,7 +356,9 @@ export default function stateModelFactory(
           // not height), which `showCrossHatches` also enforces on the drawing
           // side so a hatch enabled elsewhere doesn't strand itself here
           ...makeShowSubMenu(
-            self.isDensityMode ? [] : [makeCrossHatchItem(self)],
+            self.isDensityMode
+              ? [legendCheckboxItem(self)]
+              : [makeCrossHatchItem(self)],
           ),
           // point size / line width are top-level submenus, each present only in
           // its respective scatter / line rendering

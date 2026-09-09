@@ -4361,6 +4361,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
+          "name": "showLegend",
+          "type": "(JexlString | (boolean | undefined))"
+        },
+        {
           "name": "scoreRules",
           "type": "(JexlString | frozen)"
         },
@@ -4597,6 +4601,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
+          "name": "showLegend",
+          "type": "(JexlString | (boolean | undefined))"
+        },
+        {
           "name": "scoreRules",
           "type": "(JexlString | frozen)"
         },
@@ -4717,6 +4725,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "maxGapMultiple",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "showLegend",
+          "type": "(JexlString | (boolean | undefined))"
         },
         {
           "name": "scoreRules",

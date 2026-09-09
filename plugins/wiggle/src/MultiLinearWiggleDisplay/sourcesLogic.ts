@@ -73,7 +73,7 @@ export function sourcesFromRegionData(
  *   `posColor` swatches naming groups that were on screen in four colors;
  *   and
  * - a score ramp is drawable only while NO source sets `color`, since one that
- *   does is painted on its own scale (`scoreRamp` on the model).
+ *   does is painted on its own scale (`scoreRampApplies` on the model).
  *
  * `multirow` keeps the shared `negColor` on the negative side even when the row
  * has a color, so signed data still reads as bicolor; that split is the

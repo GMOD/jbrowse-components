@@ -19,7 +19,7 @@ export interface LegendHost extends IStateTreeNode {
   focusLegendEntry?(scaleId: string, value: string): void
   /** Width the LGV export reserves beside the plot for this legend, 0 to float it over the plot. */
   svgLegendWidth?(): number
-  /** Px from the top of the display box the key starts at, on both surfaces. */
+  /** Px the key is pushed down from its own inset, on both surfaces. */
   legendTop?: number
 }
 

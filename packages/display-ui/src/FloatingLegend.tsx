@@ -21,6 +21,9 @@ import type {
   LegendSection,
 } from '@jbrowse/core/ui/legendSpec'
 
+// The key's own inset from the display's top-right corner.
+export const FLOATING_LEGEND_TOP_PX = 10
+
 const useStyles = makeStyles()(theme => ({
   legend: {
     position: 'absolute',
@@ -352,7 +355,7 @@ const FloatingLegend = observer(function FloatingLegend({
   onItemClick,
   maxItems = DEFAULT_MAX_ITEMS,
   maxWidth = DEFAULT_MAX_WIDTH,
-  top = 10,
+  top = FLOATING_LEGEND_TOP_PX,
 }: {
   items?: LegendItem[]
   sections?: LegendSection[]
@@ -368,11 +371,9 @@ const FloatingLegend = observer(function FloatingLegend({
   // split-read rows have to say which kind of read they classify); leave it for
   // everything else, and let the ellipsis be the signal that a label is too long.
   maxWidth?: number
-  // Distance from the top of the display box. Raise it for a display that
-  // already draws something in that corner — multi-wiggle's score legend is
-  // pinned to the same right edge and drawn from y=0, so the two overprint at
-  // the default. Every other display has the corner to itself and leaves this
-  // alone.
+  // Distance from the top of the display box. `ChromeLegend` adds a display's
+  // `legendTop` clearance to the default for a display that already draws
+  // something in that corner.
   top?: number
 }) {
   const { classes } = useStyles()

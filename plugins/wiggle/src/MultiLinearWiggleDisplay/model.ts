@@ -55,6 +55,7 @@ import {
   makeWiggleScoreSubMenu,
 } from '../shared/wiggleMenuItems.tsx'
 import { MULTI_WIGGLE_RENDERING_GROUPS } from '../util.ts'
+import { scoreCaptionReservedPx } from './MultiWiggleSvgScales.tsx'
 import { buildLegendItems } from './legendItems.ts'
 import { sortSourcesByScoreAt } from './sortSourcesByScoreAt.ts'
 import {
@@ -69,6 +70,7 @@ import type { MultiWiggleContextInfo } from './components/findHit.ts'
 import type { MultiWiggleDisplayModel } from './components/multiWiggleDisplayTypes.ts'
 import type { MultiLinearWiggleDisplayConfigModel } from './configSchema.ts'
 import type { ContextMenuAnchor, LegendItem, MenuItem } from '@jbrowse/core/ui'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -219,11 +221,10 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * The color key, as the shared `LegendSpec` items every other display
-       * publishes — one row per (group, color) pair, colors resolved. The
-       * on-screen `FloatingLegend`, the SVG export and `overlayLegendApplies`
-       * all read this one list, so what is drawn and what was counted before
-       * deciding to draw cannot disagree. See `buildLegendItems`.
+       * The source key's rows — one per (group, color) pair, colors resolved.
+       * `colorScales` and `overlayLegendApplies` both read this one list, so
+       * what is drawn and what was counted before deciding to draw cannot
+       * disagree. See `buildLegendItems`.
        */
       get legendItems(): LegendItem[] {
         return buildLegendItems(
@@ -288,6 +289,14 @@ export default function stateModelFactory(
        */
       get scoreRampApplies() {
         return self.isDensityMode && self.sources.every(s => !s.color)
+      },
+
+      /**
+       * #getter
+       * Bicolor is not a setting here: every multi-wiggle ramp has two sides.
+       */
+      get densityNegColor(): string {
+        return self.negColor
       },
     }))
     .views(self => wiggleDisplayViews(self))
@@ -397,12 +406,36 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Whether the overlay color key actually draws. The on-screen overlay and
-       * the SVG export both read this, so a dismissed legend can't linger in
-       * the export.
+       * `LegendMixin`'s hook: the density ramp where one describes every row,
+       * then the source key where it is worth its rows. A row's `value` is the
+       * group or subtrack `focusLegendEntry` narrows to.
        */
-      get hasOverlayLegend(): boolean {
-        return self.overlayLegendApplies && self.showLegend
+      get colorScales(): ColorScale[] {
+        const scales: ColorScale[] = []
+        if (self.scoreColorScale) {
+          scales.push(self.scoreColorScale)
+        }
+        if (self.overlayLegendApplies) {
+          scales.push({
+            kind: 'categorical',
+            id: 'sources',
+            entries: self.legendItems.map(({ label, color }) => ({
+              value: label,
+              label,
+              color,
+            })),
+          })
+        }
+        return scales
+      },
+
+      /**
+       * #getter
+       * `LegendMixin`'s hook: the key starts below the `[min, max]` caption
+       * that stands in for the axes on rows too short to carry one.
+       */
+      get legendTop(): number {
+        return scoreCaptionReservedPx(self)
       },
 
       /**
@@ -444,12 +477,12 @@ export default function stateModelFactory(
 
       /**
        * #action
-       * Narrow the rows to the subtracks one color-key row stands for — what
-       * clicking that swatch does. A key row is a group where the subtrack has
-       * one and the subtrack itself otherwise (`buildLegendItems`), so this
-       * matches the same way.
+       * `LegendMixin`'s hook: narrow the rows to the subtracks one key row
+       * stands for — what clicking that swatch does. A key row is a group
+       * where the subtrack has one and the subtrack itself otherwise
+       * (`buildLegendItems`), so this matches the same way.
        */
-      focusLegendGroup(label: string) {
+      focusLegendEntry(_scaleId: string, label: string) {
         focusRowGroup(
           self,
           self.editableSources,
@@ -561,7 +594,7 @@ export default function stateModelFactory(
                 showRowLabelsMenuItem(self),
               ]),
           // the color key only renders as an overlay of >1 source
-          ...(self.overlayLegendApplies ? [legendCheckboxItem(self)] : []),
+          ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
           // density maps score to color, so score-axis cross hatches are
           // meaningless there (`showCrossHatches` enforces the same on the
           // drawing side)

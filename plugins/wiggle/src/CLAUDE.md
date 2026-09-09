@@ -49,11 +49,12 @@ render state, the on-screen `<canvas>` box, and `WiggleFamilySvgFrame`'s clip
 translate — a prop there, defaulting to the single-plot box, which is what the
 Manhattan display (no such getter) still draws in.
 
-**Everything written over it is `wiggleDisplayViews`**: `ticks`, `scoreRamp`,
-`renderState` and the shared halves of the two props methods, as a plain
-function each display installs as one `.views()` layer. Not a mixin — composed
-beside `TrackHeightMixin` it could not see `height` or `canvasWidthPx` without
-casting to reach them, and `types.compose` depth is a real ceiling (ADR-041).
+**Everything written over it is `wiggleDisplayViews`**: `ticks`,
+`scoreColorScale`, `renderState` and the shared halves of the two props methods,
+as a plain function each display installs as one `.views()` layer. Not a mixin —
+composed beside `TrackHeightMixin` it could not see `height` or `canvasWidthPx`
+without casting to reach them, and `types.compose` depth is a real ceiling
+(ADR-041).
 
 **`sharedRpcProps` / `sharedGpuProps` are named apart from the methods they
 feed, deliberately.** MST _intersects_ what each `.views()` layer returns, so

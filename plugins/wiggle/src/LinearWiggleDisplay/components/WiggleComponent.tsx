@@ -7,11 +7,9 @@ import {
   CrossHatches,
   ScoreRules,
   YScaleBarOverlay,
-  resolveSymlogConstant,
 } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
-import ScoreLegend, { scoreLegendHeight } from '../../shared/ScoreLegend.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
 import { findSourceHit, hitTestMouse } from '../../shared/wiggleHitTest.ts'
@@ -89,12 +87,6 @@ const WiggleBody = observer(function WiggleBody({
   mouseTracker: MouseTracker
 }) {
   const { yTop, plotHeight } = model.plotGeometry
-  // Pin the right-aligned score legend to the content's right edge, not the
-  // full track width. The view publishes the clamped SCALAR: deriving it here
-  // from `visibleRegions` read an array the view rebuilds every pan and zoom
-  // frame, so this body re-rendered on every frame of every gesture to produce
-  // the unchanged `width`.
-  const legendWidth = model.host.contentRightEdgePx
   return (
     <>
       <canvas
@@ -108,32 +100,8 @@ const WiggleBody = observer(function WiggleBody({
           top: yTop,
         }}
       />
-      {model.isDensityMode && model.domain ? (
-        <svg
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            pointerEvents: 'none',
-            // an <svg> clips to its own box, so it has to be as tall as the
-            // legend the ramp/text choice produces
-            height: scoreLegendHeight(model.scoreRamp),
-            width,
-          }}
-        >
-          <ScoreLegend
-            domain={model.domain}
-            scaleType={model.scaleType}
-            symlogConstant={resolveSymlogConstant(
-              model.domain[0],
-              model.domain[1],
-              model.symlogConstant,
-            )}
-            canvasWidth={legendWidth}
-            ramp={model.scoreRamp}
-          />
-        </svg>
-      ) : model.ticks ? (
+      {/* density spends color on the score, and its key is the chrome's ramp */}
+      {model.isDensityMode ? null : model.ticks ? (
         <YScaleBarOverlay ticks={model.ticks} height={height} width={width} />
       ) : null}
       {model.showCrossHatches && model.ticks ? (

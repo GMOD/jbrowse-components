@@ -1,56 +1,55 @@
 import { SvgRowLabels } from '@jbrowse/tree-sidebar'
-import { YScaleBar, resolveSymlogConstant } from '@jbrowse/wiggle-core'
+import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
-import ScoreLegend, { scoreLegendHeight } from '../shared/ScoreLegend.tsx'
+import ScoreDomainCaption, {
+  SCORE_CAPTION_HEIGHT,
+} from '../shared/ScoreDomainCaption.tsx'
 import { getRowTop } from '../shared/wiggleComponentUtils.ts'
 
-import type { ScoreRamp } from '../shared/ScoreLegend.tsx'
 import type { YScaleTicks } from '@jbrowse/wiggle-core'
 
 const AXIS_TO_LABEL_GAP_PX = 4
 
-// Whether the one-line score legend takes the place of the per-row axes.
-// Density encodes score as color, and a short row has no room for an axis, so
-// both fall back to it — and a domain is what makes any scale real.
-function scoreLegendShown(model: ScoreLegendModel) {
+// Whether the per-row axes draw at all: density encodes score as color, and a
+// short row has no room for an axis. A domain is what makes any scale real.
+function axesShown(model: CaptionModel) {
   return (
     !!model.domain &&
-    (model.isDensityMode || model.rowHeightTooSmallForScalebar)
+    !model.isDensityMode &&
+    !model.rowHeightTooSmallForScalebar
   )
 }
 
-interface ScoreLegendModel {
+// Whether the `[min, max]` caption stands in for them. Not under a density
+// ramp: that ramp is the chrome's key and carries the domain on its own bar.
+function captionShown(model: CaptionModel) {
+  return !!model.domain && !axesShown(model) && !model.scoreRampApplies
+}
+
+interface CaptionModel {
   domain: [number, number] | undefined
   isDensityMode: boolean
   rowHeightTooSmallForScalebar: boolean
-  scoreRamp: ScoreRamp | undefined
+  scoreRampApplies: boolean
 }
 
 /**
- * Px the score legend occupies at the top-right, which the source color key has
- * to start below.
- *
- * Both are pinned to the content's right edge and both draw from y=0, so
- * whenever they apply together the key lands on top of the score range — and
- * they apply together in exactly the case the key was widened for: a density
- * track whose rows are too short to label falls back to the score legend AND
- * gets a key. Exported so the two callers that draw the key (the on-screen
- * `FloatingLegend`, the inline one in `renderSvg`) offset it by the
- * same number this component lays the score legend out with.
+ * Px the score caption occupies at the top-right, which the chrome's key
+ * starts below (`legendTop`): both are pinned to the content's right edge and
+ * both draw from y=0, and they apply together in exactly the case the key was
+ * widened for — a density track whose rows are too short to label.
  */
-export function scoreLegendReservedPx(model: ScoreLegendModel) {
-  return scoreLegendShown(model) ? scoreLegendHeight(model.scoreRamp) : 0
+export function scoreCaptionReservedPx(model: CaptionModel) {
+  return captionShown(model) ? SCORE_CAPTION_HEIGHT : 0
 }
 
-// Row labels (non-overlay mode) plus the Y-scale legend, shared by the live
-// MultiWiggleComponent and the SVG export path so the two can't drift. The
-// overlay-mode color legend is NOT here: it's composed by each path directly —
-// on screen via the shared FloatingLegend (which portals above the
-// inter-region separators), in export inline in renderSvg. Callers pass their
-// own `legendRight`/`scalebarLeft`/`labelOffset` (the axis indent differs
-// between screen and export, see ONSCREEN_AXIS_LEFT_PX).
-interface ScaleModel extends ScoreLegendModel {
+// Row labels (non-overlay mode) plus the per-row axes or their caption, shared
+// by the live MultiWiggleComponent and the SVG export path so the two can't
+// drift. The color key is NOT here: it is the chrome's, off `colorScales`.
+// Callers pass their own `legendRight`/`scalebarLeft`/`labelOffset` (the axis
+// indent differs between screen and export, see ONSCREEN_AXIS_LEFT_PX).
+interface ScaleModel extends CaptionModel {
   sources: {
     name: string
     label?: string
@@ -61,7 +60,6 @@ interface ScaleModel extends ScoreLegendModel {
   isOverlay: boolean
   effectiveRowHeight: number
   scaleType: string
-  symlogConstant: number
   ticks?: YScaleTicks
   numSources: number
   numRows: number
@@ -75,7 +73,7 @@ export default observer(function MultiWiggleSvgScales({
   labelOffset,
 }: {
   model: ScaleModel
-  // x the right-aligned score legend is pinned to (the content's right edge)
+  // x the right-aligned score caption is pinned to (the content's right edge)
   legendRight: number
   // right edge of the per-row axes: they are left-oriented, so their ticks and
   // numbers grow leftward from here
@@ -89,15 +87,13 @@ export default observer(function MultiWiggleSvgScales({
     effectiveRowHeight,
     domain,
     scaleType,
-    symlogConstant,
     ticks,
     numSources,
     numRows,
-    scoreRamp,
     showRowLabels,
   } = model
 
-  const scalebarsShown = !!domain && !scoreLegendShown(model)
+  const scalebarsShown = axesShown(model)
 
   // The axes are left-oriented, so their ticks and numbers occupy the strip
   // that ends at `scalebarLeft`. Row labels start after that strip rather than
@@ -139,19 +135,13 @@ export default observer(function MultiWiggleSvgScales({
         </g>
       ))}
     </g>
-  ) : (
-    <ScoreLegend
+  ) : captionShown(model) ? (
+    <ScoreDomainCaption
       domain={domain}
       scaleType={scaleType}
-      symlogConstant={resolveSymlogConstant(
-        domain[0],
-        domain[1],
-        symlogConstant,
-      )}
       canvasWidth={legendRight}
-      ramp={scoreRamp}
     />
-  )
+  ) : null
 
   return (
     <>

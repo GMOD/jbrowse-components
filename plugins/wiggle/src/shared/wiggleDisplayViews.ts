@@ -1,9 +1,11 @@
 import { computeYTicks } from '@jbrowse/wiggle-core'
 
 import { densityRampLut } from './densityColorRamp.ts'
+import { scoreRampScale } from './scoreRampScale.ts'
 import { makeWiggleRenderState } from './wiggleComponentUtils.ts'
 
 import type { WiggleRenderStateModel } from './wiggleComponentUtils.ts'
+import type { RampScale } from '@jbrowse/core/ui/colorScale'
 
 /**
  * Where a wiggle-family display puts its plot inside its own height. The two
@@ -44,6 +46,12 @@ export interface WiggleDisplayViewsHost extends WiggleRenderStateModel {
    * reason a ramp can still be the wrong legend there.
    */
   scoreRampApplies: boolean
+  /**
+   * The color the sub-pivot side paints in under density: `negColor` with
+   * bicolor on, `posColor` without it, where the painter draws both sides in
+   * the one color and the key has to say so.
+   */
+  densityNegColor: string
 }
 
 /**
@@ -77,22 +85,21 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
 
     /**
      * #getter
-     * The color ramp the density legend draws, or undefined when there is no
-     * single ramp to describe. Lives on the model so the on-screen legend and
-     * the SVG export can't disagree about whether density has a ramp.
-     * `rampLut` is the resolved `densityColorRamp` LUT — the same cached bytes
-     * both renderers color through — so a named ramp's legend is drawn from
-     * what the track actually paints, not the default fade.
+     * The density ramp as a color scale, or undefined when there is no single
+     * ramp to describe or no domain yet. `LegendMixin`'s `colorScales` lists
+     * it, so the on-screen key and the export draw one bar. The LUT is the
+     * resolved `densityColorRamp` — the same cached bytes both renderers color
+     * through — so a named ramp's key is drawn from what the track paints, not
+     * the default fade.
      */
-    get scoreRamp() {
-      return self.scoreRampApplies
-        ? {
+    get scoreColorScale(): RampScale | undefined {
+      return self.scoreRampApplies && self.domain
+        ? scoreRampScale(self.domain, self.scaleType, self.symlogConstant, {
             posColor: self.posColor,
-            negColor: self.negColor,
+            negColor: self.densityNegColor,
             pivot: self.bicolorPivot,
             rampLut: densityRampLut(self.densityColorRamp),
-            gradientId: `score-ramp-${self.id}`,
-          }
+          })
         : undefined
     },
 

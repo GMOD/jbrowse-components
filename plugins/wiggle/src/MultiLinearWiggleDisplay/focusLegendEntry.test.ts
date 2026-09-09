@@ -18,9 +18,9 @@ test('focuses the subtracks a legend row names', () => {
     view.displayedRegions[0],
   )
 
-  display.focusLegendGroup('T cell')
+  display.focusLegendEntry('sources', 'T cell')
   expect(display.sources.map(s => s.name)).toEqual(['a', 'c'])
 
-  display.focusLegendGroup('Monocyte')
+  display.focusLegendEntry('sources', 'Monocyte')
   expect(display.sources.map(s => s.name)).toEqual(['d'])
 })
