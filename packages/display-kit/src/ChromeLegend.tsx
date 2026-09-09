@@ -14,12 +14,13 @@ const ChromeLegend = observer(function ChromeLegend({
 }: {
   model: LegendHost
 }) {
-  const { showLegend, legendSpec, legendTop } = model
+  const { showLegend, legendSpec, legendTop, legendMaxWidth } = model
   return showLegend ? (
     <FloatingLegend
       sections={legendSpec.sections}
       title={legendSpec.title}
       top={FLOATING_LEGEND_TOP_PX + (legendTop ?? 0)}
+      maxWidth={legendMaxWidth}
       onDismiss={() => {
         model.setShowLegend(false)
       }}

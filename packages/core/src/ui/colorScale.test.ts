@@ -26,7 +26,8 @@ const contacts: RampScale = {
 }
 
 test('a categorical scale is one section, its entries the rows', () => {
-  const { sections } = legendSpecOf([svType])
+  const { title, sections } = legendSpecOf([svType])
+  expect(title).toBe('SV type')
   expect(sections).toEqual([
     {
       id: 'svType',
@@ -40,11 +41,12 @@ test('a categorical scale is one section, its entries the rows', () => {
   ])
 })
 
-// A lone section draws no title, so a ramp that is the whole key carries its
-// own name on its row: a bar labelled 0 and 1,200 with nothing saying what is
+// A lone section draws no title of its own, so a lone categorical scale
+// titles the box and a lone ramp carries its name on its row: a bar labelled 0 and 1,200 with nothing saying what is
 // being counted is not a key.
 test('a lone ramp names itself on its row, with the domain ends formatted', () => {
-  const { sections } = legendSpecOf([contacts])
+  const { title, sections } = legendSpecOf([contacts])
+  expect(title).toBeUndefined()
   expect(sections).toEqual([
     {
       id: 'contacts',
@@ -64,7 +66,8 @@ test('a lone ramp names itself on its row, with the domain ends formatted', () =
 })
 
 test('beside another section a ramp leaves the naming to its section title', () => {
-  const { sections } = legendSpecOf([svType, contacts])
+  const { title, sections } = legendSpecOf([svType, contacts])
+  expect(title).toBeUndefined()
   expect(sections![1]!.items[0]!.label).toBe('')
   expect(legendEntries({ sections }).map(e => e.label)).toEqual([
     'SV type',

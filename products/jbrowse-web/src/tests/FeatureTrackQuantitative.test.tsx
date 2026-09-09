@@ -78,9 +78,11 @@ test('Manhattan field coloring derives its key from the values the worker met', 
     'manhattan-display',
   )
   await waitFor(() => {
-    expect(display.legend).toBeDefined()
+    expect(display.colorScales).toHaveLength(1)
   })
-  const labels = display.legend.items.map((i: { label: string }) => i.label)
+  const labels = display.colorScales[0].entries.map(
+    (i: { label: string }) => i.label,
+  )
   expect(labels).toEqual(expect.arrayContaining(['mom', 'dad', 'offspring01']))
   const legend = await findByTestId('floating-legend', {}, { timeout })
   expect(legend.textContent).toContain('sample')

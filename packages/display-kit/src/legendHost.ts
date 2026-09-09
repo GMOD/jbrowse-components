@@ -21,6 +21,11 @@ export interface LegendHost extends IStateTreeNode {
   svgLegendWidth?(): number
   /** Px the key is pushed down from its own inset, on both surfaces. */
   legendTop?: number
+  /**
+   * A ceiling on the on-screen box's width, for a vocabulary whose labels
+   * genuinely need the words; the export measures its own.
+   */
+  legendMaxWidth?: number
 }
 
 export function isLegendHost(model: object): model is LegendHost {

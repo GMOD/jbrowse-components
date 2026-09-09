@@ -5,15 +5,10 @@ import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { VERTICAL_SCROLLBAR_CLEARANCE } from '@jbrowse/core/ui/VerticalScrollbar'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
-import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar, YScaleGutter } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import { observer } from 'mobx-react'
 
-import {
-  LEGEND_MAX_WIDTH,
-  getAlignmentsLegendSections,
-} from '../../shared/legendUtils.ts'
 import {
   AXIS_SVG_WIDTH,
   COMPACT_AXIS_FONT_SIZE,
@@ -148,8 +143,6 @@ const PileupBody = observer(function PileupBody({
       <CoverageAxisHost model={model} />
 
       <InsertSizeAxisHost model={model} />
-
-      <LegendHost model={model} />
 
       <CoverageResizeHandle model={model} />
 
@@ -610,30 +603,6 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
         palette={palette}
       />
     </svg>
-  )
-})
-
-const LegendHost = observer(function LegendHost({
-  model,
-}: {
-  model: LinearAlignmentsDisplayModel
-}) {
-  if (!model.showLegend) {
-    return null
-  }
-  const onDismiss = () => {
-    model.setShowLegend(false)
-  }
-  return (
-    <FloatingLegend
-      sections={getAlignmentsLegendSections(model)}
-      onDismiss={onDismiss}
-      // wider than the 200 default: the split-read rows have to name which kind
-      // of read they classify ("Split paired-end read (same strand)"), which is
-      // this display's longest label and the only one that overflows. Sized to
-      // it, not padded — see LEGEND_MAX_WIDTH.
-      maxWidth={LEGEND_MAX_WIDTH}
-    />
   )
 })
 

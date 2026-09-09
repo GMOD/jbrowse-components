@@ -2,18 +2,13 @@
 import { Fragment } from 'react'
 
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
-import {
-  SvgColorLegend,
-  createJBrowseTheme,
-  legendEntries,
-} from '@jbrowse/core/ui'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { SvgYScaleGutter, YScaleBar } from '@jbrowse/wiggle-core'
 
-import { getAlignmentsLegendSections } from '../shared/legendUtils.ts'
 import { getMismatchContrastMap } from '../shared/util.ts'
 import CrossRegionArcsSvg from './components/CrossRegionArcsSvg.tsx'
 import { InsertSizeAxisStack } from './components/InsertSizeAxis.tsx'
@@ -187,44 +182,7 @@ function AlignmentsSvgBody({
           scroll={scroll}
         />
       ) : null}
-      {model.showLegend ? (
-        <ColorKey
-          model={model}
-          canvasWidth={canvasWidth}
-          maxHeight={displayHeight}
-        />
-      ) : null}
     </>
-  )
-}
-
-// The same color key the display shows on screen (`LegendHost` /
-// `FloatingLegend`). Without it an exported figure has colored reads and nothing
-// saying what the colors mean, which is decisive for color-by-tag and
-// color-by-modification, where the swatches are the only decoder. Vector, via
-// the shared `SvgColorLegend` the canvas and HiC exports already use, and
-// floated over the right edge of the plot so it lands where the on-screen legend
-// does. No `onDismiss`: an exported legend can't be clicked.
-//
-// Both paths read the same section list and flatten it the same way — titled
-// sections become color-less heading rows — so a heading the live legend shows
-// can't go missing here.
-function ColorKey({
-  model,
-  canvasWidth,
-  maxHeight,
-}: {
-  model: LinearAlignmentsDisplayModel
-  canvasWidth: number
-  maxHeight: number
-}) {
-  return (
-    <SvgColorLegend
-      entries={legendEntries({ sections: getAlignmentsLegendSections(model) })}
-      canvasWidth={canvasWidth}
-      maxHeight={maxHeight}
-      testid="alignments-color-legend"
-    />
   )
 }
 

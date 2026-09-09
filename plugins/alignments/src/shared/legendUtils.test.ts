@@ -5,7 +5,7 @@ import {
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import { makeTestPalette } from '../LinearAlignmentsDisplay/testUtils.ts'
 import {
-  getAlignmentsLegendSections,
+  getAlignmentsColorScales,
   getArcLegendItems,
   getReadDisplayLegendItems,
 } from './legendUtils.ts'
@@ -15,6 +15,7 @@ import type { RefNamePosition } from '../LinearAlignmentsDisplay/colorTagUtils.t
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ColorBy, ColorSchemeType } from './types.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 
 function legendFor(
   colorBy: ColorBy,
@@ -758,22 +759,27 @@ describe('getArcLegendItems', () => {
 // Reads and arcs are one vocabulary or two, and the box has to say which. The
 // overlapping case is the default one: reads by orientation under
 // insert-size-and-orientation arcs share every orientation bucket.
-describe('getAlignmentsLegendSections', () => {
+describe('getAlignmentsColorScales', () => {
   const model = (reads: LegendItem[], arcs: LegendItem[]) => ({
     legendItems: () => reads,
     arcLegendTitle: 'Arc colors',
     arcLegendItems: () => arcs,
     bezierLegendItems: () => [],
   })
-  const shown = (sections: ReturnType<typeof getAlignmentsLegendSections>) =>
-    sections
-      .filter(s => s.items.length > 0)
-      .map(s => [s.title, s.items.map(i => i.label)])
+  const entries = (scale: ColorScale | undefined) =>
+    scale?.kind === 'categorical' ? scale.entries : []
+  const shown = (scales: ReturnType<typeof getAlignmentsColorScales>) =>
+    scales
+      .filter(s => s.kind === 'categorical' && s.entries.length > 0)
+      .map(s => [
+        s.title,
+        s.kind === 'categorical' ? s.entries.map(i => i.label) : [],
+      ])
 
   test('merges reads and arcs into one list when they share a color', () => {
     expect(
       shown(
-        getAlignmentsLegendSections(
+        getAlignmentsColorScales(
           model(
             [
               { color: '#aaa', label: 'LR - Normal pair orientation' },
@@ -803,7 +809,7 @@ describe('getAlignmentsLegendSections', () => {
   // "Normal" would be that grey a second time under a different word.
   test('keys a color once, under the label it got first', () => {
     const [[, labels]] = shown(
-      getAlignmentsLegendSections(
+      getAlignmentsColorScales(
         model(
           [{ color: '#aaa', label: 'LR - Normal pair orientation' }],
           [{ color: '#aaa', label: 'Normal' }],
@@ -817,7 +823,7 @@ describe('getAlignmentsLegendSections', () => {
   // read fill vs. saturated arc stroke), so a color-only rule lists it twice.
   test('keys a label once, in the reads own color', () => {
     const [[, items]] = shown(
-      getAlignmentsLegendSections(
+      getAlignmentsColorScales(
         model(
           [
             { color: '#aaa', label: 'LR - Normal pair orientation' },
@@ -839,7 +845,7 @@ describe('getAlignmentsLegendSections', () => {
   test('a shared label keeps both swatches rather than dropping a drawn color', () => {
     // the shared grey is what merges the two sections at all; short insert is
     // the bucket inside the merged list whose two colors disagree
-    const [reads] = getAlignmentsLegendSections(
+    const [reads] = getAlignmentsColorScales(
       model(
         [
           { color: '#aaa', label: 'LR - Normal pair orientation' },
@@ -851,7 +857,8 @@ describe('getAlignmentsLegendSections', () => {
         ],
       ),
     )
-    expect(reads!.items[1]).toEqual({
+    expect(entries(reads)[1]).toEqual({
+      value: 'Short insert',
       color: '#ffc0cb',
       label: 'Short insert',
       swatches: [{ color: '#ffc0cb' }, { color: '#ff3a8c' }],
@@ -865,7 +872,7 @@ describe('getAlignmentsLegendSections', () => {
   // — and no scheme emits two of one today, so this pins the shape rather than a
   // live case: fed the concatenation, the same rules dropped the second row.
   test('two read rows in one color are two meanings, not one', () => {
-    const [reads] = getAlignmentsLegendSections(
+    const [reads] = getAlignmentsColorScales(
       model(
         [
           { color: '#ccc', label: 'Unsplit read' },
@@ -876,7 +883,7 @@ describe('getAlignmentsLegendSections', () => {
         [{ color: '#0a0', label: 'LL - Both mates forward strand' }],
       ),
     )
-    expect(reads!.items.map(i => i.label)).toEqual([
+    expect(entries(reads).map(i => i.label)).toEqual([
       'Unsplit read',
       'MAPQ unavailable (255)',
       'LL - Both mates forward strand',
@@ -887,7 +894,7 @@ describe('getAlignmentsLegendSections', () => {
   // the de-dup off that field alone let a connection row repeat the arc's half
   // verbatim — same color, same words, one section down.
   test('a connection row repeating either half of a merged row is dropped', () => {
-    const sections = getAlignmentsLegendSections({
+    const sections = getAlignmentsColorScales({
       legendItems: () => [
         { color: '#aaa', label: 'LR - Normal pair orientation' },
         { color: '#ffc0cb', label: 'Short insert' },
@@ -908,19 +915,19 @@ describe('getAlignmentsLegendSections', () => {
       'Read connections',
       ['Short insert'],
     ])
-    expect(sections.at(-1)!.items[0]!.color).toBe('#123456')
+    expect(entries(sections.at(-1))[0]!.color).toBe('#123456')
   })
 
   // The mirror case stays one swatch: same color AND same meaning is one row,
   // and a column of doubled greys is noise, not information.
   test('a shared color stays a single swatch', () => {
-    const [reads] = getAlignmentsLegendSections(
+    const [reads] = getAlignmentsColorScales(
       model(
         [{ color: '#aaa', label: 'LR - Normal pair orientation' }],
         [{ color: '#aaa', label: 'Normal' }],
       ),
     )
-    expect(reads!.items[0]!.swatches).toBeUndefined()
+    expect(entries(reads)[0]!.swatches).toBeUndefined()
   })
 
   // Seen on a paired track in chain mode: the pair colors are drawn as fills and
@@ -928,7 +935,7 @@ describe('getAlignmentsLegendSections', () => {
   // three of the four connection rows were the row above them in a different
   // section — same color, same words.
   test('a connection row that repeats a keyed row verbatim is dropped', () => {
-    const sections = getAlignmentsLegendSections({
+    const sections = getAlignmentsColorScales({
       legendItems: () => [
         { color: '#5555bb', label: 'RR - Both mates reverse strand' },
         { color: '#aaa', label: 'LR - Normal pair orientation' },
@@ -954,7 +961,7 @@ describe('getAlignmentsLegendSections', () => {
   test('keeps them apart when the two vocabularies share nothing', () => {
     expect(
       shown(
-        getAlignmentsLegendSections(
+        getAlignmentsColorScales(
           model(
             [{ color: '#e00', label: '5mC methylated' }],
             [{ color: '#f00', label: 'Long insert' }],

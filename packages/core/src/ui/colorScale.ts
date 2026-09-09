@@ -94,9 +94,15 @@ function sectionOf(scale: ColorScale, lone: boolean): LegendSection {
  * scale, in the order declared. On screen `FloatingLegend` renders the result
  * and the export flattens it through `legendEntries`, so the two cannot
  * describe different colors.
+ *
+ * A lone scale names itself: section titles draw only beside other sections,
+ * so a lone categorical scale's title becomes the box's (Manhattan's field
+ * name over its values) and a lone ramp's goes on its row.
  */
 export function legendSpecOf(scales: ColorScale[]): LegendSpec {
+  const lone = scales.length === 1 ? scales[0] : undefined
   return {
+    title: lone?.kind === 'categorical' ? lone.title : undefined,
     sections: scales.map(scale => sectionOf(scale, scales.length === 1)),
   }
 }

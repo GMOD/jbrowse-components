@@ -110,7 +110,7 @@ describe('overlay palettes follow the theme', () => {
 // carry a comment saying these must agree word for word — legendUtils because
 // "one box can show both", `connectionLabel` because "a color means one thing
 // whether the reader met it on a swatch, a fill or a curve". They are two hand-
-// kept tables, and `getAlignmentsLegendSections` de-dupes the connections
+// kept tables, and `getAlignmentsColorScales` de-dupes the connections
 // section against the already-keyed rows on `${color} ${label}`: drift one
 // string and the same connection is keyed twice in one box under two wordings.
 // One of these has already drifted once ("deletion"), and it was caught by

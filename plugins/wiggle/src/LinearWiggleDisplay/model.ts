@@ -355,11 +355,16 @@ export default function stateModelFactory(
           // cross hatches are meaningless in density mode (score maps to color,
           // not height), which `showCrossHatches` also enforces on the drawing
           // side so a hatch enabled elsewhere doesn't strand itself here
-          ...makeShowSubMenu(
-            self.isDensityMode
-              ? [legendCheckboxItem(self)]
-              : [makeCrossHatchItem(self)],
-          ),
+          // The key is density's ramp, so the row greys out elsewhere — and
+          // stays, so its display-type pin is reachable whatever the rendering
+          ...makeShowSubMenu([
+            ...(self.isDensityMode ? [] : [makeCrossHatchItem(self)]),
+            legendCheckboxItem(self, {
+              disabled: !self.isDensityMode,
+              disabledHelpText:
+                'Density paints the score as color; every other rendering keys it on the axis',
+            }),
+          ]),
           // point size / line width are top-level submenus, each present only in
           // its respective scatter / line rendering
           ...makePointSizeMenuItems(self),

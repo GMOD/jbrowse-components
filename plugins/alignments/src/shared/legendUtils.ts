@@ -32,7 +32,8 @@ import type {
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
 import type { ColorPalette } from '../shaders/colors.ts'
 import type { ArcColorByType, ColorBy, ColorSchemeType } from './types.ts'
-import type { LegendItem, LegendSection, LegendSwatch } from '@jbrowse/core/ui'
+import type { LegendItem, LegendSwatch } from '@jbrowse/core/ui'
+import type { CategoricalScale, ColorScale } from '@jbrowse/core/ui/colorScale'
 
 export type { LegendItem } from '@jbrowse/core/ui'
 
@@ -154,13 +155,28 @@ function rowKeys(item: LegendItem) {
     : swatches.map(s => legendKey({ color: s.color, label: item.label }))
 }
 
+// A section's rows as a categorical scale's entries. `value` is what the
+// row classifies; a note row has none and takes its label.
+function scaleOf(
+  id: string,
+  title: string,
+  items: LegendItem[],
+): CategoricalScale {
+  return {
+    kind: 'categorical',
+    id,
+    title,
+    entries: items.map(item => ({ ...item, value: item.value ?? item.label })),
+  }
+}
+
 /**
- * The display's color vocabularies as legend sections: the read fills, the
+ * The display's color vocabularies as its color scales: the read fills, the
  * paired-end arc / read-cloud colors, and the linked-read connection curves.
- * The on-screen `FloatingLegend` and the SVG export both build from this one
- * list, so a heading can't appear in one and not the other. Empty sections drop
- * out and titles only appear once more than one survives, so a plain track still
- * shows a single untitled list.
+ * `LegendMixin`'s `colorScales` lists them, so the on-screen key and the SVG
+ * export derive from this one list and a heading can't appear in one and not
+ * the other. Empty scales drop out of the key and titles only appear once more
+ * than one survives, so a plain track still shows a single untitled list.
  *
  * Reads and arcs are **one** section whenever they share a color, which is the
  * usual case: both classify pairs, and a shared bucket is the same swatch on
@@ -185,12 +201,12 @@ function rowKeys(item: LegendItem) {
  * (inverted)" against the fill's "Split paired-end read (inverted)"), still
  * earns its row.
  */
-export function getAlignmentsLegendSections(model: {
+export function getAlignmentsColorScales(model: {
   legendItems: () => LegendItem[]
   arcLegendTitle: string
   arcLegendItems: () => LegendItem[]
   bezierLegendItems: () => LegendItem[]
-}): LegendSection[] {
+}): ColorScale[] {
   const reads = model.legendItems()
   const arcs = model.arcLegendItems()
   // Color-less rows (headings, notes) never count as a shared color — a `reads`
@@ -216,13 +232,13 @@ export function getAlignmentsLegendSections(model: {
     [...readSection.items, ...arcSection.items].flatMap(rowKeys),
   )
   return [
-    readSection,
-    arcSection,
-    {
-      id: 'connections',
-      title: 'Read connections',
-      items: model.bezierLegendItems().filter(i => !keyed.has(legendKey(i))),
-    },
+    scaleOf(readSection.id, readSection.title, readSection.items),
+    scaleOf(arcSection.id, arcSection.title, arcSection.items),
+    scaleOf(
+      'connections',
+      'Read connections',
+      model.bezierLegendItems().filter(i => !keyed.has(legendKey(i))),
+    ),
   ]
 }
 
@@ -302,7 +318,7 @@ const CATEGORY_LEGEND: Record<SwatchCategory, string> = {
 }
 
 /**
- * How wide this display lets its floating legend grow, against the 200 default.
+ * How wide this display lets its floating key grow, against the 200 default.
  *
  * Sized to the longest label the tables here can produce — "Split paired-end
  * read (same strand)" at ~173px in the 10px app font — plus the box's own

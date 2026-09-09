@@ -88,17 +88,19 @@ export function SvgLegend({
   const gutter =
     svgLegendAreaReserved(opts) && (model.svgLegendWidth?.() ?? 0) > 0
   const top = model.legendTop ?? 0
-  return model.showLegend ? (
-    <g transform={`translate(0 ${top})`}>
-      <SvgColorLegend
-        entries={legendEntries(model.legendSpec)}
-        canvasWidth={width}
-        x={gutter ? width + GUTTER_INSET : undefined}
-        maxHeight={height - top}
-        testid="color-legend"
-      />
-    </g>
-  ) : null
+  if (!model.showLegend) {
+    return null
+  }
+  const key = (
+    <SvgColorLegend
+      entries={legendEntries(model.legendSpec)}
+      canvasWidth={width}
+      x={gutter ? width + GUTTER_INSET : undefined}
+      maxHeight={height - top}
+      testid="color-legend"
+    />
+  )
+  return top > 0 ? <g transform={`translate(0 ${top})`}>{key}</g> : key
 }
 
 /**

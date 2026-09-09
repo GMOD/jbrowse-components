@@ -80,6 +80,8 @@ import {
 import { groupByForMode, groupKeySpaceOf } from '../shared/groupFeatures.ts'
 import {
   arcKeyFoldsIntoReadKey,
+  LEGEND_MAX_WIDTH,
+  getAlignmentsColorScales,
   getArcLegendItems,
   getReadDisplayLegendItems,
   readCategoryLabelOverrides,
@@ -201,6 +203,7 @@ import type {
 } from './sectionLayout.ts'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
@@ -2255,6 +2258,31 @@ export default function stateModelFactory(
             this.bezierConnectionColorTypes,
             self.colorPalette,
           )
+        },
+
+        /**
+         * #getter
+         * `LegendMixin`'s hook: the read fills, the arc or read-cloud colors
+         * and the connection curves, merged and deduped by
+         * `getAlignmentsColorScales`. Empty while the legend is hidden, since
+         * the category scans above are.
+         */
+        get colorScales(): ColorScale[] {
+          return getAlignmentsColorScales({
+            legendItems: () => self.legendItems(),
+            arcLegendTitle: self.arcLegendTitle,
+            arcLegendItems: () => self.arcLegendItems(),
+            bezierLegendItems: () => this.bezierLegendItems(),
+          })
+        },
+
+        /**
+         * #getter
+         * `LegendMixin`'s hook: the split-read rows have to name which kind of
+         * read they classify, and that is the tree's longest label.
+         */
+        get legendMaxWidth(): number {
+          return LEGEND_MAX_WIDTH
         },
 
         /**
