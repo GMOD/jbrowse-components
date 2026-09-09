@@ -25,6 +25,7 @@
   "exports": {
     "./BlockMsg": "./src/BlockMsg.tsx",
     "./BottomRightIndicators": "./src/BottomRightIndicators.tsx",
+    "./ChromeHighlight": "./src/ChromeHighlight.tsx",
     "./ChromeLegend": "./src/ChromeLegend.tsx",
     "./CoarseTierMixin": "./src/CoarseTierMixin.ts",
     "./ContextMenuMixin": "./src/ContextMenuMixin.ts",
@@ -68,6 +69,7 @@
     "./installClearHoverOnViewportChange": "./src/installClearHoverOnViewportChange.ts",
     "./installGlobalFetchAutorun": "./src/installGlobalFetchAutorun.ts",
     "./installPerRegionFetchAutoruns": "./src/installPerRegionFetchAutoruns.ts",
+    "./highlightHost": "./src/highlightHost.ts",
     "./legendHost": "./src/legendHost.ts",
     "./planRegionFetch": "./src/planRegionFetch.ts",
     "./fetchInputs": "./src/fetchInputs.ts",
@@ -114,6 +116,7 @@
     "exports": {
       "./BlockMsg": "./esm/BlockMsg.js",
       "./BottomRightIndicators": "./esm/BottomRightIndicators.js",
+      "./ChromeHighlight": "./esm/ChromeHighlight.js",
       "./ChromeLegend": "./esm/ChromeLegend.js",
       "./CoarseTierMixin": "./esm/CoarseTierMixin.js",
       "./ContextMenuMixin": "./esm/ContextMenuMixin.js",
@@ -157,6 +160,7 @@
       "./installClearHoverOnViewportChange": "./esm/installClearHoverOnViewportChange.js",
       "./installGlobalFetchAutorun": "./esm/installGlobalFetchAutorun.js",
       "./installPerRegionFetchAutoruns": "./esm/installPerRegionFetchAutoruns.js",
+      "./highlightHost": "./esm/highlightHost.js",
       "./legendHost": "./esm/legendHost.js",
       "./planRegionFetch": "./esm/planRegionFetch.js",
       "./fetchInputs": "./esm/fetchInputs.js",

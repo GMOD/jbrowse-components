@@ -76,6 +76,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-rowcount">**rowCount**</span><br><code>number</code> | bands a span stacks into: the highest `row` any loaded layer carries, plus one | LinearMarkDisplay |
 | <span id="getter-renderstate">**renderState**</span><br><code>MarkRenderState</code> | geometry and scale for the plot canvas, the same box the hit test measures in | LinearMarkDisplay |
 | <span id="getter-regionrefnames">**regionRefNames**</span><br><code>ReadonlyMap&lt;number, string&gt;</code> | displayedRegionIndex → refName, for the hit test | LinearMarkDisplay |
+| <span id="getter-hoverink">**hoverInk**</span><br><code>HighlightRect[]</code> | The box the hovered instance painted, for the chrome's highlight; the context menu's hit stands in while a menu is open. In the chrome's px, so the plot's inset is added to the canvas box. | LinearMarkDisplay |
 | <span id="getter-legendsections">**legendSections**</span><br><code>MarkLegendSection[]</code> | the colour keys the loaded regions carry, one per scaled mark | LinearMarkDisplay |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | `LegendMixin`'s hook: the keys as color scales, so the chrome and the export draw the legend off the tables the worker resolved | LinearMarkDisplay |
 | <span id="getter-parenttrack">**parentTrack**</span><br><code>AbstractTrackModel</code> |  | [BaseDisplay](../basedisplay#getter-parenttrack) |

@@ -33,6 +33,7 @@ import {
   makePointSizeSubMenu,
 } from '@jbrowse/plugin-wiggle'
 import { installUpload } from '@jbrowse/render-core/installUpload'
+import { inkOfInstances } from '@jbrowse/render-core/marks'
 import {
   axisPlotBox,
   makeCrossHatchItem,
@@ -71,6 +72,7 @@ import type {
   MarkEncoding,
 } from '@jbrowse/core/util/markEncoding'
 import type { Region } from '@jbrowse/core/util/types/data'
+import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -393,6 +395,29 @@ export function stateModelFactory(
             r.refName,
           ]),
         )
+      },
+      /**
+       * #getter
+       * The box the hovered instance painted, for the chrome's highlight; the
+       * context menu's hit stands in while a menu is open. In the chrome's px,
+       * so the plot's inset is added to the canvas box.
+       */
+      get hoverInk(): HighlightRect[] {
+        const hit = self.hoveredFeature ?? self.contextMenuInfo?.hit
+        if (!hit) {
+          return []
+        }
+        const top = axisPlotBox(self.height).yTop
+        return inkOfInstances(
+          self.markList,
+          self.renderBlocks,
+          index => self.rpcDataMap.get(index),
+          this.renderState,
+          index =>
+            index === hit.regionIndex
+              ? [{ mark: hit.markIndex, index: hit.instance }]
+              : undefined,
+        ).map(r => ({ ...r, top: r.top + top }))
       },
       /**
        * #getter

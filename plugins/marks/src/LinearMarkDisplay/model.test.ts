@@ -312,3 +312,33 @@ test('a glyph scale reaches the worker beside the colour, and its key draws the 
     },
   ])
 })
+
+test('the hovered instance lights the box its shape painted, inset by the plot top', () => {
+  const { createDisplay } = createTestEnvironment([
+    { shape: 'span', encoding: { row: 'sampleIndex' } },
+  ])
+  const { display } = createDisplay()
+  display.setRpcData(0, result([{ y: [0, 0], row: [0, 1] }]), REGION)
+  expect(display.hoverInk).toEqual([])
+  display.setHoveredFeature({
+    markIndex: 0,
+    regionIndex: 0,
+    instance: 1,
+    refName: 'ctgA',
+    start: 100,
+    end: 150,
+    y: undefined,
+    color: undefined,
+    screenX: 0,
+    screenY: 0,
+  })
+  const [box] = display.hoverInk
+  const block = display.renderBlocks[0]!
+  const pxPerBp = (block.screenEndPx - block.screenStartPx) / 10_000
+  expect(box!.left).toBeCloseTo(block.screenStartPx + 100 * pxPerBp)
+  expect(box!.width).toBeCloseTo(50 * pxPerBp)
+  expect(box!.height).toBe(display.renderState.canvasHeight / 2)
+  expect(box!.top).toBeGreaterThan(display.renderState.canvasHeight / 2)
+  display.clearHoveredFeature()
+  expect(display.hoverInk).toEqual([])
+})
