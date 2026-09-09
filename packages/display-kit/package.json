@@ -25,6 +25,7 @@
   "exports": {
     "./BlockMsg": "./src/BlockMsg.tsx",
     "./BottomRightIndicators": "./src/BottomRightIndicators.tsx",
+    "./ChromeLegend": "./src/ChromeLegend.tsx",
     "./CoarseTierMixin": "./src/CoarseTierMixin.ts",
     "./ContextMenuMixin": "./src/ContextMenuMixin.ts",
     "./DensityTierMixin": "./src/DensityTierMixin.ts",
@@ -113,6 +114,7 @@
     "exports": {
       "./BlockMsg": "./esm/BlockMsg.js",
       "./BottomRightIndicators": "./esm/BottomRightIndicators.js",
+      "./ChromeLegend": "./esm/ChromeLegend.js",
       "./CoarseTierMixin": "./esm/CoarseTierMixin.js",
       "./ContextMenuMixin": "./esm/ContextMenuMixin.js",
       "./DensityTierMixin": "./esm/DensityTierMixin.js",

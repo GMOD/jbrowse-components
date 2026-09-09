@@ -1,12 +1,12 @@
+import ChromeLegend from '@jbrowse/display-kit/ChromeLegend'
 import { fireEvent, render } from '@testing-library/react'
 
 import { createTestEnvironment } from '../testEnv.ts'
-import HicOverlayPanel from './HicOverlayPanel.tsx'
 import { INSTANCE_STRIDE_WORDS } from './shaders/hic.iface.generated.ts'
 
 import type { HicDataResult } from '../../RenderHicDataRPC/types.ts'
 
-// One contact, which is all `hasLegendData` needs: a positive `maxScore` is the
+// One contact, which is all the scale needs: a positive `maxScore` is the
 // whole gate on the color key.
 const DATA: HicDataResult = {
   instances: new Float32Array(INSTANCE_STRIDE_WORDS),
@@ -31,17 +31,28 @@ const DATA: HicDataResult = {
 
 const { createDisplay } = createTestEnvironment()
 
+// The key is the chrome's, off `colorScales`: what these check is the scale
+// this display declares and that the chrome's box draws it.
 function renderLegend() {
   const { display } = createDisplay()
   display.setRpcData(DATA)
   display.setShowLegend(true)
-  expect(display.showLegendArea).toBe(true)
-  return { display, ...render(<HicOverlayPanel model={display} />) }
+  expect(display.colorScales).toHaveLength(1)
+  return { display, ...render(<ChromeLegend model={display} />) }
 }
 
-// The color key is `FloatingLegend`'s box now, not a hand-rolled MUI panel, so
-// the on-screen dismiss is the same `×` `HicSVGColorLegend` draws into an
-// exported figure.
+test('no scale until the data lands with a positive saturation point', () => {
+  const { display } = createDisplay()
+  expect(display.colorScales).toEqual([])
+  display.setRpcData(DATA)
+  expect(display.colorScales[0]).toMatchObject({
+    kind: 'ramp',
+    id: 'contacts',
+    title: 'Contacts',
+    domain: [0, 20],
+  })
+})
+
 test('the legend is the shared floating box', () => {
   const { getByTestId } = renderLegend()
   expect(getByTestId('floating-legend')).toBeTruthy()
@@ -57,10 +68,13 @@ test('the dismiss control is a plain × that turns the legend off', () => {
   expect(display.showLegend).toBe(false)
 })
 
-test('the gradient bar rides along as the box body', () => {
-  const { getByTestId } = renderLegend()
+test('the gradient bar is a row of the box, captioned and labelled', () => {
+  const { getByTestId, getByText } = renderLegend()
   const bar = getByTestId('floating-legend').querySelector<HTMLElement>(
     '[style*="linear-gradient"]',
   )
   expect(bar).toBeTruthy()
+  getByText('Contacts')
+  getByText('0')
+  getByText('20')
 })

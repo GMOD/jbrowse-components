@@ -1,6 +1,6 @@
 import {
   generateColorRamp,
-  getLegendStops,
+  legendStops,
   makeHicFillStyleLut,
 } from './colorRamp.ts'
 import { MIN_VISIBLE_ALPHA } from './shaders/hic.consts.generated.ts'
@@ -123,7 +123,7 @@ describe('color ramps', () => {
   test.each(SCHEMES)(
     '%s legend samples the same source as the ramp',
     scheme => {
-      const stops = getLegendStops(scheme)
+      const stops = legendStops(scheme)
       const ramp = generateColorRamp(scheme)
       expect(stops).toHaveLength(11)
       expect(stops[0]!.offset).toBe(0)
@@ -132,12 +132,11 @@ describe('color ramps', () => {
       // a color the heatmap never paints
       for (const i of [0, 10]) {
         const o = (i === 0 ? 0 : 255) * 4
-        expect(stops[i]!.rgba).toEqual([
-          ramp[o]!,
-          ramp[o + 1]!,
-          ramp[o + 2]!,
-          ramp[o + 3]!,
-        ])
+        expect(stops[i]).toEqual({
+          offset: i / 10,
+          color: `rgb(${ramp[o]},${ramp[o + 1]},${ramp[o + 2]})`,
+          opacity: ramp[o + 3]! / 255,
+        })
       }
     },
   )

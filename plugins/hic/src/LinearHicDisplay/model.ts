@@ -7,7 +7,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { installPrerequisiteFetch } from '@jbrowse/core/util/installPrerequisiteFetch'
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin, {
-  gradientSvgLegendWidth,
+  svgLegendGutterWidth,
 } from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { installGlobalFetchAutorun } from '@jbrowse/display-kit/installGlobalFetchAutorun'
@@ -23,6 +23,8 @@ import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
 import { calcAxisBlocks } from '../regionOffsets.ts'
+import { legendStops } from './components/colorRamp.ts'
+import { hicScaleDomain } from './components/scaleLabels.ts'
 import { findContactAt } from './contactLookup.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
@@ -37,6 +39,7 @@ import type {
   HicUploadData,
 } from './components/hicRenderingBackendTypes.ts'
 import type { HicTrackConfigModel } from './configSchema.ts'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
@@ -162,6 +165,15 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
+       * Whether the resolution box is up: the setting, and a file with
+       * resolutions to pick between. Read by the overlay that draws it and by
+       * the chrome, which starts the legend below it.
+       */
+      get showResolutionBox(): boolean {
+        return this.showResolutionControls && this.hasResolutions
+      },
+      /**
+       * #getter
        * The user's persisted normalization choice. May name a scheme the current
        * `.hic` file doesn't actually offer — `activeNormalization` resolves that.
        */
@@ -246,23 +258,29 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
       },
       /**
        * #getter
-       * Whether there's a color scale worth drawing a legend for: data loaded
-       * with a positive saturation point. The single place the `colorMaxScore`
-       * "0 means nothing to show" sentinel is interpreted — legend consumers
-       * read this, not the raw score.
+       * `LegendMixin`'s hook: the count ramp, once data has loaded with a
+       * positive saturation point — the single place the `colorMaxScore` "0
+       * means nothing to show" sentinel is interpreted. The stops are read
+       * out of the ramp bytes the GPU uploads, so the key and the heatmap are
+       * one table; the title says which scale the domain is read on.
+       * `svgLegendWidth()` deliberately does not gate on the data — see its
+       * note.
        */
-      get hasLegendData(): boolean {
-        return this.colorMaxScore > 0
-      },
-      /**
-       * #getter
-       * Whether a legend is drawn: the setting is on AND there is a scale worth
-       * drawing one for. Read by both the on-screen overlay panel and the SVG
-       * export, so an export can't disagree with the figure it is exporting.
-       * `svgLegendWidth()` deliberately does not gate on this — see its note.
-       */
-      get showLegendArea(): boolean {
-        return self.showLegend && this.hasLegendData
+      get colorScales(): ColorScale[] {
+        const score = this.colorMaxScore
+        if (score <= 0) {
+          return []
+        }
+        const { useLogScale } = self
+        return [
+          {
+            kind: 'ramp',
+            id: 'contacts',
+            title: useLogScale ? 'Contacts (log)' : 'Contacts',
+            domain: hicScaleDomain(score, useLogScale),
+            stops: legendStops(self.colorScheme),
+          },
+        ]
       },
       /**
        * #getter
@@ -482,12 +500,12 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
 
       /**
        * #method
-       * Width of the SVG legend (consumed by SVGLinearGenomeView), via the
-       * shared helper — see `gradientSvgLegendWidth` for why it reserves on
-       * the setting alone rather than gating on `hasLegendData`.
+       * The matrix fills its band, so the export parks the key beside it —
+       * see `svgLegendGutterWidth` for why it reserves on the setting alone
+       * rather than on the data.
        */
       svgLegendWidth(): number {
-        return gradientSvgLegendWidth(self)
+        return svgLegendGutterWidth(self)
       },
     }))
     .actions(self => ({

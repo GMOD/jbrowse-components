@@ -1,13 +1,10 @@
 import { getBpDisplayStr } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { FloatingLegend, TrackOverlayPortal } from '@jbrowse/display-ui'
+import { TrackOverlayPortal } from '@jbrowse/display-ui'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
 import { observer } from 'mobx-react'
-
-import { getLegendCssGradient } from './colorRamp.ts'
-import { getHicScaleLabels } from './scaleLabels.ts'
 
 import type { LinearHicDisplayModel } from '../model.ts'
 
@@ -50,19 +47,6 @@ const useStyles = makeStyles()(theme => ({
   resetSlot: {
     width: 18,
     display: 'flex',
-  },
-  gradientBar: {
-    width: 100,
-    height: 10,
-    border: `1px solid ${theme.palette.divider}`,
-    // clip the gradient to the padding box so it doesn't paint under the
-    // translucent divider border — otherwise the border composites over the
-    // gradient's red end and the left edge renders a dark-red sliver at 0
-    backgroundClip: 'padding-box',
-  },
-  labels: {
-    display: 'flex',
-    justifyContent: 'space-between',
   },
 }))
 
@@ -112,78 +96,38 @@ const ResolutionRow = observer(function ResolutionRow({
   )
 })
 
-// Where the legend starts when the resolution box holds the corner. Deliberately
-// a clearance rather than a sum: the row's height is whichever of its contents
-// is tallest — the `<select>`, or the reset `IconButton` beside it once the
-// resolution is biased — and the select's own is the UA's at `fontSize: 10`,
-// which moves with the theme's font family. Measured in Chrome at 15px under
-// the default Roboto stack (box bottom 29, legend 33) and 18px under
-// `system-ui` (box bottom 32, legend 36). 38 clears both with room, and erring
-// high costs a few px of gap while erring low overlaps the box.
-const RESOLUTION_ROW_CLEARANCE = 38
+// Where the chrome's legend starts when the resolution box holds the corner.
+// Deliberately a clearance rather than a sum: the row's height is whichever of
+// its contents is tallest — the `<select>`, or the reset `IconButton` beside it
+// once the resolution is biased — and the select's own is the UA's at
+// `fontSize: 10`, which moves with the theme's font family. Measured in Chrome
+// at 15px under the default Roboto stack (box bottom 29, legend 33) and 18px
+// under `system-ui` (box bottom 32, legend 36). 38 clears both with room, and
+// erring high costs a few px of gap while erring low overlaps the box.
+export const RESOLUTION_ROW_CLEARANCE = 38
 
-// The color key rides the shared `FloatingLegend` — its box, its title, its `×`
-// and its gesture ownership — and supplies the one thing a row list cannot say:
-// a continuous gradient. The `×` is then the same glyph `HicSVGColorLegend`
-// draws, so the exported figure and the screen agree. Only the resolution
-// dropdown stays bespoke, in its own portal above it.
+// The juicebox-style resolution box, in its own portal above the plot. The
+// color key beside it is the chrome's, off `colorScales`.
 const HicOverlayPanel = observer(function HicOverlayPanel({
   model,
 }: {
   model: LinearHicDisplayModel
 }) {
   const { classes } = useStyles()
-  const {
-    colorMaxScore,
-    colorScheme,
-    useLogScale,
-    showLegendArea,
-    showResolutionControls,
-    hasResolutions,
-  } = model
-
-  const showResArea = showResolutionControls && hasResolutions
-  const { minLabel, maxLabel } = getHicScaleLabels(colorMaxScore, useLogScale)
-  return (
-    <>
-      {showResArea ? (
-        // portal above the inter-region padding masks so the box isn't buried
-        // at whole-genome / multi-region scale (see TrackOverlayPortal)
-        <TrackOverlayPortal>
-          <div
-            className={classes.panel}
-            // same reason as FloatingLegend: a panel that takes pointer events
-            // must claim the press, or dragging its text pans the view
-            // underneath
-            data-gesture-owner="true"
-          >
-            <ResolutionRow model={model} />
-          </div>
-        </TrackOverlayPortal>
-      ) : null}
-      {showLegendArea ? (
-        <FloatingLegend
-          title="Contacts"
-          top={showResArea ? RESOLUTION_ROW_CLEARANCE : undefined}
-          onDismiss={() => {
-            model.setShowLegend(false)
-          }}
-        >
-          <div
-            className={classes.gradientBar}
-            // backgroundImage (longhand), not the `background` shorthand: the
-            // shorthand resets background-clip back to border-box, undoing the
-            // padding-box clip and re-introducing the dark-red sliver at 0
-            style={{ backgroundImage: getLegendCssGradient(colorScheme) }}
-          />
-          <div className={classes.labels}>
-            <span>{minLabel}</span>
-            <span>{maxLabel}</span>
-          </div>
-        </FloatingLegend>
-      ) : null}
-    </>
-  )
+  return model.showResolutionBox ? (
+    // portal above the inter-region padding masks so the box isn't buried at
+    // whole-genome / multi-region scale (see TrackOverlayPortal)
+    <TrackOverlayPortal>
+      <div
+        className={classes.panel}
+        // same reason as FloatingLegend: a panel that takes pointer events
+        // must claim the press, or dragging its text pans the view underneath
+        data-gesture-owner="true"
+      >
+        <ResolutionRow model={model} />
+      </div>
+    </TrackOverlayPortal>
+  ) : null
 })
 
 export default HicOverlayPanel

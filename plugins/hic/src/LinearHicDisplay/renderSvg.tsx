@@ -2,12 +2,10 @@ import { svgNodeId } from '@jbrowse/core/svg/svgId'
 /* eslint-disable react-refresh/only-export-components */
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { svgLegendAreaReserved } from '@jbrowse/display-kit/types'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
-import HicSVGColorLegend from './components/HicSVGColorLegend.tsx'
 import { HIC_MARKS } from './components/hicMarks.ts'
 
 import type { LinearHicDisplayModel } from './model.ts'
@@ -27,14 +25,7 @@ function HicSvgBody({
   canvasWidth: visibleWidth,
   opts,
 }: LgvSvgBodyProps<LinearHicDisplayModel>) {
-  const {
-    hicRegions,
-    colorScheme,
-    showLegendArea,
-    useLogScale,
-    colorMaxScore,
-    renderState,
-  } = self
+  const { hicRegions, renderState } = self
 
   // Reuse the model's renderState so the export shares one source of truth for
   // the transform, color params, and fit-to-height yScalar with the on-screen
@@ -44,37 +35,25 @@ function HicSvgBody({
   // is the layer's.
   const exportState = { ...renderState, canvasWidth: visibleWidth }
   return (
-    <>
-      <SvgClipRect
-        id={`hic-clip-${svgNodeId(self)}`}
+    <SvgClipRect
+      id={`hic-clip-${svgNodeId(self)}`}
+      width={visibleWidth}
+      height={height}
+    >
+      <PaintLayer
         width={visibleWidth}
         height={height}
-      >
-        <PaintLayer
-          width={visibleWidth}
-          height={height}
-          opts={opts}
-          paint={ctx => {
-            paintMarkBlocks(
-              ctx,
-              HIC_MARKS,
-              hicRegions,
-              canvasWideBlocks([0], visibleWidth),
-              exportState,
-            )
-          }}
-        />
-      </SvgClipRect>
-      {showLegendArea ? (
-        <HicSVGColorLegend
-          maxScore={colorMaxScore}
-          colorScheme={colorScheme}
-          useLogScale={useLogScale}
-          width={visibleWidth}
-          positionOutside={svgLegendAreaReserved(opts)}
-          idSuffix={self.id}
-        />
-      ) : null}
-    </>
+        opts={opts}
+        paint={ctx => {
+          paintMarkBlocks(
+            ctx,
+            HIC_MARKS,
+            hicRegions,
+            canvasWideBlocks([0], visibleWidth),
+            exportState,
+          )
+        }}
+      />
+    </SvgClipRect>
   )
 }

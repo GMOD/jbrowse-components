@@ -12,8 +12,8 @@ import type { ColorRampStop } from '@jbrowse/core/util/colorRamp'
 export type RGBA = ColorRampStop
 
 // Single source of truth for each scheme. Used to build the GPU/Canvas2D
-// 256x1 RGBA ramp AND the CSS/SVG legend gradients. Stops are evenly spaced,
-// which is what `sampleColorRamp` interpolates between.
+// 256x1 RGBA ramp AND the legend gradient. Stops are evenly spaced, which is
+// what `sampleColorRamp` interpolates between.
 const FALL_STOPS: readonly RGBA[] = [
   [255, 255, 255, 255],
   [255, 255, 204, 255],
@@ -58,7 +58,7 @@ export const DEFAULT_HIC_COLOR_SCHEME: HicColorScheme = 'juicebox'
 
 // Viridis is the full 256-stop spec (shared with wiggle density via
 // @jbrowse/core/util/colorRamp) so the heatmap gets the smooth
-// perceptually-uniform gradient; legends read an 11-stop subset out of the
+// perceptually-uniform gradient; the legend reads an 11-stop subset out of the
 // built LUT, so a legend swatch is byte-identical to a heatmap entry.
 const SCHEMES: Record<HicColorScheme, readonly RGBA[]> = {
   fall: FALL_STOPS,
@@ -83,45 +83,11 @@ export function generateColorRamp(colorScheme: HicColorScheme): Uint8Array {
 
 const LEGEND_STOP_COUNT = 11
 
-// 11 evenly-spaced legend stops read out of the ramp bytes the GPU uploads —
-// entry round(t * 255), the same index math stopsFromRampLut uses for the SVG
-// stops below, so the CSS and SVG legends and the heatmap are one table.
-export function getLegendStops(colorScheme: HicColorScheme) {
-  const ramp = RAMPS[colorScheme]
-  const out: { offset: number; rgba: RGBA }[] = []
-  for (let i = 0; i < LEGEND_STOP_COUNT; i++) {
-    const t = i / (LEGEND_STOP_COUNT - 1)
-    const o = Math.round(t * 255) * 4
-    out.push({
-      offset: t,
-      rgba: [ramp[o]!, ramp[o + 1]!, ramp[o + 2]!, ramp[o + 3]!],
-    })
-  }
-  return out
-}
-
-// Flatten a ramp color onto a white legend background so the CSS gradient uses
-// plain opaque stops. The juicebox scheme fades alpha 0->255; a translucent
-// start stop rasterizes to a faint darker sliver at the bar's left edge, so
-// compositing here keeps the legend a clean white->red with no such artifact.
-function rgbOverWhite([r, g, b, a]: RGBA) {
-  const t = a / 255
-  const flat = (c: number) => Math.round(c * t + 255 * (1 - t))
-  return `rgb(${flat(r)},${flat(g)},${flat(b)})`
-}
-
-export function getLegendCssGradient(colorScheme: HicColorScheme) {
-  const stops = getLegendStops(colorScheme)
-  const parts = stops.map(
-    s => `${rgbOverWhite(s.rgba)} ${(s.offset * 100).toFixed(0)}%`,
-  )
-  return `linear-gradient(to right, ${parts.join(', ')})`
-}
-
-// The SVG legend stops, via the shared helper over the same uploaded bytes.
-// Alpha rides stop-opacity there, which is what keeps the juicebox scheme's
+// The legend's stops, read out of the same ramp bytes the GPU uploads — entry
+// round(t * 255) at bar fraction t — so the key and the heatmap are one table.
+// Alpha rides `opacity`, which is what keeps the juicebox scheme's
 // transparent→opaque fade through exporters with uneven rgba() support.
-export function getLegendSvgStops(colorScheme: HicColorScheme) {
+export function legendStops(colorScheme: HicColorScheme) {
   return stopsFromRampLut(RAMPS[colorScheme], LEGEND_STOP_COUNT)
 }
 

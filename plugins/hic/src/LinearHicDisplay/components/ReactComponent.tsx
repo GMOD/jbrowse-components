@@ -4,7 +4,9 @@ import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
-import HicOverlayPanel from './HicOverlayPanel.tsx'
+import HicOverlayPanel, {
+  RESOLUTION_ROW_CLEARANCE,
+} from './HicOverlayPanel.tsx'
 import { HicRenderer } from './HicRenderer.ts'
 
 import type { HicDataResult } from '../../RenderHicDataRPC/types.ts'
@@ -98,13 +100,15 @@ const LinearHicReactComponent = observer(function LinearHicReactComponent({
 }: {
   model: LinearHicDisplayModel
 }) {
-  const { height, canvasWidth: width } = model
+  const { height, canvasWidth: width, showResolutionBox } = model
   return (
     <DisplayChrome
       model={model}
       factory={HicRenderer}
       testid="hic-display"
       style={{ cursor: 'crosshair', width, height, overflow: 'hidden' }}
+      // the resolution box holds the corner the key would take
+      legendTop={showResolutionBox ? RESOLUTION_ROW_CLEARANCE : undefined}
     >
       {({ canvasRef, mouseTracker }) => (
         <HicBody
