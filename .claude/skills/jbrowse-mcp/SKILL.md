@@ -18,8 +18,8 @@ agent three ways:
 
 - the `initialize` response's `instructions`, which Claude Code shows you and
   Claude Desktop does not (anthropics/claude-ai-mcp#93)
-- the same text ahead of a session's first `run_javascript` result, for the
-  clients that drop it
+- the same text after the value in a session's first `run_javascript` result,
+  for the clients that drop it
 - `docs topic:"live-model"` — read it before your first `run_javascript` call.
   `docs topic:"recipes"` has a verified snippet for most asks,
   `docs topic:"hosted-data"` the config URL for any UCSC or GenArk assembly when
@@ -45,6 +45,8 @@ the picture.
   socket — with another Desktop instance running it attaches to that one.
 - The discipline above lives in `website/docs/agents_live_model.md` and
   `SERVER_INSTRUCTIONS` (`electron/mcp/toolDefinitions.ts`). Edit it there;
-  `products/jbrowse-desktop/src/mcp/docsRoster.test.ts` checks the copies agree
-  and that the instructions and each tool description stay under the 2 KB the
-  clients show the model. Put what must be read first in the first sentence.
+  `products/jbrowse-desktop/src/mcp/docsRoster.test.ts` checks the copies agree,
+  and `pnpm check-mcp-text-caps` (CI lint) that the instructions and each tool
+  description stay under the 2048 characters Claude Code shows the model
+  (sources in `electron/mcp/README.md`). Put what must be read first in the
+  first sentence.

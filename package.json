@@ -20,6 +20,7 @@
     "check-extension-point-reachability": "node --experimental-strip-types scripts/check-extension-point-reachability.ts",
     "check-gated-adapter-budgets": "node --experimental-strip-types scripts/check-gated-adapter-budgets.ts",
     "check-shell-pipefail": "node --experimental-strip-types scripts/check-shell-pipefail.ts",
+    "check-mcp-text-caps": "node --experimental-strip-types scripts/check-mcp-text-caps.ts",
     "check-typescript-pin": "node --experimental-strip-types scripts/check-typescript-pin.ts",
     "check-demo-configs": "node --experimental-strip-types scripts/check-demo-configs.ts",
     "check-core-plugin-sets": "node --experimental-strip-types scripts/check-core-plugin-sets.ts",

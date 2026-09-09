@@ -109,12 +109,31 @@ and, condensed, in the initialize response's `instructions`.
 
 ## What each client shows the model
 
-Claude Code caps a tool description and the server `instructions` at 2 KB each
-(2.1.84). Claude Desktop stores the `instructions` and never shows them to the
-model (anthropics/claude-ai-mcp#93), so there the description of
-`run_javascript` is the whole briefing until the agent calls `docs`. Both texts
-therefore stay under the cap with the essentials first (`CLIENT_TEXT_CAP_BYTES`,
-pinned by `docsRoster.test.ts`), and the stdio server prepends the instructions
-to the first `run_javascript` result of a session that has not read
-`docs topic:"live-model"`. It cannot see chat boundaries, so a pause of
+Claude Code cuts the server `instructions` and each tool description at 2048
+characters, appending "… [truncated]":
+
+- Changelog, 2.1.84 (2026-03): "MCP tool descriptions and server instructions
+  are now capped at 2KB to prevent OpenAPI-generated servers from bloating
+  context" — https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md
+- Reproduced on 2.1.266 (2026-09-09): with `--debug`, the log reads
+  `Server instructions truncated from 3048 to 2048 chars` and
+  `Tool "noop" description truncated from 3048 to 2048 chars`.
+  `pnpm check-mcp-text-caps --probe` repeats that against the installed
+  `claude`, for when the client changes.
+- The Claude Code docs (https://code.claude.com/docs/en/mcp) do not state the
+  cap; the changelog and the observed behaviour are the sources.
+
+Claude Desktop stores the `instructions` and never shows them to the model
+(https://github.com/anthropics/claude-ai-mcp/issues/93, triaged and open;
+https://github.com/anthropics/claude-code/issues/43749 is the same report), so
+there the description of `run_javascript` is the whole briefing until the agent
+calls `docs`.
+
+So both texts stay under the cap with the must-read sentence first
+(`CLIENT_TEXT_CAP_CHARS`; `pnpm check-mcp-text-caps` fails the lint job in
+push.yml when either grows past it, and `docsRoster.test.ts` runs the same check
+— before it existed they had drifted to 2.7 KB and 5 KB). The stdio server also
+appends the instructions to the first `run_javascript` result of a session that
+has not read `docs topic:"live-model"`, after the value so `content[0]` stays
+the value every caller parses. It cannot see chat boundaries, so a pause of
 `SESSION_GAP_MS` since the previous call counts as a new session.

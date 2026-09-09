@@ -9,14 +9,31 @@
 // with the app closed (docs). Every correctness rule lives in the `jb` helper
 // library instead of in tool plumbing.
 
-// Claude Code caps a tool description and the server instructions at 2 KB
-// each (2.1.84); Claude Desktop drops the instructions entirely
-// (anthropics/claude-ai-mcp#93). So every copy the agent reads before any
-// doc stays under the cap with the essentials first, and the stdio server
-// repeats the instructions in a session's first run_javascript result.
-export const CLIENT_TEXT_CAP_BYTES = 2048
+// What a client shows the model, and the sources (kept current in README.md,
+// "What each client shows the model"):
+// - Claude Code cuts the server instructions and each tool description at
+//   2048 characters, appending "… [truncated]". Changelog 2.1.84:
+//   https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md ("MCP
+//   tool descriptions and server instructions are now capped at 2KB");
+//   reproduced on 2.1.266 with `pnpm check-mcp-text-caps --probe`.
+// - Claude Desktop never shows the model the instructions at all:
+//   https://github.com/anthropics/claude-ai-mcp/issues/93.
+// So every copy the agent reads before any doc stays under the cap with the
+// must-read sentence first, and the stdio server repeats the instructions in
+// a session's first run_javascript result. scripts/check-mcp-text-caps.ts
+// enforces the cap; the sizes drifted to 2.7 KB and 5 KB before it existed.
+export const CLIENT_TEXT_CAP_CHARS = 2048
 
-// Sent in the initialize response; see CLIENT_TEXT_CAP_BYTES.
+// Claude Desktop keeps one server process across many chats. The server
+// cannot see chat boundaries, so a pause this long since the previous tool
+// call is read as a new one, and the next run_javascript result carries the
+// instructions again.
+export const SESSION_GAP_MS = 15 * 60_000
+
+export const GUIDANCE_PREFIX =
+  'Guidance from the jbrowse server (repeated here because some clients do not show the server instructions):'
+
+// Sent in the initialize response; see CLIENT_TEXT_CAP_CHARS.
 export const SERVER_INSTRUCTIONS = `JBrowse Desktop (genome browser) control. One interface: run_javascript runs your code against the live session, with the helper library "jb" passed in as an argument (not a global; jbrowse-web publishes the same object as window.jb). open, screenshot and docs cover what code cannot.
 
 FIRST call docs topic "live-model": short, with working examples and every jb member. Then "recipes" has a verified snippet for most asks, and "hosted-data" the config URL for any UCSC or GenArk assembly when nothing is open. Orient with jb.sessionSummary() and never assume state carried over between calls. After changing anything, screenshot AND read the image: a wrong trackId, empty region or dropped settings key renders as a plausible browser with something quietly missing. Verify data claims with jb.getFeatures, not from the picture.
@@ -43,7 +60,7 @@ export const MCP_TOOLS: McpToolDefinition[] = [
   {
     name: 'run_javascript',
     handledBy: 'renderer',
-    description: `Run an async JavaScript function body inside JBrowse Desktop against the LIVE session. This is the whole interface: state, views, data, styling and feature reads are all code. Your code receives these arguments: "jb" (the helper library, the same object jbrowse-web publishes as window.jb; prefer it to the raw model), "session" (the live mobx-state-tree session; re-read it each call, a new config replaces it), "rootModel", "pluginManager", "signal" (aborts at timeoutMs; check it in long loops). READ docs topic "live-model" BEFORE your first call: short, working examples, every jb member. Mutate the model only through actions.
+    description: `Run an async JavaScript function body inside JBrowse Desktop against the LIVE session. READ docs topic "live-model" BEFORE your first call: short, working examples, every jb member. Your code receives these arguments: "jb" (the helper library, the same object jbrowse-web publishes as window.jb; prefer it to the raw model), "session" (the live mobx-state-tree session; re-read it each call, a new config replaces it), "rootModel", "pluginManager", "signal" (aborts at timeoutMs; check it in long loops). This is the whole interface: state, views, data, styling and feature reads are all code. Mutate the model only through actions.
 
 jb in brief. Orient: jb.sessionSummary() first (views, tracks, assemblies, visible regions); jb.inspect(path?) walks the live model by dot-path, listing getters, actions and modelType. Tracks: jb.listTracks(search?, limit?) answers { total, tracks } (trackId, name, type, adapterType, assemblyNames); jb.trackModel(trackId, viewId?) is the shown track's live model; jb.describeSlots(conf) lists every settings key a display accepts; track.applyDisplaySettings(settings) answers { applied, unapplied, failed }; jb.addTrack({ location, index?, assembly?, name?, show?, viewId?, settleMs? }) takes a path or URL. Views: jb.view(viewId?); jb.loadSessionSpec(spec, settleMs?) builds views declaratively (docs topic "session-spec"); view.navToLocString("BRCA1"); await view.launchTrack(id); await jb.visibleRegions(viewId?). Data: jb.getFeatures({ trackId, loc?, assembly?, viewId?, regions?, byteLimit? }) returns live Feature objects (visible region by default); aggregate in code, return only the answer. Wait: await jb.waitReady(ms) after mutations. With several views open, the helpers throw naming the candidates: pass viewId from jb.sessionSummary().
 

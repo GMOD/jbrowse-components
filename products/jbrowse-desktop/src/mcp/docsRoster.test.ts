@@ -4,8 +4,8 @@ import path from 'node:path'
 import { createJbApi } from '@jbrowse/app-core'
 
 import { WHOLE_TOPICS } from '../../electron/mcp/docLimits.ts'
+import { overCap } from '../../electron/mcp/textCaps.ts'
 import {
-  CLIENT_TEXT_CAP_BYTES,
   CODE_TIMEOUT_DEFAULT_MS,
   MCP_TOOLS,
   SERVER_INSTRUCTIONS,
@@ -108,19 +108,12 @@ describe('the copies read before any doc name the load-bearing members', () => {
   }
 })
 
-// Past the cap the client cuts the text, and the sentence that used to say
-// "read docs live-model FIRST" sat at the end of a 5 KB description, so no
-// client ever showed it.
-describe('the copies a client shows the model fit under its cap', () => {
-  const copies = {
-    instructions: SERVER_INSTRUCTIONS,
-    ...Object.fromEntries(MCP_TOOLS.map(t => [t.name, t.description])),
-  }
-  for (const [name, text] of Object.entries(copies)) {
-    it(name, () => {
-      expect(Buffer.byteLength(text)).toBeLessThanOrEqual(CLIENT_TEXT_CAP_BYTES)
-    })
-  }
+// The same gate scripts/check-mcp-text-caps.ts runs in CI, here so the
+// desktop package's own test run says so too. Past the cap the client cuts
+// the text, and "read docs live-model FIRST" sat at the end of a 5 KB
+// description, so no client ever showed it.
+it('the copies a client shows the model fit under its cap', () => {
+  expect(overCap()).toEqual([])
 })
 
 it('every copy stating the timeout default states the real one', () => {

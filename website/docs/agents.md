@@ -107,9 +107,11 @@ The agent gets four tools:
   Claude Code has one, and in Claude Desktop the agent can reach the machine's
   tools through JBrowse Desktop's own Node runtime.
 - **Claude Code is the better-briefed client.** It shows the agent the server's
-  instructions; Claude Desktop currently does not, so there the agent learns the
-  `jb` helpers from the first tool result and from `docs`. If a Desktop session
-  guesses at the model instead, ask it to read `docs topic:"live-model"`.
+  instructions; Claude Desktop currently does not
+  ([anthropics/claude-ai-mcp#93](https://github.com/anthropics/claude-ai-mcp/issues/93)),
+  so there the agent learns the `jb` helpers from its first tool result and from
+  `docs`. If a Desktop session guesses at the model instead, ask it to read
+  `docs topic:"live-model"`.
 
 ## How it works
 

@@ -218,6 +218,11 @@ jobs:
       # stops mid-run having printed something that looks like it finished.
       - name: Check no `| head` under `set -o pipefail`
         run: pnpm check-shell-pipefail
+      # Also source-only. Claude Code shows the model at most 2048 characters
+      # of the MCP server instructions and of each tool description, and the
+      # texts had drifted to 2.7 KB and 5 KB with the must-read sentence last.
+      - name: Check the MCP server's texts fit what clients show the model
+        run: pnpm check-mcp-text-caps
       # Also source-only, and no other job can see it: `pnpm typecheck` is
       # `--noEmit`, so two files whose names differ only by case emit nothing to
       # collide, and only `build:esm` on a case-insensitive checkout notices.

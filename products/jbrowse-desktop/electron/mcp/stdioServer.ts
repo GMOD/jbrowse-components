@@ -1,7 +1,12 @@
 import net from 'node:net'
 import readline from 'node:readline'
 
-import { MCP_TOOLS, SERVER_INSTRUCTIONS } from './toolDefinitions.ts'
+import {
+  GUIDANCE_PREFIX,
+  MCP_TOOLS,
+  SERVER_INSTRUCTIONS,
+  SESSION_GAP_MS,
+} from './toolDefinitions.ts'
 
 // An MCP server over stdio (newline-delimited JSON-RPC 2.0), relaying every
 // tools/call to the running app's bridge socket. Hand-rolled rather than the
@@ -12,14 +17,6 @@ import { MCP_TOOLS, SERVER_INSTRUCTIONS } from './toolDefinitions.ts'
 
 const PROTOCOL_VERSION = '2025-06-18'
 const BRIDGE_TIMEOUT_MS = 180_000
-// Claude Desktop keeps one server process across many chats and never shows
-// the initialize instructions to the model (anthropics/claude-ai-mcp#93). The
-// server cannot see chat boundaries, so a pause this long since the previous
-// tool call is read as a new one.
-export const SESSION_GAP_MS = 15 * 60_000
-
-export const GUIDANCE_PREFIX =
-  'Guidance from the jbrowse server (repeated here because some clients do not show the server instructions):'
 
 interface JsonRpcRequest {
   jsonrpc?: string
@@ -208,7 +205,8 @@ export function runMcpStdioServer({
   const rl = readline.createInterface({ input })
 
   // Whether the agent has been briefed this session: by reading the guide, or
-  // by the guidance the first run_javascript result carried
+  // by the guidance the first run_javascript result carried. Decided when the
+  // call starts, so two calls in flight at once do not both carry it.
   let briefed = false
   let lastCallAt: number | undefined
   function startSessionIfIdle() {
@@ -218,13 +216,15 @@ export function runMcpStdioServer({
     }
     lastCallAt = t
   }
+  // After the tool's own answer, so content[0] stays the value every existing
+  // caller parses (test/mcpConformance.ts, scripts/agent-demos); the model
+  // reads the whole result either way.
   function brief<T extends { content: unknown[] }>(result: T): T {
-    briefed = true
     return {
       ...result,
       content: [
-        { type: 'text', text: `${GUIDANCE_PREFIX}\n\n${SERVER_INSTRUCTIONS}` },
         ...result.content,
+        { type: 'text', text: `${GUIDANCE_PREFIX}\n\n${SERVER_INSTRUCTIONS}` },
       ],
     }
   }
@@ -322,14 +322,13 @@ export function runMcpStdioServer({
             ),
           })
         } else if (MCP_TOOLS.some(t => t.name === name)) {
+          const needsBrief = name === 'run_javascript' && !briefed
+          briefed ||= needsBrief
           const outcome = await callBridge(name, args).catch((e: unknown) => ({
             error: e instanceof Error ? e.message : String(e),
           }))
           const result = toolCallContent(outcome)
-          respond(id, {
-            result:
-              name === 'run_javascript' && !briefed ? brief(result) : result,
-          })
+          respond(id, { result: needsBrief ? brief(result) : result })
         } else {
           respond(id, {
             error: { code: -32602, message: `Unknown tool: ${name}` },

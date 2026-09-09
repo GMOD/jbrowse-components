@@ -21,6 +21,7 @@ import readline from 'node:readline'
 import { fileURLToPath } from 'node:url'
 
 import { defaultSocketPath } from '../electron/mcp/socketPath.ts'
+import { GUIDANCE_PREFIX } from '../electron/mcp/toolDefinitions.ts'
 
 import type { ChildProcess } from 'node:child_process'
 
@@ -240,13 +241,32 @@ try {
   // No delay. A page announces its MCP listener on mount, before it has loaded
   // anything, so `open` used to answer here in a quarter second with a blank
   // app — and this call was the one that found out.
-  const coldRead = await client.callJson('run_javascript', {
+  const coldAll = await client.callAll('run_javascript', {
     code: 'return jb.sessionSummary()',
   })
+  const coldRead = JSON.parse(coldAll[0]?.text ?? 'null') as {
+    value?: { assemblyNames?: string[] }
+  }
   check(
     'a call straight after open sees the opened session',
     coldRead.value?.assemblyNames?.includes('volvox') === true,
     coldRead.value,
+  )
+  // Clients that drop the initialize instructions (Claude Desktop) get them
+  // here, after the value so the value stays content[0]
+  check(
+    "a session's first run_javascript result carries the briefing after the value",
+    coldAll.length === 2 &&
+      coldAll[1]?.text?.startsWith(GUIDANCE_PREFIX) === true,
+    coldAll.map(c => c.text?.slice(0, 60)),
+  )
+  const secondRead = await client.callAll('run_javascript', {
+    code: 'return 1',
+  })
+  check(
+    'the briefing is not repeated on the next call',
+    secondRead.length === 1,
+    secondRead.length,
   )
 
   const listed = await client.rpc('tools/list', {})

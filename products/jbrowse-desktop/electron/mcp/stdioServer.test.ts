@@ -13,12 +13,11 @@ import readline from 'node:readline'
 import { PassThrough } from 'node:stream'
 
 import {
-  GUIDANCE_PREFIX,
-  SESSION_GAP_MS,
   runMcpStdioServer,
   unreachableMessage,
   versionSkewNote,
 } from './stdioServer.ts'
+import { GUIDANCE_PREFIX, SESSION_GAP_MS } from './toolDefinitions.ts'
 
 // the bundled .md imports do not resolve under jest; the briefing tests only
 // need to see a docs call answer
@@ -156,15 +155,16 @@ test('initialize, tools/list, and a relayed tools/call', async () => {
   const call = await server.next()
   expect(seen).toEqual(['run_javascript'])
   expect(call.result?.isError).toBeUndefined()
-  expect(JSON.parse(call.result?.content?.at(-1)?.text ?? '')).toEqual({
+  expect(JSON.parse(call.result?.content?.[0]?.text ?? '')).toEqual({
     ok: true,
   })
   bridge.close()
 })
 
-// Claude Desktop never shows the model the initialize instructions, and
-// Claude Code cuts them at 2 KB; the first run_javascript result of a session
-// is the one channel every client delivers whole.
+// Claude Desktop never shows the model the initialize instructions
+// (anthropics/claude-ai-mcp#93), and Claude Code cuts them at 2048 chars;
+// the first run_javascript result of a session is the one channel every
+// client delivers whole. It follows the value, so content[0] stays the value.
 describe('a session is briefed once, in its first run_javascript result', () => {
   function runJs(id: number) {
     return {
@@ -184,12 +184,12 @@ describe('a session is briefed once, in its first run_javascript result', () => 
     server.send(runJs(1))
     const first = await server.next()
     expect(guidanceIn(first)).toBe(1)
-    expect(first.result?.content?.[0]?.text).toContain(
-      'docs topic "live-model"',
-    )
-    expect(JSON.parse(first.result?.content?.[1]?.text ?? '')).toEqual({
+    expect(JSON.parse(first.result?.content?.[0]?.text ?? '')).toEqual({
       ok: true,
     })
+    expect(first.result?.content?.[1]?.text).toContain(
+      'docs topic "live-model"',
+    )
     server.send(runJs(2))
     expect(guidanceIn(await server.next())).toBe(0)
     bridge.close()
@@ -201,8 +201,8 @@ describe('a session is briefed once, in its first run_javascript result', () => 
     server.send(runJs(1))
     const call = await server.next()
     expect(call.result?.isError).toBe(true)
+    expect(call.result?.content?.[0]?.text).toBe('no session open')
     expect(guidanceIn(call)).toBe(1)
-    expect(call.result?.content?.[1]?.text).toBe('no session open')
     bridge.close()
   })
 
@@ -279,7 +279,7 @@ test('a bridge error outcome is an isError tool result, not a protocol error', a
   })
   const call = await server.next()
   expect(call.result?.isError).toBe(true)
-  expect(call.result?.content?.at(-1)?.text).toBe('no session open')
+  expect(call.result?.content?.[0]?.text).toBe('no session open')
   bridge.close()
 })
 
@@ -294,7 +294,7 @@ test('the app not running reads as a launch hint, not a stack trace', async () =
   })
   const call = await server.next()
   expect(call.result?.isError).toBe(true)
-  expect(call.result?.content?.at(-1)?.text).toContain(
+  expect(call.result?.content?.[0]?.text).toContain(
     'Launch the JBrowse Desktop app',
   )
 })
@@ -411,7 +411,7 @@ test('an app restart mid-session reconnects instead of failing forever', async (
   })
   const call = await server.next()
   expect(call.result?.isError).toBeUndefined()
-  expect(JSON.parse(call.result?.content?.at(-1)?.text ?? '')).toEqual({
+  expect(JSON.parse(call.result?.content?.[0]?.text ?? '')).toEqual({
     generation: 2,
   })
 })
