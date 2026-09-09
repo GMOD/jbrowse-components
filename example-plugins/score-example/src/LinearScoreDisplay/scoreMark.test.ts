@@ -19,9 +19,9 @@ const block = {
 const frame = { canvasWidth: 240, canvasHeight: 60 }
 
 const channels: ScoreChannels = {
-  startBp: Uint32Array.from([100, 300, 500, 900]),
-  endBp: Uint32Array.from([400, 450, 501, 1000]),
-  score: Float32Array.from([0.5, 0.25, 1, 0.1]),
+  x: Uint32Array.from([100, 300, 500, 900]),
+  x2: Uint32Array.from([400, 450, 501, 1000]),
+  y: Float32Array.from([0.5, 0.25, 1, 0.1]),
   count: 4,
 }
 

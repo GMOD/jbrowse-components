@@ -1,7 +1,7 @@
 // #exampleFile shared | the `score` shape's shader: one box per feature, compiled by gen:shaders
-// The score shape: one box per instance, spanning startBp->endBp and grown up
-// from the canvas bottom to score (0..1) x canvasHeight, every box in the one
-// uniform ABGR color. The box height is written here once and lifted into a
+// The score shape: one box per instance, spanning x->x2 and grown up from the
+// canvas bottom to y (0..1) x canvasHeight, every box in the one uniform ABGR
+// color. The box height is written here once and lifted into a
 // TypeScript twin, which the painter and the hit test read.
 //! targets: wgsl, glsl
 //! export-consts: MIN_WIDTH_PX
@@ -17,9 +17,9 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 static const float MIN_WIDTH_PX = 1.0;
 
 struct ScoreInstance {
-  uint  startBp : ATTR0;
-  uint  endBp   : ATTR1;
-  float score   : ATTR2;
+  uint  x  : ATTR0;
+  uint  x2 : ATTR1;
+  float y  : ATTR2;
 };
 
 struct Uniforms {
@@ -51,14 +51,14 @@ VsOut vs_main(ScoreInstance inst, uint vid : SV_VertexID) {
   // quadLocal maps the 6 vertices to the corners of a unit box: x/y each 0 or 1.
   float2 local = quadLocal(vid);
 
-  float x1 = bpToClipX(inst.startBp, u);
-  float x2 = bpToClipX(inst.endBp, u);
+  float x1 = bpToClipX(inst.x, u);
+  float x2 = bpToClipX(inst.x2, u);
   // reversal-safe: it is baked into bpRangeX's negated length, so x2 < x1 on a
   // reversed block and the widening grows the same way
   x2 = extendToMinWidthX(x1, x2, MIN_WIDTH_PX, u.viewportWidth);
   float x = local.x < 0.5 ? x1 : x2;
 
-  float barHeightPx = scoreBarHeightPx(inst.score, u.canvasHeight);
+  float barHeightPx = scoreBarHeightPx(inst.y, u.canvasHeight);
   // local.y: 0 = top of the box, 1 = bottom (canvas bottom edge).
   float yPx = (u.canvasHeight - barHeightPx) + local.y * barHeightPx;
 

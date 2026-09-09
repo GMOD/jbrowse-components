@@ -178,9 +178,9 @@ read those rather than restating the arithmetic:
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/shaders/score.slang -->
 
 ```slang
-// The score shape: one box per instance, spanning startBp->endBp and grown up
-// from the canvas bottom to score (0..1) x canvasHeight, every box in the one
-// uniform ABGR color. The box height is written here once and lifted into a
+// The score shape: one box per instance, spanning x->x2 and grown up from the
+// canvas bottom to y (0..1) x canvasHeight, every box in the one uniform ABGR
+// color. The box height is written here once and lifted into a
 // TypeScript twin, which the painter and the hit test read.
 //! targets: wgsl, glsl
 //! export-consts: MIN_WIDTH_PX
@@ -196,9 +196,9 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 static const float MIN_WIDTH_PX = 1.0;
 
 struct ScoreInstance {
-  uint  startBp : ATTR0;
-  uint  endBp   : ATTR1;
-  float score   : ATTR2;
+  uint  x  : ATTR0;
+  uint  x2 : ATTR1;
+  float y  : ATTR2;
 };
 
 struct Uniforms {
@@ -230,14 +230,14 @@ VsOut vs_main(ScoreInstance inst, uint vid : SV_VertexID) {
   // quadLocal maps the 6 vertices to the corners of a unit box: x/y each 0 or 1.
   float2 local = quadLocal(vid);
 
-  float x1 = bpToClipX(inst.startBp, u);
-  float x2 = bpToClipX(inst.endBp, u);
+  float x1 = bpToClipX(inst.x, u);
+  float x2 = bpToClipX(inst.x2, u);
   // reversal-safe: it is baked into bpRangeX's negated length, so x2 < x1 on a
   // reversed block and the widening grows the same way
   x2 = extendToMinWidthX(x1, x2, MIN_WIDTH_PX, u.viewportWidth);
   float x = local.x < 0.5 ? x1 : x2;
 
-  float barHeightPx = scoreBarHeightPx(inst.score, u.canvasHeight);
+  float barHeightPx = scoreBarHeightPx(inst.y, u.canvasHeight);
   // local.y: 0 = top of the box, 1 = bottom (canvas bottom edge).
   float yPx = (u.canvasHeight - barHeightPx) + local.y * barHeightPx;
 
@@ -336,9 +336,12 @@ confined to that one line; in TypeScript outside uniform writes, use plain
 ## Step 3: The shape
 
 The shape's own vocabulary is its channels — parallel typed arrays plus a count
-— and its params, everything else the drawing needs. Then the four members.
-There is no constructor: a shape is an object literal, and it is admitted by
-having a consumer rather than by completeness.
+— and its params, everything else the drawing needs. A shape names its lanes in
+the library's vocabulary — `x`, `x2`, `y` or `row`, `color`, plus whatever is
+specific to the shape — and the display's payload can spell its arrays however
+it likes, because `channels` on the mark is the lens between the two. Then the
+four members. There is no constructor: a shape is an object literal, and it is
+admitted by having a consumer rather than by completeness.
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/scoreMark.ts -->
 
@@ -354,11 +357,12 @@ import { scoreBarHeightPx } from './shaders/score.js.generated.ts'
 
 import type { MarkShape } from '@jbrowse/render-core/marks'
 
-// The shape's lanes: parallel typed arrays plus a count
+// The shape's lanes, named in the shape library's vocabulary (`x`, `x2`, `y`)
+// rather than a display's: parallel typed arrays plus a count
 export interface ScoreChannels {
-  startBp: Uint32Array
-  endBp: Uint32Array
-  score: Float32Array
+  x: Uint32Array
+  x2: Uint32Array
+  y: Float32Array
   count: number
 }
 
@@ -370,8 +374,8 @@ export interface ScoreParams {
   color: number
 }
 
-// One box per instance: startBp..endBp wide, grown up from the canvas bottom to
-// score x canvasHeight. The shader owns the geometry; the painter and the hit
+// One box per instance: x..x2 wide, grown up from the canvas bottom to
+// y x canvasHeight. The shader owns the geometry; the painter and the hit
 // test read its generated twin (`scoreBarHeightPx`) and constant
 // (`MIN_WIDTH_PX`), so the three cannot drift.
 export const scoreMark: MarkShape<ScoreChannels, ScoreParams> = {
@@ -396,15 +400,15 @@ export const scoreMark: MarkShape<ScoreChannels, ScoreParams> = {
   },
 
   paintBlock(ctx, channels, block, frame, params) {
-    const { startBp, endBp, score, count } = channels
+    const { x, x2, y, count } = channels
     const { canvasHeight } = frame
     const toX = makeBpMapper(block)
     ctx.fillStyle = abgrToCssRgba(params.color)
     for (let i = 0; i < count; i++) {
-      const xa = toX(startBp[i]!)
-      const xb = toX(endBp[i]!)
+      const xa = toX(x[i]!)
+      const xb = toX(x2[i]!)
       const width = Math.max(shader.MIN_WIDTH_PX, Math.abs(xb - xa))
-      const h = scoreBarHeightPx(score[i]!, canvasHeight)
+      const h = scoreBarHeightPx(y[i]!, canvasHeight)
       ctx.fillRect(spanLeft(xa, xb, width), canvasHeight - h, width, h)
     }
   },
@@ -412,14 +416,14 @@ export const scoreMark: MarkShape<ScoreChannels, ScoreParams> = {
   // The rect `paintBlock` fills is the hit target, so a hit's `x`/`y` is a
   // point on the box and `distSq` is 0 inside it
   hitNearest(channels, block, frame, _params, xPx, yPx, candidates, maxDistSq) {
-    const { startBp, endBp, score } = channels
+    const { x, x2, y } = channels
     const { canvasHeight } = frame
     const toX = makeBpMapper(block)
     return nearestInk(candidates, maxDistSq, i => {
-      const xa = toX(startBp[i]!)
-      const xb = toX(endBp[i]!)
+      const xa = toX(x[i]!)
+      const xb = toX(x2[i]!)
       const width = Math.max(shader.MIN_WIDTH_PX, Math.abs(xb - xa))
-      const h = scoreBarHeightPx(score[i]!, canvasHeight)
+      const h = scoreBarHeightPx(y[i]!, canvasHeight)
       return inkOnRect(
         xPx,
         yPx,
@@ -476,9 +480,9 @@ export const SCORE_MARKS = [
   defineMark({
     shape: scoreMark,
     channels: (d: ScoreRegionData) => ({
-      startBp: d.starts,
-      endBp: d.ends,
-      score: d.scores,
+      x: d.starts,
+      x2: d.ends,
+      y: d.scores,
       count: d.numFeatures,
     }),
     params: (s: ScoreRenderState) => ({ color: s.color }),
@@ -524,9 +528,9 @@ const block = {
 const frame = { canvasWidth: 240, canvasHeight: 60 }
 
 const channels: ScoreChannels = {
-  startBp: Uint32Array.from([100, 300, 500, 900]),
-  endBp: Uint32Array.from([400, 450, 501, 1000]),
-  score: Float32Array.from([0.5, 0.25, 1, 0.1]),
+  x: Uint32Array.from([100, 300, 500, 900]),
+  x2: Uint32Array.from([400, 450, 501, 1000]),
+  y: Float32Array.from([0.5, 0.25, 1, 0.1]),
   count: 4,
 }
 

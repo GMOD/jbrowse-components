@@ -10,11 +10,12 @@ import { scoreBarHeightPx } from './shaders/score.js.generated.ts'
 
 import type { MarkShape } from '@jbrowse/render-core/marks'
 
-// The shape's lanes: parallel typed arrays plus a count
+// The shape's lanes, named in the shape library's vocabulary (`x`, `x2`, `y`)
+// rather than a display's: parallel typed arrays plus a count
 export interface ScoreChannels {
-  startBp: Uint32Array
-  endBp: Uint32Array
-  score: Float32Array
+  x: Uint32Array
+  x2: Uint32Array
+  y: Float32Array
   count: number
 }
 
@@ -26,8 +27,8 @@ export interface ScoreParams {
   color: number
 }
 
-// One box per instance: startBp..endBp wide, grown up from the canvas bottom to
-// score x canvasHeight. The shader owns the geometry; the painter and the hit
+// One box per instance: x..x2 wide, grown up from the canvas bottom to
+// y x canvasHeight. The shader owns the geometry; the painter and the hit
 // test read its generated twin (`scoreBarHeightPx`) and constant
 // (`MIN_WIDTH_PX`), so the three cannot drift.
 export const scoreMark: MarkShape<ScoreChannels, ScoreParams> = {
@@ -52,15 +53,15 @@ export const scoreMark: MarkShape<ScoreChannels, ScoreParams> = {
   },
 
   paintBlock(ctx, channels, block, frame, params) {
-    const { startBp, endBp, score, count } = channels
+    const { x, x2, y, count } = channels
     const { canvasHeight } = frame
     const toX = makeBpMapper(block)
     ctx.fillStyle = abgrToCssRgba(params.color)
     for (let i = 0; i < count; i++) {
-      const xa = toX(startBp[i]!)
-      const xb = toX(endBp[i]!)
+      const xa = toX(x[i]!)
+      const xb = toX(x2[i]!)
       const width = Math.max(shader.MIN_WIDTH_PX, Math.abs(xb - xa))
-      const h = scoreBarHeightPx(score[i]!, canvasHeight)
+      const h = scoreBarHeightPx(y[i]!, canvasHeight)
       ctx.fillRect(spanLeft(xa, xb, width), canvasHeight - h, width, h)
     }
   },
@@ -68,14 +69,14 @@ export const scoreMark: MarkShape<ScoreChannels, ScoreParams> = {
   // The rect `paintBlock` fills is the hit target, so a hit's `x`/`y` is a
   // point on the box and `distSq` is 0 inside it
   hitNearest(channels, block, frame, _params, xPx, yPx, candidates, maxDistSq) {
-    const { startBp, endBp, score } = channels
+    const { x, x2, y } = channels
     const { canvasHeight } = frame
     const toX = makeBpMapper(block)
     return nearestInk(candidates, maxDistSq, i => {
-      const xa = toX(startBp[i]!)
-      const xb = toX(endBp[i]!)
+      const xa = toX(x[i]!)
+      const xb = toX(x2[i]!)
       const width = Math.max(shader.MIN_WIDTH_PX, Math.abs(xb - xa))
-      const h = scoreBarHeightPx(score[i]!, canvasHeight)
+      const h = scoreBarHeightPx(y[i]!, canvasHeight)
       return inkOnRect(
         xPx,
         yPx,

@@ -361,9 +361,9 @@ export const SCORE_MARKS = [
   defineMark({
     shape: scoreMark,
     channels: (d: ScoreRegionData) => ({
-      startBp: d.starts,
-      endBp: d.ends,
-      score: d.scores,
+      x: d.starts,
+      x2: d.ends,
+      y: d.scores,
       count: d.numFeatures,
     }),
     params: (s: ScoreRenderState) => ({ color: s.color }),

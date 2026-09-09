@@ -59,26 +59,26 @@ function paint(data: ScoreRegionData, b = block) {
 // The declaration's own claim: which of the payload's arrays reach which of
 // the shape's lanes. A lane swap packs a valid buffer that draws the wrong
 // picture, which no shader-side test can see.
-test('the declaration feeds starts/ends/scores to startBp/endBp/score', () => {
+test('the declaration feeds starts/ends/scores to x/x2/y', () => {
   const buf = MARK.pass.pack(mkData([42, 1337], [99, 2000], [0.5, 0.25]))
   const u32 = new Uint32Array(buf as ArrayBuffer)
   const f32 = new Float32Array(buf as ArrayBuffer)
   const stride = shader.INSTANCE_STRIDE_WORDS
 
   expect(buf.byteLength).toBe(2 * shader.INSTANCE_STRIDE_BYTES)
-  expect(u32[shader.INSTANCE_OFFSET_U32.startBp]).toBe(42)
-  expect(u32[shader.INSTANCE_OFFSET_U32.endBp]).toBe(99)
-  expect(f32[shader.INSTANCE_OFFSET_F32.score]).toBeCloseTo(0.5)
-  expect(u32[stride + shader.INSTANCE_OFFSET_U32.startBp]).toBe(1337)
-  expect(u32[stride + shader.INSTANCE_OFFSET_U32.endBp]).toBe(2000)
-  expect(f32[stride + shader.INSTANCE_OFFSET_F32.score]).toBeCloseTo(0.25)
+  expect(u32[shader.INSTANCE_OFFSET_U32.x]).toBe(42)
+  expect(u32[shader.INSTANCE_OFFSET_U32.x2]).toBe(99)
+  expect(f32[shader.INSTANCE_OFFSET_F32.y]).toBeCloseTo(0.5)
+  expect(u32[stride + shader.INSTANCE_OFFSET_U32.x]).toBe(1337)
+  expect(u32[stride + shader.INSTANCE_OFFSET_U32.x2]).toBe(2000)
+  expect(f32[stride + shader.INSTANCE_OFFSET_F32.y]).toBeCloseTo(0.25)
 })
 
 test('preserves uint32 positions above the float32-safe range', () => {
   const bigPos = 250_000_001
   const buf = MARK.pass.pack(mkData([bigPos], [bigPos + 1], [1]))
   expect(
-    new Uint32Array(buf as ArrayBuffer)[shader.INSTANCE_OFFSET_U32.startBp],
+    new Uint32Array(buf as ArrayBuffer)[shader.INSTANCE_OFFSET_U32.x],
   ).toBe(bigPos)
 })
 
