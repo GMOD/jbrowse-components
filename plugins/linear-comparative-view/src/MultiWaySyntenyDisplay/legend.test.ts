@@ -36,8 +36,8 @@ test('the key names the drawn colors left to right', () => {
       byId({ a: '#f00', b: '#0f0' }),
     ),
   ).toEqual([
-    { label: 'atpA', color: '#f00' },
-    { label: 'atpB', color: '#0f0' },
+    { value: 'atpA', label: 'atpA', color: '#f00' },
+    { value: 'atpB', label: 'atpB', color: '#0f0' },
   ])
 })
 
@@ -50,7 +50,7 @@ test('a second name on a color already keyed is dropped', () => {
       [0, 800],
       byId({ a: '#f00', b: '#f00' }),
     ),
-  ).toEqual([{ label: 'atpA', color: '#f00' }])
+  ).toEqual([{ value: 'atpA', label: 'atpA', color: '#f00' }])
 })
 
 test('an unnamed feature names no color', () => {
@@ -60,7 +60,7 @@ test('an unnamed feature names no color', () => {
       [0, 800],
       byId({ a: '#f00', b: '#0f0' }),
     ),
-  ).toEqual([{ label: 'atpB', color: '#0f0' }])
+  ).toEqual([{ value: 'atpB', label: 'atpB', color: '#0f0' }])
 })
 
 // The cull that packs the hits runs half a screen wider than the window, and a
@@ -73,13 +73,13 @@ test('a hit off the window is not named', () => {
       [0, 800],
       byId({ a: '#f00', b: '#0f0' }),
     ),
-  ).toEqual([{ label: 'atpB', color: '#0f0' }])
+  ).toEqual([{ value: 'atpB', label: 'atpB', color: '#0f0' }])
 })
 
 test('a gene straddling the left edge is still named', () => {
   expect(
     laneColorKey([hit('a', -50, 50, 'atpA')], [0, 800], byId({ a: '#f00' })),
-  ).toEqual([{ label: 'atpA', color: '#f00' }])
+  ).toEqual([{ value: 'atpA', label: 'atpA', color: '#f00' }])
 })
 
 test('the ribbon key is the strand pair, in two colors', () => {
@@ -113,5 +113,5 @@ test('an attribute ribbon mode keys a row per label', () => {
     colors: {},
   })
   expect(many.length).toBe(31)
-  expect(many[30]).toEqual({ label: '+3 more' })
+  expect(many[30]).toEqual({ value: '', label: '+3 more' })
 })

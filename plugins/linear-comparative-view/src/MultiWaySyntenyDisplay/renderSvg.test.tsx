@@ -89,12 +89,12 @@ test('the export carries the color key where the colors key something', async ()
   await when(() => display.svgReady, { timeout: 5000 })
 
   const svg = renderToString(<svg>{await display.renderSvg()}</svg>)
-  expect(svg).toContain('multiway-color-legend')
+  expect(svg).toContain('color-legend')
   expect(svg).toContain('galF')
   expect(svg).toContain('wzzB')
 
   display.setShowLegend(false)
   expect(renderToString(<svg>{await display.renderSvg()}</svg>)).not.toContain(
-    'multiway-color-legend',
+    'color-legend',
   )
 })

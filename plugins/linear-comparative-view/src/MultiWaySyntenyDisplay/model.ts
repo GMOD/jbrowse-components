@@ -107,12 +107,8 @@ import type {
   MultiWayRenderingBackend,
 } from './multiwayRenderTypes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type {
-  LegendItem,
-  LegendSection,
-  MenuItem,
-  MouseState,
-} from '@jbrowse/core/ui'
+import type { MenuItem, MouseState } from '@jbrowse/core/ui'
+import type { CategoricalEntry, ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -1461,7 +1457,7 @@ export function stateModelFactory(
        * because this is a derived key and that is the bound a derived key stops
        * being one at.
        */
-      get geneLegend(): LegendItem[] {
+      get geneLegend(): CategoricalEntry[] {
         const hits = [boxesKey(0), glyphsKey(0)].flatMap(key => {
           const cell = self.laneGlyphCells.get(key)
           return cell?.kind === 'glyphs' ? cell.data.hits : []
@@ -1478,34 +1474,33 @@ export function stateModelFactory(
        * what the ribbons' own colors mean, which is the strand pair or nothing:
        * one flat color keys nothing and the identity ramp is not a row list
        */
-      get ribbonLegend(): LegendItem[] {
+      get ribbonLegend(): CategoricalEntry[] {
         return ribbonColorKey(self.ribbonColorBy, self.ribbonLabels)
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * the two color vocabularies as their own sections, so each is titled and
-       * dismissed on its own, and neither claims the other's colors. Empty
-       * sections are dropped here rather than by the two renderers, so
-       * `hasLegendKey` and the box agree about whether there is a key
+       * `LegendMixin`'s hook: the two color vocabularies as their own scales,
+       * so each is titled and dismissed on its own, and neither claims the
+       * other's colors. The colors here are the config's to encode, and a track
+       * that paints one flat color has nothing for a key to say.
        */
-      get legendSections(): LegendSection[] {
+      get colorScales(): ColorScale[] {
         return [
-          { id: 'genes', title: 'Gene colors', items: self.geneLegend },
-          { id: 'ribbons', title: 'Ribbon colors', items: self.ribbonLegend },
-        ].filter(section => section.items.length > 0)
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * whether there is a key at all, which is what "Show legend" is offered
-       * on: the colors here are the config's to encode, and a track that paints
-       * one flat color has nothing for a key to say
-       */
-      get hasLegendKey() {
-        return self.legendSections.length > 0
+          {
+            kind: 'categorical' as const,
+            id: 'genes',
+            title: 'Gene colors',
+            entries: self.geneLegend,
+          },
+          {
+            kind: 'categorical' as const,
+            id: 'ribbons',
+            title: 'Ribbon colors',
+            entries: self.ribbonLegend,
+          },
+        ].filter(scale => scale.entries.length > 0)
       },
     }))
     .views(self => ({

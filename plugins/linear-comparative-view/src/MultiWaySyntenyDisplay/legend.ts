@@ -4,7 +4,7 @@ import { categoricalColor, colorSchemes } from '@jbrowse/synteny-core'
 import type { Span } from './layoutMultiWay.ts'
 import type { GlyphHit } from './multiwayRenderTypes.ts'
 import type { MultiWayRibbonColorBy } from './ribbonColorModes.ts'
-import type { LegendItem } from '@jbrowse/core/ui'
+import type { CategoricalEntry } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
 import type { CategoricalMode } from '@jbrowse/synteny-core'
 
@@ -33,10 +33,10 @@ export function laneColorKey(
   hits: readonly GlyphHit[],
   [from, to]: Span,
   colorOf: (feature: Feature) => string | undefined,
-): LegendItem[] {
+): CategoricalEntry[] {
   const colors = new Set<string>()
   const labels = new Set<string>()
-  const items: LegendItem[] = []
+  const items: CategoricalEntry[] = []
   const drawn = hits
     .filter(h => Math.max(h.x1, h.x2) >= from && Math.min(h.x1, h.x2) <= to)
     .sort((a, b) => Math.min(a.x1, a.x2) - Math.min(b.x1, b.x2))
@@ -52,7 +52,7 @@ export function laneColorKey(
     ) {
       labels.add(name)
       colors.add(color)
-      items.push({ label: name, color })
+      items.push({ value: name, label: name, color })
     }
   }
   return items
@@ -71,14 +71,16 @@ export function laneColorKey(
 export function ribbonColorKey(
   colorBy: MultiWayRibbonColorBy,
   labels?: CategoricalMode,
-): LegendItem[] {
+): CategoricalEntry[] {
   if (colorBy === 'strand') {
     return [
       {
+        value: 'same',
         label: 'Same orientation as lane above',
         color: colorSchemes.strand.posColor,
       },
       {
+        value: 'inverted',
         label: 'Inverted vs lane above',
         color: colorSchemes.strand.negColor,
       },
@@ -89,10 +91,11 @@ export function ribbonColorKey(
     const rest = labels.labels.length - shown.length
     return [
       ...shown.map(label => ({
+        value: label,
         label,
         color: categoricalColor(labels, label),
       })),
-      ...(rest > 0 ? [{ label: `+${rest} more` }] : []),
+      ...(rest > 0 ? [{ value: '', label: `+${rest} more` }] : []),
     ]
   }
   return []

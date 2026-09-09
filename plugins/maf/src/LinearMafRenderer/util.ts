@@ -86,7 +86,7 @@ export function frameColorIndex(frame: number, strand: number): number {
  * `drawMafAnnotations` paints with — same rule as the codon key below.
  *
  * The strip had no key at all, on screen or exported, and could not have had
- * one: `legendItems` dispatches on `activeRowRendering`, and the strip is an
+ * one: `colorScales` dispatches on `activeRowRendering`, and the strip is an
  * *overlay* that draws over whichever rendering won, so no branch of that
  * dispatch is ever it. Three saturated colors on every species row with nothing
  * anywhere saying they mean reading frame — a reader's first guess is strand, or

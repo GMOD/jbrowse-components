@@ -4,7 +4,7 @@ import { ScrollChrome } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
-import { FloatingLegend, PointerLayer } from '@jbrowse/display-ui'
+import { PointerLayer } from '@jbrowse/display-ui'
 import { observer } from 'mobx-react'
 
 import { MultiWayRenderer } from '../MultiWayRenderer.ts'
@@ -15,28 +15,6 @@ import type { MultiWaySyntenyDisplayModel } from '../model.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
 
 const CLICK_DRAG_THRESHOLD_PX = 5
-
-/**
- * What the drawn colors mean: the anchor lane's glyph colors named, and the
- * ribbon strand colors where that mode paints them. Both are the config's
- * encoding rather than the display's, so the box appears only where the colors
- * distinguish something (`hasLegendKey`).
- */
-const ColorKey = observer(function ColorKey({
-  model,
-}: {
-  model: MultiWaySyntenyDisplayModel
-}) {
-  const { legendSections } = model
-  return model.showLegend && legendSections.length > 0 ? (
-    <FloatingLegend
-      sections={legendSections}
-      onDismiss={() => {
-        model.setShowLegend(false)
-      }}
-    />
-  ) : null
-})
 
 const MultiWayBody = observer(function MultiWayBody({
   model,
@@ -82,7 +60,6 @@ const MultiWayBody = observer(function MultiWayBody({
         <MultiWayOverlay model={model} />
         <LaneHeaders model={model} />
       </div>
-      <ColorKey model={model} />
       <ScrollChrome
         scrollTop={model.scrollTop}
         setScrollTop={n => {

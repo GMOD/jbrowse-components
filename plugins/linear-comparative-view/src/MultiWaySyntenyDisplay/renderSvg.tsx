@@ -1,5 +1,4 @@
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
-import { SvgColorLegend, legendEntries } from '@jbrowse/core/ui'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
@@ -54,14 +53,6 @@ export async function renderMultiWaySvg(
             }}
           />
           <MultiWayOverlay model={model} exportSVG />
-          {model.showLegend && model.legendSections.length > 0 ? (
-            <SvgColorLegend
-              entries={legendEntries({ sections: model.legendSections })}
-              canvasWidth={width}
-              maxHeight={height}
-              testid="multiway-color-legend"
-            />
-          ) : null}
         </SvgClipRect>
       )
     },

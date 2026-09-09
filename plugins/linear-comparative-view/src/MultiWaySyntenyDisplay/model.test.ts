@@ -203,7 +203,7 @@ test('the key names the anchor lane genes a name-hashed color slot draws', () =>
   )
   expect(display.geneLegend.map(i => i.label)).toEqual(['atpA', 'atpB'])
   expect(new Set(display.geneLegend.map(i => i.color)).size).toBe(2)
-  expect(display.legendSections.map(s => s.id)).toEqual(['genes'])
+  expect(display.colorScales.map(s => s.id)).toEqual(['genes'])
   expect(display.hasLegendKey).toBe(true)
   expect(
     display.trackMenuItems().map(i => ('label' in i ? i.label : undefined)),
@@ -257,10 +257,10 @@ test('the strand ribbon mode adds its own section', () => {
     ]),
     undefined,
   )
-  expect(display.legendSections.map(s => s.id)).toEqual(['genes'])
+  expect(display.colorScales.map(s => s.id)).toEqual(['genes'])
 
   display.setRibbonColorBy('strand')
-  expect(display.legendSections.map(s => s.id)).toEqual(['genes', 'ribbons'])
+  expect(display.colorScales.map(s => s.id)).toEqual(['genes', 'ribbons'])
 })
 
 // The two drawing settings were config-only, and a menu toggle that writes
