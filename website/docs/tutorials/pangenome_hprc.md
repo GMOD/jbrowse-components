@@ -15,8 +15,10 @@ the file rather than an absence to infer from an alignment. This page opens the
 Human Pangenome Reference Consortium's release 2 graph at a locus, draws it
 beside GRCh38, and takes one allele off the drawing back to the coordinates it
 attaches at, and then to the haplotype it came from.
-[Part 2](/docs/tutorials/pangenome_hprc_part2) reads the rest of the release on
-the same axis.
+[Part 2](/docs/tutorials/pangenome_hprc_part2) reads who carries that sequence
+off the rest of the release on the same axis, and
+[part 3](/docs/tutorials/pangenome_hprc_part3) takes the same haplotypes off
+that axis and onto their own coordinates.
 
 :::caution Experimental
 
@@ -105,10 +107,12 @@ sequence:
 - the variant callset, 464 haplotypes as a genotype matrix
 - the multiple alignment both are derived from
 
-The last two are
-[part 2](/docs/tutorials/pangenome_hprc_part2#the-variant-callset). Every track
-below is a URL you can paste: the graph route reads projections we prebuilt and
-host, with the build script in
+The callset is
+[part 2](/docs/tutorials/pangenome_hprc_part2#the-variant-callset), the
+alignment
+[part 3](/docs/tutorials/pangenome_hprc_part3#the-alignment-underneath-both).
+Every track below is a URL you can paste: the graph route reads projections we
+prebuilt and host, with the build script in
 [Reproduce it end to end](#reproduce-it-end-to-end).
 
 ## The GraphGenomeView plugin
@@ -253,12 +257,12 @@ projections of the graph (below). Release 3 is the verkko assembly and QC
 release, and publishes no graphs.
 
 Two subdirectories sit beside those files, `v2.0/` and `v2.1/`, holding the
-fuller per-build set. Both pages read the `v2.1/` build, its `sv.gfa`, its
-callsets and its gbz-base database, so node ids agree across the pair. The one
+fuller per-build set. All three pages read the `v2.1/` build, its `sv.gfa`, its
+callsets and its gbz-base database, so node ids agree across the set. The one
 file only `v2.0/` has is the alignment the graph and the callset are derived
 from, `v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz`, 5.9 GB with a
 `.tai` index, which
-[part 2](/docs/tutorials/pangenome_hprc_part3#the-alignment-underneath-both)
+[part 3](/docs/tutorials/pangenome_hprc_part3#the-alignment-underneath-both)
 opens; v2.1 publishes its MAF only, 53 GB and unindexed.
 
 Every file above is published twice, once per reference, and this page uses the
@@ -491,7 +495,7 @@ At HPRC scale there are two answers, both published files:
 is one record per snarl with a genotype per haplotype, so the site under the
 node you clicked states who walks it, and the `.gbz` states the walks
 themselves, which is
-[part 2's route through the graph](/docs/tutorials/pangenome_hprc_part3#walks-from-the-graph).
+[part 3's route through the graph](/docs/tutorials/pangenome_hprc_part3#walks-from-the-graph).
 
 That route is drawn in the [layout figure above](#the-layout-dropdown): its left
 half has the menu open on a 1.8 kb allele of NA20809 haplotype 2, the black node
@@ -682,14 +686,16 @@ Loading a haplotype makes its own alleles openable and says nothing about
 carriage, which stays the
 [callset's](/docs/tutorials/pangenome_hprc_part2#the-variant-callset).
 
-## What part 2 adds
+## What parts 2 and 3 add
 
 The graph states what sequence exists, where it attaches, and which assembly
 first contributed it. It does not state who carries that sequence, how often, or
 what it is made of. [Part 2](/docs/tutorials/pangenome_hprc_part2) reads those
 off the rest of release 2 on the same axis: where the graph varies and by how
-much, what each alternative is, which of the 464 haplotypes walk it, and the
-multiple alignment the graph and the callset were both derived from.
+much, what each alternative is, and which of the 464 haplotypes walk it.
+[Part 3](/docs/tutorials/pangenome_hprc_part3) leaves that axis, starting from
+the multiple alignment the graph and the callset were both derived from and
+ending with each haplotype on its own contigs.
 
 ## Reproduce it end to end
 
@@ -700,12 +706,14 @@ it writes what we host, and their provenance (source, size, exact commands,
 build date) is in [README.txt](https://jbrowse.org/demos/hprc/README.txt) beside
 them.
 
-[Part 2](/docs/tutorials/pangenome_hprc_part2#reproduce-it-end-to-end) carries
-the scripts behind the rest of the release's files.
+[Part 2](/docs/tutorials/pangenome_hprc_part2#reproduce-it-end-to-end) and
+[part 3](/docs/tutorials/pangenome_hprc_part3#reproduce-it-end-to-end) carry the
+scripts behind the rest of the release's files.
 
 ## See also
 
 - [](/docs/tutorials/pangenome_hprc_part2)
+- [](/docs/tutorials/pangenome_hprc_part3)
 - [](/docs/tutorials/pangenome_prepare_graph)
 - [](/docs/tutorials/genomes_pangenome)
 - [](/docs/tutorials/pangenome_cactus)
