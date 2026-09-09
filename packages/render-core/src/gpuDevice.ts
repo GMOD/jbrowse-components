@@ -213,8 +213,14 @@ async function createDevice(): Promise<GPUDevice | null> {
     // Surface any WebGPU validation / out-of-memory / internal errors that
     // would otherwise be silently swallowed. Without this, a bad draw/pipeline
     // results in a blank canvas with no console output.
+    // The constructor name, because the message alone does not say whether a
+    // failure is validation, out-of-memory or internal — and that is what
+    // decides which `pushErrorScope` filter could have caught it.
     d.addEventListener('uncapturederror', (event: GPUUncapturedErrorEvent) => {
-      console.error('[GPU] UNCAPTURED ERROR:', event.error.message)
+      console.error(
+        `[GPU] UNCAPTURED ${event.error.constructor.name}:`,
+        event.error.message,
+      )
     })
     void d.lost.then(info => {
       // Identity check: if the shared device has already been replaced (test

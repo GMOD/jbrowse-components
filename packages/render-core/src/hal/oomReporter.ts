@@ -19,4 +19,15 @@ export class OomReporter {
     console.error(`[${this.hal}] ${message}`)
     this.handler?.(new Error(message))
   }
+
+  /**
+   * Report an error the HAL has already classified, for a failure whose remedy
+   * is not `report`'s "zoom in". Kept separate so the classification stays with
+   * the caller that knows it — flagging every over-limit allocation as a context
+   * loss would offer "Use Canvas2D" for a view that only needs zooming.
+   */
+  reportClassified(error: Error) {
+    console.error(`[${this.hal}] ${error.message}`)
+    this.handler?.(error)
+  }
 }

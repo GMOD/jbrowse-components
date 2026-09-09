@@ -7,6 +7,7 @@ import {
   noteCanvasConfigured,
   noteCanvasContext,
 } from '../canvasContext.ts'
+import { createGpuSurfaceLostError } from '../gpuContextLostError.ts'
 import { getGpuDevice } from '../gpuDevice.ts'
 import {
   STANDARD_BLEND_STATE,
@@ -271,6 +272,7 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   // than once per frame, and a reconfigure that failed is not attempted again.
   private warnedSwapChainLoss = false
   private swapChainUnrecoverable = false
+  private reportedSurfaceFailure = false
 
   private constructor(
     device: GPUDevice,
@@ -603,6 +605,22 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     }
   }
 
+  /**
+   * Once per HAL, not once per frame: the refusal holds for every frame at this
+   * canvas size, and dotplot and synteny keep their canvas mounted through a
+   * `renderError`, so a per-frame report there never stops.
+   *
+   * Not terminal — a refusal tracks the canvas dimensions, so a resize can clear
+   * it. `swapChainUnrecoverable` stays for the case it was written for.
+   */
+  private reportSurfaceFailure(message: string) {
+    if (this.reportedSurfaceFailure) {
+      return
+    }
+    this.reportedSurfaceFailure = true
+    this.oom.reportClassified(createGpuSurfaceLostError(message))
+  }
+
   beginFrame(clearR: number, clearG: number, clearB: number, clearA = 1) {
     // Skip the frame entirely rather than encode one that cannot be valid.
     // Zero-size canvas: nothing to draw. Missing MSAA target while MSAA is
@@ -620,10 +638,23 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     ) {
       return
     }
-    // Before the error scopes, so a failed acquisition needs no unwinding: the
-    // scopes stay pushed iff an encoder is created, which is what endFrame's
-    // early-return on !currentEncoder is paired with.
+    // A driver can refuse the canvas image without throwing — Dawn returns an
+    // error texture and an error view, and the frame encodes against it — so the
+    // acquisition needs a scope, and its own rather than the frame's: those stay
+    // pushed iff an encoder is created, and one left on the device's stack
+    // swallows every later frame's errors. Popped before the guard below, so
+    // every path balances. Awaiting the pop here would suspend across a
+    // GPU-process round trip and destroy the canvas texture mid-frame.
+    this.device.pushErrorScope('validation')
     const textureView = this.acquireTextureView()
+    void this.device
+      .popErrorScope()
+      .then(err => {
+        if (err) {
+          this.reportSurfaceFailure(err.message)
+        }
+      })
+      .catch(() => {})
     if (!textureView) {
       return
     }

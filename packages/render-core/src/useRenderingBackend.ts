@@ -2,6 +2,10 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
+import {
+  createGpuContextLostError,
+  createGpuDeviceLostError,
+} from './gpuContextLostError.ts'
 import { onDeviceLost } from './gpuDevice.ts'
 import { RecoveryBudget } from './recoveryBudget.ts'
 import { useTabVisibilityRerender } from './useTabVisibilityRerender.ts'
@@ -30,38 +34,12 @@ const CONTEXT_RECOVER_BASE_MS = 1000
 // aborted when the window expires, so this is not a readiness cap.
 export const CONTEXT_LOST_REPORT_GRACE_MS = 400
 
-const CONTEXT_LOST_MESSAGE =
-  'WebGL context lost. The browser reclaimed the GPU context for this display, ' +
-  'usually because too many GPU-rendered views are open at once.'
-
-const DEVICE_LOST_MESSAGE =
-  'WebGPU device lost. The GPU device backing this display went away and kept ' +
-  'going away after several attempts to rebuild on a fresh one.'
-
-/**
- * Flagged rather than matched by message or `instanceof`, so the error UI can
- * offer the remedy specific to a loss (switch the page to Canvas2D) without
- * offering it for render errors whose remedy differs (an over-allocation says to
- * zoom in).
- *
- * A lost WebGPU device carries the same flag deliberately: the two causes
- * differ, but the remedy on offer — take the page off the GPU — is the same one.
- */
-export function createGpuContextLostError(message = CONTEXT_LOST_MESSAGE) {
-  return Object.assign(new Error(message), {
-    gpuContextLost: true as const,
-  })
-}
-
-export function createGpuDeviceLostError() {
-  return createGpuContextLostError(DEVICE_LOST_MESSAGE)
-}
-
-export function isGpuContextLostError(error: unknown) {
-  return (
-    typeof error === 'object' && error !== null && 'gpuContextLost' in error
-  )
-}
+export {
+  createGpuContextLostError,
+  createGpuDeviceLostError,
+  createGpuSurfaceLostError,
+  isGpuContextLostError,
+} from './gpuContextLostError.ts'
 
 /**
  * The display's recovery budget, created on first read. Reached through the ref
