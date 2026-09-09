@@ -113,6 +113,14 @@ refName at all before this is the right question to ask of it.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
 
+### ChannelReader
+
+A channel read per feature: the compiled form of a FieldRef, and what a
+display's own worker method hands the encoder for a channel no field name can
+say — a join against a second adapter, a lookup table, a rule over two fields.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
 ### clampBandHeight
 
 Clamp one _resize_ of a drag-resizable band: boundBandHeight, plus the one rule
@@ -228,7 +236,7 @@ adapter, the filters and the transferables.
 
 ```js
 // type signature
-(features: readonly Feature[], encoding: MarkEncoding, ctx: { jexl: JexlInstance; report?: ProgressReporter | undefined; }) => EncodedChannels
+(features: readonly Feature[], encoding: MarkEncodingInput, ctx: { jexl: JexlInstance; report?: ProgressReporter | undefined; }) => EncodedChannels
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
@@ -596,6 +604,14 @@ is a glyph name or a `jexl:` expression returning one, read by the `point` shape
 alone.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+### MarkEncodingInput
+
+What `encodeFeatures` takes: a MarkEncoding, any channel of which may be a
+ChannelReader in place of its declared form. The declared form is what crosses
+the wire; a reader is built in the worker.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
 ### openPromotableDisplays
 

@@ -1,5 +1,6 @@
 // #exampleFile shared | ScoreRegionData and the RPC arg types
 import type { Region } from '@jbrowse/core/util'
+import type { EncodedChannels } from '@jbrowse/core/util/markEncoding'
 
 export interface GetScoreDataArgs {
   adapterConfig: Record<string, unknown>
@@ -8,14 +9,10 @@ export interface GetScoreDataArgs {
 }
 
 // #region region-data
-// One region's worth of features packed into parallel typed arrays. Positions
-// are absolute genomic uint32 (never region-relative) so they cross the worker
-// boundary without precision loss and the renderer can map them directly.
-export interface ScoreRegionData {
-  starts: Uint32Array
-  ends: Uint32Array
-  // score normalized to 0..1 (fraction of the region's max), driving box height
-  scores: Float32Array
-  numFeatures: number
-}
+// One region's worth of features as the encoder packs them: parallel typed
+// arrays, `x`/`x2` absolute genomic uint32 (never region-relative, so they
+// cross the worker boundary without precision loss) and `y` the raw score,
+// plus the score extremes and a hit index over (bp, score). The shape reads
+// the arrays under these names.
+export type ScoreRegionData = EncodedChannels
 // #endregion

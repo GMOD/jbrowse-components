@@ -1,5 +1,7 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { SimpleFeature } from '@jbrowse/core/util'
+import createJexlInstance from '@jbrowse/core/util/jexl'
+import { unwrapRpcResult } from '@jbrowse/core/util/librpc'
 
 import GetScoreData from './GetScoreData.ts'
 
@@ -20,6 +22,7 @@ jest
   .mockResolvedValue({ getFeaturesArray } as never)
 
 const region = { refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' }
+const pluginManager = { jexl: createJexlInstance() } as unknown as PluginManager
 
 function args(statusCallback?: StatusCallback) {
   return {
@@ -47,7 +50,7 @@ beforeEach(() => {
 
 test('the status callback and stop token reach the adapter', async () => {
   const statusCallback = jest.fn()
-  const rpc = new GetScoreData({} as unknown as PluginManager)
+  const rpc = new GetScoreData(pluginManager)
   await rpc.invoke(args(statusCallback))
 
   const opts = getFeaturesArray.mock.calls[0]![1] as BaseOptions
@@ -62,7 +65,8 @@ test('the status callback and stop token reach the adapter', async () => {
 // genuinely absent rather than a no-op function — the optional call has to
 // survive that.
 test('no status callback is not an error', async () => {
-  const rpc = new GetScoreData({} as unknown as PluginManager)
-  const result = await rpc.invoke(args())
-  expect(result.numFeatures).toBe(1)
+  const rpc = new GetScoreData(pluginManager)
+  const result = unwrapRpcResult(await rpc.invoke(args()))
+  expect(result.count).toBe(1)
+  expect(result.y[0]).toBe(5)
 })

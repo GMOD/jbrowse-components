@@ -25,17 +25,17 @@ exports map and built `esm/` rather than workspace-linked source. That runs on
 every push, so a renamed subpath, a path missing from a package's `files`, or a
 broken esm build fails before release. Nothing else in CI covers that.
 
-It is also typechecked and unit-tested in-tree: the packer, the uniform write
-through `MockHal`, the painter, the hit walk, and the shape's draw-against-hit
-sweep.
+It is also typechecked and unit-tested in-tree: the worker method, the uniform
+write through `MockHal`, the painter, the hit walk, and the shape's
+draw-against-hit sweep.
 
 ## Layout
 
 ```
 src/
   index.ts                              Plugin: registers the display + RPC
-  ScoreRPC/                             worker: fetch features -> typed arrays
-    GetScoreData.ts  buildScoreResult.ts  rpcTypes.ts
+  ScoreRPC/                             worker: fetch features, encode them
+    GetScoreData.ts  rpcTypes.ts
   LinearScoreDisplay/
     index.ts  configSchema.ts  model.ts
     scoreMark.ts                        the shape: pass, uniforms, painter, hit test

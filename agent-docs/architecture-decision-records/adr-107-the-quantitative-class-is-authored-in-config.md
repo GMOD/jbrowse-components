@@ -50,7 +50,8 @@ Four moves, one class:
   a `scoreColumn` rewrite included; an explicit name reaches the raw column.
 - **Manhattan colours by a field.** `colorBy` gains `'field'` beside `'normal'`
   and `'ld'`, with a `colorField` slot; the worker packs the colour per instance
-  and ships a `categories` table with the payload, and `categoricalValueColor`
+  and ships the value table with the payload (the encoder's categorical
+  `ScaleTable`, since 2026-09-09), and `categoricalValueColor`
   derives the colour from the value (integers walk the palette from 1, anything
   else hashes) so regions agree without a round trip. Its legend toggle is
   `showLegend` through `LegendMixin` like every other display's.
@@ -84,11 +85,13 @@ and per-display meaning). Each rung is a real consumer of the one below.
 
 - The gauge for "plot this column of this BED": zero files. The test config
   is `products/jbrowse-web/src/tests/MarkDisplay.test.tsx`.
-- Two worker packers are now spellings of `encodeFeatures` and owed a
-  migration: `buildManhattanResult` is `encodeFeatures(features, { y: 'score',
-  color, glyph })` plus its LD `r2` sibling array and `indexFound`;
-  `buildScoreResult` is `encodeFeatures(features, { y: scoreColumn })` less
-  its own `[0, 1]` normalisation, which the display's domain now does.
+- Two worker packers were spellings of `encodeFeatures`, and both sit on it
+  since 2026-09-09: the encoder takes a reader function in any channel's
+  place, Manhattan hands it the colouring mode's colour and glyph readers and
+  reads LD's r² over `featureIndex` afterwards, and the example is the bare
+  `{ y: scoreColumn }` call with the display owning the domain.
+  `reference/MARK_ENCODING.md` §"A reader in a channel's place" has the
+  measurement.
 - `QuantitativeTrack` does not get the mark display: BigWig summary features
   are wiggle's job, and a `bar` over them would draw the bins twice.
 - Categorical and ramp tables are per region without a `domain`; a config that

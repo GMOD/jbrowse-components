@@ -137,3 +137,13 @@ The full slot list is the
 encoding is evaluated, and what a `jexl:` channel measured against a field read,
 is
 [MARK_ENCODING.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/MARK_ENCODING.md).
+
+## When a plugin is the next step
+
+A drawing that is not a bar, a point or a span needs a **shape** of its own —
+one shader, one painter, one hit test — declared as a mark over the same worker
+channels this display reads: [](/docs/developer_guides/creating_gpu_display)
+writes one. A display that lays features out its own way, or gives a channel a
+meaning the encoding cannot say — Manhattan's colour by LD to an index SNP — is
+the rung after that, and [](/docs/developer_guides/plotting_features) composes
+one.

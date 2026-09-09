@@ -1,8 +1,11 @@
-// #exampleFile shared | worker: fetch features from the adapter, then pack
+// #exampleFile shared | worker: fetch features from the adapter, then encode
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-
-import { buildScoreResult } from './buildScoreResult.ts'
+import { rpcResult } from '@jbrowse/core/util/librpc'
+import {
+  encodeFeatures,
+  encodedChannelTransferables,
+} from '@jbrowse/core/util/markEncoding'
 
 import type { GetScoreDataArgs, ScoreRegionData } from './rpcTypes.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
@@ -15,6 +18,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
     GetScoreData: {
       args: GetScoreDataArgs
       return: ScoreRegionData
+      // wrapped in rpcResult so postMessage transfers its buffers
+      transferables: true
     }
   }
 }
@@ -45,6 +50,15 @@ export default class GetScoreData extends RpcMethodType<'GetScoreData'> {
       stopToken,
       statusCallback,
     })
-    return buildScoreResult(features, scoreColumn)
+    // The encoder is the packer: one walk reads `scoreColumn` as `y`, skips a
+    // feature with no finite score, and ships the dense arrays with their
+    // extremes and a hit index. A packer of your own is for a payload the
+    // encoder's channels cannot say.
+    const encoded = encodeFeatures(
+      features,
+      { y: scoreColumn },
+      { jexl: this.pluginManager.jexl },
+    )
+    return rpcResult(encoded, encodedChannelTransferables(encoded))
   }
 }

@@ -21,16 +21,22 @@ const MARK = SCORE_MARKS[0]!
 
 const BLUE = 0xffd16800
 
-function mkData(
-  starts: number[],
-  ends: number[],
-  scores: number[],
-): ScoreRegionData {
+// The encoder's payload, from parallel lists; the score domain of every
+// test below is [0, 1], so a score reads as a fraction of the canvas height
+function mkData(x: number[], x2: number[], y: number[]): ScoreRegionData {
+  const count = x.length
   return {
-    starts: new Uint32Array(starts),
-    ends: new Uint32Array(ends),
-    scores: new Float32Array(scores),
-    numFeatures: starts.length,
+    count,
+    x: Uint32Array.from(x),
+    x2: Uint32Array.from(x2),
+    y: Float32Array.from(y),
+    color: new Uint32Array(count),
+    glyph: new Uint8Array(count),
+    featureIndex: Uint32Array.from(x.map((_, i) => i)),
+    yMin: 0,
+    yMax: 1,
+    flatbushData: undefined,
+    scale: undefined,
   }
 }
 
@@ -38,6 +44,7 @@ const state: ScoreRenderState = {
   canvasWidth: 1000,
   canvasHeight: 100,
   color: BLUE,
+  domainY: [0, 1],
 }
 
 // 1bp == 1px
@@ -56,10 +63,10 @@ function paint(data: ScoreRegionData, b = block) {
   return calls
 }
 
-// The declaration's own claim: which of the payload's arrays reach which of
-// the shape's lanes. A lane swap packs a valid buffer that draws the wrong
+// The declaration's own claim: the payload's channels reach the shape's lanes
+// under the same names. A lane swap packs a valid buffer that draws the wrong
 // picture, which no shader-side test can see.
-test('the declaration feeds starts/ends/scores to x/x2/y', () => {
+test('the declaration feeds x/x2/y through unchanged', () => {
   const buf = MARK.pass.pack(mkData([42, 1337], [99, 2000], [0.5, 0.25]))
   const u32 = new Uint32Array(buf as ArrayBuffer)
   const f32 = new Float32Array(buf as ArrayBuffer)
@@ -113,7 +120,7 @@ describe('uniforms', () => {
 
   // The min-width floor divides by the width clip space spans, which is the
   // block column and not the canvas
-  test('carries the block column width, the frame and the colour', () => {
+  test('carries the block column width, the frame, the domain and the colour', () => {
     const { f32, u32 } = uniformsFor({
       ...block,
       screenStartPx: 400,
@@ -121,6 +128,8 @@ describe('uniforms', () => {
     })
     expect(f32[shader.UNIFORM_OFFSET_F32.viewportWidth]).toBe(400)
     expect(f32[shader.UNIFORM_OFFSET_F32.canvasHeight]).toBe(100)
+    expect(f32[shader.UNIFORM_OFFSET_F32.domainMin]).toBe(0)
+    expect(f32[shader.UNIFORM_OFFSET_F32.domainMax]).toBe(1)
     expect(u32[shader.UNIFORM_OFFSET_U32.color]).toBe(BLUE)
   })
 })
@@ -130,6 +139,15 @@ describe('painter', () => {
     expect(paint(mkData([100], [200], [0.5]))).toEqual([
       { x: 100, y: 50, w: 100, h: 50, fillStyle: 'rgba(0,104,209,1)' },
     ])
+  })
+
+  test('a score is placed through the domain, not the canvas', () => {
+    const { ctx, calls } = recordingContext()
+    MARK.paintBlock(ctx, mkData([100], [200], [5]), block, {
+      ...state,
+      domainY: [0, 20],
+    })
+    expect(calls[0]).toMatchObject({ y: 75, h: 25 })
   })
 
   test('a block whose region has not landed paints nothing', () => {

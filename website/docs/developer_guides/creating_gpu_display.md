@@ -11,14 +11,17 @@ bound to the display's payload and render state. `createMarkBackend` turns the
 list into the WebGPU, WebGL2 and Canvas2D backends, and the same painter is the
 SVG export. A **shape** is written once — one `.slang`, one uniform write, one
 Canvas2D painter, one hit test, all over one set of channel arrays — and only
-when neither shared shape fits. This guide writes one.
+when no shared shape fits. This guide writes one.
 
 :::note
 
-Start from [](/docs/developer_guides/plotting_features): it builds the same
-plugin — the fetch chain, the model, the mark list, the component — and this
-page replaces only the shape it names. If `spanMark` or `pointMark` draws what
-you have, you never come here.
+A field of a feature file plotted as a bar, point or span is a `marks` entry on
+[`LinearMarkDisplay`](/docs/config_guides/mark_display), with no plugin: that is
+the first rung, and the shape below reads the same worker channels. Start from
+[](/docs/developer_guides/plotting_features): it builds the same plugin — the
+fetch chain, the model, the mark list, the component — and this page replaces
+only the shape it names. If `spanMark`, `pointMark` or `barMark` draws what you
+have, you never come here.
 
 `@jbrowse/render-core` and `@jbrowse/shader-tools` are on npm. Both are
 `@experimental`, so pin an exact version and expect to rebuild on upgrade.
@@ -108,8 +111,7 @@ src/
   ScoreFeaturePanel/
     index.tsx                    adds a panel to the feature details widget
   ScoreRPC/
-    GetScoreData.ts              worker: fetch features from the adapter, then pack
-    buildScoreResult.ts          pure packer, unit-tested without a worker
+    GetScoreData.ts              worker: fetch features from the adapter, then encode
     index.ts                     registers the RPC method
     rpcTypes.ts                  ScoreRegionData and the RPC arg types
 ```
@@ -118,39 +120,41 @@ src/
 
 ## Step 1: Define data types
 
-The worker's payload, one region at a time, in absolute genomic uint32:
+The worker's payload, one region at a time, is the encoder's channels — the
+arrays a config-declared mark reads too, in absolute genomic uint32:
 
 <!-- include: example-plugins/score-example/src/ScoreRPC/rpcTypes.ts#region-data -->
 
 ```ts
-// One region's worth of features packed into parallel typed arrays. Positions
-// are absolute genomic uint32 (never region-relative) so they cross the worker
-// boundary without precision loss and the renderer can map them directly.
-export interface ScoreRegionData {
-  starts: Uint32Array
-  ends: Uint32Array
-  // score normalized to 0..1 (fraction of the region's max), driving box height
-  scores: Float32Array
-  numFeatures: number
-}
+// One region's worth of features as the encoder packs them: parallel typed
+// arrays, `x`/`x2` absolute genomic uint32 (never region-relative, so they
+// cross the worker boundary without precision loss) and `y` the raw score,
+// plus the score extremes and a hit index over (bp, score). The shape reads
+// the arrays under these names.
+export type ScoreRegionData = EncodedChannels
 ```
 
 And the render state, recomputed cheaply every frame. The colour is resolved to
 the packed form the shader's uniform takes, once, in the model — a shape takes
 packed colours and the display resolves them, so the uniform write and the
-painter are handed one number:
+painter are handed one number. The domain is the model's too: the encoder ships
+each region's score extremes, and the model folds them into the `[min, max]`
+every region's boxes are placed through:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/scoreMarks.ts#render-state -->
 
 ```ts
 // Recomputed cheaply every frame without fetching: the canvas dimensions
-// (required, to size the backing store) plus the one setting the drawing reads
+// (required, to size the backing store) plus what the drawing reads
 export interface ScoreRenderState {
   canvasWidth: number
   canvasHeight: number
   // packed ABGR (`cssColorToABGR`), resolved once in the model so both backends
   // are handed the same number
   color: number
+  // the score range the boxes are placed through, from the loaded regions'
+  // extremes, so a box's height means the same in every region
+  domainY: [number, number]
 }
 ```
 
@@ -160,10 +164,12 @@ Create a `.slang` file. JBrowse uses a Slang-derived shader language that
 compiles to both WGSL (WebGPU) and GLSL (WebGL2). Modules are referenced by bare
 name (`import hpmath;`), not file path; the shared helpers live in
 `packages/render-core/src/shaders/` (`hpmath` for the high-precision
-genomic→pixel transform, `colorPack` for unpacking packed colors). Beside those
-arithmetic atoms sit the shared _shapes_ — `capsule`, `rowRect`, `pointGlyph`,
-`diagonalGrid` — which carry a mark's geometry and its antialias contract
-together;
+genomic→pixel transform, `colorPack` for unpacking packed colors, `valueScale`
+for placing a value on a `[min, max]` domain — the scale the library's `point`
+and `bar` shapes read, which the example composes for its own anchor). Beside
+those arithmetic atoms sit the shared _shapes_ — `capsule`, `rowRect`,
+`pointGlyph`, `diagonalGrid` — which carry a mark's geometry and its antialias
+contract together;
 [the shader shape library](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SHADER_SHAPE_LIBRARY.md)
 says what each draws, who imports it, and which parts are deliberately not
 shared. The example declares its uniforms inline; if several passes share a
@@ -179,8 +185,8 @@ read those rather than restating the arithmetic:
 
 ```slang
 // The score shape: one box per instance, spanning x->x2 and grown up from the
-// canvas bottom to y (0..1) x canvasHeight, every box in the one uniform ABGR
-// color. The box height is written here once and lifted into a
+// canvas bottom to its score on the shared value scale, every box in the one
+// uniform ABGR color. The box height is written here once and lifted into a
 // TypeScript twin, which the painter and the hit test read.
 //! targets: wgsl, glsl
 //! export-consts: MIN_WIDTH_PX
@@ -188,6 +194,7 @@ read those rather than restating the arithmetic:
 
 import hpmath;
 import colorPack;
+import valueScale;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 
@@ -208,6 +215,10 @@ struct Uniforms {
   // CSS px of the block column clip space spans, not the whole canvas
   float  viewportWidth;
   float  canvasHeight;
+  // the [min, max] a score is placed through, set by the display from the
+  // loaded regions' extremes so every region's boxes share one scale
+  float  domainMin;
+  float  domainMax;
   uint   color;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
@@ -216,8 +227,11 @@ float bpToClipX(uint bp, Uniforms u) {
   return hpToClipX(hpSplitUint(bp), u.bpRangeX, u.zero);
 }
 
-float scoreBarHeightPx(float score, float canvasHeight) {
-  return clamp(score, 0.0, 1.0) * canvasHeight;
+// valueScale's valueToYPx is the scale the library's own `point` and `bar`
+// shapes read; the box's anchor — its foot on the canvas bottom — is this
+// shape's own.
+float scoreBarHeightPx(float score, float domainMin, float domainMax, float canvasHeight) {
+  return canvasHeight - valueToYPx(score, domainMin, domainMax, canvasHeight);
 }
 
 struct VsOut {
@@ -237,7 +251,7 @@ VsOut vs_main(ScoreInstance inst, uint vid : SV_VertexID) {
   x2 = extendToMinWidthX(x1, x2, MIN_WIDTH_PX, u.viewportWidth);
   float x = local.x < 0.5 ? x1 : x2;
 
-  float barHeightPx = scoreBarHeightPx(inst.y, u.canvasHeight);
+  float barHeightPx = scoreBarHeightPx(inst.y, u.domainMin, u.domainMax, u.canvasHeight);
   // local.y: 0 = top of the box, 1 = bottom (canvas bottom edge).
   float yPx = (u.canvasHeight - barHeightPx) + local.y * barHeightPx;
 
@@ -357,8 +371,9 @@ import { scoreBarHeightPx } from './shaders/score.js.generated.ts'
 
 import type { MarkShape } from '@jbrowse/render-core/marks'
 
-// The shape's lanes, named in the shape library's vocabulary (`x`, `x2`, `y`)
-// rather than a display's: parallel typed arrays plus a count
+// The shape's lanes, in the shape library's vocabulary (`x`, `x2`, `y`):
+// parallel typed arrays plus a count. The encoder's payload carries these
+// names, so the mark's channel lens is the identity.
 export interface ScoreChannels {
   x: Uint32Array
   x2: Uint32Array
@@ -372,11 +387,13 @@ export interface ScoreParams {
   // packed ABGR (`cssColorToABGR`), the form the shader's uniform takes; the
   // painter unpacks it
   color: number
+  // the [min, max] a score is placed through
+  domain: [number, number]
 }
 
-// One box per instance: x..x2 wide, grown up from the canvas bottom to
-// y x canvasHeight. The shader owns the geometry; the painter and the hit
-// test read its generated twin (`scoreBarHeightPx`) and constant
+// One box per instance: x..x2 wide, grown up from the canvas bottom to its
+// score on the value scale. The shader owns the geometry; the painter and the
+// hit test read its generated twin (`scoreBarHeightPx`) and constant
 // (`MIN_WIDTH_PX`), so the three cannot drift.
 export const scoreMark: MarkShape<ScoreChannels, ScoreParams> = {
   id: 'score',
@@ -395,6 +412,8 @@ export const scoreMark: MarkShape<ScoreChannels, ScoreParams> = {
       // CSS px, so the min-width floor is a CSS pixel on every DPR
       viewportWidth: clip.scissorW,
       canvasHeight: frame.canvasHeight,
+      domainMin: params.domain[0],
+      domainMax: params.domain[1],
       color: params.color,
     })
   },
@@ -402,28 +421,30 @@ export const scoreMark: MarkShape<ScoreChannels, ScoreParams> = {
   paintBlock(ctx, channels, block, frame, params) {
     const { x, x2, y, count } = channels
     const { canvasHeight } = frame
+    const [domainMin, domainMax] = params.domain
     const toX = makeBpMapper(block)
     ctx.fillStyle = abgrToCssRgba(params.color)
     for (let i = 0; i < count; i++) {
       const xa = toX(x[i]!)
       const xb = toX(x2[i]!)
       const width = Math.max(shader.MIN_WIDTH_PX, Math.abs(xb - xa))
-      const h = scoreBarHeightPx(y[i]!, canvasHeight)
+      const h = scoreBarHeightPx(y[i]!, domainMin, domainMax, canvasHeight)
       ctx.fillRect(spanLeft(xa, xb, width), canvasHeight - h, width, h)
     }
   },
 
   // The rect `paintBlock` fills is the hit target, so a hit's `x`/`y` is a
   // point on the box and `distSq` is 0 inside it
-  hitNearest(channels, block, frame, _params, xPx, yPx, candidates, maxDistSq) {
+  hitNearest(channels, block, frame, params, xPx, yPx, candidates, maxDistSq) {
     const { x, x2, y } = channels
     const { canvasHeight } = frame
+    const [domainMin, domainMax] = params.domain
     const toX = makeBpMapper(block)
     return nearestInk(candidates, maxDistSq, i => {
       const xa = toX(x[i]!)
       const xb = toX(x2[i]!)
       const width = Math.max(shader.MIN_WIDTH_PX, Math.abs(xb - xa))
-      const h = scoreBarHeightPx(y[i]!, canvasHeight)
+      const h = scoreBarHeightPx(y[i]!, domainMin, domainMax, canvasHeight)
       return inkOnRect(
         xPx,
         yPx,
@@ -475,17 +496,14 @@ the pass samples.
 ```ts
 // Which of the payload's arrays feed which of the shape's lanes, and which
 // render-state values reach its uniforms: two lenses, run once per block per
-// frame. Everything that draws comes from the shape.
+// frame. The encoder's payload already carries the shape's lane names, so the
+// channel lens is the payload itself. Everything that draws comes from the
+// shape.
 export const SCORE_MARKS = [
   defineMark({
     shape: scoreMark,
-    channels: (d: ScoreRegionData) => ({
-      x: d.starts,
-      x2: d.ends,
-      y: d.scores,
-      count: d.numFeatures,
-    }),
-    params: (s: ScoreRenderState) => ({ color: s.color }),
+    channels: (d: ScoreRegionData) => d,
+    params: (s: ScoreRenderState) => ({ color: s.color, domain: s.domainY }),
   }),
 ]
 ```
@@ -547,7 +565,7 @@ describe('score: every drawn box answers its own hit', () => {
             channels,
             { ...block, reversed },
             frame,
-            { color: 0xff0000ff },
+            { color: 0xff0000ff, domain: [0, 1] },
             { maxDistSq },
           ),
         ).toEqual([])
@@ -656,9 +674,11 @@ cursor and stores what comes back:
 
 ```ts
 // Where the ink is stays with the shape: `hitNearest` measures the cursor
-// against the same rect `paintBlock` fills. This display has no spatial index,
-// so it hands in every instance of every block under the cursor; one with a
-// worker-built index would hand in what the index answered.
+// against the same rect `paintBlock` fills. This display hands in every
+// instance of every block under the cursor, which is enough at a few thousand
+// boxes; the encoder also ships a Flatbush over (bp, score), and a display
+// with hundreds of thousands of instances hands in what that index answers
+// instead (`findManhattanHit` in plugins/gwas is the worked form).
 export function findScoreHit(
   xPx: number,
   yPx: number,
@@ -677,15 +697,15 @@ export function findScoreHit(
         state,
         xPx,
         yPx,
-        everyInstance(data.numFeatures),
+        everyInstance(data.count),
         bestDistSq,
       )
       if (hit) {
         bestDistSq = hit.distSq
         best = {
-          start: data.starts[hit.index]!,
-          end: data.ends[hit.index]!,
-          score: data.scores[hit.index]!,
+          start: data.x[hit.index]!,
+          end: data.x2[hit.index]!,
+          score: data.y[hit.index]!,
           x: hit.x,
           y: hit.y,
         }
@@ -850,6 +870,7 @@ section of the architecture spec is the full quick-scan list.
 
 ## See also
 
+- [](/docs/config_guides/mark_display)
 - [](/docs/developer_guides/dataflow)
 - [](/docs/developer_guides/optimizations)
 - [](/docs/developer_guides/memory)

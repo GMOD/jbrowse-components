@@ -16,6 +16,10 @@ function _min(a: number, b: number) {
   return b < a || Number.isNaN(a) ? b : a
 }
 
-export function scoreBarHeightPx(score: number, canvasHeight: number): number {
-  return (_clamp(score, 0.0, 1.0) * canvasHeight)
+function valueToYPx(value: number, domainMin: number, domainMax: number, h: number): number {
+  return ((1.0 - _clamp(((value - domainMin) / _max((domainMax - domainMin), 9.99999997475242708e-07)), 0.0, 1.0)) * h)
+}
+
+export function scoreBarHeightPx(score: number, domainMin: number, domainMax: number, canvasHeight: number): number {
+  return (canvasHeight - valueToYPx(score, domainMin, domainMax, canvasHeight))
 }

@@ -1,7 +1,7 @@
 // #exampleFile shared | the `score` shape's shader: one box per feature, compiled by gen:shaders
 // The score shape: one box per instance, spanning x->x2 and grown up from the
-// canvas bottom to y (0..1) x canvasHeight, every box in the one uniform ABGR
-// color. The box height is written here once and lifted into a
+// canvas bottom to its score on the shared value scale, every box in the one
+// uniform ABGR color. The box height is written here once and lifted into a
 // TypeScript twin, which the painter and the hit test read.
 //! targets: wgsl, glsl
 //! export-consts: MIN_WIDTH_PX
@@ -9,6 +9,7 @@
 
 import hpmath;
 import colorPack;
+import valueScale;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 
@@ -29,6 +30,10 @@ struct Uniforms {
   // CSS px of the block column clip space spans, not the whole canvas
   float  viewportWidth;
   float  canvasHeight;
+  // the [min, max] a score is placed through, set by the display from the
+  // loaded regions' extremes so every region's boxes share one scale
+  float  domainMin;
+  float  domainMax;
   uint   color;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
@@ -37,8 +42,11 @@ float bpToClipX(uint bp, Uniforms u) {
   return hpToClipX(hpSplitUint(bp), u.bpRangeX, u.zero);
 }
 
-float scoreBarHeightPx(float score, float canvasHeight) {
-  return clamp(score, 0.0, 1.0) * canvasHeight;
+// valueScale's valueToYPx is the scale the library's own `point` and `bar`
+// shapes read; the box's anchor — its foot on the canvas bottom — is this
+// shape's own.
+float scoreBarHeightPx(float score, float domainMin, float domainMax, float canvasHeight) {
+  return canvasHeight - valueToYPx(score, domainMin, domainMax, canvasHeight);
 }
 
 struct VsOut {
@@ -58,7 +66,7 @@ VsOut vs_main(ScoreInstance inst, uint vid : SV_VertexID) {
   x2 = extendToMinWidthX(x1, x2, MIN_WIDTH_PX, u.viewportWidth);
   float x = local.x < 0.5 ? x1 : x2;
 
-  float barHeightPx = scoreBarHeightPx(inst.y, u.canvasHeight);
+  float barHeightPx = scoreBarHeightPx(inst.y, u.domainMin, u.domainMax, u.canvasHeight);
   // local.y: 0 = top of the box, 1 = bottom (canvas bottom edge).
   float yPx = (u.canvasHeight - barHeightPx) + local.y * barHeightPx;
 

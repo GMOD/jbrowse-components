@@ -8,7 +8,7 @@ import { rewriteMarkerBlock } from './util.ts'
 //
 // Each page used to draw its own tree by hand for the same plugin, and between
 // them they had four errors: neither listed `src/index.ts` or the feature panel,
-// the GPU page omitted `buildScoreResult.ts`, and the Canvas2D page described a
+// the GPU page omitted the packer file, and the Canvas2D page described a
 // factory living inside the renderer file when the example has a separate one.
 // Nothing could catch that, because a hand-drawn tree of a real directory is
 // checked by nobody.

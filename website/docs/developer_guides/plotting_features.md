@@ -9,11 +9,23 @@ sidebar_label: Plotting features
 
 **TL;DR:** A custom display that fetches features in a worker and declares what
 it draws as a list of **marks** — a shape bound to the display's payload. With
-one of the two shared shapes you write no shader, no painter and no hit test;
+one of the shared shapes you write no shader, no painter and no hit test;
 `createMarkBackend` turns the list into the WebGPU, WebGL2 and Canvas2D
-backends, and the same painter is the SVG export. Only a drawing neither shared
-shape fits needs a shape of its own, which is
+backends, and the same painter is the SVG export. Only a drawing no shared shape
+fits needs a shape of its own, which is
 [](/docs/developer_guides/creating_gpu_display).
+
+:::tip Start in config
+
+Plotting a field of a feature file needs no plugin at all. A `marks` entry on
+[`LinearMarkDisplay`](/docs/config_guides/mark_display) draws a `bar`, `point`
+or `span` over any feature adapter, with an `encoding` naming which fields feed
+it, and that page is the first rung. This guide is the second: a **shape** the
+library lacks, over the same worker encoding. The third — a display of your own,
+for a layout or a meaning the mark display does not have — is what the plugin
+below composes, and `plugins/gwas` is the in-tree form of it.
+
+:::
 
 A [build-step plugin](/docs/developer_guides/simple_plugin), not a
 [no-build](/docs/developer_guides/no_build_plugin) one: it bundles
@@ -84,8 +96,7 @@ src/
   ScoreFeaturePanel/
     index.tsx                    adds a panel to the feature details widget
   ScoreRPC/
-    GetScoreData.ts              worker: fetch features from the adapter, then pack
-    buildScoreResult.ts          pure packer, unit-tested without a worker
+    GetScoreData.ts              worker: fetch features from the adapter, then encode
     index.ts                     registers the RPC method
     rpcTypes.ts                  ScoreRegionData and the RPC arg types
 ```
@@ -94,26 +105,30 @@ src/
 
 ## Step 1: Define the data the worker returns
 
-Keep it compact and structured-clone-friendly. Use absolute genomic positions.
+The payload is the encoder's own channels, `EncodedChannels` from
+`@jbrowse/core/util/markEncoding`: the same arrays a config-declared mark draws
+from, so a shape reads them under the same names. A payload of your own is for
+what those channels cannot say — Manhattan ships an LD r² array beside them —
+and it stays compact, structured-clone-friendly and in absolute genomic
+positions.
 
 <!-- include: example-plugins/score-example/src/ScoreRPC/rpcTypes.ts#region-data -->
 
 ```ts
-// One region's worth of features packed into parallel typed arrays. Positions
-// are absolute genomic uint32 (never region-relative) so they cross the worker
-// boundary without precision loss and the renderer can map them directly.
-export interface ScoreRegionData {
-  starts: Uint32Array
-  ends: Uint32Array
-  // score normalized to 0..1 (fraction of the region's max), driving box height
-  scores: Float32Array
-  numFeatures: number
-}
+// One region's worth of features as the encoder packs them: parallel typed
+// arrays, `x`/`x2` absolute genomic uint32 (never region-relative, so they
+// cross the worker boundary without precision loss) and `y` the raw score,
+// plus the score extremes and a hit index over (bp, score). The shape reads
+// the arrays under these names.
+export type ScoreRegionData = EncodedChannels
 ```
 
 ## Step 2: Write the RPC method
 
-The worker fetches from the adapter and packs the result. See
+The worker fetches from the adapter and hands the features to `encodeFeatures`,
+which reads the score column as `y` and returns the channels. It is the
+evaluation `LinearMarkDisplay` runs for a `marks` entry, so a display with a
+shape of its own and a config-declared bar chart pack a region the same way. See
 [](/docs/developer_guides/rpc_workers) for the full `RpcMethodType` contract;
 the shape is:
 
@@ -124,8 +139,11 @@ the shape is:
 ```ts
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-
-import { buildScoreResult } from './buildScoreResult.ts'
+import { rpcResult } from '@jbrowse/core/util/librpc'
+import {
+  encodeFeatures,
+  encodedChannelTransferables,
+} from '@jbrowse/core/util/markEncoding'
 
 import type { GetScoreDataArgs, ScoreRegionData } from './rpcTypes.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
@@ -138,6 +156,8 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
     GetScoreData: {
       args: GetScoreDataArgs
       return: ScoreRegionData
+      // wrapped in rpcResult so postMessage transfers its buffers
+      transferables: true
     }
   }
 }
@@ -168,7 +188,16 @@ export default class GetScoreData extends RpcMethodType<'GetScoreData'> {
       stopToken,
       statusCallback,
     })
-    return buildScoreResult(features, scoreColumn)
+    // The encoder is the packer: one walk reads `scoreColumn` as `y`, skips a
+    // feature with no finite score, and ships the dense arrays with their
+    // extremes and a hit index. A packer of your own is for a payload the
+    // encoder's channels cannot say.
+    const encoded = encodeFeatures(
+      features,
+      { y: scoreColumn },
+      { jexl: this.pluginManager.jexl },
+    )
+    return rpcResult(encoded, encodedChannelTransferables(encoded))
   }
 }
 ```
@@ -263,6 +292,19 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
       rpcProps() {
         return { scoreColumn: getConf(self, 'scoreColumn') }
       },
+      // the score range every loaded region's boxes are placed through: zero
+      // up to the largest score any region shipped, read off the extremes the
+      // encoder packed beside the channels, so a region arriving rescales
+      // every box rather than only its own
+      get domain(): [number, number] {
+        let max = -Infinity
+        for (const { yMax } of self.rpcDataMap.values()) {
+          max = yMax > max ? yMax : max
+        }
+        return [0, max > 0 ? max : 1]
+      },
+    }))
+    .views(self => ({
       // recomputed cheaply every frame without fetching; carries the canvas
       // dimensions (required) plus whatever the marks read. The color is
       // resolved to the packed form here, once, so the uniform write and the
@@ -272,6 +314,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
           canvasWidth: self.canvasWidthPx,
           canvasHeight: self.height,
           color: cssColorToABGR(getConf(self, 'color')),
+          domainY: self.domain,
         }
       },
     }))
@@ -356,17 +399,14 @@ its uniforms. That declaration is the whole of the renderer:
 ```ts
 // Which of the payload's arrays feed which of the shape's lanes, and which
 // render-state values reach its uniforms: two lenses, run once per block per
-// frame. Everything that draws comes from the shape.
+// frame. The encoder's payload already carries the shape's lane names, so the
+// channel lens is the payload itself. Everything that draws comes from the
+// shape.
 export const SCORE_MARKS = [
   defineMark({
     shape: scoreMark,
-    channels: (d: ScoreRegionData) => ({
-      x: d.starts,
-      x2: d.ends,
-      y: d.scores,
-      count: d.numFeatures,
-    }),
-    params: (s: ScoreRenderState) => ({ color: s.color }),
+    channels: (d: ScoreRegionData) => d,
+    params: (s: ScoreRenderState) => ({ color: s.color, domain: s.domainY }),
   }),
 ]
 ```
@@ -393,25 +433,18 @@ import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 
 /**
- * What this display draws, as a declaration: one `point` mark, its channels
- * read straight off the RPC result's parallel arrays.
+ * What this display draws, as a declaration: one `point` mark over the
+ * encoder's channels, which already carry the shape's lane names.
  *
  * The GPU pass and its packer, the Canvas2D painter (which is also the SVG
  * export) and the hit-test geometry all come from `pointMark`; what is written
- * here is only which of this display's arrays feed which lane, and which of its
- * render-state values reach the shape's uniforms.
+ * here is only which of this display's render-state values reach the shape's
+ * uniforms.
  */
 export const MANHATTAN_MARKS = [
   defineMark({
     shape: pointMark,
-    channels: (d: ManhattanRpcResult) => ({
-      x: d.positions,
-      x2: d.ends,
-      y: d.scores,
-      color: d.colors,
-      glyph: d.glyphs,
-      count: d.numFeatures,
-    }),
+    channels: (d: ManhattanRpcResult) => d,
     params: (s: ManhattanRenderState) => ({
       domain: s.domainY,
       diameterPx: s.pointDiameterPx,
@@ -430,13 +463,16 @@ takes, resolved once in the model:
 
 ```ts
 // Recomputed cheaply every frame without fetching: the canvas dimensions
-// (required, to size the backing store) plus the one setting the drawing reads
+// (required, to size the backing store) plus what the drawing reads
 export interface ScoreRenderState {
   canvasWidth: number
   canvasHeight: number
   // packed ABGR (`cssColorToABGR`), resolved once in the model so both backends
   // are handed the same number
   color: number
+  // the score range the boxes are placed through, from the loaded regions'
+  // extremes, so a box's height means the same in every region
+  domainY: [number, number]
 }
 ```
 
@@ -590,9 +626,11 @@ with the answer:
 
 ```ts
 // Where the ink is stays with the shape: `hitNearest` measures the cursor
-// against the same rect `paintBlock` fills. This display has no spatial index,
-// so it hands in every instance of every block under the cursor; one with a
-// worker-built index would hand in what the index answered.
+// against the same rect `paintBlock` fills. This display hands in every
+// instance of every block under the cursor, which is enough at a few thousand
+// boxes; the encoder also ships a Flatbush over (bp, score), and a display
+// with hundreds of thousands of instances hands in what that index answers
+// instead (`findManhattanHit` in plugins/gwas is the worked form).
 export function findScoreHit(
   xPx: number,
   yPx: number,
@@ -611,15 +649,15 @@ export function findScoreHit(
         state,
         xPx,
         yPx,
-        everyInstance(data.numFeatures),
+        everyInstance(data.count),
         bestDistSq,
       )
       if (hit) {
         bestDistSq = hit.distSq
         best = {
-          start: data.starts[hit.index]!,
-          end: data.ends[hit.index]!,
-          score: data.scores[hit.index]!,
+          start: data.x[hit.index]!,
+          end: data.x2[hit.index]!,
+          score: data.y[hit.index]!,
           x: hit.x,
           y: hit.y,
         }
@@ -723,9 +761,13 @@ held to each other by a sweep test. See
 
 ## In-tree references
 
+- `plugins/marks/src/LinearMarkDisplay/` - the config-declared display: one
+  `CoreEncodeFeatures` call per region, a mark list built from the `marks` slot,
+  the legend off the encoder's scale tables
 - `plugins/gwas/src/LinearManhattanDisplay/` - a real feature-plotting display
-  (scored scatter) on the shared `pointMark`, plus an indexed hit test and LD
-  coloring (this guide mirrors it)
+  (scored scatter) on the shared `pointMark`, its worker on `encodeFeatures`
+  with LD's colour and r² as reader channels, plus an indexed hit test (this
+  guide mirrors it)
 - `plugins/variants/src/LinearMultiSampleVariantDisplay/` - a display that keeps
   a shape of its own (`cellMark.ts`) beside its shader
 - `plugins/canvas/src/LinearBasicDisplay/` - the fullest reference: the generic
@@ -735,6 +777,7 @@ held to each other by a sweep test. See
 
 ## See also
 
+- [](/docs/config_guides/mark_display)
 - [](/docs/developer_guides/creating_display)
 - [](/docs/developer_guides/data_fetching)
 - [](/docs/developer_guides/rpc_workers)

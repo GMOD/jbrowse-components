@@ -69,7 +69,7 @@ SLE locus (1991 SNPs, warm adapter, local file):
 | step | ms |
 | --- | --- |
 | `getFeaturesArray` | 7.2 |
-| `buildManhattanResult` (LD evaluators) | 3.5 |
+| the encode (LD readers) | 3.5 |
 | `buildLdToIndex` | 0.8 |
 | **one refetch** | **11.5** |
 | the split's replacement: `GetLdToIndex` + main-thread join | 0.9 |

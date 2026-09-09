@@ -8,7 +8,6 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 export interface ScoreHit {
   start: number
   end: number
-  // normalized 0..1, as the worker packed it
   score: number
   // where the box's ink is nearest the cursor, in canvas px
   x: number
@@ -30,9 +29,11 @@ function* everyInstance(count: number) {
 
 // #region hit
 // Where the ink is stays with the shape: `hitNearest` measures the cursor
-// against the same rect `paintBlock` fills. This display has no spatial index,
-// so it hands in every instance of every block under the cursor; one with a
-// worker-built index would hand in what the index answered.
+// against the same rect `paintBlock` fills. This display hands in every
+// instance of every block under the cursor, which is enough at a few thousand
+// boxes; the encoder also ships a Flatbush over (bp, score), and a display
+// with hundreds of thousands of instances hands in what that index answers
+// instead (`findManhattanHit` in plugins/gwas is the worked form).
 export function findScoreHit(
   xPx: number,
   yPx: number,
@@ -51,15 +52,15 @@ export function findScoreHit(
         state,
         xPx,
         yPx,
-        everyInstance(data.numFeatures),
+        everyInstance(data.count),
         bestDistSq,
       )
       if (hit) {
         bestDistSq = hit.distSq
         best = {
-          start: data.starts[hit.index]!,
-          end: data.ends[hit.index]!,
-          score: data.scores[hit.index]!,
+          start: data.x[hit.index]!,
+          end: data.x2[hit.index]!,
+          score: data.y[hit.index]!,
           x: hit.x,
           y: hit.y,
         }

@@ -50,10 +50,32 @@ split a pixel column, so the shader declares no `//! coverage: analytic`.
 `drawAgainstHit.test.ts` sweeps it in both orientations, and a zero-height bar
 neither paints nor answers.
 
-## What the other packers would need to sit on the encoder
+## A reader in a channel's place
 
-- **Manhattan's `buildManhattanResult`** is `encodeFeatures(features, { y: 'score', color, glyph })` plus what it adds: the LD `r2` channel (a second Float32 array the encoder does not carry — either a `channels` extension or a sibling array packed beside the layer), `indexFound`, and the glyph rule `svtype === 'INS' ? triangle : disc` spelled as a `jexl:` glyph or a native `glyph` field. Its `positions`/`ends`/`scores`/`colors`/`glyphs`/`numFeatures`/`scoreMin`/`scoreMax` are the encoder's `x`/`x2`/`y`/`color`/`glyph`/`count`/`yMin`/`yMax` under other names, so `manhattanMarks.ts` is a rename.
-- **score-example's `buildScoreResult`** is `encodeFeatures(features, { y: scoreColumn })` with one difference: it normalizes scores to `[0, 1]` against the region's max, which the encoder leaves to the display's domain. A `y: 'jexl:…'` cannot see the region max; the display would read `yMax` and scale in its render state, which is what the shared score axis does anyway.
+`encodeFeatures` takes a `MarkEncodingInput`: a `MarkEncoding` any channel of
+which may be a `ChannelReader`, a `(feature) => value` built in the worker.
+The declared form is what crosses the wire; the reader form is how a display's
+own worker method reaches the one loop for a channel no field name can say. Two
+packers moved onto it on 2026-09-09:
+
+- **Manhattan** (`plugins/gwas/src/ManhattanRPC/executeGetManhattanData.ts`)
+  is `encodeFeatures(features, { y: scoreField, color, glyph })` where `color`
+  and `glyph` are the colouring mode's readers — a constant or `jexl:` colour
+  through `colorEvaluator`, the field mode's value-hashed colour, or LD's
+  join against the PLINK adapter — and `ManhattanRpcResult` is
+  `EncodedChannels` plus `r2s` and `indexFound`. The r² channel is read after
+  the encode over `featureIndex`, which is what that array is for. Field
+  colouring fills the encoder's categorical `ScaleTable` rather than a table
+  of its own, so the legend reads one shape from both displays; it keeps
+  `categoricalValueColor` over the encoder's palette walk because two regions
+  have to agree on a value with no `domain` to pin. Measured over a million
+  features, min of 7: 208 → 221 ns/feature in normal mode, 223 → 251 in LD
+  mode, the second the r² pass's re-derivation.
+- **score-example** is `encodeFeatures(features, { y: scoreColumn })` and
+  nothing else; its `[0, 1]` normalisation per region went, and the display
+  folds the shipped `yMax` of every loaded region into one `[0, max]` domain
+  the shape's `valueScale` uniform reads, so a box's height means the same in
+  every region.
 
 ## The jexl channel, measured
 

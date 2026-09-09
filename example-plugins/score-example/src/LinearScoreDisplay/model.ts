@@ -82,6 +82,23 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
         return { scoreColumn: getConf(self, 'scoreColumn') }
       },
       // #endregion
+    }))
+    .views(self => ({
+      // #region domain
+      // the score range every loaded region's boxes are placed through: zero
+      // up to the largest score any region shipped, read off the extremes the
+      // encoder packed beside the channels, so a region arriving rescales
+      // every box rather than only its own
+      get domain(): [number, number] {
+        let max = -Infinity
+        for (const { yMax } of self.rpcDataMap.values()) {
+          max = yMax > max ? yMax : max
+        }
+        return [0, max > 0 ? max : 1]
+      },
+      // #endregion
+    }))
+    .views(self => ({
       // #region renderState
       // recomputed cheaply every frame without fetching; carries the canvas
       // dimensions (required) plus whatever the marks read. The color is
@@ -92,6 +109,7 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
           canvasWidth: self.canvasWidthPx,
           canvasHeight: self.height,
           color: cssColorToABGR(getConf(self, 'color')),
+          domainY: self.domain,
         }
       },
       // #endregion

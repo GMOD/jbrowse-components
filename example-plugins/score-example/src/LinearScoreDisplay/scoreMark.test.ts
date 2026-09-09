@@ -38,7 +38,7 @@ describe('score: every drawn box answers its own hit', () => {
             channels,
             { ...block, reversed },
             frame,
-            { color: 0xff0000ff },
+            { color: 0xff0000ff, domain: [0, 1] },
             { maxDistSq },
           ),
         ).toEqual([])
