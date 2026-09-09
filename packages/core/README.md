@@ -113,6 +113,18 @@ refName at all before this is the right question to ask of it.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
 
+### CategoricalRef
+
+A field bound to a categorical scale: each distinct value takes one entry of the
+channel's range — a palette entry for `color`, a glyph name for `glyph`. With a
+`domain`, the listed values take the range in that order and whatever else the
+region meets follows, sorted; without one each value derives its entry from
+itself (an integer takes the slot it names, anything else hashes in), so every
+region agrees on a value it shares with another at the cost of an occasional
+collision, and `domain` is the way to spend the range deliberately.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
 ### ChannelReader
 
 A channel read per feature: the compiled form of a FieldRef, and what a
@@ -174,16 +186,9 @@ every promoted default at once is a preferences-scope action, and Preferences �
 
 How a mark's `color` channel resolves. A CSS colour or a `jexl:` expression
 returning one paints per feature with no scale; the two object forms bind a
-field to a scale, which is what a legend can describe.
-
-A categorical scale with a `domain` hands palette entries to the listed values
-in that order, then to whatever else it meets in sorted order; without one each
-value derives its palette entry from itself (an integer takes the slot it names,
-anything else hashes in), so every region agrees on a value it shares with
-another at the cost of an occasional collision, and `domain` is the way to spend
-the palette deliberately. A continuous scale reads the field through `domain`
-(the region's own extremes when absent) into `ramp`, and there a listed `domain`
-is what pins the answer across a whole view.
+field to a scale, which is what a legend can describe. A continuous scale reads
+the field through `domain` (the region's own extremes when absent) into `ramp`,
+and there a listed `domain` is what pins the answer across a whole view.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -199,6 +204,14 @@ unscaled arm of ColorEncoding, on its own for a display that carries a plain
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
+### ColorScaleTable
+
+The scale a colour channel was resolved through, as the legend reads it — the
+same table the colours in the payload came from, so the key cannot disagree with
+the painting.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
 ### EncodedChannels
 
@@ -471,7 +484,16 @@ See TrackConfigWithPromotables.
 
 ### GlyphEncoding
 
-A GlyphName, or a `jexl:` expression over `feature` returning one.
+A GlyphName, a `jexl:` expression over `feature` returning one, or a field bound
+to a categorical scale whose `range` lists the glyph names handed out — the
+three glyphs, in order, when absent.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+### GlyphScaleTable
+
+The scale a glyph channel was resolved through: which glyph each value of the
+field took.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -602,8 +624,7 @@ on a second click, the other filled when the box was ticked and flipping. With
 
 The declared mapping from a feature's fields to a mark's channels. `x` defaults
 to `start` and `x2` to `end`; a mark that plots no value leaves `y` off. `glyph`
-is a glyph name or a `jexl:` expression returning one, read by the `point` shape
-alone.
+is read by the `point` shape alone.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -617,8 +638,8 @@ the wire; a reader is built in the worker.
 
 ### NO_VALUE_LABEL
 
-The key row a feature with nothing in a categorical colour field lands on, so
-the legend says why a mark is grey rather than listing a blank value.
+The key row a feature with nothing in a categorical field lands on, so the
+legend says why a mark is grey, or a disc, rather than listing a blank value.
 
 ```js
 // type signature
@@ -837,9 +858,7 @@ than an extrapolation past them, and a one-stop ramp is that stop everywhere.
 
 ### ScaleTable
 
-The scale a colour channel was resolved through, as the legend reads it — the
-same table the colours in the payload came from, so the key cannot disagree with
-the painting.
+Any channel's scale table; the kind names the channel.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 

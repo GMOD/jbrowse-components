@@ -1,8 +1,11 @@
+import type { GlyphName } from '../util/markEncodingTypes.ts'
 import type { RampStop } from './colorScale.ts'
 
-// One filled box in one color.
+// One filled box in one color — or, for a key over the point shape's glyph
+// channel, that glyph in the color.
 export interface LegendSwatch {
   color: string
+  glyph?: GlyphName
 }
 
 // A continuous bar in place of a swatch: the ramp a scalar is painted

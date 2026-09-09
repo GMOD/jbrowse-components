@@ -66,6 +66,7 @@ import type {
   ColorEncoding,
   EncodedFeaturesResult,
   GlyphEncoding,
+  GlyphName,
   MarkEncoding,
 } from '@jbrowse/core/util/markEncoding'
 import type { Region } from '@jbrowse/core/util/types/data'
@@ -128,12 +129,24 @@ function encodingOf(mark: MarkConfig): MarkEncoding {
                   ? 'viridis'
                   : [...color.ramp],
           }
+  const glyphEncoding: GlyphEncoding =
+    glyph.scale === 'none'
+      ? (glyph.value as GlyphEncoding)
+      : {
+          field: glyph.field,
+          scale: 'categorical',
+          range:
+            glyph.range.length > 0
+              ? ([...glyph.range] as GlyphName[])
+              : undefined,
+          domain: glyph.domain.length > 0 ? [...glyph.domain] : undefined,
+        }
   return {
     x,
     x2,
     y: y === '' ? undefined : y,
     color: scaled,
-    glyph: glyph as GlyphEncoding,
+    glyph: glyphEncoding,
   }
 }
 
@@ -349,7 +362,7 @@ export function stateModelFactory(
        * the colour keys the loaded regions carry, one per scaled mark
        */
       get legendSections() {
-        return buildMarkLegend(self.rpcDataMap.values(), self.markShapes.length)
+        return buildMarkLegend(self.rpcDataMap.values())
       },
       /**
        * #getter

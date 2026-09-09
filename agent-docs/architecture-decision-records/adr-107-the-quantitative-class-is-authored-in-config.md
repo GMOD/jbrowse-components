@@ -60,7 +60,11 @@ Four moves, one class:
   channels — `x`, `x2`, `y`, `color`, `glyph` — to a field name or a `jexl:`
   expression, `color` alternatively to a constant or a `{ field, scale }` where
   the scale is `categorical` (palette, optional `domain` order) or
-  `linear`/`log` (a ramp, optional `domain`). `CoreEncodeFeatures` takes
+  `linear`/`log` (a ramp, optional `domain`). A scale belongs to a channel
+  rather than to colour: `glyph` takes the same categorical form with a
+  `range` of glyph names, resolved through the one categorical arm, and ships
+  its own table for the legend (2026-09-09, measured at 1.27x native against
+  the jexl ternary's 1.76x). `CoreEncodeFeatures` takes
   `{ adapterConfig, region, encodings[], filters?, byteLimit? }`, runs
   `encodeFeatures` per encoding and returns one `EncodedChannels` per mark —
   columnar typed arrays, the y extremes, a Flatbush over (bp, y) for hit

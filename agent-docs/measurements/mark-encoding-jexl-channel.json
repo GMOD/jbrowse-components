@@ -5,12 +5,25 @@
   "source": {
     "kind": "bench",
     "repro": "node packages/core/benches/encodeFeatures.bench.ts --rounds=9",
-    "notes": "1,000,000 synthetic SimpleFeatures (2 bp each, an integer score, a strand) through encodeFeatures, four arms interleaved round-robin in one node 24 process on AC power, min of 9 rounds. Every arm packs x/x2/y, builds the Flatbush and skips the same features; the identity check compares count, x and y across arms first. 'native' reads score with feature.get and packs a constant colour; 'control' is the same encoding declared a second time, so its ratio is the harness's own resolution; 'jexl-y' reads score through a jexl: expression, one evaluation per feature; 'jexl-color' reads score natively and colours through a jexl ternary, one evaluation per feature with its CSS answer parsed once per distinct string. Absolute times drift about 2x between runs on this shared box; the within-run ratios held across three runs. 'vs native' is typed rather than derived because it divides by another row."
+    "notes": "1,000,000 synthetic SimpleFeatures (2 bp each, an integer score, a strand) through encodeFeatures, seven arms interleaved round-robin in one node 24 process on AC power, min of 9 rounds. Every arm packs x/x2/y, builds the Flatbush and skips the same features; the identity check compares count, x and y across arms first. 'native' reads score with feature.get and packs a constant colour; 'control' is the same encoding declared a second time, so its ratio is the harness's own resolution; 'jexl-y' reads score through a jexl: expression, one evaluation per feature; 'jexl-color' reads score natively and colours through a jexl ternary, one evaluation per feature with its CSS answer parsed once per distinct string; 'scale-color' colours through a categorical scale over strand, a field read and a table lookup per feature plus one pass after the walk; 'jexl-glyph' and 'scale-glyph' are the same pair for the glyph channel. Re-measured with the scale arms on 2026-09-09 under a load average near 5, which is why the absolute times sit above the first record's; the ratios are the comparison. Absolute times drift about 2x between runs on this shared box; the within-run ratios held across three runs. 'vs native' is typed rather than derived because it divides by another row."
   },
   "columns": [
-    { "key": "arm", "label": "arm" },
-    { "key": "features", "label": "features", "format": "int", "align": "right" },
-    { "key": "ms", "label": "wall", "format": "ms", "align": "right" },
+    {
+      "key": "arm",
+      "label": "arm"
+    },
+    {
+      "key": "features",
+      "label": "features",
+      "format": "int",
+      "align": "right"
+    },
+    {
+      "key": "ms",
+      "label": "wall",
+      "format": "ms",
+      "align": "right"
+    },
     {
       "key": "nsPerFeature",
       "label": "per feature (ns)",
@@ -18,18 +31,84 @@
       "align": "right",
       "derived": "ms * 1000000 / features"
     },
-    { "key": "vsNative", "label": "vs native", "format": "x", "align": "right" }
+    {
+      "key": "vsNative",
+      "label": "vs native",
+      "format": "x",
+      "align": "right"
+    }
   ],
   "rows": [
-    { "values": { "arm": "native", "features": 1000000, "ms": 237, "vsNative": 1 } },
-    { "values": { "arm": "control", "features": 1000000, "ms": 246, "vsNative": 1.04 } },
     {
-      "values": { "arm": "jexl-y", "features": 1000000, "ms": 355, "vsNative": 1.5 },
-      "emphasize": ["vsNative"]
+      "values": {
+        "arm": "native",
+        "features": 1000000,
+        "ms": 288,
+        "vsNative": 1
+      }
     },
     {
-      "values": { "arm": "jexl-color", "features": 1000000, "ms": 405, "vsNative": 1.71 },
-      "emphasize": ["vsNative"]
+      "values": {
+        "arm": "control",
+        "features": 1000000,
+        "ms": 317,
+        "vsNative": 1.1
+      }
+    },
+    {
+      "values": {
+        "arm": "jexl-y",
+        "features": 1000000,
+        "ms": 426,
+        "vsNative": 1.48
+      },
+      "emphasize": [
+        "vsNative"
+      ]
+    },
+    {
+      "values": {
+        "arm": "jexl-color",
+        "features": 1000000,
+        "ms": 485,
+        "vsNative": 1.68
+      },
+      "emphasize": [
+        "vsNative"
+      ]
+    },
+    {
+      "values": {
+        "arm": "scale-color",
+        "features": 1000000,
+        "ms": 366,
+        "vsNative": 1.27
+      },
+      "emphasize": [
+        "vsNative"
+      ]
+    },
+    {
+      "values": {
+        "arm": "jexl-glyph",
+        "features": 1000000,
+        "ms": 507,
+        "vsNative": 1.76
+      },
+      "emphasize": [
+        "vsNative"
+      ]
+    },
+    {
+      "values": {
+        "arm": "scale-glyph",
+        "features": 1000000,
+        "ms": 365,
+        "vsNative": 1.27
+      },
+      "emphasize": [
+        "vsNative"
+      ]
     }
   ]
 }

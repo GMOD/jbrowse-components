@@ -145,3 +145,43 @@ test('draws nothing with no entries', () => {
   )
   expect(container.querySelector('g')).toBeNull()
 })
+
+test('a glyph swatch is the point shape drawn as a path, in the row colour', () => {
+  const { container } = renderSvg(
+    <SvgColorLegend
+      canvasWidth={500}
+      entries={[
+        {
+          key: 'tri',
+          label: 'INS',
+          swatches: [{ color: 'currentColor', glyph: 'triangle' }],
+        },
+        {
+          key: 'dia',
+          label: 'DEL',
+          swatches: [{ color: 'currentColor', glyph: 'diamond' }],
+        },
+        {
+          key: 'disc',
+          label: 'SNV',
+          swatches: [{ color: 'currentColor', glyph: 'disc' }],
+        },
+      ]}
+    />,
+  )
+  const paths = [...container.querySelectorAll('path')].map(p =>
+    p.getAttribute('d'),
+  )
+  // a triangle is three corners, a diamond four, a disc two arcs; every one
+  // closes and stays inside its 10px box
+  expect(paths[0]).toMatch(/^M[^L]*L[^L]*L[^L]*Z$/)
+  expect(paths[1]).toMatch(/^M[^L]*L[^L]*L[^L]*L[^L]*Z$/)
+  expect(paths[2]).toMatch(/A/)
+  for (const d of paths) {
+    const coords = d!.match(/-?\d+(\.\d+)?/g)!.map(Number)
+    expect(coords.every(c => c >= 0 && c <= 20)).toBe(true)
+  }
+  expect(container.querySelectorAll('path[fill="currentColor"]')).toHaveLength(
+    3,
+  )
+})

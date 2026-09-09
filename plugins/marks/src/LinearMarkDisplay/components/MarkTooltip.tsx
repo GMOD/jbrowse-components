@@ -4,7 +4,7 @@ import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { toP } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
-import { categoryLabel } from '../legend.ts'
+import { categoryLabel, colorSection } from '../legend.ts'
 
 import type { MarkShapeName } from '../configSchema.ts'
 import type { MarkHitInfo } from '../findMarkHit.ts'
@@ -28,9 +28,7 @@ const MarkTooltip = observer(function MarkTooltip({
 }) {
   const { hoveredFeature: hit, encodings, markShapes, legendSections } = model
   const encoding = hit ? encodings[hit.markIndex] : undefined
-  const scale = hit
-    ? legendSections.find(s => s.markIndex === hit.markIndex)?.scale
-    : undefined
+  const scale = hit ? colorSection(legendSections, hit.markIndex) : undefined
   const label = hit ? categoryLabel(scale, hit.color) : undefined
   return (
     <HoverTooltip hit={hit} mouseState={mouseState}>

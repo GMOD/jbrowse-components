@@ -11,13 +11,13 @@ export type MarkShapeName = (typeof MARK_SHAPES)[number]
 
 export const DEFAULT_POINT_DIAMETER_PX = 4
 
-// `color: 'red'` and `color: 'jexl:…'` are the unscaled arm, spelled as the
-// bare string every other colour slot takes; the object form binds a field to
-// a scale. One sub-schema holds both, so the string is lifted into `value`.
-// A `domain` written as numbers (a ramp's `[0, 100]`) is carried as strings,
-// which is the one array slot type the schema has; the display parses the
-// numbers back for a ramp.
-function normalizeColor(snap: unknown) {
+// `color: 'red'`, `color: 'jexl:…'` and `glyph: 'triangle'` are the unscaled
+// arm, spelled as the bare string every other such slot takes; the object
+// form binds a field to a scale. One sub-schema holds both, so the string is
+// lifted into `value`. A `domain` written as numbers (a ramp's `[0, 100]`) is
+// carried as strings, which is the one array slot type the schema has; the
+// display parses the numbers back for a ramp.
+function liftValue(snap: unknown) {
   const obj: Record<string, unknown> =
     typeof snap === 'string' ? { value: snap } : { ...(snap as object) }
   if (Array.isArray(obj.domain)) {
@@ -101,7 +101,68 @@ const markColorSchema = ConfigurationSchema(
       description: 'viridis, or CSS colour stops',
     },
   },
-  { preProcessSnapshot: normalizeColor },
+  { preProcessSnapshot: liftValue },
+)
+
+const markGlyphSchema = ConfigurationSchema(
+  'MarkGlyph',
+  {
+    /**
+     * #slot marks.encoding.glyph.value
+     * `disc`, `triangle` or `diamond`, or a jexl callback over `feature`
+     * returning one, for a point mark whose glyph is not a scale. Writing
+     * `glyph: 'triangle'` directly on the encoding lands here.
+     */
+    value: {
+      type: 'string',
+      defaultValue: 'disc',
+      description: 'disc, triangle, diamond or jexl callback',
+      contextVariable: ['feature'],
+    },
+    /**
+     * #slot marks.encoding.glyph.field
+     * The feature field a categorical scale reads — or a jexl callback over
+     * `feature`, which is slower per feature and so the opt-in.
+     */
+    field: {
+      type: 'string',
+      defaultValue: '',
+      description: 'feature field, or jexl callback',
+    },
+    /**
+     * #slot marks.encoding.glyph.scale
+     * `categorical` hands a glyph from `range` to each distinct value of
+     * `field`; `none` draws `value`.
+     */
+    scale: {
+      type: 'stringEnum',
+      model: types.enumeration('MarkGlyphScale', ['none', 'categorical']),
+      defaultValue: 'none',
+      description: 'none or categorical',
+    },
+    /**
+     * #slot marks.encoding.glyph.range
+     * The glyph names a categorical scale hands out, in order. Empty is
+     * `disc`, `triangle`, `diamond`.
+     */
+    range: {
+      type: 'stringArray',
+      defaultValue: [],
+      description: 'glyph names, in order',
+    },
+    /**
+     * #slot marks.encoding.glyph.domain
+     * The values in legend order, walking `range` from the first entry;
+     * left empty, each value derives its glyph from itself, so every region
+     * agrees.
+     */
+    domain: {
+      type: 'stringArray',
+      defaultValue: [],
+      description: 'category order',
+    },
+  },
+  { preProcessSnapshot: liftValue },
 )
 
 const markEncodingSchema = ConfigurationSchema('MarkEncoding', {
@@ -144,14 +205,11 @@ const markEncodingSchema = ConfigurationSchema('MarkEncoding', {
   color: markColorSchema,
   /**
    * #slot marks.encoding.glyph
-   * For a point mark: `disc`, `triangle` or `diamond`, or a jexl callback
-   * over `feature` returning one of those.
+   * For a point mark: `disc`, `triangle` or `diamond`, a jexl callback over
+   * `feature` returning one, or an object binding a field to a categorical
+   * scale over those names. A scale is what the legend describes.
    */
-  glyph: {
-    type: 'string',
-    defaultValue: 'disc',
-    description: 'disc, triangle, diamond or jexl callback',
-  },
+  glyph: markGlyphSchema,
 })
 
 const markSchema = ConfigurationSchema('Mark', {

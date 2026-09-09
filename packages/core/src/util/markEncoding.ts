@@ -1,13 +1,10 @@
-import {
-  GLYPH_DIAMOND,
-  GLYPH_DISC,
-  GLYPH_TRIANGLE,
-} from '@jbrowse/render-core/shaders/pointMarkConsts'
+import { GLYPH_DISC } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
 import { categoricalPalette, categoricalValueColor } from '../ui/colors.ts'
 import { cssColorToABGR, cssColorToRgba, packAbgr } from './colorBits.ts'
 import { VIRIDIS_STOPS, buildColorRampLut } from './colorRamp.ts'
 import Flatbush from './flatbush/index.ts'
+import { GLYPH_CODES, GLYPH_NAMES } from './glyphNames.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { buildJexlContext } from './simpleFeature.ts'
 
@@ -15,24 +12,28 @@ import type { ColorRampStop } from './colorRamp.ts'
 import type { JexlInstance } from './jexlStrings.ts'
 import type {
   ColorEncoding,
+  ColorScaleTable,
   EncodedChannels,
   FieldRef,
   GlyphEncoding,
   GlyphName,
+  GlyphScaleTable,
   RampRef,
-  ScaleTable,
 } from './markEncodingTypes.ts'
 import type { ProgressReporter } from './progress.ts'
 import type { Feature } from './simpleFeature.ts'
 
 export type {
+  CategoricalRef,
   ColorEncoding,
+  ColorScaleTable,
   CoreEncodeFeaturesArgs,
   EncodedChannels,
   EncodedFeaturesResult,
   FieldRef,
   GlyphEncoding,
   GlyphName,
+  GlyphScaleTable,
   MarkEncoding,
   RampRef,
   ScaleTable,
@@ -47,16 +48,11 @@ const FALLBACK_COLOR = cssColorToABGR('#808080')
 
 /**
  * #api
- * The key row a feature with nothing in a categorical colour field lands on,
- * so the legend says why a mark is grey rather than listing a blank value.
+ * The key row a feature with nothing in a categorical field lands on, so the
+ * legend says why a mark is grey, or a disc, rather than listing a blank
+ * value.
  */
 export const NO_VALUE_LABEL = '(no value)'
-
-const GLYPH_CODES: Record<GlyphName, number> = {
-  disc: GLYPH_DISC,
-  triangle: GLYPH_TRIANGLE,
-  diamond: GLYPH_DIAMOND,
-}
 
 /**
  * #api
@@ -100,7 +96,7 @@ function isGlyphName(glyph: string): glyph is GlyphName {
 }
 
 function glyphReader(
-  glyph: GlyphEncoding | ChannelReader<number> | undefined,
+  glyph: Exclude<GlyphEncoding, object> | ChannelReader<number> | undefined,
   jexl: JexlInstance,
 ): ChannelReader<number> {
   if (glyph === undefined) {
@@ -169,6 +165,58 @@ function categoryOrder(
   return [...listed, ...rest]
 }
 
+// The categorical arm `color` and `glyph` share: the walk records which
+// distinct value each admitted instance carried, and `resolve` hands every
+// value its range entry once the region's table is known. A listed domain
+// is the author's order and walks the range; without one the entry derives
+// from the value itself, so two regions that met different value sets still
+// agree on every value they share.
+function categoricalChannel(read: ChannelReader, n: number) {
+  const categories = new Map<string, number>()
+  const indexOf = new Int32Array(n)
+  return {
+    indexOf,
+    collect(f: Feature, at: number) {
+      const raw = read(f)
+      if (raw === undefined || raw === null || raw === '') {
+        indexOf[at] = -1
+        return
+      }
+      const label = String(raw)
+      let index = categories.get(label)
+      if (index === undefined) {
+        index = categories.size
+        categories.set(label, index)
+      }
+      indexOf[at] = index
+    },
+    resolve<T>(domain: (string | number)[] | undefined, range: readonly T[]) {
+      const ofIndex: T[] = Array.from({ length: categories.size })
+      const entries: { label: string; value: T }[] = []
+      categoryOrder(categories, domain).forEach((label, slot) => {
+        const value = domain
+          ? range[slot % range.length]!
+          : categoricalValueColor(label, range)
+        const index = categories.get(label)
+        if (index !== undefined) {
+          ofIndex[index] = value
+        }
+        entries.push({ label, value })
+      })
+      return { ofIndex, entries }
+    },
+  }
+}
+
+function hasMissing(indexOf: Int32Array, count: number) {
+  for (let i = 0; i < count; i++) {
+    if (indexOf[i]! < 0) {
+      return true
+    }
+  }
+  return false
+}
+
 /**
  * #api
  * Evaluate one encoding over a feature list into dense channel arrays, the
@@ -189,7 +237,6 @@ export function encodeFeatures(
   const readX2 = fieldReader(encoding.x2 ?? 'end', jexl)
   const readY =
     encoding.y === undefined ? undefined : fieldReader(encoding.y, jexl)
-  const readGlyph = glyphReader(encoding.glyph, jexl)
 
   const x = new Uint32Array(n)
   const x2 = new Uint32Array(n)
@@ -209,11 +256,25 @@ export function encodeFeatures(
       : scaled === undefined
         ? colorEvaluator(colorEncoding as string, jexl)
         : fieldReader(scaled.field, jexl)
-  // A scaled colour resolves after the walk, once the table is known: the
-  // category index or the raw value per admitted instance, kept here.
-  const scaledValues = scaled ? new Float32Array(n) : undefined
-  const categories =
-    scaled?.scale === 'categorical' ? new Map<string, number>() : undefined
+  // A scaled channel resolves after the walk, once the table is known: the
+  // category per admitted instance, or a ramp's raw value, kept here.
+  const colorCategories =
+    scaled?.scale === 'categorical'
+      ? categoricalChannel(readColor, n)
+      : undefined
+  const rampValues =
+    scaled && scaled.scale !== 'categorical' ? new Float32Array(n) : undefined
+  const glyphScaled =
+    typeof encoding.glyph === 'object' ? encoding.glyph : undefined
+  const glyphCategories = glyphScaled
+    ? categoricalChannel(fieldReader(glyphScaled.field, jexl), n)
+    : undefined
+  const readGlyph = glyphScaled
+    ? undefined
+    : glyphReader(
+        encoding.glyph as Exclude<typeof encoding.glyph, object>,
+        jexl,
+      )
 
   for (let i = 0; i < n; i++) {
     report?.(i)
@@ -235,68 +296,47 @@ export function encodeFeatures(
         yMax = yv
       }
     }
-    glyph[count] = readGlyph(f)
+    if (readGlyph) {
+      glyph[count] = readGlyph(f)
+    } else {
+      glyphCategories!.collect(f, count)
+    }
     featureIndex[count] = i
-    if (categories) {
-      const raw = readColor(f)
-      if (raw === undefined || raw === null || raw === '') {
-        scaledValues![count] = -1
-      } else {
-        const label = String(raw)
-        let index = categories.get(label)
-        if (index === undefined) {
-          index = categories.size
-          categories.set(label, index)
-        }
-        scaledValues![count] = index
-      }
-    } else if (scaledValues) {
-      scaledValues[count] = Number(readColor(f))
+    if (colorCategories) {
+      colorCategories.collect(f, count)
+    } else if (rampValues) {
+      rampValues[count] = Number(readColor(f))
     } else {
       color[count] = readColor(f) as number
     }
     count++
   }
 
-  let scale: ScaleTable | undefined
-  if (scaled?.scale === 'categorical' && categories && scaledValues) {
-    // A listed domain is the author's order and walks the palette; without
-    // one the colour derives from the value itself, so two regions that met
-    // different value sets still agree on every value they share.
-    const order = categoryOrder(categories, scaled.domain)
+  let scale: ColorScaleTable | undefined
+  if (scaled?.scale === 'categorical' && colorCategories) {
     const palette = (scaled.palette ?? categoricalPalette).map(cssColorToABGR)
-    const colorOfIndex = new Uint32Array(categories.size)
-    const entries: { label: string; color: number }[] = []
-    let missing = false
-    order.forEach((label, slot) => {
-      const index = categories.get(label)
-      const c = scaled.domain
-        ? palette[slot % palette.length]!
-        : categoricalValueColor(label, palette)
-      if (index !== undefined) {
-        colorOfIndex[index] = c
-      }
-      entries.push({ label, color: c })
-    })
+    const { ofIndex, entries } = colorCategories.resolve(scaled.domain, palette)
+    const { indexOf } = colorCategories
     for (let i = 0; i < count; i++) {
-      const index = scaledValues[i]!
-      if (index < 0) {
-        missing = true
-        color[i] = FALLBACK_COLOR
-      } else {
-        color[i] = colorOfIndex[index]!
-      }
+      const index = indexOf[i]!
+      color[i] = index < 0 ? FALLBACK_COLOR : ofIndex[index]!
     }
-    if (missing) {
-      entries.push({ label: NO_VALUE_LABEL, color: FALLBACK_COLOR })
+    scale = {
+      kind: 'categorical',
+      field: scaled.field,
+      entries: [
+        ...entries.map(e => ({ label: e.label, color: e.value })),
+        ...(hasMissing(indexOf, count)
+          ? [{ label: NO_VALUE_LABEL, color: FALLBACK_COLOR }]
+          : []),
+      ],
     }
-    scale = { kind: 'categorical', field: scaled.field, entries }
-  } else if (scaled && scaled.scale !== 'categorical' && scaledValues) {
-    const domain = scaled.domain ?? finiteExtremes(scaledValues, count)
+  } else if (scaled && scaled.scale !== 'categorical' && rampValues) {
+    const domain = scaled.domain ?? finiteExtremes(rampValues, count)
     const lut = buildColorRampLut(rampStops(scaled.ramp))
     const norm = normalizer(scaled.scale, domain)
     for (let i = 0; i < count; i++) {
-      const v = scaledValues[i]!
+      const v = rampValues[i]!
       color[i] = Number.isFinite(v) ? lutColorAt(lut, norm(v)) : FALLBACK_COLOR
     }
     scale = {
@@ -305,6 +345,30 @@ export function encodeFeatures(
       scale: scaled.scale,
       domain,
       lut,
+    }
+  }
+
+  let glyphScale: GlyphScaleTable | undefined
+  if (glyphScaled && glyphCategories) {
+    const { ofIndex, entries } = glyphCategories.resolve(
+      glyphScaled.domain,
+      glyphScaled.range ?? GLYPH_NAMES,
+    )
+    const codeOfIndex = Uint8Array.from(ofIndex, name => GLYPH_CODES[name])
+    const { indexOf } = glyphCategories
+    for (let i = 0; i < count; i++) {
+      const index = indexOf[i]!
+      glyph[i] = index < 0 ? GLYPH_DISC : codeOfIndex[index]!
+    }
+    glyphScale = {
+      kind: 'glyph',
+      field: glyphScaled.field,
+      entries: [
+        ...entries.map(e => ({ label: e.label, glyph: e.value })),
+        ...(hasMissing(indexOf, count)
+          ? [{ label: NO_VALUE_LABEL, glyph: 'disc' as const }]
+          : []),
+      ],
     }
   }
 
@@ -331,6 +395,7 @@ export function encodeFeatures(
     yMax,
     flatbushData,
     scale,
+    glyphScale,
   }
 }
 

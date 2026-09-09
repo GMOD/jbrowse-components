@@ -119,3 +119,42 @@ test('points over the same file with a jexl colour', async () => {
   expect(el.dataset.displayId).toBe('mark_points-marks')
   expect(el.dataset.displayDrawn).toBe('true')
 }, 30000)
+
+test('points with the glyph a scale over a field, and the key drawing each glyph', async () => {
+  const { view, findByTestId } = await createView(
+    markTrackConfig('mark_glyphs', [
+      {
+        shape: 'point',
+        encoding: {
+          y: 'score',
+          glyph: {
+            field: 'name',
+            scale: 'categorical',
+            domain: ['EDEN.1', 'EDEN.2'],
+            range: ['triangle', 'diamond'],
+          },
+        },
+      },
+    ]),
+  )
+  view.setNewView(5, 0)
+  fireEvent.click(await findByTestId(hts('mark_glyphs'), {}, { timeout }))
+
+  const el = await findDisplayPainted('mark-display', { timeout })
+  expect(el.dataset.displayDrawn).toBe('true')
+  // the pinned domain's rows lead the key and the region's other name
+  // follows, walking the range again; every swatch is the glyph itself
+  const legend = await findByTestId('floating-legend', {}, { timeout })
+  await waitFor(() => {
+    expect(legend.textContent).toContain('EDEN.3')
+  })
+  expect(legend.textContent).not.toContain('(no value)')
+  const paths = [...legend.querySelectorAll('path')].map(p =>
+    p.getAttribute('d'),
+  )
+  expect(paths).toEqual([
+    'M0 0L12 0L6 12Z',
+    'M6 0L12 6L6 12L0 6Z',
+    'M0 0L12 0L6 12Z',
+  ])
+}, 30000)

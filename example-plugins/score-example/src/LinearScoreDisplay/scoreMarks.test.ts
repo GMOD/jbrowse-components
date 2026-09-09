@@ -37,6 +37,7 @@ function mkData(x: number[], x2: number[], y: number[]): ScoreRegionData {
     yMax: 1,
     flatbushData: undefined,
     scale: undefined,
+    glyphScale: undefined,
   }
 }
 

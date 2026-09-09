@@ -4,16 +4,20 @@
 //   node packages/core/benches/encodeFeatures.bench.ts
 //   node packages/core/benches/encodeFeatures.bench.ts --rounds=9 --features=1000000
 //
-// Four arms over one synthetic feature list, interleaved round-robin, min
+// Seven arms over one synthetic feature list, interleaved round-robin, min
 // across rounds (agent-docs/reference/BENCHMARKING.md):
 //
-//   native     y: 'score', a constant colour — the encoder's own loop and
-//              `feature.get` per channel
-//   control    the same encoding declared a second time, so the harness's
-//              resolution is on the table beside the ratios
-//   jexl-y     y: 'jexl:feature.score' — one jexl evaluation per feature
-//   jexl-color y native, colour a jexl ternary — one evaluation per feature
-//              plus the CSS colour parse its answer costs
+//   native      y: 'score', a constant colour — the encoder's own loop and
+//               `feature.get` per channel
+//   control     the same encoding declared a second time, so the harness's
+//               resolution is on the table beside the ratios
+//   jexl-y      y: 'jexl:feature.score' — one jexl evaluation per feature
+//   jexl-color  y native, colour a jexl ternary — one evaluation per feature
+//               plus the CSS colour parse its answer costs
+//   scale-color y native, colour a categorical scale over strand — the
+//               field read, the value's table lookup and a pass after the walk
+//   jexl-glyph  y native, glyph a jexl ternary over strand
+//   scale-glyph y native, glyph a categorical scale over strand
 //
 // Every arm packs the same x/x2 and skips the same features, so the identity
 // check compares `count`, `x` and `y` across arms before any time is believed.
@@ -58,6 +62,29 @@ const ARMS: { name: string; encoding: MarkEncoding }[] = [
     encoding: {
       y: 'score',
       color: "jexl:get(feature,'strand')==1?'red':'blue'",
+    },
+  },
+  {
+    name: 'scale-color',
+    encoding: {
+      y: 'score',
+      color: { field: 'strand', scale: 'categorical' },
+    },
+  },
+  {
+    name: 'jexl-glyph',
+    encoding: {
+      y: 'score',
+      color: 'red',
+      glyph: "jexl:get(feature,'strand')==1?'triangle':'disc'",
+    },
+  },
+  {
+    name: 'scale-glyph',
+    encoding: {
+      y: 'score',
+      color: 'red',
+      glyph: { field: 'strand', scale: 'categorical' },
     },
   },
 ]

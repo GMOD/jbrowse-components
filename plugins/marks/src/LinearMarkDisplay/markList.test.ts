@@ -51,6 +51,7 @@ function layer(
     flatbushData: fb.data,
     flatbush: Flatbush.from(fb.data),
     scale: undefined,
+    glyphScale: undefined,
     ...extra,
   }
 }
@@ -213,9 +214,10 @@ test('the legend unions categorical tables across regions and keeps the first co
       }),
     ],
   }
-  expect(buildMarkLegend([regionA, regionB], 1)).toEqual([
+  expect(buildMarkLegend([regionA, regionB])).toEqual([
     {
       markIndex: 0,
+      channel: 'color',
       scale: {
         kind: 'categorical',
         field: 'type',

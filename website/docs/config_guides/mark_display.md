@@ -62,13 +62,13 @@ from an `origin` of 0, and the y-axis autoscales to the values on screen, with
 
 Each mark's `encoding` maps feature fields to the channels its shape reads:
 
-| Channel | Read by        | Value                                                                                        |
-| ------- | -------------- | -------------------------------------------------------------------------------------------- |
-| `x`     | every shape    | a field holding the left edge in bp; `start` by default                                      |
-| `x2`    | every shape    | the right edge; `end` by default                                                             |
-| `y`     | `bar`, `point` | the field plotted on the score axis; a feature whose value is not a finite number is skipped |
-| `color` | every shape    | a CSS colour, a jexl callback returning one, or a scale (below)                              |
-| `glyph` | `point`        | `disc`, `triangle` or `diamond`, or a jexl callback returning one                            |
+| Channel | Read by        | Value                                                                                          |
+| ------- | -------------- | ---------------------------------------------------------------------------------------------- |
+| `x`     | every shape    | a field holding the left edge in bp; `start` by default                                        |
+| `x2`    | every shape    | the right edge; `end` by default                                                               |
+| `y`     | `bar`, `point` | the field plotted on the score axis; a feature whose value is not a finite number is skipped   |
+| `color` | every shape    | a CSS colour, a jexl callback returning one, or a scale (below)                                |
+| `glyph` | `point`        | `disc`, `triangle` or `diamond`, a jexl callback returning one, or a categorical scale (below) |
 
 A field name is read straight off the feature (`score`, `strand`, or any column
 a BED `columnNames` or a GFF attribute names). A `jexl:` expression over
@@ -100,6 +100,34 @@ legend can describe:
 
 The scale is resolved in the worker, once, and the legend reads the same table
 the colours came from — so what the key says is what was painted.
+
+## Glyph scales
+
+A scale belongs to a channel, not only to colour. `glyph` takes the same
+categorical form — `{ "field": "svtype", "scale": "categorical" }` — with
+`range` listing the glyph names to hand out in place of `palette` (`disc`,
+`triangle`, `diamond` in that order when left off) and `domain` the values in
+legend order. The legend then carries a second key whose swatches are the glyphs
+themselves:
+
+```json
+{
+  "shape": "point",
+  "encoding": {
+    "y": "score",
+    "color": { "field": "strand", "scale": "categorical" },
+    "glyph": {
+      "field": "svtype",
+      "scale": "categorical",
+      "domain": ["INS", "DEL"],
+      "range": ["triangle", "diamond"]
+    }
+  }
+}
+```
+
+A field read through a scale costs a fraction of the jexl callback it replaces,
+which is what makes shape-by-field a declaration rather than an expression.
 
 ## Several marks
 

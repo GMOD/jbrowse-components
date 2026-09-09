@@ -5198,7 +5198,29 @@ export const configManifest: ConfigManifest = {
                 },
                 {
                   "name": "glyph",
-                  "type": "(JexlString | string)"
+                  "type": "MarkGlyphConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "value",
+                      "type": "(JexlString | string)"
+                    },
+                    {
+                      "name": "field",
+                      "type": "(JexlString | string)"
+                    },
+                    {
+                      "name": "scale",
+                      "type": "(JexlString | MarkGlyphScale)"
+                    },
+                    {
+                      "name": "range",
+                      "type": "(JexlString | string[])"
+                    },
+                    {
+                      "name": "domain",
+                      "type": "(JexlString | string[])"
+                    }
+                  ]
                 }
               ]
             }

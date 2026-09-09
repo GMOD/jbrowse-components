@@ -8,6 +8,12 @@ import {
 
 import type { MarkContext2D } from './types.ts'
 
+/** The path calls a glyph is built from — what a recorder has to answer. */
+export type GlyphPath = Pick<
+  MarkContext2D,
+  'moveTo' | 'lineTo' | 'closePath' | 'rect' | 'arc'
+>
+
 /**
  * Append one of the `point` shape's glyphs to the current path, centred on
  * `(cx, y)`.
@@ -23,7 +29,7 @@ import type { MarkContext2D } from './types.ts'
  * is that consumer.
  */
 export function appendGlyph(
-  ctx: MarkContext2D,
+  ctx: GlyphPath,
   glyph: number,
   cx: number,
   y: number,

@@ -23,28 +23,33 @@ export type RampRef = 'viridis' | string[]
 
 /**
  * #api
+ * A field bound to a categorical scale: each distinct value takes one entry
+ * of the channel's range — a palette entry for `color`, a glyph name for
+ * `glyph`. With a `domain`, the listed values take the range in that order
+ * and whatever else the region meets follows, sorted; without one each value
+ * derives its entry from itself (an integer takes the slot it names, anything
+ * else hashes in), so every region agrees on a value it shares with another at
+ * the cost of an occasional collision, and `domain` is the way to spend the
+ * range deliberately.
+ */
+export interface CategoricalRef {
+  field: FieldRef
+  scale: 'categorical'
+  domain?: (string | number)[]
+}
+
+/**
+ * #api
  * How a mark's `color` channel resolves. A CSS colour or a `jexl:` expression
  * returning one paints per feature with no scale; the two object forms bind a
- * field to a scale, which is what a legend can describe.
- *
- * A categorical scale with a `domain` hands palette entries to the listed
- * values in that order, then to whatever else it meets in sorted order;
- * without one each value derives its palette entry from itself (an integer
- * takes the slot it names, anything else hashes in), so every region agrees
- * on a value it shares with another at the cost of an occasional collision,
- * and `domain` is the way to spend the palette deliberately. A continuous
- * scale reads the field through `domain` (the region's own extremes when
- * absent) into `ramp`, and there a listed `domain` is what pins the answer
- * across a whole view.
+ * field to a scale, which is what a legend can describe. A continuous scale
+ * reads the field through `domain` (the region's own extremes when absent)
+ * into `ramp`, and there a listed `domain` is what pins the answer across a
+ * whole view.
  */
 export type ColorEncoding =
   | string
-  | {
-      field: FieldRef
-      scale: 'categorical'
-      palette?: string[]
-      domain?: (string | number)[]
-    }
+  | (CategoricalRef & { palette?: string[] })
   | {
       field: FieldRef
       scale: 'linear' | 'log'
@@ -56,16 +61,20 @@ export type GlyphName = 'disc' | 'triangle' | 'diamond'
 
 /**
  * #api
- * A {@link GlyphName}, or a `jexl:` expression over `feature` returning one.
+ * A {@link GlyphName}, a `jexl:` expression over `feature` returning one, or
+ * a field bound to a categorical scale whose `range` lists the glyph names
+ * handed out — the three glyphs, in order, when absent.
  */
-export type GlyphEncoding = GlyphName | `jexl:${string}`
+export type GlyphEncoding =
+  | GlyphName
+  | `jexl:${string}`
+  | (CategoricalRef & { range?: GlyphName[] })
 
 /**
  * #api
  * The declared mapping from a feature's fields to a mark's channels. `x`
  * defaults to `start` and `x2` to `end`; a mark that plots no value leaves `y`
- * off. `glyph` is a glyph name or a `jexl:` expression returning one, read by
- * the `point` shape alone.
+ * off. `glyph` is read by the `point` shape alone.
  */
 export interface MarkEncoding {
   x?: FieldRef
@@ -81,7 +90,7 @@ export interface MarkEncoding {
  * the same table the colours in the payload came from, so the key cannot
  * disagree with the painting.
  */
-export type ScaleTable =
+export type ColorScaleTable =
   | {
       kind: 'categorical'
       field: string
@@ -94,6 +103,23 @@ export type ScaleTable =
       domain: [number, number]
       lut: Uint8Array
     }
+
+/**
+ * #api
+ * The scale a glyph channel was resolved through: which glyph each value of
+ * the field took.
+ */
+export interface GlyphScaleTable {
+  kind: 'glyph'
+  field: string
+  entries: { label: string; glyph: GlyphName }[]
+}
+
+/**
+ * #api
+ * Any channel's scale table; the kind names the channel.
+ */
+export type ScaleTable = ColorScaleTable | GlyphScaleTable
 
 /**
  * #api
@@ -114,7 +140,10 @@ export interface EncodedChannels {
   yMax: number
   /** A Flatbush over (x, y, x2, y), or undefined when `count` is 0. */
   flatbushData: ArrayBuffer | undefined
-  scale: ScaleTable | undefined
+  /** The colour channel's table, when `color` is a scale. */
+  scale: ColorScaleTable | undefined
+  /** The glyph channel's table, when `glyph` is a scale. */
+  glyphScale: GlyphScaleTable | undefined
 }
 
 /**

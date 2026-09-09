@@ -34,11 +34,17 @@ function createTestEnvironment(marks: unknown[]) {
   })
 }
 
+type Layer = EncodedFeaturesResult['layers'][number]
+
 function result(
-  layers: { y: number[]; scale?: unknown }[],
+  layers: {
+    y: number[]
+    scale?: Layer['scale']
+    glyphScale?: Layer['glyphScale']
+  }[],
 ): EncodedFeaturesResult {
   return {
-    layers: layers.map(({ y, scale }) => ({
+    layers: layers.map(({ y, scale, glyphScale }) => ({
       count: y.length,
       x: Uint32Array.from(y.map((_, i) => i * 100)),
       x2: Uint32Array.from(y.map((_, i) => i * 100 + 50)),
@@ -49,7 +55,8 @@ function result(
       yMin: Math.min(...y),
       yMax: Math.max(...y),
       flatbushData: undefined,
-      scale: scale as EncodedFeaturesResult['layers'][number]['scale'],
+      scale,
+      glyphScale,
     })),
   }
 }
@@ -176,6 +183,7 @@ test('the legend reads the scale table the worker resolved', () => {
   expect(display.legendSections).toEqual([
     {
       markIndex: 0,
+      channel: 'color',
       scale: {
         kind: 'categorical',
         field: 'type',
@@ -184,4 +192,79 @@ test('the legend reads the scale table the worker resolved', () => {
     },
   ])
   expect(display.showLegend).toBe(true)
+})
+
+test('a glyph scale reaches the worker beside the colour, and its key draws the glyphs', () => {
+  const { createDisplay } = createTestEnvironment([
+    {
+      shape: 'point',
+      encoding: {
+        y: 'score',
+        color: 'red',
+        glyph: {
+          field: 'strand',
+          scale: 'categorical',
+          domain: [1, -1],
+          range: ['triangle', 'diamond'],
+        },
+      },
+    },
+  ])
+  const { display } = createDisplay()
+  expect(display.rpcProps().encodings[0]?.glyph).toEqual({
+    field: 'strand',
+    scale: 'categorical',
+    domain: ['1', '-1'],
+    range: ['triangle', 'diamond'],
+  })
+  display.setRpcData(
+    0,
+    result([
+      {
+        y: [1, 2],
+        glyphScale: {
+          kind: 'glyph',
+          field: 'strand',
+          entries: [
+            { label: '1', glyph: 'triangle' },
+            { label: '-1', glyph: 'diamond' },
+          ],
+        },
+      },
+    ]),
+    REGION,
+  )
+  expect(display.legendSections).toEqual([
+    {
+      markIndex: 0,
+      channel: 'glyph',
+      scale: {
+        kind: 'glyph',
+        field: 'strand',
+        entries: [
+          { label: '1', glyph: 'triangle' },
+          { label: '-1', glyph: 'diamond' },
+        ],
+      },
+    },
+  ])
+  expect(display.colorScales).toEqual([
+    {
+      kind: 'categorical',
+      id: 'mark-0-glyph',
+      title: 'strand',
+      entries: [
+        {
+          value: '1',
+          label: '1',
+          swatches: [{ color: 'currentColor', glyph: 'triangle' }],
+        },
+        {
+          value: '-1',
+          label: '-1',
+          swatches: [{ color: 'currentColor', glyph: 'diamond' }],
+        },
+      ],
+    },
+  ])
 })

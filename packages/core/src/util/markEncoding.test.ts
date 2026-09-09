@@ -1,4 +1,5 @@
 import {
+  GLYPH_DIAMOND,
   GLYPH_DISC,
   GLYPH_TRIANGLE,
 } from '@jbrowse/render-core/shaders/pointMarkConsts'
@@ -9,6 +10,8 @@ import Flatbush from './flatbush/index.ts'
 import createJexlInstance from './jexl.ts'
 import { NO_VALUE_LABEL, encodeFeatures } from './markEncoding.ts'
 import SimpleFeature from './simpleFeature.ts'
+
+import type { GlyphName } from './markEncoding.ts'
 
 const jexl = createJexlInstance()
 
@@ -207,6 +210,98 @@ test('glyph is a name or a jexl expression returning one', () => {
     GLYPH_DISC,
     GLYPH_DISC,
   ])
+})
+
+const GLYPHS: GlyphName[] = ['disc', 'triangle', 'diamond']
+const CODE = {
+  disc: GLYPH_DISC,
+  triangle: GLYPH_TRIANGLE,
+  diamond: GLYPH_DIAMOND,
+}
+
+test('an unpinned glyph scale derives each glyph from the value, so two regions agree', () => {
+  const r = encodeFeatures(
+    features,
+    { glyph: { field: 'type', scale: 'categorical' } },
+    { jexl },
+  )
+  const of = (label: string) => categoricalValueColor(label, GLYPHS)
+  expect(r.glyphScale).toEqual({
+    kind: 'glyph',
+    field: 'type',
+    entries: [
+      { label: 'cds', glyph: of('cds') },
+      { label: 'exon', glyph: of('exon') },
+      { label: 'gene', glyph: of('gene') },
+    ],
+  })
+  expect([...r.glyph]).toEqual(
+    ['gene', 'exon', 'gene', 'cds', 'gene'].map(v => CODE[of(v)]),
+  )
+  expect(r.scale).toBeUndefined()
+  const other = encodeFeatures(
+    [feature(9, { type: 'exon' }), feature(10, {})],
+    { glyph: { field: 'type', scale: 'categorical' } },
+    { jexl },
+  )
+  expect(other.glyph[0]).toBe(CODE[of('exon')])
+  expect(other.glyph[1]).toBe(GLYPH_DISC)
+  expect(other.glyphScale?.entries).toEqual([
+    { label: 'exon', glyph: of('exon') },
+    { label: NO_VALUE_LABEL, glyph: 'disc' },
+  ])
+})
+
+test('a pinned glyph domain walks the range in order', () => {
+  const r = encodeFeatures(
+    features,
+    {
+      glyph: {
+        field: 'strand',
+        scale: 'categorical',
+        domain: [1, -1],
+        range: ['triangle', 'diamond'],
+      },
+    },
+    { jexl },
+  )
+  expect(r.glyphScale).toEqual({
+    kind: 'glyph',
+    field: 'strand',
+    entries: [
+      { label: '1', glyph: 'triangle' },
+      { label: '-1', glyph: 'diamond' },
+    ],
+  })
+  expect([...r.glyph]).toEqual([
+    GLYPH_TRIANGLE,
+    GLYPH_DIAMOND,
+    GLYPH_TRIANGLE,
+    GLYPH_DIAMOND,
+    GLYPH_TRIANGLE,
+  ])
+})
+
+test('colour and glyph scales over different fields resolve side by side', () => {
+  const r = encodeFeatures(
+    features,
+    {
+      color: { field: 'type', scale: 'categorical', domain: ['gene', 'exon'] },
+      glyph: { field: 'strand', scale: 'categorical', domain: [1, -1] },
+    },
+    { jexl },
+  )
+  expect(r.scale?.kind).toBe('categorical')
+  expect(r.glyphScale?.kind).toBe('glyph')
+  expect([...r.glyph]).toEqual([
+    GLYPH_DISC,
+    GLYPH_TRIANGLE,
+    GLYPH_DISC,
+    GLYPH_TRIANGLE,
+    GLYPH_DISC,
+  ])
+  expect(r.color[0]).toBe(r.color[2])
+  expect(r.color[0]).not.toBe(r.color[1])
 })
 
 test('an empty feature list ships no index', () => {
