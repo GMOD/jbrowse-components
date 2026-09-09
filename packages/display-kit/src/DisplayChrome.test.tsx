@@ -880,3 +880,51 @@ describe('the y axis', () => {
     expect(labelsOf(container)).toEqual(['0', '10', 'TLEN'])
   })
 })
+
+// The chrome lights what a display answering `hoverInk` says is hovered or
+// selected, in the style the host names, so no display places a box of its
+// own; a display answering nothing gets no box.
+describe('the highlight', () => {
+  const HighlightModel = TestChromeModel.props({
+    lit: true,
+    style: types.maybe(types.string),
+  }).views(self => ({
+    get hoverInk() {
+      return self.lit
+        ? [
+            { left: 10, top: 20, width: 30, height: 5 },
+            { left: 50, top: 20, width: 30, height: 5, strong: true },
+          ]
+        : []
+    },
+    get selectionInk() {
+      return self.lit ? [{ left: 90, top: 0, width: 4, height: 4 }] : []
+    },
+    get highlightStyle() {
+      return self.style
+    },
+  }))
+
+  test('each rect is one positioned div, the strong one in the heavier shade', async () => {
+    const { findAllByTestId, findByTestId, queryAllByTestId } = renderChrome(
+      HighlightModel.create({}),
+    )
+    await findByTestId('probe-canvas')
+    const [weak, strong] = await findAllByTestId('chrome-hover')
+    expect(weak!.style.left).toBe('10px')
+    expect(weak!.style.width).toBe('30px')
+    expect(strong!.style.background).not.toBe(weak!.style.background)
+    expect(queryAllByTestId('chrome-selection')).toHaveLength(1)
+  })
+
+  test('the box style is a wash with a border, and nothing lit draws nothing', async () => {
+    const boxed = renderChrome(HighlightModel.create({ style: 'box' }))
+    await boxed.findByTestId('probe-canvas')
+    const [box] = await boxed.findAllByTestId('chrome-hover')
+    expect(box!.style.border).toContain('1px solid')
+    boxed.unmount()
+    const dark = renderChrome(HighlightModel.create({ lit: false }))
+    await dark.findByTestId('probe-canvas')
+    expect(dark.queryAllByTestId('chrome-hover')).toHaveLength(0)
+  })
+})

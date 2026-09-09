@@ -9,10 +9,12 @@ import {
 import { useRenderingBackend } from '@jbrowse/render-core/useRenderingBackend'
 import { observer } from 'mobx-react'
 
+import ChromeHighlight from './ChromeHighlight.tsx'
 import ChromeLegend from './ChromeLegend.tsx'
 import ChromeYAxis from './ChromeYAxis.tsx'
 import DisplayStatusChromeBase from './DisplayStatusChromeBase.tsx'
 import { isAxisHost } from './axisHost.ts'
+import { isHighlightHost } from './highlightHost.ts'
 import { isLegendHost } from './legendHost.ts'
 
 import type { StatusChromeModel } from './DisplayStatusChromeBase.tsx'
@@ -274,9 +276,11 @@ function DisplayChromeBaseInner<B extends RenderingBackend>({
           {children({ canvasRef, canvas, mouseTracker })}
         </Fragment>
       </ClearTrackedPointerProvider>
-      {/* The key of a display composing `LegendMixin`, detected structurally
-          so a display gets it by composing the mixin and nothing else. Outside
-          the canvas key: a backend re-init has nothing to say to it. */}
+      {/* The guides — highlight, axis, legend — detected structurally so a
+          display gets each by answering its host members and nothing else.
+          Outside the canvas key: a backend re-init has nothing to say to
+          them. */}
+      {isHighlightHost(model) ? <ChromeHighlight model={model} /> : null}
       {isAxisHost(model) ? <ChromeYAxis model={model} /> : null}
       {isLegendHost(model) ? <ChromeLegend model={model} /> : null}
     </DisplayStatusChromeBase>
