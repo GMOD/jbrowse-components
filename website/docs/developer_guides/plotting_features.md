@@ -354,11 +354,9 @@ its uniforms. That declaration is the whole of the renderer:
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/scoreMarks.ts#marks -->
 
 ```ts
-// What this display draws, as a declaration: which of the payload's arrays
-// feed which of the shape's lanes, and which of the render state's values reach
-// its uniforms. Both are lenses that run once per block per frame. The pass and
-// its packer, the painter (which is also the SVG export) and the hit test all
-// come from the shape.
+// Which of the payload's arrays feed which of the shape's lanes, and which
+// render-state values reach its uniforms: two lenses, run once per block per
+// frame. Everything that draws comes from the shape.
 export const SCORE_MARKS = [
   defineMark({
     shape: scoreMark,
@@ -431,9 +429,8 @@ takes, resolved once in the model:
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/scoreMarks.ts#render-state -->
 
 ```ts
-// Recomputed cheaply every frame without fetching. Carries the canvas
-// dimensions (required, to size the backing store) plus the one setting the
-// drawing reads.
+// Recomputed cheaply every frame without fetching: the canvas dimensions
+// (required, to size the backing store) plus the one setting the drawing reads
 export interface ScoreRenderState {
   canvasWidth: number
   canvasHeight: number

@@ -143,9 +143,8 @@ painter are handed one number:
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/scoreMarks.ts#render-state -->
 
 ```ts
-// Recomputed cheaply every frame without fetching. Carries the canvas
-// dimensions (required, to size the backing store) plus the one setting the
-// drawing reads.
+// Recomputed cheaply every frame without fetching: the canvas dimensions
+// (required, to size the backing store) plus the one setting the drawing reads
 export interface ScoreRenderState {
   canvasWidth: number
   canvasHeight: number
@@ -355,8 +354,7 @@ import { scoreBarHeightPx } from './shaders/score.js.generated.ts'
 
 import type { MarkShape } from '@jbrowse/render-core/marks'
 
-// The shape's own vocabulary: parallel typed arrays plus a count. A display
-// binds its payload's arrays to these lanes in `defineMark`.
+// The shape's lanes: parallel typed arrays plus a count
 export interface ScoreChannels {
   startBp: Uint32Array
   endBp: Uint32Array
@@ -364,8 +362,8 @@ export interface ScoreChannels {
   count: number
 }
 
-// Everything else the drawing needs. It reaches the GPU as uniforms and the
-// painter as arguments, so the two backends read one set of values.
+// Everything else the drawing needs, reaching the GPU as uniforms and the
+// painter as arguments
 export interface ScoreParams {
   // packed ABGR (`cssColorToABGR`), the form the shader's uniform takes; the
   // painter unpacks it
@@ -471,11 +469,9 @@ the pass samples.
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/scoreMarks.ts#marks -->
 
 ```ts
-// What this display draws, as a declaration: which of the payload's arrays
-// feed which of the shape's lanes, and which of the render state's values reach
-// its uniforms. Both are lenses that run once per block per frame. The pass and
-// its packer, the painter (which is also the SVG export) and the hit test all
-// come from the shape.
+// Which of the payload's arrays feed which of the shape's lanes, and which
+// render-state values reach its uniforms: two lenses, run once per block per
+// frame. Everything that draws comes from the shape.
 export const SCORE_MARKS = [
   defineMark({
     shape: scoreMark,
