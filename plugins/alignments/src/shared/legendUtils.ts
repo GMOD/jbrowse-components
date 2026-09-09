@@ -30,15 +30,9 @@ import type {
   ReadColorCategory,
   SwatchCategory,
 } from '../LinearAlignmentsDisplay/colorUtils.ts'
-import type { ReadConnectionsMode } from '../LinearAlignmentsDisplay/constants.ts'
 import type { ColorPalette } from '../shaders/colors.ts'
 import type { ArcColorByType, ColorBy, ColorSchemeType } from './types.ts'
-import type {
-  LegendItem,
-  LegendMark,
-  LegendSection,
-  LegendSwatch,
-} from '@jbrowse/core/ui'
+import type { LegendItem, LegendSection, LegendSwatch } from '@jbrowse/core/ui'
 
 export type { LegendItem } from '@jbrowse/core/ui'
 
@@ -49,30 +43,20 @@ export type { LegendItem } from '@jbrowse/core/ui'
 // same grey twice.
 //
 // The label rule covers the mirror case, and it is where a row grows a SECOND
-// mark rather than losing one: for a bucket the two vocabularies paint in
+// swatch rather than losing one: for a bucket the two vocabularies paint in
 // *different* colors, keying by color alone lists one label twice, while keying
 // by label alone drops whichever color arrived second — off a box whose whole
-// claim is that it names every color drawn. Keeping both as marks on one row is
+// claim is that it names every color drawn. Keeping both swatches on one row is
 // the only form that is neither repetitive nor a lie. The reads' swatch leads,
 // since a pileup fill is what most of the frame shows.
 //
 // Short insert was the one live instance of that, back when the pileup filled it
 // pale and the curves stroked it saturated; both are the saturated pink now, so
-// today every shared bucket collapses to a single mark and this arm is
+// today every shared bucket collapses to a single swatch and this arm is
 // unexercised by the alignments vocabulary. Kept because the label collision it
 // resolves is a property of merging two vocabularies at all, not of that one
 // color choice — and because losing a drawn color silently is the failure it
 // exists to prevent.
-//
-// A shared color keeps ONE mark, deliberately, and it is worth saying why it
-// isn't a third failure of the same family: the merged row is about what a color
-// MEANS, and for a bucket both vocabularies paint identically the meaning is one
-// thing. Splitting it into ▪⌒ on every such row — which is most rows, the two
-// vocabularies agreeing being the reason they merged at all — would spend the
-// label column's width to tell a reader looking straight at a curve that curves
-// exist. The marks earn their place where they discriminate: a color only the
-// overlay draws opens its own row and keeps its curve, and the connections
-// section is curves throughout.
 //
 // Color-less rows (headings, notes) merge by label only, never by color.
 //
@@ -119,7 +103,7 @@ function oneRowPerMeaning(
     } else if (item.color !== undefined) {
       const row = rows[at]!
       if (!row.swatches.some(s => s.color === item.color)) {
-        row.swatches.push({ color: item.color, mark: item.mark })
+        row.swatches.push({ color: item.color })
       }
       // so a third row in this color joins the same one rather than opening its
       // own under the label it happens to carry
@@ -579,13 +563,11 @@ function bucketItems(
   presentCategories: ReadonlySet<ReadColorCategory>,
   palette: ColorPalette,
   overrides: Partial<Record<SwatchCategory, string>>,
-  mark?: LegendMark,
 ): LegendItem[] {
   return CATEGORY_ORDER.filter(category => presentCategories.has(category)).map(
     category => ({
       color: categorySwatchColor(category, palette),
       label: overrides[category] ?? CATEGORY_LEGEND[category],
-      mark,
     }),
   )
 }
@@ -649,16 +631,6 @@ function getOverlapLegendItem(
   }
 }
 
-// The mark those colors are drawn AS, once they fold into the read key.
-//
-// A read cloud is a fill: its connector takes `flatConnectorColor` (the theme
-// foreground, no palette slot) and the category color is on the endpoint
-// squares, so a line swatch would name the one mark there that is never drawn
-// in the color beside it.
-function arcMark(mode: ReadConnectionsMode): LegendMark {
-  return mode === 'cloud' ? 'fill' : 'curve'
-}
-
 // The overlay's wording for the split buckets, "split alignment" throughout
 // (reviewer, on both cancer_sv figures: "using the term split alignment might
 // help. i like it better than split junction"). It cannot use CATEGORY_LEGEND's,
@@ -699,10 +671,9 @@ const ARC_SCHEME_AS_READ_SCHEME: Record<ArcColorByType, ColorSchemeType> = {
  * instead.
  *
  * The second half is not belt-and-braces, it is the half that was missing.
- * Folding drops the curve mark and renders an arc bucket as a plain read swatch,
- * so it is an assertion that the reads paint that color — and the scheme names
- * alone do not support it, because the arc classifier is not a re-spelling of
- * the read one:
+ * Folding files an arc bucket under the reads' own heading, so it is an
+ * assertion that the reads paint that color — and the scheme names alone do not
+ * support it, because the arc classifier is not a re-spelling of the read one:
  *
  * - A SPLIT JUNCTION colors by its two segments' strands (`splitInversion` /
  *   `splitDeletion`), whatever the mode, since it has no TLEN and no pair
@@ -753,14 +724,8 @@ export function arcKeyFoldsIntoReadKey({
 export function getArcLegendItems(
   presentCategories: ReadonlySet<ReadColorCategory>,
   palette: ColorPalette,
-  mode: ReadConnectionsMode,
 ): LegendItem[] {
-  return bucketItems(
-    presentCategories,
-    palette,
-    SPLIT_JUNCTION_LABELS,
-    arcMark(mode),
-  )
+  return bucketItems(presentCategories, palette, SPLIT_JUNCTION_LABELS)
 }
 
 // The modification family's own key: the methylation views (fill-unmarked and

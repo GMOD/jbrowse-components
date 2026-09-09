@@ -13,7 +13,7 @@ import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { readIdAt } from '../../shared/readIdentity.ts'
 import { readNameAt } from '../../shared/readNameBlock.ts'
-import { connectionLabel, connectionMark, iterLinkedPairs } from './compute.ts'
+import { connectionLabel, iterLinkedPairs } from './compute.ts'
 
 import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
@@ -101,12 +101,10 @@ function isCrossRegionPair({ e1, e2 }: LinkedPair): boolean {
 export type BezierArcScope = 'all' | 'crossRegion' | 'none'
 
 // Legend swatches for the connection types actually drawn as bezier/line arcs,
-// built from the same palette, labels and straight-vs-curved rule the overlay
-// itself uses (linkedReadColorPalette + connectionLabel + connectionMark) so the
-// on-screen key can never disagree with what's drawn — including the glyph, now
-// that a row can be drawn as the connector it names rather than as a square.
-// `colorTypes` is the set of LINKED_READ_COLOR_* present in view; sorted so the
-// legend order is stable as reads stream in.
+// built from the same palette and labels the overlay itself uses
+// (linkedReadColorPalette + connectionLabel) so the on-screen key can never
+// disagree with what's drawn. `colorTypes` is the set of LINKED_READ_COLOR_*
+// present in view; sorted so the legend order is stable as reads stream in.
 //
 // One row per COLOR, because two color types can resolve to one swatch and the
 // pair that does is drawn together: slots 0 and 1 are both `pairLR` in
@@ -129,7 +127,6 @@ export function bezierConnectionLegendItems(
       byColor.set(color, {
         color,
         label: connectionLabel(colorType),
-        mark: connectionMark(colorType),
       })
     }
   }

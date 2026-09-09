@@ -13,7 +13,6 @@ import { CHAIN_FRAME_REV, CHAIN_SUPP_PRESENT } from './types.ts'
 
 import type { RefNamePosition } from '../LinearAlignmentsDisplay/colorTagUtils.ts'
 import type { ReadColorCategory } from '../LinearAlignmentsDisplay/colorUtils.ts'
-import type { ReadConnectionsMode } from '../LinearAlignmentsDisplay/constants.ts'
 import type { ColorBy, ColorSchemeType } from './types.ts'
 import type { LegendItem } from '@jbrowse/core/ui'
 
@@ -713,44 +712,37 @@ describe('getArcLegendItems', () => {
       getArcLegendItems(
         new Set<ReadColorCategory>(['splitInversion', 'longInsert']),
         makeTestPalette(),
-        'arc',
       ).map(i => i.label),
       // …and in the overlay's own words, not the read fills': a curve is drawn
       // for a split junction whether or not the read is paired, so it must not
       // inherit "paired-end read" from CATEGORY_LEGEND.
     ).toEqual(['Long insert', 'Split alignment (inverted)'])
-    expect(getArcLegendItems(new Set(), makeTestPalette(), 'arc')).toEqual([])
+    expect(getArcLegendItems(new Set(), makeTestPalette())).toEqual([])
   })
 
   // Short insert used to be the one bucket the reads and the arcs painted in
   // DIFFERENT colors — a pale #ffc0cb fill against the saturated pink the curves
   // needed to stay visible — so the arc key overrode the swatch and the merge
-  // grew a second mark for it. The fill is now that same saturated pink, so it
-  // keys like every other bucket, in one color, in both modes.
-  test('short insert keys one color, in both overlay modes', () => {
-    const swatch = (mode: ReadConnectionsMode) =>
+  // grew a second swatch for it. The fill is now that same saturated pink, so it
+  // keys like every other bucket, in one color.
+  test('short insert keys one color', () => {
+    expect(
       getArcLegendItems(
         new Set<ReadColorCategory>(['shortInsert']),
         makeTestPalette({ colorShortInsert: [1, 0, 0.5] }),
-        mode,
-      )[0]!.color
-    expect(swatch('arc')).toBe(swatch('cloud'))
+      ).map(i => i.color),
+    ).toEqual(['rgb(255,0,128)'])
   })
 
-  // Once these fold into the read key (the usual case), the mark is the only
-  // thing left saying a color belongs to the overlay rather than to a pileup
-  // fill.
-  test('keys arc colors as the shape the overlay draws them', () => {
-    const marks = (mode: ReadConnectionsMode) =>
+  // Every row is a plain color box — an arc bucket is keyed by its color and
+  // its wording, not by a glyph shaped like the connector.
+  test('keys arc colors as plain swatches', () => {
+    expect(
       getArcLegendItems(
         new Set<ReadColorCategory>(['longInsert']),
         makeTestPalette(),
-        mode,
-      ).map(i => i.mark)
-    expect(marks('arc')).toEqual(['curve'])
-    // the cloud's color is on its endpoint squares; its connector is the theme
-    // foreground and belongs to no bucket
-    expect(marks('cloud')).toEqual(['fill'])
+      ).map(i => i.mark),
+    ).toEqual([undefined])
   })
 
   test('takes no per-scheme rewording — an arc never produces a strand bucket', () => {
@@ -759,7 +751,6 @@ describe('getArcLegendItems', () => {
       getArcLegendItems(
         new Set<ReadColorCategory>(['fwdStrand', 'revStrand']),
         makeTestPalette(),
-        'arc',
       ).map(i => i.label),
     ).toEqual(['Forward strand', 'Reverse strand'])
   })
@@ -846,7 +837,7 @@ describe('getAlignmentsLegendSections', () => {
   // …and the arc's color is not thrown away to achieve that. The pale fill is
   // genuinely not the color the curve is stroked in, so a box claiming to name
   // every color drawn has to carry both marks on the row.
-  test('a shared label keeps both marks rather than dropping a drawn color', () => {
+  test('a shared label keeps both swatches rather than dropping a drawn color', () => {
     // the shared grey is what merges the two sections at all; short insert is
     // the bucket inside the merged list whose two colors disagree
     const [reads] = getAlignmentsLegendSections(
@@ -856,18 +847,15 @@ describe('getAlignmentsLegendSections', () => {
           { color: '#ffc0cb', label: 'Short insert' },
         ],
         [
-          { color: '#aaa', label: 'Normal', mark: 'curve' },
-          { color: '#ff3a8c', label: 'Short insert', mark: 'curve' },
+          { color: '#aaa', label: 'Normal' },
+          { color: '#ff3a8c', label: 'Short insert' },
         ],
       ),
     )
     expect(reads!.items[1]).toEqual({
       color: '#ffc0cb',
       label: 'Short insert',
-      swatches: [
-        { color: '#ffc0cb', mark: undefined },
-        { color: '#ff3a8c', mark: 'curve' },
-      ],
+      swatches: [{ color: '#ffc0cb' }, { color: '#ff3a8c' }],
     })
   })
 
@@ -907,14 +895,14 @@ describe('getAlignmentsLegendSections', () => {
       ],
       arcLegendTitle: 'Arc colors',
       arcLegendItems: () => [
-        { color: '#aaa', label: 'Normal', mark: 'curve' as const },
-        { color: '#ff3a8c', label: 'Short insert', mark: 'curve' as const },
+        { color: '#aaa', label: 'Normal' },
+        { color: '#ff3a8c', label: 'Short insert' },
       ],
       bezierLegendItems: () => [
         // the arc's half of the merged short-insert row, verbatim
-        { color: '#ff3a8c', label: 'Short insert', mark: 'curve' as const },
+        { color: '#ff3a8c', label: 'Short insert' },
         // same label, a color neither half carries — still its own row
-        { color: '#123456', label: 'Short insert', mark: 'curve' as const },
+        { color: '#123456', label: 'Short insert' },
       ],
     })
     expect(shown(sections).at(-1)).toEqual([
@@ -924,13 +912,13 @@ describe('getAlignmentsLegendSections', () => {
     expect(sections.at(-1)!.items[0]!.color).toBe('#123456')
   })
 
-  // The mirror case stays one swatch: same color AND same meaning is one mark
-  // drawn two ways, and a column of doubled greys is noise, not information.
+  // The mirror case stays one swatch: same color AND same meaning is one row,
+  // and a column of doubled greys is noise, not information.
   test('a shared color stays a single swatch', () => {
     const [reads] = getAlignmentsLegendSections(
       model(
         [{ color: '#aaa', label: 'LR - Normal pair orientation' }],
-        [{ color: '#aaa', label: 'Normal', mark: 'curve' }],
+        [{ color: '#aaa', label: 'Normal' }],
       ),
     )
     expect(reads!.items[0]!.swatches).toBeUndefined()
@@ -950,17 +938,9 @@ describe('getAlignmentsLegendSections', () => {
       arcLegendItems: () => [],
       bezierLegendItems: () => [
         // the verbatim repeat
-        {
-          color: '#5555bb',
-          label: 'RR - Both mates reverse strand',
-          mark: 'curve' as const,
-        },
+        { color: '#5555bb', label: 'RR - Both mates reverse strand' },
         // same color, but the curves call it something the fills don't
-        {
-          color: '#9b30b0',
-          label: 'Split alignment (inverted)',
-          mark: 'curve' as const,
-        },
+        { color: '#9b30b0', label: 'Split alignment (inverted)' },
       ],
     })
     expect(shown(sections)).toEqual([

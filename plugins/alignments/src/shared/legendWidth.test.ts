@@ -97,10 +97,8 @@ function everyLabel() {
   // Sweeping only the read builder left the second-widest label in the
   // vocabulary ("Split alignment (interchromosomal)") unmeasured, which is not
   // a width `LEGEND_MAX_WIDTH` can claim to be derived from.
-  for (const mode of ['arc', 'cloud'] as const) {
-    for (const item of getArcLegendItems(ALL, makeTestPalette(), mode)) {
-      out.add(item.label)
-    }
+  for (const item of getArcLegendItems(ALL, makeTestPalette())) {
+    out.add(item.label)
   }
   // …and the connection curves', which is a third table again
   // (`connectionLabel`, whose neutral fallback no other builder produces).

@@ -141,9 +141,9 @@ matters.
   read-connection arcs"), combined by `emitsOffScreenPartner` — which exists
   because layering them as an AND once made unticking off-screen mates silently
   untick inter-chromosomal pairs.
-- **Legend.** `bezierConnectionLegendItems` builds one row per *color*. A foot
-  mark is a new **mark**, not a new color — `connectionMark` already lets a row
-  draw itself as the connector it names.
+- **Legend.** `bezierConnectionLegendItems` builds one row per *color*, and each
+  row is a plain colour box. A foot is a new shape rather than a new color, so
+  the key has nowhere to put it without reviving a per-row glyph.
 - **`LinkedPair` has no shape for this.** It is `{e1: ReadEntry, e2: ReadEntry,
   c: ClassifiedPair}` and `readScreenY` reads `e.data.readYs[e.readIdx]`, so the
   far end becomes an anchor-plus-target: one real entry supplying the row, plus

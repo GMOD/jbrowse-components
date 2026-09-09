@@ -87,32 +87,6 @@ export function connectionLabel(colorType: number) {
     : (SPLIT_JUNCTION_LABELS[category] ?? readColorCategoryLabel(category)!)
 }
 
-// The connection color types the overlay draws STRAIGHT rather than as a bezier.
-// `computePileupBezierArcs` decides that from `c.isNormal`, and these are the
-// color slots that flag it: `pairedColorType` maps every orientation above LR to
-// its own aberrant slot and everything at or below it to LR/unknown, and
-// `splitColorType` gives a co-linear junction (the split-read reading of
-// `isNormal`) SPLIT_NORMAL. So the legend's glyph follows the same rule the path
-// shape does — a hand-kept list of "these ones look straight" would not.
-//
-// The one pair the two rules disagree on is a split with an unknown strand on
-// exactly one side, which lands in the unknown slot while drawing as a curve;
-// mapped reads always carry ±1, so nothing reaches it.
-// `interchrom` is absent, so it draws as a curve — `isNormalOrientation` returns
-// false for it below, which is the other half of the same statement. A
-// translocated mate link is the definition of discordant, and the display's own
-// convention (shared with BreakpointSplitView) is that a line means normal and a
-// curve below the reads does not.
-const STRAIGHT_CONNECTION_COLORS = new Set([
-  LINKED_READ_COLOR_PAIR_UNKNOWN,
-  LINKED_READ_COLOR_PAIR_LR,
-  LINKED_READ_COLOR_SPLIT_NORMAL,
-])
-
-export function connectionMark(colorType: number): 'line' | 'curve' {
-  return STRAIGHT_CONNECTION_COLORS.has(colorType) ? 'line' : 'curve'
-}
-
 // No refName, unlike the arc path's entry: every comparison this path makes is
 // between two on-screen entries, and the overlay resolves each end's refName
 // through its own `displayedRegionIndex` at draw time. That difference is why

@@ -34,9 +34,9 @@ Two smaller things to know before re-filing them:
   model-level test; the overlay test mocks both and the canvas click now routes
   through the first. Building the display model in a test is the whole session,
   so the browser check above is the cheaper coverage.
-- A cross-chromosome same-strand split now curves, but the legend's glyph for
-  that colour is still a line (`connectionMark` is per colour and cannot see
-  refNames). Accepted as-is.
+- A cross-chromosome same-strand split now curves. The legend used to key that
+  colour with a straight-line glyph, which was the mismatch noted here; the key
+  draws plain colour boxes now, so the row says nothing about shape either way.
 
 ## Decisions, filed where they belong
 

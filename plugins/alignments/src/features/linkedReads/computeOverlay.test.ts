@@ -29,7 +29,6 @@ import {
   LINKED_READ_COLOR_PAIR_RR,
   LINKED_READ_COLOR_PAIR_UNKNOWN,
   LINKED_READ_COLOR_SPLIT_INV,
-  LINKED_READ_COLOR_SPLIT_NORMAL,
 } from './compute.ts'
 import {
   bezierConnectionLegendItems,
@@ -802,26 +801,9 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
   })
 })
 
-// The key is built from the palette, labels and straight-vs-curved rule the
-// overlay itself draws with, so the glyph is part of that guarantee: a color the
-// reader met as a curve must not be keyed by a square.
+// The key is built from the palette and labels the overlay itself draws with,
+// so a color the reader met on screen is keyed by that same color.
 describe('bezierConnectionLegendItems', () => {
-  it('draws each row as the connector shape that color is drawn in', () => {
-    const mark = (colorType: number) =>
-      bezierConnectionLegendItems([colorType], PALETTE)[0]!.mark
-    // aberrant orientations and inverted splits are the beziers
-    expect(mark(LINKED_READ_COLOR_PAIR_RR)).toBe('curve')
-    expect(mark(LINKED_READ_COLOR_SPLIT_INV)).toBe('curve')
-    // the normal slots reach this overlay only as cross-region pairs, which it
-    // draws as straight `M..L..` paths
-    expect(mark(LINKED_READ_COLOR_PAIR_LR)).toBe('line')
-    expect(mark(LINKED_READ_COLOR_SPLIT_NORMAL)).toBe('line')
-    // a translocated mate link is discordant by definition, so it curves —
-    // `classifyPair` gives it `isNormal: false`, and these two have to agree or
-    // the key shows a glyph the overlay never drew
-    expect(mark(LINKED_READ_COLOR_INTERCHROM)).toBe('curve')
-  })
-
   // Slot 7 was the fallback and worded 'Read pair'. It carries a meaning now,
   // and on a CURVE that meaning is the overlay's own: SPLIT_JUNCTION_LABELS
   // overrides CATEGORY_LEGEND's bare 'Inter-chromosomal', which is a property of
@@ -855,7 +837,7 @@ describe('bezierConnectionLegendItems', () => {
         [LINKED_READ_COLOR_PAIR_LR, LINKED_READ_COLOR_PAIR_UNKNOWN],
         PALETTE,
       ),
-    ).toEqual([{ color: expect.any(String), label: 'Read pair', mark: 'line' }])
+    ).toEqual([{ color: expect.any(String), label: 'Read pair' }])
     // …and the LR wording still stands on its own when slot 0 is absent
     expect(
       bezierConnectionLegendItems([LINKED_READ_COLOR_PAIR_LR], PALETTE)[0]!
