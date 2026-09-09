@@ -2080,10 +2080,13 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   //
   // "chr9" as the search term is the whole triage, and the data is what makes it
   // one term: of the 44 calls only BCR--ABL1 and NUP214--XKR3 name chr9
-  // anywhere, and each names chr22 as its other end -- the Philadelphia
-  // translocation from both sides. The grid's quick filter matches every visible
-  // column at once, so one term reads breakpoints, gene names and annotations
-  // alike; on this file it is the breakpoint columns that hit.
+  // anywhere, and each names chr22 as its other end. Two junctions, not one
+  // junction's two halves: BCR--ABL1 runs chr22:23,290,413 into
+  // chr9:130,854,064 and NUP214--XKR3 runs chr9:131,199,015 into
+  // chr22:16,808,083, whose chr22 ends are 6.5 Mb apart. The grid's quick
+  // filter matches every visible column at once, so one term reads breakpoints,
+  // gene names and annotations alike; on this file it is the breakpoint columns
+  // that hit.
   //
   // `filterText` is a session-spec field as of this figure, so both frames are
   // openable links rather than one link and one scripted keystroke. Before it,
@@ -2132,7 +2135,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
       [
         'cancer_sv/k562_fusion_inspector_pair',
         'chr9',
-        'Search "chr9": the reciprocal pair',
+        'Search "chr9": two chr9-chr22 junctions',
       ],
     ] as const
   ).map(([name, filterText, displayName]) => ({
@@ -2185,9 +2188,9 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   // connections -> View as pairs / link supplementary alignments). Iso-Seq is
   // single-end; what is linked is the SA chain.
   //
-  // NUP214--XKR3, not BCR--ABL1: the search leaves two rows because the
-  // Philadelphia translocation is in the file from both sides, and the rest of
-  // the page follows the BCR--ABL1 one.
+  // NUP214--XKR3, not BCR--ABL1: the search leaves two rows because two of the
+  // file's junctions join chr9 to chr22, and the rest of the page follows the
+  // BCR--ABL1 one.
   //
   // chr22 is `[rev]`, as on the split view and for the same reason: the call is
   // chr9:131199015:+ / chr22:16808083:-, so the transcript runs into XKR3 right
@@ -2578,15 +2581,19 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: "ABL1 intron 1. The frame's biggest cluster of chr9 ends lands here, under no annotated exon — the canonical exon-2 junction is the banded panel on the right.",
+        text: 'ABL1 intron 1 — coverage under no annotated exon',
         fontSize: 18,
-        maxWidth: 330,
+        maxWidth: 560,
         anchor: {
           track: 'K562_isoseq',
-          locus: 'chr9:130,783,900',
-          fracY: 0.06,
+          locus: 'chr9:130,778,200',
+          // 190 of coverage plus the 90 of arc band, so the pill sits on the
+          // rows it names. Four lines anchored high enough to clear them landed
+          // over the arc band of the panel to the right instead.
+          fracY: 0,
+          dy: 310,
           alignX: 'left',
-          dx: 10,
+          dx: 6,
         },
       },
     ],
