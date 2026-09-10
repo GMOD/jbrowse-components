@@ -430,7 +430,9 @@ schema, so slots are live and a state-model property is meaningless. In a
 **session** (`views[].tracks[].displays[]`) the node is instantiated by the
 state model, so properties are live and a slot name is dropped exactly like a
 misspelling: `"height": 250` on a session display node silently does nothing.
-`jbrowse validate`'s `checkSessionDisplay` reports them.
+The JSON Schema's `$defs/<Display>Snapshot` closes the node to its state-model
+properties, and `jbrowse validate` reports the slot as one written in the
+wrong place (ADR-120).
 
 **Migrating one:** adding, removing or renaming a slot needs only a
 config-schema `preProcessSnapshot`. Rewriting the **value** of an existing

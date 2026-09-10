@@ -185,9 +185,10 @@ restating it.
   a warning under it reads as the lesser of the two when it is the cause. A view
   type that registers no launch keys classifies nothing — its launcher's
   vocabulary is undeclared, so every argument would read as a typo.
-- **`jbrowse validate`** builds a `views` manifest group from `stateModelProps`
-  and `launchKeys`, which is what makes `checkSessionViewKeys` exhaustive rather
-  than a guess. It names the other view types that DO take a key, since
+- **`jbrowse validate`** builds each view's `$defs` entry in the JSON Schema
+  from `stateModelProps` and `launchKeys` (ADR-120), which is what makes the
+  schema's key check exhaustive rather than a guess. `unknownKeyMessage` in
+  `schemaValidate.ts` names the other view types that DO take a key, since
   `assembly` on a DotplotView is not a misspelling and no did-you-mean reaches
   it.
 - **`check-build-scripts.py`** applies the same placement rule to the session

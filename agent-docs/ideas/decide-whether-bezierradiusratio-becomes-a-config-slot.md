@@ -26,7 +26,7 @@ What has to be decided, and why it isn't a one-line addition:
   of one setting, so the slot needs a `migratedDisplayKeys` entry the way
   `heightPreConfig` has one, or the property goes and every saved session
   carrying it silently loses the value.
-- **Whether it wants a menu item too.** The comment in `validateConfig`'s
-  `checkSessionDisplay` states the direction as "every track-menu setting is a
+- **Whether it wants a menu item too.** The direction (ADR-120's
+  `$defs/<Display>Snapshot` description) is "every track-menu setting is a
   config slot now"; this one is neither, so adding just the slot leaves it the
   only chord geometry with no UI.
