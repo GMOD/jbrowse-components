@@ -252,7 +252,8 @@ segments, which makes them readable without the graph:
   entered on
 - columns 9 and 13 give their ranks
 
-The test is two ends on the backbone with signs that disagree.
+A breakpoint link has rank 0 at both ends, one ending in `+` and the other in
+`-`.
 
 ```bash
 tabix https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.links.bed.gz \
