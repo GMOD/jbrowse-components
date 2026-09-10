@@ -1,9 +1,18 @@
 ---
 name: two-axis-synteny-fetch
-description: Restoring the both-rows synteny fetch. SHIPPED 2026-08-19 behind `bidirectionalFetch`, on by default since 2026-09-07 as the `showOffscreenMates` checkbox: the second query lands, its ribbons are flipped into the query perspective and drawn, and the class with no second endpoint is marked on the target axis. The blocker this doc recorded — a perspective-stable `syntenyId` for PIF and all-vs-all — turned out not to be one, and the rest is kept for the adapter behaviour it names.
+description: The both-rows synteny fetch: a second query on the target axis, flipped into the query perspective and drawn. Shipped 2026-08-19, on by default since 2026-09-07 as `showOffscreenMates`. Read before changing the synteny fetch's axes or the adapter behaviour it names.
+kind: spec
 ---
 
 # Fetch both synteny axes again, joined on `syntenyId`
+
+**Shipped 2026-08-19, on by default since 2026-09-07 as the
+`showOffscreenMates` checkbox.** The second query lands, its ribbons are
+flipped into the query perspective and drawn, and the class with no second
+endpoint is marked on the target axis. The blocker this file recorded — a
+perspective-stable `syntenyId` for PIF and all-vs-all — turned out not to be
+one. What follows is the design that shipped, kept for the adapter behaviour it
+names.
 
 The synteny fetch queries **one** axis (`executeSyntenyFeaturesAndPositions`:
 "The query is on v1 (the query axis) only"). It did not always: an earlier
@@ -25,7 +34,7 @@ used it, not the mechanism.
 ## Two things it buys
 
 **It removes synteny's need for a return-direction rename.** See
-[REFNAME_NAMESPACES.md](../reference/REFNAME_NAMESPACES.md): a one-way rename is
+[REFNAME_NAMESPACES.md](REFNAME_NAMESPACES.md): a one-way rename is
 sufficient exactly while an answer describes a region the caller asked for, and a
 single-axis fetch returns answers about two locations having requested one. With
 both axes requested, each side positions features inside blocks it asked for —
@@ -49,7 +58,7 @@ nothing" — has two causes, and the *other* one costs nothing to fix:
 
 - anchored on the **query** axis, mate on a contig the target view is not
   displaying → **already fetched**, discarded in the worker's decorate loop.
-  This is [offscreen-synteny-mates](offscreen-synteny-mates.md), and on
+  This is [offscreen-synteny-mates](OFFSCREEN_SYNTENY_MATES.md), and on
   `demos/grape_peach_cacao` it is 73% of peach chr1's anchors.
 - anchored on the **target** axis, mate outside the query window → never
   requested. This doc.
@@ -60,9 +69,9 @@ pitched and is no longer specific enough to justify it.
 
 ## What shipped, and why the blocker below is not one
 
-**2026-08-19: the second fetch landed** behind `bidirectionalFetch` (a view
-property, then off by default, a fetch-key input; since 2026-09-07 it is the
-`showOffscreenMates` checkbox, on by default). `executeSyntenyFeaturesAndPositions`
+**2026-08-19: the second fetch landed** behind a view property, off by default
+and a fetch-key input; since 2026-09-07 it is the `showOffscreenMates` checkbox,
+on by default. `executeSyntenyFeaturesAndPositions`
 queries `v2.fetchRegions` alongside `v1.fetchRegions` and splits what comes back
 three ways by where the QUERY end lands:
 
@@ -76,13 +85,13 @@ three ways by where the QUERY end lands:
 all.** Its query end is at least a pan buffer off the top row's edge by
 construction, so `isRibbonCulled` drops it — and the mark that stands in for a
 culled ribbon was placed on the query axis, where that end is off screen. It is
-class D of [offscreen-synteny-mates](offscreen-synteny-mates.md), marked on the
+class D of [offscreen-synteny-mates](OFFSCREEN_SYNTENY_MATES.md), marked on the
 target axis now, which is the axis it has. On this doc's own grape/peach case
 that row is 453 of the 1029 alignments, and 849 of them end up class D once the
 band test is applied.
 
 The marks are the mirror of
-[offscreen-synteny-mates](offscreen-synteny-mates.md)'s collector, drawn on the
+[offscreen-synteny-mates](OFFSCREEN_SYNTENY_MATES.md)'s collector, drawn on the
 TARGET axis with a click that navigates the row ABOVE.
 
 **The join was never needed.** Everything below about `syntenyId` assumed the two
@@ -225,7 +234,7 @@ join.
 ## How much it would actually recover
 
 Measured on `demos/grape_peach_cacao` (method and caveats in
-[offscreen-synteny-mates](offscreen-synteny-mates.md)), whole chromosome each
+[offscreen-synteny-mates](OFFSCREEN_SYNTENY_MATES.md)), whole chromosome each
 axis, peach chr1 on top against grape chr1:
 
 - class this doc recovers (anchored on grape chr1, peach mate off peach chr1):

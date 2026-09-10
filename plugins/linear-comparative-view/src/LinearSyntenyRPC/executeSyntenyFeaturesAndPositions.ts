@@ -149,7 +149,7 @@ export async function executeSyntenyFeaturesAndPositions({
   // anchored on a v2 contig whose query end is somewhere v1 is not showing is
   // never requested, so nothing downstream can recover it. `v2.fetchRegions`
   // present is the view asking for that second half — see
-  // agent-docs/ideas/two-axis-synteny-fetch.md, and `targetOffscreenMates`
+  // agent-docs/reference/TWO_AXIS_SYNTENY_FETCH.md, and `targetOffscreenMates`
   // below for what this pass does with the answer.
   //
   // IN PARALLEL, and only the query fetch drives the bar: the two would
@@ -237,7 +237,7 @@ export async function executeSyntenyFeaturesAndPositions({
    *   outside `overdrawPx`, which defaults to less than that buffer. Raising
    *   the overdraw past the buffer is what reveals them, and what this fetch
    *   changes is that there is then something to reveal — see
-   *   agent-docs/ideas/two-axis-synteny-fetch.md.
+   *   agent-docs/reference/TWO_AXIS_SYNTENY_FETCH.md.
    * - on a contig the row above is not displaying at all → there is no second
    *   endpoint to run a ribbon to, so it is counted and marked on the target
    *   axis: the mirror of `offscreenMates` below.

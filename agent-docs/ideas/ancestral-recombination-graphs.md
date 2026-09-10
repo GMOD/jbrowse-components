@@ -177,6 +177,14 @@ should do that first — the whole no-server half of the proposal rests on it, a
 2026-08-19 could not, having no `.trees` file to hand and no room on the box to
 install `tskit` and generate one.
 
+**Lorax's own artifact is one step from static.** Its preprocessor writes the
+tree sequence as Arrow IPC shards of about 48 MB plus a breakpoints array and a
+shard index, and reading "the tree at position x" off that is a bisect on
+breakpoints, a shard lookup and one record batch. If the shard index recorded
+per-batch byte offsets, an adapter could range-request it with no Python backend
+— which fits their deployment model as well as ours, and is the thing to ask
+them for.
+
 The scale caveat is real and cuts the other way. Lorax's Python backend exists
 because biobank-scale ARGs do not fit a browser, and its numba layout pass and
 adaptive sparsification are load-bearing at that size. A client-side reader
@@ -198,6 +206,37 @@ A `plugins/arg` (or an external plugin, per
   client-side LOD for density.
 - A Canvas2D twin and cross-backend goldens, per
   [CROSS_BACKEND_GATE.md](../reference/CROSS_BACKEND_GATE.md).
+
+## What it changes for the genotype ordering
+
+A marginal tree answers the "no one tree" problem with the one object that is
+honest about it, and three of its properties bear directly on the multi-sample
+variant displays' row order:
+
+- **The row order at a position is the marginal tree's tip order.** That is the
+  local ordering the PBWT approximates, taken from a model that has already
+  resolved the recombination structure. The tree sidebar draws a hierarchy
+  already, and a marginal tree is one, with branch lengths in generations rather
+  than a distance.
+- **The breakpoints are the fraying, stated.** The tree sequence's breakpoint
+  array says exactly where the local tree changes, so ticks on the variant lane
+  at those positions — or a re-derived row order as the anchor crosses one —
+  answer "where does this ordering stop applying" with no heuristic threshold.
+- **Carriers of a variant are a clade.** A mutation sits on one branch, so the
+  alt-carrying cells in a column should be contiguous in the tip order. Where
+  they are not, the display is showing recurrent mutation or inference error,
+  which is a finding rather than noise.
+
+It does not replace the genotype-side work. An inferred ARG is a model — tsinfer
+leaves polytomies, tsdate's times carry wide intervals, and the tree near a
+breakpoint is the least certain part, which is why Lorax ships a
+compare-topologies mode at all. A PBWT divergence computed straight from
+genotypes makes no inference claim and exists for every VCF, where an ARG exists
+only where someone has run the pipeline. So genotype-derived blocks stay the
+default and the ARG is the upgrade when a tree sequence is present. The sequence
+that follows is: land the divergence painting off the existing sort, then a
+tree-sequence adapter for the marginal tree at the anchor, with Lorax's artifact
+as the first format it reads.
 
 ## What kills the obvious version
 

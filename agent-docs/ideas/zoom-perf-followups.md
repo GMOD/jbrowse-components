@@ -275,6 +275,13 @@ price worth paying, and only then write the plumbing.
   thumb transition *so the thumb stops trailing the zoom it reports*. Coarsening
   the value re-introduces exactly that, deliberately. A drag is unaffected either
   way — it reads local `dragValue`, not the model.
+- **The wheel-driven arm books 2158ms in rAF callbacks** against the scripted
+  arm's much smaller figure for the same applied zoom, which points at the wheel
+  controller and zoom spring rather than at rendering. The two runs did not
+  cover the same `bpPerPx` range, so the number means nothing until the
+  comparison is matched — the same trap that made the label A/B look like a win
+  ([reference/INTERACTION_PERF.md](../reference/INTERACTION_PERF.md) §"Zoom is
+  the worse of the two gestures").
 - **Three overlays set `ctx.font` ungated** —
   `drawVariantInsertionGlyphs.ts:147`, `drawMultiRowIndelGlyphs.ts:113`,
   `drawOffscreenMates.ts:763`. Same bug MAF already fixed. Hygiene only: per

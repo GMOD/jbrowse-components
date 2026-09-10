@@ -42,7 +42,7 @@
 //
 // FIXTURES: `demo-2767` is the shape the feature was measured on — peach chr1
 // over grape chr1 in demos/grape_peach_cacao, 2767 dropped anchors across 9 grape
-// contigs (agent-docs/ideas/offscreen-synteny-mates.md). The other two are the
+// contigs (agent-docs/reference/OFFSCREEN_SYNTENY_MATES.md). The other two are the
 // query-whole-genome/target-one-contig state, which is where this stops being
 // small.
 //

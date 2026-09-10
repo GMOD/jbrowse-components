@@ -26,7 +26,7 @@ threading `lodMode` through.
 a whole-genome top row against a zoomed-in bottom row fetches the fine tier
 across the genome. A follow that zooms one row past the threshold flips the
 tier the same way (documented). A per-axis tier needs the bidirectional fetch
-behind `bidirectionalFetch` ([two-axis-synteny-fetch.md](two-axis-synteny-fetch.md)),
-so each row can be served at its own tier and joined on `syntenyId`. Measure
+([TWO_AXIS_SYNTENY_FETCH.md](../reference/TWO_AXIS_SYNTENY_FETCH.md)), so each
+row can be served at its own tier and joined on `syntenyId`. Measure
 on a real hub file how often the two rows straddle the threshold before
 building it.

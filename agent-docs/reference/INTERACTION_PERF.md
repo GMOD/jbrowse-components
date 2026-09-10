@@ -7,7 +7,9 @@ kind: measurement
 # Interaction perf: which components re-render per frame
 
 Measurements, not a proposal — the one open action they point at (pooling the
-ruler's tick `<div>`s) is in [TODO.md](../TODO.md).
+ruler's tick `<div>`s) is
+[ideas/give-the-coordinate-ruler-a-genuinely-fixed-tick-pool.md](../ideas/give-the-coordinate-ruler-a-genuinely-fixed-tick-pool.md),
+moved off `TODO.md` on 2026-08-26.
 
 ### Where this leaves the perf story (all measured)
 
@@ -20,6 +22,52 @@ ruler's tick `<div>`s) is in [TODO.md](../TODO.md).
 - The tooltip wasn't the culprit. The remaining ~21ms/frame at 4× is the broader
   set of components that re-render on `bpPerPx`/`offsetPx` — the
   coverage/label/arc overlays and the LGV chrome.
+
+### Zoom is the worse of the two gestures, and labels are not the reason
+
+Wheel-driven zoom on the GPU path, four tracks:
+
+| ~4.8 s gesture     |    pan |           zoom |
+| ------------------ | -----: | -------------: |
+| page frames        |    279 | 152 (31.7 fps) |
+| p90 frame interval | 16.7ms |         66.7ms |
+| dropped frames     |     65 |            140 |
+| tasks > 50ms       |      1 |             16 |
+
+Main thread is 95-100% busy in every bin across the whole gesture.
+
+**A label A/B on zoom that looked like a big win was a measurement artifact.**
+The two arms swept different `bpPerPx` ranges (1.1-1.9 against 0.6-3.0), so they
+rendered different amounts of detail: the rate limiter is per elapsed-ms and the
+turnaround read `bpPerPx` back, so the slower arm both applied less zoom per
+event and flipped direction later. Re-run with a scripted geometric ramp, both
+arms reporting an identical sequence (36.0 2.67 1.76 1.16 0.766 0.505 0.750 1.14
+1.72 2.61):
+
+| scripted zoom, same ramp | labels on | labels off |
+| ------------------------ | --------: | ---------: |
+| style recalc             |     700ms |      751ms |
+| layout                   |     236ms |      236ms |
+| page frames              |       244 |        256 |
+| main busy                |    5422ms |     5230ms |
+
+Layout is identical and style recalc is higher with labels off — inside noise.
+So the container-transform fix is a pan win and does nothing measurable for
+zoom, and zoom needs its own attack.
+
+What zoom is bound by, self time, consistent across every 1200ms bin: React's
+DOM attribute and property setters (`react-dom-client:1273` ~178ms,
+`:1254` ~143ms) plus `setAttribute`, which is the top cost and the
+"too many components re-render per frame" residual again; `createObjectURL`
+~91ms on the stop-token path; style recalc at 700-750ms of a 4.8 s gesture
+(~15%), all `(no stack)` lifecycle recalcs with `@emotion/serialize` recurring
+in the long tasks; and the relayout a zoom legitimately owes
+(`GranularRectLayout.addRect`).
+
+Both named targets were taken up on 2026-08-30 and only one survived. The mint
+count is not the `createObjectURL` frame — see "The stop-token probe" below. The
+per-frame component count got the render census, whose findings are in
+[ideas/zoom-perf-followups.md](../ideas/zoom-perf-followups.md).
 
 ### Honest next step
 

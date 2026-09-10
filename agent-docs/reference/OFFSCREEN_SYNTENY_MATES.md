@@ -1,6 +1,7 @@
 ---
 name: offscreen-synteny-mates
-description: Showing alignments whose mate lands on a contig the facing view is not displaying, as a mark/box rather than a ribbon. Class A SHIPPED 2026-08-19 — counted, drawn behind a toggle, labelled, named on hover, clickable to show the mate LOCUS (with an Undo, since the navigation replaces the row's regions), and carried into an SVG export. Its click FLIES to the mate rather than jumping, from 2026-08-25, wherever the row already displays the contig. Class B shipped the same day behind `bidirectionalFetch` (two-axis-synteny-fetch.md), on the terms this file settled: its marks hang off the target axis and its click navigates the row above.
+description: Alignments whose mate lands on a contig the facing view is not displaying, drawn as a mark rather than a ribbon. Both classes shipped 2026-08-19. Read before changing the mate marks, their click or their SVG export.
+kind: spec
 ---
 
 # Off-screen synteny mates, drawn as something other than a ribbon
@@ -83,7 +84,7 @@ discarded by the `&& v2RefNames.has(mate.refName)` conjunct — which is doing
 legitimate work for the sort-size reduction it was written for, and incidentally
 eating this class.
 
-Class B is [two-axis-synteny-fetch](two-axis-synteny-fetch.md), which was
+Class B is [two-axis-synteny-fetch](TWO_AXIS_SYNTENY_FETCH.md), which was
 believed to be a real architecture change with a real blocker and turned out to
 need neither — see that file. Nothing here depended on it, and what shipped
 there is the mirror of what shipped here.
@@ -256,7 +257,7 @@ reports nothing.
   ribbon pick, answering only within the mark strip. The overlay stays
   `pointerEvents: none`: two hit paths over one band is how a click comes to
   mean different things depending on which element received it. Draw and hit
-  test share `offscreenMateRects`, so they cannot disagree the way the ribbons
+  test share `offscreenMateStrips`, so they cannot disagree the way the ribbons
   can — `syntenyPickRenderAgreement.test.ts` exists because those are two code
   paths.
 - **How a reader identifies an UNLABELLED run.** Settled 2026-08-19: by
@@ -367,7 +368,7 @@ to answer was the one arrangement the feature said nothing about.
 | class | anchor | mate | why no ribbon | decided | marked on |
 | --- | --- | --- | --- | --- | --- |
 | **A** | visible v1 window | contig v2 does not display | no second endpoint | worker, per fetch | query axis |
-| **B** | contig v1 does not display | visible v2 window | never requested | worker, per fetch (`bidirectionalFetch`) | target axis |
+| **B** | contig v1 does not display | visible v2 window | never requested | worker, per fetch (`showOffscreenMates`) | target axis |
 | **C** | visible v1 window | contig v2 displays and has scrolled off | `overdrawPx` cull | **main thread, per repaint** | query axis |
 | **D** | contig v1 displays and has scrolled off | visible v2 window | `overdrawPx` cull | **main thread, per repaint** | target axis |
 

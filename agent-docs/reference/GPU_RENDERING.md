@@ -1867,7 +1867,7 @@ lands in peaks at
 several renders fire in it. Those are tens, not the thousands at which a
 draw-call budget starts to bind, and what these frames are bound by is the main
 thread rather than draw submission
-([ideas/zoom-perf.md](../ideas/zoom-perf.md)). Merging would also have to cross
+([INTERACTION_PERF.md](INTERACTION_PERF.md)). Merging would also have to cross
 a region boundary, which is where the scissor rect, the viewport and the
 per-block uniforms all change, so the "compatible" set is one pass in one
 region: exactly what is drawn now.

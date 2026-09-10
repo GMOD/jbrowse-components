@@ -14,7 +14,7 @@ resolves "this level draws between these two rows" in seven spellings:
 `offscreenMateStrip.ts`. Each is individually correct, but the idiom — and the
 "upper row is the query axis" orientation fact riding on it — has no single
 home, which is the shape that historically let an offscreen-mate mark land on
-the wrong axis ([offscreen-synteny-mates](offscreen-synteny-mates.md)).
+the wrong axis ([offscreen-synteny-mates](../reference/OFFSCREEN_SYNTENY_MATES.md)).
 
 The minimal move: an ungated `rowPair` getter on the helper
 (`{ v0, v1 } | undefined`) that `bandTransformKey`, `assemblyNames` and the
