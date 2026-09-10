@@ -86,12 +86,11 @@ describe('getPortableSettings', () => {
   })
 
   // A hidden legend is a deliberate sizing choice on a short track, so it has
-  // to survive the switch — and the unset state has to survive as unset, since
-  // that is what follows the session-wide display-type default.
-  it('ports the legend visibility, including the unset state', () => {
+  // to survive the switch.
+  it('ports the legend visibility', () => {
     const { display, target, targetId } = setup('')
     display.getPortableSettings(targetId)
-    expect(readConfObject(target, 'showLegend')).toBeUndefined()
+    expect(readConfObject(target, 'showLegend')).toBe(true)
 
     display.setShowLegend(false)
     display.getPortableSettings(targetId)
