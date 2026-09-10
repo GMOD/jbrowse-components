@@ -319,6 +319,18 @@ export const formats: FormatEntry[] = [
       locField: 'twoBitLocation',
     },
   },
+  {
+    // the pattern `jbrowse add-assembly` has always inferred `--type
+    // chromSizes` from, so a file that names a genome on the command line names
+    // one in a config. The bare `.sizes` below stays refused: it is nobody's
+    // convention, and a genome with no sequence is too easy to reach by accident
+    regex: /\.chrom\.sizes$/i,
+    spec: {
+      kind: 'single',
+      adapterType: 'ChromSizesAdapter',
+      locField: 'chromSizesLocation',
+    },
+  },
   { regex: /\.sizes$/i, spec: { kind: 'unsupported' } },
   {
     regex: /trackData\.jsonz?$/i,

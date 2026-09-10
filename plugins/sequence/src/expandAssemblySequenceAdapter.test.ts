@@ -109,6 +109,19 @@ test('a 2bit picks up its chromSizes sidecar with the type omitted', () => {
   })
 })
 
+// a genome named by its chromosome names and lengths alone — no sequence, and
+// enough to anchor a karyotype or a whole-genome synteny view. `jbrowse
+// add-assembly` has inferred this from the same pattern for years
+test('infers ChromSizesAdapter from a .chrom.sizes uri', () => {
+  const { adapter } = expand({
+    adapter: { uri: 'https://x.test/hg38.chrom.sizes' },
+  })
+  expect(adapter.type).toBe('ChromSizesAdapter')
+  expect(adapter.chromSizesLocation).toMatchObject({
+    uri: 'https://x.test/hg38.chrom.sizes',
+  })
+})
+
 test('an explicit chromSizesLocation reaches a type-guessed 2bit too', () => {
   const { adapter } = expand({
     adapter: {

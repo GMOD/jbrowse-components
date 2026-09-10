@@ -58,6 +58,23 @@ test('sequence.type/trackId are filled in for a uri-less inline adapter', () => 
   })
 })
 
+// the flattest form there is, for a genome that has no sequence to point at.
+// An unguessable uri does not fail here — it falls to whichever adapter
+// registered first — so this pins the guess, not just the absence of a throw
+test('the flat uri shorthand takes a .chrom.sizes', () => {
+  const model = getAssemblyConfigSchema().create({
+    name: 'hg38',
+    uri: 'hg38.chrom.sizes',
+  })
+
+  expect(model.sequence.type).toBe('ReferenceSequenceTrack')
+  expect(model.sequence.trackId).toBe('hg38-ReferenceSequenceTrack')
+  expect(getSnapshot(model.sequence.adapter)).toMatchObject({
+    type: 'ChromSizesAdapter',
+    chromSizesLocation: { uri: 'hg38.chrom.sizes' },
+  })
+})
+
 // end to end through the schema, where the drop happened: the expansion runs
 // as preProcessSnapshot, and MST discards an undeclared key without a word
 test('a 2bit keeps its chromSizes through the whole config build', () => {

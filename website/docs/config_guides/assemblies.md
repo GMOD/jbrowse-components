@@ -116,6 +116,8 @@ samtools faidx sequence.fa.gz  # -> sequence.fa.gz.fai
   many chromosomes (UCSC `faToTwoBit` makes the file).
 - **`ChromSizesAdapter`** has names and lengths but no sequence, enough to
   anchor a karyotype, synteny or whole-genome view without a FASTA.
+  `{ "name": "hg38", "uri": "hg38.chrom.sizes" }` is the whole assembly — six
+  wheat genomes are tens of gigabytes as sequence and a few kilobytes as this.
 - **[`metadataLocation`](/docs/config/bgzipfastaadapter/#slot-metadatalocation)**
   attaches free-form metadata to a FASTA;
   [FFRGS](https://github.com/FFRGS/FFRGS-Specification) is one convention, and

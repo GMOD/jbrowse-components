@@ -55,6 +55,7 @@ const samples: Record<string, string[]> = {
   BgzipFastaAdapter: ['volvox.fa.gz', 'volvox.fasta.bgz', 'volvox.fas.gz'],
   IndexedFastaAdapter: ['volvox.fa', 'volvox.fasta', 'volvox.fas'],
   TwoBitAdapter: ['volvox.2bit'],
+  ChromSizesAdapter: ['volvox.chrom.sizes'],
   NCListAdapter: ['trackData.json', 'trackData.jsonz'],
   SPARQLAdapter: ['sparql'],
   HicAdapter: ['volvox.hic'],
