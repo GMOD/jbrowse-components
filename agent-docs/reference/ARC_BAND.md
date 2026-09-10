@@ -265,7 +265,8 @@ though it alone carried 8 reads and each hovering "supported by 8". The ink is
 O(N) marks at width(N) where the evidence is one junction, which is the opposite
 of what coalescing is for, and `compute.test.ts` pins it as `[5,5,5,5,5,5,5,5,5,5]`.
 Filed with the options in
-[ideas/draw-one-mark-per-interchromosomal-cluster.md](../ideas/draw-one-mark-per-interchromosomal-cluster.md)
+[ideas/arc-band-open-calls.md](../ideas/arc-band-open-calls.md)
+§"Draw one mark per interchromosomal cluster"
 — it changes what every published translocation figure looks like, so it is a
 decision and not a fix.
 
@@ -443,7 +444,8 @@ inversion. Three things about the scope are load-bearing:
   under the band, not a set of directions.
 
   The ticks are the half that IS worth it, and are filed rather than declined —
-  [ideas/give-the-interchromosomal-ticks-breakend-feet-too.md](../ideas/give-the-interchromosomal-ticks-breakend-feet-too.md).
+  [ideas/arc-band-open-calls.md](../ideas/arc-band-open-calls.md)
+  §"Give the interchromosomal ticks breakend feet too".
   Same reasoning as the arcs': their colour channel is spent too, and a tick has
   no second endpoint to read an orientation off at all.
 
@@ -524,7 +526,7 @@ As a variant, each gesture is right by default instead of by remembering:
   junction could offer. `ArcMarkHit` narrows to `{tooltip, highlight}` and drops
   the `ArcBandHitResult` behind them, which is what actually forecloses it
   downstream. See
-  [An arc's right-click offers nothing](../ideas/give-an-arcs-right-click-something-to-offer.md).
+  [An arc's right-click offers nothing](../ideas/arc-band-open-calls.md).
 
 `arcGestureGuard.test.ts` holds the behaviour, and it works the one pixel where an
 arc's ink lies over an interbase bar — the mark that answers a click with a widget

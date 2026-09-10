@@ -56,4 +56,5 @@ strand, and a display cannot assume an annotation track is loaded.
 measured version.
 
 The thread's one unfinished build item is a figure, not a feature:
-[capture-a-figure-for-the-junction-bed-tutorial-section.md](capture-a-figure-for-the-junction-bed-tutorial-section.md).
+[figures-blocked-on-data.md](figures-blocked-on-data.md)
+§"The junction-BED tutorial section has no figure".

@@ -89,9 +89,10 @@ temporary assembly carries `seq: ''` because the path is a structure, and
 concatenating each segment's reference slice yields a reference-derived contig
 rather than the sample's), reads projected onto the allele (reverted,
 `e7b4f2b29b`),
-[derive-from-partial-spanners](derive-from-partial-spanners.md), the in-CIGAR
-deletion grouping in
-[chain-in-read-deletions-not-only-sa-segments](chain-in-read-deletions-not-only-sa-segments.md).
+the two in
+[derivative-allele-reconstruction-gaps](derivative-allele-reconstruction-gaps.md)
+— deriving from partial spanners, and grouping an in-CIGAR deletion as a
+junction.
 Each moves the picker toward being a caller; the route input moves it the
 other way. They stay parked with their triggers; this is the reason not to
 pull them.

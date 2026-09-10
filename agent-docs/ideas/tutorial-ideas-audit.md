@@ -10,6 +10,13 @@ Audit of `website/src/pages/docs/tutorials/index.astro` plus the 25 tutorials on
 (`config_guides/file_types.md`), the gallery, and the hosted tracks in
 `test_data/config_demo.json`.
 
+**Every census here is 2026-07 and the corpus has more than doubled since** — 57
+pages today against the 25 this read. So a gap named below may have been filled,
+and the coverage tally in the next paragraph is history. What survives the growth
+is the demand evidence, the priorities and the dead ends; re-check a gap against
+`website/docs/tutorials/` before writing to it. The corpus's own state is
+measured in [tutorial-corpus-audit.md](tutorial-corpus-audit.md).
+
 Coverage today: synteny and comparative 7 (three of them pangenome), structural
 variation 4, population genomics 4, epigenomics and single cell 4,
 transcriptomics and proteins 2, configuration and embedding 3 plus the storybook

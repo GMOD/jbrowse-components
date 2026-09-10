@@ -85,7 +85,7 @@ by content, 8.4% of the frame differs — three haplotype lanes drop from 373 Mb
   flipping, which TP53 gave the page no negative for.
 - `multiway_synteny/hprc_lane_menu` — a lane header menu open.
 
-[ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md)
+[reference/MULTIWAY_SYNTENY_DISPLAY.md](../reference/MULTIWAY_SYNTENY_DISPLAY.md)
 §4.10 records the 17p and lane-menu figures as current. **`hprc_chr1_whole` is
 recorded nowhere else, so this file is its record.**
 

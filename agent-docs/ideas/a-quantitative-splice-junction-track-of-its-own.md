@@ -22,4 +22,4 @@ standalone track would draw is already computed; what it lacks is somewhere to
 live.
 
 Related: the tutorial section on loading junction files as BED arcs has no
-figure — [capture-a-figure-for-the-junction-bed-tutorial-section](capture-a-figure-for-the-junction-bed-tutorial-section.md).
+figure — [figures-blocked-on-data](figures-blocked-on-data.md).

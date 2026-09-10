@@ -15,7 +15,7 @@ derivative allele and checked against the reads. It ran on both cell lines until
 tool behind it and is meant to be reusable against any somatic SV callset.
 Shipped 2026-08-02 in `6c8a7b4708`..`8f15a3be06`; the forward-looking dataset
 ideas that used to sit at the bottom of this file are in
-[ideas/cancer-sv-datasets-unshot.md](../ideas/cancer-sv-datasets-unshot.md).
+[ideas/figures-blocked-on-data.md](../ideas/figures-blocked-on-data.md).
 
 ## What exists
 
@@ -37,7 +37,8 @@ Behavior checks for all three python helpers live in `scripts/check-build-script
 
 Which cell lines are usable at all — and which are dead ends nobody should
 re-check — is in
-[ideas/cancer-sv-datasets-unshot.md](../ideas/cancer-sv-datasets-unshot.md). This section is about the two the tutorial uses.
+[ideas/figures-blocked-on-data.md](../ideas/figures-blocked-on-data.md).
+This section is about the two the tutorial uses.
 
 **COLO829 chain 1** is a closed 3-junction cycle across three chromosomes,
 joining RARB (chr3), BICC1 (chr10) and TRHDE (chr12) inside under a kilobase of

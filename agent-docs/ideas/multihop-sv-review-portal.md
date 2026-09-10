@@ -77,7 +77,7 @@ A card whose normal panel also chains is the card the reviewer has to look
 at.
 
 **Not drivers.** HG002 Tier1 is germline, hg19, and needs no chaining. K562
-has no usable hg38 WGS (`ideas/cancer-sv-datasets-unshot.md`). HCC1395
+has no usable hg38 WGS (`ideas/figures-blocked-on-data.md`). HCC1395
 (SEQC2, Revio HiFi at `downloads.pacbcloud.com/public/revio/2023Q2/HCC1395/`)
 is the third driver once the first two work: six CNV callers to adjudicate.
 
@@ -274,7 +274,7 @@ which needs no extra file and is what the mappability lane is standing in for.
 
 ## What the portal is for, in the docs' terms
 
-Worth stating because it decides the layout. `ideas/tutorial-onboarding-and-accuracy-audit.md`
+Worth stating because it decides the layout. `ideas/tutorial-corpus-audit.md` §3
 measures the corpus's prose problem and finds population genomics writing ~650
 words per figure. A review portal is the extreme opposite end of that axis: it is
 all figure, one verdict column, and no prose at all. So it is not only a feature

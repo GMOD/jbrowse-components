@@ -84,6 +84,6 @@ through the selector, never through a cached handle.
 Related: [../reference/FIGURE_CAPTURE.md](../reference/FIGURE_CAPTURE.md),
 whose "The third one" was a *different* drift with a settled attribution — app
 chrome composited in after `el.screenshot()` scrolled the element — and is fixed;
-and the backlog's
-[render webgpu in the blocking gate job](../todo/render-webgpu-in-the-blocking-cross-backend-gate-job.md),
+and
+[render webgpu in the blocking gate job](render-webgpu-in-the-blocking-cross-backend-gate-job.md),
 which is what that fix left over.

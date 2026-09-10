@@ -1,6 +1,6 @@
 ---
 name: multiway-synteny-lgv-track
-description: Follow-ups to the multi-way synteny LGV track — per-base alignment lanes, the selection-scan pairing demo, multi-copy and self-comparison lanes, HPRC-scale lane selection and placement providers, and what the interaction surface still lacks now that lane order has a menu. Read before extending MultiWaySyntenyDisplay or proposing a demo on it.
+description: Follow-ups to the multi-way synteny LGV track — per-base alignment lanes, the selection-scan pairing demo, multi-copy and self-comparison lanes, HPRC-scale lane selection and the cohort hand-off, the graph data path, the four routes to more than one row per genome, the remaining LOD and byte work, and what the tests do not pin. Read before extending MultiWaySyntenyDisplay or proposing a demo on it; how the display works today is reference/MULTIWAY_SYNTENY_DISPLAY.md.
 ---
 
 # Multi-way synteny LGV track follow-ups
@@ -15,8 +15,15 @@ PAF); lanes draw gene models from each assembly's own GFF3 track; an
 alignment-level source additionally fetches each adjacent lane pair's direct
 records. The walkthrough is the second half of
 `multiway_synteny_grape_peach_cacao.md`, and each demo set's own tutorial
-carries its lanes. What follows is what
-was deliberately NOT built, with the reasoning that shaped each cut.
+carries its lanes.
+
+How the display works once built — the lane stack and its frames, the adapter
+contract, the cost of a lane at 8, 64, 464 and 4,000, the two named tutorials
+and the correctness findings that have landed — is
+[../reference/MULTIWAY_SYNTENY_DISPLAY.md](../reference/MULTIWAY_SYNTENY_DISPLAY.md),
+whose landed block names what not to re-fix. What follows here is what was
+deliberately NOT built, with the reasoning that shaped each cut, and what the
+2026-09-06 reading of the display left open.
 
 **Per-base alignment lanes (CIGAR in row-local frames).** The most-wanted
 extension and the wrong one to bolt onto this display. The backend draws
@@ -91,7 +98,7 @@ Arabidopsis accessions with a diversity or selection statistic over Col-0 plus
 per-accession assemblies and annotations. Candidates in order of data
 readiness: Arabidopsis 1001/MPIPZ accession assemblies (annotations exist,
 statistic must be computed), Dog10K (the parked 4-5 hour wolf-ancestry sweep in
-[figure-work-parked](figure-work-parked.md) would BE the top panel, but there
+[figures-blocked-on-data](figures-blocked-on-data.md) would BE the top panel, but there
 is one dog reference, not per-sample assemblies — the lanes would need the SV
 callset as a placement source instead), DEST Drosophila (statistics hosted,
 no per-population assemblies). None is an afternoon; all need `deploy-demo.sh`
@@ -140,13 +147,49 @@ answers "which haplotypes differ here" cheaply — the wave VCF's genotype
 matrix, not the alignment. The lane stack has its own geometry and headers, so
 that is a larger fit than the picker was.
 
+**Do not extend row-per-haplotype to the cohort.** Pixels, fetch and picking
+each rule it out independently and each is sufficient; the three are costed in
+[../reference/MULTIWAY_SYNTENY_DISPLAY.md](../reference/MULTIWAY_SYNTENY_DISPLAY.md)
+§5.2. The scaling story is two surfaces with a hand-off between them, in three
+steps:
+
+1. **A carriage/genotype-first picker** over the cohort: the `pgbi.vcf.gz` snarl
+   VCF (462 haplotypes of `GT`, 1.7 s for a 70 kb window remotely,
+   [PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md) "Release 2 files
+   nothing here reads yet") or the wave VCF through
+   `LinearMultiSampleVariantDisplay`, with `TreeSidebarMixin`'s
+   cluster-by-identity ordering; rows at 1-2 px each, 464 or 4,000 of them; a
+   click or a lasso yields a haplotype set.
+2. **This display as the locus reading** for that set: the set becomes
+   `selectedLanes` (session state already), and — once the reader takes a
+   filter — the fetch.
+3. **The graph view** taking the same set: `haplotypes` on `GetSubgraph`
+   (`HAPLOTYPE_WALKS_VISION.md:70-73`), Sample rows drawing the chosen set.
+
+Three smaller things go with that and are worth doing before anyone opens a
+hundred lanes: make a graph source require a lane set — the `lanes` slot is
+already how `demos/hprc_multiway` opens on eight, and "every lane the source
+places" should not be the default when the header declares more than, say, 32,
+which is a refusal with the picker open; cull scrolled-out layers in
+`renderLayers`; and cache `laneGeneAdapters` by (track set, lane set), since it
+is O(sessionTracks × lanes) `isSameAssemblyName` calls on every `rowAssemblies`
+change and is the first main-thread cliff at cohort scale. The picker dialog
+itself is fine to ~500 and should not be made to scale further.
+
 The ORDER of whatever set that picks is its own file —
 [ordering-synteny-lanes-by-similarity](ordering-synteny-lanes-by-similarity.md),
 which reaches the same "not from the alignment at cohort scale" conclusion by
 counting fetches, and adds the two constraints this paragraph does not: a ribbon
 joins only ADJACENT lanes, so the objective is seriation rather than clustering,
 and the shared-group matrix the gene sources need is free where the alignment
-one costs N(N-1)/2 adapter calls.
+one costs N(N-1)/2 adapter calls. What the 2026-09-06 reading adds is which
+demo is waiting on it: the 44-way E. coli page orders by density, so the K-12
+derivatives lead at the O-antigen locus for sharing the most symbols and the
+reduced Shigella genomes fall toward the bottom with nothing naming them. The
+weighting half of that reading landed — `rowAssembliesOf` sums `group.weight`
+rather than counting placements — and the half still open is step 1 of the
+ordering document, the gene-group seriation, which is main-thread and needs no
+RPC.
 
 **Placement and annotation providers beyond the two shipped.** The display's
 contract is source-agnostic in two places: placements (features-with-mates from
@@ -161,6 +204,38 @@ artifact for all haplotypes, resolvable locus→node-ids→GAF through the
 `segs.bed.gz` index as a two-stage tabix, with the caveat that per-haplotype
 walk offsets are exactly what the 19x-smaller reference-keyed index dropped
 ([PANGENOME_GRAPHS.md](../reference/PANGENOME_GRAPHS.md)).
+
+**The graph data path, and what Sample rows should draw.** A GBZ lane's records
+come from `GbzBaseSyntenyAdapter` in `jbrowse-plugin-graphgenomeviewer` over the
+`gbz-base-js` reader, and today the adapter extracts, identifies and aligns
+every walk in the window and then filters — so lane selection saves the
+display's per-lane work and nothing on the query. In order: release and adopt
+the reader's `keepHaplotypes` and W-line direction fix (the plugin pins 2.3.0
+and both sit after the tag, at `add1f2f`); pass a haplotype set into
+`alignments()`, which is per path and could take a handle filter today for
+about a quarter of a window's time (`HAPLOTYPE_WALKS_REVIEW.md:45-55`); cut
+static GFAs with `--keep` for every tutorial locus now, which meets the same
+need at zero runtime cost for a fixed locus and set
+(`HAPLOTYPE_WALKS_VISION.md:94-100`) and does not generalise to a window the
+reader chooses; then the companion's reference-anchored samples plus a per-path
+walk (`HAPLOTYPE_WALKS_VISION.md:54-73`), which is the only route to "eight
+lanes out of four thousand read eight haplotypes' worth of data". Add
+`identity` to the reader's records so the identity colour mode stops being dead
+on a GBZ lane (`GBZ_HANDOFF.md:288-293`). And measure the reader's `align()`
+against `gfa_to_pairwise_paf.py` on the E. coli oracle: the two emit different
+CIGARs for the same walks by design (`50I50D` against `50X`,
+`HAPLOTYPE_WALKS_REVIEW.md:280-295`), nothing has compared them, and the gap
+split that landed on 2026-09-06 made the display's clip the first consumer of
+the CIGAR's interior.
+
+Sample rows in the graph view are the same set question one surface over. Do
+not rebuild that renderer for carriage — drawing a segment once per carrier
+needs per-(node, carrier) positions and a renderer key other than node id, and
+the result is the genotype matrix drawn as tubes, which a matrix display
+already does at cohort scale. Give the cut a sample set (`keepHaplotypes` →
+`GetSubgraph`) so the rows ARE the chosen haplotypes, keep first-visit-wins for
+the shared nodes — with the cut holding only the chosen set that is nearly
+attribution-free — and route carriage questions to the matrix.
 
 **The interaction surface.** What shipped since: hovering a ribbon highlights
 its whole ortholog group across every lane (`hoveredGroupKey`, main-thread
@@ -271,6 +346,25 @@ gets its adjacent-pair links composed through the anchor (`composeLaneLinks`,
 read by `pairLinks`) where the file states none: without a fetch when the
 header names its anchor, after an empty pair fetch otherwise.
 
+Two things on that fetch are still open. **The bytes.** Five of the eight
+hosted hg38 liftOver PIFs predate the coarse tier, so the vertebrates star
+serves fine detail at every zoom — 0.7-0.78 MB of CIGAR text per lane for one
+300 kb window at TP53, parsed and walked in the worker to produce one clipped
+extent — and the rebuild is worth 49× on a whole-genome pass, 1.31 MB against
+64.23 MB over a 130 MB PIF
+(`../measurements/pif-tier-wire-bytes.json`). Then let this display prefer
+`coarse` whenever the star has it: it drops the CIGAR after the clip, and the
+split it does ask for is at 10 kb, the coarse tier's own bound, so the cut is
+the same on either tier and the fine tier buys it nothing but bytes — a
+display-level default of `lodMode: 'coarse'` when `hasLodCapableAdapter` is a
+two-line change. The coarse tier can never engage on a bacterial genome at the
+default threshold (E. coli whole-chromosome is ~3.2 kb/px against a 10,000
+threshold, [HOSTING.md](../reference/HOSTING.md)`:107-137`), so the E. coli case
+is bounded by lanes, not bytes. **The pair fetch's tier and window.** It is
+issued at the ANCHOR's tier over the upper lane's region (`model.ts:1069-1086`)
+while that lane may be drawn at up to 80× the anchor's bp/px (`SCALE_LADDER`):
+harmless for byte cost, wrong in principle for a tiered all-vs-all file.
+
 **Lane scale legibility, and what is still open on it.** Every lane sits in its
 own frame, and until 2026-08-24 nothing in the picture said so: the view's
 gridlines (`Gridlines.tsx`, painted under track content at the ANCHOR's bp
@@ -336,7 +430,12 @@ items are open: an auto-collapse for lanes placing nothing (the stacked view's
 manual — the stability walk above shows 33/259 empty steps per lane), and a
 user-guide section for the lanes UI, since the Lanes menu, the label drag and
 `hiddenLanes` appear in no user-facing page and a 47-lane reader is never told
-they can hide the Shigella lanes. Ribbon color modes shipped
+they can hide the Shigella lanes. `website/docs/user_guide.md` has no multiway
+section at all: it links the two tutorials and stops, which is where that
+section would go. The one other documentation gap the 2026-09-06 reading left
+open is `GbzBaseSyntenyAdapter`, whose slots `pangenome_hprc.md` documents with
+no config page behind them — the adapter lives in another repository, and
+nothing the pangenome pages say about it is wrong. Ribbon color modes shipped
 2026-08-27 as `ribbonColorBy` (`default`/`strand`/`identity`, **Color ribbons
 by** on the track menu): a main-thread recolor off the synteny view's own
 scheme and ramp, no refetch. Strand reads the RECORD — the two runs'
@@ -424,6 +523,16 @@ figure spec waits on — covers a load-and-shoot and not a pan-then-shoot. Every
 `multiway_synteny/*` spec is the former; a pan-then-shoot one would need a finer
 wait and should add it then.
 
+What none of those specs does is assert anything beyond the ready phase
+(`website/scripts/generate-screenshots.ts:160-196`), so a figure that draws the
+wrong thing still ships. Both ways that has happened were caught by a human
+re-reading the pictures rather than by a check: `hprc_lane_menu` was shot
+against a PIF the next day's rebuild replaced, and
+`hg38_vertebrates_17p_break` drew a lane `[rev]` at a rung the code had stopped
+choosing — see
+[../reference/MULTIWAY_SYNTENY_DISPLAY.md](../reference/MULTIWAY_SYNTENY_DISPLAY.md)
+§4.10, which records both and the 2026-09-09 reshoot that fixed them.
+
 **What this shares with SyntenyFollow, and what it does not.** Both answer
 "given the pairwise alignments under a window of genome A, where in genome B
 does that window correspond, and which way round" — `SyntenyFollow` as a
@@ -467,6 +576,27 @@ space over `displayedRegions` and a `RowFrame` lane cannot consume it, so what
 actually moves is the union-of-spans idea plus `spreadDecision`'s coverage and
 `partialShare` gating — the hard-won part, and the reason to build lane-per-
 region on the follow side's concepts rather than a second time here.
+
+**More than one row per genome, and which of the four routes to build.** A lane
+hosts one annotation chosen by rank and nothing else, so a reader who wants a
+second track on some genome has only the two escape hatches — open the lane in
+its own unsynchronised LGV, or launch a `LinearSyntenyView`, both costed in
+[../reference/MULTIWAY_SYNTENY_DISPLAY.md](../reference/MULTIWAY_SYNTENY_DISPLAY.md)
+§2.3. Four ways out were weighed. (1) Let a lane host tracks, a
+frame-projected track container per lane: large, and it recreates the deleted
+`MultiLGVSyntenyDisplay` (`884a126861`, ~4,000 lines) by another route — leave
+it alone. (2) The stacked launch with the anchor REPEATED between every pair of
+mates, since `views` may name one assembly twice and `[m1, anchor, m2, anchor,
+m3]` makes every level a direct pair on a star: landed 2026-09-06 as **Repeat
+⟨anchor⟩ between panels**, 2N-1 rows, every band a direct pair. (3) A hub
+layout in `LinearSyntenyView`, every level anchored on a designated row: a
+level is the gap between `views[i]` and `views[i + 1]` in ten files, so this is
+a view redesign — leave it alone. (4) A **synced per-lane view**: the existing
+"Open ⟨assembly⟩ at the matching region" made to FOLLOW the lane's frame. A
+lane decision is already a `{pivotAnchor, pivotLaneBp, rung, flipped}` and
+`SyntenyFollow` already navigates a real LGV from pairwise data, so this is the
+product answer and the one still to build — the lane stack stays the overview
+and the drill-down is a full LGV that tracks the lane.
 
 **Every per-settle choice holds until the evidence clearly moves.** A lane's
 frame was a pure computed until 2026-08-26, re-run on every coarse-block update
@@ -666,3 +796,33 @@ re-alignments and pinned creeping, and re-alignment stays. What did land from
 that pass is the pivot carrying across a rung change: a zoom is a scale about
 the pivot and not a relocation, so a rung change re-aligns only when the
 rescaled frame no longer shows the content.
+
+**What the tests do not pin (2026-09-06).** Every fixture in the display's
+directory is two or three mate lanes and a handful of groups. Nothing
+exercises: a star of ≥3 mates with mixed orientations end to end (ribbon
+colour, composed links and headers together); composed links against a CIGAR
+oracle; ordering semantics for a nameless source; `laneGeneAdapters` cost or
+correctness with hundreds of tracks; a window on a lane whose record carries an
+interior gap; the picker above ~10 lanes; anything at 44 or 464 lanes beyond
+the height assertion.
+[../handoffs/multiway-graph-native.md](../handoffs/multiway-graph-native.md)
+("Smaller items") adds a hung lane fetch holding the first-load phase at
+`loading` with no deadline.
+
+One of those gaps is a near-miss worth its own sentence.
+`SyntenyFeature.get('name')` answers the mate's refName when the record has no
+name (`plugins/comparative-adapters/src/SyntenyFeature/index.ts:34-35`), and
+the clipped copy is a `SyntenyFeature` (`clipFeatureToRegion.ts:107`). Had that
+object reached the display, every star record would be "named" by its mate's
+contig, `featuresAreNameless` would be false, and `groupFeatures` would fold
+every gorilla-chr17 and chimp-chr17 record into one group drawn as a chain. It
+does not reach the display: `CoreGetFeatures` returns `f.toJSON()` and rebuilds
+plain `SimpleFeature`s (`packages/core/src/rpc/methods/CoreGetFeatures.ts:16,46`),
+and the getter is not data. So the display's "is this source an alignment" test
+rests on a serialisation boundary that no test names.
+
+**What not to touch.** The 2026-09-06 reading ends with a list of what it found
+sound and would not have anyone reopen: the lane decision and its hysteresis;
+the cell/layer renderer and its parity tests; the gene glyph parity with the
+canvas track; the per-lane staleness on the dependent fetches; the lane picker
+at its current scale; and the E. coli and primate demos as they stand.

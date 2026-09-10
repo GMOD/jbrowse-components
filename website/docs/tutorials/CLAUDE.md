@@ -199,4 +199,4 @@ Moving a figure off a page means moving its card's crop source in
   behind `k562_fusions`
 - `agent-docs/reference/PANGENOME_GRAPHS.md`
 - `agent-docs/ideas/tutorial-ideas-audit.md`, and the dead ends in
-  `agent-docs/ideas/cancer-sv-datasets-unshot.md`
+  `agent-docs/ideas/figures-blocked-on-data.md`

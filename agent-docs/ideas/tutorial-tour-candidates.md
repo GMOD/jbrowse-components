@@ -33,7 +33,7 @@ actually cost and what it corrected, because the next tour on those pages starts
 from them.
 
 Every candidate below came out of the ten-agent tutorial audit
-(`tutorial-structure-audit.md` is that audit's structural half). Each names the
+(`tutorial-corpus-audit.md` §5-7 is that audit's structural half). Each names the
 prose it makes unnecessary, which is what ranks it.
 
 **A tour does not retire a figure.** Two were retired on 2026-08-21 and put back
@@ -289,7 +289,7 @@ estimate got wrong.
       on exactly that drawing.
 14. **`rnaseq/group_by_strand`** (`rnaseq.md`) — `Group by... → First-of-pair
     strand` on the MHC class III window. **Do the page's restructuring first**
-    (`tutorial-structure-audit.md`): filming a page whose sections are
+    (`tutorial-corpus-audit.md` §5): filming a page whose sections are
     reorderable just films the confusion. Note the audit also found the current
     instruction contradicts the figure it introduces.
 15. **`config/settings_to_json`** (`display_settings.md`) — **FILMED**, 860px
@@ -408,7 +408,7 @@ estimate got wrong.
     tour that needs no Escape-and-blur. **Blocked twice**: the target is the
     heaviest figure in `specs/synteny.ts` by its own comment (269,656 gene
     links, a 300s ready gate, the sole synteny failure on the first CI sweeps),
-    and `tutorial-structure-audit.md:32-37` condemns the page as three datasets
+    and `tutorial-corpus-audit.md` §5 condemns the page as three datasets
     with the dependency arrow running backwards through half of it. Re-rank it
     after the respine and after the re-render `TODO.md` has queued for those
     figures.
@@ -495,7 +495,7 @@ cascade teaches a reader nothing new about the app.
 reorderable just films the confusion.
 
 - **`dog10k_svs.md`** — two single-step interactions on 618 lines, each already
-  in a figure within fifty lines of it, and `tutorial-structure-audit.md:45-50`
+  in a figure within fifty lines of it, and `tutorial-corpus-audit.md` §5
   names the page as the reorderable case in its own TL;DR's words.
 - **`mappability_qc.md`** — it HAS the shape: three numbered steps at `:168-179`
   with no figure near them, and a `Score → Summary score mode` flip whose losing

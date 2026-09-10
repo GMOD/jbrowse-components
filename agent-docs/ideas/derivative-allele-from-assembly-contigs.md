@@ -74,3 +74,7 @@ disagreement — the read slice reaches one junction, the contig two.
 The caller-side counterpart — chaining a callset's own breakends with the
 phasing GRIDSS and Esvee write — is
 [linx-chains-in-the-breakend-walk](linx-chains-in-the-breakend-walk.md).
+
+The two gaps on the READ side of the same picker — an event written as a CIGAR
+deletion rather than an SA hop, and a chain no single read spans — are
+[derivative-allele-reconstruction-gaps.md](derivative-allele-reconstruction-gaps.md).

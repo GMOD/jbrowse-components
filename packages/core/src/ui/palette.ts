@@ -381,7 +381,8 @@ export const colorPairRR = '#5555bb'
 // close enough that `readTagColors.ts` moved its untagged-read case off this one
 // and onto that one, because only that one darkens under the dark theme. Whether
 // two neutrals are wanted at all is the open question here; this rename does not
-// settle it, and the dark-mode half is `agent-docs/TODO.md`.
+// settle it, and the dark-mode half is
+// `agent-docs/ideas/dark-theme-palette-gaps.md`.
 export const colorNeutralRead = '#c8c8c8'
 /**
  * #color alignments-pair-orientation | Inter-chromosomal | Mate on another chromosome
