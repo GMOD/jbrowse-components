@@ -100,11 +100,12 @@ gets a row per copy, which the
 [OrthoFinder page](/docs/tutorials/orthofinder_synteny#what-to-do-with-a-duplicated-gene)
 draws as a ribbon per copy over maize's whole-genome duplication. Little of that
 reaches these eight: RefSeq gives a duplicated primate gene either its own
-lettered symbol, _AMY1A_ against _AMY1B_, or a `LOC` placeholder, and the human
-symbols two genes really do share are the pseudoautosomal ones annotated on both
-X and Y, whose copies sit on chromosomes no one lane shows together. The helper
-prints how much of each column it filled; for these eight the lanes come back
-nearly full, because the annotations share one naming pipeline.
+lettered symbol, _AMY1A_ against _AMY1B_, or a `LOC` placeholder. What it does
+reach is the pseudoautosomal genes, annotated on both X and Y, whose Y copies
+are the second copy of the symbol and so had no row of their own at all until
+the expansion gave them one. The helper prints how much of each column it
+filled; for these eight the lanes come back nearly full, because the annotations
+share one naming pipeline.
 
 ## Setting up the assemblies
 
