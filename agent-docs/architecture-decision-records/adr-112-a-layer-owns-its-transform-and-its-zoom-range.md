@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The grammar's transform stage is a typed step list — filter, formula, bin, aggregate, coverage, and flatten since ADR-114 — run in the worker, shared on the request and then per layer, so a binned density and the raw features share one fetch; a mark declares the zoom range it draws in, and the display folds only the drawing marks into its shared domain, legend, row count and skipped chip. Bin width is fixed in config; window, sample and a zoom-following bin are declined until a config asks"
+summary: "The grammar's transform stage is a typed step list — filter, formula, bin, aggregate, coverage, and flatten since ADR-114 — run in the worker, shared on the request and then per layer, so a binned density and the raw features share one fetch; a mark declares the zoom range it draws in, and the display folds only the drawing marks into its shared domain, legend, row count and skipped chip. Bin width is fixed in config, until ADR-117 takes the zoom-following one; window and sample are declined until a config asks"
 ---
 
 # ADR-112: A layer owns its transform and its zoom range
@@ -76,12 +76,13 @@ render state rather than a new mechanism.
   read-back returns covers all of it.
 - A layer's transform steps stay in the mark display's own config model;
   `CoreEncodeFeatures` takes them from any caller.
-- A bin summarizes what the fetch admits. Past the byte budget a region draws
-  the banner, not a density: the density tier
-  ([ADR-102](adr-102-the-density-tier-swaps-on-the-gates-verdict.md)) reads
-  a `make-density` sidecar in the banner's place, and the mark display does
-  not compose it. The zoom-following bin declined below is what would join
-  the two, and it would need a summary the adapter can serve.
+- A bin summarized what the fetch admitted, and past the byte budget a region
+  drew the banner rather than a density. Both halves closed in
+  [ADR-117](adr-117-the-density-tier-is-a-mark-layer.md): the mark display
+  gates and composes the density tier
+  ([ADR-102](adr-102-the-density-tier-swaps-on-the-gates-verdict.md)), so a
+  mark declaring `source: 'density'` draws the `make-density` sidecar's bins
+  as its own layer where the fetch is refused.
 
 ## Rejected alternatives
 
@@ -101,8 +102,11 @@ render state rather than a new mechanism.
   worker would need the zoom, the fetch would be keyed on it, and the saving
   is the raw layer's encode at wide zoom, which the display already paid
   before this ADR.
-- **A bin width that follows the zoom.** The declared form of what the tier
-  mixins do imperatively, resolved before the RPC and keyed into the fetch
-  the way wiggle's summary levels are. Not built until a config asks; three
-  marks with three ranges say it today.
+- **A bin width that follows the zoom.** Declined here and taken in
+  [ADR-117](adr-117-the-density-tier-is-a-mark-layer.md), where the config
+  asked: `step: "auto"` resolves to the 1/2/5 rung above four pixels of bp
+  before the RPC and keys into the fetch the way wiggle's summary levels do,
+  and the snap is what bounds the refetches — 11 across a 1,600x sweep in 64
+  steps. What this row got right is that it needed a summary the adapter can
+  serve, which is the same ADR's other half.
 - **`window` and `sample`.** No consumer.

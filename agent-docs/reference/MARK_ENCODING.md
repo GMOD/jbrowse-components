@@ -22,7 +22,7 @@ BED score column, a segment ratio, a bedGraph-shaped interval.
 | `MarkEncoding`, `encodeFeatures` | `packages/core/src/util/markEncoding.ts` | the declaration and its evaluation over the **lanes** the caller names: native `feature.get(field)` per channel, `jexl:` as the opt-in escape, a `y` that is a field or a field with the scale it is read through, a colour that is a constant, a jexl expression, a categorical palette or a ramp over a domain, a glyph that is a name, a jexl expression or a categorical scale over the glyph names, an integer `row`, the `y` extremes, a Flatbush over `(x, y, x2, y)` when `index` is named, and the `ScaleTable` per scaled channel |
 | `runTransforms` | `packages/core/src/util/featureTransforms.ts` | the transform stage: a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `stack` — run in order over a feature list, each step reading what the last answered |
 | `CoreEncodeFeatures` | `packages/core/src/rpc/methods/CoreEncodeFeatures.ts` | one region's features fetched once, the request's shared `transform` steps run (the display's `jexlFilters` as `filter` steps), then each layer of the request — its own `transform`, an encoding and its lanes — run over that list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for the request's `layers[i]`, the buffers transferred |
-| `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ shape, encoding, transform, minBpPerPx, maxBpPerPx }` sub-schemas, one `defineMark` per entry reading `layers[i]` through a lens that checks its shape's lanes are present (`SHAPE_LANES`) and `enabled` inside the entry's zoom range, the wiggle-core score axis **resolved from the declared `encoding.y`**, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over its layer's Flatbush, spans stacked on `row` into `rowCount` bands |
+| `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ shape, encoding, transform, source, minBpPerPx, maxBpPerPx }` sub-schemas, one `defineMark` per entry reading `layers[i]` through a lens that checks its shape's lanes are present (`SHAPE_LANES`) and `enabled` inside the entry's zoom range, the wiggle-core score axis **resolved from the declared `encoding.y`**, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over its layer's Flatbush, spans stacked on `row` into `rowCount` bands |
 
 **A scale is declared on the channel it scales** — `y` takes `{ field, scale,
 domain, resolve }` beside the bare field name, the way `color` and `glyph`
@@ -126,7 +126,7 @@ walks it in order:
 | `filter` | the features a `jexl:` expression admits | none |
 | `formula` | every feature, with a `jexl:` expression's value in `as` | `as` |
 | `flatten` | one feature per element of an array-valued `field` (`subfeatures`), reading the element's fields over the feature it came from | the element's, and `index` |
-| `bin` | every feature, snapped to the genome-aligned bin of `step` bp its `field` (`start`) falls in | `start` and `end`, or the two names in `as` |
+| `bin` | every feature, snapped to the genome-aligned bin of `step` bp its `field` (`start`) falls in; `step: "auto"` follows the view's zoom | `start` and `end`, or the two names in `as` |
 | `aggregate` | one feature per distinct `groupby` value set, spanning its members' extent, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` over a field — in `as` or `count`/`<op>_<field>`; no `groupby` folds the region | the group's fields, the ops |
 | `coverage` | one feature per run of constant depth over the spans, where the depth is not zero | `as` (`coverage`) |
 | `stack` | every feature, on the lowest row where it overlaps nothing already there — greedy first fit in start order over `fields` (`start`, `end`), `padding` bp of clearance, `groupby` packing each group from row 0 | `as` (`row`) |
@@ -139,8 +139,12 @@ a boundary counts where its `field` falls, which is what `coverage` is for
 when the question is overlap rather than count. A `formula` and a `bin`
 answer a `DerivedFeature` reading the new fields over the old ones, so no
 feature's data is copied per step; an `aggregate` or `coverage` answers a
-`MadeFeature` carrying only what it wrote, with a lazy id. Wiggle's
-binning is still the adapter's — a BigWig's zoom levels are computed at
+`MadeFeature` carrying only what it wrote, with a lazy id. A `step` of
+`"auto"` resolves before the RPC to the 1/2/5 rung above four pixels of bp and
+is keyed into the fetch, so a bin is the same width of screen at every zoom
+and only a zoom across a rung refetches
+([ADR-117](../architecture-decision-records/adr-117-the-density-tier-is-a-mark-layer.md)).
+Wiggle's binning is still the adapter's — a BigWig's zoom levels are computed at
 index time and the mark display does not draw over `QuantitativeTrack`
 (ADR-107) — so `bin` is for the feature adapters that have no summary.
 
@@ -166,6 +170,18 @@ chip (`markVisible`), so the feature layer's axis is not blown out to the
 count's range. The worker still encodes every layer per region: the bin
 layer costs 300 instances at a million features, and the feature layer's
 encode is the cost it was, so nothing is skipped by zoom before the RPC.
+
+**Past the byte budget the picture is the sidecar's.** The display is
+byte-gated and composes `DensityTierMixin`, so where the gate refuses the
+detail fetch a mark declaring `source: 'density'` draws the adapter's
+`densityAdapter` bins as its own layer — the sidecar's intervals as `x`/`x2`,
+its levels as `y`, a Flatbush over the same box — and `rpcDataMap` answers
+that in the region store's place, so the domain, the axis, the legend, the
+hover and the SVG export are the paths the features already take. Every other
+mark is empty there, a corner chip says the sidecar is what is drawn, and a
+bin opens nothing, the read-back being the download the gate refused. With no
+density mark drawing, the tier never reads and the banner stands
+([ADR-117](../architecture-decision-records/adr-117-the-density-tier-is-a-mark-layer.md)).
 
 Measured, per input feature, as the steps plus the native encode of their
 output:

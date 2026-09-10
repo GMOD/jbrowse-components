@@ -15,9 +15,10 @@ independent across layers, and layout is a transform step; the seams left are
 that two channel vocabularies remain, that the config rung reaches three track
 types and not the formats' own meanings, and that a scale is still resolved
 over the loaded regions rather than the dataset. The gaps are scale resolution
-across layers for colour, conditional encoding, the channels a runtime shader
-generator would give, and a bin whose width follows the zoom. The
-positions behind each are in
+across layers for colour, conditional encoding, and the channels a runtime
+shader generator would give. A bin's width may now follow the zoom, and past
+the byte budget a layer may read the adapter's density sidecar, so the picture
+per zoom level holds at any scale. The positions behind each are in
 [ADR-095](../architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md)
 §"The grammar position", [ADR-106](../architecture-decision-records/adr-106-a-display-declares-its-marks.md),
 [ADR-107](../architecture-decision-records/adr-107-the-quantitative-class-is-authored-in-config.md),
@@ -28,6 +29,7 @@ positions behind each are in
 [ADR-113](../architecture-decision-records/adr-113-one-scale-rule-in-one-place.md)
 [ADR-114](../architecture-decision-records/adr-114-canvas-keeps-its-hand-written-packer.md)
 [ADR-115](../architecture-decision-records/adr-115-one-mark-may-read-its-own-axis.md)
+[ADR-117](../architecture-decision-records/adr-117-the-density-tier-is-a-mark-layer.md)
 and [ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md);
 this file is the map across them.
 
@@ -37,8 +39,8 @@ this file is the map across them.
 
 | Stage | What the grammar means | Where the tree answers | How far |
 | --- | --- | --- | --- |
-| data | rows in memory | a feature adapter's `getFeaturesArray`, any format | whole; the adapter is the format's, and the grammar has no lazy source of its own |
-| transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `stack` — run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreEncodeFeatures` request and then each layer's own; `filters: jexl[]` as sugar for leading filters | whole for a fixed bin width, layout included — `stack` is a pileup's packing as a step, and not the format-typed displays' ([ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)); `window` and `sample` are absent |
+| data | rows in memory | a feature adapter's `getFeaturesArray`, any format, and past the byte gate the adapter's `densityAdapter` sidecar as a mark's layer (ADR-117) | whole; the adapter is the format's, and the grammar has no lazy source of its own |
+| transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `stack` — run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreEncodeFeatures` request and then each layer's own; `filters: jexl[]` as sugar for leading filters | whole, layout included — `stack` is a pileup's packing as a step, and not the format-typed displays' ([ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)); a `bin`'s width may follow the zoom; `window` and `sample` are absent |
 | scale | domain → range, separate from the encoding | every channel on the encoding — `{ field, scale, domain, palette \| range \| ramp }` for colour and glyph, `{ field, scale, domain }` for y — read by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`) and resolved either in the worker (categorical) or on the main thread against a domain uniform (y, and a quantitative ramp), with `ScoreScaleMixin` resolving the declaration rather than owning it | whole, declared in one place |
 | mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`) | whole, for the shapes the library has |
 | guide | axis and legend derived from a scale; a highlight derived from a selection | `colorScales` → legend (`packages/display-kit/src/legendHost.ts`), `valueScale` → axis, hatches and rules (`packages/display-kit/src/axisHost.ts`), `hoverInk` / `selectionInk` → the highlight (`packages/display-kit/src/highlightHost.ts`), each instance's box read off its shape's `ink`; `DisplayChrome` places all three and `renderDisplaySvg` the first two | whole, for the displays that declare |
@@ -152,18 +154,14 @@ The seams, named honestly:
 
 ## Gaps against the grammar
 
-- **A bin's width is fixed in config.** `bin` takes `step` in bp, so a
-  density layer is authored for the zoom range it draws in, and a config
-  that wants three resolutions writes three marks with three ranges.
-  GenomeSpy's `multiscale` does the same with `stops`. A `step` that
-  followed the view's `bpPerPx` would be resolved before the RPC and keyed
-  into the fetch — a refetch per zoom step, the way wiggle's summary levels
-  already work — and is the declared form of what the tier mixins do
-  imperatively; not built until a config asks for it. Until then a density
-  layer draws inside the fetch budget only: past it the region shows the
-  banner, and the density tier's sidecar (ADR-102) is the summary, on the
-  displays that compose it. `window` and `sample` are absent, and wiggle's
-  binning is the adapter's and stays so.
+- **`window` and `sample` are absent**, and wiggle's binning is the adapter's
+  and stays so. The bin-width gap closed:
+  [ADR-117](../architecture-decision-records/adr-117-the-density-tier-is-a-mark-layer.md)
+  gives `bin` a `step: "auto"` that follows the view's `bpPerPx`, resolved
+  before the RPC and keyed into the fetch on a 1/2/5 ladder — four pixels of
+  bp per bin, snapped up — so a zoom inside a rung refetches nothing and a
+  1,600x sweep in 64 steps costs 11 refetches. GenomeSpy's `multiscale`
+  spells the same idea with `stops`.
 - **Scale resolution across layers is y's alone.** `encoding.y.resolve:
   'independent'` gives one mark its own domain and a second axis on the right,
   on screen and in the export

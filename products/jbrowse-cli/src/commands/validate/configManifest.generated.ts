@@ -5176,6 +5176,22 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | number)"
         },
         {
+          "name": "fetchSizeLimit",
+          "type": "(JexlString | number)"
+        },
+        {
+          "name": "forceLoad",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "densityTier",
+          "type": "(JexlString | Density tier)"
+        },
+        {
+          "name": "densityTierBpPerPx",
+          "type": "(JexlString | number)"
+        },
+        {
           "name": "marks",
           "type": "MarkConfigurationSchema[]",
           "subSlots": [
@@ -5297,7 +5313,7 @@ export const configManifest: ConfigManifest = {
                 },
                 {
                   "name": "step",
-                  "type": "(JexlString | number)"
+                  "type": "(JexlString | (number | \"auto\"))"
                 },
                 {
                   "name": "as",
@@ -5334,6 +5350,10 @@ export const configManifest: ConfigManifest = {
                   ]
                 }
               ]
+            },
+            {
+              "name": "source",
+              "type": "(JexlString | MarkSource)"
             },
             {
               "name": "minBpPerPx",

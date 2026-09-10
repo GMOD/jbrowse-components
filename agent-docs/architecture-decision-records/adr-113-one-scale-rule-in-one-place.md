@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A scale is declared on the channel it scales and resolved wherever it is cheapest, and both halves of that rule now hold: `encoding.y` carries `{ field, scale, domain }` and `ScoreScaleMixin` resolves it rather than owning a second copy, so the score menu edits the declaration; and a quantitative colour ramp resolves on the main thread against a domain unioned over the loaded regions, read by the shapes as a uniform plus the shared LUT, so an unpinned ramp agrees across regions and a pan uploads no instance bytes. The ramp rides the existing colour lane reinterpreted, not a new one; `span` keeps the worker-resolved colour, and a bin width that follows the zoom stays declined"
+summary: "A scale is declared on the channel it scales and resolved wherever it is cheapest, and both halves of that rule now hold: `encoding.y` carries `{ field, scale, domain }` and `ScoreScaleMixin` resolves it rather than owning a second copy, so the score menu edits the declaration; and a quantitative colour ramp resolves on the main thread against a domain unioned over the loaded regions, read by the shapes as a uniform plus the shared LUT, so an unpinned ramp agrees across regions and a pan uploads no instance bytes. The ramp rides the existing colour lane reinterpreted, not a new one; `span` keeps the worker-resolved colour, and a bin width that follows the zoom stays declined here (taken in ADR-117)"
 ---
 
 # ADR-113: One scale rule, in one place
@@ -207,5 +207,7 @@ table says `pinned`, and a pinned ramp is every region's whatever they hold.
   a gap and which needs a second axis in the chrome. The declaration is
   per-mark because that is where the channel is; the resolution is the
   display's one shared scale, and the first drawing declaration wins.
-- **A bin width that follows the zoom.** Still declined, on ADR-112's terms:
-  nothing here changes what a fetch is keyed on.
+- **A bin width that follows the zoom.** Declined here on ADR-112's terms —
+  nothing in this ADR changes what a fetch is keyed on — and taken in
+  [ADR-117](adr-117-the-density-tier-is-a-mark-layer.md), which does: the
+  resolved width is a term of `rpcProps()`.

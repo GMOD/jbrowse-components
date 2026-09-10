@@ -319,6 +319,62 @@ A mark outside its range is off entirely — it is not drawn, not hovered, and i
 values do not set the y-axis, the legend or the row count — so the axis at each
 zoom is the drawing mark's.
 
+### A bin that follows the zoom
+
+`"step": "auto"` on a `bin` picks the width from the view instead: the bin
+targets four pixels of screen and snaps up to the next 1, 2 or 5 — 200 bp, 500
+bp, 1 kb — so the bars stay the same width however far you zoom out, and one
+mark replaces the three a config used to write for three resolutions. The width
+is resolved before the fetch and is part of what the fetch is keyed on, so
+zooming within a rung re-uses what is loaded and crossing one re-reads at the
+new width, the way a BigWig picks a summary level.
+
+```json
+"transform": [
+  { "type": "bin", "step": "auto" },
+  { "type": "aggregate", "groupby": ["start", "end"], "ops": [{ "op": "count" }] }
+]
+```
+
+### Past the fetch budget
+
+A bin can only summarize what the fetch admits, and a wide enough view is over
+the byte budget — the point where a track normally shows "region too large".
+Give the adapter a density sidecar (a features-per-bin BigWig, which
+`jbrowse make-density` writes) and mark one layer `"source": "density"`, and
+that layer draws the sidecar's bins there instead of the banner:
+
+```json
+"adapter": {
+  "type": "Gff3TabixAdapter",
+  "gffGzLocation": { "uri": "genes.gff.gz" },
+  "index": { "location": { "uri": "genes.gff.gz.tbi" } },
+  "densityAdapter": {
+    "type": "BigWigAdapter",
+    "bigWigLocation": { "uri": "genes.density.bw" }
+  }
+},
+"displays": [
+  {
+    "type": "LinearMarkDisplay",
+    "displayId": "genes-LinearMarkDisplay",
+    "marks": [
+      { "shape": "bar", "encoding": { "y": "score" }, "maxBpPerPx": 100 },
+      { "shape": "bar", "source": "density", "encoding": { "y": "count" }, "minBpPerPx": 100 }
+    ]
+  }
+]
+```
+
+The sidecar's bars are drawn as bars like any other — same y axis, same hover,
+same SVG export — and hovering one reads out the bin's count. Marks that are not
+the density draw nothing there, and a chip in the corner says the sidecar is
+what is on screen; the track menu's **Density band** submenu switches between
+Automatic, Features only and Density only, and carries the Force-load the banner
+would have. Clicking a bin opens nothing, because reading the features back is
+the download the budget refused. With no mark declaring `"source": "density"`,
+the banner is what you get, exactly as before.
+
 ## What the track menu offers
 
 The score submenu (min/max score), point size, cross hatches, the legend toggle,

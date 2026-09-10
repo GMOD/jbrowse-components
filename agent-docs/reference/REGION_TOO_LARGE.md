@@ -346,6 +346,7 @@ the parts:
 | `densityToUniformBins` / `packDensityRegion` — the resampler onto screen-pixel bins, packed for the coverage band's painters | `packages/alignments-core/src/densityBins.ts`                     |
 | the canvas band, one painter for both feature displays and their SVG export             | `plugins/canvas/src/shared/densityBand.ts`                        |
 | the alignments band, the coverage band's own depth-bar pass over the bins               | `plugins/alignments/src/features/coverage/densityBand.ts`         |
+| the mark display's density layer — the sidecar's own rows as a `bar` mark's channels, drawn through the display's y scale, legend, hover and export (ADR-117) | `plugins/marks/src/LinearMarkDisplay/densityLayer.ts`             |
 | `jbrowse make-density`, `add-track --density`                                           | `products/jbrowse-cli/src/commands/make-density/`                 |
 
 - **The swap is the verdict, plus an optional threshold.** `coarseTierActive`
@@ -380,9 +381,10 @@ the parts:
 - **The two slots sit on the schemas that compose the tier**, not on
   `baseLinearDisplayConfigSchema` beside `regionTooLargeConfigSchemaFields`.
   Every gated display uses the gate's pair, which is why that one belongs at
-  the base; the tier reaches five displays, through
+  the base; the tier reaches six displays, through
   `LinearBasicDisplay`'s base schema (which variants and LGV synteny extend),
-  `LinearMultiRowFeatureDisplay` and `LinearAlignmentsDisplay`. Spread lower it
+  `LinearMultiRowFeatureDisplay`, `LinearAlignmentsDisplay` and
+  `LinearMarkDisplay`. Spread lower it
   listed `densityTier` in the config docs of ten displays that ignore it.
 - **The bins never touch the fetch tiers.** They live in the tier's own
   `regionDataMap` (`coarseTier`), cleared on chromosome navigation, and the
