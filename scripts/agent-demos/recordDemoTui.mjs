@@ -80,7 +80,9 @@ const DEFAULT_STEPS = [
   },
 ]
 
-const STEPS = take.STEPS ?? DEFAULT_STEPS
+const STEPS =
+  take.STEPS ??
+  (take.TURNS ? take.TURNS.map(prompt => ({ prompt, say: '' })) : DEFAULT_STEPS)
 const SHELL = take.SHELL ?? false
 const MCP_TOOLS =
   'mcp__jbrowse__run_javascript,mcp__jbrowse__open,mcp__jbrowse__docs,mcp__jbrowse__screenshot'
