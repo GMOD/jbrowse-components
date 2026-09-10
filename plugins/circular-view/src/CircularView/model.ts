@@ -26,11 +26,12 @@ import {
   pendingLaunch,
   withLaunchInput,
 } from '@jbrowse/core/util/withLaunchInput'
-import { cast, types } from '@jbrowse/mobx-state-tree'
+import { cast, destroy, types } from '@jbrowse/mobx-state-tree'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 
+import { RingHost } from '../rings/ringHost.ts'
 import { circularLaunchKeys } from './launchKeys.ts'
 import { maxLabelGutterPx, regionLabelText } from './rulerLabels.ts'
 import { calculateStaticSlices } from './slices.ts'
@@ -351,6 +352,12 @@ function stateModelFactory(pluginManager: PluginManager) {
       volatileError: undefined as unknown,
       panX: 0,
       panY: 0,
+      /**
+       * #volatile
+       * the strip every linear display in this view lays out along, and the
+       * rings drawn from it — see `regionHost`
+       */
+      ringHost: RingHost.create({}),
     }))
     .views(self => ({
       /**
@@ -770,6 +777,24 @@ function stateModelFactory(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
+       * The node a linear display's foundation reads as its view: the
+       * circumference unrolled into a strip. A display registered for the
+       * linear genome view draws on this view as a ring of that strip, so
+       * `containingHost` answers this rather than the view itself.
+       */
+      get regionHost() {
+        return self.ringHost
+      },
+      /**
+       * #getter
+       * Where the chord displays start: inside the innermost ring, or at the
+       * ruler when the view holds none.
+       */
+      get chordRadiusPx() {
+        return self.ringHost.chordRadiusPx
+      },
+      /**
+       * #getter
        */
       get staticSlices() {
         // spelled out rather than handing over `self`, because the gap between
@@ -1137,6 +1162,12 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
+      afterCreate() {
+        self.ringHost.setView(self as CircularViewModel)
+      },
+      beforeDestroy() {
+        destroy(self.ringHost)
+      },
       afterAttach() {
         installInitAutorun(self, {
           name: 'CircularViewInit',

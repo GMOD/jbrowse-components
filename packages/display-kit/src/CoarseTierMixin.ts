@@ -1,7 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { isSubAdapterConfig } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { isRegionRefused, measuredBytes } from '@jbrowse/core/rpc/byteBudget'
-import { getContainingTrack, getContainingView } from '@jbrowse/core/util'
+import { getContainingTrack } from '@jbrowse/core/util'
 import { adapterConfigKey } from '@jbrowse/core/util/adapterConfigKey'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -17,6 +17,7 @@ import {
   coarseTierSvgReady,
 } from './coarseTierPhase.ts'
 import { onDisplayedRegionsChange } from './displayAutoruns.ts'
+import { containingHost } from './foundationView.ts'
 
 import type {
   CoarseTierEntry,
@@ -25,7 +26,6 @@ import type {
   CoarseTierResult,
 } from './coarseTier.ts'
 import type { CoarseTierPhaseHost } from './coarseTierPhase.ts'
-import type { RegionHost } from './regionHost.ts'
 import type { GateCommitHost, GateFetchState } from './regionTooLargeUtils.ts'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { FetchSkeletonHost } from '@jbrowse/core/util/installFetch'
@@ -62,7 +62,7 @@ function phaseHost(self: object) {
 }
 
 function view(self: object) {
-  return getContainingView(self) as RegionHost
+  return containingHost(self)
 }
 
 /**

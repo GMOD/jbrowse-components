@@ -16,12 +16,15 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  * contract after the view it happens to be satisfied by is how the display
  * layer came to depend on the view plugin.
  *
- * Components and structural helpers keep calling `getContainingView`: they take
- * duck-typed model shapes that deliberately don't carry the whole MST instance
- * type, so there is no `host` on them to read.
+ * A view whose displays lay out along an axis that is not its box publishes
+ * that axis as `regionHost` — the circular view's strip, the circumference a
+ * ring unrolls to — and this answers it before the view itself. Every
+ * structural helper in this package resolves the host here for that reason;
+ * `getContainingView` alone hands back the view.
  */
 export function containingHost(self: IStateTreeNode): RegionHost {
-  return getContainingView(self) as RegionHost
+  const view = getContainingView(self)
+  return (view.regionHost ?? view) as RegionHost
 }
 
 /**

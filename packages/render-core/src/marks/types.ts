@@ -64,7 +64,35 @@ export interface MarkContext2D extends ClipContext2D {
   closePath(): void
   fill(): void
   stroke(): void
+  // For a shape that samples a canvas — the circular view's ring, whose ink is
+  // a linear display's finished strip. Optional the way the line members are:
+  // a recording context in a test declares what its shapes touch.
+  drawImage?(
+    image: CanvasImageSource,
+    sx: number,
+    sy: number,
+    sw: number,
+    sh: number,
+    dx: number,
+    dy: number,
+    dw: number,
+    dh: number,
+  ): void
 }
+
+/**
+ * A canvas a mark's pass samples in place of a colour ramp, with the size the
+ * texture is allocated at. A fresh object per repaint of the canvas: the
+ * backend uploads on identity, and a canvas element's identity never moves.
+ */
+export interface MarkImage {
+  image: HTMLCanvasElement | OffscreenCanvas
+  width: number
+  height: number
+}
+
+/** What a mark's pass binds: a 256-entry RGBA ramp, or a canvas. */
+export type MarkTexture = Uint8Array | MarkImage
 
 export type MarkFrame = FrameDimensions
 
@@ -264,7 +292,7 @@ export interface Mark<TRegion, TState extends MarkFrame> {
    * undefined case — a shader owns its sampler unconditionally, and a textured
    * pass with no texture never draws on the WebGPU HAL.
    */
-  readonly texture?: (state: TState, region: TRegion) => Uint8Array | undefined
+  readonly texture?: (state: TState, region: TRegion) => MarkTexture | undefined
   /**
    * The frame-level gate: whether the mark draws at all under `state`, read
    * off the display-wide state and nothing else. `planMarks` asks it once per
@@ -392,7 +420,7 @@ export function defineMark<
   params: (state: TState, region: TRegion, block: RenderBlock) => TParams
   bufferOf?: Mark<TRegion, TState>
   band?: (state: TState) => MarkBand
-  texture?: (state: TState, region: TRegion) => Uint8Array | undefined
+  texture?: (state: TState, region: TRegion) => MarkTexture | undefined
   enabled?: (state: TState) => boolean
 }): Mark<TRegion, TState> {
   const { shape, channels, params, band, texture, enabled } = spec

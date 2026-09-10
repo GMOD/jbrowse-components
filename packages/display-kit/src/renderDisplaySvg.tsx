@@ -6,7 +6,6 @@ import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 import SvgColorLegend from '@jbrowse/core/ui/SvgColorLegend'
 import { legendEntries } from '@jbrowse/core/ui/legendSpec'
-import { getContainingView } from '@jbrowse/core/util'
 import {
   AXIS_RIGHT_INSET_PX,
   AxisGutter,
@@ -24,6 +23,7 @@ import {
   captionedAxes,
   isAxisHost,
 } from './axisHost.ts'
+import { containingHost } from './foundationView.ts'
 import { isLegendHost } from './legendHost.ts'
 import { svgLegendAreaReserved } from './types.ts'
 
@@ -32,6 +32,7 @@ import type { LegendHost } from './legendHost.ts'
 import type { RegionHost } from './regionHost.ts'
 import type { ExportSvgDisplayOptions } from './types.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type React from 'react'
 
@@ -40,7 +41,7 @@ import type React from 'react'
  * renderDisplaySvg}: the terminal-state trio from `SvgExportable` plus the
  * height its box occupies.
  */
-export interface LgvSvgExportable extends SvgExportable {
+export interface LgvSvgExportable extends SvgExportable, IStateTreeNode {
   height: number
   /**
    * Whether the display paints its own body in the too-large terminal instead
@@ -230,7 +231,7 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
   Body: React.ComponentType<LgvSvgBodyProps<M>>,
 ): Promise<React.ReactNode> {
   await awaitSvgReady(model)
-  const view = getContainingView(model) as RegionHost
+  const view = containingHost(model)
   const height = model.height
   return (
     <SvgChrome

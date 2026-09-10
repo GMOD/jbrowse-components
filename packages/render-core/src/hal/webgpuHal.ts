@@ -25,6 +25,7 @@ import type {
   PipelineDescriptor,
   SampleCount,
   TextureBinding,
+  TextureSource,
 } from './types.ts'
 
 class ShaderCompileError extends Error {
@@ -490,7 +491,7 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   protected createTexture(
     passId: string,
     binding: TextureBinding,
-    data: Uint8Array,
+    data: TextureSource,
     width: number,
     height: number,
   ) {
@@ -504,17 +505,29 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
       // safe.
       this.destroyWhenIdle(existing.texture)
     }
+    const bytes = data instanceof Uint8Array
     const texture = this.device.createTexture({
       size: [width, height],
       format: 'rgba8unorm',
-      usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
+      usage:
+        GPUTextureUsage.TEXTURE_BINDING |
+        GPUTextureUsage.COPY_DST |
+        (bytes ? 0 : GPUTextureUsage.RENDER_ATTACHMENT),
     })
-    this.device.queue.writeTexture(
-      { texture },
-      data,
-      { bytesPerRow: width * 4 },
-      { width, height },
-    )
+    if (bytes) {
+      this.device.queue.writeTexture(
+        { texture },
+        data,
+        { bytesPerRow: width * 4 },
+        { width, height },
+      )
+    } else {
+      this.device.queue.copyExternalImageToTexture(
+        { source: data },
+        { texture, premultipliedAlpha: true },
+        { width, height },
+      )
+    }
     const sampler = this.device.createSampler({
       magFilter: binding.filter,
       minFilter: binding.filter,

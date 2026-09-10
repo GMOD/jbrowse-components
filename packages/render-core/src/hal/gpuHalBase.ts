@@ -1,7 +1,11 @@
 import { OomReporter } from './oomReporter.ts'
 import { RegionRegistry } from './regionRegistry.ts'
 
-import type { PipelineDescriptor, TextureBinding } from './types.ts'
+import type {
+  PipelineDescriptor,
+  TextureBinding,
+  TextureSource,
+} from './types.ts'
 
 /**
  * The device ceilings the shared upload shells refuse past. WebGPU asks the
@@ -67,7 +71,7 @@ export abstract class GpuHalBase<Buf extends { count: number }> {
   protected abstract createTexture(
     passId: string,
     binding: TextureBinding,
-    data: Uint8Array,
+    data: TextureSource,
     width: number,
     height: number,
   ): void
@@ -114,7 +118,7 @@ export abstract class GpuHalBase<Buf extends { count: number }> {
 
   uploadTexture(
     passId: string,
-    data: Uint8Array,
+    data: TextureSource,
     width: number,
     height: number,
   ) {

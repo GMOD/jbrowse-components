@@ -1,11 +1,11 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
-import { getContainingView } from '@jbrowse/core/util/mstUtils'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
 
+import { containingHost } from './foundationView.ts'
+
 import type { HeightMode } from './heightMode.ts'
 import type { HeightModeConfigModel } from './heightModeConfigSchemaFields.ts'
-import type { RegionHost } from './regionHost.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { IReactionDisposer } from 'mobx'
 
@@ -152,7 +152,7 @@ export default function HeightModeMixin() {
        * `TrackHeightMixin.height`.
        */
       get height(): number {
-        const view = getContainingView(self) as RegionHost
+        const view = containingHost(self)
         return self.autoHeight && view.initialized
           ? self.grownHeight
           : self.fitTargetHeight
@@ -251,7 +251,7 @@ export function installGrowExitBake(
     setHeight: (height: number) => number
   },
 ): IReactionDisposer {
-  const view = () => getContainingView(self) as RegionHost
+  const view = () => containingHost(self)
   return reaction(
     () => ({
       mode: self.heightMode,

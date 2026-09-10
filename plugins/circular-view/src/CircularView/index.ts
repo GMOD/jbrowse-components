@@ -20,6 +20,9 @@ export default function CircularViewF(pluginManager: PluginManager) {
       launchKeys: circularLaunchKeys,
       name: 'CircularView',
       displayName: 'Circular view',
+      // every linear display draws on the circle as a ring, off the strip the
+      // view's ring host lays its regions along
+      extendedName: 'LinearGenomeView',
     })
   })
 }

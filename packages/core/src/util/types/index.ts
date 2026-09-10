@@ -725,6 +725,13 @@ export interface AbstractViewModel {
    */
   trackContainerFor?: (id: string) => TrackContainer | undefined
   /**
+   * the node a display in this view lays its regions out against, where that
+   * is not the view's own box — the circular view's strip. A display's
+   * foundation reads its host through `containingHost`, which answers this
+   * before the view itself.
+   */
+  regionHost?: unknown
+  /**
    * every track container this view owns INSTEAD of a `tracks` array of its
    * own. The synteny view is the only one: its tracks hang off the levels, one
    * per band, so anything walking `view.tracks` to reach a display finds

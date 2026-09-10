@@ -1,5 +1,4 @@
 import { getConf } from '@jbrowse/core/configuration'
-import { getContainingView } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import CoarseTierMixin from './CoarseTierMixin.ts'
@@ -8,10 +7,10 @@ import {
   densityZoomBucket,
   isDensityTierMode,
 } from './densityTier.ts'
+import { containingHost } from './foundationView.ts'
 
 import type { CoarseTierRead, CoarseTierResult } from './coarseTier.ts'
 import type { DensityTierConfigModel } from './densityTierConfigSchemaFields.ts'
-import type { RegionHost } from './regionHost.ts'
 import type { FeatureDensity } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 
@@ -25,7 +24,7 @@ function host(self: object) {
 }
 
 function view(self: object) {
-  return getContainingView(self) as RegionHost
+  return containingHost(self)
 }
 
 /**

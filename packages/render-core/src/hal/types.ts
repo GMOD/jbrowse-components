@@ -64,6 +64,14 @@ export interface ShaderBinding {
   name: string
 }
 
+/**
+ * What a pass's texture is filled from: RGBA bytes, or a canvas whose pixels
+ * are copied on the GPU — the circular view's ring samples a linear display's
+ * finished strip that way. A canvas source lands premultiplied, so a shader
+ * reading one returns its sample under `//! blend: premultiplied`.
+ */
+export type TextureSource = Uint8Array | HTMLCanvasElement | OffscreenCanvas
+
 export interface TextureBinding {
   // WebGPU binding index for the texture view (e.g. 2)
   textureBinding: number
@@ -148,7 +156,7 @@ export interface GpuHal {
 
   uploadTexture(
     passId: string,
-    data: Uint8Array,
+    data: TextureSource,
     width: number,
     height: number,
   ): void

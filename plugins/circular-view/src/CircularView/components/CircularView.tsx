@@ -9,6 +9,8 @@ import {
 } from '@jbrowse/core/util/wheelZoom'
 import { observer } from 'mobx-react'
 
+import { RingCanvases, RingStrips } from '../../rings/RingLayer.tsx'
+import { RingPointer } from '../../rings/ringPointer.ts'
 import Controls from './Controls.tsx'
 import { Rulers } from './Ruler.tsx'
 
@@ -91,7 +93,7 @@ const Slices = observer(function Slices({
       <Rulers model={model} />
       {model.tracks.map(track => {
         const display = track.displays[0]
-        return (
+        return model.ringHost.ringDisplays.includes(display) ? null : (
           <display.RenderingComponent
             key={display.id}
             display={display}
@@ -165,6 +167,13 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
   // a wheel gesture has no up event to end it, so it ends by going quiet — the
   // same window `wheelZoom` treats a view as actively zooming for
   const [isWheeling, setIsWheeling] = useState(false)
+  // a pointer over a ring goes to that ring display's own chrome
+  const ringPointerRef = useRef<RingPointer | undefined>(undefined)
+  const ringPointer = (ringPointerRef.current ??= new RingPointer(
+    model.ringHost,
+  ))
+  // whether the press that is ending became a rotation, which is not a click
+  const draggedRef = useRef(false)
 
   // Non-passive wheel listener so we can call preventDefault(). The handler only
   // accumulates: one model write per animation frame, not per event. A trackpad
@@ -249,13 +258,24 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
     if (event.button !== 0) {
       return
     }
+    draggedRef.current = false
     pressRef.current = { x: event.clientX, y: event.clientY }
     lastAngleRef.current = angleFromCenter(event.clientX, event.clientY)
+  }
+
+  const routeRingPointer = (
+    event: React.MouseEvent<SVGSVGElement>,
+    type: 'mousemove' | 'click',
+  ) => {
+    const rect = containerRef.current!.getBoundingClientRect()
+    const [dx, dy] = offsetFromCenter(model, rect, event)
+    ringPointer.move(event.clientX, event.clientY, dx, dy, rect, type)
   }
 
   const handlePointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
     const press = pressRef.current
     if (!press) {
+      routeRingPointer(event, 'mousemove')
       return
     }
     // A press under the drag threshold never captures the pointer (see below),
@@ -281,6 +301,8 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       // the chords underneath, which carry their own onClick, would never see
       // one. A press that doesn't move never captures, and stays a click.
       event.currentTarget.setPointerCapture(event.pointerId)
+      draggedRef.current = true
+      ringPointer.leave()
       setIsDragging(true)
     }
     const angle = angleFromCenter(event.clientX, event.clientY)
@@ -314,6 +336,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       style={{ width, height }}
       data-testid={id}
     >
+      <RingCanvases view={model} />
       <div
         className={classes.panWrapper}
         style={{
@@ -336,12 +359,21 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
           onPointerMove={handlePointerMove}
           onPointerUp={endDrag}
           onPointerCancel={endDrag}
+          onPointerLeave={() => {
+            ringPointer.leave()
+          }}
+          onClick={event => {
+            if (!draggedRef.current) {
+              routeRingPointer(event, 'click')
+            }
+          }}
         >
           <g transform={`translate(${centerXY})`}>
             <Slices model={model} />
           </g>
         </svg>
       </div>
+      <RingStrips host={model.ringHost} />
       <Controls model={model} />
       {hideVerticalResizeHandle ? null : (
         <ResizeHandle

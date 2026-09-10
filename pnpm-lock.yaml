@@ -1092,6 +1092,9 @@ importers:
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.1
         version: 6.5.1(mobx@7.0.3)

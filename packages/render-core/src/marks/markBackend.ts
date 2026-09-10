@@ -18,7 +18,7 @@ import type {
 import type { RenderBlock } from '../renderBlock.ts'
 import type { FrameDimensions } from '../renderingBackendBase.ts'
 import type { MarkPlan } from './markPlan.ts'
-import type { Mark, StagedUniforms } from './types.ts'
+import type { Mark, MarkTexture, StagedUniforms } from './types.ts'
 
 // The passes a mark list owns a buffer for: the whole list minus those drawing
 // off another's (`bufferOf`). Uploading to a borrowed pass is silent and its
@@ -131,22 +131,27 @@ export class GpuMarkBackend<
     return this.clear ? this.clear(state) : super.clearColor(state)
   }
 
-  // The ramp each textured pass holds, by the table's identity — the mirror of
-  // the one texture the HAL keeps per pass, so an unchanged ramp costs a frame
-  // nothing and a backend rebuilt after context loss re-uploads. Per pass and
-  // per backend, never per region.
-  private boundRamps = new Map<string, Uint8Array>()
+  // The texture each textured pass holds, by identity — the mirror of the one
+  // texture the HAL keeps per pass, so an unchanged ramp or strip costs a
+  // frame nothing and a backend rebuilt after context loss re-uploads. Per
+  // pass and per backend, never per region.
+  private boundTextures = new Map<string, MarkTexture>()
 
-  private bindRamp(
+  private bindTexture(
     mark: Mark<TRegion, TState>,
     region: TRegion,
     state: TState,
   ) {
     if (mark.pass.textures) {
-      const ramp = mark.texture?.(state, region) ?? INERT_RAMP
-      if (ramp !== this.boundRamps.get(mark.pass.id)) {
-        uploadColorRampLut(this.hal, ramp, [mark.pass.id])
-        this.boundRamps.set(mark.pass.id, ramp)
+      const texture = mark.texture?.(state, region) ?? INERT_RAMP
+      if (texture !== this.boundTextures.get(mark.pass.id)) {
+        if (texture instanceof Uint8Array) {
+          uploadColorRampLut(this.hal, texture, [mark.pass.id])
+        } else {
+          const { image, width, height } = texture
+          this.hal.uploadTexture(mark.pass.id, image, width, height)
+        }
+        this.boundTextures.set(mark.pass.id, texture)
       }
     }
   }
@@ -158,7 +163,7 @@ export class GpuMarkBackend<
     state: TState,
   ) {
     for (const mark of this.marks) {
-      this.bindRamp(mark, region, state)
+      this.bindTexture(mark, region, state)
     }
     drawMarks(
       this.hal,

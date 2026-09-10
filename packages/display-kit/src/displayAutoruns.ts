@@ -1,7 +1,8 @@
 import { leadingEdgeAutorun } from '@jbrowse/core/util/leadingEdgeAutorun'
-import { getContainingView } from '@jbrowse/core/util/mstUtils'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
+
+import { containingHost } from './foundationView.ts'
 
 import type { RegionHost } from './regionHost.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -45,7 +46,7 @@ export function autorunOnReadyView(
     if (!isAlive(self)) {
       return false
     }
-    const view = getContainingView(self) as RegionHost
+    const view = containingHost(self)
     return view.initialized ? fn(view) : false
   }
   if (delay === undefined) {

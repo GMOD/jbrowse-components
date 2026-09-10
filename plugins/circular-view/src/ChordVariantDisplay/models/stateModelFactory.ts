@@ -182,7 +182,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        * #getter
        */
       get radiusPx() {
-        return this.view.radiusPx
+        return this.view.chordRadiusPx
       },
 
       /**

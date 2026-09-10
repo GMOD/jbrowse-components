@@ -1,10 +1,11 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { largestRegionBytes } from '@jbrowse/core/rpc/byteBudget'
-import { getContainingTrack, getContainingView } from '@jbrowse/core/util'
+import { getContainingTrack } from '@jbrowse/core/util'
 import { adapterConfigKey } from '@jbrowse/core/util/adapterConfigKey'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { autorunOnReadyView } from './displayAutoruns.ts'
+import { containingHost } from './foundationView.ts'
 import {
   AUTO_FORCE_LOAD_BP,
   evaluateRegionTooLarge,
@@ -12,7 +13,6 @@ import {
   resolveByteLimit,
 } from './regionTooLargeUtils.ts'
 
-import type { RegionHost } from './regionHost.ts'
 import type { RegionTooLargeConfigModel } from './regionTooLargeConfigSchemaFields.ts'
 import type {
   ByteEstimate,
@@ -170,7 +170,7 @@ export default function RegionTooLargeMixin() {
        * move; the rule is one rule rather than one per axis.
        */
       get gateViewport(): GateViewport | undefined {
-        const view = getContainingView(self) as RegionHost
+        const view = containingHost(self)
         if (!view.initialized) {
           return undefined
         }

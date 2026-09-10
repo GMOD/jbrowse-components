@@ -2,7 +2,12 @@ import { getDpr } from '../canvas2dUtils.ts'
 import { GpuHalBase } from './gpuHalBase.ts'
 import { assertUniquePassIds } from './passIds.ts'
 
-import type { GpuHal, PipelineDescriptor, TextureBinding } from './types.ts'
+import type {
+  GpuHal,
+  PipelineDescriptor,
+  TextureBinding,
+  TextureSource,
+} from './types.ts'
 
 export interface MockCall {
   method: string
@@ -133,17 +138,24 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
   // Copied for the same reason `createBuffer` copies, and kept for the same
   // reason the real HALs keep their texture: a test asserting which LUT a pass
   // samples needs the bytes, not the byteLength the call log records.
-  private textures = new Map<string, Uint8Array>()
+  private textures = new Map<string, TextureSource>()
 
   protected createTexture(
     passId: string,
     _binding: TextureBinding,
-    data: Uint8Array,
+    data: TextureSource,
     width: number,
     height: number,
   ) {
-    this.textures.set(passId, data.slice())
-    this.record('uploadTexture', passId, data.byteLength, width, height)
+    const bytes = data instanceof Uint8Array
+    this.textures.set(passId, bytes ? data.slice() : data)
+    this.record(
+      'uploadTexture',
+      passId,
+      bytes ? data.byteLength : 'canvas',
+      width,
+      height,
+    )
   }
 
   protected releaseResources() {

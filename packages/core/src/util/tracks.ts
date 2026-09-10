@@ -895,11 +895,18 @@ export function pickDisplayForView({
   requestedType,
   trackDisplayTypes,
   viewDisplayTypes,
+  preferredDisplayTypes = new Set<string>(),
 }: {
   declaredDisplays: DisplayConfSnapshot[]
   requestedType: string | undefined
   trackDisplayTypes: string[]
   viewDisplayTypes: string[]
+  /**
+   * The display types the view registered as its own, ahead of those it
+   * inherits through `extendedName`: a variant track on the circular view
+   * draws its chords, not the linear display the view also accepts as a ring.
+   */
+  preferredDisplayTypes?: Set<string>
 }) {
   const supported = new Set(viewDisplayTypes)
   // A requested type is CHECKED, not taken on faith. It used to pass straight
@@ -921,8 +928,11 @@ export function pickDisplayForView({
         }
       : undefined
   }
+  const declared = declaredDisplays.filter(d => supported.has(d.type))
   const type =
-    declaredDisplays.find(d => supported.has(d.type))?.type ??
+    declared.find(d => preferredDisplayTypes.has(d.type))?.type ??
+    declared[0]?.type ??
+    trackDisplayTypes.find(name => preferredDisplayTypes.has(name)) ??
     trackDisplayTypes.find(name => supported.has(name))
   return type === undefined
     ? undefined
@@ -1040,6 +1050,11 @@ function resolveTrackDisplayChoice(
     requestedType,
     trackDisplayTypes,
     viewDisplayTypes,
+    preferredDisplayTypes: new Set(
+      viewType.displayTypes
+        .filter(d => d.viewType === view.type)
+        .map(d => d.name),
+    ),
   })
 
   if (!picked) {

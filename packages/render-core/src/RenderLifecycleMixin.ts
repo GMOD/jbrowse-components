@@ -77,6 +77,7 @@ export function RenderLifecycleMixin() {
     .model('RenderLifecycle', {})
     .volatile<{
       canvasDrawn: boolean
+      paintCount: number
       currentRenderingBackend: unknown
       renderTick: number
       autorunsInstalled: boolean
@@ -87,6 +88,13 @@ export function RenderLifecycleMixin() {
        * flips true on first paint; read by test selectors to detect render
        */
       canvasDrawn: false,
+      /**
+       * #volatile
+       * bumped after every frame the backend painted, so a consumer that
+       * reads this display's canvas — the circular view's ring, which copies
+       * the strip into a texture — knows when the pixels moved
+       */
+      paintCount: 0,
       /**
        * #volatile
        * current backend reference, updated on context-loss recovery.
@@ -235,6 +243,7 @@ export function RenderLifecycleMixin() {
        * #action
        */
       markCanvasDrawn() {
+        self.paintCount += 1
         if (!self.canvasDrawn) {
           self.canvasDrawn = true
         }
