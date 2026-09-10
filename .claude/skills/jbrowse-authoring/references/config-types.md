@@ -20,7 +20,7 @@ inference.
   displays: LinearBasicDisplay, LinearMultiRowFeatureDisplay, LinearArcDisplay,
   LinearManhattanDisplay, LinearMarkDisplay
 - [AlignmentsTrack](https://jbrowse.org/jb2/docs/config/alignmentstrack.md) —
-  displays: LinearAlignmentsDisplay
+  displays: LinearAlignmentsDisplay, LinearMarkDisplay
 - [SyntenyTrack](https://jbrowse.org/jb2/docs/config/syntenytrack.md) —
   displays: DotplotDisplay, LinearSyntenyDisplay, LGVSyntenyDisplay,
   MultiWaySyntenyDisplay
@@ -29,7 +29,7 @@ inference.
 - [VariantTrack](https://jbrowse.org/jb2/docs/config/varianttrack.md) —
   displays: ChordVariantDisplay, LinearVariantDisplay,
   LinearMultiSampleVariantDisplay, LinearMultiSampleVariantMatrixDisplay,
-  LinearPairedArcDisplay
+  LinearPairedArcDisplay, LinearMarkDisplay
 - [LDTrack](https://jbrowse.org/jb2/docs/config/ldtrack.md) — displays:
   LDTrackDisplay
 - [QuantitativeTrack](https://jbrowse.org/jb2/docs/config/quantitativetrack.md)

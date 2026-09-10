@@ -39,6 +39,7 @@ used to load STAR-Fusion `star-fusion.fusion_predictions.tsv` output
 
 - **Track:** [VariantTrack](../varianttrack)
 - **Display:** [ChordVariantDisplay](../chordvariantdisplay)
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 - **Display:** [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
 - **Display:** [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
 - **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay)

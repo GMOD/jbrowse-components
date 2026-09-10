@@ -446,6 +446,27 @@ const transformStepSchema = ConfigurationSchema(
   { preProcessSnapshot: liftAs },
 )
 
+// The chrome places one second axis, on the right, so a display declaring
+// two of them has no reading. Refused where the config is read rather than
+// where it is drawn, so the message names the marks.
+function checkOneIndependentAxis(snap: Record<string, unknown>) {
+  const { marks } = snap
+  if (!Array.isArray(marks)) {
+    return snap
+  }
+  const asked = marks.flatMap((mark, i) => {
+    const y = (mark as { encoding?: { y?: unknown } }).encoding?.y
+    const resolve = (y as { resolve?: string } | undefined)?.resolve
+    return typeof y === 'object' && resolve === 'independent' ? [i] : []
+  })
+  if (asked.length > 1) {
+    throw new Error(
+      `LinearMarkDisplay: one mark at most may declare encoding.y.resolve "independent", and marks ${asked.join(', ')} all do — the second axis has one place to go`,
+    )
+  }
+  return snap
+}
+
 const markSchema = ConfigurationSchema('Mark', {
   /**
    * #slot marks.shape
@@ -539,27 +560,6 @@ const markSchema = ConfigurationSchema('Mark', {
  * }
  * ```
  */
-// The chrome places one second axis, on the right, so a display declaring
-// two of them has no reading. Refused where the config is read rather than
-// where it is drawn, so the message names the marks.
-function checkOneIndependentAxis(snap: Record<string, unknown>) {
-  const { marks } = snap
-  if (!Array.isArray(marks)) {
-    return snap
-  }
-  const asked = marks.flatMap((mark, i) => {
-    const y = (mark as { encoding?: { y?: unknown } }).encoding?.y
-    const resolve = (y as { resolve?: string } | undefined)?.resolve
-    return typeof y === 'object' && resolve === 'independent' ? [i] : []
-  })
-  if (asked.length > 1) {
-    throw new Error(
-      `LinearMarkDisplay: one mark at most may declare encoding.y.resolve "independent", and marks ${asked.join(', ')} all do — the second axis has one place to go`,
-    )
-  }
-  return snap
-}
-
 export function configSchemaFactory() {
   return ConfigurationSchema(
     'LinearMarkDisplay',

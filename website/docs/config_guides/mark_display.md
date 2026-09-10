@@ -1,17 +1,19 @@
 ---
 title: Mark display
 description:
-  Drawing bars, points and spans from the fields of any feature track with
-  LinearMarkDisplay, whose picture is an encoding declared in config
+  Drawing bars, points and spans from the fields of a feature, alignments or
+  variant track with LinearMarkDisplay, whose picture is an encoding declared in
+  config
 guide_category: Track types
 ---
 
-**TL;DR:** `LinearMarkDisplay` goes on a `FeatureTrack` and draws whatever its
-`marks` list declares — a `bar`, `point` or `span` per entry, each with an
-`encoding` naming which feature fields feed it, a `transform` list that can bin,
-count or measure coverage before it, and a zoom range it draws in. A BED score
-column becomes a bar chart with one display entry and no code, and the same
-file's density at wide zoom is a second entry.
+**TL;DR:** `LinearMarkDisplay` goes on a `FeatureTrack`, an `AlignmentsTrack` or
+a `VariantTrack` and draws whatever its `marks` list declares — a `bar`, `point`
+or `span` per entry, each with an `encoding` naming which feature fields feed
+it, a `transform` list that can bin, count, stack or measure coverage before it,
+and a zoom range it draws in. A BED score column becomes a bar chart with one
+display entry and no code, the same file's density at wide zoom is a second
+entry, and a `stack` over a BAM is a pileup.
 
 ## When to reach for it
 
@@ -22,6 +24,14 @@ per feature — a BED with a real score column, a segment file with a log ratio
 per interval, a peak file with a signal and a q-value — and those are what this
 display plots: the value on a y-axis, the interval on x, and a second field as
 colour.
+
+It attaches to an `AlignmentsTrack` and a `VariantTrack` for the same reason —
+every adapter behind those serves features with fields. What differs is which
+fields answer: a read's `score` is its MAPQ and `name` its QNAME, and a
+variant's quality is `QUAL` rather than `score`. The format-typed displays those
+tracks open with know things this one does not — a read's mismatches, a
+callset's genotypes — so reach for the mark display where the question is a
+field, not where it is the format.
 
 ## A worked example
 
@@ -99,9 +109,37 @@ ticks, its cross-hatches and the bars themselves all read this one declaration,
 and so does the track menu: "Set min/max" writes back into it, so what the user
 pins and what the config author wrote are the same slot.
 
-Marks share one y-axis, so the first mark that names a `y` field is the one
-whose scale the display uses. With a multiscale pair (below) that is the mark
-drawing at the current zoom.
+Marks share one y-axis by default, so the first mark that names a `y` field is
+the one whose scale the display uses. With a multiscale pair (below) that is the
+mark drawing at the current zoom.
+
+## Two axes
+
+A coverage run in the hundreds and a per-read mapping quality in the tens cannot
+be read off one axis. `resolve` on a mark's `y` says which axis it reads:
+
+```json
+"marks": [
+  { "shape": "bar", "encoding": { "y": "score" } },
+  {
+    "shape": "bar",
+    "transform": [{ "type": "coverage" }],
+    "encoding": {
+      "y": { "field": "coverage", "resolve": "independent" },
+      "color": "blue"
+    }
+  }
+]
+```
+
+`independent` folds that mark's domain from its own layers, keeps its own
+`scale` and `domain`, and puts its axis on the right of the plot — on screen and
+in an SVG export alike. Both axes then carry the field they measure as a
+caption, so the reader can tell them apart. `shared` is the default and is every
+other mark.
+
+One mark per display may ask for it: the chrome has one place to put a second
+axis, and a config declaring two is refused when it is read.
 
 ## Colour scales
 
@@ -185,14 +223,15 @@ band its field names.
 A mark's `transform` is a list of steps over the region's features, run in the
 worker before the encoding, in order, each reading what the last answered:
 
-| Step        | What it does                                                                                                                                                |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `filter`    | keeps the features a jexl `expr` admits                                                                                                                     |
-| `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                            |
-| `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges over `start` and `end`                                      |
-| `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field |
-| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                            |
-| `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`), each reading its parent for what it lacks, with its index in `as`           |
+| Step        | What it does                                                                                                                                                                                                                   |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `filter`    | keeps the features a jexl `expr` admits                                                                                                                                                                                        |
+| `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                                                                                               |
+| `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges over `start` and `end`                                                                                                         |
+| `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field                                                                    |
+| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                                                                                               |
+| `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`), each reading its parent for what it lacks, with its index in `as`                                                                              |
+| `stack`     | writes each feature's row in a greedy first-fit packing into `as` (`row`), reading the interval `fields` (`start`, `end`) and keeping `padding` bp between two features on one row; `groupby` packs each group on its own rows |
 
 A `bin` followed by an `aggregate` grouped by `start` and `end` is a density:
 one bar per bin, its height the count of features whose start fell in it.
@@ -224,6 +263,26 @@ file with no summary track beside it:
   "encoding": { "y": "coverage" }
 }
 ```
+
+`stack` is the layout a pileup is, said as a step. It writes the lowest row on
+which each feature overlaps nothing already there, and a `span` reading that row
+draws the packing:
+
+```json
+{
+  "shape": "span",
+  "transform": [{ "type": "stack", "padding": 10 }],
+  "encoding": {
+    "row": "row",
+    "color": { "field": "strand", "scale": "categorical" }
+  }
+}
+```
+
+Over an `AlignmentsTrack` that is a declared pileup, coloured by any field a
+read answers; `groupby: ["sampleName"]` packs each group on rows of its own. The
+plot divides into as many bands as the highest row needs, so the track grows
+with the depth on screen.
 
 The display's `jexlFilters` run before every mark's own steps.
 

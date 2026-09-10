@@ -59,6 +59,7 @@ and custom feature details in `LinearVariantDisplay`
 ## Related links
 
 - **Display:** [ChordVariantDisplay](../chordvariantdisplay) ([state model](../../models/chordvariantdisplay))
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay) ([state model](../../models/linearmarkdisplay))
 - **Display:** [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay) ([state model](../../models/linearmultisamplevariantdisplay))
 - **Display:** [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay) ([state model](../../models/linearmultisamplevariantmatrixdisplay))
 - **Display:** [LinearPairedArcDisplay](../linearpairedarcdisplay) ([state model](../../models/linearpairedarcdisplay))

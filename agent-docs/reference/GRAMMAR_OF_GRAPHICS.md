@@ -10,11 +10,13 @@ kind: spec
 layer, coordinates — and as of 2026-09-10 the tree has a declared answer at
 six of the seven stages, with guides derived from declared scales on both
 surfaces and parity between backends pinned by tests. Every channel now
-declares its scale on itself and the display resolves it; the seams left are
-that two channel vocabularies remain, that the config rung covers one class of
-track, and that a scale is still resolved over the loaded regions rather than
-the dataset. The gaps are scale resolution across layers, conditional encoding, the channels a runtime
-shader generator would give, and a bin whose width follows the zoom. The
+declares its scale on itself and the display resolves it, y resolves shared or
+independent across layers, and layout is a transform step; the seams left are
+that two channel vocabularies remain, that the config rung reaches three track
+types and not the formats' own meanings, and that a scale is still resolved
+over the loaded regions rather than the dataset. The gaps are scale resolution
+across layers for colour, conditional encoding, the channels a runtime shader
+generator would give, and a bin whose width follows the zoom. The
 positions behind each are in
 [ADR-095](../architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md)
 §"The grammar position", [ADR-106](../architecture-decision-records/adr-106-a-display-declares-its-marks.md),
@@ -24,7 +26,8 @@ positions behind each are in
 [ADR-110](../architecture-decision-records/adr-110-a-display-declares-what-is-highlighted.md),
 [ADR-112](../architecture-decision-records/adr-112-a-layer-owns-its-transform-and-its-zoom-range.md),
 [ADR-113](../architecture-decision-records/adr-113-one-scale-rule-in-one-place.md)
-and [ADR-114](../architecture-decision-records/adr-114-canvas-keeps-its-hand-written-packer.md);
+[ADR-114](../architecture-decision-records/adr-114-canvas-keeps-its-hand-written-packer.md)
+and [ADR-115](../architecture-decision-records/adr-115-one-mark-may-read-its-own-axis.md);
 this file is the map across them.
 
 ![The grammar's seven stages, and where the tree answers each](diagrams/grammar-pipeline.svg)
@@ -34,11 +37,11 @@ this file is the map across them.
 | Stage | What the grammar means | Where the tree answers | How far |
 | --- | --- | --- | --- |
 | data | rows in memory | a feature adapter's `getFeaturesArray`, any format | whole; the adapter is the format's, and the grammar has no lazy source of its own |
-| transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage` — run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreEncodeFeatures` request and then each layer's own; `filters: jexl[]` as sugar for leading filters | whole for a fixed bin width; window and sample are absent, and `flatten` reaches the wire but not yet the `marks` config enum |
+| transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `stack` — run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreEncodeFeatures` request and then each layer's own; `filters: jexl[]` as sugar for leading filters | whole for a fixed bin width, layout included — `stack` is the pileup packing as a step; `window` and `sample` are absent |
 | scale | domain → range, separate from the encoding | every channel on the encoding — `{ field, scale, domain, palette \| range \| ramp }` for colour and glyph, `{ field, scale, domain }` for y — read by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`) and resolved either in the worker (categorical) or on the main thread against a domain uniform (y, and a quantitative ramp), with `ScoreScaleMixin` resolving the declaration rather than owning it | whole, declared in one place |
 | mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`) | whole, for the shapes the library has |
 | guide | axis and legend derived from a scale; a highlight derived from a selection | `colorScales` → legend (`packages/display-kit/src/legendHost.ts`), `valueScale` → axis, hatches and rules (`packages/display-kit/src/axisHost.ts`), `hoverInk` / `selectionInk` → the highlight (`packages/display-kit/src/highlightHost.ts`), each instance's box read off its shape's `ink`; `DisplayChrome` places all three and `renderDisplaySvg` the first two | whole, for the displays that declare |
-| layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; every mark shares one y domain (`plugins/marks/src/LinearMarkDisplay/markList.ts`); a mark's `minBpPerPx`/`maxBpPerPx` is the zoom range it draws in, and the shared domain, legend and row count fold only the marks drawing | shared scale; semantic zoom per layer |
+| layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; marks share one y domain unless one declares `encoding.y.resolve: 'independent'`, which folds its own domain and takes a second axis on the right (`markValueScale`, `plugins/marks/src/LinearMarkDisplay/markList.ts`); a mark's `minBpPerPx`/`maxBpPerPx` is the zoom range it draws in, and the shared domain, legend and row count fold only the marks drawing | y resolves shared or independent; colour does not; semantic zoom per layer |
 | coordinates | a transform of the plane | genomic x, fixed; circular and dotplot are displays, not coordinate systems | fixed, by position |
 
 The encoding — field to channel, evaluated once — is the grammar's central
@@ -97,10 +100,15 @@ The seams, named honestly:
   lens change per display, still open. The alignments pileup
   (`plugins/alignments/src/features/pileupShape.ts`) is on the mark list but
   keeps its rule codes as data, for a measured reason.
-- **The config rung covers one class.** A `marks` entry draws a bar, point or
-  span over any feature adapter, which is the quantitative class ADR-107
-  reopened. Alignments, variants, genes and synteny stay format-typed
-  displays a reader cannot re-encode. That is a position
+- **The config rung covers one class, less the two it reaches now.** A `marks`
+  entry draws a bar, point or span over any feature adapter, which is the
+  quantitative class ADR-107 reopened, and the display attaches to
+  `AlignmentsTrack` and `VariantTrack` beside `FeatureTrack`, so a declared
+  pileup over a BAM and a stacked strip over a VCF are config
+  ([ADR-115](../architecture-decision-records/adr-115-one-mark-may-read-its-own-axis.md)).
+  What those tracks' own displays hold that this one cannot say is still the
+  gap: a read's mismatches, a callset's genotypes, a gene's isoform tiering,
+  synteny's two coordinate systems. That is a position
   ([SESSION_SPEC_FORMAT.md](SESSION_SPEC_FORMAT.md) §"The assessment": what
   those displays hold is layout, tiering and fetch shape, not channels), and
   it is still the widest gap between what the tree calls a grammar and what
@@ -136,10 +144,14 @@ The seams, named honestly:
   banner, and the density tier's sidecar (ADR-102) is the summary, on the
   displays that compose it. `window` and `sample` are absent, and wiggle's
   binning is the adapter's and stays so.
-- **No scale resolution across layers.** Every mark on a display shares one
-  y. `resolve: { y: 'independent' }` with a second axis is absent, and so is
-  faceting beyond stacking on `row`. Declined on review until a figure needs
-  two axes.
+- **Scale resolution across layers is y's alone.** `encoding.y.resolve:
+  'independent'` gives one mark its own domain and a second axis on the right,
+  on screen and in the export
+  ([ADR-115](../architecture-decision-records/adr-115-one-mark-may-read-its-own-axis.md));
+  colour has no equivalent, so two marks with two ramps still union nothing
+  and each key is its own. A second independent mark is refused, the chrome
+  having one place to put the axis, and faceting beyond stacking on `row` is
+  still absent.
 - **No conditional encoding.** Hover and selection are a guide over the
   painting, not a `condition` on a channel: a display names the lit
   instances and the chrome boxes their ink

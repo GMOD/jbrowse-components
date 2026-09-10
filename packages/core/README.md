@@ -823,6 +823,17 @@ carries its own draw rect beside the stack.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
 
+### StackStep
+
+Assign every feature the lowest row on which it overlaps nothing already there —
+greedy first fit in start order, the packing a pileup is — and write it to the
+field `as` (`row`). `fields` names the interval read (`start`, `end`); `padding`
+is bp of clearance kept between two features sharing a row; `groupby` packs each
+distinct value set on its own rows, each numbered from 0. The answer is the
+input in start order, so a `span` encoding `row` stacks it.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
 ### stopsFromRampLut
 
 `n` evenly spaced legend stops read straight out of a buildColorRampLut byte
@@ -854,6 +865,12 @@ on a linear scale over the loaded regions' extremes, or the same field with the
 scale spelled out — `log` to read the domain logarithmically, `domain` to pin
 `[min, max]` instead of autoscaling. The declaration is the one owner: the
 display's axis, its ticks and the shader's placement are all resolved from it.
+
+`resolve` is which axis the mark reads. `shared` — the default — folds it into
+the display's one y domain with every other mark. `independent` gives it a
+domain folded from its layers alone and a second axis on the right, so a
+coverage run and the raw features can share a plot; one mark per display may ask
+for it.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 

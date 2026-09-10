@@ -47,6 +47,7 @@ what per-base mismatches are computed against for records with no MD tag.
 
 - **Track:** [AlignmentsTrack](../alignmentstrack)
 - **Display:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 
 ## Config slots
 

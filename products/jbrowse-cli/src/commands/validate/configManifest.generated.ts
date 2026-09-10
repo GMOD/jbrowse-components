@@ -1851,7 +1851,8 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "displayTypes": [
-        "LinearAlignmentsDisplay"
+        "LinearAlignmentsDisplay",
+        "LinearMarkDisplay"
       ]
     },
     "SyntenyTrack": {
@@ -2114,7 +2115,8 @@ export const configManifest: ConfigManifest = {
         "LinearVariantDisplay",
         "LinearMultiSampleVariantDisplay",
         "LinearMultiSampleVariantMatrixDisplay",
-        "LinearPairedArcDisplay"
+        "LinearPairedArcDisplay",
+        "LinearMarkDisplay"
       ]
     },
     "LDTrack": {
@@ -5177,6 +5179,10 @@ export const configManifest: ConfigManifest = {
                     {
                       "name": "domain",
                       "type": "(JexlString | string[])"
+                    },
+                    {
+                      "name": "resolve",
+                      "type": "(JexlString | MarkValueResolve)"
                     }
                   ]
                 },
@@ -5265,6 +5271,14 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "as",
                   "type": "(JexlString | string[])"
+                },
+                {
+                  "name": "fields",
+                  "type": "(JexlString | string[])"
+                },
+                {
+                  "name": "padding",
+                  "type": "(JexlString | number)"
                 },
                 {
                   "name": "groupby",

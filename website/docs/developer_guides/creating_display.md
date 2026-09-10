@@ -27,6 +27,7 @@ past `LinearGenomeView`:
 | Track type | Display type | Renders in |
 | --- | --- | --- |
 | [](/docs/config/alignmentstrack) | [](/docs/config/linearalignmentsdisplay) | LinearGenomeView |
+|  | [](/docs/config/linearmarkdisplay) | LinearGenomeView |
 | [](/docs/config/featuretrack) | [](/docs/config/lineararcdisplay) | LinearGenomeView |
 |  | [](/docs/config/linearbasicdisplay) | LinearGenomeView |
 |  | [](/docs/config/linearmanhattandisplay) | LinearGenomeView |
@@ -47,6 +48,7 @@ past `LinearGenomeView`:
 |  | [](/docs/config/linearsyntenydisplay) | LinearSyntenyView |
 |  | [](/docs/config/multiwaysyntenydisplay) | LinearGenomeView |
 | [](/docs/config/varianttrack) | [](/docs/config/chordvariantdisplay) | CircularView |
+|  | [](/docs/config/linearmarkdisplay) | LinearGenomeView |
 |  | [](/docs/config/linearmultisamplevariantdisplay) | LinearGenomeView |
 |  | [](/docs/config/linearmultisamplevariantmatrixdisplay) | LinearGenomeView |
 |  | [](/docs/config/linearpairedarcdisplay) | LinearGenomeView |

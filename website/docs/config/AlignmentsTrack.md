@@ -60,6 +60,7 @@ has very little config; most config and state logic is on the display
 ## Related links
 
 - **Display:** [LinearAlignmentsDisplay](../linearalignmentsdisplay) ([state model](../../models/linearalignmentsdisplay))
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay) ([state model](../../models/linearmarkdisplay))
 - **Adapter:** [BamAdapter](../bamadapter)
 - **Adapter:** [CramAdapter](../cramadapter)
 - **Adapter:** [HtsgetBamAdapter](../htsgetbamadapter)

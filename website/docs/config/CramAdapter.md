@@ -47,6 +47,7 @@ mismatched one isn't rejected, it just decodes into mismatches.
 
 - **Track:** [AlignmentsTrack](../alignmentstrack)
 - **Display:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 
 ## Config slots
 

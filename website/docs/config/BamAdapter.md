@@ -46,6 +46,7 @@ automatically supplies it from the enclosing assembly's sequence track.
 
 - **Track:** [AlignmentsTrack](../alignmentstrack)
 - **Display:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 
 ## Config slots
 

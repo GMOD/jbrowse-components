@@ -30,6 +30,7 @@ Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam libra
 
 - **Track:** [AlignmentsTrack](../alignmentstrack)
 - **Display:** [LinearAlignmentsDisplay](../linearalignmentsdisplay)
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 
 ## Config slots
 
