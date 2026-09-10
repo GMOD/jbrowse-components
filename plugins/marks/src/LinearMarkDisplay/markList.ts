@@ -84,6 +84,16 @@ export interface MarkRenderState extends MarkFrame {
   /** How the shared y domain is read, off the declared value scale. */
   scaleTypeY: MarkValueScaleType
   /**
+   * The one mark reading its own y, where a mark declared
+   * `resolve: 'independent'`: its domain is folded from its layers alone and
+   * the chrome draws it as the right-hand axis.
+   */
+  independentY?: {
+    markIndex: number
+    domain: [number, number]
+    scaleType: MarkValueScaleType
+  }
+  /**
    * Mark `i`'s quantitative colour scale, or undefined where its colour is
    * not a ramp: the domain unioned over the loaded regions and the LUT the
    * pass binds, so a pan that widens it writes one uniform and no bytes.
@@ -110,6 +120,19 @@ export interface MarkEntry {
   maxBpPerPx: number
 }
 
+/**
+ * The y scale mark `i` places its value through: the display's shared one,
+ * or its own where it declared an independent axis. Every reader of a
+ * mark's domain — the shapes' uniforms and the hit test's value window —
+ * goes through this, so the two cannot disagree.
+ */
+export function markValueScale(state: MarkRenderState, i: number) {
+  const { independentY } = state
+  return independentY?.markIndex === i
+    ? { domain: independentY.domain, scaleType: independentY.scaleType }
+    : { domain: state.domainY, scaleType: state.scaleTypeY }
+}
+
 export function markDrawsAt(
   { minBpPerPx, maxBpPerPx }: MarkEntry,
   bpPerPx: number,
@@ -127,9 +150,9 @@ function withPassId<C, P>(shape: MarkShape<C, P>, id: string): MarkShape<C, P> {
 }
 
 /**
- * The mark list a `marks` config declares: mark `i` reads `layers[i]`, every
- * shape places its value through the one `domainY`, and a mark outside its
- * zoom range is off — for the draw, the hover and the highlight alike.
+ * The mark list a `marks` config declares: mark `i` reads `layers[i]`, places
+ * its value through the scale `markValueScale` hands it, and is off outside
+ * its zoom range — for the draw, the hover and the highlight alike.
  */
 export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
   return entries.map((entry, i) => {
@@ -143,8 +166,7 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
           channels: (d: MarkRegionData) =>
             withLanes(d.layers[i], SHAPE_VALUE_LANES.bar),
           params: (s: MarkRenderState) => ({
-            domain: s.domainY,
-            scaleType: s.scaleTypeY,
+            ...markValueScale(s, i),
             ramp: s.colorRamps[i],
             origin: s.origin,
             minWidthPx: s.minWidthPx,
@@ -159,8 +181,7 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
           channels: (d: MarkRegionData) =>
             withLanes(d.layers[i], SHAPE_VALUE_LANES.point),
           params: (s: MarkRenderState) => ({
-            domain: s.domainY,
-            scaleType: s.scaleTypeY,
+            ...markValueScale(s, i),
             ramp: s.colorRamps[i],
             diameterPx: s.pointDiameterPx,
           }),

@@ -65,6 +65,12 @@ export type ColorEncoding =
  * `domain` to pin `[min, max]` instead of autoscaling. The declaration is the
  * one owner: the display's axis, its ticks and the shader's placement are all
  * resolved from it.
+ *
+ * `resolve` is which axis the mark reads. `shared` — the default — folds it
+ * into the display's one y domain with every other mark. `independent` gives
+ * it a domain folded from its layers alone and a second axis on the right, so
+ * a coverage run and the raw features can share a plot; one mark per display
+ * may ask for it.
  */
 export type ValueEncoding =
   | FieldRef
@@ -72,6 +78,7 @@ export type ValueEncoding =
       field: FieldRef
       scale?: 'linear' | 'log'
       domain?: [number, number]
+      resolve?: 'shared' | 'independent'
     }
 
 export type GlyphName = 'disc' | 'triangle' | 'diamond'

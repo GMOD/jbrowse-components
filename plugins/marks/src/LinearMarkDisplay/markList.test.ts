@@ -188,6 +188,47 @@ test('a bar mark writes the origin and the domain into its uniforms', () => {
   expect(u[barShader.UNIFORM_OFFSET_F32.domainMax]).toBe(10)
 })
 
+test('an independent mark places its value through its own domain, and only it does', () => {
+  const marks = buildMarkList(entries('bar', 'point'))
+  const independent = {
+    ...state,
+    independentY: {
+      markIndex: 1,
+      domain: [0, 100] as [number, number],
+      scaleType: 'linear' as const,
+    },
+  }
+  const data: MarkRegionData = {
+    layers: [layer([500], [5], [RED]), layer([800], [80], [BLUE])],
+  }
+  const clip = clipBlock(block, state.canvasWidth, state.canvasHeight, {
+    x: 1,
+    y: 1,
+  })!
+  const domainMaxOf = (i: number, offset: number) => {
+    const hal = new MockHal([marks[i]!.pass])
+    const scratch = new ArrayBuffer(marks[i]!.pass.uniformByteSize)
+    marks[i]!.drawRegion(hal, scratch, block, clip, data, independent, 0)
+    return hal.getLastUniformsF32()![offset]
+  }
+  expect(domainMaxOf(0, barShader.UNIFORM_OFFSET_F32.domainMax)).toBe(10)
+  expect(domainMaxOf(1, pointShader.UNIFORM_OFFSET_F32.domainMax)).toBe(100)
+
+  // 80 on [0, 100] over 400 px is y=80; on the shared [0, 10] it is off the
+  // top of the canvas, so the hit test has to read the mark's own scale.
+  const hit = findMarkHit(
+    641,
+    81,
+    [block],
+    new Map([[0, data]]),
+    marks,
+    ['bar', 'point'],
+    independent,
+    new Map([[0, 'ctgA']]),
+  )
+  expect(hit).toMatchObject({ markIndex: 1, start: 800, y: 80 })
+})
+
 test('a mark outside its zoom range neither draws nor answers a hover', () => {
   const [mark] = buildMarkList([
     { shape: 'bar', minBpPerPx: 10, maxBpPerPx: 0 },

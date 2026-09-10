@@ -285,6 +285,87 @@ test('a pinned ramp domain is every region s, whatever they hold', () => {
   expect(display.colorRamps[0]!.domain).toEqual([0, 100])
 })
 
+test('an independent mark folds its own domain and takes the right-hand axis', () => {
+  const { createDisplay } = createTestEnvironment([
+    { shape: 'bar', encoding: { y: 'score' } },
+    {
+      shape: 'point',
+      encoding: { y: { field: 'coverage', resolve: 'independent' } },
+    },
+  ])
+  const { display } = createDisplay()
+  display.setRpcData(0, result([{ y: [3, 8] }, { y: [200, 900] }]), REGION)
+  expect(display.domain).toEqual([0, 8])
+  expect(display.independentValueScale).toEqual({
+    domain: [0, 900],
+    scaleType: 'linear',
+    field: 'coverage',
+  })
+  expect(display.renderState.independentY).toEqual({
+    markIndex: 1,
+    domain: [0, 900],
+    scaleType: 'linear',
+  })
+  const [left, right] = display.valueScales
+  expect(left).toMatchObject({ domain: [0, 8], caption: 'score' })
+  expect(left!.side).toBeUndefined()
+  expect(right).toMatchObject({
+    domain: [0, 900],
+    side: 'right',
+    caption: 'coverage',
+  })
+  expect(display.axes.map(a => a.side)).toEqual([undefined, 'right'])
+})
+
+test('an independent mark keeps its own scale type and pins, and leaves the shared menu alone', () => {
+  const { createDisplay } = createTestEnvironment([
+    { shape: 'bar', encoding: { y: 'score' } },
+    {
+      shape: 'bar',
+      encoding: {
+        y: {
+          field: 'coverage',
+          scale: 'log',
+          domain: [1, 1000],
+          resolve: 'independent',
+        },
+      },
+    },
+  ])
+  const { display } = createDisplay()
+  display.setRpcData(0, result([{ y: [3, 8] }, { y: [200, 900] }]), REGION)
+  expect(display.valueMarkIndex).toBe(0)
+  expect(display.independentMarkIndex).toBe(1)
+  expect(display.scaleType).toBe('linear')
+  expect(display.independentValueScale).toMatchObject({
+    domain: [1, 1000],
+    scaleType: 'log',
+  })
+  display.setMaxScore(50)
+  expect([...display.conf.marks[0]!.encoding.y.domain]).toEqual(['', '50'])
+  expect([...display.conf.marks[1]!.encoding.y.domain]).toEqual(['1', '1000'])
+})
+
+test('a display with no independent mark declares one axis and no captions', () => {
+  const { createDisplay } = createTestEnvironment([
+    { shape: 'bar', encoding: { y: 'score' } },
+  ])
+  const { display } = createDisplay()
+  display.setRpcData(0, result([{ y: [3, 8] }]), REGION)
+  expect(display.valueScales).toHaveLength(1)
+  expect(display.valueScales[0]!.caption).toBeUndefined()
+  expect(display.renderState.independentY).toBeUndefined()
+})
+
+test('two independent marks are refused where the config is read', () => {
+  expect(() =>
+    createTestEnvironment([
+      { shape: 'bar', encoding: { y: { field: 'a', resolve: 'independent' } } },
+      { shape: 'bar', encoding: { y: { field: 'b', resolve: 'independent' } } },
+    ]).createDisplay(),
+  ).toThrow(/one mark at most may declare encoding.y.resolve "independent"/)
+})
+
 test('a span-only display has no score domain', () => {
   const { createDisplay } = createTestEnvironment([
     { shape: 'span', encoding: {} },

@@ -1,5 +1,7 @@
 import { bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
 
+import { markValueScale } from './markList.ts'
+
 import type { MarkShapeName } from './configSchema.ts'
 import type {
   DisplayMark,
@@ -46,19 +48,25 @@ export function yPxToValue(
   return min + t * (max - min || 1)
 }
 
-// The value window mark `shape` is asked about at cursor score `s`: a point's
+// The value window mark `markIndex` is asked about at cursor score `s`, read
+// through that mark's own y scale: a point's
 // ink is at its value, a bar's reaches from the origin to it, a span's is
 // everywhere. Widened to the canvas edges where the cursor is within reach of
 // one, so a value clamped to the top or bottom stays catchable.
 function valueWindow(
   shape: MarkShapeName,
+  markIndex: number,
   mouseY: number,
   state: MarkRenderState,
 ): [number, number] {
-  const { domainY, scaleTypeY, canvasHeight, origin } = state
+  const { canvasHeight, origin } = state
   if (shape === 'span') {
     return [-Infinity, Infinity]
   }
+  const { domain: domainY, scaleType: scaleTypeY } = markValueScale(
+    state,
+    markIndex,
+  )
   const lo =
     mouseY >= canvasHeight - HIT_RADIUS_PX
       ? -Infinity
@@ -115,7 +123,7 @@ export function findMarkHit(
       if (!layer?.flatbush || !mark.hitNearest) {
         continue
       }
-      const [vMin, vMax] = valueWindow(shape, mouseY, state)
+      const [vMin, vMax] = valueWindow(shape, m, mouseY, state)
       const hit = mark.hitNearest(
         data,
         block,

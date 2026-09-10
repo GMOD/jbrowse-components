@@ -383,15 +383,34 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * Which mark owns the display's value scale: the first one drawing at
-       * this zoom whose `y` names a field. Every mark shares one y, so one
-       * declaration has to be the shared one, and the menu edits that one.
+       * The mark reading its own axis: the first one drawing at this zoom
+       * whose `y` declares `resolve: 'independent'`, or -1. The config
+       * schema refuses a second, so this is the whole of the display's
+       * second axis.
+       */
+      get independentMarkIndex(): number {
+        const { markVisible } = this
+        return self.conf.marks.findIndex(
+          (m: MarkConfig, i: number) =>
+            markVisible[i] &&
+            m.encoding.y.field !== '' &&
+            m.encoding.y.resolve === 'independent',
+        )
+      },
+      /**
+       * #getter
+       * Which mark owns the display's shared value scale: the first one
+       * drawing at this zoom whose `y` names a field and reads the shared
+       * axis. One declaration has to be the shared one, and the menu edits
+       * that one.
        */
       get valueMarkIndex(): number {
         const { markVisible } = this
         return self.conf.marks.findIndex(
           (m: MarkConfig, i: number) =>
-            markVisible[i] && m.encoding.y.field !== '',
+            markVisible[i] &&
+            m.encoding.y.field !== '' &&
+            m.encoding.y.resolve !== 'independent',
         )
       },
       /**
@@ -489,29 +508,79 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * nice-rounded [min, max] over the visible regions' shipped extremes,
-       * widened to the origin whenever a bar mark draws, or undefined before
-       * any valued mark loads
+       * The marks folded into the shared y domain: those drawing at this
+       * zoom, less the one reading its own axis.
        */
-      get domain() {
+      get sharedMarkIndices(): number[] {
+        const { markVisible, independentMarkIndex } = self
+        return self.markShapes.flatMap((_, i) =>
+          markVisible[i] && i !== independentMarkIndex ? [i] : [],
+        )
+      },
+      /**
+       * #method
+       * The nice-rounded [min, max] the marks in `indices` fold to over the
+       * visible regions' shipped extremes, widened to the origin where one
+       * of them is a bar, or undefined before any of them loads a value.
+       */
+      markDomain(
+        indices: readonly number[],
+        bounds: readonly [number | undefined, number | undefined],
+        scaleType: string,
+      ) {
         const origin = self.origin
-        const hasBar = this.hasBarMark
-        const { markVisible } = self
+        const folded = new Set(indices)
+        const shapes = indices.map(i => self.markShapes[i]!)
+        const hasBar = shapes.includes('bar')
         return visibleStatsDomain({
-          active: this.visibleShapes.some(s => s !== 'span'),
+          active: shapes.some(s => s !== 'span'),
           view: self.host,
           payloadFor: index => self.rpcDataMap.get(index),
           itemsFor: data =>
             data.layers.filter(
-              (l, i) =>
-                markVisible[i] && l.count > 0 && Number.isFinite(l.yMin),
+              (l, i) => folded.has(i) && l.count > 0 && Number.isFinite(l.yMin),
             ),
           accumulate: layerExtremes,
           range: ({ min, max }) =>
             hasBar ? widenRangeToRules([min, max], [origin]) : [min, max],
-          bounds: [self.minScoreBound, self.maxScoreBound],
-          scaleType: self.scaleType,
+          bounds,
+          scaleType,
         })
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * nice-rounded [min, max] over the visible regions' shipped extremes,
+       * widened to the origin whenever a bar mark draws, or undefined before
+       * any shared valued mark loads
+       */
+      get domain() {
+        return self.markDomain(
+          self.sharedMarkIndices,
+          [self.minScoreBound, self.maxScoreBound],
+          self.scaleType,
+        )
+      },
+      /**
+       * #getter
+       * The independent mark's own scale, folded from its layers alone and
+       * pinned by its own `encoding.y.domain`: what the right-hand axis and
+       * that mark's shapes read.
+       */
+      get independentValueScale():
+        | { domain: [number, number]; scaleType: string; field: string }
+        | undefined {
+        const i = self.independentMarkIndex
+        const mark = self.conf.marks[i]
+        if (!mark) {
+          return undefined
+        }
+        const scaleType = mark.encoding.y.scale
+        const domain = self.markDomain([i], declaredDomain(mark), scaleType)
+        return domain
+          ? { domain, scaleType, field: mark.encoding.y.field }
+          : undefined
       },
     }))
     .views(self => ({
@@ -522,13 +591,33 @@ export function stateModelFactory(
        * pins nothing. The shapes read the same pair.
        */
       get valueScales(): ValueScale[] {
+        const minimalTicks: boolean = getConf(self, 'minimalTicks')
+        const height = self.height
+        const second = self.independentValueScale
+        const sharedField =
+          self.conf.marks[self.valueMarkIndex]?.encoding.y.field
         return [
           {
             domain: self.domain,
             scaleType: self.scaleType,
-            height: self.height,
-            minimalTicks: getConf(self, 'minimalTicks'),
+            height,
+            minimalTicks,
+            // Captioned only where a second axis is drawn: with one axis
+            // there is nothing to tell it apart from.
+            caption: second ? sharedField : undefined,
           },
+          ...(second
+            ? [
+                {
+                  domain: second.domain,
+                  scaleType: second.scaleType,
+                  height,
+                  minimalTicks,
+                  side: 'right' as const,
+                  caption: second.field,
+                },
+              ]
+            : []),
         ]
       },
       /**
@@ -584,9 +673,23 @@ export function stateModelFactory(
         const canvasHeight = axisPlotBox(self.height).plotHeight
         const scaleTypeY = self.scaleType === 'log' ? 'log' : 'linear'
         const { colorRamps } = this
+        const markIndex = self.independentMarkIndex
+        const second = self.independentValueScale
+        const independentY =
+          markIndex === -1
+            ? undefined
+            : resolveRenderState(second?.domain, domain => ({
+                markIndex,
+                domain,
+                scaleType:
+                  second?.scaleType === 'log'
+                    ? ('log' as const)
+                    : ('linear' as const),
+              }))
         return resolveRenderState(self.domain, domainY => ({
           domainY,
           scaleTypeY,
+          independentY,
           colorRamps,
           canvasWidth,
           canvasHeight,
