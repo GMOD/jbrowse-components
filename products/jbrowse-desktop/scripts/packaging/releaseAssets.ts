@@ -1,16 +1,8 @@
-// What has to be true of a release before anyone publishes it, decided against
-// the asset list and the manifests rather than against whether three CI jobs
-// went green.
-//
-// The failure this is for produces no symptom until much later and then hits
-// everybody: a release carrying six of the seven desktop assets is a release
-// where one platform's `latest*.yml` is a 404, and electron-updater answers a
-// 404 by throwing into an error handler that stays quiet for the startup check.
-// That platform simply stops updating, and the next release does not fix it —
-// it is the *new* release the old clients cannot see.
-//
-// Its own module, taking the asset list as data, for the reason artifacts.ts
-// gives about config.ts and `import.meta.dirname`.
+// What has to be true of a release before anyone publishes it. A release
+// missing one platform's `latest*.yml` is a 404 that platform's clients answer
+// with silence, and the next release does not fix it — that is the release they
+// can no longer see. Its own module for the reason artifacts.ts gives about
+// config.ts and `import.meta.dirname`.
 import type { UpdateFeedFile } from './updateFeed.ts'
 
 export interface ReleaseAsset {
@@ -19,11 +11,9 @@ export interface ReleaseAsset {
 }
 
 /**
- * The `files:` entries of one manifest, as electron-updater reads it back.
- *
- * Deliberately a re-parse rather than a round trip through the object
- * latestYml() was handed: what is being checked is the text on the release, so
- * anything the generator could get wrong has to survive being read again.
+ * The `files:` entries of one manifest, re-parsed rather than round-tripped
+ * through what latestYml() was handed: the text on the release is what a client
+ * reads, so anything the generator could get wrong has to survive being read.
  */
 export function parseUpdateFeed(yml: string): UpdateFeedFile[] {
   const files: UpdateFeedFile[] = []
@@ -53,13 +43,11 @@ export function parseUpdateFeed(yml: string): UpdateFeedFile[] {
 /**
  * Everything wrong with a release, as sentences. Empty means it can ship.
  *
- * Two questions, because they fail separately. Is every artifact the packagers
- * were supposed to produce actually on the release — which catches an upload
- * that never ran. And does each manifest describe the assets that are there —
- * which catches a manifest uploaded beside a *different* build of the artifact
- * it names, where every name matches and the bytes do not. A client checks the
- * hash and refuses the download; here the size disagreeing is the same fact,
- * available without fetching 500MB.
+ * Two questions, because they fail separately: whether every artifact is on the
+ * release, and whether each manifest describes the assets that are there. The
+ * second catches a manifest uploaded beside a different build of the artifact it
+ * names — a client sees that as a failed hash after a full download, and a
+ * disagreeing size is the same fact for free.
  */
 export function auditRelease({
   expected,

@@ -15,20 +15,14 @@ function format(value: unknown) {
 }
 
 /**
- * electron-updater's logger, written to a file as well as the console.
+ * electron-updater's logger, written to a file as well as the console. Its
+ * default is `console`, and a packaged app has no terminal, so an update that
+ * failed on someone's machine left nothing to ask them for.
  *
- * Its default is `console`, and a packaged app has no terminal — so an update
- * that failed on someone's machine left nothing to ask them for, and "it never
- * updates" was the whole bug report. This is the only account of a check, a
- * download or an install after the fact.
- *
- * Appends rather than starting each launch fresh, because applying an update
- * quits and relaunches the app: truncating on startup would erase the log of
- * the install being investigated. It rotates instead, keeping one full previous
- * window in `<path>.old`.
- *
- * Every write is guarded. A log that cannot be written (a read-only home, a
- * full disk) must not be the reason an update fails.
+ * Appends across launches, because applying an update quits and relaunches:
+ * truncating on startup would erase the install being investigated. It rotates
+ * instead, keeping one previous window in `<path>.old`. Every write is guarded —
+ * a log that cannot be written must not be why an update fails.
  */
 export function createUpdateLog(logPath: string): Required<Logger> {
   rotate(logPath)

@@ -1,12 +1,8 @@
 // The two YAML files electron-updater reads: `app-update.yml`, baked into the
 // app so it knows where to look, and `latest*.yml`, published beside the
-// artifacts so it knows what is there.
-//
-// Its own module, taking every value as a parameter, for the reason artifacts.ts
-// and nsisScript.ts give: config.ts reads `import.meta.dirname`, so anything
-// importing it is untestable under jest's CJS transform. That matters here
-// because nothing else parses these files until a user's app polls for an
-// update — a malformed or short manifest is answered with silence, not an error.
+// artifacts so it knows what is there. Parameterized, and so testable, for the
+// reason artifacts.ts and nsisScript.ts give — which matters more here, since
+// nothing else parses these until a user's app polls and gets silence.
 
 export interface UpdateFeedFile {
   /** the artifact's basename, which is also its url relative to the release */
@@ -52,12 +48,8 @@ export function latestYml({
 /**
  * The copy that ships inside the app, at `resources/app-update.yml`.
  *
- * `publisherName` is what turns on NsisUpdater's Authenticode check of the
- * installer it just downloaded: with the field absent `verifySignature` returns
- * null and the check is skipped entirely. It has to be the exact CN of the
- * signing certificate — a wrong one refuses every update — so it is threaded
- * through from an environment variable rather than guessed, and its absence
- * leaves the pre-existing behaviour.
+ * `publisherName` turns on NsisUpdater's Authenticode check of the installer it
+ * downloaded; without it `verifySignature` returns null and skips the check.
  */
 export function appUpdateYml({
   owner,

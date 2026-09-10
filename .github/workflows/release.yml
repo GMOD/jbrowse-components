@@ -259,15 +259,10 @@ jobs:
         working-directory: products/jbrowse-desktop
 
   # Three green jobs is not the same claim as a complete release: each uploads
-  # its own platform, so a release missing one platform's latest*.yml is a
-  # release that platform silently stops updating from — and the next release
-  # does not fix it, because the new release is the one those clients can no
-  # longer see. Nothing checked that until here; every release so far has been
-  # complete by luck and diligence.
-  #
-  # `if: always()`, so an incomplete release says so in its own words rather
-  # than being inferred from a red sibling. Reads the draft, so the answer is
-  # there before the Publish click that is the release's real gate.
+  # its own platform, and a release missing one platform's latest*.yml is one
+  # that platform silently stops updating from. Reads the draft, so the answer
+  # is there before the Publish click that is the real gate; `if: always()` so
+  # an incomplete release says so rather than being inferred from a red sibling.
   verifydesktop:
     name: Verify the release carries every desktop artifact
     needs: [buildwindows, buildmac, buildlinux]

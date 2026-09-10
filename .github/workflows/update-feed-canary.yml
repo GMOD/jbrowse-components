@@ -2,19 +2,14 @@
 # without shipping a release to find out.
 #
 # electron-updater resolves the check to whatever GitHub calls this repo's
-# latest release and then fetches latest-<platform>.yml out of it. Both halves
-# can break with nobody touching desktop code: publishing the release draft
-# before the three build jobs have uploaded moves "latest" to a tag with no
-# manifests, and so would any non-`v` release published after a `v` one, since
-# GitHub picks latest by date and this repo has tags of both shapes. Either one
-# takes every existing install offline for updates, and the app is deliberately
-# silent about a failed background check — so nothing reports it. The first
-# symptom is a user asking why they are three versions behind.
+# latest release, then reads latest-<platform>.yml out of it. Publishing the
+# release draft before the build jobs upload moves "latest" to a tag with no
+# manifests, and so would a non-`v` release published after a `v` one, since
+# GitHub picks latest by date and this repo has tags of both shapes. Either
+# takes every existing install offline for updates, silently.
 #
-# Off the PR path, like blat-canary.yml: it reads published state, so a red run
-# is a fact about the releases, not about the commit under test. It runs on
-# `release: published` because that is the moment the hazard is created, and
-# weekly because the other half of it is not this repo's doing at all.
+# Off the PR path, like blat-canary.yml: a red run is a fact about the releases,
+# not about the commit under test.
 #
 # When it goes red: the named platform is not updating. Upload the missing
 # artifacts to the release the run names (`pnpm release-electron:<os>` produces

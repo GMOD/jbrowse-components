@@ -7,15 +7,11 @@ import { logError } from './util.ts'
 import type { Logger } from 'electron-updater'
 
 /**
- * The part of electron-updater's `AppUpdater` this module drives: two events,
- * three calls, and the settings.
- *
- * Named rather than taken whole because `AppUpdater` is an abstract class over
- * a typed EventEmitter, and a stand-in for it can only be built by casting an
- * emitter through `unknown` — which is a double for the base class rather than
- * for anything this file uses. The real `autoUpdater` satisfies this
- * structurally, and electron.ts and window.ts hand it over, so a signature that
- * drifts upstream fails there.
+ * The part of electron-updater's `AppUpdater` this module drives. Named rather
+ * than taken whole because `AppUpdater` is an abstract class over a typed
+ * EventEmitter, so a double for it can only be built by casting one through
+ * `unknown`. electron.ts and window.ts hand over the real thing, which is where
+ * a signature drifting upstream fails.
  */
 export interface Updater {
   autoDownload: boolean
@@ -167,16 +163,11 @@ export function checkForUpdatesInBackground(autoUpdater: Updater) {
 }
 
 /**
- * The check behind the menu item, which reports every outcome — that is the
- * whole difference from the background one, and the reason it reads the
- * returned result rather than the update-not-available and error events. Those
- * fire for the startup check too, and `checkForUpdates` resolves `null` without
- * firing either when the updater is inactive (an unpacked run, a Linux build
- * that is not the AppImage): the menu item then did nothing at all, and left a
- * "this check was manual" flag latched on for the next background check to
- * answer with dialogs.
- *
- * Never rejects.
+ * The check behind the menu item, which reports every outcome — the whole
+ * difference from the background one, and why it reads the returned result
+ * rather than the events, which fire for that one too. `checkForUpdates`
+ * resolves `null` firing nothing at all when the updater is inactive: an
+ * unpacked run, or a Linux build that is not the AppImage. Never rejects.
  */
 export async function checkForUpdatesManually(autoUpdater: Updater) {
   try {
@@ -198,29 +189,22 @@ export async function checkForUpdatesManually(autoUpdater: Updater) {
 }
 
 export function setupAutoUpdater(autoUpdater: Updater, logPath: string) {
-  // Where an update that went wrong on someone else's machine can be read back
-  // from. See createUpdateLog.
   autoUpdater.logger = createUpdateLog(logPath)
 
-  // Drives check → offer → download from an unpackaged `pnpm dev` run, which is
-  // otherwise unreachable: isUpdaterActive() refuses anything not packaged, so
-  // the only way to exercise any of this was to cut a release and wait. Put a
-  // dev-app-update.yml next to this package's package.json naming a feed — a
-  // `provider: generic` url over `python3 -m http.server` serving one
-  // latest-<platform>.yml and the artifact it names is enough — and set
-  // JBROWSE_DEV_UPDATE_CONFIG=1.
+  // isUpdaterActive() refuses anything unpackaged, so a dev run cannot exercise
+  // any of this. Put a dev-app-update.yml beside this package's package.json
+  // naming a feed — `provider: generic` over `python3 -m http.server`, holding
+  // one latest-<platform>.yml and the artifact it names — and set this.
   autoUpdater.forceDevUpdateConfig = Boolean(
     process.env.JBROWSE_DEV_UPDATE_CONFIG,
   )
 
-  // The user is asked before any bytes are fetched.
+  // ask before fetching any bytes
   autoUpdater.autoDownload = false
-  // One full installer per platform is all we publish; leaving this false only
-  // earns a warning on every Windows download.
+  // we build no web installer, and false only warns on every Windows download
   autoUpdater.disableWebInstaller = true
-  // Differential download reads a `.blockmap` beside each artifact and the
-  // packagers here write none, so it cost two doomed requests and an
-  // error-level log before every update fell back to the full download anyway.
+  // no packager here writes a `.blockmap`, so this only cost two doomed
+  // requests and an error log before falling back to the full download
   autoUpdater.disableDifferentialDownload = true
 
   autoUpdater.on('update-available', info => {
@@ -231,9 +215,8 @@ export function setupAutoUpdater(autoUpdater: Updater, logPath: string) {
     offerRestart(autoUpdater, info.version).catch(logError)
   })
 
-  // The menu bar the renderer draws is the only one Windows and Linux have —
-  // window.ts sets a native menu on macOS alone — so for two of the three
-  // platforms the manual check reaches the user through here and nowhere else.
+  // window.ts sets a native menu on macOS alone, so on the other two platforms
+  // the renderer's own menu bar is the only route to a manual check.
   ipcHandle('checkForUpdates', () => {
     checkForUpdatesManually(autoUpdater).catch(logError)
   })

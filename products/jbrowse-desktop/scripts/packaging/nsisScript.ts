@@ -85,17 +85,12 @@ RequestExecutionLevel user
 !insertmacro MUI_LANGUAGE "English"
 
 Section "Install"
-  ; electron-updater spawns this installer with --updated and *then* quits the
-  ; app it is replacing, so the two overlap — and Windows holds an unshareable
-  ; write lock on a running exe, which \`File\` cannot overwrite. Losing that race
-  ; aborts a silent install with no window to report it in, leaving the user on
-  ; the old version with an update that reports itself as applied.
-  ;
-  ; So wait for the lock to clear. Only on the update path: an interactive
-  ; install over a running app is a person who can be asked to close it, and a
-  ; silent minute of nothing is the wrong answer there. FileOpen in append mode
-  ; would create the file, hence the existence test — which is also what makes
-  ; this a no-op on a first install.
+  ; electron-updater spawns this with --updated and *then* quits the app it is
+  ; replacing, and Windows holds an unshareable write lock on a running exe, so
+  ; \`File\` loses the race and aborts a silent install with no window to report
+  ; it in. Wait for the lock instead — only on the update path, since an
+  ; interactive install can ask the user to close the app. FileOpen in append
+  ; mode would create the file, hence the existence test.
   \${GetParameters} $R0
   ClearErrors
   \${GetOptions} $R0 "--updated" $R1

@@ -3,17 +3,11 @@
 /**
  * Whether a release carries everything a client needs to update from it.
  *
- * Two modes, for the two ways this goes wrong (see packaging/releaseAssets.ts
- * for what either costs):
- *
- * - default, on `v$VERSION`, run after the three desktop jobs and before anyone
- *   publishes the draft — did every platform's upload actually happen.
+ * - default, on `v$VERSION` before anyone publishes the draft — did every
+ *   platform's upload happen.
  * - `--feed`, on whatever GitHub currently calls the latest release — is that
- *   what a running JBrowse Desktop resolves its update check to. That is a
- *   different question, and it can go wrong with nobody touching this repo's
- *   desktop code: publishing the draft before the binaries land moves it, and
- *   so would any non-`v` release published after a `v` one, since the tag is
- *   whatever GitHub decides is newest.
+ *   what a running Desktop resolves its check to. Publishing the draft early
+ *   moves it, and so would a non-`v` release published after a `v` one.
  */
 import { execFileSync } from 'child_process'
 import { parseArgs } from 'node:util'
