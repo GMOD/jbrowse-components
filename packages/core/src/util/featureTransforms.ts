@@ -161,7 +161,7 @@ function flatten(features: readonly Feature[], step: FlattenStep) {
           : new SimpleFeature({
               ...(item as Record<string, unknown>),
               uniqueId: `${f.id()}#${i}`,
-            })
+            } as SimpleFeatureSerialized)
       const flat = new FlattenedFeature(f, child)
       out.push(index ? new DerivedFeature(flat, { [index]: i }) : flat)
     }

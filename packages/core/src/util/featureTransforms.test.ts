@@ -138,7 +138,7 @@ test('flatten answers one feature per subfeature, reading the parent for what it
     [40, 60, 'exon', 'BRCA1', 1],
   ])
   expect(out.map(f => f.id())).toEqual(['e1', 'e2'])
-  expect(out[0]!.parent()!.id()).toBe('gene1')
+  expect(out[0]!.parent!()!.id()).toBe('gene1')
   expect(out[1]!.toJSON()).toMatchObject({ name: 'BRCA1', start: 40, end: 60 })
 })
 

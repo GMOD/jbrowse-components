@@ -96,14 +96,10 @@ function layoutAll() {
   return out
 }
 
-function emitAll(layouts: FeatureLayout[]) {
+function emitAll(layouts: readonly FeatureLayout[]) {
   const collector = createCollector()
   for (const layout of layouts) {
-    processFeatureRecord(
-      layout,
-      { ...ctx, layouts, regionStart, regionEnd },
-      collector,
-    )
+    processFeatureRecord(layout, ctx, collector)
   }
   return collector
 }
