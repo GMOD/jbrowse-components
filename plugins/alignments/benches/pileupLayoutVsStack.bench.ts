@@ -93,7 +93,7 @@ function stackToRows(features: readonly Feature[]) {
   const out = runTransforms(features, STEPS)
   const rows = new Uint16Array(out.length)
   for (let i = 0; i < out.length; i++) {
-    rows[i] = out[i]!.get('row')
+    rows[i] = out[i]!.get('row') as number
   }
   return rows
 }

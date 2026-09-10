@@ -70,8 +70,8 @@ has the table with file and line ranges). One entry runs a rule a step
 reproduces — a plain uncapped single-region pileup is `stack` with
 `padding: 2`, row for row, which
 `packages/core/src/util/featureTransforms.test.ts` now pins against
-`placeRect` — and porting it measured 4.45x, two thirds of that the
-`Feature[]` the step reads and answers rather than the packing. Every other
+`placeRect` — and porting it measured 4.23x, all of which is the `Feature[]`
+the step reads and answers rather than the packing. Every other
 packer runs the same rule over inputs a step has no way to be told: label
 overhang widths and strand-arrow padding in canvas's `packRef`, isoform caps,
 row caps resolved against the viewport, regions grouped by refName before

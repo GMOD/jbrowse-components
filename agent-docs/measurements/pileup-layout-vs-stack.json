@@ -4,8 +4,8 @@
   "published": false,
   "source": {
     "kind": "bench",
-    "repro": "node plugins/alignments/benches/pileupLayoutVsStack.bench.ts --rounds=11",
-    "notes": "200,000 synthetic reads of 150bp spread evenly over 600,000bp, 50 rows deep, through alignments' own `computeLayout` on its plain path — no sort, no soft clips, no cap — against the same packing as the shared `stack` transform step. Five arms interleaved and rotated in one node 24 process, min of 11 rounds, on AC power with a load average under 1. The two implementations are checked row for row before any timing is believed and the run exits non-zero if they disagree, which is the point of the comparison: `stack` with `padding: 2` is `placeRect`'s clearance, so the rule is the same rule. 'layout' is today's call over the worker's `Uint32Array` of positions, answering a `Uint16Array` of rows; 'control' is the same call through a second driver literal, so `control / layout` is what this harness could resolve at all; 'stack' is the port — a `SimpleFeature` per read, `runTransforms` with one `stack` step, then the rows read back into the `Uint16Array` every pass downstream of the layout indexes by read; 'step' is that with the feature list already built and 'features' is building it, so the two split the port's cost into the step and the representation. A second run of the same command moved the absolute times ~10% and left every ratio within 0.05."
+    "repro": "node plugins/alignments/benches/pileupLayoutVsStack.bench.ts --rounds=15",
+    "notes": "200,000 synthetic reads of 150bp spread evenly over 600,000bp, 50 rows deep, through alignments' own `computeLayout` on its plain path — no sort, no soft clips, no cap — against the same packing as the shared `stack` transform step. Five arms interleaved and rotated in one node 24 process, min of 15 rounds, on AC power with a load average around 3 from other work on a shared box. The two implementations are checked row for row before any timing is believed and the run exits non-zero if they disagree, which is the point of the comparison: `stack` with `padding: 2` is `placeRect`'s clearance, so the rule is the same rule. 'layout' is today's call over the worker's `Uint32Array` of positions, answering a `Uint16Array` of rows; 'control' is the same call through a second driver literal, so `control / layout` is what this harness could resolve at all; 'stack' is the port — a `SimpleFeature` per read, `runTransforms` with one `stack` step, then the rows read back into the `Uint16Array` every pass downstream of the layout indexes by read; 'step' is that with the feature list already built and 'features' is building it, so the two split the port's cost into the step and the representation. Six runs of the same command on a box under other load held 'stack' at 4.04x-4.39x and 'features' at 1.11x-1.21x; 'step' is the GC-sensitive arm and spread 2.65x-3.21x, so read it as about half the gap rather than to two figures."
   },
   "columns": [
     { "key": "arm", "label": "arm" },
@@ -21,10 +21,10 @@
     { "key": "vsLayout", "label": "vs layout", "format": "x", "align": "right" }
   ],
   "rows": [
-    { "values": { "arm": "layout", "reads": 200000, "ms": 9.6, "vsLayout": 1 } },
-    { "values": { "arm": "control", "reads": 200000, "ms": 9.5, "vsLayout": 0.99 } },
-    { "values": { "arm": "stack", "reads": 200000, "ms": 42.7, "vsLayout": 4.45 } },
-    { "values": { "arm": "step", "reads": 200000, "ms": 26.2, "vsLayout": 2.73 } },
-    { "values": { "arm": "features", "reads": 200000, "ms": 11, "vsLayout": 1.15 } }
+    { "values": { "arm": "layout", "reads": 200000, "ms": 10.3, "vsLayout": 1 } },
+    { "values": { "arm": "control", "reads": 200000, "ms": 10.6, "vsLayout": 1.02 } },
+    { "values": { "arm": "stack", "reads": 200000, "ms": 43.8, "vsLayout": 4.23 } },
+    { "values": { "arm": "step", "reads": 200000, "ms": 28.2, "vsLayout": 2.72 } },
+    { "values": { "arm": "features", "reads": 200000, "ms": 12.5, "vsLayout": 1.21 } }
   ]
 }
