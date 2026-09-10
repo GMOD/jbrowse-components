@@ -62,10 +62,9 @@ export interface SessionObservers {
  * uncompressed twin of `encodeSession`, for hosts that move JSON rather than
  * URLs — a notebook kernel, an R session, a "save this layout" button.
  *
- * Not a plain `getSnapshot`, and for the same reason `encodeSession` isn't:
- * display settings a user is *inheriting* from a promoted display-type default
- * live in their own browser, never in the session, so a raw snapshot replays
- * differently for whoever opens it.
+ * Not a plain `getSnapshot`, and for the same reason `encodeSession` isn't: a
+ * workspace arrangement turned on by the sender's preference is not in the
+ * snapshot, so a raw one replays as a classic stack for whoever opens it.
  */
 export function getSessionSnapshot(session: ObservedSession): SessionSnapshot {
   // `name` is restated rather than the whole thing cast: the bake returns an

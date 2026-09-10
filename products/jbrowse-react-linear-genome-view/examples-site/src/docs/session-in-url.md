@@ -24,7 +24,3 @@ Four things worth knowing:
 - **Only the session travels.** The receiving page supplies its own `assembly`
   and `tracks`; the snapshot names them. The encoding is JBrowse Web's own, so
   links open in either.
-- **`encodeSession` does more than `getSnapshot`**: display settings a user
-  picked up from a promoted display-type default live in their browser rather
-  than in the session, and it folds those in first — otherwise the link renders
-  differently for whoever opens it.

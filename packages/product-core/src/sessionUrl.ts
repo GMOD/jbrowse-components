@@ -22,10 +22,9 @@ export interface SessionSnapshot {
  * hash fragment. Deflated then base64url-encoded, so it survives a URL intact
  * and stays far smaller than raw JSON.
  *
- * Not a plain `getSnapshot`: display settings a user is *inheriting* from a
- * promoted display-type default live in their own browser, never in the
- * session, so a raw snapshot renders differently for whoever opens the link.
- * `getShareableSessionSnapshot` flattens that cascade into the snapshot first.
+ * Not a plain `getSnapshot`: a workspace arrangement turned on by the sender's
+ * preference is not in the snapshot, so a raw one renders as a classic stack
+ * for whoever opens the link. `getShareableSessionSnapshot` stamps it first.
  *
  * The session travels but the config does not — the receiving app supplies its
  * own assembly/tracks. Put the result somewhere the server never sees (the hash

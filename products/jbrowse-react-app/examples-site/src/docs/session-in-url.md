@@ -10,10 +10,9 @@ prop.
   notification rather than failing the restore.
 - **`views` still describes the starting state.** `session` only decides what
   opens now, so File → New session returns to `views`.
-- **`encodeSession` does more than `getSnapshot`**: display settings a user
-  picked up from a promoted display-type default live in their browser rather
-  than the session, and it folds those in first — otherwise the link renders
-  differently for whoever opens it.
+- **`encodeSession` does more than `getSnapshot`**: a workspace arrangement
+  turned on by your preference is not in the snapshot, and it stamps that in
+  first — otherwise the link renders as a classic stack for whoever opens it.
 
 The encoding is JBrowse Web's own, so links open in either. The save button has
 to be yours — only your app knows the URL its page is served at; pass it as

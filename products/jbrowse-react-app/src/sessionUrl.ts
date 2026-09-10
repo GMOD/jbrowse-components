@@ -33,10 +33,9 @@ export const decodeSession = decodeSessionFromUrl
  * {@link encodeSession}, for hosts that move JSON rather than URLs — a notebook
  * kernel, an R session, a "save this layout" button.
  *
- * Like `encodeSession` and for the same reason, not a plain `getSnapshot`:
- * display settings a user is *inheriting* from a promoted display-type default
- * live in their own browser, never in the session, so a raw snapshot replays
- * differently for whoever opens it.
+ * Like `encodeSession`, this goes through product-core's shareable snapshot
+ * rather than a plain `getSnapshot`, so what a reader gets is the same outgoing
+ * shape every product hands out.
  */
 export function getSessionSnapshot(viewState: ViewModel): SessionSnapshot {
   return sessionSnapshotOf(viewState.session)
