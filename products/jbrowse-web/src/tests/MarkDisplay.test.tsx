@@ -196,7 +196,7 @@ test('spans stacked by a row channel band the plot by the highest row', async ()
 }, 30000)
 
 test('a binned count and the raw features share one fetch, and each draws in its own zoom range', async () => {
-  const { view, findByTestId } = await createView(
+  const { view, session, findByTestId } = await createView(
     markTrackConfig('mark_density', [
       { shape: 'bar', encoding: { y: 'score' }, maxBpPerPx: 20 },
       {
@@ -224,8 +224,16 @@ test('a binned count and the raw features share one fetch, and each draws in its
     domain?: [number, number]
     rpcDataMap: ReadonlyMap<
       number,
-      { layers: { count: number; y?: Float32Array }[] }
+      {
+        layers: {
+          count: number
+          x?: Uint32Array
+          x2?: Uint32Array
+          y?: Float32Array
+        }[]
+      }
     >
+    selectFeature: (hit: Record<string, unknown>) => void
   }
   expect(display.markVisible).toEqual([true, false])
   await waitFor(() => {
@@ -242,5 +250,30 @@ test('a binned count and the raw features share one fetch, and each draws in its
   expect(display.markVisible).toEqual([false, true])
   await waitFor(() => {
     expect(display.domain![1]).toBe(Math.max(...density))
+  })
+
+  // a click on a density bar opens the bin, remade over the read-back
+  const layer = display.rpcDataMap.get(0)!.layers[1]!
+  const at = layer.y!.indexOf(Math.max(...density))
+  display.selectFeature({
+    markIndex: 1,
+    regionIndex: 0,
+    instance: at,
+    refName: 'ctgA',
+    start: layer.x![at]!,
+    end: layer.x2![at]!,
+    y: undefined,
+    color: undefined,
+    screenX: 0,
+    screenY: 0,
+  })
+  await waitFor(() => {
+    expect(session.visibleWidget).toBeDefined()
+  })
+  const widget = session.visibleWidget as { featureData?: unknown }
+  expect(widget.featureData).toMatchObject({
+    start: layer.x![at],
+    end: layer.x2![at],
+    count: Math.max(...density),
   })
 }, 30000)

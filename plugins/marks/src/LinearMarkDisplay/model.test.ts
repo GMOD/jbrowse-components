@@ -1,9 +1,11 @@
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
+import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
 import LinearGenomeViewPlugin, {
   linearGenomeViewStateModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
 import WigglePlugin from '@jbrowse/plugin-wiggle'
+import { waitFor } from '@testing-library/react'
 
 import { configSchemaFactory } from './configSchema.ts'
 import { stateModelFactory } from './model.ts'
@@ -420,4 +422,110 @@ test('the hovered instance lights the box its shape painted, inset by the plot t
   expect(box!.top).toBeGreaterThan(display.renderState.canvasHeight / 2)
   display.clearHoveredFeature()
   expect(display.hoverInk).toEqual([])
+})
+
+function onlyGetFeatures(mock: jest.Mock, reply: () => unknown) {
+  mock.mockImplementation((_sessionId: string, method: string) => {
+    if (method === 'CoreGetFeatures') {
+      return reply()
+    }
+    return new Promise(() => {})
+  })
+}
+
+function hitAt(markIndex: number, start: number, end: number) {
+  return {
+    markIndex,
+    regionIndex: 0,
+    instance: 0,
+    refName: 'ctgA',
+    start,
+    end,
+    y: undefined,
+    color: undefined,
+    screenX: 0,
+    screenY: 0,
+  }
+}
+
+function feature(id: string, start: number, end: number, score = 1) {
+  return new SimpleFeature({ uniqueId: id, refName: 'ctgA', start, end, score })
+}
+
+const DENSITY_MARKS = [
+  { shape: 'bar', encoding: { y: 'score' } },
+  {
+    shape: 'bar',
+    transform: [
+      { type: 'filter', expr: "jexl:get(feature,'score') > 0" },
+      { type: 'bin', step: 1000 },
+      {
+        type: 'aggregate',
+        groupby: ['start', 'end'],
+        ops: [{ op: 'count' }, { op: 'sum', field: 'score' }],
+      },
+    ],
+    encoding: { y: 'count' },
+  },
+  {
+    shape: 'bar',
+    transform: [{ type: 'coverage' }],
+    encoding: { y: 'coverage' },
+  },
+]
+
+test('a click on a raw mark opens the feature the hit spans', async () => {
+  const { createDisplay } = createTestEnvironment(DENSITY_MARKS)
+  const { display, session, mockRpcCall } = createDisplay()
+  onlyGetFeatures(mockRpcCall, () => [
+    feature('a', 1000, 1400),
+    feature('b', 1200, 1700),
+  ])
+  display.selectFeature(hitAt(0, 1200, 1700))
+  await waitFor(() => {
+    expect(session.openedWidgets).toHaveLength(1)
+  })
+  expect(session.openedWidgets[0]!.featureData).toMatchObject({
+    uniqueId: 'b',
+    start: 1200,
+    end: 1700,
+  })
+})
+
+test('a click on a binned bar opens the bin the mark made, through its own steps', async () => {
+  const { createDisplay } = createTestEnvironment(DENSITY_MARKS)
+  const { display, session, mockRpcCall } = createDisplay()
+  onlyGetFeatures(mockRpcCall, () => [
+    feature('a', 1000, 1400, 3),
+    feature('b', 1200, 1700, 4),
+    feature('c', 1900, 2100, 0),
+    feature('d', 900, 1100, 5),
+  ])
+  display.selectFeature(hitAt(1, 1000, 2000))
+  await waitFor(() => {
+    expect(session.openedWidgets).toHaveLength(1)
+  })
+  expect(session.openedWidgets[0]!.featureData).toEqual({
+    uniqueId: 'ctgA:1000-2000#0',
+    refName: 'ctgA',
+    start: 1000,
+    end: 2000,
+    count: 2,
+    sum_score: 7,
+  })
+})
+
+test('a click on a coverage run matches the run the narrower read-back remakes', async () => {
+  const { createDisplay } = createTestEnvironment(DENSITY_MARKS)
+  const { display, session, mockRpcCall } = createDisplay()
+  onlyGetFeatures(mockRpcCall, () => [feature('a', 0, 100)])
+  display.selectFeature(hitAt(2, 0, 50))
+  await waitFor(() => {
+    expect(session.openedWidgets).toHaveLength(1)
+  })
+  expect(session.openedWidgets[0]!.featureData).toMatchObject({
+    start: 0,
+    end: 100,
+    coverage: 1,
+  })
 })

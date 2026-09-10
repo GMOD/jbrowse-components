@@ -11,6 +11,7 @@ import {
   withFeatureDetails,
 } from '@jbrowse/core/util'
 import { createStopTokenRotation } from '@jbrowse/core/util/createStopTokenRotation'
+import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import {
   activeJexlFilters,
@@ -238,7 +239,7 @@ function layerExtremes(entries: VisibleEntry<StoredLayer>[]) {
  * score axis from one worker fetch per region.
  */
 export function stateModelFactory(
-  _pluginManager: PluginManager,
+  pluginManager: PluginManager,
   configSchema: LinearMarkDisplayConfigModel,
 ) {
   return types
@@ -592,7 +593,8 @@ export function stateModelFactory(
       /**
        * #action
        * Open the feature widget for a hit: the worker shipped channels, not
-       * records, so the feature is read back over its own span.
+       * records, so the features are read back over the hit's span and the
+       * mark's steps run again over them, which remakes a bin or a run.
        */
       selectFeature(hit: MarkHitInfo) {
         const region: Region | undefined =
@@ -600,6 +602,10 @@ export function stateModelFactory(
         if (!region) {
           return
         }
+        const steps = [
+          ...self.rpcProps().transform,
+          ...(self.layerRequests[hit.markIndex]?.transform ?? []),
+        ]
         const fetch = self.detailsRotation.begin()
         void withFeatureDetails(
           self,
@@ -621,12 +627,18 @@ export function stateModelFactory(
                   statusCallback: fetch.statusCallback,
                 },
               )
-              return fetch.isCurrent()
-                ? features.find(
-                    f =>
-                      f.get('start') === hit.start && f.get('end') === hit.end,
-                  )
-                : undefined
+              if (!fetch.isCurrent()) {
+                return undefined
+              }
+              const made = runTransforms(features, steps, pluginManager.jexl)
+              return (
+                made.find(
+                  f => f.get('start') === hit.start && f.get('end') === hit.end,
+                ) ??
+                made.find(
+                  f => f.get('start') <= hit.start && f.get('end') >= hit.end,
+                )
+              )
             } finally {
               fetch.end()
             }

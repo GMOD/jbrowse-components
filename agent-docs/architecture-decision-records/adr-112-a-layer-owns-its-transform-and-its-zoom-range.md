@@ -68,9 +68,12 @@ render state rather than a new mechanism.
   multiscale picture. The config docs, the JSON schema and the manifest
   see the step schema because `transform` is a typed sub-schema array like
   `marks`, never `frozen`.
-- A click on a binned bar opens nothing: `selectFeature` reads the feature
-  back over the hit's span and matches `start`/`end`, and no fetched feature
-  spans a bin. The hover and its tooltip still answer.
+- A click on a binned bar opens the bin: `selectFeature` reads the features
+  back over the hit's span, runs the shared steps and the mark's own over
+  them again on the main thread, and matches the hit's span exactly or, for a
+  coverage run the narrower read-back widens, by containment. A run's depth
+  survives that because no edge falls inside a run, so every feature the
+  read-back returns covers all of it.
 - A layer's transform steps stay in the mark display's own config model;
   `CoreEncodeFeatures` takes them from any caller.
 

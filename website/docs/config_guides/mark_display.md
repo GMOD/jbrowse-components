@@ -242,8 +242,9 @@ The score submenu (min/max score), point size, cross hatches, the legend toggle,
 and **Filter by...** for the same `jexlFilters` every feature display takes — a
 filter runs in the worker before the encoding, so a filtered feature is neither
 drawn nor counted in the y-axis. Hovering a mark shows its location, value and
-colour class; clicking opens the feature's details — for a feature the file
-holds, so a click on a binned or coverage bar opens nothing.
+colour class; clicking opens the feature's details. A click on a binned or
+coverage bar opens the bin or the run itself — its span, its count or depth and
+the other aggregates the mark's steps wrote — remade over the features under it.
 
 The full slot list is the
 [LinearMarkDisplay config reference](/docs/config/linearmarkdisplay); how the
