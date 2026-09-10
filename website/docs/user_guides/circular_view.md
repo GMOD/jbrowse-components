@@ -57,10 +57,9 @@ const ringView = {
 A variant or synteny track keeps its chords and ribbons; a track that has both a
 linear and a circular display takes the circular one unless the entry names the
 other, as `{ trackId, displaySnapshot: { type: 'LinearMarkDisplay' } }` does for
-a density ring over a variant track. The alignments pileup display has no ring;
-alignment coverage on the circle is a
-[mark display](/docs/config/linearmarkdisplay) over the alignments track with a
-`coverage` transform.
+a density ring over a variant track. An alignments track draws its coverage and
+pileup as a ring; for a coverage ring alone, open the track as a
+[mark display](/docs/config/linearmarkdisplay) with a `coverage` transform.
 
 ## Interacting with chords
 

@@ -286,6 +286,32 @@ test('a coverage ring: an alignment-shaped track through the mark display covera
   expect(display.error).toBeUndefined()
 }, 30000)
 
+test('an alignments track draws its own pileup and coverage as a ring, reading the strip as its view', async () => {
+  const { view, display } = await ringTestSession({
+    type: 'AlignmentsTrack',
+    adapter: { type: 'FromConfigAdapter', features },
+  })
+  const host = view.ringHost
+  expect(display.type).toBe('LinearAlignmentsDisplay')
+  expect(display.host).toBe(host)
+  // the display reads the linear genome view itself, and the strip answers
+  // the members it draws by
+  const lgv = (display as unknown as { view: unknown }).view
+  expect(lgv).toBe(host)
+  expect(host.bpToPx({ refName: 'ctgB', coord: 0 })).toEqual({
+    index: 1,
+    offsetPx: Math.round(host.visibleRegions[1]!.screenStartPx),
+  })
+  expect(host.bpToPx({ refName: 'ctgC', coord: 0 })).toBeUndefined()
+  const back = host.pxToBp(host.visibleRegions[1]!.screenStartPx + 10)
+  expect(back.refName).toBe('ctgB')
+  expect(back.oob).toBe(false)
+  expect(back.coord0).toBe(Math.floor(10 * host.bpPerPx))
+  expect(host.pxToBp(host.visibleRegions[0]!.screenEndPx + 1).oob).toBe(true)
+  await when(() => display.loadedRegions.size === 2, { timeout: 20000 })
+  expect(display.error).toBeUndefined()
+}, 30000)
+
 test('a variant track keeps its chords: the view prefers its own display over an inherited one', async () => {
   const { view, display } = await ringTestSession({
     type: 'VariantTrack',

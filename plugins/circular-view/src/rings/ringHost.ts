@@ -1,5 +1,5 @@
 import { getEnv } from '@jbrowse/core/util'
-import { BlockSet } from '@jbrowse/core/util/blockTypes'
+import { BlockSet, wholeBaseRegions } from '@jbrowse/core/util/blockTypes'
 import { addDisposer, destroy, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { maxCanvasCssPx } from '@jbrowse/render-core/canvas2dUtils'
@@ -13,6 +13,7 @@ import type { Slice } from '../CircularView/slices.ts'
 import type { RingCell, RingFrame } from './ringMarks.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
+import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { MarkImage } from '@jbrowse/render-core/marks'
@@ -353,6 +354,88 @@ export const RingHost = types
     get hasVisibleContent() {
       return this.dynamicBlocks.contentBlocks.length > 0
     },
+    get visibleWholeBaseRegions() {
+      return wholeBaseRegions(this.dynamicBlocks.contentBlocks)
+    },
+    get totalWidthPxWithoutBorders() {
+      return this.width
+    },
+    get minBpPerPx() {
+      return this.bpPerPx
+    },
+    get tracks() {
+      return self.view.tracks
+    },
+    get colorByCDS() {
+      return false
+    },
+    get showAminoAcids() {
+      return false
+    },
+    /**
+     * A 0-based coord's strip pixel, as the linear genome view answers it:
+     * undefined off every drawn slice, an elided run included.
+     */
+    bpToPx({
+      refName,
+      coord,
+      displayedRegionIndex,
+    }: {
+      refName: string
+      coord: number
+      displayedRegionIndex?: number
+    }) {
+      const { bpPerPx } = this
+      for (const block of this.staticBlocks.contentBlocks) {
+        if (
+          block.refName === refName &&
+          coord >= block.start &&
+          coord <= block.end &&
+          (displayedRegionIndex === undefined ||
+            displayedRegionIndex === block.displayedRegionIndex)
+        ) {
+          return {
+            index: block.displayedRegionIndex!,
+            offsetPx: Math.round(
+              block.offsetPx + (coord - block.start) / bpPerPx,
+            ),
+          }
+        }
+      }
+      return undefined
+    },
+    /**
+     * The base under a strip pixel, in the linear genome view's shape. A pixel
+     * in a gap between slices answers the slice before it, out of bounds.
+     */
+    pxToBp(px: number): PxToBpResult {
+      const blocks = this.staticBlocks.contentBlocks
+      const first = blocks[0]
+      if (!first) {
+        throw new Error('pxToBp called with no drawn slice')
+      }
+      let block = first
+      for (const b of blocks) {
+        if (px >= b.offsetPx) {
+          block = b
+        }
+      }
+      const offset = (px - block.offsetPx) * this.bpPerPx
+      const oob = offset < 0 || offset >= block.end - block.start
+      const base0 = Math.floor(block.start + offset)
+      return {
+        refName: block.refName,
+        start: block.start,
+        end: block.end,
+        assemblyName: block.assemblyName,
+        reversed: false,
+        index: block.displayedRegionIndex!,
+        offset,
+        oob,
+        coord: base0 + 1,
+        coord0: base0,
+      }
+    },
     /**
      * The view's tracks whose display draws on the strip: every display a
      * display type registered for another view lays out this way, where one
@@ -448,6 +531,7 @@ export const RingHost = types
     setBodyMounted() {},
     setMinimized() {},
     setDisplayName() {},
+    scrollZoom() {},
     setStripElement(displayId: string, el: HTMLElement | null) {
       if (el) {
         self.stripElements.set(displayId, el)

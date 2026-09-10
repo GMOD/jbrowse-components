@@ -145,9 +145,13 @@ The three questions the design had to answer:
 - **(c) Per-display code touched.** None. Wiggle, the mark display's density
   and coverage layers and the variant chords beside them ran on the first
   build; the changes are two lines in each chord display's radius, the
-  `containingHost` routing in display-kit, and `plotOnly` on the export
-  options. The wedge alternative is a twin per shape and a hit test that knows
-  the annulus.
+  `containingHost` and `containingLgv` routing, and `plotOnly` on the export
+  options. The canvas feature display and the alignments pileup read the
+  linear genome view itself rather than the host contract, so the strip
+  answers the members they draw by — `bpToPx`, `pxToBp`, the coarse blocks,
+  `visibleWholeBaseRegions` — and both drew as rings on the second build
+  without a line of their own changing. The wedge alternative is a twin per
+  shape and a hit test that knows the annulus.
 
 On swiftshader the same per-pixel fixture read warp 29 ms, wedge1 75 ms
 (2.56x) and wedge8 218 ms (7.48x); CPU rasterisation prices vertices against
@@ -181,16 +185,17 @@ fragments differently, and only the order is read from it.
 
 ## Consequences
 
-- `LinearAlignmentsDisplay` does not draw on the circle: it reads the linear
-  genome view itself (`containingLgv`, `bpToPx`, the sashimi overlay's
-  `view.width`) rather than the `RegionHost` contract, and its sashimi overlay
-  threw on the first build. Alignment coverage on the circle is the mark
-  display's `coverage` step over the alignments track, which is what the
-  integration probe drew; a pileup ring waits for that display to read its
-  host through the contract.
-- Wiggle, mark, canvas and the other `MultiRegionDisplayMixin` displays draw
-  as rings; a display's axis and legend chrome stay in the hidden strip. A
-  ring has no y-axis on screen.
+- `containingLgv` answers the strip too, so a display that names the linear
+  genome view as its view gets the strip's `bpToPx`, `pxToBp`, coarse blocks
+  and whole-base regions, and `false` for `colorByCDS` and `showAminoAcids`.
+  A member the strip does not carry — `navTo`, `showTrack`, the chrome
+  settings — is `undefined` there, and a display reaching for one in a render
+  path is the display that stays off the circle; the alignments pileup's
+  sashimi overlay threw on `view.width` before the strip carried it, which is
+  how the list above was found.
+- Wiggle, mark, canvas, alignments and the other `MultiRegionDisplayMixin`
+  displays draw as rings; a display's axis and legend chrome stay in the
+  hidden strip. A ring has no y-axis on screen.
 - `RenderLifecycleMixin.paintCount` is one more volatile every display
   carries, written per painted frame.
 - A mark's `texture` lens answering `undefined` now leaves the pass's texture
