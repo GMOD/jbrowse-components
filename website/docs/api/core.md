@@ -327,6 +327,14 @@ the color string.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
 
+## TransformStep
+
+One step over the features before any layer is encoded, named by `type`
+the way GenomeSpy spells a transform. `filter` keeps the features a
+`jexl:` expression admits; every step runs in order.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
 ## VIRIDIS_STOPS
 
 The 256 viridis stops, fully opaque. Feed them to buildColorRampLut

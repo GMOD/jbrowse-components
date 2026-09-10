@@ -1052,6 +1052,14 @@ reader has promoted in their own browser. Pinned by
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
+### TransformStep
+
+One step over the features before any layer is encoded, named by `type` the way
+GenomeSpy spells a transform. `filter` keeps the features a `jexl:` expression
+admits; every step runs in order.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
 ### ValuePin
 
 The pin on a radio or slider row, built by makePin: `onValue` is the row's own

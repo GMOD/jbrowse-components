@@ -42,6 +42,7 @@ export type {
   MarkEncoding,
   RampRef,
   ScaleTable,
+  TransformStep,
 } from './markEncodingTypes.ts'
 
 export const DEFAULT_MARK_COLOR = '#0068d1'

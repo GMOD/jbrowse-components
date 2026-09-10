@@ -71,6 +71,7 @@ import type {
   GlyphName,
   LayerRequest,
   MarkEncoding,
+  TransformStep,
 } from '@jbrowse/core/util/markEncoding'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
@@ -351,10 +352,17 @@ export function stateModelFactory(
       /**
        * #method
        * the fetch inputs SettingsInvalidate watches: each mark's encoding
-       * and lanes, and the filters, all evaluated in the worker
+       * and lanes, and the filters as transform steps, all evaluated in the
+       * worker
        */
-      rpcProps(): { layers: LayerRequest[]; filters: string[] } {
-        return { layers: self.layerRequests, filters: self.activeFilters }
+      rpcProps(): { layers: LayerRequest[]; transform: TransformStep[] } {
+        return {
+          layers: self.layerRequests,
+          transform: self.activeFilters.map(expr => ({
+            type: 'filter' as const,
+            expr,
+          })),
+        }
       },
       /**
        * #getter

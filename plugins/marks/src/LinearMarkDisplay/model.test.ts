@@ -106,7 +106,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
   const { display } = createDisplay()
   expect(display.markShapes).toEqual(['bar', 'point', 'span'])
   expect(display.rpcProps()).toEqual({
-    filters: [],
+    transform: [],
     layers: [
       {
         encoding: {

@@ -17,9 +17,9 @@ import type { EncodedFeaturesResult } from '../../util/markEncoding.ts'
 import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 
 /**
- * Fetch a region's features once and evaluate every requested layer's
- * encoding over them in the worker, where the `Feature` objects are, filling
- * the lanes its shape reads. The colours come back packed, the scale tables
+ * Fetch a region's features once, run the transform steps over them, and
+ * evaluate every requested layer's encoding over what is left in the worker,
+ * where the `Feature` objects are, filling the lanes its shape reads. The colours come back packed, the scale tables
  * resolved, and the main thread reads the same table for its legend that the
  * colours were drawn from.
  */
@@ -33,6 +33,7 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
       sequenceAdapter,
       region,
       layers: requested,
+      transform = [],
       filters = [],
       byteLimit,
       stopToken,
@@ -67,7 +68,7 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
     checkStopTokenThrottled(stopTokenCheck)
 
     const chain = new SerializableFilterChain({
-      filters,
+      filters: [...filters, ...transform.map(step => step.expr)],
       jexl: pluginManager.jexl,
     })
     const features =

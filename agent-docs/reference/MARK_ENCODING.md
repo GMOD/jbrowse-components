@@ -20,7 +20,7 @@ BED score column, a segment ratio, a bedGraph-shaped interval.
 | Piece | Where | What it owns |
 | --- | --- | --- |
 | `MarkEncoding`, `encodeFeatures` | `packages/core/src/util/markEncoding.ts` | the declaration and its evaluation over the **lanes** the caller names: native `feature.get(field)` per channel, `jexl:` as the opt-in escape, a colour that is a constant, a jexl expression, a categorical palette or a ramp over a domain, a glyph that is a name, a jexl expression or a categorical scale over the glyph names, an integer `row`, the `y` extremes, a Flatbush over `(x, y, x2, y)` when `index` is named, and the `ScaleTable` per scaled channel |
-| `CoreEncodeFeatures` | `packages/core/src/rpc/methods/CoreEncodeFeatures.ts` | one region's features fetched once, the `jexlFilters` applied, every layer of the request — an encoding and its lanes — run over the same list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for the request's `layers[i]`, the buffers transferred |
+| `CoreEncodeFeatures` | `packages/core/src/rpc/methods/CoreEncodeFeatures.ts` | one region's features fetched once, the `transform` steps run (the display's `jexlFilters` as `filter` steps), every layer of the request — an encoding and its lanes — run over the same list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for the request's `layers[i]`, the buffers transferred |
 | `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ shape, encoding }` sub-schemas, one `defineMark` per entry reading `layers[i]` through a lens that checks its shape's lanes are present (`SHAPE_LANES`), the wiggle-core score axis, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over its layer's Flatbush, spans stacked on `row` into `rowCount` bands |
 
 **Colour is resolved in exactly one place** — the worker — and the legend reads
@@ -146,9 +146,10 @@ knowing at this seam:
   the same per-region problem, without a texture and with colour still
   resolved in one place.
 - **A transform names its `type`.** GenomeSpy departed from Vega-Lite's
-  inferred transform shape on purpose, for extensibility. A transform list on
-  `CoreEncodeFeatures`, if one lands, takes that spelling, with `filters`
-  folded in as the first member.
+  inferred transform shape on purpose, for extensibility. `CoreEncodeFeatures`
+  takes that spelling — `transform: [{ type: 'filter', expr }]`, run in order
+  before the layers encode — and `filters: jexl[]` stays as sugar for leading
+  filter steps.
 - **Semantic zoom is a layer property.** Its `multiscale` composition orders
   layers from zoomed-out to zoomed-in with `stops` and cross-fades by the zoom
   metric. `defineMark`'s `enabled(state)` and the tier mixins do that

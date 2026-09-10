@@ -197,11 +197,21 @@ export interface EncodedFeaturesResult {
   bytes?: number
 }
 
+/**
+ * #api
+ * One step over the features before any layer is encoded, named by `type`
+ * the way GenomeSpy spells a transform. `filter` keeps the features a
+ * `jexl:` expression admits; every step runs in order.
+ */
+export type TransformStep = { type: 'filter'; expr: string }
+
 export type CoreEncodeFeaturesArgs = {
   adapterConfig: Record<string, unknown>
   region: { refName: string; start: number; end: number; assemblyName: string }
   layers: LayerRequest[]
-  /** `jexl:`-prefixed feature filters, every one of which must pass. */
+  /** The steps over the features, in order, before the layers encode. */
+  transform?: TransformStep[]
+  /** Sugar for leading `filter` steps: `jexl:`-prefixed expressions. */
   filters?: string[]
   byteLimit?: number
   sequenceAdapter?: Record<string, unknown>
