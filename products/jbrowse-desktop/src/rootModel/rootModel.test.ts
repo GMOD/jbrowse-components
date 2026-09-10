@@ -29,10 +29,13 @@ function saveCount() {
   ).length
 }
 
+// The app's own order (see pluginManagers.tsx): configure() comes after the
+// root model exists and has been handed to the manager, because a plugin's
+// configure reads pluginManager.rootModel — that is how plugin-menus adds its
+// items to the Help menu, and configuring first left them off entirely.
 function createRootModel() {
   const pluginManager = new PluginManager(corePlugins.map(P => new P()))
   pluginManager.createPluggableElements()
-  pluginManager.configure()
   const root = rootModelFactory({ pluginManager, sessionModelFactory }).create(
     {
       // main-thread rpc, so creating the model doesn't try to start a worker
@@ -42,6 +45,8 @@ function createRootModel() {
     },
     { pluginManager },
   )
+  pluginManager.setRootModel(root)
+  pluginManager.configure()
   root.setSessionPath(SESSION_PATH)
   root.setSession({ name: 'test' })
   return root
@@ -121,6 +126,35 @@ test('flushSession reports a failed save rather than rejecting', async () => {
 
   await expect(root.flushSession()).resolves.toBeUndefined()
   expect(root.session.snackbarMessages.length).toBe(1)
+})
+
+// The native Help menu that used to carry the update check is macOS-only —
+// window.ts sets the application menu to null everywhere else — so this entry
+// is the whole manual check on Windows and Linux. plugin-menus contributes
+// About and Help into the same menu, so what is worth pinning is the merge:
+// a second "Help" menu, or items landing in the wrong one, is how this stops
+// being reachable without anything failing.
+test('Check for updates sits above the plugin contributions in Help', () => {
+  const root = createRootModel()
+  const help = root.menus().filter(m => m.label === 'Help')
+
+  expect(help.length).toBe(1)
+  expect(
+    help[0]!
+      .menuItems()
+      .map(item => ('label' in item ? item.label : item.type)),
+  ).toEqual(['Check for updates...', 'divider', 'About', 'Help'])
+})
+
+test('the Help item asks the main process to check', () => {
+  const root = createRootModel()
+  const [check] = root
+    .menus()
+    .find(m => m.label === 'Help')!
+    .menuItems()
+  ;(check as { onClick: () => void }).onClick()
+
+  expect(mockInvokeIpc).toHaveBeenCalledWith('checkForUpdates')
 })
 
 test('nothing is written for a session with no path to write to', async () => {
