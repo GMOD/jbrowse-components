@@ -4,6 +4,8 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 
+import { Ajv2020 } from 'ajv/dist/2020.js'
+
 import { configManifest } from './configManifest.generated.ts'
 import { configJsonSchema } from './configSchema.generated.ts'
 import { configSchemaUrl, schemaProblems } from './schemaValidate.ts'
@@ -80,6 +82,12 @@ describe('the schema', () => {
         ),
       ),
     ).toEqual(configJsonSchema)
+  })
+
+  it('is a valid draft 2020-12 schema', () => {
+    const ajv = new Ajv2020({ strict: true, strictRequired: false })
+    expect(ajv.validateSchema(configJsonSchema)).toBe(true)
+    expect(() => ajv.compile(configJsonSchema)).not.toThrow()
   })
 
   it('accepts a valid config', () => {

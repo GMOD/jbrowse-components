@@ -37,7 +37,16 @@ index(root, '')
 
 let ajv: Ajv2020 | undefined
 function validatorFor(pointer: string): ValidateFunction {
-  ajv ??= new Ajv2020({ allErrors: true, strict: false, verbose: true })
+  // No meta-validation and no codegen optimization: the schema is generated
+  // and its own test checks it against the draft, and a config is validated
+  // once per process, so the compile is the cost that matters.
+  ajv ??= new Ajv2020({
+    allErrors: true,
+    strict: false,
+    verbose: true,
+    validateSchema: false,
+    code: { optimize: 0 },
+  })
   if (pointer === '') {
     return ajv.getSchema(schemaId) ?? ajv.compile(root)
   }
