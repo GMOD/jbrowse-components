@@ -35,11 +35,11 @@ Nothing about a genome is typed by hand: the zip `datasets` writes carries an
 assembly report, and each lane's name is that report's strain field (MG1655
 rather than "K-12 substr. MG1655", `Sflexneri_301` for the Shigella so it does
 not read as an E. coli strain), and the report's organism name is a screen of
-its own — three accessions the listing handed over turned out to be a Leclercia,
+its own: three accessions the listing handed over turned out to be a Leclercia,
 a Salmonella and a suppressed _Shigella_ sp., and the build drops them and says
 so. The five strains the [pangenome graph](/docs/tutorials/pangenome_ecoli) and
 [all-vs-all](/docs/tutorials/allvsall_synteny) pages build from are all here
-under the same accessions — MG1655 is the strain those pages call K12 — so the
+under the same accessions (MG1655 is the strain those pages call K12), so the
 three pages read one set of genomes three ways. The
 [build script](#reproduce-it-end-to-end) pins every accession; the anchor and
 the four Shigella are:

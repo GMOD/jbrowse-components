@@ -78,7 +78,7 @@ them. Annotation-based bacterial pangenome tools
 [PPanGGOLiN](https://github.com/labgem/PPanGGOLiN)) give a gene table instead; a
 gene cluster no reference carries has no coordinate on the K12 axis. The
 [gene-symbol lanes](/docs/tutorials/ecoli_orthologs_synteny) draw that kind of
-table without flattening it — one lane per genome at its own coordinates, and
+table without flattening it: one lane per genome at its own coordinates, and
 these five strains sit among its forty-four.
 
 Most of what JBrowse draws are the graph's **linear projections**: the graph

@@ -58,7 +58,7 @@ five-strain _E. coli_ view from one such file.
 [Synteny from ortholog tables](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 stacks cross-species comparisons from gene-level ortholog tables, and the
 [gene-symbol join](/docs/tutorials/ecoli_orthologs_synteny) scales this page's
-five strains — same accessions, K12 there is MG1655 — to forty-four lanes by
+five strains (same accessions, K12 there is MG1655) to forty-four lanes by
 skipping the alignment altogether.
 
 ## Producing an all-vs-all PAF

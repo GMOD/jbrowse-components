@@ -98,7 +98,7 @@ What each setting does:
   file without a `DP` column disables the D' row rather than drawing zeros
 
 The allele-frequency floor is not a display setting here. It is applied when the
-variants are picked for correlation, so it is a property of the file — which is
+variants are picked for correlation, so it is a property of the file. That is
 also why the two cohorts below are a fair comparison rather than one filter
 applied twice.
 
@@ -137,7 +137,7 @@ this window's width comes from.
 ## Correlate the variants with PLINK
 
 Two steps per cohort: pick the common variants, then correlate every pair of
-them. The MAF floor is what keeps the table to a size a browser can draw — every
+them. The MAF floor is what keeps the table to a size a browser can draw. Every
 pair is a row, so n variants cost n(n-1)/2 of them.
 
 <!-- from: scripts/build_lct_ld.sh -->
@@ -152,7 +152,7 @@ plink2 --vcf panel.snvs.vcf.gz --double-id --allow-extra-chr --output-chr chrM \
 # dprime adds D' beside r², which is the display's other metric.
 # --ld-window-r2 0 keeps the uncorrelated pairs, so white cells are drawn as
 # white rather than left absent, and the two window flags have to be raised
-# together — the defaults cut off after 10 variants or 1 Mb, whichever comes
+# together. The defaults cut off after 10 variants or 1 Mb, whichever comes
 # first, which would clip this block at both.
 plink --vcf panel.snvs.vcf.gz --double-id --allow-extra-chr --output-chr chrM \
   --set-missing-var-ids @:# --extract sel.snplist \
@@ -346,4 +346,4 @@ correlated rather than only filtered by frequency.
     alphas; on an earlier plink2 the flag is simply absent, which is why the r²
     step here is PLINK 1.9's. JBrowse's
     [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter) reads either
-    spelling — it resolves the columns from the header rather than by position.
+    spelling: it resolves the columns from the header rather than by position.

@@ -482,8 +482,8 @@ Each lane has its own scale, so each lane states it:
   far out for ticks draws none
 - **The view's gridlines stop at the grape lane**, the only lane they are true
   for
-- **A lane with no gene track the session can read** — GFF3, GTF, BigBed or BED
-  — outlines the table's gene spans and says `no annotation`, which is the four
+- **A lane with no gene track the session can read** (GFF3, GTF, BigBed or BED)
+  outlines the table's gene spans and says `no annotation`, which is the four
   `BLOCKS_ONLY_SPECIES` lanes here
 
 ### Ordering the lanes

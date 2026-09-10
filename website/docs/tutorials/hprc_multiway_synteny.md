@@ -239,7 +239,7 @@ one side and _CFHR4_ onward on the other, place in every lane.
 The four carriers also sort together, at the bottom of this stack. Lane order is
 densest first over the fetched window, weighed by how much of the reference each
 lane's alignment places, and a lane whose alignment skips the cluster places
-less of it — so the two genotypes separate on their own, carriers at the bottom.
+less of it, so the two genotypes separate on their own, carriers at the bottom.
 That is this window's arithmetic rather than a general rule, and `rowOrder` is
 what pins an order that has to hold.
 

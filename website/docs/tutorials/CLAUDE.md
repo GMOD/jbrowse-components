@@ -1,6 +1,7 @@
-Show rather than tell — informative screenshot specs, minimal prose. No
-em-dashes anywhere, including code comments. Numbers, captions and voice are in
-`website/CLAUDE.md`; page mechanics in `website/docs/CLAUDE.md`.
+Show rather than tell: informative screenshot specs, minimal prose. No em-dashes
+anywhere, including code comments. This file follows its own rule. Numbers,
+captions and voice are in `website/CLAUDE.md`; page mechanics in
+`website/docs/CLAUDE.md`.
 
 A tutorial is **one continuous line of work**. Each step consumes what the step
 before it produced, and the test is whether the sections could be reordered
@@ -18,13 +19,13 @@ then makes the two disagree; `cli_desktop` builds one folder and opens it twice.
 Neither has a dataset in the sense the rest of this file means, and both are
 tutorials, because you cannot start at step three.
 
-Every dataset carries a built-in control — something in the same figure that
-ought to come out negative — and the page ends by checking the inference against
+Every dataset carries a built-in control, something in the same figure that
+ought to come out negative, and the page ends by checking the inference against
 the raw data.
 
 ## Typography
 
-**A gene symbol is `_italic_` in prose and bare everywhere else** — captions,
+**A gene symbol is `_italic_` in prose and bare everywhere else**: captions,
 headings, paper titles, link labels. Backticks are for a string the reader types
 into the location box. A protein product is roman where its gene is italic; a
 fusion name is one token (`BCR-ABL1`). `mappability_qc` is the page to copy.
@@ -41,12 +42,12 @@ bare, because a caption describes the frame rather than telling anyone to click.
 **Two labels really do differ by an ellipsis.** The FAB menu renders a bare
 `Add track`; the track-menu hamburger renders `Add track...`. Both are correct,
 so a report that a page is missing the ellipsis there is a report about which
-affordance the page describes — check the route before adding one.
+affordance the page describes, so check the route before adding one.
 
 ## Don't argue, and don't preach
 
 A tutorial cultivates an air of exploring data. Three shapes to cut: the
-**thesis paragraph** (a section ending by telling the reader what it all means —
+**thesis paragraph** (a section ending by telling the reader what it all means:
 stop at the observation), **anticipate-and-correct** (naming a wrong inference
 to refute it), and **moral framing** ("the honest outcome", "checked rather than
 trusted").
@@ -78,12 +79,12 @@ it stays in `scripts/build_*.sh` under `## Reproduce it end to end`. Link to
 **The reader has not cloned the repo.** `## Reproduce it end to end` curls the
 script and then runs the copy in the working directory;
 `scripts/check-build-scripts.py` fails a `bash scripts/…`. The `.py` helpers a
-build script invokes are the script's own problem — each fetches what it is
+build script invokes are the script's own problem. Each fetches what it is
 missing, and the same check pins that list against what the script calls.
 
 **Mark the fence `<!-- from: scripts/build_<topic>.sh -->`** and
 `check-script-commands` asserts every tool, subcommand and flag in it still runs
-in that script — those rather than text, since the page carries the general form
+in that script, those rather than text, since the page carries the general form
 and the script the pinned one. Leave the marker off a fence showing a route the
 script does not take, and off one whose command the script only approximates:
 `local_ancestry` shows `jbrowse sort-bed` where its script sorts inline to stay
@@ -111,15 +112,15 @@ knows why one is there: `seed=42` is not "fixes the run", it is "FLARE draws
 random samples while it infers, so two runs differ unless the seed is pinned".
 Several short comment lines beat one dense one.
 
-The test is whether a reader with their own data would run the line as written —
-anything naming an accession, sample list or locus is script. Filenames are not
+The test is whether a reader with their own data would run the line as written.
+Anything naming an accession, sample list or locus is script. Filenames are not
 the axis.
 
 **A tool in `## Prerequisites` that no fence on the page runs fails
 `check-prereq-tools`**, which is the same rule read backwards: a reader who
 installs what the page asked for has to find it used. Runtimes and the
-bgzip/tabix prep are exempt (PLUMBING there); a tool another tool drives — LAST
-under jcvi, minimap2 inside a python helper — goes in that script's ALLOWED with
+bgzip/tabix prep are exempt (PLUMBING there); a tool another tool drives (LAST
+under jcvi, minimap2 inside a python helper) goes in that script's ALLOWED with
 the reason.
 
 **`gzip -dc`, never `zcat`.** macOS `/usr/bin/zcat` only ever looks for a `.Z`,
@@ -165,7 +166,7 @@ that long is usually a page carrying a dataset it cannot connect to its own:
 `cancer_sv` listed two cell lines out of two releases until the second became
 `k562_fusions`, and the wall went with it.
 
-Frontmatter carries `data: hosted | download | pipeline` — what it takes to end
+Frontmatter carries `data: hosted | download | pipeline`, what it takes to end
 up with what the page shows, **not** whether the figures can be read with
 nothing installed. A page whose cost is not about data leaves the field off. An
 unknown value fails the build; an absent one is silently no chip.
@@ -186,17 +187,17 @@ qualifiers grew into the sentences the relaxation was meant to exclude.
 Don't restate the prerequisite tool list inside Reproduce, point at
 `[Prerequisites](#prerequisites)`. Don't write a generic troubleshooting table:
 a failure worth documenting is one this dataset produces, and it goes in the
-prose where it happens. Don't sell the hosted data — the figures carry live
+prose where it happens. Don't sell the hosted data; the figures carry live
 links.
 
 Moving a figure off a page means moving its card's crop source in
 `gen-tutorial-thumbs.ts` too; nothing warns you.
 
-## Existing datasets — read before adding a locus
+## Existing datasets, read before adding a locus
 
 - `agent-docs/reference/DOG10K_DATASETS.md`
-- `agent-docs/reference/SV_MULTIHOP.md` — COLO829 behind `cancer_sv`, K562
-  behind `k562_fusions`
+- `agent-docs/reference/SV_MULTIHOP.md`: COLO829 behind `cancer_sv`, K562 behind
+  `k562_fusions`
 - `agent-docs/reference/PANGENOME_GRAPHS.md`
 - `agent-docs/ideas/tutorial-ideas-audit.md`, and the dead ends in
   `agent-docs/ideas/figures-blocked-on-data.md`

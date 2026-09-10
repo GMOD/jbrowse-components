@@ -203,20 +203,20 @@ draws its inversions straight, and a ribbon crosses where one block runs against
 its neighbour inside a lane. The marmoset lane is the clearest case: its chain
 covers the left of the window forwards and then stops, and the rest of the
 window is placed by a reversed block further along the same chromosome. The
-gorilla lane names chr17 in its header beside the chr5 frame it drew — the
-homologous chromosome, also placing part of this window, which is how a lane
-says the frame it drew is not the whole story. **Show … in this lane** on that
-lane's header menu pins it onto the other contig.
+gorilla lane names chr17 in its header beside the chr5 frame it drew. chr17 is
+the homologous chromosome and also places part of this window, so the chr5 frame
+is not the whole picture. **Show … in this lane** on that lane's header menu
+pins it onto the other contig.
 
 <Figure caption="hg38 chr17 near the PMP22 segmental duplications over the same eight lanes. Every genome places the window as several blocks and most run against their neighbours: five lanes carry a reversed marker in their headers, the crossed ribbons are where a block runs against its neighbour inside a lane, and the gorilla lane names a second chromosome that also places the window." src="/img/multiway_synteny/hg38_vertebrates_17p_break.png" />
 
 **Color ribbons by → Strand** on the track menu colors each ribbon by the
-record's strand — between the anchor and the first lane the alignment's own
-strand, between two mate lanes the two alignments' strands multiplied out —
-rather than by whether the ribbon is drawn crossed. A lane whose alignments all
-run the other way is drawn flipped, with `[rev]` in its header, so its ribbons
-come out straight on screen; the strand color still marks every one of them as
-an inversion, and a single crossed ribbon into an unflipped lane is one block
+record's strand: the alignment's own strand between the anchor and the first
+lane, the two alignments' strands multiplied out between two mate lanes, rather
+than by whether the ribbon is drawn crossed. A lane whose alignments all run the
+other way is drawn flipped, with `[rev]` in its header, so its ribbons come out
+straight on screen; the strand color still marks every one of them as an
+inversion, and a single crossed ribbon into an unflipped lane is one block
 running against its neighbours.
 
 ## Reading the stack

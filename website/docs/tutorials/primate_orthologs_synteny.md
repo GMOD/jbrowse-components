@@ -209,8 +209,8 @@ the human axis, each fitted to wherever that genome keeps the window's genes. A
 lane's header names its chromosome, the span it shows and `[rev]` where it reads
 the other way, and the ribbons between adjacent lanes join each gene to its
 ortholog. **Color ribbons by → Strand** on the track menu colors each ribbon by
-the strand of the pair it joins — the two lanes' orientations against the human
-axis multiplied out — rather than by whether the ribbon is drawn crossed. A lane
+the strand of the pair it joins, the two lanes' orientations against the human
+axis multiplied out, rather than by whether the ribbon is drawn crossed. A lane
 reading the block backwards is drawn mirrored, so its ribbons come out straight
 while the strand color still marks every one of them as an inversion.
 
@@ -252,7 +252,7 @@ color is what separates the two things it draws. A bundle painted as reversed is
 a block that lane reads backwards from the lane above it, whether the mirroring
 left it drawn straight or crossed: one block runs down the middle of the frame
 with same-orientation flanks on either side of it, and one pair of lanes crosses
-near the right-hand edge. The headers carry the other fact — every lane sits at
+near the right-hand edge. The headers carry the other fact: every lane sits at
 its own offset and its own scale, and a lane whose header names a multiple is
 holding the same genes over more sequence.
 
@@ -275,7 +275,7 @@ lane and have no ribbon.
 The join is exactly as good as the naming. The salivary amylase cluster on human
 chr1 is a run of near-identical copies whose human names are lettered (_AMY1A_,
 _AMY1B_, _AMY1C_), while the other primates' copies were left as placeholder
-`LOC` ids — so most of them have no row in the table at all. Every lane still
+`LOC` ids, so most of them have no row in the table at all. Every lane still
 draws its own copies, from its own annotation, and the ribbons stop where the
 naming does. A human RefSeq track above the lanes is what names the copies; each
 lettered one is its own symbol, so each takes its own color and the family reads

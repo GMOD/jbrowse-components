@@ -969,7 +969,7 @@ carries alignments from both haplotypes at once and the scaffold names on it
 come from either, which is the thing to avoid: what makes the fusion legible is
 that hap1's ribbons cross where hap2's do not.
 
-<Figure caption="A three-row synteny view of the chr3/chr13 selection: hap2 on top, GRCh38 chr3 and chr13 in the middle, and the fused chr3_chr13_hap1 scaffold below, at a raised minimum alignment length. The two blue bands on the reference row are the breakends of the translocation above, chr3:139,976,414 and chr13:114,353,244 — the same two positions the breakpoint split view opened on. The ribbons below the reference cross between them, where hap1 joins the two chromosomes; the ribbons above run to hap2, whose chr13 is unrearranged and whose chr3 material sits in a scaffold fused with chr6 and chr11." src="/img/sv_cgiab/synteny_view.png" />
+<Figure caption="A three-row synteny view of the chr3/chr13 selection: hap2 on top, GRCh38 chr3 and chr13 in the middle, and the fused chr3_chr13_hap1 scaffold below, at a raised minimum alignment length. The two blue bands on the reference row are the breakends of the translocation above, chr3:139,976,414 and chr13:114,353,244, the same two positions the breakpoint split view opened on. The ribbons below the reference cross between them, where hap1 joins the two chromosomes; the ribbons above run to hap2, whose chr13 is unrearranged and whose chr3 material sits in a scaffold fused with chr6 and chr11." src="/img/sv_cgiab/synteny_view.png" />
 
 The chr3/chr13 fusion is one of this genome's truncal interchromosomal
 rearrangements, many of which break in or near a centromere
