@@ -55,7 +55,7 @@ These look like leftovers and are not:
 - `renderToStaticMarkup` drops rgba alpha rather than converting it. Now
   explained and pinned by tests; rewriting `fill="rgba(r,g,b,a)"` into
   `fill="rgb(r,g,b)" fill-opacity="a"` would preserve the appearance and let
-  `CrossHatches` / `MultiWiggleOverlayLines` drop their workarounds, but it
+  `CrossHatches` / `RowSeparatorLines` drop their workarounds, but it
   changes exported pixels, so it needs a visual pass before regenerating
   snapshots.
 - `fileHandleStore.ts` has no delete path, so handles accumulate in IndexedDB
