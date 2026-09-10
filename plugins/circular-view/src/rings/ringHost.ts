@@ -7,14 +7,13 @@ import { installUpload } from '@jbrowse/render-core/installUpload'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 import { autorun, observable } from 'mobx'
 
-import { RING_PASSES, ringMarks } from './ringMarks.ts'
+import { RING_PASSES } from './ringMarks.ts'
 
 import type { Slice } from '../CircularView/slices.ts'
 import type { RingCell, RingFrame } from './ringMarks.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
-import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { MarkImage } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
@@ -70,10 +69,6 @@ export interface Ring {
 
 export type RingBackend = PerRegionRenderingBackend<RingCell, RingFrame>
 
-function elidedKey(slice: Slice) {
-  return slice.key
-}
-
 /**
  * The strip's blocks: one content block per drawn slice and one elided block
  * per elided run, laid along the circumference at the strip's scale. No
@@ -92,7 +87,7 @@ export function stripBlocks(
     if (region.elided) {
       blocks.push({
         type: 'ElidedBlock',
-        key: elidedKey(slice),
+        key: slice.key,
         offsetPx,
         widthPx,
       })
@@ -522,10 +517,3 @@ export const RingHost = types
   }))
 
 export interface RingHostModel extends Instance<typeof RingHost> {}
-
-export { RING_PASSES, ringMarks }
-
-/** The host, typed as the display layer reads it. */
-export function asRegionHost(host: RingHostModel): RegionHost {
-  return host as unknown as RegionHost
-}
