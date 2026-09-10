@@ -160,6 +160,25 @@ export function ringHit(
 }
 
 /**
+ * Where a display's canvas sits in its strip, in CSS px: a display may inset
+ * its plot (wiggle leaves room for its axis labels), and the ring samples the
+ * canvas, not the strip, so its band is the canvas's box.
+ */
+function canvasBox(
+  strip: HTMLElement | undefined,
+  canvas: HTMLCanvasElement | null | undefined,
+) {
+  if (!strip || !canvas) {
+    return { top: 0, height: Infinity }
+  }
+  const s = strip.getBoundingClientRect()
+  const c = canvas.getBoundingClientRect()
+  return c.height > 0
+    ? { top: c.top - s.top, height: c.height }
+    : { top: 0, height: Infinity }
+}
+
+/**
  * One canvas of rings — a `RenderLifecycleMixin` node per group of
  * `RING_PASSES`, since a pass holds one texture and a canvas's passes are
  * declared when its backend is built.
@@ -370,17 +389,19 @@ export const RingHost = types
       const cells = this.rings.map((ring, index) => {
         const { display } = ring
         live.add(display.id)
-        const canvas = self.stripElements
-          .get(display.id)
-          ?.querySelector('canvas')
+        const el = self.stripElements.get(display.id)
+        const canvas = el?.querySelector('canvas')
         const strip: MarkImage | undefined =
           canvas && canvas.width > 0 && canvas.height > 0
             ? { image: canvas, width: canvas.width, height: canvas.height }
             : undefined
+        const box = canvasBox(el, canvas)
+        const outerPx = ring.outerPx - box.top
+        const innerPx = Math.max(ring.innerPx, outerPx - box.height)
         const key = [
           index,
-          ring.innerPx,
-          ring.outerPx,
+          innerPx,
+          outerPx,
           display.paintCount,
           strip?.width,
           strip?.height,
@@ -393,8 +414,8 @@ export const RingHost = types
           index,
           display,
           channels: {
-            innerPx: new Float32Array([ring.innerPx]),
-            outerPx: new Float32Array([ring.outerPx]),
+            innerPx: new Float32Array([innerPx]),
+            outerPx: new Float32Array([outerPx]),
             count: 1,
           },
           strip,
@@ -471,6 +492,9 @@ export const RingHost = types
       addDisposer(
         self,
         autorun(() => {
+          if (!view.initialized) {
+            return
+          }
           const { dynamicBlocks, bpPerPx } = self
           clearTimeout(timer)
           timer = setTimeout(() => {
@@ -484,7 +508,9 @@ export const RingHost = types
       addDisposer(
         self,
         autorun(() => {
-          self.syncPasses(self.rings.length)
+          if (view.initialized) {
+            self.syncPasses(self.rings.length)
+          }
         }),
       )
     },
