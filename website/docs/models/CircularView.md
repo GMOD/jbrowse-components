@@ -22,6 +22,20 @@ alt/unplaced contigs off the circle:
 }
 ```
 
+`assembly` also takes a list, which is what a synteny ribbon plot needs: each
+assembly lays its contigs out in turn, so the first genome takes one arc of
+the circle and the second the next, and a `SyntenyTrack` covering both draws
+a ribbon per alignment between them. The import form opens one assembly, so
+a two-assembly circle is authored here or in a session spec:
+
+```js
+{
+  type: 'CircularView',
+  assembly: ['hg38', 'mm39'],
+  tracks: ['hg38_vs_mm39'],
+}
+```
+
 Members a composed model contributes are listed here too, so these tables are the whole surface.
 
 ## Properties
@@ -85,13 +99,13 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-elidedregions">**elidedRegions**</span><br><code>SliceRegion[]</code> | this is displayedRegions, post-processed to elide regions that are too small to see reasonably | CircularView |
 | <span id="getter-pendinglaunch">**pendingLaunch**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>LaunchInput&lt;CircularViewCommands &amp; { unknown?: Record&lt;…&gt; &#124; unde…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>LaunchInput&lt;CircularViewCommands &amp; { unknown?: Record&lt;…&gt; &#124; undefined; malformed?: Record&lt;…&gt; &#124; undefined; legacyInit?: boolean &#124; undefined; } &amp; IStateTreeNode&lt;...&gt;&gt; &#124; undefined</code></pre></dialog></span> | the launch state that still has something to apply — the gate the loading and import-form paths below read. | CircularView |
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> |  | CircularView |
-| <span id="getter-launchassemblyname">**launchAssemblyName**</span><br><code>string &#124; undefined</code> | The assembly a pending launch names, which is what the gates below wait on before `displayedRegions` exist. A blob carrying only tracks names none, and waiting on one nobody named never ends. | CircularView |
+| <span id="getter-launchassemblynames">**launchAssemblyNames**</span><br><code>string[]</code> | The assemblies a pending launch names, which is what the gates below wait on before `displayedRegions` exist. A blob carrying only tracks names none, and waiting on one nobody named never ends. | CircularView |
 | <span id="getter-initialized">**initialized**</span><br><code>boolean</code> |  | CircularView |
 | <span id="getter-assemblyerrors">**assemblyErrors**</span><br><code>string &#124; undefined</code> |  | CircularView |
 | <span id="getter-error">**error**</span><br><code>unknown</code> |  | CircularView |
 | <span id="getter-hassomethingtoshow">**hasSomethingToShow**</span><br><code>boolean</code> |  | CircularView |
 | <span id="getter-showloading">**showLoading**</span><br><code>boolean</code> | Whether to show a loading indicator instead of the import form or view | CircularView |
-| <span id="getter-loadingassembly">**loadingAssembly**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(ModelInstanceTypeProps&lt;…&gt; &amp; { error: unknown; loadingP: Promis…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(ModelInstanceTypeProps&lt;…&gt; &amp; { error: unknown; loadingP: Promise&lt;…&gt; &#124; undefined; ... 10 more ...; refNameMismatches: Map&lt;…&gt;; } &amp; ... 13 more ... &amp; IStateTreeNode&lt;...&gt;) &#124; undefined</code></pre></dialog></span> | The assembly whose load the spinner is waiting on. A pending launch names it before displayedRegions exist, so it is the source until then — the same order `initialized` above resolves in. | CircularView |
+| <span id="getter-loadingassembly">**loadingAssembly**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(ModelInstanceTypeProps&lt;…&gt; &amp; { error: unknown; loadingP: Promis…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(ModelInstanceTypeProps&lt;…&gt; &amp; { error: unknown; loadingP: Promise&lt;…&gt; &#124; undefined; ... 10 more ...; refNameMismatches: Map&lt;…&gt;; } &amp; ... 13 more ... &amp; IStateTreeNode&lt;...&gt;) &#124; undefined</code></pre></dialog></span> | The assembly whose load the spinner is waiting on. A pending launch names them before displayedRegions exist, so it is the source until then — the same order `initialized` above resolves in. | CircularView |
 | <span id="getter-loadingmessage">**loadingMessage**</span><br><code>string &#124; undefined</code> | What the spinner says: which of the assembly's files is downloading, rather than a bare "Loading" for the slow part of startup. See agent-docs/reference/PROGRESS_REPORTING.md. | CircularView |
 | <span id="getter-loadingprogress">**loadingProgress**</span><br><code>number &#124; undefined</code> | Determinate fraction for the spinner's bar, when the assembly load reports one | CircularView |
 | <span id="getter-loadingsource">**loadingSource**</span><br><code>string &#124; undefined</code> | The URL the assembly load is currently fetching, when the phase named one. Only the stalled-load notice reads it — see `ViewLoadingScreen`. | CircularView |

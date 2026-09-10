@@ -225,6 +225,63 @@ prefix may name a whole sample (`grape`) or a single haplotype (`grape#1`):
 - **A prefix matches only at a `#` boundary**, so `grape` cannot pick up
   `grapefruit#1#chr1`, and mates are labelled at the depth you listed
 
+## In the circular view
+
+A `SyntenyTrack` opens in a [circular view](/docs/user_guides/circular_view)
+too, as [](/docs/config/chordsyntenydisplay): each alignment is a ribbon between
+the span it covers on one side and the span its mate covers on the other,
+coloured by strand, with the block's own extent on both arcs — a Circos-style
+picture of where a genome's blocks land. Clicking one opens the same synteny
+feature details panel the linear views open.
+
+The circle has to carry both ends of the alignment, so what the view is opened
+on decides what can be drawn.
+
+**A self-alignment** — a genome against itself, segmental duplications, a
+whole-genome-duplication PAF — names one assembly on both sides and needs
+nothing special: open the circular view on that assembly and turn the track on.
+
+```json addtrack
+{
+  "type": "SyntenyTrack",
+  "trackId": "volvox_self",
+  "name": "Volvox self-alignment",
+  "assemblyNames": ["volvox", "volvox"],
+  "adapter": {
+    "type": "PAFAdapter",
+    "uri": "volvox_self.paf",
+    "queryAssembly": "volvox",
+    "targetAssembly": "volvox"
+  },
+  "displays": [
+    {
+      "type": "ChordSyntenyDisplay",
+      "displayId": "volvox_self-ChordSyntenyDisplay",
+      "color": "jexl:get(feature,'score')>1000?'rgba(0,0,0,0.4)':'rgba(0,0,0,0.1)'"
+    }
+  ]
+}
+```
+
+**Two assemblies** need both on the circle, which is a list in the view's
+`assembly`: each one lays its contigs out in turn, so hg38 takes one arc and
+mm39 the next and every ribbon crosses between them. The import form opens a
+single assembly, so this circle is authored in a `defaultSession` view or a
+session spec:
+
+```json
+{
+  "type": "CircularView",
+  "assembly": ["hg38", "mm39"],
+  "displayedRegionNames": ["chr1", "chr2", "chr3"],
+  "tracks": ["hg38_vs_mm39"]
+}
+```
+
+`displayedRegionNames` is resolved against each assembly in turn, which is what
+keeps a few named chromosomes of both genomes on a circle rather than every
+unplaced contig of either.
+
 ## See also
 
 - [](/docs/user_guides/linear_synteny_view)

@@ -54,6 +54,7 @@ _See the **Config slots** section below for all available configuration fields._
 ## Related links
 
 - **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [ChordSyntenyDisplay](../chordsyntenydisplay)
 - **Display:** [DotplotDisplay](../dotplotdisplay)
 - **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
 - **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)

@@ -50,6 +50,7 @@ written twice. Each child is any pairwise synteny adapter config with its own
 ## Related links
 
 - **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [ChordSyntenyDisplay](../chordsyntenydisplay)
 - **Display:** [DotplotDisplay](../dotplotdisplay)
 - **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
 - **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)

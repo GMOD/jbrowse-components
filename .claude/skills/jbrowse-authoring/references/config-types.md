@@ -22,8 +22,8 @@ inference.
 - [AlignmentsTrack](https://jbrowse.org/jb2/docs/config/alignmentstrack.md) —
   displays: LinearAlignmentsDisplay, LinearMarkDisplay
 - [SyntenyTrack](https://jbrowse.org/jb2/docs/config/syntenytrack.md) —
-  displays: DotplotDisplay, LinearSyntenyDisplay, LGVSyntenyDisplay,
-  MultiWaySyntenyDisplay
+  displays: ChordSyntenyDisplay, DotplotDisplay, LinearSyntenyDisplay,
+  LGVSyntenyDisplay, MultiWaySyntenyDisplay
 - [ReferenceSequenceTrack](https://jbrowse.org/jb2/docs/config/referencesequencetrack.md)
   — displays: LinearReferenceSequenceDisplay, LinearGCContentDisplay
 - [VariantTrack](https://jbrowse.org/jb2/docs/config/varianttrack.md) —
@@ -51,6 +51,7 @@ inference.
 - [LinearMultiRowFeatureDisplay](https://jbrowse.org/jb2/docs/config/linearmultirowfeaturedisplay.md)
 - [LinearAlignmentsDisplay](https://jbrowse.org/jb2/docs/config/linearalignmentsdisplay.md)
 - [ChordVariantDisplay](https://jbrowse.org/jb2/docs/config/chordvariantdisplay.md)
+- [ChordSyntenyDisplay](https://jbrowse.org/jb2/docs/config/chordsyntenydisplay.md)
 - [DotplotDisplay](https://jbrowse.org/jb2/docs/config/dotplotdisplay.md)
 - [LinearSyntenyDisplay](https://jbrowse.org/jb2/docs/config/linearsyntenydisplay.md)
 - [LGVSyntenyDisplay](https://jbrowse.org/jb2/docs/config/lgvsyntenydisplay.md)

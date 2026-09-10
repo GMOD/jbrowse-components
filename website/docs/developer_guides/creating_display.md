@@ -43,7 +43,8 @@ past `LinearGenomeView`:
 | [](/docs/config/quantitativetrack) | [](/docs/config/linearwiggledisplay) | LinearGenomeView |
 | [](/docs/config/referencesequencetrack) | [](/docs/config/lineargccontentdisplay) | LinearGenomeView |
 |  | [](/docs/config/linearreferencesequencedisplay) | LinearGenomeView |
-| [](/docs/config/syntenytrack) | [](/docs/config/dotplotdisplay) | DotplotView |
+| [](/docs/config/syntenytrack) | [](/docs/config/chordsyntenydisplay) | CircularView |
+|  | [](/docs/config/dotplotdisplay) | DotplotView |
 |  | [](/docs/config/lgvsyntenydisplay) | LinearGenomeView |
 |  | [](/docs/config/linearsyntenydisplay) | LinearSyntenyView |
 |  | [](/docs/config/multiwaysyntenydisplay) | LinearGenomeView |

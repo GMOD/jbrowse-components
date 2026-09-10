@@ -46,6 +46,7 @@ say.
 ## Related links
 
 - **Track:** [SyntenyTrack](../syntenytrack)
+- **Display:** [ChordSyntenyDisplay](../chordsyntenydisplay)
 - **Display:** [DotplotDisplay](../dotplotdisplay)
 - **Display:** [LGVSyntenyDisplay](../lgvsyntenydisplay)
 - **Display:** [LinearSyntenyDisplay](../linearsyntenydisplay)

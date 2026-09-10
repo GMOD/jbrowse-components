@@ -40,6 +40,7 @@
     "@jbrowse/react-circular-genome-view2": "file:./packed/jbrowse-react-circular-genome-view2.tgz",
     "@jbrowse/render-core": "file:./packed/jbrowse-render-core.tgz",
     "@jbrowse/sv-core": "file:./packed/jbrowse-sv-core.tgz",
+    "@jbrowse/synteny-core": "file:./packed/jbrowse-synteny-core.tgz",
     "@jbrowse/tree-sidebar": "file:./packed/jbrowse-tree-sidebar.tgz",
     "@jbrowse/wiggle-core": "file:./packed/jbrowse-wiggle-core.tgz"
   },
