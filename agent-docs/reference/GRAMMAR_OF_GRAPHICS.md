@@ -27,7 +27,8 @@ positions behind each are in
 [ADR-112](../architecture-decision-records/adr-112-a-layer-owns-its-transform-and-its-zoom-range.md),
 [ADR-113](../architecture-decision-records/adr-113-one-scale-rule-in-one-place.md)
 [ADR-114](../architecture-decision-records/adr-114-canvas-keeps-its-hand-written-packer.md)
-and [ADR-115](../architecture-decision-records/adr-115-one-mark-may-read-its-own-axis.md);
+[ADR-115](../architecture-decision-records/adr-115-one-mark-may-read-its-own-axis.md)
+and [ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md);
 this file is the map across them.
 
 ![The grammar's seven stages, and where the tree answers each](diagrams/grammar-pipeline.svg)
@@ -37,7 +38,7 @@ this file is the map across them.
 | Stage | What the grammar means | Where the tree answers | How far |
 | --- | --- | --- | --- |
 | data | rows in memory | a feature adapter's `getFeaturesArray`, any format | whole; the adapter is the format's, and the grammar has no lazy source of its own |
-| transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `stack` — run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreEncodeFeatures` request and then each layer's own; `filters: jexl[]` as sugar for leading filters | whole for a fixed bin width, layout included — `stack` is the pileup packing as a step; `window` and `sample` are absent |
+| transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `stack` — run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreEncodeFeatures` request and then each layer's own; `filters: jexl[]` as sugar for leading filters | whole for a fixed bin width, layout included — `stack` is a pileup's packing as a step, and not the format-typed displays' ([ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)); `window` and `sample` are absent |
 | scale | domain → range, separate from the encoding | every channel on the encoding — `{ field, scale, domain, palette \| range \| ramp }` for colour and glyph, `{ field, scale, domain }` for y — read by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`) and resolved either in the worker (categorical) or on the main thread against a domain uniform (y, and a quantitative ramp), with `ScoreScaleMixin` resolving the declaration rather than owning it | whole, declared in one place |
 | mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`) | whole, for the shapes the library has |
 | guide | axis and legend derived from a scale; a highlight derived from a selection | `colorScales` → legend (`packages/display-kit/src/legendHost.ts`), `valueScale` → axis, hatches and rules (`packages/display-kit/src/axisHost.ts`), `hoverInk` / `selectionInk` → the highlight (`packages/display-kit/src/highlightHost.ts`), each instance's box read off its shape's `ink`; `DisplayChrome` places all three and `renderDisplaySvg` the first two | whole, for the displays that declare |
@@ -60,6 +61,23 @@ primitives through `flatten` and `encodeFeatures` measured 3.11x the packer
 with five lanes filled, and the packer is 11% of the worker's per-region
 compute against the glyph emitters' 58%. The fan-out did land as a transform:
 `flatten` is a step kind, and the packer is not its consumer.
+
+**The layout steps went the same way, and the audit is the record.** Every
+place a format-typed display assigns a row to an interval, bins a position or
+measures depth was classified against `stack`, `bin` and `coverage`
+([ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)
+has the table with file and line ranges). One entry runs a rule a step
+reproduces — a plain uncapped single-region pileup is `stack` with
+`padding: 2`, row for row, which
+`packages/core/src/util/featureTransforms.test.ts` now pins against
+`placeRect` — and porting it measured 4.45x, two thirds of that the
+`Feature[]` the step reads and answers rather than the packing. Every other
+packer runs the same rule over inputs a step has no way to be told: label
+overhang widths and strand-arrow padding in canvas's `packRef`, isoform caps,
+row caps resolved against the viewport, regions grouped by refName before
+packing, a layout seeded from the previous frame's rows. So `stack` is what
+makes a pileup declarable over any adapter the mark display attaches to, and
+that is a different sentence from making the alignments pileup declarable.
 
 ## Integrity: what holds the implementation to itself
 
@@ -112,7 +130,9 @@ The seams, named honestly:
   ([SESSION_SPEC_FORMAT.md](SESSION_SPEC_FORMAT.md) §"The assessment": what
   those displays hold is layout, tiering and fetch shape, not channels), and
   it is still the widest gap between what the tree calls a grammar and what
-  one is.
+  one is. ADR-118 measured the layout half of it and the position held: the
+  rule those displays pack by is the step's rule, and everything they pack
+  *with* is the display's own.
 - **A reader channel is where "declared" ends.** Manhattan's LD colouring
   joins each feature against a second adapter through a function
   (`plugins/gwas/src/ManhattanRPC/makeLdEvaluator.ts`) the encoder takes in a
@@ -196,7 +216,8 @@ needs a shape that reads it. A new guide is a hook on the mixin that owns the
 scale and a placement in the two shells; a guide over the painting reads the
 shapes' `ink`. A transform is a `type` on `TransformStep`, an arm in
 `runTransforms` and a slot on the mark display's step schema, measured in
-`featureTransforms.bench.ts` beside the others. A new shape clears ADR-040's bar with two consumers. A
+`featureTransforms.bench.ts` beside the others — and it needs a `marks` config
+that wants it, not a display whose code it resembles (ADR-118). A new shape clears ADR-040's bar with two consumers. A
 display that wants the encoding for a meaning it cannot say hands the encoder
 a reader and says so at the call. Anything that composes a display stack from
 a declaration is what ADR-091 measured and refused.
