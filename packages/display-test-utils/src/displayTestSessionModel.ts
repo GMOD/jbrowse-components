@@ -2,7 +2,7 @@ import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { createJBrowseTheme } from '@jbrowse/core/ui/theme'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type { SnackAction } from '@jbrowse/core/util'
+import type { AnimationMode, SnackAction } from '@jbrowse/core/util'
 import type { IAnyModelType, Instance } from '@jbrowse/mobx-state-tree'
 
 /** What a queued dialog was called with, resolved to `[Component, props]`. */
@@ -45,6 +45,18 @@ export function displayTestSessionModel<VIEW extends IAnyModelType>({
       assemblyManager,
       theme: createJBrowseTheme(),
       palette: resolvePalette(),
+      // `animationAllowed(getSession(self).animationMode)` gates canvas's Y
+      // morph, and absent this it read `undefined` — so every display suite ran
+      // with the morph off and `installYMorphAutorun` only ever took its
+      // `endYMorph` branch. The same silent shape as the `palette` gap above,
+      // minus the `TypeError` that made that one findable: a missing gate input
+      // reads as a refusal, and a refusal is what a green suite looks like.
+      //
+      // Nothing pumps `requestAnimationFrame` under jsdom, so a morph a test
+      // starts stays at progress 0 and `renderDataMap` keeps answering the OLD
+      // rows for the rest of that test. Read `laidOutDataMap` for the settled
+      // layout, or drive `setMorphProgress` by hand.
+      animationMode: 'enabled' as AnimationMode,
       queuedDialogs: [] as QueuedDialog[],
       // what `getSession(self).selection` answers — the globally-selected
       // feature a display highlights against
