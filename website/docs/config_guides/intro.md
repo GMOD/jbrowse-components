@@ -76,6 +76,34 @@ error: defaultSession.views[0].tracks[0]: trackId "sample_bem" is not defined in
 It exits non-zero on errors (`--json` for machine-readable output), so it can
 gate a deploy; see [](/docs/agents) if an AI assistant is writing the config.
 
+## The schema, in an editor
+
+The same checks are published as a JSON Schema at
+`https://jbrowse.org/jb2/schema/v5/config.json`, generated from JBrowse's own
+type registry. A `$schema` line at the top of the file is all an editor needs to
+complete type names, slot names and enum members, show each slot's description
+and default on hover, and underline a key JBrowse would drop:
+
+```json
+{
+  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
+  "assemblies": [{ "name": "hg38", "uri": "hg38.fa.gz" }],
+  "tracks": [
+    { "trackId": "genes", "uri": "genes.gff.gz", "assemblyNames": ["hg38"] }
+  ]
+}
+```
+
+`v5` is the JBrowse major version the schema describes; the file regenerates
+with each release. `jbrowse validate` runs the schema first and adds what a
+schema cannot see — a `trackId` a session names that no track defines, an
+assembly no `assemblies` entry defines — so the two agree on every slot. A type
+a plugin registers is not in the schema and passes with its keys unchecked; a
+`frozen` slot such as the alignments display's `colorBy` is any JSON value, and
+its description says what it takes. A session spec written on its own, the
+`views[]` entry a `&session=spec-` URL carries, validates against `#/$defs/View`
+inside the same file.
+
 ## See also
 
 - [](/docs/automating)

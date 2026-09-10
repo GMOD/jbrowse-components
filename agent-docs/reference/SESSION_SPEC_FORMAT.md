@@ -1,7 +1,7 @@
 ---
 name: session-spec-format
 audience: internal
-description: What the session spec is, a census of what the figure corpus writes into it, and the assessment against Gosling and GenomeSpy: keep the flat format-typed form, publish one JSON Schema, decline a grammar. Read before extending the spec.
+description: What the session spec is, a census of what the figure corpus writes into it, and the assessment against Gosling and GenomeSpy: keep the flat format-typed form, one published JSON Schema (ADR-120), decline a grammar. Read before extending the spec.
 kind: spec
 ---
 
@@ -237,38 +237,26 @@ observation: `height`, `color`, `colorBy`, `groupBy` and the score scale
 should keep spelling the same across displays, and the census says they
 largely do.
 
-**What the grammars have that this format lacks is one published schema.** The
-manifest is a schema in everything but format: 169 KB of generated TypeScript
-read out of the live `ConfigurationSchema` objects, with slot names, MST types,
-shorthand keys, legacy keys and each display's state-model properties, and 119
-generated config pages carry the descriptions and defaults. A reader's editor
-cannot use either. Emitting a JSON Schema from the same generator is the change
-worth making:
-
-- `scripts/generateConfigManifest.ts` already boots the plugin manager, but
-  the manifest stores MST type names as strings (`"(JexlString | number)"`),
-  so the emitter is a second walk of the same live schemas rather than a
-  second output of the first. Each type becomes a `$defs` entry discriminated
-  on `type`; a slot's `description`, `defaultValue` and enum members go in
-  directly; every slot admits the `jexl:` string form as an alternative. The
-  slot types in `core/configuration/configurationSlot.ts` all map — the
-  location slots to the four-location union the manifest already spells —
-  except `frozen` and `maybeFrozen`, which validate nothing: alignments'
-  `colorBy` is one, so the schema documents its shape as prose and the
-  validator keeps checking it. The schema is then a second shipped artifact
-  beside the manifest the CLI bundles, and the two have to move together.
-- Adapters add their `shorthandKeys` (`uri` beside `bamLocation`), tracks add
-  `displayDefaults` and `displays[]`, and displays add `stateModelProps` so a
-  `defaultSession` display node validates too.
-- A session spec's `views[]` takes each view type's launch keys, which
-  `generateSpecKeyDocs.ts` already resolves from the `LaunchView-<type>`
-  registrations; a track entry is `trackId` plus that view's displays' slots.
-- Serve it at a versioned URL and put `$schema` in every cookbook fence. The
-  URL is also the format version the parked idea asks for.
-
-`jbrowse validate` keeps the checks a schema cannot express — a `trackId` a
-session names that no track defines, an assembly a track names that no
-assembly defines — and the schema takes the rest into the editor.
+**The one published schema the grammars had and this format lacked is
+[ADR-120](../architecture-decision-records/adr-120-one-json-schema-for-config-and-session-spec.md).**
+`scripts/generateConfigManifest.ts` walks the same live `ConfigurationSchema`
+objects and state models a second time — the manifest stores MST type names as
+strings, so it could not be a transform — into one draft 2020-12 JSON Schema
+at `https://jbrowse.org/jb2/schema/v5/config.json`, bundled in the CLI beside
+the manifest. Each type is a `$defs` entry dispatched on `type`; a slot carries
+its `description`, `defaultValue` and enum members and admits `jexl:`; the
+location slots are the four-location union; the 67 `frozen` and `maybeFrozen`
+slots (alignments' `colorBy` among them) stay open with the reason in their
+description, and the validator's cross-reference checks stay in the CLI.
+Adapters carry their `shorthandKeys`, tracks `displayDefaults` and `displays[]`,
+displays their state-model properties for a `defaultSession` node, and a
+session spec's `views[]` takes each view type's launch keys off its runtime
+registration, with a track entry as `trackId` plus that view's displays' slots.
+Every whole-config fence in the docs opens with `$schema`, and the URL's major
+segment is the format version the parked idea asked for. `jbrowse validate`
+runs the schema first and keeps only what a schema cannot express — a
+`trackId` a session names that no track defines, an assembly a track names
+that none defines — plus the migration warnings.
 
 **Declined, with the evidence each rests on:**
 
@@ -317,4 +305,4 @@ inline; a figure's spec is typically under twenty lines; and 330 of the site's
 figures are rendered from such documents and linked back to them. Against the
 grammar-based browsers the difference is where the pileup lives — in the
 reader's spec as a transform there, in the display type here — and the parity
-item to close is a published JSON Schema, which both of them have.
+item both of them had, a published JSON Schema, is closed (ADR-120).
