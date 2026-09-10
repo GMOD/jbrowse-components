@@ -241,6 +241,16 @@ function transformOf(mark: MarkConfig): TransformStep[] {
       case 'flatten': {
         return { type: 'flatten', field: step.field || undefined, index: as[0] }
       }
+      case 'stack': {
+        const fields = [...step.fields]
+        return {
+          type: 'stack',
+          as: as[0],
+          fields: fields.length === 2 ? [fields[0]!, fields[1]!] : undefined,
+          padding: step.padding || undefined,
+          groupby: step.groupby.length > 0 ? [...step.groupby] : undefined,
+        }
+      }
       default: {
         throw new Error(`unknown transform step ${String(step.type)}`)
       }

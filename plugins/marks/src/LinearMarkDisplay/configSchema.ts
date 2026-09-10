@@ -282,6 +282,7 @@ export const TRANSFORM_TYPES = [
   'aggregate',
   'coverage',
   'flatten',
+  'stack',
 ] as const
 export const AGGREGATE_OPS = ['count', 'sum', 'mean', 'min', 'max'] as const
 
@@ -336,13 +337,17 @@ const transformStepSchema = ConfigurationSchema(
      * `field` falls in, writing the bin's edges over `start` and `end` (or
      * the two names in `as`); `aggregate` folds each `groupby` group into
      * one feature carrying `ops`; `coverage` replaces the features with
-     * runs of how many overlap each stretch, in `as` (`coverage`).
+     * runs of how many overlap each stretch, in `as` (`coverage`);
+     * `flatten` fans out an array field; `stack` writes each feature's row
+     * in a greedy first-fit packing, which a `span` reading `row` draws as
+     * a pileup.
      */
     type: {
       type: 'stringEnum',
       model: types.enumeration('MarkTransformType', [...TRANSFORM_TYPES]),
       defaultValue: 'filter',
-      description: 'filter, formula, bin, aggregate, coverage or flatten',
+      description:
+        'filter, formula, bin, aggregate, coverage, flatten or stack',
     },
     /**
      * #slot marks.transform.expr
@@ -376,9 +381,10 @@ const transformStepSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.transform.as
-     * The field a `formula` or `coverage` step writes, the two fields a
-     * `bin` step writes its edges to, or the field a `flatten` step writes
-     * each element's index to. A single name may be written as a string.
+     * The field a `formula`, `coverage` or `stack` step writes, the two
+     * fields a `bin` step writes its edges to, or the field a `flatten`
+     * step writes each element's index to. A single name may be written as
+     * a string. A `stack` leaving it empty writes `row`.
      */
     as: {
       type: 'stringArray',
@@ -386,10 +392,31 @@ const transformStepSchema = ConfigurationSchema(
       description: "output field, or a bin's two",
     },
     /**
+     * #slot marks.transform.fields
+     * For a `stack` step: the two fields giving the interval it packs,
+     * `start` and `end` when empty.
+     */
+    fields: {
+      type: 'stringArray',
+      defaultValue: [],
+      description: "a stack's [start, end] fields",
+    },
+    /**
+     * #slot marks.transform.padding
+     * For a `stack` step: bp of clearance kept between two features sharing
+     * a row, so a pileup does not butt its reads together.
+     */
+    padding: {
+      type: 'number',
+      defaultValue: 0,
+      description: 'bp between two features on one row',
+    },
+    /**
      * #slot marks.transform.groupby
      * For an `aggregate` step: the fields whose distinct value sets make
      * the groups — `["start", "end"]` after a `bin`. Empty folds the whole
-     * region into one feature.
+     * region into one feature. For a `stack` step: the groups packed on
+     * their own rows, each numbered from 0.
      */
     groupby: {
       type: 'stringArray',
