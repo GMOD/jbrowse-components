@@ -22,7 +22,8 @@ positions behind each are in
 [ADR-108](../architecture-decision-records/adr-108-a-display-declares-its-colour-scales.md),
 [ADR-109](../architecture-decision-records/adr-109-a-display-declares-its-value-scale.md),
 [ADR-110](../architecture-decision-records/adr-110-a-display-declares-what-is-highlighted.md)
-and [ADR-112](../architecture-decision-records/adr-112-a-layer-owns-its-transform-and-its-zoom-range.md);
+[ADR-112](../architecture-decision-records/adr-112-a-layer-owns-its-transform-and-its-zoom-range.md)
+and [ADR-114](../architecture-decision-records/adr-114-canvas-keeps-its-hand-written-packer.md);
 this file is the map across them.
 
 ![The grammar's seven stages, and where the tree answers each](diagrams/grammar-pipeline.svg)
@@ -45,9 +46,16 @@ spellings of it call it now: the mark display, Manhattan, the example plugin
 and wiggle's array-less fallback ([MARK_ENCODING.md](MARK_ENCODING.md) §"A
 reader in a channel's place"). Canvas's `packRenderArrays`
 (`plugins/canvas/src/RenderFeatureDataRPC/packRenderArrays.ts`) is the one
-hand-written packer left, and it fans one feature out into several
-primitive families, which is a transform the encoder does not have rather
-than a spelling of it.
+hand-written packer left and stays that way, measured
+([ADR-114](../architecture-decision-records/adr-114-canvas-keeps-its-hand-written-packer.md)).
+It fans one feature out into three primitive families over 29 typed arrays,
+and the encoder has a channel for 12 of them: the other 17 are a renderer's
+instance struct — heights, strands, chevron directions, deferred colour
+classes, label rows, child ordinals — not channels of a grammar. The same
+primitives through `flatten` and `encodeFeatures` measured 3.11x the packer
+with five lanes filled, and the packer is 11% of the worker's per-region
+compute against the glyph emitters' 58%. The fan-out did land as a transform:
+`flatten` is a step kind, and the packer is not its consumer.
 
 ## Integrity: what holds the implementation to itself
 

@@ -299,6 +299,16 @@ Keep the features a `jexl:` expression over `feature` admits.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+### FlattenStep
+
+Fan each feature out into one feature per element of an array-valued field —
+`subfeatures`, so a gene answers its transcripts and a transcript its exons.
+Each answer reads the element's own fields first and the feature it came from
+for everything else, so an exon still knows its gene's name and strand. A
+feature whose field holds no array drops out unless `keepEmpty` says otherwise.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
 ### FormulaStep
 
 Write a `jexl:` expression's value over `feature` into the field `as` of every

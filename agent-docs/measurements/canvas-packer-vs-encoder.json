@@ -1,0 +1,30 @@
+{
+  "id": "canvas-packer-vs-encoder",
+  "measured": "2026-09-10",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node plugins/canvas/benches/packRenderArrays.bench.ts --rounds=15",
+    "notes": "A synthetic gene track — 20,000 genes, two mRNA isoforms each, eight CDS segments per isoform — through the canvas worker's three steps, 700,000 primitives out (380,000 rects, 280,000 intron lines, 40,000 strand arrows). Five arms interleaved AND rotated round-robin in one node 24 process, min of 15 rounds, load average under 2; a fixed order alone put the control 9% off 1.00, because the arm that ran second inherited the first's warmup. 'glyph-layout' is findGlyph per feature, 'emit' the glyph emitters' walk into the collector arrays, 'pack' packRenderArrays over those arrays and 'pack-control' the same call through a second driver literal. 'encode' is the same primitives through a flatten step and encodeFeatures, one call per family — and it is a FLOOR rather than a like-for-like: it fills x, x2, y, colour and one integer lane per family, and leaves height, strand, direction, widthBp, the colour class, the label rows, the child ordinal and the density fade unwritten, drops the bp-window filter, and needed a span invented for the arrow family, which is a point plus a width. The real port costs more than this row says. 'vs pack' is typed rather than derived because it divides by another row."
+  },
+  "columns": [
+    { "key": "arm", "label": "arm" },
+    { "key": "primitives", "label": "primitives", "format": "int", "align": "right" },
+    { "key": "ms", "label": "wall", "format": "ms", "align": "right" },
+    {
+      "key": "nsPer",
+      "label": "per primitive (ns)",
+      "format": "int",
+      "align": "right",
+      "derived": "ms * 1000000 / primitives"
+    },
+    { "key": "vsPack", "label": "vs pack", "format": "x", "align": "right" }
+  ],
+  "rows": [
+    { "values": { "arm": "glyph-layout", "primitives": 700000, "ms": 273, "vsPack": 2.73 } },
+    { "values": { "arm": "emit", "primitives": 700000, "ms": 517, "vsPack": 5.17 } },
+    { "values": { "arm": "pack", "primitives": 700000, "ms": 100, "vsPack": 1 } },
+    { "values": { "arm": "pack-control", "primitives": 700000, "ms": 98, "vsPack": 0.98 } },
+    { "values": { "arm": "encode", "primitives": 700000, "ms": 311, "vsPack": 3.11 } }
+  ]
+}

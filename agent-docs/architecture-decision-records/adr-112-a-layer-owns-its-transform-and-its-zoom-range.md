@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The grammar's transform stage is a typed step list — filter, formula, bin, aggregate, coverage — run in the worker, shared on the request and then per layer, so a binned density and the raw features share one fetch; a mark declares the zoom range it draws in, and the display folds only the drawing marks into its shared domain, legend, row count and skipped chip. Bin width is fixed in config; window, sample and a zoom-following bin are declined until a config asks"
+summary: "The grammar's transform stage is a typed step list — filter, formula, bin, aggregate, coverage, and flatten since ADR-114 — run in the worker, shared on the request and then per layer, so a binned density and the raw features share one fetch; a mark declares the zoom range it draws in, and the display folds only the drawing marks into its shared domain, legend, row count and skipped chip. Bin width is fixed in config; window, sample and a zoom-following bin are declined until a config asks"
 ---
 
 # ADR-112: A layer owns its transform and its zoom range

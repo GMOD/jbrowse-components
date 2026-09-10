@@ -12,13 +12,20 @@
 //   emit           the emitters' walk into the collector arrays
 //   pack           packRenderArrays over those arrays — the hand packer alone
 //   pack-control   the same call through a second driver, the harness's floor
+//   encode         the same primitives through `flatten` and `encodeFeatures`,
+//                  three families, five of the eleven lanes the renderers read
 //
 // The question the numbers answer is whether the packer is worth re-expressing
-// as the shared encoder: a step that is a few per cent of the region's cost
-// buys nothing back for the lanes it would have to teach the encoder.
+// as the shared encoder. `encode` is a floor, not a like-for-like: it fills x,
+// x2, y, colour and one integer lane per family and leaves height, strand,
+// direction, widthBp, the colour class, the label rows, the child ordinal and
+// the density fade unwritten, so the real port costs more than the row says.
+// ADR-114 has the decision.
 import { performance } from 'node:perf_hooks'
 
+import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 import createJexlInstance from '@jbrowse/core/util/jexl'
+import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 
 import { processFeatureRecord } from '../src/RenderFeatureDataRPC/collect/glyphEmitters.ts'
@@ -28,6 +35,7 @@ import { packRenderArrays } from '../src/RenderFeatureDataRPC/packRenderArrays.t
 import { mockDisplayConfig } from '../src/RenderFeatureDataRPC/testUtils.ts'
 
 import type { FeatureLayout } from '../src/RenderFeatureDataRPC/types.ts'
+import type { Feature } from '@jbrowse/core/util'
 
 const arg = (name: string, fallback: number) =>
   Number(
@@ -103,6 +111,41 @@ function emitAll(layouts: FeatureLayout[]) {
 const layouts = layoutAll()
 const collector = emitAll(layouts)
 
+// What the emitters would answer if the packer were the encoder: one container
+// per primitive family holding the family's records, which `flatten` fans out
+// and `encodeFeatures` walks. Built once, outside the timing, exactly as the
+// collector arrays the pack arms read are.
+const familyContainer = (items: object[]) =>
+  ({
+    get: (name: string) => (name === 'items' ? items : undefined),
+    id: () => 'family',
+  }) as unknown as Feature
+
+// An arrow is a point plus a width in bp; the encoder's x/x2 want a span, so
+// the family is given one before it can go through at all.
+const arrowSpans = collector.arrows.map(a => ({ ...a, start: a.x, end: a.x }))
+
+const FAMILIES = [
+  familyContainer(collector.rects),
+  familyContainer(collector.lines),
+  familyContainer(arrowSpans),
+]
+const FLATTEN = [{ type: 'flatten' as const, field: 'items' }]
+const LANES = ['y', 'color', 'row'] as const
+
+function encodeFamilies() {
+  let n = 0
+  for (const container of FAMILIES) {
+    const out = runTransforms([container], FLATTEN)
+    n += encodeFeatures(
+      out,
+      { x: 'start', x2: 'end', y: 'y', color: 'color', row: 'flatbushIdx' },
+      LANES,
+    ).count
+  }
+  return n
+}
+
 // Separate function literals on purpose: a shared driver takes every arm's
 // call site polymorphic and prices the harness rather than the code.
 const drivers = [
@@ -130,6 +173,7 @@ const drivers = [
         regionEnd,
       ).rectYs.length,
   },
+  { name: 'encode', run: () => encodeFamilies() },
 ]
 
 const packed = packRenderArrays(
