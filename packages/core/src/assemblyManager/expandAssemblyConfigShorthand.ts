@@ -95,9 +95,26 @@ export function expandAssemblySequenceAdapter(
       ...(typeof baseUri === 'string' ? { baseUri } : {}),
     }
     const guess = guesser(file, undefined)
-    return guess && guess.type !== UNKNOWN
-      ? { ...sequence, adapter: { ...guess, ...extras } }
-      : sequence
+    if (!guess || guess.type === UNKNOWN) {
+      return sequence
+    }
+    // the type is the only thing the guess is needed for. The adapter's own
+    // normalizeSnapshot expands `uri` and everything riding with it — a 2bit's
+    // `chromSizes`, which the guess has no slot for and MST then dropped
+    // unannounced — so this is not a second place that knows how a sequence
+    // file names its sidecars. An adapter declaring no shorthand keeps the
+    // guess's derived locations.
+    const normalize = pluginManager.hasAdapterType(guess.type)
+      ? pluginManager.getAdapterType(guess.type).normalizeSnapshot
+      : undefined
+    const shorthand = { ...adapter, type: guess.type }
+    const normalized = normalize?.(shorthand) ?? shorthand
+    // `uri` is consumed, and it has to GO: localFiles substitutes a blob into a
+    // location node, and an adapter still carrying `uri` reads as one
+    const full: Record<string, unknown> =
+      normalized === shorthand ? { ...guess, ...extras } : normalized
+    const { uri: _consumed, baseUri: _spent, ...expanded } = full
+    return { ...sequence, adapter: expanded }
   }
   return sequence
 }

@@ -70,9 +70,11 @@ test('propagates baseUri onto the fasta location and its derived .fai/.gzi', () 
     adapter: { uri: 'hg38.fa.gz', baseUri: 'https://x.test/sub/config.json' },
   })
   expect(adapter.type).toBe('BgzipFastaAdapter')
+  // shaped exactly as the typed `{ type, uri }` form expands to — the
+  // adapter's own normalizer writes both, and the fileLocation slot stamps
+  // locationType when MST builds the config
   expect(adapter.fastaLocation).toEqual({
     uri: 'hg38.fa.gz',
-    locationType: 'UriLocation',
     baseUri: 'https://x.test/sub/config.json',
   })
   expect(adapter.faiLocation).toMatchObject({
@@ -85,6 +87,38 @@ test('propagates baseUri onto the fasta location and its derived .fai/.gzi', () 
   })
   // baseUri belongs on the locations, not stray at the adapter top level
   expect(adapter.baseUri).toBeUndefined()
+})
+
+// the shorthand TwoBitAdapter's own docs advertise. Omitting the type used to
+// cost the chromSizes with it: the guess consumed `uri`, so the adapter's
+// normalizer never fired and MST dropped the undeclared key without a word,
+// leaving a 2bit that reads every contig's header to answer getRegions
+test('a 2bit picks up its chromSizes sidecar with the type omitted', () => {
+  const { adapter } = expand({
+    adapter: {
+      uri: 'https://x.test/hg38.2bit',
+      chromSizes: 'https://x.test/hg38.chrom.sizes',
+    },
+  })
+  expect(adapter.type).toBe('TwoBitAdapter')
+  expect(adapter.twoBitLocation).toMatchObject({
+    uri: 'https://x.test/hg38.2bit',
+  })
+  expect(adapter.chromSizesLocation).toMatchObject({
+    uri: 'https://x.test/hg38.chrom.sizes',
+  })
+})
+
+test('an explicit chromSizesLocation reaches a type-guessed 2bit too', () => {
+  const { adapter } = expand({
+    adapter: {
+      uri: 'https://x.test/hg38.2bit',
+      chromSizesLocation: { uri: 'https://elsewhere.test/sizes.txt' },
+    },
+  })
+  expect(adapter.chromSizesLocation).toEqual({
+    uri: 'https://elsewhere.test/sizes.txt',
+  })
 })
 
 function boot() {

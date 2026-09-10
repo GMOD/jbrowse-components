@@ -58,6 +58,42 @@ test('sequence.type/trackId are filled in for a uri-less inline adapter', () => 
   })
 })
 
+// end to end through the schema, where the drop happened: the expansion runs
+// as preProcessSnapshot, and MST discards an undeclared key without a word
+test('a 2bit keeps its chromSizes through the whole config build', () => {
+  const model = getAssemblyConfigSchema().create({
+    name: 'hg38',
+    uri: 'hg38.2bit',
+    sequence: {
+      adapter: { uri: 'hg38.2bit', chromSizes: 'hg38.chrom.sizes' },
+    },
+  })
+
+  expect(getSnapshot(model.sequence.adapter)).toMatchObject({
+    type: 'TwoBitAdapter',
+    twoBitLocation: { uri: 'hg38.2bit' },
+    chromSizesLocation: { uri: 'hg38.chrom.sizes' },
+  })
+})
+
+test('a named index survives the uri shorthand on a typed adapter', () => {
+  const model = getAssemblyConfigSchema().create({
+    name: 'volvox',
+    sequence: {
+      adapter: {
+        type: 'IndexedFastaAdapter',
+        uri: 'volvox.fa',
+        faiLocation: { uri: 'indexes/volvox.fa.fai' },
+      },
+    },
+  })
+
+  expect(getSnapshot(model.sequence.adapter)).toMatchObject({
+    fastaLocation: { uri: 'volvox.fa' },
+    faiLocation: { uri: 'indexes/volvox.fa.fai' },
+  })
+})
+
 test('an explicit sequence.type/trackId is left untouched', () => {
   const model = getAssemblyConfigSchema().create({
     name: 'volvox',
