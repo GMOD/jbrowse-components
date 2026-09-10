@@ -114,5 +114,4 @@ is no longer shared with anything.
 | `hueRampLane` | tests only — `mapqHueParity.test.ts` |
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |
 | `sBlend` | tests only — `syntenyShaderParity.test.ts` |
-| `valueToYPxScaled` | nothing |
 | `yCurve` | tests only — `syntenyShaderParity.test.ts` |
