@@ -95,14 +95,16 @@ python3 symbols_to_blocks.py --anchor human -o primates.blocks \
 
 Symbols are compared case-folded, so a mouse `Atp5f1a` would meet the human
 `ATP5F1A`, and a gene whose name is an NCBI `LOC` placeholder joins nothing. A
-symbol several genes in one genome carry is a duplication, and a link joins one
-gene to one gene, so the helper gives each copy its own row and the lane draws a
-ribbon per copy from the one anchor gene. A column offering more than
-`--max-copies` genes is a gene family rather than a duplication, and its cell
-empties. Copies RefSeq lettered apart, _AMY1A_ against _AMY1B_, are separate
-symbols and so separate rows, joined to each other by nothing. The helper prints
-how much of each column it filled; for these eight the lanes come back nearly
-full, because the annotations share one naming pipeline.
+link joins one gene to one gene, so a symbol several genes in one genome carry
+gets a row per copy, which the
+[OrthoFinder page](/docs/tutorials/orthofinder_synteny#what-to-do-with-a-duplicated-gene)
+draws as a ribbon per copy over maize's whole-genome duplication. Little of that
+reaches these eight: RefSeq gives a duplicated primate gene either its own
+lettered symbol, _AMY1A_ against _AMY1B_, or a `LOC` placeholder, and the human
+symbols two genes really do share are the pseudoautosomal ones annotated on both
+X and Y, whose copies sit on chromosomes no one lane shows together. The helper
+prints how much of each column it filled; for these eight the lanes come back
+nearly full, because the annotations share one naming pipeline.
 
 ## Setting up the assemblies
 
