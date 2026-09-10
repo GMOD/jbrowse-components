@@ -20,6 +20,15 @@ import { join } from 'node:path'
 // are deliberate and are not checked here: capture's pending census is the DOM
 // and cannot see `tooLarge`; jb's is the session model and can. Neither is a
 // bug in the other.
+//
+// What this CANNOT see, being a grep over source text, is a predicate quietly
+// losing a term — and that is the drift that actually shipped. AppReadyMarker
+// and whenViewSettled both decide "has this view finished" from the model, and
+// only one of them had `pendingLaunch`, so the app read `ready` while a session
+// spec was still attaching its tracks. Every check below stayed green through
+// it. `packages/app-core/src/ui/App/readinessTerms.test.tsx` holds those two
+// together behaviourally; capture needs no such pin because it consumes the
+// published attribute rather than recomputing the verdict.
 
 const root = join(__dirname, '..')
 const read = (rel: string) => readFileSync(join(root, rel), 'utf8')

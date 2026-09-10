@@ -10,10 +10,18 @@ export interface SettleableView {
   pendingLaunch?: unknown
 }
 
-const consumed = (view: SettleableView) =>
+/**
+ * A view that is up AND has finished applying whatever launched it.
+ *
+ * Both terms, for the reason spelled out on {@link whenViewSettled} below.
+ * Exported because AppReadyMarker decides the same thing from the same model
+ * for the whole app, the two drifted on exactly this second term, and
+ * `readinessTerms.test.tsx` in app-core now holds them together.
+ */
+export const viewSettled = (view: SettleableView) =>
   view.initialized && view.pendingLaunch === undefined
 
-const done = (view: SettleableView) => consumed(view) || !!view.error
+const done = (view: SettleableView) => viewSettled(view) || !!view.error
 
 /**
  * Wait until a view has either initialized — launch blob consumed and all — or
@@ -63,7 +71,7 @@ export async function whenViewSettled(
   escape: () => boolean = () => false,
 ) {
   await when(() => escape() || done(view))
-  return consumed(view)
+  return viewSettled(view)
 }
 
 /**
@@ -86,5 +94,5 @@ export async function whenViewsSettled(
   escape: () => boolean = () => false,
 ) {
   await when(() => escape() || views.every(done))
-  return views.every(consumed)
+  return views.every(viewSettled)
 }

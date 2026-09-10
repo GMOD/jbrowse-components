@@ -165,6 +165,7 @@ describe('waitReady', () => {
         { viewId: 'v2', phase: 'initializing' },
       ],
     })
+
     const jb = createJbApi({
       rootModel: { session: failed },
     } as unknown as PluginManager)
@@ -175,6 +176,55 @@ describe('waitReady', () => {
     await expect(jb.visibleRegions('v1')).rejects.toThrow(
       /View v1 failed to initialize: Assembly volvix not found/,
     )
+  })
+
+  // AppReadyMarker holds the app `loading` while a view is still applying its
+  // launch blob — `initialized` goes true the moment a linear view's regions
+  // land, with the spec's tracks still to attach. This is the half that says so
+  // when the settle runs out there; a term in the marker and not here is a
+  // settle answering `false` with an empty notReady, which is what the marker's
+  // own comment calls answering false with no reason.
+  it('names a view still applying what it was launched with', async () => {
+    document.body.innerHTML = '<div data-app-phase="ready"></div>'
+    const launching = {
+      views: [
+        {
+          id: 'v1',
+          type: 'LinearGenomeView',
+          initialized: true,
+          pendingLaunch: { assembly: 'volvox', tracks: ['genes'] },
+          ownViews: [],
+          ownTracks: [],
+        },
+      ],
+      snackbarMessages: [],
+    } as unknown as AbstractSessionModel
+    expect(await waitReady(5000, launching)).toMatchObject({
+      notReady: [
+        {
+          viewId: 'v1',
+          phase: 'launching',
+          reason: expect.stringContaining('still applying'),
+        },
+      ],
+    })
+  })
+
+  it('says nothing about a view whose launch blob has been consumed', async () => {
+    document.body.innerHTML = '<div data-app-phase="ready"></div>'
+    const done = {
+      views: [
+        {
+          id: 'v1',
+          type: 'LinearGenomeView',
+          initialized: true,
+          ownViews: [],
+          ownTracks: [],
+        },
+      ],
+      snackbarMessages: [],
+    } as unknown as AbstractSessionModel
+    expect(await waitReady(5000, done)).not.toHaveProperty('notReady')
   })
 
   // A settle is a CONSUMER of the session's toasts, so the MCP envelope's

@@ -100,6 +100,8 @@ interface ViewSelf {
   coarseVisibleLocStrings?: string
   height?: number
   initialized?: boolean
+  // the launch blob the view is still applying, if any — see viewState
+  pendingLaunch?: unknown
   error?: unknown
   // read only by viewSummary, whose output mirrors the nesting for the reader;
   // ENUMERATION goes through the census helpers (openViews/openTracks) below
@@ -226,13 +228,31 @@ export function sessionOf(pluginManager: PluginManager | undefined) {
 // A view whose init failed (its assembly was never found) paints the error in
 // place of a genome and raises no toast, and stays uninitialized: without
 // this, a spec with "volvix" for "volvox" settled false with nothing said.
+/**
+ * Why a view is not finished, or nothing if it is.
+ *
+ * The three terms are AppReadyMarker's, and they have to be: the marker decides
+ * whether the settle ends, this decides what it says when it doesn't, and a
+ * term in one and not the other is a settle that answers `false` with an empty
+ * `notReady`. `launching` is the one that was missing — `initialized` goes true
+ * the moment a linear view's regions land, while the same apply pass still has
+ * the spec's tracks to attach, so a spec load timing out there reported no
+ * reason at all.
+ */
 function viewState(v: ViewSelf) {
-  return {
-    ...(v.error === undefined ? {} : { error: String(v.error) }),
-    ...(v.error === undefined && v.initialized === false
-      ? { phase: 'initializing' }
-      : {}),
+  if (v.error !== undefined) {
+    return { error: String(v.error) }
   }
+  if (v.initialized === false) {
+    return { phase: 'initializing' }
+  }
+  return v.pendingLaunch === undefined
+    ? {}
+    : {
+        phase: 'launching',
+        reason:
+          'the view is still applying what it was launched with (navigation, tracks)',
+      }
 }
 
 function viewSummary(view: AbstractViewModel): Record<string, unknown> {
