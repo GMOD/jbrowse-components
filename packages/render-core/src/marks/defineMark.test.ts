@@ -379,6 +379,26 @@ describe('a mark with a ramp texture', () => {
     )
     expect(hal.draws()).toHaveLength(2)
   })
+
+  // `pointMark` and `barMark` carry a sampler for the displays that ramp, and
+  // Manhattan declares no `texture` on the same shape.
+  test('a textured pass whose mark names no texture still binds the inert table', () => {
+    const untextured = defineMark({
+      shape: {
+        ...spanMark,
+        pass: { ...spanMark.pass, textures: [RAMP_BINDING] },
+      },
+      channels: (d: Region) => d.span,
+      params: (s: State) => s.span,
+    })
+    const hal = new MockHal([untextured.pass])
+    const backend = new GpuMarkBackend(hal, [untextured])
+    backend.upload(0, REGION)
+    backend.renderBlocks([block], new Map([[0, REGION]]), state(20))
+    backend.renderBlocks([block], new Map([[0, REGION]]), state(20))
+    expect(hal.callsOf('uploadTexture')).toHaveLength(1)
+    expect(hal.draws()).toHaveLength(2)
+  })
 })
 
 function recordingCtx() {
