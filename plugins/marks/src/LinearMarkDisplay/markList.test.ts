@@ -9,8 +9,8 @@ import { findMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend } from './legend.ts'
 import { buildMarkList } from './markList.ts'
 
-import type { MarkEntry } from './markList.ts'
 import type {
+  MarkEntry,
   MarkRegionData,
   MarkRenderState,
   StoredLayer,
