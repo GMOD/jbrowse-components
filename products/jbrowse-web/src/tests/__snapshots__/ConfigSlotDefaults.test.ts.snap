@@ -335,6 +335,11 @@ exports[`every registered schema slot default 1`] = `
     "hubTxtLocation": "fileLocation = {"uri":"https://mysite.com/path/to/hub.txt","locationType":"UriLocation"}",
     "name": "string = "nameOfConnection"",
   },
+  "display: ChordSyntenyDisplay": {
+    "color": "color = "jexl:get(feature,'strand')==-1?'rgba(0,0,255,0.25)':'rgba(255,0,0,0.25)'"",
+    "colorHover": "color = "rgba(85,85,85,0.6)"",
+    "colorSelected": "color = "rgba(0,0,0,0.6)"",
+  },
   "display: ChordVariantDisplay": {
     "onChordClick": "boolean = false",
     "strokeColor": "color = "rgba(255,133,0,0.32)"",
