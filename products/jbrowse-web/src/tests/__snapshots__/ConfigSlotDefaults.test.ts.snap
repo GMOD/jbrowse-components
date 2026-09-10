@@ -640,7 +640,11 @@ exports[`every registered schema slot default 1`] = `
   },
   "display: LinearMarkDisplay": {
     "autoscale": "stringEnum = "localpercentile" of ["local","localsd","localpercentile"]",
+    "densityTier": "stringEnum = "auto" of ["auto","features","density"]",
+    "densityTierBpPerPx": "number = 0",
     "displayCrossHatches": "boolean = false",
+    "fetchSizeLimit": "number = 1000000",
+    "forceLoad": "boolean = false",
     "height": "number = 150",
     "jexlFilters": "stringArray = []",
     "maxScore": "number = 1.7976931348623157e+308",
