@@ -263,13 +263,15 @@ jobs:
   # that platform silently stops updating from. Reads the draft, so the answer
   # is there before the Publish click that is the real gate; `if: always()` so
   # an incomplete release says so rather than being inferred from a red sibling.
+  # `contents: write` only because GitHub hides drafts from a read-only token:
+  # with `read`, v5.0.0-beta.7's complete draft reported "no release".
   verifydesktop:
     name: Verify the release carries every desktop artifact
     needs: [buildwindows, buildmac, buildlinux]
     if: always()
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
