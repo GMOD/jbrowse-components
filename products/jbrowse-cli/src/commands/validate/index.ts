@@ -25,7 +25,14 @@ Two levels are reported:
            nesting its settings under "init". Never fails the run.
 
 Types registered by plugins are not known to this command, so they come through
-as warnings rather than errors.`
+as warnings rather than errors.
+
+The same checks are published as a JSON Schema at
+https://jbrowse.org/jb2/schema/v5/config.json: a "$schema" line naming it at
+the top of a config.json gives an editor completion and validation for every
+slot. This command runs that schema first, then the cross-references a schema
+cannot express — a trackId a session names that no track defines, an assembly
+a track names that none defines.`
 
 const examples = [
   '# check the config.json in the current directory',

@@ -76,6 +76,11 @@ check by fixing the manifest, not by removing a skip.
   other two thirds of the audience as the only way in. An assembly the form has
   no input for (`aliases`, `geneticCodes`, a non-sibling index) silently gets no
   such tab, which is the signal that the page owes that reader a sentence.
+- **A whole config (one with `assemblies`) opens with
+  `"$schema": "https://jbrowse.org/jb2/schema/v5/config.json"`**, the URL the
+  generated schema names, so a reader who copies it gets completion and
+  validation in their editor. `check-config-blocks` enforces it, and validates a
+  fence whose `type` names a view against the schema's `View`.
 - **A `defaultSession` gets its own fence, tagged ```json session**, and must be
   its only top-level key, since `set-default-session` writes that key and
   nothing else.
