@@ -104,7 +104,13 @@ all have colocated tests.
 now; the sweep may have been launched at hand-off and is restoring on exit):
 
     python3 scripts/mutation_sweep.py packages/tree-sidebar/src \
-      > /private/tmp/claude-501/-Users-colin-src-jbrowse-components/a026cf72-c8ab-4647-a5e8-ac357d15cb96/scratchpad/sweep-tree-sidebar.log 2>&1
+      > <your session's scratchpad>/sweep-tree-sidebar.log 2>&1
+
+The log path matters only in that **one sweep writes one log**: the run this
+resumes was launched beside another unit's sweep, both wrote `sweep.log` in a
+shared scratchpad, and the other truncated this one's output including its
+exit-1 reason. Give it a name with the unit in it, in your own session's
+scratchpad.
 
 `--start N` resumes; the mutant numbering is the `--list` order. Expect ~60s a
 mutant with the narrowed oracle, so ~1.5h for the 102. Then write the verdict
