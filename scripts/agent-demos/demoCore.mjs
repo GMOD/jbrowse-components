@@ -136,8 +136,11 @@ export function capture(session) {
 const CHUNK = 4
 
 export async function typePrompt(session, text, perCharMs = 28) {
+  // `--` or a chunk starting with `-` is a flag: "K-12 MG1655" chunks to
+  // `-12 ` at CHUNK 4 and tmux exits on `unknown flag -1`, taking the take
+  // with it four seconds into turn one
   for (let i = 0; i < text.length; i += CHUNK) {
-    tmux('send-keys', '-t', session, '-l', text.slice(i, i + CHUNK))
+    tmux('send-keys', '-t', session, '-l', '--', text.slice(i, i + CHUNK))
     await delay(perCharMs * CHUNK)
   }
   await delay(400)
