@@ -569,7 +569,14 @@ function buildWorkspaceEsm() {
 function buildJbrowseWeb() {
   console.log('Building jbrowse-web')
   try {
-    execFileSync('pnpm', ['--filter', 'jbrowse-web', 'build'], {
+    // `@jbrowse/web`, not `jbrowse-web`: the DIRECTORY is products/jbrowse-web
+    // but pnpm --filter matches the package name, and the wrong one exits 0 having
+    // built nothing ("No projects matched the filters"). So this helper silently
+    // did not build, and the stale bundle then failed every graph figure on a
+    // plugin load error five minutes deep — see test_data/graphgenomeview/README.md.
+    // The `screenshots:build` npm script had it right all along, which is why
+    // this went unnoticed.
+    execFileSync('pnpm', ['--filter', '@jbrowse/web', 'build'], {
       cwd: repoRoot,
       stdio: 'inherit',
     })

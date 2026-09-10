@@ -1,0 +1,227 @@
+{
+  "plugins": [
+    {
+      "name": "GraphGenomeView",
+      "esmUrl": "https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js"
+    }
+  ],
+  "assemblies": [
+    {
+      "name": "mm39",
+      "displayName": "Mouse (GRCm39/mm39)",
+      "aliases": ["GRCm39"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "mm39-refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/mm39/mm39.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/ucsc/mm39/mm39.chromAlias.txt"
+        }
+      }
+    },
+    {
+      "name": "bosTau9",
+      "displayName": "Cattle (ARS-UCD1.2/bosTau9)",
+      "aliases": ["ARS-UCD1.2"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "bosTau9-refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/bosTau9/bigZips/bosTau9.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/bosTau9/bosTau9.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/ucsc/bosTau9/bosTau9.chromAlias.txt"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "mm39_ncbiRefSeq_ucsc",
+      "name": "NCBI RefSeq genes (mm39)",
+      "assemblyNames": ["mm39"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/ucsc/mm39/ncbiRefSeq.gff.gz",
+        "csi": true
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "mouse_minigraph_segments",
+      "name": "Mouse strain pangenome (rGFA segments)",
+      "assemblyNames": ["mm39"],
+      "adapter": {
+        "type": "RgfaTabixAdapter",
+        "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph",
+        "assemblyNameToPanSN": {
+          "mm39": "mm39"
+        }
+      },
+      "displayDefaults": {
+        "color": "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "mouse_minigraph_tier",
+      "name": "Mouse strain pangenome: bubble tier (one node per bubble)",
+      "assemblyNames": ["mm39"],
+      "adapter": {
+        "type": "RgfaTabixAdapter",
+        "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.tier10000",
+        "assemblyNameToPanSN": {
+          "mm39": "mm39"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "mouse_minigraph_bubbles",
+      "name": "Mouse strain pangenome bubbles",
+      "assemblyNames": ["mm39"],
+      "adapter": {
+        "type": "MinigraphBubbleAdapter",
+        "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz",
+        "assemblyNameToPanSN": {
+          "mm39": "mm39"
+        }
+      },
+      "displayDefaults": {
+        "color": "rgb(130,130,130)"
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "mouse_bubble_score",
+      "name": "Mouse strain pangenome: variability (segments per bubble)",
+      "assemblyNames": ["mm39"],
+      "adapter": {
+        "type": "MinigraphBubbleAdapter",
+        "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed.gz",
+        "assemblyNameToPanSN": {
+          "mm39": "mm39"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "mouse_minigraph_alleles",
+      "name": "Mouse strain pangenome: allele inventory",
+      "assemblyNames": ["mm39"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.alleles.bed.gz"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "bosTau9_ncbiRefSeq_ucsc",
+      "name": "NCBI RefSeq genes (bosTau9)",
+      "assemblyNames": ["bosTau9"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/ucsc/bosTau9/ncbiRefSeq.gff.gz",
+        "csi": true
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "bovine_minigraph_segments",
+      "name": "Bovine super-pangenome (rGFA segments)",
+      "assemblyNames": ["bosTau9"],
+      "adapter": {
+        "type": "RgfaTabixAdapter",
+        "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph",
+        "assemblyNameToPanSN": {
+          "bosTau9": "bosTau9"
+        }
+      },
+      "displayDefaults": {
+        "color": "jexl:get(feature,'rank')==0?'rgb(52,152,219)':'rgb(237,137,44)'"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "bovine_minigraph_tier",
+      "name": "Bovine super-pangenome: bubble tier (one node per bubble)",
+      "assemblyNames": ["bosTau9"],
+      "adapter": {
+        "type": "RgfaTabixAdapter",
+        "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.tier10000",
+        "assemblyNameToPanSN": {
+          "bosTau9": "bosTau9"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "bovine_minigraph_bubbles",
+      "name": "Bovine super-pangenome bubbles",
+      "assemblyNames": ["bosTau9"],
+      "adapter": {
+        "type": "MinigraphBubbleAdapter",
+        "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.bubbles.bed.gz",
+        "assemblyNameToPanSN": {
+          "bosTau9": "bosTau9"
+        }
+      },
+      "displayDefaults": {
+        "color": "rgb(130,130,130)"
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "bovine_bubble_score",
+      "name": "Bovine super-pangenome: variability (segments per bubble)",
+      "assemblyNames": ["bosTau9"],
+      "adapter": {
+        "type": "MinigraphBubbleAdapter",
+        "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.bubbles.bed.gz",
+        "assemblyNameToPanSN": {
+          "bosTau9": "bosTau9"
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "bovine_minigraph_alleles",
+      "name": "Bovine super-pangenome: allele inventory",
+      "assemblyNames": ["bosTau9"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.alleles.bed.gz"
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "bovine_pangenome_vcf",
+      "name": "Bovine super-pangenome variants (12 assemblies)",
+      "assemblyNames": ["bosTau9"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "https://jbrowse.org/demos/bovine_pangenome/bovine-arsucd12-minigraph.vcf.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMultiSampleVariantDisplay",
+          "displayId": "bovine_pangenome_vcf_regular",
+          "renderingMode": "phased"
+        }
+      ]
+    }
+  ]
+}

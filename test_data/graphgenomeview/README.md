@@ -90,3 +90,20 @@ still writes) until 2026-09-06; pinning cost a bump nobody remembered, and
 refuses a pin in either place.
 
 Once the plugin is on npm, point `esmUrl` at a pinned version there instead.
+
+**The corollary, which costs a five-minute timeout per figure to learn the hard
+way: an unversioned `esmUrl` means a STALE local `jbrowse-web` build renders
+every graph figure as a plugin load failure.** The published plugin tracks
+`main` and links an unreleased `@jbrowse/render-core`, so a build older than it
+does not carry what the plugin extends. The browser console says
+`TypeError: Class extends value undefined is not a constructor or null`, the
+plugin never registers, the view never draws, and the run then sits on
+`TOOLBAR_READY` until `readyTimeout` — 300000 ms on the graph specs. Nothing in
+that sequence names the cause, and the same run against a fresh build is fine.
+
+Measured 2026-09-09: a `products/jbrowse-web/build` from 2026-08-02 against a
+plugin bundle rebuilt that morning. So regenerate graph figures with
+`pnpm screenshots:build` (which rebuilds first) rather than `pnpm screenshots`
+whenever the build is not from today, and check
+`stat -c %y products/jbrowse-web/build/index.html` against the plugin's
+`Last-Modified` before concluding a spec is broken.
