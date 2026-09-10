@@ -238,6 +238,9 @@ function transformOf(mark: MarkConfig): TransformStep[] {
       case 'coverage': {
         return { type: 'coverage', as: as[0] }
       }
+      case 'flatten': {
+        return { type: 'flatten', field: step.field || undefined, index: as[0] }
+      }
       default: {
         throw new Error(`unknown transform step ${String(step.type)}`)
       }

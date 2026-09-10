@@ -192,6 +192,7 @@ worker before the encoding, in order, each reading what the last answered:
 | `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges over `start` and `end`                                      |
 | `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field |
 | `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                            |
+| `flatten`   | fans each feature out into one per element of an array `field` (`subfeatures`), each reading its parent for what it lacks, with its index in `as`           |
 
 A `bin` followed by an `aggregate` grouped by `start` and `end` is a density:
 one bar per bin, its height the count of features whose start fell in it.

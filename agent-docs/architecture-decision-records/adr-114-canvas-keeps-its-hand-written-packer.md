@@ -112,12 +112,9 @@ to a vocabulary whose rule is that a lane exists because a *shape* reads it.
 
 - The grammar's transform stage now has six step kinds, and the fan-out
   genomics asks for most — a gene's exons — is one of them.
-- **`flatten` reaches the wire and not yet the config rung.** Any caller of
-  `CoreEncodeFeatures` can send it today; `TRANSFORM_TYPES` in
-  `plugins/marks/src/LinearMarkDisplay/configSchema.ts` is the one line that
-  puts it in a `marks` entry, and it was left out of this change only because
-  that file was moving under another hand. Until it lands there the step has
-  no config-authored consumer, which is the weakest part of this ADR.
+- `flatten` is a `marks[].transform` step like the others: `field` names the
+  array (`subfeatures` when empty) and `as` the index field, so a `marks`
+  entry over a gene track draws its exons.
 - The measurement table for the transform steps was re-taken whole, because
   the flatten arms' input list changed the heap the other arms ran in: a
   second million real `SimpleFeature`s put the untouched `coverage` row from

@@ -281,6 +281,7 @@ export const TRANSFORM_TYPES = [
   'bin',
   'aggregate',
   'coverage',
+  'flatten',
 ] as const
 export const AGGREGATE_OPS = ['count', 'sum', 'mean', 'min', 'max'] as const
 
@@ -341,7 +342,7 @@ const transformStepSchema = ConfigurationSchema(
       type: 'stringEnum',
       model: types.enumeration('MarkTransformType', [...TRANSFORM_TYPES]),
       defaultValue: 'filter',
-      description: 'filter, formula, bin, aggregate or coverage',
+      description: 'filter, formula, bin, aggregate, coverage or flatten',
     },
     /**
      * #slot marks.transform.expr
@@ -355,13 +356,14 @@ const transformStepSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.transform.field
-     * For a `bin` step: the field placing a feature in a bin, `start` when
+     * For a `bin` step, the field placing a feature in a bin, `start` when
+     * empty; for a `flatten` step, the array field fanned out, `subfeatures` when
      * empty.
      */
     field: {
       type: 'string',
       defaultValue: '',
-      description: 'field a bin reads',
+      description: 'field a bin or a flatten reads',
     },
     /**
      * #slot marks.transform.step
@@ -374,9 +376,9 @@ const transformStepSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.transform.as
-     * The field a `formula` or `coverage` step writes, or the two fields a
-     * `bin` step writes its edges to. A single name may be written as a
-     * string.
+     * The field a `formula` or `coverage` step writes, the two fields a
+     * `bin` step writes its edges to, or the field a `flatten` step writes
+     * each element's index to. A single name may be written as a string.
      */
     as: {
       type: 'stringArray',

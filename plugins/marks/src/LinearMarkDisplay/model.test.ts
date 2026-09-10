@@ -333,6 +333,8 @@ test("a transform list reaches the worker as its own layer's steps, defaults lef
         },
         { type: 'coverage' },
         { type: 'coverage', as: 'depth' },
+        { type: 'flatten' },
+        { type: 'flatten', field: 'exons', as: 'nth' },
       ],
     },
     { shape: 'bar', encoding: { y: 'score' } },
@@ -354,6 +356,8 @@ test("a transform list reaches the worker as its own layer's steps, defaults lef
     },
     { type: 'coverage', as: undefined },
     { type: 'coverage', as: 'depth' },
+    { type: 'flatten', field: undefined, index: undefined },
+    { type: 'flatten', field: 'exons', index: 'nth' },
   ])
   expect(layers[1]).not.toHaveProperty('transform')
 })
