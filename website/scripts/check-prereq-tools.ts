@@ -94,6 +94,7 @@ const ALLOWED = new Map([
   ],
   [
     'alu_age.md#bedGraphToBigWig',
+    'circular_synteny.md#bedGraphToBigWig',
     'jbrowse make-density runs it internally; the page shows the make-density invocation',
   ],
   [

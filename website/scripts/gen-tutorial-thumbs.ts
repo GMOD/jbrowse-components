@@ -367,6 +367,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'multiway_synteny/primate_tp53_lanes.png',
     band: [0.22, 0.75],
   },
+  circular_synteny: {
+    // The two-genome circle with its density ring and ribbons, past the app
+    // chrome; the circle is centred so the full width keeps both arcs.
+    src: 'circular_synteny/rings.png',
+    band: [0.14, 0.94],
+  },
   hg38_vertebrates_synteny: {
     // The anchor lane and the mammal lanes under it, past the app chrome and
     // the gene track, where the composed liftOver ribbons run.

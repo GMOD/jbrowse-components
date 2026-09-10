@@ -89,6 +89,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/primate_orthologs_synteny)
 - [](/docs/tutorials/hg38_vertebrates_synteny)
 - [](/docs/tutorials/mcscan_synteny_grape_peach)
+- [](/docs/tutorials/circular_synteny)
 - [](/docs/tutorials/homoeolog_synteny)
 - [](/docs/tutorials/orthofinder_synteny)
 
