@@ -1,10 +1,20 @@
-import { dialog, shell } from 'electron'
+import { EventEmitter } from 'node:events'
 
-import { askAboutVersion } from './autoUpdater.ts'
+import { dialog, ipcMain, shell } from 'electron'
+
+import {
+  askAboutVersion,
+  checkForUpdatesInBackground,
+  checkForUpdatesManually,
+  setupAutoUpdater,
+} from './autoUpdater.ts'
+
+import type { AppUpdater, UpdateCheckResult } from 'electron-updater'
 
 jest.mock('electron', () => ({
   dialog: { showMessageBox: jest.fn() },
   shell: { openExternal: jest.fn() },
+  ipcMain: { handle: jest.fn() },
 }))
 
 const showMessageBox = jest.mocked(dialog.showMessageBox)
@@ -14,10 +24,51 @@ function click(response: number) {
   showMessageBox.mockResolvedValueOnce({ response, checkboxChecked: false })
 }
 
+// Answers the OK dialogs the reporting paths raise, so a test that expects one
+// is not the one that hangs when it never comes.
+function clickThrough() {
+  showMessageBox.mockResolvedValue({ response: 0, checkboxChecked: false })
+}
+
+const titles = () => showMessageBox.mock.calls.map(([options]) => options.title)
+
+// The handlers are fire-and-forget async, so an emit returns before its dialog
+// has been asked for. A macrotask is past every await chain here.
+const flush = () => new Promise(resolve => setTimeout(resolve, 0))
+
+// Enough of electron-updater's surface for the module under test: the two
+// events it subscribes to, the three calls it makes, and the flags it sets.
+function fakeUpdater() {
+  const updater = new EventEmitter() as unknown as AppUpdater & {
+    checkForUpdates: jest.Mock
+    downloadUpdate: jest.Mock
+    quitAndInstall: jest.Mock
+  }
+  updater.checkForUpdates = jest.fn()
+  updater.downloadUpdate = jest.fn().mockResolvedValue([])
+  updater.quitAndInstall = jest.fn()
+  return updater
+}
+
+const available = (isUpdateAvailable: boolean) =>
+  ({ isUpdateAvailable }) as UpdateCheckResult
+
+// `version` is the only field either handler reads, so the rest of an
+// UpdateInfo would be noise at every call site.
+function emit(
+  updater: AppUpdater,
+  event: 'update-available' | 'update-downloaded',
+  version: string,
+) {
+  ;(updater as unknown as EventEmitter).emit(event, { version })
+}
+
 beforeEach(() => {
   showMessageBox.mockReset()
   openExternal.mockReset()
   openExternal.mockResolvedValue(undefined)
+  jest.mocked(ipcMain.handle).mockReset()
+  delete process.env.CI
 })
 
 const question = {
@@ -59,4 +110,142 @@ test('dismissing the box declines', async () => {
   click(1)
   expect(await askAboutVersion(question)).toBe(1)
   expect(showMessageBox.mock.calls[0]![0].cancelId).toBe(1)
+})
+
+// A background check that finds nothing, or fails because the laptop is on a
+// train, must say nothing at all — it is the one nobody asked for.
+test('the startup check reports nothing, either way', async () => {
+  const updater = fakeUpdater()
+  updater.checkForUpdates.mockResolvedValue(available(false))
+  checkForUpdatesInBackground(updater)
+  await Promise.resolve()
+  updater.checkForUpdates.mockRejectedValue(new Error('ENOTFOUND github.com'))
+  // logging it is all the failure gets, and that log is expected here
+  const logged = jest.spyOn(console, 'error').mockImplementation(() => {})
+  checkForUpdatesInBackground(updater)
+  await flush()
+  expect(showMessageBox).not.toHaveBeenCalled()
+  expect(logged).toHaveBeenCalled()
+  logged.mockRestore()
+})
+
+// ...and the menu item reports all three, which is the whole reason it exists.
+test('a manual check that finds nothing says so', async () => {
+  const updater = fakeUpdater()
+  updater.checkForUpdates.mockResolvedValue(available(false))
+  clickThrough()
+  await checkForUpdatesManually(updater)
+  expect(titles()).toEqual(['Up to date'])
+})
+
+test('a manual check that fails says why, without a stack', async () => {
+  const updater = fakeUpdater()
+  updater.checkForUpdates.mockRejectedValue(
+    Object.assign(new Error('request failed'), {
+      stack: 'Error: net::ERR_INTERNET_DISCONNECTED',
+    }),
+  )
+  clickThrough()
+  await checkForUpdatesManually(updater)
+  expect(titles()).toEqual(['Unable to check for updates'])
+  expect(showMessageBox.mock.calls[0]![0].message).toContain(
+    'check your internet connection',
+  )
+})
+
+// checkForUpdates resolves null without emitting anything when the updater is
+// inactive — an unpacked run, a Linux build that is not the AppImage. The menu
+// item used to do nothing whatsoever there, and leave a latched flag behind for
+// the next background check to answer with dialogs.
+test('a manual check on a build that cannot update says that', async () => {
+  const updater = fakeUpdater()
+  updater.checkForUpdates.mockResolvedValue(null)
+  clickThrough()
+  await checkForUpdatesManually(updater)
+  expect(titles()).toEqual(['Cannot check for updates'])
+})
+
+// An update the user found is announced the same way whichever check found it,
+// so the offer hangs off the event rather than off either caller.
+test('an available update is offered and downloaded on yes', async () => {
+  const updater = fakeUpdater()
+  setupAutoUpdater(updater)
+  click(0)
+  emit(updater, 'update-available', '4.4.0')
+  await flush()
+  expect(titles()).toEqual(['Found updates'])
+  expect(updater.downloadUpdate).toHaveBeenCalled()
+})
+
+test('declining the offer downloads nothing', async () => {
+  const updater = fakeUpdater()
+  setupAutoUpdater(updater)
+  click(1)
+  emit(updater, 'update-available', '4.4.0')
+  await flush()
+  expect(updater.downloadUpdate).not.toHaveBeenCalled()
+})
+
+// The download the user said yes to is the one whose failure they have to hear
+// about: it was silent, and a download that died looked exactly like having
+// said no.
+test('a download that fails after yes is reported', async () => {
+  const updater = fakeUpdater()
+  updater.downloadUpdate.mockRejectedValue(new Error('disk full'))
+  setupAutoUpdater(updater)
+  click(0)
+  clickThrough()
+  emit(updater, 'update-available', '4.4.0')
+  await flush()
+  expect(titles()).toEqual(['Found updates', 'Update download failed'])
+  expect(showMessageBox.mock.calls[1]![0].message).toContain('disk full')
+})
+
+test('restart now installs, later does not', async () => {
+  const updater = fakeUpdater()
+  setupAutoUpdater(updater)
+  click(1)
+  emit(updater, 'update-downloaded', '4.4.0')
+  await flush()
+  expect(updater.quitAndInstall).not.toHaveBeenCalled()
+  click(0)
+  emit(updater, 'update-downloaded', '4.4.0')
+  await flush()
+  expect(updater.quitAndInstall).toHaveBeenCalledWith(true, true)
+})
+
+// The e2e suite drives the packaged app, where a modal nobody can click is a
+// hung job rather than a prompt.
+test('under CI nothing opens a dialog', async () => {
+  process.env.CI = 'true'
+  const updater = fakeUpdater()
+  updater.checkForUpdates.mockResolvedValue(available(false))
+  setupAutoUpdater(updater)
+  jest.spyOn(console, 'log').mockImplementation(() => {})
+  emit(updater, 'update-available', '4.4.0')
+  emit(updater, 'update-downloaded', '4.4.0')
+  checkForUpdatesInBackground(updater)
+  await checkForUpdatesManually(updater)
+  await flush()
+  expect(showMessageBox).not.toHaveBeenCalled()
+  expect(updater.checkForUpdates).toHaveBeenCalledTimes(1)
+  jest.mocked(console.log).mockRestore()
+})
+
+// Without these three, electron-updater downloads before it has asked, warns on
+// every Windows download about a web installer we do not build, and reaches for
+// a .blockmap beside each artifact that no packager here writes.
+test('the updater is configured before any event can arrive', () => {
+  const updater = fakeUpdater()
+  setupAutoUpdater(updater)
+  expect(updater.autoDownload).toBe(false)
+  expect(updater.disableWebInstaller).toBe(true)
+  expect(updater.disableDifferentialDownload).toBe(true)
+})
+
+// The renderer's menu bar is the only one Windows and Linux have, so without
+// this channel two of the three platforms have no manual check at all.
+test('the manual check is reachable from the renderer', () => {
+  setupAutoUpdater(fakeUpdater())
+  expect(jest.mocked(ipcMain.handle).mock.calls[0]![0]).toBe('checkForUpdates')
 })

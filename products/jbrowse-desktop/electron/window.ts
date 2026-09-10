@@ -3,7 +3,10 @@ import { pathToFileURL } from 'node:url'
 
 import { BrowserWindow, Menu, app, clipboard, dialog, shell } from 'electron'
 
-import { checkForUpdatesManually } from './autoUpdater.ts'
+import {
+  checkForUpdatesInBackground,
+  checkForUpdatesManually,
+} from './autoUpdater.ts'
 import { BLAT_PARTITION } from './blatSession.ts'
 import {
   claudeCodeAddCommand,
@@ -149,7 +152,7 @@ function createMenu(autoUpdater: AppUpdater) {
         {
           label: 'Check for updates...',
           click: () => {
-            checkForUpdatesManually(autoUpdater)
+            checkForUpdatesManually(autoUpdater).catch(logError)
           },
         },
       ],
@@ -185,13 +188,11 @@ export async function createMainWindow(
 
   mainWindowState.manage(mainWindow)
 
-  // This ready-to-show handler must be attached before the loadURL
-  // Skip auto-update check in CI environments to avoid blocking dialogs
-  if (!process.env.CI) {
-    mainWindow.once('ready-to-show', () => {
-      autoUpdater.checkForUpdatesAndNotify().catch(logError)
-    })
-  }
+  // Attached before the loadURL below, or the event has already fired. Deferred
+  // to ready-to-show so the check does not compete with the first page load.
+  mainWindow.once('ready-to-show', () => {
+    checkForUpdatesInBackground(autoUpdater)
+  })
 
   const appUrl = buildAppUrl(devServerUrl, initialTarget, renderer)
 

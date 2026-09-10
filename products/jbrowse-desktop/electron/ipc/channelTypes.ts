@@ -131,6 +131,10 @@ export interface McpReadyState {
 export interface IpcChannels {
   quit: { args: []; return: void }
   userData: { args: []; return: string }
+  // The Help menu's manual update check. Returns as soon as the check has been
+  // started: every outcome is reported by a native dialog from the main
+  // process, so there is nothing for the renderer to wait for or to render.
+  checkForUpdates: { args: []; return: void }
   // A FASTA with no .fai is read end to end, and a remote one is downloaded in
   // full first, so this is the one handler that can hold a dialog for minutes.
   // `jobId` is the caller's handle on that run: cancelIndexFasta takes the same

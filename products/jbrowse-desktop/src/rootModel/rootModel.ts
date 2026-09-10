@@ -27,6 +27,7 @@ import LinkIcon from '@mui/icons-material/Link'
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
 import PublicIcon from '@mui/icons-material/Public'
 import SaveAsIcon from '@mui/icons-material/SaveAs'
+import UpdateIcon from '@mui/icons-material/Update'
 import { autorun } from 'mobx'
 
 import packageJSON from '../../package.json' with { type: 'json' }
@@ -515,6 +516,28 @@ export default function rootModelFactory({
                     },
                   },
                   workspacesMenuItem(self.session),
+                ],
+              },
+              // The native menu bar that used to carry this exists on macOS
+              // alone (electron/window.ts sets it to null elsewhere), so on
+              // Windows and Linux there was no manual update check at all —
+              // only the silent one at startup. plugin-menus appends About and
+              // Help below these, which is why the divider is here.
+              {
+                label: 'Help',
+                menuItems: () => [
+                  {
+                    label: 'Check for updates...',
+                    icon: UpdateIcon,
+                    onClick: () => {
+                      // every outcome is a native dialog raised by the main
+                      // process, so there is nothing to await or to report
+                      invokeIpc('checkForUpdates').catch((e: unknown) => {
+                        reportError(self.session, e)
+                      })
+                    },
+                  },
+                  { type: 'divider' },
                 ],
               },
             ],
