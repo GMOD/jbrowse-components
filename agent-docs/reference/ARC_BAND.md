@@ -198,8 +198,26 @@ and then dropped out on `bpB`. That is the "manufacturing support out of local
 density" failure this pass cites as the reason for requiring both sides, happening
 inside it. What single-linkage still owns either way is that the window bounds the
 GAP and not the DIAMETER: 40 pairs spaced exactly one window apart chain into one
-cluster spanning 39 of them, where the prose reads as a diameter claim. That one is
-filed rather than fixed — `agent-docs/TODO.md`.
+cluster spanning 39 of them. Measured, the chain does not form. On HG002 300x
+over two 200 kb windows of chr1 — ordinary sequence at 2,000,000 and the 1q21
+segmental duplications at 144,000,000, windows of 1142 and 1136 bp from the
+library — the connections are 230–360 bp apart on the source contig but their
+partners spread over 25–26 contigs, and the partner coordinate is what
+discriminates:
+
+```
+window            | connections | clusters | largest | widest bp | floor 2 passes
+1:2.0 Mb, linkage |         868 |      858 |       4 |       252 | 7 (17 reads)
+1:2.0 Mb, capped  |         868 |      859 |       4 |       228 | 7 (16 reads)
+1:144 Mb, linkage |         556 |      537 |       5 |       601 | 14 (33 reads)
+1:144 Mb, capped  |         556 |      537 |       5 |       601 | 14 (33 reads)
+```
+
+"Capped" is the alternative on the table — fixed window-sized cells over both
+coordinates with no linking across — and it agrees with the shipped rule to
+within one cluster, while being the rule that cuts a real translocation's
+~100 pairs wherever a cell boundary falls. No cluster is wider than the window
+under either. `benches/interchromClusters.probe.ts` reads both again.
 
 ## Support, and why a tick can hide behind an arc's foot
 

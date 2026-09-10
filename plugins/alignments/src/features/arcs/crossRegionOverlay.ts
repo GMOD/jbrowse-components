@@ -115,13 +115,14 @@ export interface CrossRegionArcShape {
 // Sized for the SAME-CHROMOSOME multi-seam case, which is the one that is
 // actually unbounded — not the interchromosomal one. Cross-region arcs at a
 // seam are the fragments straddling it, so the count scales with physical
-// coverage and with the number of seams: the measured input is 52 of 381 arcs
-// (13.6%) on ONE seam of a ~30x paired-end sample, and the same seam at 300x is
-// ~10x that before an N-region view multiplies it again. 600 is roughly two
-// deep seams' worth, which is already past the point where the picture is a
-// wash of ink rather than a set of junctions; the reader's own lever at that
-// depth (`drawProperPairArcs: false`, which drops 9138 of 9204 arcs) is the
-// real answer and this is a floor under the frame rather than a filter.
+// coverage and with the number of seams: one seam through HG002 300x is 458
+// straddling pairs, 451 arcs after `arcKey`, every one a proper pair
+// (`benches/interchromClusters.probe.ts`, 1:2,000,000-2,200,000 split at the
+// middle). 600 is one deep seam whole and a second cut, which is already past
+// the point where the picture is a wash of ink rather than a set of junctions;
+// the reader's own lever at that depth (`drawProperPairArcs: false`, which
+// drops 9138 of 9204 arcs) is the real answer and this is a floor under the
+// frame rather than a filter.
 //
 // It bounds the WORK as well as the DOM, which is why the projection below runs
 // before the build rather than after — see `computeCrossRegionArcs`.

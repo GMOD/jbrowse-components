@@ -1,73 +1,18 @@
 ---
 name: arc-band-open-calls
-description: Nine parked calls on the read-connection arc band and the read cloud, cut from TODO.md on 2026-08-26 for missing the v5.0.0 bar. Two are numbers nobody has read, four are marks and geometry, three are colour, a menu and an asymmetry nothing pins. Read alongside reference/ARC_BAND.md, which is the settled half.
+description: Seven parked calls on the read-connection arc band and the read cloud, cut from TODO.md on 2026-08-26 for missing the v5.0.0 bar. Four are marks and geometry, three are colour, a menu and an asymmetry nothing pins. Read alongside reference/ARC_BAND.md, which is the settled half and holds the two numbers this list once said nobody had read.
 ---
 
 # The arc band's open calls
 
-Nine items cut from `TODO.md` on 2026-08-26, when the backlog was reduced to
+Seven items cut from `TODO.md` on 2026-08-26, when the backlog was reduced to
 what v5.0.0 turns on. [reference/ARC_BAND.md](../reference/ARC_BAND.md) is the
 settled description of this band, and everything below is what it deliberately
-does not answer. Most are visual calls, which is why they are filed rather than
-fixed — a fixture test cannot settle what a reader concludes.
-
-## Two numbers nobody has read
-
-### Bound an interchromosomal cluster's diameter
-
-The measurement that would justify a change has not been taken, and the
-alternative on the table is the failure mode the current rule exists to avoid —
-so it is not established that anything here should be built.
-
-`clusteredInterchromSupport` is single-linkage, so the window bounds the GAP
-between neighbours and not the DIAMETER of the cluster: 40 pairs spaced exactly
-one window apart chain into one cluster spanning 39 fragment lengths
-(`arcClustering.test.ts` has the probe shape). The prose beside it reads as a
-diameter claim — "how far a supporting read can sit from the breakpoint is one
-fragment length" — so the rule delivered is a density threshold and the rule
-described is a distance one.
-
-At depth the difference is not cosmetic. The pass's own measurement puts 865
-interchromosomal connections in 200 kb at 300x, i.e. ~231 bp apart on the source
-contig against a typical `stats.upper` of 500-700 — so the first coordinate chains
-nearly everything in the window and the partner coordinate does all of the
-discriminating. Whether that matters depends on how concentrated real mismapping
-is on the PARTNER side, which is the thing to measure: mismapping goes to repeats,
-and repeats are localized, so "both sides agree" may be weaker evidence than it
-reads.
-
-Do not change the rule before measuring it. The obvious alternative — cap a
-cluster's diameter at the window and split beyond it — trades chaining for
-arbitrary cut points, which is the failure mode the current form was adopted to
-escape (the one-open-cluster version scored a four-read breakpoint as 1 and 3).
-Measure on HG002 300x and on a sample with a known translocation, and report the
-cluster size distribution under both rules before touching either.
-
-### Read the cross-region arc count at 300x, which the arc cap is sized from
-
-A wrong number here degrades a picture that is a wash of ink either way.
-
-`CROSS_REGION_ARC_CAP = 600` (`features/arcs/crossRegionOverlay.ts`) is sized for
-the same-chromosome multi-seam case, which is the one that is actually unbounded.
-Its input is an **estimate**: 52 of 381 arcs (13.6%) were cross-region on one
-seam of HG02768's inverted duplication, a ~30x paired-end sample, and that count
-was then scaled by an assumed ~10x for depth and again for the number of seams.
-Only the 30x half was measured.
-
-Reading the real number is cheap — `crossRegion.length` off the model, on the
-HG002 300x window split in two — and it decides whether 600 is two deep seams'
-worth, as the comment claims, or off by an order of magnitude in either
-direction. Note what it does *not* decide: at that depth the reader's own lever
-already exists and is the one they are using, `drawProperPairArcs: false`
-dropping 9138 of 9204 arcs, so the cap is a floor under the frame rate rather
-than a filter, and a wrong number here degrades a picture that is a wash of ink
-either way.
-
-Three companion counts were taken at the same time and have been re-read but
-never re-run, so treat them the same way: that HG02768 view yields 0
-cross-region arcs both as one region and as two regions 2 Mb apart — the 52 came
-from splitting it 300 bp apart — and 865 of 9204 arcs are interchromosomal at
-`1:2,000,000` on HG002 300x.
+does not answer. All are visual calls, which is why they are filed rather than
+fixed — a fixture test cannot settle what a reader concludes. Two measurements
+this list carried — whether single-linkage chains a cluster past its window,
+and how many arcs cross a seam at 300x — were read on 2026-09-10 and live in
+ARC_BAND.md §"Support" and beside `CROSS_REGION_ARC_CAP`.
 
 ## Marks and geometry
 

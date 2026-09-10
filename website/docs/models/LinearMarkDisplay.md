@@ -190,7 +190,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
-| <span id="action-selectfeature">**selectFeature**</span><br><code>(hit: MarkHitInfo) =&gt; void</code> | Open the feature widget for a hit: the worker shipped channels, not records, so the features are read back over the hit's span and the mark's transform steps run again over them. A bin or a coverage run is remade that way, and a run cut short by the narrower read-back still contains the hit. | LinearMarkDisplay |
+| <span id="action-selectfeature">**selectFeature**</span><br><code>(hit: MarkHitInfo) =&gt; void</code> | Open the feature widget for a hit: the worker shipped channels, not records, so the features are read back over the hit's span and the mark's steps run again over them, which remakes a bin or a run. | LinearMarkDisplay |
 | <span id="action-setrpcdata">**setRpcData**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(idx: number, data: EncodedFeaturesResult, region: Region) =&gt; v…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(idx: number, data: EncodedFeaturesResult, region: Region) =&gt; void</code></pre></dialog></span> | Stage a region as fetched, with this display's payload shape. | LinearMarkDisplay |
 | <span id="action-setjexlfilters">**setJexlFilters**</span><br><code>(filters?: string[] &#124; undefined) =&gt; void</code> |  | LinearMarkDisplay |
 | <span id="action-fetchneeded">**fetchNeeded**</span><br><code>(needed: IndexedRegion[]) =&gt; Promise&lt;void&gt;</code> |  | LinearMarkDisplay |
