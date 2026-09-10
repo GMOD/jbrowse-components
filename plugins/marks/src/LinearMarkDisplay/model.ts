@@ -47,7 +47,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { sameMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend, markColorScales } from './legend.ts'
-import { SHAPE_LANES, buildMarkList } from './markList.ts'
+import { SHAPE_LANES, buildMarkList, markDrawsAt } from './markList.ts'
 
 import type { MarkDisplayContextMenuInfo } from './components/markDisplayTypes.ts'
 import type {
@@ -55,9 +55,11 @@ import type {
   LinearMarkDisplayConfigModel,
   MarkConfig,
   MarkShapeName,
+  MarkTransformStepConfig,
 } from './configSchema.ts'
 import type { MarkHitInfo } from './findMarkHit.ts'
 import type {
+  MarkEntry,
   MarkRegionData,
   MarkRenderState,
   StoredLayer,
@@ -65,6 +67,7 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
+  AggregateOp,
   ColorEncoding,
   EncodedFeaturesResult,
   GlyphEncoding,
@@ -166,6 +169,54 @@ function encodingOf(mark: MarkConfig): MarkEncoding {
   }
 }
 
+// The config's step list as the worker's, with the empty slot values that
+// mean "default" left off the wire.
+function transformOf(mark: MarkConfig): TransformStep[] {
+  return mark.transform.map((step: MarkTransformStepConfig): TransformStep => {
+    const as: string[] = [...step.as]
+    switch (step.type) {
+      case 'filter': {
+        return { type: 'filter', expr: step.expr }
+      }
+      case 'formula': {
+        return { type: 'formula', expr: step.expr, as: as[0] ?? 'value' }
+      }
+      case 'bin': {
+        return {
+          type: 'bin',
+          step: step.step,
+          field: step.field || undefined,
+          as: as.length === 2 ? [as[0]!, as[1]!] : undefined,
+        }
+      }
+      case 'aggregate': {
+        return {
+          type: 'aggregate',
+          groupby: [...step.groupby],
+          ops: step.ops.map(
+            (o: Instance<typeof step.ops>[number]): AggregateOp => ({
+              op: o.op,
+              field: o.field || undefined,
+              as: o.as || undefined,
+            }),
+          ),
+        }
+      }
+      case 'coverage': {
+        return { type: 'coverage', as: as[0] }
+      }
+    }
+  })
+}
+
+function markEntryOf(mark: MarkConfig): MarkEntry {
+  return {
+    shape: mark.shape,
+    minBpPerPx: mark.minBpPerPx,
+    maxBpPerPx: mark.maxBpPerPx,
+  }
+}
+
 function layerExtremes(entries: VisibleEntry<StoredLayer>[]) {
   let min = Infinity
   let max = -Infinity
@@ -245,6 +296,44 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * Each mark's shape and zoom range, what the mark list is built from.
+       */
+      get markEntries(): MarkEntry[] {
+        return self.conf.marks.map((m: MarkConfig) => markEntryOf(m))
+      },
+      /**
+       * #getter
+       * Whether each mark draws at the view's zoom: inside its
+       * `minBpPerPx`..`maxBpPerPx` range, where 0 is no bound. What the
+       * shared domain, the legend, the row count and the skipped chip fold.
+       */
+      get markVisible(): boolean[] {
+        const { bpPerPx } = self.host
+        return self.conf.marks.map((m: MarkConfig) =>
+          markDrawsAt(markEntryOf(m), bpPerPx),
+        )
+      },
+      /**
+       * #method
+       * A region's layers with a mark outside its zoom range replaced by an
+       * empty one, so a fold over layers by index reads only what draws.
+       */
+      visibleLayers(data: MarkRegionData): StoredLayer[] {
+        const { markVisible } = this
+        return data.layers.map((layer, i) =>
+          markVisible[i]
+            ? layer
+            : {
+                ...layer,
+                count: 0,
+                row: undefined,
+                scale: undefined,
+                glyphScale: undefined,
+              },
+        )
+      },
+      /**
+       * #getter
        * The declared marks' encodings, as the worker takes them.
        */
       get encodings(): MarkEncoding[] {
@@ -258,7 +347,12 @@ export function stateModelFactory(
       get layerRequests(): LayerRequest[] {
         return self.conf.marks.map((m: MarkConfig) => {
           const shape: MarkShapeName = m.shape
-          return { encoding: encodingOf(m), lanes: [...SHAPE_LANES[shape]] }
+          const transform = transformOf(m)
+          return {
+            encoding: encodingOf(m),
+            lanes: [...SHAPE_LANES[shape]],
+            ...(transform.length > 0 ? { transform } : {}),
+          }
         })
       },
       /**
@@ -285,23 +379,32 @@ export function stateModelFactory(
       /**
        * #getter
        * The mark list the shapes declare — one `defineMark` per config entry,
-       * reading `layers[i]`. Recomputed only when the shape list moves, which
-       * is what lets the component key its backend factory on it.
+       * reading `layers[i]`, off outside its zoom range. Recomputed only when
+       * the entries move, which is what lets the component key its backend
+       * factory on it.
        */
       get markList() {
-        return buildMarkList(self.markShapes)
+        return buildMarkList(self.markEntries)
+      },
+      /**
+       * #getter
+       * The shapes drawing at the view's zoom.
+       */
+      get visibleShapes(): MarkShapeName[] {
+        const { markVisible } = self
+        return self.markShapes.filter((_, i) => markVisible[i])
       },
       /**
        * #getter
        */
       get hasBarMark(): boolean {
-        return self.markShapes.includes('bar')
+        return this.visibleShapes.includes('bar')
       },
       /**
        * #getter
        */
       get hasPointMark(): boolean {
-        return self.markShapes.includes('point')
+        return this.visibleShapes.includes('point')
       },
       /**
        * #getter
@@ -319,12 +422,16 @@ export function stateModelFactory(
       get domain() {
         const origin = self.origin
         const hasBar = this.hasBarMark
+        const { markVisible } = self
         return visibleStatsDomain({
-          active: self.markShapes.some(s => s !== 'span'),
+          active: this.visibleShapes.some(s => s !== 'span'),
           view: self.host,
           payloadFor: index => self.rpcDataMap.get(index),
           itemsFor: data =>
-            data.layers.filter(l => l.count > 0 && Number.isFinite(l.yMin)),
+            data.layers.filter(
+              (l, i) =>
+                markVisible[i] && l.count > 0 && Number.isFinite(l.yMin),
+            ),
           accumulate: layerExtremes,
           range: ({ min, max }) =>
             hasBar ? widenRangeToRules([min, max], [origin]) : [min, max],
@@ -372,7 +479,7 @@ export function stateModelFactory(
       get rowCount(): number {
         let highest = 0
         for (const data of self.rpcDataMap.values()) {
-          highest = Math.max(highest, highestRow(data.layers))
+          highest = Math.max(highest, highestRow(self.visibleLayers(data)))
         }
         return highest + 1
       },
@@ -388,6 +495,7 @@ export function stateModelFactory(
           domainY,
           canvasWidth,
           canvasHeight,
+          bpPerPx: self.host.bpPerPx,
           origin: self.origin,
           minWidthPx: self.minWidthPx,
           pointDiameterPx: self.scatterPointSize,
@@ -435,23 +543,30 @@ export function stateModelFactory(
        * `y` field read as missing or not a number — for the corner notice.
        */
       get skippedFeatures(): SkippedFeatures {
-        const { encodings } = self
+        const { encodings, markVisible } = self
         return skippedFeatures(
           [...self.rpcDataMap.values()].map(d =>
-            d.layers.map((layer, i) => ({
-              count: layer.count,
-              skipped: layer.skipped,
-              field: encodings[i]?.y,
-            })),
+            d.layers
+              .map((layer, i) => ({
+                count: layer.count,
+                skipped: layer.skipped,
+                field: encodings[i]?.y,
+              }))
+              .filter((_, i) => markVisible[i]),
           ),
         )
       },
       /**
        * #getter
        * the colour keys the loaded regions carry, one per scaled mark
+       * drawing at the view's zoom
        */
       get legendSections() {
-        return buildMarkLegend(self.rpcDataMap.values())
+        return buildMarkLegend(
+          [...self.rpcDataMap.values()].map(d => ({
+            layers: self.visibleLayers(d),
+          })),
+        )
       },
       /**
        * #getter

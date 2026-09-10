@@ -203,6 +203,84 @@ test('a span stacked by a row field asks the worker for the row lane and bands t
   expect(display.renderState.rowCount).toBe(3)
 })
 
+test("a transform list reaches the worker as its own layer's steps, defaults left off", () => {
+  const { createDisplay } = createTestEnvironment([
+    {
+      shape: 'bar',
+      encoding: { y: 'count' },
+      transform: [
+        { type: 'filter', expr: "jexl:get(feature,'score') > 1" },
+        { type: 'formula', expr: 'jexl:feature.score*2', as: 'twice' },
+        { type: 'bin', step: 5000 },
+        { type: 'bin', step: 10, field: 'end', as: ['b0', 'b1'] },
+        {
+          type: 'aggregate',
+          groupby: ['start', 'end'],
+          ops: [{ op: 'count' }, { op: 'mean', field: 'twice', as: 'm' }],
+        },
+        { type: 'coverage' },
+        { type: 'coverage', as: 'depth' },
+      ],
+    },
+    { shape: 'bar', encoding: { y: 'score' } },
+  ])
+  const { display } = createDisplay()
+  const { layers } = display.rpcProps()
+  expect(layers[0]!.transform).toEqual([
+    { type: 'filter', expr: "jexl:get(feature,'score') > 1" },
+    { type: 'formula', expr: 'jexl:feature.score*2', as: 'twice' },
+    { type: 'bin', step: 5000, field: undefined, as: undefined },
+    { type: 'bin', step: 10, field: 'end', as: ['b0', 'b1'] },
+    {
+      type: 'aggregate',
+      groupby: ['start', 'end'],
+      ops: [
+        { op: 'count', field: undefined, as: undefined },
+        { op: 'mean', field: 'twice', as: 'm' },
+      ],
+    },
+    { type: 'coverage', as: undefined },
+    { type: 'coverage', as: 'depth' },
+  ])
+  expect(layers[1]).not.toHaveProperty('transform')
+})
+
+test('a mark outside its zoom range leaves the shared domain and the legend', () => {
+  const { createDisplay } = createTestEnvironment([
+    { shape: 'bar', encoding: { y: 'score' }, maxBpPerPx: 4 },
+    {
+      shape: 'bar',
+      encoding: { y: 'count', color: { field: 'type', scale: 'categorical' } },
+      minBpPerPx: 4,
+    },
+  ])
+  const { display, view } = createDisplay()
+  display.setRpcData(
+    0,
+    result([
+      { y: [3, 8] },
+      {
+        y: [500, 900],
+        scale: {
+          kind: 'categorical',
+          field: 'type',
+          entries: [{ label: 'gene', color: 0xff0000ff }],
+        },
+      },
+    ]),
+    REGION,
+  )
+  view.zoomTo(2)
+  expect(display.markVisible).toEqual([true, false])
+  expect(display.domain).toEqual([0, 8])
+  expect(display.legendSections).toEqual([])
+  expect(display.renderState.bpPerPx).toBe(2)
+  view.zoomTo(8)
+  expect(display.markVisible).toEqual([false, true])
+  expect(display.domain).toEqual([0, 900])
+  expect(display.legendSections.map(s => s.markIndex)).toEqual([1])
+})
+
 test('the legend reads the scale table the worker resolved', () => {
   const { createDisplay } = createTestEnvironment([
     {

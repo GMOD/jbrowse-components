@@ -9,6 +9,7 @@ import { findMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend } from './legend.ts'
 import { buildMarkList } from './markList.ts'
 
+import type { MarkEntry } from './markList.ts'
 import type {
   MarkRegionData,
   MarkRenderState,
@@ -56,10 +57,15 @@ function layer(
   }
 }
 
+function entries(...shapes: MarkEntry['shape'][]): MarkEntry[] {
+  return shapes.map(shape => ({ shape, minBpPerPx: 0, maxBpPerPx: 0 }))
+}
+
 const state: MarkRenderState = {
   domainY: [0, 10],
   canvasWidth: 800,
   canvasHeight: 400,
+  bpPerPx: 1.25,
   origin: 0,
   minWidthPx: 1,
   pointDiameterPx: 4,
@@ -76,7 +82,7 @@ const block = {
 }
 
 test('mark i reads layers[i], and every mark gets its own pass id', () => {
-  const marks = buildMarkList(['bar', 'point', 'span'])
+  const marks = buildMarkList(entries('bar', 'point', 'span'))
   expect(marks.map(m => m.pass.id)).toEqual(['bar#0', 'point#1', 'span#2'])
   const data: MarkRegionData = {
     layers: [
@@ -95,13 +101,13 @@ test('mark i reads layers[i], and every mark gets its own pass id', () => {
 })
 
 test('a region with fewer layers than marks packs nothing for the missing one', () => {
-  const marks = buildMarkList(['bar', 'point'])
+  const marks = buildMarkList(entries('bar', 'point'))
   const data: MarkRegionData = { layers: [layer([1], [1], [RED])] }
   expect(marks[1]!.pass.pack(data).byteLength).toBe(0)
 })
 
 test('a layer without the lanes its shape reads packs nothing', () => {
-  const [span] = buildMarkList(['span'])
+  const [span] = buildMarkList(entries('span'))
   const withoutRow: MarkRegionData = { layers: [layer([1], [1], [RED])] }
   expect(span!.pass.pack(withoutRow).byteLength).toBe(0)
   const withRow: MarkRegionData = {
@@ -111,7 +117,7 @@ test('a layer without the lanes its shape reads packs nothing', () => {
 })
 
 test('a span mark stacks on the row lane, the bands dividing the plot by rowCount', () => {
-  const [mark] = buildMarkList(['span'])
+  const [mark] = buildMarkList(entries('span'))
   const hal = new MockHal([mark!.pass])
   const scratch = new ArrayBuffer(mark!.pass.uniformByteSize)
   const clip = clipBlock(block, state.canvasWidth, state.canvasHeight, {
@@ -159,7 +165,7 @@ test('a span mark stacks on the row lane, the bands dividing the plot by rowCoun
 })
 
 test('a bar mark writes the origin and the domain into its uniforms', () => {
-  const [mark] = buildMarkList(['bar'])
+  const [mark] = buildMarkList(entries('bar'))
   const hal = new MockHal([mark!.pass])
   const scratch = new ArrayBuffer(mark!.pass.uniformByteSize)
   const clip = clipBlock(block, state.canvasWidth, state.canvasHeight, {
@@ -180,8 +186,47 @@ test('a bar mark writes the origin and the domain into its uniforms', () => {
   expect(u[barShader.UNIFORM_OFFSET_F32.domainMax]).toBe(10)
 })
 
+test('a mark outside its zoom range neither draws nor answers a hover', () => {
+  const [mark] = buildMarkList([
+    { shape: 'bar', minBpPerPx: 10, maxBpPerPx: 0 },
+  ])
+  const hal = new MockHal([mark!.pass])
+  const scratch = new ArrayBuffer(mark!.pass.uniformByteSize)
+  const clip = clipBlock(block, state.canvasWidth, state.canvasHeight, {
+    x: 1,
+    y: 1,
+  })!
+  const data = { layers: [layer([500], [5], [RED])] }
+  const refNames = new Map([[0, 'ctgA']])
+  const hitAt = (bpPerPx: number) =>
+    findMarkHit(
+      402,
+      300,
+      [block],
+      new Map([[0, data]]),
+      [mark!],
+      ['bar'],
+      { ...state, bpPerPx },
+      refNames,
+    )
+  mark!.drawRegion(hal, scratch, block, clip, data, state, 0)
+  expect(hal.getLastUniformsF32()).toBeNull()
+  expect(hitAt(1.25)).toBeUndefined()
+  mark!.drawRegion(
+    hal,
+    scratch,
+    block,
+    clip,
+    data,
+    { ...state, bpPerPx: 10 },
+    0,
+  )
+  expect(hal.getLastUniformsF32()).not.toBeNull()
+  expect(hitAt(10)?.instance).toBe(0)
+})
+
 describe('findMarkHit', () => {
-  const marks = buildMarkList(['bar', 'point'])
+  const marks = buildMarkList(entries('bar', 'point'))
   const refNames = new Map([[0, 'ctgA']])
   // a bar at 500 bp reaching from the origin to 5, a point at 800 bp at 8
   const regions = new Map<number, MarkRegionData>([

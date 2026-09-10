@@ -60,6 +60,8 @@ export interface MarkRegionData {
 
 export interface MarkRenderState extends MarkFrame {
   domainY: [number, number]
+  /** The view's zoom, what a mark's range is checked against. */
+  bpPerPx: number
   origin: number
   minWidthPx: number
   pointDiameterPx: number
@@ -69,6 +71,26 @@ export interface MarkRenderState extends MarkFrame {
 
 export type DisplayMark = Mark<MarkRegionData, MarkRenderState>
 
+/**
+ * One `marks` entry as the list is built from it: the shape, and the zoom
+ * range it draws in, in bp per px, where 0 is no bound.
+ */
+export interface MarkEntry {
+  shape: MarkShapeName
+  minBpPerPx: number
+  maxBpPerPx: number
+}
+
+export function markDrawsAt(
+  { minBpPerPx, maxBpPerPx }: MarkEntry,
+  bpPerPx: number,
+) {
+  return (
+    (minBpPerPx <= 0 || bpPerPx >= minBpPerPx) &&
+    (maxBpPerPx <= 0 || bpPerPx < maxBpPerPx)
+  )
+}
+
 // A pass id keys the pipeline and the instance buffer, so two marks on one
 // shape need two ids — the shape's own, suffixed by the mark's index.
 function withPassId<C, P>(shape: MarkShape<C, P>, id: string): MarkShape<C, P> {
@@ -76,12 +98,15 @@ function withPassId<C, P>(shape: MarkShape<C, P>, id: string): MarkShape<C, P> {
 }
 
 /**
- * The mark list a `marks` config declares: mark `i` reads `layers[i]` and
- * every shape places its value through the one `domainY`.
+ * The mark list a `marks` config declares: mark `i` reads `layers[i]`, every
+ * shape places its value through the one `domainY`, and a mark outside its
+ * zoom range is off — for the draw, the hover and the highlight alike.
  */
-export function buildMarkList(shapes: readonly MarkShapeName[]): DisplayMark[] {
-  return shapes.map((shape, i) => {
+export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
+  return entries.map((entry, i) => {
+    const { shape } = entry
     const id = `${shape}#${i}`
+    const enabled = (s: MarkRenderState) => markDrawsAt(entry, s.bpPerPx)
     switch (shape) {
       case 'bar': {
         return defineMark({
@@ -93,6 +118,7 @@ export function buildMarkList(shapes: readonly MarkShapeName[]): DisplayMark[] {
             origin: s.origin,
             minWidthPx: s.minWidthPx,
           }),
+          enabled,
         })
       }
       case 'point': {
@@ -104,6 +130,7 @@ export function buildMarkList(shapes: readonly MarkShapeName[]): DisplayMark[] {
             domain: s.domainY,
             diameterPx: s.pointDiameterPx,
           }),
+          enabled,
         })
       }
       case 'span': {
@@ -118,6 +145,7 @@ export function buildMarkList(shapes: readonly MarkShapeName[]): DisplayMark[] {
             seamPx: 0,
             scrollTop: 0,
           }),
+          enabled,
         })
       }
     }

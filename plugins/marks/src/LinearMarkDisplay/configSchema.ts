@@ -223,6 +223,134 @@ const markEncodingSchema = ConfigurationSchema('MarkEncoding', {
   glyph: markGlyphSchema,
 })
 
+export const TRANSFORM_TYPES = [
+  'filter',
+  'formula',
+  'bin',
+  'aggregate',
+  'coverage',
+] as const
+export const AGGREGATE_OPS = ['count', 'sum', 'mean', 'min', 'max'] as const
+
+const aggregateOpSchema = ConfigurationSchema('MarkAggregateOp', {
+  /**
+   * #slot marks.transform.ops.op
+   * `count` needs no field; `sum`, `mean`, `min` and `max` read one.
+   */
+  op: {
+    type: 'stringEnum',
+    model: types.enumeration('MarkAggregateOpName', [...AGGREGATE_OPS]),
+    defaultValue: 'count',
+    description: 'count, sum, mean, min or max',
+  },
+  /**
+   * #slot marks.transform.ops.field
+   * The feature field the op reads, for every op but `count`.
+   */
+  field: {
+    type: 'string',
+    defaultValue: '',
+    description: 'field the op reads',
+  },
+  /**
+   * #slot marks.transform.ops.as
+   * The output field. Empty is `count`, or `<op>_<field>`.
+   */
+  as: {
+    type: 'string',
+    defaultValue: '',
+    description: 'output field',
+  },
+})
+
+// `as: 'depth'` on a formula or coverage step is the one name; a bin step's
+// two names are already a list. One array slot holds both spellings.
+function liftAs(snap: unknown) {
+  const obj = { ...(snap as Record<string, unknown>) }
+  if (typeof obj.as === 'string') {
+    obj.as = [obj.as]
+  }
+  return obj
+}
+
+const transformStepSchema = ConfigurationSchema(
+  'MarkTransformStep',
+  {
+    /**
+     * #slot marks.transform.type
+     * `filter` keeps the features `expr` admits; `formula` writes `expr`'s
+     * value into `as`; `bin` snaps each feature to the `step`-bp bin its
+     * `field` falls in, writing the bin's edges over `start` and `end` (or
+     * the two names in `as`); `aggregate` folds each `groupby` group into
+     * one feature carrying `ops`; `coverage` replaces the features with
+     * runs of how many overlap each stretch, in `as` (`coverage`).
+     */
+    type: {
+      type: 'stringEnum',
+      model: types.enumeration('MarkTransformType', [...TRANSFORM_TYPES]),
+      defaultValue: 'filter',
+      description: 'filter, formula, bin, aggregate or coverage',
+    },
+    /**
+     * #slot marks.transform.expr
+     * A jexl callback over `feature`, for a `filter` or `formula` step.
+     */
+    expr: {
+      type: 'string',
+      defaultValue: '',
+      description: 'jexl callback over feature',
+      contextVariable: ['feature'],
+    },
+    /**
+     * #slot marks.transform.field
+     * For a `bin` step: the field placing a feature in a bin, `start` when
+     * empty.
+     */
+    field: {
+      type: 'string',
+      defaultValue: '',
+      description: 'field a bin reads',
+    },
+    /**
+     * #slot marks.transform.step
+     * For a `bin` step: the bin width in bp, aligned to the genome.
+     */
+    step: {
+      type: 'number',
+      defaultValue: 10000,
+      description: 'bin width in bp',
+    },
+    /**
+     * #slot marks.transform.as
+     * The field a `formula` or `coverage` step writes, or the two fields a
+     * `bin` step writes its edges to. A single name may be written as a
+     * string.
+     */
+    as: {
+      type: 'stringArray',
+      defaultValue: [],
+      description: "output field, or a bin's two",
+    },
+    /**
+     * #slot marks.transform.groupby
+     * For an `aggregate` step: the fields whose distinct value sets make
+     * the groups — `["start", "end"]` after a `bin`. Empty folds the whole
+     * region into one feature.
+     */
+    groupby: {
+      type: 'stringArray',
+      defaultValue: [],
+      description: 'grouping fields',
+    },
+    /**
+     * #slot marks.transform.ops
+     * For an `aggregate` step: the summaries each group carries.
+     */
+    ops: types.array(aggregateOpSchema),
+  },
+  { preProcessSnapshot: liftAs },
+)
+
 const markSchema = ConfigurationSchema('Mark', {
   /**
    * #slot marks.shape
@@ -241,6 +369,35 @@ const markSchema = ConfigurationSchema('Mark', {
    * default, so `{}` draws a bar from `start` to `end` with no value.
    */
   encoding: markEncodingSchema,
+  /**
+   * #slot marks.transform
+   * Steps over the region's features before this mark encodes them, in
+   * order, after the display's `jexlFilters`. A `bin` then an `aggregate`
+   * grouped by `start` and `end` is a density: `count` per bin, plotted as
+   * `y`.
+   */
+  transform: types.array(transformStepSchema),
+  /**
+   * #slot marks.minBpPerPx
+   * The mark draws only when the view is at least this zoomed out, in bp per
+   * px. 0 sets no bound. With `maxBpPerPx` on another mark, one config shows
+   * a density zoomed out and the features zoomed in.
+   */
+  minBpPerPx: {
+    type: 'number',
+    defaultValue: 0,
+    description: 'draw only at or above this bp/px',
+  },
+  /**
+   * #slot marks.maxBpPerPx
+   * The mark draws only when the view is zoomed in past this, in bp per px.
+   * 0 sets no bound.
+   */
+  maxBpPerPx: {
+    type: 'number',
+    defaultValue: 0,
+    description: 'draw only below this bp/px',
+  },
 })
 
 /**
@@ -252,7 +409,9 @@ const markSchema = ConfigurationSchema('Mark', {
  * marks draw in order over one score axis.
  *
  * #example
- * A BED score column as bars, coloured by strand, with the key on screen:
+ * A BED score column as bars, coloured by strand, with the key on screen,
+ * and a per-10 kb count in its place once the view is wider than 100 bp
+ * per px:
  * ```js
  * {
  *   type: 'FeatureTrack',
@@ -268,6 +427,16 @@ const markSchema = ConfigurationSchema('Mark', {
  *         {
  *           shape: 'bar',
  *           encoding: { y: 'score', color: { field: 'strand', scale: 'categorical' } },
+ *           maxBpPerPx: 100,
+ *         },
+ *         {
+ *           shape: 'bar',
+ *           transform: [
+ *             { type: 'bin', step: 10000 },
+ *             { type: 'aggregate', groupby: ['start', 'end'], ops: [{ op: 'count' }] },
+ *           ],
+ *           encoding: { y: 'count' },
+ *           minBpPerPx: 100,
  *         },
  *       ],
  *     },
@@ -356,3 +525,4 @@ export type LinearMarkDisplayConfigModel = ReturnType<
 >
 export type LinearMarkDisplayConfig = Instance<LinearMarkDisplayConfigModel>
 export type MarkConfig = Instance<typeof markSchema>
+export type MarkTransformStepConfig = Instance<typeof transformStepSchema>
