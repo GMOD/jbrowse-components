@@ -31,6 +31,8 @@
     "release-electron:mac": "pnpm package:mac && node scripts/publish.ts --mac --publish",
     "release-electron:win": "pnpm package:win && node scripts/publish.ts --win --publish",
     "check:nsis": "node scripts/checkNsis.ts",
+    "check:release": "node scripts/verifyRelease.ts",
+    "check:update-feed": "node scripts/verifyRelease.ts --feed",
     "update:appimagetool": "node scripts/updateAppimagetool.ts",
     "test:e2e": "node test/e2e.ts",
     "test:mcp": "node test/mcpConformance.ts",

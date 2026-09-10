@@ -258,6 +258,38 @@ jobs:
         run: pnpm release-electron:linux
         working-directory: products/jbrowse-desktop
 
+  # Three green jobs is not the same claim as a complete release: each uploads
+  # its own platform, so a release missing one platform's latest*.yml is a
+  # release that platform silently stops updating from — and the next release
+  # does not fix it, because the new release is the one those clients can no
+  # longer see. Nothing checked that until here; every release so far has been
+  # complete by luck and diligence.
+  #
+  # `if: always()`, so an incomplete release says so in its own words rather
+  # than being inferred from a red sibling. Reads the draft, so the answer is
+  # there before the Publish click that is the release's real gate.
+  verifydesktop:
+    name: Verify the release carries every desktop artifact
+    needs: [buildwindows, buildmac, buildlinux]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      # install: false — the script reads package.json and shells out to gh;
+      # nothing here needs node_modules.
+      - uses: ./.github/actions/setup
+        with:
+          install: 'false'
+      - name: Check every artifact and manifest is on the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm check:release
+        working-directory: products/jbrowse-desktop
+
   buildjbrowseweb:
     name: Deploy jbrowse-web to latest folder on tag
     # Reuse the build createrelease already produced instead of rebuilding.

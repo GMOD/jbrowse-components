@@ -1,0 +1,57 @@
+# What a running JBrowse Desktop sees when it checks for an update, asked
+# without shipping a release to find out.
+#
+# electron-updater resolves the check to whatever GitHub calls this repo's
+# latest release and then fetches latest-<platform>.yml out of it. Both halves
+# can break with nobody touching desktop code: publishing the release draft
+# before the three build jobs have uploaded moves "latest" to a tag with no
+# manifests, and so would any non-`v` release published after a `v` one, since
+# GitHub picks latest by date and this repo has tags of both shapes. Either one
+# takes every existing install offline for updates, and the app is deliberately
+# silent about a failed background check — so nothing reports it. The first
+# symptom is a user asking why they are three versions behind.
+#
+# Off the PR path, like blat-canary.yml: it reads published state, so a red run
+# is a fact about the releases, not about the commit under test. It runs on
+# `release: published` because that is the moment the hazard is created, and
+# weekly because the other half of it is not this repo's doing at all.
+#
+# When it goes red: the named platform is not updating. Upload the missing
+# artifacts to the release the run names (`pnpm release-electron:<os>` produces
+# them), or, if a stray release has taken "latest", mark it as a prerelease.
+name: Update feed canary
+
+on:
+  release:
+    types: [published]
+  schedule:
+    # Monday 07:00 UTC, after the BLAT canary's daily slot
+    - cron: '0 7 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  update-feed:
+    name: The desktop update feed resolves and is complete
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      # install: false — the script reads package.json and shells out to gh;
+      # nothing here needs node_modules.
+      - uses: ./.github/actions/setup
+        with:
+          install: 'false'
+      - name: Resolve the update check the way Desktop does
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm check:update-feed
+        working-directory: products/jbrowse-desktop
