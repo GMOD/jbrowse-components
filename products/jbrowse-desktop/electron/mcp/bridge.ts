@@ -41,9 +41,23 @@ const delay = (ms: number) =>
     setTimeout(resolve, ms)
   })
 
+/**
+ * One call on the socket, addressed in its own connection's id namespace.
+ *
+ * `call` is this one; `sibling` names another of the same connection's, which
+ * is the only thing a cancel is allowed to reach.
+ */
+interface Caller {
+  call: string
+  sibling: (requestId: number) => string
+}
+
 interface BridgeDeps {
   paths: AppPaths
   appVersion: string
+  // injectable so a test can serve its own rendezvous rather than the running
+  // app's; nothing but a test passes one
+  socketPath?: string
   getWindow: () => BrowserWindow | null
   // ensureWindow, not the link-confirming openTarget: the consent the dialog
   // asks for is given by configuring the MCP client, and a per-call native
@@ -54,9 +68,17 @@ interface BridgeDeps {
 export function startMcpBridge({
   paths,
   appVersion,
+  socketPath: givenSocketPath,
   getWindow,
   openTarget,
 }: BridgeDeps) {
+  // The default rendezvous is the one this has to vouch for — a directory this
+  // account exclusively owns, since the endpoint runs arbitrary code. A caller
+  // that names its own path owns its own directory.
+  if (givenSocketPath === undefined) {
+    ensureSocketDir()
+  }
+  const socketPath = givenSocketPath ?? defaultSocketPath()
   let relayId = 0
   const relays = new Map<number, (response: BridgeToolResult) => void>()
 
@@ -84,17 +106,20 @@ export function startMcpBridge({
     }
   })
 
-  function stopListening() {
-    listening = undefined
-    // The page these were sent to is gone, so no mcpResponse is ever coming.
-    // Without this they sit until RENDERER_TIMEOUT_MS — a 150s hang for a call
-    // that was already unanswerable, which is what a screenshot taken across a
-    // navigation used to cost.
+  // Nothing is coming for these, so waiting out RENDERER_TIMEOUT_MS is a 150s
+  // hang over a call that is already unanswerable — which is what a screenshot
+  // taken across a navigation used to cost.
+  function settleOrphans(error: string) {
     const orphaned = [...relays.values()]
     relays.clear()
     for (const settle of orphaned) {
-      settle({ error: 'the page reloaded before the app answered; try again' })
+      settle({ error })
     }
+  }
+
+  function stopListening() {
+    listening = undefined
+    settleOrphans('the page reloaded before the app answered; try again')
   }
 
   // A page load tears the subscription down without telling anyone, so the
@@ -151,15 +176,18 @@ export function startMcpBridge({
   }
 
   // The relay a socket request is waiting on, so `cancel` can name the running
-  // code. The client's own request id addresses it: the ids the bridge hands
-  // the renderer are its own, and a client cannot know them.
-  const relayForRequest = new Map<number, number>()
+  // code. The client's own request id addresses it — the ids the bridge hands
+  // the renderer are its own and a client cannot know them — but every client
+  // numbers its calls from zero, so the connection is half the key. Two on the
+  // socket at once (Claude Desktop beside Claude Code) both have a call 5, and
+  // a cancel from one would otherwise abort the other's.
+  const relayForRequest = new Map<string, number>()
 
   async function relayToRenderer(
     tool: string,
     args: Record<string, unknown>,
     timeoutMs = RENDERER_TIMEOUT_MS,
-    requestId?: number,
+    requestId?: string,
   ): Promise<BridgeToolResult> {
     if (!getWindow()) {
       return {
@@ -204,11 +232,14 @@ export function startMcpBridge({
   // The client gave up on a call — an interrupted agent, almost always. The
   // code is cooperative, so aborting its `signal` is the whole remedy: without
   // it a runaway loop kept the renderer pinned for the rest of its budget with
-  // nobody left to read the answer.
-  function cancelTool(args: Record<string, unknown>) {
+  // nobody left to read the answer. A connection can only cancel its own calls,
+  // which is what `sibling` means.
+  function cancelTool(args: Record<string, unknown>, caller: Caller) {
     const requestId = typeof args.id === 'number' ? args.id : undefined
     const relay =
-      requestId === undefined ? undefined : relayForRequest.get(requestId)
+      requestId === undefined
+        ? undefined
+        : relayForRequest.get(caller.sibling(requestId))
     return relay === undefined
       ? Promise.resolve({ result: { cancelled: false } })
       : relayToRenderer('cancel', { id: relay }, 5000)
@@ -345,10 +376,7 @@ export function startMcpBridge({
   // absent, and reaches the socket only from a client that made it up.
   const handlers: Record<
     string,
-    (
-      args: Record<string, unknown>,
-      requestId: number,
-    ) => Promise<BridgeToolResult>
+    (args: Record<string, unknown>, caller: Caller) => Promise<BridgeToolResult>
   > = {
     // the stdio server compares this against its own version so the docs it
     // bundles can say when they describe a different build than the one running
@@ -359,8 +387,8 @@ export function startMcpBridge({
     ...Object.fromEntries(
       MCP_TOOLS.filter(t => t.handledBy === 'renderer').map(t => [
         t.name,
-        (args: Record<string, unknown>, requestId: number) =>
-          relayToRenderer(t.name, args, codeRelayBudget(args), requestId),
+        (args: Record<string, unknown>, caller: Caller) =>
+          relayToRenderer(t.name, args, codeRelayBudget(args), caller.call),
       ]),
     ),
   }
@@ -368,22 +396,21 @@ export function startMcpBridge({
   async function dispatch(
     tool: string,
     args: Record<string, unknown>,
-    requestId: number,
+    caller: Caller,
   ): Promise<BridgeToolResult> {
-    return (
-      handlers[tool]?.(args, requestId) ?? { error: `Unknown tool: ${tool}` }
-    )
+    return handlers[tool]?.(args, caller) ?? { error: `Unknown tool: ${tool}` }
   }
 
-  ensureSocketDir()
-  const socketPath = defaultSocketPath()
   if (process.platform !== 'win32' && fs.existsSync(socketPath)) {
     // a leftover from a crashed instance; the single-instance lock says no
     // other live one holds it
     fs.unlinkSync(socketPath)
   }
 
+  let connectionId = 0
   const server = net.createServer(socket => {
+    const connection = connectionId++
+    const sibling = (requestId: number) => `${connection}:${requestId}`
     connectedClients += 1
     applyThrottling()
     socket.on('close', () => {
@@ -391,6 +418,14 @@ export function startMcpBridge({
       applyThrottling()
     })
     const rl = readline.createInterface({ input: socket })
+    // BOTH halves, or the app dies. A client that exits while a call is in
+    // flight leaves a half-closed pipe, so the answer's write fails EPIPE and
+    // the socket emits 'error' — and readline forwards its input's errors to
+    // the Interface, which has no listener of its own and throws out of the
+    // main process, taking the user's unsaved session with it. The socket
+    // listener alone does not cover the Interface.
+    socket.on('error', () => {})
+    rl.on('error', () => {})
     // Everything in here runs in the MAIN process, where an uncaught throw
     // takes the app down with the user's unsaved session — so nothing off the
     // socket is trusted, `null` and arrays included (JSON.parse accepts both),
@@ -421,8 +456,11 @@ export function startMcpBridge({
           return
         }
         const { id } = request
+        // `writable`, not `!destroyed`: a peer that has gone away leaves the
+        // socket alive and unwritable for a tick, which is the window the
+        // EPIPE above comes out of
         const answer = (outcome: BridgeToolResult) => {
-          if (!socket.destroyed) {
+          if (socket.writable) {
             socket.write(`${JSON.stringify({ id, ...outcome })}\n`)
           }
         }
@@ -436,14 +474,13 @@ export function startMcpBridge({
           !Array.isArray(request.args)
             ? (request.args as Record<string, unknown>)
             : {}
-        void dispatch(request.tool, args, id)
+        void dispatch(request.tool, args, { call: sibling(id), sibling })
           .catch((e: unknown) => ({ error: String(e) }))
           .then(answer)
       } catch (e) {
         console.error('MCP bridge dropped a malformed line:', e)
       }
     })
-    socket.on('error', () => {})
   })
   server.on('error', (e: Error) => {
     console.error('MCP bridge failed to listen:', e)
@@ -452,6 +489,11 @@ export function startMcpBridge({
 
   return () => {
     server.close()
+    // Answering beats silence: a client waiting on a relay when the app quits
+    // would otherwise sit out its own timeout for a call nobody is left to run.
+    // It is also what lets the relay timers go, which is how a test that starts
+    // a bridge stops holding its worker open.
+    settleOrphans('JBrowse Desktop is shutting down')
     if (process.platform !== 'win32') {
       fs.rmSync(socketPath, { force: true })
     }
