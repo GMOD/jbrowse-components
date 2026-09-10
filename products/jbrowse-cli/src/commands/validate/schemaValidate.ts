@@ -336,7 +336,7 @@ function explain(
           const nested: Problem[] = []
           explain(value, fn.errors, nested, depth + 1)
           for (const p of nested) {
-            emit(join(where, p.where).replace(/\.\[/g, '['), p.message)
+            emit(join(where, p.where).replaceAll('.[', '['), p.message)
           }
         } else {
           emit(where, 'does not match any accepted form')
