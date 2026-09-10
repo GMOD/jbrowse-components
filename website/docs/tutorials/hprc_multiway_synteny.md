@@ -38,9 +38,6 @@ assembly.
 
 - the graph, which the lanes are unpacked from, 63 GB:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gfa.gz
-- the same alignment projected onto GRCh38 and indexed by locus, which the
-  `SOURCE=taf` route reads in place of the graph:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz
 - the CAT gene annotation index, one GFF3 per haplotype:
   https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv
 - GRCh38's chromosome lengths, which bound each chromosome's read of that
@@ -54,13 +51,6 @@ assembly.
 
 ## The graph's own alignment, unpacked
 
-The [primate page](/docs/tutorials/primate_orthologs_synteny) and the
-[E. coli page](/docs/tutorials/ecoli_orthologs_synteny) fill their lanes from a
-gene table, joining genes by name, so a lane holds genes and nothing between
-them. An alignment file places sequence: every base of the reference window that
-a haplotype aligns has a position on that haplotype's own contig, and a gene the
-haplotype lacks shows as the alignment stopping and resuming past it.
-
 The alignment here is the graph itself. Minigraph-Cactus writes every haplotype
 into the graph as a walk through its nodes, and two walks that pass through one
 node carry identical sequence there. A haplotype's pairwise alignment to GRCh38
@@ -68,13 +58,6 @@ is therefore its walk read against the reference walk: the nodes both traverse
 are matches, the nodes only one of them traverses between two shared ones are
 the indels and substitutions. Nothing is aligned on this page; what the lanes
 draw is the graph.
-
-The consortium also publishes a separate all-vs-GRCh38 PAF of the same
-haplotypes, produced by a different aligner, and the
-[CFH panel on the pangenome page](/docs/tutorials/pangenome_hprc_part3#every-haplotype-in-its-own-coordinates)
-slices its lanes out of that file. This page does not use it. One input is what
-makes the build reproducible: the graph, read as published, with no aligner run
-and no choice of aligner settings to record.
 
 `gfa_to_pairwise_paf.py` streams the GFA once and keeps only the reference walks
 and the haplotypes asked for; every other walk is skipped unparsed, which is
@@ -103,23 +86,15 @@ The converter reports on stderr, per haplotype, the walks it read, the records
 it wrote and the bases it aligned, and a haplotype that wrote none is a wrong
 sample spelling. The graph is written one chromosome at a time with the
 reference walk first, which is the order the converter expects; a graph whose
-haplotype walks precede the reference's wants `--hold-queries`, which it says
-when it meets one. `make-pif` sorts, bgzips and indexes the PAF with a fine tier
-for the per-base CIGARs and a coarse one for whole-chromosome zooms:
+haplotype walks precede the reference's wants `--hold-queries`. `make-pif`
+sorts, bgzips and indexes the PAF with a fine tier for the per-base CIGARs and a
+coarse one for whole-chromosome zooms:
 
 <!-- from: scripts/build_hprc_multiway_synteny.sh -->
 
 ```bash
 jbrowse make-pif hprc_multiway_gfa.paf --csi --out hprc_multiway_gfa.pif.gz
 ```
-
-The same script unpacks the alignment a second way, from the graph's published
-projection onto GRCh38 instead of the graph file, with `SOURCE=taf`:
-[taffy](https://github.com/ComparativeGenomicsToolkit/taffy) streams a
-chromosome of the TAF as MAF and `maf_to_pairwise_paf.py` chains each
-haplotype's rows. The two routes agree on the reference covered to within a
-tenth of a percent and put the deletion below at the same coordinate, which is
-the check that either is reading the graph faithfully.
 
 ## The assemblies and their gene models
 
@@ -128,8 +103,7 @@ Each haplotype is an assembly of its chromosome lengths alone, a
 read sequence. Its gene track is the release's CAT annotation of that assembly,
 whole genome, from the index above: the GFF3 sorted, bgzipped and tabix-indexed
 as in the [web quickstart](/docs/quickstart_web), with the intron and codon rows
-dropped and a handful of multi-megabase "genes" CAT's lift-over pass left behind
-removed. A lane finds its gene models through the session, so the track only has
+dropped. A lane finds its gene models through the session, so the track only has
 to exist under the lane's assembly name.
 
 ## The alignment track
@@ -171,22 +145,8 @@ carries all eight.
 
 Every record aligns one haplotype to GRCh38, so the file is a star with the
 reference at the centre, which is the shape a lane stack anchored on hg38 reads.
-
-## Reading the stack
-
-Each lane is one haplotype in its own coordinates, fitted to wherever its
-alignment places the anchor window, so the number at a lane's right edge is the
-span that lane shows and the multiple after it is how much wider than the anchor
-window that is. Ribbons join a lane to the lane directly above it, and since a
-star holds no alignment between two haplotypes, the ribbon between two mate
-lanes is composed through the reference. Hovering a ribbon lights the same
-alignment in every lane it reaches, and dragging a lane's label reorders the
-stack. Each lane's header carries a menu: re-anchor the whole view on that
-haplotype, so it becomes the top lane and hg38 drops into the stack; open the
-haplotype at the matching region in a view of its own, with this track and its
-CAT annotation along; or move and hide the lane, the same controls the track
-menu's **Lanes** entry offers for every lane at once, alongside **Show all
-lanes** and **Reset lane order**.
+The [linear synteny view guide](/docs/user_guides/linear_synteny_view) covers
+the lane controls, the ribbons and the launches each lane header offers.
 
 <Figure caption="The header menu of one haplotype lane: re-anchor the view on it, open it at the matching region in its own view, or move and hide the lane." src="/img/multiway_synteny/hprc_lane_menu.png" />
 
@@ -194,13 +154,10 @@ lanes** and **Reset lane order**.
 
 The eight are the panel the
 [pangenome page](/docs/tutorials/pangenome_hprc_part3#every-haplotype-in-its-own-coordinates)
-picks out of the release's callset at the CFHR3/CFHR1 deletion: samples
-homozygous for the deletion and samples homozygous reference, kept only where
-the haplotype's own CAT annotation agrees with the genotype it was picked on.
-HG01109, HG01123, HG01960 and HG02055 carry it; HG00097, HG00099, HG00128 and
-HG00133 do not. That page draws the panel from a gene table joined on the CAT
-gene names over the one window; here the same haplotypes are placed by the
-graph's alignment, whole genome.
+picks out of the release's callset at the CFHR3/CFHR1 deletion. HG01109,
+HG01123, HG01960 and HG02055 carry it; HG00097, HG00099, HG00128 and HG00133 do
+not. That page draws the panel from a gene table over one window; here the same
+haplotypes are placed by the graph's alignment, whole genome.
 
 ```json session config=https://jbrowse.org/demos/hprc_multiway/config.json
 {
@@ -236,23 +193,19 @@ one side and _CFHR4_ onward on the other, place in every lane.
 
 <Figure caption="The CFH cluster on hg38 over eight HPRC haplotype lanes placed by the graph's own alignment, each lane drawing its own CAT gene models on its own contig. The non-carrier lanes align straight through; in the carrier lanes the alignment stops before CFHR3 and resumes past CFHR1, and nothing is drawn in between." src="/img/multiway_synteny/hprc_cfh_haplotypes.png" />
 
-The four carriers also sort together, at the bottom of this stack. Lane order is
-densest first over the fetched window, weighed by how much of the reference each
-lane's alignment places, and a lane whose alignment skips the cluster places
-less of it, so the two genotypes separate on their own, carriers at the bottom.
-That is this window's arithmetic rather than a general rule, and `rowOrder` is
-what pins an order that has to hold.
+The four carriers also sort together, at the bottom of this stack, because lane
+order is densest first over the fetched window and a lane whose alignment skips
+the cluster places less of it; `rowOrder` is what pins an order that has to
+hold.
 
 ## The whole chromosome
 
-The deletion reads the same way at any zoom the index serves, and the stack is
-meant to be zoomed all the way out. Over the whole of chr1 the coarse tier
-answers the fetch in one pass, every lane is a haplotype's chromosome in its own
-frame, and the picture is the assembly rather than a locus: the centromere
-splits each lane where the graph aligns nothing, and a haplotype whose chr1 was
-assembled as two scaffolds shows one of them, with the other named in its header
-so the reader can pin the lane onto it. The track menu's **Level of detail**
-entry picks the tier by hand.
+The deletion reads the same way at any zoom the index serves. Over the whole of
+chr1 the coarse tier answers the fetch in one pass and the picture is the
+assembly: the centromere splits each lane where the graph aligns nothing, and a
+haplotype whose chr1 was assembled as two scaffolds shows one of them, with the
+other named in its header. The track menu's **Level of detail** entry picks the
+tier by hand.
 
 <Figure caption="All of hg38 chr1 over the eight haplotype lanes, served from the coarse tier of the graph-derived index. Each lane is a haplotype's chromosome in its own frame, split at the centromere; three lanes name a second scaffold in their headers because their chr1 was assembled in two pieces." src="/img/multiway_synteny/hprc_chr1_whole.png" />
 
@@ -262,9 +215,6 @@ The script fetches the graph, unpacks the eight haplotypes' walks in one pass
 over it, indexes the PAF, fetches and trims each haplotype's CAT annotation and
 writes the config; see [Prerequisites](#prerequisites). The 63 GB download is
 the cost, and it is kept, so a rerun starts from the file it already has.
-`SOURCE=taf` takes the projection instead, where `taffy` streams a chromosome at
-a time, `JOBS` sets how many run at once, and a finished chromosome is kept the
-same way; that route wants `taffy` on the path in place of `pigz`.
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_multiway_synteny.sh
@@ -290,5 +240,3 @@ bash build_hprc_multiway_synteny.sh
   https://doi.org/10.1038/s41587-023-01793-w
 - Armstrong J, et al. Progressive Cactus is a multiple-genome aligner for the
   thousand-genome era. Nature (2020). https://doi.org/10.1038/s41586-020-2871-y
-- [taffy](https://github.com/ComparativeGenomicsToolkit/taffy), which indexes
-  the alignment and streams it as MAF.
