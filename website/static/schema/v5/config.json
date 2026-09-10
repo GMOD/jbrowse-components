@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://jbrowse.org/jb2/schema/v5/config.json",
   "title": "JBrowse config.json",
-  "description": "The JBrowse 5.0.0-beta.5 config.json: assemblies, tracks, connections, site-wide configuration and a default session. Generated from the registered types by `pnpm autogen`.",
+  "description": "The JBrowse 5.0.0-beta.6 config.json: assemblies, tracks, connections, site-wide configuration and a default session. Generated from the registered types by `pnpm autogen`.",
   "type": "object",
   "properties": {
     "$schema": {

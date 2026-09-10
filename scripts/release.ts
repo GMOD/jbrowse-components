@@ -478,7 +478,28 @@ function main() {
     ? writeReleaseDocs({ ...docs, releaseTag, date, datetime, destDir })
     : undefined
   const bumped = bumpVersions(version, destDir)
-  const written = [...(rendered?.written ?? []), ...bumped]
+
+  // generateConfigManifest.ts embeds the tree's version in the schema's
+  // description and its `$id`/site path, both read off
+  // jbrowse-web/package.json — which bumpVersions just moved. Real releases
+  // only: the generator has no destDir of its own, so it reads and writes
+  // REPO_ROOT directly, and running it in a dry run would touch the real
+  // tree the whole run promises not to.
+  if (!dryRun) {
+    runQuiet(
+      'node',
+      ['--experimental-strip-types', 'scripts/generateConfigManifest.ts'],
+      'Regenerating the config schema manifest',
+    )
+  }
+  const schemaFiles = dryRun
+    ? []
+    : [
+        'products/jbrowse-cli/src/commands/validate/configSchema.generated.ts',
+        `website/static/schema/v${version.split('.')[0]}/config.json`,
+      ]
+
+  const written = [...(rendered?.written ?? []), ...bumped, ...schemaFiles]
   const deleted = rendered?.deleted ?? []
 
   // Named paths, not a bare format + `git add .`. The clean-tree check ran
