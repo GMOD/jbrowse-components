@@ -168,10 +168,8 @@ export function mergeTrackConfig(
 /** A single overridden slot: the dotted `path`, its base `from` and edited `to`. */
 export interface TrackConfigChange {
   /**
-   * Where the setting lives, and — for a row a UI can revert — its **address**:
-   * product-core's `resetDisplayDefault` parses a promoted display-type
-   * default's path back into the type and slot it clears. So a producer that
-   * wants a friendlier heading sets `label` and leaves this alone.
+   * Where the setting lives. A producer that wants a friendlier heading sets
+   * `label` and leaves this alone.
    */
   path: string[]
   from: Json

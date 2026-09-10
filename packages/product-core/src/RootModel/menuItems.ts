@@ -68,9 +68,9 @@ export function exportSessionMenuItem(): MenuItem {
           [
             JSON.stringify(
               {
-                // an exported file is read by someone who doesn't have this
-                // browser's promoted display-type defaults, so flatten the
-                // cascade into it (same rule as ShareDialog)
+                // an exported file is read by someone whose own preferences
+                // differ, so stamp what the live session resolves at read
+                // time (same rule as ShareDialog)
                 session: getShareableSessionSnapshot(session),
               },
               null,

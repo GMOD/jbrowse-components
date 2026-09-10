@@ -57,10 +57,10 @@ export async function prepareExport(
   const plan = planWebExport(snapshot, baseConfig)
   return {
     plan,
-    // Flatten the cascades this desktop instance resolves at read time, the same
-    // as jbrowse-web's ShareDialog, so the exported session shows what the
-    // sender saw. Not `getShareableSessionSnapshot`, because the snapshot being
-    // baked is planWebExport's transformed one rather than the live session's.
+    // Stamp what this desktop instance resolves at read time, the same as
+    // jbrowse-web's ShareDialog, so the exported session shows what the sender
+    // saw. Not `getShareableSessionSnapshot`, because the snapshot being baked
+    // is planWebExport's transformed one rather than the live session's.
     bakedSession: bakeSessionCascades(session, plan.session),
     // A short link uploads to the share server that the export TARGET reads back
     // from — never this desktop instance's own shareURL config, since Desktop never

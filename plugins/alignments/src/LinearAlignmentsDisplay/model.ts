@@ -3571,9 +3571,7 @@ export default function stateModelFactory(
           setHeightMode(mode: HeightMode) {
             superSetHeightMode(mode)
             // Per-group height overrides are a drag opting one lane out of a
-            // uniform fit/grow, so they go with the mode flip. Tied to the
-            // explicit user action: a track that merely inherits the mode from a
-            // session-wide default keeps its overrides.
+            // uniform fit/grow, so they go with the mode flip.
             if (mode !== 'fixed') {
               self.groupMaxHeightOverrides.clear()
             }

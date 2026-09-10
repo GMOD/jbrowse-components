@@ -147,7 +147,7 @@ function pairedEndItem(model: AnyColorByModel): MenuItem {
 //
 // It also shows whenever it is the ACTIVE scheme, whatever detection returned.
 // Detection is per-fetch volatile state, so a track colored by modifications —
-// from a saved session, a config, or a session-wide default — that lands on a
+// from a saved session or a config — that lands on a
 // region whose reads carry no MM/ML calls otherwise dropped the only row that
 // could read as checked, leaving every radio in Color by... blank and no way
 // back to the modification settings without first navigating elsewhere.

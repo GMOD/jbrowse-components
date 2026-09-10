@@ -125,6 +125,6 @@ assumption.
   is a per-`storedRefNode` MobX computed, and that is scoped to the
   **reference site**, not to the resolved track: two views showing one track
   are two reference nodes, so it would hand them two hydrated configs and break
-  the invariant `PromotedDefaultApply.test.ts` pins
+  the invariant `TrackConfigWorkingCopy.test.ts` pins
   (`first.configuration === second.configuration`). A cache keyed by the frozen
   object is the shape the invariant actually asks for, and that is this one.

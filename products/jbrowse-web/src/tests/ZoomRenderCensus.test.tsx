@@ -247,7 +247,7 @@ test('census: gene track, label zoom', async () => {
   })
 }, 90000)
 
-// An alignments track over DNA, which is where `showSashimiArcs` being promoted
+// An alignments track over DNA, which is where `showSashimiArcs` defaulting
 // on costs something for nothing: every alignments track evaluates the sashimi
 // pipeline now, and reads with no skip gap give it nothing to draw.
 //

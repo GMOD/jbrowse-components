@@ -54,9 +54,8 @@ const ShareDialog = observer(function ShareDialog({
         'short') as SessionShareMode,
   )
   // Capture snapshot once when dialog opens — we don't want to re-upload every
-  // time the session mutates while the dialog is open. Bake the cascades the
-  // live session resolves at read time so the recipient sees what the sender
-  // saw.
+  // time the session mutates while the dialog is open. Stamp what the live
+  // session resolves at read time so the recipient sees what the sender saw.
   const [snap] = useState(() => getShareableSessionSnapshot(session))
   const localFileNames = findLocalFileNames(snap)
   // The bookmark button below has to put the share URL in the address bar — a

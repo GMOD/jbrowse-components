@@ -25,8 +25,8 @@ the template and the first of these.
 | ADR for the temporary-assembly refusal | [ADR-084](../architecture-decision-records/adr-084-a-view-local-track-config-rides-on-its-track.md) |
 | Working invariants (delta caching, reset-not-delete) | `packages/product-core/src/Session/CLAUDE.md` |
 
-Tests: `UpdateTrackConfiguration.test.ts` and `PromotedDefaultOverride.test.ts`
-are the named canaries in `Session/CLAUDE.md`; `pluginFacingSessionApi.test.ts`
+Tests: `UpdateTrackConfiguration.test.ts` is the named canary in
+`Session/CLAUDE.md`, and `TrackConfigWorkingCopy.test.ts` pins the slot-unset case; `pluginFacingSessionApi.test.ts`
 pins the deprecated `addTrackConf` alias two prebuilt plugin bundles still call
 by name at runtime.
 
@@ -85,8 +85,8 @@ catalog base) — the new delta differs from any existing one (2: does the
 programmatic-sync half apply or no-op) × does an *existing* identical delta
 already exist so the write is skipped instead of stored (2) = 4, plus nets back
 to base and a delta existed (2: `revertWorkingCopy` true vs false, per
-`isWorkingCopyState` — the "promoted-default unset" case Session/CLAUDE.md
-documents), plus nets back to base with no delta to clear (1 true no-op) = 7.
+`isWorkingCopyState` — the slot-unset case `TrackConfigWorkingCopy.test.ts`
+pins), plus nets back to base with no delta to clear (1 true no-op) = 7.
 Case B (non-admin editing their own session track, no catalog base): in-place
 replace succeeds, or throws on an invalid config = 2. Case C (admin edit, a
 connection track, or a track with neither a base nor a session entry — routed
@@ -133,8 +133,7 @@ and which kind, whether the edited badge would light):
 6. missing `type` — thrown, uncaught, never reaches a snackbar
 7. delta written or restamped, edited badge on
 8. delta cleared, working copy reverted on screen (implicit reset)
-9. delta cleared, working copy **not** reverted (the promoted-default-unset
-   case — the two are indistinguishable to a `tracks`-getter read and
+9. delta cleared, working copy **not** reverted (the slot-unset case — the two are indistinguishable to a `tracks`-getter read and
    distinguishable only to an *open display*, which is exactly the split
    `Session/CLAUDE.md` calls out)
 10. true no-op — nothing to clear, nothing changed
@@ -193,8 +192,8 @@ per-user addition, and a per-user *edit of someone else's* entry are three
 different persistence and sharing semantics, and `Session/CLAUDE.md`'s
 documented invariants (delta caching keyed to the value it mirrors, the
 working-copy-revert conditional) exist because getting any one of them wrong
-either loses a keystroke mid-edit or silently undoes an admin's promoted
-default. A four-value destination is the honest floor for what this concept
+either loses a keystroke mid-edit or silently undoes a reset the user just
+watched land. A four-value destination is the honest floor for what this concept
 has to express.
 
 **Two findings worth fixing, not smoothing over in the writeup:**
