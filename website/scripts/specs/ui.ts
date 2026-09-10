@@ -7,14 +7,11 @@ import {
   PARK_CURSOR,
   VOLVOX,
   cascadeBoxes,
-  dismissMenus,
   kgUrl,
   lgvSession,
   menuCascade,
-  openFeatureHeightSubmenu,
   openTrackSelector,
   sessionSpec,
-  trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
 
 import type {
@@ -2212,133 +2209,6 @@ export const uiSpecs: ScreenshotSpec[] = [
   // one. Reviewed out rather than re-scoped; track_selector.md documents the
   // slot beside the top-level figure above, which shows the same mechanism at a
   // depth that fits in frame.
-
-  // The track-selector badge a session-wide default raises, and the dialog it
-  // opens (display_defaults.md). A promoted default lives in this browser's
-  // preferences, never in a session spec, so the state has to be driven through
-  // the UI: pin Compact in the alignments "Read height" submenu, then take the
-  // snackbar's "Set as the default".
-  //
-  // **The badge is then about a track that was not open for the pin's click.**
-  // The click writes every open track of the type, so the track it was clicked
-  // from now holds its own height and carries the "Edited" pencil, not this one.
-  // A second alignments track shown afterwards holds nothing of its own, so it
-  // is the one whose badge reads "Affected by a session-wide default"
-  // (data-testid track_session_default_badge) and whose dialog names the default
-  // as its source with a "Clear session default" action. The filter leaves only
-  // that track's row on screen, so the two pencils can't be confused.
-  {
-    mode: 'url',
-    name: 'display_type_default_badge',
-    url: lgvSession(VOLVOX, {
-      assembly: 'volvox',
-      loc: 'ctgA:1..8,000',
-      tracks: ['volvox_alignments_pileup_coverage'],
-    }),
-    readyText: 'ctgA',
-    viewportWidth: 1100,
-    // enough for the tracklist and the dialog; the compacted pileup leaves the
-    // rest of the track band empty, so a taller frame is just whitespace
-    viewportHeight: 560,
-    // the pileup keeps re-laying-out while reads stream in; let the menu
-    // geometry settle before the click sequence
-    settleMs: 8000,
-    hideTooltip: true,
-    // the pin raises an "Applied to N open tracks" snackbar that outlives the
-    // click sequence; it is the action being documented, not part of either
-    // frame
-    hideSelectors: ['.MuiTooltip-popper', '.MuiSnackbar-root'],
-    stages: [
-      {
-        // top frame: the badge in the track selector, circled
-        actions: [
-          trackMenuIcon('volvox_alignments_pileup_coverage'),
-          ...openFeatureHeightSubmenu(),
-          {
-            type: 'click',
-            selector:
-              '[aria-label="apply Compact to all open tracks of this type"]',
-          },
-          { type: 'waitForText', text: 'Applied to 1 open track' },
-          // the second click, which is the one that makes it a default at all
-          { type: 'click', text: 'Set as the default' },
-          ...dismissMenus(),
-          {
-            type: 'click',
-            selector: 'button[title="Open track selector"]',
-          },
-          {
-            type: 'waitForSelector',
-            selector: '[data-testid="hierarchical_track_selector"]',
-          },
-          // the tracklist is virtualized, so filter it down before reaching for
-          // a row; this one also opens the track the badge is about
-          {
-            type: 'type',
-            text: 'Filter tracks',
-            value: 'volvox-long reads with SV',
-          },
-          // By the row's own testid, NOT by its text. A text click matches an
-          // <input>'s VALUE too, and the step above just typed this string into
-          // the filter box above the list — so the click landed there, the track
-          // never opened, and the badge this spec is about could not exist. The
-          // testid's tail is the trackId, which also tells the two SV rows apart
-          // where the name is a prefix of the cram one's.
-          {
-            type: 'click',
-            selector: '[data-testid$=",volvox-long-reads-sv-bam"]',
-          },
-          {
-            type: 'waitForSelector',
-            selector: '[data-testid="track_session_default_badge"]',
-          },
-          { type: 'delay', ms: 1000 },
-        ],
-        // The ring alone said "look here" at a 16px glyph and left the reader to
-        // work out what it meant (review: "might help to have red text
-        // annotation explaining what they are seeing"). The pill says the one
-        // thing the badge cannot: that the track is following a default set
-        // elsewhere rather than carrying an edit of its own.
-        //
-        // Anchored to the add-track FAB rather than to the badge, and that is
-        // placement rather than pedantry: every row left of the badge is a track
-        // name, so a pill reaching for it covers the list it is about. The FAB
-        // sits below the last row, where the panel is empty.
-        annotations: [
-          {
-            type: 'text',
-            text: 'this track follows a session-wide default',
-            fontSize: 20,
-            maxWidth: 420,
-            textAlign: 'end',
-            anchor: {
-              selector: '[data-testid="hierarchical-add-track-fab"]',
-              alignX: 'left',
-            },
-            dx: -30,
-          },
-          {
-            type: 'circle',
-            anchor: {
-              selector: '[data-testid="track_session_default_badge"]',
-            },
-          },
-        ],
-      },
-      {
-        // bottom frame: the dialog it opens, listing the setting the default
-        // imposed and offering to clear it
-        actions: [
-          {
-            type: 'click',
-            selector: '[data-testid="track_session_default_badge"]',
-          },
-          { type: 'waitForText', text: 'Session-wide default' },
-          { type: 'delay', ms: 500 },
-        ],
-      },
-    ],
-  },
 
   // Default UI theme (theme.md) — a small volvox config with the track selector
   // open so the default primary/secondary/tertiary/quaternary palette is shown.

@@ -107,8 +107,7 @@ and per-display meaning). Each rung is a real consumer of the one below.
   derives each colour from the value (2026-09-09, the rule Manhattan's field
   colouring already had), so regions agree either way. Documented at the slot.
 - `applyDisplaySettings` / `setSlot` cannot write an array-of-sub-schema slot,
-  so the promotable-pin census records `marks` as unpinned; the point form is
-  covered from config.
+  so the point form is covered from config rather than from a menu row.
 
 ## Rejected alternatives
 

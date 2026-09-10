@@ -1,15 +1,16 @@
 ---
-status: Accepted
-summary: "A promotable slot's inherit sentinel is always `undefined` (a `maybe*` type + `promotedBase`) — never an in-band `'inherit'` enum member or a doubled-up `defaultValue`"
+status: Superseded
+summary: "A promotable slot's inherit sentinel is always `undefined` (a `maybe*` type + `promotedBase`) — never an in-band `'inherit'` enum member or a doubled-up `defaultValue`; superseded by ADR-111, which backs the subsystem out and leaves no inherit state to spell"
 ---
 
 # ADR-047: `undefined` is the only inherit sentinel
 
 ## Status
 
-Accepted (2026-07). Supersedes two earlier forms, both removed. Mechanism:
-[DISPLAY_TYPE_DEFAULTS.md](../reference/DISPLAY_TYPE_DEFAULTS.md) §"The inherit
-sentinel".
+Superseded by [ADR-111](adr-111-display-type-defaults-backed-out.md) (2026-09):
+no cascade means no inherit state. The `maybe*` slot types stay for the five
+slots whose `undefined` means "decide from the data".
+Accepted (2026-07), superseding two earlier forms, both removed.
 
 ## Context
 

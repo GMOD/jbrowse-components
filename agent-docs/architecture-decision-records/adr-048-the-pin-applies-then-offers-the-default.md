@@ -1,18 +1,20 @@
 ---
-status: Accepted
-summary: "The pin's click applies the value to every open track of the display type; promoting it to a session-wide default is the snackbar's one opt-in action"
+status: Superseded
+summary: "The pin's click applies the value to every open track of the display type; promoting it to a session-wide default is the snackbar's one opt-in action — superseded by ADR-111, which removes the pin and the defaults behind it"
 ---
 
 # ADR-048: The pin applies, then offers the default
 
 ## Status
 
+Superseded by [ADR-111](adr-111-display-type-defaults-backed-out.md) (2026-09),
+which removes the pin, the cascade and the session-wide defaults whole. The
+reversals below are the history that argued for removing them.
+
 Accepted (2026-07), **reversed 2026-08-29** — the click and the snackbar action
 have swapped places. The superseded decision is kept below under
 [The stylesheet reading, and why it went](#the-stylesheet-reading-and-why-it-went),
 because its failure mode is real and the new shape has to answer for it.
-Mechanism: [DISPLAY_TYPE_DEFAULTS.md](../reference/DISPLAY_TYPE_DEFAULTS.md)
-§"UI surface".
 
 **Amended 2026-09-02** for checkbox rows: their pin is the row's own checkbox
 over every open track of the type (`makeTogglePin`). Its fill mirrors the row, a

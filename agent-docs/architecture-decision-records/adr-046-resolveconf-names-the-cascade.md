@@ -1,14 +1,15 @@
 ---
-status: Accepted
-summary: "Promotable-slot resolution is named at the call site (`resolveConf`); `getConf` never cascades"
+status: Superseded
+summary: "Promotable-slot resolution is named at the call site (`resolveConf`); `getConf` never cascades — superseded by ADR-111, which backs the subsystem out, leaving `getConf` the only reader"
 ---
 
 # ADR-046: `resolveConf` names the cascade; `getConf` stays `readConfObject`
 
 ## Status
 
-Accepted (2026-07). Re-made after implementing the opposite and reverting it.
-Mechanism: [DISPLAY_TYPE_DEFAULTS.md](../reference/DISPLAY_TYPE_DEFAULTS.md).
+Superseded by [ADR-111](adr-111-display-type-defaults-backed-out.md) (2026-09):
+the cascade and `resolveConf` are gone, and `getConf` is the only reader.
+Accepted (2026-07), re-made after implementing the opposite and reverting it.
 
 ## Context
 
@@ -69,7 +70,6 @@ and bypasses the cascade, which is the actual bug the type was catching.
 - Reading a promotable slot through `readConfObject` — which has a loose `any`
   overload and so raises no type error — bypasses the cascade silently. That is
   the one hole this design leaves open; the serialization-boundary helpers
-  (ADR in [DISPLAY_TYPE_DEFAULTS.md](../reference/DISPLAY_TYPE_DEFAULTS.md)
-  §"Serialization boundaries") exist because of it.
+  (the three serialization-boundary bakes) exist because of it.
 - Don't retry the fold. It is cheap to implement and the costs above only show
   up under measurement and at unrelated call sites.

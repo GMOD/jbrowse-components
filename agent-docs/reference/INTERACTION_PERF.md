@@ -71,8 +71,8 @@ Also, per-mousemove: `AlignmentsDisplayComponent` `setMouseCoord` on every `onMo
 ### The sashimi clause of that verdict expired, and was fixed on 2026-08-30
 
 The 2026-07-11 verdict above rests on the alignments overlays being
-zoom-invariant, and one of them stopped being. `showSashimiArcs` is a promotable
-slot with `promotedBase: true` (`configSchema.ts:571`), so junction arcs draw
+zoom-invariant, and one of them stopped being. `showSashimiArcs` defaults to
+`true` (`configSchema.ts`), so junction arcs draw
 wherever the coverage band does, and `sashimiArcSections` read `view.visibleRegions` — a fresh
 array of fresh objects every frame — so the computed invalidated on every zoom
 AND pan frame and re-ran `mergeJunctions` from scratch inside it. The merge

@@ -295,15 +295,14 @@ A few, as examples of the shapes:
 | `#fileFormat`                              | adapter `#config` blocks                                   | `FILE_TYPES <group>`     | Format → adapter → track type routing, per group     |
 | `#gotcha`                                  | any `#config` block                                        | `GOTCHA <ConfigName>`    | The type's caution callouts, verbatim                |
 | _(none — `new DisplayType` registrations)_ | whole repo                                                 | `DISPLAY_TYPES`          | Track type → display types                           |
-| _(none — slots declaring `promotedBase`)_  | config schemas                                             | `PROMOTABLE_SLOTS`       | Which settings can be pinned as a display default    |
 
 **Where a new generator goes decides what gates it.** One that needs nothing
 from the TypeScript program joins `MARKER_GENERATORS` in `markerGenerators.ts`
 and is verified by `markers.ts --check` (one process for all of them, through
 `pnpm autogen`); `generate.ts` calls the same list, so the two cannot disagree
-about the set. The five that need the whole-repo program — `DISPLAY_TYPES`,
-`DISPLAY_VIEW_TYPES`, `GOTCHA`, `PROMOTABLE_SLOTS`, `SPEC_KEYS` — are called
-from `generate.ts` directly and gated by its own `--check` instead.
+about the set. The four that need the whole-repo program — `DISPLAY_TYPES`,
+`DISPLAY_VIEW_TYPES`, `GOTCHA`, `SPEC_KEYS` — are called from `generate.ts`
+directly and gated by its own `--check` instead.
 
 Either way `assertMarkersAndDocsAgree` holds the two ends together: a marker no
 doc renders, and a doc block no generator writes, are both errors. Neither was

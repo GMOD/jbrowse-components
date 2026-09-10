@@ -18,12 +18,9 @@ RPC payload extension hook — see `ARCHITECTURE.md` §"`rpcProps()` /
 `gpuProps()` pattern"). Subclasses that need to layer fields onto
 `displayConfig` extend `rpcProps()` via super-capture and spread:
 
-`getConfigSnapshotWithPromotables(self)` is the one snapshot helper the
-`@jbrowse/core/configuration` barrel exports, because a display's `promotable`
-slots resolve against the session at read time and a raw snapshot would ship
-their bare inherit sentinels (see
-[DISPLAY_TYPE_DEFAULTS.md](DISPLAY_TYPE_DEFAULTS.md) §"Serialization
-boundaries"). It takes the display **state node**, not the bare config.
+`fullConfSnapshot(self.configuration)` is the snapshot helper the
+`@jbrowse/core/configuration` barrel exports: it returns every slot's current
+value, defaults included, so the worker can read the result with no schema.
 
 ```ts
 // Base view: assemble the snapshot once, inside rpcProps()
@@ -32,7 +29,7 @@ boundaries"). It takes the display **state node**, not the bare config.
     return {
       adapterConfig: self.adapterConfigSnapshot,
       displayConfig: {
-        ...getConfigSnapshotWithPromotables(self),
+        ...fullConfSnapshot(self.configuration),
       } as DisplayConfig,
       // ...
     }
@@ -146,9 +143,8 @@ validating every member.
 ## Runtime setting changes (write the slot directly)
 
 A runtime UI change to a display setting writes the **config slot itself**
-(`setConf(self, key, value)`) and reads it back through `getConf` (or
-`resolveConf` for a promotable slot). There is no separate override map: the
-earlier
+(`setConf(self, key, value)`) and reads it back through `getConf`. There is no
+separate override map: the earlier
 `ConfigOverrideMixin` (a `configOverrides` frozen map with `getConfWithOverride`
 / `getOverride` / `setOverride`) was collapsed. A setting's current value lives
 in the slot, so the `displayConfig` snapshot above already reflects any runtime
@@ -159,9 +155,6 @@ Where to put a new setting:
 - **Config-backed setting** (the default for any display option) — add a slot to
   the display config schema, write it with `setSlot`, read it with `getConf`. It
   serializes into the session and can take a declarative config default.
-- **Read-time default resolution** — when a value must resolve across tiers
-  (config default → display-type/session default → per-instance pin), use the
-  promotable-slot mechanism / `resolveConf` rather than a shadow property.
 - **Bespoke MST prop** — only for state that isn't a config slot (an ephemeral
   volatile). A sentinel is not a reason to avoid a slot: `rowHeight === 0` =
   fit-to-height sits on a config slot in every display that has it. What a
@@ -169,7 +162,7 @@ Where to put a new setting:
   that every consumer reads instead of the raw setting — see
   `ROW_HEIGHT_AND_FIT.md`.
 
-The `getConfigSnapshotWithPromotables(self)` form above is canvas's, and canvas
+The `fullConfSnapshot(self.configuration)` form above is canvas's, and canvas
 does not ship what it returns: `pickDisplayConfig` takes exactly the slots
 `DisplayConfig` declares back out of it, off a `Record<keyof DisplayConfig, true>`
 the compiler proves complete in both directions. Everything else — alignments,
@@ -235,7 +228,7 @@ get partitionField(): string {
 }
 ```
 
-`readConfObject` / `getConf` / `resolveConf` take `args` as an **optional**
+`readConfObject` / `getConf` take `args` as an **optional**
 parameter, so "what is this setting" and "what is this setting FOR this feature"
 are the same call with and without a third argument. Omit it on a callback slot
 and the expression is evaluated anyway, against a context where every name it
@@ -272,8 +265,7 @@ rely on it as a correctness signal.
 
 | Function                                | Location                                                  | Purpose                                                   |
 | --------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------- |
-| `getConfigSnapshotWithPromotables(display)` | `packages/core/src/configuration/promotableDefaults.ts` | Snapshot with defaults included and every promotable slot resolved |
-| `fullConfSnapshot(config)`              | `packages/core/src/configuration/fullConfSnapshot.ts`     | The walker under it. Not on the barrel — use the resolving form |
+| `fullConfSnapshot(config)`              | `packages/core/src/configuration/fullConfSnapshot.ts`     | Snapshot of every slot's current value, defaults included |
 | `readConfigValue(config, key, feature)` | `packages/core/src/configuration/readConfObject.ts`       | Read from plain object, auto-evaluate JEXL                |
 | `pickDisplayConfig(snapshot)`           | `plugins/canvas/src/RenderFeatureDataRPC/renderConfig.ts` | Take the worker's slots out of the snapshot — the pick, never a subtraction |
 

@@ -517,7 +517,7 @@ author who lands on a behavior change can find the sentence that explains it.
   it** (`mergeSchemaDefinition`, `configuration/configurationSchema.ts`). A
   schema that redeclares a slot its base already defines now inherits every
   field the override leaves out — `description`, `advanced`, `contextVariable`,
-  `validate`, `model`, `promotable`/`promotedBase` — where it used to drop them.
+  `validate`, `model` — where it used to drop them.
   For the 32 in-tree overrides this was strictly a fix (three were losing
   metadata by accident), and it is almost certainly what an external author
   meant too. But an override that relied on *replacement* to shed an inherited
@@ -526,46 +526,23 @@ author who lands on a behavior change can find the sentence that explains it.
   `developer_guides/configuration_schema.md`; sub-schemas and constants still
   replace wholesale.
 
-- **Five preference-store members are now required on `AbstractSessionModel`**
-  (`util/types/index.ts`): `setPreferenceOverride`, `clearPreferenceOverrides`,
-  `setScrollZoom`, `getDisplayTypeDefault`, `setDisplayTypeDefault`. All five are
-  declared by `BaseSessionModel`, so every in-tree session and every product
-  built on `@jbrowse/product-core` already satisfies them; the optionality only
-  ever made the core readers carry `?.` calls that skipped silently. A plugin
-  that *builds its own session model from scratch* rather than composing
-  `BaseSessionModel` now fails to type-check against `AbstractSessionModel` until
-  it declares them. **Opt-out: none — compose `BaseSessionModel`**, or declare
-  the five members (a `getDisplayTypeDefault` returning `undefined` is a valid
-  "this session promotes nothing").
+- **Three preference-store members are now required on `AbstractSessionModel`**
+  (`util/types/index.ts`): `setPreferenceOverride`, `clearPreferenceOverrides`
+  and `setScrollZoom`. All three are declared by `BaseSessionModel`, so every
+  in-tree session and every product built on `@jbrowse/product-core` already
+  satisfies them; the optionality only ever made the core readers carry `?.`
+  calls that skipped silently. A plugin that *builds its own session model from
+  scratch* rather than composing `BaseSessionModel` now fails to type-check
+  against `AbstractSessionModel` until it declares them. **Opt-out: none —
+  compose `BaseSessionModel`**, or declare the three members.
 
-- **A `promotable` slot's `promotedBase` is frozen at schema build**
-  (`freezeDeep` from `configuration/configurationSlot.ts`), as is any value put
-  into the session preference store. The resolver hands both out *by reference* —
-  `promotedBase` is the schema's own literal, shared by every track sitting at
-  base — so mutating a value read with `resolveConf` used to silently repaint
-  every other track of that display type, and for `promotedBase` every later
-  session too. It now throws. Two ways a plugin can meet this: a display that
-  edits a resolved value in place must copy instead (`{...colorBy, type}`), and a
-  schema whose `promotedBase` points at an object the plugin mutates elsewhere
-  must declare its own literal. **Opt-out: none** — the value is genuinely shared,
-  and this is the same convention MST already applies to every snapshot it hands
-  out (there gated to dev mode; here unconditional, see `freezeDeep`).
-
-- **A `promotable` slot's `promotedBase` is checked against its own slot at
-  schema build** (`isUsableValue` from `configuration/slotShape.ts`, called by
-  `ConfigSlot`). The base is the bottom of the cascade — every other tier falls
-  back to it — so a base the slot could not hold was returned by *every* read
-  with nothing thrown anywhere: an enum member absent from `model`, a non-finite
-  `maybeNumber`, or a value the slot's own `validate` hook rejects. All three now
-  throw at construction, naming the slot and the value. Two consequences for a
-  plugin. A schema with a typo'd `promotedBase` fails at install rather than
-  rendering wrong. And a `validate` hook now runs at *schema build* as well as at
-  read time, so a hook that consults state its plugin registers later in
-  `install()` can throw on a base that is actually fine — the fix is to make the
-  hook depend on module-level data (which is what `isRegisteredColorScheme` and
-  its `COLOR_SCHEMES` const do), not to reorder installation. **Opt-out: none**
-  — every in-tree base passes, and a base that fails is broken for every track
-  of that display type.
+- **Display-type defaults are gone, and with them `promotable` slots**
+  ([ADR-111](../architecture-decision-records/adr-111-display-type-defaults-backed-out.md)).
+  `promotable` / `promotedBase` on a slot declaration, `resolveConf`,
+  `getDisplayTypeDefault` / `setDisplayTypeDefault` on the session, and the
+  snapshot helper that flattened the cascade all went at once. A slot that
+  declared `promotedBase: V` on a `maybe*` type becomes `defaultValue: V` on the
+  plain type, and `getConf` reads it. **Opt-out: none.**
 
 - **Loop callbacks no longer read the clock on every call** (`createTimeGate`,
   `util/timeGate.ts`, used by `checkStopTokenThrottled` and `createProgressReporter`).

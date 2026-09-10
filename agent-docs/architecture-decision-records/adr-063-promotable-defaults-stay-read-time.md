@@ -1,13 +1,15 @@
 ---
-status: Accepted
-summary: "the promotable display-type default cascade resolves at read time and is flattened only in outgoing snapshots; an apply-time model that writes promoted values into open tracks would destroy revert-on-clear"
+status: Superseded
+summary: "the promotable display-type default cascade resolves at read time and is flattened only in outgoing snapshots; an apply-time model that writes promoted values into open tracks would destroy revert-on-clear — superseded by ADR-111, which backs the cascade out rather than moving it"
 ---
 
 # ADR-063: promotable defaults stay a read-time cascade
 
 ## Status
 
-Accepted (2026-07). Recorded after the fact: the decision was made in a branch
+Superseded by [ADR-111](adr-111-display-type-defaults-backed-out.md) (2026-09):
+the cascade is gone, so read time versus apply time no longer has a subject.
+Accepted (2026-07), recorded after the fact — the decision was made in a branch
 and its reasoning lived outside the repo while the implementation landed inside
 it.
 

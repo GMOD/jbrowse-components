@@ -4,12 +4,9 @@ import {
   UCSC_HG38_CONFIG,
   VOLVOX,
   cascadeBoxes,
-  dismissMenus,
   lgvSession,
   menuCascade,
-  openFeatureHeightSubmenu,
   sessionSpec,
-  trackMenuIcon,
 } from '../screenshot-spec-helpers.ts'
 
 import type {
@@ -152,121 +149,6 @@ export const proteinLaunchFixtures = {
 }
 
 export const featuresSpecs: ScreenshotSpec[] = [
-  {
-    // The session-wide feature-height default on alignments tracks.
-    // featureHeight is a promotable slot (track value → session default →
-    // promotedBase 7; spacing is derived from it, never stored). Each height row
-    // in the "Read height" submenu carries a trailing pin (PinAdornment,
-    // aria-label "apply <preset> to all open tracks") whose click writes that
-    // preset into every open track of the type and offers the display-type
-    // default as the snackbar's one action. The two open tracks are seeded
-    // differently so the frame shows the click reaching both kinds: the pileup
-    // track has no featureHeight of its own, the CRAM track is customized to 12,
-    // and one click compacts them both. Two stages mirror the how-to: stage 1
-    // opens the submenu with the Compact row's pin circled; stage 2 clicks it and
-    // boxes the "Set as the default" action, left unclicked so it stays on
-    // screen.
-    mode: 'url',
-    name: 'feature_height_default',
-    url: lgvSession(VOLVOX, {
-      assembly: 'volvox',
-      loc: 'ctgA:1..8,000',
-      tracks: [
-        {
-          trackId: 'volvox_alignments_pileup_coverage',
-          type: 'LinearAlignmentsDisplay',
-        },
-        {
-          trackId: 'volvox_cram_alignments_ctga',
-          type: 'LinearAlignmentsDisplay',
-          featureHeight: 12,
-        },
-      ],
-    }),
-    readyText: 'ctgA',
-    // the two frames sit side by side (reviewer), so the pair is twice this
-    // wide: narrowed from 1100, which made a 4400px PNG the page then scales
-    // the menu text out of. `stageColumns` borders each frame, so the two app
-    // windows are separated by a gutter rather than sharing an edge
-    stageColumns: 2,
-    viewportWidth: 950,
-    // trimmed 100px off both frames (reviewer); MUI reflows the Read-height
-    // submenu upward to stay inside the shorter viewport, and the pin circle
-    // anchors to the live element, so it follows
-    viewportHeight: 740,
-    // alignments pileups keep re-laying-out while reads stream in; wait long
-    // enough that the menu geometry is stable before the click sequence
-    settleMs: 8000,
-    hideTooltip: true,
-    // belt-and-suspenders: also strip any lingering MUI tooltip popper the menu
-    // driving leaves behind, so no tooltip bubbles into either frame (reviewer)
-    hideSelectors: ['.MuiTooltip-popper'],
-    stages: [
-      {
-        // top frame: the "Read height" submenu open, with the Compact row's
-        // trailing pin hovered + circled so the one affordance that promotes a
-        // height to the default reads at a glance
-        // no hover on the pin: it's always rendered, and hovering pops its MUI
-        // tooltip into the frame (reviewer). The circle marks it instead.
-        actions: [
-          trackMenuIcon('volvox_alignments_pileup_coverage'),
-          ...openFeatureHeightSubmenu(),
-        ],
-        annotations: [
-          {
-            type: 'circle',
-            anchor: {
-              selector:
-                '[aria-label="apply Compact to all open tracks of this type"]',
-            },
-          },
-          {
-            type: 'text',
-            x: 210,
-            y: 34,
-            maxWidth: 500,
-            fontSize: 15,
-            text: 'Each feature-height preset has a trailing pin that applies it to every open track of this type.',
-          },
-        ],
-      },
-      {
-        // bottom frame: one pin click compacts both open tracks — the follower
-        // and the one customized to 12 alike — and raises the snackbar whose
-        // "Set as the default" action is boxed, not clicked, so it stays on
-        // screen for the frame. The menu is dismissed with a neutral title-bar
-        // click, not Escape, which would pop the snackbar. The snackbar ignores
-        // clickaway and no longer auto-hides (actionable ones persist, see
-        // SnackbarModel), so the click chain can't race a 5s timeout.
-        actions: [
-          {
-            type: 'click',
-            selector:
-              '[aria-label="apply Compact to all open tracks of this type"]',
-          },
-          { type: 'waitForText', text: 'Applied to 2 open tracks' },
-          ...dismissMenus(),
-          { type: 'delay', ms: 2000 },
-        ],
-        annotations: [
-          {
-            type: 'box',
-            anchor: { text: 'Set as the default' },
-            strokeWidth: 3,
-          },
-          {
-            type: 'text',
-            x: 210,
-            y: 34,
-            maxWidth: 500,
-            fontSize: 15,
-            text: 'One click compacts both open tracks, including the one with a height of its own; the snackbar then offers to keep Compact as the default for tracks you open later.',
-          },
-        ],
-      },
-    ],
-  },
-
   // About track dialog (config + file header), opened from the track menu of a
   // CRAM track so the FILE INFO panel shows the full @SQ/@PG header.
   {

@@ -121,14 +121,12 @@ entries too.
 *2026-08-25, one layer up*: the sweep had held ceilings only on `util/` and the
 fetch harness, and `packages/core/src/ui` turned out to hold the same two
 shapes. `MenuTypes.ts`, a React-free type module of 196 lines with one import,
-measured **374 files / 47,407 lines** of type closure because it took `Pin` from
-`promotableDefaults.ts`, and `Pin` is four members with no dependencies. `Pin`
-is now `configuration/promotablePin.ts`, a zero-import leaf that
-`promotableDefaults.ts` re-exports; `MenuTypes.ts` is 374 → **2**, and nine
-menu-builder modules that reach it collapse with it (`menuItems.ts` 378 → 8,
+measured **374 files / 47,407 lines** of type closure because it took a
+four-member menu-row type off an application module. Moving that type to a
+zero-import leaf took `MenuTypes.ts` to 374 → **2**, and the menu-builder
+modules that reach it collapsed with it (`menuItems.ts` 378 → 8,
 `filterMenuItems`, `toggleMenuItems`, `launchViewMenu`, `launchTargetsMenuItem`
-and `showSubMenu` 374-375 → 3, `promotableMenuItems` and `radioSubMenu` → 4,
-`legendMenuItem` → 5).
+and `showSubMenu` 374-375 → 3, `radioSubMenu` → 4, `legendMenuItem` → 5).
 
 The second one is the mirror image and worth naming separately. `legendSpec.ts`,
 a plain-data legend description, imported `ColorLegendEntry` from

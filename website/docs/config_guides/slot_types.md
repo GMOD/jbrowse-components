@@ -76,16 +76,11 @@ A multi-line string, e.g. an HTML template for a feature-details panel.
 `maybeNumber`, `maybeBoolean`, `maybeStringEnum`, and `maybeFrozen` each accept
 everything the type without the prefix accepts, plus one more state: **unset**.
 
-A slot left unset follows the display-type default
-([defaults for all tracks](/docs/user_guides/display_defaults)) and keeps
-following it as that default changes; writing a value, even the one the default
-happens to hold, pins the track to it. A display's `heightMode` or an alignments
-track's `colorBy` use these types, since every scheme including `normal` is
-something a user might deliberately pin, and "follow the default" has to stay
-distinguishable from an identical-looking explicit choice.
+A slot left unset carries no value of its own, which lets the display decide
+what to do from the data in front of it — a state distinct from any value the
+slot could hold, including one that looks like the display's usual choice.
 
 ## See also
 
 - [](/docs/config_guides/jexl)
 - [Configuring tracks](/docs/config_guides/tracks)
-- [](/docs/user_guides/display_defaults)

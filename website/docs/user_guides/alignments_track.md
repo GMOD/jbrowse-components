@@ -188,9 +188,7 @@ orientation class is its own coverage band with its own arcs. See
 
 The track menu's **Read height** submenu sets how tall each read is drawn and
 how the track absorbs more reads than fit. The presets are Normal, Compact and
-Super-compact, plus **Custom...** for an exact pixel height. Each preset's pin
-makes it the default for every alignments track; see
-[defaults for all tracks](/docs/user_guides/display_defaults).
+Super-compact, plus **Custom...** for an exact pixel height.
 
 <Figure caption="The same reads at a compact feature height." src="/img/alignments/compact.png" />
 

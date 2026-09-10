@@ -167,16 +167,12 @@ for track-config fields.
 
 ## Where each route keeps the value
 
-| Route                              | Kept in                  | Applies to                                |
-| ---------------------------------- | ------------------------ | ----------------------------------------- |
-| The pin beside a menu row          | your browser, or the app | every track of that display type, for you |
-| **Share** link (`?session=`)       | the URL                  | whoever opens that link                   |
-| **Save session as...** (Desktop)   | the `.jbrowse` file      | whoever opens that file                   |
-| `displayDefaults` in `config.json` | the config file          | everyone, every session                   |
+| Route                              | Kept in             | Applies to              |
+| ---------------------------------- | ------------------- | ----------------------- |
+| **Share** link (`?session=`)       | the URL             | whoever opens that link |
+| **Save session as...** (Desktop)   | the `.jbrowse` file | whoever opens that file |
+| `displayDefaults` in `config.json` | the config file     | everyone, every session |
 
-The pin is the one route with no file in it, and the only one a reader of your
-instance can reach without your help;
-[defaults for all tracks](/docs/user_guides/display_defaults) covers it.
 `?session=` URLs are a JBrowse Web feature, since Desktop has no session-URL
 server; Desktop's nearest equivalent is **File → Session → Export session to
 web...**, which uploads the session and hands you a web link with the settings
@@ -209,7 +205,6 @@ for the surrounding setup.
 
 ## See also
 
-- [](/docs/user_guides/display_defaults)
 - [](/docs/config_guides/tracks)
 - [](/docs/urlparams)
 - [](/docs/tutorials/cli_desktop)

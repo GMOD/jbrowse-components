@@ -131,22 +131,22 @@ re-derived from this tree.
   against fetched metadata, an ordering) and raw-slot transport is the special
   case. The encode equivalent found 0 consumers in 2 displays and was deleted.
 - **The table cannot hold meaning.** The deciding guard was alignments'
-  `colorBy`: the table holds it as one `maybeFrozen` promotable slot and says
+  `colorBy`: the table holds it as one `maybeFrozen` slot and says
   nothing about the six-variant union with a nested six-field `modifications`
   object inside it. Deriving menu rows and legends from the table was not
   supported.
 - **A shared setting acquires two owners.** The table owns the slot; a
   cross-cutting mixin (`LegendMixin`, `RowHeightMixin`,
-  `WiggleScoreConfigMixin`) owns the accessor, the setter, the pin and the menu
-  row. The tree's six such mixins already bundle slot, getter, setter, pin, menu
-  row and dialog and retire that whole set across four to eight displays each,
+  `WiggleScoreConfigMixin`) owns the accessor, the setter and the menu row. The
+  tree's six such mixins already bundle slot, getter, setter, menu row and
+  dialog and retire that whole set across four to eight displays each,
   which is the better answer for the reducible half.
 
 ## Decision
 
 **A display composes its own MST chain, in-tree or third-party, and its
 settings live where they always did: a config schema, and typed getters
-reading it through `getConf` / `resolveConf`.** There is no factory.
+reading it through `getConf`.** There is no factory.
 
 The bar this failed is whether a spec expresses a display's concepts natively
 or holds them through escape hatches. It held them. That verdict does not stop
@@ -214,8 +214,8 @@ Not salvaged, and why:
 - **The composition-walk checks** (`compositionChains.ts` and the three tests
   over it, ~2,500 lines in `products/jbrowse-web/src/tests/`). They found the
   four defects above, and they are a source-parsing walk of every display's
-  mixin chain standing in for what tsc already does for 18 of 19 promotable
-  slots through `ConfigurationSlotValue` and for every host cast through
+  mixin chain standing in for what tsc already does through
+  `ConfigurationSlotValue` and for every host cast through
   `HostChecksSlotNames`. The population they reach that tsc does not is the
   bare `getConf(self, 'x')` on a widened holder, and
   `scripts/configReadTypeGaps.txt` is the committed list of those, whose header
@@ -247,8 +247,6 @@ get there.
   and four pieces of machinery grew to buy them back. Reverted on the branch.
 - **A `transport:` field, a fourth `affects` value, a `normalize:` hook.** Each
   is the escape hatch a declaration grows when it meets the next display.
-- **A tree-wide check that promotable slots are read with `resolveConf`.**
-  Redundant with the compile-time guard for all but three shapes.
 
 ## What would reopen this
 

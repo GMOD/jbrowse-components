@@ -216,10 +216,6 @@ the Material UI barrel into every host that installs the plugin.
 
 <!-- MENU_ITEM_BUILDERS END -->
 
-Prefer the plural `radioItems` for a whole promotable radio group: it takes the
-pin as a factory over the option's value, so a group cannot end up one pin
-short.
-
 ## Root model menu API
 
 Called from `configure()`, guarded by `isAbstractMenuManager`. A contribution is

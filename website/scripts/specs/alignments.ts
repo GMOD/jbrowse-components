@@ -426,9 +426,9 @@ export const alignmentsSpecs: ScreenshotSpec[] = [
         ],
       },
       {
-        // click the boxed item to actually enable soft clipping. It's a
-        // promotable toggle with keepMenuOpen, so the menu stays up after the
-        // click — Escape dismisses it for the result frame.
+        // click the boxed item to actually enable soft clipping. A checkbox
+        // row keeps the menu open, so Escape dismisses it for the result
+        // frame.
         actions: [
           { type: 'click', text: 'Show soft clipping' },
           // two levels to dismiss: the "Show..." submenu, then the track menu

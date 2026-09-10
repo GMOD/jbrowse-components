@@ -372,7 +372,7 @@ than loudly. Each has its own JSDoc tag and its own generated doc page:
 
 | home | tag | survives a reload? | read/written as |
 | --- | --- | --- | --- |
-| config slot | `#slot` | yes — in the track config | `getConf` / `resolveConf`, written with `setConf` |
+| config slot | `#slot` | yes — in the track config | `getConf`, written with `setConf` |
 | MST property | `#property` | yes — in the session snapshot, on the display node | `self.x`, written by an action |
 | MST volatile | `#volatile` | no | `self.x`, written by an action |
 
@@ -440,9 +440,7 @@ slot goes in `migratedDisplayKeys`.
 
 How a slot then reaches the renderer — snapshot, plain object, RPC payload, and
 the JEXL callbacks along the way — is
-[reference/CONFIG_PATTERN.md](reference/CONFIG_PATTERN.md). Session-wide
-per-type defaults are
-[reference/DISPLAY_TYPE_DEFAULTS.md](reference/DISPLAY_TYPE_DEFAULTS.md).
+[reference/CONFIG_PATTERN.md](reference/CONFIG_PATTERN.md).
 
 ### A stored hover is a volatile the viewport can invalidate
 

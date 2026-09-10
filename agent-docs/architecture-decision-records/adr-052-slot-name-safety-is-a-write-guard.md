@@ -15,9 +15,8 @@ whole thread was measured against).
 
 ## Context
 
-Reading and writing a config slot goes through four functions —
-`getConf` / `resolveConf` (read), `setConf` → `setSlot` (write) — and each
-carries a compile-time guard on the slot name, keyed off the schema type:
+Reading and writing a config slot goes through three functions —
+`getConf` (read), `setConf` → `setSlot` (write) — and each carries a compile-time guard on the slot name, keyed off the schema type:
 
 ```ts
 SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>
@@ -159,8 +158,8 @@ Four reasons, in descending order of how much they should stop a revival:
 3. **A pure passthrough is the one member shape that cannot hide a bug.** ~1000
    deleted lines of the safest code in the repo, bought with a generator, a CI
    staleness job, a collision checker, and a per-slot JSDoc override mechanism.
-4. **Where the prose goes was never scoped.** Many of the 143 carry JSDoc
-   explaining the promotable cascade, which the slot `description` does not.
+4. **Where the prose goes was never scoped.** Many of the 143 carried JSDoc
+   explaining behaviour the slot `description` does not.
    Deciding the split means reading all 143 — most of the actual work, and it
    was listed as an open question.
 

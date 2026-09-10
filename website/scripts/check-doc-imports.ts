@@ -456,9 +456,9 @@ function scanRelativeAnchors(path: string, lines: string[]): Problem[] {
 //
 // Re-run 2026-08-15: ~120 unresolved identifiers, and the exemption still holds.
 // Two classes account for nearly all of them, and neither is drift — the
-// "deleted on purpose" idiom above (DISPLAY_TYPE_DEFAULTS.md has a section whose
-// whole job is listing removed names "so a reader doesn't go looking for them"),
-// and symbols belonging to a DIFFERENT repo, since several of these docs are
+// "deleted on purpose" idiom above (a reference doc listing removed names "so a
+// reader doesn't go looking for them"), and symbols belonging to a DIFFERENT
+// repo, since several of these docs are
 // about a boundary with one: `@gmod/bam`'s and `@gmod/cram`'s options, and the
 // graph plugin's launcher, which lives in jbrowse-plugin-graphgenomeviewer.
 // One real find: CONFIG_PATTERN.md's "Key functions" table listed a

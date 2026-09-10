@@ -419,10 +419,9 @@ function assertNoUntaggedSlots(gaps: ConfigSlotGap[]) {
  * helper has no `#config` block anywhere, because the generator keys a block to
  * its FILE and cannot see a name that only exists as a parameter at runtime. So
  * the display gets no config page, renders as bare unlinked text in the
- * track-type table, is absent from the "settings with a session-wide default"
- * table however many promotable slots it has, and — worst — the shared base it
- * derives from is left as the only documented name, so ITS slot table tells
- * readers to write `type: '<Base>Display'`, which nothing accepts.
+ * track-type table, and — worst — the shared base it derives from is left as
+ * the only documented name, so ITS slot table tells readers to write
+ * `type: '<Base>Display'`, which nothing accepts.
  *
  * That has happened twice: the two GC-content displays, then the two LD ones.
  * Both times it was found by a person reading a docs page, not by a check. The

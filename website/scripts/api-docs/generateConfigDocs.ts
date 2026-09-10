@@ -306,8 +306,8 @@ function collectBaseConfigs(config: ConfigWithHeader, index: ConfigIndex) {
 //
 // The seen-by-name set makes a slot the config (or a closer base) redeclares
 // skip every farther base — otherwise an override (e.g. LGVSyntenyDisplay's
-// `colorBy`, which moves `promotedBase` to `strand`) also lists the shadowed
-// base definition (`normal`), which reads as a live alternative rather than
+// `colorBy`, which moves the default to `strand`) also lists the shadowed base
+// definition (`normal`), which reads as a live alternative rather than
 // superseded history. The override's own row already carries the base's other
 // fields, since `resolveInheritedSlotMeta` merges them the way the runtime does.
 function slotsTable(ownSlots: Item[], bases: ConfigWithHeader[]) {
@@ -968,16 +968,6 @@ interface SlotMeta {
   defaultValue?: string
   enumValues?: string[]
   advanced?: boolean
-  // What a promotable slot resolves to when nothing overrides it — **and the
-  // only marker that the slot is promotable at all** (`isPromotableSlot`).
-  // There is no `promotable` flag any more, here or in `ConfigSlotDefinition`.
-  //
-  // The key is set-but-`undefined` for a slot whose override turns promotion
-  // off, which is load-bearing: `resolveInheritedSlotMeta` layers a base and its
-  // override with a spread, so a *present* `undefined` overwrites the inherited
-  // value exactly as the runtime `mergeSchemaDefinition` spread does, while an
-  // absent key would inherit it.
-  promotedBase?: string
   // `contextVariable`: the names a jexl callback on this slot receives
   contextVariable?: string[]
   // source of a default too long to render inline (a long array/object
@@ -1059,16 +1049,6 @@ function applySlotProperty(
     // `false` is recorded, not just skipped: an override states it to turn a
     // base slot's flag off, and that has to win over the inherited `true`
     meta.advanced = node.kind === ts.SyntaxKind.TrueKeyword
-  } else if (key === 'promotedBase') {
-    if (ts.isIdentifier(node) && node.text === 'undefined') {
-      // an override turning promotion off. Assign the key rather than leaving it
-      // absent — see `SlotMeta.promotedBase`; `renderInlineDefault` would
-      // otherwise hand back the *string* 'undefined', which reads as a promoted
-      // base whose value happens to be spelled that way.
-      meta.promotedBase = undefined
-    } else {
-      meta.promotedBase = renderInlineDefault(node) ?? node.getText()
-    }
   } else if (key === 'contextVariable') {
     const names = ts.isArrayLiteralExpression(node)
       ? node.elements.filter(ts.isStringLiteralLike).map(e => e.text)
@@ -1202,11 +1182,9 @@ const inheritedSlotMeta = new WeakMap<Item, SlotMeta>()
  * Without this the pages describe a slot by its override's source text alone, so
  * an override stating only what differs reads as though it dropped everything it
  * left out — `LinearManhattanDisplay`'s `scatterPointSize` would render as a
- * common slot when it is really `advanced`, and `LGVSyntenyDisplay`'s `colorBy`
- * as neither advanced nor promotable when it is both. The flags, the
- * advanced/common split, and the promotable-settings table in
- * `user_guides/display_defaults.md` all read through `slotMetaFor`, so resolving
- * it here fixes each of them at once.
+ * common slot when it is really `advanced`. The flags and the advanced/common
+ * split both read through `slotMetaFor`, so resolving it here fixes each of them
+ * at once.
  */
 function resolveInheritedSlotMeta(
   configs: ConfigWithHeader[],
@@ -1276,13 +1254,9 @@ function trimSlotCode(value: string) {
   return stripped.replace(/\n\s*\n+/g, '\n')
 }
 
-// The anchor other pages link a slot by (the promotable-settings table in
-// `user_guides/display_defaults.md`), kept as an explicit `<span id>` on the
-// row: lowercased, with any dots in a nested slot name (e.g.
-// `index.indexType`) dropped rather than kept as separators. Every link to a
-// slot goes through this, including the ones writePromotableSlotDocs emits —
-// spelling the anchor out a second time there meant a dotted slot name would
-// have linked somewhere that doesn't exist.
+// The anchor other pages link a slot by, kept as an explicit `<span id>` on the
+// row: lowercased, with any dots in a nested slot name (e.g. `index.indexType`)
+// dropped rather than kept as separators.
 function slotAnchor(name: string) {
   return `slot-${name.toLowerCase().replace(/\./g, '')}`
 }
@@ -1301,27 +1275,10 @@ function slotTypeCell(meta: SlotMeta) {
       )
 }
 
-// Declaring `promotedBase` is what makes a slot promotable — the one marker, in
-// the docs generator as in `ConfigSlotDefinition`. Set-but-`undefined` means an
-// override turned promotion off, so `in` is the test rather than a truthiness
-// check on the value.
-function isPromotableSlot(meta: SlotMeta) {
-  return 'promotedBase' in meta && meta.promotedBase !== undefined
-}
-
-// The Default cell. A promotable slot's own default is a sentinel meaning
-// "unset", so it renders as what it actually resolves to.
 function slotDefaultCell(meta: SlotMeta) {
-  const value =
-    meta.defaultValue !== undefined ? meta.defaultValue : meta.defaultCode
-  return [
-    // a promotable slot's own default is a sentinel; the value it resolves to
-    // is the one a reader is after
-    codeCell(isPromotableSlot(meta) ? meta.promotedBase : value),
-    isPromotableSlot(meta) && '_promotable_',
-  ]
-    .filter(Boolean)
-    .join(' ')
+  return codeCell(
+    meta.defaultValue !== undefined ? meta.defaultValue : meta.defaultCode,
+  )
 }
 
 // The Description cell: the slot's prose in full (paragraph breaks kept), then
@@ -1746,136 +1703,6 @@ function adaptersByTrackType(configs: ConfigWithHeader[]) {
   return map
 }
 
-// The "which settings can be made the default for all tracks" table in
-// user_guides/display_defaults.md, from the slots declaring `promotedBase`
-// themselves — the user guide used to list them by hand, which drifts the moment
-// a display promotes a slot. Rows are the display types users actually meet
-// (those with a `new DisplayType(...)` registration), each with its effective
-// promotable slots: declared on the display or inherited from a base, shadowing
-// resolved the same way the config page's "Inherited config slots" section
-// resolves it. An override counts as promotable when the slot it shadows is
-// (LGVSyntenyDisplay's `colorBy`), matching the runtime merge; to opt a slot out,
-// state `promotedBase: undefined`.
-//
-// The column says "session-wide default", not "pin", because this is a *schema*
-// fact and the pin is a *menu* fact. A display that inherits a promotable slot
-// but whose track menu never builds a row for it has no pin — nothing static can
-// see that, so the header claims only what the flag proves. The known cases are
-// recorded in agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md.
-export function writePromotableSlotDocs(
-  byFile: Record<string, Config>,
-  displayToTrackType: Map<string, string>,
-  { check = false } = {},
-) {
-  mergeSpreadSlots(byFile)
-  const withHeader = withHeaders(byFile)
-  const index: ConfigIndex = {
-    byDeclId: mapByKey(withHeader, c => c.header.declId),
-    byName: mapByKey(withHeader, c => c.header.name),
-  }
-  resolveInheritedSlotMeta(withHeader, index)
-  // Each promotable slot a display ends up with, paired with the config that
-  // declares the winning copy — the nearest one, since `filterUnseenByName` is
-  // what resolves shadowing, so an override's file is what a reader is sent to.
-  const promotableSlots = (cfg: ConfigWithHeader) => {
-    const seen = new Set<string>()
-    return [cfg, ...collectBaseConfigs(cfg, index)]
-      .flatMap(c =>
-        filterUnseenByName(seen, c.slots).map(slot => ({
-          slot,
-          declaredIn: c,
-        })),
-      )
-      .filter(({ slot }) => isPromotableSlot(slotMetaFor(slot).meta))
-      .sort((a, b) => a.slot.name.localeCompare(b.slot.name))
-  }
-  const displays = withHeader
-    .filter(cfg => displayToTrackType.has(cfg.header.name))
-    .map(cfg => ({ cfg, slots: promotableSlots(cfg) }))
-    .filter(({ slots }) => slots.length > 0)
-    .sort((a, b) => a.cfg.header.name.localeCompare(b.cfg.header.name))
-  const rows = displays.map(({ cfg, slots }) => {
-    const page = `/docs/config/${cfg.header.id}`
-    const trackType = displayToTrackType.get(cfg.header.name)!
-    const links = slots.map(
-      ({ slot }) => `[\`${slot.name}\`](${page}/#${slotAnchor(slot.name)})`,
-    )
-    return `| ${trackType} | [](${page}) | ${links.join(', ')} |`
-  })
-  return [
-    ...rewriteMarkerBlock(
-      'PROMOTABLE_SLOTS',
-      markdownTable(
-        ['Track type', 'Display', 'Settings with a session-wide default'],
-        rows,
-      ),
-      { check },
-    ),
-    ...writePromotableAdopterDocs(displays, { check }),
-  ]
-}
-
-// One promotable slot a display ends up with, and the config whose copy won.
-interface PromotableSlot {
-  slot: Item
-  declaredIn: ConfigWithHeader
-}
-
-// The adopter table in agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md: the same
-// promotable slots the user guide's table carries, transposed onto the question
-// that file asks — not "which settings can this track type default", but "who
-// declares this slot, what does it fall back to, and which displays inherit it".
-//
-// Generated for the reason the user-guide table is. It was four hand-written
-// rows naming schema files and slot lists, and `baseConfiguration` means a slot
-// enrols displays whose author never opened that file, so the list was stale
-// from the moment anyone added one. The rows kept their prose arguments, which
-// nothing static can derive; the enumeration is here.
-//
-// **Rows are keyed by declaration site, not by display**, which is what makes it
-// short and what makes it say something: a slot inherited through a base schema
-// is one row naming every display that gets it, while `showLegend` — declared
-// separately per display family — gets a row per declaration, which is where
-// their `promotedBase` values visibly disagree.
-function writePromotableAdopterDocs(
-  displays: { cfg: ConfigWithHeader; slots: PromotableSlot[] }[],
-  { check = false } = {},
-) {
-  const byDeclaration = new Map<
-    string,
-    { slot: string; base: string; file: string; displays: string[] }
-  >()
-  for (const { cfg, slots } of displays) {
-    for (const { slot, declaredIn } of slots) {
-      const key = `${slot.name} ${declaredIn.filename}`
-      const row = byDeclaration.get(key) ?? {
-        slot: slot.name,
-        base: slotMetaFor(slot).meta.promotedBase ?? '',
-        file: declaredIn.filename,
-        displays: [],
-      }
-      row.displays.push(cfg.header.name)
-      byDeclaration.set(key, row)
-    }
-  }
-  const rows = [...byDeclaration.values()]
-    .sort(
-      (a, b) => a.slot.localeCompare(b.slot) || a.file.localeCompare(b.file),
-    )
-    .map(
-      row =>
-        `| \`${row.slot}\` | ${codeCell(row.base)} | \`${row.file}\` | ${row.displays.join(', ')} |`,
-    )
-  return rewriteMarkerBlock(
-    'PROMOTABLE_ADOPTERS',
-    markdownTable(
-      ['Slot', 'Falls back to', 'Declared in', 'Displays that get it'],
-      rows,
-    ),
-    { check },
-  )
-}
-
 // Where the slots of this config are written, as one plain sentence — the
 // website's slotNesting with its links and its base-schema redirect removed.
 const AGENT_SLOT_NESTING: Record<string, (name: string) => string> = {
@@ -1899,11 +1726,9 @@ function agentSlotLine(item: Item) {
     : flatCode(
         meta.typeCode ?? (meta.valueCode && trimSlotCode(meta.valueCode)),
       )
-  const dflt = isPromotableSlot(meta)
-    ? `${flatCode(meta.promotedBase)} (promotable)`
-    : flatCode(
-        meta.defaultValue !== undefined ? meta.defaultValue : meta.defaultCode,
-      )
+  const dflt = flatCode(
+    meta.defaultValue !== undefined ? meta.defaultValue : meta.defaultCode,
+  )
   const notes = [
     meta.contextVariable?.length &&
       `callback args: ${meta.contextVariable.join(', ')}`,

@@ -195,9 +195,7 @@ Pinned by a test in `plugins/variants/src/shared/rowHeightResolution.test.ts`
 asserting the value lands on `configuration.rowHeight` and not in the display
 snapshot.
 
-Read it with plain `getConf` / `readConfObject` — this slot is deliberately not
-promotable. Session-wide promotion is a separate decision from where the value
-lives, and nothing needs it today.
+Read it with plain `getConf` / `readConfObject`.
 
 Note that `agent-docs/reference/CONFIG_PATTERN.md` lists a fit-to-height
 sentinel as an example of state belonging on a bespoke MST prop. That guidance

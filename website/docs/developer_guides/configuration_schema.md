@@ -147,12 +147,11 @@ because such a slot otherwise still _works_ — the value round-trips as long as
 you supply a `model` — and the only symptom is that everything keyed off the
 type name stops recognising it.
 
-The `maybe*` forms are `undefined` while unset. That is what a **promotable**
-slot needs: `undefined` means "not set on this track, follow the session-wide
-default", and it is the one value no config can spell, so it stays
-distinguishable from every real value the user might write. Pair it with
-`promotedBase` for what inheriting resolves to, and read it with `resolveConf`.
-`lineWidth` in the example below is one.
+The `maybe*` forms are `undefined` while unset. Unset is the one state no config
+can spell, so it stays distinguishable from every real value a user might write,
+and a display reads it as "decide this from the data" — a MAF track's `height`
+fits its rows when nobody has fixed one, and a feature `color` left unset lets
+the feature's own BED color through.
 
 Because unset _is_ their default, **`maybe*` slots omit `defaultValue`** — every
 other type must declare one, and leaving it off is a type error. Writing
@@ -213,11 +212,9 @@ export function configSchemaFactory() {
        * #slot
        */
       lineWidth: {
-        type: 'maybeNumber',
-        description:
-          'the stroke width of the arcs, in pixels. Unset (the default) follows the session-wide default for this display type',
-        // sentinel promotable slot: see promotableDefaults.ts
-        promotedBase: defaultArcLineWidth,
+        type: 'number',
+        description: 'the stroke width of the arcs, in pixels',
+        defaultValue: defaultArcLineWidth,
       },
       /**
        * #slot
@@ -249,9 +246,9 @@ depends on the kind of entry:
 
 - **A slot the child redeclares merges field-by-field over the base slot**, so
   the override states only what differs and inherits the rest: `description`,
-  `advanced`, `contextVariable`, `validate`, `model`, and the promotable fields.
-  Keep `type` in the override either way: that is what marks an entry as a slot
-  rather than a nested sub-schema.
+  `advanced`, `contextVariable`, `validate` and `model`. Keep `type` in the
+  override either way: that is what marks an entry as a slot rather than a
+  nested sub-schema.
 - **A nested sub-schema or a constant replaces the base entry wholesale.** They
   have no fields to fold.
 
@@ -397,14 +394,6 @@ have a raw config and should call `readConfObject` instead of `getConf`.
 Both accept a path array for nested access —
 `getConf(self, ['adapter', 'sequenceAdapter'])`, or the adapter form shown under
 [configuration internals](#configuration-internals) below.
-
-Use [`resolveConf`](/docs/api/core-configuration#resolveconf) on a
-**promotable** slot, and only there. `getConf` stays raw, so it returns the
-`undefined` inherit sentinel along with the real values — a type you cannot hand
-to a consumer expecting a real setting, which is how the compiler points at the
-read that should have been `resolveConf`. Never silence that with
-`?? someDefault`: it bypasses the cascade rather than walking it. `resolveConf`
-throws on a plain slot, which has no cascade to walk.
 
 Writes go through [`setConf`](/docs/api/core-configuration#setconf), not a bare
 `self.configuration.setSlot('x', v)`. `setConf` constrains the slot name against
@@ -573,10 +562,7 @@ the expression language itself.
 config editor's value/callback toggle, and no part of the read path consults it.
 A slot that declares none is still reachable by hand-writing `jexl:` into the
 JSON, so declare one to make the editor work — but never read it as a signal
-that a slot does or doesn't hold a callback. A promotable slot is the one place
-the pair is refused outright, and that throws at construction: the cascade
-discards a `jexl:` value at both tiers, so the toggle would offer a control
-whose every write silently degraded back to `promotedBase`.
+that a slot does or doesn't hold a callback.
 
 ## Configuration internals
 

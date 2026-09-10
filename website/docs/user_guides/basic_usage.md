@@ -236,15 +236,6 @@ settings behind a **Show advanced settings** toggle. With more than one display
 type, only the active display's settings are expanded. **Reset track settings**
 in the track menu reverts to the underlying config.
 
-### Pinning a setting as your default
-
-Many track-menu settings (color-by scheme, read and feature height,
-soft-clipping, and more) carry a small **pin**. Clicking it makes that value the
-default for every track of the same type, and clicking again clears it. Every
-open track a default affects is badged in the track selector. See
-[defaults for all tracks](/docs/user_guides/display_defaults) for what follows a
-default, what keeps its own value, and where defaults are kept.
-
 The [display settings tutorial](/docs/tutorials/display_settings) covers the
 same settings as persistent defaults in `config.json`, and as overrides in a URL
 or an embedded session.

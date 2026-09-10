@@ -20,8 +20,8 @@ v4.3.0 composed at the shell: `LinearAlignmentsDisplay` held real nested child
 displays as MST nodes. Every cost was a collision with an invariant rather than a
 rough edge, and they are worth listing because each recurs on any second attempt:
 
-- **Config could not reach a child.** Promotable slots resolve only at the top
-  level, so child config was kept in step by five sync autoruns.
+- **Config could not reach a child.** Slot resolution stopped at the top level,
+  so child config was kept in step by five sync autoruns.
 - **Child identity had to be fabricated** — `` `${displayId}_${lowerPanelType}_xyz` ``,
   the `_xyz` there to avoid colliding with a real one somebody might type. A
   comment in the tree apologized for it.

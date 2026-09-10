@@ -150,9 +150,8 @@ triple (`d2b1af1`).
 
 So a floor of two is only evidence when the pattern covers every spelling of the
 read. Before reading a count as "the shape working", grep for the accessor
-*sugar* the way you grepped for the accessor: `getConf` / `readConfObject` /
-`resolveConf`, and receivers of the form `self`, `self.conf`,
-`self.configuration`.
+*sugar* the way you grepped for the accessor: `getConf` / `readConfObject`, and
+receivers of the form `self`, `self.conf`, `self.configuration`.
 
 The half that did hold up is the **interface** tell. `rowHeightMenu.ts` already
 restated `rowHeight` / `setRowHeight` / `setFitToHeight` as `RowHeightModel`, and

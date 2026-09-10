@@ -896,7 +896,7 @@ the position. That also fixed the SVG export, which resolves the *export*
 theme's palette and had been printing worker-baked labels in the session's.
 
 **The payload is picked, not filtered, and that half is closed.** It used to be
-the whole `getConfigSnapshotWithPromotables` snapshot minus a hand-kept exclusion
+the whole `fullConfSnapshot` snapshot minus a hand-kept exclusion
 list — which, over a walker that emits *every* slot including defaults, made a
 slot that was neither read by the worker nor named in the list a silent refetch
 trigger, introduced by omission. Ten names had accumulated, and the ones that
@@ -1368,11 +1368,10 @@ corpus is at zero.
 
 **The membership half is largely done.** Display stacks, cross-cutting mixins,
 DisplayChrome's adoption map, gated budgets and the display-hook overrides are
-all generated; the pin-coverage list is a test baseline. The last two also
-*assert* something a table cannot — that a promotable slot has a pin somewhere,
-and that a hook is still declared by the file owning its default. That is the
-shape to reach for: a generated list is prevention, one with an assertion under
-it is repair.
+all generated. The display-hook overrides also *assert* something a table
+cannot — that a hook is still declared by the file owning its default. That is
+the shape to reach for: a generated list is prevention, one with an assertion
+under it is repair.
 
 **Retire when** each surviving "Don't" either names the machine that enforces it
 or is deleted because `tsc` already owns it. The list-generation half of this

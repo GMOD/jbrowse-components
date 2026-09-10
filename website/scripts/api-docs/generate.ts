@@ -15,11 +15,7 @@ import {
   writeApiDocs,
   writeApiReadmes,
 } from './generateApiDocs.ts'
-import {
-  accumulateConfig,
-  writeConfigDocs,
-  writePromotableSlotDocs,
-} from './generateConfigDocs.ts'
+import { accumulateConfig, writeConfigDocs } from './generateConfigDocs.ts'
 import {
   assertEveryDisplayDeclaresAViewType,
   writeDisplayTypeDocs,
@@ -167,7 +163,6 @@ async function main() {
     displayToTrackType,
     modelNames,
   )
-  writePromotableSlotDocs(configs, displayToTrackType)
   const modelGaps = writeModelDocs(models, configNames)
   writeAgentTypeDocs({
     models: modelGaps.agentPages,

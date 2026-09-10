@@ -1,6 +1,6 @@
 ---
 name: per-row-styling-has-no-config-tier
-description: A multi-wiggle subtrack's `color` works because two object spreads line up over a frozen slot — no schema declares it, so no validator, cascade, jexl or Copy-config sees it. The same `Source` shape is writable in one other place, `layout`, which is display *state* and so cannot be authored in a config or copied back out of one. One slot closes both gaps; why displayDefaults structurally cannot, and why the adapter tier has to stay.
+description: A multi-wiggle subtrack's `color` works because two object spreads line up over a frozen slot — no schema declares it, so no validator, jexl or Copy-config sees it. The same `Source` shape is writable in one other place, `layout`, which is display *state* and so cannot be authored in a config or copied back out of one. One slot closes both gaps; why displayDefaults structurally cannot, and why the adapter tier has to stay.
 ---
 
 # Per-row styling has no config tier
@@ -41,8 +41,8 @@ Two consequences, and they are the same fact seen from each side. It is cheap to
 author *because* it is unmodeled — no display type to name, no slot to look up,
 one obvious key next to the file it applies to. And everything the config system
 does is unavailable to it: no manifest entry, so `jbrowse validate` cannot spell-
-check the key; no jexl; no promotable cascade or `resolveConf`; and no
-appearance in the About dialog's "Copy config".
+check the key; no jexl; and no appearance in the About dialog's "Copy
+config".
 
 ## It is the base ABI, not a wiggle quirk
 
@@ -92,10 +92,10 @@ config slot, so:
   side at all — the adapter is the only door, which is exactly the observation
   this file starts from;
 - a user who hand-colors forty rows cannot get that back into a config. The
-  About dialog resolves promotable slots specifically so pasted output renders
-  like the track it came from
-  (`packages/product-core/src/ui/AboutDialogContents.tsx:40`) — and then omits
-  the colors, because they are not in the track config.
+  About dialog's "Copy config" hydrates the track config so pasted output
+  renders like the track it came from
+  (`packages/product-core/src/ui/AboutDialogContents.tsx`) — and then omits the
+  colors, because they are not in the track config.
 
 ## The proposal
 
@@ -115,19 +115,16 @@ things fall out of the one change:
 
 ### What it costs
 
-`layout`'s empty array is currently doing double duty as "unset", so it needs
-the [ADR-047](../architecture-decision-records/adr-047-undefined-is-the-only-inherit-sentinel.md)
-treatment — `undefined` as the sentinel — plus a resolved `effectiveLayout`
-getter, since a bare getter here must return a value and not the sentinel.
+`layout`'s empty array is currently doing double duty as "unset", so it needs a
+real sentinel — `undefined`, on a `maybe*` slot — plus a resolved
+`effectiveLayout` getter, since a bare getter here must return a value and not
+the sentinel.
 
 It also interacts with clustering, which writes `layout`. A clustering run
 beating a config-authored layout is correct (a user action beats a config
 default), but "reset" then has to mean *back to the config value* rather than
 *back to empty*, which is a third state the current `setLayout([])` callers do
-not have. That is the part to design before writing code, and it is the same
-question [promotable-slot-escape-hatches.md](promotable-slot-escape-hatches.md)
-§1 asks about getting back out of a value you set — worth answering once for
-both.
+not have. That is the part to design before writing code.
 
 ### Three things it must not do
 

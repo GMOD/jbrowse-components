@@ -145,7 +145,7 @@ watches.
 The reason is that **building the payload reads far more observables than it
 returns**, so tracking the call tracks all of them:
 
-- canvas builds it from a whole config snapshot (`getConfigSnapshotWithPromotables`),
+- canvas builds it from a whole config snapshot (`fullConfSnapshot`),
   which reads *every* slot on the display config and on every schema it inherits
   — so a `showLabels`, `heightMode` or compact/normal `displayMode` flip, none of
   which is in the payload, would refetch
@@ -174,7 +174,7 @@ field and a fieldless class instance are both distinct states there — pinned i
 
 Serializing fixes *which reads* invalidate. It does nothing about **which slots
 are in the payload**, and that is a second, separate hazard for any display whose
-`rpcProps()` starts from `getConfigSnapshotWithPromotables`: the snapshot carries
+`rpcProps()` starts from `fullConfSnapshot`: the snapshot carries
 every slot the display's schema *and every schema it inherits* declare, so the
 payload's contents are decided by whatever the display does with it.
 

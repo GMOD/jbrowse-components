@@ -13,7 +13,7 @@ measured, and backed out.
 
 ## Context
 
-`readConfObject` / `getConf` / `resolveConf` take `args` as an **optional** third
+`readConfObject` / `getConf` take `args` as an **optional** third
 parameter. So these are the same call:
 
 ```ts
