@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-wiggle",
-  "version": "5.0.0-beta.4",
+  "version": "5.0.0-beta.5",
   "type": "module",
   "description": "JBrowse 2 wiggle adapters, tracks, etc.",
   "keywords": [

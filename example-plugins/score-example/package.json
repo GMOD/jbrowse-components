@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/plugin-score-example",
-  "version": "5.0.0-beta.4",
+  "version": "5.0.0-beta.5",
   "type": "module",
   "private": true,
   "description": "Worked example: a custom LinearGenomeView display that plots a score per feature as a mark list over its own shape, drawn by WebGPU/WebGL2 with a Canvas2D fallback. Backs the 'Plotting features' and 'GPU displays' developer guides.",
