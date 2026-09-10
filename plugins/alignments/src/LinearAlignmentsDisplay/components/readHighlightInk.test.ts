@@ -81,6 +81,27 @@ test('a spliced read is one box over its segments and the intron between', () =>
   ])
 })
 
+// A hovered connector sends both of its ends outside chain mode, and pileup
+// layout puts them wherever they fit: the merge is per row, so two reads on
+// different rows get a box each and nothing spans the reads between them.
+test('two hovered reads on different rows get a box each', () => {
+  const twoRows = {
+    ...rpcData,
+    readYs: new Uint16Array([0, 7]),
+  } as PileupDataResult
+  const boxes = readHighlightInk({
+    blocks,
+    sections: [{ ...open, laidOutPileupMap: { get: () => twoRows } }],
+    readIdIndexMap,
+    ids: ['read0', 'read1'],
+    state,
+    scroll: { isGrouped: false, scrollTop: 0, canvasHeight: 1000 },
+    strong: false,
+  })
+  expect(boxes.map(b => b.top)).toEqual([100, 184])
+  expect(boxes[1]!.width).toBeCloseTo(2)
+})
+
 test('a chain merges its members on the row, in the strong shade', () => {
   expect(run(['read0', 'read1'], open, { strong: true })).toEqual([
     { left: 1, top: 100, width: 8, height: 10, strong: true },

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A shape declares its ink — the box each instance paints — and render-core derives the hit test from it; a display declares WHICH instances are hovered or selected, as `hoverInk` / `selectionInk` walked through its mark list, and `DisplayChrome` lights them as positioned divs, so a display places no highlight and recomputes no rect. Six overlays that re-derived the painted rect from their own payloads are deleted; the highlight stays a div, not render state, on the Canvas2D measurement; what is not a per-instance box keeps its own cue"
+summary: "A shape declares its ink — the box each instance paints — and render-core derives the hit test from it; a display declares WHICH instances are hovered or selected, as `hoverInk` / `selectionInk` walked through its mark list, and `DisplayChrome` lights them as positioned divs, so a display places no highlight and recomputes no rect. Five overlays that re-derived the painted rect from their own payloads are deleted; the highlight stays a div, not render state, on the Canvas2D measurement; what is not a per-instance box keeps its own cue"
 ---
 
 # ADR-110: A display declares what is highlighted
@@ -21,7 +21,7 @@ Every shape's `hitNearest` computed the rect it painted for instance `i` and
 kept only the nearest point — `MarkHit` carried `index, x, y, distSq` and not
 the rect. So the rect was thrown away at the one place that knew it, and each
 display that wanted to light a hovered or selected instance recomputed it from
-its own payload. A census on 2026-09-09 found the recomputation in six places,
+its own payload. A census on 2026-09-09 found the recomputation in five places,
 each a separate spelling of one mark's geometry:
 
 | Display | Overlay | Recomputed from |
