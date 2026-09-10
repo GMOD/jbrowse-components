@@ -61,5 +61,6 @@ export function packagedApp(target: Platform) {
     dir: path.join(DIST, app.dir),
     bundle: path.join(DIST, app.bundle),
     executable: path.join(DIST, app.executable),
+    resources: path.join(DIST, app.resources),
   }
 }

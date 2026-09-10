@@ -81,6 +81,13 @@ export function unpackedApp(
       platform === 'darwin'
         ? `${bundle}/Contents/MacOS/${name}`
         : `${dir}/${name}${platform === 'win32' ? '.exe' : ''}`,
+    // What `process.resourcesPath` resolves to in the running app, and so where
+    // `extraResource` has to have put app-update.yml. Without that file
+    // electron-updater cannot look anywhere at all and the build never updates.
+    resources:
+      platform === 'darwin'
+        ? `${bundle}/Contents/Resources`
+        : `${dir}/resources`,
   }
 }
 

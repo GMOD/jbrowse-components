@@ -105,6 +105,18 @@ export async function packageApp(target: Platform) {
         `@electron/packager wrote ${appPaths[0]}, not the ${dir} the installers and the browser-test harness derive`,
       )
     }
+    // The one file whose absence disables updates outright, and says nothing
+    // about it: electron-updater reads process.resourcesPath/app-update.yml to
+    // learn where to look, and without it every check throws ENOENT into an
+    // error handler that is deliberately silent for the startup check. It rides
+    // in on `extraResource`, which is packager's to honour and nothing else's to
+    // notice — so this is asked here, where a build can still fail, rather than
+    // discovered a release later.
+    if (!fs.existsSync(path.join(app.resources, 'app-update.yml'))) {
+      throw new Error(
+        `app-update.yml is not in ${app.resources}: this build could not update itself`,
+      )
+    }
     return app
   } finally {
     fs.rmSync(pkgJsonPath, { force: true })

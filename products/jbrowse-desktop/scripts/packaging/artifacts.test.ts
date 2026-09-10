@@ -75,3 +75,20 @@ test('the unpacked tree is where @electron/packager puts it', () => {
       'unpacked/JBrowse 2-darwin-universal/JBrowse 2.app/Contents/MacOS/JBrowse 2',
   })
 })
+
+// `process.resourcesPath` in the running app, which is where app-update.yml has
+// to land — packageApp fails the build if it did not. macOS puts it inside the
+// bundle and the other two beside the executable, the same split the executable
+// path above got wrong once.
+test('resources is where the running app will look for app-update.yml', () => {
+  const names = { appName: 'jbrowse-desktop', productName: 'JBrowse 2' }
+  expect(unpackedApp('linux', names).resources).toBe(
+    'unpacked/jbrowse-desktop-linux-x64/resources',
+  )
+  expect(unpackedApp('win', names).resources).toBe(
+    'unpacked/jbrowse-desktop-win32-x64/resources',
+  )
+  expect(unpackedApp('mac', names).resources).toBe(
+    'unpacked/JBrowse 2-darwin-universal/JBrowse 2.app/Contents/Resources',
+  )
+})
