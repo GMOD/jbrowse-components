@@ -1,6 +1,6 @@
 ---
 name: record-ecoli-synteny-take
-description: The E. coli synteny take is written, verified from the CLI on two machines and never shot — four turns that align two strains with minimap2 on camera and land on the LEE island. Everything it needs is in the tree and it runs on either platform's TUI harness. Read before filming any agent-client clip, and before reaching for the Claude-app harness, which was tried and judged not showcase material.
+description: The E. coli synteny take is written, verified from the CLI on two machines and still never shot — two Linux attempts on 2026-09-09 each ended in a harness fix rather than a clip — four turns that align two strains with minimap2 on camera and land on the LEE island. Everything it needs is in the tree and it runs on either platform's TUI harness. Read before filming any agent-client clip, and before reaching for the Claude-app harness, which was tried and judged not showcase material.
 ---
 
 # Record the E. coli synteny take
@@ -78,6 +78,34 @@ line, which is 2026-09-09:
   island at the coordinates the plan prints. What is machine-dependent is the
   wall clock the plan quotes for `minimap2`, which was 5.4 s here against the
   3.3 s the Mac measured — the take is still inside its turn either way.
+
+## Two attempts on Linux, 2026-09-09, and what they cost
+
+Neither produced a clip; both produced a harness fix, and the smoke take shot
+clean either side of them, so the loop itself is proven on this platform —
+`~/jbrowse-smoke-take/demo-captioned.mp4` is one turn, hg38 at BRCA1, the TUI
+and the app side by side with the agent's own answer on screen.
+
+- **A typed chunk starting with `-` was a tmux flag.** `typePrompt` chunks at
+  four characters, so "K-12 MG1655" handed `send-keys` a chunk of `-12 ` and it
+  exited on `unknown flag -1`, four seconds into turn one. `demoCore` drives
+  both harnesses, so the Mac one would have died on this take too. Fixed with
+  `--`.
+- **Turn one outran the 5-minute cap.** UCSC's hgdownload was answering in ~6s a
+  request that night (it was back to ~0.45s twenty minutes later), and the agent
+  spent the turn probing whether the genark hubs were reachable rather than
+  running the alignment. The run was stopped by hand before the cap fired,
+  because a cap firing mid-turn types the next prompt into a working session —
+  `recordDemoMac.mjs` has passed 40 minutes for exactly that reason and
+  `recordDemoTui.mjs` now does too.
+
+**Check UCSC before shooting.** The take's own data is local, but its SYSTEM
+tells the agent to merge the two hosted genark configs, and turn four reads gene
+names off the Sakai track, which UCSC serves. One `curl -o /dev/null -w
+'%{time_total}'` against
+`hgdownload.soe.ucsc.edu/hubs/GCF/000/008/865/GCF_000008865.2/GCF_000008865.2.chromAlias.txt`
+says whether tonight is the night: sub-second is fine, six seconds means the
+agent will spend the turn diagnosing the network on camera.
 
 ## What is still open
 
