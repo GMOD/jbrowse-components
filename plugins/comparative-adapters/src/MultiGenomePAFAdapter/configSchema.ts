@@ -1,5 +1,4 @@
-import { fillLocations } from '@jbrowse/core/configuration'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
