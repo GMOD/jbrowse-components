@@ -34,6 +34,7 @@
     "@jbrowse/mobx-state-tree": "^6.5.1",
     "@jbrowse/render-core": "workspace:^",
     "@jbrowse/sv-core": "workspace:^",
+    "@jbrowse/synteny-core": "workspace:^",
     "@mui/icons-material": "^9.4.0",
     "@mui/material": "^9.4.0",
     "mobx": "^7.0.3",

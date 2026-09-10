@@ -2,6 +2,7 @@ import Plugin from '@jbrowse/core/Plugin'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
 import DataUsageIcon from '@mui/icons-material/DataUsage'
 
+import ChordSyntenyDisplayF from './ChordSyntenyDisplay/index.ts'
 import ChordVariantDisplayF from './ChordVariantDisplay/index.ts'
 import CircularViewF from './CircularView/index.ts'
 import LaunchCircularViewF from './LaunchCircularView/index.ts'
@@ -16,6 +17,7 @@ export default class CircularViewPlugin extends Plugin {
     CircularViewF(pluginManager)
     LaunchCircularViewF(pluginManager)
     ChordVariantDisplayF(pluginManager)
+    ChordSyntenyDisplayF(pluginManager)
   }
 
   configure(pluginManager: PluginManager) {

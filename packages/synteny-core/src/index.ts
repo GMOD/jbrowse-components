@@ -312,3 +312,5 @@ export type {
   SelectorProps,
   SyntenyFileFormatOption,
 } from './SelectorTypes.ts'
+export { getMate } from './syntenyMate.ts'
+export type { SyntenyMate } from './syntenyMate.ts'
