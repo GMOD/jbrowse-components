@@ -57,17 +57,37 @@ content edge.
     track's coverage band per group, each projected through the display's own
     scroll. One at 0 by default; `[]` for a scale the display maps to colour
     rather than to y.
-  - `side` — the edge the axis hugs. Right where the left is spoken for: the
-    group label chips, or arcs that spring from the top.
-  - `left` — what a panel of the display's own takes at the left edge before
-    the gutter starts: the dendrogram.
-  - `caption` — a name for the axis, drawn rotated along the gutter's outer
-    edge (`TLEN`).
+  - `side` and `left` — which of the band's edges the display's own panels
+    leave clear for a gutter. `right` where a group label chip takes the
+    coverage band's left edge; `left: n` where a dendrogram takes the first
+    `n` px of every row. The read cloud's scale keeps the side each mode's
+    axis had before this ADR — left under `readConnectionsDown`, right above
+    the coverage band — which is inherited, not derived.
+  - `caption` — what the scale measures (`TLEN`), the counterpart of a
+    colour scale's `field`: the legend titles from that, the axis from this.
 
   The mixin resolves them to `axes: YAxis[]` — each scale with its domain and
   ticks resolved — which is what the chrome reads (`isAxisHost`). A display
   whose every ladder is its own answers `axes` directly without the mixin
   (MAF).
+
+  **A `ValueScale` member describes the scale or the band it rules, never
+  the axis.** The scale is its domain, its type, its name and how its ticks
+  are chosen; the band is its box, where the display stacks copies of it,
+  and which of its edges the display's own panels leave clear. Those are
+  facts about the display's layout, which the chrome cannot see and so
+  cannot derive, and each one was measured against removal on 2026-09-09:
+  `left` cannot be the chrome's rule without the chrome learning the tree
+  sidebar, `side` cannot without it learning the group chips, and a
+  display-level hook in place of either — the way `legendTop` is one — cannot
+  say which of two scales it means. What a member may not describe is the
+  drawing: an orientation, a form, a gutter width, a font, the height below
+  which an axis becomes a caption. The test at review is what the chrome
+  would read the member for. To choose between two drawings of one band, it
+  is a setting and is refused, the way `orientation` is below and the way
+  [ADR-091](adr-091-a-displays-settings-are-a-declaration.md) refused a table
+  of them; to keep from drawing the axis over something the display put
+  there, it is a declaration.
 - **Placement is the chrome's, for every guide on every scale.**
   `DisplayChromeBase` mounts `ChromeYAxis`, which for each axis and each band
   on screen draws the cross-hatches when `showCrossHatches`, the reader's
@@ -98,7 +118,7 @@ Migrated, and every one of them lost its placement sites: `LinearWiggleDisplay`
 scale, a band per row, `left` past the dendrogram, no band under density rows
 in their own colours so the chrome captions the domain), `LinearAlignmentsDisplay`
 (coverage: a band per section, right beside group chips; insert size: a band
-per section reserving an arc band, on the side the arcs spring from, captioned
+per section reserving an arc band, on the side each mode's axis had, captioned
 `TLEN`) and `LinearMafDisplay` (coverage and conservation, one band each).
 
 ## Consequences

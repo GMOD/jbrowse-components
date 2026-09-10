@@ -2845,8 +2845,8 @@ export default function stateModelFactory(
          * The scales the chrome places the axes from. Coverage rules one band
          * per section, on the right wherever the group label chips take the
          * left edge; the read cloud's insert-size scale rules the arc band of
-         * every section that reserves one, on the side the arcs spring from,
-         * captioned TLEN. Each band is projected to screen through the
+         * every section that reserves one, on the side its axis had in each
+         * mode, captioned TLEN. Each band is projected to screen through the
          * section's own scroll; the chrome drops the ones off screen.
          */
         get valueScales(): ValueScale[] {
