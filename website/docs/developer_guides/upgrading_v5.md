@@ -422,7 +422,7 @@ Two behavior changes carry no migration:
 
 A point whose `args` are an array is now registered through
 `contributeToExtensionPoint`, whose callback takes only the props and returns
-its own entries — `undefined` meaning "nothing from me" — instead of being
+its own entries, with `undefined` meaning "nothing from me", instead of being
 handed everyone else's array and trusted to hand it back. The old form let a
 callback return a bare entry, or its own single-element array, and silently drop
 every other plugin's contribution; both look correct in an install where theirs
@@ -438,7 +438,7 @@ component whatever fills the slot so far, so replacing is wrapping without
 rendering what you were handed and wrappers from two plugins nest instead of one
 disappearing. Which tracks any of them applies to is `matchesTrackSelector`, one
 predicate your contribution asks before it draws, and it reads a track config as
-readily as a widget model — so an About panel now gets the copy-safe `trackId`
+readily as a widget model. An About panel therefore gets the copy-safe `trackId`
 matching only feature panels used to have, and so does `Core-customizeAbout`,
 which renders nothing at all. Both come from `@jbrowse/core/ui`, and between
 them they replace `addFeaturePanel`, `addReplaceWidget` and `addWidgetWrapper`.
@@ -523,12 +523,12 @@ what it does when the model is not loaded is the second column:
 
 The submenu that `pushLaunchViewMenuItem` collects contributions under is
 labelled `Launch`, because half of what it opens is no longer a view. The
-function keeps its name — it is pinned by the re-export ABI, so a published
-bundle reads it off the host at module scope — and contributions still land in
-one place, so this matters only where you spelled the label yourself. That is
-usually a test walking a menu, where the failure reads as "my item was never
-added" rather than "the submenu is called something else". Import `LAUNCH_LABEL`
-from `@jbrowse/core/ui` rather than repeating the string.
+function keeps its name, pinned by the re-export ABI so a published bundle reads
+it off the host at module scope, and contributions still land in one place. The
+rename matters only where you spelled the label yourself. That is usually a test
+walking a menu, where the failure reads as "my item was never added" rather than
+"the submenu is called something else". Import `LAUNCH_LABEL` from
+`@jbrowse/core/ui` rather than repeating the string.
 
 ## Removals with no replacement
 

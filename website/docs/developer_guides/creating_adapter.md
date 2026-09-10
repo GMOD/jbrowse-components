@@ -180,8 +180,8 @@ public async configure() {
 
 Resolve it in one `configure()` the other methods await. Use `getSubAdapter`
 directly for a subadapter that is genuinely part of the track's own
-configuration; it is optional on the base class, so it needs the `?.` and a
-check, and `dataAdapter` is the base union, so cast it.
+configuration. The method is optional on the base class, so it needs the `?.`
+and a check. `dataAdapter` comes back as the base union, so cast it.
 
 Larger example:
 [`MCScanAnchorsAdapter`](https://github.com/GMOD/jbrowse-components/blob/main/plugins/comparative-adapters/src/MCScanAnchorsAdapter/MCScanAnchorsAdapter.ts).

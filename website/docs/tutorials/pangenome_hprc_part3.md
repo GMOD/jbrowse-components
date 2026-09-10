@@ -709,7 +709,8 @@ chromosome with, since sequence one of them lacks has no lifted-over interval.
 repeat content, so a single density lane would show no difference. What moved is
 the composition, in opposite directions: more L1, less Alu.
 
-That comparison is between two whole chromosome ends, which is why it holds. A
+That comparison is between two whole chromosome ends, spans large enough that
+the composition difference is not an artifact of where the window was put. A
 single interval is harder. Rank the insertion allele from
 [the donor-node figure](#the-one-donor-worth-loading) against windows of its own
 size and where it lands moves with the windows you rank it against, which is why

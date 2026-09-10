@@ -164,7 +164,7 @@ tabix L1.bed.gz chr1:155,000,000-156,000,000 | wc -l
 | 60 to 61 Mb   | 4     | 146  | 295 | 235            |
 
 The gene count runs with the Alu count and against the L1 count, and the simple
-repeats come out about the same in both, which is the shape the four bands drew.
+repeats come out about the same in both, the same pattern the four bands show.
 
 ## Reproduce it end to end
 

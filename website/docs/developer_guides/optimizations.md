@@ -78,8 +78,8 @@ decompressed chunk cache and so decompresses nothing, which measures the two
 halves apart: the line scan alone is 28% of the cold query, and the pool reaches
 the rest at 1.83x. Amdahl's law puts the end-to-end figure at 1.49x against
 1.45x measured. A 1000 Genomes line carries a genotype field per sample, so that
-28% is byte scanning on enormous lines, so more than 1.5x on multi-sample VCF
-means attacking
+28% is byte scanning on enormous lines. Getting past 1.5x on multi-sample VCF
+therefore means attacking
 [the scan](https://github.com/GMOD/tabix-js/blob/main/docs/optimizations.md#scanning-lines).
 
 **The pool degrades silently, so verify it engages.** jbrowse-web runs adapters
@@ -302,7 +302,7 @@ crosses one `postMessage`. What crosses is
 and a record is an index shared across them. Arrays in that shape cross as
 [transferables](/docs/developer_guides/rpc_workers#returning-arraybuffers-zero-copy),
 so handing a block over costs the same whether it holds ten records or a
-million, and they are the buffers the graphics card takes, so the main thread
+million. They are also the buffers the graphics card takes, so the main thread
 uploads them without reading them. The decoder writes the arrays the shader
 reads, and no step in between converts between representations.
 

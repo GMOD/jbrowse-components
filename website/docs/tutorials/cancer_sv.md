@@ -155,8 +155,8 @@ another junction leaving from the same place, and takes it when there is exactly
 one. On this record that is three panels, because the chr10 breakend has a
 second junction a couple of hundred bases away whose far end is on chr12. The
 walk stops at two open continuations, or at one leading back into the chain. The
-reads are the evidence for the assumption that two junctions leaving one locus
-belong to one molecule, which is the dialog above.
+dialog's walk assumes that two junctions leaving one locus belong to one
+molecule, and the reads are the evidence for that.
 
 <Figure caption="Opening the split view from the record itself: right-click the breakend, set the shape and window in the dialog, and get three panels because the chain runs chr3 to chr10 to chr12." src="/img/cancer_sv/split_view_from_breakend.png" />
 

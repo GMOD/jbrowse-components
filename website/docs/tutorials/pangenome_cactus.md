@@ -169,12 +169,12 @@ One run produces everything the sections below use:
 ## All-vs-all synteny projection
 
 [`halSynteny`](https://github.com/ComparativeGenomicsToolkit/hal) reads the
-HAL's base-level alignment and emits synteny blocks per genome pair. It writes
-PSL and names every sequence `chr` with no sample tag, so the
+HAL's base-level alignment and emits synteny blocks per genome pair. halSynteny
+writes PSL and names every sequence `chr` with no sample tag, so the
 [build script](#reproduce-it-end-to-end) runs it for all six pairs and converts
 each PSL to PAF, injecting the PanSN `sample#0#chr` names and decoding the
-strand (halSynteny flips only the target, so the PAF strand is the second
-character of the PSL strand field).
+strand. halSynteny flips only the target, so the PAF strand is the second
+character of the PSL strand field.
 
 Index the combined PAF so a range query fetches only the region in view:
 

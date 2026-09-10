@@ -343,7 +343,7 @@ tabix https://jbrowse.org/demos/gene_density/Alu.bed.gz chr1:154,000,000-155,000
 | 157 to 158 Mb |     237 |   35 |
 
 The total falls by about four fold between the two windows and the AluY count by
-less than three, which is the two bands' shapes.
+less than three, so the AluY band is the flatter of the two.
 
 ## Reproduce it end to end
 

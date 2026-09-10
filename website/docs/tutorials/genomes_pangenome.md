@@ -117,8 +117,8 @@ The graph view lays a window out in the browser, which caps it. For the same
 region at every scale, the form's **Open in PangyPlot** link opens
 [PangyPlot](https://pangyplot.research.sickkids.ca/), which precomputes an odgi
 layout and level-of-detail tiers server-side and navigates by the same
-`chrom:start-end`. It serves the release 1.1 graph, so a locus can differ in
-detail from the release 2 launch; both are on GRCh38, so the coordinates line
+`chrom:start-end`. PangyPlot serves the release 1.1 graph, so a locus can differ
+in detail from the release 2 launch. Both are on GRCh38, so the coordinates line
 up.
 
 ## Adding the same tracks to your own instance
