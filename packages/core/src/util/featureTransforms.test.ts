@@ -1,5 +1,6 @@
 import { runTransforms } from './featureTransforms.ts'
 import createJexlInstance from './jexl.ts'
+import { placeRect } from './layouts/placeRect.ts'
 import SimpleFeature from './simpleFeature.ts'
 
 import type { Feature } from './simpleFeature.ts'
@@ -268,4 +269,26 @@ test('stack reads the interval fields the step names and writes the field as nam
     [0, 0],
     [30, 0],
   ])
+})
+
+// The claim ADR-118 rests on: `stack` is the same first-fit rule the display
+// packers run, so what separates the transform stage from a pileup is the
+// representation and the extra inputs, never the packing. `placeRect`'s
+// clearance is 2, which is what the step spells as `padding`.
+test('stack with placeRect padding assigns the rows placeRect does', () => {
+  const spans: [number, number][] = []
+  let seed = 1
+  for (let i = 0; i < 500; i++) {
+    seed = (seed * 1103515245 + 12345) % 2147483648
+    const start = i * 3
+    spans.push([start, start + 5 + (seed % 40)])
+  }
+  const rowsState: number[][] = []
+  const expected = spans.map(([start, end]) => placeRect(rowsState, start, end))
+  const out = runTransforms(
+    spans.map(([start, end]) => feature(start, end)),
+    [{ type: 'stack', padding: 2 }],
+  )
+  expect(out.map(f => f.get('row'))).toEqual(expected)
+  expect(Math.max(...expected)).toBeGreaterThan(3)
 })
