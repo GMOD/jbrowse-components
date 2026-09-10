@@ -309,6 +309,75 @@ test('a binned count and the raw features share one fetch, and each draws in its
   })
 }, 30000)
 
+test('past a forced-small byte limit the density sidecar draws in the banner s place', async () => {
+  const base = volvoxConfigWithTracks(['gff3tabix_genes'])
+  const config = {
+    ...base,
+    tracks: base.tracks.map(t => ({
+      ...t,
+      trackId: 'mark_sidecar',
+      name: 'mark_sidecar',
+      adapter: {
+        ...(t as { adapter: object }).adapter,
+        densityAdapter: {
+          type: 'BigWigAdapter',
+          bigWigLocation: {
+            uri: 'volvox.sort.gff3.density.bw',
+            locationType: 'UriLocation',
+          },
+        },
+      },
+      displays: [
+        {
+          type: 'LinearMarkDisplay',
+          displayId: 'mark_sidecar-marks',
+          // one byte: every region on screen is over budget, so the gate
+          // refuses the features and the tier is what is left
+          fetchSizeLimit: 1,
+          marks: [
+            { shape: 'bar', encoding: { y: 'score' } },
+            {
+              shape: 'bar',
+              source: 'density',
+              encoding: { y: 'count', color: 'red' },
+            },
+          ],
+        },
+      ],
+    })),
+  }
+  const { view, findByTestId } = await createView(config)
+  view.setNewView(50, 0)
+  fireEvent.click(await findByTestId(hts('mark_sidecar'), {}, { timeout }))
+
+  const el = await findDisplayPainted('mark-display', { timeout })
+  const display = view.tracks[0]!.displays[0] as MarkDisplayProbe & {
+    regionTooLarge: boolean
+    coarseTierStandsIn: boolean
+    densityStandInNotice?: string
+  }
+  await waitFor(
+    () => {
+      expect(display.coarseTierStandsIn).toBe(true)
+    },
+    { timeout },
+  )
+  expect(display.regionTooLarge).toBe(true)
+  expect(el.dataset.displayDrawn).toBe('true')
+
+  // the sidecar's bins are the density mark's layer, and the feature mark has
+  // nothing
+  const layers = [...display.rpcDataMap.values()].map(d => d.layers)
+  expect(layers.length).toBeGreaterThan(0)
+  for (const [features, density] of layers) {
+    expect(features!.count).toBe(0)
+    expect(density!.count).toBeGreaterThan(0)
+  }
+  // and the axis is the bins', so the plot has a scale to read them against
+  expect(display.domain![1]).toBeGreaterThan(0)
+  expect(display.densityStandInNotice).toContain('density sidecar')
+}, 40000)
+
 test('the mark display is offered on every track type whose adapters it reads', async () => {
   const { session } = await createView(volvoxConfigWithTracks(['volvox_bam']))
   const { pluginManager } = getEnv<{ pluginManager: PluginManager }>(session)
