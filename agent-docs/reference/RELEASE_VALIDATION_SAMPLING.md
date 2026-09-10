@@ -175,7 +175,7 @@ The upgrade guide covers the 70 — mostly **by class rather than by name**, whi
 is the right editorial call, plus a section of its own for the six removed RPC
 method names, which are addressed by string and so are a surface no re-export
 list reaches ([upgrading_v5.md](../../website/docs/developer_guides/upgrading_v5.md)
-§"RPC methods that no longer exist").
+§"Removed RPC methods").
 
 ## What is outstanding
 
