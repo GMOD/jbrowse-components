@@ -212,6 +212,26 @@ already answers `NO_CATEGORY_COLOR` for an absent value
 either way, so the unit of work is one pass over the build scripts plus a
 `scripts/deploy-demo.sh` of each config — not a config edit.
 
+The worse version of this is a demo with **no** build script in the tree at all.
+`demos/mouse_pangenome/` and `demos/bovine_pangenome/` were published
+2026-09-02 and were in that state until 2026-09-09: the only record of how
+either was made was a set of shell scripts on one build box under `/mnt/sdb`,
+so reproducing either meant finding that machine. They are
+`scripts/build_mouse_pangenome.sh` and `scripts/build_bovine_pangenome.sh` now.
+Both ship a `README.txt` beside the data carrying source checksums, what was
+modified, tool versions and the audits that ran — which is the half that was
+always done well, and is why the 27.4 h minigraph figure and the chrY finding
+are quotable at all. The rule the two halves add up to: **the build script is
+committed before the data is uploaded.**
+
+A related drift that reachability checks cannot see: `demos/hprc/` holds both
+`hprc-v2.0-mc-grch38.*` and `hprc-v2.1-mc-grch38.*`, and consumers can sit on
+either indefinitely because both answer 200. The HPRC tutorials moved to v2.1;
+GMOD/jb2hubs' `website/pangenome-config/hprc-grch38.json` was still on v2.0 as
+of 2026-09-09, serving the older graph with nothing reporting it. Its
+`pnpm check-pangenome-assets` now probes the next minor and major sibling of
+whatever version a config names, which is the general form of that check.
+
 ## Third-party mirrors, and what a bucket listing does not prove
 
 `website/scripts/third-party-hosts.txt` is the ratchet over which servers we do

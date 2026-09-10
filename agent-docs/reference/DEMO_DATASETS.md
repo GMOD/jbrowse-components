@@ -358,6 +358,60 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   the wall there — two passes over a 1.2 GB GFF3 is ~10 min per haplotype, so
   `CAT_JOBS` runs them concurrently. `README.txt` beside the data carries
   provenance and the row counts.
+- **`demos/mouse_pangenome` is a graph we built, because nobody published one**
+  (`build_mouse_pangenome.sh`): minigraph 0.21 `-cxggs` over mm39 plus the 18
+  Mouse Genomes Project / Ensembl strain assemblies as rehosted in GenArk, one
+  graph per chromosome then renumbered (`chromIndex * 10,000,000`) and
+  concatenated into a single rGFA — 1,321,274 segments, 1,867,122 links, max
+  rank 18, rank-0 total exactly GRCm39's own 2,723,414,844 bp, which is the
+  check that the reference thread survived. 27.4 h of minigraph wall time over
+  21 chromosomes run two at a time at 8 threads; chrX longest at 3 h 50 m,
+  chr19 shortest at 22 m. The 2025 mouse pangenome paper released ENA
+  assemblies and an Ensembl browser and no graph, and the 2022 Minigraph-Cactus
+  mouse graph in cactus's own list is a different panel that upstream warns is
+  "nearly 40% Ns"; neither was usable. Three things it settled:
+  - **Coverage is not uniform, and it is the assemblies' fault, not the
+    build's.** Every autosome carries all 19. chrX carries 18: C57BL_6J_T2T's
+    chromAlias names 238 sequences and none is an X or a Y. chrY carries mm39
+    alone — one segment, zero links, 91 MB of reference thread — kept so the
+    graph covers the whole reference and deliberately not offered as a
+    whole-chromosome view.
+  - **minigraph writes no P or W lines**, so this graph cannot express carriage
+    at all; a line census of the finished rGFA is `H`, `S`, `L` only.
+    `firstSeenIn`/`discoveryRank` in its allele file is construction order.
+    `minigraph -cxasm --call` per assembly plus `misc/mgutils.js merge -r0` is
+    the cheap route to carriage and a VCF (hours, no rebuild, bubble
+    resolution); minigraph-cactus is the route to walks, and is multi-day.
+  - **Per chromosome rather than whole-genome** because peak RSS scales with the
+    graph being extended. The build gates each job on available memory holding
+    above a floor across three probes 20 s apart — a job launched into a dip
+    another job is about to reclaim gets OOM-killed after hours.
+- **`demos/bovine_pangenome` is a projection of someone else's graph, whose tags
+  had to be recovered** (`build_bovine_pangenome.sh`): the minigraph set from
+  Leonard et al. 2023 (Genome Biology 24:128, Zenodo 7737904, CC-BY 4.0), 12
+  assemblies over the 29 autosomes on ARS-UCD1.2 = bosTau9, including yak,
+  bison and gaur. 425,796 segments, 604,543 links, 171,334 alleles, 153,719
+  bubbles.
+  - **The published graphs are not rGFA.** VN:Z:1.1, `S <id> <seq>`, and
+    `grep -c SN:Z:` is 0 on all 29. What they carry is 12 P lines, so
+    `gfa_paths_to_rgfa.py` walks each path with a cumulative offset and the
+    first path to reach a segment names it. Exact for the backbone and checked
+    rather than assumed: the HER path of every chromosome must sum to bosTau9's
+    own length for it, 29 for 29, and the whole-graph rank-0 total is
+    2,489,385,779 bp. 1,216 of 427,012 segments (0.28%) lie on no path and are
+    dropped with their links, since no path means no coordinate.
+  - **Rank above 0 is a convention, not a measurement** — ranks 1..11 are P-line
+    order, so it is weaker than minigraph's own SR and is not carriage. The
+    tarball's `pggb` (23.7 GB) and `cactus` (26.1 GB) sets are base-level and
+    do state per-assembly walks, so `build_pggb_tabix.sh` over one of them
+    would emit the same five files carrying `SM:Z:`, and `vg deconstruct` the
+    VCF this demo lacks. That needs no new download and is what would make
+    bovine a peer of `demos/hprc` rather than a structural-resolution sibling.
+  - `genome_annotation.bed.gz`, the other Zenodo file, is **not** a gene
+    annotation despite the name: a four-column repeat/mappability
+    classification of the reference, 6,089,641 rows, chromosomes named `1..29`.
+  - `gfatools bubble` clamps its path count at 2147483647 rather than
+    overflowing; 22 bubbles sit there, where it means "more than I can count".
 - **`demos/hg38_vertebrates` builds nothing** (`build_hg38_liftover_multiway.sh`
   writes only the config): eight UCSC genomes under hg38 through the liftOver
   PIFs already at `ucsc/hg38/liftOver/hg38To<Genome>.over.pif.gz`, one
