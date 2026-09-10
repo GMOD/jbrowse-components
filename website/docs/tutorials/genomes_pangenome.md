@@ -89,9 +89,8 @@ selection)**, so a zoomed-in window reopens as a graph without the page. The
 graph reaches back the same way: hovering a node bands its interval across the
 lanes above, right-clicking one offers **Highlight in hg38** and **Open in
 hg38**, and the view's own **Launch** menu reopens the whole window as a linear
-view. The HPRC tutorial lists
-[every crossing](/docs/tutorials/pangenome_hprc#every-way-across) and what each
-cannot do.
+view. The HPRC tutorial walks
+[a node back to its coordinates](/docs/tutorials/pangenome_hprc#from-a-node-back-to-a-coordinate).
 
 ## Drawing a whole chromosome
 
