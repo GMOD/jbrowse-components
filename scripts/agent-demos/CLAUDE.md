@@ -187,12 +187,21 @@ What is established, each of it paid for:
 
 ## Linux: `recordDemoTui.mjs`
 
-`node scripts/agent-demos/recordDemoTui.mjs <outdir>` writes
+`node scripts/agent-demos/recordDemoTui.mjs <outdir> [takes/<name>.mjs]` writes
 `<outdir>/demo-captioned.mp4`. It shows the REAL Claude Code TUI (Sonnet,
 `--verbose`) driven by `tmux send-keys` — not the formatted `claude -p` stream
 `recordDemoLinux.mjs` films, which reads as a fake — beside the built-in hg38,
-with the narration burned in as ASS captions. The steps live in `STEPS` at the
-top of the file, each a prompt and the sentence that explains it to a viewer.
+with the narration burned in as ASS captions.
+
+**It takes the same take modules `recordDemoMac.mjs` does**: `STEPS`, and
+optionally `SYSTEM(cwd)` and `SHELL`. Without one, the BRCA1 steps at the top of
+the file are the take. The session runs in `<outdir>/cwd`, so a `SHELL` take's
+files stay out of the recorder's own mp4 and captions, and the invocation goes
+through a `start-session.sh` there rather than down `send-keys` — a take's
+system prompt runs past a thousand characters and the shell's line editor
+silently truncates a line that long instead of submitting it.
+`JBROWSE_DESKTOP_ROOT` points the client at another checkout's `build/`, so a
+worktree can film against the primary's.
 
 - **Side-by-side is automated, and every part of it can fail silently.** The
   take walks to the last workspace, which dynamic workspaces keep empty, so the

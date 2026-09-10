@@ -4,7 +4,10 @@
 // blocks synthetic keystrokes to apps, but tmux injects into the pty) and
 // `tmux capture-pane` can tell when each turn finishes.
 //
-//   node scripts/agent-demos/recordDemoTui.mjs <outdir>
+//   node scripts/agent-demos/recordDemoTui.mjs <outdir> [takes/<name>.mjs]
+//
+// A take module is the shape recordDemoMac.mjs consumes — STEPS, and optionally
+// SYSTEM(cwd) and SHELL. Without one the BRCA1 steps below are the take.
 //
 // The side-by-side layout is automated: the take runs on a fresh empty
 // workspace, and ydotool presses the same Super+Left / Super+Right a person
@@ -23,13 +26,36 @@ import net from 'node:net'
 import os from 'node:os'
 import path from 'node:path'
 
+// The TUI driving is demoCore's, not this file's own: the startup choosers, the
+// readiness markers and the working-spinner pattern all move whenever Claude
+// Code restyles its status line, and one copy of them is the only way both
+// harnesses stay shot-able. This file kept private copies until 2026-09-09,
+// which is why it still matched `❯` — a shell prompt — as readiness and keyed
+// turn detection on `esc to interrupt`, which 2.1.263 no longer draws.
+import {
+  capture as capturePane,
+  delay,
+  tmux,
+  typePrompt as typePromptInto,
+  waitTurnDone as waitTurnDoneIn,
+  waitTuiReady,
+} from './demoCore.mjs'
+
 const repoRoot = path.resolve(
   path.dirname(new URL(import.meta.url).pathname),
   '../..',
 )
-const desktopRoot = path.join(repoRoot, 'products/jbrowse-desktop')
+// a worktree can film against the primary checkout's build rather than its own
+const desktopRoot =
+  process.env.JBROWSE_DESKTOP_ROOT ??
+  path.join(repoRoot, 'products/jbrowse-desktop')
 const outDir = process.argv[2] ?? path.join(process.cwd(), 'jbrowse-tui-demo')
 fs.mkdirSync(outDir, { recursive: true })
+// the agent's own working directory, so a take that writes files does not
+// scatter them among the recorder's mp4 and captions
+const cwd = path.join(outDir, 'cwd')
+fs.mkdirSync(cwd, { recursive: true })
+const take = process.argv[3] ? await import(path.resolve(process.argv[3])) : {}
 
 const SESSION = 'jbdemo'
 // the window opens at this size and GNOME's tiling then resizes it; the two
@@ -39,7 +65,7 @@ const ROWS = 24
 
 // friendly, natural questions a person would ask; the narration below explains
 // each in plain language for the viewer
-const STEPS = [
+const DEFAULT_STEPS = [
   {
     prompt: 'Open the human genome and take me to the BRCA1 gene.',
     say: 'Asked in plain English, Claude opens the human genome (hg38) and navigates to the BRCA1 gene.',
@@ -54,15 +80,12 @@ const STEPS = [
   },
 ]
 
-const delay = ms => new Promise(r => setTimeout(r, ms))
-const tmux = (...args) => execFileSync('tmux', args, { encoding: 'utf8' })
-const capture = () => {
-  try {
-    return tmux('capture-pane', '-p', '-t', SESSION)
-  } catch {
-    return ''
-  }
-}
+const STEPS = take.STEPS ?? DEFAULT_STEPS
+const SHELL = take.SHELL ?? false
+const MCP_TOOLS =
+  'mcp__jbrowse__run_javascript,mcp__jbrowse__open,mcp__jbrowse__docs,mcp__jbrowse__screenshot'
+
+const capture = () => capturePane(SESSION)
 
 function fail(msg) {
   console.error(`\n✗ ${msg}\n`)
@@ -294,46 +317,12 @@ async function checkTiled() {
 }
 
 // ------------------------------------------------------------ TUI driving
-// type a prompt one character at a time so the recording shows real typing
-async function typePrompt(text) {
-  for (const ch of text) {
-    tmux('send-keys', '-t', SESSION, '-l', ch)
-    await delay(28)
-  }
-  await delay(400)
-  tmux('send-keys', '-t', SESSION, 'Enter')
-}
+const typePrompt = text => typePromptInto(SESSION, text)
 
-// a turn is done when the pane has changed from before the prompt AND then gone
-// stable with no "esc to interrupt" — the previous turn's "· done" lingers, so
-// markers alone give a false positive
-async function waitTurnDone(before, maxMs = 150000) {
-  const deadline = Date.now() + maxMs
-  let started = false
-  let stablePane = ''
-  let stableCount = 0
-  while (Date.now() < deadline) {
-    await delay(1500)
-    const pane = capture()
-    const working = /esc to interrupt/i.test(pane)
-    if (!started && (working || pane !== before)) {
-      started = true
-    }
-    if (started && !working) {
-      if (pane === stablePane) {
-        stableCount++
-        if (stableCount >= 2) {
-          return
-        }
-      } else {
-        stablePane = pane
-        stableCount = 0
-      }
-    } else {
-      stableCount = 0
-    }
+async function waitTurnDone(before) {
+  if (!(await waitTurnDoneIn(SESSION, before))) {
+    console.error('  (turn did not settle before timeout; continuing)')
   }
-  console.error('  (turn did not settle before timeout; continuing)')
 }
 
 // ------------------------------------------------------------ captions (ASS)
@@ -474,14 +463,16 @@ try {
       },
     }),
   )
-  const system = [
-    'You are demonstrating JBrowse Desktop live in a short video for people learning what this AI can do.',
-    'When asked to open the human genome, use the open tool with exactly this URL: https://jbrowse.org/ucsc/hg38/config.json (the built-in hg38).',
-    'Be direct and friendly: accomplish each request with as few tool calls as possible, then reply in one warm, plain-English sentence a non-expert understands.',
-    'Do NOT inspect, modify, or remove plugins or configuration.',
-    'Leave nothing open over the view: hide the track selector once the track is on, so the genome fills the window.',
-    'After each change call jb.waitReady and confirm the gene track actually drew before answering.',
-  ].join(' ')
+  const system = take.SYSTEM
+    ? take.SYSTEM(cwd)
+    : [
+        'You are demonstrating JBrowse Desktop live in a short video for people learning what this AI can do.',
+        'When asked to open the human genome, use the open tool with exactly this URL: https://jbrowse.org/ucsc/hg38/config.json (the built-in hg38).',
+        'Be direct and friendly: accomplish each request with as few tool calls as possible, then reply in one warm, plain-English sentence a non-expert understands.',
+        'Do NOT inspect, modify, or remove plugins or configuration.',
+        'Leave nothing open over the view: hide the track selector once the track is on, so the genome fills the window.',
+        'After each change call jb.waitReady and confirm the gene track actually drew before answering.',
+      ].join(' ')
 
   // real Claude Code TUI inside tmux
   console.log('starting the real Claude Code session…')
@@ -493,7 +484,7 @@ try {
     '-s',
     SESSION,
     '-c',
-    outDir,
+    cwd,
     '-x',
     String(COLS),
     '-y',
@@ -504,17 +495,27 @@ try {
   tmux('set-option', '-t', SESSION, 'focus-events', 'on')
   // Sonnet, not the session default (Fable) — a lighter model is the honest
   // thing to show in a public demo, and plenty for driving the app
-  const claudeCmd =
-    `claude --model sonnet --verbose --mcp-config ${JSON.stringify(mcpConfig)} --strict-mcp-config ` +
-    `--allowedTools 'mcp__jbrowse__run_javascript,mcp__jbrowse__open,mcp__jbrowse__docs,mcp__jbrowse__screenshot' ` +
-    `--append-system-prompt ${JSON.stringify(system)}`
-  tmux('send-keys', '-t', SESSION, claudeCmd, 'Enter')
-  // wait for the TUI to be ready (idle prompt)
-  for (let i = 0; i < 40; i++) {
-    await delay(1000)
-    if (/bypass permissions|\S+\s*\/effort|❯/.test(capture())) {
-      break
-    }
+  // The invocation goes in a script rather than down the wire: a take's system
+  // prompt runs past a thousand characters, and zsh's line editor never submits
+  // a send-keys line that long — it redraws it, echoes it truncated and sits
+  // there. It also keeps the command on camera short enough to read.
+  const startScript = path.join(cwd, 'start-session.sh')
+  fs.writeFileSync(
+    startScript,
+    `#!/bin/sh\nexec claude --model sonnet --verbose \\\n  --mcp-config ${JSON.stringify(mcpConfig)} --strict-mcp-config \\\n  --allowedTools '${MCP_TOOLS}${SHELL ? ',Bash,Read,Write,Edit,Glob,Grep' : ''}' \\\n  --append-system-prompt ${JSON.stringify(system)}\n`,
+  )
+  fs.chmodSync(startScript, 0o755)
+  tmux('send-keys', '-t', SESSION, './start-session.sh', 'Enter')
+  // demoCore answers the startup choosers on the way — the take's cwd is a
+  // fresh directory every run, so the folder-trust one always shows up, and
+  // whatever is typed while it is up goes into it rather than into Claude
+  if (!(await waitTuiReady(SESSION))) {
+    const pane = capture()
+    fs.writeFileSync(path.join(outDir, 'tui-stuck.txt'), pane)
+    console.error(pane.split('\n').slice(-25).join('\n'))
+    fail(
+      `the Claude Code TUI never reached its prompt — pane saved to ${path.join(outDir, 'tui-stuck.txt')}`,
+    )
   }
   await delay(2000)
 

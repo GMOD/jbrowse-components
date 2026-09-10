@@ -1,6 +1,6 @@
 ---
 name: record-ecoli-synteny-take
-description: The E. coli synteny take is written, verified from the CLI on two machines and never shot — four turns that align two strains with minimap2 on camera and land on the LEE island. Everything it needs is in the tree; what is missing is a recording session on a Mac with the grants. Read before filming any agent-client clip, and before reaching for the Claude-app harness, which was tried and judged not showcase material.
+description: The E. coli synteny take is written, verified from the CLI on two machines and never shot — four turns that align two strains with minimap2 on camera and land on the LEE island. Everything it needs is in the tree and it runs on either platform's TUI harness. Read before filming any agent-client clip, and before reaching for the Claude-app harness, which was tried and judged not showcase material.
 ---
 
 # Record the E. coli synteny take
@@ -25,9 +25,16 @@ Permanent homes, none of which this file repeats:
   `website/scripts/video-specs.ts`, and the embeds at the top of
   `website/docs/agents.md`.
 
-## Use the TUI harness
+## Use the TUI harness, on either platform
 
 `node scripts/agent-demos/recordDemoMac.mjs <outdir> scripts/agent-demos/takes/ecoli_synteny.mjs`
+on macOS, or `recordDemoTui.mjs` with the same two arguments on GNOME/Wayland.
+**This take is not Mac-only**, whatever an earlier draft of this file said: both
+harnesses film the real Claude Code TUI in a terminal beside the app, and the
+Linux one took the take module, the `SYSTEM(cwd)` contract and the
+`start-session.sh` invocation on 2026-09-09 — before that it carried its own
+hardcoded BRCA1 `STEPS` and sent the whole `claude` command down `send-keys`,
+which a system prompt this long does not survive.
 
 **Not `recordDemoApp.mjs`.** Filming Claude Code inside the Claude desktop app
 was built and tried on 2026-09-08 and the output was judged not showcase
@@ -47,8 +54,13 @@ line, which is 2026-09-09:
   how a session claimed to have opened hg38 over an app that never moved.
 - `pnpm --filter @jbrowse/desktop build` first; the harness serves `build/` and
   points the client at `build/mcpServer.js`.
-- The terminal running the harness needs both Accessibility and Screen
-  Recording. Screen Recording fails silently into wallpaper-only frames.
+- **macOS**: the terminal running the harness needs both Accessibility and
+  Screen Recording. Screen Recording fails silently into wallpaper-only frames.
+- **GNOME/Wayland**: `ydotoold` has to be running with a socket you own, and
+  seat0's active session has to be yours — the harness refuses to start
+  otherwise, which is the check that separates a clear error from an hour of
+  chasing the input stack. `scripts/agent-demos/CLAUDE.md` § "Linux:
+  `recordDemoTui.mjs`" has the rest, including the tiling-extension handling.
 - `tmux`, `ffmpeg`, `claude`, `minimap2` and the repo CLI were all present and
   on PATH on this machine; the take runs in a terminal, so it inherits the
   shell environment and the fnm-shimmed `jbrowse` resolves.
