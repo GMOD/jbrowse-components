@@ -885,12 +885,16 @@ export default defineConfig(
   // would stop the twin from matching the GPU, which is the file's whole
   // purpose. Autofixing any of them also edits a file `pnpm gen:shaders`
   // immediately overwrites — the Shaders CI job diffs it.
+  // The config JSON Schema is a template literal (its `then` keys read as a
+  // thenable in object form), and a slot description quoting a `{refseq}` URL
+  // template is data.
   {
     files: ['**/*.generated.ts'],
     rules: {
       'unicorn/no-zero-fractions': 'off',
       'unicorn/prefer-flat-math-min-max': 'off',
       'unicorn/prefer-modern-math-apis': 'off',
+      'unicorn/no-incorrect-template-string-interpolation': 'off',
     },
   },
   // Guards against regressions in the SVG-export pipeline. See

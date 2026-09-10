@@ -19302,6 +19302,235 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "TrackSnapshot": {
+      "type": "object",
+      "description": "A built track node inside a saved session view: its config by id, and its display nodes.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Which registered type this is. A name the core plugins do not register (one a plugin adds) passes with its keys unchecked.",
+          "anyOf": [
+            {
+              "enum": [
+                "FeatureTrack",
+                "AlignmentsTrack",
+                "SyntenyTrack",
+                "ReferenceSequenceTrack",
+                "VariantTrack",
+                "LDTrack",
+                "QuantitativeTrack",
+                "MultiQuantitativeTrack",
+                "GCContentTrack",
+                "MafTrack",
+                "HicTrack",
+                "GWASTrack"
+              ]
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      "required": [
+        "type",
+        "configuration"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "FeatureTrack"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/FeatureTrackSnapshot"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "AlignmentsTrack"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/AlignmentsTrackSnapshot"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "SyntenyTrack"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/SyntenyTrackSnapshot"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "ReferenceSequenceTrack"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/ReferenceSequenceTrackSnapshot"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "VariantTrack"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/VariantTrackSnapshot"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "LDTrack"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/LDTrackSnapshot"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "QuantitativeTrack"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/QuantitativeTrackSnapshot"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "MultiQuantitativeTrack"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MultiQuantitativeTrackSnapshot"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "GCContentTrack"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/GCContentTrackSnapshot"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "MafTrack"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/MafTrackSnapshot"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "HicTrack"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/HicTrackSnapshot"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "const": "GWASTrack"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "then": {
+            "$ref": "#/$defs/GWASTrackSnapshot"
+          }
+        }
+      ]
+    },
     "LinearGenomeViewTrackEntry": {
       "title": "LinearGenomeViewTrackEntry",
       "description": "A track to open in a LinearGenomeView: a trackId, or an object whose other keys are the display's config slots and state written inline.",
@@ -20040,26 +20269,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "unevaluatedProperties": false
         },
         {
-          "type": "object",
-          "description": "A built track snapshot, as a saved session carries it.",
-          "required": [
-            "configuration"
-          ],
-          "properties": {
-            "configuration": {},
-            "displays": {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/DisplaySnapshot"
-              }
-            }
-          }
+          "$ref": "#/$defs/TrackSnapshot"
         }
       ]
     },
-    "LinearGenomeView": {
-      "title": "LinearGenomeView",
-      "description": "A LinearGenomeView in a session: its launch keys (resolved on open) and the state model's own properties.",
+    "LinearGenomeViewKeys": {
       "type": "object",
       "properties": {
         "id": {
@@ -20086,9 +20300,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "showHighlightChips": {
           "type": "boolean"
-        },
-        "type": {
-          "const": "LinearGenomeView"
         },
         "windowStartBp": {
           "type": "number"
@@ -20184,11 +20395,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "offsetPx": {
           "deprecated": true,
           "description": "Legacy spelling the view's own preProcessSnapshot converts."
+        }
+      }
+    },
+    "LinearGenomeView": {
+      "title": "LinearGenomeView",
+      "description": "A LinearGenomeView in a session: its launch keys (resolved on open) and the state model's own properties.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/LinearGenomeViewKeys"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "LinearGenomeView"
         },
         "init": {
-          "type": "object",
           "deprecated": true,
-          "description": "Deprecated nesting: write every setting directly on the view object."
+          "description": "Deprecated nesting: write every setting directly on the view object.",
+          "type": "object",
+          "title": "LinearGenomeView",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearGenomeViewKeys"
+            }
+          ],
+          "properties": {},
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
         }
       },
       "required": [
@@ -20197,7 +20434,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "patternProperties": {
         "^_+comment": {}
       },
-      "additionalProperties": false
+      "unevaluatedProperties": false
     },
     "CircularViewTrackEntry": {
       "title": "CircularViewTrackEntry",
@@ -20289,26 +20526,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "unevaluatedProperties": false
         },
         {
-          "type": "object",
-          "description": "A built track snapshot, as a saved session carries it.",
-          "required": [
-            "configuration"
-          ],
-          "properties": {
-            "configuration": {},
-            "displays": {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/DisplaySnapshot"
-              }
-            }
-          }
+          "$ref": "#/$defs/TrackSnapshot"
         }
       ]
     },
-    "CircularView": {
-      "title": "CircularView",
-      "description": "A CircularView in a session: its launch keys (resolved on open) and the state model's own properties.",
+    "CircularViewKeys": {
       "type": "object",
       "properties": {
         "id": {
@@ -20319,9 +20541,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "minimized": {
           "type": "boolean"
-        },
-        "type": {
-          "const": "CircularView"
         },
         "offsetRadians": {
           "type": "number"
@@ -20384,11 +20603,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "displayedRegionNames": {
           "description": "Launch key, resolved by the CircularView launcher on open."
+        }
+      }
+    },
+    "CircularView": {
+      "title": "CircularView",
+      "description": "A CircularView in a session: its launch keys (resolved on open) and the state model's own properties.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/CircularViewKeys"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "CircularView"
         },
         "init": {
-          "type": "object",
           "deprecated": true,
-          "description": "Deprecated nesting: write every setting directly on the view object."
+          "description": "Deprecated nesting: write every setting directly on the view object.",
+          "type": "object",
+          "title": "CircularView",
+          "allOf": [
+            {
+              "$ref": "#/$defs/CircularViewKeys"
+            }
+          ],
+          "properties": {},
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
         }
       },
       "required": [
@@ -20397,7 +20642,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "patternProperties": {
         "^_+comment": {}
       },
-      "additionalProperties": false
+      "unevaluatedProperties": false
     },
     "DotplotViewTrackEntry": {
       "title": "DotplotViewTrackEntry",
@@ -20453,26 +20698,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "unevaluatedProperties": false
         },
         {
-          "type": "object",
-          "description": "A built track snapshot, as a saved session carries it.",
-          "required": [
-            "configuration"
-          ],
-          "properties": {
-            "configuration": {},
-            "displays": {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/DisplaySnapshot"
-              }
-            }
-          }
+          "$ref": "#/$defs/TrackSnapshot"
         }
       ]
     },
-    "DotplotView": {
-      "title": "DotplotView",
-      "description": "A DotplotView in a session: its launch keys (resolved on open) and the state model's own properties.",
+    "DotplotViewKeys": {
       "type": "object",
       "properties": {
         "id": {
@@ -20511,9 +20741,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "hideUnlabelled": {
           "type": "boolean"
-        },
-        "type": {
-          "const": "DotplotView"
         },
         "height": {
           "type": "number"
@@ -20616,11 +20843,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "autoDiagonalize": {
           "description": "Launch key, resolved by the DotplotView launcher on open."
+        }
+      }
+    },
+    "DotplotView": {
+      "title": "DotplotView",
+      "description": "A DotplotView in a session: its launch keys (resolved on open) and the state model's own properties.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/DotplotViewKeys"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "DotplotView"
         },
         "init": {
-          "type": "object",
           "deprecated": true,
-          "description": "Deprecated nesting: write every setting directly on the view object."
+          "description": "Deprecated nesting: write every setting directly on the view object.",
+          "type": "object",
+          "title": "DotplotView",
+          "allOf": [
+            {
+              "$ref": "#/$defs/DotplotViewKeys"
+            }
+          ],
+          "properties": {},
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
         }
       },
       "required": [
@@ -20629,7 +20882,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "patternProperties": {
         "^_+comment": {}
       },
-      "additionalProperties": false
+      "unevaluatedProperties": false
     },
     "LinearSyntenyViewTrackEntry": {
       "title": "LinearSyntenyViewTrackEntry",
@@ -20685,26 +20938,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "unevaluatedProperties": false
         },
         {
-          "type": "object",
-          "description": "A built track snapshot, as a saved session carries it.",
-          "required": [
-            "configuration"
-          ],
-          "properties": {
-            "configuration": {},
-            "displays": {
-              "type": "array",
-              "items": {
-                "$ref": "#/$defs/DisplaySnapshot"
-              }
-            }
-          }
+          "$ref": "#/$defs/TrackSnapshot"
         }
       ]
     },
-    "LinearSyntenyView": {
-      "title": "LinearSyntenyView",
-      "description": "A LinearSyntenyView in a session: its launch keys (resolved on open) and the state model's own properties.",
+    "LinearSyntenyViewKeys": {
       "type": "object",
       "properties": {
         "id": {
@@ -20715,9 +20953,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "minimized": {
           "type": "boolean"
-        },
-        "type": {
-          "const": "LinearSyntenyView"
         },
         "trackSelectorType": {
           "type": "string"
@@ -20891,11 +21126,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "drawLocationMarkers": {
           "description": "Launch key, resolved by the LinearSyntenyView launcher on open."
+        }
+      }
+    },
+    "LinearSyntenyView": {
+      "title": "LinearSyntenyView",
+      "description": "A LinearSyntenyView in a session: its launch keys (resolved on open) and the state model's own properties.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/LinearSyntenyViewKeys"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "LinearSyntenyView"
         },
         "init": {
-          "type": "object",
           "deprecated": true,
-          "description": "Deprecated nesting: write every setting directly on the view object."
+          "description": "Deprecated nesting: write every setting directly on the view object.",
+          "type": "object",
+          "title": "LinearSyntenyView",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearSyntenyViewKeys"
+            }
+          ],
+          "properties": {},
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
         }
       },
       "required": [
@@ -20904,11 +21165,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "patternProperties": {
         "^_+comment": {}
       },
-      "additionalProperties": false
+      "unevaluatedProperties": false
     },
-    "SpreadsheetView": {
-      "title": "SpreadsheetView",
-      "description": "A SpreadsheetView in a session: its launch keys (resolved on open) and the state model's own properties.",
+    "SpreadsheetViewKeys": {
       "type": "object",
       "properties": {
         "id": {
@@ -20919,9 +21178,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "minimized": {
           "type": "boolean"
-        },
-        "type": {
-          "const": "SpreadsheetView"
         },
         "height": {
           "type": "number"
@@ -20997,11 +21253,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "filterText": {
           "description": "Launch key, resolved by the SpreadsheetView launcher on open."
+        }
+      }
+    },
+    "SpreadsheetView": {
+      "title": "SpreadsheetView",
+      "description": "A SpreadsheetView in a session: its launch keys (resolved on open) and the state model's own properties.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/SpreadsheetViewKeys"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "SpreadsheetView"
         },
         "init": {
-          "type": "object",
           "deprecated": true,
-          "description": "Deprecated nesting: write every setting directly on the view object."
+          "description": "Deprecated nesting: write every setting directly on the view object.",
+          "type": "object",
+          "title": "SpreadsheetView",
+          "allOf": [
+            {
+              "$ref": "#/$defs/SpreadsheetViewKeys"
+            }
+          ],
+          "properties": {},
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
         }
       },
       "required": [
@@ -21010,11 +21292,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "patternProperties": {
         "^_+comment": {}
       },
-      "additionalProperties": false
+      "unevaluatedProperties": false
     },
-    "SvInspectorView": {
-      "title": "SvInspectorView",
-      "description": "A SvInspectorView in a session: its launch keys (resolved on open) and the state model's own properties.",
+    "SvInspectorViewKeys": {
       "type": "object",
       "properties": {
         "id": {
@@ -21025,9 +21305,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "minimized": {
           "type": "boolean"
-        },
-        "type": {
-          "const": "SvInspectorView"
         },
         "height": {
           "type": "number"
@@ -21070,11 +21347,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "filterText": {
           "description": "Launch key, resolved by the SvInspectorView launcher on open."
+        }
+      }
+    },
+    "SvInspectorView": {
+      "title": "SvInspectorView",
+      "description": "A SvInspectorView in a session: its launch keys (resolved on open) and the state model's own properties.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/SvInspectorViewKeys"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "SvInspectorView"
         },
         "init": {
-          "type": "object",
           "deprecated": true,
-          "description": "Deprecated nesting: write every setting directly on the view object."
+          "description": "Deprecated nesting: write every setting directly on the view object.",
+          "type": "object",
+          "title": "SvInspectorView",
+          "allOf": [
+            {
+              "$ref": "#/$defs/SvInspectorViewKeys"
+            }
+          ],
+          "properties": {},
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
         }
       },
       "required": [
@@ -21083,11 +21386,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "patternProperties": {
         "^_+comment": {}
       },
-      "additionalProperties": false
+      "unevaluatedProperties": false
     },
-    "BreakpointSplitView": {
-      "title": "BreakpointSplitView",
-      "description": "A BreakpointSplitView in a session: its launch keys (resolved on open) and the state model's own properties.",
+    "BreakpointSplitViewKeys": {
       "type": "object",
       "properties": {
         "id": {
@@ -21098,9 +21399,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "minimized": {
           "type": "boolean"
-        },
-        "type": {
-          "const": "BreakpointSplitView"
         },
         "height": {
           "type": "number"
@@ -21124,11 +21422,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/View"
           }
         },
-        "launch": {},
+        "launch": {}
+      }
+    },
+    "BreakpointSplitView": {
+      "title": "BreakpointSplitView",
+      "description": "A BreakpointSplitView in a session: its launch keys (resolved on open) and the state model's own properties.",
+      "type": "object",
+      "allOf": [
+        {
+          "$ref": "#/$defs/BreakpointSplitViewKeys"
+        }
+      ],
+      "properties": {
+        "type": {
+          "const": "BreakpointSplitView"
+        },
         "init": {
-          "type": "object",
           "deprecated": true,
-          "description": "Deprecated nesting: write every setting directly on the view object."
+          "description": "Deprecated nesting: write every setting directly on the view object.",
+          "type": "object",
+          "title": "BreakpointSplitView",
+          "allOf": [
+            {
+              "$ref": "#/$defs/BreakpointSplitViewKeys"
+            }
+          ],
+          "properties": {},
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
         }
       },
       "required": [
@@ -21137,7 +21461,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "patternProperties": {
         "^_+comment": {}
       },
-      "additionalProperties": false
+      "unevaluatedProperties": false
     },
     "View": {
       "type": "object",

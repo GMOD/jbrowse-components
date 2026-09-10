@@ -859,6 +859,17 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     ...union(snapshotDisplays, 'A display node inside a saved session.'),
     allOf: dispatch(snapshotDisplays, d => `${d.name}Snapshot`),
   }
+  const snapshotTracks = deps.elements.tracks.filter(
+    t => defs[`${t.name}Snapshot`],
+  )
+  defs.TrackSnapshot = {
+    ...union(
+      snapshotTracks,
+      'A built track node inside a saved session view: its config by id, and its display nodes.',
+    ),
+    required: ['type', 'configuration'],
+    allOf: dispatch(snapshotTracks, t => `${t.name}Snapshot`),
+  }
 
   // A track entry in a view's `tracks`: the trackId, or an object whose other
   // keys are one display's config slots and state written inline.
@@ -906,15 +917,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
             'A one-element tuple naming a trackId (the synteny levels form).',
         },
         ...displays.map(entry),
-        {
-          type: 'object',
-          description: 'A built track snapshot, as a saved session carries it.',
-          required: ['configuration'],
-          properties: {
-            configuration: {},
-            displays: { type: 'array', items: ref('DisplaySnapshot') },
-          },
-        },
+        ref('TrackSnapshot'),
       ],
     }
     return name
@@ -985,16 +988,24 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
           "Legacy spelling the view's own preProcessSnapshot converts.",
       }
     }
-    properties.init = {
-      type: 'object',
-      deprecated: true,
-      description:
-        'Deprecated nesting: write every setting directly on the view object.',
-    }
+    const { type: identity = {}, ...keys } = properties
+    defs[`${view.name}Keys`] = { type: 'object', properties: keys }
     defs[view.name] = {
       title: view.name,
       description: `A ${view.name} in a session: its launch keys (resolved on open) and the state model's own properties.`,
-      ...closed(properties, ['type']),
+      ...composed(
+        [`${view.name}Keys`],
+        {
+          type: identity,
+          init: {
+            deprecated: true,
+            description:
+              'Deprecated nesting: write every setting directly on the view object.',
+            ...composed([`${view.name}Keys`], {}, [], { title: view.name }),
+          },
+        },
+        ['type'],
+      ),
     }
   }
 

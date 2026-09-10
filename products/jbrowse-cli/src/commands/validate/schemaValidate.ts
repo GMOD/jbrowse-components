@@ -119,7 +119,7 @@ function pathOf(instancePath: string) {
 }
 
 function join(where: string, key: string) {
-  return where ? `${where}.${key}` : key
+  return where && key ? `${where}.${key}` : where || key
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -130,14 +130,18 @@ function typeOf(data: unknown) {
   return isRecord(data) && typeof data.type === 'string' ? data.type : undefined
 }
 
+// Whether an object schema is for this `type`: a def names it as a const or an
+// alias enum, a dispatching union lists it in its hint.
 function admitsType(schema: Schema, type: string) {
   const prop = (schema.properties as Schema | undefined)?.type as
     | Schema
     | undefined
-  return prop
-    ? prop.const === type ||
-        (Array.isArray(prop.enum) && prop.enum.includes(type))
-    : false
+  const hint = (prop?.anyOf as Schema[] | undefined)?.[0]
+  return [prop, hint].some(
+    p =>
+      p &&
+      (p.const === type || (Array.isArray(p.enum) && p.enum.includes(type))),
+  )
 }
 
 const viewNames = new Set(
@@ -170,9 +174,7 @@ function unknownKeyMessage(
   }
   if (viewNames.has(title)) {
     const elsewhere = [...viewNames].filter(
-      name =>
-        name !== title &&
-        Object.keys(defs[name]!.properties as Schema).includes(key),
+      name => name !== title && acceptedKeys(defs[name]!).includes(key),
     )
     return elsewhere.length
       ? `"${key}" is a setting of ${elsewhere.join(', ')}, not of ${title}${guess} — a session snapshot drops keys the view does not declare, so this setting silently does nothing`
