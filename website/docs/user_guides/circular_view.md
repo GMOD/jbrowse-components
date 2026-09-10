@@ -63,6 +63,8 @@ a density ring over a variant track. An alignments track draws its coverage and
 pileup as a ring; for a coverage ring alone, open the track as a
 [mark display](/docs/config/linearmarkdisplay) with a `coverage` transform.
 
+<Figure src="/img/circular_synteny/rings.png" caption="Two assemblies on one circle, human chromosomes clockwise from the top and mouse after them, with a gene density ring inside the ideogram and the liftOver blocks between the genomes as ribbons, red forward and blue reverse." />
+
 ## Interacting with chords
 
 - **Hover** a chord to highlight it and see the variant it represents
@@ -82,6 +84,7 @@ together.
 - [](/docs/user_guides/sv_inspector_view)
 - [Structural variant visualization](/docs/user_guides/sv_visualization)
 - [Cancer SVs (C-GIAB) tutorial](/docs/tutorials/sv_visualization_cgiab)
+- [](/docs/tutorials/circular_synteny)
 - [ChordVariantDisplay config schema](/docs/config/chordvariantdisplay)
 - [LinearMarkDisplay config schema](/docs/config/linearmarkdisplay), for a
   density or coverage ring
