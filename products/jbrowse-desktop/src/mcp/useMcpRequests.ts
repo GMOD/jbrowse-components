@@ -14,6 +14,7 @@ export function useMcpRequests(
   getPluginManager: () => PluginManager | undefined,
   install: string,
   phase: McpReadyState['phase'],
+  launchError: McpReadyState['launchError'],
 ) {
   useIpc('mcpRequest', request => {
     handleMcpRequest(request, getPluginManager())
@@ -36,7 +37,9 @@ export function useMcpRequests(
   // whether the load happened. It re-fires on `phase` too: a load that fails
   // installs nothing and so changes no install id, and without this the bridge
   // would wait out its whole open deadline for a session that is not coming.
+  // `launchError` is the same news for the route where not even `phase` moves —
+  // a pushed launch that throws leaves the previous session on screen.
   useEffect(() => {
-    invokeIpc('mcpReady', { install, phase }).catch(console.error)
-  }, [install, phase])
+    invokeIpc('mcpReady', { install, phase, launchError }).catch(console.error)
+  }, [install, phase, launchError])
 }

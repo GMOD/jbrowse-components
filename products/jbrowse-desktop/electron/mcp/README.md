@@ -81,26 +81,47 @@ against the live session/MST model graph, with `jb` as the standard library
 with slot routing, main-thread feature access with refName renaming, the
 readiness wait, and the full mobx-state-tree/mobx APIs underneath). Every
 correctness rule lives in `jb`, not in tool plumbing. The envelope is what a
-shell would give: the value, `logs` (the code's console output), the session's
-`notifications` since the previous call (each delivered once, with its level),
-and on a throw the line and column in the submitted code plus the output printed
-before it. A call outliving `timeoutMs` answers with that and keeps running with
-its `signal` argument aborted; the bridge budgets its relay from the same
-number.
+shell would give: the value, `logs` (the code's console output, bounded by the
+same envelope budget as the value), the session's `notifications` since the
+previous call (each delivered once, with its level), and on a throw the line and
+column in the submitted code plus the output printed before it. A call outliving
+`timeoutMs` answers with that and keeps running with its `signal` argument
+aborted; the bridge budgets its relay from the same number.
 
 The other three exist only because renderer JavaScript cannot express them:
 `screenshot` (pixels live in the main process; waits on the capture readiness
-contract and reports the session's error notifications), `open` (recovery path
-that works with no session or a broken renderer; waits for the new session
-identity before answering; bare form lists recent sessions), and `docs`
-(`live-model`, `recipes`, `hosted-data`, `session-spec`, `automating`, plus
-`model:<Name>` / `config:<Name>` for every documented type, compact pages
-`pnpm autogen` writes to `docs/typeDocs.generated.json` from the same pass as
-the website reference — bundled at build time, readable while the app is closed;
-a long topic answers with its headings and takes a `section`). The bundled docs
-match the packaged `--mcp` entry by construction; the standalone shim asks the
-running app its version and prefixes every docs answer with a note when they
-disagree (`versionSkewNote`).
+contract and reports the session's error notifications; one image pixel per CSS
+pixel whatever the display's density, so the two capture routes and every
+machine agree), `open` (recovery path that works with no session or a broken
+renderer; waits for the new session identity before answering; bare form lists
+recent sessions), and `docs` (`live-model`, `recipes`, `hosted-data`,
+`session-spec`, `automating`, plus `model:<Name>` / `config:<Name>` for every
+documented type, compact pages `pnpm autogen` writes to
+`docs/typeDocs.generated.json` from the same pass as the website reference —
+bundled at build time, readable while the app is closed; a long topic answers
+with its headings and takes a `section`). The bundled docs match the packaged
+`--mcp` entry by construction; the standalone shim asks the running app its
+version and prefixes every docs answer with a note when they disagree
+(`versionSkewNote`).
+
+Each tool also carries MCP `annotations` — `readOnlyHint` and the rest — which a
+client reads to decide how hard to ask before running one. They are not shown to
+the model and so are not capped like the descriptions below.
+
+## Cancelling
+
+`notifications/cancelled` is the one notification the stdio server acts on. The
+client stops waiting; per spec the request then gets no response at all, so
+`respond` drops it. The app is told separately, because the submitted code is
+only ever cooperative: the cancel names the bridge's own id for the call, the
+bridge maps it back to the relay it pushed, and the renderer aborts that
+evaluation's `signal`. Without it an interrupted agent left its code running for
+the rest of `timeoutMs` in a renderer nobody was watching.
+
+The abort also stops the call WAITING, which is what frees the relay slot. A
+cancel that lands before the race is armed — during the re-export import — is
+caught by the `aborted` check at the top of `runUntilHalted`; the listener alone
+would never fire for it.
 
 `pnpm test:mcp` (after `pnpm build && pnpm build:electron-main`) launches the
 built app and runs the conformance suite in `test/mcpConformance.ts` against

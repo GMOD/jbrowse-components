@@ -6,7 +6,9 @@ import readline from 'node:readline'
 import { ipcHandle, ipcSend } from '../ipc/channels.ts'
 import { isAutosave } from '../paths.ts'
 import { hostedConfigUrl } from './hostedConfig.ts'
+import { createScreenshotTool } from './screenshot.ts'
 import { defaultSocketPath, ensureSocketDir } from './socketPath.ts'
+import { resultFields } from './stdioServer.ts'
 import {
   CODE_TIMEOUT_DEFAULT_MS,
   CODE_TIMEOUT_MAX_MS,
@@ -20,11 +22,15 @@ import type {
 } from '../ipc/channelTypes.ts'
 import type { AppPaths } from '../paths.ts'
 import type { BridgeToolResult } from './stdioServer.ts'
-import type { BrowserWindow, Rectangle } from 'electron'
+import type { BrowserWindow } from 'electron'
 
 const RENDERER_TIMEOUT_MS = 150_000
-const SCREENSHOT_WAIT_MS = 30_000
 const OPEN_WAIT_MS = 90_000
+// The settle `open` waits out once the new session announces itself, and the
+// relay that carries it. Budgeted rather than left on the default relay
+// timeout: those two summed past the stdio server's own deadline, which would
+// answer "did not answer in time" over a bridge still working.
+const OPEN_SETTLE_MS = 60_000
 // How long a relay waits for the renderer to subscribe. Must stay well under
 // OPEN_WAIT_MS: openAndWait polls in a loop, and a single wait longer than its
 // deadline would let the loop exit having polled exactly once.
@@ -144,10 +150,16 @@ export function startMcpBridge({
     })
   }
 
+  // The relay a socket request is waiting on, so `cancel` can name the running
+  // code. The client's own request id addresses it: the ids the bridge hands
+  // the renderer are its own, and a client cannot know them.
+  const relayForRequest = new Map<number, number>()
+
   async function relayToRenderer(
     tool: string,
     args: Record<string, unknown>,
     timeoutMs = RENDERER_TIMEOUT_MS,
+    requestId?: number,
   ): Promise<BridgeToolResult> {
     if (!getWindow()) {
       return {
@@ -167,17 +179,39 @@ export function startMcpBridge({
       return { error: 'JBrowse Desktop has no window open' }
     }
     const id = relayId++
-    return new Promise(resolve => {
-      const timer = setTimeout(() => {
-        relays.delete(id)
-        resolve({ error: `The app did not answer "${tool}" in time` })
-      }, timeoutMs)
-      relays.set(id, response => {
-        clearTimeout(timer)
-        resolve(response)
+    if (requestId !== undefined) {
+      relayForRequest.set(requestId, id)
+    }
+    try {
+      return await new Promise<BridgeToolResult>(resolve => {
+        const timer = setTimeout(() => {
+          relays.delete(id)
+          resolve({ error: `The app did not answer "${tool}" in time` })
+        }, timeoutMs)
+        relays.set(id, response => {
+          clearTimeout(timer)
+          resolve(response)
+        })
+        ipcSend(win.webContents, 'mcpRequest', { id, tool, args })
       })
-      ipcSend(win.webContents, 'mcpRequest', { id, tool, args })
-    })
+    } finally {
+      if (requestId !== undefined) {
+        relayForRequest.delete(requestId)
+      }
+    }
+  }
+
+  // The client gave up on a call — an interrupted agent, almost always. The
+  // code is cooperative, so aborting its `signal` is the whole remedy: without
+  // it a runaway loop kept the renderer pinned for the rest of its budget with
+  // nobody left to read the answer.
+  function cancelTool(args: Record<string, unknown>) {
+    const requestId = typeof args.id === 'number' ? args.id : undefined
+    const relay =
+      requestId === undefined ? undefined : relayForRequest.get(requestId)
+    return relay === undefined
+      ? Promise.resolve({ result: { cancelled: false } })
+      : relayToRenderer('cancel', { id: relay }, 5000)
   }
 
   async function listRecentSessions(): Promise<BridgeToolResult> {
@@ -218,10 +252,17 @@ export function startMcpBridge({
   ): Promise<BridgeToolResult> {
     watchWindow()
     const before = listening?.install
+    const failedBefore = listening?.launchError?.attempt ?? 0
     await openTarget(target)
     const deadline = Date.now() + OPEN_WAIT_MS
     while (Date.now() < deadline) {
       watchWindow()
+      const failed = listening?.launchError
+      if (failed && failed.attempt > failedBefore) {
+        return {
+          error: `${opened} did not load: ${failed.message}. The session that was open is still open.`,
+        }
+      }
       if (listening && listening.install !== before) {
         if (listening.phase === 'startScreen') {
           return {
@@ -232,11 +273,21 @@ export function startMcpBridge({
           // the first call every agent makes: a cold volvox load on a busy
           // machine passed 30s and answered settled:false over a session that
           // was fine, and the loop below exits the moment it is ready anyway
-          const settled = await relayToRenderer('wait_ready', {
-            timeoutMs: 60_000,
-          })
+          const settled = await relayToRenderer(
+            'wait_ready',
+            { timeoutMs: OPEN_SETTLE_MS },
+            OPEN_SETTLE_MS + 15_000,
+          )
+          // the relay's own failure, not the settle's: dropping it answered a
+          // reloaded page with a bare { opened } that carried no `settled` and
+          // no reason, which reads as success
           return {
-            result: { opened, ...(settled.result as object | undefined) },
+            result: {
+              opened,
+              ...(settled.error
+                ? { warning: settled.error }
+                : resultFields(settled.result)),
+            },
           }
         }
       }
@@ -276,223 +327,52 @@ export function startMcpBridge({
     return openAndWait({ type: 'file', path: target }, target)
   }
 
-  function isRect(value: unknown): value is Rectangle {
+  // budgeted past the code's own deadline, so the renderer's answer (the error
+  // with the console output so far) wins over the relay's silence
+  function codeRelayBudget(args: Record<string, unknown>) {
     return (
-      typeof value === 'object' &&
-      value !== null &&
-      ['x', 'y', 'width', 'height'].every(
-        k => typeof (value as Record<string, unknown>)[k] === 'number',
-      )
+      Math.min(
+        typeof args.timeoutMs === 'number'
+          ? args.timeoutMs
+          : CODE_TIMEOUT_DEFAULT_MS,
+        CODE_TIMEOUT_MAX_MS,
+      ) + 15_000
     )
   }
 
-  // what the renderer's `measure` answers: the element's viewport box plus the
-  // page's scroll offset, so the box can be re-addressed in document space
-  interface Measured extends Rectangle {
-    scrollX: number
-    scrollY: number
-  }
-
-  function isMeasured(value: unknown): value is Measured {
-    return (
-      isRect(value) &&
-      typeof (value as Measured).scrollX === 'number' &&
-      typeof (value as Measured).scrollY === 'number'
-    )
-  }
-
-  function documentRect(measured: Measured): Rectangle {
-    return {
-      x: measured.x + measured.scrollX,
-      y: measured.y + measured.scrollY,
-      width: measured.width,
-      height: measured.height,
-    }
-  }
-
-  // capturePage takes integer DIP coordinates inside the page; a CSS rect off
-  // the renderer is fractional and may hang past the window edge
-  function clampRect(rect: Rectangle, bounds: Rectangle): Rectangle {
-    const x = Math.max(0, Math.floor(rect.x))
-    const y = Math.max(0, Math.floor(rect.y))
-    return {
-      x,
-      y,
-      width: Math.max(1, Math.min(Math.ceil(rect.width), bounds.width - x)),
-      height: Math.max(1, Math.min(Math.ceil(rect.height), bounds.height - y)),
-    }
-  }
-
-  // A selector measures where the element sits in the VIEWPORT; the full-page
-  // capture is addressed in document coordinates, so a scrolled page has the
-  // renderer's scroll offset added back
-  async function cropRect(
-    args: Record<string, unknown>,
-    bounds: Rectangle,
-    inDocument: boolean,
-  ): Promise<{ rect?: Rectangle; error?: string }> {
-    const selector = typeof args.selector === 'string' ? args.selector : ''
-    if (selector) {
-      const measured = await relayToRenderer('measure', { selector }, 30_000)
-      if (measured.error !== undefined) {
-        return { error: measured.error }
-      }
-      if (!isMeasured(measured.result)) {
-        return { error: 'the page did not report a rectangle for the selector' }
-      }
-      const rect = inDocument ? documentRect(measured.result) : measured.result
-      return { rect: clampRect(rect, bounds) }
-    }
-    return isRect(args.rect) ? { rect: clampRect(args.rect, bounds) } : {}
-  }
-
-  // capturePage sees the viewport and nothing past it, and a session taller
-  // than the window is the common case in every filmed take. The devtools
-  // protocol captures the laid-out document instead, by widening the viewport
-  // for the one frame — the same thing puppeteer's fullPage does.
-  interface CapturedImage {
-    data: string
-    rect?: Rectangle
-    page?: { width: number; height: number }
-  }
-
-  async function captureFullPage(
-    contents: BrowserWindow['webContents'],
-    args: Record<string, unknown>,
-  ): Promise<CapturedImage | { error: string }> {
-    const dbg = contents.debugger
-    dbg.attach('1.3')
-    try {
-      const metrics = (await dbg.sendCommand('Page.getLayoutMetrics')) as {
-        cssContentSize?: { width: number; height: number }
-        contentSize: { width: number; height: number }
-      }
-      const content = metrics.cssContentSize ?? metrics.contentSize
-      const bounds = { x: 0, y: 0, ...content }
-      const crop = await cropRect(args, bounds, true)
-      if (crop.error !== undefined) {
-        return { error: crop.error }
-      }
-      const clip = crop.rect ?? bounds
-      const shot = (await dbg.sendCommand('Page.captureScreenshot', {
-        format: 'png',
-        captureBeyondViewport: true,
-        clip: { ...clip, scale: 1 },
-      })) as { data: string }
-      return { rect: crop.rect, page: content, data: shot.data }
-    } finally {
-      dbg.detach()
-    }
-  }
-
-  async function screenshot(
-    args: Record<string, unknown>,
-  ): Promise<BridgeToolResult> {
-    // clamped under the relay timeout, which would otherwise fire first and
-    // silently convert a long wait into a warning
-    const timeoutMs = Math.min(
-      typeof args.timeoutMs === 'number' ? args.timeoutMs : SCREENSHOT_WAIT_MS,
-      120_000,
-    )
-    // budget the relay against the wait actually requested: a timeoutMs: 0
-    // screenshot must not be able to block for RENDERER_TIMEOUT_MS
-    const settled = await relayToRenderer(
-      'wait_ready',
-      { timeoutMs },
-      Math.max(timeoutMs + 15_000, 30_000),
-    )
-    const win = getWindow()
-    if (!win) {
-      return { error: 'JBrowse Desktop has no window open' }
-    }
-    const { width, height } = win.getContentBounds()
-    const fullPage = args.fullPage === true
-    const crop = fullPage
-      ? {}
-      : await cropRect(args, { x: 0, y: 0, width, height }, false)
-    if (crop.error !== undefined) {
-      return { error: crop.error }
-    }
-    // An occluded window composites nothing new, and capturePage then answers
-    // with whatever frame it last had: three captures across two navigations
-    // came back byte-identical, each under a settled: true. Throttling off for
-    // the capture lets the hidden page paint the settled DOM, and the renderer
-    // says when a frame has actually been produced.
-    const contents = win.webContents
-    const throttled = contents.getBackgroundThrottling()
-    contents.setBackgroundThrottling(false)
-    let painted
-    let captured: CapturedImage | { error: string }
-    try {
-      painted = await relayToRenderer('paint', {}, 10_000)
-      captured = fullPage
-        ? await captureFullPage(contents, args)
-        : {
-            rect: crop.rect,
-            data: (await contents.capturePage(crop.rect))
-              .toPNG()
-              .toString('base64'),
-          }
-    } finally {
-      contents.setBackgroundThrottling(throttled)
-    }
-    if ('error' in captured) {
-      return captured
-    }
-    const paint = (painted.result ?? {}) as {
-      hidden?: boolean
-      painted?: boolean
-    }
-    const settle = {
-      ...(settled.error
-        ? { warning: settled.error }
-        : (settled.result as object | undefined)),
-      ...(painted.error !== undefined || paint.painted === false
-        ? {
-            warning: `the window is hidden and produced no new frame before the capture, so the image may be stale — bring JBrowse Desktop to the front (${painted.error ?? 'paint timed out'})`,
-          }
-        : {}),
-      ...(captured.rect ? { cropped: captured.rect } : {}),
-      ...(captured.page ? { page: captured.page } : {}),
-    }
-    return {
-      result: settle,
-      image: { data: captured.data, mimeType: 'image/png' },
-    }
+  // One table, so `handledBy` routes rather than being read and then switched
+  // on again. A tool the stdio server answers for itself (docs) is deliberately
+  // absent, and reaches the socket only from a client that made it up.
+  const handlers: Record<
+    string,
+    (
+      args: Record<string, unknown>,
+      requestId: number,
+    ) => Promise<BridgeToolResult>
+  > = {
+    // the stdio server compares this against its own version so the docs it
+    // bundles can say when they describe a different build than the one running
+    app_version: () => Promise.resolve({ result: { version: appVersion } }),
+    open: openTool,
+    screenshot: createScreenshotTool({ getWindow, relay: relayToRenderer }),
+    cancel: cancelTool,
+    ...Object.fromEntries(
+      MCP_TOOLS.filter(t => t.handledBy === 'renderer').map(t => [
+        t.name,
+        (args: Record<string, unknown>, requestId: number) =>
+          relayToRenderer(t.name, args, codeRelayBudget(args), requestId),
+      ]),
+    ),
   }
 
   async function dispatch(
     tool: string,
     args: Record<string, unknown>,
+    requestId: number,
   ): Promise<BridgeToolResult> {
-    // the stdio server compares this against its own version so the docs it
-    // bundles can say when they describe a different build than the one running
-    if (tool === 'app_version') {
-      return { result: { version: appVersion } }
-    }
-    const definition = MCP_TOOLS.find(t => t.name === tool)
-    if (!definition) {
-      return { error: `Unknown tool: ${tool}` }
-    }
-    if (definition.handledBy === 'renderer') {
-      // budgeted past the code's own deadline, so the renderer's answer (the
-      // error with the console output so far) wins over the relay's silence
-      const codeTimeoutMs = Math.min(
-        typeof args.timeoutMs === 'number'
-          ? args.timeoutMs
-          : CODE_TIMEOUT_DEFAULT_MS,
-        CODE_TIMEOUT_MAX_MS,
-      )
-      return relayToRenderer(tool, args, codeTimeoutMs + 15_000)
-    }
-    switch (tool) {
-      case 'open':
-        return openTool(args)
-      case 'screenshot':
-        return screenshot(args)
-      default:
-        return { error: `Unhandled tool: ${tool}` }
-    }
+    return (
+      handlers[tool]?.(args, requestId) ?? { error: `Unknown tool: ${tool}` }
+    )
   }
 
   ensureSocketDir()
@@ -556,7 +436,7 @@ export function startMcpBridge({
           !Array.isArray(request.args)
             ? (request.args as Record<string, unknown>)
             : {}
-        void dispatch(request.tool, args)
+        void dispatch(request.tool, args, id)
           .catch((e: unknown) => ({ error: String(e) }))
           .then(answer)
       } catch (e) {

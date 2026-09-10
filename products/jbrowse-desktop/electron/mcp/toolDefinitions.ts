@@ -54,9 +54,19 @@ export interface McpToolDefinition {
   handledBy: 'main' | 'renderer' | 'stdio'
   description: string
   inputSchema: Record<string, unknown>
+  // What a client needs to decide how much to ask the user before running this.
+  // Not capped like the description is: a client reads them, it does not show
+  // them to the model.
+  annotations: {
+    title: string
+    readOnlyHint: boolean
+    destructiveHint: boolean
+    idempotentHint: boolean
+    openWorldHint: boolean
+  }
 }
 
-export const MCP_TOOLS: McpToolDefinition[] = [
+export const MCP_TOOLS: readonly McpToolDefinition[] = [
   {
     name: 'run_javascript',
     handledBy: 'renderer',
@@ -85,6 +95,13 @@ Whatever you "return" comes back serialized (size-capped) with "logs" (console o
       },
       required: ['code'],
     },
+    annotations: {
+      title: 'Run JavaScript in JBrowse Desktop',
+      readOnlyHint: false,
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
   },
   {
     name: 'docs',
@@ -107,6 +124,14 @@ Whatever you "return" comes back serialized (size-capped) with "logs" (console o
         },
       },
     },
+    annotations: {
+      title: 'Read the JBrowse automation docs',
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: true,
+      // bundled at build time and answered without the app, let alone a network
+      openWorldHint: false,
+    },
   },
   {
     name: 'open',
@@ -123,12 +148,20 @@ Whatever you "return" comes back serialized (size-capped) with "logs" (console o
         },
       },
     },
+    annotations: {
+      title: 'Open a config or session',
+      readOnlyHint: false,
+      // it replaces whatever session is open
+      destructiveHint: true,
+      idempotentHint: false,
+      openWorldHint: true,
+    },
   },
   {
     name: 'screenshot',
     handledBy: 'main',
     description:
-      'Screenshot the JBrowse Desktop window after waiting for tracks to finish loading and drawing. The text part of the result carries the session\'s notifications since your previous call, any tracks that settled without drawing, and "offscreen" when the session is taller than the window (a viewport capture cuts those views off); the image is the second part. Use it after every change worth verifying — then actually read both. fullPage: true captures the whole laid-out document instead of the viewport, which is the answer to "offscreen". To look closely at one view or track, crop: selector takes a CSS selector (a view is [data-testid="view-container-<view.id>"]; view ids come from jb.sessionSummary()), or rect takes page coordinates in CSS pixels.',
+      'Screenshot the JBrowse Desktop window after waiting for tracks to finish loading and drawing. The text part of the result carries the session\'s notifications since your previous call, any tracks that settled without drawing, "offscreen" when the session is taller than the window (a viewport capture cuts those views off), and the pixel size of the image; the image is the second part. Use it after every change worth verifying — then actually read both. fullPage: true captures the whole laid-out document instead of the viewport, which is the answer to "offscreen". To look closely at one view or track, crop: selector takes a CSS selector (a view is [data-testid="view-container-<view.id>"]; view ids come from jb.sessionSummary()), or rect takes page coordinates in CSS pixels. The image is one pixel per CSS pixel whatever the display\'s density; raise scale to read fine print.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -136,6 +169,11 @@ Whatever you "return" comes back serialized (size-capped) with "logs" (console o
           type: 'number',
           description:
             'Max ms to wait for rendering to settle before capturing anyway (default 30000, capped at 120000)',
+        },
+        scale: {
+          type: 'number',
+          description:
+            'Image pixels per CSS pixel (default 1, max 4). 2 doubles the detail and roughly quadruples the bytes; below 1 shrinks a full-page capture of a tall session.',
         },
         fullPage: {
           type: 'boolean',
@@ -160,6 +198,13 @@ Whatever you "return" comes back serialized (size-capped) with "logs" (console o
           required: ['x', 'y', 'width', 'height'],
         },
       },
+    },
+    annotations: {
+      title: 'Screenshot JBrowse Desktop',
+      readOnlyHint: true,
+      destructiveHint: false,
+      idempotentHint: false,
+      openWorldHint: false,
     },
   },
 ]

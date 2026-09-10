@@ -181,3 +181,79 @@ describe('run_javascript envelope', () => {
     expect(second).not.toHaveProperty('notifications')
   })
 })
+
+// maxBytes bounds the value; the logs rode beside it bounded only by the entry
+// count, so 200 large lines answered a 50 KB-capped call with 400 KB.
+describe('the log budget', () => {
+  it('stops at a total size well under the entry count', () => {
+    const logs: string[] = []
+    const spy = jest.spyOn(console, 'log').mockImplementation(() => {})
+    const c = captureConsole(logs)
+    for (let i = 0; i < 100; i++) {
+      c.log('x'.repeat(1000))
+    }
+    expect(logs.length).toBeLessThan(30)
+    expect(logs.at(-1)).toMatch(/dropped after \d+ entries and \d+ chars/)
+    expect(logs.join('').length).toBeLessThan(25_000)
+    spy.mockRestore()
+  })
+})
+
+// A client that gives up used to leave the code running for the rest of its
+// budget, pinning the renderer with nobody left to read the answer.
+describe('cancel', () => {
+  function cancel(id: number, pluginManager: PluginManager) {
+    return handleMcpRequest(
+      { id: 99, tool: 'cancel', args: { id } },
+      pluginManager,
+    ) as Promise<{ cancelled: boolean }>
+  }
+
+  it('aborts the running call and answers it at once', async () => {
+    const { pluginManager } = fakeApp()
+    const call = handleMcpRequest(
+      {
+        id: 7,
+        tool: 'run_javascript',
+        args: {
+          code: 'await new Promise(r => setTimeout(r, 30000)); return 1',
+          timeoutMs: 30_000,
+        },
+      },
+      pluginManager,
+    )
+    const outcome = call.then(
+      () => 'resolved',
+      (e: unknown) => (e as Error).message,
+    )
+    await Promise.resolve()
+    expect(await cancel(7, pluginManager)).toEqual({ cancelled: true })
+    expect(await outcome).toMatch(/CodeCancelledError: the client cancelled/)
+  })
+
+  it('names no line in the submitted code', async () => {
+    const { pluginManager } = fakeApp()
+    const call = handleMcpRequest(
+      {
+        id: 8,
+        tool: 'run_javascript',
+        args: { code: 'await new Promise(r => setTimeout(r, 30000))' },
+      },
+      pluginManager,
+    ).catch((e: unknown) => (e as Error).message)
+    await Promise.resolve()
+    await cancel(8, pluginManager)
+    expect(await call).not.toMatch(/at code line/)
+  })
+
+  it('says so when nothing is running under that id', async () => {
+    const { pluginManager } = fakeApp()
+    expect(await cancel(404, pluginManager)).toEqual({ cancelled: false })
+  })
+
+  it('is answerable on the start screen, where no manager is installed', async () => {
+    expect(await cancel(1, undefined as unknown as PluginManager)).toEqual({
+      cancelled: false,
+    })
+  })
+})

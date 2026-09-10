@@ -32,7 +32,7 @@ interface JsonRpcResponse {
   result?: Record<string, unknown> & {
     content?: { type: string; text?: string; data?: string }[]
     isError?: boolean
-    tools?: { name: string }[]
+    tools?: { name: string; annotations?: { readOnlyHint?: boolean } }[]
     serverInfo?: { name: string }
   }
   error?: { code: number; message: string }
@@ -146,6 +146,13 @@ test('initialize, tools/list, and a relayed tools/call', async () => {
   const list = await server.next()
   const names = list.result?.tools?.map(t => t.name)
   expect(names).toEqual(['run_javascript', 'docs', 'open', 'screenshot'])
+  // what a client reads to decide how hard to ask before running one
+  expect(list.result?.tools?.map(t => t.annotations?.readOnlyHint)).toEqual([
+    false,
+    true,
+    false,
+    true,
+  ])
 
   server.send({
     id: 3,
@@ -414,6 +421,67 @@ test('an app restart mid-session reconnects instead of failing forever', async (
   expect(JSON.parse(call.result?.content?.[0]?.text ?? '')).toEqual({
     generation: 2,
   })
+})
+
+// An interrupted agent used to leave the code running for the rest of its
+// budget: notifications/cancelled was dropped with every other notification.
+test('a cancelled call is not answered, and the app is told to abort it', async () => {
+  const seen: { id: number; tool: string; args: Record<string, unknown> }[] = []
+  let answer: (() => void) | undefined
+  const bridge = await startFakeBridgeAsync(request => {
+    const call = request as (typeof seen)[number]
+    seen.push(call)
+    return call.tool === 'cancel'
+      ? Promise.resolve({ id: call.id, result: { cancelled: true } })
+      : new Promise<Record<string, unknown>>(resolve => {
+          answer = () => {
+            resolve({ id: call.id, result: { ok: true } })
+          }
+        })
+  })
+  const server = startServer(bridge.socketPath)
+  server.send({
+    id: 1,
+    method: 'tools/call',
+    params: { name: 'run_javascript', arguments: { code: 'return 1' } },
+  })
+  const settle = async () => {
+    await new Promise(resolve => setTimeout(resolve, 10))
+  }
+  while (!answer) {
+    await settle()
+  }
+  server.send({ method: 'notifications/cancelled', params: { requestId: 1 } })
+  while (!seen.some(r => r.tool === 'cancel')) {
+    await settle()
+  }
+  // named by the bridge's own id for that call, which is the only handle the
+  // app has on the code it is running
+  expect(seen.find(r => r.tool === 'cancel')?.args).toEqual({ id: seen[0]!.id })
+
+  // the answer still arrives over the socket; what must not happen is its
+  // reaching the client, which has stopped listening for it
+  answer()
+  for (let i = 0; i < 10; i++) {
+    await settle()
+  }
+  server.send({ id: 2, method: 'ping' })
+  expect((await server.next()).id).toBe(2)
+  bridge.close()
+})
+
+test('a cancel for a request that is not in flight reaches nobody', async () => {
+  const seen: string[] = []
+  const bridge = await startFakeBridge(request => {
+    seen.push(request.tool)
+    return { result: { ok: true } }
+  })
+  const server = startServer(bridge.socketPath)
+  server.send({ method: 'notifications/cancelled', params: { requestId: 42 } })
+  server.send({ id: 1, method: 'ping' })
+  expect((await server.next()).id).toBe(1)
+  expect(seen).toEqual([])
+  bridge.close()
 })
 
 test('closing stdin drains in-flight calls before onExit', async () => {

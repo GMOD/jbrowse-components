@@ -126,6 +126,16 @@ export interface McpBridgeResponse {
 export interface McpReadyState {
   install: string
   phase: 'loading' | 'session' | 'startScreen'
+  /**
+   * The launch the renderer was pushed and could not load.
+   *
+   * A pushed launch that throws leaves the session it failed to replace open,
+   * so no plugin manager is installed and `install` never changes — and `open`
+   * polled out its whole 90 s deadline for a session that was never coming,
+   * over a renderer that had known within a second. `attempt` counts them, so a
+   * second failure reads as new rather than as the first one still standing.
+   */
+  launchError?: { attempt: number; message: string }
 }
 
 export interface IpcChannels {

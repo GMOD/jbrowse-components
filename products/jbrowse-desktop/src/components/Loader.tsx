@@ -25,7 +25,10 @@ import { useLaunchTarget } from './useLaunchTarget.ts'
 import { usePluginManagerLoad } from './usePluginManagerLoad.ts'
 import { useSessionSwap } from './useSessionSwap.ts'
 
-import type { LaunchTarget } from '../../electron/ipc/channelTypes.ts'
+import type {
+  LaunchTarget,
+  McpReadyState,
+} from '../../electron/ipc/channelTypes.ts'
 import type { DesktopRootModel } from '../rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -82,6 +85,8 @@ const LoaderContents = observer(function LoaderContents() {
   // bridge watches it to tell "the app is showing something new" from "the same
   // session was restored with the id it was saved under".
   const [install, setInstall] = useState(() => nanoid(10))
+  const [launchError, setLaunchError] =
+    useState<McpReadyState['launchError']>(undefined)
 
   // Install a manager, tearing down whatever it replaces so its worker pool and
   // autosave loop don't leak. undefined installs nothing, which is what
@@ -162,7 +167,14 @@ const LoaderContents = observer(function LoaderContents() {
     onError: useEventCallback((e: unknown, target: LaunchTarget) => {
       // The session this failed to replace is still open and still on screen —
       // nothing was torn down — so this notifies rather than falling back to
-      // the start screen the way the query-string route has to.
+      // the start screen the way the query-string route has to. Which is also
+      // why the MCP bridge has to be told separately: nothing else about this
+      // page changes, and `open` would poll out its whole deadline waiting for
+      // a session that is not coming.
+      setLaunchError(previous => ({
+        attempt: (previous?.attempt ?? 0) + 1,
+        message: e instanceof Error ? e.message : String(e),
+      }))
       notifyError(
         e,
         target.type === 'file' ? removeRecentAction(target.path) : undefined,
@@ -183,6 +195,7 @@ const LoaderContents = observer(function LoaderContents() {
       : target
         ? 'loading'
         : 'startScreen',
+    launchError,
   )
 
   const loadTarget = useEventCallback((source: string) =>

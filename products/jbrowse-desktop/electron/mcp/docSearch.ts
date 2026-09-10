@@ -153,19 +153,25 @@ export function searchDocs(
     terms.length > 1
       ? `${hits.length} line(s) carry a word of "${query}"${more}, the ones carrying the most first.`
       : `${hits.length} match${hits.length === 1 ? '' : 'es'} for "${query}"${more}.`
-  // grouped, because three getters of one display under one heading is one
-  // place to read, and repeating its address three times says otherwise
-  const groups: { where: string; lines: string[] }[] = []
+  // Grouped, because three getters of one display under one heading is one
+  // place to read, and repeating its address three times says otherwise. By
+  // key, not by adjacency: the ranking sorts on score first, so a third topic
+  // scoring between two hits of one section split them and printed the address
+  // twice — which is what the grouping exists to stop. Insertion order keeps
+  // the best-ranked group first.
+  const groups = new Map<string, string[]>()
   for (const hit of shown) {
     const where = `topic:"${hit.topic}"${hit.section ? ` section:"${hit.section}"` : ''}`
-    const last = groups.at(-1)
-    if (last?.where === where) {
-      last.lines.push(hit.line)
+    const lines = groups.get(where)
+    if (lines) {
+      lines.push(hit.line)
     } else {
-      groups.push({ where, lines: [hit.line] })
+      groups.set(where, [hit.line])
     }
   }
-  const body = groups.map(g => `${g.where}\n  ${g.lines.join('\n  ')}`)
+  const body = [...groups].map(
+    ([where, lines]) => `${where}\n  ${lines.join('\n  ')}`,
+  )
   return {
     text: `${head} Read one with the topic and section spelled as written here:\n\n${body.join('\n\n')}\n`,
   }

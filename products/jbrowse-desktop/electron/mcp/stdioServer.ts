@@ -35,6 +35,12 @@ export interface BridgeToolResult {
   image?: { data: string; mimeType: string }
 }
 
+// `result` crosses the socket as unknown; a settle's is always an object, and
+// both tools that wait on one spread it into an answer of their own.
+export function resultFields(result: unknown) {
+  return (result ?? {}) as Record<string, unknown>
+}
+
 /**
  * Why the app could not be reached, told apart by which failure it was.
  *
@@ -118,9 +124,16 @@ function connectBridge(socketPath: string) {
     }
   }
 
-  return async function call(tool: string, args: Record<string, unknown>) {
+  // `onSent` is handed the bridge's own id for this call, which is what a
+  // cancel has to name: the JSON-RPC request id means nothing on the socket.
+  return async function call(
+    tool: string,
+    args: Record<string, unknown>,
+    onSent?: (bridgeId: number) => void,
+  ) {
     const s = await ensureSocket()
     const id = nextId++
+    onSent?.(id)
     return new Promise<BridgeToolResult>((resolve, reject) => {
       const timer = setTimeout(() => {
         pending.delete(id)
@@ -254,18 +267,53 @@ export function runMcpStdioServer({
     return skewNote
   }
 
+  // A call the client has stopped waiting for, and the bridge call carrying it.
+  // The spec says a cancelled request gets no response, so `respond` drops it —
+  // and the app is told as well, because the code it is running is cooperative
+  // and would otherwise pin the renderer for the rest of its budget with nobody
+  // left to read the answer.
+  const openRequests = new Set<number | string>()
+  const cancelled = new Set<number | string>()
+  const bridgeCallOf = new Map<number | string, number>()
+
   function respond(id: number | string | null, body: Record<string, unknown>) {
+    if (id !== null) {
+      openRequests.delete(id)
+      bridgeCallOf.delete(id)
+      if (cancelled.delete(id)) {
+        return
+      }
+    }
     output.write(`${JSON.stringify({ jsonrpc: '2.0', id, ...body })}\n`)
+  }
+
+  function cancel(params: Record<string, unknown>) {
+    const requestId = params.requestId
+    if (
+      (typeof requestId !== 'number' && typeof requestId !== 'string') ||
+      !openRequests.has(requestId)
+    ) {
+      return
+    }
+    cancelled.add(requestId)
+    const bridgeCall = bridgeCallOf.get(requestId)
+    if (bridgeCall !== undefined) {
+      void callBridge('cancel', { id: bridgeCall }).catch(() => {})
+    }
   }
 
   async function handle(msg: JsonRpcRequest) {
     const { id, method, params = {} } = msg
     if (method?.startsWith('notifications/')) {
+      if (method === 'notifications/cancelled') {
+        cancel(params)
+      }
       return
     }
     if (id === undefined || id === null) {
       return
     }
+    openRequests.add(id)
     switch (method) {
       case 'initialize': {
         // always PROTOCOL_VERSION: echoing an arbitrary requested revision
@@ -288,11 +336,14 @@ export function runMcpStdioServer({
       case 'tools/list': {
         respond(id, {
           result: {
-            tools: MCP_TOOLS.map(({ name, description, inputSchema }) => ({
-              name,
-              description,
-              inputSchema,
-            })),
+            tools: MCP_TOOLS.map(
+              ({ name, description, inputSchema, annotations }) => ({
+                name,
+                description,
+                inputSchema,
+                annotations,
+              }),
+            ),
           },
         })
         break
@@ -324,7 +375,9 @@ export function runMcpStdioServer({
         } else if (MCP_TOOLS.some(t => t.name === name)) {
           const needsBrief = name === 'run_javascript' && !briefed
           briefed ||= needsBrief
-          const outcome = await callBridge(name, args).catch((e: unknown) => ({
+          const outcome = await callBridge(name, args, bridgeCall => {
+            bridgeCallOf.set(id, bridgeCall)
+          }).catch((e: unknown) => ({
             error: e instanceof Error ? e.message : String(e),
           }))
           const result = toolCallContent(outcome)

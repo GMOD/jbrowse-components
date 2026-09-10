@@ -72,6 +72,27 @@ test('an exact phrase outranks the words apart', () => {
   expect(text!.split('\n\n')[1]).toContain('model:LinearAlignmentsDisplay')
 })
 
+// Grouping used to merge adjacent hits only, and the ranking sorts on score
+// before topic — so a third page scoring between two hits of one section split
+// them and printed its address twice, which is what the grouping exists to stop.
+test('one section is one address however the ranking interleaves it', () => {
+  const split: SearchableDoc[] = [
+    {
+      topic: 'live-model',
+      text: '# Guide\n\n## Reading data\n\nthe colorBy setting and the reads it colours\nthe colorBy list\n',
+    },
+    {
+      topic: 'config:BamAdapter',
+      name: 'BamAdapter',
+      text: '# BamAdapter\n\n## Slots\n\n- `colorBy the reads`: both words\n',
+    },
+  ]
+  const { text } = searchDocs(split, 'colorBy reads')
+  expect(
+    text!.match(/topic:"live-model" section:"Reading data"/g),
+  ).toHaveLength(1)
+})
+
 test('a miss says where else to look', () => {
   const { error } = searchDocs(docs, 'nosuchthing')
   expect(error).toMatch(/carries any word of/)

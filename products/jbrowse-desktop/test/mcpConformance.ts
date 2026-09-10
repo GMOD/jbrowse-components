@@ -112,17 +112,30 @@ function startMcpClient() {
   const child = spawn('node', [path.join(desktopRoot, 'build/mcpServer.js')], {
     stdio: ['pipe', 'pipe', 'inherit'],
   })
-  const waiters: ((r: JsonRpcResponse) => void)[] = []
+  // matched by id, not in order: a cancelled request is answered by nobody, and
+  // a queue would then hand its slot to the next call's answer
+  const waiters = new Map<number, (r: JsonRpcResponse) => void>()
   readline.createInterface({ input: child.stdout! }).on('line', line => {
-    waiters.shift()?.(JSON.parse(line) as JsonRpcResponse)
+    const response = JSON.parse(line) as JsonRpcResponse
+    waiters.get(response.id)?.(response)
+    waiters.delete(response.id)
   })
   let nextId = 0
-  async function rpc(method: string, params: Record<string, unknown>) {
+  function send(method: string, params: Record<string, unknown>) {
     const id = ++nextId
     child.stdin!.write(
       `${JSON.stringify({ jsonrpc: '2.0', id, method, params })}\n`,
     )
-    return new Promise<JsonRpcResponse>(resolve => waiters.push(resolve))
+    return id
+  }
+  function notify(method: string, params: Record<string, unknown>) {
+    child.stdin!.write(
+      `${JSON.stringify({ jsonrpc: '2.0', method, params })}\n`,
+    )
+  }
+  async function rpc(method: string, params: Record<string, unknown>) {
+    const id = send(method, params)
+    return new Promise<JsonRpcResponse>(resolve => waiters.set(id, resolve))
   }
   async function callAll(name: string, args: Record<string, unknown> = {}) {
     const response = await rpc('tools/call', { name, arguments: args })
@@ -146,6 +159,8 @@ function startMcpClient() {
   }
   return {
     rpc,
+    send,
+    notify,
     call,
     callAll,
     callJson,
@@ -566,6 +581,35 @@ try {
     return { hidden: view.hideTrack('volvox_test_vcf') }`)
   check('hideTrack removes the track', hidden.value?.hidden >= 1, hidden)
 
+  // An interrupted agent used to leave its code running for the rest of its
+  // budget, pinning the renderer. The request itself is never answered — that
+  // is what cancelling means — so what proves it arrived is the loop stopping.
+  const pause = async (ms: number) => {
+    await new Promise(resolve => setTimeout(resolve, ms))
+  }
+  const cancelledId = client.send('tools/call', {
+    name: 'run_javascript',
+    arguments: {
+      timeoutMs: 60_000,
+      code: `
+        globalThis.mcpCancelProbe = { stopped: false }
+        while (!signal.aborted) {
+          await new Promise(r => setTimeout(r, 50))
+        }
+        globalThis.mcpCancelProbe.stopped = true
+        return 'never read'`,
+    },
+  })
+  await pause(1000)
+  client.notify('notifications/cancelled', { requestId: cancelledId })
+  await pause(1500)
+  const stopped = await run('return globalThis.mcpCancelProbe')
+  check(
+    'a cancelled call aborts the code it left running',
+    stopped.value?.stopped === true,
+    stopped,
+  )
+
   // both parts: the settle result was being dropped, so an agent screenshotting
   // an errored or undrawn track was told nothing was wrong
   const shot = await client.callAll('screenshot', {})
@@ -609,10 +653,26 @@ try {
     shotText?.text?.slice(0, 200),
   )
 
+  // One image pixel per CSS pixel on both routes. Before that, capturePage
+  // answered in device pixels and the devtools clip in CSS pixels, so the two
+  // heights below were only comparable on a 1x display — which is what dev and
+  // CI happen to be, and the reason this check passed while saying nothing.
+  const innerWidth = (await run('return window.innerWidth')).value as number
+  check(
+    'a viewport capture is one image pixel per CSS pixel, and says its size',
+    pngWidth(shotImage?.data) === innerWidth &&
+      JSON.parse(shotText?.text ?? '{}').image?.width === innerWidth,
+    { innerWidth, png: pngWidth(shotImage?.data), text: shotText?.text },
+  )
+  const doubled = await client.callAll('screenshot', { scale: 2 })
+  check(
+    'scale multiplies the pixels the same capture answers with',
+    pngWidth(doubled.find(c => c.type === 'image')?.data) === innerWidth * 2,
+    pngWidth(doubled.find(c => c.type === 'image')?.data),
+  )
+
   // the viewport is what capturePage sees; the document is what the session
-  // occupies, and every filmed take had the second taller than the first. The
-  // PNGs are in device pixels and the reported page box in CSS pixels, so the
-  // viewport is compared in CSS pixels too — on a 2x display the two differ
+  // occupies, and every filmed take had the second taller than the first
   const pngHeight = (data: string | undefined) =>
     data === undefined ? 0 : Buffer.from(data, 'base64').readUInt32BE(20)
   const innerHeight = (await run('return window.innerHeight')).value as number
