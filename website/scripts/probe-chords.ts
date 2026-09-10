@@ -45,7 +45,10 @@ await withHarness(
       waitUntil: 'domcontentloaded',
       timeout,
     })
-    await page.waitForSelector('path[data-testid^="chord-"]', { timeout })
+    await page.waitForSelector(
+      'path[data-testid^="chord-"], path[data-testid^="ribbon-"]',
+      { timeout },
+    )
     // The chords mount as the VCF streams in, so the first one on screen is not
     // the last one: this is a settle, not a gate.
     await new Promise(r => setTimeout(r, settle))
@@ -53,7 +56,7 @@ await withHarness(
     const titles = await page.evaluate(() =>
       [
         ...document.querySelectorAll<SVGPathElement>(
-          'path[data-testid^="chord-"]',
+          'path[data-testid^="chord-"], path[data-testid^="ribbon-"]',
         ),
       ].map(p => ({
         testid: p.dataset.testid ?? '',
@@ -77,7 +80,7 @@ await withHarness(
     const samples = await page.evaluate((label: string) => {
       const paths = [
         ...document.querySelectorAll<SVGPathElement>(
-          'path[data-testid^="chord-"]',
+          'path[data-testid^="chord-"], path[data-testid^="ribbon-"]',
         ),
       ]
       const match = paths.find(p =>

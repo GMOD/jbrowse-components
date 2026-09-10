@@ -1,0 +1,237 @@
+{
+  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
+  "assemblies": [
+    {
+      "name": "hg38",
+      "displayName": "Human (hg38)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg38-refseq",
+        "metadata": {
+          "description": "Dec. 2013 (GRCh38/hg38)",
+          "nibPath": "/gbdb/hg38",
+          "organism": "Human",
+          "defaultPos": "chr7:155799529-155812871",
+          "active": 1,
+          "orderKey": 50,
+          "genome": "Human",
+          "scientificName": "Homo sapiens",
+          "htmlPath": "/gbdb/hg38/html/description.html",
+          "hgNearOk": 1,
+          "hgPbOk": 0,
+          "sourceName": "GRCh38 Genome Reference Consortium Human Reference 38 (GCA_000001405.15)",
+          "taxId": 9606,
+          "id": "hg38",
+          "name": "hg38",
+          "accession": "hg38",
+          "commonName": "Human",
+          "jbrowseConfig": "https://jbrowse.org/ucsc/hg38/config.json",
+          "jbrowseMinimalConfig": "https://jbrowse.org/ucsc/hg38/minimal.json",
+          "blatDb": "hg38"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/hg38/hg38.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/demos/circular_synteny/hg38.chromAlias.txt"
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://jbrowse.org/ucsc/hg38/hg38.cytoBand.txt.gz"
+        }
+      },
+      "geneticCodes": {
+        "chrM": 2
+      }
+    },
+    {
+      "name": "mm39",
+      "displayName": "Mouse (mm39)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "mm39-refseq",
+        "metadata": {
+          "description": "Jun. 2020 (GRCm39/mm39)",
+          "nibPath": "/gbdb/mm39",
+          "organism": "Mouse",
+          "defaultPos": "chr12:56741761-56761390",
+          "active": 1,
+          "orderKey": 269,
+          "genome": "Mouse",
+          "scientificName": "Mus musculus",
+          "htmlPath": "/gbdb/mm39/html/description.html",
+          "hgNearOk": 1,
+          "hgPbOk": 0,
+          "sourceName": "Genome Reference Consortium Mouse Build 39 (GCA_000001635.9)",
+          "taxId": 10090,
+          "id": "mm39",
+          "name": "mm39",
+          "accession": "mm39",
+          "commonName": "Mouse",
+          "jbrowseConfig": "https://jbrowse.org/ucsc/mm39/config.json",
+          "jbrowseMinimalConfig": "https://jbrowse.org/ucsc/mm39/minimal.json",
+          "blatDb": "mm39"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/mm39/bigZips/mm39.2bit",
+          "chromSizes": "https://jbrowse.org/ucsc/mm39/mm39.chrom.sizes"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/demos/circular_synteny/mm39.chromAlias.txt"
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://jbrowse.org/ucsc/mm39/mm39.cytoBand.txt.gz"
+        }
+      },
+      "geneticCodes": {
+        "chrM": 2
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "hg38ToMm39_blocks",
+      "name": "hg38 vs mm39 (liftOver chains of 100 kb and over)",
+      "assemblyNames": ["mm39", "hg38"],
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "uri": "https://jbrowse.org/demos/circular_synteny/hg38ToMm39.blocks.pif.gz",
+        "queryAssembly": "mm39",
+        "targetAssembly": "hg38"
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "hg38ToMm39_gene_density",
+      "name": "hg38 and mm39 gene density (RefSeq curated genes per 100 kb)",
+      "assemblyNames": ["hg38", "mm39"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "uri": "https://jbrowse.org/demos/circular_synteny/hg38ToMm39.genes.gff.density.bw"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38-ncbiRefSeqCurated",
+      "name": "NCBI RefSeq - RefSeq Curated",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz.csi"
+          }
+        }
+      },
+      "metadata": {
+        "ucsc": {
+          "baseColorDefault": "genomicCodons",
+          "baseColorUseCds": "given",
+          "color": "12,12,120",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "longLabel": "NCBI RefSeq genes, curated subset (NM_*, NR_*, NP_* or YP_*)",
+          "parent": "refSeqComposite on",
+          "priority": "2",
+          "shortLabel": "RefSeq Curated",
+          "track": "ncbiRefSeqCurated",
+          "html": ""
+        }
+      },
+      "description": "NCBI RefSeq genes, curated subset (NM_*, NR_*, NP_* or YP_*)",
+      "category": ["Genes and Gene Predictions"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "mm39-ncbiRefSeqCurated",
+      "name": "NCBI RefSeq - RefSeq Curated",
+      "assemblyNames": ["mm39"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/mm39/ncbiRefSeqCurated.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/mm39/ncbiRefSeqCurated.gff.gz.csi"
+          }
+        }
+      },
+      "metadata": {
+        "ucsc": {
+          "baseColorDefault": "genomicCodons",
+          "baseColorUseCds": "given",
+          "color": "12,12,120",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "longLabel": "NCBI RefSeq genes, curated subset (NM_*, NR_*, NP_* or YP_*)",
+          "parent": "refSeqComposite on",
+          "priority": "2",
+          "shortLabel": "RefSeq Curated",
+          "track": "ncbiRefSeqCurated",
+          "html": ""
+        }
+      },
+      "description": "NCBI RefSeq genes, curated subset (NM_*, NR_*, NP_* or YP_*)",
+      "category": ["Genes and Gene Predictions"]
+    }
+  ],
+  "defaultSession": {
+    "name": "hg38 and mm39 on one circle",
+    "views": [
+      {
+        "type": "CircularView",
+        "assembly": ["hg38", "mm39"],
+        "displayedRegionNames": [
+          "chr1",
+          "chr2",
+          "chr3",
+          "chr4",
+          "chr5",
+          "chr6",
+          "chr7",
+          "chr8",
+          "chr9",
+          "chr10",
+          "chr11",
+          "chr12",
+          "chr13",
+          "chr14",
+          "chr15",
+          "chr16",
+          "chr17",
+          "chr18",
+          "chr19",
+          "chrX"
+        ],
+        "height": 780,
+        "tracks": [
+          {
+            "trackId": "hg38ToMm39_gene_density",
+            "type": "LinearWiggleDisplay",
+            "height": 40
+          },
+          "hg38ToMm39_blocks"
+        ]
+      }
+    ]
+  }
+}

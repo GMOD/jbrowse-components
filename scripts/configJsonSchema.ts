@@ -46,6 +46,9 @@ export interface ElementEntry {
   stateModel?: MstType
   aliases?: string[]
   viewType?: string
+  // the view whose display types this one inherits (a CircularView draws a
+  // LinearGenomeView display as a ring)
+  extendedName?: string
   displayTypes?: { name: string }[]
   launchKeys?: {
     keys: Record<string, { kind: string }>
@@ -902,7 +905,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
   function trackEntryDef(view: ElementEntry) {
     const displays = deps.elements.displays.filter(
       d =>
-        d.viewType === view.name &&
+        (d.viewType === view.name || d.viewType === view.extendedName) &&
         defs[`${d.name}Slots`] &&
         defs[`${d.name}State`],
     )

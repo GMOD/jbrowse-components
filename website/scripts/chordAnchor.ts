@@ -31,22 +31,18 @@ import type { Page } from 'puppeteer'
 // answer: there was no pixel of it to click.
 export async function chordPoint(page: Page, anchor: AnnotationAnchor) {
   const point = await page.evaluate((label: string) => {
+    // a synteny ribbon carries the same `<title>` under `ribbon-<id>`
     const paths = [
       ...document.querySelectorAll<SVGPathElement>(
-        'path[data-testid^="chord-"]',
+        'path[data-testid^="chord-"], path[data-testid^="ribbon-"]',
       ),
     ]
-    const match = paths.find(p =>
+    // every path whose title names the alignment: a synteny ribbon is drawn
+    // once from each genome's side, and the twin painted last is what a click
+    // reaches
+    const matches = paths.filter(p =>
       (p.querySelector('title')?.textContent ?? '').includes(label),
     )
-    if (!match) {
-      return undefined
-    }
-    const ctm = match.getScreenCTM()
-    const total = match.getTotalLength()
-    if (!ctm || !total) {
-      return undefined
-    }
     // Sampled from the ends inward rather than straight down the middle. Near an
     // endpoint a chord is out by the rim where it is alone; the middle is the
     // bundle. Both ends are tried because one of them can be under the ring's
@@ -54,15 +50,23 @@ export async function chordPoint(page: Page, anchor: AnnotationAnchor) {
     const ts = [
       0.12, 0.88, 0.2, 0.8, 0.3, 0.7, 0.5, 0.06, 0.94, 0.4, 0.6, 0.25, 0.75,
     ]
-    for (const t of ts) {
-      const p = match.getPointAtLength(total * t)
-      const x = p.x * ctm.a + p.y * ctm.c + ctm.e
-      const y = p.x * ctm.b + p.y * ctm.d + ctm.f
-      // elementFromPoint is the whole point of this loop: it answers with what a
-      // click at (x,y) would actually reach, overlapping chords and any overlay
-      // included.
-      if (document.elementFromPoint(x, y) === match) {
-        return { x, y }
+    for (const match of matches) {
+      const ctm = match.getScreenCTM()
+      const total = match.getTotalLength()
+      if (!ctm || !total) {
+        continue
+      }
+      for (const t of ts) {
+        const p = match.getPointAtLength(total * t)
+        const x = p.x * ctm.a + p.y * ctm.c + ctm.e
+        const y = p.x * ctm.b + p.y * ctm.d + ctm.f
+        // elementFromPoint is the whole point of this loop: it answers with
+        // what a click at (x,y) would actually reach, overlapping chords and
+        // any overlay included.
+        const hit = document.elementFromPoint(x, y)
+        if (hit instanceof SVGPathElement && matches.includes(hit)) {
+          return { x, y }
+        }
       }
     }
     return undefined

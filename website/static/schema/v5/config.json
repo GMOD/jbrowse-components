@@ -14292,6 +14292,108 @@
         },
         {
           "type": "object",
+          "title": "LinearBasicDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearBasicDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearBasicDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LinearBasicDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "title": "LinearMultiRowFeatureDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearMultiRowFeatureDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LinearMultiRowFeatureDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "title": "LinearAlignmentsDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearAlignmentsDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearAlignmentsDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LinearAlignmentsDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
           "title": "ChordVariantDisplayTrackEntry",
           "allOf": [
             {
@@ -14341,6 +14443,584 @@
             },
             "type": {
               "const": "ChordSyntenyDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "title": "LGVSyntenyDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LGVSyntenyDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LGVSyntenyDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LGVSyntenyDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "title": "MultiWaySyntenyDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/MultiWaySyntenyDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/MultiWaySyntenyDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "MultiWaySyntenyDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "title": "LinearReferenceSequenceDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearReferenceSequenceDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearReferenceSequenceDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LinearReferenceSequenceDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "title": "LinearVariantDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearVariantDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearVariantDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LinearVariantDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "title": "LinearMultiSampleVariantDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearMultiSampleVariantDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LinearMultiSampleVariantDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "title": "LinearMultiSampleVariantMatrixDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearMultiSampleVariantMatrixDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LinearMultiSampleVariantMatrixDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "title": "LDTrackDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LDTrackDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LDTrackDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LDTrackDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "title": "LinearWiggleDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearWiggleDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearWiggleDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LinearWiggleDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "title": "MultiLinearWiggleDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/MultiLinearWiggleDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/MultiLinearWiggleDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "MultiLinearWiggleDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "title": "LinearGCContentDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearGCContentDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearGCContentDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LinearGCContentDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "title": "LinearGCContentTrackDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearGCContentTrackDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearGCContentTrackDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LinearGCContentTrackDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "title": "LinearMafDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearMafDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearMafDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LinearMafDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "title": "LinearHicDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearHicDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearHicDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LinearHicDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "title": "LinearArcDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearArcDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearArcDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LinearArcDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "title": "LinearPairedArcDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearPairedArcDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearPairedArcDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LinearPairedArcDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "title": "LinearManhattanDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearManhattanDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearManhattanDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LinearManhattanDisplay",
+              "description": "The display to open the track with, when the track offers several for this view."
+            },
+            "trackSnapshot": {
+              "type": "object",
+              "description": "Keys applied to the track config node."
+            },
+            "displaySnapshot": {
+              "type": "object",
+              "description": "Keys applied to the display node explicitly."
+            }
+          },
+          "required": ["trackId"],
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "unevaluatedProperties": false
+        },
+        {
+          "type": "object",
+          "title": "LinearMarkDisplayTrackEntry",
+          "allOf": [
+            {
+              "$ref": "#/$defs/LinearMarkDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearMarkDisplayState"
+            }
+          ],
+          "properties": {
+            "trackId": {
+              "type": "string"
+            },
+            "type": {
+              "const": "LinearMarkDisplay",
               "description": "The display to open the track with, when the track offers several for this view."
             },
             "trackSnapshot": {
