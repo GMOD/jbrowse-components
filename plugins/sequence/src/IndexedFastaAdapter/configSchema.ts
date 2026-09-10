@@ -1,11 +1,11 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
 
 import { deriveFastaLocations } from '../chromSizesUtils.ts'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri ? { ...snap, ...deriveFastaLocations(snap) } : snap
+  return snap.uri ? fillLocations(snap, deriveFastaLocations(snap)) : snap
 }
 
 /**

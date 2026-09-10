@@ -1,3 +1,5 @@
+import { fillLocations } from './fillLocations.ts'
+
 /**
  * The `index` half of a tabix-indexed adapter's shorthand snapshot: given
  * `{ uri, baseUri?, csi? }`, where the index file sits and what kind it is.
@@ -40,10 +42,9 @@ export function expandTabixShorthand(
   locationKey: string,
 ) {
   return snap.uri
-    ? {
-        ...snap,
+    ? fillLocations(snap, {
         [locationKey]: { uri: snap.uri, baseUri: snap.baseUri },
         index: tabixIndexSnapshot(snap),
-      }
+      })
     : snap
 }

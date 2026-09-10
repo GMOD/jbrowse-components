@@ -47,6 +47,22 @@ describe('BamAdapter normalizeSnapshot', () => {
     ).toBe('file:///data/proj/reads.bam.bai')
   })
 
+  // the sibling the shorthand invents used to win, so a config naming both a
+  // uri and an index that does not sit next to it silently read the one that
+  // isn't there
+  test('an index named alongside the uri outlives the derived sibling', () => {
+    expect(
+      normalizeSnapshot({
+        type: 'BamAdapter',
+        uri: 'my.bam',
+        index: { location: { uri: 'elsewhere/my.bam.bai' } },
+      }),
+    ).toMatchObject({
+      bamLocation: { uri: 'my.bam' },
+      index: { location: { uri: 'elsewhere/my.bam.bai' } },
+    })
+  })
+
   test('passes through a fully-specified snapshot unchanged', () => {
     const snap = {
       type: 'BamAdapter',

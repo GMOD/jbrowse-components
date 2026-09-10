@@ -1,16 +1,15 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
 
 import { pairwiseAssemblyFields } from '../pairwiseAssemblyFields.ts'
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
-    ? {
-        ...snap,
+    ? fillLocations(snap, {
         deltaLocation: {
           uri: snap.uri,
           baseUri: snap.baseUri,
         },
-      }
+      })
     : snap
 }
 

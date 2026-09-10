@@ -1,4 +1,4 @@
-import { tabixIndexSnapshot } from '@jbrowse/core/configuration'
+import { fillLocations, tabixIndexSnapshot } from '@jbrowse/core/configuration'
 
 type Snapshot = Record<string, unknown>
 
@@ -14,14 +14,13 @@ export function expandMafShorthand(
   index: (snap: Snapshot) => Snapshot,
 ) {
   return snap.uri
-    ? {
-        ...snap,
+    ? fillLocations(snap, {
         ...(snap.nhUri
           ? { nhLocation: { uri: snap.nhUri, baseUri: snap.baseUri } }
           : {}),
         [gzSlot]: { uri: snap.uri, baseUri: snap.baseUri },
         ...index(snap),
-      }
+      })
     : snap
 }
 

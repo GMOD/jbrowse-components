@@ -1,4 +1,7 @@
-import { ConfigurationSchema } from '../../configuration/index.ts'
+import {
+  ConfigurationSchema,
+  fillLocations,
+} from '../../configuration/index.ts'
 
 /**
  * #config CytobandAdapter
@@ -61,13 +64,12 @@ const configSchema = ConfigurationSchema(
     preProcessSnapshot: snap => {
       // populate from just snap.uri
       return snap.uri
-        ? {
-            ...snap,
+        ? fillLocations(snap, {
             cytobandLocation: {
               uri: snap.uri,
               baseUri: snap.baseUri,
             },
-          }
+          })
         : snap
     },
   },

@@ -1,12 +1,11 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
 import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/BaseAdapter'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
-    ? {
-        ...snap,
+    ? fillLocations(snap, {
         cramLocation: {
           uri: snap.uri,
           baseUri: snap.baseUri,
@@ -15,7 +14,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
           uri: `${snap.uri}.crai`,
           baseUri: snap.baseUri,
         },
-      }
+      })
     : snap
 }
 

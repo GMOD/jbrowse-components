@@ -1,4 +1,4 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
 import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { types } from '@jbrowse/mobx-state-tree'
 
@@ -7,8 +7,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // #region preProcess
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
-    ? {
-        ...snap,
+    ? fillLocations(snap, {
         bamLocation: {
           uri: snap.uri,
           baseUri: snap.baseUri,
@@ -20,7 +19,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
             baseUri: snap.baseUri,
           },
         },
-      }
+      })
     : snap
 }
 // #endregion

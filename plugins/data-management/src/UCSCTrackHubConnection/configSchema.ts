@@ -1,3 +1,4 @@
+import { fillLocations } from '@jbrowse/core/configuration'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { baseConnectionConfig } from '@jbrowse/core/pluggableElementTypes/models'
 
@@ -64,13 +65,12 @@ const UCSCTrackHubConnection = ConfigurationSchema(
      */
     preProcessSnapshot: snap => {
       return snap.uri
-        ? {
-            ...snap,
+        ? fillLocations(snap, {
             hubTxtLocation: {
               uri: snap.uri,
               baseUri: snap.baseUri,
             },
-          }
+          })
         : snap
     },
   },

@@ -4,6 +4,9 @@ import { densityAdapterConfigSchemaFields } from '@jbrowse/core/data_adapters/Ba
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 // #region normalizeSnapshot
+// Not `fillLocations`: the shorthand and the slot are the same key, so this
+// rewrites what the config wrote rather than filling in what it left out, and
+// letting the config win would leave a bare string where a location goes.
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return typeof snap.htsgetBase === 'string'
     ? {

@@ -20,19 +20,18 @@ as a real one gets:
 <!-- include: plugins/bed/src/BedGraphAdapter/configSchema.ts -->
 
 ````ts
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
-    ? {
-        ...snap,
+    ? fillLocations(snap, {
         bedGraphLocation: {
           uri: snap.uri,
           baseUri: snap.baseUri,
         },
-      }
+      })
     : snap
 }
 
@@ -297,8 +296,7 @@ the schema actually declares, and derives the index name from it.
 ```ts
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri
-    ? {
-        ...snap,
+    ? fillLocations(snap, {
         bamLocation: {
           uri: snap.uri,
           baseUri: snap.baseUri,
@@ -310,10 +308,15 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
             baseUri: snap.baseUri,
           },
         },
-      }
+      })
     : snap
 }
 ```
+
+`fillLocations` is what settles precedence: the derived locations fill in the
+slots, and any slot the config spells out for itself wins. So a config naming
+both a `uri` and an index that does not sit next to the data file keeps the
+index it named.
 
 Passed as `preProcessSnapshot: normalizeSnapshot` in the schema's options, that
 allows minimal configs in `config.json` — neither `bamLocation` nor `index` is

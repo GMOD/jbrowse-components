@@ -1,9 +1,8 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, fillLocations } from '@jbrowse/core/configuration'
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return typeof snap.uri === 'string'
-    ? {
-        ...snap,
+    ? fillLocations(snap, {
         // `uri` points at the `.ix` file and the `.ixx` sits beside it (the
         // `jbrowse text-index` naming convention), so derive the pair
         ixFilePath: {
@@ -14,7 +13,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
           uri: `${snap.uri}x`,
           baseUri: snap.baseUri,
         },
-      }
+      })
     : snap
 }
 
