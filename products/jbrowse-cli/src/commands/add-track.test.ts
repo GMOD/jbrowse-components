@@ -340,9 +340,11 @@ test('--color, --height, and --displayDefaults merge into displayDefaults', asyn
   })
 })
 
-// LinearAlignmentsDisplay declares colorBy, not color, and
+// An AlignmentsTrack's displays declare colorBy, not color, and
 // expandTrackConfigShorthand drops the unmatched key with a console warning —
-// so the run used to write the dead setting into the config and exit 0
+// so the run used to write the dead setting into the config and exit 0. The
+// message names the track rather than a display since LinearMarkDisplay
+// joined LinearAlignmentsDisplay there.
 test('--color on a track whose displays do not declare it is refused', async () => {
   await runInTmpDir(async ctx => {
     await initctx(ctx)
@@ -357,7 +359,7 @@ test('--color on a track whose displays do not declare it is refused', async () 
     ])
 
     expect(error?.message).toContain(
-      '"color" is not a setting LinearAlignmentsDisplay declares',
+      '"color" is not a setting any AlignmentsTrack display declares',
     )
     expect(error?.message).toContain('did you mean "colorBy"')
     expect(readConf(ctx).tracks).toEqual([])

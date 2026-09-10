@@ -97,9 +97,9 @@ export function mergeDisplayDefaults({
 // An unknown track type accepts everything: it is a plugin's, and this manifest
 // is only the core plugins'.
 //
-// The message names the display when the track offers one — which most do, and
-// AlignmentsTrack is the case that matters here, since `--color` is the
-// reachable mistake and LinearAlignmentsDisplay is the only place to go look.
+// The message names the display where the track offers exactly one, and the
+// track otherwise: the keys checked are the union over its displays, so
+// naming one of several would send the reader to look in the wrong place.
 function checkDisplayDefaultKeys(
   merged: Record<string, unknown>,
   trackType: string,
