@@ -1,6 +1,6 @@
 import { getFeatureAdapterOrThrow } from '../../data_adapters/getFeatureAdapter.ts'
 import RpcMethodTypeWithRenameRegion from '../../pluggableElementTypes/RpcMethodTypeWithRenameRegion.ts'
-import SerializableFilterChain from '../../pluggableElementTypes/renderers/util/serializableFilterChain.ts'
+import { runTransforms } from '../../util/featureTransforms.ts'
 import { rpcResult } from '../../util/librpc.ts'
 import {
   encodeFeatures,
@@ -17,11 +17,12 @@ import type { EncodedFeaturesResult } from '../../util/markEncoding.ts'
 import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 
 /**
- * Fetch a region's features once, run the transform steps over them, and
- * evaluate every requested layer's encoding over what is left in the worker,
- * where the `Feature` objects are, filling the lanes its shape reads. The colours come back packed, the scale tables
- * resolved, and the main thread reads the same table for its legend that the
- * colours were drawn from.
+ * Fetch a region's features once, run the shared transform steps over them,
+ * then each layer's own, and evaluate the layer's encoding over what is left
+ * in the worker, where the `Feature` objects are, filling the lanes its shape
+ * reads. The colours come back packed, the scale tables resolved, and the
+ * main thread reads the same table for its legend that the colours were
+ * drawn from.
  */
 export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'CoreEncodeFeatures'> {
   name = 'CoreEncodeFeatures' as const
@@ -67,26 +68,28 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
     )
     checkStopTokenThrottled(stopTokenCheck)
 
-    const chain = new SerializableFilterChain({
-      filters: [...filters, ...transform.map(step => step.expr)],
-      jexl: pluginManager.jexl,
-    })
-    const features =
-      chain.filterChain.length === 0
-        ? fetched
-        : fetched.filter(f => chain.passes(f))
+    const { jexl } = pluginManager
+    const shared = runTransforms(
+      fetched,
+      [
+        ...filters.map(expr => ({ type: 'filter' as const, expr })),
+        ...transform,
+      ],
+      jexl,
+    )
 
-    const layers = requested.map(({ encoding, lanes }) =>
-      encodeFeatures(features, encoding, lanes, {
-        jexl: pluginManager.jexl,
+    const layers = requested.map(({ encoding, lanes, transform: own }) => {
+      const features = own ? runTransforms(shared, own, jexl) : shared
+      return encodeFeatures(features, encoding, lanes, {
+        jexl,
         report: createProgressReporter({
           label: 'Encoding features',
           total: features.length,
           statusCallback,
           stopTokenCheck,
         }),
-      }),
-    )
+      })
+    })
     const result: EncodedFeaturesResult = { layers, bytes }
     return rpcResult(
       result,

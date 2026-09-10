@@ -184,6 +184,8 @@ export type Encoded<L extends LaneName> = EncodedChannels &
 export interface LayerRequest {
   encoding: MarkEncoding
   lanes: LaneName[]
+  /** This layer's own steps, run after the request's shared ones. */
+  transform?: TransformStep[]
 }
 
 /**
@@ -199,17 +201,91 @@ export interface EncodedFeaturesResult {
 
 /**
  * #api
- * One step over the features before any layer is encoded, named by `type`
- * the way GenomeSpy spells a transform. `filter` keeps the features a
- * `jexl:` expression admits; every step runs in order.
+ * Keep the features a `jexl:` expression over `feature` admits.
  */
-export type TransformStep = { type: 'filter'; expr: string }
+export interface FilterStep {
+  type: 'filter'
+  expr: string
+}
+
+/**
+ * #api
+ * Write a `jexl:` expression's value over `feature` into the field `as` of
+ * every feature.
+ */
+export interface FormulaStep {
+  type: 'formula'
+  expr: string
+  as: string
+}
+
+/**
+ * #api
+ * Snap every feature to the genome-aligned bin of `step` bp its `field`
+ * (`start` by default) falls in, writing the bin's edges over the fields
+ * `as` names — `start` and `end` by default, so an `aggregate` grouped by
+ * those counts per bin and the bar spans the bin.
+ */
+export interface BinStep {
+  type: 'bin'
+  step: number
+  field?: FieldRef
+  as?: [string, string]
+}
+
+/**
+ * #api
+ * One summary over a group: `count` needs no field; `sum`, `mean`, `min` and
+ * `max` read one, skipping values that are not numbers. The output field is
+ * `as`, else `count` or `<op>_<field>`.
+ */
+export interface AggregateOp {
+  op: 'count' | 'sum' | 'mean' | 'min' | 'max'
+  field?: FieldRef
+  as?: string
+}
+
+/**
+ * #api
+ * One feature per distinct `groupby` value set (one for the whole region
+ * with none), spanning its members' extent, carrying the group's fields and
+ * every `ops` entry.
+ */
+export interface AggregateStep {
+  type: 'aggregate'
+  groupby?: FieldRef[]
+  ops: AggregateOp[]
+}
+
+/**
+ * #api
+ * Replace the features with runs of constant depth: how many of them overlap
+ * each stretch of the region, in a field `as` (`coverage` by default), with
+ * the stretches nothing overlaps left out.
+ */
+export interface CoverageStep {
+  type: 'coverage'
+  as?: string
+}
+
+/**
+ * #api
+ * One step over the features before a layer is encoded, named by `type` the
+ * way GenomeSpy spells a transform; every step runs in order and the next
+ * reads what the last answered.
+ */
+export type TransformStep =
+  | FilterStep
+  | FormulaStep
+  | BinStep
+  | AggregateStep
+  | CoverageStep
 
 export type CoreEncodeFeaturesArgs = {
   adapterConfig: Record<string, unknown>
   region: { refName: string; start: number; end: number; assemblyName: string }
   layers: LayerRequest[]
-  /** The steps over the features, in order, before the layers encode. */
+  /** The steps over the features, in order, before every layer encodes. */
   transform?: TransformStep[]
   /** Sugar for leading `filter` steps: `jexl:`-prefixed expressions. */
   filters?: string[]

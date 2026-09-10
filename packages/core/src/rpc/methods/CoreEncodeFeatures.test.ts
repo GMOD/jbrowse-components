@@ -68,3 +68,42 @@ test('filters is sugar for leading filter steps', async () => {
 test('no transform encodes every feature', async () => {
   expect((await run({})).count).toBe(4)
 })
+
+test("a layer's own transform runs after the shared one, and the other layer sees neither", async () => {
+  jest.mocked(getAdapter).mockResolvedValue({
+    dataAdapter: {
+      getFeatures: () => {},
+      getFeaturesArray: async () => features,
+      setSequenceAdapterConfig: () => {},
+    },
+  } as unknown as Awaited<ReturnType<typeof getAdapter>>)
+  const method = new CoreEncodeFeatures({
+    jexl: createJexlInstance(),
+  } as PluginManager)
+  const result = await method.invoke({
+    sessionId: 's',
+    adapterConfig: { type: 'AnyAdapter' },
+    region: { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
+    transform: [{ type: 'filter', expr: "jexl:get(feature,'score') > 5" }],
+    layers: [
+      {
+        encoding: { y: 'count' },
+        lanes: ['y'],
+        transform: [
+          { type: 'bin', step: 200 },
+          {
+            type: 'aggregate',
+            groupby: ['start', 'end'],
+            ops: [{ op: 'count' }],
+          },
+        ],
+      },
+      { encoding: { y: 'score' }, lanes: ['y'] },
+    ],
+  })
+  const { layers } = (result as RpcResult<EncodedFeaturesResult>).value
+  expect([...layers[0]!.x]).toEqual([0, 200])
+  expect([...layers[0]!.x2]).toEqual([200, 400])
+  expect([...layers[0]!.y!]).toEqual([2, 1])
+  expect([...layers[1]!.y!]).toEqual([10, 40, 25])
+})

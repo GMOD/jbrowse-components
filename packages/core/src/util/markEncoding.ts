@@ -26,14 +26,20 @@ import type { ProgressReporter } from './progress.ts'
 import type { Feature } from './simpleFeature.ts'
 
 export type {
+  AggregateOp,
+  AggregateStep,
+  BinStep,
   CategoricalRef,
   ColorEncoding,
+  CoverageStep,
   ColorScaleTable,
   CoreEncodeFeaturesArgs,
   Encoded,
   EncodedChannels,
   EncodedFeaturesResult,
   FieldRef,
+  FilterStep,
+  FormulaStep,
   GlyphEncoding,
   GlyphName,
   GlyphScaleTable,
