@@ -25,4 +25,10 @@ export interface CircularViewCommands {
   // contigs are left off the circle
   displayedRegionNames?: string[]
   tracks?: TrackInit[]
+  // On a circle of two genomes carrying a synteny track, reorder the second
+  // genome's chromosomes to follow the first's and lay them out mirrored, so the
+  // ribbons read as a band of parallel arcs rather than crossing at the centre.
+  // The figure is hidden behind a "Reordering chromosomes" screen during the
+  // wait. Same key and same pass as the linear synteny view's and the dotplot's
+  autoDiagonalize?: boolean
 }

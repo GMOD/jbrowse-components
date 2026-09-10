@@ -25,9 +25,15 @@ export interface RibbonSide {
 }
 
 /**
- * A ribbon side's angular span, floored at {@link minRibbonEndPx} and centered
- * on where the span actually sits. An elided slice resolves both coordinates to
- * its midpoint, so this is also what keeps a ribbon into an elision drawn.
+ * A ribbon side's two angles, IN GENOMIC ORDER: `start` is where the span's
+ * first base sits and `end` where its last does, so on a reversed slice `start`
+ * is the larger of the two. Keeping the direction is what makes a mirrored
+ * genome's ribbons read right — sorted low-to-high, a forward alignment onto a
+ * reversed slice drew untwisted and an inversion drew as if it were forward.
+ *
+ * The span is floored at {@link minRibbonEndPx}, grown about where it sits and
+ * outward in its own direction. An elided slice resolves both coordinates to its
+ * midpoint, so the floor is also what keeps a ribbon into an elision drawn.
  */
 export function ribbonEndRadians(
   { block, start, end }: RibbonSide,
@@ -36,10 +42,10 @@ export function ribbonEndRadians(
 ) {
   const a = bpToRadians(block, start)
   const b = bpToRadians(block, end)
-  const lo = Math.min(a, b)
-  const hi = Math.max(a, b)
-  const pad = Math.max(0, minWidthPx / Math.max(radius, 1) - (hi - lo)) / 2
-  return { start: lo - pad, end: hi + pad }
+  const pad =
+    Math.max(0, minWidthPx / Math.max(radius, 1) - Math.abs(b - a)) / 2
+  const dir = b < a ? -1 : 1
+  return { start: a - dir * pad, end: b + dir * pad }
 }
 
 /**
@@ -47,10 +53,12 @@ export function ribbonEndRadians(
  * along the anchor's arc, across to the mate, along the mate's arc, back.
  *
  * The strand is in that order and nowhere else. A forward alignment pairs the
- * two spans start-to-start, so the mate's arc is walked high-to-low and the two
- * crossing curves do not cross; a reverse one pairs the anchor's start with the
- * mate's END, so the mate's arc is walked low-to-high and the ribbon takes the
- * twist that is how an inversion reads on a circle.
+ * two spans start-to-start, so the mate's arc is walked from its last base back
+ * to its first and the two crossing curves do not cross; a reverse one pairs the
+ * anchor's start with the mate's END, so the mate's arc is walked first-to-last
+ * and the ribbon takes the twist that is how an inversion reads on a circle.
+ * Both are the same statement about GENOMIC ends, which is why a mirrored slice
+ * needs nothing here: `ribbonEndRadians` already answers in genomic order.
  */
 export function ribbonAngles({
   anchor,

@@ -7,6 +7,7 @@ import {
   ZOOM_ACTIVE_WINDOW_MS,
   normalizeWheelDelta,
 } from '@jbrowse/core/util/wheelZoom'
+import { DiagonalizeLoadingScreen } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import { RingCanvases, RingStrips } from '../../rings/RingLayer.tsx'
@@ -111,7 +112,19 @@ const CircularView = observer(function CircularView({
   model: CircularViewModel
 }) {
   const { showLoading, showView, showImportForm, loadingMessage } = model
-  if (showLoading) {
+  if (model.awaitingAutoDiagonalize) {
+    // Before `showLoading`, which this flag is one term of: the reorder has its
+    // own screen, and the figure stays off it so nobody watches an
+    // undiagonalized hairball flash past.
+    return (
+      <DiagonalizeLoadingScreen
+        status={model.diagonalizeStatus}
+        onCancel={() => {
+          model.cancelAutoDiagonalize()
+        }}
+      />
+    )
+  } else if (showLoading) {
     return (
       <ViewLoadingScreen
         message={loadingMessage}

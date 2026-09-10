@@ -26,10 +26,15 @@ import {
   pendingLaunch,
   withLaunchInput,
 } from '@jbrowse/core/util/withLaunchInput'
-import { cast, destroy, types } from '@jbrowse/mobx-state-tree'
+import { cast, destroy, isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  DiagonalizeProgressMixin,
+  withDiagonalizeProgress,
+} from '@jbrowse/synteny-core'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
+import ShuffleIcon from '@mui/icons-material/Shuffle'
 
 import { RingHost } from '../rings/ringHost.ts'
 import { circularLaunchKeys } from './launchKeys.ts'
@@ -82,6 +87,9 @@ function figureMiddleY(width: number, height: number, figureSize: number) {
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
+const ReorderChromosomesDialog = lazy(
+  () => import('./components/ReorderChromosomesDialog.tsx'),
+)
 
 export interface ExportSvgOptions {
   /**
@@ -108,6 +116,23 @@ interface CircularViewInitSelf extends IStateTreeNode {
     trackSnapshot?: Record<string, unknown>,
     displaySnapshot?: Record<string, unknown>,
   ) => Promise<unknown>
+  beginAutoDiagonalize: (requested: boolean) => void
+  autoDiagonalize: () => Promise<void>
+}
+
+/**
+ * A ribbon display, as a chromosome reorder reads it: the adapter to fetch
+ * alignments from, and an MST node to take the track's `rpcSessionId` off.
+ *
+ * Duck-typed rather than `Instance<ChordSyntenyDisplayStateModel>`, which is
+ * the same reason the display's own state model is lazily registered — naming
+ * that type here would pull `@jbrowse/synteny-core` into the eager bundle of
+ * every product carrying this view, including the circular embed that ships no
+ * synteny plugin at all (ADR-116).
+ */
+interface ChordSyntenyDisplaySelf extends IStateTreeNode {
+  type: string
+  adapterConfig: Record<string, unknown>
 }
 
 /**
@@ -170,12 +195,21 @@ async function applyInit(
       : regions
     drawn.push(...(named ?? regions))
   }
+  // declare the reorder gate up front, before any ribbon can paint: it outlives
+  // this pass, since only the reorder itself lowers it
+  self.beginAutoDiagonalize(!!init.autoDiagonalize)
   if (drawn.length) {
     self.setDisplayedRegions(drawn)
   }
   for (const t of init.tracks ?? []) {
     const { trackId, trackSnapshot, displaySnapshot } = normalizeTrackInit(t)
     await self.launchTrack(trackId, trackSnapshot, displaySnapshot)
+  }
+  // after the tracks, because the reorder reads its alignments off their
+  // adapters — though not after their ribbon fetch, which it does not wait on:
+  // the reorder runs its own whole-genome fetch in the RPC
+  if (init.autoDiagonalize) {
+    await self.autoDiagonalize()
   }
 }
 
@@ -232,6 +266,7 @@ function stateModelFactory(pluginManager: PluginManager) {
     .compose(
       'CircularView',
       BaseViewModel,
+      DiagonalizeProgressMixin(),
       types.model({
         /**
          * #property
@@ -598,6 +633,39 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * Every ribbon display under this view's tracks, which is what a
+       * chromosome reorder reads its alignments from. Filtered by `type` rather
+       * than taken as `tracks[i].displays[0]`, the same rule the dotplot's
+       * `dotplotDisplays` states: a hand-written or legacy session snapshot is
+       * hydrated verbatim, so a `displays` array that is empty or names a
+       * foreign display puts an `undefined` into a list every consumer
+       * dereferences.
+       */
+      get chordSyntenyDisplays(): ChordSyntenyDisplaySelf[] {
+        const out: ChordSyntenyDisplaySelf[] = []
+        for (const track of self.tracks) {
+          for (const display of track.displays) {
+            if (display.type === 'ChordSyntenyDisplay') {
+              out.push(display as ChordSyntenyDisplaySelf)
+            }
+          }
+        }
+        return out
+      },
+      /**
+       * #getter
+       * Whether a chromosome reorder has anything to do: a ribbon track to take
+       * alignments from, and exactly the two genomes a mirrored layout is
+       * defined for — see `mirrorRegionsForCircle`.
+       */
+      get canDiagonalize() {
+        return (
+          this.chordSyntenyDisplays.length > 0 &&
+          this.assemblyNames.length === 2
+        )
+      },
+      /**
+       * #getter
        * The assemblies a pending launch names, which is what the gates below
        * wait on before `displayedRegions` exist. A blob carrying only tracks
        * names none, and waiting on one nobody named never ends.
@@ -671,7 +739,10 @@ function stateModelFactory(pluginManager: PluginManager) {
        * Whether to show a loading indicator instead of the import form or view
        */
       get showLoading() {
-        return !this.initialized && !this.error && this.hasSomethingToShow
+        return (
+          self.awaitingAutoDiagonalize ||
+          (!this.initialized && !this.error && this.hasSomethingToShow)
+        )
       },
 
       /**
@@ -1077,6 +1148,41 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
+       */
+      openReorderChromosomesDialog() {
+        getDialogHost(self).queueDialog(handleClose => [
+          ReorderChromosomesDialog,
+          { model: self as CircularViewModel, handleClose },
+        ])
+      },
+
+      /**
+       * #action
+       * The init-time reorder, behind the "Reordering chromosomes" screen the
+       * comparative views show. `withDiagonalizeProgress` drives that screen's
+       * label, its bar and its Cancel, and swallows the abort.
+       *
+       * The regions and the tracks are both in place by the time this runs, and
+       * the reorder fetches the whole-genome alignments it needs in its own RPC
+       * — so it does not wait on any ribbon fetch first.
+       */
+      async autoDiagonalize() {
+        await withDiagonalizeProgress(self as CircularViewModel, async opts => {
+          const { runCircularDiagonalize } =
+            await import('./util/runCircularDiagonalize.ts')
+          await runCircularDiagonalize(self as CircularViewModel, opts)
+          // only now is the figure the diagonalized one, so release the gate a
+          // capture waits on. A reorder that threw skips this line —
+          // `withDiagonalizeProgress` caught it — and the gate stays up, so the
+          // capture times out loudly rather than committing a hairball.
+          if (isAlive(self)) {
+            self.finishAutoDiagonalize()
+          }
+        })
+      },
+
+      /**
+       * #action
        * renders the view to SVG markup, which it returns; saves it through
        * FileSaver unless `save: false`
        */
@@ -1209,6 +1315,17 @@ function stateModelFactory(pluginManager: PluginManager) {
               self.openExportDialog()
             },
           },
+          ...(self.canDiagonalize
+            ? [
+                {
+                  label: 'Re-order chromosomes',
+                  icon: ShuffleIcon,
+                  onClick: () => {
+                    self.openReorderChromosomesDialog()
+                  },
+                },
+              ]
+            : []),
           {
             label: 'Open track selector',
             onClick: () => {

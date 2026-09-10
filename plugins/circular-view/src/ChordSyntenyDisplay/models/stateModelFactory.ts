@@ -21,6 +21,8 @@ import {
   renameRegionsForAdapter,
 } from '@jbrowse/synteny-core'
 
+import { dedupeRibbons } from '../../chords/dedupeRibbons.ts'
+
 import type {
   CircularViewModel,
   ExportSvgOptions,
@@ -141,7 +143,18 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
        * name tables that place each of their two ends
        */
       get ready() {
-        return self.features !== undefined && self.adapterNames !== undefined
+        return (
+          self.features !== undefined &&
+          self.adapterNames !== undefined &&
+          // A reorder this launch asked for and has not finished leaves the
+          // ribbons drawn against the arcs it is about to move, so the display
+          // is not ready however complete its own fetch is. Only the reorder
+          // itself lowers the view's flag, so a pass that threw keeps this
+          // false and a capture times out rather than committing a hairball —
+          // the same rule `DiagonalizeProgressMixin` states for the two
+          // comparative views' `settled`.
+          !this.view.pendingAutoDiagonalize
+        )
       },
       /**
        * #getter
@@ -365,7 +378,10 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
                 }),
               ),
             ])
-            return { features, adapterNames: Object.fromEntries(maps) }
+            return {
+              features: dedupeRibbons(features),
+              adapterNames: Object.fromEntries(maps),
+            }
           },
           commit: ({ features, adapterNames }) => {
             self.setAdapterNames(adapterNames)

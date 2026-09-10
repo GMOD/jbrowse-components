@@ -12,6 +12,21 @@ test('bpToRadians maps position linearly within a non-elided block', () => {
   expect(bpToRadians(block, 900)).toBe(1)
 })
 
+// A mirrored region runs the other way round the circle: its first base sits at
+// the slice's END angle. Same span, walked backwards, which is what makes the
+// second genome of a diagonalized circle a mirror of the first.
+test('bpToRadians runs a reversed block from its end angle', () => {
+  const block = {
+    startRadians: 2,
+    endRadians: 4,
+    bpPerRadian: 100,
+    region: { elided: false as const, start: 1000, reversed: true },
+  }
+  expect(bpToRadians(block, 1000)).toBe(4)
+  expect(bpToRadians(block, 1100)).toBe(3)
+  expect(bpToRadians(block, 1200)).toBe(2)
+})
+
 test('bpToRadians collapses an elided block to its midpoint', () => {
   const block = {
     startRadians: 1,

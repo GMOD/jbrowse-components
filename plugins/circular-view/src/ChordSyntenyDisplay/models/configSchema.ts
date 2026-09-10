@@ -2,13 +2,18 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
-// The synteny strand colors (`colorSchemes.strand` in synteny-core: red
-// forward, blue reverse), as the jexl a config author edits, and translucent
-// because a whole-genome alignment stacks hundreds of ribbons over one contig.
-// A literal rather than the imported constant so this schema — which every
-// session builds eagerly — pulls none of synteny-core in with it.
-const colorByStrand =
-  "jexl:get(feature,'strand')==-1?'rgba(0,0,255,0.25)':'rgba(255,0,0,0.25)'"
+// One flat translucent fill for every ribbon. Translucent because a whole-genome
+// alignment stacks hundreds of ribbons over one contig, and flat because the
+// strand is already in the geometry: a reverse alignment twists between its two
+// ends (`ribbonAngles`), so painting it a second color spends the whole figure's
+// color budget on something the shape says. Human against mouse is the case
+// that settled it — every autosome carries inversions, so a per-strand palette
+// filled the circle with interleaved red and blue and no reader could follow one
+// bundle through it.
+//
+// A literal rather than a constant imported from synteny-core, so this schema —
+// which every session builds eagerly — pulls none of that package in with it.
+const flatRibbonColor = 'rgba(70,130,180,0.25)'
 
 /**
  * #config ChordSyntenyDisplay
@@ -16,9 +21,9 @@ const colorByStrand =
  * #example
  * The circular-view display for a `SyntenyTrack`: each alignment is a ribbon
  * between the span it covers on one side and the span its mate covers on the
- * other. The three color slots are its resting, hovered and selected fills,
- * and each takes a `jexl:` expression over the `feature` — the default colors
- * by strand, and anything on the record can drive it instead:
+ * other. The three color slots are its resting, hovered and selected fills, and
+ * each takes a `jexl:` expression over the `feature`, so anything on the record
+ * can drive the fill — here the alignment's score:
  * ```js
  * {
  *   type: 'SyntenyTrack',
@@ -40,6 +45,14 @@ const colorByStrand =
  *   ],
  * }
  * ```
+ * The default is one flat translucent fill, since a reverse alignment already
+ * twists between its two ends. To color by strand as the linear synteny
+ * displays do:
+ * ```js
+ * {
+ *   color: "jexl:get(feature,'strand')==-1?'rgba(0,0,255,0.25)':'rgba(255,0,0,0.25)'",
+ * }
+ * ```
  * How deep a ribbon bows toward the center is `bezierRadiusRatio`, a display
  * state-model property rather than a config slot — a saved session carries it,
  * a track config drops it.
@@ -54,7 +67,7 @@ function configSchemaF(_pluginManager: PluginManager) {
       color: {
         type: 'color',
         description: 'the fill color of each ribbon',
-        defaultValue: colorByStrand,
+        defaultValue: flatRibbonColor,
         contextVariable: ['feature'],
       },
       /**

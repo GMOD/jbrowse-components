@@ -15,26 +15,36 @@ export interface SliceNonElidedRegion {
   end: number
   refName: string
   assemblyName: string
+  reversed?: boolean
 }
 export type SliceRegion = SliceNonElidedRegion | SliceElidedRegion
 
 /**
  * Angle (radians) of a genomic position within a slice/block. Elided regions
  * collapse to their midpoint since individual positions aren't resolvable.
+ *
+ * A `reversed` region runs the other way around the circle: its first base is
+ * at the slice's END angle. That is what lays the second genome of a two-genome
+ * circle out as a mirror of the first, so the ribbons between them run parallel
+ * instead of through the centre — see `mirrorRegionsForCircle`.
  */
 export function bpToRadians(
   block: {
     startRadians: number
     endRadians: number
     bpPerRadian: number
-    region: { elided: true } | { elided?: false; start: number }
+    region:
+      | { elided: true }
+      | { elided?: false; start: number; reversed?: boolean }
   },
   bp: number,
 ) {
   const { region, startRadians, endRadians, bpPerRadian } = block
-  return region.elided
-    ? (startRadians + endRadians) / 2
-    : (bp - region.start) / bpPerRadian + startRadians
+  if (region.elided) {
+    return (startRadians + endRadians) / 2
+  }
+  const offset = (bp - region.start) / bpPerRadian
+  return region.reversed ? endRadians - offset : startRadians + offset
 }
 
 /**

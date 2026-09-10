@@ -74,6 +74,10 @@ export type RingBackend = PerRegionRenderingBackend<RingCell, RingFrame>
  * The strip's blocks: one content block per drawn slice and one elided block
  * per elided run, laid along the circumference at the strip's scale. No
  * padding blocks — a gap between slices is a gap.
+ *
+ * A mirrored slice hands its block `reversed`, which every linear display's
+ * projection already honours, so a ring over the second genome of a
+ * diagonalized circle reads the same way round as its ideogram.
  */
 export function stripBlocks(
   slices: readonly Slice[],
@@ -94,7 +98,7 @@ export function stripBlocks(
       })
       displayedRegionIndex += region.regions.length
     } else {
-      const { assemblyName, refName, start, end } = region
+      const { assemblyName, refName, start, end, reversed } = region
       blocks.push({
         type: 'ContentBlock',
         key: `${slice.key}:${displayedRegionIndex}`,
@@ -102,7 +106,7 @@ export function stripBlocks(
         refName,
         start,
         end,
-        reversed: false,
+        reversed: reversed ?? false,
         offsetPx,
         widthPx,
         displayedRegionIndex,
@@ -397,7 +401,9 @@ export const RingHost = types
           return {
             index: block.displayedRegionIndex!,
             offsetPx: Math.round(
-              block.offsetPx + (coord - block.start) / bpPerPx,
+              block.offsetPx +
+                (block.reversed ? block.end - coord : coord - block.start) /
+                  bpPerPx,
             ),
           }
         }
@@ -422,13 +428,15 @@ export const RingHost = types
       }
       const offset = (px - block.offsetPx) * this.bpPerPx
       const oob = offset < 0 || offset >= block.end - block.start
-      const base0 = Math.floor(block.start + offset)
+      const base0 = Math.floor(
+        block.reversed ? block.end - offset : block.start + offset,
+      )
       return {
         refName: block.refName,
         start: block.start,
         end: block.end,
         assemblyName: block.assemblyName,
-        reversed: false,
+        reversed: block.reversed,
         index: block.displayedRegionIndex!,
         offset,
         oob,
