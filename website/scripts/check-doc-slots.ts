@@ -227,7 +227,7 @@ function assertInventoryParsed(
   const problems: string[] = []
   const canaries: [string, string][] = [
     ['autoscale', 'stringEnum'], // linked spelling
-    ['displayMode', 'maybeStringEnum'], // bare spelling
+    ['displayMode', 'stringEnum'], // bare spelling
     ['jexlFilters', 'stringArray'], // bare, non-enum
     ['height', 'number'], // linked, non-enum
     ['significanceLine', 'maybeNumber'], // linked, maybe*

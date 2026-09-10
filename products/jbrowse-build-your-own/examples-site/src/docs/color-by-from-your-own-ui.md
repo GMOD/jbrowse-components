@@ -25,9 +25,8 @@ with **no provider to swap it**, unlike the loading and error states.
 A key lists the colours actually painted in the window, not every colour the
 scheme could paint, so it moves with the data.
 
-`showLegend` is off by default and is a _promotable_ slot, so read
-`display.showLegend` rather than `getConf`: unset means "follow the session
-default", and only the resolved getter knows what that is.
+`showLegend` is off by default. Read `display.showLegend` rather than reaching
+into the config, so the control reflects what the display resolved.
 
 ## Getting it above your own overlays
 

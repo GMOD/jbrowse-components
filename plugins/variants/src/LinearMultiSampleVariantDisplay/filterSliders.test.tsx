@@ -13,9 +13,8 @@ import type { MenuItem } from '@jbrowse/core/ui'
 // deferral itself is makeSizeMenu's concern, not asserted here.)
 describe('multi-sample variant filter sliders', () => {
   // The shared harness rather than a bare `stateModel.create()`: `sliderRow`
-  // builds the WHOLE track menu to find one row, and the "Show legend" row in
-  // it reads a promotable slot, whose cascade walks up to the session. A
-  // parentless display throws "no session model found!" there.
+  // builds the WHOLE track menu to find one row, and a parentless display
+  // throws "no session model found!" there.
   function makeModel() {
     return createTestEnvironment().createDisplay().display
   }

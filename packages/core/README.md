@@ -160,28 +160,6 @@ lands before React re-renders.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandHeight.ts)
 
-### clearPromotedDefaults
-
-Clear the named promoted defaults for this display type, so every track
-following one reverts to its own config value. Backs the badge's "clear session
-default" action, which passes the slots it actually listed
-(`getDisplayTypeDefaultChanges`).
-
-**`slots` is required, and an all-slots default is not the convenience it looks
-like.** It reaches further than any list a dialog can have shown: a promoted
-default the track _customized_ over is `inherited: false` and so appears in no
-row, yet still governs sibling tracks — so clearing it from a dialog that never
-showed it moves tracks other than the one whose badge was clicked. Clearing
-every promoted default at once is a preferences-scope action, and Preferences →
-"Reset to defaults" is where it lives (`clearPreferenceOverrides`).
-
-```js
-// type signature
-(self: ResolvableDisplay, slots: Iterable<string>) => void
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
-
 ### ColorEncoding
 
 How a mark's `color` channel resolves. A CSS colour or a `jexl:` expression
@@ -311,42 +289,12 @@ check, so reaching for the other one does not get a typo past tsc. It does not
 consult the session and has no per-slot behavior; what you read is what the
 track stores.
 
-A `promotable` slot read this way therefore yields the raw stored value,
-`undefined` included — that `undefined` is the cascade's inherit sentinel, and
-`resolveConf` is what turns it into a real value. The read type keeps the
-`undefined` on purpose, so reaching for the wrong reader is a compile error
-rather than a silent one.
-
 ```js
 // type signature
 { (model: {…}): ModelSnapshotType<…>; <…>(model: {…}, slotPath: SLOT, args?: Record<…> | undefined): SLOT extends string ? ConfigurationSlotValue<…> : any; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
-
-### getConfigSnapshotWithPromotables
-
-The display's full config snapshot with every `promotable` slot overwritten by
-its resolved value in place. For building a worker payload: a promotable slot
-serializes as its raw inherit sentinel (`undefined`, since they're all `maybe*`
-types), which the worker can't interpret — it has no session to resolve against.
-This hands it concrete values instead, with no per-slot bookkeeping, so adding a
-promotable worker-consumed slot needs no rpcProps change and can't silently ship
-a sentinel. Main-thread only (the cascade consults the session). Display-only
-promotable slots the worker never reads (e.g. displayMode) are still excluded by
-the caller — resolving them here is a harmless no-op since they're dropped
-anyway.
-
-The return type is branded (`ResolvedConfigSnapshot`) so a payload builder can
-demand a snapshot that has been through here. The assertion below is the one
-place the brand is applied, and it sits on the line after the resolve.
-
-```js
-// type signature
-(self: ResolvableDisplay) => ResolvedConfigSnapshot
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
 ### getContainingDisplay
 
@@ -394,19 +342,6 @@ Where a display puts a dialog it cannot mount itself.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
-
-### getDisplayTypeDefaultChanges
-
-Effective differences a track following the default inherits from session-wide
-defaults, one per promotable slot whose inherited value differs from its schema
-default. Drives the track-selector "affected by a session default" badge.
-
-```js
-// type signature
-(self: ResolvableDisplay) => TrackConfigChange[]
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
 ### getEnv
 
@@ -489,17 +424,6 @@ module actually uses.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/sessionServices.ts)
 
-### getTrackConfigWithPromotables
-
-See TrackConfigWithPromotables.
-
-```js
-// type signature
-(session: PromotedDefaultStore, trackConfig: ModelInstanceTypeProps<…> & {…} & IStateTreeNode<…>) => TrackConfigWithPromotables
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
-
 ### GLYPH_CODES
 
 The `point` shape's glyph code for each name an encoding can say.
@@ -533,7 +457,7 @@ to find the schema. `session.tracks` holds `types.frozen` plain objects until
 something references a track (ADR-031), so a caller handed one of those has a
 config that reads nothing but what was literally authored: a slot at its schema
 default is absent, `preProcessSnapshot` has not run, and nothing that walks a
-live node — the promotable cascade above all — applies to it.
+live node applies to it.
 
 For the callers that need the resolved answer rather than the authored one and
 cannot know which of the two they were handed. The About dialog's "Copy config"
@@ -559,26 +483,6 @@ needs; `CopyConfigEntryPoints.test.ts` pins both halves.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/configurationSchema.ts)
-
-### isSlotCustomized
-
-Whether this track has customized the slot (holds a non-default value of its
-own) rather than following the display type's default. The correct "reset to
-default" predicate for a promotable slot: comparing the resolved value to the
-base instead reads as at-default for a track merely _following_ a non-base
-promoted default, so the reset control lights up on a no-op.
-
-`SLOT` is constrained the way `getConf`'s is, and a widened `self` switches the
-check off (`HostChecksSlotNames`). A slot name the schema does not declare
-throws at the first read (`getSlotDefinition`), and a declared but
-non-promotable one throws in `resolveSlotIn`.
-
-```js
-// type signature
-<CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>>(self: ResolvableDisplay<CONFMODEL>, slot: SLOT) => boolean
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
 ### LaneName
 
@@ -609,63 +513,6 @@ lanes the display's shape reads.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
-### makePin
-
-The pin on a radio or slider row: "apply this value to every open track of this
-display type", and — via the snackbar it raises — "keep it as the default for
-the ones opened later".
-
-`value` chooses between the subsystem's two meanings, which are otherwise
-identical:
-
-- **Give it** for a per-value pin — "make _compact_ the default" — independent
-  of what the track currently shows. Use on an always-visible pin so it can
-  never promote a meaningless value, and so two rows sharing one slot (sashimi
-  `'down'` vs `'auto'`) stay independent.
-- **Omit it** for "whatever I'm showing", resolved through the cascade. Use for
-  a continuous setting where no fixed on-value makes sense (wiggle point size,
-  arc line width).
-
-A checkbox row takes neither: makeTogglePin.
-
-One function with an optional argument, rather than the two exported builders it
-replaces — a per-value one and a `…CurrentValue…` one, the second of which was
-exactly the first applied to `resolveSlot(self, slot).value`. The pair was one
-function plus a doc section explaining which name to reach for; omitting the
-argument now says what the longer name said.
-
-```js
-// type signature
-<CONFMODEL extends AnyConfigurationModel, SLOT extends ConfigurationSlotName<…>>(self: ResolvableDisplay<CONFMODEL>, slot: SLOT, ...value: [] | [...]) => ValuePin
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
-
-### makeTogglePin
-
-The pin on a checkbox row: the row's own checkbox, acting on every open track of
-the display type. `active` mirrors the row, so the pin draws filled exactly when
-the box is ticked; a click flips the row's state on every open track and offers
-the new state as the display type's default. It never clears a default the way
-makePin's filled pin does — flipping back and taking the offer promotes the
-other value, and promoting the base value clears the default
-(`applyAndOfferDefault`).
-
-Replaces a symmetric `makePin(self, slot)` on these rows, which carried the
-row's current state: beside an unchecked box that applied _off_ everywhere and
-visibly did nothing. It also replaces the per-value `makePin` a checkbox row
-over a shared enum slot used to carry, which gave two checkbox rows in one
-submenu two different pins: one filled when its value was promoted and clearing
-on a second click, the other filled when the box was ticked and flipping. With
-`states`, a checkbox row is always the toggle kind.
-
-```js
-// type signature
-<…>(self: ResolvableDisplay<CONFMODEL>, slot: SLOT, ...states: ConfigurationSlotValueResolved<...> extends boolean ? [] | [...] : [...]) => TogglePin
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
-
 ### MarkEncoding
 
 The declared mapping from a feature's fields to a mark's channels. `x` defaults
@@ -694,43 +541,6 @@ legend says why a mark is grey, or a disc, rather than listing a blank value.
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
-
-### openPromotableDisplays
-
-Every display on an open track, across all open views — the reach of anything
-that acts on "the tracks the user is looking at": a promoted default's "apply to
-open tracks", and the share/export bake. One walk so those can't drift apart.
-
-Recurses into composite views. A display nested in one resolves the cascade like
-any other but was invisible to both callers, so the share/export bake didn't
-bake its inherited values and a shared session containing a breakpoint-split or
-synteny view rendered differently for the recipient. `LGVSyntenyDisplay` is only
-ever reached through this branch, so don't flatten the recursion away.
-`hasChildViews` names the one composite shape it does not cover.
-
-A view holding neither (e.g. spreadsheet) drops out via the structural guards. A
-view whose displays declare no promotable slot (e.g. dotplot, which does hold
-tracks) is walked and contributes nothing — harmless, and cheaper than asking
-each display whether it has anything to promote.
-
-```js
-// type signature
-(session: AbstractSessionModel) => ResolvableDisplay[]
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/openDisplays.ts)
-
-### Pin
-
-The "apply this to every open track of this type" affordance on a menu row — the
-trailing `PushPin`, bundled so the row consumes it as one prop.
-
-`kind` is what the adornment words itself from and what the row builders check:
-a checkbox row takes a TogglePin, a radio or slider row a ValuePin. The two used
-to be told apart by `typeof onValue === 'boolean'`, which let a value pin over a
-boolean slot compile and read as a toggle while clearing on its second click.
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotablePin.ts)
 
 ### RampRef
 
@@ -820,57 +630,6 @@ bound) stated height when on. This is the single spelling of "off spends 0 px".
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/bandLayout.ts)
-
-### resolveConf
-
-Reads a `promotable` slot through the display-type-default cascade — the track's
-own value, else the session-wide promoted default for this display type, else
-the slot's `promotedBase`. Always yields a real value, never the `undefined`
-inherit sentinel, so a display's value getter is
-`get displayMode(): DisplayMode { return resolveConf(self, 'displayMode') }`
-with no post-guard and no cast.
-
-Separate from `getConf` rather than folded into it, deliberately: resolution
-consults the session, so it is main-thread only and throws on a detached node.
-Folding it in was built and reverted — ADR-046.
-
-Throws if `slot` isn't promotable — the cascade has nothing to say about a plain
-slot, and `getConf` is what you want there.
-
-Takes no jexl `args`, unlike `getConf`: a promotable slot cannot hold a callback
-(see `SlotResolution`), so there is no per-feature context to supply.
-
-```js
-// type signature
-<…>(model: ResolvableDisplay<...>, slot: SLOT) => ConfigurationSlotValueResolved<...>
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/getConf.ts)
-
-### ResolvedConfigSnapshot
-
-A display config snapshot whose promotable slots hold RESOLVED values rather
-than the inherit sentinel — what a worker payload has to be built from.
-
-The brand is required and unforgeable, so a plain `Record<string, unknown>` is
-not assignable to it and neither is `getSnapshot(self.configuration)`. That is
-the whole point. Everything downstream of the resolve is an ERASED container — a
-snapshot is `Record<string, unknown>`, and the payload it becomes is an
-`as`-asserted interface — so a payload builder handed the RAW snapshot instead
-typechecks, ships `undefined` for every promotable slot, and types it as the
-resolved value. That was measured, not supposed: the raw spelling in
-`LinearBasicDisplay`'s `rpcProps()` passed `pnpm typecheck` and every suite in
-`plugins/canvas`, `packages/core/src/configuration` and `products/jbrowse-web`,
-while sending the worker `undefined` for chevrons, subfeature labels and feature
-height.
-
-The rest of this subsystem's guarantees are carried by types that stay connected
-to the schema: a raw read of a promotable `maybe*` slot is `T | undefined` (see
-`ConfigurationSlotValue`), so `getConf` where `resolveConf` was meant is a
-compile error at any typed consumer. The brand is that guarantee re-established
-at the point where the connection is cut.
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
 
 ### runLazyAfterAttach
 
@@ -965,9 +724,9 @@ cast names a concrete schema instead (`ConfigModelForFields`, or the base schema
 when the slot is the base's), and `HostChecksSlotNames` pins each one.
 
 A wrong _value_ type still throws at runtime (MST type-checks the assignment)
-rather than at compile time. `value` is deliberately `unknown` because the
-inherit sentinel (`undefined`/`null`) is a legitimate write on every promotable
-slot, which the declared slot value type doesn't include.
+rather than at compile time. `value` is deliberately `unknown` because
+`undefined` is a legitimate write — it resets a slot to its schema default — and
+the declared slot value type doesn't include it.
 
 ```js
 // type signature
@@ -1011,47 +770,6 @@ never baked into the color string.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/colorRamp.ts)
 
-### TogglePin
-
-The pin on a checkbox row, built by makeTogglePin: the row's own checkbox over
-every open track of the display type. `active` mirrors the row, `onValue` is the
-state a click applies (the row's opposite), and `toggle` applies it everywhere
-and offers it as the default. It never clears a default on its own — promoting
-the slot's base value is what clears one.
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotablePin.ts)
-
-### TrackConfigWithPromotables
-
-A track config snapshot with every display's `promotable` slots resolved, plus
-the list of values that came from a session-wide default rather than from the
-config itself.
-
-For handing a track's config to somewhere that leaves the cascade for good — the
-About dialog's "Copy config", whose output a user pastes into a `config.json`. A
-raw `getSnapshot` records a slot a track merely _follows_ as absent
-(`stripDefault` collapsed it), so the copied config renders differently from the
-track it was copied from. This is `getComputedStyle` at that boundary, and
-`fromDisplayTypeDefaults` is what lets the UI say so rather than silently
-materializing a session preference into a track config.
-
-Resolves from the display _config_ alone, whether or not the track is open.
-Everything the cascade takes is on the config node: it is the same node an open
-display's `configuration` points at (the hydration cache makes it stable), its
-`type` is the display type the session-wide tier is keyed on (every display
-schema is `explicitlyTyped` under the display type's own name), and the session
-is passed in. So an unopened track — which has no display state at all — still
-has an answer to "what would this render as", by the same code path.
-
-**Writes every promotable slot, including the ones sitting at `promotedBase`,
-and that is the decision — don't "align" it with the share bake.** A pasted
-`config.json` is read by a mechanism with no cascade in it at all, so writing
-only the inherited values would leave every other slot to pick up whatever the
-reader has promoted in their own browser. Pinned by
-`products/jbrowse-web/src/tests/CopyConfigPromotedDefaults.test.ts`.
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
-
 ### TransformStep
 
 One step over the features before any layer is encoded, named by `type` the way
@@ -1059,16 +777,6 @@ GenomeSpy spells a transform. `filter` keeps the features a `jexl:` expression
 admits; every step runs in order.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
-
-### ValuePin
-
-The pin on a radio or slider row, built by makePin: `onValue` is the row's own
-value, `active` means that value is the display type's promoted default, and
-`toggle` on an outline pin applies the value to every open track and offers it
-as the default, while on a filled pin it clears that default and touches no
-track (`applyAndOfferDefault` / `clearDefault`).
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotablePin.ts)
 
 ### VIRIDIS_STOPS
 

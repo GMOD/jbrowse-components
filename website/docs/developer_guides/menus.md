@@ -179,8 +179,7 @@ Every variant except `divider` and `subHeader` also takes these:
 | `helpText` | `string` | tooltip shown from a help icon at the trailing edge |
 | `disabledHelpText` | `string` | tooltip shown when the item is disabled, in place of helpText |
 | `keepMenuOpen` | `boolean` | override the dismiss-on-click rule; see `staysOpenOnClick` |
-| `endAdornment` | `React.ReactNode` | arbitrary trailing content; prefer `pin` |
-| `pin` | `MenuItemPin` | the "apply this to all open tracks of this type" pin; set it through a row builder's `pin` option |
+| `endAdornment` | `React.ReactNode` | arbitrary trailing content |
 
 <!-- MENU_ITEM_FIELDS END -->
 
@@ -205,10 +204,10 @@ the Material UI barrel into every host that installs the plugin.
 <!-- prettier-ignore -->
 | Builder | Description |
 | --- | --- |
-| `checkboxItem` | one checkbox setting row, with a toggle pin when the setting is promotable |
+| `checkboxItem` | one checkbox setting row |
 | `makeRadioSubMenu` | a radio group wrapped in a submenu row |
 | `radioItem` | one radio setting row; the singular of `radioItems` |
-| `radioItems` | a radio group, one row per option, with a value pin per option when the setting is promotable |
+| `radioItems` | a radio group, one row per option |
 | `showLegendCheckboxItem` | the shared "Show legend" checkbox |
 | `toggleItem` | a checkbox row whose setter takes the new value |
 | `withHint` | a row label carrying an aside that is only sometimes there |

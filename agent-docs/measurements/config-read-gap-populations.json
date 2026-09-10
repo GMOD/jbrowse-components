@@ -1,6 +1,6 @@
 {
   "id": "config-read-gap-populations",
-  "measured": "2026-09-01",
+  "measured": "2026-09-10",
   "published": false,
   "source": {
     "kind": "bench",
@@ -28,7 +28,7 @@
       "values": {
         "population": "track or assembly schema",
         "slots": "`name`, `assemblyNames`, `trackId`, `adapter`",
-        "reads": 79
+        "reads": 78
       }
     },
     {
@@ -42,7 +42,7 @@
       "values": {
         "population": "everything else",
         "slots": "31 other names",
-        "reads": 44
+        "reads": 42
       }
     }
   ]

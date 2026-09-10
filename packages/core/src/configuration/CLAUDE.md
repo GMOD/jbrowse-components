@@ -1,8 +1,7 @@
 # Configuration package
 
-Full model: `agent-docs/reference/CONFIG_PATTERN.md` (reading a slot off the
-node not the snapshot, forwarding a callback slot raw, reference resolution) and
-`DISPLAY_TYPE_DEFAULTS.md`.
+Full model: `agent-docs/reference/CONFIG_PATTERN.md` — reading a slot off the
+node not the snapshot, forwarding a callback slot raw, reference resolution.
 
 ## Readers
 
@@ -14,13 +13,9 @@ node not the snapshot, forwarding a callback slot raw, reference resolution) and
 - **`setSlot` throws on an undeclared name**, which is what makes a misspelled
   _write_ diagnosable at all; `setConf`'s compile-time guard only covers
   concrete schemas and a mixin erases that.
-- **`resolveConf` is the only thing that walks a promotable slot's cascade.**
-  `getConf` stays raw — never paper over the compile error with `?? default`.
-- **`promotedBase` is the one thing that makes a slot promotable.** Such a slot
-  is a `maybe*` type with no `defaultValue`; `undefined` is the only inherit
-  sentinel. Every boundary serializing a display config **must flatten**
-  (worker, shared session). Resolved values are shared by reference and frozen —
-  copy to modify.
+- **A worker payload is `fullConfSnapshot`, not `getSnapshot`.** `stripDefault`
+  omits a slot sitting at its default, and a worker has no schema to fill it
+  back in.
 - **An arg-less read of a `jexl:` slot still evaluates**, against a context
   where every name is `undefined`, and returns the fallout as the setting.
   Skipping evaluation when `args` is empty was built, measured and backed out.
@@ -29,8 +24,7 @@ node not the snapshot, forwarding a callback slot raw, reference resolution) and
 
 - A subclass redeclaring a slot gets a **field-by-field merge**, so state only
   what differs — but keep `type`, which is what distinguishes a slot from a
-  sub-schema. It is a spread, so turning a base field off means stating it
-  (`promotedBase: undefined`).
+  sub-schema. It is a spread, so turning a base field off means stating it.
 - **`defaultValue` is required only on a non-`maybe*` slot**, which is what the
   `ConfigSlotDefinition` union says. A `maybe*` slot's default is unset, so omit
   the field rather than writing `defaultValue: undefined` — **except when the

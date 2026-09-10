@@ -322,9 +322,8 @@ The caller supplies `plugins` and `viewModel` because this package sits above
 
 **Don't hand-roll one.** Ten did, and every failure the arrangement produced was
 invisible from inside any one file: nine copied `console.error = jest.fn()` and
-muted every display-contract check; twenty-one of twenty-eight session fakes in
-the repo lacked `getDisplayTypeDefault`; `palette` was in two harnesses of ten
-while every model-side color getter reads it; and half of them left `displays[0]`
+muted every display-contract check; `palette` was in two harnesses of ten while
+every model-side color getter reads it; and half of them left `displays[0]`
 un-annotated, so those suites asserted against `any` (folding the last two in
 turned up five assertions that had been doing exactly that).
 

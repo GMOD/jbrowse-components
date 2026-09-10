@@ -233,7 +233,7 @@ const GENERATORS: Generator[] = [
   {
     // The generated pages under website/docs/{config,models,api}, the marker
     // blocks that need the whole-repo program (DISPLAY_TYPES, GOTCHA,
-    // PROMOTABLE_SLOTS, SPEC_KEYS, ...), each package's API_DOCS README block,
+    // SPEC_KEYS, ...), each package's API_DOCS README block,
     // and api-docs/coverage-gaps.txt. generateConfigDocs reads the shorthand
     // keys out of the manifest.
     name: 'config/model/api docs',

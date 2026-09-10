@@ -6,13 +6,13 @@ sidebar_label: Mixin -> LegendMixin
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/display-kit/src/LegendMixin.ts).
 
-#crossCuttingMixin The legend, whole. A display declares the color scales it paints with (`colorScales`, a getter hook) and the mixin derives the key from them (`legendSpec`, through `legendSpecOf`), keeps the promotable `showLegend` slot's resolved getter, display-type pin and setter, dismisses sections one at a time (`dismissLegendSection`, undone by re-showing the legend), answers whether there is a key to offer (`hasLegendKey`) and whether the export parks it beside the plot (`svgLegendWidth`). `DisplayChrome` draws the on-screen key and `renderDisplaySvg` the exported one, so a display places neither
+#crossCuttingMixin The legend, whole. A display declares the color scales it paints with (`colorScales`, a getter hook) and the mixin derives the key from them (`legendSpec`, through `legendSpecOf`), keeps the `showLegend` slot's getter and setter, dismisses sections one at a time (`dismissLegendSection`, undone by re-showing the legend), answers whether there is a key to offer (`hasLegendKey`) and whether the export parks it beside the plot (`svgLegendWidth`). `DisplayChrome` draws the on-screen key and `renderDisplaySvg` the exported one, so a display places neither
 
 A key derived from the scales the painter resolves colors through cannot
 list a color nothing painted, which is what a legend hand-built from a second
 copy of the rules used to do. The config slot stays per display: the
-composing schemas set `promotedBase` differently (a Hi-C color scale is off
-by default, a variant genotype key on) and describe different legends, so
+composing schemas default it differently (a Hi-C color scale is off by
+default, a variant genotype key on) and describe different legends, so
 this mixin supplies the accessors over the slot and never the slot.
 
 ## Volatiles
@@ -27,8 +27,7 @@ this mixin supplies the accessors over the slot and never the slot.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-showlegend">**showLegend**</span><br><code>boolean</code> | Whether the legend is drawn. Resolved through the promotable-slot tiers (`resolveConf`): an explicit track value customizes it either way, otherwise it follows the session-wide default for this display type, falling back to the slot's `promotedBase`. |
-| <span id="getter-showlegenddisplaytypedefault">**showLegendDisplayTypeDefault**</span><br><code>TogglePin</code> | The legend checkbox over every open track of this type. `showLegendCheckboxItem` takes this as its `pin`. |
+| <span id="getter-showlegend">**showLegend**</span><br><code>boolean</code> | Whether the legend is drawn. |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | Overridable hook (default none): the color scales this display paints with, in the order the key lists them. Each becomes one section of the legend, so a display with two vocabularies (genotype colors and sample groups) declares two. |
 | <span id="getter-legendtop">**legendTop**</span><br><code>number</code> | Overridable hook (default 0): px the key is pushed down from its own inset, on screen and in the export alike. A display that already draws something of its own in that corner — Hi-C's resolution box — answers that thing's height; the chrome adds its own axis captions on top. |
 | <span id="getter-legendspec">**legendSpec**</span><br><code>LegendSpec</code> | The key, derived from `colorScales` less the sections the reader dismissed. `DisplayChrome` renders it on screen and `renderDisplaySvg` flattens it for the export, so the two describe one set of colors. |

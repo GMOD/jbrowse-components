@@ -2858,7 +2858,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "heightMode",
-          "type": "(JexlString | (heightMode | undefined))"
+          "type": "(JexlString | heightMode)"
         },
         {
           "name": "growMaxHeight",
@@ -2878,11 +2878,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "showLabels",
-          "type": "(JexlString | (showLabels | undefined))"
+          "type": "(JexlString | showLabels)"
         },
         {
           "name": "maxLabelFeatureDensity",
@@ -2914,7 +2914,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displayMode",
-          "type": "(JexlString | (displayMode | undefined))"
+          "type": "(JexlString | displayMode)"
         },
         {
           "name": "geneGlyphMode",
@@ -2922,11 +2922,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "subfeatureLabels",
-          "type": "(JexlString | (subfeatureLabels | undefined))"
+          "type": "(JexlString | subfeatureLabels)"
         },
         {
           "name": "displayDirectionalChevrons",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "transcriptTypes",
@@ -3080,7 +3080,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "legend",
@@ -3150,11 +3150,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "featureHeight",
-          "type": "(JexlString | (number | undefined))"
+          "type": "(JexlString | number)"
         },
         {
           "name": "heightMode",
-          "type": "(JexlString | (heightMode | undefined))"
+          "type": "(JexlString | heightMode)"
         },
         {
           "name": "growMaxHeight",
@@ -3174,11 +3174,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showSashimiLabels",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "hideNonCanonicalJunctions",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "maxHeight",
@@ -3186,7 +3186,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "colorBy",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(JexlString | frozen)"
         },
         {
           "name": "filterBy",
@@ -3226,7 +3226,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "mismatchAlpha",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "showLowFreqMismatches",
@@ -3234,7 +3234,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "sortedBy",
@@ -3254,7 +3254,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "linkedReads",
-          "type": "(JexlString | (LinkedReadsMode | undefined))"
+          "type": "(JexlString | LinkedReadsMode)"
         },
         {
           "name": "showBezierConnections",
@@ -3314,19 +3314,19 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "readConnections",
-          "type": "(JexlString | (ReadConnectionsMode | undefined))"
+          "type": "(JexlString | ReadConnectionsMode)"
         },
         {
           "name": "readConnectionsDown",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "showSashimiArcs",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "sashimiArcsMode",
-          "type": "(JexlString | (SashimiArcsMode | undefined))"
+          "type": "(JexlString | SashimiArcsMode)"
         },
         {
           "name": "minSashimiScore",
@@ -3342,7 +3342,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showSoftClipping",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         }
       ],
       "aliases": [
@@ -3423,11 +3423,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "drawCurves",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "drawLocationMarkers",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         }
       ],
       "stateModelProps": [
@@ -3468,11 +3468,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "featureHeight",
-          "type": "(JexlString | (number | undefined))"
+          "type": "(JexlString | number)"
         },
         {
           "name": "heightMode",
-          "type": "(JexlString | (heightMode | undefined))"
+          "type": "(JexlString | heightMode)"
         },
         {
           "name": "growMaxHeight",
@@ -3492,11 +3492,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showSashimiLabels",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "hideNonCanonicalJunctions",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "maxHeight",
@@ -3504,7 +3504,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "colorBy",
-          "type": "(JexlString | (frozen | undefined))"
+          "type": "(JexlString | frozen)"
         },
         {
           "name": "filterBy",
@@ -3544,7 +3544,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "mismatchAlpha",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "showLowFreqMismatches",
@@ -3552,7 +3552,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "sortedBy",
@@ -3572,7 +3572,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "linkedReads",
-          "type": "(JexlString | (LinkedReadsMode | undefined))"
+          "type": "(JexlString | LinkedReadsMode)"
         },
         {
           "name": "showBezierConnections",
@@ -3632,19 +3632,19 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "readConnections",
-          "type": "(JexlString | (ReadConnectionsMode | undefined))"
+          "type": "(JexlString | ReadConnectionsMode)"
         },
         {
           "name": "readConnectionsDown",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "showSashimiArcs",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "sashimiArcsMode",
-          "type": "(JexlString | (SashimiArcsMode | undefined))"
+          "type": "(JexlString | SashimiArcsMode)"
         },
         {
           "name": "minSashimiScore",
@@ -3660,7 +3660,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showSoftClipping",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "hideSelfAlignments",
@@ -3730,7 +3730,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "showLaneTicks",
@@ -3824,7 +3824,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "heightMode",
-          "type": "(JexlString | (heightMode | undefined))"
+          "type": "(JexlString | heightMode)"
         },
         {
           "name": "growMaxHeight",
@@ -3844,11 +3844,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "showLabels",
-          "type": "(JexlString | (showLabels | undefined))"
+          "type": "(JexlString | showLabels)"
         },
         {
           "name": "maxLabelFeatureDensity",
@@ -3880,7 +3880,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "displayMode",
-          "type": "(JexlString | (displayMode | undefined))"
+          "type": "(JexlString | displayMode)"
         },
         {
           "name": "geneGlyphMode",
@@ -3888,11 +3888,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "subfeatureLabels",
-          "type": "(JexlString | (subfeatureLabels | undefined))"
+          "type": "(JexlString | subfeatureLabels)"
         },
         {
           "name": "displayDirectionalChevrons",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "transcriptTypes",
@@ -4035,7 +4035,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "colorBy",
@@ -4160,7 +4160,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "colorBy",
@@ -4233,7 +4233,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "showLDTriangle",
@@ -4350,11 +4350,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "scatterPointSize",
-          "type": "(JexlString | (number | undefined))"
+          "type": "(JexlString | number)"
         },
         {
           "name": "lineWidth",
-          "type": "(JexlString | (number | undefined))"
+          "type": "(JexlString | number)"
         },
         {
           "name": "maxGapMultiple",
@@ -4362,7 +4362,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "scoreRules",
@@ -4448,11 +4448,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "scatterPointSize",
-          "type": "(JexlString | (number | undefined))"
+          "type": "(JexlString | number)"
         },
         {
           "name": "lineWidth",
-          "type": "(JexlString | (number | undefined))"
+          "type": "(JexlString | number)"
         },
         {
           "name": "maxGapMultiple",
@@ -4492,7 +4492,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         }
       ],
       "stateModelProps": [
@@ -4590,11 +4590,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "scatterPointSize",
-          "type": "(JexlString | (number | undefined))"
+          "type": "(JexlString | number)"
         },
         {
           "name": "lineWidth",
-          "type": "(JexlString | (number | undefined))"
+          "type": "(JexlString | number)"
         },
         {
           "name": "maxGapMultiple",
@@ -4602,7 +4602,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "scoreRules",
@@ -4716,11 +4716,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "scatterPointSize",
-          "type": "(JexlString | (number | undefined))"
+          "type": "(JexlString | number)"
         },
         {
           "name": "lineWidth",
-          "type": "(JexlString | (number | undefined))"
+          "type": "(JexlString | number)"
         },
         {
           "name": "maxGapMultiple",
@@ -4728,7 +4728,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "scoreRules",
@@ -4826,7 +4826,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "showCoverage",
@@ -4915,7 +4915,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "resolutionBias",
@@ -5028,7 +5028,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "lineWidth",
-          "type": "(JexlString | (number | undefined))"
+          "type": "(JexlString | number)"
         },
         {
           "name": "minScore",
@@ -5113,11 +5113,11 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "scatterPointSize",
-          "type": "(JexlString | (number | undefined))"
+          "type": "(JexlString | number)"
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         }
       ],
       "stateModelProps": [
@@ -5264,7 +5264,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "scatterPointSize",
-          "type": "(JexlString | (number | undefined))"
+          "type": "(JexlString | number)"
         },
         {
           "name": "minimalTicks",
@@ -5272,7 +5272,7 @@ export const configManifest: ConfigManifest = {
         },
         {
           "name": "showLegend",
-          "type": "(JexlString | (boolean | undefined))"
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "jexlFilters",

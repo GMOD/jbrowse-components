@@ -8,16 +8,15 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 
 #crossCuttingMixin Track-height strategy; the one row that must compose **after** `TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the raw slot). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight`, and the grow-exit bake reaction that writes the grown height into the slot when the mode leaves grow
 
-The whole track-height strategy every display with a promotable `heightMode`
-config slot shares (the canvas feature display, the alignments display), so the
+The whole track-height strategy every display with a `heightMode` config slot
+shares (the canvas feature display, the alignments display), so the
 fixed/grow/fit vocabulary is identical by construction rather than by two call
 sites that happen to agree. What differs between the two — canvas fits a
 feature stack, alignments a grouped pileup — is exactly one getter,
 `growTargetHeight`.
 
-`heightMode` is the single source of truth (resolved through the promotable
-session-default cascade); `autoHeight`/`fitHeightToDisplay` are plain-flag
-conveniences derived from it. `fitTargetHeight` is the raw drag-resizable
+`heightMode` is the single source of truth; `autoHeight`/`fitHeightToDisplay`
+are plain-flag conveniences derived from it. `fitTargetHeight` is the raw drag-resizable
 `height` slot, read by the fit/grow layout machinery INSTEAD of the reactive
 `height` getter: in grow mode `height` returns the content-derived grown height,
 so routing the layout through it would make that height depend on itself (a MobX
@@ -40,7 +39,7 @@ written in one `types.compose` and says what it costs.
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-heightmode">**heightMode**</span><br><code>"fit" &#124; "fixed" &#124; "grow"</code> | The resolved track-height strategy (`fixed`/`grow`/`fit`). Promotable sentinel slot: resolveConf walks the customized-track -> session-default -> `fixed` cascade and never returns the `inherit` sentinel. |
+| <span id="getter-heightmode">**heightMode**</span><br><code>"fit" &#124; "fixed" &#124; "grow"</code> | The track-height strategy (`fixed`/`grow`/`fit`). |
 | <span id="getter-fittargetheight">**fitTargetHeight**</span><br><code>number</code> | The drag-resizable track height as stored in the config slot — the fit target the fit/grow layout scales or packs content into. Read there instead of the reactive `height` getter to break the grow-mode cycle (`height`->grownHeight->layout->height). Equals `height` in fixed/fit. |
 | <span id="getter-growmaxheight">**growMaxHeight**</span><br><code>number</code> | Ceiling `grow` mode sizes the track to, in px (content past it scrolls). Lives here rather than as a constant so a track whose whole point is a deep pileup can raise it; both displays that own a `grownHeight` read this, so the two can't diverge. |
 | <span id="getter-autoheight">**autoHeight**</span><br><code>boolean</code> | `grow` mode as a boolean, derived from the unified `heightMode` slot. |
