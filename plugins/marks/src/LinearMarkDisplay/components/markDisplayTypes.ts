@@ -8,6 +8,7 @@ import type {
 } from '../markList.ts'
 import type { MarkRenderingBackend } from '../model.ts'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
+import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 
@@ -31,6 +32,7 @@ export interface MarkDisplayModel extends WiggleGpuDisplayModel<
   scatterPointSize: number
   hoveredFeature: MarkHitInfo | undefined
   legendSections: MarkLegendSection[]
+  skippedFeatures: SkippedFeatures
   showLegend: boolean
   setHoveredFeature: (hit: MarkHitInfo | undefined) => void
   clearHoveredFeature: () => void

@@ -27,6 +27,7 @@ function mkData(x: number[], x2: number[], y: number[]): ScoreRegionData {
   const count = x.length
   return {
     count,
+    skipped: 0,
     x: Uint32Array.from(x),
     x2: Uint32Array.from(x2),
     y: Float32Array.from(y),

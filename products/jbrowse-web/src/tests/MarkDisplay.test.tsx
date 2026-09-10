@@ -159,6 +159,19 @@ test('points with the glyph a scale over a field, and the key drawing each glyph
   ])
 }, 30000)
 
+test('a y field naming no column is a skipped count in the corner, not an empty track', async () => {
+  const { view, findByTestId } = await createView(
+    markTrackConfig('mark_typo', [{ shape: 'bar', encoding: { y: 'scroe' } }]),
+  )
+  view.setNewView(5, 0)
+  fireEvent.click(await findByTestId(hts('mark_typo'), {}, { timeout }))
+
+  const chip = await findByTestId('track-control-filter', {}, { timeout })
+  expect(chip.getAttribute('aria-label')).toMatch(
+    /^\d+ of \d+ features skipped: `scroe` missing or not a number$/,
+  )
+}, 30000)
+
 test('spans stacked by a row channel band the plot by the highest row', async () => {
   const { view, findByTestId } = await createView(
     markTrackConfig('mark_rows', [

@@ -55,9 +55,10 @@ test('x and x2 default to start and end, read natively', () => {
   expect(r.scale).toBeUndefined()
 })
 
-test('a declared y skips the features whose value is not finite', () => {
+test('a declared y skips the features whose value is not finite, and counts them', () => {
   const r = encodeFeatures(features, { y: 'score' }, ALL, { jexl })
   expect(r.count).toBe(3)
+  expect(r.skipped).toBe(2)
   expect([...r.y]).toEqual([10, 40, 25])
   expect([...r.featureIndex]).toEqual([0, 1, 2])
   expect(r.yMin).toBe(10)

@@ -6,6 +6,7 @@ import type {
 } from '../manhattanRenderingBackendTypes.ts'
 import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type Flatbush from '@jbrowse/core/util/flatbush'
+import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { ScoreRuleMark, WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 
@@ -30,6 +31,7 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   scatterPointSize: number
   hoveredFeature: ManhattanHit | undefined
   indexSnpMissing: boolean
+  skippedFeatures: SkippedFeatures
   // the significance threshold as a score rule, [] when unset or off-domain
   scoreRuleMarks: ScoreRuleMark[]
   setHoveredFeature: (hit: ManhattanHit | undefined) => void

@@ -15,6 +15,7 @@ import LegendMixin, {
   legendCheckboxItem,
 } from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import { skippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
@@ -66,6 +67,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { CategoricalEntry, ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Region } from '@jbrowse/core/util/types/data'
+import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import type {
   HighlightRect,
   HighlightStyle,
@@ -478,6 +480,20 @@ export function stateModelFactory(
          */
         get highlightStyle(): HighlightStyle {
           return 'ring'
+        },
+        /**
+         * #getter
+         * What the worker left out of the loaded regions — a feature whose
+         * `scoreField` read as missing or not a number — for the corner
+         * notice.
+         */
+        get skippedFeatures(): SkippedFeatures {
+          const field = self.scoreField
+          return skippedFeatures(
+            [...self.rpcDataMap.values()].map(d => [
+              { count: d.count, skipped: d.skipped, field },
+            ]),
+          )
         },
         /**
          * #getter

@@ -70,6 +70,19 @@ test('a Manhattan scoreField plots another column as y', async () => {
   expect(scores).toContain(50001)
 }, 30000)
 
+test('a Manhattan scoreField naming no column says so in the corner', async () => {
+  const { display, findByTestId } = await openTrack(
+    { type: 'LinearManhattanDisplay', scoreField: 'pvalue' },
+    'manhattan-display',
+  )
+  const chip = await findByTestId('track-control-filter', {}, { timeout })
+  expect(chip.textContent).toContain('skipped')
+  expect(chip.getAttribute('aria-label')).toMatch(
+    /^\d+ of \d+ features skipped: `pvalue` missing or not a number$/,
+  )
+  expect(display.skippedFeatures.skipped).toBe(display.skippedFeatures.total)
+}, 30000)
+
 test('Manhattan field coloring derives its key from the values the worker met', async () => {
   const { display, findByTestId } = await openTrack(
     { type: 'LinearManhattanDisplay', colorBy: 'field', colorField: 'sample' },

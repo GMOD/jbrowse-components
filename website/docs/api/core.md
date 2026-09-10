@@ -127,8 +127,9 @@ the lanes named, the scale table each scaled channel came from, the `y`
 extremes and — when `index` is among the lanes — a hit index.
 
 A feature whose `x`, `x2` or (declared and asked-for) `y` is not finite is
-skipped, so every array stays index-aligned with the Flatbush. Pure: the
-RPC around it owns the adapter, the filters and the transferables.
+skipped and counted in `skipped`, so every array stays index-aligned with
+the Flatbush. Pure: the RPC around it owns the adapter, the filters and the
+transferables.
 
 ```js
 // type signature

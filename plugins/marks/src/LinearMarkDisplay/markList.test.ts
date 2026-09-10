@@ -41,6 +41,7 @@ function layer(
   fb.finish()
   return {
     count,
+    skipped: 0,
     x: xs,
     x2: x2s,
     y: ys,

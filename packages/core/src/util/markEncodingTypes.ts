@@ -144,6 +144,12 @@ export type ScaleTable = ColorScaleTable | GlyphScaleTable
  */
 export interface EncodedChannels {
   count: number
+  /**
+   * Features the walk left out: one whose `x`, `x2` or `y` read as missing
+   * or not a number. A mistyped field skips every feature, so a display
+   * reads this beside `count` to say so.
+   */
+  skipped: number
   x: Uint32Array
   x2: Uint32Array
   featureIndex: Uint32Array

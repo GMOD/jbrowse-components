@@ -43,6 +43,7 @@ export function manhattanFixture({
   }
   return {
     count,
+    skipped: 0,
     x: Uint32Array.from(x),
     x2: Uint32Array.from(x2),
     y: Float32Array.from(y),

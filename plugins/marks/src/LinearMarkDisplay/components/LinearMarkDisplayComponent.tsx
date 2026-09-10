@@ -1,11 +1,13 @@
 import { useCallback, useMemo } from 'react'
 
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
+import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import {
   DisplayContextMenu,
   openContextMenuFromEvent,
 } from '@jbrowse/display-kit/DisplayContextMenu'
+import SkippedFeaturesIndicator from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { wiggleMouseHandlers } from '@jbrowse/plugin-wiggle'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
@@ -115,6 +117,9 @@ const MarkBody = observer(function MarkBody({
       <PointerLayer mouseTracker={mouseTracker}>
         {mouseState => <MarkTooltip model={model} mouseState={mouseState} />}
       </PointerLayer>
+      <BottomRightIndicators>
+        <SkippedFeaturesIndicator {...model.skippedFeatures} />
+      </BottomRightIndicators>
       <DisplayContextMenu model={model} />
     </>
   )

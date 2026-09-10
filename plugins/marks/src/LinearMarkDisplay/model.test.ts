@@ -58,6 +58,7 @@ function result(
   return {
     layers: layers.map(({ y, row, scale, glyphScale }) => ({
       count: y.length,
+      skipped: 0,
       x: Uint32Array.from(y.map((_, i) => i * 100)),
       x2: Uint32Array.from(y.map((_, i) => i * 100 + 50)),
       y: Float32Array.from(y),

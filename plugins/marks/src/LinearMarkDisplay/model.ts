@@ -23,6 +23,7 @@ import LegendMixin, {
   legendCheckboxItem,
 } from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import { skippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
@@ -72,6 +73,7 @@ import type {
   MarkEncoding,
 } from '@jbrowse/core/util/markEncoding'
 import type { Region } from '@jbrowse/core/util/types/data'
+import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -418,6 +420,23 @@ export function stateModelFactory(
               ? [{ mark: hit.markIndex, index: hit.instance }]
               : undefined,
         ).map(r => ({ ...r, top: r.top + top }))
+      },
+      /**
+       * #getter
+       * What the worker left out of the loaded regions — a feature whose
+       * `y` field read as missing or not a number — for the corner notice.
+       */
+      get skippedFeatures(): SkippedFeatures {
+        const { encodings } = self
+        return skippedFeatures(
+          [...self.rpcDataMap.values()].map(d =>
+            d.layers.map((layer, i) => ({
+              count: layer.count,
+              skipped: layer.skipped,
+              field: encodings[i]?.y,
+            })),
+          ),
+        )
       },
       /**
        * #getter

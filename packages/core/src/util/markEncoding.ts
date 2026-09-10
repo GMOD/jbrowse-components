@@ -248,8 +248,9 @@ function hasMissing(indexOf: Int32Array, count: number) {
  * extremes and — when `index` is among the lanes — a hit index.
  *
  * A feature whose `x`, `x2` or (declared and asked-for) `y` is not finite is
- * skipped, so every array stays index-aligned with the Flatbush. Pure: the
- * RPC around it owns the adapter, the filters and the transferables.
+ * skipped and counted in `skipped`, so every array stays index-aligned with
+ * the Flatbush. Pure: the RPC around it owns the adapter, the filters and the
+ * transferables.
  */
 export function encodeFeatures<L extends LaneName>(
   features: readonly Feature[],
@@ -428,6 +429,7 @@ export function encodeFeatures<L extends LaneName>(
 
   const encoded: EncodedChannels = {
     count,
+    skipped: n - count,
     x: x.subarray(0, count),
     x2: x2.subarray(0, count),
     featureIndex: featureIndex.subarray(0, count),

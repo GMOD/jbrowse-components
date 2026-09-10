@@ -1,11 +1,13 @@
 import { useCallback } from 'react'
 
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
+import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import {
   DisplayContextMenu,
   openContextMenuFromEvent,
 } from '@jbrowse/display-kit/DisplayContextMenu'
+import SkippedFeaturesIndicator from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { wiggleMouseHandlers } from '@jbrowse/plugin-wiggle'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
@@ -136,6 +138,9 @@ const ManhattanBody = observer(function ManhattanBody({
           <TooltipComponent model={model} mouseState={mouseState} />
         )}
       </PointerLayer>
+      <BottomRightIndicators>
+        <SkippedFeaturesIndicator {...model.skippedFeatures} />
+      </BottomRightIndicators>
       <DisplayContextMenu model={model} />
     </>
   )

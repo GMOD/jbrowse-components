@@ -65,6 +65,15 @@ every-instance walk) declines it. A `jexl` instance is likewise passed only
 by a caller with a `jexl:` channel to compile; every other channel is a
 field name or a reader.
 
+**A feature the encoder cannot place is counted, not lost.** A feature whose
+`x`, `x2` or asked-for `y` reads as missing or not a number is left out of
+the arrays and added to `skipped` beside `count`, and the mark display and
+Manhattan sum the two over their loaded regions into a warning chip in the
+bottom-right corner (`SkippedFeaturesIndicator` in display-kit, the same
+`TrackControl` the height indicator uses for features the layout dropped):
+"4 of 4 skipped", with the tooltip naming the `y` field. Before it, a
+mistyped `scoreField` or `encoding.y` was an empty track with no message.
+
 **A `jexl:` ref is a channel escape, not the default.** The measurement below
 is why: the native read is the loop's own cost and a jexl evaluation is half
 again on top of it per channel.
