@@ -66,6 +66,69 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
   },
   "additionalProperties": false,
   "$defs": {
+    "StringOrJexl": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/JexlString"
+        }
+      ]
+    },
+    "NumberOrJexl": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "$ref": "#/$defs/JexlString"
+        }
+      ]
+    },
+    "IntegerOrJexl": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "$ref": "#/$defs/JexlString"
+        }
+      ]
+    },
+    "BooleanOrJexl": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "$ref": "#/$defs/JexlString"
+        }
+      ]
+    },
+    "FileLocationOrJexl": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FileLocation"
+        },
+        {
+          "$ref": "#/$defs/JexlString"
+        }
+      ]
+    },
+    "StringArrayOrJexl": {
+      "anyOf": [
+        {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        {
+          "$ref": "#/$defs/JexlString"
+        }
+      ]
+    },
     "JexlString": {
       "type": "string",
       "pattern": "^jexl:",
@@ -188,14 +251,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "cytobandLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/cytoband.txt.gz"
           }
@@ -236,14 +292,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "size in bytes over which to display a warning to the user that too much data will be fetched.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 5000000
         },
         "densityAdapter": {
@@ -252,39 +301,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "useSliceWorkerPool": {
           "description": "decode CRAM slices on a pool of workers rather than in the thread that asked.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "cramLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.cram",
             "locationType": "UriLocation"
           }
         },
         "craiLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.cram.crai",
             "locationType": "UriLocation"
@@ -340,14 +368,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "BAI"
         },
         "location": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.bam.bai",
             "locationType": "UriLocation"
@@ -363,14 +384,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bamLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.bam",
             "locationType": "UriLocation"
@@ -381,14 +395,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "fetchSizeLimit": {
           "description": "size to fetch in bytes over which to display a warning to the user that too much data will be fetched.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 5000000
         },
         "densityAdapter": {
@@ -434,28 +441,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "samLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.sam",
             "locationType": "UriLocation"
           }
         },
         "samText": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "uri": {
@@ -494,14 +487,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "htsgetBase": {
           "description": "the base URL to fetch from.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "",
             "locationType": "UriLocation"
@@ -509,14 +495,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "htsgetTrackId": {
           "description": "the trackId, which is appended to the base URL.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "densityAdapter": {
@@ -550,14 +529,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bigBedLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.bb",
             "locationType": "UriLocation"
@@ -565,38 +537,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "scoreColumn": {
           "description": "The column to use as a \\"score\\" attribute.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "aggregateField": {
           "description": "An attribute to aggregate features with.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "geneName2"
         },
         "disableGeneHeuristic": {
           "description": "Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications).",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "densityAdapter": {
@@ -639,14 +590,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "bedLocation": {
           "description": "path to bed file, also allows gzipped bed.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.bed.gz",
             "locationType": "UriLocation"
@@ -654,88 +598,36 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "columnNames": {
           "description": "List of column names. A column named like a standard BED column is parsed as that column's type (chromStart numeric, blockSizes a numeric list); any other column is text.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "scoreColumn": {
           "description": "The column to use as a \\"score\\" attribute.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "autoSql": {
           "description": "The autoSql definition for the data fields in the file.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "colRef": {
           "description": "The column to use as a \\"refName\\" attribute.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "colStart": {
           "description": "The column to use as a \\"start\\" attribute.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
         "colEnd": {
           "description": "The column to use as a \\"end\\" attribute.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 2
         },
         "disableGeneHeuristic": {
           "description": "Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications).",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "uri": {
@@ -774,14 +666,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "bedpeLocation": {
           "description": "can be plaintext or gzipped, not indexed so loaded into memory on startup.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.bedpe.gz",
             "locationType": "UriLocation"
@@ -789,17 +674,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "columnNames": {
           "description": "List of column names.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "uri": {
           "type": "string",
@@ -837,14 +712,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "starFusionLocation": {
           "description": "STAR-Fusion TSV output file (plain text or gzipped).",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/star-fusion.fusion_predictions.tsv",
             "locationType": "UriLocation"
@@ -902,14 +770,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "location": {
           "description": "location of the tabix index. Only needed when it is not named \`<file>.tbi\`, which is what the \`uri\` shorthand assumes — a \`.csi\` beside the file is reached with \`csi: true\` rather than by spelling this out.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.gz.tbi",
             "locationType": "UriLocation"
@@ -925,14 +786,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bedGzLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.bed.gz",
             "locationType": "UriLocation"
@@ -943,52 +797,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "columnNames": {
           "description": "List of column names. A column named like a standard BED column is parsed as that column's type (chromStart numeric, blockSizes a numeric list); any other column is text.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "scoreColumn": {
           "description": "The column to use as a \\"score\\" attribute.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "autoSql": {
           "description": "The autoSql definition for the data fields in the file.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "disableGeneHeuristic": {
           "description": "Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications).",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "densityAdapter": {
@@ -1034,14 +857,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bedGraphLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.bedgraph",
             "locationType": "UriLocation"
@@ -1049,17 +865,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "columnNames": {
           "description": "List of column names.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "uri": {
           "type": "string",
@@ -1096,14 +902,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bedGraphGzLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.bedgraph",
             "locationType": "UriLocation"
@@ -1114,17 +913,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "columnNames": {
           "description": "List of column names.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "uri": {
           "type": "string",
@@ -1165,14 +954,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "adapterId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "features": {
@@ -1205,14 +987,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "adapterId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "features": {
@@ -1245,14 +1020,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "adapterId": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "features": {
@@ -1285,40 +1053,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "location": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my/aliases.txt",
             "locationType": "UriLocation"
           }
         },
         "refNameColumn": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "refNameColumnHeaderName": {
           "description": "alternative to refNameColumn, instead looks at header (starts with # and finds column name).",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "uri": {
@@ -1356,14 +1103,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "location": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my/sequence_report.tsv",
             "locationType": "UriLocation"
@@ -1371,14 +1111,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "useNameOverride": {
           "description": "forces usage of the UCSC names over the NCBI style names from a FASTA.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "uri": {
@@ -1417,14 +1150,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "gtfLocation": {
           "description": "path to gtf file, also allows for gzipped gtf.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.gtf",
             "locationType": "UriLocation"
@@ -1432,14 +1158,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "aggregateField": {
           "description": "attribute naming the parent gene that transcripts are aggregated into. transcripts are grouped by gene_id where the file has one (gene names are not unique within a reference), so this is the gene label, and the grouping key only for files with no gene_id.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "gene_name"
         },
         "uri": {
@@ -1477,14 +1196,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "gtfGzLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.gtf.gz",
             "locationType": "UriLocation"
@@ -1494,17 +1206,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/TabixIndex"
         },
         "dontRedispatch": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "chromosome",
             "region",
@@ -1515,14 +1217,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "aggregateField": {
           "description": "attribute naming the parent gene that transcripts are aggregated into. transcripts are grouped by gene_id where the file has one (gene names are not unique within a reference), so this is the gene label, and the grouping key only for files with no gene_id.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "gene_name"
         },
         "densityAdapter": {
@@ -1568,14 +1263,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "gffGzLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.gff.gz",
             "locationType": "UriLocation"
@@ -1585,17 +1273,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/TabixIndex"
         },
         "dontRedispatch": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "chromosome",
             "region",
@@ -1647,14 +1325,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "gffLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.gff",
             "locationType": "UriLocation"
@@ -1695,14 +1366,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "rootUrlTemplate": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my/{refseq}/trackData.json",
             "locationType": "UriLocation"
@@ -1710,17 +1374,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "refNames": {
           "description": "List of refNames used by the NCList used for aliasing.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         }
       }
     },
@@ -1750,14 +1404,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "endpoint": {
           "description": "URL of the SPARQL endpoint.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "https://somesite.com/sparql",
             "locationType": "UriLocation"
@@ -1765,55 +1412,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "queryTemplate": {
           "description": "SPARQL query where {start} {end} and {refName} will get replaced for each call.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "refNamesQueryTemplate": {
           "description": "SPARQL query that returns the possible refNames in a ?refName column.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "refNames": {
           "description": "Possible refNames used by the SPARQL endpoint (ignored if \\"refNamesQueryTemplate\\" is provided).",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "additionalQueryParams": {
           "description": "Additional parameters to add to the query, e.g. \\"format=JSON\\".",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         }
       }
     },
@@ -1842,14 +1455,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "twoBitLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.2bit",
             "locationType": "UriLocation"
@@ -1857,14 +1463,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "chromSizesLocation": {
           "description": "An optional chrom.sizes file can be supplied to speed up loading since parsing the twobit file can take time.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/default.chrom.sizes",
             "locationType": "UriLocation"
@@ -1908,28 +1507,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fastaLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/seq.fa.gz",
             "locationType": "UriLocation"
           }
         },
         "faiLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/seq.fa.gz.fai",
             "locationType": "UriLocation"
@@ -1937,28 +1522,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "metadataLocation": {
           "description": "Optional metadata file.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/fa.metadata.yaml",
             "locationType": "UriLocation"
           }
         },
         "gziLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/seq.fa.gz.gzi",
             "locationType": "UriLocation"
@@ -1999,14 +1570,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "chromSizesLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/species.chrom.sizes",
             "locationType": "UriLocation"
@@ -2047,28 +1611,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "fastaLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/seq.fa",
             "locationType": "UriLocation"
           }
         },
         "faiLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/seq.fa.fai",
             "locationType": "UriLocation"
@@ -2076,14 +1626,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "metadataLocation": {
           "description": "Optional metadata file.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/fa.metadata.yaml",
             "locationType": "UriLocation"
@@ -2124,25 +1667,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "rewriteRefNames": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "fastaLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/seq.fa",
             "locationType": "UriLocation"
@@ -2150,14 +1679,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "metadataLocation": {
           "description": "Optional metadata file.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/fa.metadata.yaml",
             "locationType": "UriLocation"
@@ -2199,14 +1721,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "search": {
           "description": "Search string or regex to search for.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "sequenceAdapter": {
@@ -2214,36 +1729,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": null
         },
         "searchForward": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "searchReverse": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "caseInsensitive": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         }
       }
@@ -2277,25 +1771,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": null
         },
         "pam": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "NGG"
         },
         "guideLength": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 20
         },
         "pamLocation": {
@@ -2313,80 +1793,31 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "3prime"
         },
         "cutOffset": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 3
         },
         "cutOffsetBottom": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 3
         },
         "minGcPercent": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "maxGcPercent": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
         "excludePolyT": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "searchForward": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "searchReverse": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         }
       }
@@ -2417,14 +1848,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "motifs": {
           "description": "Named motifs to search for, one per line.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "sequenceAdapter": {
@@ -2432,25 +1856,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": null
         },
         "searchForward": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "searchReverse": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         }
       }
@@ -2480,28 +1890,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "vcfLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.vcf",
             "locationType": "UriLocation"
           }
         },
         "samplesTsvLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/samples.tsv",
             "locationType": "UriLocation"
@@ -2542,14 +1938,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "vcfGzLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.vcf.gz",
             "locationType": "UriLocation"
@@ -2559,14 +1948,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/TabixIndex"
         },
         "samplesTsvLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/samples.tsv",
             "locationType": "UriLocation"
@@ -2574,14 +1956,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "fetchSizeLimit": {
           "description": "size in bytes over which to display a warning to the user that too much data will be fetched.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 5000000
         },
         "densityAdapter": {
@@ -2647,14 +2022,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "TBI"
         },
         "samplesTsvLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/samples.tsv",
             "locationType": "UriLocation"
@@ -2662,14 +2030,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "fetchSizeLimit": {
           "description": "size in bytes over which to display a warning to the user that too much data will be fetched.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 5000000
         },
         "densityAdapter": {
@@ -2703,14 +2064,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "ldLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/plink.ld",
             "locationType": "UriLocation"
@@ -2751,14 +2105,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "ldLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/plink.ld.gz",
             "locationType": "UriLocation"
@@ -2838,14 +2185,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bigWigLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.bw",
             "locationType": "UriLocation"
@@ -2853,26 +2193,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "source": {
           "description": "Label added to all features; used as the subtrack/row name when this adapter is a subadapter of a multi-wiggle track.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "resolutionMultiplier": {
           "description": "Resolution multiplier applied to every fetch: <1 fetches more points (higher resolution), >1 fetches fewer (e.g. 2 = half as many points).",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
         "uri": {
@@ -2914,25 +2240,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": null
         },
         "windowSize": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
         "windowDelta": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
         "gcMode": {
@@ -2978,14 +2290,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "mafGzLocation": {
           "description": "bgzip-compressed MAF file.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.maf.gz",
             "locationType": "UriLocation"
@@ -2993,14 +2298,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "taiLocation": {
           "description": "taffy index.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.maf.gz.tai",
             "locationType": "UriLocation"
@@ -3011,14 +2309,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "nhLocation": {
           "description": "newick tree naming and ordering the species rows; its leaf names are the sample ids, and any \`samples\` entries supply label/color overrides matched by id.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.nh",
             "locationType": "UriLocation"
@@ -3071,14 +2362,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "tafGzLocation": {
           "description": "bgzip taffy file.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.taf.gz",
             "locationType": "UriLocation"
@@ -3086,14 +2370,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "taiLocation": {
           "description": "taffy index.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.taf.gz.tai",
             "locationType": "UriLocation"
@@ -3104,14 +2381,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "nhLocation": {
           "description": "newick tree naming and ordering the species rows; its leaf names are the sample ids, and any \`samples\` entries supply label/color overrides matched by id.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.nh",
             "locationType": "UriLocation"
@@ -3163,14 +2433,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bigBedLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.bb",
             "locationType": "UriLocation"
@@ -3181,14 +2444,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "nhLocation": {
           "description": "newick tree naming and ordering the species rows; its leaf names are the sample ids, and any \`samples\` entries supply label/color overrides matched by id.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.nh",
             "locationType": "UriLocation"
@@ -3229,28 +2485,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bedGzLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.bed.gz",
             "locationType": "UriLocation"
           }
         },
         "refAssemblyName": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "index": {
@@ -3261,14 +2503,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "nhLocation": {
           "description": "newick tree naming and ordering the species rows; its leaf names are the sample ids, and any \`samples\` entries supply label/color overrides matched by id.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.nh",
             "locationType": "UriLocation"
@@ -3324,14 +2559,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "hicLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.hic",
             "locationType": "UriLocation"
@@ -3372,27 +2600,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "assemblyNames": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "pafLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/file.paf",
             "locationType": "UriLocation"
@@ -3439,28 +2650,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "assemblyNames": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "pifGzLocation": {
           "description": "location of the multi-genome tabix indexed PAF (pif).",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/all_vs_all.pif.gz",
             "locationType": "UriLocation"
@@ -3470,14 +2664,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "coarseBpPerPxThreshold": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 10000
         },
         "index": {
@@ -3526,51 +2713,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "assemblyNames": {
           "description": "Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "targetAssembly": {
           "description": "Alternative to assemblyNames: the target assembly name.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "queryAssembly": {
           "description": "Alternative to assemblyNames: the query assembly name.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "pafLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/file.paf",
             "locationType": "UriLocation"
@@ -3612,66 +2768,28 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "assemblyNames": {
           "description": "Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "targetAssembly": {
           "description": "Alternative to assemblyNames: the target assembly name.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "queryAssembly": {
           "description": "Alternative to assemblyNames: the query assembly name.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "pifGzLocation": {
           "description": "location of pairwise tabix indexed PAF (pif).",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/data/file.pif.gz",
             "locationType": "UriLocation"
           }
         },
         "coarseBpPerPxThreshold": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 10000
         },
         "index": {
@@ -3719,14 +2837,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "array of pairwise synteny adapter configs sharing one assembly. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "coarseBpPerPxThreshold": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 10000
         }
       }
@@ -3757,51 +2868,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "assemblyNames": {
           "description": "Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "targetAssembly": {
           "description": "Alternative to assemblyNames: the target assembly name.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "queryAssembly": {
           "description": "Alternative to assemblyNames: the query assembly name.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "deltaLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/file.delta",
             "locationType": "UriLocation"
@@ -3843,51 +2923,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "assemblyNames": {
           "description": "Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "targetAssembly": {
           "description": "Alternative to assemblyNames: the target assembly name.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "queryAssembly": {
           "description": "Alternative to assemblyNames: the query assembly name.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "chainLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/file.chain",
             "locationType": "UriLocation"
@@ -3928,59 +2977,28 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "mcscanAnchorsLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/mcscan.anchors",
             "locationType": "UriLocation"
           }
         },
         "bed1Location": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/file.bed",
             "locationType": "UriLocation"
           }
         },
         "bed2Location": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/file.bed",
             "locationType": "UriLocation"
           }
         },
         "assemblyNames": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "uri": {
           "type": "string",
@@ -4036,60 +3054,23 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "mcscanBlocksLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/mcscan.blocks",
             "locationType": "UriLocation"
           }
         },
         "blockAssemblies": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "bedLocations": {
           "description": "Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "assemblyNames": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "attributeColumns": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "uri": {
           "type": "string",
@@ -4126,59 +3107,28 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "mcscanSimpleAnchorsLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/mcscan.anchors.simple",
             "locationType": "UriLocation"
           }
         },
         "bed1Location": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/file.bed",
             "locationType": "UriLocation"
           }
         },
         "bed2Location": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/file.bed",
             "locationType": "UriLocation"
           }
         },
         "assemblyNames": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "uri": {
           "type": "string",
@@ -4235,51 +3185,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "assemblyNames": {
           "description": "Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "targetAssembly": {
           "description": "Alternative to assemblyNames: the target assembly name.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "queryAssembly": {
           "description": "Alternative to assemblyNames: the query assembly name.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "outLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/mashmap.out",
             "locationType": "UriLocation"
@@ -4321,51 +3240,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "assemblyNames": {
           "description": "Array of assembly names to use for this file. The query assembly name is the first value in the array, target assembly name is the second.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "targetAssembly": {
           "description": "Alternative to assemblyNames: the target assembly name.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "queryAssembly": {
           "description": "Alternative to assemblyNames: the query assembly name.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "blastTableLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/blastTable.tsv",
             "locationType": "UriLocation"
@@ -4373,14 +3261,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "columns": {
           "description": "Optional space-separated column name list. If custom columns were used in outfmt, enter them here exactly as specified in the command. At least qseqid, sseqid, qstart, qend, sstart, and send are required.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore"
         }
       }
@@ -4410,14 +3291,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "bedGzLocation": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/path/to/my.bed.gz",
             "locationType": "UriLocation"
@@ -4428,52 +3302,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "columnNames": {
           "description": "List of column names. A column named like a standard BED column is parsed as that column's type (chromStart numeric, blockSizes a numeric list); any other column is text.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "scoreColumn": {
           "description": "BED column to read as the Manhattan plot score.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "neg_log_pvalue"
         },
         "autoSql": {
           "description": "The autoSql definition for the data fields in the file.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "disableGeneHeuristic": {
           "description": "Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications).",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "densityAdapter": {
@@ -4482,14 +3325,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "scoreTransform": {
           "description": "transform applied to the score column.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "none"
         },
         "ldAdapter": {
@@ -4537,26 +3373,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "the primary name of the feature to show.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'name') || get(feature,'id')"
         },
         "description": {
           "description": "the text description to show.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'note') || get(feature,'description') || get(feature,'function')"
         }
       },
@@ -4570,65 +3392,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given feature track.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 5000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "height": {
           "description": "default height for the track.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
         "mouseover": {
           "description": "text to display when the cursor hovers over a feature.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
         "jexlFilters": {
           "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "heightMode": {
           "description": "Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the \\"Track sizing\\" menu). \`fixed\` (the default) keeps a scrollable fixed height, \`grow\` expands the track to show all features, \`fit\` squeezes features to fill the current height. Orthogonal to the per-feature size set by \`displayMode\`. Unifies the former \`autoHeight\` (grow) + \`squeezeToDisplayHeight\` (fit) settings.",
@@ -4648,14 +3432,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "growMaxHeight": {
           "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 800
         },
         "densityTier": {
@@ -4676,38 +3453,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "densityTierBpPerPx": {
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "maxFeatureScreenDensity": {
           "description": "maximum features per pixel before showing a \\"too many features\\" message.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
         "showLegend": {
           "description": "show the color key. Defaults to on.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showLabels": {
@@ -4740,83 +3496,34 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "maxLabelFeatureDensity": {
           "description": "In \\"auto\\" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0.2
         },
         "maxDescriptionFeatureDensity": {
           "description": "In \\"auto\\" showLabels mode, hide descriptions when visible feature density (features/pixel) exceeds this value. Lower than maxLabelFeatureDensity so descriptions drop before names.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0.1
         },
         "color": {
           "description": "the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring). Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringOrJexl"
         },
         "connectorColor": {
           "description": "color of the connecting/intron lines between feature segments (defaults to the theme text color).",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringOrJexl"
         },
         "utrColor": {
           "description": "fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringOrJexl"
         },
         "outlineColor": {
           "description": "outline color for features (empty string = no outline).",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "featureHeight": {
           "description": "height in pixels of the main body of each feature.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 10
         },
         "displayMode": {
@@ -4878,28 +3585,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "displayDirectionalChevrons": {
           "description": "Display directional chevrons on intron lines to indicate strand direction. Defaults to on.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "transcriptTypes": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "mRNA",
             "transcript",
@@ -4911,28 +3601,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ]
         },
         "canonicalTranscriptField": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "tag"
         },
         "canonicalTranscriptTags": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "MANE Select",
             "MANE_Select",
@@ -4943,69 +3616,31 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ]
         },
         "containerTypes": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "proteoform_orf"
           ]
         },
         "subParts": {
           "description": "subparts for a glyph.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "CDS,UTR,five_prime_UTR,three_prime_UTR"
         },
         "impliedUTRs": {
           "description": "imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "hideSourceFeatures": {
           "description": "hide the GFF3 source record, the whole-molecule type=region feature NCBI RefSeq emits per sequence (gbkey=Src). It spans the entire chromosome and carries only taxon/strain metadata, so it draws as a bar across every window. Set false to draw it. No effect on files that carry no gbkey attribute.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "labels": {
           "$ref": "#/$defs/CanvasFeatureLabels"
         },
         "showOnlyGenes": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "legend": {
@@ -5073,152 +3708,62 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given feature track.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 5000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "height": {
           "description": "default height for the track.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
         "mouseover": {
           "description": "text to display when the cursor hovers over a feature.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
         "jexlFilters": {
           "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "partitionField": {
           "description": "feature attribute that assigns each feature to a row, or a jexl expression deriving one. Empty = pick one off the data (repClass if present, else name).",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "lengthField": {
           "description": "feature attribute holding a signed bp length change vs the reference; enables indel glyphs. Empty = off.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "color": {
           "description": "fill color of each block (CSS color or jexl expression for per-feature coloring). Unset, a feature's own itemRgb paints it if it has one, else each row gets a distinct color from a categorical palette.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringOrJexl"
         },
         "sampleColorMap": {
           "description": "map of partition value to color; overrides the color slot for matching features. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "rowOrder": {
           "description": "optional explicit row order (by partition value).",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "rowHeight": {
           "description": "fixed row height in px; 0 (the default) auto-fits all rows to the display height, so adding rows shrinks them instead of growing the track.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "rowProportion": {
           "description": "fraction of the row height each block fills.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "densityTier": {
@@ -5239,38 +3784,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "densityTierBpPerPx": {
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "colorRowLabels": {
           "description": "tint each sidebar label with the color that row's blocks are painted in.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "showLegend": {
           "description": "show the categorical color key for per-feature coloring. Defaults to on.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "legend": {
@@ -5281,38 +3805,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "showTree": {
           "description": "show the cluster tree sidebar.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showBranchLength": {
           "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showRowLabels": {
           "description": "draw the row name over the left of each row.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         }
       }
@@ -5346,76 +3849,31 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "height": {
           "description": "Starting height in pixels for the coverage band and pileup together; heightMode decides what a pileup deeper than this does.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 250
         },
         "mouseover": {
           "description": "text to display when the cursor hovers over a feature.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
         "jexlFilters": {
           "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "featureHeight": {
           "description": "Height of each feature (read) in pixels. Defaults to 7.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 7
         },
         "heightMode": {
@@ -5436,14 +3894,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "growMaxHeight": {
           "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see maxHeight).",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 800
         },
         "densityTier": {
@@ -5464,62 +3915,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "densityTierBpPerPx": {
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "readConnectionsLineWidth": {
           "description": "Line width for read-connection arcs/lines in pixels.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
         "showSashimiLabels": {
           "description": "Draw the supporting-read count on each sashimi arc.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "hideNonCanonicalJunctions": {
           "description": "Hide sashimi arcs whose splice-site motif is none of GT-AG, GC-AG or AT-AC. Read off the reference under each junction, so it needs a sequence adapter; a junction whose motif could not be read stays.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "maxHeight": {
           "description": "Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth).",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 6000
         },
         "colorBy": {
@@ -5541,14 +3957,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "collapseGroupRows": {
           "description": "Draw each group as a single row rather than a stack.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "autoscale": {
@@ -5568,26 +3977,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "minScore": {
           "description": "Minimum coverage depth bound.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 5e-324
         },
         "maxScore": {
           "description": "Maximum coverage depth bound.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1.7976931348623157e+308
         },
         "scaleType": {
@@ -5608,62 +4003,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "symlogConstant": {
           "description": "Width of symlog's linear region around zero, in depth units. The default 1 makes symlog exactly log(depth+1), which is the transform read depth wants: the knee sits at one read, the smallest depth there is. 0 means \\"derive from the domain\\" (a thousandth of the visible max) — right for a wiggle track, whose units are its own, and wrong here, since it puts the knee a tenth of a read below zero and draws a single stray read a third of the way up a depth-100 band.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
         "numStdDev": {
           "description": "Number of standard deviations for localsd autoscale.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 3
         },
         "mismatchAlpha": {
           "description": "Fade mismatch bases by their per-base Phred quality. Defaults to off.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "showLowFreqMismatches": {
           "description": "Draw sub-pixel mismatches, insertions and clip bars in the pileup at full opacity instead of fading the ones below the depth-dependent frequency threshold. Read through the \`filterMismatchesByFrequency\` getter, which is this in the polarity the renderers and hit-test take. Does not affect the coverage band (see runCoveragePipeline).",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "showLegend": {
           "description": "Show the color-scheme legend overlay. Defaults to off.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "sortedBy": {
@@ -5672,26 +4032,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "largeFeaturesFirst": {
           "description": "Lay out large features first, in the lowest pileup rows.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "splicedReadsFirst": {
           "description": "Lay out spliced reads first, in the lowest pileup rows.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "showOutline": {
@@ -5715,158 +4061,67 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "showBezierConnections": {
           "description": "Draw paired-read connection curves over the pileup.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "showCoverage": {
           "description": "Draw the coverage histogram band.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showPileup": {
           "description": "Draw the stacked-read pileup band.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "coverageHeight": {
           "description": "Height of the coverage band in pixels.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 45
         },
         "coverageSnpMinFrequency": {
           "description": "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from \`showLowFreqMismatches\`, which turns OFF the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "showMismatches": {
           "description": "Draw how reads differ from the reference: per-base mismatches, insertion markers and deletion bars. Not the intron centerlines — a spliced read is drawn as separate exon blocks, so the line joining them says they are one read rather than several, and it draws either way (PILEUP_MARKS).",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showInterbaseIndicators": {
           "description": "Draw interbase insertion/clip count bars and indicator triangles.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "flipStrandLongReadChains": {
           "description": "Color split segments relative to the predominant orientation of the reads on screen, rather than by their own mapping strand.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "colorSupplementaryChains": {
           "description": "Paint every chain carrying a supplementary segment a flat supplementary color, paired or not.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "drawInter": {
           "description": "Draw inter-chromosomal read-connection arcs.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "drawProperPairArcs": {
           "description": "Draw arcs for ordinary concordant pairs. Uncheck to leave only the arcs that carry a category (abnormal insert size or orientation, split junctions), which on deep coverage is the difference between a readable band and a solid mass.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "minInterchromSupport": {
           "description": "Hide inter-chromosomal connections supported by fewer than this many reads clustered at the same breakpoint.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 2
         },
         "drawLongRange": {
           "description": "Draw long-range read-connection arcs.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "arcColorByType": {
@@ -5903,26 +4158,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "readConnectionsDown": {
           "description": "Draw read connections below the coverage band. Defaults to on.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showSashimiArcs": {
           "description": "Draw sashimi (splice-junction) arcs.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "sashimiArcsMode": {
@@ -5943,50 +4184,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "minSashimiScore": {
           "description": "Hide sashimi arcs with fewer than this many supporting reads.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 2
         },
         "sashimiArcsHeight": {
           "description": "Height of the sashimi-arc band in pixels.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 40
         },
         "readConnectionsHeight": {
           "description": "Height of the read-connection band in pixels.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 35
         },
         "showSoftClipping": {
           "description": "Draw soft-clipped read portions. Defaults to off.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         }
       }
@@ -6026,50 +4239,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "onChordClick": {
           "description": "callback that should be run when a chord in the track is clicked.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "strokeColor": {
           "description": "the line color of each arc.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "rgba(255,133,0,0.32)"
         },
         "strokeColorSelected": {
           "description": "the line color of an arc that has been selected.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "black"
         },
         "strokeColorHover": {
           "description": "the line color of an arc that is being hovered over with the mouse.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "#555"
         },
         "renderer": {
@@ -6107,38 +4292,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "color": {
           "description": "the fill color of each ribbon.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'strand')==-1?'rgba(0,0,255,0.25)':'rgba(255,0,0,0.25)'"
         },
         "colorSelected": {
           "description": "the fill color of a ribbon that has been selected.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "rgba(0,0,0,0.6)"
         },
         "colorHover": {
           "description": "the fill color of a ribbon that is being hovered over with the mouse.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "rgba(85,85,85,0.6)"
         }
       }
@@ -6200,26 +4364,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "drawCurves": {
           "description": "Draw each ribbon as a bezier curve rather than a straight chord. Defaults to off (straight chords). The row is on the VIEW's settings menu (\`Curved lines\`) — this display curates no track menu of its own — and the checkbox writes this slot on every level of the view, as an init spec's \`drawCurves\` key does for the tracks it opens.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "drawLocationMarkers": {
           "description": "Continue the query row's scalebar grid down through the ribbons: a tick at each round query coordinate, joined to the coordinate the alignment pairs it with. Defaults to off, through the same settings-menu row and init key as \`drawCurves\` above.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         }
       }
@@ -6253,76 +4403,31 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "height": {
           "description": "Starting height in pixels for the coverage band and pileup together; heightMode decides what a pileup deeper than this does.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 250
         },
         "mouseover": {
           "description": "text to display when the cursor hovers over a feature.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:lgvSyntenyTooltip(feature)"
         },
         "jexlFilters": {
           "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "featureHeight": {
           "description": "Height of each feature (read) in pixels. Defaults to 7.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 7
         },
         "heightMode": {
@@ -6343,14 +4448,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "growMaxHeight": {
           "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see maxHeight).",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 800
         },
         "densityTier": {
@@ -6371,62 +4469,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "densityTierBpPerPx": {
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "readConnectionsLineWidth": {
           "description": "Line width for read-connection arcs/lines in pixels.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
         "showSashimiLabels": {
           "description": "Draw the supporting-read count on each sashimi arc.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "hideNonCanonicalJunctions": {
           "description": "Hide sashimi arcs whose splice-site motif is none of GT-AG, GC-AG or AT-AC. Read off the reference under each junction, so it needs a sequence adapter; a junction whose motif could not be read stays.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "maxHeight": {
           "description": "Maximum pixel height of the pileup layout; reads beyond this are not stacked (coverage still reflects true depth).",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 6000
         },
         "colorBy": {
@@ -6448,14 +4511,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "collapseGroupRows": {
           "description": "Draw each group as a single row rather than a stack.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "autoscale": {
@@ -6475,26 +4531,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "minScore": {
           "description": "Minimum coverage depth bound.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 5e-324
         },
         "maxScore": {
           "description": "Maximum coverage depth bound.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1.7976931348623157e+308
         },
         "scaleType": {
@@ -6515,62 +4557,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "symlogConstant": {
           "description": "Width of symlog's linear region around zero, in depth units. The default 1 makes symlog exactly log(depth+1), which is the transform read depth wants: the knee sits at one read, the smallest depth there is. 0 means \\"derive from the domain\\" (a thousandth of the visible max) — right for a wiggle track, whose units are its own, and wrong here, since it puts the knee a tenth of a read below zero and draws a single stray read a third of the way up a depth-100 band.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
         "numStdDev": {
           "description": "Number of standard deviations for localsd autoscale.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 3
         },
         "mismatchAlpha": {
           "description": "Fade mismatch bases by their per-base Phred quality. Defaults to off.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "showLowFreqMismatches": {
           "description": "Draw sub-pixel mismatches, insertions and clip bars in the pileup at full opacity instead of fading the ones below the depth-dependent frequency threshold. Read through the \`filterMismatchesByFrequency\` getter, which is this in the polarity the renderers and hit-test take. Does not affect the coverage band (see runCoveragePipeline).",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "showLegend": {
           "description": "Show the color-scheme legend overlay. Defaults to off.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "sortedBy": {
@@ -6579,26 +4586,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "largeFeaturesFirst": {
           "description": "Lay out large features first, in the lowest pileup rows.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "splicedReadsFirst": {
           "description": "Lay out spliced reads first, in the lowest pileup rows.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "showOutline": {
@@ -6622,158 +4615,67 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "showBezierConnections": {
           "description": "Draw paired-read connection curves over the pileup.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "showCoverage": {
           "description": "Draw the coverage histogram band.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "showPileup": {
           "description": "Draw the stacked-read pileup band.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "coverageHeight": {
           "description": "Height of the coverage band in pixels.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 45
         },
         "coverageSnpMinFrequency": {
           "description": "Hide a coverage-band allele segment whose share of that position's depth is below this fraction, so the band stops painting a sliver for every sequencing error at high depth. 0 (the default) colors every mismatch. Distinct from \`showLowFreqMismatches\`, which turns OFF the pileup's fade of sub-pixel marks against a depth-dependent threshold; this is a flat allele-fraction floor on the band, and the grey depth bar still shows through where a segment is hidden.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "showMismatches": {
           "description": "Draw how reads differ from the reference: per-base mismatches, insertion markers and deletion bars. Not the intron centerlines — a spliced read is drawn as separate exon blocks, so the line joining them says they are one read rather than several, and it draws either way (PILEUP_MARKS).",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showInterbaseIndicators": {
           "description": "Draw interbase insertion/clip count bars and indicator triangles.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "flipStrandLongReadChains": {
           "description": "Color split segments relative to the predominant orientation of the reads on screen, rather than by their own mapping strand.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "colorSupplementaryChains": {
           "description": "Paint every chain carrying a supplementary segment a flat supplementary color, paired or not.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "drawInter": {
           "description": "Draw inter-chromosomal read-connection arcs.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "drawProperPairArcs": {
           "description": "Draw arcs for ordinary concordant pairs. Uncheck to leave only the arcs that carry a category (abnormal insert size or orientation, split junctions), which on deep coverage is the difference between a readable band and a solid mass.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "minInterchromSupport": {
           "description": "Hide inter-chromosomal connections supported by fewer than this many reads clustered at the same breakpoint.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 2
         },
         "drawLongRange": {
           "description": "Draw long-range read-connection arcs.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "arcColorByType": {
@@ -6810,26 +4712,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "readConnectionsDown": {
           "description": "Draw read connections below the coverage band. Defaults to on.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showSashimiArcs": {
           "description": "Draw sashimi (splice-junction) arcs.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "sashimiArcsMode": {
@@ -6850,62 +4738,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "minSashimiScore": {
           "description": "Hide sashimi arcs with fewer than this many supporting reads.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 2
         },
         "sashimiArcsHeight": {
           "description": "Height of the sashimi-arc band in pixels.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 40
         },
         "readConnectionsHeight": {
           "description": "Height of the read-connection band in pixels.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 35
         },
         "showSoftClipping": {
           "description": "Draw soft-clipped read portions. Defaults to off.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "hideSelfAlignments": {
           "description": "Hide the group matching the view's own assembly when grouping by mate assembly.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         }
       }
@@ -6939,175 +4792,71 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "height": {
           "description": "default height for the track.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 240
         },
         "mouseover": {
           "description": "text to display when the cursor hovers over a feature.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
         "jexlFilters": {
           "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "color": {
           "description": "the fill color of the gene glyphs, matching the canvas gene track default.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "goldenrod"
         },
         "utrColor": {
           "description": "the fill color of the untranslated parts of a gene glyph, matching the canvas gene track default.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "#357089"
         },
         "ribbonColor": {
           "description": "the color of the ribbons connecting adjacent lanes.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "rgba(130,130,130,0.3)"
         },
         "ribbonColorBy": {
           "description": "what colors a ribbon: \`default\` is ribbonColor; \`strand\` reads the record's strand — the two placements' orientations against the anchor multiplied out, so between the anchor and the first lane the alignment's own strand and between two mate lanes their relative strand — in the synteny view's strand colors, and not the drawn twist: a lane drawn flipped straightens its ribbons on screen while every one of them is an inversion; \`identity\` reads the pair's \`identity\` attribute (a PAF's, or an MCScan table's attributeColumns) on the synteny view's viridis ramp, and a pair without one keeps ribbonColor; \`attribute:<column>\` reads a text column the table declares in attributeColumns (an ancestral linkage group, an orthogroup) and paints one color per distinct label, or the color a \`color\` column put beside it, in the order labels were first seen so a pan does not recolor; a row without one keeps ribbonColor. Every mode keeps ribbonColor's opacity.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "default"
         },
         "drawCurves": {
           "description": "draw the ribbons as bezier curves rather than straight chords. A plain per-track slot: this display does not share the linear synteny view's view-level \`drawCurves\` override. Straight is the default in both places: a chord's slant reads directly as the offset between two lanes drawn in different coordinate frames, which is exactly what a curve hides.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "bridgeSkippedLanes": {
           "description": "join a group across a lane that places nothing for it, to the next lane down that does. A ribbon otherwise joins adjacent lanes only, so a sparse lane mid-stack cuts every chain running through it.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showLegend": {
           "description": "show the color key naming the anchor lane's drawn colors, and the ribbon strand colors where \`ribbonColorBy\` paints them. Derived from what is on screen, so it draws nothing until the \`color\` slot resolves to more than one color — a flat default color has nothing to key. Defaults to on.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showLaneTicks": {
           "description": "draw each lane's own coordinate ticks, at one interval shared by every lane. Equal spacing between two lanes means equal bp-per-pixel; a lane whose ticks crowd together is zoomed out. Turning this off leaves the header's span and multiple as the only scale statement.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "lanes": {
           "description": "the mate lanes to draw, by assembly name, until the reader chooses a set from the lane picker; empty draws every lane the source places. The way a hosted config points this display at a graph of hundreds of haplotypes and opens on the eight it means to show.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         }
       }
     },
@@ -7140,73 +4889,31 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "height": {
           "description": "display height in pixels; unset auto-fits to the sequence.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/NumberOrJexl"
         },
         "showForward": {
           "description": "show the forward-strand sequence row.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showReverse": {
           "description": "show the reverse-complement sequence row (DNA only).",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showTranslation": {
           "description": "show the translation frame rows (DNA only).",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         }
       }
@@ -7240,65 +4947,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "height": {
           "description": "default height for the track.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
         "mouseover": {
           "description": "text to display when the cursor hovers over a feature.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
         "jexlFilters": {
           "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "heightMode": {
           "description": "Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the \\"Track sizing\\" menu). \`fixed\` (the default) keeps a scrollable fixed height, \`grow\` expands the track to show all features, \`fit\` squeezes features to fill the current height. Orthogonal to the per-feature size set by \`displayMode\`. Unifies the former \`autoHeight\` (grow) + \`squeezeToDisplayHeight\` (fit) settings.",
@@ -7318,14 +4987,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "growMaxHeight": {
           "description": "Ceiling in pixels for the \\"autogrow track height\\" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 800
         },
         "densityTier": {
@@ -7346,38 +5008,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "densityTierBpPerPx": {
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "maxFeatureScreenDensity": {
           "description": "maximum features per pixel before showing a \\"too many features\\" message.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
         "showLegend": {
           "description": "show the color key. Defaults to on.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showLabels": {
@@ -7410,83 +5051,34 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "maxLabelFeatureDensity": {
           "description": "In \\"auto\\" showLabels mode, hide labels when visible feature density (features/pixel) exceeds this value.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0.2
         },
         "maxDescriptionFeatureDensity": {
           "description": "In \\"auto\\" showLabels mode, hide descriptions when visible feature density (features/pixel) exceeds this value. Lower than maxLabelFeatureDensity so descriptions drop before names.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0.1
         },
         "color": {
           "description": "the main fill color of each feature (a CSS color, or a jexl expression for per-feature coloring). Unset, a feature's own BED itemRgb paints it if it has one, else goldenrod.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringOrJexl"
         },
         "connectorColor": {
           "description": "color of the connecting/intron lines between feature segments (defaults to the theme text color).",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringOrJexl"
         },
         "utrColor": {
           "description": "fill color for UTRs on gene/transcript glyphs. Unset, a feature's own BED itemRgb paints them too (matching UCSC's whole-item coloring), else a contrasting blue.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringOrJexl"
         },
         "outlineColor": {
           "description": "outline color for features (empty string = no outline).",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "featureHeight": {
           "description": "height in pixels of the main body of each feature.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 10
         },
         "displayMode": {
@@ -7548,28 +5140,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "displayDirectionalChevrons": {
           "description": "Display directional chevrons on intron lines to indicate strand direction. Defaults to on.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "transcriptTypes": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "mRNA",
             "transcript",
@@ -7581,28 +5156,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ]
         },
         "canonicalTranscriptField": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "tag"
         },
         "canonicalTranscriptTags": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "MANE Select",
             "MANE_Select",
@@ -7613,55 +5171,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ]
         },
         "containerTypes": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "proteoform_orf"
           ]
         },
         "subParts": {
           "description": "subparts for a glyph.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "CDS,UTR,five_prime_UTR,three_prime_UTR"
         },
         "impliedUTRs": {
           "description": "imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "hideSourceFeatures": {
           "description": "hide the GFF3 source record, the whole-molecule type=region feature NCBI RefSeq emits per sequence (gbkey=Src). It spans the entire chromosome and carries only taxon/strain metadata, so it draws as a bar across every window. Set false to draw it. No effect on files that carry no gbkey attribute.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "labels": {
@@ -7726,147 +5253,60 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "height": {
           "description": "Starting height in pixels for the genotype rows; drag-resizable, and the rows divide it while row height is on auto-fit.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 200
         },
         "mouseover": {
           "description": "text to display when the cursor hovers over a feature.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
         "jexlFilters": {
           "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "lineZoneHeight": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "rowHeight": {
           "description": "per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "showTree": {
           "description": "Show the sample clustering tree in the sidebar.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showBranchLength": {
           "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showRowLabels": {
           "description": "Show the per-sample row labels in the sidebar.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "showTooltips": {
           "description": "show the hover tooltip over the genotype rows; the crosshairs and the hover highlight stay either way.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "renderingMode": {
@@ -7885,74 +5325,32 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "alleleCount"
         },
         "featureColor": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "minorAlleleFrequencyFilter": {
           "description": "Hide variants whose minor allele frequency is below this threshold.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "maxMissingnessFilter": {
           "description": "Hide variants whose fraction of no-call (missing) genotypes is above this threshold; 1 keeps every variant.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
         "showLegend": {
           "description": "Whether to show the floating legend over the display; turn it off to size a short lane to its rows rather than to its key. Defaults to on.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "colorBy": {
           "description": "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "groupBy": {
           "description": "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to order the sample rows by, so each group's rows are contiguous and a group-restricted genotype pattern reads as one band; empty means the rows keep their existing order.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "referenceDrawingMode": {
@@ -7972,37 +5370,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "showInsertionGlyphs": {
           "description": "widen insertion cells to a marker sized by the inserted bp, instead of drawing them at the 2px floor like a SNP.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showVariantLane": {
           "description": "draw a lane of the variants themselves above the genotype rows, at their genomic positions.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "variantLaneHeight": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 40
         },
         "variantLaneLabels": {
@@ -8057,147 +5434,60 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "height": {
           "description": "Starting height in pixels for the whole display, including the lineZoneHeight band above the rows; drag-resizable, and the rows divide what is left over while row height is on auto-fit.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 250
         },
         "mouseover": {
           "description": "text to display when the cursor hovers over a feature.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
         "jexlFilters": {
           "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "lineZoneHeight": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 20
         },
         "rowHeight": {
           "description": "per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "showTree": {
           "description": "Show the sample clustering tree in the sidebar.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showBranchLength": {
           "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showRowLabels": {
           "description": "Show the per-sample row labels in the sidebar.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "showTooltips": {
           "description": "show the hover tooltip over the genotype rows; the crosshairs and the hover highlight stay either way.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "renderingMode": {
@@ -8216,74 +5506,32 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "alleleCount"
         },
         "featureColor": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "minorAlleleFrequencyFilter": {
           "description": "Hide variants whose minor allele frequency is below this threshold.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "maxMissingnessFilter": {
           "description": "Hide variants whose fraction of no-call (missing) genotypes is above this threshold; 1 keeps every variant.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
         "showLegend": {
           "description": "Whether to show the floating legend over the display; turn it off to size a short lane to its rows rather than to its key. Defaults to on.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "colorBy": {
           "description": "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "groupBy": {
           "description": "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to order the sample rows by, so each group's rows are contiguous and a group-restricted genotype pattern reads as one band; empty means the rows keep their existing order.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "referenceDrawingMode": {
@@ -8335,75 +5583,30 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "height": {
           "description": "default height for the track.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 400
         },
         "mouseover": {
           "description": "text to display when the cursor hovers over a feature.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
         "jexlFilters": {
           "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "lineZoneHeight": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
         "ldMetric": {
@@ -8421,91 +5624,35 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "r2"
         },
         "showLegend": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "showLDTriangle": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "squashToHeight": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "maxVariantSeparation": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "showVerticalGuides": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showLabels": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "tickHeight": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 6
         },
         "useGenomicPositions": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         }
       }
@@ -8557,62 +5704,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "height": {
           "description": "default height for the track.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
         "useBicolor": {
           "description": "When true (the default), positive scores use posColor and negative use negColor; when false, all bars use the single color slot. Setting color alone, with no posColor/negColor/useBicolor, turns this off for you.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "color": {
           "description": "Single fill CSS color for the wiggle bars; a wiggle colors per signal, not per feature, so jexl callbacks do not apply. Set alone it implies useBicolor false; alongside posColor/negColor it goes unused. Density rendering always draws from posColor.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "#0068d1"
         },
         "minScore": {
           "description": "Fixed minimum score bound. The default (Number.MIN_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 5e-324
         },
         "maxScore": {
           "description": "Fixed maximum score bound. The default (Number.MAX_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1.7976931348623157e+308
         },
         "scaleType": {
@@ -8649,86 +5761,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "numStdDev": {
           "description": "Number of standard deviations to use for the localsd autoscale type.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 3
         },
         "displayCrossHatches": {
           "description": "Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu's \\"Show cross hatches\\". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "scoreField": {
           "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "score"
         },
         "symlogConstant": {
           "description": "Width of symlog's linear region around zero. The default 0 means \\"derive from the domain\\" (a thousandth of its largest magnitude). Setting it to 1 makes symlog exactly log(x+1), which flattens anything living below 1 — set it near the smallest score you need to tell apart instead.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "posColor": {
           "description": "Fill color for positive scores, used when useBicolor is true (the default).",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "#0068d1"
         },
         "negColor": {
           "description": "Fill color for negative scores, used when useBicolor is true (the default).",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "#e01e26"
         },
         "bicolorPivot": {
           "description": "Pivot value for bicolor mode.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "densityColorRamp": {
@@ -8748,62 +5811,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "numQuantile": {
           "description": "Percentile used to clip outliers for the localpercentile autoscale type (e.g. 0.99 clips the outermost 1% of each sign). Positive and negative extents are computed independently and anchored at 0, so a sparse minority tail (e.g. phyloP acceleration) stays visible; all-positive data pins the min at 0.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0.99
         },
         "scatterPointSize": {
           "description": "Point height in px for scatterplot (\\"scatter\\"/\\"multiscatter\\") rendering. Defaults to 2.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 2
         },
         "lineWidth": {
           "description": "Line thickness in px for line (\\"line\\"/\\"multiline\\") rendering. Defaults to 1.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
         "maxGapMultiple": {
           "description": "Interpolated line (\\"linecenter\\"/\\"multilinecenter\\"/\\"multirowlinecenter\\") only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout).",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "showLegend": {
           "description": "Draw the score color ramp in density mode. Defaults to on.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "scoreRules": {
@@ -8811,14 +5839,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "summaryScoreMode": {
@@ -8869,26 +5890,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "minScore": {
           "description": "Fixed minimum score bound. The default (Number.MIN_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 5e-324
         },
         "maxScore": {
           "description": "Fixed maximum score bound. The default (Number.MAX_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1.7976931348623157e+308
         },
         "scaleType": {
@@ -8925,86 +5932,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "numStdDev": {
           "description": "Number of standard deviations to use for the localsd autoscale type.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 3
         },
         "displayCrossHatches": {
           "description": "Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu's \\"Show cross hatches\\". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "scoreField": {
           "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "score"
         },
         "symlogConstant": {
           "description": "Width of symlog's linear region around zero. The default 0 means \\"derive from the domain\\" (a thousandth of its largest magnitude). Setting it to 1 makes symlog exactly log(x+1), which flattens anything living below 1 — set it near the smallest score you need to tell apart instead.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "posColor": {
           "description": "Fill color for positive scores, used when useBicolor is true (the default).",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "#0068d1"
         },
         "negColor": {
           "description": "Fill color for negative scores, used when useBicolor is true (the default).",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "#e01e26"
         },
         "bicolorPivot": {
           "description": "Pivot value for bicolor mode.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "densityColorRamp": {
@@ -9024,62 +5982,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "numQuantile": {
           "description": "Percentile used to clip outliers for the localpercentile autoscale type (e.g. 0.99 clips the outermost 1% of each sign). Positive and negative extents are computed independently and anchored at 0, so a sparse minority tail (e.g. phyloP acceleration) stays visible; all-positive data pins the min at 0.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0.99
         },
         "scatterPointSize": {
           "description": "Point height in px for scatterplot (\\"scatter\\"/\\"multiscatter\\") rendering. Defaults to 2.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 2
         },
         "lineWidth": {
           "description": "Line thickness in px for line (\\"line\\"/\\"multiline\\") rendering. Defaults to 1.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
         "maxGapMultiple": {
           "description": "Interpolated line (\\"linecenter\\"/\\"multilinecenter\\"/\\"multirowlinecenter\\") only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout).",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "height": {
           "description": "default height for the track.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 200
         },
         "summaryScoreMode": {
@@ -9123,74 +6046,32 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "showTree": {
           "description": "Show the subtrack clustering tree in the sidebar.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showBranchLength": {
           "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showRowLabels": {
           "description": "Name each subtrack row down the left edge.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showRowSeparators": {
           "description": "draw a hairline between adjacent rows; off by default, because a painting whose neighbouring rows differ in color already separates itself and the line only earns its pixel where they do not — a run of same-colored rows reads as one block without it, with no way to recover the row count by eye. Drawn only once rows are at least 4px tall: below that the line is as thick as the row it borders, turning a dense painting into a grid of hairlines with a little color between them.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "showLegend": {
           "description": "Draw the source color key in overlay mode. Defaults to on.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         }
       }
@@ -9242,62 +6123,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "height": {
           "description": "default height for the track.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
         "useBicolor": {
           "description": "When true (the default), positive scores use posColor and negative use negColor; when false, all bars use the single color slot. Setting color alone, with no posColor/negColor/useBicolor, turns this off for you.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "color": {
           "description": "Single fill CSS color for the wiggle bars; a wiggle colors per signal, not per feature, so jexl callbacks do not apply. Set alone it implies useBicolor false; alongside posColor/negColor it goes unused. Density rendering always draws from posColor.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "#0068d1"
         },
         "minScore": {
           "description": "Fixed minimum score bound. The default (Number.MIN_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 5e-324
         },
         "maxScore": {
           "description": "Fixed maximum score bound. The default (Number.MAX_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1.7976931348623157e+308
         },
         "scaleType": {
@@ -9334,86 +6180,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "numStdDev": {
           "description": "Number of standard deviations to use for the localsd autoscale type.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 3
         },
         "displayCrossHatches": {
           "description": "Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu's \\"Show cross hatches\\". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "scoreField": {
           "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "score"
         },
         "symlogConstant": {
           "description": "Width of symlog's linear region around zero. The default 0 means \\"derive from the domain\\" (a thousandth of its largest magnitude). Setting it to 1 makes symlog exactly log(x+1), which flattens anything living below 1 — set it near the smallest score you need to tell apart instead.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "posColor": {
           "description": "Fill color for positive scores, used when useBicolor is true (the default).",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "#0068d1"
         },
         "negColor": {
           "description": "Fill color for negative scores, used when useBicolor is true (the default).",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "#e01e26"
         },
         "bicolorPivot": {
           "description": "Pivot value for bicolor mode.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "densityColorRamp": {
@@ -9433,62 +6230,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "numQuantile": {
           "description": "Percentile used to clip outliers for the localpercentile autoscale type (e.g. 0.99 clips the outermost 1% of each sign). Positive and negative extents are computed independently and anchored at 0, so a sparse minority tail (e.g. phyloP acceleration) stays visible; all-positive data pins the min at 0.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0.99
         },
         "scatterPointSize": {
           "description": "Point height in px for scatterplot (\\"scatter\\"/\\"multiscatter\\") rendering. Defaults to 2.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 2
         },
         "lineWidth": {
           "description": "Line thickness in px for line (\\"line\\"/\\"multiline\\") rendering. Defaults to 1.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
         "maxGapMultiple": {
           "description": "Interpolated line (\\"linecenter\\"/\\"multilinecenter\\"/\\"multirowlinecenter\\") only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout).",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "showLegend": {
           "description": "Draw the score color ramp in density mode. Defaults to on.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "scoreRules": {
@@ -9496,14 +6258,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "summaryScoreMode": {
@@ -9524,25 +6279,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "avg"
         },
         "windowSize": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
         "windowDelta": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
         "gcMode": {
@@ -9608,62 +6349,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "height": {
           "description": "default height for the track.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
         "useBicolor": {
           "description": "When true (the default), positive scores use posColor and negative use negColor; when false, all bars use the single color slot. Setting color alone, with no posColor/negColor/useBicolor, turns this off for you.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "color": {
           "description": "Single fill CSS color for the wiggle bars; a wiggle colors per signal, not per feature, so jexl callbacks do not apply. Set alone it implies useBicolor false; alongside posColor/negColor it goes unused. Density rendering always draws from posColor.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "#0068d1"
         },
         "minScore": {
           "description": "Fixed minimum score bound. The default (Number.MIN_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 5e-324
         },
         "maxScore": {
           "description": "Fixed maximum score bound. The default (Number.MAX_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1.7976931348623157e+308
         },
         "scaleType": {
@@ -9700,86 +6406,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "numStdDev": {
           "description": "Number of standard deviations to use for the localsd autoscale type.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 3
         },
         "displayCrossHatches": {
           "description": "Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu's \\"Show cross hatches\\". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "scoreField": {
           "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "score"
         },
         "symlogConstant": {
           "description": "Width of symlog's linear region around zero. The default 0 means \\"derive from the domain\\" (a thousandth of its largest magnitude). Setting it to 1 makes symlog exactly log(x+1), which flattens anything living below 1 — set it near the smallest score you need to tell apart instead.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "posColor": {
           "description": "Fill color for positive scores, used when useBicolor is true (the default).",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "#0068d1"
         },
         "negColor": {
           "description": "Fill color for negative scores, used when useBicolor is true (the default).",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "#e01e26"
         },
         "bicolorPivot": {
           "description": "Pivot value for bicolor mode.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "densityColorRamp": {
@@ -9799,62 +6456,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "numQuantile": {
           "description": "Percentile used to clip outliers for the localpercentile autoscale type (e.g. 0.99 clips the outermost 1% of each sign). Positive and negative extents are computed independently and anchored at 0, so a sparse minority tail (e.g. phyloP acceleration) stays visible; all-positive data pins the min at 0.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0.99
         },
         "scatterPointSize": {
           "description": "Point height in px for scatterplot (\\"scatter\\"/\\"multiscatter\\") rendering. Defaults to 2.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 2
         },
         "lineWidth": {
           "description": "Line thickness in px for line (\\"line\\"/\\"multiline\\") rendering. Defaults to 1.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
         "maxGapMultiple": {
           "description": "Interpolated line (\\"linecenter\\"/\\"multilinecenter\\"/\\"multirowlinecenter\\") only: break the line where consecutive points sit further apart than this multiple of the track's own mean point spacing, instead of drawing one long chord across the hole. Scaled to the data rather than a fixed bp distance so it holds at every zoom. 0 disables breaking (the pre-existing behavior, one connected line throughout).",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "showLegend": {
           "description": "Draw the score color ramp in density mode. Defaults to on.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "scoreRules": {
@@ -9862,14 +6484,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "summaryScoreMode": {
@@ -9890,25 +6505,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "avg"
         },
         "windowSize": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
         "windowDelta": {
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
         "gcMode": {
@@ -9956,231 +6557,95 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "fetchSizeLimit": {
           "description": "size in bytes over which to display a warning to the user that too much data will be fetched.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 5000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "height": {
           "description": "display height in pixels; unset fits rows to content, bounded so a deep alignment shrinks its rows rather than growing the track off-screen.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/NumberOrJexl"
         },
         "mouseover": {
           "description": "text to display when the cursor hovers over a feature.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
         "jexlFilters": {
           "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "rowHeight": {
           "description": "per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "rowProportion": {
           "description": "fraction of the row height each glyph fills.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0.8
         },
         "showAllLetters": {
           "description": "draw every base letter instead of only mismatches.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "mismatchRendering": {
           "description": "color bases by mismatch to the reference.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showAsUpperCase": {
           "description": "uppercase all base letters.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showTree": {
           "description": "show the species tree sidebar.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showBranchLength": {
           "description": "position tree nodes by branch length (dendrogram) rather than evenly by topology (cladogram).",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showRowLabels": {
           "description": "draw the species name over the left of each row.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showLegend": {
           "description": "show the color key for the active row rendering. Defaults to on.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showCoverage": {
           "description": "show the coverage band.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showAlignments": {
           "description": "show the per-sample alignment rows.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "coverageHeight": {
           "description": "height of the coverage band in px.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 45
         },
         "showConservation": {
           "description": "show the conservation band.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "conservationHeight": {
           "description": "height of the conservation band in px.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 40
         },
         "conservationMode": {
@@ -10216,74 +6681,32 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "rowIdentityAutoZoom": {
           "description": "show the base/SNP coloring instead of the per-row identity plot once zoomed in to base level (UCSC wigMaf); false pins the plot on at every zoom.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showAnnotations": {
           "description": "show the per-species CDS reading-frame overlay.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "showTranslation": {
           "description": "draw translated amino acids in place of nucleotides.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "colorByChromosome": {
           "description": "color alignment blocks by source chromosome.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "showReferenceRow": {
           "description": "give the reference species a row of its own.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showInversions": {
           "description": "hatch strand-flipped (inverted) alignment blocks.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         }
       }
@@ -10317,14 +6740,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "height": {
           "description": "default height for the Hi-C track.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 300
         },
         "colorScheme": {
@@ -10345,86 +6761,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "showLegend": {
           "description": "show the color scale legend. Defaults to off.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "resolutionBias": {
           "description": "offset from the auto-picked resolution binsize.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "useLogScale": {
           "description": "map contact counts to color on a log2 scale.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "useColorPercentile": {
           "description": "saturate color at the 95th percentile of counts.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "showResolutionControls": {
           "description": "show the on-figure resolution dropdown in the overlay.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "selectedNormalization": {
           "description": "preferred matrix normalization scheme.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "KR"
         },
         "squashToHeight": {
           "description": "squash the triangle vertically to fit the display height instead of drawing square bins.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         }
       }
@@ -10458,74 +6825,32 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "height": {
           "description": "default height for the track.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
         "color": {
           "description": "the color of the arcs.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "darkblue"
         },
         "thickness": {
           "description": "the thickness of the arcs, in pixels; an arc given 0 or less is not drawn at all.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": "jexl:logThickness(feature,'score')"
         },
         "label": {
           "description": "the label to appear at the apex of the arcs.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'score')"
         },
         "arcHeight": {
           "description": "the height of the arcs.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": "jexl:log10(get(feature,'end')-get(feature,'start'))*50"
         },
         "caption": {
           "description": "the caption to appear when hovering over any point on the arcs.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'name')"
         },
         "displayMode": {
@@ -10545,38 +6870,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "minScore": {
           "description": "hide arcs whose feature score is below this; features with no score are always drawn.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "renderer": {
@@ -10614,74 +6918,32 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "height": {
           "description": "default height for the track.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
         "color": {
           "description": "the color of the arcs.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:defaultPairedArcColor(feature,alt)"
         },
         "lineWidth": {
           "description": "the stroke width of the arcs, in pixels.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 3
         },
         "minScore": {
           "description": "hide arcs whose feature score is below this; features with no score are always drawn.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         }
       }
@@ -10715,26 +6977,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "height": {
           "description": "default height for the track.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 100
         },
         "color": {
           "description": "CSS color or jexl callback for Manhattan points.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "#0068d1"
         },
         "colorBy": {
@@ -10755,50 +7003,22 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "colorField": {
           "description": "Feature field whose values color the points under colorBy: field.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "name"
         },
         "scoreField": {
           "description": "Feature field plotted on the score axis, read natively off each feature. The default \`score\` is the field every adapter serves — including the value a BED adapter's \`scoreColumn\` rewrote it to — so an explicit name here reaches a raw column the adapter left alone (a BED extra column, a GFF attribute) and takes precedence over that adapter-tier rewrite. The Manhattan plot skips a feature with no finite value in the field; the wiggle renderings plot it at 0.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "score"
         },
         "minScore": {
           "description": "Fixed minimum score bound. The default (Number.MIN_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 5e-324
         },
         "maxScore": {
           "description": "Fixed maximum score bound. The default (Number.MAX_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1.7976931348623157e+308
         },
         "scaleType": {
@@ -10834,73 +7054,31 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "numStdDev": {
           "description": "Number of standard deviations to use for the localsd autoscale type.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 3
         },
         "displayCrossHatches": {
           "description": "Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu's \\"Show cross hatches\\". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "significanceLine": {
           "description": "Score to draw a horizontal threshold line at, on the same scale as the plotted points. Unset draws none.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/NumberOrJexl"
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "scatterPointSize": {
           "description": "Diameter in px of Manhattan points.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 4
         },
         "showLegend": {
           "description": "Draw the color key while LD or field coloring is active. Defaults to on.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         }
       }
@@ -10941,14 +7119,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "field": {
               "description": "value field, or jexl callback.",
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ],
+              "$ref": "#/$defs/StringOrJexl",
               "default": ""
             },
             "scale": {
@@ -10968,17 +7139,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "domain": {
               "description": "pinned [min, max].",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ]
+              "$ref": "#/$defs/StringArrayOrJexl"
             },
             "resolve": {
               "description": "shared or independent y axis.",
@@ -11015,26 +7176,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "CSS colour or jexl callback.",
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ],
+              "$ref": "#/$defs/StringOrJexl",
               "default": "#0068d1"
             },
             "field": {
               "description": "feature field, or jexl callback.",
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ],
+              "$ref": "#/$defs/StringOrJexl",
               "default": ""
             },
             "scale": {
@@ -11056,45 +7203,15 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "palette": {
               "description": "categorical colours, in order.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ]
+              "$ref": "#/$defs/StringArrayOrJexl"
             },
             "domain": {
               "description": "category order, or a ramp [min, max].",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ]
+              "$ref": "#/$defs/StringArrayOrJexl"
             },
             "ramp": {
               "description": "viridis, or CSS colour stops.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ]
+              "$ref": "#/$defs/StringArrayOrJexl"
             }
           },
           "patternProperties": {
@@ -11116,26 +7233,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "properties": {
             "value": {
               "description": "disc, triangle, diamond or jexl callback.",
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ],
+              "$ref": "#/$defs/StringOrJexl",
               "default": "disc"
             },
             "field": {
               "description": "feature field, or jexl callback.",
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ],
+              "$ref": "#/$defs/StringOrJexl",
               "default": ""
             },
             "scale": {
@@ -11155,31 +7258,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "range": {
               "description": "glyph names, in order.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ]
+              "$ref": "#/$defs/StringArrayOrJexl"
             },
             "domain": {
               "description": "category order.",
-              "anyOf": [
-                {
-                  "type": "array",
-                  "items": {
-                    "type": "string"
-                  }
-                },
-                {
-                  "$ref": "#/$defs/JexlString"
-                }
-              ]
+              "$ref": "#/$defs/StringArrayOrJexl"
             }
           },
           "patternProperties": {
@@ -11195,26 +7278,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "x": {
           "description": "left edge field.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "start"
         },
         "x2": {
           "description": "right edge field.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "end"
         },
         "y": {
@@ -11222,14 +7291,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "row": {
           "description": "band field for spans.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "color": {
@@ -11268,26 +7330,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "field": {
           "description": "field the op reads.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "as": {
           "description": "output field.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         }
       },
@@ -11322,26 +7370,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "expr": {
           "description": "jexl callback over feature.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "field": {
           "description": "field a bin or a flatten reads.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "step": {
@@ -11365,57 +7399,20 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "as": {
           "description": "output field, or a bin's two.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "fields": {
           "description": "a stack's [start, end] fields.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "padding": {
           "description": "bp between two features on one row.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "groupby": {
           "description": "grouping fields.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "ops": {
           "type": "array",
@@ -11475,26 +7472,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "minBpPerPx": {
           "description": "draw only at or above this bp/px.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "maxBpPerPx": {
           "description": "draw only below this bp/px.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         }
       },
@@ -11508,38 +7491,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "height": {
           "description": "default height for the track.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 150
         },
         "fetchSizeLimit": {
           "description": "maximum data to attempt to download for a given track, used if adapter doesn't specify one.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1000000
         },
         "forceLoad": {
           "description": "Declarative equivalent of the \\"Force load\\" button on the \\"too much data\\" banner: when true the display always renders, however large the region or dense the features. Off by default (the gate guards against huge downloads). Set it on a view no one can interact with — an embedded / notebook view, or a screenshot — where the region is known and you want it drawn without a click.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "densityTier": {
@@ -11560,14 +7522,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "densityTierBpPerPx": {
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "marks": {
@@ -11578,26 +7533,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "minScore": {
           "description": "Fixed minimum score bound. The default (Number.MIN_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 5e-324
         },
         "maxScore": {
           "description": "Fixed maximum score bound. The default (Number.MAX_VALUE) is a sentinel meaning \\"unset, use autoscale\\".",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1.7976931348623157e+308
         },
         "scaleType": {
@@ -11633,101 +7574,42 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "numStdDev": {
           "description": "Number of standard deviations to use for the localsd autoscale type.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 3
         },
         "displayCrossHatches": {
           "description": "Rule the score axis with horizontal cross hatches at the tick positions — the config form of the score menu's \\"Show cross hatches\\". Ignored by the density rendering types, which spend color rather than height on the score and so have no axis to rule.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "origin": {
           "description": "baseline value for bars.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         },
         "minWidthPx": {
           "description": "minimum bar/span width in px.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 1
         },
         "scatterPointSize": {
           "description": "point diameter in px.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 4
         },
         "minimalTicks": {
           "description": "Draw only the min/max Y-axis ticks.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "showLegend": {
           "description": "draw the colour key.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "jexlFilters": {
           "description": "feature filters, without the jexl prefix.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         }
       }
     },
@@ -11809,17 +7691,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "indexingAttributes": {
           "description": "list of which feature attributes to index for text searching.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "Name",
             "ID",
@@ -11828,17 +7700,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "indexingFeatureTypesToExclude": {
           "description": "list of feature types to exclude in text search index.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "CDS",
             "exon"
@@ -11846,17 +7708,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "indexingFeatureTypesToInclude": {
           "description": "the only feature types to index; empty means index every type not excluded.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "textSearchAdapter": {
           "anyOf": [
@@ -11886,25 +7738,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "depth": {
           "description": "levels of subfeature the formatDetails.subfeatures callback runs on, default 2.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/NumberOrJexl"
         },
         "maxDepth": {
           "description": "hide subfeatures nested deeper than this, default no limit.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/NumberOrJexl"
         }
       },
       "patternProperties": {
@@ -11920,14 +7758,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "formats configuration object in about dialog. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "hideUris": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         }
       },
@@ -11941,58 +7772,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
@@ -12093,58 +7890,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
@@ -12236,58 +7999,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
@@ -12397,38 +8126,17 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "name": {
           "description": "optional track name, otherwise uses the \\"Reference sequence (assemblyName)\\".",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "sequenceType": {
           "description": "either dna or pep.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "dna"
         },
         "description": {
           "description": "a description of the track.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "metadata": {
@@ -12506,58 +8214,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
@@ -12661,58 +8335,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
@@ -12801,58 +8441,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
@@ -12941,58 +8547,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
@@ -13081,58 +8653,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
@@ -13221,58 +8759,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
@@ -13361,58 +8865,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
@@ -13501,58 +8971,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
@@ -13641,14 +9077,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "namesIndexLocation": {
           "description": "the location of the JBrowse1 names index data directory.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "/volvox/names",
             "locationType": "UriLocation"
@@ -13656,31 +9085,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "tracks": {
           "description": "List of tracks covered by text search adapter.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "assemblyNames": {
           "description": "List of assemblies covered by text search adapter.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         }
       }
     },
@@ -13688,28 +9097,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "ixFilePath": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "out.ix",
             "locationType": "UriLocation"
           }
         },
         "ixxFilePath": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "out.ixx",
             "locationType": "UriLocation"
@@ -13717,17 +9112,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "assemblyNames": {
           "description": "List of assemblies covered by text search adapter.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "uri": {
           "type": "string",
@@ -13744,40 +9129,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "a unique name for this connection.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "nameOfConnection"
         },
         "assemblyNames": {
           "description": "optional list of genomes to import from this track hub, if empty all genomes will be imported.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "hubTxtLocation": {
           "description": "location of the hub file (usually called hub.txt).",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "https://mysite.com/path/to/hub.txt",
             "locationType": "UriLocation"
@@ -13814,40 +9175,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "a unique name for this connection.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "nameOfConnection"
         },
         "assemblyNames": {
           "description": "optional list of genomes to import from this config.json, if empty all genomes will be imported.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "configJsonLocation": {
           "description": "location of the jb2 config file (usually called config.json).",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "https://mysite.com/path/to/config.json",
             "locationType": "UriLocation"
@@ -13884,40 +9221,16 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "a unique name for this connection.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "nameOfConnection"
         },
         "assemblyNames": {
           "description": "name of the assembly the connection belongs to, should be a single entry.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "dataDirLocation": {
           "description": "the location of the JBrowse 1 data directory, often something like https://mysite.com/jbrowse/data/.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "https://mysite.com/jbrowse/data/",
             "locationType": "UriLocation"
@@ -13954,148 +9267,61 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the internet account.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "description": {
           "description": "a description of the internet account.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "authHeader": {
           "description": "request header for credentials.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "Authorization"
         },
         "tokenType": {
           "description": "a custom name for a token to include in the header.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "Bearer"
         },
         "domains": {
           "description": "array of valid domains the url can contain to use this account.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "authEndpoint": {
           "description": "the authorization code endpoint of the internet account.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "tokenEndpoint": {
           "description": "the token endpoint of the internet account.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "needsPKCE": {
           "description": "boolean to indicate if the endpoint needs a PKCE code.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "clientId": {
           "description": "id for the OAuth application.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "scopes": {
           "description": "optional scopes for the authorization call.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "state": {
           "description": "optional state for the authorization call.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "responseType": {
           "description": "the type of response from the authorization endpoint. can be 'token' or 'code'.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "code"
         }
       }
@@ -14129,76 +9355,31 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the internet account.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "description": {
           "description": "a description of the internet account.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "authHeader": {
           "description": "request header for credentials.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "Authorization"
         },
         "tokenType": {
           "description": "a custom name for a token to include in the header.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "domains": {
           "description": "array of valid domains the url can contain to use this account.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "validateWithHEAD": {
           "description": "validate the token with a HEAD request before using it.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         }
       }
@@ -14232,76 +9413,31 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the internet account.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "description": {
           "description": "a description of the internet account.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "authHeader": {
           "description": "request header for credentials.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "Authorization"
         },
         "tokenType": {
           "description": "a custom name for a token to include in the header.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "Basic"
         },
         "domains": {
           "description": "array of valid domains the url can contain to use this account.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "validateWithHEAD": {
           "description": "validate the token with a HEAD request before using it.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         }
       }
@@ -14335,65 +9471,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the internet account.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "description": {
           "description": "a description of the internet account.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "authHeader": {
           "description": "request header for credentials.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "Authorization"
         },
         "tokenType": {
           "description": "a custom name for a token to include in the header.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "Bearer"
         },
         "domains": {
           "description": "array of valid domains the url can contain to use this account.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "addtodropbox.com",
             "db.tt",
@@ -14406,86 +9504,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "authEndpoint": {
           "description": "the authorization code endpoint of the internet account.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "https://www.dropbox.com/oauth2/authorize"
         },
         "tokenEndpoint": {
           "description": "the token endpoint of the internet account.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "https://api.dropbox.com/oauth2/token"
         },
         "needsPKCE": {
           "description": "boolean to indicate if the endpoint needs a PKCE code.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "clientId": {
           "description": "id for the OAuth application.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "scopes": {
           "description": "optional scopes for the authorization call.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "state": {
           "description": "optional state for the authorization call.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "responseType": {
           "description": "the type of response from the authorization endpoint. can be 'token' or 'code'.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "code"
         }
       }
@@ -14519,151 +9568,64 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "name": {
           "description": "descriptive name of the internet account.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "description": {
           "description": "a description of the internet account.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "authHeader": {
           "description": "request header for credentials.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "Authorization"
         },
         "tokenType": {
           "description": "a custom name for a token to include in the header.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "Bearer"
         },
         "domains": {
           "description": "array of valid domains the url can contain to use this account.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "drive.google.com"
           ]
         },
         "authEndpoint": {
           "description": "the authorization code endpoint of the internet account.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "https://accounts.google.com/o/oauth2/v2/auth"
         },
         "tokenEndpoint": {
           "description": "the token endpoint of the internet account.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "needsPKCE": {
           "description": "boolean to indicate if the endpoint needs a PKCE code.",
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "clientId": {
           "description": "id for the OAuth application.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "scopes": {
           "description": "optional scopes for the authorization call.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "https://www.googleapis.com/auth/drive.readonly"
         },
         "state": {
           "description": "optional state for the authorization call.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "responseType": {
           "description": "the type of response from the authorization endpoint.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "token"
         }
       }
@@ -16439,58 +11401,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "name": {
           "description": "descriptive name of the track, falls back to the trackId when unset.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "assemblyNames": {
           "description": "name of the assembly (or assemblies) track belongs to.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringArrayOrJexl",
           "default": [
             "assemblyName"
           ]
         },
         "description": {
           "description": "a description of the track.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "category": {
           "description": "the category and sub-categories of a track.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "metadata": {
           "description": "anything to add about this track. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
@@ -16849,48 +11777,21 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "aliases": {
           "description": "Other possible names for the assembly.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "sequence": {
           "$ref": "#/$defs/AssemblySequence"
         },
         "refNameColors": {
           "description": "Define custom colors for each reference sequence. Will cycle through this list if there are not enough colors for every sequence.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "geneticCodes": {
           "description": "Map of reference sequence name to NCBI genetic-code (translation table) id for sequences not using the standard code, e.g. { \\"chrM\\": 2 }. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
         },
         "geneticCodesLocation": {
           "description": "Optional TSV file of refName<TAB>geneticCodeId, an alternative to inlining the geneticCodes map.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "",
             "locationType": "UriLocation"
@@ -16904,14 +11805,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "displayName": {
           "description": "A human readable display name for the assembly e.g. \\"Homo sapiens (hg38)\\" while the assembly name may just be \\"hg38\\".",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "uri": {
@@ -21860,26 +16754,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "properties": {
         "defaultDriver": {
           "description": "the RPC driver to run data fetching on: MainThreadRpcDriver or WebWorkerRpcDriver. Leave empty to use the default for this application.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
         "workerCount": {
           "description": "The number of workers to use. If 0 (the default) JBrowse will decide how many workers to use.",
-          "anyOf": [
-            {
-              "type": "number"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/NumberOrJexl",
           "default": 0
         }
       },
@@ -21893,25 +16773,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "trackNames": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "categories": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         }
       },
@@ -21925,38 +16791,14 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       "type": "object",
       "properties": {
         "categoryNames": {
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "topLevelCategories": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "subCategories": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         }
       },
@@ -21974,17 +16816,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "defaultFolderCategories": {
           "description": "list of category names to display as folders by default.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "defaultCollapsed": {
           "$ref": "#/$defs/defaultCollapsed"
@@ -22015,47 +16847,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "enabled"
         },
         "scrollZoom": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "numberGrouping": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
         "useWorkspaces": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "developerMode": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         }
       },
@@ -22104,25 +16908,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/FormatAbout"
         },
         "shareURL": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/StringOrJexl",
           "default": "https://share.jbrowse.org/api/v1/"
         },
         "disableAnalytics": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/BooleanOrJexl",
           "default": false
         },
         "hierarchical": {
@@ -22139,14 +16929,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "logoPath": {
           "description": "path to a custom logo image displayed in the app header.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/FileLocation"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
+          "$ref": "#/$defs/FileLocationOrJexl",
           "default": {
             "uri": "",
             "locationType": "UriLocation"

@@ -287,6 +287,29 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     }
   }
 
+  // The value half of the common slot types, shared as one def each: a slot is
+  // `<value> | jexl:` and there are seven hundred of them, so an inline anyOf
+  // per slot is what ajv spends its compile time on.
+  const SHARED_SLOT_DEFS: Record<string, [string, JsonSchema]> = {
+    string: ['StringOrJexl', { type: 'string' }],
+    text: ['StringOrJexl', { type: 'string' }],
+    color: ['StringOrJexl', { type: 'string' }],
+    maybeColor: ['StringOrJexl', { type: 'string' }],
+    number: ['NumberOrJexl', { type: 'number' }],
+    maybeNumber: ['NumberOrJexl', { type: 'number' }],
+    integer: ['IntegerOrJexl', { type: 'integer' }],
+    boolean: ['BooleanOrJexl', { type: 'boolean' }],
+    maybeBoolean: ['BooleanOrJexl', { type: 'boolean' }],
+    fileLocation: ['FileLocationOrJexl', ref('FileLocation')],
+    stringArray: [
+      'StringArrayOrJexl',
+      { type: 'array', items: { type: 'string' } },
+    ],
+  }
+  for (const [name, value] of Object.values(SHARED_SLOT_DEFS)) {
+    defs[name] = { anyOf: [value, ref('JexlString')] }
+  }
+
   function builtinSlot(type: string): JsonSchema {
     switch (type) {
       case 'stringArray':
@@ -328,19 +351,6 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       .filter((s): s is string => Boolean(s))
       .map(s => (/[.!?]$/.test(s) ? s : `${s}.`))
       .join(' ')
-    const value = def.model
-      ? mstSchema(def.model, depth)
-      : frozen
-        ? {}
-        : builtinSlot(def.type)
-    const withDefault =
-      def.defaultValue === undefined ||
-      typeof def.defaultValue === 'function' ||
-      (typeof def.defaultValue === 'object' &&
-        def.defaultValue !== null &&
-        Object.keys(def.defaultValue).length === 0)
-        ? {}
-        : { default: def.defaultValue }
     const legacy = legacyValues?.length
       ? [
           {
@@ -351,11 +361,27 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
           },
         ]
       : []
-    return {
-      ...(description ? { description } : {}),
-      ...(frozen ? {} : { anyOf: [value, ...legacy, ref('JexlString')] }),
-      ...withDefault,
-    }
+    const shared = SHARED_SLOT_DEFS[def.type]
+    const value = def.model
+      ? mstSchema(def.model, depth)
+      : frozen
+        ? {}
+        : builtinSlot(def.type)
+    const form =
+      shared && !def.model && !legacyValues?.length
+        ? ref(shared[0])
+        : frozen
+          ? {}
+          : { anyOf: [value, ...legacy, ref('JexlString')] }
+    const withDefault =
+      def.defaultValue === undefined ||
+      typeof def.defaultValue === 'function' ||
+      (typeof def.defaultValue === 'object' &&
+        def.defaultValue !== null &&
+        Object.keys(def.defaultValue).length === 0)
+        ? {}
+        : { default: def.defaultValue }
+    return { ...(description ? { description } : {}), ...form, ...withDefault }
   }
 
   function isSlotDefinition(entry: unknown): entry is SlotDefinition {
