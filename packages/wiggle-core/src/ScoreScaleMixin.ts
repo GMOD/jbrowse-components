@@ -48,6 +48,12 @@ const confNode = (self: object) => self as ScoreScaleHost
  * means "autoscale this end". Every consumer that computes a domain reads the
  * `*Bound` pair.
  *
+ * A display that declares its value scale elsewhere answers
+ * `declaredValueScale`, and then the scale type and the pinned bounds come
+ * from the declaration rather than from `scaleType`/`minScore`/`maxScore`.
+ * Its setters are the display's to override so the edit lands on the same
+ * declaration — one owner, whichever it is.
+ *
  * Whether a bound is *configured* is a third question, and `hasManualScoreBounds`
  * is the only getter that answers it — the resolved pair cannot, since
  * `defaultScoreDomain` is exactly the hook that turns an unset end into a number.
@@ -58,9 +64,28 @@ export function ScoreScaleMixin() {
     .views(self => ({
       /**
        * #getter
+       * Overridable hook: a value scale the display declares somewhere other
+       * than these slots — the mark display's `encoding.y`. Where it answers,
+       * it is the owner and the slots below stand in only for the ends it
+       * leaves open, so a scale is read from one place whichever place that
+       * is. Default none, which is every display whose axis IS these slots.
+       */
+      get declaredValueScale():
+        | {
+            scaleType?: string
+            domain?: [number | undefined, number | undefined]
+          }
+        | undefined {
+        return undefined
+      },
+      /**
+       * #getter
        */
       get scaleType(): string {
-        return getConf(confNode(self), 'scaleType')
+        return (
+          this.declaredValueScale?.scaleType ??
+          getConf(confNode(self), 'scaleType')
+        )
       },
       /**
        * #getter
@@ -116,6 +141,10 @@ export function ScoreScaleMixin() {
        * The lower bound the config really sets, `undefined` at the sentinel.
        */
       get manualMinScore(): number | undefined {
+        const declared = this.declaredValueScale?.domain?.[0]
+        if (declared !== undefined) {
+          return declared
+        }
         return this.minScore === Number.MIN_VALUE ? undefined : this.minScore
       },
       /**
@@ -123,6 +152,10 @@ export function ScoreScaleMixin() {
        * The upper bound the config really sets, `undefined` at the sentinel.
        */
       get manualMaxScore(): number | undefined {
+        const declared = this.declaredValueScale?.domain?.[1]
+        if (declared !== undefined) {
+          return declared
+        }
         return this.maxScore === Number.MAX_VALUE ? undefined : this.maxScore
       },
       /**

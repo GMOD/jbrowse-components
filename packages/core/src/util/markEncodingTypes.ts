@@ -57,6 +57,23 @@ export type ColorEncoding =
       ramp?: RampRef
     }
 
+/**
+ * #api
+ * How a mark's `y` channel resolves: a feature field (or `jexl:` expression)
+ * read on a linear scale over the loaded regions' extremes, or the same field
+ * with the scale spelled out — `log` to read the domain logarithmically,
+ * `domain` to pin `[min, max]` instead of autoscaling. The declaration is the
+ * one owner: the display's axis, its ticks and the shader's placement are all
+ * resolved from it.
+ */
+export type ValueEncoding =
+  | FieldRef
+  | {
+      field: FieldRef
+      scale?: 'linear' | 'log'
+      domain?: [number, number]
+    }
+
 export type GlyphName = 'disc' | 'triangle' | 'diamond'
 
 /**
@@ -81,7 +98,7 @@ export type GlyphEncoding =
 export interface MarkEncoding {
   x?: FieldRef
   x2?: FieldRef
-  y?: FieldRef
+  y?: ValueEncoding
   row?: FieldRef
   color?: ColorEncoding
   glyph?: GlyphEncoding
@@ -95,7 +112,7 @@ export interface MarkEncoding {
  * allocated nor transferred, and a caller that never hovers declines the
  * index, which is most of the encoder's cost after the walk.
  */
-export type LaneName = 'y' | 'color' | 'glyph' | 'row' | 'index'
+export type LaneName = 'y' | 'color' | 'colorValue' | 'glyph' | 'row' | 'index'
 
 /**
  * #api
@@ -113,7 +130,12 @@ export type ColorScaleTable =
       kind: 'ramp'
       field: string
       scale: 'linear' | 'log'
+      /** What the ramp spans here: the declared domain, else `extent`. */
       domain: [number, number]
+      /** Whether `domain` was declared, and so already agrees across regions. */
+      pinned: boolean
+      /** This region's own extremes of the field, what a display unions. */
+      extent: [number, number]
       lut: Uint8Array
     }
 
@@ -155,6 +177,13 @@ export interface EncodedChannels {
   featureIndex: Uint32Array
   y?: Float32Array
   color?: Uint32Array
+  /**
+   * The raw values of a ramp colour channel, for a caller that named the
+   * `colorValue` lane: the scale then resolves on the main thread against a
+   * domain unioned over the loaded regions, and `scale.extent` is this
+   * region's contribution to it.
+   */
+  colorValue?: Float32Array
   glyph?: Uint8Array
   row?: Uint32Array
   /** The finite `y` extremes, `Infinity`/`-Infinity` when nothing plotted. */

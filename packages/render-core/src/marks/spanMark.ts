@@ -19,6 +19,12 @@ export interface SpanChannels {
   x: Uint32Array
   x2: Uint32Array
   row: Uint32Array
+  /**
+   * Packed ABGR, resolved in the worker — a span's colour has no ramp arm.
+   * `rowRect`'s uniform struct is shared with four other consumers, and a
+   * sampler on it would move all of them for a channel no config asks for
+   * on a span (ADR-113).
+   */
   color: Uint32Array
   count: number
 }

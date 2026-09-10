@@ -1,6 +1,7 @@
 import HoverTooltip from '@jbrowse/core/ui/HoverTooltip'
 import { assembleLocString } from '@jbrowse/core/util'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+import { valueField } from '@jbrowse/core/util/markEncoding'
 import { toP } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
@@ -31,6 +32,7 @@ const MarkTooltip = observer(function MarkTooltip({
   const scale = hit ? colorSection(legendSections, hit.markIndex) : undefined
   const label =
     hit?.color === undefined ? undefined : categoryLabel(scale, hit.color)
+  const swatch = hit?.color === undefined ? undefined : abgrToCssRgba(hit.color)
   return (
     <HoverTooltip hit={hit} mouseState={mouseState}>
       {hit ? (
@@ -41,23 +43,29 @@ const MarkTooltip = observer(function MarkTooltip({
           {hit.y === undefined || !encoding?.y ? null : (
             <>
               <br />
-              {encoding.y}: {toP(hit.y, 4)}
+              {valueField(encoding.y)}: {toP(hit.y, 4)}
             </>
           )}
-          {scale && hit.color !== undefined ? (
+          {scale && (swatch !== undefined || hit.colorValue !== undefined) ? (
             <>
               <br />
-              <span
-                style={{
-                  display: 'inline-block',
-                  width: 10,
-                  height: 10,
-                  marginRight: 4,
-                  background: abgrToCssRgba(hit.color),
-                }}
-              />
+              {swatch === undefined ? null : (
+                <span
+                  style={{
+                    display: 'inline-block',
+                    width: 10,
+                    height: 10,
+                    marginRight: 4,
+                    background: swatch,
+                  }}
+                />
+              )}
               {scale.field}
-              {label === undefined ? '' : `: ${label}`}
+              {hit.colorValue !== undefined
+                ? `: ${toP(hit.colorValue, 4)}`
+                : label === undefined
+                  ? ''
+                  : `: ${label}`}
             </>
           ) : null}
         </div>

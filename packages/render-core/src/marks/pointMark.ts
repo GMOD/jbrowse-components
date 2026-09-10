@@ -1,14 +1,24 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
 import { getDpr, makeBpMapper } from '../canvas2dUtils.ts'
 import * as shader from '../shaders/pointMark.generated.ts'
-import { pointDrawsBar, valueToYPx } from '../shaders/pointMark.js.generated.ts'
+import {
+  pointDrawsBar,
+  valueToYPxScaled,
+} from '../shaders/pointMark.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { appendGlyph, glyphBox } from './glyphPaint.ts'
 import { inkAtPoint, inkOnRect, nearestInk } from './markHit.ts'
+import {
+  colorBits,
+  paintColors,
+  rampUniforms,
+  valueScaleTypeCode,
+} from './markRamp.ts'
 import { blockPx } from './spanMark.ts'
 
-import type { MarkShape } from './types.ts'
+import type { ColorChannel } from './markRamp.ts'
+import type { MarkRamp, MarkShape, MarkValueScaleType } from './types.ts'
 
 /**
  * The `point` shape's channels: a glyph per instance at `x`, on the `y` scale,
@@ -18,18 +28,21 @@ import type { MarkShape } from './types.ts'
  * one array holds SNPs (`x2 === x + 1`) and structural variants together, and
  * the shader, the painter and the hit test all take the same branch off it.
  */
-export interface PointChannels {
+export interface PointChannels extends ColorChannel {
   x: Uint32Array
   x2: Uint32Array
   y: Float32Array
-  color: Uint32Array
   glyph: Uint8Array
   count: number
 }
 
 export interface PointParams {
-  /** `[min, max]` of the linear scale `y` is read through. */
+  /** `[min, max]` `y` is read through. */
   domain: [number, number]
+  /** How that domain is read; linear when absent. */
+  scaleType?: MarkValueScaleType
+  /** The quantitative colour scale, for a point whose colour is a ramp. */
+  ramp?: MarkRamp
   /** Glyph diameter in CSS px. */
   diameterPx: number
 }
@@ -38,7 +51,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
   id: 'point',
   pass: {
     ...slangPass({ id: 'point', mod: shader }),
-    pack: c => shader.packInstances(c, c.count),
+    pack: c => shader.packInstances({ ...c, color: colorBits(c) }, c.count),
   },
 
   writeUniforms(scratch, clip, block, frame, params) {
@@ -47,6 +60,8 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       canvasHeight: frame.canvasHeight,
       domainMin: params.domain[0],
       domainMax: params.domain[1],
+      valueScaleType: valueScaleTypeCode(params.scaleType),
+      ...rampUniforms(params.ramp),
       zero: 0,
       // viewportWidth and radiusPx stay in CSS units to match canvasHeight:
       // mixing a DPR-scaled radius with a CSS-scaled height draws vertically
@@ -58,15 +73,17 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
   },
 
   paintBlock(ctx, channels, block, frame, params) {
-    const { x, x2, y, color, glyph, count } = channels
+    const { x, x2, y, glyph, count } = channels
     if (count === 0) {
       return
     }
+    const color = paintColors(channels, count, params.ramp)
     const { diameterPx, domain } = params
     const r = diameterPx / 2
     const canvasHeight = frame.canvasHeight
     const domainMin = domain[0]
     const domainMax = domain[1]
+    const st = valueScaleTypeCode(params.scaleType)
     // The per-block closure, not the six-argument `bpToScreenPx`: that spelling
     // re-derives the region span and the block width at every call, and this
     // loop makes two calls per instance. Measured at 1.67x on 100K points.
@@ -87,7 +104,13 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       }
       const xStart = bpToPx(x[i]!)
       const xEnd = bpToPx(x2[i]!)
-      const yPx = valueToYPx(y[i]!, domainMin, domainMax, canvasHeight)
+      const yPx = valueToYPxScaled(
+        y[i]!,
+        domainMin,
+        domainMax,
+        canvasHeight,
+        st,
+      )
       const widthPx = Math.abs(xEnd - xStart)
       if (pointDrawsBar(widthPx, r)) {
         ctx.rect(Math.min(xStart, xEnd), yPx - r, widthPx, diameterPx)
@@ -105,7 +128,13 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     const { diameterPx, domain } = params
     const xStart = blockPx(block, x[i]!)
     const xEnd = blockPx(block, x2[i]!)
-    const cy = valueToYPx(y[i]!, domain[0], domain[1], frame.canvasHeight)
+    const cy = valueToYPxScaled(
+      y[i]!,
+      domain[0],
+      domain[1],
+      frame.canvasHeight,
+      valueScaleTypeCode(params.scaleType),
+    )
     const lo = Math.min(xStart, xEnd)
     const hi = Math.max(xStart, xEnd)
     const r = diameterPx / 2
@@ -125,10 +154,11 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     const domainMin = domain[0]
     const domainMax = domain[1]
     const canvasHeight = frame.canvasHeight
+    const st = valueScaleTypeCode(params.scaleType)
     return nearestInk(candidates, maxDistSq, i => {
       const xStart = bpToPx(x[i]!)
       const xEnd = bpToPx(x2[i]!)
-      const cy = valueToYPx(y[i]!, domainMin, domainMax, canvasHeight)
+      const cy = valueToYPxScaled(y[i]!, domainMin, domainMax, canvasHeight, st)
       const lo = Math.min(xStart, xEnd)
       const hi = Math.max(xStart, xEnd)
       return pointDrawsBar(hi - lo, diameterPx / 2)

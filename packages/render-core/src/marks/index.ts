@@ -15,6 +15,8 @@ export type {
   MarkBand,
   MarkContext2D,
   MarkFrame,
+  MarkRamp,
+  MarkValueScaleType,
   InkRect,
   MarkHit,
   MarkShape,
@@ -24,3 +26,4 @@ export type {
 export type { BarChannels, BarParams } from './barMark.ts'
 export type { PointChannels, PointParams } from './pointMark.ts'
 export type { SpanChannels, SpanParams } from './spanMark.ts'
+export type { ColorChannel } from './markRamp.ts'

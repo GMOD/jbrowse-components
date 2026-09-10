@@ -16,6 +16,7 @@
 //
 // `SCALE_TYPE_LINEAR` is deliberately absent: it is "neither of these", and a
 // third constant would be a value nothing compares against.
+//! export-consts: SCALE_TYPE_LOG, SCALE_TYPE_SYMLOG
 //! js-export: normalizeScore
 //! js-skip: symlogTransform — the JS twin (wiggle-core normalize.ts) spells it Math.log1p, which is accurate near zero where the shader's log(1.0 + x) is not; a generated twin would be a faithful copy of the worse of the two. What both backends must agree on is normalizeScore, which is exported and swept by normalizeScoreParity.test.ts
 module scoreScale;

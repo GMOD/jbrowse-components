@@ -12,7 +12,13 @@ import type {
   EncodedChannels,
   LaneName,
 } from '@jbrowse/core/util/markEncoding'
-import type { Mark, MarkFrame, MarkShape } from '@jbrowse/render-core/marks'
+import type {
+  Mark,
+  MarkFrame,
+  MarkRamp,
+  MarkShape,
+  MarkValueScaleType,
+} from '@jbrowse/render-core/marks'
 
 /**
  * One encoded layer as the display stores it: the worker's channels — the
@@ -24,29 +30,44 @@ export interface StoredLayer extends EncodedChannels {
 
 /**
  * The lanes each shape reads, which is what the worker is asked to fill:
- * `index` on every one, for the hover.
+ * `index` on every one, for the hover. `color` and `colorValue` are both
+ * named where a shape resolves a ramp itself — the encoder fills whichever
+ * the colour declaration calls for.
  */
 export const SHAPE_LANES = {
-  bar: ['y', 'color', 'index'],
-  point: ['y', 'color', 'glyph', 'index'],
+  bar: ['y', 'color', 'colorValue', 'index'],
+  point: ['y', 'color', 'colorValue', 'glyph', 'index'],
   span: ['row', 'color', 'index'],
 } as const satisfies Record<MarkShapeName, readonly LaneName[]>
 
-// Whether a layer carries the lanes a shape reads. A region whose payload
-// predates a shape change packs nothing rather than a lane of zeros.
-function hasLanes<L extends LaneName>(
+// The lanes a shape's channel type requires by name; its colour is checked
+// apart, being either lane.
+type ChannelLane = Exclude<LaneName, 'index'>
+
+const SHAPE_VALUE_LANES = {
+  bar: ['y'],
+  point: ['y', 'glyph'],
+  span: ['row', 'color'],
+} as const satisfies Record<MarkShapeName, readonly ChannelLane[]>
+
+// Whether a layer carries what a shape reads. A region whose payload predates
+// a shape change packs nothing rather than a lane of zeros.
+function hasLanes<L extends ChannelLane>(
   layer: StoredLayer,
   lanes: readonly L[],
 ): layer is StoredLayer & Encoded<L> {
-  for (const lane of lanes as readonly LaneName[]) {
-    if (lane !== 'index' && layer[lane] === undefined) {
+  if (layer.color === undefined && layer.colorValue === undefined) {
+    return false
+  }
+  for (const lane of lanes as readonly ChannelLane[]) {
+    if (layer[lane] === undefined) {
       return false
     }
   }
   return true
 }
 
-function withLanes<L extends LaneName>(
+function withLanes<L extends ChannelLane>(
   layer: StoredLayer | undefined,
   lanes: readonly L[],
 ) {
@@ -60,6 +81,14 @@ export interface MarkRegionData {
 
 export interface MarkRenderState extends MarkFrame {
   domainY: [number, number]
+  /** How the shared y domain is read, off the declared value scale. */
+  scaleTypeY: MarkValueScaleType
+  /**
+   * Mark `i`'s quantitative colour scale, or undefined where its colour is
+   * not a ramp: the domain unioned over the loaded regions and the LUT the
+   * pass binds, so a pan that widens it writes one uniform and no bytes.
+   */
+  colorRamps: (MarkRamp | undefined)[]
   /** The view's zoom, what a mark's range is checked against. */
   bpPerPx: number
   origin: number
@@ -112,12 +141,15 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
         return defineMark({
           shape: withPassId(barMark, id),
           channels: (d: MarkRegionData) =>
-            withLanes(d.layers[i], SHAPE_LANES.bar),
+            withLanes(d.layers[i], SHAPE_VALUE_LANES.bar),
           params: (s: MarkRenderState) => ({
             domain: s.domainY,
+            scaleType: s.scaleTypeY,
+            ramp: s.colorRamps[i],
             origin: s.origin,
             minWidthPx: s.minWidthPx,
           }),
+          texture: (s: MarkRenderState) => s.colorRamps[i]?.lut,
           enabled,
         })
       }
@@ -125,11 +157,14 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
         return defineMark({
           shape: withPassId(pointMark, id),
           channels: (d: MarkRegionData) =>
-            withLanes(d.layers[i], SHAPE_LANES.point),
+            withLanes(d.layers[i], SHAPE_VALUE_LANES.point),
           params: (s: MarkRenderState) => ({
             domain: s.domainY,
+            scaleType: s.scaleTypeY,
+            ramp: s.colorRamps[i],
             diameterPx: s.pointDiameterPx,
           }),
+          texture: (s: MarkRenderState) => s.colorRamps[i]?.lut,
           enabled,
         })
       }
@@ -137,7 +172,7 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
         return defineMark({
           shape: withPassId(spanMark, id),
           channels: (d: MarkRegionData) =>
-            withLanes(d.layers[i], SHAPE_LANES.span),
+            withLanes(d.layers[i], SHAPE_VALUE_LANES.span),
           params: (s: MarkRenderState) => ({
             rowHeight: s.canvasHeight / s.rowCount,
             rowProportion: 1,

@@ -125,7 +125,7 @@ const slicePoint = (c: PointChannels, i: number): PointChannels => ({
   x: c.x.subarray(i, i + 1),
   x2: c.x2.subarray(i, i + 1),
   y: c.y.subarray(i, i + 1),
-  color: c.color.subarray(i, i + 1),
+  color: c.color!.subarray(i, i + 1),
   glyph: c.glyph.subarray(i, i + 1),
   count: 1,
 })
@@ -222,7 +222,7 @@ test('bar: a zero-height bar paints nothing and is never the answer', () => {
           x: c.x.subarray(i, i + 1),
           x2: c.x2.subarray(i, i + 1),
           y: c.y.subarray(i, i + 1),
-          color: c.color.subarray(i, i + 1),
+          color: c.color!.subarray(i, i + 1),
           count: 1,
         }),
       },

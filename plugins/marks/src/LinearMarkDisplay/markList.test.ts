@@ -63,6 +63,8 @@ function entries(...shapes: MarkEntry['shape'][]): MarkEntry[] {
 
 const state: MarkRenderState = {
   domainY: [0, 10],
+  scaleTypeY: 'linear',
+  colorRamps: [],
   canvasWidth: 800,
   canvasHeight: 400,
   bpPerPx: 1.25,

@@ -1,6 +1,10 @@
 import { lazy } from 'react'
 
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  getConf,
+  setConf,
+} from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
@@ -18,6 +22,7 @@ import {
   configuredJexlFilters,
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
+import { valueField } from '@jbrowse/core/util/markEncoding'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import LegendMixin, {
@@ -47,7 +52,7 @@ import {
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { sameMarkHit } from './findMarkHit.ts'
-import { buildMarkLegend, markColorScales } from './legend.ts'
+import { buildMarkLegend, colorSection, markColorScales } from './legend.ts'
 import { SHAPE_LANES, buildMarkList, markDrawsAt } from './markList.ts'
 
 import type { MarkDisplayContextMenuInfo } from './components/markDisplayTypes.ts'
@@ -83,6 +88,7 @@ import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { MarkRamp } from '@jbrowse/render-core/marks'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type { ValueScale, VisibleEntry } from '@jbrowse/wiggle-core'
 
@@ -106,6 +112,13 @@ function storedRegionData(result: EncodedFeaturesResult): MarkRegionData {
   }
 }
 
+// The y field a skipped-feature notice names, whichever form the encoding
+// declared it in.
+function encodingY(encoding: MarkEncoding | undefined) {
+  const y = encoding?.y
+  return y === undefined ? undefined : valueField(y)
+}
+
 function highestRow(layers: Iterable<StoredLayer>) {
   let highest = 0
   for (const { row } of layers) {
@@ -118,6 +131,21 @@ function highestRow(layers: Iterable<StoredLayer>) {
     }
   }
   return highest
+}
+
+// A pinned end of a declared domain, or undefined where the author left it
+// to autoscale.
+function pinnedBound(raw: string | undefined) {
+  const v = Number(raw)
+  return raw === undefined || raw === '' || !Number.isFinite(v) ? undefined : v
+}
+
+/** The `[min, max]` a mark's `y` declaration pins, either end open. */
+export function declaredDomain(
+  mark: MarkConfig,
+): [number | undefined, number | undefined] {
+  const d = mark.encoding.y.domain
+  return [pinnedBound(d[0]), pinnedBound(d[1])]
 }
 
 // The config's raw slot values as the worker's encoding: a `jexl:` string
@@ -160,10 +188,21 @@ function encodingOf(mark: MarkConfig): MarkEncoding {
               : undefined,
           domain: glyph.domain.length > 0 ? [...glyph.domain] : undefined,
         }
+  const [minPin, maxPin] = declaredDomain(mark)
   return {
     x,
     x2,
-    y: y === '' ? undefined : y,
+    y:
+      y.field === ''
+        ? undefined
+        : {
+            field: y.field,
+            scale: y.scale,
+            domain:
+              minPin !== undefined && maxPin !== undefined
+                ? [minPin, maxPin]
+                : undefined,
+          },
     row: row === '' ? undefined : row,
     color: scaled,
     glyph: glyphEncoding,
@@ -338,6 +377,31 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * Which mark owns the display's value scale: the first one drawing at
+       * this zoom whose `y` names a field. Every mark shares one y, so one
+       * declaration has to be the shared one, and the menu edits that one.
+       */
+      get valueMarkIndex(): number {
+        const { markVisible } = this
+        return self.conf.marks.findIndex(
+          (m: MarkConfig, i: number) =>
+            markVisible[i] && m.encoding.y.field !== '',
+        )
+      },
+      /**
+       * #getter
+       * `ScoreScaleMixin`'s hook: the scale type and the pinned bounds come
+       * off the owning mark's `encoding.y`, so the axis, the ticks and the
+       * shapes read one declaration.
+       */
+      get declaredValueScale() {
+        const mark = self.conf.marks[this.valueMarkIndex]
+        return mark
+          ? { scaleType: mark.encoding.y.scale, domain: declaredDomain(mark) }
+          : undefined
+      },
+      /**
+       * #getter
        * The declared marks' encodings, as the worker takes them.
        */
       get encodings(): MarkEncoding[] {
@@ -440,21 +504,22 @@ export function stateModelFactory(
           range: ({ min, max }) =>
             hasBar ? widenRangeToRules([min, max], [origin]) : [min, max],
           bounds: [self.minScoreBound, self.maxScoreBound],
-          scaleType: 'linear',
+          scaleType: self.scaleType,
         })
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * The y scale the chrome draws the axis from; the shapes place values
-       * linearly, so the inherited `scaleType` slot is not consulted
+       * The y scale the chrome draws the axis from — the declared
+       * `encoding.y`, resolved: its type, and its domain autoscaled where it
+       * pins nothing. The shapes read the same pair.
        */
       get valueScales(): ValueScale[] {
         return [
           {
             domain: self.domain,
-            scaleType: 'linear',
+            scaleType: self.scaleType,
             height: self.height,
             minimalTicks: getConf(self, 'minimalTicks'),
           },
@@ -489,14 +554,34 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * Each mark's quantitative colour scale: the ramp its regions carry,
+       * over the domain the legend already unioned across them. A pan that
+       * widens it writes one uniform and uploads no instance bytes, which is
+       * what resolving the ramp here rather than per region buys.
+       */
+      get colorRamps(): (MarkRamp | undefined)[] {
+        const sections = this.legendSections
+        return self.conf.marks.map((_: MarkConfig, i: number) => {
+          const table = colorSection(sections, i)
+          return table?.kind === 'ramp'
+            ? { domain: table.domain, scale: table.scale, lut: table.lut }
+            : undefined
+        })
+      },
+      /**
+       * #getter
        * geometry and scale for the plot canvas, the same box the hit test
        * measures in
        */
       get renderState(): MarkRenderState {
         const canvasWidth = self.canvasWidthPx
         const canvasHeight = axisPlotBox(self.height).plotHeight
+        const scaleTypeY = self.scaleType === 'log' ? 'log' : 'linear'
+        const { colorRamps } = this
         return resolveRenderState(self.domain, domainY => ({
           domainY,
+          scaleTypeY,
+          colorRamps,
           canvasWidth,
           canvasHeight,
           bpPerPx: self.host.bpPerPx,
@@ -554,7 +639,7 @@ export function stateModelFactory(
               .map((layer, i) => ({
                 count: layer.count,
                 skipped: layer.skipped,
-                field: encodings[i]?.y,
+                field: encodingY(encodings[i]),
               }))
               .filter((_, i) => markVisible[i]),
           ),
@@ -657,9 +742,58 @@ export function stateModelFactory(
       },
       /**
        * #action
+       * The score menu's pin lands on the declaration: `encoding.y` owns the
+       * value scale, so an edited bound writes there and not on a second
+       * pair of display slots. `end` is 0 for the minimum, 1 for the
+       * maximum; `undefined` reopens that end to autoscale.
+       */
+      setDeclaredBound(end: 0 | 1, val?: number) {
+        const mark = self.conf.marks[self.valueMarkIndex]
+        if (!mark) {
+          setConf(self, end === 0 ? 'minScore' : 'maxScore', val)
+          return
+        }
+        const y = mark.encoding.y
+        const next = [y.domain[0] ?? '', y.domain[1] ?? '']
+        next[end] = val === undefined ? '' : String(val)
+        setConf(
+          { configuration: y },
+          'domain',
+          next[0] === '' && next[1] === '' ? [] : next,
+        )
+      },
+      /**
+       * #action
        */
       setJexlFilters(filters?: string[]) {
         self.jexlFiltersSetting = cast(filters)
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      setMinScore(val?: number) {
+        self.setDeclaredBound(0, val)
+      },
+      /**
+       * #action
+       */
+      setMaxScore(val?: number) {
+        self.setDeclaredBound(1, val)
+      },
+      /**
+       * #action
+       * Writes the owning mark's declared scale type, the same declaration
+       * the axis and the shapes read.
+       */
+      setScaleType(scaleType: string) {
+        const mark = self.conf.marks[self.valueMarkIndex]
+        if (mark) {
+          setConf({ configuration: mark.encoding.y }, 'scale', scaleType)
+        } else {
+          setConf(self, 'scaleType', scaleType)
+        }
       },
     }))
     .views(self => ({
@@ -668,7 +802,7 @@ export function stateModelFactory(
        */
       trackMenuItems(): MenuItem[] {
         return [
-          makeScoreSubMenu(self, { scaleType: false, autoscale: false }),
+          makeScoreSubMenu(self, { autoscale: false }),
           ...makePointSizeSubMenu(self, {
             label: 'Point size',
             applies: self.hasPointMark,

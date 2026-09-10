@@ -19,21 +19,31 @@ export interface MarkHitInfo {
   y: number | undefined
   /** The packed colour the worker resolved for this instance, if its shape reads one. */
   color: number | undefined
+  /** The raw value of a ramp colour channel, where the display resolves it. */
+  colorValue: number | undefined
   screenX: number
   screenY: number
 }
 
 const HIT_RADIUS_PX = 8
 
-// Inverse of the shape's `valueToYPx`, unclamped: canvas y (px from the top)
-// to a value, for the score window a cursor position asks the index about.
+// Inverse of the shape's `valueToYPxScaled`, unclamped: canvas y (px from the
+// top) to a value, for the score window a cursor position asks the index
+// about. The log arm inverts `scoreScale`'s, floor and all.
 export function yPxToValue(
   yPx: number,
   domain: [number, number],
   canvasHeight: number,
+  scaleType: 'linear' | 'log' = 'linear',
 ) {
   const [min, max] = domain
-  return max - (yPx / canvasHeight) * (max - min || 1)
+  const t = 1 - yPx / canvasHeight
+  if (scaleType === 'log') {
+    const floorV = min > 0 ? min : 1
+    const logMin = Math.log2(floorV)
+    return 2 ** (logMin + t * (Math.log2(Math.max(max, floorV)) - logMin))
+  }
+  return min + t * (max - min || 1)
 }
 
 // The value window mark `shape` is asked about at cursor score `s`: a point's
@@ -45,20 +55,20 @@ function valueWindow(
   mouseY: number,
   state: MarkRenderState,
 ): [number, number] {
-  const { domainY, canvasHeight, origin } = state
+  const { domainY, scaleTypeY, canvasHeight, origin } = state
   if (shape === 'span') {
     return [-Infinity, Infinity]
   }
   const lo =
     mouseY >= canvasHeight - HIT_RADIUS_PX
       ? -Infinity
-      : yPxToValue(mouseY + HIT_RADIUS_PX, domainY, canvasHeight)
+      : yPxToValue(mouseY + HIT_RADIUS_PX, domainY, canvasHeight, scaleTypeY)
   const hi =
     mouseY <= HIT_RADIUS_PX
       ? Infinity
-      : yPxToValue(mouseY - HIT_RADIUS_PX, domainY, canvasHeight)
+      : yPxToValue(mouseY - HIT_RADIUS_PX, domainY, canvasHeight, scaleTypeY)
   if (shape === 'bar') {
-    const s = yPxToValue(mouseY, domainY, canvasHeight)
+    const s = yPxToValue(mouseY, domainY, canvasHeight, scaleTypeY)
     return s >= origin ? [lo, Infinity] : [-Infinity, hi]
   }
   return [lo, hi]
@@ -126,6 +136,7 @@ export function findMarkHit(
           end: layer.x2[hit.index]!,
           y: layer.y?.[hit.index],
           color: layer.color?.[hit.index],
+          colorValue: layer.colorValue?.[hit.index],
           screenX: hit.x,
           screenY: hit.y,
         }

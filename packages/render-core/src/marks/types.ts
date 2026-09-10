@@ -68,6 +68,22 @@ export interface MarkContext2D extends ClipContext2D {
 
 export type MarkFrame = FrameDimensions
 
+/** How a declared value scale reads its domain. */
+export type MarkValueScaleType = 'linear' | 'log'
+
+/**
+ * The quantitative colour scale a frame paints a ramp channel through: the
+ * domain, unioned over the loaded regions by the display; the declared scale
+ * type; and the 256-entry RGBA LUT the pass's sampler binds. A shape that
+ * reads it takes the raw values in `colorValue` and resolves them per frame,
+ * so a pan that widens the domain uploads no instance bytes.
+ */
+export interface MarkRamp {
+  domain: [number, number]
+  scale: MarkValueScaleType
+  lut: Uint8Array
+}
+
 /** A horizontal strip of the canvas, in CSS px down from its top edge. */
 export interface MarkBand {
   top: number

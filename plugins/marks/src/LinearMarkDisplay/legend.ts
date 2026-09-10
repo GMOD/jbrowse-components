@@ -28,7 +28,11 @@ const CHANNELS: {
 function copyOf(scale: ScaleTable): ScaleTable {
   switch (scale.kind) {
     case 'ramp':
-      return scale
+      return {
+        ...scale,
+        domain: [scale.domain[0], scale.domain[1]],
+        extent: [scale.extent[0], scale.extent[1]],
+      }
     case 'categorical':
       return { ...scale, entries: [...scale.entries] }
     case 'glyph':
@@ -62,6 +66,17 @@ function union(current: ScaleTable, next: ScaleTable) {
       }
       break
     case 'ramp':
+      // An unpinned ramp's domain is the union of the regions' extremes,
+      // which is the same number the shapes read as a uniform, so the key
+      // and the painting cannot disagree across a pan. A pinned one already
+      // agrees.
+      if (next.kind === 'ramp' && !current.pinned && !next.pinned) {
+        current.extent = [
+          Math.min(current.extent[0], next.extent[0]),
+          Math.max(current.extent[1], next.extent[1]),
+        ]
+        current.domain = [current.extent[0], current.extent[1]]
+      }
       break
   }
 }
@@ -71,9 +86,10 @@ function union(current: ScaleTable, next: ScaleTable) {
  * mark order with colour before glyph. A categorical table is the union over
  * regions in first-seen order, the no-value row last; a label's entry is the
  * same in every region (a pinned `domain` walks the range, an unpinned one
- * derives from the value). A ramp is the first region's, since every region
- * agrees once `domain` is pinned and disagrees otherwise in a way no single
- * bar could show.
+ * derives from the value). A ramp's domain is the union of the regions' own
+ * extremes, or the pinned one where the config listed it — the same number
+ * the shapes read as a uniform, so the bar cannot label a value the plot
+ * paints elsewhere.
  */
 export function buildMarkLegend(
   regions: Iterable<MarkRegionData>,

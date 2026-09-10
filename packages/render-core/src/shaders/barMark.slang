@@ -24,6 +24,7 @@
 import antialias;
 import hpmath;
 import colorPack;
+import markColor;
 import valueScale;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
@@ -40,6 +41,13 @@ struct Uniforms {
   float  canvasHeight;
   float  domainMin;
   float  domainMax;
+  // `scoreScale`'s scale-type vocabulary, for the declared y scale.
+  int    valueScaleType;
+  // `markColor`'s: 0 packs the instance's colour, 1 and 2 read its slot as a
+  // value through the ramp below.
+  int    rampMode;
+  float  rampMin;
+  float  rampMax;
   // The baseline value bars grow from, on the same scale as `y`.
   float  origin;
   float  zero;
@@ -50,6 +58,7 @@ struct Uniforms {
   float  devicePixelRatio;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
+[[vk::binding(2, 0)]] Sampler2D<float4> colorRamp;
 
 struct VsOut {
   float4 position : SV_Position;
@@ -77,8 +86,8 @@ VsOut vs_main(BarMarkInstance inst, uint vid : SV_VertexID) {
   sx2 = extendToMinWidthX(sx1, sx2, u.minWidthPx, u.minCellDenomPx);
   float2 q = quadLocal(vid);
 
-  float valueY = valueToYPx(inst.y, u.domainMin, u.domainMax, u.canvasHeight);
-  float originY = valueToYPx(u.origin, u.domainMin, u.domainMax, u.canvasHeight);
+  float valueY = valueToYPxScaled(inst.y, u.domainMin, u.domainMax, u.canvasHeight, u.valueScaleType);
+  float originY = valueToYPxScaled(u.origin, u.domainMin, u.domainMax, u.canvasHeight, u.valueScaleType);
   float topPx = min(valueY, originY);
   float botPx = max(valueY, originY);
   float padPx = barAaPx();
@@ -86,7 +95,7 @@ VsOut vs_main(BarMarkInstance inst, uint vid : SV_VertexID) {
 
   VsOut o;
   o.position = float4(lerp(sx1, sx2, q.x), yPxToClipY(vy, u.canvasHeight), 0.0, 1.0);
-  o.color = unpackRGBA(inst.color);
+  o.color = markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax);
   o.barInkPx = float2(vy - topPx, vy - botPx);
   return o;
 }

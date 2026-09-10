@@ -1,28 +1,38 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
 import { getDpr, makeBpMapper, spanLeft } from '../canvas2dUtils.ts'
 import * as shader from '../shaders/barMark.generated.ts'
-import { valueToYPx } from '../shaders/pointMark.js.generated.ts'
+import { valueToYPxScaled } from '../shaders/pointMark.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { makeAbgrFill } from './colorFill.ts'
+import {
+  colorBits,
+  paintColors,
+  rampUniforms,
+  valueScaleTypeCode,
+} from './markRamp.ts'
 import { blockPx } from './spanMark.ts'
 
-import type { MarkShape } from './types.ts'
+import type { ColorChannel } from './markRamp.ts'
+import type { MarkRamp, MarkShape, MarkValueScaleType } from './types.ts'
 
 /**
  * The `bar` shape's channels: a rectangle from `x` to `x2` standing between
  * the baseline and `y` on the value scale.
  */
-export interface BarChannels {
+export interface BarChannels extends ColorChannel {
   x: Uint32Array
   x2: Uint32Array
   y: Float32Array
-  color: Uint32Array
   count: number
 }
 
 export interface BarParams {
-  /** `[min, max]` of the linear scale `y` and `origin` are read through. */
+  /** `[min, max]` `y` and `origin` are read through. */
   domain: [number, number]
+  /** How that domain is read; linear when absent. */
+  scaleType?: MarkValueScaleType
+  /** The quantitative colour scale, for a bar whose colour is a ramp. */
+  ramp?: MarkRamp
   /** The value bars grow from; a bar below it hangs down. */
   origin: number
   /**
@@ -46,8 +56,15 @@ function barRect(
   const xb = bpToPx(x2)
   const width = Math.max(params.minWidthPx, Math.abs(xb - xa))
   const [domainMin, domainMax] = params.domain
-  const valueY = valueToYPx(y, domainMin, domainMax, canvasHeight)
-  const originY = valueToYPx(params.origin, domainMin, domainMax, canvasHeight)
+  const st = valueScaleTypeCode(params.scaleType)
+  const valueY = valueToYPxScaled(y, domainMin, domainMax, canvasHeight, st)
+  const originY = valueToYPxScaled(
+    params.origin,
+    domainMin,
+    domainMax,
+    canvasHeight,
+    st,
+  )
   const top = Math.min(valueY, originY)
   const height = Math.abs(valueY - originY)
   return height === 0
@@ -59,7 +76,7 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
   id: 'bar',
   pass: {
     ...slangPass({ id: 'bar', mod: shader }),
-    pack: c => shader.packInstances(c, c.count),
+    pack: c => shader.packInstances({ ...c, color: colorBits(c) }, c.count),
   },
 
   writeUniforms(scratch, clip, block, frame, params) {
@@ -68,6 +85,8 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
       canvasHeight: frame.canvasHeight,
       domainMin: params.domain[0],
       domainMax: params.domain[1],
+      valueScaleType: valueScaleTypeCode(params.scaleType),
+      ...rampUniforms(params.ramp),
       origin: params.origin,
       zero: 0,
       minCellDenomPx: clip.scissorW,
@@ -77,7 +96,8 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
   },
 
   paintBlock(ctx, channels, block, frame, params) {
-    const { x, x2, y, color, count } = channels
+    const { x, x2, y, count } = channels
+    const color = paintColors(channels, count, params.ramp)
     const bpToPx = makeBpMapper(block)
     const setFill = makeAbgrFill(ctx)
     for (let i = 0; i < count; i++) {

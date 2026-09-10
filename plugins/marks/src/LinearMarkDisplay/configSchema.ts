@@ -165,6 +165,61 @@ const markGlyphSchema = ConfigurationSchema(
   { preProcessSnapshot: liftValue },
 )
 
+// `y: 'score'` is the bare-field form every other channel takes; the object
+// form spells the scale out. One sub-schema holds both, so the string is
+// lifted into `field`.
+function liftField(snap: unknown) {
+  const obj: Record<string, unknown> =
+    typeof snap === 'string' ? { field: snap } : { ...(snap as object) }
+  if (Array.isArray(obj.domain)) {
+    obj.domain = obj.domain.map(String)
+  }
+  return obj
+}
+
+const markValueSchema = ConfigurationSchema(
+  'MarkValue',
+  {
+    /**
+     * #slot marks.encoding.y.field
+     * The feature field, or jexl callback over `feature`, plotted on the
+     * score axis. A feature whose value is not a finite number is skipped.
+     * Empty for a mark with no value, which is what a span is. Writing
+     * `y: 'score'` directly on the encoding lands here.
+     */
+    field: {
+      type: 'string',
+      defaultValue: '',
+      description: 'value field, or jexl callback',
+    },
+    /**
+     * #slot marks.encoding.y.scale
+     * How the axis reads the domain. This is the display's value scale: the
+     * ticks, the cross-hatches and the shader's placement all come from it,
+     * and the first mark that names a `field` is the one that owns it.
+     */
+    scale: {
+      type: 'stringEnum',
+      model: types.enumeration('MarkValueScale', ['linear', 'log']),
+      defaultValue: 'linear',
+      description: 'linear or log',
+    },
+    /**
+     * #slot marks.encoding.y.domain
+     * The `[min, max]` the axis spans, pinning what would otherwise
+     * autoscale to the loaded regions. An empty entry autoscales that end,
+     * so `["0", ""]` pins the floor alone. The score menu's "Set min/max"
+     * writes here.
+     */
+    domain: {
+      type: 'stringArray',
+      defaultValue: [],
+      description: 'pinned [min, max]',
+    },
+  },
+  { preProcessSnapshot: liftField },
+)
+
 const markEncodingSchema = ConfigurationSchema('MarkEncoding', {
   /**
    * #slot marks.encoding.x
@@ -187,15 +242,12 @@ const markEncodingSchema = ConfigurationSchema('MarkEncoding', {
   },
   /**
    * #slot marks.encoding.y
-   * The feature field, or jexl callback, plotted on the score axis. A feature
-   * whose value is not a finite number is skipped. Empty for a mark with no
-   * value, which is what a span is.
+   * The value plotted on the score axis: a feature field, a jexl callback,
+   * or an object naming the field with the scale it is read through. The
+   * scale is the display's — its axis and its shader read the same
+   * declaration.
    */
-  y: {
-    type: 'string',
-    defaultValue: '',
-    description: 'value field',
-  },
+  y: markValueSchema,
   /**
    * #slot marks.encoding.row
    * For a span mark: the feature field, or jexl callback, naming the band

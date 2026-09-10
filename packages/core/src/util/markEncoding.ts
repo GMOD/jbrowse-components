@@ -21,6 +21,7 @@ import type {
   GlyphScaleTable,
   LaneName,
   RampRef,
+  ValueEncoding,
 } from './markEncodingTypes.ts'
 import type { ProgressReporter } from './progress.ts'
 import type { Feature } from './simpleFeature.ts'
@@ -49,6 +50,7 @@ export type {
   RampRef,
   ScaleTable,
   TransformStep,
+  ValueEncoding,
 } from './markEncodingTypes.ts'
 
 export const DEFAULT_MARK_COLOR = '#0068d1'
@@ -84,7 +86,7 @@ export type ChannelReader<T = unknown> = (feature: Feature) => T
 export interface MarkEncodingInput {
   x?: FieldRef | ChannelReader
   x2?: FieldRef | ChannelReader
-  y?: FieldRef | ChannelReader
+  y?: ValueEncoding | ChannelReader
   row?: FieldRef | ChannelReader
   color?: ColorEncoding | ChannelReader<number>
   glyph?: GlyphEncoding | ChannelReader<number>
@@ -120,6 +122,15 @@ function fieldReader(
     return feature => expr.eval(buildJexlContext({ feature }))
   }
   return feature => feature.get(ref)
+}
+
+/**
+ * #api
+ * The field a `y` declaration reads, whichever of its two forms it is
+ * written in.
+ */
+export function valueField(y: ValueEncoding): FieldRef {
+  return typeof y === 'string' ? y : y.field
 }
 
 function isGlyphName(glyph: string): glyph is GlyphName {
@@ -270,9 +281,13 @@ export function encodeFeatures<L extends LaneName>(
   const has = (lane: LaneName) => (lanes as readonly LaneName[]).includes(lane)
   const readX = fieldReader(encoding.x ?? 'start', jexl)
   const readX2 = fieldReader(encoding.x2 ?? 'end', jexl)
+  const { y: yEncoding } = encoding
   const readY =
-    has('y') && encoding.y !== undefined
-      ? fieldReader(encoding.y, jexl)
+    has('y') && yEncoding !== undefined
+      ? fieldReader(
+          typeof yEncoding === 'object' ? valueField(yEncoding) : yEncoding,
+          jexl,
+        )
       : undefined
   const readRow =
     has('row') && encoding.row !== undefined
@@ -283,7 +298,6 @@ export function encodeFeatures<L extends LaneName>(
   const x2 = new Uint32Array(n)
   const y = has('y') ? new Float32Array(n) : undefined
   const row = has('row') ? new Uint32Array(n) : undefined
-  const color = has('color') ? new Uint32Array(n) : undefined
   const glyph = has('glyph') ? new Uint8Array(n) : undefined
   const featureIndex = new Uint32Array(n)
   let yMin = Infinity
@@ -291,9 +305,22 @@ export function encodeFeatures<L extends LaneName>(
   let count = 0
 
   const colorEncoding = encoding.color ?? DEFAULT_MARK_COLOR
-  const scaled =
-    color && typeof colorEncoding === 'object' ? colorEncoding : undefined
-  const readColor = !color
+  const declaredScale =
+    typeof colorEncoding === 'object' ? colorEncoding : undefined
+  const rampEncoding =
+    declaredScale && declaredScale.scale !== 'categorical'
+      ? declaredScale
+      : undefined
+  // Which side of the wire a ramp resolves on is the caller's lane choice: a
+  // shape that reads the ramp itself names `colorValue` and gets the raw
+  // values, and the display unions the regions' extremes into one domain.
+  // Anything else names `color` and the walk resolves per region.
+  const colorValue =
+    rampEncoding && has('colorValue') ? new Float32Array(n) : undefined
+  const color = has('color') && !colorValue ? new Uint32Array(n) : undefined
+  const wantColor = color !== undefined || colorValue !== undefined
+  const scaled = wantColor ? declaredScale : undefined
+  const readColor = !wantColor
     ? undefined
     : typeof colorEncoding === 'function'
       ? colorEncoding
@@ -307,7 +334,9 @@ export function encodeFeatures<L extends LaneName>(
       ? categoricalChannel(readColor, n)
       : undefined
   const rampValues =
-    scaled && scaled.scale !== 'categorical' ? new Float32Array(n) : undefined
+    scaled && scaled.scale !== 'categorical'
+      ? (colorValue ?? new Float32Array(n))
+      : undefined
   const { glyph: glyphEncoding } = encoding
   const glyphScaled =
     glyph && typeof glyphEncoding === 'object' ? glyphEncoding : undefined
@@ -382,19 +411,26 @@ export function encodeFeatures<L extends LaneName>(
           : []),
       ],
     }
-  } else if (scaled && scaled.scale !== 'categorical' && rampValues && color) {
-    const domain = scaled.domain ?? finiteExtremes(rampValues, count)
+  } else if (scaled && scaled.scale !== 'categorical' && rampValues) {
+    const extent = finiteExtremes(rampValues, count)
+    const domain = scaled.domain ?? extent
     const lut = buildColorRampLut(rampStops(scaled.ramp))
-    const norm = normalizer(scaled.scale, domain)
-    for (let i = 0; i < count; i++) {
-      const v = rampValues[i]!
-      color[i] = Number.isFinite(v) ? lutColorAt(lut, norm(v)) : FALLBACK_COLOR
+    if (color) {
+      const norm = normalizer(scaled.scale, domain)
+      for (let i = 0; i < count; i++) {
+        const v = rampValues[i]!
+        color[i] = Number.isFinite(v)
+          ? lutColorAt(lut, norm(v))
+          : FALLBACK_COLOR
+      }
     }
     scale = {
       kind: 'ramp',
       field: scaled.field,
       scale: scaled.scale,
       domain,
+      pinned: scaled.domain !== undefined,
+      extent,
       lut,
     }
   }
@@ -451,6 +487,9 @@ export function encodeFeatures<L extends LaneName>(
   }
   if (color) {
     encoded.color = color.subarray(0, count)
+  }
+  if (colorValue) {
+    encoded.colorValue = colorValue.subarray(0, count)
   }
   if (glyph) {
     encoded.glyph = glyph.subarray(0, count)
@@ -528,7 +567,7 @@ export function encodedChannelTransferables(c: EncodedChannels) {
     c.x2.buffer,
     c.featureIndex.buffer,
   ]
-  for (const lane of [c.y, c.row, c.color, c.glyph]) {
+  for (const lane of [c.y, c.row, c.color, c.colorValue, c.glyph]) {
     if (lane) {
       buffers.push(lane.buffer)
     }

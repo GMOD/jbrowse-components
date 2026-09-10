@@ -7,13 +7,14 @@
 // All four are a 6-vertex quad; the fragment shader carves the shape.
 //! targets: wgsl, glsl
 //! export-consts: DIAMOND_GLYPH_SCALE, GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DIAMOND
-//! js-export: valueToYPx, pointDrawsBar
+//! js-export: valueToYPx, valueToYPxScaled, pointDrawsBar
 // `valueToYPx` is `valueScale`'s; it is lifted here, once, for every consumer
 // of the scale — the bar shape's painter and hit test import this twin too.
 
 import antialias;
 import hpmath;
 import colorPack;
+import markColor;
 import pointGlyph;
 import valueScale;
 
@@ -32,6 +33,13 @@ struct Uniforms {
   float  canvasHeight;
   float  domainMin;
   float  domainMax;
+  // `scoreScale`'s scale-type vocabulary, for the declared y scale.
+  int    valueScaleType;
+  // `markColor`'s: 0 packs the instance's colour, 1 and 2 read its slot as a
+  // value through the ramp below.
+  int    rampMode;
+  float  rampMin;
+  float  rampMax;
   float  zero;
   float  viewportWidth;
   float  radiusPx;
@@ -39,6 +47,7 @@ struct Uniforms {
   float  devicePixelRatio;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
+[[vk::binding(2, 0)]] Sampler2D<float4> colorRamp;
 
 float bpToClipX(uint bp, Uniforms u) {
   return hpToClipX(hpSplitUint(bp), u.bpRangeX, u.zero);
@@ -101,7 +110,7 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
 
   float startClipX = bpToClipX(inst.x, u);
   float endClipX = bpToClipX(inst.x2, u);
-  float yPx = valueToYPx(inst.y, u.domainMin, u.domainMax, u.canvasHeight);
+  float yPx = valueToYPxScaled(inst.y, u.domainMin, u.domainMax, u.canvasHeight, u.valueScaleType);
   float centerClipY = yPxToClipY(yPx, u.canvasHeight);
 
   // Genomic span in CSS px (clip width spans -1..1 across viewportWidth).
@@ -111,7 +120,7 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
   bool isBar = pointDrawsBar(spanPx, u.radiusPx);
 
   VsOut o;
-  o.color = unpackRGBA(inst.color);
+  o.color = markInstanceColor(colorRamp, inst.color, u.rampMode, u.rampMin, u.rampMax);
   if (isBar) {
     // Horizontal bar from x→x2, height 2*radiusPx px, centered on the value.
     //

@@ -14,8 +14,8 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 42 shaders with entry points. 100 functions
-are inside the emitter's subset, of which **76 are exported**.
+Scanned 42 shaders with entry points. 101 functions
+are inside the emitter's subset, of which **77 are exported**.
 
 ## Candidates
 
@@ -77,9 +77,9 @@ noticing in a diff.
 | type 'vec4' is outside the supported scalar subset | 9 | `edgeSpan`, `fillEdges`, `isCulled`, `ribbonEdgeDeltas`, `ribbonEdges`, `ribbonWidths`, … |
 | type 'vec3' is outside the supported scalar subset | 6 | `arcColorByIndex`, `baseColor`, `bpRange`, `categoryPaletteColor`, `hueRampHalfSat`, `linkedReadColorByIndex` |
 | type 'Instance' is outside the supported scalar subset | 5 | `arcCurve`, `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
+| type 'texture_2d' is outside the supported scalar subset | 3 | `markInstanceColor`, `rampColor`, `rampColorPremultiplied` |
 | call to 'length' at line N is neither a supported builtin nor a function in this module | 2 | `aaGradient`, `glyphEdgeAlpha` |
 | type 'FillVsOut' is outside the supported scalar subset | 2 | `fillFs`, `strokeFs` |
-| type 'texture_2d' is outside the supported scalar subset | 2 | `rampColor`, `rampColorPremultiplied` |
 | vec2 element type 'u32' is outside the supported scalar subset | 2 | `decodeBanded`, `decodeTriangular` |
 | 'vec3<f32>' construction is outside the supported scalar subset | 1 | `arcBpToLinear` |
 | //! js-export: 'arcYDir' reaches arcsPointDown(), which is outside the supported scalar subset | 1 | `arcYDir` |
@@ -113,6 +113,6 @@ is no longer shared with anything.
 | `frequencyAlpha` | tests only — `alphaShaderParity.test.ts` |
 | `hueRampLane` | tests only — `mapqHueParity.test.ts` |
 | `isTileKind` | tests only — `syntenyShaderParity.test.ts` |
-| `normalizeScore` | tests only — `densityColorParity.test.ts`, `normalizeScoreParity.test.ts` |
 | `sBlend` | tests only — `syntenyShaderParity.test.ts` |
+| `valueToYPxScaled` | nothing |
 | `yCurve` | tests only — `syntenyShaderParity.test.ts` |

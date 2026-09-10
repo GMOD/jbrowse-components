@@ -16,8 +16,49 @@ function _min(a: number, b: number) {
   return b < a || Number.isNaN(a) ? b : a
 }
 
+function symlogTransform(x: number, c: number): number {
+  return ((((Math.sign(x)) | 0)) * Math.log((1.0 + Math.abs((x / c)))))
+}
+
+function normalizeScore(score: number, domainMin: number, domainMax: number, scaleType: number, symlogConstant: number): number {
+  if ((scaleType == 2)) {
+    let tMin = symlogTransform(domainMin, symlogConstant)
+    let tRange = (symlogTransform(domainMax, symlogConstant) - tMin)
+    if ((tRange <= 0.0)) {
+      return 0.0
+    }
+    return _clamp(((symlogTransform(score, symlogConstant) - tMin) / tRange), 0.0, 1.0)
+  }
+  if ((scaleType == 1)) {
+    let floorV: number
+    if ((domainMin > 0.0)) {
+      floorV = domainMin
+    } else {
+      floorV = 1.0
+    }
+    let logMin = Math.log2(floorV)
+    let logRange = (Math.log2(_max(domainMax, floorV)) - logMin)
+    if ((logRange <= 0.0)) {
+      return 0.0
+    }
+    return _clamp(((Math.log2(_max(score, floorV)) - logMin) / logRange), 0.0, 1.0)
+  }
+  let range = (domainMax - domainMin)
+  if ((range <= 0.0)) {
+    return 0.0
+  }
+  return _clamp(((score - domainMin) / range), 0.0, 1.0)
+}
+
 export function valueToYPx(value: number, domainMin: number, domainMax: number, h: number): number {
   return ((1.0 - _clamp(((value - domainMin) / _max((domainMax - domainMin), 9.99999997475242708e-07)), 0.0, 1.0)) * h)
+}
+
+export function valueToYPxScaled(value: number, domainMin: number, domainMax: number, h: number, scaleType: number): number {
+  if ((scaleType == 1)) {
+    return ((1.0 - normalizeScore(value, domainMin, domainMax, 1, 1.0)) * h)
+  }
+  return valueToYPx(value, domainMin, domainMax, h)
 }
 
 export function pointDrawsBar(spanPx: number, radiusPx: number): boolean {
