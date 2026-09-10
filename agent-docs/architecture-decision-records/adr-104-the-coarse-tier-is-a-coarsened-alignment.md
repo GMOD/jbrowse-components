@@ -61,11 +61,15 @@ only had to store that.
   review caught it.) Balanced small indels never trigger this; only a
   lopsided stretch costs a run. It is what makes interpolating inside a run a
   bounded operation rather than a guess.
-- **The tag is omitted** when the row has no CIGAR, when the fold is a single
-  run (the columns already describe it), and when the CIGAR does not close on
-  the columns — the columns are what the fine tier draws. A fold of several
-  runs with no kept indel IS written: a lopsided cluster of sub-gap indels
-  bends the path by their sum, which a straight ribbon would miss.
+- **The tag is omitted** when the row has no CIGAR and when the fold is a
+  single run that closes on the columns (which already describe it). A fold of
+  several runs with no kept indel IS written: a lopsided cluster of sub-gap
+  indels bends the path by their sum, which a straight ribbon would miss. So is
+  a fold whose walk misses the row's own far corner (2026-09-10): the first cut
+  withheld it on the theory that the fine tier draws the columns, but the fine
+  tier walks the CIGAR from the start corner unchecked, and the withheld row
+  also flipped the header's `cigars` to `some`, which cost every tagless coarse
+  row in the file its implied run.
 - **A `#pif` header line** states `version`, `tiers`, `coarse` (the bound) and
   `cigars` (all/some/none). Written last and sorted first, kept by tabix as a
   header, invisible to older readers. It is what makes a tagless coarse row
@@ -73,7 +77,9 @@ only had to store that.
   when the file states a bound and every row had a CIGAR
   (`coarseRowsAreBounded`), so `hasCigar` and the walks no longer flip with
   the tier on short-block files where few rows earn a tag. `--coarse 0` is
-  gone for the same reason: a coarse tier always has a bound.
+  gone for the same reason: a coarse tier always has a bound. A reader keeps
+  only `version` from a header newer than `PIF_FORMAT_VERSION` and ignores
+  `cr`, so a future grammar degrades to plain ribbons rather than a misparse.
 - **The alphabet is pinned** to `M I D N` plus the run; a run never has a zero
   side (the writer spells it as the indel it is); a reader takes `=`/`X` as M
   and skips clips; an incoming `cr` is stripped from both tiers.

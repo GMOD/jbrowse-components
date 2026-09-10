@@ -3,11 +3,7 @@ import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import { PairwiseAdapterBase } from '../PairwiseAdapterBase.ts'
 import { PifFile } from '../PifFile.ts'
-import {
-  coarseRowsAreBounded,
-  makeIndexedSyntenyFeature,
-  resolveCoarseTier,
-} from '../util.ts'
+import { makeIndexedSyntenyFeature, resolveCoarseTier } from '../util.ts'
 
 import type { PairwiseIndexedPAFAdapterConfig } from './configSchema.ts'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -69,7 +65,7 @@ export default class PairwiseIndexedPAFAdapter extends PairwiseAdapterBase<Pairw
       const sides = this.queriedSides(assemblyName)
 
       const hasCoarseTier = await this.pif.hasCoarseTier(opts)
-      const boundedCoarseRows = coarseRowsAreBounded(await this.pif.meta(opts))
+      const meta = await this.pif.meta(opts)
       const stopTokenCheck = createStopTokenChecker(stopToken)
       const notYetEmitted = this.createSideDedupe(sides)
 
@@ -112,7 +108,7 @@ export default class PairwiseIndexedPAFAdapter extends PairwiseAdapterBase<Pairw
                   line: parsed,
                   fileOffset,
                   assemblyName,
-                  boundedCoarseRows,
+                  meta,
                   refName: parsed.indexedRefName,
                   mate: {
                     start: parsed.mateStart,

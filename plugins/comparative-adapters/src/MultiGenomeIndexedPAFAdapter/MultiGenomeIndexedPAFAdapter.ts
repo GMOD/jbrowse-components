@@ -9,7 +9,6 @@ import { panSNContig, panSNPrefixes } from '../pansn.ts'
 import {
   assemblyByPanSNPrefix,
   assemblyForPanSNName,
-  coarseRowsAreBounded,
   getOrCreate,
   makeIndexedSyntenyFeature,
   markReciprocalDuplicates,
@@ -106,7 +105,7 @@ export default class MultiGenomeIndexedPAFAdapter extends ComparativeAdapterBase
         hasCoarseTier: await this.pif.hasCoarseTier(opts),
         lodMode: opts.lodMode,
       })
-      const boundedCoarseRows = coarseRowsAreBounded(await this.pif.meta(opts))
+      const meta = await this.pif.meta(opts)
       // The anchor is the PAF query side of some records and the target side of
       // others, so both perspectives (letters) of the chosen tier must be
       // queried and unioned.
@@ -204,7 +203,7 @@ export default class MultiGenomeIndexedPAFAdapter extends ComparativeAdapterBase
               line,
               fileOffset,
               assemblyName,
-              boundedCoarseRows,
+              meta,
               refName: qref,
               mate: {
                 // The mate (columns 6/8/9) is a full PanSN name, no tier

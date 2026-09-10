@@ -136,13 +136,19 @@ into the run, leaving a single run, so the tag is omitted altogether.
 `cr:Z:` is omitted when:
 
 - the row has no CIGAR
-- the fold is a single run, which the coordinate columns already describe
-- the CIGAR does not close on the row's own columns (clipping ops, a
-  hand-written `cg`, a `cs` whose spans do not add up)
+- the fold is a single run that closes on the coordinate columns, which then
+  already describe it
+
+A single run whose walk misses the row's own far corner (clipping ops, a
+hand-written `cg`, a `cs` whose spans do not add up) keeps its tag: the fine
+tier walks that CIGAR as written, and the coarse tier has to land where it
+lands.
 
 In a file whose header states a bound and `cigars:Z:all`, a tagless coarse row
 is therefore exactly one run, and readers walk it as `<own>:<mate>M` over its
-columns.
+columns. A reader that meets a `version` newer than it knows keeps only that
+field: no bound, no implied runs, and `cr:Z:` ignored, so the coarse tier draws
+as plain ribbons rather than misreading a grammar it has not seen.
 
 The renderer walks a coarse CIGAR exactly as it walks a CIGAR at that zoom: each
 run is a ribbon segment between its corners, each kept gap a colored indel

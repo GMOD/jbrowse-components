@@ -9,6 +9,8 @@ import {
   restatementContext,
 } from './util.ts'
 
+import type { PifMeta } from './util.ts'
+
 describe('parseBed', () => {
   test('reads a scored, stranded row', () => {
     expect(parseBed('chr1\t10\t20\tgene1\t55\t-').get('gene1')).toEqual({
@@ -454,6 +456,14 @@ describe('the #pif header', () => {
     expect(parsePifHeader('')).toEqual({})
   })
 
+  test('a newer generation keeps only its version', () => {
+    expect(
+      parsePifHeader(
+        '#pif\tversion:i:2\ttiers:Z:fine,coarse\tcoarse:i:10000\tcigars:Z:all\n',
+      ),
+    ).toEqual({ version: 2 })
+  })
+
   test('coarse rows are bounded only with a bound and a CIGAR on every row', () => {
     expect(coarseRowsAreBounded({ coarseGap: 10000, cigars: 'all' })).toBe(true)
     expect(coarseRowsAreBounded({ coarseGap: 10000, cigars: 'some' })).toBe(
@@ -468,24 +478,30 @@ describe('the #pif header', () => {
 // columns describe, so it walks, flips and clips like any fold; a fine row and
 // an unbounded file's coarse row get nothing implied.
 describe('the implied fold of a tagless coarse row', () => {
-  const row = (prefix: string) =>
+  const row = (prefix: string, tags = '') =>
     parsePifLine(
-      `${prefix}chr1\t1000\t0\t500\t+\tq1\t1000\t0\t450\t400\t500\t60\tde:f:0.1`,
+      `${prefix}chr1\t1000\t0\t500\t+\tq1\t1000\t0\t450\t400\t500\t60\tde:f:0.1${tags}`,
     )
-  const feature = (prefix: string, boundedCoarseRows: boolean) =>
+  const bounded = { coarseGap: 10000, cigars: 'all' as const }
+  const feature = (prefix: string, meta: PifMeta, tags?: string) =>
     makeIndexedSyntenyFeature({
-      line: row(prefix),
+      line: row(prefix, tags),
       fileOffset: 1,
       assemblyName: 'a',
       refName: 'chr1',
-      boundedCoarseRows,
+      meta,
       mate: { start: 0, end: 450, refName: 'q1', assemblyName: 'b' },
     })
   test('implied for a coarse row of a bounded file', () => {
-    expect(feature('T', true).get('coarseCigar')).toBe('500:450M')
+    expect(feature('T', bounded).get('coarseCigar')).toBe('500:450M')
   })
   test('not for a fine row, nor without the bound', () => {
-    expect(feature('t', true).get('coarseCigar')).toBeUndefined()
-    expect(feature('T', false).get('coarseCigar')).toBeUndefined()
+    expect(feature('t', bounded).get('coarseCigar')).toBeUndefined()
+    expect(feature('T', {}).get('coarseCigar')).toBeUndefined()
+  })
+  test('a fold from a newer generation is not read', () => {
+    const cr = '\tcr:Z:200M50D250:200M'
+    expect(feature('T', bounded, cr).get('coarseCigar')).toBe('200M50D250:200M')
+    expect(feature('T', { version: 2 }, cr).get('coarseCigar')).toBeUndefined()
   })
 })

@@ -347,11 +347,12 @@ test('a minus-strand coarse row flips the fold for the Q row', async () => {
   })
 })
 
-test('a coarse row keeps the PAF coordinate columns verbatim and no fold when the CIGAR does not close on them', async () => {
+// The fine tier walks a CIGAR from the start corner without checking that it
+// reaches the columns' far corner, so a coarse row drawn from the columns alone
+// would disagree with it. The fold goes out, single run or not, and the two
+// tiers walk the same path.
+test('a coarse row keeps the PAF coordinate columns verbatim and carries the fold when the CIGAR does not close on them', async () => {
   await runInTmpDir(async () => {
-    // a CIGAR whose spans disagree with the coordinate columns: the fine tier
-    // draws the columns, so the coarse row must not say anything the walk
-    // reconstructed from a CIGAR that never reached them
     const lines = await pifLines(pafRow(['cg:Z:50M1000D40M']), [
       '--coarse',
       '500',
@@ -359,7 +360,31 @@ test('a coarse row keeps the PAF coordinate columns verbatim and no fold when th
     const coarseT = lines.find(l => l.startsWith('T'))!
     const [, , start, end] = coarseT.split('\t')
     expect([start, end]).toEqual(['0', '100'])
-    expect(coarseT).not.toContain('cr:Z:')
+    expect(tagValue(coarseT, 'cr:Z:')).toBe('50M1000D40M')
+    expect(
+      tagValue(
+        lines.find(l => l.startsWith('Q'))!,
+        'cr:Z:',
+      ),
+    ).toBe('50M1000I40M')
+  })
+})
+
+test('a single run that misses its own corner is still written', async () => {
+  await runInTmpDir(async () => {
+    // 50M40D40M under --coarse 500 folds to one run of 90:130 that the columns
+    // (100 by 100) do not describe, so leaving the tag off would let the
+    // header's `cigars:Z:all` imply a 100:100 run the fine tier never draws
+    const lines = await pifLines(pafRow(['cg:Z:50M40I40M']), [
+      '--coarse',
+      '500',
+    ])
+    expect(
+      tagValue(
+        lines.find(l => l.startsWith('T'))!,
+        'cr:Z:',
+      ),
+    ).toBe('90:130M')
   })
 })
 
@@ -436,12 +461,10 @@ test('a fine-only file says so in its header, and a CIGAR-less one too', async (
 })
 
 // `cigars:Z:all` is the reader's licence to take a coarse row with no `cr:Z:`
-// as one run within the bound (`coarseRowsAreBounded`), and a row whose fold
-// does not close on its own far corner is not one — the tag is withheld for the
-// same reason a clipped or hand-made CIGAR's is. Counting it as a CIGAR row
-// anyway had the header licence a run the fold never produced, and the follow
-// then called itself exact where the fine tier lands 580bp away.
-test('a CIGAR the fold cannot stand behind downgrades the census to some', async () => {
+// as one run within the bound (`coarseRowsAreBounded`). A fold that misses its
+// own far corner carries its tag, so the licence stays whole-file and a stray
+// clipped row no longer costs every other row its implied run.
+test('a CIGAR that does not close keeps the census at all and carries its fold', async () => {
   await runInTmpDir(async () => {
     const lines = await pifLines(
       // 40M1000D40M walks 1080 of the target, but the row's columns claim 500
@@ -454,11 +477,35 @@ test('a CIGAR the fold cannot stand behind downgrades the census to some', async
       ['--coarse', '500'],
     )
     expect(lines[0]).toBe(
-      '#pif\tversion:i:1\ttiers:Z:fine,coarse\tcoarse:i:500\tcigars:Z:some',
+      '#pif\tversion:i:1\ttiers:Z:fine,coarse\tcoarse:i:500\tcigars:Z:all',
     )
-    for (const l of lines.filter(l => /^[TQ]/.test(l))) {
-      expect(l).not.toContain('cr:Z:')
-    }
+    expect(
+      tagValue(
+        lines.find(l => l.startsWith('T'))!,
+        'cr:Z:',
+      ),
+    ).toBe('40M1000D40M')
+  })
+})
+
+test('warns when no row has a CIGAR, since the coarse tier then adds nothing', async () => {
+  await runInTmpDir(async () => {
+    fs.writeFileSync('bare.paf', pafRow([]))
+    const { warnings } = await runCommand([
+      'make-pif',
+      'bare.paf',
+      '--out',
+      'bare.pif.gz',
+    ])
+    expect(warnings).toMatch(/no row carried a CIGAR/)
+    const { warnings: quiet } = await runCommand([
+      'make-pif',
+      'bare.paf',
+      '--out',
+      'bare2.pif.gz',
+      '--no-coarse',
+    ])
+    expect(quiet).not.toMatch(/CIGAR/)
   })
 })
 
@@ -471,7 +518,6 @@ test('a pass that saw no rows at all carries no CIGAR census either', () => {
       pairs: new Set(),
       rows: 0,
       cigarRows: 0,
-      unboundedRows: 0,
       skipped: 1,
     }),
   ).toBe(

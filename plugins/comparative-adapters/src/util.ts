@@ -627,6 +627,18 @@ export interface PifMeta {
   cigars?: 'all' | 'some' | 'none'
 }
 
+/** The newest `#pif` header generation this reader understands. */
+export const PIF_FORMAT_VERSION = 1
+
+/**
+ * A header from a newer generation keeps only its version: its facts and its
+ * coarse rows' folds may mean something else, so the file reads as a
+ * pre-header one (no bound, no implied runs, plain ribbons on the coarse tier).
+ */
+export function pifVersionKnown(meta: PifMeta) {
+  return meta.version === undefined || meta.version <= PIF_FORMAT_VERSION
+}
+
 export function parsePifHeader(header: string): PifMeta {
   const meta: PifMeta = {}
   const line = header.split('\n').find(l => l.startsWith('#pif'))
@@ -647,7 +659,7 @@ export function parsePifHeader(header: string): PifMeta {
       meta.cigars = value
     }
   }
-  return meta
+  return pifVersionKnown(meta) ? meta : { version: meta.version }
 }
 
 /**
@@ -1085,16 +1097,16 @@ export function makeIndexedSyntenyFeature({
   assemblyName,
   refName,
   mate,
-  boundedCoarseRows = false,
+  meta = {},
 }: {
   line: ReturnType<typeof parsePifLine>
   fileOffset: number
   assemblyName: string
   refName: string
   mate: { start: number; end: number; refName: string; assemblyName: string }
-  // `coarseRowsAreBounded` of the file: a coarse row with no fold then gets
-  // the single run its columns describe, so it walks and flips like any fold
-  boundedCoarseRows?: boolean
+  // the file's `#pif` header: under a bound with a CIGAR on every row, a
+  // coarse row with no fold gets the single run its columns describe
+  meta?: PifMeta
 }) {
   const { extra, strand, indexedStart, indexedEnd, indexedName } = line
   const { numMatches = 0, blockLen = 1, cg, cs, cr } = extra
@@ -1103,7 +1115,7 @@ export function makeIndexedSyntenyFeature({
   const own = indexedEnd - indexedStart
   const mateLen = mate.end - mate.start
   const impliedFold =
-    boundedCoarseRows && coarseRow
+    coarseRowsAreBounded(meta) && coarseRow
       ? own === mateLen
         ? `${own}M`
         : `${own}:${mateLen}M`
@@ -1127,7 +1139,8 @@ export function makeIndexedSyntenyFeature({
     CIGAR,
     cs: typeof cs === 'string' ? cs : undefined,
     // the coarse tier's fold of the CIGAR: runs and the gaps make-pif kept
-    coarseCigar: typeof cr === 'string' ? cr : impliedFold,
+    coarseCigar:
+      typeof cr === 'string' && pifVersionKnown(meta) ? cr : impliedFold,
     syntenyId: fileOffset,
     identity: pafIdentity(extra),
     numMatches,

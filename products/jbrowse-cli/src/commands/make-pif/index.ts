@@ -163,7 +163,7 @@ export async function run(args?: string[]) {
     throw new Error(`PIF sort/index pipeline exited with ${describeExit(exit)}`)
   }
   const { stats } = pass
-  const { samples, rows, skipped } = stats
+  const { samples, rows, cigarRows, skipped } = stats
   if (rows === 0) {
     discardPart()
     throw new Error(
@@ -175,6 +175,13 @@ export async function run(args?: string[]) {
   if (skipped > 0) {
     console.warn(
       `Warning: skipped ${skipped} of ${rows + skipped} line(s) with fewer than the 12 mandatory PAF columns`,
+    )
+  }
+  if (coarseGap !== undefined && cigarRows === 0) {
+    console.warn(
+      'Warning: no row carried a CIGAR (cg:Z: or cs:Z:), so the coarse tier repeats ' +
+        'the fine tier and doubles the file for nothing. Rebuild with --no-coarse, ' +
+        'or align with a CIGAR (minimap2 -c) so low zooms have something cheaper to read.',
     )
   }
 
