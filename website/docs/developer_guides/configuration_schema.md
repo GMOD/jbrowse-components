@@ -256,15 +256,15 @@ To turn an inherited field off, state it rather than omitting it:
 `mySlot: { type: 'number', defaultValue: 4, advanced: false }` still inherits
 the base slot's `description` and `validate`, and is not advanced here.
 
-The schema's third argument — its options — merges the same shallow way, with
-four exceptions. `actions`, `views`, `extend` and `preProcessSnapshot`
-**compose** with the base's instead of replacing them, base first. The first
-three chain through separate MST calls, so the base's members are on `self`
-inside your function and you override one by redeclaring its name;
-`preProcessSnapshot` folds to `child(base(snapshot))`, so the base normalizes
-before you see the snapshot. `createBaseTrackConfig` declares two of the four —
-`actions` and `preProcessSnapshot` — so a track config schema that declares its
-own composes on top of the base's.
+The schema's third argument, its options, merges the same shallow way, with four
+exceptions. `actions`, `views`, `extend` and `preProcessSnapshot` **compose**
+with the base's instead of replacing them, base first. The first three chain
+through separate MST calls, so the base's members are on `self` inside your
+function and you override one by redeclaring its name; `preProcessSnapshot`
+folds to `child(base(snapshot))`, so the base normalizes before you see the
+snapshot. `createBaseTrackConfig` declares two of the four — `actions` and
+`preProcessSnapshot` — so a track config schema that declares its own composes
+on top of the base's.
 
 Pass the type `ConfigurationSchema()` returned, and nothing else. The slot table
 lives in a registry keyed by that exact type, so a `types.late` wrapper or a
@@ -525,8 +525,8 @@ wrong look nothing alike:
 - every function in it is total (`split(feature.name,…)`), and a plausible wrong
   value comes back — `''`, `NaN` — and travels on as a real setting.
 
-So a value that something downstream will still bind a feature to — anything
-going into `rpcProps()`, a renderer, or a worker — must be read **raw**
+A value that something downstream will still bind a feature to — anything going
+into `rpcProps()`, a renderer, or a worker — must therefore be read **raw**
 (`self.conf.someSlot`), not through a reader. A value being used on the main
 thread here and now — a swatch, a menu label, arithmetic — is a resolving read,
 and needs either a feature in the third argument or an `isJexl` guard and a

@@ -15,7 +15,8 @@ Open a linear genome view (LGV) from the menu bar: `Add` → `Linear genome view
 
 ### Scrolling
 
-Mouse wheel, click-and-drag, or the pan buttons in the LGV header.
+The view scrolls on the mouse wheel, on a click-and-drag, and from the pan
+buttons in the LGV header.
 
 ### Zooming
 
@@ -212,7 +213,7 @@ Gene and transcript features also have a sequence panel, covered in
 
 ## About track dialog
 
-Opened from the track menu.
+The track menu opens this dialog.
 
 <Figure caption="The 'About track' dialog for a CRAM file, showing the full CRAM header and the config info." src="/img/about_track.png"/>
 
@@ -276,7 +277,7 @@ The chromosome names along the scale bar are clickable. The menu holds:
 
 ## View and layout controls
 
-Four layout controls, reached from the view's hamburger menu or the header bar.
+Four layout controls sit in the view's hamburger menu and the header bar.
 
 ### Show ideogram
 

@@ -134,7 +134,7 @@ arrays a config-declared mark reads too, in absolute genomic uint32:
 export type ScoreRegionData = Encoded<'y'>
 ```
 
-And the render state, recomputed cheaply every frame. The colour is resolved to
+The render state is recomputed cheaply every frame. The colour is resolved to
 the packed form the shader's uniform takes, once, in the model — a shape takes
 packed colours and the display resolves them, so the uniform write and the
 painter are handed one number. The domain is the model's too: the encoder ships
@@ -292,12 +292,12 @@ of a module wants, the always-loaded chunk pays for all of it.
 | `score.consts.generated.ts` | the `//! export-consts` values, and nothing else                  | a state model, a hit test, a Canvas2D twin — anything that wants a number |
 | `score.js.generated.ts`     | the `//! js-export` functions as scalar TypeScript                | the painter and the hit test, which run the shader's own math             |
 
-So a display model reading one threshold reaches for the `.consts.` module, not
-the shader module that re-exports it.
+A display model reading one threshold therefore reaches for the `.consts.`
+module, not the shader module that re-exports it.
 
-What lands in `score.generated.ts`, and what a plugin imports from it. It
-re-exports the interface and consts modules, so the table below is the union of
-all three:
+The table below says what lands in `score.generated.ts` and what a plugin
+imports from it. That module re-exports the interface and consts modules, so the
+table is the union of all three:
 
 <!-- SHADER_EXPORTS START -->
 
@@ -349,13 +349,14 @@ confined to that one line; in TypeScript outside uniform writes, use plain
 
 ## Step 3: The shape
 
-The shape's own vocabulary is its channels — parallel typed arrays plus a count
-— and its params, everything else the drawing needs. A shape names its lanes in
-the library's vocabulary — `x`, `x2`, `y` or `row`, `color`, plus whatever is
-specific to the shape — and the display's payload can spell its arrays however
-it likes, because `channels` on the mark is the lens between the two. Then the
-four members. There is no constructor: a shape is an object literal, and it is
-admitted by having a consumer rather than by completeness.
+A shape's own vocabulary is its channels, which are parallel typed arrays plus a
+count, and its params, which are everything else the drawing needs. A shape
+names its lanes in the library's vocabulary — `x`, `x2`, `y` or `row`, `color`,
+plus whatever is specific to the shape — while the display's payload can spell
+its arrays however it likes, because `channels` on the mark is the lens between
+the two. The four members come next. There is no constructor: a shape is an
+object literal, and it is admitted by having a consumer rather than by
+completeness.
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/scoreMark.ts -->
 

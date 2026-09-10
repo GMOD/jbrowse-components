@@ -218,8 +218,8 @@ every other file these two pages read.
 
 ### Why this graph opens by locus {#regular-gfa-vs-rgfa}
 
-That the track answers a locus at all is a property of the file behind it.
-Release 2 labels no file "rGFA", but `sv.gfa` is the minigraph stage of the
+The file behind the track is what lets it answer a locus at all. Release 2
+labels no file "rGFA", but `sv.gfa` is the minigraph stage of the
 Minigraph-Cactus build, so every segment in it carries the `SN`/`SO`/`SR` tags
 that state where the segment sits and which segments are the reference. That is
 what lets JBrowse open any locus with no extraction step, and it is the whole

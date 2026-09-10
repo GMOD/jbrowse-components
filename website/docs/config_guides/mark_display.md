@@ -25,12 +25,12 @@ per interval, a peak file with a signal and a q-value — and those are what thi
 display plots: the value on a y-axis, the interval on x, and a second field as
 colour.
 
-It attaches to an `AlignmentsTrack` and a `VariantTrack` for the same reason —
+The mark display attaches to an `AlignmentsTrack` and a `VariantTrack` because
 every adapter behind those serves features with fields. What differs is which
 fields answer: a read's `score` is its MAPQ and `name` its QNAME, and a
 variant's quality is `QUAL` rather than `score`. The format-typed displays those
-tracks open with know things this one does not — a read's mismatches, a
-callset's genotypes — so reach for the mark display where the question is a
+tracks open with know things this one does not, such as a read's mismatches or a
+callset's genotypes, so reach for the mark display where the question is a
 field, not where it is the format.
 
 ## A worked example
@@ -90,8 +90,8 @@ a BED `columnNames` or a GFF attribute names). A `jexl:` expression over
 { "y": "jexl:-log10(feature.pvalue)" }
 ```
 
-It costs about half again as much per feature as a field read, which is why it
-is the escape rather than the default.
+A jexl `y` is evaluated once per feature and costs about half again as much as a
+field read, so reach for it where no field holds the value you want to plot.
 
 ## The value scale
 
@@ -163,7 +163,7 @@ legend can describe:
   a figure needs the colours to stay put.
 
 Whichever way a scale resolves, the legend reads the same table the colours came
-from — so what the key says is what was painted.
+from.
 
 ## Glyph scales
 
@@ -190,8 +190,8 @@ themselves:
 }
 ```
 
-A field read through a scale costs a fraction of the jexl callback it replaces,
-which is what makes shape-by-field a declaration rather than an expression.
+A scale is a lookup from the field's value into `domain` and `range`, so it
+costs a fraction of the per-feature jexl callback it replaces.
 
 ## Several marks
 

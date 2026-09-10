@@ -57,7 +57,7 @@ the four Shigella are:
 - the finished table, BEDs and config, rehosted so the lanes load without
   rerunning the pipeline: https://jbrowse.org/demos/ecoli_orthologs/config.json
 
-## A join instead of an alignment
+## A join on the gene symbols
 
 The [all-vs-all page](/docs/tutorials/allvsall_synteny) describes five E. coli
 strains to each other by aligning them, which is one minimap2 run per pair and

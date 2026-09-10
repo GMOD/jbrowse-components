@@ -80,7 +80,7 @@ id. The [end-to-end script](#reproduce-it-end-to-end) has the loop.
 
 The assembly is a `ChromSizesAdapter` built from the GFF3's own
 `##sequence-region` header, which is all a gene-level view reads. See
-[assemblies without sequence](/docs/tutorials/orthofinder_synteny#assemblies-without-sequence).
+[assemblies from a chrom.sizes](/docs/tutorials/orthofinder_synteny#assemblies-from-a-chromsizes).
 
 ### Syntenic anchors from a self-alignment
 

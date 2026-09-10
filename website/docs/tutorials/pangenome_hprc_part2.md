@@ -346,13 +346,14 @@ the assemblies it aligns rather than for these columns.
 
 The VCF is fully decomposed, so `chr6:32,450,000-32,650,000` (the window in the
 figure below) holds over fourteen thousand records, most of them SNPs and the
-rest small indels. The structural tier is already in this file. Add the filter
+rest small indels. The structural tier is already in this file. Add this filter
+from **Edit filters**:
 
 ```
 jexl:feature.INFO.LV[0]==0 && alleleLength(feature)>=50
 ```
 
-from **Edit filters** and the same window drops to a couple of hundred sites.
+The same window then drops to a couple of hundred sites.
 
 Both halves are load-bearing:
 

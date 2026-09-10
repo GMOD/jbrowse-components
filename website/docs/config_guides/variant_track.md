@@ -54,7 +54,8 @@ jexl: genotypeCount(feature, 'het') > 0 // samples in a genotype class — ref, 
 
 <!-- JEXL_CATEGORY variant-functions END -->
 
-So a track colors by allele frequency with no preprocessing:
+With those functions available, a track colors by allele frequency with no
+preprocessing:
 
 ```json addtrack
 {
@@ -115,7 +116,7 @@ block per display type. The slots both share are on
 - **`minorAlleleFrequencyFilter`** and **`maxMissingnessFilter`** hide variants
   below an allele-frequency floor or above a no-call ceiling
 
-### Coloring cells by the variant instead of the genotype
+### Coloring cells by the variant
 
 `featureColor` overrides the per-genotype shading, painting every alt-carrying
 cell by the variant itself. It takes any per-feature jexl expression, the

@@ -135,7 +135,7 @@ reads the aligner could not place come out red. Raising the track's mapping
 quality filter empties the span the same way. Residual coverage inside a called
 deletion turns up wherever the deleted sequence has a close paralog.
 
-## An SV the coverage cannot see
+## A complex call read off the pair orientations
 
 Most structural variants leave the coverage alone. The demo carries a complex
 call on chromosome 1 in HG02768 whose profile looks like anywhere else on the

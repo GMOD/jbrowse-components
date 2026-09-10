@@ -44,7 +44,7 @@ index, so neither assembly has to be described by hand.
 - _D. mauritiana_ hosted config:
   https://jbrowse.org/hubs/genark/GCF/004/382/145/GCF_004382145.1/config.json
 
-## A question with no file behind it
+## Why this needs a shell
 
 _Drosophila simulans_ and _D. mauritiana_ are sister species. Both are already
 hosted, so a browser opens either one on its own with genes and a working search

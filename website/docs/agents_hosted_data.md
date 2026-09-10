@@ -84,9 +84,9 @@ GCA_040938575.1   axolotl (Mex_15411 2024 genbank) UKY_AmexF1_1
   scheme above.
 - It is one large file, so filter it with a tool rather than reading it into
   context.
-- Two fields decide between near-duplicates: `source` is `ucsc` for a row that
-  also has a UCSC database (use that db name instead, for the richer track set),
-  and `ncbiStatusBits & 1` marks NCBI's designated reference for the species.
+- Two fields distinguish near-duplicates: `source` is `ucsc` for a row that also
+  has a UCSC database (use that db name instead, for the richer track set), and
+  `ncbiStatusBits & 1` marks NCBI's designated reference for the species.
 
 ## Finding a track
 

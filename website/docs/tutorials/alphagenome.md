@@ -48,7 +48,7 @@ the AlphaGenome team's
 - the hg38 sequence:
   https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit
 
-## A model instead of an experiment
+## Predicted assays from sequence
 
 AlphaGenome is given a window of reference sequence and returns what an RNA-seq,
 DNase, ATAC, CAGE, PRO-cap or ChIP-seq experiment in a named cell type would

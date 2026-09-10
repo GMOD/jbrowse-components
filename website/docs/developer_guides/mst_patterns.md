@@ -343,9 +343,9 @@ debugging which effect refired.
 
 ## self over this in .views()
 
-This is a **typing** rule, not a runtime one. `self` and `self`-via-`this` are
-the same object at runtime, and both dispatch to a later block's override; what
-differs is what TypeScript can see:
+`self` over `this` is a **typing** rule, not a runtime one. `self` and
+`self`-via-`this` are the same object at runtime, and both dispatch to a later
+block's override; what differs is what TypeScript can see:
 
 - `self` is typed with everything the model had **before** the block. It reaches
   earlier blocks, the properties, and the volatiles — and cannot see a sibling

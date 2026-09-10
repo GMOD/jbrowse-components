@@ -22,8 +22,9 @@ Set `configuration.theme` to one of these names:
 
 ## Custom palette properties
 
-These extend MUI's standard `primary`/`secondary`/`error`/etc. Every key below
-is optional in a config theme; anything you don't set keeps its preset value.
+The custom palette properties extend MUI's standard
+`primary`/`secondary`/`error`/etc. Every key below is optional in a config
+theme; anything you don't set keeps its preset value.
 
 <!-- PALETTE_KEYS START -->
 

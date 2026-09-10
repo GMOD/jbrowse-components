@@ -149,8 +149,8 @@ your own when an expression gets unwieldy.
 
 ### How do I get (more) categories to filter on in the faceted track selector
 
-It facets on adapter type, category, and every `metadata` key on a track.
-[](/docs/config_guides/track_selector)
+The faceted track selector facets on adapter type, category, and every
+`metadata` key on a track. [](/docs/config_guides/track_selector)
 
 ### How do I open JBrowse at a particular location with certain tracks turned on
 

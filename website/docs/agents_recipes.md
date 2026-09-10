@@ -502,7 +502,7 @@ remain as aliases of it.
 To show the same data twice at once, add the file a second time with
 `jb.addTrack` under another name; a trackId is shown once per view.
 
-## A second view without replacing the session
+## Adding a view beside the open one
 
 `jb.loadSessionSpec` replaces the whole session. To keep what is open and add a
 view beside it, add one to the session and navigate it, naming the assembly

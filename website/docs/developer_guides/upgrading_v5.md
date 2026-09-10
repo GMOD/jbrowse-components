@@ -340,7 +340,7 @@ Two things did change:
   width threaded in from their caller, and both now say `windowWidthBp: refLen`
   and take no width at all.
 
-## A view says when it does not know a key
+## A view reports an unknown key
 
 v4 dropped an undeclared key on a view snapshot silently: no error, no warning,
 the view rendered its default. A `defaultSession` written with a setting one

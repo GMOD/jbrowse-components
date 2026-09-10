@@ -757,7 +757,7 @@ function ScoreSvgBody({
 The model's `renderSvg` action loads it lazily.
 [](/docs/developer_guides/svg_export) has the pipeline.
 
-## A display with no shape at all
+## A Canvas2D-only display
 
 A drawing that is not instances of a shape — the reference sequence's letters —
 skips the mark layer, writes a Canvas2D backend by hand and returns it through

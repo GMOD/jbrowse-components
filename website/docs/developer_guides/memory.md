@@ -71,7 +71,7 @@ One budget, because `SharedBudget.total` sums over its members, so they must all
 weigh the same unit — cram weighs a decoded slice's byte length, where it used
 to weigh a record count that could not be summed with bam and tabix's bytes.
 
-## What no budget bounds
+## Unbounded retention
 
 - **Reads in flight.** Eviction never touches an unsettled read.
 - **A query's working set.** It holds every chunk it parsed until it returns.

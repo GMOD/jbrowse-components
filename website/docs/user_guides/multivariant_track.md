@@ -117,15 +117,15 @@ HIGH the same way a stop-gained SNV does.
 
 To have the track load already colored this way, preset the display's
 `featureColor` slot: see
-[coloring cells by the variant instead of the genotype](/docs/config_guides/variant_track#coloring-cells-by-the-variant-instead-of-the-genotype).
+[coloring cells by the variant](/docs/config_guides/variant_track#coloring-cells-by-the-variant).
 
 ## Coloring by SV type
 
-Structural variants can be colored by their class instead of by genotype: each
-alt-carrying cell takes the color of its variant's structural-variant type. From
-the track menu, open **Color by...** and choose **SV type** under **Cells**.
-Like the consequence option it greys out rather than disappearing, reading _(no
-structural variants found)_ on a callset that carries none.
+Structural variants can be colored by their class: each alt-carrying cell takes
+the color of its variant's structural-variant type. From the track menu, open
+**Color by...** and choose **SV type** under **Cells**. Like the consequence
+option it greys out rather than disappearing, reading _(no structural variants
+found)_ on a callset that carries none.
 
 The common classes get fixed colors, so the legend reads the same across tracks:
 deletion (red), duplication (blue), insertion (green), inversion (orange), copy
@@ -145,7 +145,7 @@ falling back to `INFO/SVTYPE` when the ALT is a plain sequence.
 <Figure caption="1000 Genomes SV ensemble callset on chr19 colored by SV type, each alt-carrying cell taking its variant's class color. The legend names every class present, including the callset's complex (CPX) events." src="/img/multisv_svtype.png" />
 
 This preset also has a
-[`featureColor` value](/docs/config_guides/variant_track#coloring-cells-by-the-variant-instead-of-the-genotype)
+[`featureColor` value](/docs/config_guides/variant_track#coloring-cells-by-the-variant)
 so a track can load already colored by SV type.
 
 ## Coloring and grouping by sample metadata

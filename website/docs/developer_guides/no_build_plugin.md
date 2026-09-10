@@ -57,7 +57,7 @@ Put `myplugin.js` alongside your config file and reference it in `config.json`:
 
 ## Adding a global menu item
 
-This adds a menu item via the plugin's `configure` method:
+The plugin's `configure` method adds a menu item:
 
 <!-- include: test_data/no_build_plugin/esmplugin.js#configure -->
 

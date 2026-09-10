@@ -56,7 +56,7 @@ the rest of the ecosystem quotes.
   rerunning the pipeline:
   https://jbrowse.org/demos/primate_orthologs/config.json
 
-## An ortholog table without an aligner
+## An ortholog table joined on gene names
 
 The [grape, peach and cacao](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 page builds its ortholog table by aligning coding sequence, and the
@@ -270,7 +270,7 @@ lane and have no ribbon.
 
 <Figure caption="Three megabases of human chr2 across the 2q13 fusion point over the seven primate lanes. Every non-human lane sits on the chromosome holding most of the window, and the three African ape lanes name the other in their headers; the genes past the fusion have models in every lane and ribbons in none." src="/img/multiway_synteny/primate_chr2_fusion.png" />
 
-## What a symbol join cannot see
+## Placeholder names in the amylase cluster
 
 The join is exactly as good as the naming. The salivary amylase cluster on human
 chr1 is a run of near-identical copies whose human names are lettered (_AMY1A_,

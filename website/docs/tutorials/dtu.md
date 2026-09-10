@@ -116,8 +116,8 @@ tabix -f -p gff dtu_muscle_vs_liver.gff3.gz
 
 ### The attribute column
 
-This is the part the track configuration depends on. A transcript row from the
-finished file, wrapped:
+The track configuration reads its slots out of this column. A transcript row
+from the finished file looks like this, wrapped:
 
 ```
 chr10  HAVANA  transcript  7788129  7807815  .  +  .

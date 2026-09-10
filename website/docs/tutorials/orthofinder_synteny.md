@@ -482,7 +482,7 @@ that pair and row order in the stack is free, unlike a
 [jcvi `.blocks` table](/docs/tutorials/multiway_synteny_grape_peach_cacao#direct-vs-transitive-pairs)
 anchored on one column.
 
-### Assemblies without sequence
+### Assemblies from a chrom.sizes
 
 A gene-level synteny view never reads a base, so each assembly is a
 [`ChromSizesAdapter`](/docs/config/chromsizesadapter) built from the
