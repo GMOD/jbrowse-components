@@ -1,6 +1,6 @@
 {
   "name": "@jbrowse/display-test-utils",
-  "version": "5.0.0-beta.6",
+  "version": "5.0.0-beta.7",
   "private": true,
   "type": "module",
   "description": "Internal jsdom harness pieces every display plugin's testEnv.ts builds on: the stub session, the stub assembly manager, and the ADR-069 teardown-noise watch the products' destroy suites hold",
