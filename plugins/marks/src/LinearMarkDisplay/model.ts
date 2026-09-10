@@ -188,21 +188,14 @@ function encodingOf(mark: MarkConfig): MarkEncoding {
               : undefined,
           domain: glyph.domain.length > 0 ? [...glyph.domain] : undefined,
         }
-  const [minPin, maxPin] = declaredDomain(mark)
   return {
     x,
     x2,
-    y:
-      y.field === ''
-        ? undefined
-        : {
-            field: y.field,
-            scale: y.scale,
-            domain:
-              minPin !== undefined && maxPin !== undefined
-                ? [minPin, maxPin]
-                : undefined,
-          },
+    // The field alone: the worker reads a value, and the scale it is read
+    // through is the display's. Shipping the declared scale would put the
+    // axis type and its bounds in the fetch's inputs, so a menu toggle
+    // between linear and log would refetch every region to no effect.
+    y: y.field === '' ? undefined : y.field,
     row: row === '' ? undefined : row,
     color: scaled,
     glyph: glyphEncoding,

@@ -209,6 +209,58 @@ test('a pinned ramp domain wins over the region extremes', () => {
   expect(r.color[1]).toBe(cssColorToABGR('rgb(102,102,102)'))
 })
 
+test('the colorValue lane ships the raw values and the region extent instead of colours', () => {
+  const r = encodeFeatures(
+    features,
+    { color: { field: 'score', scale: 'linear', ramp: ['black', 'white'] } },
+    [...ALL, 'colorValue'],
+    { jexl },
+  )
+  expect(r.color).toBeUndefined()
+  expect([...r.colorValue]).toEqual([10, 40, 25, Number.NaN, Number.NaN])
+  expect(r.scale?.kind).toBe('ramp')
+  if (r.scale?.kind === 'ramp') {
+    expect(r.scale.extent).toEqual([10, 40])
+    expect(r.scale.pinned).toBe(false)
+    expect(r.scale.lut.length).toBe(256 * 4)
+  }
+  expect(encodedChannelTransferables(r)).toContain(r.colorValue.buffer)
+})
+
+test('a pinned domain says so, so the display leaves it alone', () => {
+  const r = encodeFeatures(
+    features,
+    { color: { field: 'score', scale: 'log', domain: [1, 100] } },
+    [...ALL, 'colorValue'],
+    { jexl },
+  )
+  expect(r.scale?.kind === 'ramp' && r.scale.pinned).toBe(true)
+  expect(r.scale?.kind === 'ramp' && r.scale.domain).toEqual([1, 100])
+})
+
+test('a categorical colour resolves in the worker whatever lanes are named', () => {
+  const r = encodeFeatures(
+    features,
+    { color: { field: 'strand', scale: 'categorical' } },
+    [...ALL, 'colorValue'],
+    { jexl },
+  )
+  expect(r.colorValue).toBeUndefined()
+  expect(r.color).toBeDefined()
+})
+
+test('y declares its scale beside its field, and the encoder reads the field', () => {
+  const bare = encodeFeatures(features, { y: 'score' }, ['y'], { jexl })
+  const declared = encodeFeatures(
+    features,
+    { y: { field: 'score', scale: 'log', domain: [1, 100] } },
+    ['y'],
+    { jexl },
+  )
+  expect([...declared.y]).toEqual([...bare.y])
+  expect(declared.yMin).toBe(bare.yMin)
+})
+
 test('glyph is a name or a jexl expression returning one', () => {
   const named = encodeFeatures(features, { glyph: 'triangle' }, ALL, { jexl })
   expect(new Set(named.glyph)).toEqual(new Set([GLYPH_TRIANGLE]))

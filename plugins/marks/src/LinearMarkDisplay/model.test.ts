@@ -39,6 +39,21 @@ function createTestEnvironment(marks: unknown[]) {
 
 type Layer = EncodedFeaturesResult['layers'][number]
 
+function ramp(
+  extent: [number, number],
+  pinnedDomain?: [number, number],
+): Layer['scale'] {
+  return {
+    kind: 'ramp',
+    field: 'score',
+    scale: 'linear',
+    domain: pinnedDomain ?? extent,
+    pinned: pinnedDomain !== undefined,
+    extent,
+    lut: new Uint8Array(256 * 4),
+  }
+}
+
 function extremes(y: number[]) {
   let yMin = Infinity
   let yMax = -Infinity
@@ -124,7 +139,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
           },
           glyph: 'disc',
         },
-        lanes: ['y', 'color', 'index'],
+        lanes: ['y', 'color', 'colorValue', 'index'],
       },
       {
         encoding: {
@@ -135,7 +150,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
           color: "jexl:get(feature,'name')=='a'?'red':'blue'",
           glyph: 'triangle',
         },
-        lanes: ['y', 'color', 'glyph', 'index'],
+        lanes: ['y', 'color', 'colorValue', 'glyph', 'index'],
       },
       {
         encoding: {
@@ -172,6 +187,102 @@ test('the domain spans every valued layer and widens to the origin for a bar', (
   display.setRpcData(0, result([{ y: [3, 8] }, { y: [12, 20] }]), REGION)
   expect(display.domain).toEqual([0, 20])
   expect(display.renderState.domainY).toEqual([0, 20])
+})
+
+test('the declared y scale is the axis: its type and its pinned bounds', () => {
+  const { createDisplay } = createTestEnvironment([
+    {
+      shape: 'bar',
+      encoding: { y: { field: 'score', scale: 'log', domain: [1, 1000] } },
+    },
+  ])
+  const { display } = createDisplay()
+  expect(display.scaleType).toBe('log')
+  expect(display.minScoreBound).toBe(1)
+  expect(display.maxScoreBound).toBe(1000)
+  display.setRpcData(0, result([{ y: [3, 8] }]), REGION)
+  expect(display.domain).toEqual([1, 1000])
+  expect(display.valueScales[0]!.scaleType).toBe('log')
+  expect(display.renderState.scaleTypeY).toBe('log')
+})
+
+test('a bare y field is the linear autoscaled form it always was', () => {
+  const { createDisplay } = createTestEnvironment([
+    { shape: 'bar', encoding: { y: 'score' } },
+  ])
+  const { display } = createDisplay()
+  expect(display.scaleType).toBe('linear')
+  expect(display.hasManualScoreBounds).toBe(false)
+  display.setRpcData(0, result([{ y: [3, 8] }]), REGION)
+  expect(display.domain).toEqual([0, 8])
+})
+
+test('one end of a declared domain pins and the other autoscales', () => {
+  const { createDisplay } = createTestEnvironment([
+    { shape: 'bar', encoding: { y: { field: 'score', domain: ['', '50'] } } },
+  ])
+  const { display } = createDisplay()
+  expect(display.minScoreBound).toBeUndefined()
+  expect(display.maxScoreBound).toBe(50)
+})
+
+test('the score menu edits the declaration, not a second pair of slots', () => {
+  const { createDisplay } = createTestEnvironment([
+    { shape: 'bar', encoding: { y: 'score' } },
+  ])
+  const { display } = createDisplay()
+  display.setMaxScore(200)
+  expect([...display.conf.marks[0]!.encoding.y.domain]).toEqual(['', '200'])
+  expect(display.maxScore).toBe(Number.MAX_VALUE)
+  expect(display.maxScoreBound).toBe(200)
+  display.setScaleType('log')
+  expect(display.conf.marks[0]!.encoding.y.scale).toBe('log')
+  expect(display.scaleType).toBe('log')
+  display.setMaxScore(undefined)
+  expect([...display.conf.marks[0]!.encoding.y.domain]).toEqual([])
+  expect(display.hasManualScoreBounds).toBe(false)
+})
+
+test('an unpinned ramp domain is the union of the loaded regions extremes', () => {
+  const { createDisplay } = createTestEnvironment([
+    {
+      shape: 'bar',
+      encoding: { y: 'score', color: { field: 'score', scale: 'linear' } },
+    },
+  ])
+  const { display } = createDisplay()
+  display.setRpcData(0, result([{ y: [3, 8], scale: ramp([3, 8]) }]), REGION)
+  expect(display.colorRamps[0]!.domain).toEqual([3, 8])
+  display.setRpcData(1, result([{ y: [1, 20], scale: ramp([1, 20]) }]), REGION)
+  expect(display.colorRamps[0]!.domain).toEqual([1, 20])
+  expect(display.colorScales[0]).toMatchObject({
+    kind: 'ramp',
+    domain: [1, 20],
+  })
+})
+
+test('a pinned ramp domain is every region s, whatever they hold', () => {
+  const { createDisplay } = createTestEnvironment([
+    {
+      shape: 'bar',
+      encoding: {
+        y: 'score',
+        color: { field: 'score', scale: 'linear', domain: [0, 100] },
+      },
+    },
+  ])
+  const { display } = createDisplay()
+  display.setRpcData(
+    0,
+    result([{ y: [3, 8], scale: ramp([3, 8], [0, 100]) }]),
+    REGION,
+  )
+  display.setRpcData(
+    1,
+    result([{ y: [1, 20], scale: ramp([1, 20], [0, 100]) }]),
+    REGION,
+  )
+  expect(display.colorRamps[0]!.domain).toEqual([0, 100])
 })
 
 test('a span-only display has no score domain', () => {
