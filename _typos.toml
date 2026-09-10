@@ -110,6 +110,18 @@ Hieght = "Hieght"
 planed = "planed"
 alo = "alo"           # a's lo bound, paired with ahi in coveringGene
 ahi = "ahi"           # a's hi bound, paired with alo in coveringGene
+# MarkDisplay.test.tsx: the misspelling IS the fixture, `mark_typo` asserts the
+# skipped-feature warning names the unknown encoding key it was given
+scroe = "scroe"
+# schemaValidate.test.ts: same fixture shape, `heightPreConfg` asserts the
+# schema validator reports the misspelled key
+Confg = "Confg"
+# FLAM and FRAM, the two fossil Alu monomers — website/docs/tutorials/alu_age.md
+# and website/scripts/specs/marks.ts
+FRAM = "FRAM"
+# generateConfigManifest.ts: `[sS]tringEnum` is a character-class regex
+# literal, and typos tokenizes the text after it, "tringEnum", into "tring"
+tring = "tring"
 
 [files]
 extend-exclude = [
