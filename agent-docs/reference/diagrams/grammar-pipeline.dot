@@ -28,7 +28,7 @@ digraph grammar_pipeline {
     marks [label="defineMark list\nshape x lenses\nGPU, Canvas2D, SVG, hit test", style=bold]
     legend [label="colorScales -> legend\nvalueScale -> axis, hatches, rules\nplaced by the chrome", style=bold]
     layers [label="marks[] in draw order\none y domain, shared\na zoom range per mark", style=bold]
-    genomic [label="genomic x, fixed\ncircular and dotplot\nare displays", style=dashed]
+    genomic [label="ring pass\nstrip x -> angle, y -> radius\nsampled per pixel", style=bold]
     adapter -> filters -> encode -> marks -> legend -> layers -> genomic
     encode -> valueScale [style=dotted label="y extremes"]
     valueScale -> marks [style=dotted]

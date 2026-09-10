@@ -20,19 +20,20 @@ const config = volvoxConfigWithTracks(['volvox_microarray'])
 
 const timeout = 30000
 
+// #region ringView
+const ringView = {
+  type: 'CircularView',
+  assembly: 'volvox',
+  tracks: ['volvox_microarray'],
+}
+// #endregion
+
 test('a bigwig track on a circular view draws as a ring', async () => {
   const { view: created } = await createView({
     ...config,
     defaultSession: {
       name: 'ring',
-      views: [
-        {
-          id: 'ring_view',
-          type: 'CircularView',
-          assembly: 'volvox',
-          tracks: ['volvox_microarray'],
-        },
-      ],
+      views: [{ id: 'ring_view', ...ringView }],
     },
   })
   const view = created as unknown as CircularViewModel

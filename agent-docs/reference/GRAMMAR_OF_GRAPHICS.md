@@ -8,8 +8,11 @@ kind: spec
 
 **TL;DR:** the grammar is a pipeline — data, transform, scale, mark, guide,
 layer, coordinates — and as of 2026-09-10 the tree has a declared answer at
-six of the seven stages, with guides derived from declared scales on both
-surfaces and parity between backends pinned by tests. Every channel now
+every one of the seven stages, with guides derived from declared scales on
+both surfaces and parity between backends pinned by tests. The coordinate
+stage is the circular view: a linear display draws on it as a ring, unchanged,
+through a strip the width of the circumference and a polar resampling of the
+picture the display made. Every channel now
 declares its scale on itself and the display resolves it, y resolves shared or
 independent across layers, and layout is a transform step; the seams left are
 that two channel vocabularies remain, that the config rung reaches three track
@@ -30,7 +33,8 @@ per zoom level holds at any scale. The positions behind each are in
 [ADR-114](../architecture-decision-records/adr-114-canvas-keeps-its-hand-written-packer.md)
 [ADR-115](../architecture-decision-records/adr-115-one-mark-may-read-its-own-axis.md)
 [ADR-117](../architecture-decision-records/adr-117-the-density-tier-is-a-mark-layer.md)
-and [ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md);
+[ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)
+and [ADR-119](../architecture-decision-records/adr-119-the-circular-view-is-a-coordinate-stage-over-the-linear-displays.md);
 this file is the map across them.
 
 ![The grammar's seven stages, and where the tree answers each](diagrams/grammar-pipeline.svg)
@@ -45,7 +49,7 @@ this file is the map across them.
 | mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`) | whole, for the shapes the library has |
 | guide | axis and legend derived from a scale; a highlight derived from a selection | `colorScales` → legend (`packages/display-kit/src/legendHost.ts`), `valueScale` → axis, hatches and rules (`packages/display-kit/src/axisHost.ts`), `hoverInk` / `selectionInk` → the highlight (`packages/display-kit/src/highlightHost.ts`), each instance's box read off its shape's `ink`; `DisplayChrome` places all three and `renderDisplaySvg` the first two | whole, for the displays that declare |
 | layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; marks share one y domain unless one declares `encoding.y.resolve: 'independent'`, which folds its own domain and takes a second axis on the right (`markValueScale`, `plugins/marks/src/LinearMarkDisplay/markList.ts`); a mark's `minBpPerPx`/`maxBpPerPx` is the zoom range it draws in, and the shared domain, legend and row count fold only the marks drawing | y resolves shared or independent; colour does not; semantic zoom per layer |
-| coordinates | a transform of the plane | genomic x, fixed; circular and dotplot are displays, not coordinate systems | fixed, by position |
+| coordinates | a transform of the plane | genomic x along a strip, and the circular view's ring pass over it: the view is a `RegionHost` whose axis is the circumference, a display renders its strip as into a linear track, and one pass per ring resamples the strip's canvas in polar coordinates (`plugins/circular-view/src/rings/`, [ADR-119](../architecture-decision-records/adr-119-the-circular-view-is-a-coordinate-stage-over-the-linear-displays.md)) | polar, as a resampling of the finished picture rather than a twin per shape — measured at 4.3 ms a ring against 5.4–6.8 ms for the twin, exact at every bin width; the dotplot stays a display |
 
 The encoding — field to channel, evaluated once — is the grammar's central
 idea and the tree has it as one loop. Four packers that were hand-written
@@ -183,9 +187,13 @@ The seams, named honestly:
   generated from the encoding. That is ADR-095's trade, and it holds until a
   second in-tree consumer wants one; `opacity` also breaks the Canvas2D
   painters' colour batching.
-- **A fixed coordinate system.** Genomic x, always. A circular view is a
-  display with its own shapes, not a coordinate transform over the same
-  marks.
+- **The coordinate stage is a resampling, and it reaches the displays that
+  read the `RegionHost` contract.** A ring is the display's strip warped,
+  which is exact in angle and minifies an inner ring by `inner / ruler`, and
+  a display that reads the linear genome view itself rather than its host —
+  the alignments pileup — has no ring; its coverage on the circle is the mark
+  display's `coverage` step. There is one polar transform and no other, and
+  the strip past `maxCanvasCssPx()` scales down rather than tiling.
 
 ## What the tree does that the grammars do not
 

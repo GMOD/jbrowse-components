@@ -1,0 +1,34 @@
+{
+  "id": "ring-warp-vs-wedge",
+  "measured": "2026-09-10",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome node plugins/circular-view/benches/ringWarp.bench.ts --bins=5278; the same with --bins=10",
+    "notes": "One ring on a 1000 css px circular view at dpr 2 (2000 device px canvas, ruler at 840 device px, a 100 css px display as a 200 device px band, a strip 5278 device px wide), in headless Chrome on an Intel UHD 630 through ANGLE, min of 10 rounds of 6 frames with the arms interleaved. Every frame ends on a one-pixel readPixels, so it is the raster that is timed. 'warp' samples the strip texture in polar coordinates from one annulus; 'control' is the same arm declared twice, so `control / warp` is what the page could resolve; 'restrip' re-uploads the strip canvas as a texture every frame, the cost a zoom or a data arrival adds to a rotation; 'wedge1' and 'wedge8' draw one instance per bin as a quad whose corners the vertex shader places in polar coordinates, with one and eight segments per bin; 'c2d-warp' and 'c2d-wedge' are the Canvas2D fallbacks, the strip as one rotated device-pixel slice per column and one arc path per bin. 5278 bins is a bar per device column, the shape a 300x coverage band takes where its bins are pixels; 10 bins is ten 36-degree bins, the case a straight-edged wedge gets wrong. 'differs' is the share of ring pixels whose alpha differs by more than 8/255 from the warp's and 'mean' the mean absolute alpha difference over them: at ten bins the single-segment wedge misses 14% of the ring at a mean of 241/255 — its chord sits 24 px inside the arc — where eight segments bring it within 1.1% of the warp, the residual being rim antialiasing. The per-pixel fixture differs on 22% of pixels at 27/255 under any pair of these arms, which is what resampling one-pixel bars costs; the Canvas2D warp differs from the GPU warp by the same amount. On swiftshader the same fixture read warp 29 ms, wedge1 75 ms (2.56x) and wedge8 218 ms (7.48x): CPU rasterisation prices vertices against fragments differently, and only the order is worth reading from it."
+  },
+  "columns": [
+    { "key": "arm", "label": "arm" },
+    { "key": "bins", "label": "bins", "format": "int", "align": "right" },
+    { "key": "ms", "label": "ms/frame", "format": "ms", "align": "right" },
+    { "key": "vsWarp", "label": "vs warp", "format": "x", "align": "right" },
+    { "key": "differs", "label": "differs from warp", "align": "right" },
+    { "key": "mean", "label": "mean alpha error", "align": "right" }
+  ],
+  "rows": [
+    { "values": { "arm": "warp", "bins": 5278, "ms": 4.33, "vsWarp": 1, "differs": "—", "mean": "—" } },
+    { "values": { "arm": "control", "bins": 5278, "ms": 4.02, "vsWarp": 0.93, "differs": "0%", "mean": "0" } },
+    { "values": { "arm": "restrip", "bins": 5278, "ms": 4.63, "vsWarp": 1.07, "differs": "0%", "mean": "0" } },
+    { "values": { "arm": "wedge1", "bins": 5278, "ms": 5.43, "vsWarp": 1.25, "differs": "22.3%", "mean": "27.5/255" } },
+    { "values": { "arm": "wedge8", "bins": 5278, "ms": 6.83, "vsWarp": 1.58, "differs": "22.3%", "mean": "27.5/255" } },
+    { "values": { "arm": "c2d-warp", "bins": 5278, "ms": 64.9, "vsWarp": 14.98, "differs": "49.7%", "mean": "28.2/255" } },
+    { "values": { "arm": "c2d-wedge", "bins": 5278, "ms": 37.2, "vsWarp": 8.58, "differs": "59.0%", "mean": "41.4/255" } },
+    { "values": { "arm": "warp", "bins": 10, "ms": 2.92, "vsWarp": 1, "differs": "—", "mean": "—" } },
+    { "values": { "arm": "control", "bins": 10, "ms": 3.35, "vsWarp": 1.15, "differs": "0%", "mean": "0" } },
+    { "values": { "arm": "restrip", "bins": 10, "ms": 3.58, "vsWarp": 1.23, "differs": "0%", "mean": "0" } },
+    { "values": { "arm": "wedge1", "bins": 10, "ms": 3.02, "vsWarp": 1.03, "differs": "14.4%", "mean": "241.4/255" } },
+    { "values": { "arm": "wedge8", "bins": 10, "ms": 2.77, "vsWarp": 0.95, "differs": "1.1%", "mean": "56.1/255" } },
+    { "values": { "arm": "c2d-warp", "bins": 10, "ms": 59.0, "vsWarp": 20.23, "differs": "62.6%", "mean": "34.3/255" } },
+    { "values": { "arm": "c2d-wedge", "bins": 10, "ms": 1.02, "vsWarp": 0.35, "differs": "1.0%", "mean": "31.2/255" } }
+  ]
+}

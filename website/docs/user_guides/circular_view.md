@@ -1,6 +1,8 @@
 ---
 title: Circular genome view
-description: Whole-genome chord plot of structural variants
+description:
+  Whole-genome rings of quantitative tracks, with structural variants and
+  synteny drawn as chords and ribbons across the interior
 guide_category: Views
 ---
 
@@ -8,7 +10,9 @@ guide_category: Views
 draws long-range structural variants as chords across the interior, one arc per
 event connecting its two breakpoints. An arc with its two ends in different
 chromosome segments is an inter-chromosomal event, which no single linear window
-can hold.
+can hold. Any track that draws in the linear genome view — a bigWig, a feature
+density, an alignment coverage — draws on the circle as a ring inside the
+ideogram, so a Circos-style figure is the same tracks opened on this view.
 
 <Figure caption="A circular genome view of a structural-variant VCF. Each chord connects the two breakpoints of one variant; arcs spanning between different chromosomes are inter-chromosomal events (translocations/breakends)." src="/img/jbrowse-img/circular_chords.png" />
 
@@ -23,6 +27,40 @@ can hold.
 The view reads standard VCF/VCF.gz variant tracks. Chords are drawn from
 long-range records (`SVTYPE=BND` breakends and translocations). Single-locus
 deletions and duplications load but don't produce an informative chord.
+
+## Rings
+
+A track whose display draws in the linear genome view draws on the circle as a
+ring: open it from the view's track selector, or name it in the view's `tracks`.
+Rings stack inward from the ideogram in the order the tracks were opened, each
+as tall as the display's height, and the chords and ribbons draw inside the
+innermost ring. Every setting the display has on a linear view — a wiggle's plot
+type and colour, a mark display's `marks` — applies on the ring, and hovering or
+clicking a ring is the same hover and click as on the linear track: the tooltip
+and the feature details are the display's own.
+
+A ring is the display's linear rendering wrapped around the circle: the display
+draws a strip as long as the circumference, and the view resamples it so each
+base sits at its arc. Inner rings are drawn from the same strip and so resolve a
+little coarser than the outer ones.
+
+<!-- include: products/jbrowse-web/src/tests/CircularViewRing.test.tsx#ringView -->
+
+```ts
+const ringView = {
+  type: 'CircularView',
+  assembly: 'volvox',
+  tracks: ['volvox_microarray'],
+}
+```
+
+A variant or synteny track keeps its chords and ribbons; a track that has both a
+linear and a circular display takes the circular one unless the entry names the
+other, as `{ trackId, displaySnapshot: { type: 'LinearMarkDisplay' } }` does for
+a density ring over a variant track. The alignments pileup display has no ring;
+alignment coverage on the circle is a
+[mark display](/docs/config/linearmarkdisplay) over the alignments track with a
+`coverage` transform.
 
 ## Interacting with chords
 
@@ -44,3 +82,5 @@ together.
 - [Structural variant visualization](/docs/user_guides/sv_visualization)
 - [Cancer SVs (C-GIAB) tutorial](/docs/tutorials/sv_visualization_cgiab)
 - [ChordVariantDisplay config schema](/docs/config/chordvariantdisplay)
+- [LinearMarkDisplay config schema](/docs/config/linearmarkdisplay), for a
+  density or coverage ring
