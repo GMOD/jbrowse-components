@@ -203,3 +203,105 @@ export const marksSpecs: ScreenshotSpec[] = [
     ],
   },
 ]
+
+// The Alu tutorial's track (docs/tutorials/alu_age.md): each copy's divergence
+// from its consensus as a bar coloured by lineage zoomed in, the count per
+// zoom-following bin with the AluY count over it zoomed out, and the
+// make-density sidecar past the fetch budget, all from one marks list.
+const ALU_AGE_TRACK = {
+  ...ALU_MARKS_TRACK,
+  trackId: 'alu_age',
+  name: 'Alu copies',
+  displays: [
+    {
+      type: 'LinearMarkDisplay',
+      displayId: 'alu_age-LinearMarkDisplay',
+      marks: [
+        {
+          shape: 'bar',
+          transform: [
+            {
+              type: 'formula',
+              expr: 'jexl:substring(feature.name, 0, 4)',
+              as: 'lineage',
+            },
+          ],
+          encoding: {
+            y: 'milliDiv',
+            color: {
+              field: 'lineage',
+              scale: 'categorical',
+              domain: ['AluJ', 'AluS', 'AluY', 'FLAM', 'FRAM'],
+              palette: ['#4575b4', '#fdae61', '#d73027', '#8c8c8c', '#8c8c8c'],
+            },
+          },
+          maxBpPerPx: 100,
+        },
+        {
+          shape: 'bar',
+          source: 'density',
+          transform: [
+            { type: 'bin', step: 'auto' },
+            {
+              type: 'aggregate',
+              groupby: ['start', 'end'],
+              ops: [{ op: 'count' }],
+            },
+          ],
+          encoding: { y: 'count', color: '#c0c0c0' },
+          minBpPerPx: 100,
+        },
+        {
+          shape: 'bar',
+          transform: [
+            { type: 'filter', expr: "jexl:startsWith(feature.name, 'AluY')" },
+            { type: 'bin', step: 'auto' },
+            {
+              type: 'aggregate',
+              groupby: ['start', 'end'],
+              ops: [{ op: 'count' }],
+            },
+          ],
+          encoding: { y: 'count', color: '#d73027' },
+          minBpPerPx: 100,
+        },
+      ],
+    },
+  ],
+}
+
+function aluAgeSpec(name: string, loc: string): ScreenshotSpec {
+  return {
+    mode: 'url',
+    name,
+    url: sessionSpec(CONFIG, {
+      sessionTracks: [ALU_AGE_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc,
+          tracks: [
+            { trackId: 'alu_age', type: 'LinearMarkDisplay', height: 200 },
+          ],
+        },
+      ],
+    }),
+    readySelector: displayPainted('mark-display'),
+    readyTimeout: 90000,
+    settleMs: 8000,
+    viewportHeight: 410,
+  }
+}
+
+export const aluAgeSpecs: ScreenshotSpec[] = [
+  // 30 kb of 1q21: one bar per Alu copy, its height the copy's divergence from
+  // its consensus and its colour the lineage read off the name, with the key.
+  aluAgeSpec('alu_age/locus', 'chr1:151,000,000-151,030,000'),
+  // 10 Mb of 1q21 to 1q23: the copies per zoom-following bin in grey, with the
+  // AluY copies per bin over them in the lineage's colour.
+  aluAgeSpec('alu_age/binned', 'chr1:150,000,000-160,000,000'),
+  // Chromosome 1 end to end, past the fetch budget: the sidecar's bins draw as
+  // the count mark, the chip names them, and the AluY mark draws nothing.
+  aluAgeSpec('alu_age/chromosome', 'chr1'),
+]

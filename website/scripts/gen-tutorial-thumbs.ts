@@ -540,6 +540,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     // centred crop lands on the centromere gap
     position: 'left',
   },
+  alu_age: {
+    // The binned frame below the app header and the view's toolbar: the grey
+    // count swinging over a level red band is the card.
+    src: 'alu_age/binned.png',
+    band: [0.42, 0.98],
+  },
 }
 
 const WIDTH = 600
