@@ -1,37 +1,54 @@
 ---
 name: bezier-overlay-hover
-description: The bezier connector overlay's hover, selection and click landed on worktree-bezier-overlay-hover with unit tests only — waiting on a browser check against a split-read BAM in chain mode, and on two decisions the parked ideas now spell out (who draws a same-strand hidden hop in chain mode; the gesture for adding a dashed arc's hidden loci as regions)
+description: The bezier connector overlay's hover, selection and click have unit tests only and have never been looked at in a browser — an owed check that grew on 2026-09-09, when four more commits landed on the same overlay and replaced the SVG highlight boxes it was written against with ink the chrome draws. Two decisions the parked ideas spell out are still open (who draws a same-strand hidden hop in chain mode; the gesture for adding a dashed arc's hidden loci as regions)
 ---
 
 # Bezier overlay hover handoff
 
-The first two commits on `worktree-bezier-overlay-hover` (`7256ecfdc9`, and
-the model-doc regeneration `0164671960`; the pre-commit gate rebases the branch
-when main moves, so match by subject if these have drifted): a connector
-hovers, selects and clicks like the reads it joins.
-Lint, typecheck and `pnpm test-related` are green; `--with-web` was not run,
-since no slot, menu, label or snapshot shape moved.
+The landing this file was opened for is `cccbf4c1de` and its model-doc
+regeneration (2026-09-02, both on main now): a connector hovers, selects and
+clicks like the reads it joins. **Four more commits have landed on the same
+overlay since, all on 2026-09-09** — `c27c5a7737` (a hover leave respects the
+menu's pin, a chain selection clears), `8b93e8dc3d` (a hovered connector boxes
+each end on its own row, plus the `PAN_MOVED` guard on the click),
+`e335e43fce`, and `bf7a8196c1`. Each is unit-tested and none was looked at in a
+browser.
 
 ## Owed: a browser check
 
-Nothing in the commit was looked at in a browser. Open a split-read BAM (the
-foldback fixture in `computeOverlay.test.ts` is the shape) in chain mode with
-curved connectors on, and confirm:
+`bf7a8196c1` is why this is worth re-reading before you shoot it. It **deleted
+`computeHighlightBoxes` and `HighlightOverlay`** — the SVG boxes the original
+check list named — for `readHighlightInk`, which resolves the hovered ids to
+reads, a read to its exon segments, and the segments to the read mark's ink,
+clipped to each section's band and merged per row. So the thing to confirm is
+now that the *chrome* lights the right ink, not that an overlay draws the right
+rects.
 
-- hovering one hop of a three-segment read thickens both hops and boxes all
-  three segments;
+Open a split-read BAM (the foldback fixture in `computeOverlay.test.ts` is the
+shape) in chain mode with curved connectors on, and confirm:
+
+- hovering one hop of a three-segment read thickens both hops and lights all
+  three segments as one span — `mergeRow` in `readHighlightInk.ts` is what
+  merges a spliced read's segments and a chain's members, and a chain lights in
+  the strong shade through the rect's flag;
+- outside chain mode, a hovered connector lights **each end on its own row**.
+  This is `8b93e8dc3d`'s fix for a real defect — the merge key had no row, so a
+  hovered pair drew one box spanning the reads between the mates, on one mate's
+  row, with nothing on the other's. jsdom cannot judge that it is right now;
 - clicking near either end of an arc selects that end, not always the first
   (`PileupBezierOverlay.tsx`, `nearerEndpoint`, reads the cursor against the
   SVG's bounding rect — the one part no unit test reaches);
-- clicking empty canvas un-thickens the arc;
-- outside chain mode, hovering an arc boxes both ends with the chain shading,
-  which is stronger than a single read's. The reviewer asked for it; it is a
-  visual call whether two reads should read as a chain.
+- panning off a curve does **not** open a read's detail widget (the `PAN_MOVED`
+  guard, also `8b93e8dc3d`);
+- clicking empty canvas un-lights the arc, and a hover leave over a pinned menu
+  does not (`c27c5a7737`);
+- a collapsed group's rows clip to nothing rather than bleeding into the next
+  section (`pileupHeight` 0).
 
 Two smaller things to know before re-filing them:
 
-- `selectReadWithChain` and `readIdsSharingChainWith` on the model have no
-  model-level test; the overlay test mocks both and the canvas click now routes
+- `selectReadWithChain` and `readIdsSharingChainWith` on the model still have no
+  model-level test; the overlay test mocks both and the canvas click routes
   through the first. Building the display model in a test is the whole session,
   so the browser check above is the cheaper coverage.
 - A cross-chromosome same-strand split now curves. The legend used to key that

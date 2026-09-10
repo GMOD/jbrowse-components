@@ -92,12 +92,11 @@ recorded nowhere else, so this file is its record.**
 ## Data
 
 - **The hosted liftOver PIFs for panTro6, gorGor6, ponAbe3, rheMac10 and mm39
-  predate the coarse tier** (no `#pif` header, no `T`/`Q` seqids; measured in
-  DEMO_DATASETS.md). `MultiPairwiseSyntenyAdapter` offers coarse only when
-  every child has it, so the hg38 vertebrates track serves fine detail at
-  every zoom until those five are rebuilt with the current `make-pif`. The
-  chains are UCSC's; the rebuild is chain → PAF → `make-pif`, whichever script
-  wrote the existing ones (find it by the `.over.pif.gz` naming).
+  predate the coarse tier**, so the hg38 vertebrates track serves fine detail at
+  every zoom. That rebuild is owed as a whole and lives in
+  [todo/rebuild-every-hosted-pif-with-the-coarse-cigar.md](../todo/rebuild-every-hosted-pif-with-the-coarse-cigar.md);
+  the per-file measurement is DEMO_DATASETS.md's table, which is the list to
+  work from.
 - **Direct mate-versus-mate links from the graph.** The converter takes any
   path as `--reference`, so the N−1 adjacent-lane pairs can be unpacked
   directly rather than projected; the HPRC demo does not do this yet. It is a
@@ -116,7 +115,11 @@ recorded nowhere else, so this file is its record.**
 
 - A selected feature's colour still rebuilds every glyph cell on click,
   because the feature-glyph passes carry no highlight id in their uniforms
-  (noted in the design record; the ribbons already take one).
+  (noted in the design record; the ribbons already take one). **There is a
+  landed pattern to copy now**: on 2026-09-09 four displays moved their hover
+  to ink the chrome draws — `bf7a8196c1` (pileup), `ed7eb5f9ef` (Manhattan),
+  `b7bfff9d43` (multi-sample variants), `6a6c1fc70d` (multi-row canvas) — and
+  this display is the one that did not.
 - A hung lane fetch holds the first-load phase at loading with no deadline.
 - `AllVsAllAddTrackComponent` and `resolveAllVsAllQuery` kept their names in
   the rename because they describe the query semantics; revisit if the
