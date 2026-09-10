@@ -205,9 +205,9 @@ each found there by a check rather than a bug report:
   ever configured with one; `refNameMismatch` read a raw `assemblyNames` slot
   that `ReferenceSequenceTrack`'s schema omits and was inert for that track
   type.
-- A worker payload could be built from an unresolved config snapshot;
-  `ResolvedConfigSnapshot` is a brand the resolving reader applies and the
-  payload builder requires.
+- A worker payload could be built from an unresolved config snapshot. A brand on
+  the resolving reader's return type fixed that, and both went with the cascade
+  in [ADR-111](adr-111-display-type-defaults-backed-out.md).
 
 Not salvaged, and why:
 
