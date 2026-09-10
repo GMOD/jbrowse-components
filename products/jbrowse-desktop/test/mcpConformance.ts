@@ -197,6 +197,13 @@ function recipeFences() {
   return fences
 }
 
+// What a spec load is given to settle here, over jb.loadSessionSpec's own
+// 30s default. Under xvfb on a shared machine, two tracks whose display state
+// models load as lazy chunks take longer than that often enough to be the
+// flake this suite had: every check downstream then read a session that was
+// still filling in. The recipe fences already run on a raised budget.
+const SETTLE_MS = 90_000
+
 function check(name: string, condition: boolean, detail?: unknown) {
   if (condition) {
     console.log(`ok    ${name}`)
@@ -334,7 +341,7 @@ try {
           ],
         },
       ],
-    })`)
+    }, ${SETTLE_MS})`)
   const loaded = await openConformanceSession()
   const actions = await client.call('docs', {
     topic: 'model:LinearGenomeView',
@@ -518,7 +525,7 @@ try {
           tracks: [{ trackId: 'gff3tabix_genes', colorSchem: 'strand' }],
         },
       ],
-    })`)
+    }, ${SETTLE_MS})`)
   check(
     'a spec key that reaches nothing is reported, not dropped',
     [
@@ -763,7 +770,7 @@ try {
           ],
         },
       ],
-    })`)
+    }, ${SETTLE_MS})`)
   let openedFor: string | undefined
   for (const { heading, code } of recipeFences()) {
     if (!code.includes('hg38') && !code.includes('https://')) {

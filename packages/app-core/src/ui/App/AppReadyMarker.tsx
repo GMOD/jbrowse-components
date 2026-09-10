@@ -24,6 +24,7 @@ interface ViewFlags {
   showLoading?: boolean
   initialized?: boolean
   error?: unknown
+  pendingLaunch?: unknown
 }
 interface DisplayLike {
   displayPhase?: string
@@ -33,15 +34,31 @@ function trackLoading(track: AbstractTrackModel) {
   return track.displays.some(d => (d as DisplayLike).displayPhase === 'loading')
 }
 
-// A view whose init failed (its assembly was never found) stays uninitialized
-// for good and paints its error, so like a display's terminal phase it is
-// finished, not pending: without this the whole app read `loading` for as long
-// as that view was open, and every settle answered false with no reason.
+/**
+ * A view whose init failed (its assembly was never found) stays uninitialized
+ * for good and paints its error, so like a display's terminal phase it is
+ * finished, not pending: without this the whole app read `loading` for as long
+ * as that view was open, and every settle answered false with no reason.
+ *
+ * `pendingLaunch` is the third term and the one that was missing. `initialized`
+ * goes true mid-launch — LGV's flips the moment displayedRegions land, while
+ * the same apply pass still has the spec's tracks to attach — and `showLoading`
+ * goes false at the same moment, deliberately, so the reader sees the
+ * navigated view rather than a spinner while its tracks arrive. That left a
+ * window, exactly as wide as attaching the tracks, in which the marker said
+ * `ready` over a session missing everything it had been asked for.
+ * `whenViewSettled` states the same rule for the callers that await a single
+ * view, and says why in more detail. Not shared as one predicate: that one
+ * requires `initialized`, while absent here means not loading, and an adapter
+ * between the two null rules would read as agreement it does not have.
+ */
 function viewLoading(view: AbstractViewModel) {
   const flags = view as ViewFlags
   return (
     flags.error === undefined &&
-    (flags.showLoading === true || flags.initialized === false)
+    (flags.showLoading === true ||
+      flags.initialized === false ||
+      flags.pendingLaunch !== undefined)
   )
 }
 

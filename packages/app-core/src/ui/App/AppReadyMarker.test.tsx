@@ -13,6 +13,7 @@ import type { AppSession } from './types.ts'
 interface FakeView {
   showLoading?: boolean
   initialized?: boolean
+  pendingLaunch?: unknown
   error?: unknown
   assemblyNames?: string[]
   tracks?: { trackId?: string; displays?: { displayPhase?: string }[] }[]
@@ -67,6 +68,34 @@ test('a view that failed to initialize is ready, not loading', () => {
 test('a view that errored while loading is ready, not loading', () => {
   expect(
     phaseOf([{ showLoading: true, error: 'Assembly volvix not found' }]),
+  ).toBe('ready')
+})
+
+// The state a spec-loaded view sits in for as long as attaching its tracks
+// takes: positioned (initialized, displayedRegions landed, so showLoading has
+// gone false on purpose — the reader should see the view, not a spinner) while
+// the same apply pass still has the spec's tracks to launch. The marker read
+// `ready` there, so `jb.loadSessionSpec` answered settled over a session
+// missing everything it had been asked for, and every capture waiting on the
+// selector shot the empty view. Which of the two it looked like depended on
+// whether the launches finished inside the one-second ready hold.
+test('a view still applying its launch blob is loading', () => {
+  expect(
+    phaseOf([
+      { initialized: true, showLoading: false, pendingLaunch: { tracks: [] } },
+    ]),
+  ).toBe('loading')
+})
+
+test('a view whose launch blob has been consumed is ready', () => {
+  expect(phaseOf([{ initialized: true, showLoading: false }])).toBe('ready')
+})
+
+// A launch that failed sets the view's error, and an error is terminal
+// everywhere else in here.
+test('a view whose launch failed is ready, not loading', () => {
+  expect(
+    phaseOf([{ pendingLaunch: { tracks: [] }, error: 'launch failed' }]),
   ).toBe('ready')
 })
 
