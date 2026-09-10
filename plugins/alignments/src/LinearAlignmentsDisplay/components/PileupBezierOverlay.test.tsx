@@ -118,7 +118,7 @@ test('a click selects the endpoint nearer the cursor, chain and all', () => {
 // on top of the reads — so panning off one would open a read's detail widget.
 test('a click that followed a pan selects nothing', () => {
   const { model, target, container } = renderOverlay()
-  container.setAttribute('data-pan-moved', '')
+  container.dataset.panMoved = ''
 
   fireEvent.click(target, { clientX: 25 })
 
