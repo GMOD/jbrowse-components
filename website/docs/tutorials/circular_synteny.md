@@ -170,26 +170,23 @@ as a twist between its two ends rather than as a second color.
 
 ## Ordering the second genome
 
-Left in its own contig order, the mouse arc puts every chromosome opposite the
-human one it does not align to, and each ribbon crosses the middle of the circle
-to reach its partner — the two arcs run the same way round, so a matching pair
-sits at opposite ends of a diameter.
+Both arcs run the same way round the circle, so a mouse chromosome laid out in
+its own contig order sits opposite the human chromosome it does not align to,
+and each ribbon crosses the middle to reach its partner.
 
-`autoDiagonalize` is the same reorder the
+`autoDiagonalize` is the reorder the
 [linear synteny view](/docs/user_guides/linear_synteny_view) and the
-[dotplot](/docs/user_guides/dotplot_view) run on open: each mouse chromosome is
-assigned to the human chromosome it shares the most aligned bases with, and the
-mouse arc is ordered by that. The circle then lays that order out mirrored, so
-the mouse arc's coordinate falls where the human arc's rises — which is what
-makes the ribbons a band of parallel arcs instead of a hairball, since chords
-between two arcs never cross when one side ascends and the other descends. A
-mouse chromosome that runs antiparallel to its human partner is drawn the other
-way round again, so its bundle comes out untwisted and the twists that are left
-are the inversions.
+[dotplot](/docs/user_guides/dotplot_view) run on open: each mouse chromosome
+takes the human chromosome it shares the most aligned bases with, and the mouse
+arc follows that order. The circle lays it out mirrored, so the mouse arc's
+coordinate falls where the human arc's rises. Chords between two arcs cross only
+where both sides rise together, so the ribbons come out as a band. A mouse
+chromosome that runs antiparallel to its human partner is drawn the other way
+round again, and the twists left on the figure are the inversions.
 
-The circle's own **Re-order chromosomes** menu item runs the same pass on
-demand, with a progress bar and a cancel, and re-running it on a circle that is
-already ordered moves nothing.
+**Re-order chromosomes** in the view's menu runs the same pass on demand, with a
+progress bar and a cancel; re-running it on a circle that is already ordered
+moves nothing.
 
 ## The X chromosome as the control
 
@@ -337,7 +334,7 @@ reader's own pair has to satisfy:
 - an alignment as a PIF, sorted and tabix-indexed: a chain through `chain2paf`
   as above, or a PAF straight from minimap2 or wfmash, through
   `jbrowse make-pif`; whichever way, the synteny track's `assemblyNames` is
-  `[query, target]`. The reorder needs nothing beyond that — it reads the same
+  `[query, target]`. The reorder needs nothing beyond that: it reads the same
   file
 - both assemblies declared in the config, from a hub entry as here or from
   `jbrowse add-assembly genome.fa`
