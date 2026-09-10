@@ -38,6 +38,11 @@ carries a one-letter prefix naming the perspective.
 A [coarse tier](#coarse-tier) repeats both lines under `T`/`Q`. The prefix is
 always the first character of column 1.
 
+Every line of one PAF row ends with `pi:i:<n>`, the row's index in the input. It
+is the one id the row's two or four lines share, so a reader can hold a
+selection across the tier switch and match a coarse line to its fine one. An
+incoming `pi:i:` or `cr:Z:` is dropped and rewritten.
+
 Sorted under `LC_ALL=C`, bgzipped, and indexed with:
 
 ```bash
@@ -90,12 +95,13 @@ tags, so identity coloring does not jump at a tier switch.
 One meta line, sorted first and kept by tabix (`tabix -H file.pif.gz`):
 
 ```
-#pif	version:i:1	tiers:Z:fine,coarse	coarse:i:10000	cigars:Z:all
+#pif	version:i:2	writer:Z:jbrowse-cli/5.0.0	tiers:Z:fine,coarse	coarse:i:10000	cigars:Z:all
 ```
 
 | Field     | Meaning                                                      |
 | --------- | ------------------------------------------------------------ |
-| `version` | format generation                                            |
+| `version` | format generation: 2 adds `pi:i:` on every line and `writer` |
+| `writer`  | the tool and version that built the file                     |
 | `tiers`   | `fine` or `fine,coarse`                                      |
 | `coarse`  | the coarse tier's bound in bp, absent when there is no tier  |
 | `cigars`  | whether every input row had a CIGAR: `all`, `some` or `none` |

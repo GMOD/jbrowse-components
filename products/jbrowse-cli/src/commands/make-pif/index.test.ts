@@ -8,10 +8,13 @@ import { Writable } from 'node:stream'
 import { gunzipSync, gzipSync } from 'node:zlib'
 
 import { runCommand, runInTmpDir } from '../../testUtil.ts'
-import { createPIF, pifHeader } from './pif-generator.ts'
+import { version } from '../../version.ts'
+import { PIF_FORMAT_VERSION, createPIF, pifHeader } from './pif-generator.ts'
 
 const base = path.join(__dirname, '..', '..', '..', 'test', 'data')
 const simplePaf = path.join(base, 'volvox_inv_indels.paf')
+
+const HEADER = `#pif\tversion:i:${PIF_FORMAT_VERSION}\twriter:Z:jbrowse-cli/${version}`
 
 const exists = (p: string) => fs.existsSync(p)
 
@@ -29,7 +32,32 @@ test('make-pif', async () => {
     const fn = `${path.basename(simplePaf, '.paf')}.pif.gz`
     await runCommand(['make-pif', simplePaf, '--out', fn])
     expect(exists(fn)).toBeTruthy()
-    expect(gunzipSync(fs.readFileSync(fn)).toString()).toMatchSnapshot()
+    expect(
+      gunzipSync(fs.readFileSync(fn))
+        .toString()
+        .replace(`writer:Z:jbrowse-cli/${version}`, 'writer:Z:jbrowse-cli/x'),
+    ).toMatchSnapshot()
+  })
+})
+
+test('the four rows of one alignment share a pi:i: row index', async () => {
+  await runInTmpDir(async () => {
+    const lines = await pifLines(
+      pafRow(['cg:Z:100M', 'pi:i:99']) + pafRow(['cg:Z:100M'], { 0: 'q2' }),
+    )
+    const byRow = (i: number) =>
+      lines.filter(l => tagValue(l, 'pi:i:') === String(i))
+    expect(
+      byRow(0)
+        .map(l => l[0])
+        .sort(),
+    ).toEqual(['Q', 'T', 'q', 't'])
+    expect(
+      byRow(1)
+        .map(l => l[0])
+        .sort(),
+    ).toEqual(['Q', 'T', 'q', 't'])
+    expect(byRow(99)).toHaveLength(0)
   })
 })
 
@@ -443,7 +471,7 @@ test('the header line sorts first and states the tiers, the bound and the CIGAR 
   await runInTmpDir(async () => {
     const lines = await pifLines(pafRow(['cg:Z:100M']), ['--coarse', '500'])
     expect(lines[0]).toBe(
-      '#pif\tversion:i:1\ttiers:Z:fine,coarse\tcoarse:i:500\tcigars:Z:all',
+      `${HEADER}\ttiers:Z:fine,coarse\tcoarse:i:500\tcigars:Z:all`,
     )
     expect(lines.filter(l => l.startsWith('#'))).toHaveLength(1)
   })
@@ -452,10 +480,10 @@ test('the header line sorts first and states the tiers, the bound and the CIGAR 
 test('a fine-only file says so in its header, and a CIGAR-less one too', async () => {
   await runInTmpDir(async () => {
     const fineOnly = await pifLines(pafRow(['cg:Z:100M']), ['--no-coarse'])
-    expect(fineOnly[0]).toBe('#pif\tversion:i:1\ttiers:Z:fine\tcigars:Z:all')
+    expect(fineOnly[0]).toBe(`${HEADER}\ttiers:Z:fine\tcigars:Z:all`)
     const noCigar = await pifLines(pafRow(['tp:A:P']))
     expect(noCigar[0]).toBe(
-      '#pif\tversion:i:1\ttiers:Z:fine,coarse\tcoarse:i:10000\tcigars:Z:none',
+      `${HEADER}\ttiers:Z:fine,coarse\tcoarse:i:10000\tcigars:Z:none`,
     )
   })
 })
@@ -477,7 +505,7 @@ test('a CIGAR that does not close keeps the census at all and carries its fold',
       ['--coarse', '500'],
     )
     expect(lines[0]).toBe(
-      '#pif\tversion:i:1\ttiers:Z:fine,coarse\tcoarse:i:500\tcigars:Z:all',
+      `${HEADER}\ttiers:Z:fine,coarse\tcoarse:i:500\tcigars:Z:all`,
     )
     expect(
       tagValue(
@@ -520,9 +548,7 @@ test('a pass that saw no rows at all carries no CIGAR census either', () => {
       cigarRows: 0,
       skipped: 1,
     }),
-  ).toBe(
-    '#pif\tversion:i:1\ttiers:Z:fine,coarse\tcoarse:i:10000\tcigars:Z:none\n',
-  )
+  ).toBe(`${HEADER}\ttiers:Z:fine,coarse\tcoarse:i:10000\tcigars:Z:none\n`)
 })
 
 test('an incoming cr:Z: is dropped from both tiers', async () => {

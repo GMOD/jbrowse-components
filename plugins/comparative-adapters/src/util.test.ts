@@ -454,14 +454,24 @@ describe('the #pif header', () => {
       cigars: 'all',
     })
     expect(parsePifHeader('')).toEqual({})
+    expect(
+      parsePifHeader(
+        '#pif\tversion:i:2\twriter:Z:jbrowse-cli/5.0.0\ttiers:Z:fine\tcigars:Z:none\n',
+      ),
+    ).toEqual({
+      version: 2,
+      writer: 'jbrowse-cli/5.0.0',
+      tiers: ['fine'],
+      cigars: 'none',
+    })
   })
 
   test('a newer generation keeps only its version', () => {
     expect(
       parsePifHeader(
-        '#pif\tversion:i:2\ttiers:Z:fine,coarse\tcoarse:i:10000\tcigars:Z:all\n',
+        '#pif\tversion:i:3\ttiers:Z:fine,coarse\tcoarse:i:10000\tcigars:Z:all\n',
       ),
-    ).toEqual({ version: 2 })
+    ).toEqual({ version: 3 })
   })
 
   test('coarse rows are bounded only with a bound and a CIGAR on every row', () => {
@@ -502,6 +512,18 @@ describe('the implied fold of a tagless coarse row', () => {
   test('a fold from a newer generation is not read', () => {
     const cr = '\tcr:Z:200M50D250:200M'
     expect(feature('T', bounded, cr).get('coarseCigar')).toBe('200M50D250:200M')
-    expect(feature('T', { version: 2 }, cr).get('coarseCigar')).toBeUndefined()
+    expect(feature('T', { version: 3 }, cr).get('coarseCigar')).toBeUndefined()
+  })
+  // the same shape the in-memory PAF adapter gives its features, so a
+  // selection held by uniqueId survives the tier switch
+  test('a pi:i: row index shapes the ids across tiers and hides from the tags', () => {
+    const fine = feature('t', bounded, '\tpi:i:7')
+    const coarse = feature('T', bounded, '\tpi:i:7')
+    expect(fine.id()).toBe('7-t-a')
+    expect(coarse.id()).toBe('7-t-a')
+    expect(feature('Q', bounded, '\tpi:i:7').id()).toBe('7-q-a')
+    expect(fine.get('syntenyId')).toBe(7)
+    expect(fine.get('pi')).toBeUndefined()
+    expect(feature('t', bounded).id()).toBe('1a')
   })
 })

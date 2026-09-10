@@ -130,9 +130,11 @@ read directly, its pairs translate to `cr` runs one for one.
   only when a pinned coarse tier is zoomed finer than the tier's threshold
   (`coarseWalkIsApproximate`), which is the one zoom where the gap is wider
   than a pixel.
-- Feature ids still differ across tiers (both are file offsets), so a selection
-  does not survive the switch. A per-alignment id stamped on every row of one
-  PAF row is the follow-up for that.
+- Format version 2 (2026-09-10) stamps `pi:i:<input row index>` on every row
+  of one PAF row, and the indexed adapters build `uniqueId` and `syntenyId`
+  from it the way the in-memory PAF adapter does (`<row>-<t|q>-<assembly>`),
+  so a selection survives the tier switch. A version-1 file keeps its file
+  offsets. The header also names its `writer`.
 - `--coarse` is the tier's accuracy bound, not a "split gap": indels over half
   of it are kept and a run's line is within it. `coarseBpPerPxThreshold` must
   still be at least `--coarse`, for the same reason as before.

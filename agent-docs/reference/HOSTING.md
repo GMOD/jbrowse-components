@@ -124,15 +124,19 @@ no download. Audited 2026-08-02:
   2026-09-02 `make-pif` writes a `cr:Z:` tag on a coarse row (ADR-104) so the
   indels it keeps draw as wedges, and a header stating the bound; these files'
   coarse rows are the older split pieces with no alignment string and draw as
-  plain ribbons. One rebuild adds both. A JBrowse older than that date draws a
-  rebuilt file's coarse rows as single straight ribbons, so a hub that must
-  serve such clients builds with `--no-coarse`.
+  plain ribbons. Since 2026-09-10 the header is version 2 and every row
+  carries `pi:i:`, the id a selection holds across the tier switch. One
+  rebuild adds all of it. A JBrowse older than 2026-09-02 draws a rebuilt
+  file's coarse rows as single straight ribbons, so a hub that must serve such
+  clients builds with `--no-coarse`.
 - **The coarse tier can never engage for a bacterial genome.** It serves only
   past `coarseBpPerPxThreshold` (default 10000 bp/px); E. coli's 4.6Mb across
   1500px is ~3.2 kb/px. Demonstrating it needs a eukaryote-scale PIF.
-- **A PIF regen is never pixel-neutral.** Coarse rows shift every fine row's byte
-  offset, so `syntenyId`/`uniqueId` (from `fileOffset`) change and dense figures
-  move slightly in ribbon overlap order.
+- **A PIF regen of a version-1 file is never pixel-neutral.** Coarse rows shift
+  every fine row's byte offset, so `syntenyId`/`uniqueId` (from `fileOffset`)
+  change and dense figures move slightly in ribbon overlap order. A version-2
+  file's ids come from `pi:i:`, the input row index, so a regen from the same
+  PAF keeps them.
 - **PIF inverts losslessly back to PAF**: `t`-prefixed rows keep the original
   CIGAR, since `processLine` builds `tRow` before mutating `rest[cigarIdx]`.
 

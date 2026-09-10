@@ -14,6 +14,8 @@ import {
   swapIndelCigar,
 } from '@jbrowse/cigar-utils'
 
+import { version } from '../../version.ts'
+
 import type { Writable } from 'node:stream'
 
 // Default gap (bp) of the coarse tier's coarse CIGAR: how far a straight line
@@ -47,11 +49,15 @@ export interface PifStats {
   skipped: number
 }
 
+// Generation 2 (2026-09): every row carries `pi:i:`, the input row's index,
+// and the header names the writer.
+export const PIF_FORMAT_VERSION = 2
+
 /**
  * The one meta line a PIF carries, sorted first by the C-locale sort and kept
- * by tabix as a header. It states the format generation, the tiers written,
- * the coarse tier's accuracy bound (`--coarse`), and whether every input row
- * had a CIGAR — the facts a reader cannot recover from the rows.
+ * by tabix as a header. It states the format generation, the writer, the
+ * tiers written, the coarse tier's accuracy bound (`--coarse`), and whether
+ * every input row had a CIGAR — the facts a reader cannot recover from the rows.
  */
 export function pifHeader(coarseGap: number | undefined, stats: PifStats) {
   const cigars =
@@ -62,7 +68,7 @@ export function pifHeader(coarseGap: number | undefined, stats: PifStats) {
         : 'some'
   const tiers = coarseGap === undefined ? 'fine' : 'fine,coarse'
   const bound = coarseGap === undefined ? '' : `\tcoarse:i:${coarseGap}`
-  return `#pif\tversion:i:1\ttiers:Z:${tiers}${bound}\tcigars:Z:${cigars}\n`
+  return `#pif\tversion:i:${PIF_FORMAT_VERSION}\twriter:Z:jbrowse-cli/${version}\ttiers:Z:${tiers}${bound}\tcigars:Z:${cigars}\n`
 }
 
 function panSNSample(refName: string) {
@@ -186,12 +192,14 @@ function processLine(
   const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = parts
   addPanSNPair(stats, c1!, c2!)
 
-  // an incoming cr:Z: (a PIF turned back into PAF, or a tool that adopted the
-  // tag) is dropped from both tiers: the fine tier never carries one, and the
-  // coarse tier writes its own below
-  const { tags, cigarIdx } = foldCsIntoCg(
-    rest.filter(f => !f.startsWith('cr:Z:')),
-  )
+  // an incoming cr:Z: or pi:i: (a PIF turned back into PAF, or a tool that
+  // adopted the tags) is dropped: the coarse tier writes its own fold below,
+  // and every row of this alignment gets this pass's row index as `pi`, the
+  // one id its four rows share across perspectives and tiers
+  const { tags, cigarIdx } = foldCsIntoCg([
+    ...rest.filter(f => !f.startsWith('cr:Z:') && !f.startsWith('pi:i:')),
+    `pi:i:${stats.rows - 1}`,
+  ])
   const cigar = cigarIdx === -1 ? undefined : tags[cigarIdx]!.slice(5)
   if (cigar !== undefined) {
     stats.cigarRows++

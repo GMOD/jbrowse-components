@@ -616,19 +616,21 @@ export type PifLine = ReturnType<typeof parsePifLine>
 
 /**
  * What a PIF's `#pif` header line states (make-pif writes it since the coarse
- * CIGAR, ADR-104): the format generation, the tiers written, the coarse tier's
- * accuracy bound in bp, and whether every input row carried a CIGAR. Every
- * field is optional because a file built before the header has none.
+ * CIGAR, ADR-104): the format generation, the writer, the tiers written, the
+ * coarse tier's accuracy bound in bp, and whether every input row carried a
+ * CIGAR. Every field is optional because a file built before the header has
+ * none.
  */
 export interface PifMeta {
   version?: number
+  writer?: string
   tiers?: string[]
   coarseGap?: number
   cigars?: 'all' | 'some' | 'none'
 }
 
 /** The newest `#pif` header generation this reader understands. */
-export const PIF_FORMAT_VERSION = 1
+export const PIF_FORMAT_VERSION = 2
 
 /**
  * A header from a newer generation keeps only its version: its facts and its
@@ -648,6 +650,8 @@ export function parsePifHeader(header: string): PifMeta {
     const value = m?.[2]
     if (key === 'version' && value !== undefined) {
       meta.version = +value
+    } else if (key === 'writer' && value !== undefined) {
+      meta.writer = value
     } else if (key === 'tiers' && value !== undefined) {
       meta.tiers = value.split(',')
     } else if (key === 'coarse' && value !== undefined) {
@@ -1078,6 +1082,7 @@ export function copyPafTags(
       key !== 'cg' &&
       key !== 'cs' &&
       key !== 'cr' &&
+      key !== 'pi' &&
       key !== 'id' &&
       !Object.hasOwn(data, key)
     ) {
@@ -1109,9 +1114,18 @@ export function makeIndexedSyntenyFeature({
   meta?: PifMeta
 }) {
   const { extra, strand, indexedStart, indexedEnd, indexedName } = line
-  const { numMatches = 0, blockLen = 1, cg, cs, cr } = extra
-  const tierLetter = indexedName[0]
+  const { numMatches = 0, blockLen = 1, cg, cs, cr, pi } = extra
+  const tierLetter = indexedName[0]!
   const coarseRow = tierLetter === 'T' || tierLetter === 'Q'
+  // a version-2 row names its input row in `pi`, so the four rows of one
+  // alignment share the in-memory adapters' id shape and a selection survives
+  // the tier switch; an older file has only the row's own offset
+  const rowIndex = typeof pi === 'string' ? +pi : undefined
+  const syntenyId = rowIndex ?? fileOffset
+  const uniqueId =
+    rowIndex === undefined
+      ? fileOffset + assemblyName
+      : `${rowIndex}-${tierLetter.toLowerCase()}-${assemblyName}`
   const own = indexedEnd - indexedStart
   const mateLen = mate.end - mate.start
   const impliedFold =
@@ -1129,7 +1143,7 @@ export function makeIndexedSyntenyFeature({
         ? csToCigar(cs)
         : undefined
   const data: SimpleFeatureSerialized = {
-    uniqueId: fileOffset + assemblyName,
+    uniqueId,
     assemblyName,
     start: indexedStart,
     end: indexedEnd,
@@ -1141,7 +1155,7 @@ export function makeIndexedSyntenyFeature({
     // the coarse tier's fold of the CIGAR: runs and the gaps make-pif kept
     coarseCigar:
       typeof cr === 'string' && pifVersionKnown(meta) ? cr : impliedFold,
-    syntenyId: fileOffset,
+    syntenyId,
     identity: pafIdentity(extra),
     numMatches,
     blockLen,
