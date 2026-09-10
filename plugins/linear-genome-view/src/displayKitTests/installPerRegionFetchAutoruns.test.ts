@@ -568,6 +568,9 @@ describe('the dependency set is the contract', () => {
         ...viewport,
         ...fetchKeyAxes,
         'LinearGenomeView.launch',
+        // `containingHost` asks the view for a `regionHost` before settling
+        // on the view itself, and a view declaring none registers the probe
+        'LinearGenomeView.regionHost?',
         'LinearGenomeView.volatileWidth',
         'PerRegionTestDisplay.byteEstimate',
         'PerRegionTestDisplay.error',
@@ -610,6 +613,7 @@ describe('the dependency set is the contract', () => {
         'DisplayTestSession.assemblyManager',
         'LinearGenomeView.displayedRegions',
         'LinearGenomeView.launch',
+        'LinearGenomeView.regionHost?',
         'LinearGenomeView.volatileWidth',
         'PerRegionTestDisplay.byteEstimate',
         'PerRegionTestDisplay.error',

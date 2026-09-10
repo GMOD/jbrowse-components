@@ -139,6 +139,10 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
             </div>
             <div
               class="css-HASH"
+              data-testid="circular-ring-strips"
+            />
+            <div
+              class="css-HASH"
             >
               <button
                 class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-HASH-MuiButtonBase-root-MuiIconButton-root"
