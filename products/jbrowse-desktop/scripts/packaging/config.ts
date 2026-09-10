@@ -38,6 +38,18 @@ export const PRODUCT_NAME = 'JBrowse 2'
 export const APP_ID = 'org.jbrowse2.app'
 export const APPLE_TEAM_ID = '9KR53J86Q2'
 
+// Where the update feed lives: releases of this repo.
+export const GITHUB_OWNER = 'GMOD'
+export const GITHUB_REPO = 'jbrowse-components'
+
+// The `CN=` of the ssl.com certificate signWindowsFile signs with, which is
+// what lets a Windows client verify the installer it downloaded really came
+// from us (see appUpdateYml). Unset, that check is skipped — which is where
+// this stood after the electron-builder config went, since electron-builder
+// filled the field in from the certificate itself. Read it off a signed
+// release exe with `Get-AuthenticodeSignature`, or `osslsigncode verify`.
+export const WINDOWS_PUBLISHER_NAME = process.env.WINDOWS_PUBLISHER_NAME
+
 // Where a packaged target lands on disk, from `unpackedApp`'s naming rule.
 export function packagedApp(target: Platform) {
   const app = unpackedApp(target, {

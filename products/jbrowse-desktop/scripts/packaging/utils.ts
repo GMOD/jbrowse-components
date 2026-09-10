@@ -3,7 +3,16 @@ import crypto from 'crypto'
 import fs from 'fs'
 import path from 'path'
 
-import { APP_NAME, DIST, ROOT, VERSION } from './config.ts'
+import {
+  APP_NAME,
+  DIST,
+  GITHUB_OWNER,
+  GITHUB_REPO,
+  ROOT,
+  VERSION,
+  WINDOWS_PUBLISHER_NAME,
+} from './config.ts'
+import { appUpdateYml, latestYml } from './updateFeed.ts'
 
 import type { ExecSyncOptions } from 'child_process'
 
@@ -52,15 +61,15 @@ export function ensureDir(dir: string) {
 }
 
 export function generateAppUpdateYml() {
-  return `provider: github
-owner: GMOD
-repo: jbrowse-components
-updaterCacheDirName: ${APP_NAME}-updater
-`
+  return appUpdateYml({
+    owner: GITHUB_OWNER,
+    repo: GITHUB_REPO,
+    cacheDirName: `${APP_NAME}-updater`,
+    publisherName: WINDOWS_PUBLISHER_NAME,
+  })
 }
 
-// The electron-updater feed for one platform: the artifacts a client may
-// download, and the hash it checks each against.
+// Measures the artifacts in dist/ and hands them to latestYml.
 //
 // A file that isn't there is a build failure, not an entry to leave out. Every
 // caller writes its artifact and then immediately describes it here, so a
@@ -77,24 +86,15 @@ export function generateLatestYml(files: string[]) {
       `cannot write the update manifest: ${missing.join(', ')} not in ${DIST}`,
     )
   }
-  const lines = [`version: ${VERSION}`, `files:`]
-
-  for (const file of files) {
-    const filePath = path.join(DIST, file)
-    lines.push(`  - url: ${file}`)
-    lines.push(`    sha512: ${sha512Base64(filePath)}`)
-    lines.push(`    size: ${fileSize(filePath)}`)
-  }
-
-  // The pre-`files` fields, still read by older clients. Always the first entry,
-  // which is why each caller passes the artifact its platform updates FROM
-  // first (mac's zip, not its dmg).
-  const first = files[0]
-  if (first) {
-    lines.push(`path: ${first}`)
-    lines.push(`sha512: ${sha512Base64(path.join(DIST, first))}`)
-  }
-
-  lines.push(`releaseDate: '${new Date().toISOString()}'`)
-  return lines.join('\n')
+  return latestYml({
+    version: VERSION,
+    files: files.map(name => {
+      const filePath = path.join(DIST, name)
+      return {
+        name,
+        sha512: sha512Base64(filePath),
+        size: fileSize(filePath),
+      }
+    }),
+  })
 }

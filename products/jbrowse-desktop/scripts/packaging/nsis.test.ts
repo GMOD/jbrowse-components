@@ -173,6 +173,29 @@ test('a --force-run install relaunches the app', () => {
   expect(install).toContain('Exec \'"$INSTDIR\\jbrowse-desktop.exe"\'')
 })
 
+// electron-updater spawns the installer with --updated and then quits the app,
+// so the copy starts while the old exe is still locked and `File` cannot
+// overwrite it. The wait has to come before anything is written, and only on
+// that flag — an interactive install over a running app is a person who can be
+// asked to close it.
+test('an --updated install waits for the running app to release its exe', () => {
+  const install = script().split('Section "Uninstall"')[0]!
+  const wait = install.indexOf('"--updated"')
+
+  expect(wait).toBeGreaterThan(-1)
+  expect(wait).toBeLessThan(install.indexOf('File /r'))
+  expect(wait).toBeLessThan(install.indexOf('SetOutPath $INSTDIR'))
+  // append mode on an exe another process is running is the lock test; it
+  // creates the file when there is none, hence the existence guard
+  expect(install).toContain('FileOpen $R3 "$INSTDIR\\jbrowse-desktop.exe" a')
+  expect(install).toContain(
+    '${If} ${FileExists} "$INSTDIR\\jbrowse-desktop.exe"',
+  )
+  // bounded, so a lock that never clears is a failed install rather than an
+  // installer sitting on the machine forever
+  expect(install).toContain('${LoopUntil} $R2 >= 240')
+})
+
 test('the paths it was handed reach the script', () => {
   expect(script()).toContain('OutFile "/tmp/out.exe"')
   expect(script()).toContain('File /r "/tmp/app\\*.*"')
