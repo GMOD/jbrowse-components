@@ -154,7 +154,10 @@ Canvas2D-vs-GPU parity gate cannot catch the strand case.
   pass, re-uploads only when the bytes' identity moves, and binds an inert table
   for a mark that names none — a textured pass with no texture never draws on
   the WebGPU HAL. Every ramp in tree reaches the GPU that way; nothing calls
-  `uploadColorRampLut` but `createMarkBackend`.
+  `uploadColorRampLut` but `createMarkBackend`. The same lens may name a canvas
+  (`MarkImage`), copied on the GPU when its identity moves — the circular view's
+  ring samples a display's strip that way — and a lens answering nothing for a
+  region leaves the pass's texture where it is.
 - **A display that stacks bands on one canvas declares them as `band` on
   `defineMark`**, never as a renderer pair around the mark list: the GPU
   scissors to the strip and hands the block column back, Canvas2D clips, a
