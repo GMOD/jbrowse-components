@@ -12,8 +12,10 @@ import {
   getDialogHost,
   getSession,
   openFeatureWidget,
+  pluralize,
   withFeatureDetails,
 } from '@jbrowse/core/util'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { createStopTokenRotation } from '@jbrowse/core/util/createStopTokenRotation'
 import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 import Flatbush from '@jbrowse/core/util/flatbush'
@@ -22,9 +24,10 @@ import {
   configuredJexlFilters,
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
-import { valueField } from '@jbrowse/core/util/markEncoding'
+import { DEFAULT_MARK_COLOR, valueField } from '@jbrowse/core/util/markEncoding'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
+import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
 import LegendMixin, {
   legendCheckboxItem,
 } from '@jbrowse/display-kit/LegendMixin'
@@ -32,6 +35,8 @@ import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixi
 import { skippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
+import { coarseTierModeOf } from '@jbrowse/display-kit/densityTier'
+import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { cast, types } from '@jbrowse/mobx-state-tree'
@@ -52,6 +57,7 @@ import {
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { binStepWidth } from './autoBin.ts'
+import { densityRegionData } from './densityLayer.ts'
 import { sameMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend, colorSection, markColorScales } from './legend.ts'
 import { SHAPE_LANES, buildMarkList, markDrawsAt } from './markList.ts'
@@ -85,6 +91,7 @@ import type {
 } from '@jbrowse/core/util/markEncoding'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
+import type { CoarseTierMode } from '@jbrowse/display-kit/coarseTier'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -259,6 +266,16 @@ function transformOf(mark: MarkConfig, bpPerPx: number): TransformStep[] {
   })
 }
 
+// A mark's colour where it declares a constant one, packed as the worker
+// would have packed it. A scale has no meaning over a bin the sidecar wrote,
+// and a jexl callback has no feature to read.
+function markConstantColor(mark: MarkConfig): number {
+  const { scale, value } = mark.encoding.color
+  return cssColorToABGR(
+    scale === 'none' && !value.startsWith('jexl:') ? value : DEFAULT_MARK_COLOR,
+  )
+}
+
 function markEntryOf(mark: MarkConfig): MarkEntry {
   return {
     shape: mark.shape,
@@ -294,6 +311,10 @@ export function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
+      // Where the byte gate refuses the features, a mark declaring
+      // `source: 'density'` draws the adapter's sidecar in the banner's place
+      // — see `densityPayloads`.
+      DensityTierMixin(),
       WiggleScoreConfigMixin(),
       LegendMixin(),
       ContextMenuMixin<MarkDisplayContextMenuInfo>(),
@@ -312,15 +333,18 @@ export function stateModelFactory(
         jexlFiltersSetting: types.maybe(types.array(types.string)),
       }),
     )
-    .views(self => ({
+    .views(() => ({
       /**
        * #getter
-       * The fetched layers, keyed by displayedRegionIndex — the foundation's
-       * per-region store, narrowed.
+       * Opt into the byte gate: `CoreEncodeFeatures` measures the index before
+       * it downloads, so an over-budget region is refused before a feature is
+       * read — and the refusal is what the density tier stands in for.
        */
-      get rpcDataMap(): ReadonlyMap<number, MarkRegionData> {
-        return self.regionPayloads as ReadonlyMap<number, MarkRegionData>
+      get gateEnabled() {
+        return true
       },
+    }))
+    .views(self => ({
       /**
        * #getter
        * the config typed off the concrete schema
@@ -468,6 +492,77 @@ export function stateModelFactory(
        */
       get configuredFilters() {
         return () => configuredJexlFilters(self)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The mark the density sidecar stands in for: the first one drawing at
+       * this zoom whose `source` is `density`, or -1.
+       */
+      get densityMarkIndex(): number {
+        const { markVisible } = self
+        return self.conf.marks.findIndex(
+          (m: MarkConfig, i: number) =>
+            markVisible[i] && m.source === 'density',
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * `CoarseTierMixin`'s hook, narrowed: with no mark declaring the
+       * sidecar there is nothing to draw the bins as, so the tier neither
+       * reads nor stands in and the banner is the answer it always was.
+       */
+      get coarseTierMode(): CoarseTierMode {
+        return self.densityMarkIndex === -1
+          ? 'never'
+          : coarseTierModeOf(self.densityTierMode)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get coarseTierStandsIn(): boolean {
+        return self.coarseTierActive && self.host.initialized
+      },
+      /**
+       * #getter
+       * The tier's bins as this display's own payload: the density mark's
+       * layer built from the sidecar's intervals, every other mark empty.
+       * Keyed off `coarseTier`, which moves once per read.
+       */
+      get densityPayloads(): ReadonlyMap<number, MarkRegionData> {
+        const markIndex = self.densityMarkIndex
+        const mark = self.conf.marks[markIndex]
+        const payloads = new Map<number, MarkRegionData>()
+        if (mark) {
+          const color = markConstantColor(mark)
+          for (const [index, bins] of self.coarseTier) {
+            payloads.set(
+              index,
+              densityRegionData(bins, self.conf.marks.length, markIndex, color),
+            )
+          }
+        }
+        return payloads
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The layers the display draws, keyed by displayedRegionIndex: the
+       * foundation's per-region store, or the density tier's bins where the
+       * gate refused the features and a mark declared the sidecar. One map,
+       * so the domain, the legend, the hover, the highlight and the SVG
+       * export read the tier through the paths they already had.
+       */
+      get rpcDataMap(): ReadonlyMap<number, MarkRegionData> {
+        return self.coarseTierStandsIn
+          ? self.densityPayloads
+          : (self.regionPayloads as ReadonlyMap<number, MarkRegionData>)
       },
     }))
     .views(self => ({
@@ -739,6 +834,25 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * The corner notice while the sidecar stands in, naming what is drawn
+       * and how many marks are not: past the budget the banner is gone, and
+       * nothing else on screen says the bars are the sidecar's.
+       */
+      get densityStandInNotice(): string | undefined {
+        if (!self.coarseTierStandsIn) {
+          return undefined
+        }
+        const off = self.markVisible.filter(
+          (visible, i) => visible && i !== self.densityMarkIndex,
+        ).length
+        const rest =
+          off === 0
+            ? ''
+            : `; ${off} other ${pluralize(off, 'mark')} draws nothing`
+        return `Too much data to fetch here, so the adapter's density sidecar is drawn in the features' place${rest}`
+      },
+      /**
+       * #getter
        * What the worker left out of the loaded regions — a feature whose
        * `y` field read as missing or not a number — for the corner notice.
        */
@@ -795,7 +909,9 @@ export function stateModelFactory(
       selectFeature(hit: MarkHitInfo) {
         const region: Region | undefined =
           self.host.displayedRegions[hit.regionIndex]
-        if (!region) {
+        // Past the budget the read-back is the download the gate refused, so
+        // a bin of the sidecar opens nothing.
+        if (!region || self.coarseTierStandsIn) {
           return
         }
         const steps = [
@@ -929,6 +1045,7 @@ export function stateModelFactory(
               ])
             },
           }),
+          ...densityTierMenuItems(self),
           ...makeShowSubMenu([
             makeCrossHatchItem(self),
             legendCheckboxItem(self),
@@ -939,7 +1056,9 @@ export function stateModelFactory(
        * #method
        */
       contextMenuItems(): MenuItem[] {
-        const hit = self.contextMenuInfo?.hit
+        const hit = self.coarseTierStandsIn
+          ? undefined
+          : self.contextMenuInfo?.hit
         return hit
           ? [
               {

@@ -8,6 +8,7 @@ import {
   openContextMenuFromEvent,
 } from '@jbrowse/display-kit/DisplayContextMenu'
 import SkippedFeaturesIndicator from '@jbrowse/display-kit/SkippedFeaturesIndicator'
+import TrackControl from '@jbrowse/display-kit/TrackControl'
 import { PointerLayer } from '@jbrowse/display-ui'
 import { wiggleMouseHandlers } from '@jbrowse/plugin-wiggle'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
@@ -118,6 +119,13 @@ const MarkBody = observer(function MarkBody({
         {mouseState => <MarkTooltip model={model} mouseState={mouseState} />}
       </PointerLayer>
       <BottomRightIndicators>
+        {model.densityStandInNotice ? (
+          <TrackControl
+            icon="filter"
+            label="density"
+            tooltip={model.densityStandInNotice}
+          />
+        ) : null}
         <SkippedFeaturesIndicator {...model.skippedFeatures} />
       </BottomRightIndicators>
       <DisplayContextMenu model={model} />

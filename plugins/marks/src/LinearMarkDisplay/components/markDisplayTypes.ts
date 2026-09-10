@@ -33,6 +33,7 @@ export interface MarkDisplayModel extends WiggleGpuDisplayModel<
   hoveredFeature: MarkHitInfo | undefined
   legendSections: MarkLegendSection[]
   skippedFeatures: SkippedFeatures
+  densityStandInNotice: string | undefined
   showLegend: boolean
   setHoveredFeature: (hit: MarkHitInfo | undefined) => void
   clearHoveredFeature: () => void

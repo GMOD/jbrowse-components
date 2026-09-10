@@ -258,6 +258,8 @@ export const GATE_OPT_IN_SITES: Record<string, string> = {
     'BamAdapter/CramAdapter declare 5 Mb, which outranks any display value',
   'plugins/arc/src/shared/ArcFetchModel.ts':
     'baseLinearDisplayConfigSchema: arc reads paired-feature adapters, which report no estimate, so the byte axis is inert unless pointed at a gated one',
+  'plugins/marks/src/LinearMarkDisplay/model.ts':
+    'baseLinearDisplayConfigSchema: the mark display spreads regionTooLargeConfigSchemaFields and declares no limit of its own, so a tabix feature adapter is read at the base 1 Mb and BAM/CRAM/VCF at the 5 Mb they declare',
   'plugins/canvas/src/LinearMultiRowFeatureDisplay/model.ts':
     'LinearMultiRowFeatureDisplay',
   'plugins/canvas/src/shared/CanvasFeatureGateMixin.ts': 'LinearBasicDisplay',
