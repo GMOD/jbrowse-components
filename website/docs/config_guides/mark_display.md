@@ -209,15 +209,15 @@ The display's `jexlFilters` run before every mark's own steps.
 
 Each mark can name the zoom range it draws in, in bp per pixel: `minBpPerPx`
 draws it only at or above that width, `maxBpPerPx` only below it, and 0 sets no
-bound. With a density on one mark and the features on another, one track shows
-the count per 10 kb zoomed out and the individual scores zoomed in, from one
-fetch per region:
+bound. A density on one mark and the features on another make one track that
+shows the count per bin zoomed out and each feature's own value zoomed in, from
+one fetch per region:
 
 ```json
 "marks": [
   {
     "shape": "bar",
-    "encoding": { "y": "score" },
+    "encoding": { "y": "milliDiv" },
     "maxBpPerPx": 100
   },
   {
@@ -232,9 +232,11 @@ fetch per region:
 ]
 ```
 
+<Figure src="/img/mark_display/multiscale.png" caption="One Alu track, twice: across 3 Mb the binned mark draws and the axis is elements per 10 kb; across 30 kb the raw mark draws and the axis is each element's divergence from its consensus."/>
+
 A mark outside its range is off entirely — it is not drawn, not hovered, and its
-values do not set the y-axis, the legend or the row count — so the score axis at
-close zoom is the scores' and at wide zoom the counts'.
+values do not set the y-axis, the legend or the row count — so the axis at each
+zoom is the drawing mark's.
 
 ## What the track menu offers
 

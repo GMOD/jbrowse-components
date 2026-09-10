@@ -40,6 +40,7 @@ import {
 } from './specs/jbrowse-img.ts'
 import { ldSpecs } from './specs/ld.ts'
 import { mafSpecs } from './specs/maf.ts'
+import { marksSpecs } from './specs/marks.ts'
 import { methylationSpecs } from './specs/methylation.ts'
 import { msaSpecs } from './specs/msa.ts'
 import { pangenomeSpecs } from './specs/pangenome.ts'
@@ -89,6 +90,7 @@ export const specs: ScreenshotSpec[] = [
   ...trioSpecs,
   ...dog10kSpecs,
   ...mafSpecs,
+  ...marksSpecs,
   ...msaSpecs,
   ...pangenomeSpecs,
   ...pangenomeCactusSpecs,
