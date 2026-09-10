@@ -39,8 +39,7 @@ carry a given allele:
 - **Mouse** cannot. `minigraph` writes no path lines at all, so the information
   is not in the file to recover.
 
-A graph built to record structure and one built to record haplotypes differ in
-exactly that: only the second can say who carries an allele.
+Only a graph that records haplotypes can say who carries an allele.
 
 ## Mouse: a deletion that appears as an insertion
 
