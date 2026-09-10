@@ -52,6 +52,7 @@ exports[`render-core public surface pins the subpath exports 1`] = `
   "./shaders/rowRect",
   "./shaders/rowRectConsts",
   "./shaders/scoreScale",
+  "./shaders/spanMarkIface",
   "./sharedBackendKey",
   "./slangPass",
   "./useGraphicsCapabilities",
