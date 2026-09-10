@@ -321,8 +321,14 @@ async function checkTiled() {
 // ------------------------------------------------------------ TUI driving
 const typePrompt = text => typePromptInto(SESSION, text)
 
+// 40 minutes, not demoCore's default 5: turn one of a take can carry a whole-
+// genome alignment, and the cap firing mid-turn desynchronises the harness from
+// the agent — it types the next prompt into a session still working on the last
+// one. recordDemoMac.mjs has passed this since it filmed a take that aligned
+// two genomes; this file kept the default and the E. coli take reached 5
+// minutes of turn one on a night UCSC was answering in 6 seconds a request.
 async function waitTurnDone(before) {
-  if (!(await waitTurnDoneIn(SESSION, before))) {
+  if (!(await waitTurnDoneIn(SESSION, before, 2_400_000))) {
     console.error('  (turn did not settle before timeout; continuing)')
   }
 }
