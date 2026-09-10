@@ -1,4 +1,4 @@
-import { getContainingView } from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util/mstUtils'
 
 import type { RegionHost } from './regionHost.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'

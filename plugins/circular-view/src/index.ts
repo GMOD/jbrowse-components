@@ -38,6 +38,7 @@ export default class CircularViewPlugin extends Plugin {
 export {
   type CircularViewModel,
   type CircularViewStateModel,
+  type ChordSyntenyDisplaySelf,
   type ExportSvgOptions,
 } from './CircularView/model.ts'
 export {
@@ -46,6 +47,13 @@ export {
   type SliceElidedRegion,
   type SliceNonElidedRegion,
 } from './CircularView/slices.ts'
+export {
+  type Ring,
+  type RingDisplay,
+  type RingHostView,
+  type RingPassModel,
+} from './rings/ringHost.ts'
+export { type RingCell } from './rings/ringMarks.ts'
 export { circularLaunchKeys } from './CircularView/launchKeys.ts'
 export { renderToSvg } from './CircularView/svgcomponents/SVGCircularView.tsx'
 export type { CircularViewCommands } from './CircularView/types.ts'

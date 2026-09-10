@@ -43,6 +43,11 @@ jest.mock('@jbrowse/core/util', () => ({
   getFillProps: (color: string) => ({ fill: color }),
   getStrokeProps: (color: string) => ({ stroke: color }),
 }))
+// foundationView.ts resolves `getContainingView` through this leaf module,
+// not the barrel above, so it needs its own mock.
+jest.mock('@jbrowse/core/util/mstUtils', () => ({
+  getContainingView: () => mockView,
+}))
 jest.mock('mobx', () => ({
   ...jest.requireActual('mobx'),
   when: () => Promise.resolve(),

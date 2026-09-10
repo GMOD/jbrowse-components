@@ -37,6 +37,12 @@ jest.mock('@jbrowse/core/util', () => ({
   ...jest.requireActual('@jbrowse/core/util'),
   getContainingView: () => mockView,
 }))
+// foundationView.ts resolves `getContainingView` through this leaf module,
+// not the barrel above, so it needs its own mock.
+jest.mock('@jbrowse/core/util/mstUtils', () => ({
+  ...jest.requireActual('@jbrowse/core/util/mstUtils'),
+  getContainingView: () => mockView,
+}))
 jest.mock('mobx', () => ({
   ...jest.requireActual('mobx'),
   when: () => Promise.resolve(),

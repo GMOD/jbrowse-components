@@ -51,6 +51,11 @@ jest.mock('@jbrowse/core/util', () => ({
   measureText: (str: unknown, fontSize = 10) =>
     String(str).length * fontSize * 0.6,
 }))
+// foundationView.ts resolves `getContainingView` through this leaf module,
+// not the barrel above, so it needs its own mock.
+jest.mock('@jbrowse/core/util/mstUtils', () => ({
+  getContainingView: () => mockView,
+}))
 
 afterEach(() => {
   mockView = makeDefaultMockView()
