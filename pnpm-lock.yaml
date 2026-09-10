@@ -2139,6 +2139,9 @@ importers:
       '@jbrowse/text-indexing-core':
         specifier: workspace:^
         version: link:../../packages/text-indexing-core
+      ajv:
+        specifier: ^8.20.0
+        version: 8.20.0
       cli-progress:
         specifier: ^3.12.0
         version: 3.12.0

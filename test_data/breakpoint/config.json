@@ -93,10 +93,8 @@
       {
         "id": "MiDMyyWpp",
         "type": "BreakpointSplitView",
-        "headerHeight": 44,
         "height": 400,
         "displayName": "pbsv.BND.3:186700648-6:56758392 split detail",
-        "trackSelectorType": "hierarchical",
         "views": [
           {
             "id": "AcZl9Uifbv",
@@ -201,8 +199,7 @@
         "type": "SessionManager"
       }
     },
-    "activeWidgets": {},
-    "connections": {}
+    "activeWidgets": {}
   },
   "configuration": {
     "disableAnalytics": true

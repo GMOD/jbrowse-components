@@ -32,7 +32,6 @@
     "minimized": false,
     "id": "Mx1HRX2pW",
     "name": "Sess 5/9/2025, 12:49:19 PM",
-    "margin": 0,
     "views": [
       {
         "id": "952Gt6UH6",
@@ -75,9 +74,7 @@
         "showGridlines": true,
         "highlight": [],
         "colorByCDS": false,
-        "showTrackOutlines": true,
-        "bookmarkHighlightsVisible": true,
-        "bookmarkLabelsVisible": true
+        "showTrackOutlines": true
       }
     ],
     "stickyViewHeaders": true,

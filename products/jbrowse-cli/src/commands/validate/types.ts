@@ -21,6 +21,12 @@ export interface TypeEntry {
    */
   legacyKeys?: string[]
   /**
+   * Per enum slot, values the current enum no longer spells but that this
+   * schema's preProcessSnapshot still rewrites (`showLabels: false`). A config
+   * using one loads correctly, so these are reported as stale rather than wrong.
+   */
+  legacyValues?: Record<string, unknown[]>
+  /**
    * Adapters only: keys `normalizeSnapshot` expands, so `{type, uri}` is valid
    * even though the schema declares `bamLocation`.
    */
@@ -68,6 +74,7 @@ export interface ConfigManifest {
   displays: TypeGroup
   textSearchAdapters: TypeGroup
   connections: TypeGroup
+  internetAccounts: TypeGroup
   views: ViewGroup
   /**
    * Legacy display-instance keys product-core's sessionMigrations still lifts

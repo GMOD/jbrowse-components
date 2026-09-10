@@ -35,6 +35,7 @@
     "@jbrowse/add-track-core": "workspace:^",
     "@jbrowse/cigar-utils": "workspace:^",
     "@jbrowse/text-indexing-core": "workspace:^",
+    "ajv": "^8.20.0",
     "cli-progress": "^3.12.0",
     "ixixx": "^3.0.13",
     "serve-handler": "^6.1.7",

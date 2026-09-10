@@ -2991,6 +2991,18 @@ export const configManifest: ConfigManifest = {
         "color3",
         "outline"
       ],
+      "legacyValues": {
+        "showLabels": [
+          true,
+          false,
+          "on",
+          "off"
+        ],
+        "displayMode": [
+          "reducedRepresentation",
+          "collapse"
+        ]
+      },
       "aliases": [
         "LinearFeatureDisplay"
       ],
@@ -3979,6 +3991,18 @@ export const configManifest: ConfigManifest = {
         "color3",
         "outline"
       ],
+      "legacyValues": {
+        "showLabels": [
+          true,
+          false,
+          "on",
+          "off"
+        ],
+        "displayMode": [
+          "reducedRepresentation",
+          "collapse"
+        ]
+      },
       "stateModelProps": [
         "id",
         "type",
@@ -5547,6 +5571,260 @@ export const configManifest: ConfigManifest = {
         {
           "name": "dataDirLocation",
           "type": "(JexlString | (LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation))"
+        }
+      ]
+    }
+  },
+  "internetAccounts": {
+    "OAuthInternetAccount": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"OAuthInternetAccount\""
+        },
+        {
+          "name": "internetAccountId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "description",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "authHeader",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "tokenType",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "domains",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "authEndpoint",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "tokenEndpoint",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "needsPKCE",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "clientId",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "scopes",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "state",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "responseType",
+          "type": "(JexlString | string)"
+        }
+      ]
+    },
+    "ExternalTokenInternetAccount": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"ExternalTokenInternetAccount\""
+        },
+        {
+          "name": "internetAccountId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "description",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "authHeader",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "tokenType",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "domains",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "validateWithHEAD",
+          "type": "(JexlString | boolean)"
+        }
+      ]
+    },
+    "HTTPBasicInternetAccount": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"HTTPBasicInternetAccount\""
+        },
+        {
+          "name": "internetAccountId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "description",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "authHeader",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "tokenType",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "domains",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "validateWithHEAD",
+          "type": "(JexlString | boolean)"
+        }
+      ]
+    },
+    "DropboxOAuthInternetAccount": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"DropboxOAuthInternetAccount\""
+        },
+        {
+          "name": "internetAccountId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "description",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "authHeader",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "tokenType",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "domains",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "authEndpoint",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "tokenEndpoint",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "needsPKCE",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "clientId",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "scopes",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "state",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "responseType",
+          "type": "(JexlString | string)"
+        }
+      ]
+    },
+    "GoogleDriveOAuthInternetAccount": {
+      "slots": [
+        {
+          "name": "type",
+          "type": "\"GoogleDriveOAuthInternetAccount\""
+        },
+        {
+          "name": "internetAccountId",
+          "type": "identifier"
+        },
+        {
+          "name": "name",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "description",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "authHeader",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "tokenType",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "domains",
+          "type": "(JexlString | string[])"
+        },
+        {
+          "name": "authEndpoint",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "tokenEndpoint",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "needsPKCE",
+          "type": "(JexlString | boolean)"
+        },
+        {
+          "name": "clientId",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "scopes",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "state",
+          "type": "(JexlString | string)"
+        },
+        {
+          "name": "responseType",
+          "type": "(JexlString | string)"
         }
       ]
     }

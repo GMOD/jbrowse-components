@@ -167,20 +167,12 @@
   "defaultSession": {
     "id": "z9Dg7EHrD",
     "name": "R64 vs YJM1447 4/9/2021, 7:48:13 PM",
-    "margin": 0,
     "drawerWidth": 384,
     "views": [
       {
         "id": "JI_FpqCPi",
         "type": "DotplotView",
-        "headerHeight": 0,
         "height": 600,
-        "borderSize": 20,
-        "tickSize": 5,
-        "vtextRotation": 0,
-        "htextRotation": -90,
-        "fontSize": 15,
-        "trackSelectorType": "hierarchical",
         "assemblyNames": ["R64", "YJM1447"],
         "hview": {
           "displayedRegions": [
@@ -306,7 +298,6 @@
           ],
           "bpPerPx": 774.3540445689202,
           "offsetPx": 10034,
-          "interRegionPaddingWidth": 0,
           "minimumBlockWidth": 0
         },
         "vview": {
@@ -433,7 +424,6 @@
           ],
           "bpPerPx": 1214.9986315587473,
           "offsetPx": 6694,
-          "interRegionPaddingWidth": 0,
           "minimumBlockWidth": 0
         },
         "tracks": [
@@ -454,11 +444,7 @@
       {
         "id": "1Brqh2UJa",
         "type": "LinearSyntenyView",
-        "height": 400,
-        "trackSelectorType": "hierarchical",
-        "showIntraviewLinks": true,
         "linkViews": false,
-        "interactToggled": false,
         "tracks": [
           {
             "id": "IlfiBA7ufg",

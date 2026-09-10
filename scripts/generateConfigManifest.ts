@@ -49,15 +49,45 @@ const INDEX = path.join(
   REPO_ROOT,
   '.claude/skills/jbrowse-authoring/references/config-types.md',
 )
+const SCHEMA_OUT = path.join(
+  REPO_ROOT,
+  'products/jbrowse-cli/src/commands/validate/configSchema.generated.ts',
+)
+const VERSION = (
+  JSON.parse(
+    readFileSync(
+      path.join(REPO_ROOT, 'products/jbrowse-web/package.json'),
+      'utf8',
+    ),
+  ) as { version: string }
+).version
+const SCHEMA_URL_PATH = `schema/v${VERSION.split('.')[0]}/config.json`
+const SCHEMA_ID = `https://jbrowse.org/jb2/${SCHEMA_URL_PATH}`
+const SCHEMA_SITE_OUT = path.join(REPO_ROOT, 'website/static', SCHEMA_URL_PATH)
 
 // Runs inside the bundle, so it can reach the real PluginManager. Everything it
 // needs to say has to come back as JSON.
 const ENTRY = `
 import PluginManager from '@jbrowse/core/PluginManager'
 import { MIGRATED_DISPLAY_INSTANCE_KEYS } from '@jbrowse/product-core'
+import { JBrowseConfigF } from '@jbrowse/app-core'
 import { getConfigurationSchemaMetadata } from '@jbrowse/core/configuration'
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import assemblyConfigSchemaFactory from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
+import { FileLocation } from '@jbrowse/core/util/types/mst'
+import {
+  getSnapshot,
+  isArrayType,
+  isFrozenType,
+  isIdentifierType,
+  isLiteralType,
+  isMapType,
+  isModelType,
+  isReferenceType,
+  isType,
+} from '@jbrowse/mobx-state-tree'
 import corePlugins from './src/corePlugins.ts'
+import sessionModelFactory from './src/sessionModel/index.ts'
+import { buildConfigJsonSchema } from '../../scripts/configJsonSchema.ts'
 
 const pm = new PluginManager(corePlugins.map(P => new P()))
 pm.createPluggableElements()
@@ -358,6 +388,58 @@ function legacyKeysOf(configSchema, declaredSlots) {
     .map(([key]) => key)
 }
 
+// Values an enum slot no longer spells but that the schema's preProcessSnapshot
+// still rewrites — \`showLabels: false\` from before the unified enum. Asked of
+// each schema by construction, like the keys above: a candidate the migration
+// consumes builds and comes out as something else, one it does not throws.
+const LEGACY_VALUE_CANDIDATES = [
+  true,
+  false,
+  'on',
+  'off',
+  'reducedRepresentation',
+  'collapse',
+]
+
+function legacyValuesOf(configSchema, declaredSlots) {
+  const definition = getConfigurationSchemaMetadata(configSchema)?.definition
+  if (!definition) {
+    return {}
+  }
+  const pinnedIds = Object.fromEntries(
+    declaredSlots
+      .filter(slot => /Id$/.test(slot.name))
+      .map(slot => [slot.name, 'probe-id']),
+  )
+  const out = {}
+  for (const [slot, entry] of Object.entries(definition)) {
+    if (
+      !entry ||
+      typeof entry !== 'object' ||
+      !/^(maybe)?[sS]tringEnum$/.test(String(entry.type))
+    ) {
+      continue
+    }
+    const accepted = LEGACY_VALUE_CANDIDATES.filter(value => {
+      if (entry.model?.is(value)) {
+        return false
+      }
+      try {
+        const snap = getSnapshot(
+          configSchema.create({ ...pinnedIds, [slot]: value }),
+        )
+        return snap[slot] !== value
+      } catch {
+        return false
+      }
+    })
+    if (accepted.length) {
+      out[slot] = accepted
+    }
+  }
+  return out
+}
+
 function collect(group, getType) {
   const record = pm.getElementTypeRecord(group)
   const out = {}
@@ -376,9 +458,11 @@ function collect(group, getType) {
       continue
     }
     const legacyKeys = legacyKeysOf(entry.configSchema, slots)
+    const legacyValues = legacyValuesOf(entry.configSchema, slots)
     out[name] = {
       slots,
       ...(legacyKeys.length ? { legacyKeys } : {}),
+      ...(Object.keys(legacyValues).length ? { legacyValues } : {}),
       ...(group === 'adapter' || group === 'text search adapter'
         ? { shorthandKeys: shorthandKeysOf(entry) }
         : {}),
@@ -403,12 +487,13 @@ function collect(group, getType) {
   return out
 }
 
-console.log(JSON.stringify({
+const manifest = {
   adapters: collect('adapter', n => pm.getAdapterType(n)),
   tracks: collect('track', n => pm.getTrackType(n)),
   displays: collect('display', n => pm.getDisplayType(n)),
   textSearchAdapters: collect('text search adapter', n => pm.getTextSearchAdapterType(n)),
   connections: collect('connection', n => pm.getConnectionType(n)),
+  internetAccounts: collect('internet account', n => pm.getInternetAccountType(n)),
   views: collectViews(),
   // Legacy display-instance keys product-core's sessionMigrations still lifts
   // into the config, keyed by display type ('*' = any). Taken from the migration
@@ -420,7 +505,72 @@ console.log(JSON.stringify({
       [...keys].sort(),
     ]),
   ),
-}))
+}
+
+// Every registered element of a group whose type resolves, with the built
+// state model where one exists (loadStateModel ran above).
+function elements(group, getType) {
+  return Object.keys(pm.getElementTypeRecord(group).registeredTypes).flatMap(
+    name => {
+      try {
+        return [getType(name)]
+      } catch {
+        return []
+      }
+    },
+  )
+}
+
+const assemblyConfigSchema = assemblyConfigSchemaFactory(pm)
+const configModel = JBrowseConfigF({ pluginManager: pm, assemblyConfigSchema })
+const schema = buildConfigJsonSchema({
+  schemaId: __SCHEMA_ID__,
+  version: __VERSION__,
+  elements: {
+    adapters: elements('adapter', n => pm.getAdapterType(n)),
+    tracks: elements('track', n => pm.getTrackType(n)),
+    displays: elements('display', n => pm.getDisplayType(n)),
+    textSearchAdapters: elements('text search adapter', n =>
+      pm.getTextSearchAdapterType(n),
+    ),
+    connections: elements('connection', n => pm.getConnectionType(n)),
+    internetAccounts: elements('internet account', n =>
+      pm.getInternetAccountType(n),
+    ),
+    views: elements('view', n => pm.getViewType(n)),
+  },
+  metadataOf: getConfigurationSchemaMetadata,
+  isType,
+  isArrayType,
+  isMapType,
+  isModelType,
+  isLiteralType,
+  isFrozenType,
+  isIdentifierType,
+  isReferenceType,
+  fileLocation: FileLocation,
+  assemblySchema: assemblyConfigSchema,
+  rootConfigSchema: configModel.properties.configuration,
+  configModel,
+  sessionModel: sessionModelFactory({ pluginManager: pm, assemblyConfigSchema }),
+  migratedDisplayKeys: manifest.migratedDisplayKeys,
+  legacyKeysOf: (group, name) => groupOf(group)[name]?.legacyKeys ?? [],
+  legacyValuesOf: (group, name) => groupOf(group)[name]?.legacyValues ?? {},
+  shorthandKeysOf: (group, name) => groupOf(group)[name]?.shorthandKeys ?? [],
+})
+
+function groupOf(group) {
+  return {
+    adapter: manifest.adapters,
+    track: manifest.tracks,
+    display: manifest.displays,
+    'text search adapter': manifest.textSearchAdapters,
+    connection: manifest.connections,
+    'internet account': manifest.internetAccounts,
+  }[group]
+}
+
+console.log(JSON.stringify({ manifest, schema }))
 `
 
 // Every key an ADAPTER's snapshot normalizer reads, which is the candidate set
@@ -498,12 +648,50 @@ function collectShorthandProbes() {
   return [...lead, ...[...keys].sort()]
 }
 
-const built = esbuild.buildSync({
+const dir = mkdtempSync(path.join(tmpdir(), 'jbrowse-schema-'))
+// jbrowse-web's session model imports permanentPlugins.ts, which reads the page
+// URL and localStorage at module load; the schema wants the model's properties
+// only, so the bundle gets a stub in its place.
+const permanentPluginsStub = path.join(dir, 'permanentPlugins.ts')
+writeFileSync(
+  permanentPluginsStub,
+  [
+    'readPermanentPlugins',
+    'permanentPluginSafeMode',
+    'permanentPluginSafeModeSuspects',
+    'addPermanentPlugin',
+    'removePermanentPlugin',
+    'setPermanentPluginDisabled',
+    'clearPermanentPlugins',
+    'onPermanentPluginsChanged',
+    'reloadWithPermanentPlugins',
+    'reloadInSafeMode',
+    'getPermanentPlugins',
+    'markPermanentPluginLoadFinished',
+    'setPermanentPlugins',
+  ]
+    .map(name => `export const ${name} = () => []`)
+    .join('\n'),
+)
+
+const built = await esbuild.build({
+  plugins: [
+    {
+      name: 'stub-permanent-plugins',
+      setup(build) {
+        build.onResolve({ filter: /permanentPlugins\.ts$/ }, () => ({
+          path: permanentPluginsStub,
+        }))
+      },
+    },
+  ],
   stdin: {
     contents: ENTRY.replace(
       '__SHORTHAND_PROBES__',
       JSON.stringify(collectShorthandProbes()),
-    ),
+    )
+      .replace('__SCHEMA_ID__', JSON.stringify(SCHEMA_ID))
+      .replace('__VERSION__', JSON.stringify(VERSION)),
     resolveDir: RESOLVE_DIR,
     loader: 'ts',
   },
@@ -517,7 +705,6 @@ const built = esbuild.buildSync({
   loader: { '.css': 'empty' },
 })
 
-const dir = mkdtempSync(path.join(tmpdir(), 'jbrowse-schema-'))
 const bundlePath = path.join(dir, 'introspect.mjs')
 const bundle = built.outputFiles[0]
 if (!bundle) {
@@ -534,6 +721,8 @@ writeFileSync(bundlePath, bundle.text)
 // throws on import doesn't leak one either.
 const originalLog = console.log
 let payload = ''
+// jbrowse-web's session model imports permanentPlugins.ts, which reads the
+// page URL at module load; nothing else in the bundle touches the window.
 try {
   console.log = (...args: unknown[]) => {
     payload += args.join(' ')
@@ -544,7 +733,10 @@ try {
   rmSync(dir, { recursive: true, force: true })
 }
 
-const schema = JSON.parse(payload) as Record<string, any>
+const { manifest: schema, schema: jsonSchema } = JSON.parse(payload) as {
+  manifest: Record<string, any>
+  schema: Record<string, unknown>
+}
 const manifest = [
   '// Generated by scripts/generateConfigManifest.ts — do not edit by hand.',
   '// Regenerate with `pnpm autogen` after changing any configSchema.ts.',
@@ -657,6 +849,32 @@ checkOrWriteAll(
       path: INDEX,
       content: formatMarkdown(`${lines.join('\n')}\n`, INDEX),
       label: path.relative(REPO_ROOT, INDEX),
+    },
+    {
+      path: SCHEMA_OUT,
+      // A template literal rather than an object literal: the schema's `then`
+      // keys read as thenables to the linter, and V8 parses JSON faster than
+      // a literal of this size anyway.
+      content: [
+        '// Generated by scripts/generateConfigManifest.ts — do not edit by hand.',
+        '// Regenerate with `pnpm autogen` after changing any configSchema.ts.',
+        'export const configJsonSchema: Record<string, unknown> = JSON.parse(`',
+        JSON.stringify(jsonSchema, null, 2)
+          .replaceAll('\\', '\\\\')
+          .replaceAll('`', '\\`')
+          .replaceAll('${', '\\${'),
+        '`)',
+        '',
+      ].join('\n'),
+      label: path.relative(REPO_ROOT, SCHEMA_OUT),
+    },
+    {
+      path: SCHEMA_SITE_OUT,
+      content: formatMarkdown(
+        JSON.stringify(jsonSchema, null, 2),
+        SCHEMA_SITE_OUT,
+      ),
+      label: path.relative(REPO_ROOT, SCHEMA_SITE_OUT),
     },
   ],
   'run `pnpm autogen`',

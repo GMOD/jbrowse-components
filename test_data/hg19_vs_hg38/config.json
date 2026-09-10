@@ -47,14 +47,11 @@
   ],
   "defaultSession": {
     "name": "hg19 vs hg38",
-    "width": 1850,
     "drawerWidth": 384,
     "views": [
       {
         "id": "MiDMyyWpp",
         "type": "DotplotView",
-        "headerHeight": 44,
-        "width": 1850,
         "height": 600,
         "displayName": "hg19 vs hg38 dotplot",
         "trackSelectorType": "hierarchical",
