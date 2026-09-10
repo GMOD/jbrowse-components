@@ -5164,7 +5164,21 @@ export const configManifest: ConfigManifest = {
                 },
                 {
                   "name": "y",
-                  "type": "(JexlString | string)"
+                  "type": "MarkValueConfigurationSchema",
+                  "subSlots": [
+                    {
+                      "name": "field",
+                      "type": "(JexlString | string)"
+                    },
+                    {
+                      "name": "scale",
+                      "type": "(JexlString | MarkValueScale)"
+                    },
+                    {
+                      "name": "domain",
+                      "type": "(JexlString | string[])"
+                    }
+                  ]
                 },
                 {
                   "name": "row",

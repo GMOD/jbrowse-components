@@ -4,8 +4,8 @@
 //   node packages/core/benches/encodeFeatures.bench.ts
 //   node packages/core/benches/encodeFeatures.bench.ts --rounds=9 --features=1000000
 //
-// Nine arms over one synthetic feature list, interleaved round-robin, min
-// across rounds (agent-docs/reference/BENCHMARKING.md). The first seven ask
+// Eleven arms over one synthetic feature list, interleaved round-robin, min
+// across rounds (agent-docs/reference/BENCHMARKING.md). The first nine ask
 // for the point shape's lanes and the hit index:
 //
 //   native      y: 'score', a constant colour — the encoder's own loop and
@@ -17,6 +17,10 @@
 //               plus the CSS colour parse its answer costs
 //   scale-color y native, colour a categorical scale over strand — the
 //               field read, the value's table lookup and a pass after the walk
+//   ramp-color  y native, colour a linear ramp the WORKER resolves — the
+//               field read plus a LUT index per feature
+//   ramp-value  the same ramp with the `colorValue` lane named, so the walk
+//               keeps the raw values and the display resolves the scale
 //   jexl-glyph  y native, glyph a jexl ternary over strand
 //   scale-glyph y native, glyph a categorical scale over strand
 //
@@ -84,6 +88,21 @@ const ARMS: {
       y: 'score',
       color: { field: 'strand', scale: 'categorical' },
     },
+  },
+  {
+    name: 'ramp-color',
+    encoding: {
+      y: 'score',
+      color: { field: 'score', scale: 'linear' },
+    },
+  },
+  {
+    name: 'ramp-value',
+    encoding: {
+      y: 'score',
+      color: { field: 'score', scale: 'linear' },
+    },
+    lanes: [...POINT_LANES, 'colorValue'],
   },
   {
     name: 'jexl-glyph',

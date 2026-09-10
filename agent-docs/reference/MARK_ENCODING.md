@@ -19,13 +19,27 @@ BED score column, a segment ratio, a bedGraph-shaped interval.
 
 | Piece | Where | What it owns |
 | --- | --- | --- |
-| `MarkEncoding`, `encodeFeatures` | `packages/core/src/util/markEncoding.ts` | the declaration and its evaluation over the **lanes** the caller names: native `feature.get(field)` per channel, `jexl:` as the opt-in escape, a colour that is a constant, a jexl expression, a categorical palette or a ramp over a domain, a glyph that is a name, a jexl expression or a categorical scale over the glyph names, an integer `row`, the `y` extremes, a Flatbush over `(x, y, x2, y)` when `index` is named, and the `ScaleTable` per scaled channel |
+| `MarkEncoding`, `encodeFeatures` | `packages/core/src/util/markEncoding.ts` | the declaration and its evaluation over the **lanes** the caller names: native `feature.get(field)` per channel, `jexl:` as the opt-in escape, a `y` that is a field or a field with the scale it is read through, a colour that is a constant, a jexl expression, a categorical palette or a ramp over a domain, a glyph that is a name, a jexl expression or a categorical scale over the glyph names, an integer `row`, the `y` extremes, a Flatbush over `(x, y, x2, y)` when `index` is named, and the `ScaleTable` per scaled channel |
 | `runTransforms` | `packages/core/src/util/featureTransforms.ts` | the transform stage: a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage` — run in order over a feature list, each step reading what the last answered |
 | `CoreEncodeFeatures` | `packages/core/src/rpc/methods/CoreEncodeFeatures.ts` | one region's features fetched once, the request's shared `transform` steps run (the display's `jexlFilters` as `filter` steps), then each layer of the request — its own `transform`, an encoding and its lanes — run over that list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for the request's `layers[i]`, the buffers transferred |
-| `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ shape, encoding, transform, minBpPerPx, maxBpPerPx }` sub-schemas, one `defineMark` per entry reading `layers[i]` through a lens that checks its shape's lanes are present (`SHAPE_LANES`) and `enabled` inside the entry's zoom range, the wiggle-core score axis, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over its layer's Flatbush, spans stacked on `row` into `rowCount` bands |
+| `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ shape, encoding, transform, minBpPerPx, maxBpPerPx }` sub-schemas, one `defineMark` per entry reading `layers[i]` through a lens that checks its shape's lanes are present (`SHAPE_LANES`) and `enabled` inside the entry's zoom range, the wiggle-core score axis **resolved from the declared `encoding.y`**, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over its layer's Flatbush, spans stacked on `row` into `rowCount` bands |
 
-**Colour is resolved in exactly one place** — the worker — and the legend reads
-the same table ([mechanisms/rendering-decisions](../mechanisms/rendering-decisions.md)).
+**A scale is declared on the channel it scales** — `y` takes `{ field, scale,
+domain }` beside the bare field name, the way `color` and `glyph` take their
+own — and the display resolves it rather than owning a second copy
+([ADR-113](../architecture-decision-records/adr-113-one-scale-rule-in-one-place.md)).
+`ScoreScaleMixin`'s `declaredValueScale` hook is where that lands: the mark
+display answers it off the first mark drawing at this zoom whose `y` names a
+field, so the axis, its ticks and the shapes read one declaration, and the
+score menu's "Set min/max" and scale-type rows write back into it. The display's
+own `minScore`/`maxScore`/`scaleType` slots are what a mark with no declared
+`y` falls back to; for wiggle, the multi-wiggle, Manhattan and the coverage
+band those slots are still the axis itself. The declared scale does not cross
+the wire — the worker reads a value and nothing there reads the scale, and
+shipping it would key the fetch on the axis.
+
+**Colour is resolved in exactly one place per cardinality**, and the legend
+reads the same table ([mechanisms/rendering-decisions](../mechanisms/rendering-decisions.md)).
 A categorical scale with a `domain` hands palette entries to the listed values
 in that order and then to whatever else the region held, sorted; without one,
 each value derives its entry from itself through `categoricalValueColor` (an
@@ -36,9 +50,23 @@ was Manhattan's own evaluator until 2026-09-09; the encoder's per-region
 palette walk was the one way two regions of a view could disagree about a
 colour, and the reviewer's case against a view-level resolution instead was
 that it either refetches on every union growth or rewrites colour per instance
-on the main thread, which breaks the one-place rule above. A ramp reads the
-field through `domain`, or the region's own extremes when none is listed, and
-there `domain` is still what pins the answer across a view.
+on the main thread, which breaks the one-place rule above.
+
+A **quantitative** ramp resolves on the main thread instead, the way y does:
+a caller whose shape reads the ramp itself names the `colorValue` lane and the
+worker ships the raw values plus the region's own `extent`; the display unions
+the extents of the loaded regions into one domain and `bar` and `point` read
+it as three uniforms (`rampMode`, `rampMin`, `rampMax`) over the 256-entry LUT
+bound through `defineMark`'s `texture`, so an unpinned ramp agrees across a
+view and a pan that widens the domain uploads no instance bytes. The value
+rides the colour lane reinterpreted — one 4-byte slot carrying either a packed
+ABGR or the value's float32 bits, `colorBits` on the packing side and
+`markColor.slang`'s `asfloat` on the shader's — so the ramp costs no instance
+byte. The Canvas2D painters, which are also the SVG export, bake the packed
+colours once per domain change (`paintColors`, memoized on the payload). A
+`span` keeps the worker-resolved lane: its geometry is `rowRect`'s, whose
+uniform struct four other displays share. A listed `domain` still pins, and is
+what fixes a legend for a figure.
 
 **A scale belongs to a channel, not to colour alone.** `glyph` takes the
 same `{ field, scale: 'categorical', domain? }` that `color` does, with
@@ -54,8 +82,8 @@ triangle the plot draws as a disc. Only `point` reads the lane; a scale on a
 bar's glyph resolves and is never drawn.
 
 **A lane is filled because a shape reads it.** `encodeFeatures` takes the
-lane set beside the encoding — `y`, `color`, `glyph`, `row`, and `index` for
-the Flatbush — and a lane not named is neither allocated, filled nor
+lane set beside the encoding — `y`, `color`, `colorValue`, `glyph`, `row`, and
+`index` for the Flatbush — and a lane not named is neither allocated, filled nor
 transferred: `EncodedChannels` carries every lane as optional on the wire,
 `Encoded<L>` is the same type with a caller's own lanes required, and the
 mark display's lens hands a shape its layer only when the lanes it reads

@@ -9,11 +9,11 @@ kind: spec
 **TL;DR:** the grammar is a pipeline — data, transform, scale, mark, guide,
 layer, coordinates — and as of 2026-09-10 the tree has a declared answer at
 six of the seven stages, with guides derived from declared scales on both
-surfaces and parity between backends pinned by tests. The seams are that the
-scale lives in two places (colour on the encoding, y on the display), that
-two channel vocabularies remain, that the config rung covers one class of
-track, and that a scale table is per fetched region. The gaps are scale
-resolution across layers, conditional encoding, the channels a runtime
+surfaces and parity between backends pinned by tests. Every channel now
+declares its scale on itself and the display resolves it; the seams left are
+that two channel vocabularies remain, that the config rung covers one class of
+track, and that a scale is still resolved over the loaded regions rather than
+the dataset. The gaps are scale resolution across layers, conditional encoding, the channels a runtime
 shader generator would give, and a bin whose width follows the zoom. The
 positions behind each are in
 [ADR-095](../architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md)
@@ -21,8 +21,9 @@ positions behind each are in
 [ADR-107](../architecture-decision-records/adr-107-the-quantitative-class-is-authored-in-config.md),
 [ADR-108](../architecture-decision-records/adr-108-a-display-declares-its-colour-scales.md),
 [ADR-109](../architecture-decision-records/adr-109-a-display-declares-its-value-scale.md),
-[ADR-110](../architecture-decision-records/adr-110-a-display-declares-what-is-highlighted.md)
-[ADR-112](../architecture-decision-records/adr-112-a-layer-owns-its-transform-and-its-zoom-range.md)
+[ADR-110](../architecture-decision-records/adr-110-a-display-declares-what-is-highlighted.md),
+[ADR-112](../architecture-decision-records/adr-112-a-layer-owns-its-transform-and-its-zoom-range.md),
+[ADR-113](../architecture-decision-records/adr-113-one-scale-rule-in-one-place.md)
 and [ADR-114](../architecture-decision-records/adr-114-canvas-keeps-its-hand-written-packer.md);
 this file is the map across them.
 
@@ -34,7 +35,7 @@ this file is the map across them.
 | --- | --- | --- | --- |
 | data | rows in memory | a feature adapter's `getFeaturesArray`, any format | whole; the adapter is the format's, and the grammar has no lazy source of its own |
 | transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage` — run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreEncodeFeatures` request and then each layer's own; `filters: jexl[]` as sugar for leading filters | whole for a fixed bin width; window and sample are absent, and `flatten` reaches the wire but not yet the `marks` config enum |
-| scale | domain → range, separate from the encoding | colour and glyph: `{ field, scale, domain, palette \| range }` on the encoding, resolved by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`); y: `valueScale` on `ScoreScaleMixin` (`packages/wiggle-core/src/ScoreScaleMixin.ts`), placed by `valueScale.slang` | whole, in two places |
+| scale | domain → range, separate from the encoding | every channel on the encoding — `{ field, scale, domain, palette \| range \| ramp }` for colour and glyph, `{ field, scale, domain }` for y — read by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`) and resolved either in the worker (categorical) or on the main thread against a domain uniform (y, and a quantitative ramp), with `ScoreScaleMixin` resolving the declaration rather than owning it | whole, declared in one place |
 | mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`) | whole, for the shapes the library has |
 | guide | axis and legend derived from a scale; a highlight derived from a selection | `colorScales` → legend (`packages/display-kit/src/legendHost.ts`), `valueScale` → axis, hatches and rules (`packages/display-kit/src/axisHost.ts`), `hoverInk` / `selectionInk` → the highlight (`packages/display-kit/src/highlightHost.ts`), each instance's box read off its shape's `ink`; `DisplayChrome` places all three and `renderDisplaySvg` the first two | whole, for the displays that declare |
 | layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; every mark shares one y domain (`plugins/marks/src/LinearMarkDisplay/markList.ts`); a mark's `minBpPerPx`/`maxBpPerPx` is the zoom range it draws in, and the shared domain, legend and row count fold only the marks drawing | shared scale; semantic zoom per layer |
@@ -74,15 +75,19 @@ its consumer.
 
 The seams, named honestly:
 
-- **The scale lives in two places.** A colour or glyph scale is on the
-  encoding and resolves in the worker, per instance, into a packed value. The
-  y scale is on the display and resolves on the GPU, per frame, from a domain
-  uniform. Both are right for their cost: a colour is data and travels with
-  the instance, a domain moves on every autoscale and must not touch a
-  buffer ([ADR-097](../architecture-decision-records/adr-097-the-y-channel-shares-its-scale-and-not-its-anchor.md)).
-  But a config reader sees a scale under `encoding.color` and none under
-  `encoding.y`, and has to learn that `minScore` and `maxScore` on the
-  display are that scale. The grammar puts them beside each other.
+- **A scale is declared on its channel and resolved where its cost says.**
+  `encoding.y` carries `{ field, scale, domain }` beside `encoding.color`'s,
+  and `ScoreScaleMixin`'s `declaredValueScale` hook is the resolution: the
+  mark display answers it off the first drawing mark whose `y` names a field,
+  the score menu writes back into it, and `minScore`/`maxScore` are the
+  fallback rather than the meaning
+  ([ADR-113](../architecture-decision-records/adr-113-one-scale-rule-in-one-place.md)).
+  Where a scale resolves still splits by cardinality, and rightly: a
+  categorical colour is data and travels packed with the instance, while a
+  domain that moves on every autoscale must not touch a buffer
+  ([ADR-097](../architecture-decision-records/adr-097-the-y-channel-shares-its-scale-and-not-its-anchor.md)).
+  The four score-axis displays that are not the mark display keep their axis
+  in those slots, which is what the hook's default answers.
 - **Two channel vocabularies remain.** The encoder and the three shared
   shapes say `x`, `x2`, `y`, `row`, `color`, `glyph`. Variants' cell
   (`plugins/variants/src/LinearMultiSampleVariantDisplay/components/cellMark.ts`)
@@ -106,13 +111,16 @@ The seams, named honestly:
   channel's place. It runs in the one loop, but nothing about it is a
   declaration, and the grammar has no equivalent. Every display with a
   meaning the encoding cannot say will look like this.
-- **A scale table is per fetched region.** The grammar resolves a scale over
-  the whole dataset; the worker sees one region. Value-derived categorical
-  resolution makes regions agree without a round trip, and a pinned `domain`
-  pins a ramp; an unpinned ramp still disagrees across regions, and no
-  display can declare "one domain across the view" without a refetch. This is
-  the cost of resolving colour in one place, and it is the honest limit of
-  that rule.
+- **A scale table is per fetched region, and the quantitative ones are
+  unioned.** The grammar resolves a scale over the whole dataset; the worker
+  sees one region. Value-derived categorical resolution makes regions agree
+  without a round trip. A quantitative ramp ships its raw values and the
+  region's extent instead, and the display unions the extents into one domain
+  the shapes read as a uniform (ADR-113), so an unpinned ramp agrees across
+  the loaded regions and a pan that widens it uploads no instance bytes. What
+  remains is the dataset beyond the view: a value in no loaded region has
+  never been seen, so the domain still grows as the user pans, and a pinned
+  `domain` is what fixes a legend for a figure.
 
 ## Gaps against the grammar
 

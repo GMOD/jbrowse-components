@@ -405,6 +405,29 @@ reads what the last answered.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
+## ValueEncoding
+
+How a mark's `y` channel resolves: a feature field (or `jexl:` expression)
+read on a linear scale over the loaded regions' extremes, or the same field
+with the scale spelled out — `log` to read the domain logarithmically,
+`domain` to pin `[min, max]` instead of autoscaling. The declaration is the
+one owner: the display's axis, its ticks and the shader's placement are all
+resolved from it.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+## valueField
+
+The field a `y` declaration reads, whichever of its two forms it is
+written in.
+
+```js
+// type signature
+(y: ValueEncoding) => string
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
+
 ## VIRIDIS_STOPS
 
 The 256 viridis stops, fully opaque. Feed them to buildColorRampLut

@@ -57,21 +57,20 @@ Bars from a BED score column, coloured by strand, with the colour key on screen:
 
 Listing the display first under `displays` makes it the one the track opens
 with. Every other slot has a default: `x` is `start`, `x2` is `end`, bars grow
-from an `origin` of 0, and the y-axis autoscales to the values on screen, with
-`minScore`/`maxScore` and the track menu's score submenu pinning it.
+from an `origin` of 0, and the y-axis autoscales to the values on screen.
 
 ## The encoding
 
 Each mark's `encoding` maps feature fields to the channels its shape reads:
 
-| Channel | Read by        | Value                                                                                          |
-| ------- | -------------- | ---------------------------------------------------------------------------------------------- |
-| `x`     | every shape    | a field holding the left edge in bp; `start` by default                                        |
-| `x2`    | every shape    | the right edge; `end` by default                                                               |
-| `y`     | `bar`, `point` | the field plotted on the score axis; a feature whose value is not a finite number is skipped   |
-| `row`   | `span`         | an integer field naming the band a span stacks on, from 0; missing is 0                        |
-| `color` | every shape    | a CSS colour, a jexl callback returning one, or a scale (below)                                |
-| `glyph` | `point`        | `disc`, `triangle` or `diamond`, a jexl callback returning one, or a categorical scale (below) |
+| Channel | Read by        | Value                                                                                                                                                                 |
+| ------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `x`     | every shape    | a field holding the left edge in bp; `start` by default                                                                                                               |
+| `x2`    | every shape    | the right edge; `end` by default                                                                                                                                      |
+| `y`     | `bar`, `point` | the field plotted on the score axis, or an object naming the field with the scale it is read through (below); a feature whose value is not a finite number is skipped |
+| `row`   | `span`         | an integer field naming the band a span stacks on, from 0; missing is 0                                                                                               |
+| `color` | every shape    | a CSS colour, a jexl callback returning one, or a scale (below)                                                                                                       |
+| `glyph` | `point`        | `disc`, `triangle` or `diamond`, a jexl callback returning one, or a categorical scale (below)                                                                        |
 
 A field name is read straight off the feature (`score`, `strand`, or any column
 a BED `columnNames` or a GFF attribute names). A `jexl:` expression over
@@ -83,6 +82,27 @@ a BED `columnNames` or a GFF attribute names). A `jexl:` expression over
 
 It costs about half again as much per feature as a field read, which is why it
 is the escape rather than the default.
+
+## The value scale
+
+`y` as a string plots that field on an autoscaled linear axis. As an object it
+says how the axis reads it, in the same shape a colour scale takes:
+
+```json
+{ "y": { "field": "score", "scale": "log", "domain": [1, 1000] } }
+```
+
+`scale` is `linear` (the default) or `log`, and `domain` pins the `[min, max]`
+the axis spans instead of autoscaling to the loaded regions — an empty entry
+leaves that end autoscaling, so `["0", ""]` pins the floor alone. The axis, its
+ticks, its cross-hatches and the bars themselves all read this one declaration,
+and so does the track menu: "Set min/max" and the scale-type rows write back
+into it, so what the user pins and what the config author wrote are the same
+slot.
+
+Marks share one y-axis, so the first mark that names a `y` field is the one
+whose scale the display uses. With a multiscale pair (below) that is the mark
+drawing at the current zoom.
 
 ## Colour scales
 
@@ -98,11 +118,13 @@ legend can describe:
 - **linear** or **log** —
   `{ "field": "signal", "scale": "linear", "domain": [0, 50], "ramp": ["white", "red"] }`
   reads the value through `domain` into the ramp. `ramp` is `["viridis"]` or two
-  or more CSS colour stops spaced evenly; `domain` left off uses each region's
-  own extremes.
+  or more CSS colour stops spaced evenly; `domain` left off spans the values of
+  every region loaded, so a bar and its key mean the same thing in every block
+  on screen and the ramp widens as you pan into bigger values. Pin `domain` when
+  a figure needs the colours to stay put.
 
-The scale is resolved in the worker, once, and the legend reads the same table
-the colours came from — so what the key says is what was painted.
+Whichever way a scale resolves, the legend reads the same table the colours came
+from — so what the key says is what was painted.
 
 ## Glyph scales
 

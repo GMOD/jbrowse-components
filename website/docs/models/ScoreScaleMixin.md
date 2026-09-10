@@ -30,6 +30,12 @@ dialog round-trips and what the menu captions itself with;
 means "autoscale this end". Every consumer that computes a domain reads the
 `*Bound` pair.
 
+A display that declares its value scale elsewhere answers
+`declaredValueScale`, and then the scale type and the pinned bounds come
+from the declaration rather than from `scaleType`/`minScore`/`maxScore`.
+Its setters are the display's to override so the edit lands on the same
+declaration — one owner, whichever it is.
+
 Whether a bound is *configured* is a third question, and `hasManualScoreBounds`
 is the only getter that answers it — the resolved pair cannot, since
 `defaultScoreDomain` is exactly the hook that turns an unset end into a number.
@@ -39,6 +45,7 @@ is the only getter that answers it — the resolved pair cannot, since
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
+| <span id="getter-declaredvaluescale">**declaredValueScale**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ scaleType?: string &#124; undefined; domain?: [number &#124; undefined,…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ scaleType?: string &#124; undefined; domain?: [number &#124; undefined, number &#124; undefined] &#124; undefined; } &#124; undefined</code></pre></dialog></span> | Overridable hook: a value scale the display declares somewhere other than these slots — the mark display's `encoding.y`. Where it answers, it is the owner and the slots below stand in only for the ends it leaves open, so a scale is read from one place whichever place that is. Default none, which is every display whose axis IS these slots. |
 | <span id="getter-scaletype">**scaleType**</span><br><code>string</code> |  |
 | <span id="getter-autoscaletype">**autoscaleType**</span><br><code>string</code> |  |
 | <span id="getter-numstddev">**numStdDev**</span><br><code>number</code> |  |
