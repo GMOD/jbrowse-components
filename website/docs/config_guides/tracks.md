@@ -15,6 +15,7 @@ track sits:
 
 ```json
 {
+  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
   "assemblies": [
     {
       "name": "hg19",
@@ -53,6 +54,7 @@ The same track written short:
 
 ```json
 {
+  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
   "assemblies": [
     {
       "name": "hg19",

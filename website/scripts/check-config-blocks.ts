@@ -19,6 +19,8 @@
 //     or, when the excerpt really is about the slot, prefix the parent key
 //     (`"adapter": { ... }`), which this check accepts because the fence then
 //     isn't standalone JSON;
+//   * a whole config (one with `assemblies`) opens with the `$schema` line an
+//     editor validates it by, at the URL the CLI's generated schema names;
 //   * every key a track/assembly block names is one its type declares, checked
 //     with `jbrowse validate`'s own checker. Nothing else covered this:
 //     check-doc-slots reads `displayDefaults` keys and slot VALUES, and
@@ -39,6 +41,10 @@ import remarkParse from 'remark-parse'
 import { unified } from 'unified'
 import { visit } from 'unist-util-visit'
 
+import {
+  configSchemaUrl,
+  schemaProblems,
+} from '../../products/jbrowse-cli/src/commands/validate/schemaValidate.ts'
 import { validateConfig } from '../../products/jbrowse-cli/src/commands/validate/validateConfig.ts'
 import { deriveAddAssembly } from '../src/lib/derive-add-assembly.ts'
 import { defaultSessionObject } from '../src/lib/derive-set-default-session.ts'
@@ -133,24 +139,27 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 // A parsed block is a complete track config when it carries the three things
 // `tracks` entries always have; an assembly when it has a name plus a sequence
-// (or the flattest `uri` shorthand for one).
+// (or the flattest `uri` shorthand for one); a view when its `type` names one,
+// which is the session spec's unit and has `tracks` of its own.
 function shape(obj: Record<string, unknown>) {
   const type = typeof obj.type === 'string' ? obj.type : ''
   const keys = Object.keys(obj)
-  return Array.isArray(obj.assemblies) || Array.isArray(obj.tracks)
-    ? 'config'
-    : type.endsWith('Adapter')
-      ? 'adapter'
-      : type.endsWith('Display')
-        ? 'display'
-        : obj.trackId && obj.adapter && obj.type
-          ? 'track'
-          : obj.name && (obj.sequence ?? obj.uri)
-            ? 'assembly'
-            : keys.length > 0 &&
-                keys.every(k => k === 'displayDefaults' || k === 'displays')
-              ? 'fragment'
-              : 'other'
+  return type.endsWith('View')
+    ? 'view'
+    : Array.isArray(obj.assemblies) || Array.isArray(obj.tracks)
+      ? 'config'
+      : type.endsWith('Adapter')
+        ? 'adapter'
+        : type.endsWith('Display')
+          ? 'display'
+          : obj.trackId && obj.adapter && obj.type
+            ? 'track'
+            : obj.name && (obj.sequence ?? obj.uri)
+              ? 'assembly'
+              : keys.length > 0 &&
+                  keys.every(k => k === 'displayDefaults' || k === 'displays')
+                ? 'fragment'
+                : 'other'
 }
 
 const problems: string[] = []
@@ -194,7 +203,23 @@ for (const { file, text } of docsMatching(docsDir, JSON_FENCE)) {
         `      Restate the whole track config with the slot in place (same trackId`,
         `      as the track it replaces), or prefix the parent key.\n`,
       )
-    } else if (kind === 'track' || kind === 'assembly' || kind === 'config') {
+    } else if (
+      kind === 'config' &&
+      Array.isArray(parsed.assemblies) &&
+      parsed.$schema !== configSchemaUrl
+    ) {
+      problems.push(
+        `  ${where}`,
+        `    → whole config without \`"$schema": "${configSchemaUrl}"\` as its first key,`,
+        `      which is what lets an editor validate and complete a copy of it.\n`,
+      )
+    }
+    if (kind === 'view') {
+      for (const p of schemaProblems(parsed, '/$defs/View')) {
+        problems.push(`  ${where}`, `    → ${p.where}: ${p.message}\n`)
+      }
+    }
+    if (kind === 'track' || kind === 'assembly' || kind === 'config') {
       // Slot names, run through the same checker `jbrowse validate` uses. The
       // gap this closes: check-doc-slots looks at `displayDefaults` keys and at
       // slot VALUES, and check-config-cli takes the block verbatim through

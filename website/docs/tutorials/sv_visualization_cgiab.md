@@ -365,10 +365,10 @@ takes the column names from the file.
     "type": "BedAdapter",
     "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NYGC-somatic-pipeline_20240412/GRCh38-GIABv3/HG008-T--HG008-N.cnv.annotated.v7.final.bed"
   },
+  "displays": [{ "type": "LinearBasicDisplay", "displayMode": "compact" }],
   "displayDefaults": {
     "color": "jexl:feature.type=='DEL'?'#2166ac':'#b2182b'",
     "labels": { "name": "jexl:feature.type+' '+feature.cytoband" },
-    "displayMode": "compact",
     "legend": [
       { "label": "Loss (DEL)", "color": "#2166ac" },
       { "label": "Gain (DUP)", "color": "#b2182b" }
@@ -766,9 +766,9 @@ which UCSC serves as a bigBed:
     "type": "BigBedAdapter",
     "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hg38/bbi/clinvar/clinvarCnv.bb"
   },
+  "displays": [{ "type": "LinearBasicDisplay", "displayMode": "compact" }],
   "displayDefaults": {
-    "jexlFilters": ["get(feature,'_varLen') < 50000"],
-    "displayMode": "compact"
+    "jexlFilters": ["get(feature,'_varLen') < 50000"]
   }
 }
 ```

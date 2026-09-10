@@ -30,6 +30,7 @@ The genome, a track, and the view to open on:
 
 ```json
 {
+  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
   "assemblies": [
     {
       "name": "hg38",

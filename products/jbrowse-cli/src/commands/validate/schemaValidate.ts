@@ -361,17 +361,16 @@ function explain(
   }
 }
 
-export function schemaProblems(config: unknown): Problem[] {
-  const validate = validatorFor('')
-  if (validate(config)) {
+// The problems in `data` against the whole schema, or against one of its
+// definitions by pointer (`/$defs/View` for a session spec's view).
+export function schemaProblems(data: unknown, pointer = ''): Problem[] {
+  const validate = validatorFor(pointer)
+  if (validate(data)) {
     return []
   }
   const problems: Problem[] = []
-  explain(config, validate.errors ?? [], problems, 0)
-  return problems.map(p => ({
-    ...p,
-    where: p.where.replace(/^\./, ''),
-  }))
+  explain(data, validate.errors ?? [], problems, 0)
+  return problems
 }
 
 export { schemaId as configSchemaUrl }

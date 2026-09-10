@@ -10931,239 +10931,263 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     },
     "MarkValue": {
       "title": "MarkValue",
-      "type": "object",
-      "properties": {
-        "field": {
-          "description": "value field, or jexl callback.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": ""
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Shorthand for \`{ \\"field\\": ... }\`."
         },
-        "scale": {
-          "description": "linear or log.",
-          "anyOf": [
-            {
-              "enum": [
-                "linear",
-                "log"
+        {
+          "type": "object",
+          "properties": {
+            "field": {
+              "description": "value field, or jexl callback.",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ],
+              "default": ""
+            },
+            "scale": {
+              "description": "linear or log.",
+              "anyOf": [
+                {
+                  "enum": [
+                    "linear",
+                    "log"
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ],
+              "default": "linear"
+            },
+            "domain": {
+              "description": "pinned [min, max].",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
               ]
             },
-            {
-              "$ref": "#/$defs/JexlString"
+            "resolve": {
+              "description": "shared or independent y axis.",
+              "anyOf": [
+                {
+                  "enum": [
+                    "shared",
+                    "independent"
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ],
+              "default": "shared"
             }
-          ],
-          "default": "linear"
-        },
-        "domain": {
-          "description": "pinned [min, max].",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
-        },
-        "resolve": {
-          "description": "shared or independent y axis.",
-          "anyOf": [
-            {
-              "enum": [
-                "shared",
-                "independent"
-              ]
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "shared"
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
         }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
+      ]
     },
     "MarkColor": {
       "title": "MarkColor",
-      "type": "object",
-      "properties": {
-        "value": {
-          "description": "CSS colour or jexl callback.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "#0068d1"
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Shorthand for \`{ \\"value\\": ... }\`."
         },
-        "field": {
-          "description": "feature field, or jexl callback.",
-          "anyOf": [
-            {
-              "type": "string"
+        {
+          "type": "object",
+          "properties": {
+            "value": {
+              "description": "CSS colour or jexl callback.",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ],
+              "default": "#0068d1"
             },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": ""
-        },
-        "scale": {
-          "description": "none, categorical, linear or log.",
-          "anyOf": [
-            {
-              "enum": [
-                "none",
-                "categorical",
-                "linear",
-                "log"
+            "field": {
+              "description": "feature field, or jexl callback.",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ],
+              "default": ""
+            },
+            "scale": {
+              "description": "none, categorical, linear or log.",
+              "anyOf": [
+                {
+                  "enum": [
+                    "none",
+                    "categorical",
+                    "linear",
+                    "log"
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ],
+              "default": "none"
+            },
+            "palette": {
+              "description": "categorical colours, in order.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
               ]
             },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "none"
-        },
-        "palette": {
-          "description": "categorical colours, in order.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
+            "domain": {
+              "description": "category order, or a ramp [min, max].",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
             },
-            {
-              "$ref": "#/$defs/JexlString"
+            "ramp": {
+              "description": "viridis, or CSS colour stops.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
             }
-          ]
-        },
-        "domain": {
-          "description": "category order, or a ramp [min, max].",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
-        },
-        "ramp": {
-          "description": "viridis, or CSS colour stops.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
         }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
+      ]
     },
     "MarkGlyph": {
       "title": "MarkGlyph",
-      "type": "object",
-      "properties": {
-        "value": {
-          "description": "disc, triangle, diamond or jexl callback.",
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": "disc"
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Shorthand for \`{ \\"value\\": ... }\`."
         },
-        "field": {
-          "description": "feature field, or jexl callback.",
-          "anyOf": [
-            {
-              "type": "string"
+        {
+          "type": "object",
+          "properties": {
+            "value": {
+              "description": "disc, triangle, diamond or jexl callback.",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ],
+              "default": "disc"
             },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ],
-          "default": ""
-        },
-        "scale": {
-          "description": "none or categorical.",
-          "anyOf": [
-            {
-              "enum": [
-                "none",
-                "categorical"
+            "field": {
+              "description": "feature field, or jexl callback.",
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ],
+              "default": ""
+            },
+            "scale": {
+              "description": "none or categorical.",
+              "anyOf": [
+                {
+                  "enum": [
+                    "none",
+                    "categorical"
+                  ]
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ],
+              "default": "none"
+            },
+            "range": {
+              "description": "glyph names, in order.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
               ]
             },
-            {
-              "$ref": "#/$defs/JexlString"
+            "domain": {
+              "description": "category order.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
             }
-          ],
-          "default": "none"
-        },
-        "range": {
-          "description": "glyph names, in order.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
-        },
-        "domain": {
-          "description": "category order.",
-          "anyOf": [
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "$ref": "#/$defs/JexlString"
-            }
-          ]
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
         }
-      },
-      "patternProperties": {
-        "^_+comment": {}
-      },
-      "additionalProperties": false
+      ]
     },
     "MarkEncoding": {
       "title": "MarkEncoding",
@@ -20131,8 +20155,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Launch key, resolved by the LinearGenomeView launcher on open."
         },
         "assembly": {
-          "type": "string",
-          "description": "The assembly to open."
+          "description": "The assembly to open; a view that lays several out (the circular view) takes a list.",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
         },
         "displayedRegionNames": {
           "description": "Launch key, resolved by the LinearGenomeView launcher on open."
@@ -20335,8 +20369,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "launch": {},
         "assembly": {
-          "type": "string",
-          "description": "The assembly to open."
+          "description": "The assembly to open; a view that lays several out (the circular view) takes a list.",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
         },
         "displayedRegionNames": {
           "description": "Launch key, resolved by the CircularView launcher on open."
@@ -20929,8 +20973,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "launch": {},
         "assembly": {
-          "type": "string",
-          "description": "The assembly to open."
+          "description": "The assembly to open; a view that lays several out (the circular view) takes a list.",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
         },
         "uri": {
           "description": "Launch key, resolved by the SpreadsheetView launcher on open."
@@ -20992,8 +21046,18 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "launch": {},
         "assembly": {
-          "type": "string",
-          "description": "The assembly to open."
+          "description": "The assembly to open; a view that lays several out (the circular view) takes a list.",
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          ]
         },
         "uri": {
           "description": "Launch key, resolved by the SvInspectorView launcher on open."

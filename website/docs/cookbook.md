@@ -17,6 +17,7 @@ An assembly to supply the reference sequence, and a track to draw on it:
 
 ```json
 {
+  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
   "assemblies": [{ "name": "volvox", "uri": "volvox.2bit" }],
   "tracks": [{ "trackId": "genes", "uri": "volvox.sort.gff3.gz" }]
 }
@@ -50,6 +51,7 @@ and a theme. Every recipe below changes one piece of it.
 
 ```json
 {
+  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
   "assemblies": [{ "name": "volvox", "uri": "volvox.2bit" }],
   "tracks": [
     {

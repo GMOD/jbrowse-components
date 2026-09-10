@@ -36,6 +36,7 @@ export interface SchemaMetadata {
     explicitlyTyped?: boolean
     explicitIdentifier?: string
     implicitIdentifier?: string | boolean
+    preProcessSnapshot?: (snap: unknown) => unknown
   }
 }
 
@@ -401,6 +402,32 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     return properties
   }
 
+  // What a sub-schema's own preProcessSnapshot lifts, asked by probing it: a
+  // bare string (a mark encoding's `"y": "score"`) and a `uri` beside no
+  // `adapter` (an assembly's `refNameAliases`). The probe has to come back out
+  // of the lift for the form to count, since a normalizer built for objects
+  // returns an object for a string too.
+  function liftedForms(meta: SchemaMetadata) {
+    const lift = meta.options.preProcessSnapshot
+    const lifts = (input: unknown) => {
+      try {
+        const out = lift?.(input)
+        return (
+          typeof out === 'object' &&
+          out !== null &&
+          JSON.stringify(out).includes('probe') &&
+          JSON.stringify(out) !== JSON.stringify(input)
+        )
+      } catch {
+        return false
+      }
+    }
+    return {
+      string: lifts('probe'),
+      uri: lifts({ uri: 'probe' }),
+    }
+  }
+
   // An unregistered ConfigurationSchema, i.e. a sub-schema slot. Every track
   // schema builds its own `textSearching` and `formatDetails`, so identical
   // ones share one definition, named after the sub-schema.
@@ -411,10 +438,26 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     depth: number,
   ): JsonSchema {
     const name = type.name.replace(/ConfigurationSchema$/, '')
-    const schema = closed({
+    const forms = liftedForms(meta)
+    const properties = {
       ...identityOf(meta, name),
       ...slotTable(meta, depth),
-    })
+      ...(forms.uri
+        ? { uri: shorthandSchema('uri'), baseUri: shorthandSchema('baseUri') }
+        : {}),
+    }
+    const object = closed(properties)
+    const schema = forms.string
+      ? {
+          anyOf: [
+            {
+              type: 'string',
+              description: `Shorthand for \`{ "${stringTarget(meta, properties)}": ... }\`.`,
+            },
+            object,
+          ],
+        }
+      : object
     const content = `${name}:${JSON.stringify(schema)}`
     let shared = sharedByContent.get(content)
     if (!shared) {
@@ -452,6 +495,21 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
           description: "Shorthand the adapter's snapshot normalizer expands.",
         }
     }
+  }
+
+  // The slot a bare string lands on, read off the lift itself.
+  function stringTarget(
+    meta: SchemaMetadata,
+    properties: Record<string, JsonSchema>,
+  ) {
+    const out = meta.options.preProcessSnapshot?.('probe') as
+      | Record<string, unknown>
+      | undefined
+    return (
+      Object.keys(out ?? {}).find(
+        k => out?.[k] === 'probe' && k in properties,
+      ) ?? 'value'
+    )
   }
 
   const LEGACY: JsonSchema = {
@@ -695,20 +753,6 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
   }
   const assemblySlots = slotTable(assemblyMeta, 0)
   assemblySlots.sequence = ref('AssemblySequence')
-  for (const sub of ['refNameAliases', 'cytobands']) {
-    const target = (assemblySlots[sub]?.$ref as string | undefined)?.replace(
-      '#/$defs/',
-      '',
-    )
-    const props = target
-      ? (defs[target]?.properties as Record<string, JsonSchema> | undefined)
-      : undefined
-    if (!props) {
-      throw new Error(`the assembly's ${sub} sub-schema was not emitted`)
-    }
-    props.uri = shorthandSchema('uri')
-    props.baseUri = shorthandSchema('baseUri')
-  }
   defs.Assembly = {
     title: 'Assembly',
     description:
@@ -907,7 +951,14 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       }
     }
     if (key === 'assembly') {
-      return { type: 'string', description: 'The assembly to open.' }
+      return {
+        description:
+          'The assembly to open; a view that lays several out (the circular view) takes a list.',
+        anyOf: [
+          { type: 'string' },
+          { type: 'array', items: { type: 'string' } },
+        ],
+      }
     }
     if (key === 'loc') {
       return {
