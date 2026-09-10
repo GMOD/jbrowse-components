@@ -61,7 +61,8 @@ members that all read the same channel arrays:
 - `pass` — the `.slang` shader and the packer that fills its instance buffer
 - `writeUniforms` — what reaches the GPU per block
 - `paintBlock` — the Canvas2D painter, which is also the SVG export
-- `hitNearest` — where the ink is nearest a cursor, for hover and click
+- `ink` — the box each instance paints, which render-core turns into the hit
+  test for hover and click and the chrome into the hover highlight
 
 A **mark** (`defineMark({ shape, channels, params })`) binds a shape to one
 display: `channels` names which of the payload's arrays feed which lane, and
@@ -98,11 +99,11 @@ src/
   index.ts                       the plugin class; installs the display, the RPC method and the feature panel
   LinearScoreDisplay/
     configSchema.ts              config slots (color, scoreColumn)
-    findScoreHit.ts              the display's hit walk: hands every instance of each block to the mark's `hitNearest`
+    findScoreHit.ts              the display's hit walk: hands every instance of each block to the mark's `hitNearest`, which its `ink` implies
     index.ts                     registers the display type; the model and the component both load lazily
     model.ts                     MST model: rpcDataMap, renderState, fetchNeeded, startRenderingBackend, renderSvg
     renderSvg.tsx                SVG export: the mark list painted through renderDisplaySvg
-    scoreMark.ts                 the `score` shape: score.slang's pass, its uniform write, its painter (also the SVG export) and its hit test
+    scoreMark.ts                 the `score` shape: score.slang's pass, its uniform write, its painter (also the SVG export) and its ink, which is the hit test and the highlight
     scoreMarks.ts                ScoreRenderState, the mark list (one `score` mark over the RPC payload) and the backend type
     components/
       ScoreDisplayComponent.tsx  React: DisplayChrome wrapping the canvas; builds the backend from the mark list
@@ -361,8 +362,8 @@ admitted by having a consumer rather than by completeness.
 ```ts
 import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
 import { makeBpMapper, spanLeft } from '@jbrowse/render-core/canvas2dUtils'
+import { blockPx } from '@jbrowse/render-core/marks'
 import { abgrToCssRgba } from '@jbrowse/render-core/marks/colorFill'
-import { inkOnRect, nearestInk } from '@jbrowse/render-core/marks/hit'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as shader from './shaders/score.generated.ts'
@@ -432,27 +433,23 @@ export const scoreMark: MarkShape<ScoreChannels, ScoreParams> = {
     }
   },
 
-  // The rect `paintBlock` fills is the hit target, so a hit's `x`/`y` is a
-  // point on the box and `distSq` is 0 inside it
-  hitNearest(channels, block, frame, params, xPx, yPx, candidates, maxDistSq) {
+  // The rect `paintBlock` fills. render-core derives the hit test from it —
+  // distance 0 inside the box, the nearest edge outside — and the chrome's
+  // highlight lights it for the hovered instance
+  ink(channels, block, frame, params, i) {
     const { x, x2, y } = channels
     const { canvasHeight } = frame
     const [domainMin, domainMax] = params.domain
-    const toX = makeBpMapper(block)
-    return nearestInk(candidates, maxDistSq, i => {
-      const xa = toX(x[i]!)
-      const xb = toX(x2[i]!)
-      const width = Math.max(shader.MIN_WIDTH_PX, Math.abs(xb - xa))
-      const h = scoreBarHeightPx(y[i]!, domainMin, domainMax, canvasHeight)
-      return inkOnRect(
-        xPx,
-        yPx,
-        spanLeft(xa, xb, width),
-        canvasHeight - h,
-        width,
-        h,
-      )
-    })
+    const xa = blockPx(block, x[i]!)
+    const xb = blockPx(block, x2[i]!)
+    const width = Math.max(shader.MIN_WIDTH_PX, Math.abs(xb - xa))
+    const height = scoreBarHeightPx(y[i]!, domainMin, domainMax, canvasHeight)
+    return {
+      left: spanLeft(xa, xb, width),
+      top: canvasHeight - height,
+      width,
+      height,
+    }
   },
 }
 ```
@@ -475,12 +472,15 @@ What each member is held to:
   one. `makeBpMapper(block)` mirrors bp→px on a reversed block the same way the
   negated `bpRangeX` does, and `spanLeft` places a widened span growing away
   from its anchor on both orientations.
-- **`hitNearest`** measures the cursor against the rect the painter fills:
-  `inkOnRect` says where instance `i`'s ink is nearest `(x, y)` and how far, and
-  `nearestInk` keeps the closest — only a strictly nearer candidate replaces the
-  best, so a caller iterating back to front gets the mark on top. The candidate
-  set is the display's, not the shape's: hand in every instance, or what a
-  spatial index answered.
+- **`ink`** is the rect the painter fills for one instance, or undefined for one
+  it skips. render-core derives `hitNearest` from it: `inkOnRect` says where the
+  box is nearest `(x, y)` and how far, and `nearestInk` keeps the closest — only
+  a strictly nearer candidate replaces the best, so a caller iterating back to
+  front gets the mark on top. The candidate set is the display's, not the
+  shape's: hand in every instance, or what a spatial index answered. A shape
+  whose ink is not a box — a ribbon, an arc — or whose hit rule is not its box
+  (`point`, where a cluster of glyphs resolves to the nearest centre) declares
+  `hitNearest` itself.
 
 Two optional members, for a shape that needs them:
 `paintsBlock(block, frame, params)` is a draw predicate both backends and the
@@ -515,11 +515,13 @@ display that stacks strips on one canvas. A first shape wants none of them.
 
 ## Step 5: The parity gate
 
-The painter and the hit test are two spellings of where the ink is, and they
-drift. `sweepDrawAgainstHit` paints a block into a recording context, walks it
-in half-pixel steps, and holds `hitNearest` to what the painter put down: a
-point on a box answers that box, a hit's `x`/`y` lies inside the box it names,
-and no answer is nearer than its painting. Run it in both orientations:
+The painter and the ink are two spellings of where the ink is, and they drift.
+`sweepDrawAgainstHit` paints a block into a recording context and holds `ink` to
+what the painter put down — the painting lies inside the box, and every edge of
+the box is within a pixel of it — then walks the block in half-pixel steps and
+holds the hit test to both: a point on a box answers that box, a hit's `x`/`y`
+lies inside the box it names, and no answer is nearer than its painting. Run it
+in both orientations:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/scoreMark.test.ts -->
 
@@ -666,14 +668,14 @@ its painter and its hit test are things a state model can legitimately reach,
 and a state model is eager; the backend costs the GPU stack, so it is imported
 once, from the lazily loaded component, and from nowhere else.
 
-The hover hands the shape's `hitNearest` every instance of every block under the
-cursor and stores what comes back:
+The hover hands the mark's `hitNearest` — the one its `ink` implies — every
+instance of every block under the cursor and stores what comes back:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/findScoreHit.ts#hit -->
 
 ```ts
 // Where the ink is stays with the shape: `hitNearest` measures the cursor
-// against the same rect `paintBlock` fills. This display hands in every
+// against the rect its `ink` declares. This display hands in every
 // instance of every block under the cursor, which is enough at a few thousand
 // boxes; a display with hundreds of thousands of instances asks the encoder
 // for its `index` lane — a Flatbush over (bp, score) — and hands in what that
@@ -707,6 +709,8 @@ export function findScoreHit(
           score: data.y[hit.index]!,
           x: hit.x,
           y: hit.y,
+          regionIndex: block.displayedRegionIndex,
+          instance: hit.index,
         }
       }
     }
@@ -733,6 +737,33 @@ onPointerPosition={state => {
       : undefined,
   )
 }}
+```
+
+The highlight comes with the hit. A model that answers `hoverInk` — the hovered
+instance walked through the mark list's `ink` with `inkOfInstances` — gets a
+positioned box from `DisplayChrome`, in the palette's hover shade, and places
+nothing itself:
+
+<!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts#hoverInk -->
+
+```ts
+// the box the hovered bar painted, which DisplayChrome lights: the
+// display names the instance and the shape's `ink` says where it is
+get hoverInk(): HighlightRect[] {
+  const hit = self.hoveredFeature
+  return hit
+    ? inkOfInstances(
+        SCORE_MARKS,
+        self.renderBlocks,
+        index => self.rpcDataMap.get(index),
+        self.renderState,
+        index =>
+          index === hit.regionIndex
+            ? [{ mark: 0, index: hit.instance }]
+            : undefined,
+      )
+    : []
+},
 ```
 
 ## Step 8: SVG export

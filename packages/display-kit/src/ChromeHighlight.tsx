@@ -55,8 +55,9 @@ function Boxes({
  * by the chrome so no display places its own. A DOM element rather than
  * render state on purpose: the hovered instance moves on nearly every
  * mousemove, and a hover in the canvas's state repaints the whole display on
- * the Canvas2D fallback per move (`INTERACTION_PERF.md`). Its own observer,
- * so a hover re-renders these few divs and not the chrome around them.
+ * the Canvas2D fallback per move, re-rasterizing every base of a pileup
+ * (ADR-110). Its own observer, so a hover re-renders these few divs and not
+ * the chrome around them.
  */
 const ChromeHighlight = observer(function ChromeHighlight({
   model,

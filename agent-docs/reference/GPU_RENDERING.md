@@ -614,12 +614,18 @@ block and its glyph lanes a real bp-span one off `glyphRangeStart`, which is
 what lets one mark list serve both. It was four
 per-plugin copies of that until 2026-09-08.
 
-A shape that answers `hitNearest` measures its ink with `render-core/marks/hit`:
-`inkOnRect` / `inkAtPoint` say where instance i's ink is and how far, and
+A shape whose instance is a box declares `ink(channels, block, frame, params,
+i)` — the rect its painter fills, undefined when culled — and `defineMark`
+derives `hitNearest` from it (`shapeHitNearest` in `render-core/marks/hit`:
+`inkOnRect` says where the box is nearest the cursor and how far, and
 `nearestInk` keeps the closest — only a STRICTLY nearer candidate replaces the
-best, so a caller handing candidates back to front gets the mark on top. Dotplot
-is the one shape with a metric of its own, the shader's `capsuleDistPx`, which
-is the same distance measured the shader's way.
+best, so a caller handing candidates back to front gets the mark on top). The
+same `ink` is what the chrome's highlight draws for the instances a display
+names (`inkOfInstances`, ADR-110). A shape whose ink is not a box keeps a
+`hitNearest` of its own: the synteny ribbons, the arcs, dotplot's capsule
+(`capsuleDistPx`, the shader's own metric), the pileup marks (bp containment,
+though they declare `ink` beside it), and `point`, whose glyph cluster resolves
+to the nearest centre where every box contains the cursor.
 
 Both halves `createMarkBackend` builds extend one of two abstract base classes
 in `@jbrowse/render-core/perRegionRenderingBackend`
@@ -1959,7 +1965,7 @@ does the shared-shape version); keep them in step with any change here.
 - **Shape** — `spanMark` or `pointMark` where one fits. Otherwise a
   `MarkShape` of your own beside `my.slang` (`pnpm gen:shaders` emits
   `my.generated.ts`; `slangPass()` builds the `PipelineDescriptor`): its
-  `writeUniforms`, its `paintBlock` (also the SVG export) and its `hitNearest`,
+  `writeUniforms`, its `paintBlock` (also the SVG export) and its `ink`,
   held to each other by a `sweepDrawAgainstHit` test.
 - **Marks + backend** — `defineMark({ shape, channels, params })`, one per
   shape, and `createMarkBackend(canvas, MARKS)` from

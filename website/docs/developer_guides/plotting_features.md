@@ -83,11 +83,11 @@ src/
   index.ts                       the plugin class; installs the display, the RPC method and the feature panel
   LinearScoreDisplay/
     configSchema.ts              config slots (color, scoreColumn)
-    findScoreHit.ts              the display's hit walk: hands every instance of each block to the mark's `hitNearest`
+    findScoreHit.ts              the display's hit walk: hands every instance of each block to the mark's `hitNearest`, which its `ink` implies
     index.ts                     registers the display type; the model and the component both load lazily
     model.ts                     MST model: rpcDataMap, renderState, fetchNeeded, startRenderingBackend, renderSvg
     renderSvg.tsx                SVG export: the mark list painted through renderDisplaySvg
-    scoreMark.ts                 the `score` shape: score.slang's pass, its uniform write, its painter (also the SVG export) and its hit test
+    scoreMark.ts                 the `score` shape: score.slang's pass, its uniform write, its painter (also the SVG export) and its ink, which is the hit test and the highlight
     scoreMarks.ts                ScoreRenderState, the mark list (one `score` mark over the RPC payload) and the backend type
     components/
       ScoreDisplayComponent.tsx  React: DisplayChrome wrapping the canvas; builds the backend from the mark list
@@ -221,12 +221,16 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
+import { inkOfInstances } from '@jbrowse/render-core/marks'
+
+import { SCORE_MARKS } from './scoreMarks.ts'
 
 import type { ScoreRegionData } from '../ScoreRPC/rpcTypes.ts'
 import type { LinearScoreDisplayConfigModel } from './configSchema.ts'
 import type { ScoreHit } from './findScoreHit.ts'
 import type { ScoreRenderState, ScoreRenderingBackend } from './scoreMarks.ts'
 import type { Region } from '@jbrowse/core/util'
+import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -316,6 +320,25 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
           color: cssColorToABGR(getConf(self, 'color')),
           domainY: self.domain,
         }
+      },
+    }))
+    .views(self => ({
+      // the box the hovered bar painted, which DisplayChrome lights: the
+      // display names the instance and the shape's `ink` says where it is
+      get hoverInk(): HighlightRect[] {
+        const hit = self.hoveredFeature
+        return hit
+          ? inkOfInstances(
+              SCORE_MARKS,
+              self.renderBlocks,
+              index => self.rpcDataMap.get(index),
+              self.renderState,
+              index =>
+                index === hit.regionIndex
+                  ? [{ mark: 0, index: hit.instance }]
+                  : undefined,
+            )
+          : []
       },
     }))
     .actions(self => ({
@@ -617,16 +640,16 @@ how displays attach to a track type.
 
 ## Hit-testing (clicks and hovers)
 
-Where the ink is stays with the shape: its `hitNearest` measures the cursor
-against the same rect its painter fills, and the shared shapes carry one. The
-display's part is the walk — which blocks, which candidates — and what to do
+Where the ink is stays with the shape: its `ink` is the rect its painter fills,
+`hitNearest` measures the cursor against it, and the shared shapes carry both.
+The display's part is the walk — which blocks, which candidates — and what to do
 with the answer:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/findScoreHit.ts#hit -->
 
 ```ts
 // Where the ink is stays with the shape: `hitNearest` measures the cursor
-// against the same rect `paintBlock` fills. This display hands in every
+// against the rect its `ink` declares. This display hands in every
 // instance of every block under the cursor, which is enough at a few thousand
 // boxes; a display with hundreds of thousands of instances asks the encoder
 // for its `index` lane — a Flatbush over (bp, score) — and hands in what that
@@ -660,6 +683,8 @@ export function findScoreHit(
           score: data.y[hit.index]!,
           x: hit.x,
           y: hit.y,
+          regionIndex: block.displayedRegionIndex,
+          instance: hit.index,
         }
       }
     }

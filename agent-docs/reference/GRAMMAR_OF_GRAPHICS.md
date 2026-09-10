@@ -18,8 +18,9 @@ channels a runtime shader generator would give. The positions behind each are
 in [ADR-095](../architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md)
 §"The grammar position", [ADR-106](../architecture-decision-records/adr-106-a-display-declares-its-marks.md),
 [ADR-107](../architecture-decision-records/adr-107-the-quantitative-class-is-authored-in-config.md),
-[ADR-108](../architecture-decision-records/adr-108-a-display-declares-its-colour-scales.md)
-and [ADR-109](../architecture-decision-records/adr-109-a-display-declares-its-value-scale.md);
+[ADR-108](../architecture-decision-records/adr-108-a-display-declares-its-colour-scales.md),
+[ADR-109](../architecture-decision-records/adr-109-a-display-declares-its-value-scale.md)
+and [ADR-110](../architecture-decision-records/adr-110-a-display-declares-what-is-highlighted.md);
 this file is the map across them.
 
 ![The grammar's seven stages, and where the tree answers each](diagrams/grammar-pipeline.svg)
@@ -32,7 +33,7 @@ this file is the map across them.
 | transform | a declared step over rows before encoding | `filters: jexl[]` on `CoreEncodeFeatures` (`packages/core/src/rpc/methods/CoreEncodeFeatures.ts`) | one transform; bin, aggregate, window and sample are absent |
 | scale | domain → range, separate from the encoding | colour and glyph: `{ field, scale, domain, palette \| range }` on the encoding, resolved by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`); y: `valueScale` on `ScoreScaleMixin` (`packages/wiggle-core/src/ScoreScaleMixin.ts`), placed by `valueScale.slang` | whole, in two places |
 | mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`) | whole, for the shapes the library has |
-| guide | axis and legend derived from a scale | `colorScales` → legend (`packages/display-kit/src/legendHost.ts`), `valueScale` → axis, hatches and rules (`packages/display-kit/src/axisHost.ts`); `DisplayChrome` and `renderDisplaySvg` place both | whole, for the displays that declare |
+| guide | axis and legend derived from a scale; a highlight derived from a selection | `colorScales` → legend (`packages/display-kit/src/legendHost.ts`), `valueScale` → axis, hatches and rules (`packages/display-kit/src/axisHost.ts`), `hoverInk` / `selectionInk` → the highlight (`packages/display-kit/src/highlightHost.ts`), each instance's box read off its shape's `ink`; `DisplayChrome` places all three and `renderDisplaySvg` the first two | whole, for the displays that declare |
 | layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; every mark shares one y domain (`plugins/marks/src/LinearMarkDisplay/markList.ts`) | shared only |
 | coordinates | a transform of the plane | genomic x, fixed; circular and dotplot are displays, not coordinate systems | fixed, by position |
 
@@ -52,11 +53,14 @@ The claim the tree can make that the grammars cannot is **parity, pinned**.
 A shape's painter, its shader and its hit test are held to each other by
 `sweepDrawAgainstHit` (`packages/render-core/src/marks/drawAgainstHit.ts`):
 every pixel the painter inks answers the instance it belongs to, in both
-orientations. A legend cannot list a colour nothing painted, because it reads
-the table the worker packed the colours from. An axis cannot label a value the
-renderer places elsewhere, because the mixin derives the ticks from the
-declaration the shader's uniforms are written from. Each guide has one source,
-and each source is tested against its consumer.
+orientations, and the box a shape declares as its `ink` is within a pixel of
+what it painted. A legend cannot list a colour nothing painted, because it
+reads the table the worker packed the colours from. An axis cannot label a
+value the renderer places elsewhere, because the mixin derives the ticks from
+the declaration the shader's uniforms are written from. A highlight cannot
+box a place nothing painted, because it reads the same `ink` the hit test is
+derived from. Each guide has one source, and each source is tested against
+its consumer.
 
 The seams, named honestly:
 
@@ -111,10 +115,14 @@ The seams, named honestly:
   y. `resolve: { y: 'independent' }` with a second axis is absent, and so is
   faceting beyond stacking on `row`. Declined on review until a figure needs
   two axes.
-- **No conditional encoding.** Hover and selection highlighting are per-display
-  overlays, not a `condition` on a channel. GenomeSpy does it in-shader with
-  a selection predicate; here it would be a uniform the shape reads and a
-  second colour per instance, which no consumer has asked for.
+- **No conditional encoding.** Hover and selection are a guide over the
+  painting, not a `condition` on a channel: a display names the lit
+  instances and the chrome boxes their ink
+  ([ADR-110](../architecture-decision-records/adr-110-a-display-declares-what-is-highlighted.md)).
+  GenomeSpy does it in-shader with a selection predicate; here that would be
+  a uniform the shape reads, and the Canvas2D fallback would repaint the
+  whole display per mousemove for it, which is the measurement that keeps
+  the highlight a div.
 - **Fewer channels.** `size`, `opacity` and `angle` are uniforms, not
   channels, because shapes are compiled from hand-written Slang rather than
   generated from the encoding. That is ADR-095's trade, and it holds until a
@@ -148,7 +156,8 @@ The seams, named honestly:
 
 A new channel or scale kind is the encoder's (`markEncodingTypes.ts`) and
 needs a shape that reads it. A new guide is a hook on the mixin that owns the
-scale and a placement in the two shells. A transform is a typed step on
+scale and a placement in the two shells; a guide over the painting reads the
+shapes' `ink`. A transform is a typed step on
 `CoreEncodeFeatures`. A new shape clears ADR-040's bar with two consumers. A
 display that wants the encoding for a meaning it cannot say hands the encoder
 a reader and says so at the call. Anything that composes a display stack from

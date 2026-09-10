@@ -1,8 +1,8 @@
-// #exampleFile shared | the `score` shape: score.slang's pass, its uniform write, its painter (also the SVG export) and its hit test
+// #exampleFile shared | the `score` shape: score.slang's pass, its uniform write, its painter (also the SVG export) and its ink, which is the hit test and the highlight
 import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
 import { makeBpMapper, spanLeft } from '@jbrowse/render-core/canvas2dUtils'
+import { blockPx } from '@jbrowse/render-core/marks'
 import { abgrToCssRgba } from '@jbrowse/render-core/marks/colorFill'
-import { inkOnRect, nearestInk } from '@jbrowse/render-core/marks/hit'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as shader from './shaders/score.generated.ts'
@@ -72,26 +72,22 @@ export const scoreMark: MarkShape<ScoreChannels, ScoreParams> = {
     }
   },
 
-  // The rect `paintBlock` fills is the hit target, so a hit's `x`/`y` is a
-  // point on the box and `distSq` is 0 inside it
-  hitNearest(channels, block, frame, params, xPx, yPx, candidates, maxDistSq) {
+  // The rect `paintBlock` fills. render-core derives the hit test from it —
+  // distance 0 inside the box, the nearest edge outside — and the chrome's
+  // highlight lights it for the hovered instance
+  ink(channels, block, frame, params, i) {
     const { x, x2, y } = channels
     const { canvasHeight } = frame
     const [domainMin, domainMax] = params.domain
-    const toX = makeBpMapper(block)
-    return nearestInk(candidates, maxDistSq, i => {
-      const xa = toX(x[i]!)
-      const xb = toX(x2[i]!)
-      const width = Math.max(shader.MIN_WIDTH_PX, Math.abs(xb - xa))
-      const h = scoreBarHeightPx(y[i]!, domainMin, domainMax, canvasHeight)
-      return inkOnRect(
-        xPx,
-        yPx,
-        spanLeft(xa, xb, width),
-        canvasHeight - h,
-        width,
-        h,
-      )
-    })
+    const xa = blockPx(block, x[i]!)
+    const xb = blockPx(block, x2[i]!)
+    const width = Math.max(shader.MIN_WIDTH_PX, Math.abs(xb - xa))
+    const height = scoreBarHeightPx(y[i]!, domainMin, domainMax, canvasHeight)
+    return {
+      left: spanLeft(xa, xb, width),
+      top: canvasHeight - height,
+      width,
+      height,
+    }
   },
 }

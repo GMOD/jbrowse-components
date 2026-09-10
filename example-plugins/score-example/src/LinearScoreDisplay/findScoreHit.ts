@@ -1,4 +1,4 @@
-// #exampleFile shared | the display's hit walk: hands every instance of each block to the mark's `hitNearest`
+// #exampleFile shared | the display's hit walk: hands every instance of each block to the mark's `hitNearest`, which its `ink` implies
 import { SCORE_MARKS } from './scoreMarks.ts'
 
 import type { ScoreRegionData } from '../ScoreRPC/rpcTypes.ts'
@@ -12,6 +12,9 @@ export interface ScoreHit {
   // where the box's ink is nearest the cursor, in canvas px
   x: number
   y: number
+  // the instance in its region, which the chrome's highlight lights
+  regionIndex: number
+  instance: number
 }
 
 // How far outside a box the cursor may be and still pick it, so a 1px-wide
@@ -29,7 +32,7 @@ function* everyInstance(count: number) {
 
 // #region hit
 // Where the ink is stays with the shape: `hitNearest` measures the cursor
-// against the same rect `paintBlock` fills. This display hands in every
+// against the rect its `ink` declares. This display hands in every
 // instance of every block under the cursor, which is enough at a few thousand
 // boxes; a display with hundreds of thousands of instances asks the encoder
 // for its `index` lane — a Flatbush over (bp, score) — and hands in what that
@@ -63,6 +66,8 @@ export function findScoreHit(
           score: data.y[hit.index]!,
           x: hit.x,
           y: hit.y,
+          regionIndex: block.displayedRegionIndex,
+          instance: hit.index,
         }
       }
     }

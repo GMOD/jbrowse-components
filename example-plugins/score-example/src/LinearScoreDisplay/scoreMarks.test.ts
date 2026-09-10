@@ -173,6 +173,8 @@ describe('hit', () => {
       score: 0.5,
       x: 150,
       y: 75,
+      regionIndex: 0,
+      instance: 0,
     })
   })
 

@@ -10,6 +10,9 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
+import { inkOfInstances } from '@jbrowse/render-core/marks'
+
+import { SCORE_MARKS } from './scoreMarks.ts'
 // #endregion
 
 import type { ScoreRegionData } from '../ScoreRPC/rpcTypes.ts'
@@ -17,6 +20,7 @@ import type { LinearScoreDisplayConfigModel } from './configSchema.ts'
 import type { ScoreHit } from './findScoreHit.ts'
 import type { ScoreRenderState, ScoreRenderingBackend } from './scoreMarks.ts'
 import type { Region } from '@jbrowse/core/util'
+import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -111,6 +115,27 @@ export function modelFactory(configSchema: LinearScoreDisplayConfigModel) {
           color: cssColorToABGR(getConf(self, 'color')),
           domainY: self.domain,
         }
+      },
+      // #endregion
+    }))
+    .views(self => ({
+      // #region hoverInk
+      // the box the hovered bar painted, which DisplayChrome lights: the
+      // display names the instance and the shape's `ink` says where it is
+      get hoverInk(): HighlightRect[] {
+        const hit = self.hoveredFeature
+        return hit
+          ? inkOfInstances(
+              SCORE_MARKS,
+              self.renderBlocks,
+              index => self.rpcDataMap.get(index),
+              self.renderState,
+              index =>
+                index === hit.regionIndex
+                  ? [{ mark: 0, index: hit.instance }]
+                  : undefined,
+            )
+          : []
       },
       // #endregion
     }))

@@ -144,6 +144,11 @@ Canvas2D-vs-GPU parity gate cannot catch the strand case.
 - **Per-block Canvas2D clipping goes through `forEachClippedBlock`.** Its
   `select` callback is the single skip gate, and the `finally`-paired restore is
   what keeps a throwing painter from leaving every later frame clipped.
+- **A shape whose instance is a box declares `ink` and no `hitNearest`** —
+  `defineMark` derives the hit test from the box and the chrome's highlight
+  reads it; `sweepDrawAgainstHit` holds the box to the painting within a pixel.
+  A shape writes `hitNearest` only where its ink is not a box, or its hit rule
+  is not the box (`point`'s glyph cluster). ADR-110.
 - **A pass that samples a colour ramp declares it as `texture` on `defineMark`**
   rather than uploading one itself: the backend binds the 256-entry LUT once per
   pass, re-uploads only when the bytes' identity moves, and binds an inert table
