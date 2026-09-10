@@ -11,6 +11,7 @@ autoscale
 color
 colorDomain
 connectedView
+connectedViewId
 displayMode
 followSynteny
 growMaxHeight
