@@ -31,7 +31,7 @@ own — and the display resolves it rather than owning a second copy
 `ScoreScaleMixin`'s `declaredValueScale` hook is where that lands: the mark
 display answers it off the first mark drawing at this zoom whose `y` names a
 field, so the axis, its ticks and the shapes read one declaration, and the
-score menu's "Set min/max" and scale-type rows write back into it. The display's
+score menu's "Set min/max" writes back into it. The display's
 own `minScore`/`maxScore`/`scaleType` slots are what a mark with no declared
 `y` falls back to; for wiggle, the multi-wiggle, Manhattan and the coverage
 band those slots are still the axis itself. The declared scale does not cross

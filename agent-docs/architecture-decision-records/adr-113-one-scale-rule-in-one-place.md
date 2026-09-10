@@ -161,8 +161,12 @@ table says `pinned`, and a pinned ramp is every region's whatever they hold.
   bound, so the menu's "Clear manual min/max" row appears and clears the
   declaration. That is the intended reading: the row asks about a pin, not
   about which file the pin is written in.
-- The score menu's scale-type submenu is on for the mark display, which it was
-  not, because a log y now places as well as labels.
+- The scale type stays config-only on the mark display, and its
+  `setScaleType` writes the declaration for whoever reaches it. The shared
+  radio offers symlog, which `MarkValueScale` does not admit and
+  `valueToYPxScaled` does not place, so `makeScoreSubMenu`'s `scaleType:
+  false` stands — the same opt-out Manhattan takes, for the same reason
+  `scoreMenuItems.ts` states at the radio.
 - A shape reading a ramp declares `color` and `colorValue` optional and asks
   `colorBits` for the GPU and `paintColors` for Canvas2D. `span` declares
   neither and keeps a required packed `color`.

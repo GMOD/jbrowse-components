@@ -96,9 +96,8 @@ says how the axis reads it, in the same shape a colour scale takes:
 the axis spans instead of autoscaling to the loaded regions — an empty entry
 leaves that end autoscaling, so `["0", ""]` pins the floor alone. The axis, its
 ticks, its cross-hatches and the bars themselves all read this one declaration,
-and so does the track menu: "Set min/max" and the scale-type rows write back
-into it, so what the user pins and what the config author wrote are the same
-slot.
+and so does the track menu: "Set min/max" writes back into it, so what the user
+pins and what the config author wrote are the same slot.
 
 Marks share one y-axis, so the first mark that names a `y` field is the one
 whose scale the display uses. With a multiscale pair (below) that is the mark

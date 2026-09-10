@@ -795,7 +795,9 @@ export function stateModelFactory(
        */
       trackMenuItems(): MenuItem[] {
         return [
-          makeScoreSubMenu(self, { autoscale: false }),
+          // The shared radio offers symlog, which the declared enum does not
+          // admit; the scale type is config-only until it does.
+          makeScoreSubMenu(self, { scaleType: false, autoscale: false }),
           ...makePointSizeSubMenu(self, {
             label: 'Point size',
             applies: self.hasPointMark,
