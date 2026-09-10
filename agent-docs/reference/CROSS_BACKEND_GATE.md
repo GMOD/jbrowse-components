@@ -775,6 +775,48 @@ a blocking job is worse than a job that renders two backends. So the CI half is
 its own piece of work: provision Firefox Nightly plus a display plus a software
 WebGPU adapter in the job, prove it on a branch, then drop the flag there too.
 
+## The AA ramp prediction outlived its instrument
+
+Closed 2026-09-09 with no number, and the reason is worth keeping: **a
+before/after against a recorded distribution is only readable while the sites it
+names hold still.** Four `aaSmoothRamp` → `aaRamp` conversions landed in late
+August posed as a falsifiable prediction — the converted pairs should move DOWN
+the 66-pair distribution in §"What made a blocking gate possible", not merely
+somewhere else. Three gate runs were attempted and all three died (two to a
+second `runner.ts` in the same worktree, one wedged on
+`Alignments Track > volvox_sv track screenshot` for 23 minutes with nothing else
+running). Each death cost a day, and the tree did not wait.
+
+By 2026-09-09 the entry's own scope had been eaten twice over. It had already
+given up `Dotplot View` and the wiggle-line control to `8a9c288605`, which
+replaced the ramp at both sites with analytic capsule coverage, and had narrowed
+to `Synteny Views`, `Multi-Way Synteny Views` and `GWAS Tracks`. **All three of
+those then moved**, in the 902 commits between the last attempt's baseline
+`d477a80121` and 2026-09-09, 93 of them in render-core, a shader or
+`browser-tests`:
+
+- `GWAS Tracks` — Manhattan was rewritten four times: through the point shape
+  (`1c9d999679`), through the encoder (`60c4a394fd`), its hover moved to the
+  chrome (`ed7eb5f9ef`), and its axis moved out to `ChromeYAxis` (`048070a743`).
+- `Multi-Way Synteny Views` — `05ec50660e` cuts a clipped record at every large
+  indel, which changes what a lane draws rather than how it is antialiased; the
+  measured effect on one hosted figure was 8.4% of the frame.
+- `Synteny Views` — 35 commits on `LinearSyntenyDisplay`, `8d0bb7ca4f` (the band
+  keeps a white ground in every theme) among them.
+
+So a run taken now would sum a ramp change against four unrelated rewrites and
+quote it against a distribution recorded before any of them. **Re-baseline
+instead**: the current distribution at a current commit is worth having, and
+[todo/look-at-the-mark-layers-guides-in-a-real-browser.md](../todo/look-at-the-mark-layers-guides-in-a-real-browser.md)
+already owes a gate run for the mark-grammar pass (ADR-106 through ADR-109),
+which is the same command. Record the new distribution here, dated and with its
+commit, and treat the numbers above §1 as the pre-mark-grammar baseline.
+
+The prediction stands unfalsified rather than wrong. Re-posing it needs a
+before/after across ONE commit pair on a site nothing else is touching — which
+is the condition this attempt never had, and the thing to check before posing
+the next one.
+
 ## Two cheap habits this thread paid for
 
 - **When a wait expires, report what state the thing is actually in**, rather

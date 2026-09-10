@@ -1483,23 +1483,20 @@ linear form takes the FULL ramp width where the smoothstep takes the half. Get
 it wrong and it still compiles, with every ramp in that shader half or double
 the width it asks for.
 
-**The drift these conversions predict is NOT yet measured.** The instrument is
-the cross-backend gate rather than a golden — it diffs canvas2d against the GPU
-render of the same run with canvas2d as the reference side, and `Dotplot View`,
-`Synteny Views`, `Multi-Way Synteny Views` and `GWAS Tracks` are all in its CI
-scope, so all four sites are watched:
+**The drift these conversions predict was never measured, and no longer can
+be.** The instrument was the cross-backend gate rather than a golden — it diffs
+canvas2d against the GPU render of the same run with canvas2d as the reference
+side, and `Dotplot View`, `Synteny Views`, `Multi-Way Synteny Views` and `GWAS
+Tracks` were all in its CI scope, so all four sites were watched. Three runs
+were attempted between 2026-08-29 and 2026-09-02 and none produced a number; by
+the time a fourth was possible every watched site had been redrawn for unrelated
+reasons. [CROSS_BACKEND_GATE.md](CROSS_BACKEND_GATE.md) § "The AA ramp
+prediction outlived its instrument" carries what moved and the decision.
 
-```sh
-pnpm --filter @jbrowse/web build
-cd products/jbrowse-web && node browser-tests/runner.ts \
-  --backend=all --skip-webgpu --swiftshader --gate-only --ci-gate --drift-report
-```
-
-A ramp closer to exact coverage should move those pairs DOWN the distribution
-[CROSS_BACKEND_GATE.md](CROSS_BACKEND_GATE.md) records (66 pairs, max 0.62%,
-median 0.00%), not merely somewhere else. Note the wiggle line plots at the top
-of that distribution were already on the linear ramp, so they are the control
-rather than the target.
+The prediction itself stands unfalsified rather than wrong: a ramp closer to
+exact coverage should move a pair DOWN a cross-backend distribution, not merely
+somewhere else. Anyone re-posing it needs a before/after across one commit pair
+on a site nothing else is touching, which is the part that was never true here.
 
 **Check that nothing else is driving the harness before you start.** That file
 already says the machine has to be quiet; the sharper version is that a SECOND
