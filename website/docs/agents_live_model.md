@@ -141,6 +141,10 @@ Besides `value`, a call answers with:
   or `debug`, in order. Print intermediate state instead of returning it.
 - `notifications`, toasts the session raised since the previous call, each with
   its `level`, each reported once, on the first call after it fired.
+- `pageErrors`, the throws no toast carried: an uncaught exception, a rejection
+  nobody awaited, a mobx reaction that died. Nothing else reports these, so a
+  session that settles clean and looks right in a screenshot can still be
+  carrying one.
 - a thrown error as its message plus `at code line L, column C`, counted in your
   code, followed by the console output printed before it. A compile error has no
   line, because V8 gives none for a function body: look for an unbalanced
