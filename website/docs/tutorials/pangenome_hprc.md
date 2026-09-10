@@ -528,7 +528,7 @@ node can open the haplotype it came from once that haplotype is loaded.
 [UCSC GenArk](https://hgdownload.soe.ucsc.edu/hubs/) hosts every release 2
 assembly, a 2bit and an alias file each, and names the sequences by the same
 GenBank accessions the graph does: `NA20809#2#CM094351.1` in the graph is
-`CM094351.1` in the 2bit. So a haplotype loads with nothing translated, and the
+`CM094351.1` in the 2bit, so a haplotype loads with nothing translated, and the
 alias file's `ucsc` column adds `chr6`.
 
 Which haplotype to load is read off the graph. A node's details name

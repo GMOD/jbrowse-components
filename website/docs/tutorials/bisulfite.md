@@ -231,8 +231,8 @@ apart:
 | Gene body methylation (gbM)     | yes | no  | no  | None obvious, the gene stays transcribed. Maintained by MET1, depleted at both ends of the gene |
 | Transposon and repeat silencing | yes | yes | yes | Heterochromatin, transcriptionally off. CMT3 maintains CHG, RdDM and CMT2 maintain CHH          |
 
-So red in the CpG row alone is gene body methylation, and red in all three rows
-is silencing.
+Red in the CpG row alone is gene body methylation, and red in all three rows is
+silencing.
 
 Type `NC_003070.9:4,398,000-4,412,000` into the location box for a window on
 chromosome 1 carrying one of each: the expressed gene AT1G12930 on the left, and

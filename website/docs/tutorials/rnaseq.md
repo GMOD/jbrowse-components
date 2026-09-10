@@ -5,9 +5,11 @@ guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
 ---
 
-**TL;DR:** JBrowse derives splice arcs and spliced read alignments from BAM/CRAM
-CIGAR `N` skips with no configuration, and can color or group reads by
-first-of-pair strand for strand-specific libraries.
+**TL;DR:** an RNA-seq read mapped back to the genome jumps the introns that were
+spliced out of it, and in a stranded library the read also says which strand its
+transcript came from. Both facts are already in the BAM, in the CIGAR string and
+the pair flags, so splice arcs and strand coloring need no extra files and no
+configuration.
 
 ## Prerequisites
 

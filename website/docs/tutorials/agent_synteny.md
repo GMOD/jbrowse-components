@@ -51,9 +51,9 @@ hosted, so a browser opens either one on its own with genes and a working search
 box. What neither config has is the other species: the only synteny track in
 each is a liftOver to dm6, the _D. melanogaster_ reference.
 
-So "show me these two side by side" cannot be answered by loading something.
-Somebody has to align the genomes first, and that is the part of the job an
-agent with a shell is for.
+Neither hosted config can answer "show me these two side by side" by loading
+something. Somebody has to align the genomes first, and that is the part of the
+job an agent with a shell is for.
 
 ## What the agent is driving
 

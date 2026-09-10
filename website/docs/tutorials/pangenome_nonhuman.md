@@ -11,12 +11,12 @@ data: download
 
 **TL;DR:** the machinery on the
 [HPRC pangenome page](/docs/tutorials/pangenome_hprc/) is not human-specific.
-Two more graphs are hosted the same way, on references JBrowse already serves —
-a mouse strain graph over GRCm39 and the bovine super-pangenome over ARS-UCD1.2
-— and opening them needs no new adapters and no new track types. What differs
-between the three is not the mechanism but **what each graph is able to say.**
+Two more graphs are hosted the same way, on references JBrowse already serves: a
+mouse strain graph over GRCm39 and the bovine super-pangenome over ARS-UCD1.2.
+Opening them needs no new adapters and no new track types. What differs between
+the three is **what each graph is able to say.**
 
-## The three graphs, and the one thing that separates them
+## The three graphs, and what separates them
 
 All three are SV-resolution minigraph rGFA, so the tracks, the adapters and the
 coarse tier are identical, and each is served as the same five files:
@@ -29,7 +29,7 @@ coarse tier are identical, and each is served as the same five files:
 | `<prefix>.alleles.bed.gz` | one row per allele, with a CIGAR for its size    |
 | `<prefix>.tier10000.*`    | one node per bubble, so a chromosome is drawable |
 
-What separates them is **carriage** — whether the graph can say _which_ samples
+What separates them is **carriage**: whether the graph can say _which_ samples
 carry a given allele:
 
 - **HPRC** can. Minigraph-Cactus records per-haplotype walks, so carriage is a
@@ -39,14 +39,14 @@ carry a given allele:
 - **Mouse** cannot. `minigraph` writes no path lines at all, so the information
   is not in the file to recover.
 
-That is the difference between a graph built to record structure and one built
-to record haplotypes, and it decides what each dataset can honestly show.
+A graph built to record structure and one built to record haplotypes differ in
+exactly that: only the second can say who carries an allele.
 
 ## Mouse: a deletion that appears as an insertion
 
 The mouse graph is GRCm39 plus eighteen inbred and wild-derived strain
 assemblies from the Mouse Genomes Project, as rehosted in UCSC GenArk. Each
-chromosome is one `minigraph` call over the reference followed by the strains —
+chromosome is one `minigraph` call over the reference followed by the strains,
 reference first, which is what makes it rank 0:
 
 <!-- from: scripts/build_mouse_pangenome.sh -->
@@ -56,10 +56,10 @@ minigraph -cxggs -t "$THREADS" $(tr '\n' ' ' < "chrom/$c/order.txt")
 ```
 
 Start at `Nnt`. C57BL/6J carries a well-known multi-exon deletion there that
-abolishes the protein and is why B6J mice are glucose intolerant — and **GRCm39
-_is_ C57BL/6J.** So the backbone of this graph is the strain with the deletion,
-and the deletion shows up with the opposite sign from every description of it:
-as sequence the _other_ strains carry and the reference lacks.
+abolishes the protein and is why B6J mice are glucose intolerant, and **GRCm39
+is C57BL/6J**, so the backbone of this graph is the strain with the deletion.
+The deletion shows up with the opposite sign from every description of it: as
+sequence the _other_ strains carry and the reference lacks.
 
 <Figure caption="The Nnt locus on GRCm39: RefSeq genes, the bubbles lane, the allele inventory drawn at each allele's real size, and the rGFA segments, over the same window as an anchored graph. The one large allele sits inside Nnt, and it is an insertion because the reference is the strain that lacks the sequence." src="/img/pangenome/mouse_nnt.png" />
 
@@ -71,7 +71,7 @@ its real size from its CIGAR.
 ## Cattle: where the graph and the callset say different things
 
 The bovine super-pangenome is twelve assemblies on ARS-UCD1.2, and the panel is
-unusually wide for a livestock pangenome — taurine and indicine breeds plus yak,
+unusually wide for a livestock pangenome: taurine and indicine breeds plus yak,
 bison and gaur.
 
 The BoLA class II region is where its two routes diverge. The **graph** shows
@@ -93,8 +93,8 @@ vg deconstruct -p "chr$k" -a -t "$THREADS" "$TMPDIR/$k.vg" > "vcf/chr$k.vcf.tmp"
 <Figure caption="The BoLA class II region on ARS-UCD1.2: RefSeq genes, the bubbles lane, the allele inventory, the deconstructed callset with one row per assembly, and the rGFA segments, over the same window as an anchored graph. The callset lane resolves alleles the graph lanes can only show as bulk presence and absence." src="/img/pangenome/bovine_bola.png" />
 
 Read the genotype rows across: most assemblies carry a different allele here,
-which is cattle MHC behaving much like human MHC — and none of it is visible in
-the graph lanes above.
+which is cattle MHC behaving much like human MHC. None of it is visible in the
+graph lanes above.
 
 ## A whole chromosome, off the coarse tier
 
@@ -107,9 +107,9 @@ many features"; the tier draws.
 
 Two settings make it work. The view refuses a cut wider than 5 Mb, which is a
 proxy for node count and a good one only at segment granularity, so a session
-pointed at a tier raises `maxRegionBp` explicitly. And the layout is anchored
-rather than force-directed — a tier is one node per bubble in reference order,
-which is a chain, and a force layout draws a chain as an arc.
+pointed at a tier raises `maxRegionBp` explicitly. The layout is anchored rather
+than force-directed: a tier is one node per bubble in reference order, which is
+a chain, and a force layout draws a chain as an arc.
 
 :::note
 
@@ -139,11 +139,11 @@ bubble sitting inside one intron of `Dock2`:
 
 It is also the counterexample to the note above. Every other panel on this page
 is a chain and is drawn anchored; this cut is loops hanging off a backbone,
-which is the shape the force-directed layout exists for — and it was found by
+which is the shape the force-directed layout exists for, and it was found by
 ranking a file rather than by knowing anything about mouse.
 
-That is what makes the method repeatable for a panel nobody has written about
-yet. The ranking lives in
+Ranking the graph rather than the literature is what makes the method repeatable
+for a panel nobody has written about yet. The ranking lives in
 [`generatePangenomeLoci.ts`](https://github.com/GMOD/jb2hubs/blob/main/website/generatePangenomeLoci.ts)
 in the genomes.jbrowse.org repo, which publishes the derived catalogues at
 [genomes.jbrowse.org/pangenomes](https://genomes.jbrowse.org/pangenomes) so a
@@ -156,7 +156,7 @@ Both graphs are reproducible from committed scripts:
 - [`build_mouse_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_mouse_pangenome.sh)
   downloads the assemblies, extracts one sequence per chromosome renamed to
   PanSN, runs `minigraph` per chromosome, concatenates, and projects the five
-  files. It is a long run — most of a day of alignment.
+  files. It is a long run, most of a day of alignment.
 - [`build_bovine_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bovine_pangenome.sh)
   downloads the published archive, recovers rGFA tags from its path lines with
   [`gfa_paths_to_rgfa.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/gfa_paths_to_rgfa.py),

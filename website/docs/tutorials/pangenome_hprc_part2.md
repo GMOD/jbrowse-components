@@ -252,7 +252,7 @@ segments, which makes them readable without the graph:
   entered on
 - columns 9 and 13 give their ranks
 
-So the test is: both ends on the backbone, and the two signs disagree.
+The test is two ends on the backbone with signs that disagree.
 
 ```bash
 tabix https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.links.bed.gz \
