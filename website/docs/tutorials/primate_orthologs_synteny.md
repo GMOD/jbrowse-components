@@ -3,19 +3,19 @@ title: Synteny from gene symbols (eight primates)
 sidebar_label: Synteny (gene-symbol lanes)
 description:
   Stack the great apes, a gibbon and a macaque under a human locus by joining
-  their RefSeq annotations on the gene symbol, with no alignment step
+  their RefSeq annotations on the gene symbol
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 data: pipeline
 ---
 
-**TL;DR:** we look at one human locus across seven other primates at once,
-without aligning any of the genomes. NCBI gives an orthologous gene the same
-symbol in every species it annotates, so an ortholog table is a join on the gene
-name, built from eight GFF3 files in seconds. Each primate then becomes a lane
-under the human view, in its own coordinates, carrying its own gene models. A
-gene family whose copies got placeholder names is what the join cannot see, and
-the page ends there.
+**TL;DR:** we look at one human locus across seven other primates at once. NCBI
+gives an orthologous gene the same symbol in every species it annotates, so an
+ortholog table is a join on the gene name, built from eight GFF3 files in
+seconds. Each primate then becomes a lane under the human view, in its own
+coordinates, carrying its own gene models. The join reaches exactly as far as
+the naming does, and the page ends on a gene family whose copies carry
+placeholder names.
 
 ## Prerequisites
 
@@ -62,10 +62,10 @@ The [grape, peach and cacao](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 page builds its ortholog table by aligning coding sequence, and the
 [OrthoFinder](/docs/tutorials/orthofinder_synteny) page by clustering proteins.
 Both produce the same `.blocks` shape: one row per orthologous group, one column
-per genome, a gene id in each cell. For genomes annotated by one pipeline there
-is a third way to fill that table. NCBI's eukaryotic annotation pipeline names a
-gene after its ortholog, so human _TP53_ is chimpanzee _TP53_ and gorilla
-_TP53_, and the table is a join on the `Name` attribute of each GFF3.
+per genome, a gene id in each cell. Genomes annotated by one pipeline fill that
+table a third way. NCBI's eukaryotic annotation pipeline names a gene after its
+ortholog, so human _TP53_ is chimpanzee _TP53_ and gorilla _TP53_, and the table
+is a join on the `Name` attribute of each GFF3.
 
 The join needs only the annotations, so the download is a GFF3 and a sequence
 report per genome:
@@ -94,11 +94,16 @@ python3 symbols_to_blocks.py --anchor human -o primates.blocks \
 ```
 
 Symbols are compared case-folded, so a mouse `Atp5f1a` would meet the human
-`ATP5F1A`, and a gene whose name is an NCBI `LOC` placeholder joins nothing. A
-symbol appearing twice in one genome is a paralog and the first copy in file
-order takes the cell. The helper prints how much of each column it filled; for
-these eight the lanes come back nearly full, because the annotations share one
-naming pipeline.
+`ATP5F1A`, and a gene whose name is an NCBI `LOC` placeholder joins nothing.
+Paralogs reach the table three ways, and none of them is a ribbon between the
+copies. A symbol carried by two genes in a lane genome fills that cell from the
+first copy in coordinate order and leaves the others out. The same symbol twice
+in human drops the second gene's row entirely, so that copy joins nothing in
+either direction. Copies RefSeq lettered apart, _AMY1A_ against _AMY1B_, are
+separate symbols and therefore separate rows. Every copy still draws in every
+lane, since the models come from each genome's own annotation. The helper prints
+how much of each column it filled; for these eight the lanes come back nearly
+full, because the annotations share one naming pipeline.
 
 ## Setting up the assemblies
 
@@ -148,10 +153,9 @@ One `SyntenyTrack` names all eight assemblies. `blockAssemblies` and
 `bedLocations` are positional against the table's columns, in the order the
 helper printed. The display colors a gene by its symbol, so a conserved gene is
 one color down the whole stack and a lane missing it breaks the column. The
-color is a hash of the symbol rather than any grouping of genes, so it
-identifies a gene without classifying it. A key naming the symbols appears in
-the top right once the window holds few enough genes to list, and stays out of
-the way at the windows below:
+color is a hash of the symbol, so it identifies a gene and carries nothing else.
+A key naming the symbols appears in the top right once the window holds few
+enough genes to list, and stays out of the way at the windows below:
 
 ```json addtrack
 {
@@ -277,7 +281,7 @@ chr1 is a run of near-identical copies whose human names are lettered (_AMY1A_,
 _AMY1B_, _AMY1C_), while the other primates' copies were left as placeholder
 `LOC` ids, so most of them have no row in the table at all. Every lane still
 draws its own copies, from its own annotation, and the ribbons stop where the
-naming does. A human RefSeq track above the lanes is what names the copies; each
+naming does. The human RefSeq track above the lanes names the copies; each
 lettered one is its own symbol, so each takes its own color and the family reads
 as unrelated genes.
 

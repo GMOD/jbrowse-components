@@ -16,9 +16,10 @@ NCBI's LOC ids; a PGAP bacterial annotation wants --unnamed '_RS[0-9]+$' for
 its locus tags.
 
 One row per anchor gene, in the anchor's coordinate order, so the table is
-reference-anchored the way jcvi's mcscan output is. A symbol appearing twice in
-one genome is a paralog and the first copy in file order takes the cell; a row
-that names only the anchor is dropped, since it links nothing.
+reference-anchored the way jcvi's mcscan output is. Paralogs sharing a symbol
+collapse to one row: the first copy in file order takes the cell, and a second
+anchor gene of the same symbol is skipped, so that copy gets no row and joins
+nothing. A row that names only the anchor is dropped, since it links nothing.
 
 The column order printed on stdout is what the JBrowse track's blockAssemblies
 and bedLocations have to list, in that order.

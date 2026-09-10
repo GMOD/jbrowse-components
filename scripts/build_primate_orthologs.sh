@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Stack eight primate genomes as lanes of one MultiWaySyntenyDisplay, from
-# their RefSeq annotations alone: no genome FASTA, no aligner.
+# their RefSeq annotations alone.
 #
 # NCBI's annotation pipeline names a gene by its ortholog across species (human
 # ATP5F1A is chimp ATP5F1A), so an ortholog table is a join on the gene symbol,
@@ -9,9 +9,9 @@
 # download is the GFF3 and the sequence report per genome, ~290 MB for eight,
 # and each assembly is a ChromSizesAdapter over the report's chromosome lengths
 # since the display never reads sequence. The same route with a PGAP bacterial
-# annotation is `--unnamed '_RS[0-9]+$'` on the helper; what it cannot do in
-# either kingdom is join a gene family whose copies got LOC ids (the AMY1
-# cluster here) or the accessory genome of a pangenome.
+# annotation is `--unnamed '_RS[0-9]+$'` on the helper. In either kingdom the
+# join reaches as far as the naming: a gene family whose copies got LOC ids (the
+# AMY1 cluster here) and the accessory genome of a pangenome both stay unjoined.
 #
 # The genomes are the NHGRI T2T apes (v2.1 primary haplotypes), T2T macaque
 # and GRCh38.p14, all reference assemblies with a current RefSeq annotation.
