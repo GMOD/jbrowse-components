@@ -11,19 +11,11 @@ data: pipeline
 
 **TL;DR:** parts [1](/docs/tutorials/pangenome_hprc) and
 [2](/docs/tutorials/pangenome_hprc_part2) draw everything on GRCh38's axis,
-which is what makes hundreds of haplotypes comparable in one lane and what
-leaves each assembly's own coordinates out of the picture. This page starts from
-the multiple alignment both products were derived from, then puts each haplotype
+which makes hundreds of haplotypes comparable in one lane and leaves each
+assembly's own coordinates out of the picture. This page starts from the
+multiple alignment both products were derived from, then puts each haplotype
 back on its own contigs, first from a gene table and then straight out of the
 graph, and ends on the one donor that has a published reference of its own.
-
-:::caution Experimental
-
-The graph view is a beta plugin, and this tutorial covers experimental ideas.
-Where a step below says the view works a particular way today, that is a current
-limit rather than a settled design. We welcome your [feedback](/contact).
-
-:::
 
 ## Prerequisites
 
@@ -33,12 +25,6 @@ limit rather than a settled design. We welcome your [feedback](/contact).
   for the tracks that use `GbzBaseSyntenyAdapter` and `RgfaTabixAdapter`; every
   other track here is a URL you can paste
 - htslib (`bgzip`, `tabix`), to slice the annotations the lanes carry
-- `bedtools`, and UCSC's `bedGraphToBigWig` and `bigBedToBed`, for the
-  repeat-density lanes
-
-Both UCSC binaries are
-[single-binary downloads](https://hgdownload.soe.ucsc.edu/admin/exe/), and
-`build_repeat_density.sh`'s header carries the curl line for each.
 
 ## Where the data comes from
 
@@ -66,17 +52,11 @@ UCSC and the companion index we host.
 - our companion haplotype index for that database, which HPRC does not publish:
   https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db
 
-**T2T-CHM13 and the repeat lanes**
+**T2T-CHM13**
 
 - the T2T-CHM13v2.0 reference (hs1), loaded as its own donor assembly:
   https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit
 - hs1's RefSeq genes, rehosted: https://jbrowse.org/ucsc/hs1/hs1.gff.gz
-- GRCh38's RepeatMasker annotation, binned for the repeat-density lanes:
-  https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/rmsk.txt.gz
-- hs1's RepeatMasker annotation, the same lanes' other assembly:
-  https://hgdownload.soe.ucsc.edu/gbdb/hs1/t2tRepeatMasker/chm13v2.0_rmsk.bb
-- our own repeat-density projections, with the exact build recorded beside them:
-  https://jbrowse.org/demos/hprc/README.txt
 
 ## The alignment the graph and callset came from {#the-alignment-underneath-both}
 
@@ -99,46 +79,26 @@ addressable, so a locus is a ranged read rather than a download:
 }
 ```
 
-The `uri` shorthand resolves the sibling `.tai`, which downloads once.
-
-TAF is taffy's own column-oriented format, and the same alignment is published
-as a 53 GB MAF under `v2.1/`, which `BgzipMafAdapter` reads with the same `uri`
-shorthand. The v2.0 file is the one this page uses: it is the build
+The `uri` shorthand resolves the sibling `.tai`, which downloads once. The same
+alignment is published as a 53 GB MAF under `v2.1/`, which `BgzipMafAdapter`
+reads with the same shorthand, and the v2.0 TAF is the build
 [the graph](/docs/tutorials/pangenome_hprc#load-the-graph) and
 [the callset](/docs/tutorials/pangenome_hprc_part2#the-variant-callset) come
-from, and it is far smaller to store and cheaper to read a locus out of.
+from. The figure below puts all three products on one axis.
 
-Each product these three pages open states something different about the same
-sequence, so the figure below puts them on one axis: the graph as its segments
-and again as a subgraph, the callset as a genotype matrix over all 464
-haplotypes, and the alignment as rows. The band runs down all of them.
-
-<Figure caption="The C4 locus on one axis: the NCBI RefSeq genes, the graph's rGFA segments, the callset's 464 haplotypes clustered by genotype, thirty-two of those haplotypes as alignment rows clustered by identity, and the same window as a force-directed subgraph. The band marks the pseudogene pair between C4A and C4B, where the haplotypes that carry nothing there gather into a block." src="/img/maf_hprc_pangenome.png" />
+<Figure caption="The C4 locus on one axis: the NCBI RefSeq genes, the graph's rGFA segments, the callset's haplotypes clustered by genotype, a subtree of those haplotypes as alignment rows clustered by identity, and the same window as a force-directed subgraph. The band marks the pseudogene pair between C4A and C4B, where the haplotypes that carry nothing there gather into a block." src="/img/maf_hprc_pangenome.png" />
 
 The locus is C4, the example [HPRCv2](https://github.com/pangenome/HPRCv2)
 itself opens with. Every alignment row is a human haplotype, so a row that drops
 out belongs to a person who does not carry that segment. Read down a column for
 who carries what, across for where each segment starts and stops.
 
-Both matrices are clustered, over different measurements: the callset by
-genotype, the alignment by how much of each bin a haplotype aligns and matches
-at, where a bin it does not reach scores zero. Each dendrogram comes from its
-own measurement, so neither reads as the other's. The graph's attribution is a
-third, crediting a segment to whichever assembly first contributed it, where a
-genotype names every haplotype that carries the allele. What lines up across all
-of them is the span, which is what the band is for.
-
-Clustering the alignment is a run. A MAF usually orders its rows by a guide tree
-the file ships, and HPRC's ships none: how the haplotypes group is a property of
-the locus. **Cluster rows by identity...** under the track menu's **Clustering**
-submenu computes it over the window in view, and **Reset row order** puts back
-whatever the file supplied.
-
-The alignment draws sixteen samples rather than all 232, thirty-two haplotype
-rows at two per sample, because a row needs enough height for its name to fit
-beside it and the whole cohort named is a track several screens tall. Drop
-`subtreeFilter` from the session and every haplotype is there, at whatever
-height it fits in.
+Clustering the alignment is a run, since HPRC's file ships no guide tree to
+order its rows by. **Cluster rows by identity...** under the track menu's
+**Clustering** submenu computes it over the window in view, and **Reset row
+order** puts back whatever the file supplied. The alignment draws thirty-two
+haplotype rows because a row needs enough height for its name beside it; drop
+`subtreeFilter` from the session and every haplotype is there.
 
 The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
 per-row identity and codon view, all derived from the alignment with no extra
@@ -146,31 +106,23 @@ files.
 
 ## Every haplotype in its own coordinates
 
-The alignment above is anchored: each haplotype is drawn on GRCh38's axis, which
-is what makes hundreds of rows comparable at all, and what leaves each
-assembly's own coordinates out of the picture. A
+The alignment above draws each haplotype on GRCh38's axis. A
 [multi-way synteny track](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
-is the other reading. One lane per haplotype, each in that assembly's own contig
+is the other reading: one lane per haplotype, each in that assembly's own contig
 coordinates and carrying that assembly's own CAT gene models, with ribbons
 connecting a gene to its copy in the lane below.
 
-Eight haplotypes carry that stack, and this section picks them and fills their
-lanes from the annotations before the session opens.
-[The next one](#walks-from-the-graph) draws the same eight from the graph
-itself, with no offline step at all; the panel is chosen here because choosing
-it is a question about the callset either way.
-
-No aligner is in the loop. CAT projects the GENCODE gene set onto every release
-2 assembly, so a gene keeps its name on every haplotype, and joining the
-annotations by name is already the ortholog table: one row per GRCh38 gene in
-the window, one column per haplotype, `.` where that haplotype's annotation has
-no copy.
+Eight haplotypes carry that stack, and this section fills their lanes from the
+annotations before the session opens; [the next one](#walks-from-the-graph)
+draws the same eight from the graph itself. No aligner is in the loop: CAT
+projects the GENCODE gene set onto every release 2 assembly, so joining the
+annotations by gene name is already the ortholog table.
 
 ### Picking the panel out of the callset
 
 `build_hprc_cfhr_synteny.sh` genotypes the CFHR3/CFHR1 deletion over all 464
-haplotypes rather than taking a list, and prints what it found: 139 haplotypes
-carry it, 36 samples are homozygous for it and 124 are homozygous reference.
+haplotypes and keeps the homozygous samples whose own CAT annotation agrees with
+the genotype:
 
 <!-- from: scripts/build_hprc_cfhr_synteny.sh -->
 
@@ -181,20 +133,7 @@ carry it, 36 samples are homozygous for it and 124 are homozygous reference.
 bcftools view -r chr1:196753075-196753075 -Oz -o cfhr_site.vcf.gz "$WAVE"
 ```
 
-The script then walks the homozygous samples in callset order and keeps a
-haplotype only if three things hold: its alignment in the window sits on one
-contig, release 2 annotated it, and its own CAT annotation agrees with the
-genotype it was picked on, meaning no _CFHR3_ or _CFHR1_ on a carrier and both
-on a non-carrier. The third is the control, since the callset and the annotation
-are separate products of the release, and a lane is drawn only where the two say
-the same thing.
-
-That last check is the one that costs: a CAT annotation is ~110 MB, whole
-genome, and ships no index, so the shortlist is fetched concurrently
-(`CAT_JOBS`, 6 by default) and each slice is kept, which is what makes a re-run
-that only wants the table cheap.
-
-Each kept haplotype's slice then reduces to one plain BED of its gene rows,
+Each kept haplotype's annotation then reduces to one plain BED of its gene rows,
 keyed on the CAT `Name` that every assembly shares:
 
 <!-- from: scripts/build_hprc_cfhr_synteny.sh -->
@@ -255,19 +194,14 @@ lane per haplotype:
 }
 ```
 
-`rowOrder` puts every non-carrier above every carrier, and that ordering is what
-makes the deletion readable. A ribbon joins adjacent lanes and bridges past one
-that places nothing for the group, down to the next lane that does, so a chain
-stops only where no lane below it kept the gene. With every carrier at the
-bottom, that is the first carrier lane.
+`rowOrder` puts every non-carrier above every carrier, which is what makes the
+deletion readable: a ribbon bridges past a lane that places nothing, so a chain
+stops at the first carrier lane. Every lane sits at a different coordinate on a
+different contig, and the flanking genes still line up down the stack because a
+lane is fitted to the orthologs. The two chains that stop are _CFHR3_ and
+_CFHR1_, which the carriers' own annotations do not have.
 
 <Figure caption="The CFH cluster on chr1 as one multi-way synteny track: hg38 genes over a lane per HPRC haplotype, each on its own contig and carrying its own CAT gene models. The CFHR3 and CFHR1 chains run through the non-carrier lanes and stop where the carriers begin, and every flanking gene's chain runs the whole way down." src="/img/pangenome/hprc_cfhr_lane_stack.png" />
-
-Every lane sits at a different coordinate on a different contig, which is what
-the headers say, and the flanking genes still line up down the stack because a
-lane is fitted to the orthologs rather than projected onto GRCh38. The two
-chains that stop are _CFHR3_ and _CFHR1_: the carriers' own annotations have
-neither gene, so there is nothing in those lanes for a ribbon to reach.
 
 The same eight lanes over 500 kb bring in more flanking genes, which are the
 control on that reading.
@@ -276,17 +210,11 @@ control on that reading.
 
 ## Every haplotype's walk, straight from the graph {#walks-from-the-graph}
 
-The lanes above were assembled before the session opened: one slice of the
-release's PAF per haplotype, one CAT annotation each, and a genotype step to
-choose the eight. The graph states the same thing already. A `.gbz` holds one
-walk per haplotype, and release 2.1 publishes that graph as a **gbz-base
-database**, which is the graph in SQLite with its tables laid out so a window is
-a handful of range requests rather than a 10 GB download.
-
+The graph states the same thing already: a `.gbz` holds one walk per haplotype,
+and release 2.1 publishes that graph as a **gbz-base database**, the graph in
+SQLite with its tables laid out so a window is a handful of range requests.
 Every graph-derived track on this page reads release **2.1**, so a segment id in
-the rGFA tracks and a node id in this database are the same graph's; only the
-alignment underneath, the TAF, is release 2.0, which
-[the alignment section](#the-alignment-underneath-both) says why.
+the rGFA tracks and a node id in this database are the same graph's.
 
 ```json addtrack
 {
@@ -355,123 +283,35 @@ alignment underneath, the TAF, is release 2.0, which
 }
 ```
 
-The eight lanes are the same eight as above, listed twice: in `assemblyNames` so
-each lane is the assembly the session already holds (its gene annotation follows
-it), and in the display's `lanes` so the track opens on them rather than on
-all 464. **Choose lanes...** on the track menu lists every haplotype the graph
-names, grouped by sample, so any other set is a tick away, and **Every lane** is
-the whole cohort. The figure's stack is pinned by the same `rowOrder` as the
-gene-table session above; a track pasted from the fence opens densest-first.
+The eight lanes are listed twice: in `assemblyNames` so each lane is the
+assembly the session already holds, and in the display's `lanes` so the track
+opens on them. **Choose lanes...** on the track menu lists every haplotype the
+graph names, grouped by sample, and **Every lane** is the whole cohort.
 
 <Figure caption="The CFH cluster's eight lanes read from the graph at load time, in the same lane order as the gene-table stack above, from two hosted files and no offline step. Each lane is one haplotype's walk aligned to hg38 as a CIGAR, and because the eight assemblies are in the session, each draws that haplotype's own CAT genes at its own coordinates over it." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
 
-`GbzBaseSyntenyAdapter` answers a window rather than reading a file. It locates
-the window on GRCh38's own path through the graph, reads the subgraph over it,
-and emits one record per haplotype walk, in that haplotype's contig coordinates
-and carrying the walk's CIGAR (a walk that leaves the window's nodes and comes
-back is joined, the private stretch its insertion and the reference it skipped
-its deletion), which is the record a
-[multi-way synteny](#every-haplotype-in-its-own-coordinates) lane is drawn from.
-The reader's test suite checks those CIGARs against upstream gbz-base's own
-query output, and on the E. coli graph they were read against the offline
-converter the [E. coli tutorial](/docs/tutorials/pangenome_ecoli)'s alignments
-come from: at 1,552 reference points across ten windows, 1,544 put a haplotype
-base at the same coordinate, and the eight that differ are one divergent block
-the reader scores as an insertion then a deletion where the converter writes
-mismatches. No aligner is in the loop here either, and no offline step at all:
-the lanes are the graph's own walks.
+`GbzBaseSyntenyAdapter` answers a window: it locates the window on GRCh38's own
+path through the graph and emits one record per haplotype walk, in that
+haplotype's contig coordinates and carrying the walk's CIGAR. Upstream gbz-base
+reports `unknown#1`, `unknown#2` for those walks, so the companion file at
+`haplotypeIndexLocation` names them and carries anchors a named set can be
+walked from. The display's `lanes`, and whatever the reader picks from **Choose
+lanes...**, reach the adapter as the set to fetch.
 
-`haplotypeIndexLocation` is what names them. Upstream gbz-base cannot say which
-haplotype a walk belongs to and reports `unknown#1`, `unknown#2`, so a companion
-file beside the database names them, and carries anchors along GRCh38 and CHM13
-from which a named set of haplotypes can be walked without touching the rest,
-which is the route `--keep` and the graph cut take. A lane track takes it too:
-the display's `lanes`, and whatever the reader picks from **Choose lanes...**,
-reach the adapter as the set to fetch rather than only the set to draw, so a
-track opened on eight of the 464 walks those eight from the anchor before the
-window instead of naming all 464 and discarding 456 of them. The timings below
-are what the whole cohort costs, which is what a window with no selection in
-force still pays; the reader's own
-[measurements](https://github.com/GMOD/gbz-base-js/blob/main/docs/performance.md)
-have the same windows for a chosen eight beside them. What the file holds and
-how it is built is in the
-[gbz-base README](https://github.com/GMOD/gbz-base-js#readme).
-
-### What a window costs {#gbz-window-cost}
-
-A window comes back as one record per haplotype walk through it, whatever
-`context` is set to: `@gmod/gbz-base` joins the pieces of a walk that leaves the
-window's nodes and comes back, so a private bubble becomes the record's
-insertion and the reference it skipped the deletion. What `context` trades is
-nodes read against pieces joined. The C4 window below is 8,083 pieces at
-`context: 0` and 463 walks at 1000, for the same 463 records; MHC class II sits
-inside a snarl far larger than the window, so it is 1.1 million pieces at 0 and
-takes three times as long as at 1000. The default is 1000. These are all at
-1000, contained snarls, `@gmod/gbz-base` 2.5.0, reading both files over HTTP,
-the database from HPRC's bucket and the companion from ours, timed around the
-whole command, two runs each on 2026-09-06 and the median:
-
-| Locus        | Window                         | Nodes  | Records | Companion read | Time   |
-| ------------ | ------------------------------ | ------ | ------- | -------------- | ------ |
-| C4           | `chr6:31,980,000-31,990,000`   | 1,173  | 463     | 8 req, 0.5 MB  | 17.8 s |
-| C4           | `chr6:31,950,000-32,010,000`   | 4,236  | 463     | 9 req, 0.6 MB  | 31.5 s |
-| CFH cluster  | `chr1:196,640,000-196,900,000` | 16,372 | 465     | 17 req, 1.1 MB | 31.9 s |
-| LPA KIV-2    | `chr6:160,525,000-160,655,000` | 27,438 | 464     | 14 req, 0.9 MB | 33.8 s |
-| MHC class II | `chr6:32,510,000-32,600,000`   | 43,540 | 463     | 11 req, 0.7 MB | 31.7 s |
-| AMY1         | `chr1:103,690,000-103,780,000` | 12,240 | 1,395   | 24 req, 1.5 MB | 30.3 s |
-
-Every record is named in all six, and the companion is barely touched, a
-megabyte and a half at most out of its 7.9 GB. The first five are one record per
-haplotype. The times are set by the network the command was timed from rather
-than by the window: on the day of this table one 64 kB range request to the
-bucket took 0.4-0.8 s, every window came back in about half a minute whatever
-its node count, and 2.3.0 timed the same as 2.5.0 on the same connection (15.0
-and 15.4 s against 14.9 and 15.4 s at the small C4 window), so the 5-13 s an
-earlier run of this table showed were that day's network and not a reader that
-has since slowed. A chosen set takes a different route: with `--keep`, the
-tutorial's eight at KIV-2 are walked from the anchor before the window, 9
-companion requests and 3 s on a fresh open against 3.8 s for all 464, and 0.4 s
-cached; the four tutorial windows measured both ways are in the gbz-base README.
-
-_AMY1_ is the row with more records than haplotypes, and it is the locus a
-copy-number question would start from. The amylase repeat sends each haplotype
-out of the window's nodes and back, so 490 haplotype walks arrive as 1,912
-pieces; the pieces of one walk that follow each other along the reference are
-joined, and the ones that do not, because an extra copy of the repeat unit
-revisits the same stretch of GRCh38, stay separate. That is 1,395 records, and
-those extra records, the ones whose reference interval falls on the repeat unit,
-are where a copy count per haplotype would be read off the graph. Naming those
-pieces is also the one place the companion is walked rather than looked up: a
-piece shorter than the 16 kb it samples at holds no recorded position and is
-walked to one, 78,506 steps here against zero at every other locus, and since
-`@gmod/gbz-base` 2.3.0 that costs 24 requests rather than the 5,202 it did when
-the index was scanned across the gaps between the repeat's node-id clusters.
-
-`context` is also the wrong repair for a window like _AMY1_. `context` 20000 and
-`overlapping` snarls each pull in enough of the repeat to exhaust a 4 GB heap
-after about a minute, so the window that most wants a wider read is the one that
-cannot afford it; the contained cut at 1000 is what the table shows.
-
-`nodeLimit` is the guard on the other end. It fails a window rather than letting
-the display sit on a whole chromosome, and the failure names a zoom that would
-fit, so it has to clear the largest window you mean to open: 12,000 is enough
-for C4 and refuses MHC class II. It bounds nodes, not time, and _AMY1_'s 12,240
-nodes are under any limit that lets the other loci through.
+`context` defaults to 1000, the nodes read on either side of the window.
+`nodeLimit` refuses a window that would not fit and names a zoom that would.
+_AMY1_ returns more records than there are haplotypes, because an extra copy of
+the repeat unit revisits the same stretch of GRCh38 and those pieces of one walk
+stay separate; those extra records are where a copy count per haplotype would be
+read off the graph.
 
 ### The graph view from the GBZ, for a chosen set {#gbz-graph-cut}
 
 The same track feeds the graph view: **Launch → Graph genome view (this
 region)** on a GBZ lane track cuts the window from the database, and the cut
-carries one W line per haplotype walk, named through the companion. That is what
-the rGFA cut cannot say: an rGFA segment names the one assembly that contributed
-it, a GBZ cut says which haplotypes walk every node. A cut for every haplotype
-names all 464 walks, 21,721 base-level nodes at KIV-2 and 12 s against the two
-hosted files, for a Sample rows layout of 232 donors; a cut for the track's
-chosen lanes walks only those from the anchor.
-
-For a figure of a chosen set, cut once and load the file. `gbz-base-query`, the
-reader's command line, takes `--keep` for each haplotype and writes the
-reference walk, the kept walks and only the nodes those walks visit:
+carries one W line per haplotype walk, named through the companion. For a figure
+of a chosen set, cut once and load the file. `gbz-base-query`, the reader's
+command line, takes `--keep` for each haplotype:
 
 ```bash
 npx -p @gmod/gbz-base gbz-base-query \
@@ -484,18 +324,11 @@ npx -p @gmod/gbz-base gbz-base-query \
   > hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa
 ```
 
-That is the KIV-2 bubble for the eight, 3,140 nodes in 350 kB after 6 s, each
-haplotype's walk in the pieces that stay inside the window, and the graph view
-opens it as a file (**Add → Graph genome view**, then the file's URL in the load
-form, or a session with `gfaLocation`), in Sample rows with `GRCh38` as the
-reference path:
+The graph view opens that file (**Add → Graph genome view**, then the file's URL
+in the load form, or a session with `gfaLocation`), in Sample rows with `GRCh38`
+as the reference path.
 
 <Figure caption="The KIV-2 array cut from the GBZ for the eight haplotypes, in Sample rows over the same window as the rGFA segments lane. Each row is a haplotype of the eight; an allele is drawn in the row of the first of them to walk it, so a row holds what that haplotype is the first to carry, and the hover on any node lists every haplotype that walks it." src="/img/pangenome/hprc_kiv2_gbz_walks.png" />
-
-One step short of carriage, and said plainly: the layout places each node once,
-so an allele two of the eight share is drawn in the earlier row only. A layout
-that draws a node in every row that walks it is what would turn this into the
-carriage figure, and it is the graph view's next change on this route.
 
 ### Preparing a graph of your own {#preparing-a-gbz-base-database}
 
@@ -504,22 +337,15 @@ HPRC publishes the database this track reads, so nothing above builds one. For a
 them JBrowse: `vg chains` for the snarl decomposition, `gbz-base construct` for
 the database, and `gbz-haplotype-index` for the companion that names the walks.
 [Preparing your own graph](/docs/tutorials/pangenome_prepare_graph#every-haplotypes-walk-a-gbz-base-database)
-shows all three, and the same page builds every other file this one reads.
-
-The companion HPRC does not publish is the one exception, and it has a script of
-its own under [Reproduce it end to end](#reproduce-it-end-to-end).
+shows all three. The companion HPRC does not publish has a script of its own
+under [Reproduce it end to end](#reproduce-it-end-to-end).
 
 ## T2T-CHM13 as hs1 {#the-one-donor-worth-loading}
 
-The lanes above put each haplotype on its own contigs, which is as far as an
-assembly with no reference of its own goes. One contributor has one.
-
 CHM13 is the contributor with a published reference behind it, T2T-CHM13v2.0,
-which UCSC serves as `hs1` with RefSeq genes and RepeatMasker, so it loads from
-that host rather than from GenArk; [](/docs/tutorials/hg002_haplotypes) loads
-HG002, the other donor with a reference of its own. Its coordinates are that
-assembly's: CHM13 segments on chr17 run past the end of GRCh38's chr17 and
-inside hs1's.
+which UCSC serves as `hs1` with RefSeq genes and RepeatMasker;
+[](/docs/tutorials/hg002_haplotypes) loads HG002, the other donor with a
+reference of its own.
 
 Load it under its own name, with the graph's spelling as an alias. The view
 resolves a donor through `assemblyManager`, which is keyed by name and aliases
@@ -574,31 +400,11 @@ one more assembly:
 ```
 
 With both assemblies loaded a CHM13 node opens on either one, and on hs1 its
-coordinates are the donor's own rather than the GRCh38 interval it attaches
-across. The node in the figure below is 142 kb of chr17 that GRCh38 does not
-carry, near the end of the chromosome, and RepeatMasker tiles it with long L1
-elements.
-
-Read that lane for what the sequence is made of rather than for how much repeat
-is in it. The elements are old L1 subfamilies, long past copying themselves, and
-the CHM13 sequence either side of the node is made of the same thing. A
-subtelomere built out of decayed L1 is the kind of sequence a BAC-and-Sanger
-reference had no way to place, which is the answer to why GRCh38 ends where it
-does here.
+coordinates are the donor's own. The node in the figure below is 142 kb of chr17
+that GRCh38 does not carry, near the end of the chromosome, and RepeatMasker
+tiles it with long L1 elements.
 
 <Figure caption="A donor node on both coordinate systems: the GRCh38 window, the graph cut from it, then that node on hs1's own chr17 tiled by long L1 elements in red." src="/img/pangenome/hprc_chm13_allele.png" />
-
-CHM13 entered this graph late, after most of the other haplotypes, so little is
-credited to it: `tabix hprc-v2.1-mc-grch38.segs.bed.gz 'CHM13#0#chr1'` returns a
-short list for the whole of chr1, most of it attaching only to other donors.
-Finding one that touches GRCh38, like the node above, means scanning the links
-index for CHM13 rows with a GRCh38 endpoint:
-
-```bash
-tabix https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.links.bed.gz \
-  'CHM13#0#chr17' |
-  awk -F'\t' '$6 ~ /^GRCh38/ || $10 ~ /^GRCh38/'
-```
 
 With two assemblies loaded the graph's own **Launch** menu offers **Linear
 synteny view** as well, one panel per contributor at the locus each contributes
@@ -621,118 +427,12 @@ liftOver is one, rehosted as an indexed PAF:
 ```
 
 Taken at the window above, it opens hg38 over hs1, each panel already at the
-interval the graph states for it, with the liftOver ribbons between them.
-Without such a track the entry stays, greyed out, and its tooltip says what is
-missing. The launch opens every loaded contributor, so a session carrying
-several haplotypes opens a panel for each one with a node in the window, whether
-or not the track aligns it.
+interval the graph states for it. Without such a track the entry stays, greyed
+out, and its tooltip says what is missing.
 
 <Figure caption="The graph's own Launch menu at the CHM13 window, with hg38 and hs1 loaded and the liftOver between them in the session. Above, the hg38 window and the cut, the CHM13 node ringed. Below, the synteny view the Linear synteny view entry opened: hg38 over hs1, each panel framed on the locus the graph states for it, with the liftOver ribbons between." src="/img/pangenome/hprc_synteny_launch.png" />
 
-## What kind of sequence GRCh38 was missing
-
-The lane above says the inserted sequence is tiled by L1. Whether that is
-unusual, a subtelomere being repeat-dense either way, takes the same measurement
-on both assemblies at the same scale: the fraction of each 5 kb bin covered by
-one RepeatMasker class, one lane per class, on GRCh38 and CHM13 alike.
-`bedtools` measures it, one lane at a time, from a RepeatMasker BED of
-`chrom start end class`:
-
-<!-- from: scripts/build_repeat_density.sh -->
-
-```bash
-# CHM13's rmsk ships as a bigBed where UCSC's hg38 is a table
-bigBedToBed chm13v2.0_rmsk.bb rmsk.raw.bed
-
-# only the chroms the rmsk BED covers, so no lane carries empty scaffold bins
-bedtools makewindows -g hs1.main.sizes -w 5000 | sort -k1,1 -k2,2n > windows.bed
-
-# merge first: one fragmented L1 is several overlapping records, and unmerged
-# coverage counts the shared bases twice and reports over 100%
-awk -F'\t' '$4=="LINE"' rmsk.bed | bedtools merge -i - > line.bed
-
-# -a windows -b class puts the covered fraction of each window in the last column
-bedtools coverage -a windows.bed -b line.bed -sorted -g hs1.main.sizes |
-  awk -F'\t' '{printf "%s\t%s\t%s\t%.5f\n", $1, $2, $3, $NF}' > line.bg
-bedGraphToBigWig line.bg hs1.main.sizes hs1_repeat_density_LINE.bw
-```
-
-```json addtrack
-{
-  "type": "MultiQuantitativeTrack",
-  "trackId": "hs1_repeat_density",
-  "name": "Repeat density by class (RepeatMasker, 5 kb bins)",
-  "assemblyNames": ["hs1"],
-  "adapter": {
-    "type": "MultiWiggleAdapter",
-    "subadapters": [
-      {
-        "type": "BigWigAdapter",
-        "name": "LINE",
-        "color": "rgb(200,60,45)",
-        "uri": "https://jbrowse.org/demos/hprc/repeat_density/hs1_repeat_density_LINE.bw"
-      },
-      {
-        "type": "BigWigAdapter",
-        "name": "SINE",
-        "color": "rgb(60,110,180)",
-        "uri": "https://jbrowse.org/demos/hprc/repeat_density/hs1_repeat_density_SINE.bw"
-      },
-      {
-        "type": "BigWigAdapter",
-        "name": "LTR",
-        "color": "rgb(70,150,90)",
-        "uri": "https://jbrowse.org/demos/hprc/repeat_density/hs1_repeat_density_LTR.bw"
-      }
-    ]
-  },
-  "displayDefaults": {
-    "defaultRendering": "multirowxy",
-    "minScore": 0,
-    "maxScore": 1
-  }
-}
-```
-
-Swap `hs1` for `hg38` in the `trackId`/`assemblyNames` and the URLs for the
-GRCh38 copy. `DNA`, `Satellite` and `Simple_repeat` are hosted under the same
-names if you want them, near zero here but the whole story on a centromere. The
-pinned `minScore`/`maxScore` are load-bearing for the same reason they are in
-the
-[cookbook recipe](/docs/cookbook#multiple-signals-on-one-track-each-its-own-color)
-this follows: autoscale runs per row, so each class would rescale to its own
-maximum and the comparison the track exists for would disappear.
-
-Open the track on each assembly's last 650 kb of chr17, what each one ends the
-chromosome with, since sequence one of them lacks has no lifted-over interval.
-`build_repeat_density.sh` reports the two windows at almost the same total
-repeat content, so a single density lane would show no difference. What moved is
-the composition, in opposite directions: more L1, less Alu.
-
-That comparison is between two whole chromosome ends, spans large enough that
-the composition difference is not an artifact of where the window was put. A
-single interval is harder. Rank the insertion allele from
-[the donor-node figure](#the-one-donor-worth-loading) against windows of its own
-size and where it lands moves with the windows you rank it against, which is why
-`build_repeat_density.sh` reports several scopes rather than one. Read these
-lanes for which class changed, not for how much of it there is.
-
 ## Reproduce it end to end
-
-The [repeat-density lanes](#what-kind-of-sequence-grch38-was-missing) come from
-a script that bins UCSC's RepeatMasker for both assemblies, with the tools
-listed under [Prerequisites](#prerequisites):
-
-```bash
-curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_repeat_density.sh
-bash build_repeat_density.sh out
-```
-
-`build_repeat_density.sh` writes the twelve bigWigs (six classes x two
-assemblies, genome-wide) and prints the per-class table the section above
-quotes, so the numbers come out of the same run that builds the lanes. The first
-run downloads ~500 MB and re-running skips what is already built, so an
-interrupted run resumes.
 
 The [haplotype-walk lanes](#walks-from-the-graph) need one file HPRC does not
 publish, the companion index that names the walks in its gbz-base database:
