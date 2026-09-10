@@ -213,7 +213,7 @@ points' colour a callback:
 ```
 
 A `span` has no `y`: it paints a band from `x` to `x2`, in its colour, for an
-interval whose extent is the point — a region of interest under the bars,
+interval whose extent is the point, such as a region of interest under the bars
 coloured by a class field. With no `row` every span shares one band across the
 whole plot; with one —
 `{ "shape": "span", "encoding": { "row": "sampleIndex" } }` — the plot divides
@@ -382,7 +382,7 @@ the banner is what you get, exactly as before.
 ## What the track menu offers
 
 The score submenu (min/max score), point size, cross hatches, the legend toggle,
-and **Filter by...** for the same `jexlFilters` every feature display takes — a
+and **Filter by...** for the same `jexlFilters` every feature display takes. A
 filter runs in the worker before the encoding, so a filtered feature is neither
 drawn nor counted in the y-axis. Hovering a mark shows its location, value and
 colour class; clicking opens the feature's details. A click on a binned or
@@ -397,8 +397,8 @@ is
 
 ## When a plugin is the next step
 
-A drawing that is not a bar, a point or a span needs a **shape** of its own —
-one shader, one painter, one hit test — declared as a mark over the same worker
+A drawing that is not a bar, a point or a span needs a **shape** of its own: one
+shader, one painter and one hit test, declared as a mark over the same worker
 channels this display reads: [](/docs/developer_guides/creating_gpu_display)
 writes one. A display that lays features out its own way, or gives a channel a
 meaning the encoding cannot say — Manhattan's colour by LD to an index SNP — is

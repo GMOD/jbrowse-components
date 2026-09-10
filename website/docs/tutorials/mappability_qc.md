@@ -242,7 +242,7 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash scan_mappability_qc.sh
 ```
 
-It prints the mappability, coverage, region-annotation, MAPQ and callset
+The script prints the mappability, coverage, region-annotation, MAPQ and callset
 sections in the order this page uses them, so a locus swapped into its `LOCI`
 list is measured the same way.
 

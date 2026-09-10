@@ -263,8 +263,8 @@ bash build_chromhmm_multirow.sh         # builds ./chromhmm_build/jbrowse2
 npx --yes serve chromhmm_build/jbrowse2 # then open the printed URL
 ```
 
-It downloads the nine segmentation BEDs, merges, bgzips and tabixes them,
-downloads JBrowse, and writes the `config.json` above, opening on HOXA.
+The script downloads the nine segmentation BEDs, merges, bgzips and tabixes
+them, downloads JBrowse, and writes the `config.json` above, opening on HOXA.
 
 [`build_chromhmm_roadmap.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_chromhmm_roadmap.sh)
 builds the 127-epigenome track by the same steps:

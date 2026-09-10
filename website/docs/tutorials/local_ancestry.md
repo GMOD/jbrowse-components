@@ -295,8 +295,9 @@ bash build_dog10k_wolfdog_ancestry.sh       # chr1, into ./dog10k_wolfdog_build
 bash build_dog10k_wolfdog_ancestry.sh chr38 # any other autosome
 ```
 
-It derives the panel and target lists, slices the chromosome, generates the map,
-runs FLARE, prints every measurement read above, and writes both painted BEDs
+The script derives the panel and target lists, slices the chromosome, generates
+the map, runs FLARE, prints every measurement read above, and writes both
+painted BEDs
 ([`flare_anc_to_bed.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/flare_anc_to_bed.py))
 plus indexes. It also prints, per painted block edge, how many
 ancestry-informative markers each haplotype carries on either side: the long

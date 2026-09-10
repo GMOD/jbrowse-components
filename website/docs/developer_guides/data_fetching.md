@@ -369,7 +369,7 @@ the call — the adapter config — is tracked and re-fires the read; `run` owns
 RPC through the same `ctx.callRpc` envelope and reads nothing tracked; `commit`
 runs only while the run is still current. `setError` is both the clear at the
 start and the publish on failure, so a display whose failure has a second
-consequence says so there — the sample-list scan raises a session notification
+consequence says so there. The sample-list scan raises a session notification
 too, because a list that will not load leaves the band empty rather than partial
 and nothing else on screen would say so. Pass no `contract`: the display's own
 foundation already installed the two display-contract checks, and a second

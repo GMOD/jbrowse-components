@@ -540,7 +540,7 @@ bash build_grape_peach_cacao_synteny.sh
 npx --yes serve grape_peach_cacao_build/jbrowse2  # then open the printed URL
 ```
 
-It needs the tools under [Prerequisites](#prerequisites).
+The script needs the tools under [Prerequisites](#prerequisites).
 
 ## See also
 

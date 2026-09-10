@@ -437,9 +437,9 @@ bash build_ecoli_pangenome_synteny.sh          # builds ./ecoli_pangenome_build/
 npx --yes serve ecoli_pangenome_build/jbrowse2 # then open the printed URL
 ```
 
-It writes a `config.json` with the five assemblies, the gene tracks, the synteny
-track, and a default session opening the stacked view. It needs the tools under
-[Prerequisites](#prerequisites).
+The script writes a `config.json` with the five assemblies, the gene tracks, the
+synteny track, and a default session opening the stacked view. It needs the
+tools under [Prerequisites](#prerequisites).
 
 For a whole-genome pangenome, swap the `add-track` step for the `make-pif` +
 `MultiGenomeIndexedPAFAdapter` path from

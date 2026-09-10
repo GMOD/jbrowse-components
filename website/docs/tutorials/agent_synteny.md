@@ -240,7 +240,7 @@ an empty region and a dropped setting all render as a plausible browser with
 something missing. And ask it to say the numbers before it navigates, so what
 you are looking at is a claim you can check.
 
-## Without an agent
+## The same pipeline as a script
 
 The same pipeline as a script, for a reader who wants the files rather than the
 conversation:

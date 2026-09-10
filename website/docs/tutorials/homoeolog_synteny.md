@@ -211,7 +211,7 @@ bash build_oat_homoeologs.sh
 npx --yes serve oat_homoeologs_build/jbrowse2  # then open the printed URL
 ```
 
-It needs the tools under [Prerequisites](#prerequisites) on PATH.
+The script needs the tools under [Prerequisites](#prerequisites) on PATH.
 
 The wheat half of the [two-hexaploid figure](#reading-the-plot) is a second
 script, taking the Compara route:

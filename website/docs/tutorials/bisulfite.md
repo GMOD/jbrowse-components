@@ -260,8 +260,8 @@ bash build_arabidopsis_wgbs.sh          # builds ./arabidopsis_wgbs_build/jbrows
 npx --yes serve arabidopsis_wgbs_build/jbrowse2 # then open the printed URL
 ```
 
-It downloads the TAIR10 reference and the DRR029742 WGBS run, trims and aligns
-them with bwameth, downloads JBrowse, and writes a `config.json` with the
+The script downloads the TAIR10 reference and the DRR029742 WGBS run, trims and
+aligns them with bwameth, downloads JBrowse, and writes a `config.json` with the
 assembly, the gene models, and the pileup pre-colored Bisulfite / CpG, opening
 on the window above. With MethylDackel on `PATH` it also prints the conversion
 rate and the per-context fractions; the aggregate bigWig track is left out

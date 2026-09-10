@@ -358,7 +358,7 @@ bash build_cancer_sv_demo.sh    # builds ./cancer_sv_build/jbrowse2
 npx --yes serve cancer_sv_build/jbrowse2
 ```
 
-It fetches the ONT COLO829 somatic SV calls and coverage and runs both
+The script fetches the ONT COLO829 somatic SV calls and coverage and runs both
 `sv_multihop.py` steps against the tumor CRAM over HTTP. The same script builds
 the K562 half of the demo, which [](/docs/tutorials/k562_fusions) walks through.
 

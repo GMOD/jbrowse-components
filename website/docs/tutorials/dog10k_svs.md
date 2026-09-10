@@ -508,8 +508,9 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_dog10k_nhej1_sv.sh   # writes ./dog10k_sv_build/
 ```
 
-It downloads the Dog10K sample table, derives the breed lists from it, slices
-the locus out of the Zenodo genotype VCF, and prints the deletion's genotypes.
+The script downloads the Dog10K sample table, derives the breed lists from it,
+slices the locus out of the Zenodo genotype VCF, and prints the deletion's
+genotypes.
 
 [`build_omia_dog_variants.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_omia_dog_variants.sh)
 builds the OMIA lane:
@@ -532,7 +533,7 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_dog10k_amy2b_sv.sh   # writes ./dog10k_amy2b_build/
 ```
 
-It derives the panel and the label TSV from the sample table, slices the
+The script derives the panel and the label TSV from the sample table, slices the
 duplication record out of the Manta callset, then genotypes it over every canid:
 the tally quoted above, the non-carrier dogs and carrier wolves by name, and the
 wolves by country.
@@ -545,9 +546,9 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_dog10k_slc28a3_cn.sh   # writes ./dog10k_slc28a3_cn_build/
 ```
 
-It prints each panel animal's copy number over the duplication. Its first route
-needs only `bcftools`; the second re-measures six animals from their SRA runs,
-which needs an aligner and about 35 GB of scratch.
+The script prints each panel animal's copy number over the duplication. Its
+first route needs only `bcftools`; the second re-measures six animals from their
+SRA runs, which needs an aligner and about 35 GB of scratch.
 
 Two more build the _FGF4_ locus:
 

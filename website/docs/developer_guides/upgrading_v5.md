@@ -58,7 +58,7 @@ In practice the affected set is small: the significant custom renderers were
 ones we wrote ourselves, now vendored into core plugins, plus two known external
 ones, `jbrowse-plugin-gwas-hoot` and `NucContent`.
 
-## RPC methods that no longer exist
+## Removed RPC methods
 
 An RPC method is addressed by string — `rpcManager.call(sessionId, name, args)`
 — so a plugin naming one of these has nothing that resolves. Six went in v5,

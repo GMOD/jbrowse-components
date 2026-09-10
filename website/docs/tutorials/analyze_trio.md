@@ -277,7 +277,7 @@ bash build_khv_trio_hapibd.sh   # builds ./khv_trio_build/jbrowse2
 npx --yes serve khv_trio_build/jbrowse2 # then open the printed URL
 ```
 
-It needs java, python3, node, and htslib (`bgzip` and `tabix`). Opening
+The script needs java, python3, node, and htslib (`bgzip` and `tabix`). Opening
 `khv_trio_build/jbrowse2/config.json` in JBrowse Desktop via **File -> Session
 -> Open config.json or .jbrowse file...** gives the same view without serving
 anything.

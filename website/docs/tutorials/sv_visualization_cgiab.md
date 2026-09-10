@@ -1043,8 +1043,8 @@ bash build_sv_visualization_cgiab.sh   # builds ./cgiab_build/jbrowse2
 npx --yes serve cgiab_build/jbrowse2
 ```
 
-It downloads the C-GIAB GRCh38 build and the V0.5 benchmark calls, turns both
-HiFi BAMs into CRAMs, computes megadepth coverage, calls copy number with
+The script downloads the C-GIAB GRCh38 build and the V0.5 benchmark calls, turns
+both HiFi BAMs into CRAMs, computes megadepth coverage, calls copy number with
 HiFiCNV, builds the BAF bigWig, aligns the T2T tumor assembly to GRCh38 with
 minimap2, downloads JBrowse, and writes a `config.json` with all of it loaded
 beside the published Wakhan segments.
@@ -1053,9 +1053,10 @@ The BAF and Wakhan tracks go in with `add-track-json`: the settings that make
 them readable (`resolutionMultiplier` on one, `partitionField` on the other) are
 track config, with no command-line flag.
 
-It needs the tools listed under [Prerequisites](#prerequisites), plus `bcftools`
-and `bedGraphToBigWig`. It pulls down more than 200 GB, wants roughly 1.5 TB of
-free disk and 32 GB of RAM, and its alignment and copy-number steps take hours.
+The script needs the tools listed under [Prerequisites](#prerequisites), plus
+`bcftools` and `bedGraphToBigWig`. It pulls down more than 200 GB, wants roughly
+1.5 TB of free disk and 32 GB of RAM, and its alignment and copy-number steps
+take hours.
 
 ## See also
 

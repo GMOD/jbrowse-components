@@ -232,10 +232,10 @@ bash build_cancer_sv_demo.sh    # builds ./cancer_sv_build/jbrowse2
 npx --yes serve cancer_sv_build/jbrowse2
 ```
 
-It merges the four ENCODE Iso-Seq alignments, converts the DepMap release into a
-STAR-Fusion TSV and a copy-number bigWig, and lifts the ENCODE linked-read
-breakpoints onto hg38. The same run builds the COLO829 half of the demo, which
-[](/docs/tutorials/cancer_sv) walks through.
+The script merges the four ENCODE Iso-Seq alignments, converts the DepMap
+release into a STAR-Fusion TSV and a copy-number bigWig, and lifts the ENCODE
+linked-read breakpoints onto hg38. The same run builds the COLO829 half of the
+demo, which [](/docs/tutorials/cancer_sv) walks through.
 
 ## See also
 

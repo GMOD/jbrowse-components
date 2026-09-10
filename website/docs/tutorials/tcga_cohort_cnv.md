@@ -293,11 +293,12 @@ bash build_tcga_cohort_cnv.sh TCGA-BRCA    # the full cohort, ~20 minutes
 npx --yes serve jbrowse2                   # then open the printed URL
 ```
 
-It writes `tcga_brca_cnv.bed.gz` (+ `.tbi`), the two recurrence bedGraphs (+
-`.tbi`) and `tcga_brca_clinical.tsv`, then a `jbrowse2/` opening on _ERBB2_. The
-assembly is the hosted UCSC hg38 hub's entry copied in, so the reference is
-never downloaded. Swap in any other project id (`TCGA-OV`, `TCGA-LUAD`, ...),
-with a third argument to group the recurrence by a different clinical column.
+The script writes `tcga_brca_cnv.bed.gz` (+ `.tbi`), the two recurrence
+bedGraphs (+ `.tbi`) and `tcga_brca_clinical.tsv`, then a `jbrowse2/` opening on
+_ERBB2_. The assembly is the hosted UCSC hg38 hub's entry copied in, so the
+reference is never downloaded. Swap in any other project id (`TCGA-OV`,
+`TCGA-LUAD`, ...), with a third argument to group the recurrence by a different
+clinical column.
 
 Three steps decide whether the track loads correctly:
 

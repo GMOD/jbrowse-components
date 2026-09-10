@@ -250,10 +250,10 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_dog10k_cyp1a2.sh   # writes ./dog10k_cyp1a2_build/
 ```
 
-It derives the stop codon's position from the reference, builds the sample list
-from the Dog10K sample table, slices the gene out of the callset, prints the
-genotypes at the stop so you can check the figure against the data, then
-genotypes that one site over all 1,987 canids for the breed and wild-canid
+The script derives the stop codon's position from the reference, builds the
+sample list from the Dog10K sample table, slices the gene out of the callset,
+prints the genotypes at the stop so you can check the figure against the data,
+then genotypes that one site over all 1,987 canids for the breed and wild-canid
 counts quoted above.
 
 [`build_dog10k_cyp1a2_cn.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_dog10k_cyp1a2_cn.sh)
@@ -264,10 +264,10 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_dog10k_cyp1a2_cn.sh   # writes ./dog10k_cyp1a2_cn_build/
 ```
 
-It reads depth over this gene straight out of each published CRAM, paints the 15
-dogs, then slices the callset's own depth field and paints the other 1,972. It
-prints each dog's copy number over the element beside the spread of the sequence
-around it, and the agreement between the two measurements.
+The script reads depth over this gene straight out of each published CRAM,
+paints the 15 dogs, then slices the callset's own depth field and paints the
+other 1,972. It prints each dog's copy number over the element beside the spread
+of the sequence around it, and the agreement between the two measurements.
 
 ## See also
 

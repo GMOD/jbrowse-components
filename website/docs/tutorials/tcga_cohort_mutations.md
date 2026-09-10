@@ -327,7 +327,8 @@ bash build_tcga_cohort_mutations.sh TCGA-BRCA    # the full cohort, ~10 minutes
 npx --yes serve jbrowse2                         # then open the printed URL
 ```
 
-It writes `tcga_brca_mutations.vcf.gz` (+ `.tbi`), `tcga_brca_clinical.tsv` and
+The script writes `tcga_brca_mutations.vcf.gz` (+ `.tbi`),
+`tcga_brca_clinical.tsv` and
 `tcga_brca_mutation_recurrence_by_subtype.bedGraph.gz` (+ `.tbi`), then a
 `jbrowse2/` opening on _PIK3CA_ with the recurrence rows over the matrix. The
 assembly is the hosted UCSC hg38 hub's entry copied in, so the reference is

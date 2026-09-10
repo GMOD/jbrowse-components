@@ -177,10 +177,10 @@ bash build_gene_density.sh                # builds ./gene_density_build/jbrowse2
 npx --yes serve gene_density_build/jbrowse2 # then open the printed URL
 ```
 
-It fetches the two UCSC tables and the reference lengths, cuts the RepeatMasker
-table into the three family BEDs, builds a sidecar for each of the four files,
-and writes a JBrowse with the four tracks. The tools it needs are the ones under
-[Prerequisites](#prerequisites).
+The script fetches the two UCSC tables and the reference lengths, cuts the
+RepeatMasker table into the three family BEDs, builds a sidecar for each of the
+four files, and writes a JBrowse with the four tracks. The tools it needs are
+the ones under [Prerequisites](#prerequisites).
 
 ## See also
 

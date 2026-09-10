@@ -181,7 +181,7 @@ bash build_primate_selection.sh
 npx --yes serve primate_selection_build/jbrowse2  # then open the printed URL
 ```
 
-It needs the tools under [Prerequisites](#prerequisites) on PATH.
+The script needs the tools under [Prerequisites](#prerequisites) on PATH.
 
 ## See also
 

@@ -196,7 +196,7 @@ bash build_hpylori_synteny.sh          # builds ./hpylori_synteny_build/jbrowse2
 npx --yes serve hpylori_synteny_build/jbrowse2 # then open the printed URL
 ```
 
-It downloads the three assemblies, aligns the strain pairs, and writes a
+The script downloads the three assemblies, aligns the strain pairs, and writes a
 `config.json` with a gene track per strain, the pairwise synteny tracks, and a
 default session stacking all three. It needs the tools under
 [Prerequisites](#prerequisites).

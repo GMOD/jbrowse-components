@@ -205,12 +205,12 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_dtu_demo.sh dtu_build   # writes ./dtu_build/
 ```
 
-It fetches the eight RSEM tables and the four coverage bigWigs from ENCODE,
-downloads the GENCODE v29 GFF3 those quantifications were made against, runs the
-satuRn fit, and writes `dtu_muscle_vs_liver.gff3.gz` with its `.tbi` index: the
-local build of the file the track configuration above loads from jbrowse.org.
-Point the adapter's `uri` at the local copy to open your own run instead. It
-needs [Prerequisites](#prerequisites) on your `PATH`.
+The script fetches the eight RSEM tables and the four coverage bigWigs from
+ENCODE, downloads the GENCODE v29 GFF3 those quantifications were made against,
+runs the satuRn fit, and writes `dtu_muscle_vs_liver.gff3.gz` with its `.tbi`
+index: the local build of the file the track configuration above loads from
+jbrowse.org. Point the adapter's `uri` at the local copy to open your own run
+instead. It needs [Prerequisites](#prerequisites) on your `PATH`.
 
 Along the way it prints the transcript and gene counts at each filtering step,
 and the minimum empirical FDR beside the regular-FDR count.

@@ -270,7 +270,7 @@ bash bxd_build_demo.sh            # builds ./bxd_demo/jbrowse2
 npx --yes serve bxd_demo/jbrowse2 # then open the printed URL
 ```
 
-It downloads JBrowse and the GeneNetwork consensus genotypes, builds the
+The script downloads JBrowse and the GeneNetwork consensus genotypes, builds the
 painting, fetches the coat-color scan (trait `11280`) from GeneNetwork's mapping
 API, and writes a `config.json` that opens on mm10 chr4 with the scan over the
 painting. It prints the scan's peak marker and LOD as it goes. It needs `curl`,
