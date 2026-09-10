@@ -48,68 +48,58 @@ const { html, toc } = await renderMarkdown(post.body ?? '')
         <time datetime={post.data.date.toISOString()}>
           {formatBlogDate(post.data.date)}
         </time>
-        {
-          post.data.author && (
-            <span class="author">
-              {post.data.author_url ? (
-                <a
-                  href={post.data.author_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {post.data.author}
-                </a>
-              ) : (
-                post.data.author
-              )}
-            </span>
-          )
-        }
-        {
-          post.data.tags && (
-            <div class={blog.tags}>
-              {post.data.tags.map(tag => (
-                <span class={blog.tag}>{tag}</span>
-              ))}
-            </div>
-          )
-        }
+        {post.data.author && (
+          <span class="author">
+            {post.data.author_url ? (
+              <a
+                href={post.data.author_url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {post.data.author}
+              </a>
+            ) : (
+              post.data.author
+            )}
+          </span>
+        )}
+        {post.data.tags && (
+          <div class={blog.tags}>
+            {post.data.tags.map(tag => (
+              <span class={blog.tag}>{tag}</span>
+            ))}
+          </div>
+        )}
       </div>
     </header>
     <div class:list={['content', blog.prose, prose.prose]} data-pagefind-body>
       <Fragment set:html={html} />
     </div>
     <footer>
-      {
-        newsletterApiUrl && (
-          <div class="newsletter-cta">
-            <p class="newsletter-label">
-              Get notified about new JBrowse releases
-            </p>
-            <NewsletterSignup />
-          </div>
-        )
-      }
+      {newsletterApiUrl && (
+        <div class="newsletter-cta">
+          <p class="newsletter-label">
+            Get notified about new JBrowse releases
+          </p>
+          <NewsletterSignup />
+        </div>
+      )}
       <div class="post-nav">
         <div class="post-nav-prev">
-          {
-            prev && (
-              <a href={`${baseUrl}/blog/${prev.slug}/`}>
-                <span class="nav-label">← Older</span>
-                <span class="nav-title">{prev.title}</span>
-              </a>
-            )
-          }
+          {prev && (
+            <a href={`${baseUrl}/blog/${prev.slug}/`}>
+              <span class="nav-label">← Older</span>
+              <span class="nav-title">{prev.title}</span>
+            </a>
+          )}
         </div>
         <div class="post-nav-next">
-          {
-            next && (
-              <a href={`${baseUrl}/blog/${next.slug}/`}>
-                <span class="nav-label">Newer →</span>
-                <span class="nav-title">{next.title}</span>
-              </a>
-            )
-          }
+          {next && (
+            <a href={`${baseUrl}/blog/${next.slug}/`}>
+              <span class="nav-label">Newer →</span>
+              <span class="nav-title">{next.title}</span>
+            </a>
+          )}
         </div>
       </div>
     </footer>

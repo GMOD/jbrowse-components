@@ -60,50 +60,44 @@ const soleVideo = videos.length === 1 ? videos[0] : undefined
   >
     <Breadcrumbs currentSlug={currentSlug} />
     <h1>{title}</h1>
-    {
-      soleVideo ? (
-        <nav class="video-jump" aria-label="Video on this page">
-          <span class="video-jump-lead">
-            <svg class="video-jump-play" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" fill="none" stroke-width="2" />
-              <path d="M10 8.3v7.4l6.5-3.7z" />
-            </svg>
-            Video
-          </span>
-          <a class="video-jump-link" href={`#${soleVideo.id}`}>
-            {soleVideo.section ? soleVideo.section : 'Walkthrough'}
-          </a>
-        </nav>
-      ) : (
-        videos.length > 1 && (
-          <p class="video-jump">
-            <svg class="video-jump-play" viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" fill="none" stroke-width="2" />
-              <path d="M10 8.3v7.4l6.5-3.7z" />
-            </svg>
-            {videos.length} videos in this tutorial
-          </p>
-        )
-      )
-    }
-    <slot />
-    {
-      isTutorial && (
-        <p class="tutorial-feedback">
-          Feedback on this tutorial is welcome:{' '}
-          <a href={`${baseUrl}/contact/`}>contact us</a>.
+    {soleVideo ? (
+      <nav class="video-jump" aria-label="Video on this page">
+        <span class="video-jump-lead">
+          <svg class="video-jump-play" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" fill="none" stroke-width="2" />
+            <path d="M10 8.3v7.4l6.5-3.7z" />
+          </svg>
+          Video
+        </span>
+        <a class="video-jump-link" href={`#${soleVideo.id}`}>
+          {soleVideo.section ? soleVideo.section : 'Walkthrough'}
+        </a>
+      </nav>
+    ) : (
+      videos.length > 1 && (
+        <p class="video-jump">
+          <svg class="video-jump-play" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" fill="none" stroke-width="2" />
+            <path d="M10 8.3v7.4l6.5-3.7z" />
+          </svg>
+          {videos.length} videos in this tutorial
         </p>
       )
-    }
+    )}
+    <slot />
+    {isTutorial && (
+      <p class="tutorial-feedback">
+        Feedback on this tutorial is welcome:{' '}
+        <a href={`${baseUrl}/contact/`}>contact us</a>.
+      </p>
+    )}
   </article>
   <CopyMarkdown markdown={rawMarkdown} title={title} />
   {toc.length > 0 && <TableOfContents toc={toc} />}
 </SidebarLayout>
 
-{
-  /* Cell dialogs are emitted into the generated HTML by the api-docs scripts,
-    so they are wired here rather than mounted as an island. */
-}
+{/* Cell dialogs are emitted into the generated HTML by the api-docs scripts,
+    so they are wired here rather than mounted as an island. */}
 <script>
   // open the dialog holding a table cell's full value (a long type signature, a
   // jexl default, an #example) — see dialogCell in scripts/api-docs/util.ts

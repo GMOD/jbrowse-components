@@ -29,18 +29,16 @@ const multiSection = page.sections.length > 1
 >
   <h1>{page.title}</h1>
   <p class="lead">{page.description}</p>
-  {
-    multiSection && (
-      <p>
-        On this page:{' '}
-        {page.sections.map((s, i) => (
-          <>
-            {i > 0 && ' · '}
-            <a href={`#${s.slug}`}>{s.title}</a>
-          </>
-        ))}
-      </p>
-    )
-  }
+  {multiSection && (
+    <p>
+      On this page:{' '}
+      {page.sections.map((s, i) => (
+        <>
+          {i > 0 && ' · '}
+          <a href={`#${s.slug}`}>{s.title}</a>
+        </>
+      ))}
+    </p>
+  )}
   <slot />
 </Shell>

@@ -27,42 +27,36 @@ const renderedPosts = await Promise.all(
 >
   <div class="content">
     <h1>Blog</h1>
-    {
-      renderedPosts.map(({ post, html, truncated }) => (
-        <article>
-          <header>
-            <h2>
-              <a href={`${baseUrl}/blog/${blogPath(post)}/`}>
-                {post.data.title}
-              </a>
-            </h2>
-            <div class={blog.meta}>
-              <time datetime={post.data.date.toISOString()}>
-                {formatBlogDate(post.data.date)}
-              </time>
-              {post.data.author && (
-                <span class="author">{post.data.author}</span>
-              )}
-              {post.data.tags && (
-                <div class={blog.tags}>
-                  {post.data.tags.map(tag => (
-                    <span class={blog.tag}>{tag}</span>
-                  ))}
-                </div>
-              )}
-            </div>
-          </header>
-          <div class:list={['post-body', blog.prose, prose.prose]}>
-            <Fragment set:html={html} />
-            {truncated && (
-              <a class="read-more" href={`${baseUrl}/blog/${blogPath(post)}/`}>
-                Read more →
-              </a>
+    {renderedPosts.map(({ post, html, truncated }) => (
+      <article>
+        <header>
+          <h2>
+            <a href={`${baseUrl}/blog/${blogPath(post)}/`}>{post.data.title}</a>
+          </h2>
+          <div class={blog.meta}>
+            <time datetime={post.data.date.toISOString()}>
+              {formatBlogDate(post.data.date)}
+            </time>
+            {post.data.author && <span class="author">{post.data.author}</span>}
+            {post.data.tags && (
+              <div class={blog.tags}>
+                {post.data.tags.map(tag => (
+                  <span class={blog.tag}>{tag}</span>
+                ))}
+              </div>
             )}
           </div>
-        </article>
-      ))
-    }
+        </header>
+        <div class:list={['post-body', blog.prose, prose.prose]}>
+          <Fragment set:html={html} />
+          {truncated && (
+            <a class="read-more" href={`${baseUrl}/blog/${blogPath(post)}/`}>
+              Read more →
+            </a>
+          )}
+        </div>
+      </article>
+    ))}
   </div>
 </BlogLayout>
 

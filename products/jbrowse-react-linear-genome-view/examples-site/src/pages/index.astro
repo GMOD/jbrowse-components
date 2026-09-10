@@ -34,23 +34,21 @@ const sourceLines = code.trimEnd().split('\n').length
 >
   <h1>JBrowse Linear Genome View</h1>
   <p class="lead">
-    <code>@jbrowse/react-linear-genome-view2</code> is a React component that embeds
-    a full linear genome browser (tracks, search, zoom/pan, and track selection) in
-    your app. For the parts rather than the finished component, the{' '}
-    <a href="https://jbrowse.org/storybook/byo/">Build your own</a> examples start
-    from this same engine and add the chrome back one piece at a time.
+    <code>@jbrowse/react-linear-genome-view2</code> is a React component that
+    embeds a full linear genome browser (tracks, search, zoom/pan, and track
+    selection) in your app. For the parts rather than the finished component,
+    the <a href="https://jbrowse.org/storybook/byo/">Build your own</a> examples
+    start from this same engine and add the chrome back one piece at a time.
   </p>
 
   <div class="doc">
     <h2>Live demo</h2>
     <p>
-      Human genes on hg38, opened at the <em>SHH</em> locus. Everything below is the
-      source that produced it.
+      Human genes on hg38, opened at the <em>SHH</em> locus. Everything below is
+      the source that produced it.
     </p>
-    {
-      /* held open at the height it settles at, so the install steps below don't
-    slide down the page when the island mounts. See `demoHeights`. */
-    }
+    {/* held open at the height it settles at, so the install steps below don't
+    slide down the page when the island mounts. See `demoHeights`. */}
     <div
       class:list={['demo', { reserved: !!reserved }]}
       style={reserved ? `min-height:${reserved}px` : undefined}
@@ -85,39 +83,41 @@ const sourceLines = code.trimEnd().split('\n').length
       </div>
     </div>
     <p>
-      <code>--legacy-peer-deps</code> silences npm's peer-dep warnings. yarn and pnpm
-      don't need it.
+      <code>--legacy-peer-deps</code> silences npm's peer-dep warnings. yarn and
+      pnpm don't need it.
     </p>
 
     <h2>Two things that cost people an hour</h2>
     <p>
-      <strong>It renders on the client only.</strong> The view needs a real DOM; server-rendering
-      and hydrating it are not supported. Vite, rsbuild and plain script tags just
-      work. In an SSR framework, mount it client-side — our Next.js demo wraps it
-      in a <code>'use client'</code> component loaded through{' '}
-      <a href="https://nextjs.org/docs/app/guides/lazy-loading"
-        ><code>next/dynamic</code></a
-      >{' '}
+      <strong>It renders on the client only.</strong> The view needs a real DOM;
+      server-rendering and hydrating it are not supported. Vite, rsbuild and
+      plain script tags just work. In an SSR framework, mount it client-side —
+      our Next.js demo wraps it in a <code>'use client'</code> component loaded
+      through{' '}
+      <a href="https://nextjs.org/docs/app/guides/lazy-loading">
+        <code>next/dynamic</code>
+      </a>{' '}
       with <code>{'{ ssr: false }'}</code>.
     </p>
     <p>
       <strong>It wants Roboto.</strong> Add{' '}
-      <a href="https://www.npmjs.com/package/@fontsource/roboto"
-        ><code>@fontsource/roboto</code></a
-      >{' '}
+      <a href="https://www.npmjs.com/package/@fontsource/roboto">
+        <code>@fontsource/roboto</code>
+      </a>{' '}
       or the chrome falls back to the host page's font.
     </p>
     <p>
       A step-by-step build is the{' '}
-      <a href="https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/"
-        >embedding tutorial</a
-      >; the{' '}
-      <a href="https://jbrowse.org/jb2/docs/embedded_components/"
-        >embedded components page</a
-      >{' '}
-      compares the packages and lists a deployed starter repo per bundler (Vite, rsbuild,
-      Next.js, vanilla JS). The full assembly and track config shape is the{' '}
-      <a href="https://jbrowse.org/jb2/docs/config_guide/">config guide</a>.
+      <a href="https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/">
+        embedding tutorial
+      </a>
+      ; the{' '}
+      <a href="https://jbrowse.org/jb2/docs/embedded_components/">
+        embedded components page
+      </a>{' '}
+      compares the packages and lists a deployed starter repo per bundler (Vite,
+      rsbuild, Next.js, vanilla JS). The full assembly and track config shape is
+      the <a href="https://jbrowse.org/jb2/docs/config_guide/">config guide</a>.
     </p>
   </div>
 

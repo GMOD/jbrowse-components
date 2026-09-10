@@ -15,8 +15,7 @@ const trail = breadcrumbTrail(
 )
 ---
 
-{
-  /* Where the page sits in the docs tree, for a reader who arrived from search
+{/* Where the page sits in the docs tree, for a reader who arrived from search
     or an external link. Matters most on mobile, where the sidebar is collapsed
     behind a toggle and is the only other place this is shown.
 
@@ -24,23 +23,20 @@ const trail = breadcrumbTrail(
     grouping, not a page, so most have nothing to point at.
 
     pagefind-ignored so "Docs User guide Track types" doesn't land in every
-    page's search excerpt (same reasoning as the inherited-member rows in generateStateModelDocs.ts). */
-}
-{
-  trail.length > 0 && (
-    <nav class="breadcrumbs" aria-label="Breadcrumb" data-pagefind-ignore>
-      <a href={`${baseUrl}/docs/`}>Docs</a>
-      {trail.map(label => (
-        <>
-          <span class="sep" aria-hidden="true">
-            /
-          </span>
-          <span>{label}</span>
-        </>
-      ))}
-    </nav>
-  )
-}
+    page's search excerpt (same reasoning as the inherited-member rows in generateStateModelDocs.ts). */}
+{trail.length > 0 && (
+  <nav class="breadcrumbs" aria-label="Breadcrumb" data-pagefind-ignore>
+    <a href={`${baseUrl}/docs/`}>Docs</a>
+    {trail.map(label => (
+      <>
+        <span class="sep" aria-hidden="true">
+          /
+        </span>
+        <span>{label}</span>
+      </>
+    ))}
+  </nav>
+)}
 
 <style>
   .breadcrumbs {

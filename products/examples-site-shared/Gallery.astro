@@ -19,23 +19,21 @@ const groups = [...new Set(examples.map(e => e.group))]
 ---
 
 <div class="gallery">
-  {
-    groups.map(group => (
-      <section>
-        <h2>{group}</h2>
-        <ul>
-          {examples
-            .filter(e => e.group === group)
-            .map(e => (
-              <li>
-                <a href={`${base}${e.slug}/`}>
-                  <div class="title">{e.title}</div>
-                  <div class="desc">{e.description}</div>
-                </a>
-              </li>
-            ))}
-        </ul>
-      </section>
-    ))
-  }
+  {groups.map(group => (
+    <section>
+      <h2>{group}</h2>
+      <ul>
+        {examples
+          .filter(e => e.group === group)
+          .map(e => (
+            <li>
+              <a href={`${base}${e.slug}/`}>
+                <div class="title">{e.title}</div>
+                <div class="desc">{e.description}</div>
+              </a>
+            </li>
+          ))}
+      </ul>
+    </section>
+  ))}
 </div>

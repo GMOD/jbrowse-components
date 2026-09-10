@@ -583,32 +583,26 @@ try {
       </a>
       <nav>
         <div class="siblings" aria-label="JBrowse embedded components">
-          {
-            siblings.map(s =>
-              isSelf(s.base) ? (
-                <span
-                  class="sibling current"
-                  aria-current="true"
-                  title={s.title}
-                >
-                  {s.label}
-                </span>
-              ) : (
-                <a class="sibling" href={siteHref(s.base)} title={s.title}>
-                  {s.label}
-                </a>
-              ),
-            )
-          }
+          {siblings.map(s =>
+            isSelf(s.base) ? (
+              <span class="sibling current" aria-current="true" title={s.title}>
+                {s.label}
+              </span>
+            ) : (
+              <a class="sibling" href={siteHref(s.base)} title={s.title}>
+                {s.label}
+              </a>
+            ),
+          )}
         </div>
         <a href={docsHref}>Embedding docs</a>
         <a href="https://jbrowse.org/jb2/">jbrowse.org</a>
-        {
-          /* the deployed commit — see `buildCommit` above. Also emitted as a
+        {/* the deployed commit — see `buildCommit` above. Also emitted as a
             <meta> in <head>, so checking what is live is a curl and a grep
-            rather than a screenshot. */
-        }
-        <span class="build-commit" title="deployed commit">{buildCommit}</span>
+            rather than a screenshot. */}
+        <span class="build-commit" title="deployed commit">
+          {buildCommit}
+        </span>
         <button
           type="button"
           id="theme-toggle"
@@ -621,41 +615,41 @@ try {
     </header>
     <div class="layout">
       <input type="checkbox" id="nav-toggle" class="nav-toggle-cb" />
-      <label class="nav-toggle-label" for="nav-toggle">☰ Examples menu</label>
+      <label class="nav-toggle-label" for="nav-toggle">
+        ☰ Examples menu
+      </label>
       <aside class="sidebar">
         <nav aria-label="Examples">
-          {
-            groups.map(group => (
-              <div class="nav-group">
-                <div class="nav-group-title">{group}</div>
-                <ul>
-                  {examples
-                    .filter(e => e.group === group)
-                    .map(e => (
-                      <li>
-                        <a
-                          href={`${base}${e.slug}/`}
-                          aria-current={isActive(e.slug) ? 'page' : undefined}
-                        >
-                          {e.title}
-                        </a>
-                        {sectionLinks(e).length > 0 && (
-                          <ul class="nav-sections">
-                            {sectionLinks(e).map(s => (
-                              <li>
-                                <a href={`${base}${e.slug}/#${s.slug}`}>
-                                  {s.title}
-                                </a>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </li>
-                    ))}
-                </ul>
-              </div>
-            ))
-          }
+          {groups.map(group => (
+            <div class="nav-group">
+              <div class="nav-group-title">{group}</div>
+              <ul>
+                {examples
+                  .filter(e => e.group === group)
+                  .map(e => (
+                    <li>
+                      <a
+                        href={`${base}${e.slug}/`}
+                        aria-current={isActive(e.slug) ? 'page' : undefined}
+                      >
+                        {e.title}
+                      </a>
+                      {sectionLinks(e).length > 0 && (
+                        <ul class="nav-sections">
+                          {sectionLinks(e).map(s => (
+                            <li>
+                              <a href={`${base}${e.slug}/#${s.slug}`}>
+                                {s.title}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </li>
+                  ))}
+              </ul>
+            </div>
+          ))}
         </nav>
       </aside>
       <main style={`max-width:${mainMaxWidth}`}>

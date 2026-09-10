@@ -14,11 +14,9 @@ const { toc } = Astro.props
 const defaultShow = toc.length >= 12
 ---
 
-{
-  /* Apply the preference before first paint so the rail doesn't flash in or out.
+{/* Apply the preference before first paint so the rail doesn't flash in or out.
     An explicit toggle wins in both directions; only an untouched preference
-    falls back to the page's own length. */
-}
+    falls back to the page's own length. */}
 <script is:inline define:vars={{ defaultShow }}>
   const stored = localStorage.getItem('jbrowse-toc')
   if (stored === 'show' || (stored === null && defaultShow)) {
@@ -39,22 +37,21 @@ const defaultShow = toc.length >= 12
       fill="none"
       stroke="currentColor"
       stroke-width="2"
-      stroke-linecap="round"></path>
+      stroke-linecap="round"
+    ></path>
   </svg>
   <span>On this page</span>
 </button>
 
 <aside class="toc" aria-label="Table of contents">
   <ul>
-    {
-      toc.map(item => (
-        <li class:list={['toc-item', `toc-depth-${item.depth}`]}>
-          <a href={`#${item.id}`} data-toc-link={item.id}>
-            {item.text}
-          </a>
-        </li>
-      ))
-    }
+    {toc.map(item => (
+      <li class:list={['toc-item', `toc-depth-${item.depth}`]}>
+        <a href={`#${item.id}`} data-toc-link={item.id}>
+          {item.text}
+        </a>
+      </li>
+    ))}
   </ul>
 </aside>
 

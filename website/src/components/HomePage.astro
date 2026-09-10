@@ -30,17 +30,15 @@ import btn from '../styles/button.module.css'
           Tutorials
         </a>
       </div>
-      {
-        newsletterApiUrl && (
-          <div class="newsletter-hero">
-            <p class="newsletter-label">
-              Get notified about new releases (
-              <a href={`${baseUrl}/blog/`}>latest release notes</a>)
-            </p>
-            <NewsletterSignup />
-          </div>
-        )
-      }
+      {newsletterApiUrl && (
+        <div class="newsletter-hero">
+          <p class="newsletter-label">
+            Get notified about new releases (
+            <a href={`${baseUrl}/blog/`}>latest release notes</a>)
+          </p>
+          <NewsletterSignup />
+        </div>
+      )}
     </div>
     <div class="hero-image">
       <button
@@ -125,9 +123,9 @@ import btn from '../styles/button.module.css'
         <p class="card-desc">Open your first genome.</p>
         <ul class="card-links">
           <li>
-            <a href={`${baseUrl}/docs/quickstart_desktop/`}
-              >Desktop quick start</a
-            >
+            <a href={`${baseUrl}/docs/quickstart_desktop/`}>
+              Desktop quick start
+            </a>
           </li>
           <li>
             <a href={`${baseUrl}/docs/quickstart_web/`}>Web quick start</a>
@@ -144,13 +142,21 @@ import btn from '../styles/button.module.css'
         <h3 class="card-title">Learn</h3>
         <p class="card-desc">Using, configuring and extending JBrowse.</p>
         <ul class="card-links">
-          <li><a href={`${baseUrl}/docs/user_guide/`}>User guide</a></li>
-          <li><a href={`${baseUrl}/docs/config_guide/`}>Config guide</a></li>
+          <li>
+            <a href={`${baseUrl}/docs/user_guide/`}>User guide</a>
+          </li>
+          <li>
+            <a href={`${baseUrl}/docs/config_guide/`}>Config guide</a>
+          </li>
           <li>
             <a href={`${baseUrl}/docs/developer_guide/`}>Developer guide</a>
           </li>
-          <li><a href={`${baseUrl}/docs/tutorials/`}>Tutorials</a></li>
-          <li><a href={`${baseUrl}/features/`}>Feature overview</a></li>
+          <li>
+            <a href={`${baseUrl}/docs/tutorials/`}>Tutorials</a>
+          </li>
+          <li>
+            <a href={`${baseUrl}/features/`}>Feature overview</a>
+          </li>
         </ul>
       </div>
       <div class="card">
@@ -159,19 +165,19 @@ import btn from '../styles/button.module.css'
         <p class="card-desc">Embed JBrowse and extend it with plugins.</p>
         <ul class="card-links">
           <li>
-            <a href={`${baseUrl}/docs/tutorials/embed_linear_genome_view/`}
-              >Embed a genome view</a
-            >
+            <a href={`${baseUrl}/docs/tutorials/embed_linear_genome_view/`}>
+              Embed a genome view
+            </a>
           </li>
           <li>
-            <a href={`${baseUrl}/docs/embedded_components/`}
-              >Embedded components reference</a
-            >
+            <a href={`${baseUrl}/docs/embedded_components/`}>
+              Embedded components reference
+            </a>
           </li>
           <li>
-            <a href={`${baseUrl}/docs/developer_guides/simple_plugin/`}
-              >Write a plugin</a
-            >
+            <a href={`${baseUrl}/docs/developer_guides/simple_plugin/`}>
+              Write a plugin
+            </a>
           </li>
         </ul>
       </div>
@@ -200,10 +206,11 @@ import btn from '../styles/button.module.css'
     <p class="body-text">
       Supported by the US National Institutes of Health (U41 HG003751), the Chan
       Zuckerberg Initiative, the Ontario Institute for Cancer Research (OICR),
-      and the University of California, Berkeley. Released under the <a
-        href="https://www.apache.org/licenses/LICENSE-2.0"
-        >Apache License, Version 2.0</a
-      >.
+      and the University of California, Berkeley. Released under the{' '}
+      <a href="https://www.apache.org/licenses/LICENSE-2.0">
+        Apache License, Version 2.0
+      </a>
+      .
     </p>
   </section>
 </div>

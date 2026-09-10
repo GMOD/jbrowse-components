@@ -14,8 +14,7 @@ const allDocs = await getCollection('docs')
 const sidebar = buildSiteSidebar(allDocs, baseUrl)
 ---
 
-{
-  /* A filter over the nav itself, not a search: 370-odd pages sit behind ten
+{/* A filter over the nav itself, not a search: 370-odd pages sit behind ten
      categories that are collapsed unless they hold the current page, so a
      reader who knows a page's name ("cookbook", "jexl", "BamAdapter") but not
      which category owns it had no way in short of opening every drawer.
@@ -24,10 +23,11 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
      a surviving row survives with it, so a hit still reads as "MAF track" under
      "Track types" under "User guide". That is what tells apart the several
      pages the same feature has in different categories. Distinct from the
-     header search, which is full-text over page bodies and leaves the page. */
-}
+     header search, which is full-text over page bodies and leaves the page. */}
 <div class="sidebar-filter">
-  <label class="sr-only" for="sidebar-filter-input">Filter documentation</label>
+  <label class="sr-only" for="sidebar-filter-input">
+    Filter documentation
+  </label>
   <input
     id="sidebar-filter-input"
     type="search"
@@ -42,12 +42,15 @@ const sidebar = buildSiteSidebar(allDocs, baseUrl)
   aria-live="polite"
   hidden
 >
-  No page titles match. <a href={`${baseUrl}/search/`} id="sidebar-filter-all"
-    >Search all docs</a
-  >
+  No page titles match.{' '}
+  <a href={`${baseUrl}/search/`} id="sidebar-filter-all">
+    Search all docs
+  </a>
 </p>
 <ul id="docs-sidebar-list">
-  {sidebar.map(item => <SidebarItem item={item} currentSlug={currentSlug} />)}
+  {sidebar.map(item => (
+    <SidebarItem item={item} currentSlug={currentSlug} />
+  ))}
 </ul>
 
 <script>

@@ -91,8 +91,8 @@ importers:
         specifier: ^30.0.0
         version: 30.0.0
       '@types/jest-image-snapshot':
-        specifier: ^6.4.1
-        version: 6.4.1
+        specifier: ^6.4.2
+        version: 6.4.2
       '@types/node':
         specifier: ^26.5.0
         version: 26.5.0
@@ -152,7 +152,7 @@ importers:
         version: 4.4.5(eslint-plugin-import-x@4.17.1(@typescript-eslint/utils@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1))(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)
       eslint-plugin-astro:
         specifier: 3.1.0
-        version: 3.1.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@typescript-eslint/parser@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript-eslint@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))
+        version: 3.1.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@typescript-eslint/parser@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript-eslint@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))
       eslint-plugin-import-x:
         specifier: ^4.17.1
         version: 4.17.1(@typescript-eslint/utils@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -208,8 +208,8 @@ importers:
         specifier: ^3.9.6
         version: 3.9.6
       prettier-plugin-astro:
-        specifier: ^0.14.1
-        version: 0.14.1
+        specifier: ^1.0.0
+        version: 1.0.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(prettier@3.9.6)
       puppeteer:
         specifier: ^25.10.0
         version: 25.10.0(yauzl@2.10.0)
@@ -2104,7 +2104,7 @@ importers:
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.10
-        version: 0.9.10(prettier-plugin-astro@0.14.1)(prettier@3.9.6)(typescript@6.0.3)
+        version: 0.9.10(prettier-plugin-astro@1.0.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(prettier@3.9.6))(prettier@3.9.6)(typescript@6.0.3)
       '@jbrowse/browser-test-utils':
         specifier: workspace:*
         version: link:../../../packages/browser-test-utils
@@ -2592,7 +2592,7 @@ importers:
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.10
-        version: 0.9.10(prettier-plugin-astro@0.14.1)(prettier@3.9.6)(typescript@6.0.3)
+        version: 0.9.10(prettier-plugin-astro@1.0.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(prettier@3.9.6))(prettier@3.9.6)(typescript@6.0.3)
       '@jbrowse/browser-test-utils':
         specifier: workspace:*
         version: link:../../../packages/browser-test-utils
@@ -2699,7 +2699,7 @@ importers:
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.10
-        version: 0.9.10(prettier-plugin-astro@0.14.1)(prettier@3.9.6)(typescript@6.0.3)
+        version: 0.9.10(prettier-plugin-astro@1.0.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(prettier@3.9.6))(prettier@3.9.6)(typescript@6.0.3)
       '@jbrowse/browser-test-utils':
         specifier: workspace:*
         version: link:../../../packages/browser-test-utils
@@ -2857,7 +2857,7 @@ importers:
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.10
-        version: 0.9.10(prettier-plugin-astro@0.14.1)(prettier@3.9.6)(typescript@6.0.3)
+        version: 0.9.10(prettier-plugin-astro@1.0.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(prettier@3.9.6))(prettier@3.9.6)(typescript@6.0.3)
       '@jbrowse/browser-test-utils':
         specifier: workspace:*
         version: link:../../../packages/browser-test-utils
@@ -3072,7 +3072,7 @@ importers:
     devDependencies:
       '@astrojs/check':
         specifier: ^0.9.10
-        version: 0.9.10(prettier-plugin-astro@0.14.1)(prettier@3.9.6)(typescript@6.0.3)
+        version: 0.9.10(prettier-plugin-astro@1.0.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(prettier@3.9.6))(prettier@3.9.6)(typescript@6.0.3)
       '@iconify-json/mdi':
         specifier: ^1.2.3
         version: 1.2.3
@@ -3095,8 +3095,8 @@ importers:
         specifier: ^1.5.2
         version: 1.5.2
       prettier-plugin-astro:
-        specifier: ^0.14.1
-        version: 0.14.1
+        specifier: ^1.0.0
+        version: 1.0.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(prettier@3.9.6)
       react:
         specifier: ^19.2.8
         version: 19.2.8
@@ -5647,6 +5647,9 @@ packages:
   '@popperjs/core@2.11.8':
     resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
 
+  '@prettier/parse-srcset@3.1.0':
+    resolution: {integrity: sha512-FIRv2rZotO9NP/r66taYqD1zICpPiBbrECqjKV/xqNotqDxF7fLzzUeK+1RSRx9Tenk0DajR/GcRmTJ2qtHaKQ==}
+
   '@puppeteer/browsers@3.2.2':
     resolution: {integrity: sha512-q2BU4YfO9h/Wt7IcWPcggpOOqLk2Tbs1hDwolvKZrweRjy751OJBKMN9zO5bfD0pzU7X/tvKw/exQds4pM/LOg==}
     engines: {node: '>=22.12.0'}
@@ -5938,8 +5941,8 @@ packages:
   '@types/istanbul-reports@3.0.4':
     resolution: {integrity: sha512-pk2B1NWalF9toCRu6gjBzR69syFjP4Od8WRAX+0mmf9lAjCRicLOWc+ZrxZHx/0XRjotgkF9t6iaMJ+aXcOdZQ==}
 
-  '@types/jest-image-snapshot@6.4.1':
-    resolution: {integrity: sha512-pj3Sdc7Cx5mMLUttPprazSDQCur2cr512Dm38e9aAHI55LDxEhqdyqzK9myC4EmEy7sPAF2nGJ8zifX4qso7sQ==}
+  '@types/jest-image-snapshot@6.4.2':
+    resolution: {integrity: sha512-w439RR3cs0GOMc8PMDqQwgazq85Rz4d8wt+rsM6i+4qYK5ziNZBVj7yMV6SzfLoq6D8FX4zltuWVWRtFmC1/Aw==}
 
   '@types/jest@30.0.0':
     resolution: {integrity: sha512-XTYugzhuwqWjws0CVz8QpM36+T+Dz5mTEBKhNs/esGLnCIlGdRy+Dq78NRjd7ls7r8BC8ZRMOrKlkO1hU0JOwA==}
@@ -9445,9 +9448,11 @@ packages:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
 
-  prettier-plugin-astro@0.14.1:
-    resolution: {integrity: sha512-RiBETaaP9veVstE4vUwSIcdATj6dKmXljouXc/DDNwBSPTp8FRkLGDSGFClKsAFeeg+13SB0Z1JZvbD76bigJw==}
-    engines: {node: ^14.15.0 || >=16.0.0}
+  prettier-plugin-astro@1.0.0:
+    resolution: {integrity: sha512-xOlwKNSaPkPPiJeOhiFk8/MA2eH5A+in99dID+weTJhPcq+FBdIaB/3UNFdy9ckmc8/bT7QNyxSb78cnopgElQ==}
+    engines: {node: '>=22.12.0'}
+    peerDependencies:
+      prettier: ^3.5.3
 
   prettier@3.9.6:
     resolution: {integrity: sha512-OpN0zzVdiaiAhxpuuj5efpIS4sY9j7bY6uR5mnj5yPzGkdkjNKSJeUThPb60Jw29QuAZgA4o+/iB49kFiaBX6g==}
@@ -9798,8 +9803,9 @@ packages:
   safer-buffer@2.1.2:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
 
-  sass-formatter@0.7.9:
-    resolution: {integrity: sha512-CWZ8XiSim+fJVG0cFLStwDvft1VI7uvXdCNJYXhDvowiv+DsbD1nXLiQ4zrE5UBvj5DWZJ93cwN0NX5PMsr1Pw==}
+  sass-formatter@0.8.0:
+    resolution: {integrity: sha512-Nf4eMGE2O5vnJG7KPCRyksWS9gVKSYoUWtPeMXRRxwZSPVQhSGtL602xVYS65LvMkHmkvKa7xpauF0+/5pPwrg==}
+    hasBin: true
 
   satteri@0.10.5:
     resolution: {integrity: sha512-Ao1LKpAEa9Wdg0otgbVKViZHEq9ebdXe4DMrp3s9vQAU0HNIuHnFEuMuOcm0ZIXyV0Yzxj91NvhLpvXZJO/5ZQ==}
@@ -10915,9 +10921,9 @@ snapshots:
       is-potential-custom-element-name: 1.0.1
       lru-cache: 11.5.2
 
-  '@astrojs/check@0.9.10(prettier-plugin-astro@0.14.1)(prettier@3.9.6)(typescript@6.0.3)':
+  '@astrojs/check@0.9.10(prettier-plugin-astro@1.0.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(prettier@3.9.6))(prettier@3.9.6)(typescript@6.0.3)':
     dependencies:
-      '@astrojs/language-server': 2.16.16(prettier-plugin-astro@0.14.1)(prettier@3.9.6)(typescript@6.0.3)
+      '@astrojs/language-server': 2.16.16(prettier-plugin-astro@1.0.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(prettier@3.9.6))(prettier@3.9.6)(typescript@6.0.3)
       chokidar: 4.0.3
       kleur: 4.1.5
       typescript: 6.0.3
@@ -10944,14 +10950,6 @@ snapshots:
   '@astrojs/compiler-binding-linux-x64-musl@0.4.0':
     optional: true
 
-  '@astrojs/compiler-binding-wasm32-wasi@0.4.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
-    dependencies:
-      '@napi-rs/wasm-runtime': 1.2.3(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
-    transitivePeerDependencies:
-      - '@emnapi/core'
-      - '@emnapi/runtime'
-    optional: true
-
   '@astrojs/compiler-binding-wasm32-wasi@0.4.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)':
     dependencies:
       '@napi-rs/wasm-runtime': 1.2.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)
@@ -10966,21 +10964,6 @@ snapshots:
   '@astrojs/compiler-binding-win32-x64-msvc@0.4.0':
     optional: true
 
-  '@astrojs/compiler-binding@0.4.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
-    optionalDependencies:
-      '@astrojs/compiler-binding-darwin-arm64': 0.4.0
-      '@astrojs/compiler-binding-darwin-x64': 0.4.0
-      '@astrojs/compiler-binding-linux-arm64-gnu': 0.4.0
-      '@astrojs/compiler-binding-linux-arm64-musl': 0.4.0
-      '@astrojs/compiler-binding-linux-x64-gnu': 0.4.0
-      '@astrojs/compiler-binding-linux-x64-musl': 0.4.0
-      '@astrojs/compiler-binding-wasm32-wasi': 0.4.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
-      '@astrojs/compiler-binding-win32-arm64-msvc': 0.4.0
-      '@astrojs/compiler-binding-win32-x64-msvc': 0.4.0
-    transitivePeerDependencies:
-      - '@emnapi/core'
-      - '@emnapi/runtime'
-
   '@astrojs/compiler-binding@0.4.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)':
     optionalDependencies:
       '@astrojs/compiler-binding-darwin-arm64': 0.4.0
@@ -10992,13 +10975,6 @@ snapshots:
       '@astrojs/compiler-binding-wasm32-wasi': 0.4.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)
       '@astrojs/compiler-binding-win32-arm64-msvc': 0.4.0
       '@astrojs/compiler-binding-win32-x64-msvc': 0.4.0
-    transitivePeerDependencies:
-      - '@emnapi/core'
-      - '@emnapi/runtime'
-
-  '@astrojs/compiler-rs@0.4.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
-    dependencies:
-      '@astrojs/compiler-binding': 0.4.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
@@ -11023,7 +10999,7 @@ snapshots:
       smol-toml: 1.8.0
       unified: 11.0.5
 
-  '@astrojs/language-server@2.16.16(prettier-plugin-astro@0.14.1)(prettier@3.9.6)(typescript@6.0.3)':
+  '@astrojs/language-server@2.16.16(prettier-plugin-astro@1.0.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(prettier@3.9.6))(prettier@3.9.6)(typescript@6.0.3)':
     dependencies:
       '@astrojs/compiler': 2.13.1
       '@astrojs/yaml2ts': 0.2.4
@@ -11045,7 +11021,7 @@ snapshots:
       vscode-uri: 3.2.0
     optionalDependencies:
       prettier: 3.9.6
-      prettier-plugin-astro: 0.14.1
+      prettier-plugin-astro: 1.0.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(prettier@3.9.6)
     transitivePeerDependencies:
       - typescript
 
@@ -13664,6 +13640,8 @@ snapshots:
 
   '@popperjs/core@2.11.8': {}
 
+  '@prettier/parse-srcset@3.1.0': {}
+
   '@puppeteer/browsers@3.2.2(yauzl@2.10.0)':
     dependencies:
       modern-tar: 0.8.5
@@ -13931,7 +13909,7 @@ snapshots:
     dependencies:
       '@types/istanbul-lib-report': 3.0.3
 
-  '@types/jest-image-snapshot@6.4.1':
+  '@types/jest-image-snapshot@6.4.2':
     dependencies:
       '@types/jest': 30.0.0
       '@types/pixelmatch': 5.2.6
@@ -14607,9 +14585,9 @@ snapshots:
 
   astring@1.9.0: {}
 
-  astro-eslint-parser@3.1.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(supports-color@8.1.1):
+  astro-eslint-parser@3.1.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(supports-color@8.1.1):
     dependencies:
-      '@astrojs/compiler-rs': 0.4.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)
+      '@astrojs/compiler-rs': 0.4.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)
       '@typescript-eslint/scope-manager': 8.69.0
       '@typescript-eslint/types': 8.69.0
       debug: 4.4.3(supports-color@8.1.1)
@@ -15637,12 +15615,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-astro@3.1.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(@typescript-eslint/parser@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript-eslint@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)):
+  eslint-plugin-astro@3.1.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(@typescript-eslint/parser@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3))(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript-eslint@8.70.0(eslint@10.10.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)):
     dependencies:
       '@eslint-community/eslint-utils': 4.10.1(eslint@10.10.0(supports-color@8.1.1))
       '@jridgewell/sourcemap-codec': 1.6.0
       '@typescript-eslint/types': 8.69.0
-      astro-eslint-parser: 3.1.0(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(supports-color@8.1.1)
+      astro-eslint-parser: 3.1.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(supports-color@8.1.1)
       eslint: 10.10.0(supports-color@8.1.1)
       espree: 11.2.0
       globals: 17.12.0
@@ -18259,11 +18237,15 @@ snapshots:
 
   prelude-ls@1.2.1: {}
 
-  prettier-plugin-astro@0.14.1:
+  prettier-plugin-astro@1.0.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)(prettier@3.9.6):
     dependencies:
-      '@astrojs/compiler': 2.13.1
+      '@astrojs/compiler-rs': 0.4.0(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.3)
+      '@prettier/parse-srcset': 3.1.0
       prettier: 3.9.6
-      sass-formatter: 0.7.9
+      sass-formatter: 0.8.0
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
 
   prettier@3.9.6: {}
 
@@ -18718,7 +18700,7 @@ snapshots:
 
   safer-buffer@2.1.2: {}
 
-  sass-formatter@0.7.9:
+  sass-formatter@0.8.0:
     dependencies:
       suf-log: 2.5.3
 

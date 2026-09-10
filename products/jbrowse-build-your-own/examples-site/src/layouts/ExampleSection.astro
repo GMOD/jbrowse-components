@@ -57,13 +57,11 @@ const Doc = doc?.Content
   >
     <slot />
   </div>
-  {
-    Doc && (
-      <div class="doc">
-        <Doc />
-      </div>
-    )
-  }
+  {Doc && (
+    <div class="doc">
+      <Doc />
+    </div>
+  )}
   <details class="source" open>
     <summary>View source — {sourceLines} lines</summary>
     <Code code={code} lang="tsx" />

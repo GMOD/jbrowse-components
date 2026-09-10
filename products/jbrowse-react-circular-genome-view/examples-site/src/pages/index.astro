@@ -15,15 +15,16 @@ import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
 >
   <h1>JBrowse Circular Genome View</h1>
   <p class="intro">
-    <code>@jbrowse/react-circular-genome-view2</code> is a React component that embeds
-    a whole-genome circular overview — well suited to structural variants and other
-    long-range, cross-chromosome relationships. For a single linear-track browser,
-    use the{' '}
-    <a href="https://jbrowse.org/storybook/lgv/"
-      ><code>@jbrowse/react-linear-genome-view2</code></a
-    > component instead, and the{' '}
-    <a href="https://jbrowse.org/storybook/byo/">Build your own</a> examples for one
-    whose chrome you draw yourself.
+    <code>@jbrowse/react-circular-genome-view2</code> is a React component that
+    embeds a whole-genome circular overview — well suited to structural variants
+    and other long-range, cross-chromosome relationships. For a single
+    linear-track browser, use the{' '}
+    <a href="https://jbrowse.org/storybook/lgv/">
+      <code>@jbrowse/react-linear-genome-view2</code>
+    </a>{' '}
+    component instead, and the{' '}
+    <a href="https://jbrowse.org/storybook/byo/">Build your own</a> examples for
+    one whose chrome you draw yourself.
   </p>
 
   <div class="doc">
@@ -36,19 +37,22 @@ import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
     <h2>Usage</h2>
     <p>
       The declarative <code>CircularGenomeView</code> component takes an{' '}
-      <code>assembly</code> and <code>tracks</code>, plus an <code>init</code> for
-      which tracks to open (the{' '}
-      <a href="https://jbrowse.org/jb2/docs/config_guide/">config guide</a> covers
-      the assembly/track shape). Because it draws to canvas and uses browser-only
-      APIs, render it client-side only — in a server-rendered framework (Next.js,
-      Remix), load it with the framework's client-only wrapper (e.g.{' '}
-      <code>next/dynamic</code> with <code>{'{ ssr: false }'}</code>). The{' '}
-      <a href="https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/"
-        >Embedding JBrowse tutorial</a
-      > is a worked example, and the{' '}
-      <a href="https://jbrowse.org/jb2/docs/embedded_components/"
-        >embedded components page</a
-      > compares the packages and links Vite/Next.js starter templates.
+      <code>assembly</code> and <code>tracks</code>, plus an <code>init</code>{' '}
+      for which tracks to open (the{' '}
+      <a href="https://jbrowse.org/jb2/docs/config_guide/">config guide</a>{' '}
+      covers the assembly/track shape). Because it draws to canvas and uses
+      browser-only APIs, render it client-side only — in a server-rendered
+      framework (Next.js, Remix), load it with the framework's client-only
+      wrapper (e.g. <code>next/dynamic</code> with{' '}
+      <code>{'{ ssr: false }'}</code>). The{' '}
+      <a href="https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/">
+        Embedding JBrowse tutorial
+      </a>{' '}
+      is a worked example, and the{' '}
+      <a href="https://jbrowse.org/jb2/docs/embedded_components/">
+        embedded components page
+      </a>{' '}
+      compares the packages and links Vite/Next.js starter templates.
     </p>
   </div>
 

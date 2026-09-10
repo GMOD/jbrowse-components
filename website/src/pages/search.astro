@@ -41,19 +41,17 @@ const FILTERS = [
       <span class={styles.count} id="search-count"></span>
     </div>
     <div class={styles.filters}>
-      {
-        FILTERS.map(filter => (
-          <label class={styles.filterLabel}>
-            <input
-              type="checkbox"
-              id={`filter-${filter.id}`}
-              data-category={filter.id}
-              checked
-            />{' '}
-            {filter.label}
-          </label>
-        ))
-      }
+      {FILTERS.map(filter => (
+        <label class={styles.filterLabel}>
+          <input
+            type="checkbox"
+            id={`filter-${filter.id}`}
+            data-category={filter.id}
+            checked
+          />{' '}
+          {filter.label}
+        </label>
+      ))}
     </div>
     <ul id="search-results" class={styles.results}></ul>
   </div>

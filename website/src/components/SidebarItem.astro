@@ -11,52 +11,45 @@ interface Props {
 const { item, currentSlug } = Astro.props
 ---
 
-{
-  /* A page under a section heading keeps the heading in its accessible name
+{/* A page under a section heading keeps the heading in its accessible name
      ("Adapter: BamAdapter") though not in its visible label: a screen reader
      moving link by link never sees the heading row, which is exactly the
      grouping the visible prefix used to carry. The visible text is a substring
-     of it, so the name still satisfies label-in-name. */
-}
-{
-  item.type === 'heading' ? (
-    <li class="sidebar-heading">{item.label}</li>
-  ) : item.type === 'link' ? (
-    <li>
-      <a
-        href={item.href}
-        class:list={[{ active: item.slug === currentSlug }]}
-        aria-current={item.slug === currentSlug ? 'page' : undefined}
-        aria-label={item.group ? `${item.group}: ${item.label}` : undefined}
-      >
-        {item.label}
-      </a>
-    </li>
-  ) : (
-    <li>
-      <details open={containsSlug(item, currentSlug)}>
-        <summary>
-          {item.href ? (
-            <a
-              href={item.href}
-              class:list={[
-                'summary-link',
-                { active: item.slug === currentSlug },
-              ]}
-              aria-current={item.slug === currentSlug ? 'page' : undefined}
-            >
-              {item.label}
-            </a>
-          ) : (
-            item.label
-          )}
-        </summary>
-        <ul>
-          {item.items.map(child => (
-            <SidebarItem item={child} currentSlug={currentSlug} />
-          ))}
-        </ul>
-      </details>
-    </li>
-  )
-}
+     of it, so the name still satisfies label-in-name. */}
+{item.type === 'heading' ? (
+  <li class="sidebar-heading">{item.label}</li>
+) : item.type === 'link' ? (
+  <li>
+    <a
+      href={item.href}
+      class:list={[{ active: item.slug === currentSlug }]}
+      aria-current={item.slug === currentSlug ? 'page' : undefined}
+      aria-label={item.group ? `${item.group}: ${item.label}` : undefined}
+    >
+      {item.label}
+    </a>
+  </li>
+) : (
+  <li>
+    <details open={containsSlug(item, currentSlug)}>
+      <summary>
+        {item.href ? (
+          <a
+            href={item.href}
+            class:list={['summary-link', { active: item.slug === currentSlug }]}
+            aria-current={item.slug === currentSlug ? 'page' : undefined}
+          >
+            {item.label}
+          </a>
+        ) : (
+          item.label
+        )}
+      </summary>
+      <ul>
+        {item.items.map(child => (
+          <SidebarItem item={child} currentSlug={currentSlug} />
+        ))}
+      </ul>
+    </details>
+  </li>
+)}

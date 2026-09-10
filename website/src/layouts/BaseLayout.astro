@@ -88,16 +88,14 @@ const year = new Date().getFullYear()
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
     <link rel="canonical" href={Astro.url.href} />
-    {
-      mdHref && (
-        <link
-          rel="alternate"
-          type="text/markdown"
-          href={mdHref}
-          title="Markdown"
-        />
-      )
-    }
+    {mdHref && (
+      <link
+        rel="alternate"
+        type="text/markdown"
+        href={mdHref}
+        title="Markdown"
+      />
+    )}
     <link rel="sitemap" href={`${baseUrl}/sitemap.xml`} />
     <link
       rel="alternate"
@@ -171,7 +169,9 @@ const year = new Date().getFullYear()
     </style>
   </head>
   <body>
-    <a class={styles.skipLink} href="#main-content">Skip to main content</a>
+    <a class={styles.skipLink} href="#main-content">
+      Skip to main content
+    </a>
     <nav class={styles.nav} aria-label="Main">
       <a class={styles.brand} href={`${baseUrl}/`}>
         <img src={`${baseUrl}/img/logo.svg`} alt="" />
@@ -179,17 +179,15 @@ const year = new Date().getFullYear()
       </a>
 
       <div class={styles.navLinks} id="nav-links">
-        {
-          nav.map(({ href, label, active }) => (
-            <a
-              href={href}
-              aria-current={active ? 'page' : undefined}
-              class:list={[{ [navActive]: active }]}
-            >
-              {label}
-            </a>
-          ))
-        }
+        {nav.map(({ href, label, active }) => (
+          <a
+            href={href}
+            aria-current={active ? 'page' : undefined}
+            class:list={[{ [navActive]: active }]}
+          >
+            {label}
+          </a>
+        ))}
         <a
           href="https://genomes.jbrowse.org/"
           class={styles.navExternalLink}
@@ -210,7 +208,8 @@ const year = new Date().getFullYear()
             stroke-linejoin="round"
             aria-hidden="true"
           >
-            <path d="M7 17 17 7"></path><path d="M7 7h10v10"></path>
+            <path d="M7 17 17 7"></path>
+            <path d="M7 7h10v10"></path>
           </svg>
         </a>
       </div>
@@ -223,7 +222,8 @@ const year = new Date().getFullYear()
           target="_blank"
           rel="noopener noreferrer"
           aria-label="JBrowse on GitHub"
-          title="JBrowse on GitHub"></a>
+          title="JBrowse on GitHub"
+        ></a>
       </div>
 
       <button
@@ -245,13 +245,17 @@ const year = new Date().getFullYear()
         <div class={styles.footerCol}>
           <h4>Docs</h4>
           <ul>
-            <li><a href={`${baseUrl}/docs/`}>Documentation</a></li>
+            <li>
+              <a href={`${baseUrl}/docs/`}>Documentation</a>
+            </li>
             <li>
               <a
                 href="https://genomes.jbrowse.org/"
                 target="_blank"
-                rel="noopener noreferrer">Genome Hubs ↗</a
+                rel="noopener noreferrer"
               >
+                Genome Hubs ↗
+              </a>
             </li>
           </ul>
         </div>
@@ -262,58 +266,74 @@ const year = new Date().getFullYear()
               <a
                 href="https://app.gitter.im/#/room/#GMOD_jbrowse2:gitter.im"
                 target="_blank"
-                rel="noopener noreferrer">Gitter chat ↗</a
+                rel="noopener noreferrer"
               >
+                Gitter chat ↗
+              </a>
             </li>
             <li>
               <a
                 href="https://bsky.app/profile/jbrowse.org"
                 target="_blank"
-                rel="noopener noreferrer">Bluesky ↗</a
+                rel="noopener noreferrer"
               >
+                Bluesky ↗
+              </a>
             </li>
             <li>
               <a
                 href="https://genomic.social/@usejbrowse"
                 target="_blank"
-                rel="noopener noreferrer">Mastodon ↗</a
+                rel="noopener noreferrer"
               >
+                Mastodon ↗
+              </a>
             </li>
             <li>
               <a
                 href="https://www.youtube.com/@jbrowse6740"
                 target="_blank"
-                rel="noopener noreferrer">YouTube ↗</a
+                rel="noopener noreferrer"
               >
+                YouTube ↗
+              </a>
             </li>
-            <li><a href={`${baseUrl}/contact/`}>Contact</a></li>
-            {
-              newsletterApiUrl && (
-                <li>
-                  <a href={`${baseUrl}/contact/#newsletter`}>Newsletter</a>
-                </li>
-              )
-            }
+            <li>
+              <a href={`${baseUrl}/contact/`}>Contact</a>
+            </li>
+            {newsletterApiUrl && (
+              <li>
+                <a href={`${baseUrl}/contact/#newsletter`}>Newsletter</a>
+              </li>
+            )}
           </ul>
         </div>
         <div class={styles.footerCol}>
           <h4>More</h4>
           <ul>
-            <li><a href={`${baseUrl}/blog/`}>Blog</a></li>
-            <li><a href={`${baseUrl}/rss.xml`}>Blog RSS feed</a></li>
+            <li>
+              <a href={`${baseUrl}/blog/`}>Blog</a>
+            </li>
+            <li>
+              <a href={`${baseUrl}/rss.xml`}>Blog RSS feed</a>
+            </li>
             <li>
               <a
                 href="https://github.com/GMOD/jbrowse-components"
                 target="_blank"
-                rel="noopener noreferrer">GitHub ↗</a
+                rel="noopener noreferrer"
               >
+                GitHub ↗
+              </a>
             </li>
             <li>
               <a
                 href="https://jbrowse.org/jbrowse1.html"
                 target="_blank"
-                rel="noopener noreferrer">Looking for JBrowse 1? ↗</a
+                rel="noopener noreferrer"
               >
+                Looking for JBrowse 1? ↗
+              </a>
             </li>
           </ul>
         </div>

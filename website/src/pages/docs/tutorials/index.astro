@@ -127,51 +127,50 @@ const HAS_THUMB = new Set(
   <p class="lead">
     Hands-on walkthroughs of common JBrowse workflows, from first setup to
     advanced analysis. The first section runs on
-    <a href="https://genomes.jbrowse.org" target="_blank" rel="noopener"
-      >genomes.jbrowse.org</a
-    >, which hosts a configured JBrowse for every UCSC genome, so those pages
+    <a href="https://genomes.jbrowse.org" target="_blank" rel="noopener">
+      genomes.jbrowse.org
+    </a>
+    , which hosts a configured JBrowse for every UCSC genome, so those pages
     need nothing installed and no data prepared.
   </p>
-  {
-    grouped.map(group => (
-      <section class="tut-section">
-        <h2 class="tut-heading">{group.category}</h2>
-        <div class="tut-grid">
-          {group.items.map(tutorial => (
-            <a
-              class="tut-card"
-              href={tutorial.href}
-              target={tutorial.external ? '_blank' : undefined}
-              rel={tutorial.external ? 'noopener' : undefined}
-            >
-              {HAS_THUMB.has(tutorial.key) ? (
-                <img
-                  class="tut-thumb"
-                  src={`${baseUrl}/img/tutorial-thumbs/${tutorial.key}.webp`}
-                  loading="lazy"
-                  decoding="async"
-                  alt={`Preview of ${tutorial.title}`}
-                />
-              ) : (
-                <span class="tut-thumb tut-thumb-empty">
-                  {tutorial.key === 'cli_desktop' ? '$ jbrowse' : 'JBrowse 2'}
-                </span>
-              )}
-              <span class="tut-card-body">
-                <span class="tut-card-title">
-                  {tutorial.title}
-                  {tutorial.external && <span class="tut-ext"> ↗</span>}
-                </span>
-                {tutorial.description && (
-                  <span class="tut-card-desc">{tutorial.description}</span>
-                )}
+  {grouped.map(group => (
+    <section class="tut-section">
+      <h2 class="tut-heading">{group.category}</h2>
+      <div class="tut-grid">
+        {group.items.map(tutorial => (
+          <a
+            class="tut-card"
+            href={tutorial.href}
+            target={tutorial.external ? '_blank' : undefined}
+            rel={tutorial.external ? 'noopener' : undefined}
+          >
+            {HAS_THUMB.has(tutorial.key) ? (
+              <img
+                class="tut-thumb"
+                src={`${baseUrl}/img/tutorial-thumbs/${tutorial.key}.webp`}
+                loading="lazy"
+                decoding="async"
+                alt={`Preview of ${tutorial.title}`}
+              />
+            ) : (
+              <span class="tut-thumb tut-thumb-empty">
+                {tutorial.key === 'cli_desktop' ? '$ jbrowse' : 'JBrowse 2'}
               </span>
-            </a>
-          ))}
-        </div>
-      </section>
-    ))
-  }
+            )}
+            <span class="tut-card-body">
+              <span class="tut-card-title">
+                {tutorial.title}
+                {tutorial.external && <span class="tut-ext"> ↗</span>}
+              </span>
+              {tutorial.description && (
+                <span class="tut-card-desc">{tutorial.description}</span>
+              )}
+            </span>
+          </a>
+        ))}
+      </div>
+    </section>
+  ))}
 </DocsLayout>
 
 <style>

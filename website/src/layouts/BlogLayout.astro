@@ -58,32 +58,28 @@ const currentYear = currentSlug ? currentSlug.split('/')[0]! : ''
     <li>
       <a href={`${baseUrl}/rss.xml`}>RSS feed</a>
     </li>
-    {
-      years.map(year => (
-        <li>
-          <details
-            open={year === currentYear || (!currentSlug && year === years[0])}
-          >
-            <summary>{year}</summary>
-            <ul>
-              {byYear.get(year)!.map(post => (
-                <li>
-                  <a
-                    href={post.href}
-                    class:list={[{ active: post.slug === currentSlug }]}
-                    aria-current={
-                      post.slug === currentSlug ? 'page' : undefined
-                    }
-                  >
-                    {post.title}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </details>
-        </li>
-      ))
-    }
+    {years.map(year => (
+      <li>
+        <details
+          open={year === currentYear || (!currentSlug && year === years[0])}
+        >
+          <summary>{year}</summary>
+          <ul>
+            {byYear.get(year)!.map(post => (
+              <li>
+                <a
+                  href={post.href}
+                  class:list={[{ active: post.slug === currentSlug }]}
+                  aria-current={post.slug === currentSlug ? 'page' : undefined}
+                >
+                  {post.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+      </li>
+    ))}
   </ul>
   <div class="blog-content">
     <slot />

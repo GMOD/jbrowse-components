@@ -21,21 +21,22 @@ const sourceLines = code.trimEnd().split('\n').length
 >
   <h1>JBrowse React App</h1>
   <p class="intro">
-    <code>@jbrowse/react-app2</code> embeds the full multi-view JBrowse 2 app — menu
-    bar, view manager, drawer widgets, and every view type — in a single React component.
-    If you only need a single track view, the lighter{' '}
-    <a href="https://jbrowse.org/storybook/lgv/"
-      ><code>@jbrowse/react-linear-genome-view2</code></a
-    > component is a better fit, and the{' '}
-    <a href="https://jbrowse.org/storybook/byo/">Build your own</a> examples keep
-    the engine and rebuild the chrome from scratch.
+    <code>@jbrowse/react-app2</code> embeds the full multi-view JBrowse 2 app —
+    menu bar, view manager, drawer widgets, and every view type — in a single
+    React component. If you only need a single track view, the lighter{' '}
+    <a href="https://jbrowse.org/storybook/lgv/">
+      <code>@jbrowse/react-linear-genome-view2</code>
+    </a>{' '}
+    component is a better fit, and the{' '}
+    <a href="https://jbrowse.org/storybook/byo/">Build your own</a> examples
+    keep the engine and rebuild the chrome from scratch.
   </p>
 
   <div class="doc">
     <h2>Live demo</h2>
     <p>
-      A real-world hg38 session at the <em>SHH</em> locus — genes, repeats, exome
-      alignments, variants, and conservation.
+      A real-world hg38 session at the <em>SHH</em> locus — genes, repeats,
+      exome alignments, variants, and conservation.
     </p>
     <div class:list={['demo', { fill: demoFillHeight }]}>
       <Example client:only="react" />
@@ -51,19 +52,20 @@ const sourceLines = code.trimEnd().split('\n').length
 
     <h2>Quick start</h2>
     <p>
-      Render the <code>JBrowse</code> component with your assemblies, tracks, and
-      the views to open on load:
+      Render the <code>JBrowse</code> component with your assemblies, tracks,
+      and the views to open on load:
     </p>
     <Code code={quickstart} lang="tsx" />
     <p>
       For production, offload data parsing and rendering to a{' '}
-      <a href={`${base}/customizing-the-app/#with-web-worker`}>web worker</a> so the
-      main thread stays responsive. The examples in the sidebar cover the rest: theming,
-      loading a <code>config.json</code>, the other view types, and plugins.
-      Full API and configuration reference lives in the{' '}
-      <a href="https://jbrowse.org/jb2/docs/embedded_components/"
-        >embedding docs</a
-      >.
+      <a href={`${base}/customizing-the-app/#with-web-worker`}>web worker</a> so
+      the main thread stays responsive. The examples in the sidebar cover the
+      rest: theming, loading a <code>config.json</code>, the other view types,
+      and plugins. Full API and configuration reference lives in the{' '}
+      <a href="https://jbrowse.org/jb2/docs/embedded_components/">
+        embedding docs
+      </a>
+      .
     </p>
   </div>
 </Shell>

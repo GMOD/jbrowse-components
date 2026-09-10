@@ -38,30 +38,26 @@ const desktopDownloads = [
       many sources.
     </p>
     <div class="download-cards">
-      {
-        desktopDownloads.map(({ os, suffix, icon }) => (
-          <div class="download-card">
-            <div class="card-icon">
-              <Icon name={icon} width="40" height="40" />
-            </div>
-            <h3>{os}</h3>
-            <a
-              class:list={[btn.btn, btn.btnPrimary, btn.btnSmall]}
-              href={`${desktopBase}/jbrowse-desktop-${currentVersion}-${suffix}`}
-            >
-              Download
-            </a>
+      {desktopDownloads.map(({ os, suffix, icon }) => (
+        <div class="download-card">
+          <div class="card-icon">
+            <Icon name={icon} width="40" height="40" />
           </div>
-        ))
-      }
+          <h3>{os}</h3>
+          <a
+            class:list={[btn.btn, btn.btnPrimary, btn.btnSmall]}
+            href={`${desktopBase}/jbrowse-desktop-${currentVersion}-${suffix}`}
+          >
+            Download
+          </a>
+        </div>
+      ))}
     </div>
     <p class="caption">
-      Check out our <a href={`${baseUrl}/docs/quickstart_desktop/`}
-        >quick start guide</a
-      >{' '}
-      after downloading. Can't find what you're looking for? Check <a
-        href={ghRelease}>other platforms</a
-      >.
+      Check out our{' '}
+      <a href={`${baseUrl}/docs/quickstart_desktop/`}>quick start guide</a>{' '}
+      after downloading. Can't find what you're looking for? Check{' '}
+      <a href={ghRelease}>other platforms</a>.
     </p>
 
     <h2>JBrowse Web</h2>
@@ -70,9 +66,9 @@ const desktopDownloads = [
       your own website.
     </p>
     <div class="web-download">
-      <a class:list={[btn.btn, btn.btnPrimary]} href={webZip}
-        >Download JBrowse Web</a
-      >
+      <a class:list={[btn.btn, btn.btnPrimary]} href={webZip}>
+        Download JBrowse Web
+      </a>
     </div>
     <p>
       Consider installing the JBrowse CLI tools (below), which can be used to
@@ -92,8 +88,8 @@ const desktopDownloads = [
 
     <h2>Static image generator</h2>
     <p>
-      <a href={`${baseUrl}/docs/jbrowse-img/`}>@jbrowse/img</a> generates images of
-      JBrowse 2 statically on the command line. See the{' '}
+      <a href={`${baseUrl}/docs/jbrowse-img/`}>@jbrowse/img</a> generates images
+      of JBrowse 2 statically on the command line. See the{' '}
       <a href={`${baseUrl}/docs/jbrowse-img/`}>documentation</a> or the{' '}
       <a href="https://www.npmjs.com/package/@jbrowse/img">NPM package</a>.
     </p>
@@ -104,35 +100,28 @@ const desktopDownloads = [
         <a href="https://www.npmjs.com/package/@jbrowse/react-app2">
           @jbrowse/react-app2
         </a>{' '}
-        — full JBrowse 2 app React component on NPM (<a href={appExamples}
-          >live examples</a
-        >)
+        — full JBrowse 2 app React component on NPM (
+        <a href={appExamples}>live examples</a>)
       </li>
       <li>
-        <a
-          href="https://www.npmjs.com/package/@jbrowse/react-linear-genome-view2"
-        >
+        <a href="https://www.npmjs.com/package/@jbrowse/react-linear-genome-view2">
           @jbrowse/react-linear-genome-view2
         </a>{' '}
-        — linear genome browser React component on NPM (<a href={lgvExamples}
-          >live examples</a
-        >)
+        — linear genome browser React component on NPM (
+        <a href={lgvExamples}>live examples</a>)
       </li>
       <li>
-        <a
-          href="https://www.npmjs.com/package/@jbrowse/react-circular-genome-view2"
-        >
+        <a href="https://www.npmjs.com/package/@jbrowse/react-circular-genome-view2">
           @jbrowse/react-circular-genome-view2
         </a>{' '}
-        — circular genome browser React component on NPM (<a href={cgvExamples}
-          >live examples</a
-        >)
+        — circular genome browser React component on NPM (
+        <a href={cgvExamples}>live examples</a>)
       </li>
     </ul>
     <p>
-      More info in the <a href={`${baseUrl}/docs/embedded_components/`}
-        >embedded docs</a
-      >, including examples with create-react-app, vite, next.js, and vanillajs.
+      More info in the{' '}
+      <a href={`${baseUrl}/docs/embedded_components/`}>embedded docs</a>,
+      including examples with create-react-app, vite, next.js, and vanillajs.
     </p>
 
     <h2>Other language bindings</h2>
@@ -144,8 +133,8 @@ const desktopDownloads = [
       </li>
       <li>
         R/Shiny: <a href={`${baseUrl}/docs/jbrowser/`}>Documentation</a>,{' '}
-        <a href="https://gmod.github.io/JBrowseR/">JBrowseR</a>{' '}
-        — R package on CRAN
+        <a href="https://gmod.github.io/JBrowseR/">JBrowseR</a> — R package on
+        CRAN
       </li>
     </ul>
   </div>

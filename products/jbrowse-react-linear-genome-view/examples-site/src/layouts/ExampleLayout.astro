@@ -26,21 +26,19 @@ const multiSection = page.sections.length > 1
 >
   <h1>{page.title}</h1>
   <p class="lead">{page.description}</p>
-  {
-    multiSection && (
-      <nav class="toc" aria-label="On this page">
-        <div class="toc-title">On this page</div>
-        <ol>
-          {page.sections.map(s => (
-            <li>
-              <a href={`#${s.slug}`}>{s.title}</a>
-              {s.description && <span class="toc-desc">{s.description}</span>}
-            </li>
-          ))}
-        </ol>
-      </nav>
-    )
-  }
+  {multiSection && (
+    <nav class="toc" aria-label="On this page">
+      <div class="toc-title">On this page</div>
+      <ol>
+        {page.sections.map(s => (
+          <li>
+            <a href={`#${s.slug}`}>{s.title}</a>
+            {s.description && <span class="toc-desc">{s.description}</span>}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )}
   <slot />
 </Shell>
 
