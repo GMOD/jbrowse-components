@@ -11,7 +11,7 @@ import {
   setupAutoUpdater,
 } from './autoUpdater.ts'
 
-import type { AppUpdater, UpdateCheckResult } from 'electron-updater'
+import type { Updater } from './autoUpdater.ts'
 
 jest.mock('electron', () => ({
   dialog: { showMessageBox: jest.fn() },
@@ -39,37 +39,48 @@ const titles = () => showMessageBox.mock.calls.map(([options]) => options.title)
 const flush = () => new Promise(resolve => setTimeout(resolve, 0))
 
 type UpdateEvent = 'update-available' | 'update-downloaded'
+type UpdateListener = (info: { version: string }) => void
 
 /**
- * Enough of electron-updater's surface for the module under test: the two
- * events it subscribes to, the three calls it makes, and the flags it sets.
+ * A stand-in for the real updater — no cast anywhere, because `Updater` is the
+ * surface the module under test actually drives, so an object carrying those
+ * members is one. That the real `autoUpdater` is also one is proved at
+ * electron.ts's call site rather than here.
  *
- * `fire` takes only a version, because that is the only field either handler
- * reads and the rest of an UpdateInfo would be noise at every call site. Its
- * own listener map rather than an EventEmitter, which lint would rather were an
- * EventTarget — and neither is really the point here.
+ * `fire` delivers an event to whatever setupAutoUpdater subscribed. It takes
+ * only a version, because that is the only field either handler reads and the
+ * rest of an UpdateInfo would be noise at every call site.
  */
-function fakeUpdater() {
-  const listeners = new Map<string, ((info: { version: string }) => void)[]>()
-  const updater = {
-    on(event: string, listener: (info: { version: string }) => void) {
+type FakeUpdater = Updater & {
+  fire: (event: UpdateEvent, version: string) => void
+  checkForUpdates: jest.Mock<Promise<{ isUpdateAvailable: boolean } | null>, []>
+  downloadUpdate: jest.Mock<Promise<string[]>, []>
+  quitAndInstall: jest.Mock<void, [boolean, boolean]>
+}
+
+function fakeUpdater(): FakeUpdater {
+  const listeners = new Map<string, UpdateListener[]>()
+  return {
+    autoDownload: true,
+    disableWebInstaller: false,
+    disableDifferentialDownload: false,
+    forceDevUpdateConfig: false,
+    logger: null,
+    on(event, listener) {
       listeners.set(event, [...(listeners.get(event) ?? []), listener])
-      return updater
     },
-    fire(event: UpdateEvent, version: string) {
+    fire(event, version) {
       for (const listener of listeners.get(event) ?? []) {
         listener({ version })
       }
     },
     checkForUpdates: jest.fn(),
-    downloadUpdate: jest.fn().mockResolvedValue([]),
+    downloadUpdate: jest.fn<Promise<string[]>, []>().mockResolvedValue([]),
     quitAndInstall: jest.fn(),
   }
-  return updater as unknown as AppUpdater & typeof updater
 }
 
-const available = (isUpdateAvailable: boolean) =>
-  ({ isUpdateAvailable }) as UpdateCheckResult
+const available = (isUpdateAvailable: boolean) => ({ isUpdateAvailable })
 
 let logDir: string
 let logPath: string

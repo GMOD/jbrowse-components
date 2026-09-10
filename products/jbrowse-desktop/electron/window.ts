@@ -22,9 +22,9 @@ import {
 import { logError } from './util.ts'
 import windowStateKeeper from './windowStateKeeper.ts'
 
+import type { Updater } from './autoUpdater.ts'
 import type { AuthWindowParams } from './ipc/channelTypes.ts'
 import type { LaunchTarget } from './launchTarget.ts'
-import type { AppUpdater } from 'electron-updater'
 
 const DEFAULT_WINDOW_WIDTH = 1400
 const DEFAULT_WINDOW_HEIGHT = 800
@@ -110,7 +110,7 @@ async function showConnectAgentDialog() {
   }
 }
 
-function createMenu(autoUpdater: AppUpdater) {
+function createMenu(autoUpdater: Updater) {
   return Menu.buildFromTemplate([
     { role: 'appMenu' },
     { role: 'fileMenu' },
@@ -161,7 +161,7 @@ function createMenu(autoUpdater: AppUpdater) {
 }
 
 export async function createMainWindow(
-  autoUpdater: AppUpdater,
+  autoUpdater: Updater,
   devServerUrl: string | undefined,
   initialTarget: LaunchTarget | undefined,
   renderer: string | undefined,

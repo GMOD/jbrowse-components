@@ -4,7 +4,33 @@ import { ipcHandle } from './ipc/channels.ts'
 import { createUpdateLog } from './updateLog.ts'
 import { logError } from './util.ts'
 
-import type { AppUpdater } from 'electron-updater'
+import type { Logger } from 'electron-updater'
+
+/**
+ * The part of electron-updater's `AppUpdater` this module drives: two events,
+ * three calls, and the settings.
+ *
+ * Named rather than taken whole because `AppUpdater` is an abstract class over
+ * a typed EventEmitter, and a stand-in for it can only be built by casting an
+ * emitter through `unknown` — which is a double for the base class rather than
+ * for anything this file uses. The real `autoUpdater` satisfies this
+ * structurally, and electron.ts and window.ts hand it over, so a signature that
+ * drifts upstream fails there.
+ */
+export interface Updater {
+  autoDownload: boolean
+  disableWebInstaller: boolean
+  disableDifferentialDownload: boolean
+  forceDevUpdateConfig: boolean
+  logger: Logger | null
+  on(
+    event: 'update-available' | 'update-downloaded',
+    listener: (info: { version: string }) => void,
+  ): unknown
+  checkForUpdates(): Promise<{ isUpdateAvailable: boolean } | null>
+  downloadUpdate(): Promise<string[]>
+  quitAndInstall(isSilent: boolean, isForceRunAfter: boolean): void
+}
 
 const RELEASE_NOTES_URL =
   'https://github.com/GMOD/jbrowse-components/releases/tag/v'
@@ -87,7 +113,7 @@ export async function askAboutVersion({
   return response
 }
 
-async function offerUpdate(autoUpdater: AppUpdater, version: string) {
+async function offerUpdate(autoUpdater: Updater, version: string) {
   if (!interactive()) {
     console.log(`Update ${version} available (CI mode, skipping dialog)`)
     return
@@ -113,7 +139,7 @@ async function offerUpdate(autoUpdater: AppUpdater, version: string) {
   }
 }
 
-async function offerRestart(autoUpdater: AppUpdater, version: string) {
+async function offerRestart(autoUpdater: Updater, version: string) {
   if (!interactive()) {
     console.log(`Update ${version} downloaded (CI mode, skipping dialog)`)
     return
@@ -134,7 +160,7 @@ async function offerRestart(autoUpdater: AppUpdater, version: string) {
  * dialog nobody asked for, and an update it does find announces itself through
  * the update-available handler. electron-updater logs the failure itself.
  */
-export function checkForUpdatesInBackground(autoUpdater: AppUpdater) {
+export function checkForUpdatesInBackground(autoUpdater: Updater) {
   if (interactive()) {
     autoUpdater.checkForUpdates().catch(logError)
   }
@@ -152,7 +178,7 @@ export function checkForUpdatesInBackground(autoUpdater: AppUpdater) {
  *
  * Never rejects.
  */
-export async function checkForUpdatesManually(autoUpdater: AppUpdater) {
+export async function checkForUpdatesManually(autoUpdater: Updater) {
   try {
     const result = await autoUpdater.checkForUpdates()
     if (!result) {
@@ -171,7 +197,7 @@ export async function checkForUpdatesManually(autoUpdater: AppUpdater) {
   }
 }
 
-export function setupAutoUpdater(autoUpdater: AppUpdater, logPath: string) {
+export function setupAutoUpdater(autoUpdater: Updater, logPath: string) {
   // Where an update that went wrong on someone else's machine can be read back
   // from. See createUpdateLog.
   autoUpdater.logger = createUpdateLog(logPath)

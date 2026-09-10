@@ -1,5 +1,7 @@
 import fs from 'node:fs'
 
+import type { Logger } from 'electron-updater'
+
 // Generous for what electron-updater writes — a handful of lines per check — so
 // the file holds months, and small enough that a user can attach it to an issue.
 const MAX_BYTES = 256 * 1024
@@ -28,7 +30,7 @@ function format(value: unknown) {
  * Every write is guarded. A log that cannot be written (a read-only home, a
  * full disk) must not be the reason an update fails.
  */
-export function createUpdateLog(logPath: string) {
+export function createUpdateLog(logPath: string): Required<Logger> {
   rotate(logPath)
   const record = (level: string, value: unknown) => {
     try {

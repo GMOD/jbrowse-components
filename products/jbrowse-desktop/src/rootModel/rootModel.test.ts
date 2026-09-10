@@ -152,7 +152,13 @@ test('the Help item asks the main process to check', () => {
     .menus()
     .find(m => m.label === 'Help')!
     .menuItems()
-  ;(check as { onClick: () => void }).onClick()
+  // narrowed rather than asserted: a divider or a submenu reaching the front of
+  // this menu is exactly what the test above is about, and it should say so
+  // here too rather than throw on a missing property
+  if (!check || !('onClick' in check)) {
+    throw new Error(`the first Help item is not clickable: ${check?.type}`)
+  }
+  check.onClick()
 
   expect(mockInvokeIpc).toHaveBeenCalledWith('checkForUpdates')
 })

@@ -28,6 +28,7 @@ import {
 import { auditRelease, parseUpdateFeed } from './packaging/releaseAssets.ts'
 
 import type { Platform } from './packaging/config.ts'
+import type { ReleaseAsset } from './packaging/releaseAssets.ts'
 
 const ALL: Platform[] = ['linux', 'mac', 'win']
 
@@ -38,20 +39,48 @@ function gh(args: string[]) {
   })
 }
 
+// gh's json is another program's output, so it is read rather than asserted: a
+// schema that moves should name itself here, not become an `undefined` that a
+// check below quietly passes.
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function readString(value: unknown, field: string) {
+  const found = isRecord(value) ? value[field] : undefined
+  if (typeof found !== 'string') {
+    throw new Error(`gh gave no string ${field} in ${JSON.stringify(value)}`)
+  }
+  return found
+}
+
+function readNumber(value: unknown, field: string) {
+  const found = isRecord(value) ? value[field] : undefined
+  if (typeof found !== 'number') {
+    throw new Error(`gh gave no number ${field} in ${JSON.stringify(value)}`)
+  }
+  return found
+}
+
 // A release that isn't there gets a sentence rather than gh's stack. It is what
 // running this before the draft exists looks like, and in a release run it
 // arrives alongside whichever earlier job is the actual failure.
-function assetsOf(tag: string) {
+function assetsOf(tag: string): ReleaseAsset[] {
+  let raw: unknown
   try {
-    return (
-      JSON.parse(gh(['release', 'view', tag, '--json', 'assets'])) as {
-        assets: { name: string; size: number }[]
-      }
-    ).assets
+    raw = JSON.parse(gh(['release', 'view', tag, '--json', 'assets']))
   } catch {
     console.error(`There is no release ${tag} to check.`)
     process.exit(1)
   }
+  const assets = isRecord(raw) ? raw.assets : undefined
+  if (!Array.isArray(assets)) {
+    throw new Error(`gh gave no assets for ${tag}: ${JSON.stringify(raw)}`)
+  }
+  return assets.map(asset => ({
+    name: readString(asset, 'name'),
+    size: readNumber(asset, 'size'),
+  }))
 }
 
 // `gh release download` rather than the browser url: in the default mode the
@@ -62,7 +91,7 @@ function downloadAsset(tag: string, name: string) {
 
 // What electron-updater's GitHub provider resolves an update check to.
 function latestTag() {
-  return (
+  return readString(
     JSON.parse(
       gh([
         'api',
@@ -70,8 +99,9 @@ function latestTag() {
         '--jq',
         '{tag_name: .tag_name}',
       ]),
-    ) as { tag_name: string }
-  ).tag_name
+    ),
+    'tag_name',
+  )
 }
 
 function check(tag: string, version: string) {
