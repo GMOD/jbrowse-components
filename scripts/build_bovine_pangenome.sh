@@ -64,6 +64,7 @@ export LC_ALL=C
 export TMPDIR="${TMPDIR:-$PWD/tmp}"
 mkdir -p "$TMPDIR"
 
+THREADS="${THREADS:-8}"
 PREFIX=bovine-arsucd12-minigraph
 
 # The reference FIRST; this order is what SR reflects, and it is the order the P
@@ -88,11 +89,17 @@ if [ ! -s "$TARBALL" ] || [ "$(stat -c%s "$TARBALL")" -ne "$TARBALL_SIZE" ]; the
   echo "downloading $TARBALL ($TARBALL_SIZE bytes, resumable)"
   curl -fL --retry 40 --retry-delay 3 -C - -o "$TARBALL" "$ZENODO/$TARBALL?download=1"
 fi
-got=$(md5sum "$TARBALL" | cut -d' ' -f1)
-[ "$got" = "$TARBALL_MD5" ] || {
-  echo "md5 mismatch: got $got want $TARBALL_MD5" >&2
-  exit 1
-}
+# Stamped, because md5summing 12 GB is a minute and a half and the answer
+# cannot change for a file this script refuses to modify.
+if [ ! -s "$TARBALL.md5ok" ]; then
+  got=$(md5sum "$TARBALL" | cut -d' ' -f1)
+  [ "$got" = "$TARBALL_MD5" ] || {
+    echo "md5 mismatch: got $got want $TARBALL_MD5" >&2
+    exit 1
+  }
+  echo "$got" > "$TARBALL.md5ok"
+fi
+echo "md5 verified: $(cat "$TARBALL.md5ok")"
 
 # NOT a gene annotation despite the name: a four-column classification of
 # ARS-UCD1.2 into Normal / Repetitive / Tandem repeat / Low mappability /
@@ -119,15 +126,35 @@ if [ ! -s "$PREFIX.rgfa.gz" ]; then
     2> "$PREFIX.rgfa.log" | bgzip -@ 8 > "$PREFIX.rgfa.gz.tmp"
   mv "$PREFIX.rgfa.gz.tmp" "$PREFIX.rgfa.gz"
 fi
-tail -1 "$PREFIX.rgfa.log"
+# Only written by the stage above, so a warm tree that already has the rGFA has
+# no log to summarize. An unconditional tail here aborts the whole run under
+# `set -e`, which is how this was found.
+if [ -s "$PREFIX.rgfa.log" ]; then
+  tail -1 "$PREFIX.rgfa.log"
+fi
 
 echo "=== gfatools stat ==="
 # rank-0 total must be the sum of bosTau9 chr1..chr29 (2,489,385,779 bp). That
 # is the whole-graph version of the per-chromosome check the helper already
 # made, and it is what says the reference thread survived concatenation.
 gfatools stat "$PREFIX.rgfa.gz" | tee "$PREFIX.stat.txt"
-awk '{s+=$2} END {printf "expected rank-0 total: %d bp\n", s}' \
-  <(head -29 bosTau9.chrom.sizes)
+# ASSERTED, not printed beside the number for a human to compare. The first
+# version of this selected the chromosomes with `head -29`, and
+# bosTau9.chrom.sizes is sorted by SIZE, so it took chrX and dropped chr25 and
+# reported 2,586,044,488 against the graph's correct 2,489,385,779 — a mismatch
+# on every run, in a line nothing checked. Select by name, and compare.
+want_rank0=$(awk '
+  BEGIN { for (i = 1; i <= 29; i++) want["chr" i] = 1 }
+  want[$1] { s += $2; n++ }
+  END { if (n != 29) { print "found " n " of 29 chromosomes" > "/dev/stderr"; exit 2 } print s }
+' bosTau9.chrom.sizes)
+got_rank0=$(awk '/^Sum of rank-0 segment lengths:/ {print $NF}' "$PREFIX.stat.txt")
+if [ "$got_rank0" != "$want_rank0" ]; then
+  echo "rank-0 total $got_rank0 != sum of bosTau9 chr1..chr29 $want_rank0" >&2
+  echo "the reference thread did not survive reconstruction or concatenation" >&2
+  exit 1
+fi
+echo "  rank-0 total $got_rank0 bp == sum of bosTau9 chr1..chr29"
 
 echo "=== segments + links (RgfaTabixAdapter reads this pair by shared prefix) ==="
 [ -s "$PREFIX.segs.bed.gz" ] ||
@@ -155,6 +182,67 @@ echo "=== coarse tier: one node per bubble holding >=10 kb ==="
 [ -s "$PREFIX.tier10000.segs.bed.gz" ] ||
   bash "$SCRIPT_DIR/build_bubble_tier.sh" "$PREFIX.bubbles.bed.gz" \
     "$PREFIX.tier10000" 10000
+
+echo "=== variant route: vg deconstruct per chromosome ==="
+# The graph route above and this are the two halves the HPRC tutorial names:
+# "the sv.gfa is the graph route; the VCF is the variant route". The graph
+# cannot state carriage -- rGFA has nowhere to put it -- so allele frequency and
+# per-sample burden come from here, and this is the only file in the set with a
+# GT column per assembly.
+#
+# It is cheap because it is SV-resolution, which is the resolution the whole
+# demo is at: measured on chr25, `vg convert` 1.6 s and `vg deconstruct` 0.42 s
+# for 2,593 records. HPRC's base-level equivalent is a 2.3 GB download.
+#
+# The INFO vocabulary comes out AC/AF/AN/AT/NS/LV, which is what
+# generatePangenomeData.ts in GMOD/jb2hubs already parses, and LV means the
+# site's own `INFO.LV[0]==0 && alleleLength>=50` filter applies unchanged.
+REF_PATH="${PATHS%%,*}"
+if [ ! -s "$PREFIX.vcf.gz" ]; then
+  mkdir -p vcf
+  for k in $(seq 1 29); do
+    [ -s "vcf/chr$k.vcf" ] && continue
+    # deconstruct names CHROM after the path it is given, so rename the
+    # reference P line to the UCSC chromosome first rather than rewriting CHROM
+    # afterwards -- one naming rule produces both this file and the rGFA.
+    awk -F'\t' -v ref="$REF_PATH" -v c="chr$k" \
+      'BEGIN { OFS = "\t" } $1 == "P" && $2 == ref { $2 = c } { print }' \
+      "Zenodo/minigraph/$k.gfa" > "$TMPDIR/$k.renamed.gfa"
+    vg convert -g "$TMPDIR/$k.renamed.gfa" -p > "$TMPDIR/$k.vg"
+    vg deconstruct -p "chr$k" -a -t "$THREADS" "$TMPDIR/$k.vg" > "vcf/chr$k.vcf.tmp"
+    mv "vcf/chr$k.vcf.tmp" "vcf/chr$k.vcf"
+    rm -f "$TMPDIR/$k.renamed.gfa" "$TMPDIR/$k.vg"
+    echo "  chr$k: $(awk '!/^#/' "vcf/chr$k.vcf" | wc -l) records"
+  done
+
+  # Sample columns must be identical across the 29 before they can be
+  # concatenated; a differing set would silently shift every genotype. The rGFA
+  # stage already refuses a chromosome whose path list differs, but that is a
+  # different producer and this is cheap.
+  want=$(grep -m1 '^#CHROM' vcf/chr1.vcf)
+  for k in $(seq 2 29); do
+    [ "$(grep -m1 '^#CHROM' "vcf/chr$k.vcf")" = "$want" ] || {
+      echo "chr$k has a different sample set from chr1; refusing to concatenate" >&2
+      exit 1
+    }
+  done
+  echo "  sample set identical across 29 chromosomes"
+
+  # One header carrying all 29 contigs in chromosome order, then the bodies in
+  # that same order, so the result is sorted without a sort pass. awk rather
+  # than grep throughout: grep exits 1 on no match, which under pipefail would
+  # turn an empty chromosome into a failed build.
+  {
+    awk '/^##fileformat/' vcf/chr1.vcf
+    awk '/^##/ && !/^##fileformat/ && !/^##contig/' vcf/chr1.vcf
+    for k in $(seq 1 29); do awk '/^##contig/' "vcf/chr$k.vcf"; done
+    awk '/^#CHROM/' vcf/chr1.vcf
+    for k in $(seq 1 29); do awk '!/^#/' "vcf/chr$k.vcf"; done
+  } | bgzip -@ 8 > "$PREFIX.vcf.gz.tmp"
+  mv "$PREFIX.vcf.gz.tmp" "$PREFIX.vcf.gz"
+  tabix -f -p vcf "$PREFIX.vcf.gz"
+fi
+echo "  $(tabix -l "$PREFIX.vcf.gz" | wc -l) chromosomes indexed"
 
 echo
 echo "Built in $PWD:"
