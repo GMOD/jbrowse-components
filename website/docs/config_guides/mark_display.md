@@ -141,6 +141,8 @@ other mark.
 One mark per display may ask for it: the chrome has one place to put a second
 axis, and a config declaring two is refused when it is read.
 
+<Figure src="/img/mark_display/two_axes.png" caption="Reads as a mark display: each read's mapping quality on the left axis, and the coverage over them as bars on an axis of their own on the right."/>
+
 ## Colour scales
 
 `color` as a string paints every feature that colour (or whatever the jexl
@@ -374,6 +376,8 @@ Automatic, Features only and Density only, and carries the Force-load the banner
 would have. Clicking a bin opens nothing, because reading the features back is
 the download the budget refused. With no mark declaring `"source": "density"`,
 the banner is what you get, exactly as before.
+
+<Figure src="/img/mark_display/density_sidecar.png" caption="Chromosome 1 end to end, past the budget: the Alu track's sidecar bins draw as the density mark, with the chip in the corner naming what is on screen."/>
 
 ## What the track menu offers
 

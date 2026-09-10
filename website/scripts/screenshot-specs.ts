@@ -18,6 +18,7 @@ import { alignmentsSpecs } from './specs/alignments.ts'
 import { alphagenomeSpecs } from './specs/alphagenome.ts'
 import { bigwigSpecs } from './specs/bigwig.ts'
 import { cancerSvSpecs } from './specs/cancer_sv.ts'
+import { circularSpecs } from './specs/circular.ts'
 import { cnv1000gSpecs } from './specs/cnv1000g.ts'
 import { cookbookSpecs } from './specs/cookbook.ts'
 import { dog10kSpecs } from './specs/dog10k.ts'
@@ -80,6 +81,7 @@ export const specs: ScreenshotSpec[] = [
   ...scrnaSpecs,
   ...svSpecs,
   ...cancerSvSpecs,
+  ...circularSpecs,
   ...tcgaSpecs,
   ...cnv1000gSpecs,
   ...gwasSpecs,

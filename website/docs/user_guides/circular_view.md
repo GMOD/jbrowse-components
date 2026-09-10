@@ -54,6 +54,8 @@ const ringView = {
 }
 ```
 
+<Figure src="/img/circular_view/coverage_ring_chords.png" caption="A cancer cell line's long-read coverage as a ring, on a log scale, with its translocations as chords: the copy-number steps sit where the chords land."/>
+
 A variant or synteny track keeps its chords and ribbons; a track that has both a
 linear and a circular display takes the circular one unless the entry names the
 other, as `{ trackId, displaySnapshot: { type: 'LinearMarkDisplay' } }` does for
