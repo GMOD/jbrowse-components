@@ -124,21 +124,22 @@ table says `pinned`, and a pinned ramp is every region's whatever they hold.
 
 ## The measured record
 
-- **The encoder got cheaper, not dearer.** `ramp-value` (the values shipped
-  raw) against `ramp-color` (the worker's per-feature LUT index), and the rest
-  of the table beside them, in `reference/MARK_ENCODING.md` §"The jexl channel,
-  measured".
+- **The encoder got cheaper, not dearer.** Shipping the values raw
+  (`ramp-value`, 1.04x native) against resolving them per feature in the
+  worker (`ramp-color`, 1.22x) is 305 → 259 ns per feature, and the whole
+  table is in `reference/MARK_ENCODING.md` §"The jexl channel, measured". A
+  ramp is now the cheapest declared scale the encoder has.
 - **The Canvas2D repaint is unchanged in the steady state.**
   `packages/render-core/benches/markRampPaint.bench.ts`, 200,000 bars, min of
-  15, on AC power: `packed` (the worker-resolved lane, what shipped before)
-  51.71 ms; `baked` (the ramp with the domain unchanged since the last
-  repaint) 51.78 ms, **1.00x**, against a separately-declared control at
-  0.98x; `perPaint` (the domain moved every repaint, so the bake runs inside
-  the frame) 53.39 ms, **1.03x**. The bake is therefore not a thing that had
-  to be got right for speed — it is 3% of a repaint even paid every frame —
-  and it is kept because a memo keyed on the domain is the honest shape and
-  the export path pays it too. Absolute times drift about 1.4x between runs on
-  this shared box; the within-run ratios held.
+  25, on AC power: `packed` (the worker-resolved lane, what shipped before)
+  45.16 ms; `baked` (the ramp with the domain unchanged since the last
+  repaint) 45.41 ms, **1.01x**, against a separately-declared control at
+  1.00x; `perPaint` (the domain moved every repaint, so the bake runs inside
+  the frame) 48.83 ms, **1.08x**. So the bake is not a thing that had to be
+  got right for speed — resolving the ramp every frame would have cost 8% of
+  a repaint — and it is kept because a memo keyed on the domain is the honest
+  shape and the SVG export walks the same painter. Absolute times drift about
+  1.4x between runs on this shared box; the ratios held across three.
 - **The GPU cost of a domain that moves is one uniform write**, structurally:
   `packInstances` takes no domain, `installUpload`'s cells carry none, and the
   ramp rides `renderState`, read per frame by the render autorun. The 1 KB LUT

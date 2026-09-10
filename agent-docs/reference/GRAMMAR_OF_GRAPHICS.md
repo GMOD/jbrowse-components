@@ -160,12 +160,12 @@ The seams, named honestly:
 ## What the tree does that the grammars do not
 
 - **Every channel evaluation is measured**, and the escape is priced: a
-  `jexl:` channel costs 1.5–1.8x a native field read
+  `jexl:` channel costs 1.5–2.0x a native field read
   ([MARK_ENCODING.md](MARK_ENCODING.md) §"The jexl channel, measured"), so
   field names are the unit and jexl is opt-in per channel.
 - **A lane is filled because a shape reads it.** The encoder allocates and
   transfers only the lanes the caller names, and builds a hit index only for
-  a caller that hovers; wiggle's fallback runs at 0.31x the full encode for
+  a caller that hovers; wiggle's fallback runs at 0.33x the full encode for
   that reason.
 - **Pan and zoom write one uniform and no buffer.** GenomeSpy achieves the
   same through scale uniforms; the tree does it with shapes a person can read.
