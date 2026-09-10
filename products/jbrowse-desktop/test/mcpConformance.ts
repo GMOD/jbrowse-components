@@ -610,6 +610,26 @@ try {
     stopped,
   )
 
+  // Nothing raises a toast for this and no display records it, so before the
+  // envelope carried it the only reader was devtools.
+  const raised = await run(`
+    Promise.reject(new Error('mcp conformance unhandled rejection'))
+    await new Promise(r => setTimeout(r, 500))
+    return 'raised'`)
+  check(
+    'a rejection nobody awaited comes back in the envelope',
+    ((raised.pageErrors ?? []) as { source: string; message: string }[]).some(
+      e => e.message.includes('mcp conformance unhandled rejection'),
+    ),
+    raised,
+  )
+  const drained = await run("return 'again'")
+  check(
+    'each page error is delivered once',
+    drained.pageErrors === undefined,
+    drained.pageErrors,
+  )
+
   // both parts: the settle result was being dropped, so an agent screenshotting
   // an errored or undrawn track was told nothing was wrong
   const shot = await client.callAll('screenshot', {})

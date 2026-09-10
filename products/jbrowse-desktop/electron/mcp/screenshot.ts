@@ -149,7 +149,17 @@ async function captureFullPage(
   relay: Relay,
 ): Promise<CapturedImage | { error: string }> {
   const dbg = contents.debugger
-  dbg.attach('1.3')
+  // DevTools is the attacher `screenshot` checks for by name, because it is the
+  // one a user opens from the View menu and the one worth a remedy. Anything
+  // else holding the slot throws here, and a raw "Another debugger is already
+  // attached" says nothing about what to do with it.
+  try {
+    dbg.attach('1.3')
+  } catch (e) {
+    return {
+      error: `fullPage needs the devtools protocol and something else is holding it (${e instanceof Error ? e.message : String(e)}) — close DevTools, or screenshot the viewport instead`,
+    }
+  }
   try {
     const metrics = (await dbg.sendCommand('Page.getLayoutMetrics')) as {
       cssContentSize?: { width: number; height: number }

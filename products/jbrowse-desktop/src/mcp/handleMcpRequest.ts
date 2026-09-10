@@ -11,6 +11,7 @@ import {
   CODE_TIMEOUT_DEFAULT_MS,
   CODE_TIMEOUT_MAX_MS,
 } from '../../electron/mcp/toolDefinitions.ts'
+import { drainPageErrors } from './pageErrors.ts'
 
 import type { McpBridgeRequest } from '../../electron/ipc/channelTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -294,9 +295,11 @@ async function evaluateWith(
     ...consumed,
     ...(liveSession ? undeliveredNotifications(liveSession) : []),
   ]
+  const pageErrors = drainPageErrors()
   const extras = {
     ...(logs.length > 0 ? { logs } : {}),
     ...(notifications.length > 0 ? { notifications } : {}),
+    ...(pageErrors.length > 0 ? { pageErrors } : {}),
   }
   if (value === undefined) {
     return {
@@ -387,13 +390,18 @@ const pageTools: Record<
     session: AbstractSessionModel | undefined,
   ) => unknown
 > = {
-  wait_ready: (args, session) =>
-    session
-      ? waitReady(
+  // the page's own errors ride the settle, so a screenshot carries them too:
+  // the bridge relays wait_ready before every capture
+  wait_ready: async (args, session) => {
+    const settle = session
+      ? await waitReady(
           typeof args.timeoutMs === 'number' ? args.timeoutMs : 30_000,
           session,
         )
-      : { settled: true, note: 'no session is open (start screen)' },
+      : { settled: true, note: 'no session is open (start screen)' }
+    const pageErrors = drainPageErrors()
+    return pageErrors.length > 0 ? { ...settle, pageErrors } : settle
+  },
   measure,
   paint,
   cancel: cancelRunning,

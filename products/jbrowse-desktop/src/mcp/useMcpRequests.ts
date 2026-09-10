@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import { invokeIpc } from '../ipc.ts'
 import { useIpc } from '../useIpc.ts'
 import { handleMcpRequest } from './handleMcpRequest.ts'
+import { watchPageErrors } from './pageErrors.ts'
 
 import type { McpReadyState } from '../../electron/ipc/channelTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -16,6 +17,11 @@ export function useMcpRequests(
   phase: McpReadyState['phase'],
   launchError: McpReadyState['launchError'],
 ) {
+  // Idempotent, and installed for the app's whole life rather than per session:
+  // an error a swap raises belongs to the call that reads next, not to whichever
+  // plugin manager happened to be installed when it fired.
+  watchPageErrors()
+
   useIpc('mcpRequest', request => {
     handleMcpRequest(request, getPluginManager())
       .then(result => invokeIpc('mcpResponse', { id: request.id, result }))

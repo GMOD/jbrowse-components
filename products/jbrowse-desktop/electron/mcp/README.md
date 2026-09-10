@@ -83,10 +83,19 @@ readiness wait, and the full mobx-state-tree/mobx APIs underneath). Every
 correctness rule lives in `jb`, not in tool plumbing. The envelope is what a
 shell would give: the value, `logs` (the code's console output, bounded by the
 same envelope budget as the value), the session's `notifications` since the
-previous call (each delivered once, with its level), and on a throw the line and
-column in the submitted code plus the output printed before it. A call outliving
-`timeoutMs` answers with that and keeps running with its `signal` argument
-aborted; the bridge budgets its relay from the same number.
+previous call (each delivered once, with its level), `pageErrors`, and on a
+throw the line and column in the submitted code plus the output printed before
+it. A call outliving `timeoutMs` answers with that and keeps running with its
+`signal` argument aborted; the bridge budgets its relay from the same number.
+
+`pageErrors` (`src/mcp/pageErrors.ts`) is the class the other two miss.
+`notifications` holds what someone chose to raise and `notReady` what a display
+recorded on itself, so an uncaught throw, a rejection nobody awaited and a mobx
+reaction that died reached devtools and stopped there — a session that settles
+clean and screenshots as a browser with one track quietly missing. Reactions are
+why it imports mobx: mobx reports a reaction's throw to `onReactionError` and to
+no caller. It rides the `wait_ready` answer as well as the `run_javascript`
+envelope, so a screenshot carries it too.
 
 The other three exist only because renderer JavaScript cannot express them:
 `screenshot` (pixels live in the main process; waits on the capture readiness
