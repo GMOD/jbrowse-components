@@ -18,6 +18,10 @@
   },
   "author": "JBrowse Team",
   "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./yAxisConstants": "./src/yAxisConstants.ts"
+  },
   "files": [
     "esm"
   ],
@@ -43,7 +47,8 @@
     "main": "esm/index.js",
     "types": "esm/index.d.ts",
     "exports": {
-      ".": "./esm/index.js"
+      ".": "./esm/index.js",
+      "./yAxisConstants": "./esm/yAxisConstants.js"
     }
   },
   "sideEffects": false

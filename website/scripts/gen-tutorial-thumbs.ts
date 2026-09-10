@@ -488,6 +488,18 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   // which is what [0.4, 0.98] did: three gene bars over a lot of white filled
   // half the card, and the alignment rows the card is about were a thin strip at
   // the bottom.
+  pangenome_nonhuman: {
+    // The BoLA genotype matrix: one red/yellow/blue lane per breed, which is
+    // the one row on the page that names which assembly carries an allele
+    // rather than just where the graph varies. xband drops the row-label
+    // column and its long grey reference flank on one side and the legend box
+    // on the other, keeping only the striped genotype block; unlike the graph
+    // pane below it, this lane carries no hand-added deletion callouts.
+    src: 'pangenome/bovine_bola.png',
+    band: [0.481, 0.644],
+    xband: [0.33, 0.87],
+    position: 'center',
+  },
   pangenome_cactus: {
     src: 'pangenome_cactus/maf.png',
     band: [0.62, 0.96],
