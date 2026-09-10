@@ -110,6 +110,17 @@ interface CircularViewInitSelf extends IStateTreeNode {
 }
 
 /**
+ * The assemblies a launch blob draws, in the order it names them. One name and
+ * a list are the same thing here: a chord plot of one genome is the common
+ * case, and a synteny ribbon plot needs both ends of the alignment on the
+ * circle.
+ */
+function launchAssemblyNames(init: LaunchInput<CircularViewCommands>) {
+  const { assembly } = init
+  return assembly === undefined ? [] : [assembly].flat()
+}
+
+/**
  * Apply one launch blob: the regions the circle is drawn from, then the chord
  * tracks. The only await is `launchTrack`'s dynamic import of a lazily
  * registered display model, which cannot park indefinitely, so
@@ -122,19 +133,25 @@ async function applyInit(
   init: LaunchInput<CircularViewCommands>,
 ) {
   const session = getSession(self)
-  const assemblyName = init.assembly
-  const assembly = assemblyName
-    ? session.assemblyManager.get(assemblyName)
-    : undefined
-  const regions = assembly?.regions
-  if (assemblyName && assembly && regions) {
+  const drawn: Region[] = []
+  // Each assembly contributes its slices in the order it was named, which is
+  // what puts one genome on one half of the circle and its partner on the
+  // other — the layout a synteny ribbon plot is read as.
+  for (const assemblyName of launchAssemblyNames(init)) {
+    const assembly = session.assemblyManager.get(assemblyName)
+    const regions = assembly?.regions
+    if (!assembly || !regions) {
+      continue
+    }
     const names = init.displayedRegionNames
     // A list that matches nothing draws the whole assembly rather than blanking
     // the circle — the same fallback the synteny row takes, and it matters more
     // here: an empty displayedRegions drops the view to its import form, and
     // `init`, the only thing that could rebuild the figure, is consumed on the
     // way out. So a typo'd refName used to lose the view outright with nothing
-    // said; resolveNamedRegions is what says it now.
+    // said; resolveNamedRegions is what says it now. The list is resolved
+    // against each assembly separately, so a two-assembly circle names the
+    // contigs of both and each reports its own misses.
     //
     // `?.length`, not the bare key: an empty array is truthy, so `[]` used to
     // resolve to nothing and report that no names had matched no regions.
@@ -150,7 +167,10 @@ async function applyInit(
           },
         })
       : regions
-    self.setDisplayedRegions(named ?? regions)
+    drawn.push(...(named ?? regions))
+  }
+  if (drawn.length) {
+    self.setDisplayedRegions(drawn)
   }
   for (const t of init.tracks ?? []) {
     const { trackId, trackSnapshot, displaySnapshot } = normalizeTrackInit(t)
@@ -172,6 +192,18 @@ async function applyInit(
  *   assembly: 'hg38',
  *   displayedRegionNames: ['chr1', 'chr2', 'chr3'],
  *   tracks: [{ trackId: 'my-sv-vcf', strokeColor: 'red' }],
+ * }
+ * ```
+ * `assembly` also takes a list, which is what a synteny ribbon plot needs: each
+ * assembly lays its contigs out in turn, so the first genome takes one arc of
+ * the circle and the second the next, and a `SyntenyTrack` covering both draws
+ * a ribbon per alignment between them. The import form opens one assembly, so
+ * a two-assembly circle is authored here or in a session spec:
+ * ```js
+ * {
+ *   type: 'CircularView',
+ *   assembly: ['hg38', 'mm39'],
+ *   tracks: ['hg38_vs_mm39'],
  * }
  * ```
  */
@@ -559,12 +591,13 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * The assembly a pending launch names, which is what the gates below wait
-       * on before `displayedRegions` exist. A blob carrying only tracks names
-       * none, and waiting on one nobody named never ends.
+       * The assemblies a pending launch names, which is what the gates below
+       * wait on before `displayedRegions` exist. A blob carrying only tracks
+       * names none, and waiting on one nobody named never ends.
        */
-      get launchAssemblyName() {
-        return this.pendingLaunch?.assembly
+      get launchAssemblyNames() {
+        const launch = this.pendingLaunch
+        return launch ? launchAssemblyNames(launch) : []
       },
       /**
        * #getter
@@ -574,10 +607,12 @@ function stateModelFactory(pluginManager: PluginManager) {
           return false
         }
         const { assemblyManager } = getSession(self)
-        const launching = this.launchAssemblyName
-        if (launching) {
-          const asm = assemblyManager.get(launching)
-          return !!(asm?.initialized && asm.regions)
+        const launching = this.launchAssemblyNames
+        if (launching.length) {
+          return launching.every(name => {
+            const asm = assemblyManager.get(name)
+            return !!(asm?.initialized && asm.regions)
+          })
         }
         return this.assemblyNames.every(
           name => assemblyManager.get(name)?.initialized,
@@ -602,11 +637,10 @@ function stateModelFactory(pluginManager: PluginManager) {
         if (this.assemblyErrors) {
           return this.assemblyErrors
         }
-        // Check the launch assembly for errors (displayedRegions may be empty
-        // while it is still resolving)
-        const launching = this.launchAssemblyName
-        if (launching) {
-          const { assemblyManager } = getSession(self)
+        // Check the launch assemblies for errors (displayedRegions may be
+        // empty while they are still resolving)
+        const { assemblyManager } = getSession(self)
+        for (const launching of this.launchAssemblyNames) {
           const asm = assemblyManager.get(launching)
           if (!asm) {
             return `Assembly ${launching} not found`
@@ -636,14 +670,14 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * The assembly whose load the spinner is waiting on. A pending launch
-       * names it before displayedRegions exist, so it is the source until then
-       * — the same order `initialized` above resolves in.
+       * names them before displayedRegions exist, so it is the source until
+       * then — the same order `initialized` above resolves in.
        */
       get loadingAssembly() {
         const { assemblyManager } = getSession(self)
-        const launching = this.launchAssemblyName
+        const launching = this.launchAssemblyNames
         return assemblyManager.loadingAssembly(
-          launching ? [launching] : this.assemblyNames,
+          launching.length ? launching : this.assemblyNames,
         )
       },
 

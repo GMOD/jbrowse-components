@@ -16,9 +16,11 @@ import type { TrackInit } from '@jbrowse/core/util/tracks'
  * rendering a blank cell.
  */
 export interface CircularViewCommands {
-  // the assembly whose chromosomes the circle draws. Optional because a spec
-  // view is untyped user input; without one the view opens on its import form
-  assembly?: string
+  // the assembly whose chromosomes the circle draws, or the assemblies, in the
+  // order their slices are laid out — a synteny ribbon plot wants both ends of
+  // its alignments on the circle. Optional because a spec view is untyped user
+  // input; without one the view opens on its import form
+  assembly?: string | string[]
   // whole chromosomes to draw, in this order; the rest of the assembly's
   // contigs are left off the circle
   displayedRegionNames?: string[]

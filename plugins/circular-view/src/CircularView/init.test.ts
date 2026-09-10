@@ -5,15 +5,19 @@ import type { CircularViewModel } from './model.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
-function addVolvoxConf(session: ReturnType<typeof createTestSession>) {
+function addAssemblyConf(
+  session: ReturnType<typeof createTestSession>,
+  name: string,
+  refNames: string[],
+) {
   session.addAssemblyConf({
-    name: 'volvox',
+    name,
     sequence: {
-      trackId: 'volvox_refseq',
+      trackId: `${name}_refseq`,
       type: 'ReferenceSequenceTrack',
       adapter: {
         type: 'FromConfigSequenceAdapter',
-        features: ['ctgA', 'ctgB'].map(refName => ({
+        features: refNames.map(refName => ({
           refName,
           uniqueId: refName,
           start: 0,
@@ -25,15 +29,19 @@ function addVolvoxConf(session: ReturnType<typeof createTestSession>) {
   })
 }
 
-async function setup(init: Record<string, unknown>) {
+async function setup(init: Record<string, unknown>, assemblies = ['volvox']) {
   const session = createTestSession()
-  addVolvoxConf(session)
+  for (const name of assemblies) {
+    addAssemblyConf(session, name, ['ctgA', 'ctgB'])
+  }
   const view = (await session.launchView(
     'CircularView',
     init,
   )) as CircularViewModel
   view.setWidth(800)
-  await session.assemblyManager.waitForAssembly('volvox')
+  for (const name of assemblies) {
+    await session.assemblyManager.waitForAssembly(name)
+  }
   await when(() => view.displayedRegions.length > 0)
   return { session, view }
 }
@@ -71,4 +79,28 @@ test('a consumed init is cleared rather than re-applied on the next resize', asy
   const { bpPerPx } = view
   view.setWidth(600)
   expect(view.bpPerPx).toBe(bpPerPx)
+})
+
+// The circle a synteny ribbon plot is drawn on: one genome's contigs, then the
+// other's, in the order the launch named them. The view derives its
+// `assemblyNames` from the regions, so nothing else has to be told.
+test('two assemblies each contribute their slices, in the order named', async () => {
+  const { view } = await setup({ assembly: ['volvox', 'volvox2'] }, [
+    'volvox',
+    'volvox2',
+  ])
+  expect(
+    view.displayedRegions.map(r => `${r.assemblyName}:${r.refName}`),
+  ).toEqual(['volvox:ctgA', 'volvox:ctgB', 'volvox2:ctgA', 'volvox2:ctgB'])
+  expect(view.assemblyNames).toEqual(['volvox', 'volvox2'])
+})
+
+test('displayedRegionNames restricts each assembly it names', async () => {
+  const { view } = await setup(
+    { assembly: ['volvox', 'volvox2'], displayedRegionNames: ['ctgB'] },
+    ['volvox', 'volvox2'],
+  )
+  expect(
+    view.displayedRegions.map(r => `${r.assemblyName}:${r.refName}`),
+  ).toEqual(['volvox:ctgB', 'volvox2:ctgB'])
 })

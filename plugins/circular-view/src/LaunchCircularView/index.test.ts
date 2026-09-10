@@ -71,6 +71,24 @@ test('height rides along beside the launch keys', async () => {
   expect(captured[0]!.initialState.height).toBe(800)
 })
 
+// a synteny ribbon plot needs both ends of its alignments on the circle
+test('a list of assemblies reaches the view object as written', async () => {
+  const { captured, session, run } = setup()
+  await run({ session, assembly: ['hg38', 'mm39'], tracks: ['hg38_vs_mm39'] })
+  expect(captured[0]!.initialState).toEqual({
+    assembly: ['hg38', 'mm39'],
+    tracks: ['hg38_vs_mm39'],
+  })
+})
+
+test('an empty assembly list throws, like a missing one', async () => {
+  const { captured, session, run } = setup()
+  await expect(run({ session, assembly: [] })).rejects.toThrow(
+    /No assembly provided/,
+  )
+  expect(captured).toHaveLength(0)
+})
+
 test('a missing assembly throws rather than opening an empty view', async () => {
   const { captured, session, run } = setup()
   await expect(run({ session, tracks: ['sv'] })).rejects.toThrow(
