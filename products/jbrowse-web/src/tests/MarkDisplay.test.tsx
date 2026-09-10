@@ -194,3 +194,53 @@ test('spans stacked by a row channel band the plot by the highest row', async ()
     expect(display.rowCount).toBe(2)
   })
 }, 30000)
+
+test('a binned count and the raw features share one fetch, and each draws in its own zoom range', async () => {
+  const { view, findByTestId } = await createView(
+    markTrackConfig('mark_density', [
+      { shape: 'bar', encoding: { y: 'score' }, maxBpPerPx: 20 },
+      {
+        shape: 'bar',
+        transform: [
+          { type: 'bin', step: 2000 },
+          {
+            type: 'aggregate',
+            groupby: ['start', 'end'],
+            ops: [{ op: 'count' }],
+          },
+        ],
+        encoding: { y: 'count' },
+        minBpPerPx: 20,
+      },
+    ]),
+  )
+  view.setNewView(5, 0)
+  fireEvent.click(await findByTestId(hts('mark_density'), {}, { timeout }))
+
+  const el = await findDisplayPainted('mark-display', { timeout })
+  expect(el.dataset.displayDrawn).toBe('true')
+  const display = view.tracks[0]!.displays[0] as {
+    markVisible: boolean[]
+    domain?: [number, number]
+    rpcDataMap: ReadonlyMap<
+      number,
+      { layers: { count: number; y?: Float32Array }[] }
+    >
+  }
+  expect(display.markVisible).toEqual([true, false])
+  await waitFor(() => {
+    expect(display.domain).toEqual([0, 1000])
+  })
+  // the same fetch carried the density layer: every bin counts at least one feature
+  const density = [...display.rpcDataMap.values()].flatMap(d => [
+    ...(d.layers[1]!.y ?? []),
+  ])
+  expect(density.length).toBeGreaterThan(0)
+  expect(Math.min(...density)).toBeGreaterThanOrEqual(1)
+
+  view.zoomTo(40)
+  expect(display.markVisible).toEqual([false, true])
+  await waitFor(() => {
+    expect(display.domain![1]).toBe(Math.max(...density))
+  })
+}, 30000)

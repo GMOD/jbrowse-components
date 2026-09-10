@@ -8,8 +8,10 @@ guide_category: Track types
 
 **TL;DR:** `LinearMarkDisplay` goes on a `FeatureTrack` and draws whatever its
 `marks` list declares — a `bar`, `point` or `span` per entry, each with an
-`encoding` naming which feature fields feed it. A BED score column becomes a bar
-chart with one display entry and no code.
+`encoding` naming which feature fields feed it, a `transform` list that can bin,
+count or measure coverage before it, and a zoom range it draws in. A BED score
+column becomes a bar chart with one display entry and no code, and the same
+file's density at wide zoom is a second entry.
 
 ## When to reach for it
 
@@ -157,13 +159,91 @@ whole plot; with one —
 into as many bands as the highest row on screen needs, and each span sits on the
 band its field names.
 
+## Transforms
+
+A mark's `transform` is a list of steps over the region's features, run in the
+worker before the encoding, in order, each reading what the last answered:
+
+| Step        | What it does                                                                                                                                                |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `filter`    | keeps the features a jexl `expr` admits                                                                                                                     |
+| `formula`   | writes a jexl `expr`'s value into the field `as`                                                                                                            |
+| `bin`       | snaps each feature to the `step`-bp bin its `field` (`start`) falls in, writing the bin's edges over `start` and `end`                                      |
+| `aggregate` | folds each group of features sharing the `groupby` fields into one, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` of a `field` — as a new field |
+| `coverage`  | replaces the features with runs of how many overlap each stretch, in the field `as` (`coverage`)                                                            |
+
+A `bin` followed by an `aggregate` grouped by `start` and `end` is a density:
+one bar per bin, its height the count of features whose start fell in it.
+
+```json
+{
+  "shape": "bar",
+  "transform": [
+    { "type": "bin", "step": 10000 },
+    {
+      "type": "aggregate",
+      "groupby": ["start", "end"],
+      "ops": [{ "op": "count" }, { "op": "mean", "field": "score" }]
+    }
+  ],
+  "encoding": { "y": "count" }
+}
+```
+
+The aggregate's fields are `count` and `mean_score` here, and either can feed
+`y` or a colour scale. `coverage` answers the other question — how many features
+overlap each position — for a repeat annotation, a set of peaks or any interval
+file with no summary track beside it:
+
+```json
+{
+  "shape": "bar",
+  "transform": [{ "type": "coverage" }],
+  "encoding": { "y": "coverage" }
+}
+```
+
+The display's `jexlFilters` run before every mark's own steps.
+
+## A picture per zoom level
+
+Each mark can name the zoom range it draws in, in bp per pixel: `minBpPerPx`
+draws it only at or above that width, `maxBpPerPx` only below it, and 0 sets no
+bound. With a density on one mark and the features on another, one track shows
+the count per 10 kb zoomed out and the individual scores zoomed in, from one
+fetch per region:
+
+```json
+"marks": [
+  {
+    "shape": "bar",
+    "encoding": { "y": "score" },
+    "maxBpPerPx": 100
+  },
+  {
+    "shape": "bar",
+    "transform": [
+      { "type": "bin", "step": 10000 },
+      { "type": "aggregate", "groupby": ["start", "end"], "ops": [{ "op": "count" }] }
+    ],
+    "encoding": { "y": "count" },
+    "minBpPerPx": 100
+  }
+]
+```
+
+A mark outside its range is off entirely — it is not drawn, not hovered, and its
+values do not set the y-axis, the legend or the row count — so the score axis at
+close zoom is the scores' and at wide zoom the counts'.
+
 ## What the track menu offers
 
 The score submenu (min/max score), point size, cross hatches, the legend toggle,
 and **Filter by...** for the same `jexlFilters` every feature display takes — a
 filter runs in the worker before the encoding, so a filtered feature is neither
 drawn nor counted in the y-axis. Hovering a mark shows its location, value and
-colour class; clicking opens the feature's details.
+colour class; clicking opens the feature's details — for a feature the file
+holds, so a click on a binned or coverage bar opens nothing.
 
 The full slot list is the
 [LinearMarkDisplay config reference](/docs/config/linearmarkdisplay); how the
