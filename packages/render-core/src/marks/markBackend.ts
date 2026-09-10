@@ -134,7 +134,11 @@ export class GpuMarkBackend<
   // The texture each textured pass holds, by identity — the mirror of the one
   // texture the HAL keeps per pass, so an unchanged ramp or strip costs a
   // frame nothing and a backend rebuilt after context loss re-uploads. Per
-  // pass and per backend, never per region.
+  // pass and per backend, never per region. A lens answering nothing for a
+  // region leaves the pass's texture where it is, and binds the inert table
+  // only while the pass has none at all: a ring canvas draws one region per
+  // pass, and a lens with no opinion on the other regions must not swap the
+  // strip out and back on every frame.
   private boundTextures = new Map<string, MarkTexture>()
 
   private bindTexture(
@@ -143,8 +147,9 @@ export class GpuMarkBackend<
     state: TState,
   ) {
     if (mark.pass.textures) {
-      const texture = mark.texture?.(state, region) ?? INERT_RAMP
-      if (texture !== this.boundTextures.get(mark.pass.id)) {
+      const bound = this.boundTextures.get(mark.pass.id)
+      const texture = mark.texture?.(state, region) ?? bound ?? INERT_RAMP
+      if (texture !== bound) {
         if (texture instanceof Uint8Array) {
           uploadColorRampLut(this.hal, texture, [mark.pass.id])
         } else {

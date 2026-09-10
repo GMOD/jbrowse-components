@@ -8,6 +8,7 @@ import { notifySkippedSvgTracks } from '@jbrowse/core/svg/trackNames'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession, radToDeg } from '@jbrowse/core/util'
 
+import { renderRingsSvg } from '../../rings/ringSvg.tsx'
 import { Rulers } from '../components/Ruler.tsx'
 import { labelGutterPx } from '../rulerLabels.ts'
 
@@ -37,7 +38,12 @@ export async function renderToSvg(
   // exactly what making it optional was for; renderViewTracks does the same
   // partition for the three LGV-family exports, and this was the view that
   // depends on neither it nor the LGV plugin and so never got it.
-  const exportable = model.tracks.filter(t => t.displays[0]?.renderSvg)
+  // a ring display's export is rendered for its strip and warped by
+  // `renderRingsSvg`, so it is left out of the chord exports here
+  const { ringDisplays } = model.ringHost
+  const exportable = model.tracks.filter(
+    t => t.displays[0]?.renderSvg && !ringDisplays.includes(t.displays[0]),
+  )
   notifySkippedSvgTracks(
     session,
     model.tracks.filter(t => !t.displays[0]?.renderSvg),
@@ -72,6 +78,11 @@ export async function renderToSvg(
   const gutterPx = Math.max(paddingPx, labelGutterPx(model))
   const figureSize = 2 * (radiusPx + gutterPx)
   const center = radiusPx + gutterPx
+  const rings = await renderRingsSvg(model.ringHost, opts, theme, {
+    size: figureSize,
+    center,
+    offsetRadians,
+  })
 
   return wrapSvgExport({
     theme,
@@ -83,14 +94,17 @@ export async function renderToSvg(
     fontFamily,
     Wrapper,
     children: (
-      <g
-        transform={`translate(${center},${center}) rotate(${radToDeg(offsetRadians)})`}
-      >
-        <Rulers model={model} />
-        {displayResults.map(({ id, result }) => (
-          <Fragment key={id}>{result}</Fragment>
-        ))}
-      </g>
+      <>
+        {rings}
+        <g
+          transform={`translate(${center},${center}) rotate(${radToDeg(offsetRadians)})`}
+        >
+          <Rulers model={model} />
+          {displayResults.map(({ id, result }) => (
+            <Fragment key={id}>{result}</Fragment>
+          ))}
+        </g>
+      </>
     ),
   })
 }

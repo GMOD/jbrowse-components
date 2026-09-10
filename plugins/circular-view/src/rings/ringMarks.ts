@@ -26,15 +26,20 @@ export interface RingFrame extends MarkFrame {
  * The mark list a ring canvas draws through: `RING_PASSES` ring marks, the
  * i-th drawing the cell keyed i and sampling its strip.
  */
-export const ringMarks = Array.from({ length: RING_PASSES }, (_, i) =>
-  defineMark<RingCell, RingFrame, RingChannels, ReturnType<typeof params>>({
+export const ringMarks = Array.from({ length: RING_PASSES }, (_, i) => {
+  const own = (cell: RingCell) => cell.index % RING_PASSES === i
+  return defineMark<
+    RingCell,
+    RingFrame,
+    RingChannels,
+    ReturnType<typeof params>
+  >({
     shape: ringShape(`ring${i}`),
-    channels: cell =>
-      cell.index % RING_PASSES === i ? cell.channels : undefined,
+    channels: cell => (own(cell) ? cell.channels : undefined),
     params,
-    texture: (_state, cell) => cell.strip,
-  }),
-)
+    texture: (_state, cell) => (own(cell) ? cell.strip : undefined),
+  })
+})
 
 function params(state: RingFrame, cell: RingCell) {
   return {

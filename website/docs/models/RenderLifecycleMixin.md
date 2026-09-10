@@ -43,6 +43,7 @@ this tick (e.g. `renderState` not yet computed or no regions loaded).
 | Member | Description |
 | --- | --- |
 | <span id="volatile-canvasdrawn">**canvasDrawn**</span><br><code>canvasDrawn: false</code> | flips true on first paint; read by test selectors to detect render |
+| <span id="volatile-paintcount">**paintCount**</span><br><code>paintCount: 0</code> | bumped after every frame the backend painted, so a consumer that reads this display's canvas — the circular view's ring, which copies the strip into a texture — knows when the pixels moved |
 | <span id="volatile-currentrenderingbackend">**currentRenderingBackend**</span><br><code>currentRenderingBackend: undefined</code> | current backend reference, updated on context-loss recovery. Typed `unknown` (not generic `B`) on purpose: this mixin is composed by every display via a non-generic factory, so the per-display backend type `B` isn't known here — it's supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the autoruns. Don't "fix" the cast. |
 | <span id="volatile-rendertick">**renderTick**</span><br><code>renderTick: 0</code> | counter the render autorun observes; bumped to force a re-render |
 | <span id="volatile-autorunsinstalled">**autorunsInstalled**</span><br><code>autorunsInstalled: false</code> | guards attachRenderingBackend so the autorun pair spawns once per instance |

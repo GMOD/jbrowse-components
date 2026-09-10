@@ -64,6 +64,12 @@ export interface ExportSvgDisplayOptions extends ExportSvgOptions {
    * legend over the plot instead; see {@link svgLegendAreaReserved}.
    */
   legendWidth?: number
+  /**
+   * The plot alone, without the axis and legend guides: for an export that
+   * resamples the strip somewhere a guide has no place, such as the circular
+   * view's rings.
+   */
+  plotOnly?: boolean
 }
 
 export function svgLegendAreaReserved(opts?: ExportSvgDisplayOptions) {

@@ -247,10 +247,10 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
         renderBlocks={buildRenderBlocks(view.visibleRegions)}
         opts={opts}
       />
-      {isAxisHost(model) ? (
+      {isAxisHost(model) && !opts?.plotOnly ? (
         <SvgYAxis model={model} view={view} width={view.width} />
       ) : null}
-      {isLegendHost(model) ? (
+      {isLegendHost(model) && !opts?.plotOnly ? (
         <SvgLegend
           model={model}
           width={view.width}
