@@ -20,7 +20,14 @@ const REGION = {
   assemblyName: 'volvox',
 }
 
-function createTestEnvironment(marks: unknown[]) {
+const WIDE_REGION = {
+  refName: 'ctgA',
+  start: 0,
+  end: 8_000_000,
+  assemblyName: 'volvox',
+}
+
+function createTestEnvironment(marks: unknown[], region = REGION) {
   return createDisplayTestEnvironment<LinearMarkDisplayModel>({
     plugins: [new LinearGenomeViewPlugin(), new WigglePlugin()],
     trackType: 'FeatureTrack',
@@ -30,7 +37,8 @@ function createTestEnvironment(marks: unknown[]) {
     stateModel: (pm, schema) => stateModelFactory(pm, schema),
     viewModel: linearGenomeViewStateModelFactory,
     displayConfig: { marks },
-    regions: [REGION],
+    regions: [region],
+    assemblyRegions: [region],
     onViewReady: view => {
       view.showAllRegions()
     },
@@ -747,5 +755,71 @@ test('a click on a coverage run matches the run the narrower read-back remakes',
     start: 0,
     end: 100,
     coverage: 1,
+  })
+})
+
+const AUTO_BIN_MARKS = [
+  {
+    shape: 'bar',
+    transform: [
+      { type: 'bin', step: 'auto' },
+      { type: 'aggregate', groupby: ['start', 'end'], ops: [{ op: 'count' }] },
+    ],
+    encoding: { y: 'count' },
+  },
+]
+
+test('an auto bin resolves to the 1/2/5 rung above four pixels of bp', () => {
+  const { createDisplay } = createTestEnvironment(AUTO_BIN_MARKS, WIDE_REGION)
+  const { display, view } = createDisplay()
+  const stepAt = (bpPerPx: number) => {
+    view.zoomTo(bpPerPx)
+    const [step] = display.rpcProps().layers[0]!.transform!
+    return (step as { step: number }).step
+  }
+  expect(stepAt(0.5)).toBe(2)
+  expect(stepAt(1)).toBe(5)
+  expect(stepAt(2)).toBe(10)
+  expect(stepAt(4)).toBe(20)
+  expect(stepAt(10)).toBe(50)
+  expect(stepAt(1000)).toBe(5000)
+})
+
+test('a zoom sweep refetches once per rung, not once per step', () => {
+  const { createDisplay } = createTestEnvironment(AUTO_BIN_MARKS, WIDE_REGION)
+  const { display, view } = createDisplay()
+  const keys: string[] = []
+  let bpPerPx = 1
+  for (let i = 0; i < 64; i++) {
+    view.zoomTo(bpPerPx)
+    const key = display.rpcPropsCacheKey
+    if (keys.at(-1) !== key) {
+      keys.push(key)
+    }
+    bpPerPx *= 1.125
+  }
+  // 64 steps of 1.125x — 1 to 1,600 bp/px — cross 11 rungs of the ladder, so
+  // 53 of the 64 zooms leave the fetch's inputs alone
+  expect(keys).toHaveLength(11)
+})
+
+test('a fixed bin width ignores the zoom, and its fetch key with it', () => {
+  const { createDisplay } = createTestEnvironment(
+    [
+      {
+        shape: 'bar',
+        transform: [{ type: 'bin', step: 5000 }],
+        encoding: { y: 'count' },
+      },
+    ],
+    WIDE_REGION,
+  )
+  const { display, view } = createDisplay()
+  view.zoomTo(1)
+  const key = display.rpcPropsCacheKey
+  view.zoomTo(1000)
+  expect(display.rpcPropsCacheKey).toBe(key)
+  expect(display.rpcProps().layers[0]!.transform![0]).toMatchObject({
+    step: 5000,
   })
 })

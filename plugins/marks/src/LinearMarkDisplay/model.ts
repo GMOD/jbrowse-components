@@ -51,6 +51,7 @@ import {
 } from '@jbrowse/wiggle-core'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
+import { binStepWidth } from './autoBin.ts'
 import { sameMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend, colorSection, markColorScales } from './legend.ts'
 import { SHAPE_LANES, buildMarkList, markDrawsAt } from './markList.ts'
@@ -203,8 +204,8 @@ function encodingOf(mark: MarkConfig): MarkEncoding {
 }
 
 // The config's step list as the worker's, with the empty slot values that
-// mean "default" left off the wire.
-function transformOf(mark: MarkConfig): TransformStep[] {
+// mean "default" left off the wire and an `auto` bin resolved at `bpPerPx`.
+function transformOf(mark: MarkConfig, bpPerPx: number): TransformStep[] {
   return mark.transform.map((step: MarkTransformStepConfig): TransformStep => {
     const as: string[] = [...step.as]
     switch (step.type) {
@@ -217,7 +218,7 @@ function transformOf(mark: MarkConfig): TransformStep[] {
       case 'bin': {
         return {
           type: 'bin',
-          step: step.step,
+          step: binStepWidth(step.step, bpPerPx),
           field: step.field || undefined,
           as: as.length === 2 ? [as[0]!, as[1]!] : undefined,
         }
@@ -438,9 +439,10 @@ export function stateModelFactory(
        * its shape reads.
        */
       get layerRequests(): LayerRequest[] {
+        const { bpPerPx } = self.host
         return self.conf.marks.map((m: MarkConfig) => {
           const shape: MarkShapeName = m.shape
-          const transform = transformOf(m)
+          const transform = transformOf(m, bpPerPx)
           return {
             encoding: encodingOf(m),
             lanes: [...SHAPE_LANES[shape]],

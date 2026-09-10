@@ -4,6 +4,8 @@ import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightC
 import { types } from '@jbrowse/mobx-state-tree'
 import { scoreAxisConfigSchemaFields } from '@jbrowse/wiggle-core'
 
+import { AUTO_BIN } from './autoBin.ts'
+
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export const MARK_SHAPES = ['bar', 'point', 'span'] as const
@@ -386,12 +388,16 @@ const transformStepSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.transform.step
-     * For a `bin` step: the bin width in bp, aligned to the genome.
+     * For a `bin` step: the bin width in bp, aligned to the genome, or
+     * `"auto"` for a width that follows the view's zoom — the target of four
+     * pixels per bin, snapped up to the next 1/2/5 rung, resolved before the
+     * fetch and keyed into it.
      */
     step: {
       type: 'number',
+      model: types.union(types.number, types.literal(AUTO_BIN)),
       defaultValue: 10000,
-      description: 'bin width in bp',
+      description: 'bin width in bp, or "auto" to follow the zoom',
     },
     /**
      * #slot marks.transform.as
