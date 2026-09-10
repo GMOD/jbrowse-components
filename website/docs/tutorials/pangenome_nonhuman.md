@@ -123,15 +123,27 @@ it earns its place where the bubbles lane says a window is genuinely tangled.
 
 ## Finding the loci
 
-Neither of the windows above was picked by reading the literature. The coarse
-tier records how many segments each bubble holds, so ranking it says where a
-graph varies most, and intersecting that with the reference annotation names the
-result. On these two datasets that recovers the beta-defensin cluster, the
-vomeronasal receptor and Speer families, `Dock2`, the immunoglobulin heavy chain
-locus and BoLA — without anyone curating a list.
+`Nnt` and BoLA are both loci someone had already written about, and that does
+not generalise: a panel nobody has published on has no literature to read, which
+is most panels. The graph can answer the question itself. The coarse tier
+records how many segments each bubble holds, so ranking it says where the graph
+varies most, and intersecting the result with the reference annotation names
+what it found.
 
-That is what makes this repeatable for a panel nobody has written about yet. The
-ranking lives in
+On these two datasets that recovers the beta-defensin cluster, the vomeronasal
+receptor and Speer families, the immunoglobulin heavy chain locus and BoLA, with
+nobody curating a list. The densest window it returns for mouse is a single
+bubble sitting inside one intron of `Dock2`:
+
+<Figure caption="The densest bubble in the mouse graph that still fits in one cut, found by ranking the coarse tier and named off the reference annotation. The gene lane holds nothing but intron, the bubbles lane is a single row, and the allele inventory below it draws each alternative path through that bubble at its real size." src="/img/pangenome/mouse_dock2.png" />
+
+It is also the counterexample to the note above. Every other panel on this page
+is a chain and is drawn anchored; this cut is loops hanging off a backbone,
+which is the shape the force-directed layout exists for — and it was found by
+ranking a file rather than by knowing anything about mouse.
+
+That is what makes the method repeatable for a panel nobody has written about
+yet. The ranking lives in
 [`generatePangenomeLoci.ts`](https://github.com/GMOD/jb2hubs/blob/main/website/generatePangenomeLoci.ts)
 in the genomes.jbrowse.org repo, which publishes the derived catalogues at
 [genomes.jbrowse.org/pangenomes](https://genomes.jbrowse.org/pangenomes) so a

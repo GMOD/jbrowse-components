@@ -63,22 +63,123 @@ const NNT_REGION = {
 }
 const NNT_LOC = 'chr13:119,440,000-119,600,000'
 
-// The H2 complex, mouse's MHC and the locus the mouse pangenome literature
-// leads with. Window picked by measurement, like the loci on the HPRC page: the
-// hosted files report 44 bubbles and 94 segments over this 150 kb, against 503
-// segments for the full K-to-D span (chr17:34.2-35.5 Mb), which draws as a
-// thread. So this is the widest cut of H2 that stays legible.
+// Dock2, and the window this figure draws was picked by MEASUREMENT rather than
+// by reputation. It replaced an H2 figure, and the replacement is the point:
+// H2 is mouse's MHC and what the mouse pangenome literature leads with, so it
+// was the obvious second mouse panel -- and rendering it produced a competent
+// picture of nothing. 44 bubbles and 94 segments over 150 kb draws as a chain
+// with a scatter of 5-91 bp loops hanging off it, and no lane on the page said
+// anything a reader could not have guessed. Picked on reputation, and it showed.
 //
-// It is legible ANCHORED, which is the correction to make if you are reading
-// this against the HPRC page's force figures: 94 segments here is not the same
-// picture as 94 segments there. See the layoutMode comment on the view below.
-const H2_REGION = {
-  refName: 'chr17',
+// This window came out of the mechanism the tutorial's "Finding the loci"
+// section describes: rank the coarse tier by segments per bubble (`cn:i:`) and
+// name each entry off the reference annotation. Mouse's densest DRAWABLE entry
+// is a single bubble --
+//
+//   tabix …mouse-mm39-minigraph.bubbles.bed.gz 'mm39#0#chr11:34516044-34560497'
+//
+// returns exactly one row: `cn` 524 segments over 44,453 bp of GRCm39, with
+// alternate paths from 3,943 bp to 114,372 bp. Three bubbles in the whole graph
+// hold more segments and all three are 372 kb to 2.24 Mb wide, so this is the
+// densest one that fits inside what the view will cut.
+//
+// It is INTRONIC and the figure claims nothing else. Dock2 is
+// chr11:34,176,814-34,674,732 on the minus strand with 52 exons; the nearest
+// ones end at 34,464,536 and begin at 34,578,334, so the bubble sits inside one
+// ~114 kb intron and touches no exon. What is being shown is where the strain
+// panel varies most, not a coding consequence.
+const DOCK2_REGION = {
+  refName: 'chr11',
   assemblyName: 'mm39',
-  start: 34_140_000,
-  end: 34_290_000,
+  start: 34_516_044,
+  end: 34_560_497,
 }
-const H2_LOC = 'chr17:34,140,000-34,290,000'
+const DOCK2_LOC = 'chr11:34,516,044-34,560,497'
+
+// FORCE, and the only figure in this file that is. Both layouts were rendered
+// before this was decided, because the other three panels here are anchored and
+// the reasoning that settled them would have settled this one too:
+//
+//   anchored  18 rank lanes at 2.9% zoom, each large allele named at its
+//             reference position -- 6.2, 12.8, 13.7, 4.1 kb deletions and a
+//             couple of dozen more. Readable, and it looks like a denser
+//             version of the Nnt panel above.
+//   force     20% zoom, and the cut draws as what it is: several large loops
+//             off one backbone with 425 nodes and 580 edges between them.
+//
+// The second is the figure, because this page's note tells a reader to check
+// the node and edge counts before reaching for the force layout, and a rule
+// with no counterexample on the page is a preference. Every other window here
+// is a chain and force draws a chain as an arc -- recorded on each of their
+// views below. This one is a single bubble holding 524 segments, and it is the
+// shape the note is describing.
+const dock2Spec: ScreenshotSpec = {
+  mode: 'url',
+  name: 'pangenome/mouse_dock2',
+  url: sessionSpec(CONFIG, {
+    views: [
+      {
+        type: 'LinearGenomeView',
+        id: 'mouse-dock2-lgv',
+        assembly: 'mm39',
+        loc: DOCK2_LOC,
+        tracks: [
+          // Nothing but an intron line and the gene's name crosses this
+          // window, which is the context the figure needs and all of it.
+          {
+            trackId: 'mm39_ncbiRefSeq_ucsc',
+            type: 'LinearBasicDisplay',
+            height: 48,
+          },
+          // One row, whose own label states the ranking metric: this is the
+          // bubble the derivation returned, and the lane says 524 in text.
+          {
+            trackId: 'mouse_minigraph_bubbles',
+            type: 'LinearBasicDisplay',
+            height: 52,
+          },
+          // Pileup for the reason the Nnt figure's lane is: these rows are the
+          // alleles themselves, drawn at real magnitude off their CIGARs, which
+          // is what makes a 3.9 kb path and a 114 kb one distinguishable.
+          {
+            trackId: 'mouse_minigraph_alleles',
+            type: 'LinearPileupDisplay',
+            height: 110,
+          },
+          // Labels off: 231 segment rows sit on the reference path here against
+          // 56 in the whole 160 kb Nnt window, so the lane's subject is density
+          // and a per-segment id is unreadable at that count anyway.
+          {
+            trackId: 'mouse_minigraph_segments',
+            type: 'LinearBasicDisplay',
+            showLabels: 'none',
+            height: 90,
+          },
+        ],
+      },
+      {
+        type: 'GraphGenomeView',
+        displayName: 'Dock2 intron graph',
+        loadedTrackId: 'mouse_minigraph_segments',
+        loadedRegion: DOCK2_REGION,
+        connectedViewId: 'mouse-dock2-lgv',
+        colorScheme: 'reference-position',
+        layoutMode: 'force',
+      },
+    ],
+  }),
+  readySelector: TOOLBAR_READY,
+  readyTimeout: 300000,
+  settleMs: 15000,
+  viewportWidth: 1400,
+  // The tallest figure in the file, and the run measured it rather than the
+  // spec guessing: at 1150 it reported 181 css px of the graph pane below the
+  // fold. A force layout of this cut needs the room -- the whole point of the
+  // panel is its topology, and a topology with its bottom third missing is not
+  // one. SLACK_WARN_PX reports the other direction if this ever over-shoots.
+  viewportHeight: 1320,
+  hideTooltip: true,
+}
 
 // ---------------------------------------------------------------------------
 // Bovine
@@ -151,10 +252,18 @@ export const nonHumanGraphSpecs: ScreenshotSpec[] = [
               type: 'LinearBasicDisplay',
               height: 80,
             },
+            // 70 CLIPPED IT, and the clip was through the middle of a
+            // label rather than at a row boundary, which reads as a broken
+            // render. 29 bubbles over this window pack into three rows of
+            // (tick, span, "N segments, up to M paths") at ~39 CSS px each, so
+            // anything under ~120 cuts the third row's second line. Same
+            // arithmetic for the segments lane below: 56 segments, four rows at
+            // ~31 px. The run's own SLACK_WARN_PX check reports the other
+            // direction, so an over-tall viewport does not go unnoticed.
             {
               trackId: 'mouse_minigraph_bubbles',
               type: 'LinearBasicDisplay',
-              height: 70,
+              height: 125,
             },
             // The lane that carries the 16 kb claim, and PILEUP rather than the
             // default: the allele inventory's rows are the alleles themselves,
@@ -171,7 +280,7 @@ export const nonHumanGraphSpecs: ScreenshotSpec[] = [
             {
               trackId: 'mouse_minigraph_segments',
               type: 'LinearBasicDisplay',
-              height: 80,
+              height: 130,
             },
           ],
         },
@@ -194,59 +303,10 @@ export const nonHumanGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 300000,
     settleMs: 12000,
     viewportWidth: 1400,
-    viewportHeight: 1000,
+    viewportHeight: 1105,
     hideTooltip: true,
   },
-  {
-    mode: 'url',
-    name: 'pangenome/mouse_h2',
-    url: sessionSpec(CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          id: 'mouse-h2-lgv',
-          assembly: 'mm39',
-          loc: H2_LOC,
-          tracks: [
-            'mm39_ncbiRefSeq_ucsc',
-            'mouse_bubble_score',
-            'mouse_minigraph_segments',
-          ],
-        },
-        {
-          type: 'GraphGenomeView',
-          displayName: 'H2 class I graph',
-          loadedTrackId: 'mouse_minigraph_segments',
-          loadedRegion: H2_REGION,
-          connectedViewId: 'mouse-h2-lgv',
-          colorScheme: 'reference-position',
-          // ANCHORED, and the force layout was RENDERED here first rather than
-          // declined on the HPRC figures' reasoning. It does not work, and the
-          // pane's own header says why: the cut is 149 nodes and 206 edges,
-          // which on a connected drawing is barely more than the n-1 of a path.
-          // An SV-resolution graph over 150 kb of mouse is a chain with a few
-          // small loops in it -- 44 bubbles over the window -- so the force
-          // layout draws one long arc at 17% zoom that runs off the bottom of
-          // the frame with nothing about H2 legible in it.
-          //
-          // This is the general shape of the two non-human graphs and the main
-          // way they differ from HPRC's in practice: the HPRC force figures sit
-          // at loci where 90 haplotypes make genuinely tangled bubbles (C4,
-          // amylase, MHC class II), and neither of these panels has that
-          // density anywhere. Anchored puts every x on a GRCm39 coordinate, so
-          // the backbone runs under the linear view's axis and each allele
-          // hangs below where it attaches, which is the readable form here.
-          layoutMode: 'auto',
-        },
-      ],
-    }),
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 300000,
-    settleMs: 12000,
-    viewportWidth: 1400,
-    viewportHeight: 860,
-    hideTooltip: true,
-  },
+  dock2Spec,
   {
     mode: 'url',
     name: 'pangenome/bovine_bola',
