@@ -20,8 +20,9 @@ BED score column, a segment ratio, a bedGraph-shaped interval.
 | Piece | Where | What it owns |
 | --- | --- | --- |
 | `MarkEncoding`, `encodeFeatures` | `packages/core/src/util/markEncoding.ts` | the declaration and its evaluation over the **lanes** the caller names: native `feature.get(field)` per channel, `jexl:` as the opt-in escape, a colour that is a constant, a jexl expression, a categorical palette or a ramp over a domain, a glyph that is a name, a jexl expression or a categorical scale over the glyph names, an integer `row`, the `y` extremes, a Flatbush over `(x, y, x2, y)` when `index` is named, and the `ScaleTable` per scaled channel |
-| `CoreEncodeFeatures` | `packages/core/src/rpc/methods/CoreEncodeFeatures.ts` | one region's features fetched once, the `transform` steps run (the display's `jexlFilters` as `filter` steps), every layer of the request — an encoding and its lanes — run over the same list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for the request's `layers[i]`, the buffers transferred |
-| `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ shape, encoding }` sub-schemas, one `defineMark` per entry reading `layers[i]` through a lens that checks its shape's lanes are present (`SHAPE_LANES`), the wiggle-core score axis, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over its layer's Flatbush, spans stacked on `row` into `rowCount` bands |
+| `runTransforms` | `packages/core/src/util/featureTransforms.ts` | the transform stage: a typed step list — `filter`, `formula`, `bin`, `aggregate`, `coverage` — run in order over a feature list, each step reading what the last answered |
+| `CoreEncodeFeatures` | `packages/core/src/rpc/methods/CoreEncodeFeatures.ts` | one region's features fetched once, the request's shared `transform` steps run (the display's `jexlFilters` as `filter` steps), then each layer of the request — its own `transform`, an encoding and its lanes — run over that list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for the request's `layers[i]`, the buffers transferred |
+| `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ shape, encoding, transform, minBpPerPx, maxBpPerPx }` sub-schemas, one `defineMark` per entry reading `layers[i]` through a lens that checks its shape's lanes are present (`SHAPE_LANES`) and `enabled` inside the entry's zoom range, the wiggle-core score axis, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over its layer's Flatbush, spans stacked on `row` into `rowCount` bands |
 
 **Colour is resolved in exactly one place** — the worker — and the legend reads
 the same table ([mechanisms/rendering-decisions](../mechanisms/rendering-decisions.md)).
@@ -77,6 +78,75 @@ mistyped `scoreField` or `encoding.y` was an empty track with no message.
 **A `jexl:` ref is a channel escape, not the default.** The measurement below
 is why: the native read is the loop's own cost and a jexl evaluation is half
 again on top of it per channel.
+
+## The transform stage
+
+A layer's features are the region's, after the steps its `transform` names,
+run in the worker before the encode. The step list is typed by `type`, the
+spelling GenomeSpy chose over Vega-Lite's inferred one, and `runTransforms`
+walks it in order:
+
+| Step | What it answers | Fields it writes |
+| --- | --- | --- |
+| `filter` | the features a `jexl:` expression admits | none |
+| `formula` | every feature, with a `jexl:` expression's value in `as` | `as` |
+| `bin` | every feature, snapped to the genome-aligned bin of `step` bp its `field` (`start`) falls in | `start` and `end`, or the two names in `as` |
+| `aggregate` | one feature per distinct `groupby` value set, spanning its members' extent, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` over a field — in `as` or `count`/`<op>_<field>`; no `groupby` folds the region | the group's fields, the ops |
+| `coverage` | one feature per run of constant depth over the spans, where the depth is not zero | `as` (`coverage`) |
+
+`bin` writes over `start` and `end` on purpose: an `aggregate` grouped by
+those two is then a density whose bars span the bins, with the encoding's
+`x`/`x2` defaults untouched and `y: 'count'`, and the group's extent is the
+bin's. A feature is placed in one bin by one field; a feature that crosses
+a boundary counts where its `field` falls, which is what `coverage` is for
+when the question is overlap rather than count. A `formula` and a `bin`
+answer a `DerivedFeature` reading the new fields over the old ones, so no
+feature's data is copied per step; an `aggregate` or `coverage` answers a
+`MadeFeature` carrying only what it wrote, with a lazy id. Wiggle's
+binning is still the adapter's — a BigWig's zoom levels are computed at
+index time and the mark display does not draw over `QuantitativeTrack`
+(ADR-107) — so `bin` is for the feature adapters that have no summary.
+
+The request's shared `transform` runs first, then each layer's own, so a
+`marks` list can hold a binned count and the raw features over one fetch:
+the display's `jexlFilters` are the shared steps and a mark's `transform`
+its own. With a zoom range on each — `minBpPerPx` on the density,
+`maxBpPerPx` on the features — one config is a multiscale picture, the
+declared form of GenomeSpy's `multiscale` layer and of `defineMark`'s
+`enabled`. A mark outside its range is off for the draw, the hover and the
+highlight through `enabled`, and the display folds only the drawing marks
+into the shared y domain, the legend, the span row count and the skipped
+chip (`markVisible`), so the feature layer's axis is not blown out to the
+count's range. The worker still encodes every layer per region: the bin
+layer costs 300 instances at a million features, and the feature layer's
+encode is the cost it was, so nothing is skipped by zoom before the RPC.
+
+Measured, per input feature, as the steps plus the native encode of their
+output:
+
+<!-- BEGIN GENERATED MEASUREMENT feature-transform-steps -->
+
+_Generated by `pnpm autogen` — edit the source, not this block._
+
+| arm          | features in | features out |  wall | per input feature (ns) | vs none |
+| ------------ | ----------: | -----------: | ----: | ---------------------: | ------: |
+| none         |   1,000,000 |    1,000,000 |  78ms |                     78 |   1.00x |
+| filter       |   1,000,000 |      500,000 | 216ms |                    216 |   2.77x |
+| formula      |   1,000,000 |    1,000,000 | 418ms |                    418 |   5.36x |
+| bin-count    |   1,000,000 |          300 | 257ms |                    257 |   3.31x |
+| bin-mean     |   1,000,000 |          300 | 291ms |                    291 |   3.73x |
+| coverage     |   1,000,000 |    1,599,999 | 435ms |                    435 |   5.58x |
+| bin-then-raw |   1,000,000 |    1,000,300 | 340ms |                    340 |   4.37x |
+
+<!-- END GENERATED MEASUREMENT feature-transform-steps -->
+
+The jexl arms cost what the jexl channel does. The aggregate's first form
+built a string key per feature and measured 2.5x the raw-value trie it
+keys by now; its and coverage's outputs were `SimpleFeature`s and measured
+1.9x the data-backed feature they are now. What the table does not show is
+what the encode hands the GPU: `bin-count` uploads 300 instances where
+`none` uploads a million, which is the whole point of a density layer at
+wide zoom.
 
 ## The bar shape
 
@@ -152,8 +222,9 @@ knowing at this seam:
   filter steps.
 - **Semantic zoom is a layer property.** Its `multiscale` composition orders
   layers from zoomed-out to zoomed-in with `stops` and cross-fades by the zoom
-  metric. `defineMark`'s `enabled(state)` and the tier mixins do that
-  imperatively; a zoom range on a `marks` entry is the declared form.
+  metric. A `marks` entry's `minBpPerPx`/`maxBpPerPx` is the declared form
+  here, a hard cut through `defineMark`'s `enabled(state)` rather than a
+  cross-fade.
 
 What it has that the compile-time form deliberately does not: `size`,
 `opacity` and `angle` as channels, from shaders generated at runtime from the

@@ -62,12 +62,15 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-conf">**conf**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelInstanceTypeProps&lt;Record&lt;…&gt;&gt; &amp; { setSubschema(slotName: st…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelInstanceTypeProps&lt;Record&lt;…&gt;&gt; &amp; { setSubschema(slotName: string, data: Record&lt;string, unknown&gt;): any; setSlot(slotName: string, value: unknown): void; } &amp; IStateTreeNode&lt;...&gt;</code></pre></dialog></span> | the config typed off the concrete schema | LinearMarkDisplay |
 | <span id="getter-prefersoffset">**prefersOffset**</span><br><code>boolean</code> | the track label sits above the plot so the y-axis stays on the edge | LinearMarkDisplay |
 | <span id="getter-markshapes">**markShapes**</span><br><code>("bar" &#124; "point" &#124; "span")[]</code> | The declared marks' shapes, in draw order. | LinearMarkDisplay |
+| <span id="getter-markentries">**markEntries**</span><br><code>MarkEntry[]</code> | Each mark's shape and zoom range, what the mark list is built from. | LinearMarkDisplay |
+| <span id="getter-markvisible">**markVisible**</span><br><code>boolean[]</code> | Whether each mark draws at the view's zoom: inside its `minBpPerPx`..`maxBpPerPx` range, where 0 is no bound. What the shared domain, the legend, the row count and the skipped chip fold. | LinearMarkDisplay |
 | <span id="getter-encodings">**encodings**</span><br><code>MarkEncoding[]</code> | The declared marks' encodings, as the worker takes them. | LinearMarkDisplay |
 | <span id="getter-layerrequests">**layerRequests**</span><br><code>LayerRequest[]</code> | The worker request, one layer per mark: its encoding and the lanes its shape reads. | LinearMarkDisplay |
 | <span id="getter-origin">**origin**</span><br><code>number</code> |  | LinearMarkDisplay |
 | <span id="getter-minwidthpx">**minWidthPx**</span><br><code>number</code> |  | LinearMarkDisplay |
 | <span id="getter-configuredfilters">**configuredFilters**</span><br><code>() =&gt; string[]</code> | the `jexlFilters` slot, `jexl:`-prefixed | LinearMarkDisplay |
-| <span id="getter-marklist">**markList**</span><br><code>DisplayMark[]</code> | The mark list the shapes declare — one `defineMark` per config entry, reading `layers[i]`. Recomputed only when the shape list moves, which is what lets the component key its backend factory on it. | LinearMarkDisplay |
+| <span id="getter-marklist">**markList**</span><br><code>DisplayMark[]</code> | The mark list the shapes declare — one `defineMark` per config entry, reading `layers[i]`, off outside its zoom range. Recomputed only when the entries move, which is what lets the component key its backend factory on it. | LinearMarkDisplay |
+| <span id="getter-visibleshapes">**visibleShapes**</span><br><code>("bar" &#124; "point" &#124; "span")[]</code> | The shapes drawing at the view's zoom. | LinearMarkDisplay |
 | <span id="getter-hasbarmark">**hasBarMark**</span><br><code>boolean</code> |  | LinearMarkDisplay |
 | <span id="getter-haspointmark">**hasPointMark**</span><br><code>boolean</code> |  | LinearMarkDisplay |
 | <span id="getter-activefilters">**activeFilters**</span><br><code>string[]</code> | the filters actually applied, `jexl:`-prefixed | LinearMarkDisplay |
@@ -78,7 +81,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-regionrefnames">**regionRefNames**</span><br><code>ReadonlyMap&lt;number, string&gt;</code> | displayedRegionIndex → refName, for the hit test | LinearMarkDisplay |
 | <span id="getter-hoverink">**hoverInk**</span><br><code>HighlightRect[]</code> | The box the hovered instance painted, for the chrome's highlight; the context menu's hit stands in while a menu is open. In the chrome's px, so the plot's inset is added to the canvas box. | LinearMarkDisplay |
 | <span id="getter-skippedfeatures">**skippedFeatures**</span><br><code>SkippedFeatures</code> | What the worker left out of the loaded regions — a feature whose `y` field read as missing or not a number — for the corner notice. | LinearMarkDisplay |
-| <span id="getter-legendsections">**legendSections**</span><br><code>MarkLegendSection[]</code> | the colour keys the loaded regions carry, one per scaled mark | LinearMarkDisplay |
+| <span id="getter-legendsections">**legendSections**</span><br><code>MarkLegendSection[]</code> | the colour keys the loaded regions carry, one per scaled mark drawing at the view's zoom | LinearMarkDisplay |
 | <span id="getter-colorscales">**colorScales**</span><br><code>ColorScale[]</code> | `LegendMixin`'s hook: the keys as color scales, so the chrome and the export draw the legend off the tables the worker resolved | LinearMarkDisplay |
 | <span id="getter-parenttrack">**parentTrack**</span><br><code>AbstractTrackModel</code> |  | [BaseDisplay](../basedisplay#getter-parenttrack) |
 | <span id="getter-renderingcomponent">**RenderingComponent**</span><br><code>FC&lt;…&gt;</code> |  | [BaseDisplay](../basedisplay#getter-renderingcomponent) |
@@ -171,6 +174,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="method-visiblelayers">**visibleLayers**</span><br><code>(data: MarkRegionData) =&gt; StoredLayer[]</code> | A region's layers with a mark outside its zoom range replaced by an empty one, so a fold over layers by index reads only what draws. | LinearMarkDisplay |
 | <span id="method-rpcprops">**rpcProps**</span><br><code>() =&gt; { layers: LayerRequest[]; transform: TransformStep[]; }</code> | the fetch inputs SettingsInvalidate watches: each mark's encoding and lanes, and the filters as transform steps, all evaluated in the worker | LinearMarkDisplay |
 | <span id="method-trackmenuitems">**trackMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  | LinearMarkDisplay |
 | <span id="method-contextmenuitems">**contextMenuItems**</span><br><code>() =&gt; MenuItem[]</code> |  | LinearMarkDisplay |

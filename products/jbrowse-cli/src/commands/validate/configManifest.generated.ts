@@ -5227,6 +5227,62 @@ export const configManifest: ConfigManifest = {
                   ]
                 }
               ]
+            },
+            {
+              "name": "transform",
+              "type": "MarkTransformStepConfigurationSchema[]",
+              "subSlots": [
+                {
+                  "name": "type",
+                  "type": "(JexlString | MarkTransformType)"
+                },
+                {
+                  "name": "expr",
+                  "type": "(JexlString | string)"
+                },
+                {
+                  "name": "field",
+                  "type": "(JexlString | string)"
+                },
+                {
+                  "name": "step",
+                  "type": "(JexlString | number)"
+                },
+                {
+                  "name": "as",
+                  "type": "(JexlString | string[])"
+                },
+                {
+                  "name": "groupby",
+                  "type": "(JexlString | string[])"
+                },
+                {
+                  "name": "ops",
+                  "type": "MarkAggregateOpConfigurationSchema[]",
+                  "subSlots": [
+                    {
+                      "name": "op",
+                      "type": "(JexlString | MarkAggregateOpName)"
+                    },
+                    {
+                      "name": "field",
+                      "type": "(JexlString | string)"
+                    },
+                    {
+                      "name": "as",
+                      "type": "(JexlString | string)"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "minBpPerPx",
+              "type": "(JexlString | number)"
+            },
+            {
+              "name": "maxBpPerPx",
+              "type": "(JexlString | number)"
             }
           ]
         },

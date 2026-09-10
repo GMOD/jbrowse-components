@@ -8,7 +8,9 @@ Auto-generated config schema for the current JBrowse release — see the [config
 
 ## Example usage
 
-A BED score column as bars, coloured by strand, with the key on screen:
+A BED score column as bars, coloured by strand, with the key on screen,
+and a per-10 kb count in its place once the view is wider than 100 bp
+per px:
 
 ```js
 {
@@ -25,6 +27,16 @@ A BED score column as bars, coloured by strand, with the key on screen:
         {
           shape: 'bar',
           encoding: { y: 'score', color: { field: 'strand', scale: 'categorical' } },
+          maxBpPerPx: 100,
+        },
+        {
+          shape: 'bar',
+          transform: [
+            { type: 'bin', step: 10000 },
+            { type: 'aggregate', groupby: ['start', 'end'], ops: [{ op: 'count' }] },
+          ],
+          encoding: { y: 'count' },
+          minBpPerPx: 100,
         },
       ],
     },
@@ -79,8 +91,21 @@ These slots go on a display entry: `"displays": [{ "type": "LinearMarkDisplay", 
 | <span id="slot-marksencodingrow">**marks.encoding.row**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | For a span mark: the feature field, or jexl callback, naming the band the span stacks on, an integer from 0; a feature with nothing there sits on band 0. Empty puts every span on one band across the whole plot. |
 | <span id="slot-marksencodingcolor">**marks.encoding.color**</span><br><code>markColorSchema</code> | The mark's colour: a CSS colour, a jexl callback returning one, or an object binding a field to a categorical or continuous scale. A scale is what the legend describes. |
 | <span id="slot-marksencodingglyph">**marks.encoding.glyph**</span><br><code>markGlyphSchema</code> | For a point mark: `disc`, `triangle` or `diamond`, a jexl callback over `feature` returning one, or an object binding a field to a categorical scale over those names. A scale is what the legend describes. |
+| <span id="slot-markstransformopsop">**marks.transform.ops.op**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (count, sum, mean, min, max) = <code>'count'</code> | `count` needs no field; `sum`, `mean`, `min` and `max` read one. |
+| <span id="slot-markstransformopsfield">**marks.transform.ops.field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The feature field the op reads, for every op but `count`. |
+| <span id="slot-markstransformopsas">**marks.transform.ops.as**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | The output field. Empty is `count`, or `<op>_<field>`. |
+| <span id="slot-markstransformtype">**marks.transform.type**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (filter, formula, bin, aggregate, coverage) = <code>'filter'</code> | `filter` keeps the features `expr` admits; `formula` writes `expr`'s value into `as`; `bin` snaps each feature to the `step`-bp bin its `field` falls in, writing the bin's edges over `start` and `end` (or the two names in `as`); `aggregate` folds each `groupby` group into one feature carrying `ops`; `coverage` replaces the features with runs of how many overlap each stretch, in `as` (`coverage`). |
+| <span id="slot-markstransformexpr">**marks.transform.expr**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | A jexl callback over `feature`, for a `filter` or `formula` step.<br>_callback args:_ `feature` |
+| <span id="slot-markstransformfield">**marks.transform.field**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | For a `bin` step: the field placing a feature in a bin, `start` when empty. |
+| <span id="slot-markstransformstep">**marks.transform.step**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>10000</code> | For a `bin` step: the bin width in bp, aligned to the genome. |
+| <span id="slot-markstransformas">**marks.transform.as**</span><br>`stringArray` = <code>[]</code> | The field a `formula` or `coverage` step writes, or the two fields a `bin` step writes its edges to. A single name may be written as a string. |
+| <span id="slot-markstransformgroupby">**marks.transform.groupby**</span><br>`stringArray` = <code>[]</code> | For an `aggregate` step: the fields whose distinct value sets make the groups — `["start", "end"]` after a `bin`. Empty folds the whole region into one feature. |
+| <span id="slot-markstransformops">**marks.transform.ops**</span><br><code>types.array(aggregateOpSchema)</code> | For an `aggregate` step: the summaries each group carries. |
 | <span id="slot-marksshape">**marks.shape**</span><br>[`stringEnum`](/docs/config_guides/slot_types#stringenum) (bar, point, span) = <code>'bar'</code> | `bar` stands between `origin` and `y`; `point` is a glyph at `y`; `span` is a band across the whole plot from `x` to `x2`. |
 | <span id="slot-marksencoding">**marks.encoding**</span><br><code>markEncodingSchema</code> | Which feature fields feed the mark's channels. Every channel has a default, so `{}` draws a bar from `start` to `end` with no value. |
+| <span id="slot-markstransform">**marks.transform**</span><br><code>types.array(transformStepSchema)</code> | Steps over the region's features before this mark encodes them, in order, after the display's `jexlFilters`. A `bin` then an `aggregate` grouped by `start` and `end` is a density: `count` per bin, plotted as `y`. |
+| <span id="slot-marksminbpperpx">**marks.minBpPerPx**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | The mark draws only when the view is at least this zoomed out, in bp per px. 0 sets no bound. With `maxBpPerPx` on another mark, one config shows a density zoomed out and the features zoomed in. |
+| <span id="slot-marksmaxbpperpx">**marks.maxBpPerPx**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | The mark draws only when the view is zoomed in past this, in bp per px. 0 sets no bound. |
 | <span id="slot-marks">**marks**</span><br><code>types.array(markSchema)</code> | The marks to draw, in order — a later one paints over an earlier one. Each is a `shape` and an `encoding`. |
 | <span id="slot-origin">**origin**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>0</code> | The value bars grow from. The axis widens to include it whenever a bar mark is drawn. |
 | <span id="slot-minwidthpx">**minWidthPx**</span><br>[`number`](/docs/config_guides/slot_types#number) = <code>1</code> | Narrowest a bar or span is painted, in px, grown off its start edge.<br>_advanced_ |

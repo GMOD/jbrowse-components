@@ -7,20 +7,22 @@ kind: spec
 # The mark layer against the grammar of graphics
 
 **TL;DR:** the grammar is a pipeline — data, transform, scale, mark, guide,
-layer, coordinates — and as of 2026-09-09 the tree has a declared answer at
-five of the seven stages, with guides derived from declared scales on both
+layer, coordinates — and as of 2026-09-10 the tree has a declared answer at
+six of the seven stages, with guides derived from declared scales on both
 surfaces and parity between backends pinned by tests. The seams are that the
 scale lives in two places (colour on the encoding, y on the display), that
 two channel vocabularies remain, that the config rung covers one class of
-track, and that a scale table is per fetched region. The gaps are the
-transform stage, scale resolution across layers, conditional encoding and the
-channels a runtime shader generator would give. The positions behind each are
-in [ADR-095](../architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md)
+track, and that a scale table is per fetched region. The gaps are scale
+resolution across layers, conditional encoding, the channels a runtime
+shader generator would give, and a bin whose width follows the zoom. The
+positions behind each are in
+[ADR-095](../architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md)
 §"The grammar position", [ADR-106](../architecture-decision-records/adr-106-a-display-declares-its-marks.md),
 [ADR-107](../architecture-decision-records/adr-107-the-quantitative-class-is-authored-in-config.md),
 [ADR-108](../architecture-decision-records/adr-108-a-display-declares-its-colour-scales.md),
-[ADR-109](../architecture-decision-records/adr-109-a-display-declares-its-value-scale.md)
-and [ADR-110](../architecture-decision-records/adr-110-a-display-declares-what-is-highlighted.md);
+[ADR-109](../architecture-decision-records/adr-109-a-display-declares-its-value-scale.md),
+[ADR-110](../architecture-decision-records/adr-110-a-display-declares-what-is-highlighted.md)
+and [ADR-112](../architecture-decision-records/adr-112-a-layer-owns-its-transform-and-its-zoom-range.md);
 this file is the map across them.
 
 ![The grammar's seven stages, and where the tree answers each](diagrams/grammar-pipeline.svg)
@@ -30,11 +32,11 @@ this file is the map across them.
 | Stage | What the grammar means | Where the tree answers | How far |
 | --- | --- | --- | --- |
 | data | rows in memory | a feature adapter's `getFeaturesArray`, any format | whole; the adapter is the format's, and the grammar has no lazy source of its own |
-| transform | a declared step over rows before encoding | `transform: [{ type: 'filter', expr }]` on `CoreEncodeFeatures` (`packages/core/src/rpc/methods/CoreEncodeFeatures.ts`), `filters: jexl[]` as sugar | one step kind; bin, aggregate, window and sample are absent |
+| transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `bin`, `aggregate`, `coverage` — run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreEncodeFeatures` request and then each layer's own; `filters: jexl[]` as sugar for leading filters | whole for a fixed bin width; window and sample are absent |
 | scale | domain → range, separate from the encoding | colour and glyph: `{ field, scale, domain, palette \| range }` on the encoding, resolved by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`); y: `valueScale` on `ScoreScaleMixin` (`packages/wiggle-core/src/ScoreScaleMixin.ts`), placed by `valueScale.slang` | whole, in two places |
 | mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`) | whole, for the shapes the library has |
 | guide | axis and legend derived from a scale; a highlight derived from a selection | `colorScales` → legend (`packages/display-kit/src/legendHost.ts`), `valueScale` → axis, hatches and rules (`packages/display-kit/src/axisHost.ts`), `hoverInk` / `selectionInk` → the highlight (`packages/display-kit/src/highlightHost.ts`), each instance's box read off its shape's `ink`; `DisplayChrome` places all three and `renderDisplaySvg` the first two | whole, for the displays that declare |
-| layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; every mark shares one y domain (`plugins/marks/src/LinearMarkDisplay/markList.ts`) | shared only |
+| layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; every mark shares one y domain (`plugins/marks/src/LinearMarkDisplay/markList.ts`); a mark's `minBpPerPx`/`maxBpPerPx` is the zoom range it draws in, and the shared domain, legend and row count fold only the marks drawing | shared scale; semantic zoom per layer |
 | coordinates | a transform of the plane | genomic x, fixed; circular and dotplot are displays, not coordinate systems | fixed, by position |
 
 The encoding — field to channel, evaluated once — is the grammar's central
@@ -106,11 +108,15 @@ The seams, named honestly:
 
 ## Gaps against the grammar
 
-- **One transform kind.** The list is typed — `[{ type: 'filter', expr }]`,
-  the spelling GenomeSpy chose over Vega-Lite's inferred one — and `filter`
-  is its only member. `bin`, `aggregate`, `window` and `sample` are what a
-  "count features per 10 kb" config needs, and nothing in the tree can say
-  them today. Wiggle's binning is the adapter's and stays so.
+- **A bin's width is fixed in config.** `bin` takes `step` in bp, so a
+  density layer is authored for the zoom range it draws in, and a config
+  that wants three resolutions writes three marks with three ranges.
+  GenomeSpy's `multiscale` does the same with `stops`. A `step` that
+  followed the view's `bpPerPx` would be resolved before the RPC and keyed
+  into the fetch — a refetch per zoom step, the way wiggle's summary levels
+  already work — and is the declared form of what the tier mixins do
+  imperatively; not built until a config asks for it. `window` and
+  `sample` are absent, and wiggle's binning is the adapter's and stays so.
 - **No scale resolution across layers.** Every mark on a display shares one
   y. `resolve: { y: 'independent' }` with a second axis is absent, and so is
   faceting beyond stacking on `row`. Declined on review until a figure needs
@@ -157,8 +163,9 @@ The seams, named honestly:
 A new channel or scale kind is the encoder's (`markEncodingTypes.ts`) and
 needs a shape that reads it. A new guide is a hook on the mixin that owns the
 scale and a placement in the two shells; a guide over the painting reads the
-shapes' `ink`. A transform is a `type` on
-`TransformStep`, run by `CoreEncodeFeatures` before the layers encode. A new shape clears ADR-040's bar with two consumers. A
+shapes' `ink`. A transform is a `type` on `TransformStep`, an arm in
+`runTransforms` and a slot on the mark display's step schema, measured in
+`featureTransforms.bench.ts` beside the others. A new shape clears ADR-040's bar with two consumers. A
 display that wants the encoding for a meaning it cannot say hands the encoder
 a reader and says so at the call. Anything that composes a display stack from
 a declaration is what ADR-091 measured and refused.

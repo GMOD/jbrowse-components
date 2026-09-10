@@ -7,6 +7,31 @@ Auto-generated from exported functions tagged `#api` in the source. See
 [imports and re-exports](/docs/developer_guides/imports_and_reexports) for how to
 import these from a plugin.
 
+## AggregateOp
+
+One summary over a group: `count` needs no field; `sum`, `mean`, `min` and
+`max` read one, skipping values that are not numbers. The output field is
+`as`, else `count` or `<op>_<field>`.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+## AggregateStep
+
+One feature per distinct `groupby` value set (one for the whole region
+with none), spanning its members' extent, carrying the group's fields and
+every `ops` entry.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+## BinStep
+
+Snap every feature to the genome-aligned bin of `step` bp its `field`
+(`start` by default) falls in, writing the bin's edges over the fields
+`as` names — `start` and `end` by default, so an `aggregate` grouped by
+those counts per bin and the bar spans the bin.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
 ## buildColorRampLut
 
 An RGBA lookup table over sampleColorRamp, laid out as the Nx1
@@ -72,6 +97,14 @@ carries a plain `color` slot.
 The scale a colour channel was resolved through, as the legend reads it —
 the same table the colours in the payload came from, so the key cannot
 disagree with the painting.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+## CoverageStep
+
+Replace the features with runs of constant depth: how many of them overlap
+each stretch of the region, in a field `as` (`coverage` by default), with
+the stretches nothing overlaps left out.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -143,6 +176,19 @@ transferables.
 Where a channel's value comes from: a feature field name, read natively
 (`feature.get(name)`), or a `jexl:` expression over `feature` — the opt-in
 escape, three orders of magnitude slower per feature.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+## FilterStep
+
+Keep the features a `jexl:` expression over `feature` admits.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+## FormulaStep
+
+Write a `jexl:` expression's value over `feature` into the field `as` of
+every feature.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -255,6 +301,19 @@ a lap has to read as one tone across the whole palette or it reads as noise.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/color/index.ts)
 
+## runTransforms
+
+Run the transform steps over a feature list, in order, in the worker. The
+list a step answers is what the next one reads, and the last one is what
+the encoder walks.
+
+```js
+// type signature
+(features: readonly Feature[], steps: readonly TransformStep[], jexl?: JexlInstance | undefined) => readonly Feature[]
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
+
 ## sampleColorRamp
 
 The color at `t` in `[0, 1]` across a list of EVENLY SPACED stops, linearly
@@ -329,9 +388,9 @@ the color string.
 
 ## TransformStep
 
-One step over the features before any layer is encoded, named by `type`
-the way GenomeSpy spells a transform. `filter` keeps the features a
-`jexl:` expression admits; every step runs in order.
+One step over the features before a layer is encoded, named by `type` the
+way GenomeSpy spells a transform; every step runs in order and the next
+reads what the last answered.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 

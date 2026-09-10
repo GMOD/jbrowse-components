@@ -22,12 +22,12 @@ digraph grammar_pipeline {
     label="  where the tree answers, and how far  "
     fontname=monospace fontsize=10 style=dashed color=gray50
     adapter [label="feature adapter\ngetFeaturesArray\n(any format)"]
-    filters [label="filters: jexl[]\nthe one transform", style=dashed]
+    filters [label="runTransforms\nfilter, formula, bin,\naggregate, coverage\nshared, then per layer", style=bold]
     encode [label="encodeFeatures\nfield -> channel, one loop\ncolour + glyph scales resolved\nin the worker, per region", style=bold]
     valueScale [label="valueScale\non ScoreScaleMixin\ndomain -> uniform, on the GPU", style=bold]
     marks [label="defineMark list\nshape x lenses\nGPU, Canvas2D, SVG, hit test", style=bold]
     legend [label="colorScales -> legend\nvalueScale -> axis, hatches, rules\nplaced by the chrome", style=bold]
-    layers [label="marks[] in draw order\none y domain, shared", style=bold]
+    layers [label="marks[] in draw order\none y domain, shared\na zoom range per mark", style=bold]
     genomic [label="genomic x, fixed\ncircular and dotplot\nare displays", style=dashed]
     adapter -> filters -> encode -> marks -> legend -> layers -> genomic
     encode -> valueScale [style=dotted label="y extremes"]
