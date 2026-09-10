@@ -124,7 +124,7 @@ interface CircularViewInitSelf extends IStateTreeNode {
 // the display's own state model is lazily registered: naming its type here pulls
 // `@jbrowse/synteny-core` into the eager bundle of every product carrying this
 // view, the circular embed that ships no synteny plugin included (ADR-116).
-interface ChordSyntenyDisplaySelf extends IStateTreeNode {
+export interface ChordSyntenyDisplaySelf extends IStateTreeNode {
   type: string
   adapterConfig: Record<string, unknown>
 }
