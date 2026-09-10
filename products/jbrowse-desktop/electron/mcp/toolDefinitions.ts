@@ -1,3 +1,5 @@
+import { CODE_TIMEOUT_DEFAULT_MS, CODE_TIMEOUT_MAX_MS } from './budgets.ts'
+
 // The MCP tool surface, defined once for the stdio server (tools/list) and the
 // bridge (routing). Import-free of electron and of the renderer, like
 // channelTypes.ts, so all three processes can agree on it.
@@ -42,12 +44,6 @@ Introspect, never guess: jb.listTracks() for trackIds; jb.describeSlots(jb.track
 
 Traps: mutate the model only via actions. Write display settings with track.applyDisplaySettings(settings), never raw assignment; an unknown key lands in its "unapplied" list, so read the report. A track too tall for the window wants heightMode "fit" or "grow", not displayMode "compact". Data files may spell refNames differently than the assembly: jb.getFeatures handles it. A fresh view throws "width undefined" until it mounts: read its region with await jb.visibleRegions(viewId). Aggregate large results in code; never return thousands of raw features.`
 
-// run_javascript's own deadline, raced inside the renderer so a runaway call
-// answers with what it printed instead of a bare relay timeout. The bridge
-// budgets its relay from the same number (see bridge.ts).
-export const CODE_TIMEOUT_DEFAULT_MS = 120_000
-export const CODE_TIMEOUT_MAX_MS = 150_000
-
 export interface McpToolDefinition {
   name: string
   // 'stdio' is answered inside the stdio server itself, without the app
@@ -66,7 +62,7 @@ export interface McpToolDefinition {
   }
 }
 
-export const MCP_TOOLS: readonly McpToolDefinition[] = [
+export const MCP_TOOLS = [
   {
     name: 'run_javascript',
     handledBy: 'renderer',
@@ -207,4 +203,15 @@ Whatever you "return" comes back serialized (size-capped) with "logs" (console o
       openWorldHint: false,
     },
   },
-]
+] as const satisfies readonly McpToolDefinition[]
+
+type Tool = (typeof MCP_TOOLS)[number]
+
+/**
+ * The tools each process owes a handler, derived from `handledBy` rather than
+ * agreed with it. The bridge annotates its routing table with these, so a tool
+ * declared here and served nowhere fails the build instead of answering
+ * "Unknown tool" to a client that tools/list had just advertised it to.
+ */
+export type MainToolName = Extract<Tool, { handledBy: 'main' }>['name']
+export type RendererToolName = Extract<Tool, { handledBy: 'renderer' }>['name']

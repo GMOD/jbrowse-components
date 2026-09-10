@@ -1,19 +1,22 @@
 import fs from 'node:fs'
 import net from 'node:net'
 import path from 'node:path'
-import readline from 'node:readline'
 
 import { ipcHandle, ipcSend } from '../ipc/channels.ts'
 import { isAutosave } from '../paths.ts'
-import { hostedConfigUrl } from './hostedConfig.ts'
-import { createScreenshotTool } from './screenshot.ts'
-import { defaultSocketPath, ensureSocketDir } from './socketPath.ts'
-import { resultFields } from './stdioServer.ts'
 import {
   CODE_TIMEOUT_DEFAULT_MS,
   CODE_TIMEOUT_MAX_MS,
-  MCP_TOOLS,
-} from './toolDefinitions.ts'
+  OPEN_SETTLE_MS,
+  OPEN_WAIT_MS,
+  RENDERER_TIMEOUT_MS,
+  relayBudget,
+} from './budgets.ts'
+import { hostedConfigUrl } from './hostedConfig.ts'
+import { onJsonLines, writeJsonLine } from './jsonLines.ts'
+import { createScreenshotTool } from './screenshot.ts'
+import { defaultSocketPath, ensureSocketDir } from './socketPath.ts'
+import { resultFields } from './stdioServer.ts'
 
 import type {
   LaunchTarget,
@@ -22,15 +25,9 @@ import type {
 } from '../ipc/channelTypes.ts'
 import type { AppPaths } from '../paths.ts'
 import type { BridgeToolResult } from './stdioServer.ts'
+import type { MainToolName, RendererToolName } from './toolDefinitions.ts'
 import type { BrowserWindow } from 'electron'
 
-const RENDERER_TIMEOUT_MS = 150_000
-const OPEN_WAIT_MS = 90_000
-// The settle `open` waits out once the new session announces itself, and the
-// relay that carries it. Budgeted rather than left on the default relay
-// timeout: those two summed past the stdio server's own deadline, which would
-// answer "did not answer in time" over a bridge still working.
-const OPEN_SETTLE_MS = 60_000
 // How long a relay waits for the renderer to subscribe. Must stay well under
 // OPEN_WAIT_MS: openAndWait polls in a loop, and a single wait longer than its
 // deadline would let the loop exit having polled exactly once.
@@ -307,7 +304,7 @@ export function startMcpBridge({
           const settled = await relayToRenderer(
             'wait_ready',
             { timeoutMs: OPEN_SETTLE_MS },
-            OPEN_SETTLE_MS + 15_000,
+            relayBudget(OPEN_SETTLE_MS),
           )
           // the relay's own failure, not the settle's: dropping it answered a
           // reloaded page with a bare { opened } that carried no `settled` and
@@ -361,36 +358,41 @@ export function startMcpBridge({
   // budgeted past the code's own deadline, so the renderer's answer (the error
   // with the console output so far) wins over the relay's silence
   function codeRelayBudget(args: Record<string, unknown>) {
-    return (
+    return relayBudget(
       Math.min(
         typeof args.timeoutMs === 'number'
           ? args.timeoutMs
           : CODE_TIMEOUT_DEFAULT_MS,
         CODE_TIMEOUT_MAX_MS,
-      ) + 15_000
+      ),
     )
   }
 
   // One table, so `handledBy` routes rather than being read and then switched
-  // on again. A tool the stdio server answers for itself (docs) is deliberately
-  // absent, and reaches the socket only from a client that made it up.
+  // on again — and the annotation is what makes it load-bearing: a tool
+  // declared `main` or `renderer` and served nowhere fails the build here,
+  // rather than answering "Unknown tool" to a client tools/list had just
+  // advertised it to. A tool the stdio server answers for itself (docs) is
+  // deliberately absent, and reaches the socket only from a client that made
+  // the name up. `app_version` and `cancel` are the two wire verbs no client
+  // asks for by name.
   const handlers: Record<
-    string,
+    MainToolName | RendererToolName | 'app_version' | 'cancel',
     (args: Record<string, unknown>, caller: Caller) => Promise<BridgeToolResult>
   > = {
     // the stdio server compares this against its own version so the docs it
     // bundles can say when they describe a different build than the one running
     app_version: () => Promise.resolve({ result: { version: appVersion } }),
+    cancel: cancelTool,
     open: openTool,
     screenshot: createScreenshotTool({ getWindow, relay: relayToRenderer }),
-    cancel: cancelTool,
-    ...Object.fromEntries(
-      MCP_TOOLS.filter(t => t.handledBy === 'renderer').map(t => [
-        t.name,
-        (args: Record<string, unknown>, caller: Caller) =>
-          relayToRenderer(t.name, args, codeRelayBudget(args), caller.call),
-      ]),
-    ),
+    run_javascript: (args, caller) =>
+      relayToRenderer(
+        'run_javascript',
+        args,
+        codeRelayBudget(args),
+        caller.call,
+      ),
   }
 
   async function dispatch(
@@ -398,7 +400,10 @@ export function startMcpBridge({
     args: Record<string, unknown>,
     caller: Caller,
   ): Promise<BridgeToolResult> {
-    return handlers[tool]?.(args, caller) ?? { error: `Unknown tool: ${tool}` }
+    const handler = (handlers as Record<string, (typeof handlers)['open']>)[
+      tool
+    ]
+    return handler?.(args, caller) ?? { error: `Unknown tool: ${tool}` }
   }
 
   if (process.platform !== 'win32' && fs.existsSync(socketPath)) {
@@ -417,37 +422,17 @@ export function startMcpBridge({
       connectedClients -= 1
       applyThrottling()
     })
-    const rl = readline.createInterface({ input: socket })
-    // BOTH halves, or the app dies. A client that exits while a call is in
-    // flight leaves a half-closed pipe, so the answer's write fails EPIPE and
-    // the socket emits 'error' — and readline forwards its input's errors to
-    // the Interface, which has no listener of its own and throws out of the
-    // main process, taking the user's unsaved session with it. The socket
-    // listener alone does not cover the Interface.
-    socket.on('error', () => {})
-    rl.on('error', () => {})
     // Everything in here runs in the MAIN process, where an uncaught throw
-    // takes the app down with the user's unsaved session — so nothing off the
-    // socket is trusted, `null` and arrays included (JSON.parse accepts both),
-    // and the whole body is guarded. A line with no numeric id has nobody to
-    // answer: the client matches responses by id and would leave the reply
-    // pending, so that one is dropped.
-    rl.on('line', line => {
+    // takes the app down with the user's unsaved session — so the whole body is
+    // guarded, on top of what onJsonLines already refuses. A line with no
+    // numeric id has nobody to answer: the client matches responses by id and
+    // would leave the reply pending, so that one is dropped.
+    onJsonLines(socket, line => {
       try {
-        let parsed: unknown
-        try {
-          parsed = JSON.parse(line)
-        } catch {
+        if (!('value' in line)) {
           return
         }
-        if (
-          typeof parsed !== 'object' ||
-          parsed === null ||
-          Array.isArray(parsed)
-        ) {
-          return
-        }
-        const request = parsed as {
+        const request = line.value as {
           id?: unknown
           tool?: unknown
           args?: unknown
@@ -456,13 +441,8 @@ export function startMcpBridge({
           return
         }
         const { id } = request
-        // `writable`, not `!destroyed`: a peer that has gone away leaves the
-        // socket alive and unwritable for a tick, which is the window the
-        // EPIPE above comes out of
         const answer = (outcome: BridgeToolResult) => {
-          if (socket.writable) {
-            socket.write(`${JSON.stringify({ id, ...outcome })}\n`)
-          }
+          writeJsonLine(socket, { id, ...outcome })
         }
         if (typeof request.tool !== 'string') {
           answer({ error: 'Invalid request: "tool" must be a string' })

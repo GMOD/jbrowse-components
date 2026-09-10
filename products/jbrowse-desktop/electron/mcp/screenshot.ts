@@ -1,12 +1,15 @@
 import { nativeImage } from 'electron'
 
+import {
+  SCREENSHOT_WAIT_MAX_MS,
+  SCREENSHOT_WAIT_MS,
+  relayBudget,
+} from './budgets.ts'
 import { resultFields } from './stdioServer.ts'
 
 import type { BridgeToolResult } from './stdioServer.ts'
 import type { BrowserWindow, Rectangle } from 'electron'
 
-export const SCREENSHOT_WAIT_MS = 30_000
-export const SCREENSHOT_WAIT_MAX_MS = 120_000
 const PAINT_WAIT_MS = 10_000
 const MEASURE_WAIT_MS = 30_000
 const SCALE_MIN = 0.1
@@ -220,7 +223,7 @@ export function createScreenshotTool({
     const settled = await relay(
       'wait_ready',
       { timeoutMs },
-      Math.max(timeoutMs + 15_000, 30_000),
+      Math.max(relayBudget(timeoutMs), 30_000),
     )
     const win = getWindow()
     if (!win) {

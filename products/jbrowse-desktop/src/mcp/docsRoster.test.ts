@@ -3,10 +3,10 @@ import path from 'node:path'
 
 import { createJbApi } from '@jbrowse/app-core'
 
+import { CODE_TIMEOUT_DEFAULT_MS } from '../../electron/mcp/budgets.ts'
 import { WHOLE_TOPICS } from '../../electron/mcp/docLimits.ts'
 import { overCap } from '../../electron/mcp/textCaps.ts'
 import {
-  CODE_TIMEOUT_DEFAULT_MS,
   MCP_TOOLS,
   SERVER_INSTRUCTIONS,
 } from '../../electron/mcp/toolDefinitions.ts'

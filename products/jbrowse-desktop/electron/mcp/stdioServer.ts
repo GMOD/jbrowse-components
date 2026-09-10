@@ -1,6 +1,7 @@
 import net from 'node:net'
-import readline from 'node:readline'
 
+import { BRIDGE_TIMEOUT_MS } from './budgets.ts'
+import { onJsonLines, writeJsonLine } from './jsonLines.ts'
 import {
   GUIDANCE_PREFIX,
   MCP_TOOLS,
@@ -16,7 +17,6 @@ import {
 // dependencies beyond node.
 
 const PROTOCOL_VERSION = '2025-06-18'
-const BRIDGE_TIMEOUT_MS = 180_000
 
 interface JsonRpcRequest {
   jsonrpc?: string
@@ -86,15 +86,12 @@ function connectBridge(socketPath: string) {
     connecting = new Promise<net.Socket>((resolve, reject) => {
       const s = net.createConnection(socketPath, () => {
         socket = s
-        const rl = readline.createInterface({ input: s })
-        rl.on('line', line => {
-          // a killed app can leave a truncated final line (a screenshot is one
-          // multi-MB line); it must fail that call, not the whole server
-          let msg: (BridgeToolResult & { id: number }) | undefined
-          try {
-            msg = JSON.parse(line) as BridgeToolResult & { id: number }
-          } catch {
+        onJsonLines(s, line => {
+          if (!('value' in line)) {
             return
+          }
+          const msg = line.value as unknown as BridgeToolResult & {
+            id: number
           }
           const entry = pending.get(msg.id)
           if (entry) {
@@ -149,7 +146,7 @@ function connectBridge(socketPath: string) {
           reject(e)
         },
       })
-      s.write(`${JSON.stringify({ id, tool, args })}\n`)
+      writeJsonLine(s, { id, tool, args })
     })
   }
 }
@@ -215,7 +212,6 @@ export function runMcpStdioServer({
   now?: () => number
 }) {
   const callBridge = connectBridge(socketPath)
-  const rl = readline.createInterface({ input })
 
   // Whether the agent has been briefed this session: by reading the guide, or
   // by the guidance the first run_javascript result carried. Decided when the
@@ -284,7 +280,7 @@ export function runMcpStdioServer({
         return
       }
     }
-    output.write(`${JSON.stringify({ jsonrpc: '2.0', id, ...body })}\n`)
+    writeJsonLine(output, { jsonrpc: '2.0', id, ...body })
   }
 
   function cancel(params: Record<string, unknown>) {
@@ -398,39 +394,31 @@ export function runMcpStdioServer({
   }
 
   const inFlight = new Set<Promise<void>>()
-  rl.on('line', line => {
-    if (line.trim()) {
-      let parsed: unknown
-      try {
-        parsed = JSON.parse(line)
-      } catch {
-        respond(null, { error: { code: -32700, message: 'Parse error' } })
-        return
-      }
-      if (
-        typeof parsed !== 'object' ||
-        parsed === null ||
-        Array.isArray(parsed)
-      ) {
-        respond(null, {
-          error: { code: -32600, message: 'Invalid request (no batching)' },
-        })
-        return
-      }
-      const msg = parsed as JsonRpcRequest
-      const work = handle(msg).catch((e: unknown) => {
-        if (msg.id !== undefined && msg.id !== null) {
-          respond(msg.id, {
-            error: {
-              code: -32603,
-              message: e instanceof Error ? e.message : String(e),
+  const rl = onJsonLines(input, line => {
+    if ('dropped' in line) {
+      respond(
+        null,
+        line.dropped === 'unparseable'
+          ? { error: { code: -32700, message: 'Parse error' } }
+          : {
+              error: { code: -32600, message: 'Invalid request (no batching)' },
             },
-          })
-        }
-      })
-      inFlight.add(work)
-      void work.finally(() => inFlight.delete(work))
+      )
+      return
     }
+    const msg = line.value as JsonRpcRequest
+    const work = handle(msg).catch((e: unknown) => {
+      if (msg.id !== undefined && msg.id !== null) {
+        respond(msg.id, {
+          error: {
+            code: -32603,
+            message: e instanceof Error ? e.message : String(e),
+          },
+        })
+      }
+    })
+    inFlight.add(work)
+    void work.finally(() => inFlight.delete(work))
   })
   rl.on('close', () => {
     // drain before exiting: a one-shot pipe closes stdin the moment it has

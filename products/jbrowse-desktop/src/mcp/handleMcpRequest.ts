@@ -10,7 +10,7 @@ import {
 import {
   CODE_TIMEOUT_DEFAULT_MS,
   CODE_TIMEOUT_MAX_MS,
-} from '../../electron/mcp/toolDefinitions.ts'
+} from '../../electron/mcp/budgets.ts'
 import { drainPageErrors } from './pageErrors.ts'
 
 import type { McpBridgeRequest } from '../../electron/ipc/channelTypes.ts'
