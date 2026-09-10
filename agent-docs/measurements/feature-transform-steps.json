@@ -1,0 +1,33 @@
+{
+  "id": "feature-transform-steps",
+  "measured": "2026-09-10",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node packages/core/benches/featureTransforms.bench.ts --rounds=7",
+    "notes": "1,000,000 synthetic SimpleFeatures (2 to 6 bp each, an integer score) through runTransforms and then the native encode of what the steps answered (y, a constant colour, no index), seven arms interleaved round-robin in one node 24 process, min of 7 rounds, load average under 2. A row is the steps plus the encode of their output, per input feature. 'none' is the encode alone over the raw list; 'filter' is one jexl filter keeping every other feature; 'formula' is one jexl formula writing a field the encode then reads; 'bin-count' bins at 10 kb and counts per bin, so the encode walks 300 bins in place of a million features; 'bin-mean' adds a mean score per bin; 'coverage' is the sweep over the spans, 1.6 runs per input feature here; 'bin-then-raw' is the bin-count layer and the raw layer over one fetched list, what a multiscale config costs the worker per region. The aggregate keyed its groups by raw field values through one Map per groupby field after a string key per feature measured 2.5x that; aggregate and coverage outputs are a plain data-backed feature with a lazy id after a SimpleFeature per output measured 1.9x that. The jexl arms cost what the jexl channel does (mark-encoding-jexl-channel). 'vs none' is typed rather than derived because it divides by another row."
+  },
+  "columns": [
+    { "key": "arm", "label": "arm" },
+    { "key": "features", "label": "features in", "format": "int", "align": "right" },
+    { "key": "out", "label": "features out", "format": "int", "align": "right" },
+    { "key": "ms", "label": "wall", "format": "ms", "align": "right" },
+    {
+      "key": "nsPerFeature",
+      "label": "per input feature (ns)",
+      "format": "int",
+      "align": "right",
+      "derived": "ms * 1000000 / features"
+    },
+    { "key": "vsNone", "label": "vs none", "format": "x", "align": "right" }
+  ],
+  "rows": [
+    { "values": { "arm": "none", "features": 1000000, "out": 1000000, "ms": 78, "vsNone": 1 } },
+    { "values": { "arm": "filter", "features": 1000000, "out": 500000, "ms": 216, "vsNone": 2.77 } },
+    { "values": { "arm": "formula", "features": 1000000, "out": 1000000, "ms": 418, "vsNone": 5.36 } },
+    { "values": { "arm": "bin-count", "features": 1000000, "out": 300, "ms": 257, "vsNone": 3.31 } },
+    { "values": { "arm": "bin-mean", "features": 1000000, "out": 300, "ms": 291, "vsNone": 3.73 } },
+    { "values": { "arm": "coverage", "features": 1000000, "out": 1599999, "ms": 435, "vsNone": 5.58 } },
+    { "values": { "arm": "bin-then-raw", "features": 1000000, "out": 1000300, "ms": 340, "vsNone": 4.37 } }
+  ]
+}

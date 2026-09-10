@@ -1,5 +1,5 @@
 import { stringToJexlExpression } from './jexlStrings.ts'
-import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
+import { buildJexlContext } from './simpleFeature.ts'
 
 import type { JexlInstance } from './jexlStrings.ts'
 import type {
@@ -19,17 +19,18 @@ export const DEFAULT_COVERAGE_AS = 'coverage'
  * produce, without copying the base feature's data per step.
  */
 class DerivedFeature implements Feature {
-  constructor(
-    private readonly base: Feature,
-    private readonly fields: Record<string, unknown>,
-  ) {}
+  private readonly base: Feature
+  private readonly fields: Record<string, unknown>
 
-  get(name: 'refName'): string
-  get(name: 'start' | 'end'): number
-  get(name: string): unknown
-  get(name: string) {
-    return name in this.fields ? this.fields[name] : this.base.get(name)
+  constructor(base: Feature, fields: Record<string, unknown>) {
+    this.base = base
+    this.fields = fields
   }
+
+  get = ((name: string) =>
+    name in this.fields
+      ? this.fields[name]
+      : this.base.get(name)) as Feature['get']
 
   id() {
     return this.base.id()
@@ -45,6 +46,33 @@ class DerivedFeature implements Feature {
 
   toJSON(): SimpleFeatureSerialized {
     return { ...this.base.toJSON(), ...this.fields }
+  }
+}
+
+/**
+ * A feature a step made from nothing: what `aggregate` and `coverage` answer,
+ * carrying only the fields they wrote. `SimpleFeature`'s constructor costs
+ * more than the encode of what it builds, and nothing here needs its checks.
+ */
+class MadeFeature implements Feature {
+  private readonly data: Record<string, unknown>
+  private readonly tag: string
+
+  constructor(data: Record<string, unknown>, tag: string) {
+    this.data = data
+    this.tag = tag
+  }
+
+  get = ((name: string) =>
+    name === 'uniqueId' ? this.id() : this.data[name]) as Feature['get']
+
+  id() {
+    const { refName, start, end } = this.data
+    return `${String(refName)}:${String(start)}-${String(end)}${this.tag}`
+  }
+
+  toJSON(): SimpleFeatureSerialized {
+    return { ...this.data, uniqueId: this.id() } as SimpleFeatureSerialized
   }
 }
 
@@ -96,24 +124,48 @@ export function aggregateFieldName({ op, field, as }: AggregateOp) {
   return as ?? (op === 'count' || field === undefined ? op : `${op}_${field}`)
 }
 
-function aggregate(features: readonly Feature[], step: AggregateStep) {
-  const { groupby = [], ops } = step
-  const groups = new Map<string, Feature[]>()
+// The groups keyed by their raw field values, one Map level per groupby
+// field: a string key built per feature was the aggregate's whole cost.
+type GroupTrie = Map<unknown, GroupTrie | Feature[]>
+
+function groupMembers(
+  features: readonly Feature[],
+  groupby: readonly string[],
+): Feature[][] {
+  if (groupby.length === 0) {
+    return features.length > 0 ? [[...features]] : []
+  }
+  const last = groupby.length - 1
+  const root: GroupTrie = new Map()
+  const groups: Feature[][] = []
   for (const f of features) {
-    let key = ''
-    for (const field of groupby) {
-      key += `${String(f.get(field))}\0`
+    let node = root
+    for (let i = 0; i < last; i++) {
+      const v = f.get(groupby[i]!)
+      let next = node.get(v) as GroupTrie | undefined
+      if (!next) {
+        next = new Map()
+        node.set(v, next)
+      }
+      node = next
     }
-    let members = groups.get(key)
+    const v = f.get(groupby[last]!)
+    let members = node.get(v) as Feature[] | undefined
     if (!members) {
       members = []
-      groups.set(key, members)
+      node.set(v, members)
+      groups.push(members)
     }
     members.push(f)
   }
+  return groups
+}
+
+function aggregate(features: readonly Feature[], step: AggregateStep) {
+  const { groupby = [], ops } = step
   const out: Feature[] = []
   let serial = 0
-  for (const members of groups.values()) {
+  for (const members of groupMembers(features, groupby)) {
     const first = members[0]!
     const refName = first.get('refName')
     let start = Infinity
@@ -122,19 +174,14 @@ function aggregate(features: readonly Feature[], step: AggregateStep) {
       start = Math.min(start, m.get('start'))
       end = Math.max(end, m.get('end'))
     }
-    const data: Record<string, unknown> = { refName, start, end }
+    const data: Record<string, unknown> = {}
     for (const field of groupby) {
       data[field] = first.get(field)
     }
     for (const agg of ops) {
       data[aggregateFieldName(agg)] = aggregateValue(members, agg)
     }
-    out.push(
-      new SimpleFeature({
-        uniqueId: `${refName}:${start}-${end}#${serial++}`,
-        ...data,
-      }),
-    )
+    out.push(new MadeFeature({ ...data, refName, start, end }, `#${serial++}`))
   }
   return out
 }
@@ -207,13 +254,7 @@ function coverage(features: readonly Feature[], step: CoverageStep) {
   const emit = (to: number) => {
     if (depth > 0 && to > runStart) {
       out.push(
-        new SimpleFeature({
-          uniqueId: `${refName}:${runStart}-${to}:${as}`,
-          refName,
-          start: runStart,
-          end: to,
-          [as]: depth,
-        }),
+        new MadeFeature({ refName, start: runStart, end: to, [as]: depth }, ''),
       )
     }
   }
