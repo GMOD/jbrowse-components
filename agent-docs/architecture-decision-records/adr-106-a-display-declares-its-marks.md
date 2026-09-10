@@ -144,9 +144,16 @@ cannot is layout, tiering, fetch shape and per-display meaning.
 - A display that still writes a `GpuXxxRenderer` / `Canvas2DXxxRenderer` pair
   is the exception the reference doc names, and a new one needs an argument.
 - The channel vocabulary is not yet one: `span` and `point` say `x`/`x2`/`row`,
-  variants' `cell` says `startEnd`/`rowIndex`, canvas's `rect` says
-  `startEnd`/`y`/`height`. Converging it is a lens change per display, not a
-  shape change, and is the next small move on this layer.
+  variants' `cell` says `startEnd`/`row` (`rowIndex` until ADR-110), canvas's
+  `rect` says `startEnd`/`y`/`height`. `startEnd` was measured for the split
+  on 2026-09-09 and left: it is the worker payload itself (`cellPositions`,
+  `rectPositions`, `linePositions`), addressed by `2i` in the packers, the
+  Flatbush builds, the cell pick, the isoform trim, the multiway geometry and
+  the shaders' `uint2` instance attribute — 18 modules and some 35 tests —
+  so splitting it is a payload and instance-struct change across two
+  pipelines, not a lens change, and it waits for a consumer that needs two
+  arrays. Canvas's `y`/`height` are pixel geometry rather than the value
+  channel `y` names elsewhere, so a rename there converges nothing.
 - The encoding — features to typed arrays — is the half of a grammar the tree
   hand-wrote per display. ADR-107 declared it; on 2026-09-09 Manhattan, the
   example and wiggle's array-less fallback moved onto `encodeFeatures`,
