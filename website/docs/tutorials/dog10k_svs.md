@@ -336,17 +336,11 @@ The variant here is an insertion somewhere else in the genome, and what the
 callset holds at _FGF4_ is its footprint.
 [Parker et al. (2009)](https://doi.org/10.1126/science.1173275) tied
 breed-defining short legs to an expressed _FGF4_ retrogene, a processed copy of
-the transcript reinserted elsewhere. Made from spliced mRNA, it has no introns,
-so short reads from the retrocopy map to the parent's exons and stop at each
-splice site, and a short-read caller reads that pileup as a deletion of each
-intron. The callset cannot tell a retrocopy's footprint from a real deletion.
-
-[Parker et al. (2009)](https://doi.org/10.1126/science.1173275) tied
-breed-defining short legs to an expressed _FGF4_ retrogene, a processed copy of
 the _FGF4_ transcript reinserted elsewhere. Processed means it was made from the
 spliced mRNA, so it has no introns: short reads from the retrocopy map to the
 parent's exons and stop at each splice site, and a short-read caller reads that
-pileup as a deletion of each intron.
+pileup as a deletion of each intron. The callset cannot tell a retrocopy's
+footprint from a real deletion.
 
 ### Checking the records against the FGF4 introns
 
