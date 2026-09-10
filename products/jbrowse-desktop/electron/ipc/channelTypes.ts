@@ -145,6 +145,10 @@ export interface IpcChannels {
   // started: every outcome is reported by a native dialog from the main
   // process, so there is nothing for the renderer to wait for or to render.
   checkForUpdates: { args: []; return: void }
+  // The MCP setup text, which only the main process can write: it is built from
+  // this install's execPath and app path, so it is not something a user could
+  // assemble by hand or a doc page could state.
+  showConnectAgent: { args: []; return: void }
   // A FASTA with no .fai is read end to end, and a remote one is downloaded in
   // full first, so this is the one handler that can hold a dialog for minutes.
   // `jobId` is the caller's handle on that run: cancelIndexFasta takes the same

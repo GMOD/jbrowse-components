@@ -9,6 +9,7 @@ export const INVOKABLE_CHANNELS = [
   'quit',
   'userData',
   'checkForUpdates',
+  'showConnectAgent',
   'indexFasta',
   'cancelIndexFasta',
   'promptOpenFile',

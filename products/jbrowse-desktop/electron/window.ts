@@ -66,7 +66,7 @@ function openExternal(url: string) {
 // The setup text for this install, with the exact path the docs can only
 // guess at per platform. Native, so it works from the start screen and with
 // no session open.
-async function showConnectAgentDialog() {
+export async function showConnectAgentDialog() {
   if (process.env.JBROWSE_DISABLE_MCP) {
     await dialog.showMessageBox({
       type: 'info',

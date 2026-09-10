@@ -128,13 +128,12 @@ test('flushSession reports a failed save rather than rejecting', async () => {
   expect(root.session.snackbarMessages.length).toBe(1)
 })
 
-// The native Help menu that used to carry the update check is macOS-only —
-// window.ts sets the application menu to null everywhere else — so this entry
-// is the whole manual check on Windows and Linux. plugin-menus contributes
-// About and Help into the same menu, so what is worth pinning is the merge:
-// a second "Help" menu, or items landing in the wrong one, is how this stops
-// being reachable without anything failing.
-test('Check for updates sits above the plugin contributions in Help', () => {
+// The native Help menu that carries these is macOS-only, so on Windows and
+// Linux they are the only route to either. plugin-menus contributes About and
+// Help into the same menu, so the merge is what is worth pinning: a second
+// "Help" menu, or an item landing in the wrong one, takes them off the bar
+// without anything failing.
+test('both items sit above the plugin contributions in Help', () => {
   const root = createRootModel()
   const help = root.menus().filter(m => m.label === 'Help')
 
@@ -143,24 +142,38 @@ test('Check for updates sits above the plugin contributions in Help', () => {
     help[0]!
       .menuItems()
       .map(item => ('label' in item ? item.label : item.type)),
-  ).toEqual(['Check for updates...', 'divider', 'About', 'Help'])
+  ).toEqual([
+    'Check for updates...',
+    'Connect an AI agent...',
+    'divider',
+    'About',
+    'Help',
+  ])
 })
 
-test('the Help item asks the main process to check', () => {
+// Both items are the main process doing something the renderer cannot: the
+// update check, and the MCP setup text, which is built from this install's own
+// execPath and app path.
+test('the Help items ask the main process to act', () => {
   const root = createRootModel()
-  const [check] = root
+  const items = root
     .menus()
     .find(m => m.label === 'Help')!
     .menuItems()
-  // narrowed rather than asserted: a divider or a submenu reaching the front of
-  // this menu is exactly what the test above is about, and it should say so
-  // here too rather than throw on a missing property
-  if (!check || !('onClick' in check)) {
-    throw new Error(`the first Help item is not clickable: ${check?.type}`)
-  }
-  check.onClick()
 
-  expect(mockInvokeIpc).toHaveBeenCalledWith('checkForUpdates')
+  for (const [index, channel] of [
+    'checkForUpdates',
+    'showConnectAgent',
+  ].entries()) {
+    const item = items[index]
+    // narrowed rather than asserted: a divider reaching the front of this menu
+    // is what the test above is about, and it should say so here too
+    if (!item || !('onClick' in item)) {
+      throw new Error(`Help item ${index} is not clickable: ${item?.type}`)
+    }
+    item.onClick()
+    expect(mockInvokeIpc).toHaveBeenCalledWith(channel)
+  }
 })
 
 test('nothing is written for a session with no path to write to', async () => {

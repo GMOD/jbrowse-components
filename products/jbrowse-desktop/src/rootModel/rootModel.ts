@@ -27,6 +27,7 @@ import LinkIcon from '@mui/icons-material/Link'
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
 import PublicIcon from '@mui/icons-material/Public'
 import SaveAsIcon from '@mui/icons-material/SaveAs'
+import SmartToyIcon from '@mui/icons-material/SmartToy'
 import UpdateIcon from '@mui/icons-material/Update'
 import { autorun } from 'mobx'
 
@@ -518,11 +519,13 @@ export default function rootModelFactory({
                   workspacesMenuItem(self.session),
                 ],
               },
-              // The native menu bar that used to carry this exists on macOS
-              // alone (electron/window.ts sets it to null elsewhere), so on
-              // Windows and Linux there was no manual update check at all —
-              // only the silent one at startup. plugin-menus appends About and
-              // Help below these, which is why the divider is here.
+              // The native menu bar that carries these exists on macOS alone
+              // (electron/window.ts sets it to null elsewhere), so on Windows
+              // and Linux there was no manual update check and no way to reach
+              // the MCP setup text, which is built from this install's own
+              // paths and so cannot be looked up. The links that menu also has
+              // are already in plugin-menus' Help widget, which appends below
+              // these — hence the divider.
               {
                 label: 'Help',
                 menuItems: () => [
@@ -533,6 +536,15 @@ export default function rootModelFactory({
                       // every outcome is a native dialog raised by the main
                       // process, so there is nothing to await or to report
                       invokeIpc('checkForUpdates').catch((e: unknown) => {
+                        reportError(self.session, e)
+                      })
+                    },
+                  },
+                  {
+                    label: 'Connect an AI agent...',
+                    icon: SmartToyIcon,
+                    onClick: () => {
+                      invokeIpc('showConnectAgent').catch((e: unknown) => {
                         reportError(self.session, e)
                       })
                     },

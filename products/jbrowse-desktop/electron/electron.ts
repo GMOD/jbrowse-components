@@ -9,7 +9,7 @@ import { registerDownloadHandler } from './downloads.ts'
 import { initializeFileSystem } from './fileSystemInit.ts'
 import { registerAuthHandlers } from './ipc/authHandlers.ts'
 import { registerBlatHandlers } from './ipc/blatHandlers.ts'
-import { ipcSend } from './ipc/channels.ts'
+import { ipcHandle, ipcSend } from './ipc/channels.ts'
 import { registerFileHandlers } from './ipc/fileHandlers.ts'
 import { registerGlobalPluginHandlers } from './ipc/globalPluginHandlers.ts'
 import { registerPluginHandlers } from './ipc/pluginHandlers.ts'
@@ -27,7 +27,11 @@ import { defaultSocketPath } from './mcp/socketPath.ts'
 import { runMcpStdioServer } from './mcp/stdioServer.ts'
 import { initializePaths } from './paths.ts'
 import { logError } from './util.ts'
-import { buildAppUrl, createMainWindow } from './window.ts'
+import {
+  buildAppUrl,
+  createMainWindow,
+  showConnectAgentDialog,
+} from './window.ts'
 
 import type { CloseGuard } from './closeGuard.ts'
 import type { LaunchTarget } from './launchTarget.ts'
@@ -299,6 +303,11 @@ function runApp() {
       registerBlatHandlers()
       registerPluginHandlers()
       registerDownloadHandler()
+      // window.ts sets a native menu on macOS alone, so on the other two
+      // platforms the renderer's own Help menu is the only route to this.
+      ipcHandle('showConnectAgent', () => {
+        showConnectAgentDialog().catch(logError)
+      })
       setupAutoUpdater({
         autoUpdater,
         logPath: paths.updateLogPath,
