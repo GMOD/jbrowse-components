@@ -27,14 +27,7 @@ function openChoices(slot: SlotFacade) {
   return result
 }
 
-// Every other choice in the list is a value the user can read off the plot; the
-// unset one was the only one that said nothing about what picking it draws.
-test('the unset enum choice names what unset resolves to', () => {
-  const { getByText } = openChoices(enumSlot({ promotedBase: 'fixed' }))
-  expect(getByText('default (fixed)')).toBeTruthy()
-})
-
-test('a plain maybeStringEnum slot keeps the bare label', () => {
+test('a maybeStringEnum slot labels its unset choice', () => {
   const { getByText } = openChoices(enumSlot({}))
   expect(getByText('default')).toBeTruthy()
 })

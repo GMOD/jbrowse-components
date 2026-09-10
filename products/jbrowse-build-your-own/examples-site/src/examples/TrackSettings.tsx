@@ -332,13 +332,8 @@ const ColorBySelect = observer(function ColorBySelect({
  * top of every alignments track is worse than one you ask for.
  * `setShowLegend(true)` is the ask.
  *
- * **Read it back through `display.showLegend`, never `getConf`.** It is a
- * *promotable* slot: unset means "follow the session-wide default for this
- * display type", and only the resolved getter knows what that came out as. The
- * raw config value for an untouched track is `undefined`, which as a checkbox
- * state reads as "off" whether or not the session turned it on. `setShowLegend`
- * also takes `undefined`, which puts a track back to inheriting -- that is what
- * a tri-state control would write, and this checkbox does not offer it.
+ * Read it back through `display.showLegend` rather than off the raw config, so
+ * the checkbox reflects what the display resolved.
  *
  * Once it is on, the legend's own `×` writes the same slot. Nothing here is
  * told; the checkbox goes back to unticked because it reads the model.

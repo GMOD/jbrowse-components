@@ -19,13 +19,6 @@ function makeSelf(
   const self = {
     showTree: true,
     showLegend: true,
-    showLegendDisplayTypeDefault: {
-      kind: 'toggle' as const,
-      slot: 'showLegend',
-      onValue: true,
-      active: false,
-      toggle: () => {},
-    },
     showRowSeparators: false,
     showRowLabels: true,
     setShowRowLabels: () => {},

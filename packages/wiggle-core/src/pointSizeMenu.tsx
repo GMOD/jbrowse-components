@@ -1,10 +1,7 @@
 import { getSlotDefinition } from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
 
-import type {
-  ConfigModelForFields,
-  ResolvableDisplay,
-} from '@jbrowse/core/configuration'
+import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // Wires a display's shared `scatterPointSize`/`setScatterPointSize` (from
@@ -14,11 +11,10 @@ export function makeScatterPointSizeMenuItem(
   self: {
     scatterPointSize: number
     setScatterPointSize: (n?: number) => void
-  } & ResolvableDisplay<
-    ConfigModelForFields<{
-      scatterPointSize: { type: 'maybeNumber'; promotedBase: number }
+    configuration: ConfigModelForFields<{
+      scatterPointSize: { type: 'number'; defaultValue: number }
     }>
-  >,
+  },
   opts: { label: string },
 ): MenuItem {
   return makeSizeMenu({

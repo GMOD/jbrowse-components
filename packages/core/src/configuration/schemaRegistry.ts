@@ -54,8 +54,7 @@ export function isRegisteredConfigurationSchema(type: IAnyType) {
  * The slot/sub-schema/constant table for a config (includes slots merged in from
  * `baseConfiguration` at schema construction). Undefined when the argument isn't
  * a registered configuration schema. The single accessor for "what are this
- * config's slots?" — shared by the slot facade, promotable defaults, and
- * `fullConfSnapshot`.
+ * config's slots?" — shared by the slot facade and `fullConfSnapshot`.
  *
  * Takes a live node *or* the schema type itself. Every in-tree reader holds a
  * node, which is why the `getType` hop is here; a caller enumerating registered

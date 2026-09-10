@@ -47,7 +47,6 @@ export type {
   SessionWithSessionTracksType,
 } from './SessionTracks.ts'
 export {
-  bakePromotedDefaultsIntoSnapshot,
   bakeSessionCascades,
   getShareableSessionSnapshot,
 } from './shareableSnapshot.ts'

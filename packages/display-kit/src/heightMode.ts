@@ -1,11 +1,7 @@
-// Shared track-height vocabulary for displays that expose a promotable
-// `heightMode` config slot (the canvas feature display and the alignments
-// display). Keeping the enum members, the resolved type, and the grow ceiling in
-// one place keeps the two plugins' modes identical rather than drifting.
-
-// Config-slot enum members: the real modes only. The slot is a promotable
-// `maybeStringEnum`, so the inherit state is the slot being unset, not a member
-// here — the vocabulary stays free of the cascade's plumbing.
+// Shared track-height vocabulary for displays that expose a `heightMode` config
+// slot (the canvas feature display and the alignments display). Keeping the enum
+// members, the resolved type, and the grow ceiling in one place keeps the two
+// plugins' modes identical rather than drifting.
 export const HEIGHT_MODE_VALUES = ['fixed', 'grow', 'fit'] as const
 
 // What a resolved `heightMode` getter (getConf) returns. `fixed` scrolls, `grow`

@@ -2442,7 +2442,7 @@ export default function stateModelFactory(
          * Overrides `LegendMixin`'s, which reads the scales: those decline on
          * an uninitialized view and on a rank the data has not reported yet, so
          * the row that turns a dismissed key back on would go missing exactly
-         * while a track was loading, taking the promotable pin with it.
+         * while a track was loading.
          */
         get hasLegendKey(): boolean {
           return (

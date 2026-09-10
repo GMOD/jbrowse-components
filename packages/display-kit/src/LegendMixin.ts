@@ -1,39 +1,32 @@
-import { resolveConf, setConf } from '@jbrowse/core/configuration'
+import { getConf, setConf } from '@jbrowse/core/configuration'
 import { LEGEND_SVG_GUTTER_WIDTH } from '@jbrowse/core/ui/SvgColorLegend'
 import { colorScaleIsEmpty, legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import type {
-  ConfigModelForFields,
-  ResolvableDisplay,
-} from '@jbrowse/core/configuration'
+import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
 import type { SettingRowOptions } from '@jbrowse/core/ui/menuItems'
 
 /**
  * The slot this mixin reads, restated rather than moved into a shared field
- * table: the composing schemas disagree about `promotedBase` (off for a Hi-C
+ * table: the composing schemas disagree about the default (off for a Hi-C
  * color scale, on for a variant genotype key) and each describes a different
  * legend. Only the type is common, and typing it is all the cast needs.
  *
  * A runtime value rather than a bare type so `RestatedMixinSlots.test.ts` in
  * jbrowse-web can compare it against the real declarations — a restatement
- * nothing compares to the thing it restates is a copy, and copies drift. The
- * `promotedBase` here is a placeholder; only the key's presence is what makes
- * the type drop the inherit sentinel, and the test checks presence, not value.
+ * nothing compares to the thing it restates is a copy, and copies drift.
  */
 export const legendMixinSlots = {
-  showLegend: { type: 'maybeBoolean', promotedBase: false },
+  showLegend: { type: 'boolean', defaultValue: false },
 } as const
 
-// `ResolvableDisplay` alone would widen `configuration` to
-// `AnyConfigurationModel` and switch the slot-name check off entirely.
 type LegendConfigModel = ConfigModelForFields<typeof legendMixinSlots>
 
 /** The whole of what `LegendMixin` needs a composing display to be. */
-export type LegendConfHost = ResolvableDisplay<LegendConfigModel>
+export type LegendConfHost = { configuration: LegendConfigModel }
 
 // The mixin's own `self` is the model it declares, so it cannot see the
 // `configuration` the concrete display supplies — every display composing this
@@ -49,8 +42,8 @@ const confNode = (self: object) => self as LegendConfHost
  * A key derived from the scales the painter resolves colors through cannot
  * list a color nothing painted, which is what a legend hand-built from a second
  * copy of the rules used to do. The config slot stays per display: the
- * composing schemas set `promotedBase` differently (a Hi-C color scale is off
- * by default, a variant genotype key on) and describe different legends, so
+ * composing schemas default it differently (a Hi-C color scale is off by
+ * default, a variant genotype key on) and describe different legends, so
  * this mixin supplies the accessors over the slot and never the slot.
  */
 export default function LegendMixin() {
@@ -69,13 +62,10 @@ export default function LegendMixin() {
     .views(self => ({
       /**
        * #getter
-       * Whether the legend is drawn. Resolved through the promotable-slot tiers
-       * (`resolveConf`): an explicit track value customizes it either way,
-       * otherwise it follows the session-wide default for this display type,
-       * falling back to the slot's `promotedBase`.
+       * Whether the legend is drawn.
        */
       get showLegend(): boolean {
-        return resolveConf(confNode(self), 'showLegend')
+        return getConf(confNode(self), 'showLegend')
       },
       /**
        * #getter

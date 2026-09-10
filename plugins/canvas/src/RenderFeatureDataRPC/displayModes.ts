@@ -22,8 +22,6 @@ export function isDisplayMode(value: unknown): value is DisplayMode {
   return (DISPLAY_MODES as readonly string[]).includes(value as string)
 }
 
-// 'none' is the promotedBase of the promotable slot; every option is still
-// customizable so any mode can be promoted back over another session default.
 export const SUBFEATURE_LABEL_OPTIONS = [
   { value: 'none', label: 'Off' },
   { value: 'below', label: 'Below' },

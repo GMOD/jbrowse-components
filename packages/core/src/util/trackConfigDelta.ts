@@ -22,10 +22,8 @@
  * What it is NOT free to conflate is a removal with a reset. Both diff to an
  * empty delta, and `SessionTracks.updateTrackConfiguration` used to read that as
  * "the edit netted back to the base" and revert the track's working copy — which
- * undid a removal on screen 400ms after it landed. Promotable slots made that
- * reachable rather than rare: a slider row's reset unsets its slot, and an
- * admin config is free to set one. That branch now keeps the working copy; see
- * the comment there.
+ * undid a removal on screen 400ms after it landed. That branch now keeps the
+ * working copy; see the comment there.
  *
  * `displays` is merged by `displayId` so an edit to one display doesn't pin the
  * others. Nested config objects (e.g. `adapter`) recurse. Any other array (value

@@ -82,27 +82,16 @@ const StringEnumEditor = observer(function StringEnumEditor({
 }: {
   slot: {
     name: string
-    // a `maybeStringEnum` slot is undefined when unset — the inherit state of a
-    // promotable slot, which the extra leading choice below both shows and sets
+    // a `maybeStringEnum` slot is undefined when unset, which the extra leading
+    // choice below both shows and sets
     value: string | undefined
     type: string
     description: string
-    // what unset resolves to on a promotable slot, absent on a plain one
-    promotedBase?: unknown
     choices?: string[]
     set: (arg: string | undefined) => void
   }
 }) {
   const nullable = slot.type === 'maybeStringEnum'
-  // Naming the member unset resolves to, rather than a bare "default": every
-  // other choice in the list is a value the user can read off the plot, and
-  // this one was the only one that said nothing about what picking it draws.
-  // `promotedBase` is the honest half to show — the editor's target is often a
-  // detached config node, so it cannot see a value promoted this session.
-  const unsetLabel =
-    typeof slot.promotedBase === 'string'
-      ? `default (${slot.promotedBase})`
-      : 'default'
   return (
     <ConfigurationTextField
       value={slot.value ?? UNSET_CHOICE}
@@ -116,7 +105,7 @@ const StringEnumEditor = observer(function StringEnumEditor({
     >
       {nullable ? (
         <MenuItem value={UNSET_CHOICE}>
-          <em>{unsetLabel}</em>
+          <em>default</em>
         </MenuItem>
       ) : null}
       {(slot.choices ?? []).map(str => (
@@ -203,8 +192,6 @@ const SlotEditor = observer(function SlotEditor({
   const ValueComponent: React.ComponentType<any> = callbackMode
     ? CallbackEditor
     : (TypedComponent ?? StringEditor)
-  // a promotable slot's default is its inherit sentinel, so resetting it here
-  // doubles as "un-pin / follow the session-wide default"
   const { modified } = slot
   return (
     <Paper className={classes.paper}>

@@ -15,16 +15,15 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
  * two displays composing the mixin declared the pair by hand, and what held the
  * copies together was a **value** test on each side — `growMaxHeight defaults
  * to the shared GROW_MAX_HEIGHT` — which pins the number and nothing else. A
- * slot that lost `advanced: true`, or a `heightMode` that lost
- * `promotedBase: 'fixed'` (making `fixed` unpinnable over a promoted `fit`),
- * passes both tests.
+ * slot that lost `advanced: true`, or a `heightMode` that lost its `fixed`
+ * default, passes both tests.
  *
  * The **descriptions** are the parameters because they are the part that is
  * genuinely per display — canvas sizes a feature stack against `displayMode`,
  * alignments a grouped pileup against `featureHeight`, and each names its own
  * `maxHeight`, which is a different quantity in the two schemas and therefore
- * deliberately not here. The types, the enum, the promotable sentinel and the
- * grow ceiling are not per display, and both copies had written them out.
+ * deliberately not here. The types, the enum and the grow ceiling are not per
+ * display, and both copies had written them out.
  *
  * `growMaxHeight` takes `GROW_MAX_HEIGHT` rather than a literal `800`. Writing
  * the constant used to cost the config docs the number itself — they printed the
@@ -46,15 +45,10 @@ export function heightModeConfigSchemaFields({
      * #slot
      */
     heightMode: {
-      type: 'maybeStringEnum',
+      type: 'stringEnum',
       model: types.enumeration('heightMode', [...HEIGHT_MODE_VALUES]),
       description: heightMode,
-      // Promotable sentinel slot (see promotableDefaults.ts): unset is the
-      // inherit state, `promotedBase` ('fixed') is what it resolves to when
-      // nothing is promoted — so every real mode, `fixed` included, stays
-      // customizable back over a session-wide default. Read through the
-      // resolved `heightMode` getter (resolveConf), never raw.
-      promotedBase: 'fixed',
+      defaultValue: 'fixed',
     },
     /**
      * #slot
@@ -73,7 +67,7 @@ export function heightModeConfigSchemaFields({
  * two slots above, **plus whatever `baseLinearDisplayConfigSchema` declares** —
  * `ConfigurationSlotName` walks the base chain, and the mixin reads `height`
  * off it because a grow strategy starts from the configured height. Narrow so
- * `getConf`/`resolveConf`/`setConf` still check the slot name, and so their
+ * `getConf`/`setConf` still check the slot name, and so their
  * results come back typed: the two `as number` casts this replaced were there
  * only because a widened read returns `any`. See `ConfigModelForFields`.
  */

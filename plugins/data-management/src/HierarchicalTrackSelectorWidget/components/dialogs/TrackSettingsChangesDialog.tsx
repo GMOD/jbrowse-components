@@ -15,34 +15,24 @@ const useStyles = makeStyles()(theme => ({
   content: {
     minWidth: 500,
   },
-  section: {
-    marginTop: theme.spacing(2),
-  },
   heading: {
     fontWeight: 'bold',
     marginBottom: theme.spacing(0.5),
   },
 }))
 
-// Lists both sources that make a track's effective settings differ from its
-// configured defaults: per-track edits (`changes`, resettable) and settings
-// imposed by a session-wide pin (`displayTypeDefaults`, clearable).
-// The two are kept visually separate so a global preference never reads as an
-// individual edit of this track.
+// The per-track edits that make a track's effective settings differ from its
+// configured defaults.
 const TrackSettingsChangesDialog = observer(
   function TrackSettingsChangesDialog({
     changes,
-    displayTypeDefaults = [],
     trackName,
     onReset,
-    onClearDefaults,
     handleClose,
   }: {
     changes: TrackConfigChange[]
-    displayTypeDefaults?: TrackConfigChange[]
     trackName: string
     onReset?: () => void
-    onClearDefaults?: () => void
     handleClose: () => void
   }) {
     const { classes } = useStyles()
@@ -67,19 +57,7 @@ const TrackSettingsChangesDialog = observer(
               <SettingsChangesTable changes={changes} />
             </>
           ) : null}
-          {displayTypeDefaults.length ? (
-            <div className={classes.section}>
-              <Typography variant="subtitle2" className={classes.heading}>
-                Session-wide default
-              </Typography>
-              <DialogContentText>
-                These come from a default you set for all tracks of this type,
-                not from an edit to this track.
-              </DialogContentText>
-              <SettingsChangesTable changes={displayTypeDefaults} />
-            </div>
-          ) : null}
-          {changes.length || displayTypeDefaults.length ? null : (
+          {changes.length ? null : (
             <Typography>This track has no setting changes.</Typography>
           )}
         </DialogContent>
@@ -94,18 +72,6 @@ const TrackSettingsChangesDialog = observer(
               }}
             >
               Reset to default
-            </Button>
-          ) : null}
-          {displayTypeDefaults.length && onClearDefaults ? (
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={() => {
-                onClearDefaults()
-                handleClose()
-              }}
-            >
-              Clear session default
             </Button>
           ) : null}
           <Button

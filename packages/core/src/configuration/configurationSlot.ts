@@ -1,9 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { freezeDeep } from '../util/freezeDeep.ts'
 import { isJexl, stringToJexlExpression } from '../util/jexlStrings.ts'
 import { FileLocation } from '../util/types/mst.ts'
-import { isUsableValue } from './slotShape.ts'
 import { isCallbackValue } from './slotValueUtils.ts'
 
 import type { JexlInstance } from '../util/jexlStrings.ts'
@@ -45,9 +43,7 @@ const slotTypes = {
   number: { model: types.number, fallbackDefault: 1 },
   // The `maybe*` types spend `undefined` on "not explicitly set", which is the
   // one value no config can spell and so the only reliable way to say it — a
-  // computed/auto fallback (a drag-resized track height), or the inherit
-  // sentinel every promotable slot needs (pair with `promotedBase`, and read
-  // with `resolveConf`).
+  // computed/auto fallback, e.g. a drag-resized track height.
   maybeNumber: { model: types.maybe(types.number) },
   maybeBoolean: { model: types.maybe(types.boolean) },
   // for a slot whose unset state means "decide from the data" — a feature's own
@@ -156,53 +152,6 @@ interface ConfigSlotDefinitionCommon {
    * editor, so common slots aren't crowded out by rarely-changed ones
    */
   advanced?: boolean
-  /**
-   * **Declaring this makes the slot promotable**, and it is the only thing that
-   * does: a user can promote the slot's value to a session-wide default for all
-   * tracks of the same display type (the track-menu pin). An *unset* slot
-   * follows (inherits) that promoted default; any concrete value customizes the
-   * track. Read it with `resolveConf`, never `getConf`; see
-   * `promotableResolve.ts`.
-   *
-   * The value itself is what the unset state resolves to when a track inherits
-   * and nothing is promoted. This is the CSS model — being unset is the
-   * `inherit` keyword and `promotedBase` is `initial` (the value at the bottom
-   * of the cascade). Spending only `undefined` on the sentinel is what leaves
-   * every *real* value — `promotedBase` included — customizable over an opposite
-   * session default, so a track can hold `displayMode: 'normal'` under a
-   * promoted `'compact'`.
-   *
-   * Requires a `maybe*` slot type (whose `undefined` is the inherit sentinel)
-   * and no `defaultValue`; `ConfigSlot` throws otherwise, and both stay runtime
-   * checks. Forbidding it on the plain half of `ConfigSlotDefinition` was tried:
-   * it forces a cast into `mergeSchemaDefinition`, whose spread of two slot
-   * definitions lands in neither member, and buys only an earlier version of a
-   * throw that already fires when the schema is built.
-   *
-   * A subclass turns an inherited promotable slot back into a plain one by
-   * stating `promotedBase: undefined` — the definition merge is a spread, so a
-   * stated `undefined` really does overwrite the base's value.
-   */
-  promotedBase?: unknown
-  /**
-   * For a promotable slot: an extra semantic check a stored value must pass,
-   * on top of the built-in type-shape check, before the cascade
-   * (`promotableResolve.ts`'s `isUsableValue`) treats it as usable. Applies to
-   * both cascade tiers — a session-wide promoted default and a track's own saved
-   * value. Needed when a slot's shape alone can't catch a semantically-invalid
-   * value — e.g. alignments `colorBy`'s `.type` must name a currently-registered
-   * color scheme, not just be *some* string — so a stale scheme name (renamed or
-   * removed since the value was saved) degrades to "not usable" (falls back to
-   * the base) instead of reaching a lookup that assumes every `.type` is
-   * registered. Omit when the type-shape check alone is enough to trust the value.
-   *
-   * Runs at **schema build** too, over the slot's own `promotedBase` — the base
-   * is what every failing tier degrades to, so it has to clear the same bar.
-   * Keep the hook a function of module-level data (as `isRegisteredColorScheme`
-   * is of `COLOR_SCHEMES`); one that consults state its plugin registers later
-   * during `install()` would reject a base that is really fine.
-   */
-  validate?: (value: unknown) => boolean
 }
 
 /**
@@ -249,7 +198,7 @@ export type ConfigSlotDefinition =
  * evaluated on read by `readConfObject`.
  */
 export default function ConfigSlot(definition: ConfigSlotDefinition) {
-  const { model, type, defaultValue, promotedBase } = definition
+  const { model, type, defaultValue } = definition
   if (!CONFIG_SLOT_TYPE_NAMES.has(type)) {
     throw new Error(
       `config slot needs a known type name, got ${JSON.stringify(type)}`,
@@ -267,65 +216,12 @@ export default function ConfigSlot(definition: ConfigSlotDefinition) {
   if (defaultValue === undefined && !MAYBE_TYPES.has(type)) {
     throw new Error("no 'defaultValue' provided")
   }
-  // `promotedBase` is what makes a slot promotable, so its presence is the whole
-  // condition here (ADR-047).
-  //
-  // A promotable slot spends being-unset on the inherit sentinel, so it must be a
-  // `maybe*` type. Any *concrete* default would double as the inherit signal,
-  // making that one value un-customizable under an opposite promoted default — an
-  // authoring mistake with no runtime symptom other than a setting that won't
-  // stay put, so fail at construction.
-  if (promotedBase !== undefined) {
-    if (!MAYBE_TYPES.has(type)) {
-      throw new Error(
-        `a 'promotedBase' slot needs a maybe* type whose undefined is the inherit sentinel, not "${type}"`,
-      )
-    }
-    if (defaultValue !== undefined) {
-      throw new Error(
-        "a promotable slot must leave 'defaultValue' undefined — that IS the inherit sentinel; 'promotedBase' is what an unset slot resolves to",
-      )
-    }
-    // The base is the bottom of the cascade: every other tier that fails
-    // `isUsableValue` falls back to it, so a base that would itself fail has
-    // nowhere left to fall and every read of the slot returns a value no
-    // consumer handles — with nothing thrown anywhere. The typo this catches is
-    // a `promotedBase` outside the slot's own vocabulary (an enum member not in
-    // `model`, a non-finite number), which nothing else in the system checks.
-    if (!isUsableValue(definition, promotedBase)) {
-      throw new Error(
-        `a 'promotedBase' must be a value the slot can hold: ${JSON.stringify(promotedBase)} is not a valid "${type}"`,
-      )
-    }
-    // A promotable slot cannot hold a callback: `isUsableValue` refuses a
-    // `jexl:` value at both cascade tiers, so one written into the slot is
-    // discarded straight back to the base. `contextVariable` is the only thing
-    // that offers writing one — it is what raises the config editor's jexl
-    // toggle (`SlotEditor`) — so the pair is a control whose every write the
-    // cascade throws away, with nothing thrown anywhere. Nothing else in the
-    // system states this; DISPLAY_TYPE_DEFAULTS.md §"No callbacks" only
-    // describes the read side.
-    if (definition.contextVariable?.length) {
-      throw new Error(
-        "a promotable slot ('promotedBase') cannot declare 'contextVariable': the cascade refuses a jexl: callback, so the config editor would offer a toggle whose writes silently degrade back to the base",
-      )
-    }
-    // The resolver hands `promotedBase` out by reference, so an object-valued one
-    // (`maybeFrozen`, e.g. alignments `colorBy`) is one literal shared live by
-    // every track sitting at base. Freeze it here, the only place it enters the
-    // system, so mutating a resolved value throws instead of silently rewriting
-    // the default for every other track — and for every later session, since this
-    // object belongs to the schema. See `freezeDeep` for why by-reference stays.
-    freezeDeep(promotedBase)
-  }
   // The inverse of the `defaultValue === undefined` check above, and the half
   // that had no guard. A `maybe*` slot whose default is concrete can never *be*
   // unset — no config can spell `undefined` — so the unset state such a slot
   // exists to express (auto-fit, decide-from-the-data, inherit) is unreachable
   // and the branch reading it never runs. There is no symptom: the slot reads as
   // a perfectly good value everywhere.
-  //
-  // Last, so a promotable slot still gets the more specific message above.
   //
   // The way this happens is **inheritance**, which is why the type can't catch
   // it: a `maybe*` override of a plain base slot inherits the base's concrete
@@ -342,9 +238,8 @@ export default function ConfigSlot(definition: ConfigSlotDefinition) {
     types.union(
       JexlStringType,
       // `maybeStringEnum` is the only maybe type whose model comes from the
-      // author: they write the plain vocabulary (`['fixed','grow','fit']`) and
-      // the nullability is added here, so no enumeration has to carry a fake
-      // member for the cascade's benefit.
+      // author: they write the plain vocabulary and the nullability is added
+      // here.
       type === 'maybeStringEnum' ? types.maybe(valueModel) : valueModel,
     ),
     defaultValue,

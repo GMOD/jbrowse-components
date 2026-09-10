@@ -79,10 +79,6 @@ function ribbonToggle({
  * blocks only" does not fit a segmented toggle's segment); as radio rows in
  * their own submenu they cost the top level nothing, and each option keeps the
  * help the option table already carries.
- *
- * A FUNCTION rather than a literal inside the button, so the pin coverage check
- * can walk the rows: `promotableSlotsWithoutPin` needs the built menu, and this
- * is the only surface LinearSyntenyDisplay's promotable slots have.
  */
 export function syntenySettingsMenuItems(
   model: LinearSyntenyViewModel,

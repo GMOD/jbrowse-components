@@ -255,8 +255,8 @@ async function runAutoDiagonalize(self: LinearSyntenyViewModel) {
 
 // The launch keys whose destination is neither the view's own state nor a row:
 // `levelHeights` lands after the auto-scale pass it is allowed to override, and
-// the two ribbon settings are promotable config slots on every synteny display
-// this launch opened, so applying them is a fan-out write.
+// the two ribbon settings are config slots on every synteny display this launch
+// opened, so applying them is a fan-out write.
 function applyLaunchSettings(
   self: LinearSyntenyViewModel,
   init: SyntenyLaunch,

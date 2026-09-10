@@ -257,11 +257,10 @@ const legacyTypes: readonly string[] = LEGACY_COLOR_SCHEME_TYPES
 // A persisted `colorBy` value is only usable once its `.type` still names a
 // registered scheme: the lookups above (colorSchemeLabel, isModificationScheme,
 // the model's colorSchemeIndexFor) are total over ColorSchemeType by design and
-// throw on anything else, so a stale/renamed name from a saved session or
-// session-wide default must be rejected before it reaches them. The retired
-// names are accepted here (normalizeColorBy upgrades them at read time) so
-// legacy sessions keep resolving. Wired as the `colorBy` slot's promotable
-// `validate` hook (see promotableDefaults.ts).
+// throw on anything else, so a stale/renamed name from a saved session must be
+// rejected before it reaches them. The retired names are accepted here
+// (normalizeColorBy upgrades them at read time) so legacy sessions keep
+// resolving.
 export function isRegisteredColorScheme(
   value: unknown,
 ): value is PersistedColorBy {

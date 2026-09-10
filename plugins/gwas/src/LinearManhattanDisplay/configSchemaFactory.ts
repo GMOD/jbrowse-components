@@ -186,10 +186,9 @@ export function configSchemaFactory() {
        * default than wiggle's since Manhattan points are the primary glyph.
        */
       scatterPointSize: {
-        type: 'maybeNumber',
-        promotedBase: DEFAULT_POINT_DIAMETER_PX,
-        description:
-          'Diameter in px of Manhattan points. Unset (the default) follows the session-wide default for this display type',
+        type: 'number',
+        defaultValue: DEFAULT_POINT_DIAMETER_PX,
+        description: 'Diameter in px of Manhattan points',
         // wiggle marks this advanced because scatter is one of its several
         // renderings; Manhattan is only ever a scatter, so point size is a
         // basic setting here and stays out of "Show advanced settings"
@@ -202,10 +201,10 @@ export function configSchemaFactory() {
        * which has no key to draw.
        */
       showLegend: {
-        type: 'maybeBoolean',
-        promotedBase: true,
+        type: 'boolean',
+        defaultValue: true,
         description:
-          'Draw the color key while LD or field coloring is active. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track',
+          'Draw the color key while LD or field coloring is active. Defaults to on',
       },
     },
     {

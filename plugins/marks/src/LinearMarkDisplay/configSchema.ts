@@ -309,12 +309,11 @@ export function configSchemaFactory() {
       },
       /**
        * #slot scatterPointSize
-       * Diameter in px of point marks. Unset (the default) follows the
-       * session-wide default for this display type.
+       * Diameter in px of point marks.
        */
       scatterPointSize: {
-        type: 'maybeNumber',
-        promotedBase: DEFAULT_POINT_DIAMETER_PX,
+        type: 'number',
+        defaultValue: DEFAULT_POINT_DIAMETER_PX,
         description: 'point diameter in px',
       },
       /**
@@ -329,13 +328,12 @@ export function configSchemaFactory() {
       },
       /**
        * #slot showLegend
-       * Draw the colour key for every mark whose colour is a scale. Unset
-       * (the default) follows the session-wide default for this display type,
-       * falling back to on.
+       * Draw the colour key for every mark whose colour is a scale. Defaults to
+       * on.
        */
       showLegend: {
-        type: 'maybeBoolean',
-        promotedBase: true,
+        type: 'boolean',
+        defaultValue: true,
         description: 'draw the colour key',
       },
       /**

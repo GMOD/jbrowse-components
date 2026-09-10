@@ -96,12 +96,9 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
      * #slot
      */
     showLegend: {
-      type: 'maybeBoolean',
-      description:
-        'Draw the score color ramp in density mode. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track',
-      // Promotable: read through LegendMixin's resolved `showLegend` getter
-      // (resolveConf), never raw.
-      promotedBase: true,
+      type: 'boolean',
+      description: 'Draw the score color ramp in density mode. Defaults to on',
+      defaultValue: true,
     },
     /**
      * #slot

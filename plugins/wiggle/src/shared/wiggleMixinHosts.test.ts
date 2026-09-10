@@ -6,9 +6,8 @@ import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
 
 // The two wiggle mixins both cast to reach their composing display's
 // `configuration`, and what they cast to decides whether the slot names below
-// are checked at all. Both once used `ResolvableDisplay & { configuration: X }`,
-// which reads like a narrowing and re-widens; the mechanism is pinned in core's
-// `configTypeNarrowing.test.ts` and this is the per-mixin half.
+// are checked at all. A host widened to `AnyConfigurationModel` switches the
+// check off with no symptom, so each mixin names its own field table.
 const wiggleCommonPin: HostChecksSlotNames<WiggleCommonHost> = true
 const wiggleScoreConfigPin: HostChecksSlotNames<WiggleScoreConfigHost> = true
 

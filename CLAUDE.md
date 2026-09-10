@@ -35,8 +35,7 @@ Worktree workflow is in `~/.claude/CLAUDE.md`. What differs here:
 
 - `@jbrowse/mobx-state-tree` is our ESM fork; treat it like upstream.
 - Keep the main model chain in one file.
-- Write config with `setConf`, not `configuration.setSlot`. Promotable slots
-  resolve only via `resolveConf`.
+- Write config with `setConf`, not `configuration.setSlot`.
 - **A mixin casting to reach its host names a concrete schema** —
   `HostChecksSlotNames` fails the build for the widened spellings and says why.
 - A bare getter returns a resolved value, never `undefined` — a sentinel prop

@@ -38,18 +38,6 @@ test('the coverage submenu is live with the band shown', () => {
   expect(menu(true)).toMatchObject({ disabled: false })
 })
 
-// Greying a row disables its pin along with it (`menuItemAdornment`), so a
-// promotable row must never be gated. Nothing in here carries one today; this is
-// what says so before a future promotable setting is added to the submenu rather
-// than after a user finds its pin dead.
-test('no row inside carries a pin', () => {
-  const item = menu(true)
-  const rows = 'subMenu' in item ? resolveSubMenu(item) : []
-  for (const row of rows) {
-    expect(row).not.toHaveProperty('pin')
-  }
-})
-
 // The floor is a plain number a config can declare, so it need not be one of the
 // five offered fractions. The group still has to say which one is nearest, or a
 // track configured at 0.15 renders five unticked rows over a floor that is in

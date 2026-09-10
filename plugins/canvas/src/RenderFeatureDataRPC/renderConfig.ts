@@ -1,7 +1,6 @@
 import { readConfigValue as coreReadConfigValue } from '@jbrowse/core/configuration'
 
 import type { SubfeatureLabels } from './displayModes.ts'
-import type { ResolvedConfigSnapshot } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
@@ -117,12 +116,8 @@ const DISPLAY_CONFIG_KEYS = Object.keys(
  * Picks exactly the slots `DisplayConfig` declares out of the
  * everything-snapshot. Picking rather than excluding keeps an unrelated slot
  * write — `height` on every resize-drag frame — out of the RPC cache key.
- *
- * The parameter is `ResolvedConfigSnapshot` rather than a bare record because
- * the pick asserts resolved types: a raw snapshot would compile while shipping
- * `undefined` for every promotable slot.
  */
-export function pickDisplayConfig(snapshot: ResolvedConfigSnapshot) {
+export function pickDisplayConfig(snapshot: Record<string, unknown>) {
   const picked: Record<string, unknown> = {}
   for (const key of DISPLAY_CONFIG_KEYS) {
     picked[key] = snapshot[key]

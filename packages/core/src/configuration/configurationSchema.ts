@@ -128,12 +128,8 @@ function chainHooks(
  * **redeclares merges field-by-field over the base's** — so an override states
  * only what actually differs and inherits the rest. (`type` comes along
  * regardless: it is what marks an entry as a slot rather than a nested
- * sub-schema, per `isSlotDefinitionEntry`.)
- *
- * A subclass that really wants a plain slot states `promotedBase: undefined`,
- * which works *because* this is a spread: a stated `undefined` overwrites the
- * base's value where an omitted key would inherit it. The four cases are pinned
- * by the "baseConfiguration slot override merge" tests.
+ * sub-schema, per `isSlotDefinitionEntry`.) The cases are pinned by the
+ * "baseConfiguration slot override merge" tests.
  */
 function mergeSchemaDefinition(
   baseDefinition: ConfigurationSchemaDefinition,
@@ -448,8 +444,7 @@ function hydrateInto(
  * objects until something references a track (ADR-031), so a caller handed one
  * of those has a config that reads nothing but what was literally authored: a
  * slot at its schema default is absent, `preProcessSnapshot` has not run, and
- * nothing that walks a live node — the promotable cascade above all — applies
- * to it.
+ * nothing that walks a live node applies to it.
  *
  * For the callers that need the resolved answer rather than the authored one
  * and cannot know which of the two they were handed. The About dialog's "Copy

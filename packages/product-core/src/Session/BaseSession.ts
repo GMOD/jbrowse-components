@@ -29,38 +29,6 @@ function isAnimationMode(val: unknown): val is AnimationMode {
   return val === 'system' || val === 'enabled' || val === 'disabled'
 }
 
-// Promoted per-display-type slot defaults live flat in `preferencesOverrides`
-// under one composite key each (`displayTypeDefault\0<type>\0<slot>`), not under
-// a single nested `displayTypeDefaults` object. Flat keys make each promoted
-// default its own tracked observable-map entry — promoting one can't invalidate
-// a reader of another (every promotable display's `rpcProps` reads one via
-// `getDisplayTypeDefault`) — and collapse the get/set/diff logic to one lookup.
-// The `\0` delimiter can't appear in a display type or slot name.
-// The literal is a **persisted localStorage key prefix**, so treat it as data
-// rather than as an identifier a rename should sweep — a blanket
-// `displayTypeDefault` → `pin` pass did sweep it, and orphans every promoted
-// default already in a browser's storage. Nothing released stores these yet, so
-// the reason it keeps this spelling is naming, not compatibility: the key names
-// *what is stored* (a display-type default, reached through
-// `get/setDisplayTypeDefault`), while `Pin` names the menu control the write
-// is offered from.
-const DISPLAY_TYPE_DEFAULT_PREFIX = 'displayTypeDefault\0'
-
-// Module-private on purpose: the composite-key spelling is a storage detail of
-// this file's get/set/diff methods, and nothing outside it should be able to
-// depend on the layout.
-function displayTypeDefaultKey(displayType: string, slot: string) {
-  return `${DISPLAY_TYPE_DEFAULT_PREFIX}${displayType}\0${slot}`
-}
-
-function parseDisplayTypeDefaultKey(key: string) {
-  const rest = key.startsWith(DISPLAY_TYPE_DEFAULT_PREFIX)
-    ? key.slice(DISPLAY_TYPE_DEFAULT_PREFIX.length)
-    : ''
-  const [displayType, slot] = rest.split('\0')
-  return displayType && slot ? { displayType, slot } : undefined
-}
-
 /**
  * #stateModel BaseSessionModel
  *
@@ -142,23 +110,15 @@ export function BaseSessionModel<
        *
        * An `observable.map` (not a plain object reassigned wholesale) so each
        * preference is its own tracked key: writing one (`setScrollZoom`) can't
-       * invalidate a reader of another (`getDisplayTypeDefault` in a track's
-       * `rpcProps`). A single spread-replaced object made every setter wake
-       * every reader, so toggling scroll-to-zoom re-fetched every track. For the
-       * same reason each promoted per-display-type default is a flat composite
-       * key (see `displayTypeDefaultKey`), not a single nested `displayTypeDefaults`
-       * object — promoting one default can't wake readers of a different one.
+       * invalidate a reader of another. A single spread-replaced object made
+       * every setter wake every reader, so toggling scroll-to-zoom re-fetched
+       * every track.
        *
-       * `deep: false` is load-bearing, not a micro-optimization. The default
-       * enhancer wraps an object/array value in a MobX Proxy on `set`, and a
-       * promoted default is handed straight back out by `getConf` — so an
-       * object-valued promotable slot (alignments `colorBy`) put a Proxy into
-       * `rpcProps()`, and V8's structured-clone serializer rejects a Proxy:
-       * `worker.postMessage` threw `DataCloneError` on the next fetch of any
-       * track following that default (electron IPC and `structuredClone` in the
-       * share bake likewise). The map still notifies per key on `set`, so shallow
-       * values lose no reactivity — and nothing can mutate a preference in place,
-       * because `setPreferenceOverride` freezes what it stores.
+       * `deep: false` keeps an object-valued preference a plain object rather
+       * than a MobX Proxy, which V8's structured-clone serializer rejects. The
+       * map still notifies per key on `set`, so shallow values lose no
+       * reactivity — and nothing can mutate a preference in place, because
+       * `setPreferenceOverride` freezes what it stores.
        */
       preferencesOverrides: observable.map<string, unknown>(undefined, {
         deep: false,
@@ -251,59 +211,21 @@ export function BaseSessionModel<
       },
       /**
        * #method
-       * resolved value of a per-display-type slot default the user promoted
-       * (see `setDisplayTypeDefault`); undefined when nothing was promoted.
-       */
-      getDisplayTypeDefault(displayType: string, slot: string): unknown {
-        return self.preferencesOverrides.get(
-          displayTypeDefaultKey(displayType, slot),
-        )
-      },
-      /**
-       * #method
-       * every per-display-type default the user has promoted, as
-       * `{ displayType, slot, value }` — the inventory the Preferences dialog
-       * lists and clears one at a time (`setDisplayTypeDefault(…, undefined)`).
-       *
-       * Parsed here rather than by the dialog, because the composite-key
-       * layout is this file's and nothing outside it should depend on it.
-       */
-      getDisplayTypeDefaults(): {
-        displayType: string
-        slot: string
-        value: unknown
-      }[] {
-        const found = []
-        for (const [key, value] of self.preferencesOverrides.entries()) {
-          const parsed = parseDisplayTypeDefaultKey(key)
-          if (parsed) {
-            found.push({ ...parsed, value })
-          }
-        }
-        return found
-      },
-      /**
-       * #method
        * every scalar preference override that currently differs from its
        * config/admin default, as `{ path, from, to }` rows whose path is the
        * override's own key. A scalar pref (animationMode, scrollZoom) whose
        * override equals the default is omitted, since reverting it is a no-op.
-       * Promoted display-type defaults share the map but are not here: they
-       * are `getDisplayTypeDefaults`, and the Preferences dialog lists them
-       * through one builder on both of its surfaces.
        */
       getPreferenceChanges(): TrackConfigChange[] {
         const changes: TrackConfigChange[] = []
         for (const [key, value] of self.preferencesOverrides.entries()) {
-          if (!key.startsWith(DISPLAY_TYPE_DEFAULT_PREFIX)) {
-            const dflt = this.getPreferenceDefault(key)
-            if (value !== dflt) {
-              changes.push({
-                path: [key],
-                from: dflt,
-                to: value,
-              } as TrackConfigChange)
-            }
+          const dflt = this.getPreferenceDefault(key)
+          if (value !== dflt) {
+            changes.push({
+              path: [key],
+              from: dflt,
+              to: value,
+            } as TrackConfigChange)
           }
         }
         return changes
@@ -400,19 +322,18 @@ export function BaseSessionModel<
         if (value === undefined) {
           self.preferencesOverrides.delete(key)
         } else {
-          // frozen because `deep: false` hands an object-valued preference (a
-          // promoted `colorBy`) straight back out by reference to every display
-          // following it, so the "nothing mutates a preference in place" this
-          // store relies on is enforced rather than assumed
+          // frozen because `deep: false` hands an object-valued preference
+          // straight back out by reference, so the "nothing mutates a
+          // preference in place" this store relies on is enforced rather than
+          // assumed
           self.preferencesOverrides.set(key, freezeDeep(value))
         }
       },
       /**
        * #action
-       * clear every runtime preference override at once — scrollZoom,
-       * animationMode, and every promoted per-display-type default (see
-       * `setDisplayTypeDefault`) — so each falls back to its config/admin
-       * default. Backs the Preferences dialog "Reset to defaults" button.
+       * clear every runtime preference override at once, so each falls back to
+       * its config/admin default. Backs the Preferences dialog "Reset to
+       * defaults" button.
        */
       clearPreferenceOverrides() {
         self.preferencesOverrides.clear()
@@ -432,19 +353,6 @@ export function BaseSessionModel<
        */
       setScrollZoom(flag: boolean) {
         this.setPreferenceOverride('scrollZoom', flag)
-      },
-      /**
-       * #action
-       * promote (or, with `value` undefined, clear) a per-display-type slot
-       * default. Just a preference override under one flat composite key (see
-       * `displayTypeDefaultKey`), so it persists and independently tracks like
-       * any other pref, and clearing deletes only that key.
-       */
-      setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
-        this.setPreferenceOverride(
-          displayTypeDefaultKey(displayType, slot),
-          value,
-        )
       },
       /**
        * #action

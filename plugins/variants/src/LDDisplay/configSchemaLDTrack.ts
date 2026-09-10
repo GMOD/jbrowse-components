@@ -60,16 +60,11 @@ export default function ldTrackDisplayConfigSchema() {
       },
       /**
        * #slot
-       * Whether to show the legend. Unset (the default) follows the
-       * session-wide default for this display type, falling back to off; an
-       * explicit true/false customizes the track.
+       * Whether to show the legend. Defaults to off.
        */
       showLegend: {
-        type: 'maybeBoolean',
-        // Promotable: `undefined` (unset) is the inherit state, `promotedBase`
-        // (false) is what it resolves to when nothing is promoted. Read through
-        // the resolved `showLegend` getter (resolveConf), never raw.
-        promotedBase: false,
+        type: 'boolean',
+        defaultValue: false,
       },
       /**
        * #slot

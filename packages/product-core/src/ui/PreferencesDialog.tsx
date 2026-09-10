@@ -5,7 +5,6 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogActions, DialogContent, Tab, Tabs } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import DisplayDefaultsSection from './DisplayDefaultsSection.tsx'
 import GeneralPreferencesTab from './GeneralPreferencesTab.tsx'
 import PreferencesResetDialog from './PreferencesResetDialog.tsx'
 import ViewPreferencesTab from './ViewPreferencesTab.tsx'
@@ -15,7 +14,6 @@ import {
   resetPreferenceChange,
 } from './preferencesReset.ts'
 
-import type { DisplayDefaultsSession } from './DisplayDefaultsSection.tsx'
 import type { GeneralPreferencesSession } from './GeneralPreferencesTab.tsx'
 import type { ViewPreferencesSession } from './ViewPreferencesTab.tsx'
 import type { ResettablePreferencesSession } from './preferencesReset.ts'
@@ -33,7 +31,6 @@ export interface PreferencesDialogSession
   extends
     GeneralPreferencesSession,
     ViewPreferencesSession,
-    DisplayDefaultsSession,
     ResettablePreferencesSession {}
 
 /**
@@ -74,7 +71,6 @@ const PreferencesDialog = observer(function PreferencesDialog({
     [],
     { session },
   )
-  const displayDefaultCount = session.getDisplayTypeDefaults().length
   const tabs = [
     {
       value: 'general',
@@ -85,18 +81,6 @@ const PreferencesDialog = observer(function PreferencesDialog({
       value: 'views',
       label: 'Views',
       content: <ViewPreferencesTab session={session} />,
-    },
-    {
-      value: 'displayDefaults',
-      label: displayDefaultCount
-        ? `Display defaults (${displayDefaultCount})`
-        : 'Display defaults',
-      content: (
-        <DisplayDefaultsSection
-          session={session}
-          pluginManager={pluginManager}
-        />
-      ),
     },
     ...pluginPanels.map(({ name, Component }) => ({
       value: `plugin:${name}`,
@@ -146,7 +130,7 @@ const PreferencesDialog = observer(function PreferencesDialog({
       </DialogActions>
       {resetDialogOpen ? (
         <PreferencesResetDialog
-          changes={collectPreferenceChanges(session, pluginManager)}
+          changes={collectPreferenceChanges(session)}
           onReset={() => {
             resetAllPreferences(session)
           }}

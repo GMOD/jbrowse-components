@@ -282,7 +282,6 @@ export {
   sessionStorageSetItem,
 } from './sessionStorage.ts'
 export { isObject } from './objectUtils.ts'
-export { openPromotableDisplays } from './openDisplays.ts'
 export {
   type ReorderDirection,
   applyOrderWithin,

@@ -2,7 +2,7 @@
  * Reports every config read/write whose TYPE CHECKING IS OFF, and fails when the
  * count grows.
  *
- * `getConf` / `resolveConf` / `setConf` derive both halves of their safety from
+ * `getConf` / `setConf` derive both halves of their safety from
  * the schema attached to `model.configuration`:
  *
  *   - the **slot name** is constrained to `ConfigurationSlotName<Schema>`, a
@@ -98,7 +98,7 @@ function createProgram() {
 // model-shaped loose overload that laundered any typo into `any`, which is gone —
 // the remaining loose path is an ARRAY slot path, and those never reach this list
 // because only string-literal slot args are recorded (see `isLiteralSlot`).
-const READERS = new Set(['getConf', 'resolveConf', 'readConfObject'])
+const READERS = new Set(['getConf', 'readConfObject'])
 const WRITERS = new Set(['setConf'])
 
 type Bucket = 'source' | 'test'
@@ -155,7 +155,7 @@ function writeMeasurements(gaps: Gap[], calls: Record<Bucket, number>) {
     measured,
     published: false,
     source: source(
-      'Every getConf/resolveConf/readConfObject call in the root tsconfig program whose return type is `any`, which is exactly the widened-schema case. setConf carries no signal (it returns void) and is counted as a call, not as a gap. The gate compares the source row alone.',
+      'Every getConf/readConfObject call in the root tsconfig program whose return type is `any`, which is exactly the widened-schema case. setConf carries no signal (it returns void) and is counted as a call, not as a gap. The gate compares the source row alone.',
     ),
     columns: [
       { key: 'scope', label: 'scope' },

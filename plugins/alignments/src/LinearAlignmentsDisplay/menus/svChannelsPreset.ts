@@ -15,13 +15,9 @@ export interface SvChannelsSettings {
 }
 
 /**
- * What a preset WRITES, which is not the same shape.
- *
- * `readConnections` is a promotable sentinel: its getter always resolves — to
- * `promotedBase` 'off' when nothing is set — while its setter also takes
- * `undefined`, meaning UNSET. Only the write side can say that, so only the
- * write side has the wider type, and a preset asserting `SvChannelsSettings`
- * could not express "hand this back to what it was inheriting" at all.
+ * What a preset WRITES, which is not the same shape: `readConnections`'s getter
+ * always answers a mode, while its setter also takes `undefined`, meaning "back
+ * to the slot's default".
  */
 export type SvChannelsWrite = Omit<SvChannelsSettings, 'readConnections'> & {
   readConnections: ReadConnectionsMode | undefined

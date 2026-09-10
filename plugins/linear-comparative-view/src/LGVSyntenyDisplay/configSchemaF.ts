@@ -82,13 +82,11 @@ function configSchemaF(pluginManager: PluginManager) {
        */
       colorBy: {
         // merges over the base alignments slot, so this states only what
-        // differs — synteny falls back to `strand`, not `normal`. `validate` and
-        // `advanced` are inherited. Restating `promotedBase` is also what keeps
-        // the slot promotable, here and at the type level: declaring it is the
-        // only marker. (`type` stays because it is what marks an entry as a slot
-        // rather than a sub-schema.)
-        type: 'maybeFrozen',
-        promotedBase: { type: 'strand' },
+        // differs — synteny defaults to `strand`, not `normal`. `validate` and
+        // `advanced` are inherited. (`type` stays because it is what marks an
+        // entry as a slot rather than a sub-schema.)
+        type: 'frozen',
+        defaultValue: { type: 'strand' },
         description: 'Color scheme for synteny reads',
       },
       /**

@@ -13,10 +13,10 @@ function mockModel(initial: Partial<SvChannelsSettings> = {}) {
   return {
     showPileup: true,
     groupBy: undefined as SvChannelsSettings['groupBy'],
-    // The promotable sentinel modelled honestly, because the bug lived in the
-    // gap between its two sides: the getter always RESOLVES ('off' when nothing
-    // is set), and only the setter can say unset. `readConnectionsWritten` is
-    // what reached the config, which is the half a resolved read cannot show.
+    // Both sides modelled honestly, because the bug lived in the gap between
+    // them: the getter always resolves ('off' when nothing is set), and only
+    // the setter can say unset. `readConnectionsWritten` is what reached the
+    // config, which is the half a resolved read cannot show.
     readConnections: 'off' as SvChannelsSettings['readConnections'],
     readConnectionsWritten: 'off' as string | undefined,
     drawProperPairArcs: true,
@@ -69,9 +69,8 @@ test('clicking the menu row turns the arrangement on, then back off', () => {
   expect(model.drawProperPairArcs).toBe(true)
 })
 
-// UNSET, not 'off'. The slot is a promotable sentinel whose unset state follows
-// a session-wide default; writing 'off' pins the track out of one for good.
-test('leaving the arrangement unsets read connections rather than pinning off', () => {
+// UNSET, not 'off', so the slot goes back to its schema default.
+test('leaving the arrangement unsets read connections rather than writing off', () => {
   const model = mockModel()
   getSvChannelsMenuItem(model).onClick()
   expect(model.readConnectionsWritten).toBe('arc')

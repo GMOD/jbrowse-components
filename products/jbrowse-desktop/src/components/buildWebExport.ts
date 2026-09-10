@@ -27,7 +27,7 @@ import type {
 
 export interface PreparedExport {
   plan: WebExportPlan
-  // plan.session with the live promotable-default cascade flattened in
+  // plan.session with the live session's read-time cascades flattened in
   bakedSession: Record<string, unknown>
   // the share store a short link must upload to, see below
   shareURL: string
@@ -58,12 +58,9 @@ export async function prepareExport(
   return {
     plan,
     // Flatten the cascades this desktop instance resolves at read time, the same
-    // as jbrowse-web's ShareDialog — promoted display-type defaults into each
-    // track's config layer (self-contained track into its sessionTracks config,
-    // hosted-base track into a trackConfigDeltas entry the web recipient merges),
-    // and the workspaces intent — so the exported session shows what the sender
-    // saw. Not `getShareableSessionSnapshot`, because the snapshot being baked is
-    // planWebExport's transformed one rather than the live session's.
+    // as jbrowse-web's ShareDialog, so the exported session shows what the
+    // sender saw. Not `getShareableSessionSnapshot`, because the snapshot being
+    // baked is planWebExport's transformed one rather than the live session's.
     bakedSession: bakeSessionCascades(session, plan.session),
     // A short link uploads to the share server that the export TARGET reads back
     // from — never this desktop instance's own shareURL config, since Desktop never

@@ -1,13 +1,6 @@
-import {
-  displayDefaultChanges,
-  resetDisplayDefault,
-} from './displayDefaultChanges.ts'
-
-import type { DisplayDefaultsSession } from './displayDefaultChanges.ts'
-import type PluginManager from '@jbrowse/core/PluginManager'
 import type { TrackConfigChange } from '@jbrowse/core/util'
 
-export interface ResettablePreferencesSession extends DisplayDefaultsSession {
+export interface ResettablePreferencesSession {
   themeName?: string
   setThemeName: (arg: string) => void
   stickyViewHeaders: boolean
@@ -71,18 +64,14 @@ const NON_MAP_PREFERENCES: NonMapPreference[] = [
 const NON_MAP_HEADS = new Set(NON_MAP_PREFERENCES.map(p => p.head))
 
 // Everything "Reset to defaults" reverts, as rows: the scalar overrides in the
-// preference map, the promoted display-type defaults (same map, listed through
-// the builder the Display defaults section uses so both surfaces read alike),
-// and the preferences held outside the map.
+// preference map, and the preferences held outside it.
 export function collectPreferenceChanges(
   session: ResettablePreferencesSession,
-  pluginManager: PluginManager,
 ) {
   return [
     ...session
       .getPreferenceChanges()
       .filter(c => !NON_MAP_HEADS.has(c.path[0]!)),
-    ...displayDefaultChanges(session, pluginManager),
     ...NON_MAP_PREFERENCES.map(p => p.change(session)).filter(
       c => c !== undefined,
     ),
@@ -104,7 +93,7 @@ export function resetPreferenceChange(
   const pref = NON_MAP_PREFERENCES.find(p => p.head === head)
   if (pref) {
     pref.reset(session)
-  } else if (!resetDisplayDefault(session, change) && head) {
+  } else if (head) {
     session.clearPreferenceOverride(head)
   }
 }

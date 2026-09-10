@@ -6,11 +6,10 @@ import { createTestEnvironment } from './testEnv.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // The color key — the r² ramp under LD coloring, the value table under field
-// coloring — is a promotable config slot through LegendMixin. It was a VOLATILE
-// once, sitting with `hoveredFeature` and `rpcDataMap`, so it reset on every
-// retick and turning the key off lasted only until the track was hidden and
-// reshown. These pin the two halves of the change: it persists, and it
-// cascades.
+// coloring — is a config slot through LegendMixin. It was a VOLATILE once,
+// sitting with `hoveredFeature` and `rpcDataMap`, so it reset on every retick
+// and turning the key off lasted only until the track was hidden and reshown.
+// These pin that it persists.
 //
 // `colorBy: 'ld'` throughout, since the row is disabled (though still present,
 // and still pinned) under the plain single-color scheme.

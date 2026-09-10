@@ -5,17 +5,16 @@ import {
   ConfigurationReference,
   ConfigurationSchema,
 } from './configurationSchema.ts'
-import { getConf, readConfObject, resolveConf, setConf } from './index.ts'
+import { getConf, readConfObject, setConf } from './index.ts'
 
 import type { FileLocation } from '../util/types/index.ts'
 import type { IConfigurationReference } from './configurationSchema.ts'
-import type { ResolvableDisplay } from './promotableResolve.ts'
 import type {
+  AnyConfigurationModel,
   AnyConfigurationSchemaType,
   AnyConfigurationSnapshot,
-  ConfigurationSchemaForModel,
-  ConfigurationSlotName,
   ConfigurationSnapshot,
+  HostChecksSlotNames,
 } from './types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -54,70 +53,17 @@ const Container = types.model('ConfigNarrowingContainer', {
   configuration: ConfigurationReference(schema),
 })
 
-// Promotable sentinel slots + one plain `maybe` slot, to guard that
-// `SlotValueFromDef` drops the inherit sentinel from a `getConf` read *only* for
-// `promotedBase` slots (see ./CLAUDE.md and DISPLAY_TYPE_DEFAULTS.md).
-const promotableSchema = ConfigurationSchema('ConfigNarrowingPromotable', {
-  mode: {
-    type: 'maybeStringEnum',
-    model: types.enumeration('PromMode', ['a', 'b']),
-    defaultValue: undefined,
-    promotedBase: 'a',
-  },
-  chevrons: {
-    type: 'maybeBoolean',
-    defaultValue: undefined,
-    promotedBase: true,
-  },
-  size: {
-    type: 'maybeNumber',
-    defaultValue: undefined,
-    promotedBase: 7,
-  },
-  // no `promotedBase`: an ordinary optional slot, whose read must still surface
-  // `undefined` — the exclusion is keyed on `promotedBase`, not `maybe*`
-  plainSize: { type: 'maybeNumber', defaultValue: undefined },
-  // the object-valued sentinel (alignments `colorBy`). `maybeFrozen` is `any`
-  // like plain `frozen`, so both readers agree — asserted so it stays a listed
-  // case rather than drifting back into the `defaultValue` fallback
-  colorBy: {
-    type: 'maybeFrozen',
-    defaultValue: undefined,
-    promotedBase: { type: 'normal' },
-  },
+// A `maybe*` slot reads as `T | undefined`, and `maybeFrozen` is `any` like
+// plain `frozen` — pinned so it stays a listed case rather than drifting back
+// into the `defaultValue` fallback that only lands on `any` by accident.
+const maybeSchema = ConfigurationSchema('ConfigNarrowingMaybe', {
+  plainSize: { type: 'maybeNumber' },
+  colorBy: { type: 'maybeFrozen' },
 })
 
-// A subclass turns an inherited promotable slot off by stating
-// `promotedBase: undefined`, and the sentinel must survive in BOTH read types.
-//
-// This is the canary for the *first* branch of `SlotValueResolvedFromDef`, which
-// looks redundant and is not: `{ promotedBase: undefined }` satisfies
-// `{ promotedBase: unknown }`, so keying only on the latter would resolve the
-// sentinel away for the one slot that just stopped being promotable — tsc would
-// promise a `number` while `resolveConf` threw "not promotable" at runtime.
-const turnedOffSchema = ConfigurationSchema(
-  'ConfigNarrowingTurnedOff',
-  {
-    size: {
-      type: 'maybeNumber',
-      defaultValue: undefined,
-      promotedBase: undefined,
-    },
-  },
-  { baseConfiguration: promotableSchema },
-)
-
-// `resolveConf` asks for the display node the cascade reads (type + config), so
-// these model that rather than a bare config holder. Type-only fixtures — never
-// `.create()`d.
-const PromotableContainer = types.model('ConfigNarrowingPromotableContainer', {
-  type: types.string,
-  configuration: ConfigurationReference(promotableSchema),
-})
-
-const TurnedOffContainer = types.model('ConfigNarrowingTurnedOffContainer', {
-  type: types.string,
-  configuration: ConfigurationReference(turnedOffSchema),
+// Type-only fixture — never `.create()`d.
+const MaybeContainer = types.model('ConfigNarrowingMaybeContainer', {
+  configuration: ConfigurationReference(maybeSchema),
 })
 
 describe('getConf slot-value type narrowing', () => {
@@ -222,57 +168,12 @@ describe('getConf slot-value type narrowing', () => {
     expect(color).toBe('red')
   })
 
-  // The two readers differ in exactly one way on a promotable slot, and that
-  // difference IS the guard: `resolveConf` runs the cascade and can only yield a
-  // real value, while `getConf` stays raw and surfaces the `undefined` inherit
-  // sentinel — so handing a raw read to a consumer expecting a real mode is a
-  // compile error pointing at the call that should have resolved. Type-only:
-  // resolution consults a session at runtime, so this exercises the return TYPE
-  // (computed from the schema alone) without invoking it.
-  test('resolveConf drops the inherit sentinel, getConf keeps it', () => {
-    const check = (model: Instance<typeof PromotableContainer>) => {
-      // resolved: never the sentinel, so a display getter needs no cast
-      const mode = resolveConf(model, 'mode')
-      const chevrons = resolveConf(model, 'chevrons')
-      const size = resolveConf(model, 'size')
-      assertType<Equal<typeof mode, 'a' | 'b'>>()
-      assertType<Equal<typeof chevrons, boolean>>()
-      assertType<Equal<typeof size, number>>()
-
-      // raw: the sentinel is still there to be handled
-      const rawMode = getConf(model, 'mode')
-      const rawChevrons = getConf(model, 'chevrons')
-      const rawSize = getConf(model, 'size')
-      assertType<Equal<typeof rawMode, 'a' | 'b' | undefined>>()
-      assertType<Equal<typeof rawChevrons, boolean | undefined>>()
-      assertType<Equal<typeof rawSize, number | undefined>>()
-
-      // a plain `maybe` slot (no `promotedBase`) reads the same either way
+  test('a maybe* slot surfaces its unset state at the read', () => {
+    const check = (model: Instance<typeof MaybeContainer>) => {
       const plainSize = getConf(model, 'plainSize')
+      const colorBy = getConf(model, 'colorBy')
       assertType<Equal<typeof plainSize, number | undefined>>()
-
-      // ...as does `maybeFrozen`, which is `any` like plain `frozen` — pinned
-      // here so it stays a listed case rather than drifting back into the
-      // `defaultValue` fallback that only lands on `any` by accident
-      const colorBy = resolveConf(model, 'colorBy')
-      const rawColorBy = getConf(model, 'colorBy')
       assertType<Equal<typeof colorBy, any>>()
-      assertType<Equal<typeof rawColorBy, any>>()
-    }
-    void check
-    expect(true).toBe(true)
-  })
-
-  // A subclass that turns an inherited promotable slot off states
-  // `promotedBase: undefined`, so `resolveConf` throws there — and both read
-  // types must keep the sentinel rather than promising a value that read can't
-  // produce.
-  test('a slot turned off with promotedBase: undefined keeps the sentinel', () => {
-    const check = (model: Instance<typeof TurnedOffContainer>) => {
-      const size = resolveConf(model, 'size')
-      const rawSize = getConf(model, 'size')
-      assertType<Equal<typeof size, number | undefined>>()
-      assertType<Equal<typeof rawSize, number | undefined>>()
     }
     void check
     expect(true).toBe(true)
@@ -392,38 +293,39 @@ describe('getConf slot-value type narrowing', () => {
 // A cross-cutting mixin can't see the `configuration` its composing display
 // supplies, so it casts to reach it. **What it casts to decides whether the
 // slot names below it are checked at all**, and the two spellings that look
-// equivalent are not: `ResolvableDisplay<X>` narrows, and
-// `ResolvableDisplay & { configuration: X }` re-widens, because
-// `ResolvableDisplay` declares `configuration: AnyConfigurationModel` and the
-// intersection keeps it. `HeightModeMixin` and `WiggleScoreConfigMixin` both
-// shipped the intersection spelling and neither was checking anything; only a
-// sabotage found it, since the widened form has no symptom at all.
+// equivalent are not: a host type naming the concrete schema narrows, while
+// intersecting with one that declares `configuration: AnyConfigurationModel`
+// re-widens, because the intersection keeps the widened member.
+// `HeightModeMixin` and `WiggleScoreConfigMixin` both shipped the intersection
+// spelling and neither was checking anything; only a sabotage found it, since
+// the widened form has no symptom at all. `HostChecksSlotNames` is the assertion
+// each mixin pins itself with.
+interface AnyConfigHost {
+  configuration: AnyConfigurationModel
+}
+
 describe('a mixin host type narrows the slot names, or silently does not', () => {
-  it('narrows through the type parameter', () => {
-    type Names = ConfigurationSlotName<
-      ConfigurationSchemaForModel<
-        ResolvableDisplay<Instance<typeof schema>>['configuration']
+  it('narrows through a host naming the concrete schema', () => {
+    assertType<
+      Equal<
+        HostChecksSlotNames<{ configuration: Instance<typeof schema> }>,
+        true
       >
-    >
-    assertType<Equal<string extends Names ? true : false, false>>()
-    const slot: Names = 'color'
-    void slot
+    >()
     expect(true).toBe(true)
   })
 
-  it('does NOT narrow through an intersection', () => {
-    type Names = ConfigurationSlotName<
-      ConfigurationSchemaForModel<
-        (ResolvableDisplay & {
-          configuration: Instance<typeof schema>
-        })['configuration']
+  it('does NOT narrow through an intersection with a widened host', () => {
+    // the failing half, asserted rather than described. If this ever flips to
+    // `true`, the intersection spelling became safe.
+    assertType<
+      Equal<
+        HostChecksSlotNames<
+          AnyConfigHost & { configuration: Instance<typeof schema> }
+        >,
+        false
       >
-    >
-    // the failing half, asserted rather than described: widened to `string`, so
-    // every slot name typechecks. If this ever flips to `false`, the
-    // intersection spelling became safe and the guidance on `ResolvableDisplay`
-    // should be revisited.
-    assertType<Equal<string extends Names ? true : false, true>>()
+    >()
     expect(true).toBe(true)
   })
 })

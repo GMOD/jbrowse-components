@@ -86,9 +86,6 @@ function createView() {
       getTrackById(id: string) {
         return id === 'test_track' ? trackConfig : undefined
       },
-      getDisplayTypeDefault() {
-        return undefined
-      },
       get themeOptions() {
         return undefined
       },

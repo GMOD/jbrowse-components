@@ -261,44 +261,16 @@ export function bootAlignmentsDisplay({
       name: 'testSession',
       view: types.maybe(LinearGenomeModel),
       configuration: types.map(types.frozen()),
-      // same shape as BaseSession's preferencesOverrides.displayTypeDefaults:
-      // displayType -> slot -> value, reassigned wholesale so a display getter
-      // tracks it reactively.
-      displayTypeDefaults: types.frozen<
-        Record<string, Record<string, unknown>>
-      >({}),
     })
-    .views(self => ({
+    .views(() => ({
       getTrackById(id: string) {
         return id === 'test_track' ? trackConfig : undefined
-      },
-      // Every promotable slot read walks the cascade through this, and
-      // `resolveSlotIn` calls it UNCONDITIONALLY — a session without it doesn't
-      // fall back, it throws `getDisplayTypeDefault is not a function` from
-      // somewhere that looks nothing like the test. So it is the real store for
-      // everyone rather than a stub for most and an implementation for the one
-      // file about promotion; empty, it answers `undefined` for every slot,
-      // which is what a stub was standing in for anyway.
-      getDisplayTypeDefault(displayType: string, slot: string): unknown {
-        return self.displayTypeDefaults[displayType]?.[slot]
       },
     }))
     .actions(self => ({
       setView(view: Instance<typeof LinearGenomeModel>) {
         self.view = view
         return view
-      },
-      setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
-        const forType = { ...self.displayTypeDefaults[displayType] }
-        if (value === undefined) {
-          delete forType[slot]
-        } else {
-          forType[slot] = value
-        }
-        self.displayTypeDefaults = {
-          ...self.displayTypeDefaults,
-          [displayType]: forType,
-        }
       },
     }))
 

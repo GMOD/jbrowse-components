@@ -17,10 +17,7 @@ import {
 } from './WiggleScoreConfigMixin.ts'
 import { isLineMode, isScatterMode } from './wiggleComponentUtils.ts'
 
-import type {
-  ConfigModelForFields,
-  ResolvableDisplay,
-} from '@jbrowse/core/configuration'
+import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ScoreScaleModel } from '@jbrowse/wiggle-core'
 import type { ElementType } from 'react'
@@ -67,14 +64,12 @@ export function makeGroupedRenderingTypeSubMenu(
   }
 }
 
-// A top-level size submenu holding one inline slider row (value + reset + a
-// promotable "default for all tracks of this type" pin), present only in the
-// rendering types the size applies to: point size in the scatter variants
-// ('scatter'/'multirowscatter'/'multiscatter'), line width in the line ones.
-// Both are top-level rather than nested under Score because they describe the
-// mark, not the axis.
-// The row is a thunk so a rendering type that doesn't take the size never
-// walks its config slot's promotable cascade to build one it won't show.
+// A top-level size submenu holding one inline slider row (value + reset),
+// present only in the rendering types the size applies to: point size in the
+// scatter variants ('scatter'/'multirowscatter'/'multiscatter'), line width in
+// the line ones. Both are top-level rather than nested under Score because they
+// describe the mark, not the axis. The row is a thunk so a rendering type that
+// doesn't take the size never builds one it won't show.
 function sizeSubMenu(
   applies: boolean,
   label: string,
@@ -104,17 +99,14 @@ export function makePointSizeMenuItems(
   })
 }
 
-export function makeLineWidthMenuItems(
-  self: {
-    renderingType: string
-    lineWidth: number
-    setLineWidth: (n?: number) => void
-  } & ResolvableDisplay<
-    ConfigModelForFields<{
-      lineWidth: { type: 'maybeNumber'; promotedBase: number }
-    }>
-  >,
-): MenuItem[] {
+export function makeLineWidthMenuItems(self: {
+  renderingType: string
+  lineWidth: number
+  setLineWidth: (n?: number) => void
+  configuration: ConfigModelForFields<{
+    lineWidth: { type: 'number'; defaultValue: number }
+  }>
+}): MenuItem[] {
   return sizeSubMenu(
     isLineMode(self.renderingType),
     'Line width',

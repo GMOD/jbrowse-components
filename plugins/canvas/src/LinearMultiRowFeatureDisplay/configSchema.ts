@@ -162,11 +162,10 @@ export default function configSchemaF() {
        * mode — elsewhere the sidebar labels are already the key.
        */
       showLegend: {
-        type: 'maybeBoolean',
+        type: 'boolean',
         description:
-          'show the categorical color key for per-feature coloring. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track',
-        // Promotable: read through the resolved `showLegend` getter, never raw.
-        promotedBase: true,
+          'show the categorical color key for per-feature coloring. Defaults to on',
+        defaultValue: true,
       },
       /**
        * #slot

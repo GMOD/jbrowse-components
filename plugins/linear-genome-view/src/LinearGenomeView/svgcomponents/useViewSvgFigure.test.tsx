@@ -172,9 +172,6 @@ function initialize() {
       get assemblies() {
         return []
       },
-      getDisplayTypeDefault() {
-        return undefined
-      },
       getTrackById(trackId: string) {
         return self.tracks.find(track => track.trackId === trackId)
       },

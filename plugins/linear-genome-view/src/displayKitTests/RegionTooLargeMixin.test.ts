@@ -357,9 +357,8 @@ describe('an ungated display evaluates nothing below the opt-in', () => {
 })
 
 // One line per mixin, and the whole point of it: a host cast widened back to
-// `AnyConfigurationModel` — or written as the `ResolvableDisplay & { … }`
-// intersection, which re-widens — compiles and checks nothing, so every slot
-// name below it typechecks and a misspelled read reports nothing at any layer.
+// `AnyConfigurationModel` compiles and checks nothing, so every slot name below
+// it typechecks and a misspelled read reports nothing at any layer.
 // `HostChecksSlotNames` resolves to `false` there, and this annotation fails.
 const regionTooLargePin: HostChecksSlotNames<RegionTooLargeHost> = true
 test('the mixin checks the slot names it reads', () => {

@@ -162,9 +162,9 @@ function isObject(v: unknown): v is Record<string, unknown> {
 // The standalone `methylation` colorBy scheme was removed; it is now the
 // `modifications` scheme with `fillUnmarked` set. It is NOT rewritten here: the
 // alignments model normalizes it at read time (`normalizeColorBy`, applied in
-// its `colorBy` getter), which covers every persistence path — instance slot,
-// session-wide promoted default, and config-file display default — so session
-// migration deliberately leaves a `methylation` colorBy untouched.
+// its `colorBy` getter), which covers every persistence path — instance slot and
+// config-file display default alike — so session migration deliberately leaves a
+// `methylation` colorBy untouched.
 function migrateDisplayType(
   display: Record<string, unknown>,
   trackConfigId: string | undefined,

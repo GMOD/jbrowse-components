@@ -1,7 +1,4 @@
-import {
-  ConfigurationReference,
-  resolveConf,
-} from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   findParentThatIs,
@@ -515,23 +512,20 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * Whether this level draws bezier ribbons: the promotable `drawCurves`
-       * slot resolved through the display-type cascade — this track's
-       * configured value, the session-wide default the settings menu's pin
-       * writes, then `promotedBase` (straight). The view settings checkbox
-       * writes the slot too, on every level at once (`setDrawCurves`), so
-       * there is no view tier over this.
+       * Whether this level draws bezier ribbons, from the `drawCurves` slot.
+       * The view settings checkbox writes the slot on every level at once
+       * (`setDrawCurves`), so there is no view tier over this.
        */
       get effectiveDrawCurves(): boolean {
-        return resolveConf(self, 'drawCurves')
+        return getConf(self, 'drawCurves')
       },
       /**
        * #getter
        * Whether this level continues the query row's ruler through its ribbons.
-       * Resolved exactly as `effectiveDrawCurves` above.
+       * Read exactly as `effectiveDrawCurves` above.
        */
       get effectiveDrawLocationMarkers(): boolean {
-        return resolveConf(self, 'drawLocationMarkers')
+        return getConf(self, 'drawLocationMarkers')
       },
       /**
        * #method

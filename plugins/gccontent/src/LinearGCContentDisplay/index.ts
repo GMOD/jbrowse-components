@@ -23,10 +23,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 // built from one un-annotated helper, neither registered display type had a page
 // at all. `SharedGCContentDisplay` had the only page, and — being the only
 // documented name — its slot table told readers to write
-// `type: 'SharedGCContentDisplay'`, which nothing accepts. Both displays were
-// also missing from the "settings with a session-wide default" table
-// (`agent-docs/reference/DISPLAY_TYPE_DEFAULTS.md`), though their promotable
-// `lineWidth`/`scatterPointSize` pins have always worked.
+// `type: 'SharedGCContentDisplay'`, which nothing accepts.
 
 export type LinearGCContentDisplayConfigSchema = ReturnType<
   typeof linearGCContentDisplayConfigSchema

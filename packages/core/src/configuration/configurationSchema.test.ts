@@ -340,15 +340,12 @@ describe('configuration schemas', () => {
     // field-by-field for a redeclared *slot* and wholesale for everything else,
     // so an override states only what differs. Replace semantics were the old
     // behavior and dropped every field an override left out, silently.
-    const isEven = (value: unknown) =>
-      typeof value === 'number' && value % 2 === 0
     const base = ConfigurationSchema('MergeBase', {
       size: {
         type: 'number',
         defaultValue: 2,
         description: 'the base description',
         contextVariable: ['feature'],
-        validate: isEven,
         advanced: true,
       },
       mySubConfiguration: ConfigurationSchema('MergeBaseSub', {
@@ -371,7 +368,6 @@ describe('configuration schemas', () => {
       expect(def.defaultValue).toBe(4)
       expect(def.description).toBe('the base description')
       expect(def.contextVariable).toEqual(['feature'])
-      expect(def.validate).toBe(isEven)
       expect(def.advanced).toBe(true)
     })
 

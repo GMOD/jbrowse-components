@@ -25,9 +25,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * A real LGVSyntenyDisplay on a two-assembly SyntenyTrack, in a real LGV. Both
  * menus this display builds read the track config (for the mate-assembly check)
- * and the containing view, and every promotable-slot row walks the cascade
- * through the session — so a mock `self` would just reimplement the thing under
- * test.
+ * and the containing view, so a mock `self` would just reimplement the thing
+ * under test.
  *
  * `neighbourAssembly` puts that LGV in a two-panel STACK, with the second panel
  * open on the named assembly — the shape "Move other panel to the matching
@@ -220,10 +219,9 @@ export function createSyntenyEnv({
 }
 
 /**
- * The display alone, which is all most callers here want. `createSyntenyEnv`
- * is the form for a test that also has to reach the session — the promotable
- * pins raise a snackbar whose one action is the promotion, and that is only
- * assertable through `session.notifications`.
+ * The display alone, which is all most callers here want. `createSyntenyEnv` is
+ * the form for a test that also has to reach the session, e.g. to assert on
+ * `session.notifications`.
  */
 export function createDisplay(
   opts: Parameters<typeof createSyntenyEnv>[0] = {},

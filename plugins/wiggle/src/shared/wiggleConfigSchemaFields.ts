@@ -65,25 +65,18 @@ export const wiggleConfigSchemaFields = {
       'Percentile used to clip outliers for the localpercentile autoscale type (e.g. 0.99 clips the outermost 1% of each sign). Positive and negative extents are computed independently and anchored at 0, so a sparse minority tail (e.g. phyloP acceleration) stays visible; all-positive data pins the min at 0',
     advanced: true,
   },
-  // Sentinel promotable slots (like alignments featureHeight): `undefined` is
-  // the inherit state and `promotedBase` is what it resolves to when nothing is
-  // promoted, so every real value — the base included — stays customizable over
-  // a session-wide default. A plain `number` slot would spend its default as
-  // the inherit signal, so dragging the slider back to that value would strip
-  // to default and silently re-inherit the promoted one. See
-  // promotableDefaults.ts.
   scatterPointSize: {
-    type: 'maybeNumber',
-    promotedBase: 2,
+    type: 'number',
+    defaultValue: 2,
     description:
-      'Point height in px for scatterplot ("scatter"/"multiscatter") rendering. Unset (the default) follows the session-wide default for this display type, falling back to 2',
+      'Point height in px for scatterplot ("scatter"/"multiscatter") rendering. Defaults to 2',
     advanced: true,
   },
   lineWidth: {
-    type: 'maybeNumber',
-    promotedBase: 1,
+    type: 'number',
+    defaultValue: 1,
     description:
-      'Line thickness in px for line ("line"/"multiline") rendering. Unset (the default) follows the session-wide default for this display type, falling back to 1',
+      'Line thickness in px for line ("line"/"multiline") rendering. Defaults to 1',
     advanced: true,
   },
   maxGapMultiple: {
@@ -98,7 +91,7 @@ export const wiggleConfigSchemaFields = {
 /**
  * What `WiggleScoreConfigMixin` asks a composing display's `configuration` to
  * be — this table, which already spreads the score axis. Narrow so
- * `getConf`/`resolveConf`/`setConf` still check the slot name; see
+ * `getConf`/`setConf` still check the slot name; see
  * `ConfigModelForFields`.
  */
 export type WiggleConfigModel = ConfigModelForFields<

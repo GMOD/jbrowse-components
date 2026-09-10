@@ -1,7 +1,7 @@
 import {
   ConfigurationReference,
+  getConf,
   readConfObject,
-  resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
@@ -114,11 +114,11 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * arc stroke width in px, from the promotable `lineWidth` slot (track-menu
+       * arc stroke width in px, from the `lineWidth` slot (the track-menu
        * slider writes it); flat across all arcs
        */
       get lineWidth(): number {
-        return resolveConf(self, 'lineWidth')
+        return getConf(self, 'lineWidth')
       },
     }))
     .views(self => ({

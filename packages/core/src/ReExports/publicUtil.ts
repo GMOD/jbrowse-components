@@ -233,7 +233,6 @@ export {
   notEmpty,
   objectHash,
   openFeatureWidget,
-  openPromotableDisplays,
   parseLocString,
   parseLocStringOneBased,
   parseMotifList,

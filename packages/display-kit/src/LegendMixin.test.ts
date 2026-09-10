@@ -13,31 +13,24 @@ import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 // multi-row features, multi-wiggle and LD had none, so the getter could have
 // been inverted on four displays in silence. Consolidating the implementation is
 // what makes that fixable in one place, and this is that place.
-//
-// It runs against a REAL promotable slot and a session that answers
-// `getDisplayTypeDefault`, because the whole point of these three members is the
-// cascade: a plain `getConf` would pass every assertion here except the two that
-// matter.
 
 const pluginManager = new PluginManager([]).createPluggableElements()
 pluginManager.configure()
 
 function makeSession({
-  promotedBase,
+  defaultValue,
   configuration = {},
-  displayTypeDefaults = {},
   colorScales = [],
 }: {
-  promotedBase: boolean
+  defaultValue: boolean
   configuration?: Record<string, unknown>
-  displayTypeDefaults?: Record<string, Record<string, unknown>>
   colorScales?: ColorScale[]
 }) {
   const configSchema = ConfigurationSchema('TestLegendDisplay', {
     showLegend: {
-      type: 'maybeBoolean',
+      type: 'boolean',
       description: 'show the legend',
-      promotedBase,
+      defaultValue,
     },
   })
   const Display = types
@@ -58,10 +51,6 @@ function makeSession({
     .model('TestSession', {
       rpcManager: types.frozen({}),
       configuration: types.frozen({}),
-      displayTypeDefaults:
-        types.frozen<Record<string, Record<string, unknown>>>(
-          displayTypeDefaults,
-        ),
       display: Display,
     })
     .volatile(() => ({
@@ -69,21 +58,7 @@ function makeSession({
         | { name: string; onClick: () => void }
         | undefined,
     }))
-    .views(self => ({
-      getDisplayTypeDefault(displayType: string, slot: string): unknown {
-        return self.displayTypeDefaults[displayType]?.[slot]
-      },
-    }))
     .actions(self => ({
-      setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
-        self.displayTypeDefaults = {
-          ...self.displayTypeDefaults,
-          [displayType]: {
-            ...self.displayTypeDefaults[displayType],
-            [slot]: value,
-          },
-        }
-      },
       notify(
         _message: string,
         _level?: string,
@@ -99,52 +74,31 @@ function makeSession({
   return { session, display: session.display }
 }
 
-// `promotedBase` is what still differs per display — off for Hi-C, alignments
-// and LD, on for the variants, multi-row and multi-wiggle — so it is the axis
-// worth running everything over rather than picking one.
-describe.each([true, false])('with promotedBase %p', promotedBase => {
-  it('falls back to promotedBase when nothing is set', () => {
-    const { display } = makeSession({ promotedBase })
-    expect(display.showLegend).toBe(promotedBase)
+// The default is what still differs per display — off for Hi-C, alignments and
+// LD, on for the variants, multi-row and multi-wiggle — so it is the axis worth
+// running everything over rather than picking one.
+describe.each([true, false])('with default %p', defaultValue => {
+  it('falls back to the slot default when nothing is set', () => {
+    const { display } = makeSession({ defaultValue })
+    expect(display.showLegend).toBe(defaultValue)
   })
 
   it('takes an explicit track value in either direction', () => {
     for (const value of [true, false]) {
       const { display } = makeSession({
-        promotedBase,
+        defaultValue,
         configuration: { showLegend: value },
       })
       expect(display.showLegend).toBe(value)
     }
   })
 
-  // The tier that makes this a promotable read rather than a `getConf` one: a
-  // display-type default overrides the base for a track that set nothing.
-  it('follows the session-wide default over the base', () => {
-    const { display } = makeSession({
-      promotedBase,
-      displayTypeDefaults: { TestLegendDisplay: { showLegend: !promotedBase } },
-    })
-    expect(display.showLegend).toBe(!promotedBase)
-  })
-
-  // ...and a track that DID set something outranks that default, which is the
-  // half a one-directional slot would get wrong.
-  it('lets a track customize back over a session-wide default', () => {
-    const { display } = makeSession({
-      promotedBase,
-      configuration: { showLegend: promotedBase },
-      displayTypeDefaults: { TestLegendDisplay: { showLegend: !promotedBase } },
-    })
-    expect(display.showLegend).toBe(promotedBase)
-  })
-
   it('setShowLegend writes the slot, both ways', () => {
-    const { display } = makeSession({ promotedBase })
-    display.setShowLegend(!promotedBase)
-    expect(display.showLegend).toBe(!promotedBase)
-    display.setShowLegend(promotedBase)
-    expect(display.showLegend).toBe(promotedBase)
+    const { display } = makeSession({ defaultValue })
+    display.setShowLegend(!defaultValue)
+    expect(display.showLegend).toBe(!defaultValue)
+    display.setShowLegend(defaultValue)
+    expect(display.showLegend).toBe(defaultValue)
   })
 })
 
@@ -163,7 +117,7 @@ const groups: ColorScale = {
 
 describe('the key derives from the scales', () => {
   it('a display declaring no scales has no key to offer', () => {
-    const { display } = makeSession({ promotedBase: true })
+    const { display } = makeSession({ defaultValue: true })
     expect(display.colorScales).toEqual([])
     expect(display.legendSpec.sections).toEqual([])
     expect(display.hasLegendKey).toBe(false)
@@ -172,7 +126,7 @@ describe('the key derives from the scales', () => {
 
   it('one section per scale, in the order declared', () => {
     const { display } = makeSession({
-      promotedBase: true,
+      defaultValue: true,
       colorScales: [genotypes, groups],
     })
     expect(display.hasLegendKey).toBe(true)
@@ -184,7 +138,7 @@ describe('the key derives from the scales', () => {
 
   it('an empty scale is no key', () => {
     const { display } = makeSession({
-      promotedBase: true,
+      defaultValue: true,
       colorScales: [{ ...genotypes, entries: [] }],
     })
     expect(display.hasLegendKey).toBe(false)
@@ -194,7 +148,7 @@ describe('the key derives from the scales', () => {
   // the behaviour the multi-sample variant base used to override the setter for.
   it('a dismissed section leaves the key until the legend is shown again', () => {
     const { display } = makeSession({
-      promotedBase: true,
+      defaultValue: true,
       colorScales: [genotypes, groups],
     })
     display.dismissLegendSection('group')
@@ -210,9 +164,8 @@ describe('the key derives from the scales', () => {
 })
 
 // One line per mixin, and the whole point of it: a host cast widened back to
-// `AnyConfigurationModel` — or written as the `ResolvableDisplay & { … }`
-// intersection, which re-widens — compiles and checks nothing, so every slot
-// name below it typechecks and a misspelled read reports nothing at any layer.
+// `AnyConfigurationModel` compiles and checks nothing, so every slot name below
+// it typechecks and a misspelled read reports nothing at any layer.
 // `HostChecksSlotNames` resolves to `false` there, and this annotation fails.
 const legendPin: HostChecksSlotNames<LegendConfHost> = true
 test('the mixin checks the slot name it reads', () => {

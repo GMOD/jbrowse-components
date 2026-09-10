@@ -149,13 +149,10 @@ export default function configSchemaF() {
        * colors and there is nothing to key, so nothing draws whatever this says.
        */
       showLegend: {
-        type: 'maybeBoolean',
+        type: 'boolean',
         description:
-          'show the color key for the active row rendering. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track',
-        // Promotable: `undefined` (unset) is the inherit state, `promotedBase`
-        // (true) is what it resolves to when nothing is promoted. Read through
-        // LegendMixin's resolved `showLegend` getter, never raw.
-        promotedBase: true,
+          'show the color key for the active row rendering. Defaults to on',
+        defaultValue: true,
       },
       /**
        * #slot

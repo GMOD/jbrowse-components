@@ -4,8 +4,6 @@ import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightC
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
-// default arc stroke width in px; the promotable slot's `promotedBase` (the
-// track-menu slider reads/resets via isSlotCustomized, not this constant)
 const defaultArcLineWidth = 3
 
 /**
@@ -55,11 +53,9 @@ export function configSchemaFactory() {
        * #slot
        */
       lineWidth: {
-        type: 'maybeNumber',
-        description:
-          'the stroke width of the arcs, in pixels. Unset (the default) follows the session-wide default for this display type',
-        // sentinel promotable slot: see promotableDefaults.ts
-        promotedBase: defaultArcLineWidth,
+        type: 'number',
+        description: 'the stroke width of the arcs, in pixels',
+        defaultValue: defaultArcLineWidth,
       },
       /**
        * #slot

@@ -241,8 +241,8 @@ test('the CIGAR row sets the mode it names', async () => {
 // visit — which is what `CascadingMenu` gives a checkbox row by its type.
 test('a checkbox row writes its boolean and leaves the menu up', async () => {
   const view = await openMenu()
-  // the row shows the resolved value, and the click writes the promotable
-  // `drawCurves` slot on the view's synteny displays
+  // the row shows the resolved value, and the click writes the `drawCurves`
+  // slot on the view's synteny displays
   expect(view.effectiveDrawCurves).toBe(false)
   fireEvent.click(screen.getByText('Curved lines'))
   expect(view.effectiveDrawCurves).toBe(true)
@@ -251,11 +251,10 @@ test('a checkbox row writes its boolean and leaves the menu up', async () => {
 
 // The half the click test cannot see. It asserts false -> click -> true, which
 // a row hardcoded to `checked: false` satisfies too, because `!false` is still
-// true — so both ribbon rows could render permanently unticked, and build a pin
-// offering the opposite of what is on screen, with every suite green. What goes
-// wrong for a reader is a session whose promoted default is ON: the ribbons
-// draw curved, the row says they do not, and the pin offers to make straight
-// the default. So read the row back with the setting resolved true.
+// true — so both ribbon rows could render permanently unticked with every suite
+// green. What goes wrong for a reader is a track configured curved: the ribbons
+// draw curved and the row says they do not. So read the row back with the
+// setting resolved true.
 test('a checkbox row renders the value it resolved, not a constant', async () => {
   const view = await openMenu()
   act(() => {

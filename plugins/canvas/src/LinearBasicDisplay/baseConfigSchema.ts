@@ -32,7 +32,7 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       // `migrateBasicConfigSnapshot`.
       ...heightModeConfigSchemaFields({
         heightMode:
-          'Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the "Track sizing" menu). Unset (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps a scrollable fixed height, `grow` expands the track to show all features, `fit` squeezes features to fill the current height. Orthogonal to the per-feature size set by `displayMode`. Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit) settings.',
+          'Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the "Track sizing" menu). `fixed` (the default) keeps a scrollable fixed height, `grow` expands the track to show all features, `fit` squeezes features to fill the current height. Orthogonal to the per-feature size set by `displayMode`. Unifies the former `autoHeight` (grow) + `squeezeToDisplayHeight` (fit) settings.',
         growMaxHeight:
           'Ceiling in pixels for the "autogrow track height" sizing mode; a track with more content than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes',
       }),
@@ -55,23 +55,19 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * variant track's consequence-impact / SV-type presets).
        */
       showLegend: {
-        type: 'maybeBoolean',
-        description:
-          'show the color key. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track',
-        promotedBase: true,
+        type: 'boolean',
+        description: 'show the color key. Defaults to on',
+        defaultValue: true,
       },
       /**
        * #slot
        */
       showLabels: {
-        type: 'maybeStringEnum',
+        type: 'stringEnum',
         model: types.enumeration('showLabels', [...SHOW_LABELS_MODES]),
         description:
-          'Which label text is drawn beside each feature: "auto" adapts to zoom, dropping descriptions at maxDescriptionFeatureDensity and names at maxLabelFeatureDensity; "nameAndDescription", "name", "description", and "none" pin a choice at every zoom. Unset (the default) follows the session-wide default for this display type, falling back to `auto`. Replaces the former showLabels on/off enum + showDescriptions boolean pair',
-        // A promotable sentinel enum: unset inherits and `promotedBase` is
-        // the resolved default, so every rung, `auto` included, stays
-        // customizable back over an opposite session default.
-        promotedBase: 'auto',
+          'Which label text is drawn beside each feature: "auto" adapts to zoom, dropping descriptions at maxDescriptionFeatureDensity and names at maxLabelFeatureDensity; "nameAndDescription", "name", "description", and "none" pin a choice at every zoom. Defaults to `auto`. Replaces the former showLabels on/off enum + showDescriptions boolean pair',
+        defaultValue: 'auto',
       },
       /**
        * #slot
@@ -146,11 +142,11 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       displayMode: {
-        type: 'maybeStringEnum',
+        type: 'stringEnum',
         model: types.enumeration('displayMode', [...DISPLAY_MODES]),
         description:
-          'Feature height preset. Unset (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` customize the track explicitly (including customizing `normal` back over a `compact` session default); `collapsed` packs every feature onto a single row with all labels hidden',
-        promotedBase: 'normal',
+          'Feature height preset, `normal` by default; `compact` and `superCompact` shrink the rows, and `collapsed` packs every feature onto a single row with all labels hidden',
+        defaultValue: 'normal',
       },
       /**
        * #slot
@@ -166,20 +162,20 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       subfeatureLabels: {
-        type: 'maybeStringEnum',
+        type: 'stringEnum',
         model: types.enumeration('subfeatureLabels', [...SUBFEATURE_LABELS]),
         description:
-          'subfeature label display mode. Unset (the default) follows the session-wide default for this display type, falling back to `none`; `none`/`below`/`overlay` customize the track explicitly',
-        promotedBase: 'none',
+          'subfeature label display mode: `none` (the default), `below` or `overlay`',
+        defaultValue: 'none',
       },
       /**
        * #slot
        */
       displayDirectionalChevrons: {
-        type: 'maybeBoolean',
+        type: 'boolean',
         description:
-          'Display directional chevrons on intron lines to indicate strand direction. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track (including customizing on over an off session default)',
-        promotedBase: true,
+          'Display directional chevrons on intron lines to indicate strand direction. Defaults to on',
+        defaultValue: true,
       },
       /**
        * #slot

@@ -7,13 +7,9 @@
 // (spacing is derived from it). Both the radios' `checked` state and their
 // onClick derive from this, so adding a preset means updating one place.
 //
-// 'Normal' (7) is the resolved base of the featureHeight sentinel slot (its
-// promotedBase), so a fresh display with no overrides reads as Normal-checked.
-// Clicking any preset — Normal included — writes its exact height, which
-// customizes the track (the slot is sentinel maybeNumber, so 7 is a real
-// customizable value, not the inherit signal). That's what lets Normal win over
-// a Compact session default; a plain-number slot would strip 7 to the default
-// and re-inherit Compact. See promotableDefaults.ts.
+// 'Normal' (7) is the featureHeight slot's default, so a fresh display with no
+// overrides reads as Normal-checked. Clicking any preset writes its exact
+// height.
 export const COMPACTNESS_PRESETS = {
   normal: { label: 'Normal', featureHeight: 7 },
   compact: { label: 'Compact', featureHeight: 3 },

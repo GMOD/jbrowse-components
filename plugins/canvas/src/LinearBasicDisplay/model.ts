@@ -1,7 +1,6 @@
 import {
   ConfigurationReference,
   getConf,
-  resolveConf,
   setConf,
 } from '@jbrowse/core/configuration'
 import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
@@ -90,7 +89,7 @@ export default function stateModelFactory(
       },
 
       get subfeatureLabels(): DisplayConfig['subfeatureLabels'] {
-        return resolveConf(self, 'subfeatureLabels')
+        return getConf(self, 'subfeatureLabels')
       },
 
       get geneGlyphMode() {
@@ -105,7 +104,7 @@ export default function stateModelFactory(
       },
 
       get displayDirectionalChevrons(): boolean {
-        return resolveConf(self, 'displayDirectionalChevrons')
+        return getConf(self, 'displayDirectionalChevrons')
       },
 
       // Off the debounced zoom, so a gesture crossing the `auto` threshold

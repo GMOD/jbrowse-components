@@ -19,11 +19,10 @@ import { closure } from './moduleClosure.ts'
 // return type is the whole application — is what would put the 370 back.
 //
 // The three `ui/` entries are the same failure one layer up, and they were
-// unguarded until 2026-08-25: `MenuTypes.ts` took `Pin` from
-// `promotableDefaults.ts` and `legendSpec.ts` took `ColorLegendEntry` from the
-// component that draws it, so two files describing plain data measured 374 and
-// 375. `menuItems.ts` is the whole builder family in one closure, and its
-// ceiling is what keeps a builder from taking a type off a module that renders.
+// unguarded until 2026-08-25: `legendSpec.ts` took `ColorLegendEntry` from the
+// component that draws it, so a file describing plain data measured 375.
+// `menuItems.ts` is the whole builder family in one closure, and its ceiling is
+// what keeps a builder from taking a type off a module that renders.
 
 const root = join(__dirname, '..')
 

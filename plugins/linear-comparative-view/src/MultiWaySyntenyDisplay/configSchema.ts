@@ -85,7 +85,7 @@ export function configSchemaFactory() {
       drawCurves: {
         type: 'boolean',
         description:
-          "draw the ribbons as bezier curves rather than straight chords. A plain per-track slot: this display does not share the linear synteny view's promotable `drawCurves` cascade or its view-level override. Straight is the default in both places: a chord's slant reads directly as the offset between two lanes drawn in different coordinate frames, which is exactly what a curve hides",
+          "draw the ribbons as bezier curves rather than straight chords. A plain per-track slot: this display does not share the linear synteny view's view-level `drawCurves` override. Straight is the default in both places: a chord's slant reads directly as the offset between two lanes drawn in different coordinate frames, which is exactly what a curve hides",
         defaultValue: false,
       },
       /**
@@ -101,12 +101,10 @@ export function configSchemaFactory() {
        * #slot
        */
       showLegend: {
-        type: 'maybeBoolean',
+        type: 'boolean',
         description:
-          "show the color key naming the anchor lane's drawn colors, and the ribbon strand colors where `ribbonColorBy` paints them. Derived from what is on screen, so it draws nothing until the `color` slot resolves to more than one color — a flat default color has nothing to key. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track",
-        // Promotable: read through LegendMixin's resolved `showLegend` getter,
-        // never raw.
-        promotedBase: true,
+          "show the color key naming the anchor lane's drawn colors, and the ribbon strand colors where `ribbonColorBy` paints them. Derived from what is on screen, so it draws nothing until the `color` slot resolves to more than one color — a flat default color has nothing to key. Defaults to on",
+        defaultValue: true,
       },
       /**
        * #slot

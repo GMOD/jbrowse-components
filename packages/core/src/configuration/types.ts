@@ -77,7 +77,7 @@ export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
  * every value left `unknown`.
  *
  * Names are the whole point of it. A slot value can be its own type, a `jexl:`
- * callback string, or (for a promotable slot) absent, and nothing here tries to
+ * callback string, or (for a `maybe*` slot) absent, and nothing here tries to
  * check that; a *name* the schema does not declare is dropped on the way in
  * without a word, so `preferance` is a setting that reads as applied and never
  * applies. Against an object literal — which is how an embedder writes one —
@@ -106,36 +106,6 @@ export type ConfigurationSnapshot<SCHEMA> = SCHEMA extends undefined
 // - every `maybe*` type becomes `T | undefined`, surfacing the unset state at
 //   each read instead of hiding it behind `any`.
 // jexl callbacks are declared to return the slot's own type, correct here too.
-//
-// A slot declaring `promotedBase` is a *sentinel* slot: being unset is the
-// "inherit" signal, which only `resolveConf` resolves away (every promotable slot
-// is a `maybe*` type, so the sentinel is always `undefined`). So the *resolved*
-// read type drops it — `boolean | undefined` becomes `boolean`,
-// `'fixed' | 'grow' | 'fit' | undefined` becomes `'fixed' | 'grow' | 'fit'`.
-//
-// The plain `getConf` read type keeps the `undefined` (see
-// `ConfigurationSlotValue` below), which is the whole compile-time guard: read a
-// promotable slot with the raw reader and you get a type you can't hand to a
-// consumer expecting a real mode, so tsc points at the call that should have
-// been `resolveConf`. A slot without `promotedBase` is unaffected either way.
-//
-// This mapping sees the subclass's **literal** definition, so anything a schema
-// gains at runtime through `mergeSchemaDefinition` is invisible here — a real
-// override states `promotedBase` and inherits the rest (`LGVSyntenyDisplay`'s
-// `colorBy`), which is why the marker has to be a field this can read.
-//
-// **`promotedBase: undefined` has to be checked first, and it is not a no-op
-// branch.** It is how a subclass turns an inherited promotable slot back into a
-// plain one — the definition merge is a spread, so a stated `undefined`
-// overwrites the base's value at runtime. But `{ promotedBase: undefined }` does
-// satisfy `{ promotedBase: unknown }`, so without this branch the type would
-// keep resolving the sentinel away for exactly the slot that just stopped being
-// promotable, and `resolveConf` would throw on a read tsc had blessed.
-type SlotValueResolvedFromDef<DEF> = DEF extends { promotedBase: undefined }
-  ? SlotValueRawFromDef<DEF>
-  : DEF extends { promotedBase: unknown }
-    ? Exclude<SlotValueRawFromDef<DEF>, undefined>
-    : SlotValueRawFromDef<DEF>
 
 /**
  * The value each builtin slot `type` reads as — the type-level twin of
@@ -164,9 +134,8 @@ interface SlotValueByType {
    * only add cast ceremony on values that are legitimately dynamic.
    *
    * Stated here rather than left to the `defaultValue` fallback, which reaches
-   * `any` for these only by accident: it lands there because no `frozen` slot in
-   * the repo happens to default to a scalar, and a promotable slot's default is
-   * always the `undefined` sentinel.
+   * `any` for these only by accident: no `frozen` slot in the repo happens to
+   * default to a scalar.
    */
   frozen: any
   maybeFrozen: any
@@ -251,19 +220,6 @@ export type ConfigurationSlotValue<SCHEMA, K extends string> =
     : any
 
 /**
- * what `resolveConf` yields: the same, minus the inherit sentinel on a
- * promotable slot — the cascade always produces a real value.
- */
-export type ConfigurationSlotValueResolved<SCHEMA, K extends string> =
-  SCHEMA extends ConfigurationSchemaType<infer D, any>
-    ? K extends keyof D
-      ? SlotValueResolvedFromDef<D[K]>
-      : GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
-        ? ConfigurationSlotValueResolved<GetBase<SCHEMA>, K>
-        : any
-    : any
-
-/**
  * Naming convention for config types, paired per schema:
  * - `XConfigSchema` is the MST IType (the schema itself). Use it for
  *   `getConf`, `ConfigurationReference`, and factory params — anywhere a schema
@@ -313,8 +269,7 @@ export type ConfigModelForFields<
  * ```
  *
  * Worth a named type because the widened form has **no symptom** — a mixin host
- * cast to `AnyConfigurationModel`, or to the `ResolvableDisplay & { … }`
- * intersection that re-widens, compiles and runs and checks nothing. Every
+ * cast to `AnyConfigurationModel` compiles and runs and checks nothing. Every
  * misspelled slot name below it typechecks, and a misspelled *read* returns
  * `undefined` with no diagnostic at any layer, so only a sabotage or this
  * assertion tells the two apart.

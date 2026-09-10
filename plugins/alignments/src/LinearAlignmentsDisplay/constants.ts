@@ -59,10 +59,8 @@ export function colorSchemeIndexFor(type: ColorSchemeType) {
 // lines. Bezier connection curves are orthogonal to layout (see the
 // `showBezierConnections` flag) and draw over either mode.
 //
-// The list is also the `linkedReads` config enumeration (a promotable
-// `maybeStringEnum`, so the unset inherit state is NOT a member — see
-// promotableResolve.ts). One source so the schema and the resolved type can't
-// drift; likewise for the two below.
+// The list is also the `linkedReads` config enumeration. One source so the
+// schema and the resolved type can't drift; likewise for the two below.
 //
 // It is two members, so "is chain layout on" is binary and `!== 'off'` (the
 // worker, the menu row) and `=== 'normal'` (the model's `isChainMode`) are the

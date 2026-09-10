@@ -43,7 +43,6 @@ export {
   TrackMenuSessionMixin,
   TracksManagerSessionMixin,
   aboutTrackMenuItem,
-  bakePromotedDefaultsIntoSnapshot,
   bakeSessionCascades,
   getShareableSessionSnapshot,
   copyTrackSnapshot,

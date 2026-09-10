@@ -185,7 +185,7 @@ test('reset-to-default appears only when a slot differs, and reverts it', () => 
   expect(queryByLabelText('reset to default')).toBeNull()
 })
 
-test('reset un-pins a promotable maybeBoolean back to its inherit default', () => {
+test('reset returns a maybeBoolean to its unset default', () => {
   const TestSchema = ConfigurationSchema('TestThing', {
     maybeBoolTest: {
       name: 'maybeBoolTest',
@@ -202,11 +202,10 @@ test('reset un-pins a promotable maybeBoolean back to its inherit default', () =
     </ThemeProvider>,
   )
 
-  // pinning true diverges from the undefined (inherit) default
+  // setting true diverges from the undefined default
   fireEvent.click(getByLabelText('maybeBoolTest'))
   expect(readConfObject(target, 'maybeBoolTest')).toBe(true)
 
-  // reset returns it to the inherit sentinel (undefined)
   fireEvent.click(getByLabelText('reset to default'))
   expect(readConfObject(target, 'maybeBoolTest')).toBeUndefined()
 })

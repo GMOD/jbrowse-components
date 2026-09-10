@@ -1,4 +1,4 @@
-import { getConf, resolveConf, setConf } from '@jbrowse/core/configuration'
+import { getConf, setConf } from '@jbrowse/core/configuration'
 import { getEnv, openFeatureWidget } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
@@ -18,10 +18,7 @@ import { wiggleFeatureWidgetData } from './wiggleHitTest.ts'
 import type { WiggleHoveredFeature } from '../util.ts'
 import type { summaryScoreModeConfigSchemaFields } from './summaryScoreModeConfigSchemaFields.ts'
 import type { wiggleConfigSchemaFields } from './wiggleConfigSchemaFields.ts'
-import type {
-  ConfigModelForFields,
-  ResolvableDisplay,
-} from '@jbrowse/core/configuration'
+import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 import type { RegionStoreSelf } from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
@@ -53,7 +50,7 @@ type WiggleCommonConfigModel = ConfigModelForFields<
 >
 
 /** The whole of what `WiggleCommonMixin` needs a composing display to be. */
-export type WiggleCommonHost = ResolvableDisplay<WiggleCommonConfigModel>
+export type WiggleCommonHost = { configuration: WiggleCommonConfigModel }
 
 const confNode = (self: object) => self as WiggleCommonHost
 
@@ -174,7 +171,7 @@ export function WiggleCommonMixin() {
        * #getter
        */
       get lineWidth(): number {
-        return resolveConf(confNode(self), 'lineWidth')
+        return getConf(confNode(self), 'lineWidth')
       },
       /**
        * #getter

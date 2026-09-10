@@ -8,10 +8,9 @@ import {
 
 import corePlugins from '../corePlugins.ts'
 
-// **Why this lives in jbrowse-web.** Same reason as `PromotablePinCoverage.test.ts`
-// next door: this is the only place the whole plugin set is assembled, and the
-// question is about every registered schema at once. Core has no plugins and a
-// plugin sees only its own types.
+// **Why this lives in jbrowse-web.** This is the only place the whole plugin set
+// is assembled, and the question is about every registered schema at once. Core
+// has no plugins and a plugin sees only its own types.
 //
 // **What it is for.** A slot's default is the value every config that doesn't
 // mention the slot gets, and changing one by accident is silent — nothing
@@ -72,24 +71,14 @@ test('every registered schema slot default', () => {
         if (!isSlotDefinitionEntry(entry)) {
           continue
         }
-        // `promotedBase` stands in for the default on a promotable slot: it is
-        // the bottom of that slot's cascade, so it is the real default and moves
-        // for the same silent reasons. Such a slot has no `defaultValue` by
-        // construction.
-        //
         // `undefined` is spelled out rather than leaning on
         // JSON.stringify(undefined), whose declared return type is a plain
         // string even though it really answers undefined — and an unset
         // `maybe*` slot is the common case here.
-        const value =
-          entry.promotedBase === undefined
-            ? `= ${entry.defaultValue === undefined ? 'undefined' : JSON.stringify(entry.defaultValue)}`
-            : `promotedBase ${JSON.stringify(entry.promotedBase)}`
+        const value = `= ${entry.defaultValue === undefined ? 'undefined' : JSON.stringify(entry.defaultValue)}`
         // An enum's vocabulary is the other schema fact that breaks saved
         // sessions silently: drop a member and a session holding it fails MST
         // validation, so the track stops hydrating rather than falling back.
-        // Appended rather than branched, so a *promotable* enum (`heightMode`,
-        // `displayMode`) records its base and its vocabulary both.
         const choices = slotChoices(entry)
         slots[name] = choices
           ? `${entry.type} ${value} of ${JSON.stringify(choices)}`

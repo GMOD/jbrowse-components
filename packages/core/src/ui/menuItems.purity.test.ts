@@ -6,8 +6,8 @@ import path from 'node:path'
 // without reaching the `@jbrowse/core/ui` barrel, which re-exports ~80 Material
 // UI components. The whole value of the split is that the entry stays free of
 // React, MUI and emotion, and that is not a property anyone can see by reading
-// the file: it went wrong through `promotableMenuItems`, one hop away, which
-// rendered a pin element into the descriptor it returned.
+// the file: it went wrong through a row builder one hop away, which rendered an
+// element into the descriptor it returned.
 //
 // So walk the graph. Value imports only — `import type` is erased and a type
 // from a React module costs nothing — resolved relative-path by relative-path,
@@ -52,7 +52,7 @@ test('the menu-item entry reaches no React, MUI or emotion', () => {
   const bare = reach(path.join(__dirname, 'menuItems.ts'))
   const offenders = [...bare].filter(([spec]) => forbidden.test(spec))
   // the trail is the whole diagnostic — "menuItems.ts pulls MUI" is unactionable,
-  // "via ./promotableMenuItems.ts -> ./PinAdornment.tsx" is a fix
+  // "via ./legendMenuItem.ts -> ./SomeComponent.tsx" is a fix
   expect(
     offenders.map(([spec, trail]) => `${spec} via ${trail.join(' -> ')}`),
   ).toEqual([])

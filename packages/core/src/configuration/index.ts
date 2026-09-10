@@ -45,7 +45,7 @@ export {
   readConfSlot,
   readConfigValue,
 } from './readConfObject.ts'
-export { getConf, resolveConf, setConf } from './getConf.ts'
+export { getConf, setConf } from './getConf.ts'
 export { fillLocations } from './fillLocations.ts'
 export { expandTabixShorthand, tabixIndexSnapshot } from './tabixShorthand.ts'
 export { tabixIndexFields } from './tabixIndexFields.ts'
@@ -59,14 +59,4 @@ export {
   slotChoices,
 } from './slotFacade.ts'
 export type { SlotFacade } from './slotFacade.ts'
-export type { ResolvableDisplay } from './promotableResolve.ts'
-export {
-  clearPromotedDefaults,
-  getDisplayTypeDefaultChanges,
-  getConfigSnapshotWithPromotables,
-  getTrackConfigWithPromotables,
-} from './promotableDefaults.ts'
-export type {
-  ResolvedConfigSnapshot,
-  TrackConfigWithPromotables,
-} from './promotableDefaults.ts'
+export { fullConfSnapshot } from './fullConfSnapshot.ts'

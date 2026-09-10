@@ -159,8 +159,7 @@ function composeInOrder(...mixins: any[]) {
       }),
     )
     .views(() => ({
-      // Pinned rather than resolved: `heightMode` is a promotable slot with no
-      // session here to cascade through, and the mixin's default
+      // Pinned rather than read off the slot: the mixin's default
       // `growTargetHeight` is the `height` slot itself, which would make grow
       // indistinguishable from fixed — the very collapse under test.
       get heightMode() {
@@ -217,9 +216,8 @@ test('the wrong order silently leaves grow mode inert', () => {
 })
 
 // One line per mixin, and the whole point of it: a host cast widened back to
-// `AnyConfigurationModel` — or written as the `ResolvableDisplay & { … }`
-// intersection, which re-widens — compiles and checks nothing, so every slot
-// name below it typechecks and a misspelled read reports nothing at any layer.
+// `AnyConfigurationModel` compiles and checks nothing, so every slot name below
+// it typechecks and a misspelled read reports nothing at any layer.
 // `HostChecksSlotNames` resolves to `false` there, and this annotation fails.
 const trackHeightPin: HostChecksSlotNames<TrackHeightHost> = true
 const heightModePin: HostChecksSlotNames<HeightModeHost> = true

@@ -91,9 +91,8 @@ export interface LinearSyntenyViewCommands extends SyntenyViewSharedCommands {
   // scale on both. Applied last, after any autoDiagonalize pass.
   sameScale?: boolean
   // Draw the ribbons as bezier curves rather than straight chords. Writes the
-  // promotable `drawCurves` config slot on every synteny track the launch
-  // opens; omit it to follow the viewer's session-wide default (straight when
-  // nothing is pinned).
+  // `drawCurves` config slot on every synteny track the launch opens; omit it
+  // to leave each track at its configured value.
   drawCurves?: boolean
   // Continue the query row's scalebar grid down through the ribbons: a tick at
   // each round query coordinate, joined to the coordinate the alignment pairs

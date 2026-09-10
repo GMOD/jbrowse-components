@@ -71,7 +71,7 @@ test('a property a composed mixin contributes lands too', async () => {
 test('an omitted property keeps its default', async () => {
   const view = await open({ views: ROWS })
   expect(view.cigarMode).toBe('full')
-  // nothing customized, nothing promoted; straight is the promotedBase
+  // nothing set it, and straight is the slot's default
   expect(view.effectiveDrawCurves).toBe(false)
 })
 

@@ -5,7 +5,6 @@ import { heightModeConfigSchemaFields } from '@jbrowse/display-kit/heightModeCon
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { ARC_COLOR_TYPES } from '../shared/arcColorOptions.ts'
-import { isRegisteredColorScheme } from '../shared/colorSchemes.ts'
 import { defaultFilterFlags } from '../shared/util.ts'
 import {
   LINKED_READS_MODES,
@@ -84,22 +83,15 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       // this (`featureSpacingForHeight`), not stored — the presets (7/3/1) and
       // the fit-mode squeeze all key off this one value.
       featureHeight: {
-        type: 'maybeNumber',
-        description:
-          'Height of each feature (read) in pixels. Unset (the default) follows the session-wide default for this display type, falling back to 7; an explicit number customizes the track (including customizing 7 back over a compact session default)',
-        // Sentinel promotable slot (like heightMode): `undefined` is the inherit
-        // state, `promotedBase` (7) is what it resolves to when nothing is
-        // promoted. A plain `number` slot would spend its default value (7 =
-        // Normal) as the inherit signal, so a track could not pin Normal back
-        // over a session-wide Compact default — clicking Normal would strip to
-        // default and re-inherit Compact. See promotableDefaults.ts.
-        promotedBase: 7,
+        type: 'number',
+        description: 'Height of each feature (read) in pixels. Defaults to 7',
+        defaultValue: 7,
       },
       // `growMaxHeight` rides along, so both of `HeightModeMixin`'s slots are
       // declared here at once. It is NOT the `maxHeight` layout cap below.
       ...heightModeConfigSchemaFields({
         heightMode:
-          'Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). Unset (the default) follows the session-wide default for this display type, falling back to `fixed`; `fixed` keeps `featureHeight` and scrolls; `grow` expands the track to show every read at the configured height; `fit` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by `featureHeight`',
+          'Track-sizing strategy — how the track responds when there are more reads than fit (shared vocabulary with the canvas feature display, exposed in the "Track sizing" menu). `fixed` (the default) keeps `featureHeight` and scrolls; `grow` expands the track to show every read at the configured height; `fit` squeezes reads so every uncollapsed group fills the display without scrolling. Orthogonal to the per-read size set by `featureHeight`',
         growMaxHeight:
           'Ceiling in pixels for the "autogrow track height" sizing mode; a pileup deeper than this grows to the ceiling and scrolls the rest. Does not apply to the fixed or fit modes, and does not limit how much is laid out (see maxHeight)',
       }),
@@ -117,26 +109,18 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       showSashimiLabels: {
-        type: 'maybeBoolean',
+        type: 'boolean',
         description: 'Draw the supporting-read count on each sashimi arc',
-        // `undefined` is the inherit sentinel and `promotedBase` the value it
-        // resolves to, so a track can pin labels OFF over a promoted ON — a
-        // plain boolean would spend its `false` default on the inherit signal
-        // and silently re-inherit ON. Read through the resolved
-        // `showSashimiLabels` getter (resolveConf), never raw.
-        promotedBase: false,
+        defaultValue: false,
       },
       /**
        * #slot
        */
       hideNonCanonicalJunctions: {
-        type: 'maybeBoolean',
+        type: 'boolean',
         description:
           'Hide sashimi arcs whose splice-site motif is none of GT-AG, GC-AG or AT-AC. Read off the reference under each junction, so it needs a sequence adapter; a junction whose motif could not be read stays',
-        // Promotable like the sibling sashimi settings: `undefined` inherits,
-        // `promotedBase` is what it resolves to. Read through the resolved
-        // `hideNonCanonicalJunctions` getter (resolveConf), never raw.
-        promotedBase: false,
+        defaultValue: false,
       },
       /**
        * #slot
@@ -164,24 +148,8 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       colorBy: {
-        type: 'maybeFrozen',
-        // Promotable sentinel slot (see promotableDefaults.ts / displayMode):
-        // unset is the inherit state, `promotedBase` (`{ type: 'normal' }`) is
-        // what it resolves to when nothing is promoted — so every real scheme,
-        // `normal` included, is customizable over an opposite session-wide
-        // default (picking "Normal" customizes to normal, exactly as picking
-        // "Fixed" customizes the heightMode base). Nothing has to invent a
-        // non-scheme `.type` for the inherit state, so `validate` only ever sees
-        // a real candidate and every read goes through the resolved `colorBy`
-        // getter (resolveConf). Legacy stored schemes stay valid values (customized),
-        // so no snapshot migration is needed.
-        promotedBase: { type: 'normal' },
-        // Reject a `.type` that isn't (or no longer is) a registered scheme —
-        // whether customized on this track or promoted session-wide — so a
-        // stale/renamed scheme name in a saved session degrades to "not usable"
-        // (falls back to the base) instead of reaching the total COLOR_SCHEMES
-        // lookups and crashing color-by resolution.
-        validate: isRegisteredColorScheme,
+        type: 'frozen',
+        defaultValue: { type: 'normal' },
         description: 'Color scheme for reads',
         advanced: true,
       },
@@ -296,15 +264,10 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       mismatchAlpha: {
-        type: 'maybeBoolean',
+        type: 'boolean',
         description:
-          'Fade mismatch bases by their per-base Phred quality. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false customizes the track (either direction, including customizing off over an on session default)',
-        // Promotable via the `maybeBoolean` sentinel: `undefined` (unset) is the
-        // inherit state, `promotedBase` (false) is what it resolves to when
-        // nothing is promoted. A legacy stored boolean is already a valid
-        // customized value, so no snapshot migration is needed. Read through the resolved
-        // `mismatchAlpha` getter (resolveConf), never raw.
-        promotedBase: false,
+          'Fade mismatch bases by their per-base Phred quality. Defaults to off',
+        defaultValue: false,
       },
       /**
        * #slot
@@ -320,15 +283,9 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       showLegend: {
-        type: 'maybeBoolean',
-        description:
-          'Show the color-scheme legend overlay. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false customizes the track (either direction, including customizing off over an on session default)',
-        // Promotable via the `maybeBoolean` sentinel: `undefined` (unset) is the
-        // inherit state, `promotedBase` (false) is what it resolves to when
-        // nothing is promoted. A legacy stored boolean is already a valid
-        // customized value, so no snapshot migration is needed. Read through the
-        // resolved `showLegend` getter (resolveConf), never raw.
-        promotedBase: false,
+        type: 'boolean',
+        description: 'Show the color-scheme legend overlay. Defaults to off',
+        defaultValue: false,
       },
       /**
        * #slot
@@ -378,14 +335,9 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       linkedReads: {
-        type: 'maybeStringEnum',
+        type: 'stringEnum',
         model: types.enumeration('LinkedReadsMode', [...LINKED_READS_MODES]),
-        // Promotable sentinel slot (like heightMode): unset is the inherit
-        // state, resolving to the session-wide default for this display type,
-        // falling back to `promotedBase` ('off'). Being a sentinel lets a track
-        // customize `off` back over a session-wide `normal` (view-as-pairs) default.
-        // See promotableDefaults.ts.
-        promotedBase: 'off',
+        defaultValue: 'off',
         // Chains by QNAME — mates plus supplementary (split) segments onto one
         // row. NOT a linked-read barcode (BX/MI) grouping, which this has never
         // done and which the old wording ('barcode-chain') sent readers looking
@@ -534,14 +486,11 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       readConnections: {
-        type: 'maybeStringEnum',
+        type: 'stringEnum',
         model: types.enumeration('ReadConnectionsMode', [
           ...READ_CONNECTIONS_MODES,
         ]),
-        // Promotable sentinel slot: unset follows the session-wide default
-        // (else `promotedBase` 'off'), and a track can pin `off` back over a
-        // session-wide `arc` default. See promotableDefaults.ts.
-        promotedBase: 'off',
+        defaultValue: 'off',
         description:
           'Read-connection rendering mode (mate pairs + split reads)',
       },
@@ -549,41 +498,26 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       readConnectionsDown: {
-        type: 'maybeBoolean',
+        type: 'boolean',
         description:
-          'Draw read connections below the coverage band. Unset (the default) follows the session-wide default for this display type, falling back to on; an explicit true/false customizes the track (either direction, including drawing above the coverage band over an on session default)',
-        // Promotable via the `maybeBoolean` sentinel (like showSoftClipping):
-        // `undefined` (unset) is the inherit state, `promotedBase` (true) is what
-        // it resolves to when nothing is promoted. The plain-boolean form could
-        // never promote `false` (draw above coverage) because `defaultValue`
-        // doubled as the inherit signal. Read through the resolved
-        // `readConnectionsDown` getter (resolveConf), never raw.
-        promotedBase: true,
+          'Draw read connections below the coverage band. Defaults to on',
+        defaultValue: true,
       },
       /**
        * #slot
        */
       showSashimiArcs: {
-        type: 'maybeBoolean',
-        // Promotable sentinel like the two sashimi settings it gates: `undefined`
-        // is the inherit signal and `promotedBase` the value it resolves to, so a
-        // track can pin arcs OFF over a session-wide ON. It was the one control
-        // in its own submenu with no pin — "show sashimi arcs by default for
-        // every track" was the single thing the menu couldn't express. Read
-        // through the resolved `showSashimiArcs` getter (resolveConf), never raw.
-        promotedBase: true,
+        type: 'boolean',
+        defaultValue: true,
         description: 'Draw sashimi (splice-junction) arcs',
       },
       /**
        * #slot
        */
       sashimiArcsMode: {
-        type: 'maybeStringEnum',
+        type: 'stringEnum',
         model: types.enumeration('SashimiArcsMode', [...SASHIMI_ARCS_MODES]),
-        // Promotable sentinel slot (like linkedReads/readConnections): unset
-        // follows the session-wide default (else `promotedBase` 'up'), and a
-        // track can pin 'up' back over a session-wide 'down'/'auto' default.
-        promotedBase: 'up',
+        defaultValue: 'up',
         description: 'Sashimi junction-arc placement',
       },
       /**
@@ -627,15 +561,9 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       showSoftClipping: {
-        type: 'maybeBoolean',
-        description:
-          'Draw soft-clipped read portions. Unset (the default) follows the session-wide default for this display type, falling back to off; an explicit true/false customizes the track (either direction, including customizing off over an on session default)',
-        // Promotable via the `maybeBoolean` sentinel: `undefined` (unset) is the
-        // inherit state, `promotedBase` (false) is what it resolves to when
-        // nothing is promoted. A legacy stored boolean is already a valid
-        // customized value, so no snapshot migration is needed. Read through the resolved
-        // `showSoftClipping` getter (resolveConf), never raw.
-        promotedBase: false,
+        type: 'boolean',
+        description: 'Draw soft-clipped read portions. Defaults to off',
+        defaultValue: false,
       },
     },
     {

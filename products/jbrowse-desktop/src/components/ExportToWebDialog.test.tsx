@@ -6,9 +6,9 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type * as ProductCore from '@jbrowse/product-core'
 import type { WebExportInput } from '@jbrowse/product-core'
 
-// The dialog's only read of the live session is the promotable-default bake,
-// which needs a whole app to produce anything; pass the plan's session through
-// so the rest of the pipeline (planning, encoding, url assembly) stays real.
+// The dialog's only read of the live session is the cascade bake, which needs a
+// whole app to produce anything; pass the plan's session through so the rest of
+// the pipeline (planning, encoding, url assembly) stays real.
 jest.mock('@jbrowse/product-core', () => {
   const actual = jest.requireActual<typeof ProductCore>('@jbrowse/product-core')
   return {

@@ -279,9 +279,8 @@ test("a drag past a fully-shown lane's content pads its band", () => {
 // layout still caps at its own override shows fewer rows than the pitch was
 // solved for and leaves that much of the display blank. `setHeightMode` drops
 // the overrides on the explicit switch, but the resolved mode also moves without
-// it — the promotable cascade writes the slot, a track reset clears the delta —
-// and there `canSizeGroupHeights` has already taken away both surfaces that
-// could clear one.
+// it — a track reset clears the delta — and there `canSizeGroupHeights` has
+// already taken away both surfaces that could clear one.
 test('fit ignores a banked height override rather than clipping under it', () => {
   const display = seed([
     { key: '1', label: 'HP: 1', n: 400 },

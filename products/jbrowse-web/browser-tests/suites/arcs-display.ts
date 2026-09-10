@@ -179,10 +179,9 @@ const suite: TestSuite = {
     }),
     lgvSnapshotTest({
       // THE DEFAULT, and it sets nothing so that it stays the default:
-      // `readConnectionsDown`'s `promotedBase` is true (configSchema.ts), so
-      // arcs point DOWN — below the coverage band — unless a track says
-      // otherwise. This case is what a user gets, and the one below is the
-      // opt-out.
+      // `readConnectionsDown` defaults to true (configSchema.ts), so arcs point
+      // DOWN — below the coverage band — unless a track says otherwise. This
+      // case is what a user gets, and the one below is the opt-out.
       name: 'cloud mode (paired-end SV)',
       snapshot: 'arcs-cloud',
       loc: 'ctgA:1-50000',

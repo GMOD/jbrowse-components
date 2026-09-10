@@ -2,7 +2,7 @@
  * Reports every read that RESOLVES a callback-capable config slot without
  * supplying a context for the callback, and fails when the count grows.
  *
- * `readConfObject` / `getConf` / `resolveConf` take `args` as an OPTIONAL third
+ * `readConfObject` / `getConf` take `args` as an OPTIONAL third
  * parameter, so "what is this setting" and "what is this setting FOR this
  * feature" are the same call with and without it. On a slot holding a `jexl:`
  * expression the arg-less form still evaluates, against a context where every
@@ -62,7 +62,7 @@ import ts from 'typescript'
 const REPO_ROOT = path.join(import.meta.dirname, '..')
 const BASELINE = path.join(import.meta.dirname, 'deferredSlotReads.txt')
 
-const READERS = new Set(['getConf', 'resolveConf', 'readConfObject'])
+const READERS = new Set(['getConf', 'readConfObject'])
 
 interface Read {
   file: string

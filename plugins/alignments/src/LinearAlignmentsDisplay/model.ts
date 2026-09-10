@@ -245,7 +245,7 @@ const NO_GROUP_HEIGHT_OVERRIDES: ReadonlyMap<string, number> = new Map()
 // downstream on every frame of every gesture, for a list the overlay is about to
 // `return null` on. So each per-frame overlay geometry hands back ONE empty
 // array, and both of these emptinesses are the common case — `showSashimiArcs`
-// is promoted on while DNA reads carry no skip gap, and a single-region view
+// defaults on while DNA reads carry no skip gap, and a single-region view
 // (nearly every view) has no arc whose two feet are in different regions.
 // Frozen, like `NO_PADDING_SPANS` next door: a singleton handed out of a public
 // getter is one in-place `.sort()` away from being corrupted for the session,
@@ -665,9 +665,8 @@ export default function stateModelFactory(
         /**
          * #getter
          */
-        // featureHeight is the one promotable "compactness" slot: it resolves
-        // through resolveConf (track value, else session-wide default, else
-        // schema base 7). featureSpacing is derived from it, never stored. In
+        // featureHeight is the one "compactness" slot; featureSpacing is
+        // derived from it, never stored. In
         // fit-to-height mode featureHeight instead splits the autorun-cached fit
         // pitch (`fittedHeightPx` = pileupSpace/rows) into a read body plus the
         // derived spacing, so every read-height consumer sees the fitted values
@@ -899,8 +898,8 @@ export default function stateModelFactory(
          * promises not to do.
          *
          * `setHeightMode` drops the overrides on the explicit switch, but the
-         * resolved mode also moves without it (the promotable cascade, a track
-         * reset), and there `canSizeGroupHeights` had already taken away both
+         * resolved mode also moves without it (a track reset), and there
+         * `canSizeGroupHeights` had already taken away both
          * surfaces that could clear one — leaving the lane clipped by a cap
          * the lane reports as `clippedBy: 'override'`, which fires no affordance.
          * Inert rather than dropped, so returning to fixed restores what the
@@ -2625,8 +2624,8 @@ export default function stateModelFactory(
            *
            * Empty — the SAME empty, so the overlay's observer stops rather than
            * re-rendering a list of nulls — when no lane has a junction to draw.
-           * That is the DNA case, which is most tracks: `showSashimiArcs` is
-           * promoted on, so every alignments track evaluates this, and one that
+           * That is the DNA case, which is most tracks: `showSashimiArcs`
+           * defaults on, so every alignments track evaluates this, and one that
            * merges nothing has nothing to project.
            */
           get sashimiArcSections(): readonly SashimiArcSection[] {
@@ -3827,11 +3826,9 @@ export default function stateModelFactory(
             const currentType = self.colorBy.type
             if (mode === 'off') {
               // Leaving pairs: pairing-only schemes no longer have meaning, so
-              // reset colorBy back to inherit — falling back to the
-              // session-wide color default, else the `normal` promotedBase.
-              // This cleanly undoes the enter-pairs customization rather than
-              // customizing `normal` over a default. Explicit non-pairing choices (tag,
-              // methylation, base quality, ...) are preserved by the gate.
+              // reset colorBy back to the slot's default. Explicit non-pairing
+              // choices (tag, methylation, base quality, ...) are preserved by
+              // the gate.
               if (PAIRING_COLOR_SCHEMES.has(currentType)) {
                 setConf(self, 'colorBy', undefined)
               }

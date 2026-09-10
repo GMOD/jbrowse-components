@@ -1,4 +1,4 @@
-import { getConf, resolveConf, setConf } from '@jbrowse/core/configuration'
+import { getConf, setConf } from '@jbrowse/core/configuration'
 import { getContainingView } from '@jbrowse/core/util/mstUtils'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
@@ -6,24 +6,19 @@ import { reaction } from 'mobx'
 import type { HeightMode } from './heightMode.ts'
 import type { HeightModeConfigModel } from './heightModeConfigSchemaFields.ts'
 import type { RegionHost } from './regionHost.ts'
-import type { ResolvableDisplay } from '@jbrowse/core/configuration'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { IReactionDisposer } from 'mobx'
 
 /**
- * The whole of what `HeightModeMixin` needs a composing display to be. It keeps
- * `ResolvableDisplay` because the promotable `heightMode` read goes through the
- * cascade, which keys its session-wide tier on `type`; what changed is the
- * `configuration`, narrowed from `AnyConfigurationModel` to this mixin's own
- * field table so the four slot names below are checked again.
+ * The whole of what `HeightModeMixin` needs a composing display to be. The
+ * `configuration` names this mixin's own field table rather than
+ * `AnyConfigurationModel` so the four slot names below are checked.
  */
-export type HeightModeHost = ResolvableDisplay<HeightModeConfigModel>
+export type HeightModeHost = { configuration: HeightModeConfigModel }
 
 // The mixin's own `self` is the empty model it declares, so it can't see the
 // props the concrete display supplies; every display composing this is a
-// BaseDisplay, so they are really there. The mixin took a
-// `TConf extends ResolvableDisplay` type parameter for this, but no caller ever
-// passed one — it only ever resolved to its own default.
+// BaseDisplay, so they are really there.
 const confNode = (self: object) => self as HeightModeHost
 
 // The `TrackHeightMixin` members this one drives. Composed before it by every
@@ -41,16 +36,15 @@ const heightHost = (self: object) =>
  * #category display
  * #crossCuttingMixin Track-height strategy; the one row that must compose **after** `TrackHeightMixin()`, whose `height` and `resizeHeight` it overrides. `growTargetHeight` (default = the raw slot). Brings `heightMode`/`autoHeight`/`fitHeightToDisplay`, `grownHeight`, the reactive `height` override, `setHeightMode`, and the grow-aware `resizeHeight`, and the grow-exit bake reaction that writes the grown height into the slot when the mode leaves grow
  *
- * The whole track-height strategy every display with a promotable `heightMode`
- * config slot shares (the canvas feature display, the alignments display), so the
+ * The whole track-height strategy every display with a `heightMode` config slot
+ * shares (the canvas feature display, the alignments display), so the
  * fixed/grow/fit vocabulary is identical by construction rather than by two call
  * sites that happen to agree. What differs between the two — canvas fits a
  * feature stack, alignments a grouped pileup — is exactly one getter,
  * `growTargetHeight`.
  *
- * `heightMode` is the single source of truth (resolved through the promotable
- * session-default cascade); `autoHeight`/`fitHeightToDisplay` are plain-flag
- * conveniences derived from it. `fitTargetHeight` is the raw drag-resizable
+ * `heightMode` is the single source of truth; `autoHeight`/`fitHeightToDisplay`
+ * are plain-flag conveniences derived from it. `fitTargetHeight` is the raw drag-resizable
  * `height` slot, read by the fit/grow layout machinery INSTEAD of the reactive
  * `height` getter: in grow mode `height` returns the content-derived grown height,
  * so routing the layout through it would make that height depend on itself (a MobX
@@ -74,12 +68,10 @@ export default function HeightModeMixin() {
     .views(self => ({
       /**
        * #getter
-       * The resolved track-height strategy (`fixed`/`grow`/`fit`). Promotable
-       * sentinel slot: resolveConf walks the customized-track -> session-default
-       * -> `fixed` cascade and never returns the `inherit` sentinel.
+       * The track-height strategy (`fixed`/`grow`/`fit`).
        */
       get heightMode(): HeightMode {
-        return resolveConf(confNode(self), 'heightMode')
+        return getConf(confNode(self), 'heightMode')
       },
       /**
        * #getter
@@ -231,11 +223,10 @@ export default function HeightModeMixin() {
  * Leaving grow mode: bake the height the user was seeing into the `height` slot
  * so fixed/fit start from it rather than snapping to the stale slot value (grow
  * computes `height` reactively and never writes the slot). A reaction as well as
- * the call inside `setHeightMode` because the resolved `heightMode` also flips
- * without any imperative action — resetting a track customized to grow, or changing the
- * session-wide default out from under grow-following tracks that inherit it (the
- * promotable cascade) — and every such exit must bake. Installed from the
- * mixin's own `afterAttach`, which the fork chains under the display's.
+ * the call inside `setHeightMode` because `heightMode` also flips without any
+ * imperative action — resetting a track customized to grow, say — and every such
+ * exit must bake. Installed from the mixin's own `afterAttach`, which the fork
+ * chains under the display's.
  *
  * The captured height is `prev.grown`, computed in the tracked expression while
  * still in grow mode: by the time the effect runs the mode has flipped and

@@ -130,11 +130,10 @@ describe('alignments grow-mode reactive height', () => {
     expect(display.height).toBe(grown)
   })
 
-  // The promotable cascade can flip a grow track out of grow mode WITHOUT
-  // setHeightMode — resetting it to the inherit sentinel or a session-default
-  // change flipping a track that follows the default. The bake is a reaction on
-  // the resolved mode, so that exit bakes too, instead of snapping to the stale slot.
-  it('bakes on a cascade-driven grow exit (reset), not just the menu action', () => {
+  // A slot reset flips a grow track out of grow mode WITHOUT setHeightMode. The
+  // bake is a reaction on the resolved mode, so that exit bakes too, instead of
+  // snapping to the stale slot.
+  it('bakes on a reset-driven grow exit, not just the menu action', () => {
     const { display } = createEnvWithPileup(20)
 
     display.setHeightMode('grow')

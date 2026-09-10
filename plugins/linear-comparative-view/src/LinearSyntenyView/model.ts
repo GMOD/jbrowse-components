@@ -265,15 +265,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * What the "Curved lines" checkbox shows: the first synteny display's
-       * walk of the promotable slot's cascade (this track's configured value,
-       * the session-wide default the row's pin writes, then `promotedBase`).
+       * `drawCurves` slot.
        *
-       * THE FIRST DISPLAY, not a vote across them. The cascade's lower tier is
-       * per track config, so two levels differ only when one of their tracks was
-       * authored with a value of its own, and a checkbox has one bit to say it
-       * with. With NO display — an import form, or a level whose track has not
-       * arrived — there is no config to resolve against, and `false` matches
-       * both slots' `promotedBase`.
+       * THE FIRST DISPLAY, not a vote across them. The value is per track
+       * config, so two levels differ only when one of their tracks was authored
+       * with a value of its own, and a checkbox has one bit to say it with. With
+       * NO display — an import form, or a level whose track has not arrived —
+       * there is no config to read, and `false` matches both slots' defaults.
        */
       get effectiveDrawCurves(): boolean {
         return this.ribbonSettingsSample?.effectiveDrawCurves ?? false
@@ -287,7 +285,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * The level the two getters above read the cascade off.
+       * The level the two getters above read their slots off.
        */
       get ribbonSettingsSample() {
         return self.allSyntenyDisplays[0]
@@ -591,10 +589,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        * Write the `drawCurves` config slot on every synteny display this view
-       * is showing — the settings checkbox means every level. The write
-       * customizes each track, exactly as any promotable checkbox does, so the
-       * row's pin (or unsetting the slot) is what puts a track back on the
-       * session-wide default.
+       * is showing — the settings checkbox means every level.
        */
       setDrawCurves(arg: boolean) {
         for (const d of self.allSyntenyDisplays) {

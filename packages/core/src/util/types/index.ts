@@ -4,10 +4,7 @@ import { isSessionServices } from './services.ts'
 
 import type { ViewSnapshotInput } from '../../PluginManager.ts'
 import type TextSearchManager from '../../TextSearch/TextSearchManager.ts'
-import type {
-  AnyConfigurationModel,
-  ResolvableDisplay,
-} from '../../configuration/index.ts'
+import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { BaseInternetAccountModel } from '../../pluggableElementTypes/models/index.ts'
 import type { PluginDefinition } from '../../pluginDefinitions.ts'
 import type RpcManager from '../../rpc/RpcManager.ts'
@@ -175,22 +172,14 @@ export interface AbstractSessionModel
   revealHighlights: () => void
   // The runtime user-preference store, all of it declared by `BaseSessionModel`
   // and therefore present on every session in every product — required, not
-  // optional, so its readers (the promotable-default cascade, the scroll-zoom
-  // toggles, the preferences dialog) call it plainly. `AssertSessionModel` on
+  // optional, so its readers (the scroll-zoom toggles, the preferences dialog)
+  // call it plainly. `AssertSessionModel` on
   // each product's session model is what turns a member drifting out of this set
   // into a build error rather than a silently-skipped `?.` call.
   getPreference: (key: string) => unknown
   setPreferenceOverride: (key: string, value: unknown) => void
   clearPreferenceOverrides: () => void
   setScrollZoom: (flag: boolean) => void
-  // per-display-type slot default a user promoted (e.g. "make compact the
-  // default for all tracks like this"), persisted alongside preferences
-  getDisplayTypeDefault: (displayType: string, slot: string) => unknown
-  setDisplayTypeDefault: (
-    displayType: string,
-    slot: string,
-    value: unknown,
-  ) => void
   hovered: unknown
   setHovered: (arg: unknown) => void
   setFocusedViewId?: (id: string) => void
@@ -670,7 +659,7 @@ export interface SessionWithFocusedViewAndDrawerWidgets extends SessionWithDrawe
 export interface TrackContainer {
   tracks: {
     configuration: { trackId: string }
-    displays: ResolvableDisplay[]
+    displays: { type: string; configuration: AnyConfigurationModel }[]
   }[]
   assemblyNames?: string[]
   /**

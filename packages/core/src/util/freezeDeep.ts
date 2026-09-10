@@ -7,20 +7,18 @@ function isObjectLike(value: unknown): value is Record<string, unknown> {
 /**
  * Freeze `value` and everything reachable from it, in place, and return it.
  *
- * For a value handed to consumers **by reference on purpose**: a config slot's
- * `promotedBase` (the one literal every track sitting at base resolves to) and a
- * stored user preference (a promoted display-type default, read by every
- * following display). Sharing the reference is load-bearing in both cases —
- * `===` stability is what lets a display's cached MobX computed re-resolve
+ * For a value handed to consumers **by reference on purpose**: a stored user
+ * preference, read by everything that follows it. Sharing the reference is
+ * load-bearing — `===` stability is what lets a cached MobX computed re-derive
  * without waking anything downstream — so handing out a defensive copy per read
  * would trade a silent hazard for a real re-render on every read. Freezing keeps
  * the identity and makes "nothing mutates this" throw rather than quietly
- * rewriting a value every other track is reading.
+ * rewriting a value every other reader sees.
  *
- * Both callers freeze once, at schema build or at the store write, over a value
- * that has to survive `postMessage` anyway — so the recursion is over small JSON
- * and costs nothing per read. Cyclic input terminates: each object is frozen
- * before its children are visited.
+ * The caller freezes once, at the store write, over a value that has to survive
+ * `postMessage` anyway — so the recursion is over small JSON and costs nothing
+ * per read. Cyclic input terminates: each object is frozen before its children
+ * are visited.
  *
  * **Unconditional, deliberately unlike MST's own `deepFreeze`** (whose body this
  * otherwise mirrors), which is gated on `devMode()`. MST gates because it freezes

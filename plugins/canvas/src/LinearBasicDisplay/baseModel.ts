@@ -2,9 +2,8 @@ import { lazy } from 'react'
 
 import {
   ConfigurationReference,
+  fullConfSnapshot,
   getConf,
-  resolveConf,
-  getConfigSnapshotWithPromotables,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -386,7 +385,7 @@ export default function baseStateModelFactory(
          * #getter
          */
         get displayMode(): DisplayMode {
-          return resolveConf(self, 'displayMode')
+          return getConf(self, 'displayMode')
         },
 
         /**
@@ -396,7 +395,7 @@ export default function baseStateModelFactory(
         get effectiveSubfeatureLabels() {
           return this.displayMode === 'collapsed'
             ? 'none'
-            : resolveConf(self, 'subfeatureLabels')
+            : getConf(self, 'subfeatureLabels')
         },
 
         /**
@@ -410,7 +409,7 @@ export default function baseStateModelFactory(
          * #getter
          */
         get showLabelsMode() {
-          return resolveConf(self, 'showLabels')
+          return getConf(self, 'showLabels')
         },
 
         /**
@@ -525,7 +524,7 @@ export default function baseStateModelFactory(
           // zooming across the 20 kb floor a full clear and refetch, and a
           // raised budget already reaches the verdict through the tracked
           // `regionTooLarge`.
-          const snapshot = getConfigSnapshotWithPromotables(self)
+          const snapshot = fullConfSnapshot(self.configuration)
           const workerConfig = pickDisplayConfig(snapshot)
           return {
             // Reading `activeFilters()` here makes it a cache key, so
