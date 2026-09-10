@@ -1,6 +1,7 @@
 import './svgExportMocks.ts'
 
 import { saveAs } from '@jbrowse/core/util'
+import { getEnv } from '@jbrowse/mobx-state-tree'
 import { fireEvent, waitFor } from '@testing-library/react'
 
 import {
@@ -13,15 +14,22 @@ import {
   volvoxConfigWithTracks,
 } from './util.tsx'
 
+import type PluginManager from '@jbrowse/core/PluginManager'
+
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 
 setup()
 
-// The BED12 track, re-declared with a mark display in its config: the
-// FeatureTrack and the BedTabixAdapter are the volvox config's own, and only
-// the `displays` entry is this suite's.
-function markTrackConfig(trackId: string, marks: unknown[]) {
-  const base = volvoxConfigWithTracks(['bedtabix_genes'])
+// One of the volvox config's own tracks, re-declared with a mark display: the
+// track type and its adapter are the config's, and only the `displays` entry
+// is this suite's. `over` is which track — the BED12 FeatureTrack by default,
+// the BAM and the VCF for the pileup and the variant strip.
+function markTrackConfig(
+  trackId: string,
+  marks: unknown[],
+  over = 'bedtabix_genes',
+) {
+  const base = volvoxConfigWithTracks([over])
   return {
     ...base,
     tracks: base.tracks.map(t => ({
@@ -33,6 +41,29 @@ function markTrackConfig(trackId: string, marks: unknown[]) {
       ],
     })),
   }
+}
+
+interface MarkDisplayProbe {
+  rowCount: number
+  domain?: [number, number]
+  independentValueScale?: { domain: [number, number]; field: string }
+  axes: { side?: string }[]
+  rpcDataMap: ReadonlyMap<
+    number,
+    {
+      layers: {
+        count: number
+        x: Uint32Array
+        x2: Uint32Array
+        row?: Uint32Array
+        y?: Float32Array
+      }[]
+    }
+  >
+}
+
+function probe(view: { tracks: { displays: unknown[] }[] }) {
+  return view.tracks[0]!.displays[0] as MarkDisplayProbe
 }
 
 beforeEach(() => {
@@ -277,3 +308,114 @@ test('a binned count and the raw features share one fetch, and each draws in its
     count: Math.max(...density),
   })
 }, 30000)
+
+test('the mark display is offered on every track type whose adapters it reads', async () => {
+  const { session } = await createView(volvoxConfigWithTracks(['volvox_bam']))
+  const { pluginManager } = getEnv<{ pluginManager: PluginManager }>(session)
+  for (const trackType of ['FeatureTrack', 'AlignmentsTrack', 'VariantTrack']) {
+    expect(
+      pluginManager.getTrackType(trackType).displayTypes.map(d => d.name),
+    ).toContain('LinearMarkDisplay')
+  }
+}, 30000)
+
+test('a stack over the volvox BAM is a declared pileup, its rows packed in the worker', async () => {
+  const { view, findByTestId } = await createView(
+    markTrackConfig(
+      'mark_pileup',
+      [
+        {
+          shape: 'span',
+          transform: [{ type: 'stack' }],
+          encoding: { row: 'row', color: 'red' },
+        },
+      ],
+      'volvox_bam',
+    ),
+  )
+  view.setNewView(5, 0)
+  fireEvent.click(await findByTestId(hts('mark_pileup'), {}, { timeout }))
+
+  const el = await findDisplayPainted('mark-display', { timeout })
+  expect(el.dataset.displayDrawn).toBe('true')
+  const display = probe(view)
+  await waitFor(() => {
+    expect(display.rowCount).toBeGreaterThan(1)
+  })
+  // the packing is the claim: no two reads the worker put on one row overlap
+  for (const { layers } of display.rpcDataMap.values()) {
+    const { x, x2, row, count } = layers[0]!
+    expect(count).toBeGreaterThan(0)
+    const lastEnd = new Map<number, number>()
+    const order = [...x.keys()].sort((a, b) => x[a]! - x[b]!)
+    for (const i of order) {
+      const r = row![i]!
+      expect(x[i]!).toBeGreaterThanOrEqual(lastEnd.get(r) ?? 0)
+      lastEnd.set(r, x2[i]!)
+    }
+  }
+}, 40000)
+
+test('a coverage run and the raw reads keep two domains and two axes', async () => {
+  const { view, findByTestId } = await createView(
+    markTrackConfig(
+      'mark_two_axes',
+      [
+        { shape: 'bar', encoding: { y: 'score' } },
+        {
+          shape: 'bar',
+          transform: [{ type: 'coverage' }],
+          encoding: {
+            y: { field: 'coverage', resolve: 'independent' },
+            color: 'blue',
+          },
+        },
+      ],
+      'volvox_bam',
+    ),
+  )
+  view.setNewView(5, 0)
+  fireEvent.click(await findByTestId(hts('mark_two_axes'), {}, { timeout }))
+
+  const el = await findDisplayPainted('mark-display', { timeout })
+  expect(el.dataset.displayDrawn).toBe('true')
+  const display = probe(view)
+  await waitFor(() => {
+    expect(display.independentValueScale).toBeDefined()
+  })
+  const depths = [...display.rpcDataMap.values()].flatMap(d => [
+    ...(d.layers[1]!.y ?? []),
+  ])
+  // the coverage layer's own extremes, and not the MAPQ layer's
+  expect(display.independentValueScale!.domain[1]).toBeGreaterThanOrEqual(
+    Math.max(...depths),
+  )
+  expect(display.independentValueScale!.field).toBe('coverage')
+  expect(display.domain).not.toEqual(display.independentValueScale!.domain)
+  expect(display.axes.map(a => a.side)).toEqual([undefined, 'right'])
+}, 40000)
+
+test('spans over a VCF stack the variants the worker packed', async () => {
+  const { view, findByTestId } = await createView(
+    markTrackConfig(
+      'mark_variants',
+      [
+        {
+          shape: 'span',
+          transform: [{ type: 'stack', padding: 10000 }],
+          encoding: { row: 'row', color: 'green' },
+        },
+      ],
+      'volvox_filtered_vcf',
+    ),
+  )
+  view.setNewView(5, 0)
+  fireEvent.click(await findByTestId(hts('mark_variants'), {}, { timeout }))
+
+  const el = await findDisplayPainted('mark-display', { timeout })
+  expect(el.dataset.displayId).toBe('mark_variants-marks')
+  const display = probe(view)
+  await waitFor(() => {
+    expect(display.rowCount).toBeGreaterThan(1)
+  })
+}, 40000)
