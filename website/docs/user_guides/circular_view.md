@@ -35,7 +35,7 @@ ring: open it from the view's track selector, or name it in the view's `tracks`.
 Rings stack inward from the ideogram in the order the tracks were opened, each
 as tall as the display's height, and the chords and ribbons draw inside the
 innermost ring. Every setting the display has on a linear view — a wiggle's plot
-type and colour, a mark display's `marks` — applies on the ring, and hovering or
+type and color, a mark display's `marks` — applies on the ring, and hovering or
 clicking a ring is the same hover and click as on the linear track: the tooltip
 and the feature details are the display's own.
 
@@ -61,9 +61,36 @@ linear and a circular display takes the circular one unless the entry names the
 other, as `{ trackId, displaySnapshot: { type: 'LinearMarkDisplay' } }` does for
 a density ring over a variant track. An alignments track draws its coverage and
 pileup as a ring; for a coverage ring alone, open the track as a
-[mark display](/docs/config/linearmarkdisplay) with a `coverage` transform.
+[mark display](/docs/config/linearmarkdisplay) with a `coverage` transform. A
+mirrored arc's ring is mirrored with it, so a ring bin stays under the stretch
+of ideogram it belongs to.
 
-<Figure src="/img/circular_synteny/rings.png" caption="Two assemblies on one circle, human chromosomes clockwise from the top and mouse after them, with a gene density ring inside the ideogram and the liftOver blocks between the genomes as ribbons, red forward and blue reverse." />
+<Figure src="/img/circular_synteny/rings.png" caption="Two assemblies on one circle, human chromosomes clockwise from the top and mouse after them, with a gene density ring inside the ideogram and the liftOver blocks between the genomes as ribbons." />
+
+## Synteny ribbons
+
+A `SyntenyTrack` draws each alignment as a ribbon between the span it covers on
+one side and the span its mate covers on the other, so a block's extent is on
+the figure and an inversion reads as a twist. A track aligning two genomes needs
+both of them on the circle, which is what `assembly: ['hg38', 'mm39']` does —
+each assembly lays its chromosomes out in turn. The import form opens one
+assembly, so a two-genome circle is written as a session or a
+[URL spec](/docs/urlparams).
+
+Both arcs of a two-genome circle run the same way round, so a genome left in its
+own contig order puts every matching pair of chromosomes at opposite ends of a
+diameter and sends every ribbon through the middle. **Re-order chromosomes** in
+the view's menu — or `autoDiagonalize: true` on the view, which runs it on open
+— orders the second genome's chromosomes to follow the first's, by how many
+aligned bases each pair shares, and lays that genome out mirrored so the ribbons
+come out as a band of parallel arcs. It is the same pass the linear synteny view
+and the dotplot run, over the same alignment file, and it is offered on a
+two-genome circle carrying a synteny track and nowhere else.
+
+The ribbons are one flat translucent fill by default. `color` on the display is
+a `jexl:` expression over the feature, so a score, an identity or the strand can
+drive it instead — see
+[the display's config schema](/docs/config/chordsyntenydisplay).
 
 ## Interacting with chords
 
@@ -86,5 +113,6 @@ together.
 - [Cancer SVs (C-GIAB) tutorial](/docs/tutorials/sv_visualization_cgiab)
 - [](/docs/tutorials/circular_synteny)
 - [ChordVariantDisplay config schema](/docs/config/chordvariantdisplay)
+- [ChordSyntenyDisplay config schema](/docs/config/chordsyntenydisplay)
 - [LinearMarkDisplay config schema](/docs/config/linearmarkdisplay), for a
   density or coverage ring

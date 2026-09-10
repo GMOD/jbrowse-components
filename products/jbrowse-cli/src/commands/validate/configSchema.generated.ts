@@ -4293,7 +4293,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "color": {
           "description": "the fill color of each ribbon.",
           "$ref": "#/$defs/StringOrJexl",
-          "default": "jexl:get(feature,'strand')==-1?'rgba(0,0,255,0.25)':'rgba(255,0,0,0.25)'"
+          "default": "rgba(70,130,180,0.25)"
         },
         "colorSelected": {
           "description": "the fill color of a ribbon that has been selected.",
@@ -16216,6 +16216,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ]
         },
         "displayedRegionNames": {
+          "description": "Launch key, resolved by the CircularView launcher on open."
+        },
+        "autoDiagonalize": {
           "description": "Launch key, resolved by the CircularView launcher on open."
         }
       }

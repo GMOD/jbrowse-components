@@ -62,7 +62,7 @@ async function launch(autoDiagonalize: boolean) {
 
 // Reverse order and each region flipped, which together are the mirror: b3 ends
 // up beside genome A's first chromosome (the two arcs meet there once the circle
-// wraps) and b1 beside its last, so every ribbon runs between neighbouring arcs.
+// wraps) and b1 beside its last, so every ribbon runs between neighboring arcs.
 // `reversed` is what the ribbon geometry then reads to keep the pairs untwisted;
 // b1 carries the minus-strand row, so it is the one that comes out unflipped.
 test('the second genome follows the first, laid out mirrored', async () => {

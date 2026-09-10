@@ -5897,6 +5897,7 @@ export const configManifest: ConfigManifest = {
       ],
       "launchKeys": [
         "assembly",
+        "autoDiagonalize",
         "displayedRegionNames",
         "tracks"
       ]

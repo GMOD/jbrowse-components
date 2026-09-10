@@ -26,7 +26,7 @@ export type SliceRegion = SliceNonElidedRegion | SliceElidedRegion
  * A `reversed` region runs the other way around the circle: its first base is
  * at the slice's END angle. That is what lays the second genome of a two-genome
  * circle out as a mirror of the first, so the ribbons between them run parallel
- * instead of through the centre — see `mirrorRegionsForCircle`.
+ * instead of through the center — see `mirrorRegionsForCircle`.
  */
 export function bpToRadians(
   block: {

@@ -37,9 +37,10 @@ export async function chordPoint(page: Page, anchor: AnnotationAnchor) {
         'path[data-testid^="chord-"], path[data-testid^="ribbon-"]',
       ),
     ]
-    // every path whose title names the alignment: a synteny ribbon is drawn
-    // once from each genome's side, and the twin painted last is what a click
-    // reaches
+    // every path whose title names the alignment. A ribbon's title carries both
+    // of its loci, so naming either one finds it — which is what keeps a spec
+    // written against the human coordinate working now that `dedupeRibbons`
+    // keeps one of the two perspectives rather than drawing both.
     const matches = paths.filter(p =>
       (p.querySelector('title')?.textContent ?? '').includes(label),
     )

@@ -10,9 +10,9 @@ Auto-generated config schema for the current JBrowse release — see the [config
 
 The circular-view display for a `SyntenyTrack`: each alignment is a ribbon
 between the span it covers on one side and the span its mate covers on the
-other. The three color slots are its resting, hovered and selected fills,
-and each takes a `jexl:` expression over the `feature` — the default colors
-by strand, and anything on the record can drive it instead:
+other. The three color slots are its resting, hovered and selected fills, and
+each takes a `jexl:` expression over the `feature`, so anything on the record
+can drive the fill — here the alignment's score:
 
 ```js
 {
@@ -33,6 +33,16 @@ by strand, and anything on the record can drive it instead:
       color: "jexl:get(feature,'score')>1000?'rgba(0,0,0,0.4)':'rgba(0,0,0,0.1)'",
     },
   ],
+}
+```
+
+The default is one flat translucent fill, since a reverse alignment already
+twists between its two ends. To color by strand as the linear synteny
+displays do:
+
+```js
+{
+  color: "jexl:get(feature,'strand')==-1?'rgba(0,0,255,0.25)':'rgba(255,0,0,0.25)'",
 }
 ```
 
@@ -65,6 +75,6 @@ These slots go on a display entry: `"displays": [{ "type": "ChordSyntenyDisplay"
 <!-- prettier-ignore -->
 | Slot | Description |
 | --- | --- |
-| <span id="slot-color">**color**</span><br>[`color`](/docs/config_guides/slot_types#color) = <span class="cell-more"><button type="button" class="cell-more-trigger"><code>'jexl:get(feature,'strand')==-1?'rgba(0,0,255,0.25)':'rgba(255,…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>'jexl:get(feature,'strand')==-1?'rgba(0,0,255,0.25)':'rgba(255,0,0,0.25)''</code></pre></dialog></span> | the fill color of each ribbon<br>_callback args:_ `feature` |
+| <span id="slot-color">**color**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(70,130,180,0.25)'</code> | the fill color of each ribbon<br>_callback args:_ `feature` |
 | <span id="slot-colorselected">**colorSelected**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(0,0,0,0.6)'</code> | the fill color of a ribbon that has been selected<br>_callback args:_ `feature` |
 | <span id="slot-colorhover">**colorHover**</span><br>[`color`](/docs/config_guides/slot_types#color) = <code>'rgba(85,85,85,0.6)'</code> | the fill color of a ribbon that is being hovered over with the mouse<br>_callback args:_ `feature` |

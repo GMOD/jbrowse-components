@@ -27,6 +27,9 @@ const DENSITY_RING = {
   height: 40,
 }
 
+// autoDiagonalize on every one of these: the mouse chromosomes are laid out to
+// follow the human order and mirrored, which is what turns the ribbons from a
+// bundle through the middle into a band between the two arcs.
 function circularSyntenyView(
   displayedRegionNames: string[],
   tracks: unknown[],
@@ -39,6 +42,7 @@ function circularSyntenyView(
         assembly: ['hg38', 'mm39'],
         displayedRegionNames,
         height: 780,
+        autoDiagonalize: true,
         tracks,
         ...extra,
       },
@@ -90,7 +94,8 @@ export const circularSpecs: ScreenshotSpec[] = [
   // The two genomes' chromosomes around one circle, human first, and every
   // block of the chain as a ribbon between the stretch it covers on each. An
   // autosome's ribbons fan out across several of the other genome's
-  // chromosomes; the two X chromosomes hold one bundle.
+  // chromosomes; the two X chromosomes hold one bundle, and the reorder puts
+  // that bundle's two arcs beside each other.
   {
     mode: 'url',
     name: 'circular_synteny/ribbons',
@@ -113,7 +118,8 @@ export const circularSpecs: ScreenshotSpec[] = [
 
   // Three chromosomes of each genome: the X pair against two autosomes. The
   // autosomes cross-wire and the X ribbons stay between the two X arcs, with
-  // nothing joining either X to an autosome.
+  // nothing joining either X to an autosome. The reorder mirrors the mouse arc,
+  // so mouse chrX faces human chrX across the shortest span on the circle.
   {
     mode: 'url',
     name: 'circular_synteny/x_control',
@@ -148,9 +154,11 @@ export const circularSpecs: ScreenshotSpec[] = [
         maxWidth: 260,
         leader: true,
         // the overlay resolves no chord anchor, so the pill points at the
-        // path's own box; the id is the PIF row's index, stable while the
-        // file is
-        anchor: { selector: 'path[data-testid="ribbon-28-q-mm39"]' },
+        // path's own box; the id is the PIF row's index and the perspective it
+        // was reached from — the human one, since the circle lists that
+        // genome's regions first and the ribbon dedupe keeps the first of the
+        // two — stable while the file is
+        anchor: { selector: 'path[data-testid="ribbon-28-t-hg38"]' },
         dx: 200,
         dy: 140,
       },

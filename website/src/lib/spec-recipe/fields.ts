@@ -1506,10 +1506,22 @@ const graphSettingsField = (
 // (ViewOptionsMenuButton), and the dotplot's is in the overflow menu in
 // DotplotControls. The init flag runs it once as the view opens rather than
 // naming a different feature, so the step is the menu item either way.
-const DIAGONALIZE_MENUS: Record<string, string> = {
-  LinearSyntenyView:
-    'Synteny view header → View options → Rows → Re-order chromosomes',
-  DotplotView: 'Dotplot header → the ⋮ menu → Re-order chromosomes',
+// Where each view's reorder lives, and what it does there. The circular one
+// carries its own note: it has no rows, and the mirrored layout is the half of
+// its answer a reader would not predict from the other two.
+const DIAGONALIZE_MENUS: Record<string, { path: string; note: string }> = {
+  LinearSyntenyView: {
+    path: 'Synteny view header → View options → Rows → Re-order chromosomes',
+    note: 'Reorders and flips each row so the best-hit blocks line up on a diagonal.',
+  },
+  DotplotView: {
+    path: 'Dotplot header → the ⋮ menu → Re-order chromosomes',
+    note: 'Reorders and flips the vertical axis so the best-hit blocks line up on a diagonal.',
+  },
+  CircularView: {
+    path: 'View menu → Re-order chromosomes',
+    note: "Orders the second genome's chromosomes to follow the first's and lays that genome out mirrored, so the ribbons run between neighboring arcs instead of crossing the middle. Offered on a two-genome circle carrying a synteny track and nowhere else.",
+  },
 }
 
 // The settings menu behind the sliders (TuneIcon) button in each comparative
@@ -1586,8 +1598,8 @@ export const viewFields: Record<string, FieldRecipe> = {
     }
     return value
       ? {
-          path: menu,
-          note: 'Reorders and flips each row so the best-hit blocks line up on a diagonal. The spec runs it once as the view opens; the menu item is the same thing on demand.',
+          path: menu.path,
+          note: `${menu.note} The spec runs it once as the view opens; the menu item is the same thing on demand.`,
         }
       : {
           path: "Nothing to run — the view keeps each assembly's own chromosome order.",

@@ -9,7 +9,7 @@ import type { Region } from '@jbrowse/core/util'
  * `reversed` such that the alignment reads monotonically along the reference
  * beside it. Both arcs of a circle run the same way round, so applying that
  * answer directly sends each matching pair to a pair of ANTIPODAL points: every
- * ribbon becomes a diameter and the figure crosses at the centre, which is what
+ * ribbon becomes a diameter and the figure crosses at the center, which is what
  * the undiagonalized human-mouse circle looked like. Chords between two arcs
  * never cross when one side's coordinate rises with the angle and the other's
  * falls, so the second genome is mirrored and the ribbons come out as a band of
