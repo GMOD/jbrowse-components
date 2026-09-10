@@ -223,7 +223,7 @@ const ALU_AGE_TRACK = {
             {
               type: 'formula',
               expr: 'jexl:substring(feature.name, 0, 4)',
-              as: 'lineage',
+              as: ['lineage'],
             },
           ],
           encoding: {

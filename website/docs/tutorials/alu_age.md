@@ -99,7 +99,7 @@ from, get a grey.
             {
               "type": "formula",
               "expr": "jexl:substring(feature.name, 0, 4)",
-              "as": "lineage"
+              "as": ["lineage"]
             }
           ],
           "encoding": {
@@ -152,7 +152,7 @@ over the total in AluY's colour.
   {
     "shape": "bar",
     "transform": [
-      { "type": "formula", "expr": "jexl:substring(feature.name, 0, 4)", "as": "lineage" }
+      { "type": "formula", "expr": "jexl:substring(feature.name, 0, 4)", "as": ["lineage"] }
     ],
     "encoding": {
       "y": "milliDiv",
@@ -250,7 +250,7 @@ there.
             {
               "type": "formula",
               "expr": "jexl:substring(feature.name, 0, 4)",
-              "as": "lineage"
+              "as": ["lineage"]
             }
           ],
           "encoding": {

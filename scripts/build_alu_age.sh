@@ -147,7 +147,7 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@FAMILY@|$FAMILY|g" -e "s|@BED@|$BED|g" \
             {
               "type": "formula",
               "expr": "jexl:substring(feature.name, 0, 4)",
-              "as": "lineage"
+              "as": ["lineage"]
             }
           ],
           "encoding": {
