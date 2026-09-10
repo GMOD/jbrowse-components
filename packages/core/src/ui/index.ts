@@ -70,11 +70,7 @@ export { default as MonospaceTextField } from './MonospaceTextField.tsx'
 export { default as ShareLinkField } from './ShareLinkField.tsx'
 export { default as SingleSlider } from './SingleSlider.tsx'
 export { default as SliderTooltip } from './SliderTooltip.tsx'
-export {
-  makePromotableSizeMenu,
-  makeSizeMenu,
-  makeSizeSubMenu,
-} from './makeSizeMenu.tsx'
+export { makeSizeMenu, makeSizeSubMenu } from './makeSizeMenu.tsx'
 export {
   INLINE_MENU_ROW_WIDTH,
   ResetToDefaultButton,
@@ -143,20 +139,6 @@ export { default as Crosshairs } from './Crosshairs.tsx'
 export { hoverBoxStyle } from './hoverBoxStyle.ts'
 export { useMouseState, useMouseTracking } from './useMouseTracking.ts'
 export type { MouseState, MouseTracker } from './useMouseTracking.ts'
-export { PinAdornment } from './PinAdornment.tsx'
-// Not on the React-free `menuItems.ts` entry beside the row builders: this
-// reads a config's slot table, so it pulls `configuration/promotableSlots.ts`
-// in, and that entry exists precisely to stay out of every plugin's eager graph.
-//
-// `pinnedSlots`, the walk underneath it, stays module-private: the question a
-// caller has is "which promotable slots does this menu miss", and answering the
-// half of it that lists what a menu *does* offer needs the schema's slot table
-// to mean anything.
-export {
-  displayTypesWithPromotableSlots,
-  misKindedPins,
-  promotableSlotsWithoutPin,
-} from './promotablePinCoverage.ts'
 export const VIEW_HEADER_HEIGHT = 28
 export {
   LEGEND_ROW_HEIGHT,

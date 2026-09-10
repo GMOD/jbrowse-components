@@ -5,36 +5,6 @@ import { DEFAULT_MIN_INTERCHROM_SUPPORT } from '../constants.ts'
 import { getReadConnectionsMenuItem } from './readConnections.ts'
 
 import type { GroupBy } from '../../shared/types.ts'
-import type { TogglePin, ValuePin } from '@jbrowse/core/configuration'
-
-// stateful stand-in for a Pin (the menu builder and the promote
-// path only touch active/toggle; `slot` is what a built menu is later asked for
-// by promotableSlotsWithoutPin, and `onValue` what PinAdornment words itself
-// from — neither is read here)
-function control(slot: string, onValue: unknown = false): TogglePin {
-  return {
-    kind: 'toggle',
-    slot,
-    onValue,
-    active: false,
-    toggle() {
-      this.active = !this.active
-    },
-  }
-}
-
-// the radio rows carry value pins, one per option
-function valueControl(slot: string, onValue: unknown): ValuePin {
-  return {
-    kind: 'value',
-    slot,
-    onValue,
-    active: false,
-    toggle() {
-      this.active = !this.active
-    },
-  }
-}
 
 function makeModel() {
   return {
@@ -42,28 +12,14 @@ function makeModel() {
     setLinkedReads(mode: 'off' | 'normal') {
       this.linkedReads = mode
     },
-    pairsDisplayTypeDefault: control('linkedReads'),
     readConnections: 'off' as 'off' | 'arc' | 'cloud',
-    // Unset resolves to 'off', as the promotable sentinel's getter does — the
-    // setter is the only side that can say undefined.
     setReadConnections(mode?: 'off' | 'arc' | 'cloud') {
       this.readConnections = mode ?? 'off'
-    },
-    // one stateful control per radio option, so promoting one leaves the
-    // others untouched the way makePin's per-value pins do
-    readConnectionsPins: {
-      off: valueControl('readConnections', 'off'),
-      arc: valueControl('readConnections', 'arc'),
-      cloud: valueControl('readConnections', 'cloud'),
-    },
-    readConnectionsDisplayTypeDefault(mode: 'off' | 'arc' | 'cloud') {
-      return this.readConnectionsPins[mode]
     },
     readConnectionsDown: false,
     setReadConnectionsDown(v: boolean) {
       this.readConnectionsDown = v
     },
-    readConnectionsDownDisplayTypeDefault: control('readConnectionsDown'),
     drawLongRange: true,
     setDrawLongRange(v: boolean) {
       this.drawLongRange = v
@@ -131,28 +87,6 @@ function checkboxByLabel(model: ReturnType<typeof makeModel>, label: string) {
     throw new Error(`no ${label} checkbox`)
   }
   return item
-}
-
-// A promotable row is a native checkbox item carrying a "default for all" pin,
-// always present. It is a description (`{ ...pin, label }`) rather than a
-// rendered element — see ui/MenuTypes.ts — so the control is read straight off
-// the row instead of out of a React element's props.
-function pinOfRow(model: ReturnType<typeof makeModel>, label: string) {
-  const item = findByLabel(model, label)
-  return item && 'pin' in item ? item.pin : undefined
-}
-
-// Promote a row's value (what clicking its pin does), exercising the menu's
-// promote wiring.
-function promoteDefaultForAll(
-  model: ReturnType<typeof makeModel>,
-  label: string,
-) {
-  const pin = pinOfRow(model, label)
-  if (!pin) {
-    throw new Error(`no default-for-all control on ${label}`)
-  }
-  pin.control.toggle()
 }
 
 describe('read connections menu', () => {
@@ -224,40 +158,6 @@ describe('read-connection band options submenu is disabled until an overlay is a
     expect(bandOptionsSubMenu(model).disabled).toBe(false)
     checkboxByLabel(model, 'Draw arcs below coverage band').onClick()
     expect(model.readConnectionsDown).toBe(true)
-  })
-})
-
-describe('promote-as-default (default for all) pin', () => {
-  const pairs = 'View as pairs / link supplementary alignments'
-
-  test('the pin is always shown, even while the mode is off', () => {
-    const model = makeModel()
-    expect(pinOfRow(model, pairs)).toBeDefined()
-    // every overlay option, the base 'None' included, so a promoted overlay
-    // can be undone from its own row
-    expect(pinOfRow(model, 'None')).toBeDefined()
-    expect(pinOfRow(model, 'Read arcs')).toBeDefined()
-    expect(pinOfRow(model, 'Read cloud')).toBeDefined()
-  })
-
-  test('the pin toggles the view-as-pairs session default', () => {
-    const model = makeModel()
-    promoteDefaultForAll(model, pairs)
-    expect(model.pairsDisplayTypeDefault.active).toBe(true)
-  })
-
-  test('arcs and read cloud pins toggle independent session defaults', () => {
-    const model = makeModel()
-    promoteDefaultForAll(model, 'Read arcs')
-    expect(model.readConnectionsPins.arc.active).toBe(true)
-    expect(model.readConnectionsPins.cloud.active).toBe(false)
-    expect(model.readConnectionsPins.off.active).toBe(false)
-  })
-
-  test('"Draw arcs below coverage band" also carries a pin, even while disabled', () => {
-    const model = makeModel()
-    promoteDefaultForAll(model, 'Draw arcs below coverage band')
-    expect(model.readConnectionsDownDisplayTypeDefault.active).toBe(true)
   })
 })
 

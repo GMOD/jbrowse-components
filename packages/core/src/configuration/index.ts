@@ -63,16 +63,10 @@ export type { ResolvableDisplay } from './promotableResolve.ts'
 export {
   clearPromotedDefaults,
   getDisplayTypeDefaultChanges,
-  isSlotCustomized,
-  makePin,
-  makeTogglePin,
   getConfigSnapshotWithPromotables,
   getTrackConfigWithPromotables,
 } from './promotableDefaults.ts'
 export type {
-  Pin,
   ResolvedConfigSnapshot,
-  TogglePin,
   TrackConfigWithPromotables,
-  ValuePin,
 } from './promotableDefaults.ts'

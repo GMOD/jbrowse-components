@@ -4,31 +4,6 @@ import { DEFAULT_MIN_SASHIMI_SCORE } from '../constants.ts'
 import { getSashimiMenuItem } from './sashimi.ts'
 
 import type { SashimiArcsMode } from '../constants.ts'
-import type { TogglePin, ValuePin } from '@jbrowse/core/configuration'
-import type { MenuItem } from '@jbrowse/core/ui'
-
-// stateful stand-in for a Pin (the menu builder only touches
-// active/toggle; `slot` is what a built menu is later asked for by
-// promotableSlotsWithoutPin, and `kind` what PinAdornment words itself
-// from — neither is read here)
-function control(slot: string, onValue: unknown = false) {
-  return {
-    slot,
-    onValue,
-    active: false,
-    toggle() {
-      this.active = !this.active
-    },
-  }
-}
-const toggleControl = (slot: string): TogglePin => ({
-  kind: 'toggle',
-  ...control(slot),
-})
-const valueControl = (slot: string, onValue: unknown): ValuePin => ({
-  kind: 'value',
-  ...control(slot, onValue),
-})
 
 function makeModel() {
   return {
@@ -36,32 +11,19 @@ function makeModel() {
     setShowSashimiArcs(v: boolean) {
       this.showSashimiArcs = v
     },
-    showSashimiArcsDisplayTypeDefault: toggleControl('showSashimiArcs'),
     showSashimiLabels: false,
     setShowSashimiLabels() {},
-    showSashimiLabelsDisplayTypeDefault: toggleControl('showSashimiLabels'),
     sashimiArcsMode: 'auto' as SashimiArcsMode,
     setSashimiArcsMode(mode: SashimiArcsMode) {
       this.sashimiArcsMode = mode
     },
-    sashimiArcsModeDisplayTypeDefault: (mode: SashimiArcsMode) =>
-      valueControl('sashimiArcsMode', mode),
     minSashimiScore: DEFAULT_MIN_SASHIMI_SCORE,
     setMinSashimiScore() {},
     hideNonCanonicalJunctions: false,
     setHideNonCanonicalJunctions(v: boolean) {
       this.hideNonCanonicalJunctions = v
     },
-    hideNonCanonicalJunctionsDisplayTypeDefault: toggleControl(
-      'hideNonCanonicalJunctions',
-    ),
   }
-}
-
-// the "default for all tracks of this type" pin, carried as a description
-// (`pin`) rather than a rendered element — see ui/MenuTypes.ts
-function pinOf(item: MenuItem | undefined) {
-  return item && 'pin' in item ? item.pin : undefined
 }
 
 function labels(model: ReturnType<typeof makeModel>) {
@@ -132,7 +94,7 @@ describe('sashimi menu', () => {
     ])
   })
 
-  test('"Hide non-canonical junctions" toggles and carries a pin', () => {
+  test('"Hide non-canonical junctions" toggles', () => {
     const model = makeModel()
     model.showSashimiArcs = true
     const row = resolveSubMenu(getSashimiMenuItem(model)).find(
@@ -143,7 +105,6 @@ describe('sashimi menu', () => {
     }
     row.onClick()
     expect(model.hideNonCanonicalJunctions).toBe(true)
-    expect(pinOf(row)).toBeDefined()
   })
 
   test('placement submenu checks the active mode and switches on click', () => {
@@ -163,41 +124,5 @@ describe('sashimi menu', () => {
     }
     below.onClick()
     expect(model.sashimiArcsMode).toBe('down')
-  })
-
-  test('every arc-placement option carries a default-for-all pin', () => {
-    const model = makeModel()
-    model.showSashimiArcs = true
-    const placement = resolveSubMenu(getSashimiMenuItem(model)).find(
-      i => 'label' in i && i.label === 'Arc placement',
-    )
-    if (!placement || !('subMenu' in placement)) {
-      throw new Error('no placement submenu')
-    }
-    const byLabel = (label: string) =>
-      resolveSubMenu(placement).find(i => 'label' in i && i.label === label)
-    expect(pinOf(byLabel('Below coverage'))).toBeDefined()
-    expect(pinOf(byLabel('Auto (minimize overlap)'))).toBeDefined()
-    expect(pinOf(byLabel('Above coverage'))).toBeDefined()
-  })
-
-  test('"Show labels" carries a default-for-all pin', () => {
-    const model = makeModel()
-    model.showSashimiArcs = true
-    const showLabels = resolveSubMenu(getSashimiMenuItem(model)).find(
-      i => 'label' in i && i.label === 'Show labels',
-    )
-    expect(pinOf(showLabels)).toBeDefined()
-  })
-
-  test('"Show sashimi arcs" carries one too', () => {
-    // It gates everything below it and was the one control in its own submenu
-    // with no pin, so "show sashimi arcs by default for every track" was the
-    // single thing this menu couldn't express.
-    const model = makeModel()
-    const toggle = resolveSubMenu(getSashimiMenuItem(model)).find(
-      i => 'label' in i && i.label === 'Show sashimi arcs',
-    )
-    expect(pinOf(toggle)).toBeDefined()
   })
 })

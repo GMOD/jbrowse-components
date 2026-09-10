@@ -6,19 +6,16 @@ import { pickColorOptions } from '../../shared/colorSchemes.ts'
 import { getColorByMenuItem } from './colorBy.ts'
 
 import type { ColorBy } from '../../shared/types.ts'
-import type { ValuePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // Minimal model: enough for schemeRadios + the Paired end submenu (modModel is
-// "defined" whenever modificationsReady is set, even to false). `pinned` records
-// which colorBy values have been promoted as the session default.
+// "defined" whenever modificationsReady is set, even to false).
 function makeModel() {
   return {
     colorBy: { type: 'normal' } as ColorBy,
     setColorScheme(cb: ColorBy) {
       this.colorBy = cb
     },
-    pinned: new Set<string>(),
     modificationsReady: false,
     regionTooLarge: false,
     detectedModificationTypes: [] as string[],
@@ -27,28 +24,6 @@ function makeModel() {
 }
 
 type Model = ReturnType<typeof makeModel>
-
-// A per-value pin control backed by the model's `pinned` set, keyed on the
-// colorBy value — mirrors makePin over the colorBy
-// slot.
-function fakePinFactory(model: Model) {
-  return (colorBy: ColorBy): ValuePin => {
-    const key = JSON.stringify(colorBy)
-    return {
-      kind: 'value',
-      slot: 'colorBy',
-      onValue: colorBy,
-      active: model.pinned.has(key),
-      toggle() {
-        if (model.pinned.has(key)) {
-          model.pinned.delete(key)
-        } else {
-          model.pinned.add(key)
-        }
-      },
-    }
-  }
-}
 
 function subMenuOf(item: MenuItem | undefined) {
   return item && 'subMenu' in item ? resolveSubMenu(item) : []
@@ -81,51 +56,6 @@ function byLabel(
 }
 
 describe('color by menu', () => {
-  test('basic scheme radios carry a session-default pin when promotable', () => {
-    const model = makeModel()
-    const strand = byLabel(model, 'Strand', {
-      pin: fakePinFactory(model),
-    })
-    expect(strand && 'pin' in strand && strand.pin).toBeTruthy()
-  })
-
-  test('paired-end radios (First of pair strand) carry a pin', () => {
-    const model = makeModel()
-    const item = byLabel(model, 'First of pair strand', {
-      pin: fakePinFactory(model),
-    })
-    expect(item && 'pin' in item && item.pin).toBeTruthy()
-  })
-
-  test('no standalone "Make ... the default" checkbox remains', () => {
-    const model = makeModel()
-    const labels = allItems(model, {
-      pin: fakePinFactory(model),
-    })
-      .map(i => ('label' in i ? i.label : ''))
-      .filter(Boolean)
-    expect(labels.some(l => /Make .* the default/.test(String(l)))).toBe(false)
-  })
-
-  test('a scheme pin promotes that exact scheme value', () => {
-    const model = makeModel()
-    const item = byLabel(model, 'Strand', {
-      pin: fakePinFactory(model),
-    })
-    const pin = item && 'pin' in item ? item.pin : undefined
-    if (!pin) {
-      throw new Error('no pin on Strand radio')
-    }
-    pin.control.toggle()
-    expect(model.pinned.has(JSON.stringify({ type: 'strand' }))).toBe(true)
-  })
-
-  test('no pins when the display is not promotable (synteny omits pin)', () => {
-    const model = makeModel()
-    const strand = byLabel(model, 'Strand')
-    expect(strand && 'pin' in strand && strand.pin).toBeFalsy()
-  })
-
   // The tag radio is the only scheme whose choice carries a parameter, and it
   // was invisible without reopening the dialog.
   test('the tag radio names the tag in use', () => {
@@ -157,23 +87,6 @@ describe('color by menu', () => {
         !label.startsWith('Tag'),
       ])
     }
-  })
-
-  test('the tag pin promotes the tag actually in use', () => {
-    const model = makeModel()
-    model.colorBy = { type: 'tag', tag: 'HP' }
-    const item = byLabel(model, 'Tag (HP)...', {
-      includeTagOption: true,
-      pin: fakePinFactory(model),
-    })
-    const pin = item && 'pin' in item ? item.pin : undefined
-    if (!pin) {
-      throw new Error('no pin on the tag radio')
-    }
-    pin.control.toggle()
-    expect(model.pinned.has(JSON.stringify({ type: 'tag', tag: 'HP' }))).toBe(
-      true,
-    )
   })
 })
 
@@ -258,26 +171,6 @@ describe('color by modifications menu', () => {
       type: 'modifications',
       modifications: { cytosineContext: 'CHH' },
     })
-  })
-
-  test('the 2-color pin promotes the methylation view for cytosine data', () => {
-    const model = makeModModel(['m', 'h'])
-    const item = byLabel(model, TWO_COLOR, {
-      pin: fakePinFactory(model),
-    })
-    const pin = item && 'pin' in item ? item.pin : undefined
-    if (!pin) {
-      throw new Error('no pin on 2-color radio')
-    }
-    pin.control.toggle()
-    expect(
-      model.pinned.has(
-        JSON.stringify({
-          type: 'modifications',
-          modifications: { fillUnmarked: true },
-        }),
-      ),
-    ).toBe(true)
   })
 
   function tickModType(model: ReturnType<typeof makeModModel>, label: string) {

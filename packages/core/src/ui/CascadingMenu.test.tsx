@@ -206,32 +206,19 @@ describe('CascadingMenu endAdornment', () => {
     expect(onClick).toHaveBeenCalled()
   })
 
-  // The promotable pin's filled state, and a size row's "reset" enablement, are
-  // plain booleans captured when the items are BUILT — so the whole subsystem
-  // rests on the menu rebuilding while it stays open (every promotable row sets
-  // `keepMenuOpen`, and clicking a pin is expected to fill it in place). That
-  // works because `CascadingMenu` is an observer and calls a `menuItems` getter
-  // inside its own render, so whatever the build reads — here a promoted
-  // display-type default, in production the session's preference map — is
+  // A size row's "reset" enablement is a plain boolean captured when the items
+  // are BUILT, so a settings menu that stays open rests on rebuilding while it
+  // is up. That works because `CascadingMenu` is an observer and calls a
+  // `menuItems` getter inside its own render, so whatever the build reads is
   // tracked. Pin this, or a "cheap" memo of the items array silently freezes
-  // every pin until the menu is reopened.
-  it('re-runs a menuItems getter when an observable it read changes, so a pin fills in place', () => {
-    const promoted = observable.box('normal')
-    const { getByRole } = render(
+  // every such row until the menu is reopened.
+  it('re-runs a menuItems getter when an observable it read changes', () => {
+    const mode = observable.box('normal')
+    const { getByText } = render(
       <ThemeProvider theme={theme}>
         <CascadingMenu
           open
-          menuItems={() => [
-            radioItem('Compact', false, () => {}, {
-              pin: {
-                kind: 'value',
-                slot: 'displayMode',
-                onValue: 'compact',
-                active: promoted.get() === 'compact',
-                toggle: () => {},
-              },
-            }),
-          ]}
+          menuItems={() => [radioItem(`Mode: ${mode.get()}`, false, () => {})]}
           onMenuItemClick={cb => {
             cb()
           }}
@@ -239,26 +226,15 @@ describe('CascadingMenu endAdornment', () => {
         />
       </ThemeProvider>,
     )
-    // the label moves with the state, so naming it per state also pins the
-    // rebuild the aria-pressed flip could otherwise pass without
-    const pin = (name: string) => getByRole('button', { name })
-    expect(
-      pin('apply Compact to all open tracks of this type').getAttribute(
-        'aria-pressed',
-      ),
-    ).toBe('false')
+    expect(getByText('Mode: normal')).toBeTruthy()
 
     // the model moves with the menu still mounted — no reopen, no rerender call
     act(() => {
       runInAction(() => {
-        promoted.set('compact')
+        mode.set('compact')
       })
     })
-    expect(
-      pin(
-        'clear the default for Compact for all tracks of this type',
-      ).getAttribute('aria-pressed'),
-    ).toBe('true')
+    expect(getByText('Mode: compact')).toBeTruthy()
   })
 
   it('an adornment that stops propagation does not fire the row click', () => {

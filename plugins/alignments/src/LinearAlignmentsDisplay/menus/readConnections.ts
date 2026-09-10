@@ -14,19 +14,15 @@ import { getSvChannelsMenuItem } from './svChannels.ts'
 
 import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
 import type { SvChannelsModel } from './svChannels.ts'
-import type { TogglePin, ValuePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface ReadConnectionsModel {
   linkedReads: LinkedReadsMode
   setLinkedReads: (mode: LinkedReadsMode) => void
-  pairsDisplayTypeDefault: TogglePin
   readConnections: ReadConnectionsMode
   setReadConnections: (mode: ReadConnectionsMode) => void
-  readConnectionsDisplayTypeDefault: (mode: ReadConnectionsMode) => ValuePin
   readConnectionsDown: boolean
   setReadConnectionsDown: (down: boolean) => void
-  readConnectionsDownDisplayTypeDefault: TogglePin
   drawLongRange: boolean
   setDrawLongRange: (draw: boolean) => void
   drawInter: boolean
@@ -72,31 +68,21 @@ export function getReadConnectionsMenuItem(
   const linked = model.linkedReads !== 'off'
   const overlayActive = model.readConnections !== 'off'
   const subMenu: MenuItem[] = [
-    // Value checkbox + a trailing "default for all" pin, in one row.
     checkboxItem(
       'View as pairs / link supplementary alignments',
       linked,
       () => {
         model.setLinkedReads(linked ? 'off' : 'normal')
       },
-      { pin: model.pairsDisplayTypeDefault },
     ),
     // One radio over the `readConnections` slot rather than an arcs checkbox
     // and a cloud checkbox: the two overlays share a band (the cloud repurposes
-    // its Y axis to |tlen|, insertSizeTicks/arcsYDomainBp), so they were
-    // mutually exclusive checkboxes, and the unticked one's pin wrote the
-    // whole slot — "arcs off" switched the cloud off too — under a label that
-    // named only its own row. A radio says the exclusion, and every option
-    // carries a pin over exactly the value its row selects, 'None' included.
+    // its Y axis to |tlen|, insertSizeTicks/arcsYDomainBp), so they are mutually
+    // exclusive and a radio says so.
     { type: 'subHeader' as const, label: 'Connection overlay' },
-    ...radioItems(
-      READ_CONNECTIONS_OPTIONS,
-      model.readConnections,
-      mode => {
-        model.setReadConnections(mode)
-      },
-      mode => model.readConnectionsDisplayTypeDefault(mode),
-    ),
+    ...radioItems(READ_CONNECTIONS_OPTIONS, model.readConnections, mode => {
+      model.setReadConnections(mode)
+    }),
     getSvChannelsMenuItem(model),
     // Orthogonal to layout — the connection curves draw over an ordinary pileup
     // or a chain layout, so this is always offered.
@@ -122,7 +108,6 @@ export function getReadConnectionsMenuItem(
           down => {
             model.setReadConnectionsDown(down)
           },
-          { pin: model.readConnectionsDownDisplayTypeDefault },
         ),
         toggleItem(
           'Show concordant-pair arcs',

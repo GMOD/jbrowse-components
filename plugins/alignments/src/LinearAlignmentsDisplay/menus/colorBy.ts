@@ -17,7 +17,6 @@ import { modificationsMenu } from './modificationsMenu.ts'
 import type { ColorOption } from '../../shared/colorSchemes.ts'
 import type { ArcColorByType, ColorBy } from '../../shared/types.ts'
 import type { ModificationsMenuModel } from './modificationsMenu.ts'
-import type { ValuePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const ColorByTagDialog = lazy(() => import('../dialogs/ColorByTagDialog.tsx'))
@@ -80,12 +79,6 @@ interface ColorByMenuOptions {
     colorSupplementaryChains: boolean
     setColorSupplementaryChains: (flag: boolean) => void
   }
-  // Per-value session-default pins — supplied only for displays whose colorBy
-  // slot is promotable (alignments; synteny omits it). Given a colorBy value,
-  // returns the pin control for making that exact scheme the session-wide
-  // default, so each scheme radio carries its own pin (like every other
-  // promotable setting) instead of a standalone mouthful checkbox.
-  pin?: (colorBy: ColorBy) => ValuePin
 }
 
 // Derived from the shared COLOR_SCHEMES registry (single source of menu
@@ -97,37 +90,24 @@ const pairedEndColorOptions = radioColorOptions('pairedEnd')
 //
 // Each builder returns its item(s) and nothing else — whether a section is
 // OFFERED is decided once, visibly, in the `subMenu` list at the bottom. The
-// builders used to take the caller's `include` flag and the pin factory as
-// extra parameters, which spread one caller decision across six signatures and
-// hid the opt-in list the file's comments keep describing.
+// builders used to take the caller's `include` flag as an extra parameter,
+// which spread one caller decision across six signatures and hid the opt-in
+// list the file's comments keep describing.
 
-// A plain radio that selects a whole color scheme (no extra config). When the
-// display is promotable, each row also carries its own pin, which applies that
-// exact scheme to every open track of this display type and offers to keep it
-// as the display type's default.
+// A plain radio that selects a whole color scheme (no extra config).
 function colorRadio(
   model: AnyColorByModel,
   { label, type }: ColorOption,
-  pin: ColorByMenuOptions['pin'],
 ): MenuItem {
-  return radioItem(
-    label,
-    model.colorBy.type === type,
-    () => {
-      model.setColorScheme({ type })
-    },
-    { pin: pin?.({ type }) },
-  )
+  return radioItem(label, model.colorBy.type === type, () => {
+    model.setColorScheme({ type })
+  })
 }
 
 // Names the tag in the label once one is picked ("Tag (HP)...") — the radio is
 // the only scheme whose choice has a parameter, and it was previously invisible
-// without reopening the dialog. Carries the same session-default pin as the
-// plain radios, pinning the tag actually in use.
-function tagItem(
-  model: AnyColorByModel,
-  pin: ColorByMenuOptions['pin'],
-): MenuItem {
+// without reopening the dialog.
+function tagItem(model: AnyColorByModel): MenuItem {
   const { colorBy } = model
   const active = colorBy.type === 'tag' && colorBy.tag !== undefined
   return radioItem(
@@ -140,11 +120,10 @@ function tagItem(
       ])
     },
     {
-      // the only promotable row whose click opens a dialog rather than writing
-      // a value, so it dismisses the menu instead of the builder's default of
+      // the only row here whose click opens a dialog rather than writing a
+      // value, so it dismisses the menu instead of the builder's default of
       // staying open
       keepMenuOpen: false,
-      pin: active ? pin?.({ type: 'tag', tag: colorBy.tag }) : undefined,
     },
   )
 }
@@ -153,13 +132,10 @@ function tagItem(
 // it takes the bare model. Threading the `modModel` probe through it instead
 // silently dropped the whole section for a caller that opted in but carries no
 // modification state.
-function pairedEndItem(
-  model: AnyColorByModel,
-  pin: ColorByMenuOptions['pin'],
-): MenuItem {
+function pairedEndItem(model: AnyColorByModel): MenuItem {
   return {
     label: 'Paired end',
-    subMenu: pairedEndColorOptions.map(o => colorRadio(model, o, pin)),
+    subMenu: pairedEndColorOptions.map(o => colorRadio(model, o)),
   }
 }
 
@@ -175,16 +151,13 @@ function pairedEndItem(
 // region whose reads carry no MM/ML calls otherwise dropped the only row that
 // could read as checked, leaving every radio in Color by... blank and no way
 // back to the modification settings without first navigating elsewhere.
-function modificationsItems(
-  model: ModificationsModel,
-  pin: ColorByMenuOptions['pin'],
-): MenuItem[] {
+function modificationsItems(model: ModificationsModel): MenuItem[] {
   const detecting = !model.modificationsReady && !model.regionTooLarge
   const active = model.colorBy.type === 'modifications'
   const detected =
     model.modificationsReady && model.detectedModificationTypes.length > 0
   return [
-    ...(active || detected ? [modificationsMenu(model, pin)] : []),
+    ...(active || detected ? [modificationsMenu(model)] : []),
     ...(detecting
       ? [{ label: 'Loading modifications...', disabled: true, onClick() {} }]
       : []),
@@ -254,7 +227,6 @@ export function getColorByMenuItem(
     includeModifications,
     arcColor,
     supplementaryColoring,
-    pin,
   } = options
   const mods = includeModifications ? modModel(model) : undefined
   // Everything above the header picks the read fill scheme — the radios and the
@@ -276,10 +248,10 @@ export function getColorByMenuItem(
     type: 'subMenu' as const,
     icon: Palette,
     subMenu: [
-      ...colorOptions.map(o => colorRadio(model, o, pin)),
-      ...(includeTagOption ? [tagItem(model, pin)] : []),
-      ...(includePairedEnd ? [pairedEndItem(model, pin)] : []),
-      ...(mods ? modificationsItems(mods, pin) : []),
+      ...colorOptions.map(o => colorRadio(model, o)),
+      ...(includeTagOption ? [tagItem(model)] : []),
+      ...(includePairedEnd ? [pairedEndItem(model)] : []),
+      ...(mods ? modificationsItems(mods) : []),
       ...withSubHeader('Additional coloring', refinements),
     ] satisfies MenuItem[],
   }

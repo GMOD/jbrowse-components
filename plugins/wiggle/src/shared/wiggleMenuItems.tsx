@@ -1,4 +1,5 @@
-import { makePromotableSizeMenu } from '@jbrowse/core/ui'
+import { getSlotDefinition } from '@jbrowse/core/configuration'
+import { makeSizeMenu } from '@jbrowse/core/ui'
 import { makeRadioSubMenu, radioItems } from '@jbrowse/core/ui/menuItems'
 import {
   makeResolutionSubMenuItem,
@@ -119,7 +120,7 @@ export function makeLineWidthMenuItems(
     'Line width',
     LineWeightIcon,
     () =>
-      makePromotableSizeMenu({
+      makeSizeMenu({
         label: 'Line width',
         title: 'Line width',
         // integer px with a floor of 1: the default range/step (0.5-12 by 0.5)
@@ -129,9 +130,10 @@ export function makeLineWidthMenuItems(
         min: 1,
         max: 10,
         step: 1,
-        display: self,
-        slot: 'lineWidth',
         getValue: () => self.lineWidth,
+        isDefault:
+          self.lineWidth ===
+          getSlotDefinition(self.configuration, 'lineWidth').defaultValue,
         onChange: n => {
           self.setLineWidth(n)
         },

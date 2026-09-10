@@ -1,5 +1,3 @@
-import type { Pin } from '../configuration/promotablePin.ts'
-
 /** #menuItem divider | a horizontal rule; not clickable */
 export interface MenuDivider {
   priority?: number
@@ -60,7 +58,7 @@ export interface BaseMenuItem {
    */
   keepMenuOpen?: boolean
   /**
-   * #menuField arbitrary trailing content; prefer `pin`
+   * #menuField arbitrary trailing content
    *
    * Extra content rendered at the trailing (right) edge of the row, after the
    * checkbox/radio decoration and help icon — e.g. a secondary toggle. The
@@ -68,57 +66,10 @@ export interface BaseMenuItem {
    * onClick or dismiss the menu.
    *
    * An **element**, so a module that sets it drags React and whatever it renders
-   * into its own graph. That is fine for the one-off it exists for (synteny's
-   * color swatch) and wrong for the common case, which is why the pin below is
-   * a description instead. Prefer `pin`; reach for this only when the
-   * content is genuinely arbitrary.
+   * into its own graph. Reach for it only when the content is genuinely
+   * arbitrary — synteny's and wiggle's colour swatches are what it exists for.
    */
   endAdornment?: React.ReactNode
-  /**
-   * #menuField the "apply this to all open tracks of this type" pin; set it through a row builder's `pin` option
-   *
-   * The trailing "default for all tracks of this type" pin, as a **description**
-   * rather than an element — the renderer builds `PinAdornment` from
-   * it. Same rule as a `TrackControlProps` icon name (reference/DISPLAYCHROME.md):
-   * menu-item builders are called from state models and menu modules, which are
-   * eager, so an element here puts MUI's `ToggleButton`, `Tooltip` and two icons
-   * into every host's first paint. It did, until 2026-08-05; see
-   * reference/EAGER_BUNDLE.md.
-   *
-   * Set it through the `pin` option of `checkboxItem` / `toggleItem` /
-   * `radioItem` / `radioItems`, not by hand.
-   *
-   * A `type: 'custom'` row (`makePromotableSizeMenu`) draws its own pin inside
-   * its rendered content and still sets this — the declaration is what lets a
-   * built menu be asked which promotable slots it offers a pin for at all. Such
-   * a row is excluded from the trailing-column reservation; see
-   * `hasMenuItemAdornment`.
-   */
-  pin?: MenuItemPin
-}
-
-/**
- * A row's pin declaration: the {@link Pin} `makePin` built, plus the one thing
- * the row knows and the pin doesn't — what to call the setting.
- *
- * **`control` holds the pin by reference; don't flatten this into
- * `interface MenuItemPin extends Pin`.** That was tried, to save the hop every
- * reader spells (`item.pin.control.active`), and it turns the declaration into a
- * *copy* of the control — so a `Pin` whose `toggle` resolves anything through
- * `this` silently mutates the copy and the real control never changes. Nothing in
- * `Pin` promises copy-safety: `makePin` happens to close over what it needs, but
- * the interface is a plain object a plugin can build by hand, and the failure is
- * a pin that draws correctly and does nothing. Two hops in `pinnedSlots` and
- * `menuItemAdornment` is the whole cost of not having that.
- */
-export interface MenuItemPin {
-  control: Pin
-  /**
-   * Names the setting in the pin's tooltip and aria-label. Carried here rather
-   * than read off the row's `label`, which is a `ReactNode` and may not be a
-   * string; a pin that can't name what it promotes reads as a bug.
-   */
-  label: string
 }
 
 /** #menuItem normal | an action row; the default when `type` is omitted */
@@ -147,8 +98,8 @@ export interface RadioMenuItem extends BaseMenuItem {
  * The function form is called when the submenu opens (or a walker asks for its
  * rows), not when the parent menu is built — for a submenu whose rows cost a
  * scan of the display's data to name. Read the field through `resolveSubMenu`
- * rather than by hand, so the two forms stay one thing to the renderer, the
- * pin-coverage walk and every test helper that flattens a menu.
+ * rather than by hand, so the two forms stay one thing to the renderer and to
+ * every test helper that flattens a menu.
  */
 export interface SubMenuItem extends BaseMenuItem {
   type?: 'subMenu'

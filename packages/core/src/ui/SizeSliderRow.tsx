@@ -1,6 +1,6 @@
 // The drawn half of a `makeSizeMenu` row, split out so the builder can reach
 // it through `lazy()`. Everything Material UI in a size row is here: the
-// slider, the reset button, the pin, the caption. See makeSizeMenu.tsx.
+// slider, the reset button, the caption. See makeSizeMenu.tsx.
 import { useState } from 'react'
 
 import { Typography } from '@mui/material'
@@ -8,12 +8,10 @@ import { observer } from 'mobx-react'
 
 import { makeStyles } from '../util/tss-react/index.ts'
 import { ResetToDefaultButton } from './InlineMenuControls.tsx'
-import { PinAdornment } from './PinAdornment.tsx'
 import SingleSlider from './SingleSlider.tsx'
 import { INLINE_MENU_ROW_WIDTH } from './inlineMenuRowWidth.ts'
 import { sliderScale } from './sliderScale.ts'
 
-import type { Pin } from '../configuration/promotablePin.ts'
 import type { SliderScale } from './sliderScale.ts'
 
 const useStyles = makeStyles()(theme => ({
@@ -42,7 +40,6 @@ export const SizeSliderRow = observer(function SizeSliderRow({
   commitOnRelease,
   onChange,
   onReset,
-  pin,
 }: {
   title: string
   getValue: () => number
@@ -55,12 +52,10 @@ export const SizeSliderRow = observer(function SizeSliderRow({
   commitOnRelease?: boolean
   onChange: (n: number) => void
   onReset: () => void
-  pin?: Pin
 }) {
   const { classes } = useStyles()
-  const modelValue = getValue()
   const [dragValue, setDragValue] = useState<number | undefined>(undefined)
-  const value = dragValue ?? modelValue
+  const value = dragValue ?? getValue()
   const { toSlider, fromSlider, sliderStep } = sliderScale(scale)
   const slug = title.toLowerCase().replaceAll(' ', '-')
   return (
@@ -79,14 +74,6 @@ export const SizeSliderRow = observer(function SizeSliderRow({
             onReset()
           }}
         />
-        {pin ? (
-          // the model value, not the drag value: the pin was built over what
-          // the model held, so its tooltip names what a click applies
-          // ("Line width (2px)") rather than where the thumb is mid-drag
-          <PinAdornment
-            pin={{ control: pin, label: `${title} (${format(modelValue)})` }}
-          />
-        ) : null}
       </div>
       <SingleSlider
         value={toSlider(value)}

@@ -1,7 +1,7 @@
 import { checkboxItem } from './toggleMenuItems.ts'
 
 import type { MenuItem } from './MenuTypes.ts'
-import type { CheckboxRowOptions } from './toggleMenuItems.ts'
+import type { SettingRowOptions } from './toggleMenuItems.ts'
 
 /**
  * The "Show legend" checkbox, which seven displays build by hand — Hi-C, LD,
@@ -13,20 +13,9 @@ import type { CheckboxRowOptions } from './toggleMenuItems.ts'
  * and would otherwise need an adapter object at the call site. Same argument
  * order as `checkboxItem`, which is all this adds a label to.
  *
- * The `showLegend` **config slots** stay per display: their `promotedBase`
- * values legitimately differ (a Hi-C color scale is off by default, a variant
- * genotype key on), and their descriptions describe genuinely different legends.
- * What they now share is being *promotable* — pass `opts.pin` and the row gains
- * the pin that toggles the legend on every open track of this display type,
- * offering the new state as the display-type default in its snackbar. Every
- * display whose legend is backed by a config slot passes one, and gets it from
- * `LegendMixin`'s `showLegendDisplayTypeDefault` rather than calling
- * `makeTogglePin` itself: the slot is the per-display half, the accessors over
- * it are not.
- *
- * `pin` is optional because two callers have no slot to promote: the Manhattan
- * plot's LD legend and `LinearBasicDisplay`'s color key are a volatile and a
- * per-legend `dismissed` flag respectively, neither of which is config at all.
+ * The `showLegend` **config slots** stay per display: their default values
+ * legitimately differ (a Hi-C color scale is off by default, a variant genotype
+ * key on), and their descriptions describe genuinely different legends.
  *
  * `synteny-core`'s color-by legend has no toggle at all: it comes up with the
  * modes that have a key and is dismissed from its own close button.
@@ -35,7 +24,7 @@ import type { CheckboxRowOptions } from './toggleMenuItems.ts'
 export function showLegendCheckboxItem(
   checked: boolean,
   onToggle: () => void,
-  opts?: CheckboxRowOptions,
+  opts?: SettingRowOptions,
 ): MenuItem {
   return checkboxItem('Show legend', checked, onToggle, opts)
 }

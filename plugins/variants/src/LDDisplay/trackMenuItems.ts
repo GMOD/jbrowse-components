@@ -4,7 +4,6 @@ import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import { squashToHeightCheckboxItem } from '@jbrowse/display-kit/squashToHeightMenuItem'
 
 import type { LDMetric, LDSnp } from '../VariantRPC/ldTypes.ts'
-import type { TogglePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -20,7 +19,6 @@ export interface LDMenuSelf extends IStateTreeNode {
   focalSnpIndex: number
   showLDTriangle: boolean
   showLegend: boolean
-  showLegendDisplayTypeDefault: TogglePin
   showLabels: boolean
   showVerticalGuides: boolean
   squashToHeight: boolean

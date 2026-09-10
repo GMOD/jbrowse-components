@@ -1,9 +1,4 @@
-import {
-  getConf,
-  makePin,
-  makeTogglePin,
-  resolveConf,
-} from '@jbrowse/core/configuration'
+import { getConf, resolveConf } from '@jbrowse/core/configuration'
 
 import { normalizeColorBy } from '../shared/colorSchemes.ts'
 import { normalizeGroupBy } from '../shared/groupFeatures.ts'
@@ -25,9 +20,8 @@ import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * Every track-menu toggle that is nothing but its config slot: a `getConf` or a
- * promotable `resolveConf` read, or the `makePin` control that promotes one.
- * Config slots persist across hide/retick (#5591), unlike the MST props these
- * replaced.
+ * promotable `resolveConf` read. Config slots persist across hide/retick
+ * (#5591), unlike the MST props these replaced.
  *
  * They live here rather than in the model chain because none of them reads the
  * model — only its `configuration`, which `ResolvableDisplay` is core's name for.
@@ -58,11 +52,6 @@ export function configSlotViews(self: ConfigSlotSelf) {
     // See promotableDefaults.ts.
     get linkedReads(): LinkedReadsMode {
       return resolveConf(self, 'linkedReads')
-    },
-    /** #getter */
-    // the view-as-pairs checkbox over every open track of this type (pin)
-    get pairsDisplayTypeDefault() {
-      return makeTogglePin(self, 'linkedReads', { on: 'normal', off: 'off' })
     },
     /** #getter */
     get showBezierConnections(): boolean {
@@ -139,16 +128,6 @@ export function configSlotViews(self: ConfigSlotSelf) {
     get readConnections(): ReadConnectionsMode {
       return resolveConf(self, 'readConnections')
     },
-    /**
-     * #method
-     * "apply this connection overlay to the open tracks" control (pin), one
-     * per option of the radio group — a method rather than a getter per
-     * value, like `sashimiArcsModeDisplayTypeDefault`, so the base 'off' is
-     * pinnable from its own row.
-     */
-    readConnectionsDisplayTypeDefault(mode: ReadConnectionsMode) {
-      return makePin(self, 'readConnections', mode)
-    },
     /** #getter */
     // Resolved through the promotable-slot tiers (resolveConf): a
     // maybeBoolean sentinel (like showSoftClipping) — an unset track follows
@@ -158,23 +137,10 @@ export function configSlotViews(self: ConfigSlotSelf) {
       return resolveConf(self, 'readConnectionsDown')
     },
     /** #getter */
-    // the arcs-below-coverage checkbox over every open track of this type (pin)
-    get readConnectionsDownDisplayTypeDefault() {
-      return makeTogglePin(self, 'readConnectionsDown')
-    },
-    /** #getter */
     // Sentinel promotable slot: a track pins arcs on/off explicitly, else
     // follows the session-wide default, falling back to on.
     get showSashimiArcs(): boolean {
       return resolveConf(self, 'showSashimiArcs')
-    },
-    /**
-     * #getter
-     * the submenu's own sashimi checkbox over every open track of this type
-     * (pin)
-     */
-    get showSashimiArcsDisplayTypeDefault() {
-      return makeTogglePin(self, 'showSashimiArcs')
     },
     /** #getter */
     // Sentinel promotable slot (like linkedReads/readConnections): a track
@@ -182,17 +148,6 @@ export function configSlotViews(self: ConfigSlotSelf) {
     // back to 'up'.
     get sashimiArcsMode(): SashimiArcsMode {
       return resolveConf(self, 'sashimiArcsMode')
-    },
-    /**
-     * #method
-     * "apply this arc placement to the open tracks" control (pin),
-     * one per option of the radio group. A method rather than a getter per
-     * value: the options share one slot and differ only in the on-value, so
-     * naming each combination was what made the base value 'up' look
-     * unpinnable.
-     */
-    sashimiArcsModeDisplayTypeDefault(mode: SashimiArcsMode) {
-      return makePin(self, 'sashimiArcsMode', mode)
     },
     /** #getter */
     get minSashimiScore(): number {
@@ -214,12 +169,6 @@ export function configSlotViews(self: ConfigSlotSelf) {
     // back over a session default of "on".
     get showSoftClipping(): boolean {
       return resolveConf(self, 'showSoftClipping')
-    },
-
-    /** #getter */
-    // the soft-clipping checkbox over every open track of this type (pin)
-    get softClippingDisplayTypeDefault() {
-      return makeTogglePin(self, 'showSoftClipping')
     },
 
     /**
@@ -271,26 +220,11 @@ export function configSlotViews(self: ConfigSlotSelf) {
     },
     /**
      * #getter
-     * the sashimi-labels checkbox over every open track of this type (pin)
-     */
-    get showSashimiLabelsDisplayTypeDefault() {
-      return makeTogglePin(self, 'showSashimiLabels')
-    },
-    /**
-     * #getter
      * Whether junctions with a non-canonical splice motif are dropped from
      * the sashimi arcs. Promotable like `showSashimiLabels`.
      */
     get hideNonCanonicalJunctions(): boolean {
       return resolveConf(self, 'hideNonCanonicalJunctions')
-    },
-    /**
-     * #getter
-     * the non-canonical-junction checkbox over every open track of this
-     * type (pin)
-     */
-    get hideNonCanonicalJunctionsDisplayTypeDefault() {
-      return makeTogglePin(self, 'hideNonCanonicalJunctions')
     },
     /**
      * #getter
@@ -308,13 +242,6 @@ export function configSlotViews(self: ConfigSlotSelf) {
     // off on a single track.
     get mismatchAlpha(): boolean {
       return resolveConf(self, 'mismatchAlpha')
-    },
-    /**
-     * #getter
-     */
-    // the fade-by-quality checkbox over every open track of this type (pin)
-    get mismatchAlphaDisplayTypeDefault() {
-      return makeTogglePin(self, 'mismatchAlpha')
     },
     /**
      * #getter

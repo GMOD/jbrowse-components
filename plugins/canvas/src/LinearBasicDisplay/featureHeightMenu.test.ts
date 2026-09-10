@@ -53,22 +53,6 @@ describe('Feature height submenu', () => {
         i => i.type === 'subHeader' && hasLabel(i, 'Track sizing'),
       ),
     ).toHaveLength(1)
-    expect(radio(subMenu, 'Normal').pin).toBeDefined()
-    expect(radio(subMenu, 'Compact').pin).toBeDefined()
-    expect(radio(subMenu, 'Super-compact').pin).toBeDefined()
-  })
-
-  it('resolves the session-wide default and lets a track pin any preset back', () => {
-    const { createDisplay } = createTestEnvironment()
-    const { display, session } = createDisplay()
-
-    expect(display.displayMode).toBe('normal')
-
-    session.setDisplayTypeDefault(display.type, 'displayMode', 'compact')
-    expect(display.displayMode).toBe('compact')
-
-    display.setDisplayMode('normal')
-    expect(display.displayMode).toBe('normal')
   })
 
   it('checks the resolved size preset', () => {
@@ -109,15 +93,6 @@ describe('Feature height submenu', () => {
     expect(
       radio(sizing, 'Fixed feature height + fixed track height').checked,
     ).toBe(true)
-    expect(
-      radio(sizing, 'Fixed feature height + fixed track height').pin,
-    ).toBeDefined()
-    expect(
-      radio(sizing, 'Fixed feature height + autogrow track height').pin,
-    ).toBeDefined()
-    expect(
-      radio(sizing, 'Fit feature height to track height').pin,
-    ).toBeDefined()
 
     display.setHeightMode('grow')
     const sizing2 = featureHeightSubMenu(display)

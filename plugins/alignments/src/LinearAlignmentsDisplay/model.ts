@@ -9,7 +9,6 @@ import {
 import {
   ConfigurationReference,
   getConf,
-  makePin,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -4167,7 +4166,6 @@ export default function stateModelFactory(
                   self.setColorSupplementaryChains(flag)
                 },
               },
-              pin: (colorBy: ColorBy) => makePin(self, 'colorBy', colorBy),
             }),
             // The gate and the copy naming the switch are one value
             // (`sortReadsBlockedReason`), so this cannot grey the menu out

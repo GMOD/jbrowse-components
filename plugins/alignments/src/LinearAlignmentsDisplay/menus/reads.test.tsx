@@ -8,18 +8,9 @@ import { cleanup, fireEvent, render } from '@testing-library/react'
 
 import { getReadsMenuItems } from './reads.ts'
 
-import type { TogglePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 afterEach(cleanup)
-
-const noPin: TogglePin = {
-  kind: 'toggle',
-  slot: 'unused',
-  onValue: true,
-  active: false,
-  toggle: () => {},
-}
 
 // Only the fields "Show..." reads.
 function makeModel(
@@ -32,7 +23,6 @@ function makeModel(
   return {
     showLegend: false,
     setShowLegend: jest.fn(),
-    showLegendDisplayTypeDefault: noPin,
     showCoverage: true,
     setShowCoverage: jest.fn(),
     showPileup: true,
@@ -41,13 +31,11 @@ function makeModel(
     setShowMismatches: jest.fn(),
     showSoftClipping: false,
     setShowSoftClipping: jest.fn(),
-    softClippingDisplayTypeDefault: noPin,
     isChainMode: false,
     showInterbaseIndicators: true,
     setShowInterbaseIndicators: jest.fn(),
     mismatchAlpha: false,
     setMismatchAlpha: jest.fn(),
-    mismatchAlphaDisplayTypeDefault: noPin,
     canCollapseGroupRows: false,
     collapseGroupRows: false,
     setCollapseGroupRows: jest.fn(),
@@ -159,27 +147,11 @@ function softClipRow(isChainMode: boolean) {
 
 // The worker forces soft clipping off in chain mode
 // (`executeRenderAlignmentData`), so the row says so instead of taking a click
-// that draws nothing. Gated, it carries no pin (next test).
+// that draws nothing.
 test('the soft clipping toggle greys out in chain mode', () => {
   expect(softClipRow(true)).toMatchObject({
     disabled: true,
     disabledHelpText: expect.stringContaining('Chain layout'),
   })
-  expect(softClipRow(true)).not.toHaveProperty('pin')
   expect(softClipRow(false)).not.toHaveProperty('disabled')
-  expect(softClipRow(false)).toHaveProperty('pin')
-})
-
-// A disabled row's pin is disabled with it (`menuItemAdornment`), so gating a
-// promotable row would also take away its "default for all tracks of this type"
-// control — which is why the promotable rows here state their dependency in
-// help text instead of greying out. Nothing gated may carry a pin.
-test('no gated row carries a pin', () => {
-  for (const row of subMenuOf(
-    makeModel({ showCoverage: false, isChainMode: true }),
-  )) {
-    if ('disabled' in row && row.disabled) {
-      expect(row).not.toHaveProperty('pin')
-    }
-  }
 })

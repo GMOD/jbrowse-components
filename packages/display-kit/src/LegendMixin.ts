@@ -1,8 +1,4 @@
-import {
-  makeTogglePin,
-  resolveConf,
-  setConf,
-} from '@jbrowse/core/configuration'
+import { resolveConf, setConf } from '@jbrowse/core/configuration'
 import { LEGEND_SVG_GUTTER_WIDTH } from '@jbrowse/core/ui/SvgColorLegend'
 import { colorScaleIsEmpty, legendSpecOf } from '@jbrowse/core/ui/colorScale'
 import { showLegendCheckboxItem } from '@jbrowse/core/ui/menuItems'
@@ -11,7 +7,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 import type {
   ConfigModelForFields,
   ResolvableDisplay,
-  TogglePin,
 } from '@jbrowse/core/configuration'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { LegendSpec } from '@jbrowse/core/ui/legendSpec'
@@ -49,7 +44,7 @@ const confNode = (self: object) => self as LegendConfHost
 /**
  * #stateModel LegendMixin
  * #category display
- * #crossCuttingMixin The legend, whole. A display declares the color scales it paints with (`colorScales`, a getter hook) and the mixin derives the key from them (`legendSpec`, through `legendSpecOf`), keeps the promotable `showLegend` slot's resolved getter, display-type pin and setter, dismisses sections one at a time (`dismissLegendSection`, undone by re-showing the legend), answers whether there is a key to offer (`hasLegendKey`) and whether the export parks it beside the plot (`svgLegendWidth`). `DisplayChrome` draws the on-screen key and `renderDisplaySvg` the exported one, so a display places neither
+ * #crossCuttingMixin The legend, whole. A display declares the color scales it paints with (`colorScales`, a getter hook) and the mixin derives the key from them (`legendSpec`, through `legendSpecOf`), keeps the `showLegend` slot's getter and setter, dismisses sections one at a time (`dismissLegendSection`, undone by re-showing the legend), answers whether there is a key to offer (`hasLegendKey`) and whether the export parks it beside the plot (`svgLegendWidth`). `DisplayChrome` draws the on-screen key and `renderDisplaySvg` the exported one, so a display places neither
  *
  * A key derived from the scales the painter resolves colors through cannot
  * list a color nothing painted, which is what a legend hand-built from a second
@@ -81,14 +76,6 @@ export default function LegendMixin() {
        */
       get showLegend(): boolean {
         return resolveConf(confNode(self), 'showLegend')
-      },
-      /**
-       * #getter
-       * The legend checkbox over every open track of this type.
-       * `showLegendCheckboxItem` takes this as its `pin`.
-       */
-      get showLegendDisplayTypeDefault() {
-        return makeTogglePin(confNode(self), 'showLegend')
       },
       /**
        * #getter
@@ -182,15 +169,14 @@ export function svgLegendGutterWidth(self: { showLegend: boolean }) {
 }
 
 /**
- * The "Show legend" checkbox for a display composing `LegendMixin`: the slot,
- * the toggle and the display-type pin, so a track menu lists it in one call.
- * `opts` is for a display that greys the row out under a scheme with no key,
- * which keeps the row — and its pin — in the menu whatever the scheme.
+ * The "Show legend" checkbox for a display composing `LegendMixin`: the slot
+ * and the toggle, so a track menu lists it in one call. `opts` is for a display
+ * that greys the row out under a scheme with no key, which keeps the row in the
+ * menu whatever the scheme.
  */
 export function legendCheckboxItem(
   self: {
     showLegend: boolean
-    showLegendDisplayTypeDefault: TogglePin
     setShowLegend: (arg: boolean) => void
   },
   opts?: SettingRowOptions,
@@ -200,6 +186,6 @@ export function legendCheckboxItem(
     () => {
       self.setShowLegend(!self.showLegend)
     },
-    { ...opts, pin: self.showLegendDisplayTypeDefault },
+    opts,
   )
 }

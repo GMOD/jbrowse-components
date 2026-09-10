@@ -42,26 +42,23 @@ function radio(subMenu: MenuItem[], label: string) {
 }
 
 describe('Subfeature labels submenu', () => {
-  it('offers Off/Below/Overlay radios, each carrying a "make default" pin', () => {
+  it('offers Off/Below/Overlay radios', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     const subMenu = showSubMenu(display)
 
     const labels = subMenu.flatMap(i => ('label' in i ? [i.label] : []))
     expect(labels).toEqual(['Off', 'Below', 'Overlay'])
-    expect(radio(subMenu, 'Off').pin).toBeDefined()
-    expect(radio(subMenu, 'Below').pin).toBeDefined()
-    expect(radio(subMenu, 'Overlay').pin).toBeDefined()
   })
 
-  it('checks the resolved mode and lets a track pin Below back over a session default', () => {
+  it('checks the mode the track holds', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, session } = createDisplay()
+    const { display } = createDisplay()
 
     expect(display.subfeatureLabels).toBe('none')
     expect(radio(showSubMenu(display), 'Off').checked).toBe(true)
 
-    session.setDisplayTypeDefault(display.type, 'subfeatureLabels', 'overlay')
+    display.setSubfeatureLabels('overlay')
     expect(display.subfeatureLabels).toBe('overlay')
     expect(radio(showSubMenu(display), 'Overlay').checked).toBe(true)
 

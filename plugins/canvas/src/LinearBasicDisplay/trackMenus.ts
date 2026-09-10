@@ -1,4 +1,3 @@
-import { makePin } from '@jbrowse/core/configuration'
 import { filterMenuItems, undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import { radioItems, toggleItem, withHint } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
@@ -12,17 +11,10 @@ import { STRAND_COLOR_JEXL } from '../RenderFeatureDataRPC/featureColors.ts'
 import { SHOW_LABELS_OPTIONS } from './showLabelsMode.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
-import type { LinearBasicDisplayConfig } from './configSchema.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
-import type {
-  ResolvableDisplay,
-  TogglePin,
-  ValuePin,
-} from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
 import type { HeightModeMenuModel } from '@jbrowse/display-kit/heightModeMenu'
-import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // Every menu level sorts by `priority` and the sort is stable, so this pins
 // the recovery rows below whatever a subclass appends and above "Display
@@ -31,20 +23,17 @@ const RECOVERY_PRIORITY = -100
 
 // Rows come from core's `radioItems`, so every radio keeps the menu
 // open on click; a hand-rolled copy is how the Gene glyph submenu came to
-// dismiss the whole menu. `hint` is applied to the row's label after the pin
-// is attached, never to the option, because the builder copies the option's
-// label into the pin's tooltip and aria-label.
+// dismiss the whole menu.
 export function inlineRadioGroup<T extends string>(
   header: string,
   current: T,
   options: readonly { value: T; label: string }[],
   onSelect: (value: T) => void,
-  pin: (value: T) => ValuePin,
   hint?: (value: T) => string | undefined,
 ): MenuItem[] {
   return [
     { type: 'subHeader' as const, label: header },
-    ...radioItems(options, current, onSelect, pin).map((item, i) => {
+    ...radioItems(options, current, onSelect).map((item, i) => {
       const { value, label } = options[i]!
       return hint ? { ...item, label: withHint(label, hint(value)) } : item
     }),
@@ -52,16 +41,13 @@ export function inlineRadioGroup<T extends string>(
 }
 
 // Structural for the same reason as `FeatureMenuSelf`;
-// `LinearBasicDisplayConfig` rather than a bare `ResolvableDisplay`, which
-// widens `configuration` and switches the slot-name check off.
-interface ShowSubmenuSelf extends ResolvableDisplay<LinearBasicDisplayConfig> {
+interface ShowSubmenuSelf {
   showOutline: boolean
   showLabelsMode: ShowLabelsMode
   displayMode: DisplayMode
   labelsFitHint: string | undefined
   hasLegendKey: boolean
   showLegend: boolean
-  showLegendDisplayTypeDefault: TogglePin
   setShowLegend: (value: boolean) => void
   setShowOutline: (value: boolean) => void
   setShowLabels: (mode: ShowLabelsMode) => void
@@ -74,10 +60,7 @@ interface ColorMenuSelf {
   setFeatureColor: (color?: string) => void
 }
 
-// `HeightModeMenuModel<LinearBasicDisplayConfig>`, not the bare form: this
-// menu pins `displayMode` too, and only a concrete schema checks that name.
-interface FeatureHeightSelf
-  extends IStateTreeNode, HeightModeMenuModel<LinearBasicDisplayConfig> {
+interface FeatureHeightSelf extends HeightModeMenuModel {
   displayMode: DisplayMode
   setDisplayMode: (value: DisplayMode) => void
 }
@@ -110,10 +93,6 @@ export function showSubmenuRadioGroups(self: ShowSubmenuSelf): MenuItem[] {
     mode => {
       self.setShowLabels(mode)
     },
-    // Every rung is pinnable, `auto` included: once a user promotes 'none'
-    // for all their feature tracks, pinning `auto` back is the only per-value
-    // way to undo it.
-    mode => makePin(self, 'showLabels', mode),
     inertLabelHint(self, self.showLabelsMode, self.labelsFitHint),
   )
 }
@@ -186,14 +165,9 @@ export function featureHeightMenuItems(self: FeatureHeightSelf): MenuItem[] {
       label: 'Set feature height',
       icon: HeightIcon,
       subMenu: [
-        ...radioItems(
-          DISPLAY_MODE_OPTIONS,
-          self.displayMode,
-          mode => {
-            self.setDisplayMode(mode)
-          },
-          mode => makePin(self, 'displayMode', mode),
-        ),
+        ...radioItems(DISPLAY_MODE_OPTIONS, self.displayMode, mode => {
+          self.setDisplayMode(mode)
+        }),
         { type: 'subHeader' as const, label: 'Track sizing' },
         ...heightModeMenuItems(self, 'feature'),
       ],

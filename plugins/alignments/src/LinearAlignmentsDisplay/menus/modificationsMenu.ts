@@ -11,7 +11,6 @@ import {
 } from '../../shared/types.ts'
 
 import type { ColorBy, ModificationColorBy } from '../../shared/types.ts'
-import type { ValuePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { CytosineContext } from '@jbrowse/modifications-utils'
 
@@ -120,18 +119,11 @@ function setModTypeShown(
 // Each refinement shows only when it bites — the type filter when >1 type is
 // detected, cytosine context when the data is cytosine methylation. Threshold
 // gates only the by-type view (two-color uses a fixed 50% cutoff; the fill
-// paints every cytosine), which its caption states. The promotion pin on each
-// radio promotes the bare view (no refinements baked in).
+// paints every cytosine), which its caption states.
 //
 // All three are revealed only once this scheme is the active one, like
 // bisulfite's "Show unmethylated" — see `refinements` below for why.
-export function modificationsMenu(
-  model: ModificationsMenuModel,
-  // The per-value session-default pin factory, absent for a display whose
-  // colorBy slot isn't promotable. Spelled out rather than reached back for from
-  // colorBy.ts's options bag, which would make the import cycle.
-  pin: ((colorBy: ColorBy) => ValuePin) | undefined,
-): MenuItem {
+export function modificationsMenu(model: ModificationsMenuModel): MenuItem {
   const mods = currentMods(model)
   const isActive = model.colorBy.type === 'modifications'
   const byTwoColor = isActive && (!!mods.twoColor || !!mods.fillUnmarked)
@@ -236,7 +228,6 @@ export function modificationsMenu(
         },
         {
           helpText: `Colors each call by which modification it is (5mC, 5hmC, 6mA…). Only positions the basecaller called, at or above the probability threshold (${model.modificationThreshold}%), are drawn — everything else stays blank.`,
-          pin: pin?.({ type: 'modifications' }),
         },
       ),
       radioItem(
@@ -248,10 +239,6 @@ export function modificationsMenu(
         {
           helpText:
             'Everything the by-type view does, plus it paints the not-modified side blue instead of leaving it blank: modified sites keep their per-type colors, while low-probability and unmodified sites turn blue. For methylation data every cytosine in context is drawn, including the ones the basecaller left implicit; for other modifications the called positions are drawn, blue where the call is more likely negative. The probability threshold does not apply here. Named as in IGV ("base modification 2-color") — with both 5mC and 5hmC present the palette is strictly more than two colors.',
-          pin: pin?.({
-            type: 'modifications',
-            modifications: twoColorView,
-          }),
         },
       ),
       ...(refinements.length ? [DIVIDER, ...refinements] : []),

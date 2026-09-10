@@ -26,7 +26,6 @@ import type { ConservationMode } from './conservationModes.ts'
 import type { RowRendering } from './rowRenderings.ts'
 import type { MafClusterSelf } from './runMafClustering.ts'
 import type { MafSource } from './stateModel.ts'
-import type { TogglePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -65,11 +64,10 @@ const HEIGHT_PRESETS = [
 ]
 
 interface MafMenuSelf extends IStateTreeNode, MafClusterSelf {
-  // The shared "Show legend" row: LegendMixin's three members, plus whether
-  // this display has a key for them to be about.
+  // The shared "Show legend" row: LegendMixin's members, plus whether this
+  // display has a key for them to be about.
   hasLegendKey: boolean
   showLegend: boolean
-  showLegendDisplayTypeDefault: TogglePin
   setShowLegend: (arg: boolean) => void
   showAllLetters: boolean
   mismatchRendering: boolean

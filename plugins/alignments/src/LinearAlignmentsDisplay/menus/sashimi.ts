@@ -5,13 +5,8 @@ import AltRouteIcon from '@mui/icons-material/AltRoute'
 import { DEFAULT_MIN_SASHIMI_SCORE } from '../constants.ts'
 
 import type { SashimiArcsMode } from '../constants.ts'
-import type { TogglePin, ValuePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// Every option carries a pin, the base value 'up' included — once a non-base
-// mode is promoted, pinning the base back is the only per-value way to undo it
-// from its own row, and a radio group where one row is silently missing its
-// trailing control reads as a bug. Matches the heightMode group.
 const SASHIMI_MODE_OPTIONS: { value: SashimiArcsMode; label: string }[] = [
   { value: 'auto', label: 'Auto (minimize overlap)' },
   { value: 'up', label: 'Above coverage' },
@@ -21,18 +16,14 @@ const SASHIMI_MODE_OPTIONS: { value: SashimiArcsMode; label: string }[] = [
 interface SashimiModel {
   showSashimiArcs: boolean
   setShowSashimiArcs: (show: boolean) => void
-  showSashimiArcsDisplayTypeDefault: TogglePin
   showSashimiLabels: boolean
   setShowSashimiLabels: (show: boolean) => void
-  showSashimiLabelsDisplayTypeDefault: TogglePin
   sashimiArcsMode: SashimiArcsMode
   setSashimiArcsMode: (mode: SashimiArcsMode) => void
-  sashimiArcsModeDisplayTypeDefault: (mode: SashimiArcsMode) => ValuePin
   minSashimiScore: number
   setMinSashimiScore: (score: number) => void
   hideNonCanonicalJunctions: boolean
   setHideNonCanonicalJunctions: (hide: boolean) => void
-  hideNonCanonicalJunctionsDisplayTypeDefault: TogglePin
 }
 
 // All sashimi (splice-junction arc) controls in one place. The labels,
@@ -59,31 +50,20 @@ interface SashimiModel {
 // repeating that in the abstract is a fourth copy that goes stale first.
 export function getSashimiMenuItem(model: SashimiModel) {
   const subMenu: MenuItem[] = [
-    toggleItem(
-      'Show sashimi arcs',
-      model.showSashimiArcs,
-      show => {
-        model.setShowSashimiArcs(show)
-      },
-      { pin: model.showSashimiArcsDisplayTypeDefault },
-    ),
+    toggleItem('Show sashimi arcs', model.showSashimiArcs, show => {
+      model.setShowSashimiArcs(show)
+    }),
     ...(model.showSashimiArcs
       ? [
-          toggleItem(
-            'Show labels',
-            model.showSashimiLabels,
-            show => {
-              model.setShowSashimiLabels(show)
-            },
-            { pin: model.showSashimiLabelsDisplayTypeDefault },
-          ),
+          toggleItem('Show labels', model.showSashimiLabels, show => {
+            model.setShowSashimiLabels(show)
+          }),
           toggleItem(
             'Hide non-canonical junctions',
             model.hideNonCanonicalJunctions,
             hide => {
               model.setHideNonCanonicalJunctions(hide)
             },
-            { pin: model.hideNonCanonicalJunctionsDisplayTypeDefault },
           ),
           {
             label: 'Arc placement',
@@ -94,7 +74,6 @@ export function getSashimiMenuItem(model: SashimiModel) {
               mode => {
                 model.setSashimiArcsMode(mode)
               },
-              mode => model.sashimiArcsModeDisplayTypeDefault(mode),
             ),
           },
           makeSizeSubMenu({

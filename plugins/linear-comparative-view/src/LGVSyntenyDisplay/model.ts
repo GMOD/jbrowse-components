@@ -1,7 +1,6 @@
 import {
   ConfigurationReference,
   getConf,
-  makePin,
   setConf,
 } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
@@ -35,10 +34,7 @@ import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItems } from './menus.ts'
 import type { LGVSyntenyDisplayConfigModel } from './configSchemaF.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
-import type {
-  ColorBy,
-  DerivativePathEvidence,
-} from '@jbrowse/plugin-alignments'
+import type { DerivativePathEvidence } from '@jbrowse/plugin-alignments'
 import type { LodMode } from '@jbrowse/synteny-core'
 
 /**
@@ -308,14 +304,6 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
                 'mappingQuality',
                 { type: 'mateRefName', label: 'Query name' },
               ),
-              // This display's `colorBy` is promotable in its own right — the
-              // schema override in configSchemaF.ts exists precisely to give it
-              // a synteny `promotedBase` (`strand`, not `normal`). Without the
-              // pin the slot was promotable with nowhere to promote from: a
-              // promoted default is keyed by display type, so no alignments pin
-              // could ever write LGVSyntenyDisplay's key either, and the slot
-              // resolved to its base forever unless a track customized it.
-              pin: (colorBy: ColorBy) => makePin(self, 'colorBy', colorBy),
             }),
             // No base pair / tag: a PAF block has no per-base sequence to sort a
             // column by, and no SAM tags. 'Longest features first' is the

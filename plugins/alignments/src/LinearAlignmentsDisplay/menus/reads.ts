@@ -8,13 +8,11 @@ import type {
   CollapseGroupRowsModel,
   HiddenGroupsModel,
 } from './groupByMenu.ts'
-import type { TogglePin } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface ReadsModel extends CollapseGroupRowsModel, HiddenGroupsModel {
   showLegend: boolean
   setShowLegend: (show: boolean) => void
-  showLegendDisplayTypeDefault: TogglePin
   showCoverage: boolean
   setShowCoverage: (show: boolean) => void
   showPileup: boolean
@@ -23,13 +21,11 @@ interface ReadsModel extends CollapseGroupRowsModel, HiddenGroupsModel {
   setShowMismatches: (show: boolean) => void
   showSoftClipping: boolean
   setShowSoftClipping: (show: boolean) => void
-  softClippingDisplayTypeDefault: TogglePin
   isChainMode: boolean
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
   mismatchAlpha: boolean
   setMismatchAlpha: (value: boolean) => void
-  mismatchAlphaDisplayTypeDefault: TogglePin
 }
 
 // Visibility of the rendering layers. Sashimi and read-connection controls live
@@ -59,9 +55,7 @@ function softClippingItem(model: ReadsModel) {
         disabledHelpText:
           'Chain layout does not expand soft clips — uncheck "View as pairs / link supplementary alignments" first',
       })
-    : toggleItem(label, model.showSoftClipping, onToggle, {
-        pin: model.softClippingDisplayTypeDefault,
-      })
+    : toggleItem(label, model.showSoftClipping, onToggle)
 }
 
 export function getReadsMenuItems(model: ReadsModel) {
@@ -91,19 +85,12 @@ export function getReadsMenuItems(model: ReadsModel) {
           'the line joining them is what says they are one read.',
       },
     ),
-    toggleItem(
-      'Fade low quality mismatches',
-      model.mismatchAlpha,
-      fade => {
-        model.setMismatchAlpha(fade)
-      },
-      { pin: model.mismatchAlphaDisplayTypeDefault },
-    ),
+    toggleItem('Fade low quality mismatches', model.mismatchAlpha, fade => {
+      model.setMismatchAlpha(fade)
+    }),
     // The worker forces soft clipping off in chain mode
     // (`executeRenderAlignmentData`'s `effShowSoftClipping`), so the row greys
-    // out there rather than taking a click that draws nothing. It sheds its pin
-    // while gated: a disabled row's pin is disabled with it (see the interbase
-    // row below), and a live-looking pin that takes no click is worse than none.
+    // out there rather than taking a click that draws nothing.
     softClippingItem(model),
     // Every interbase mark — the count bars and the fixed-size triangles alike
     // — draws inside the coverage band (`ALIGNMENTS_COVERAGE_MARKS`, on both
@@ -118,13 +105,6 @@ export function getReadsMenuItems(model: ReadsModel) {
     // it costs nothing, while here the band is on by default and vanishing the
     // row would be the surprise. Greying keeps it discoverable and names the
     // switch — this display's own idiom, shared with the arc-band options.
-    //
-    // Safe to grey because the row carries no pin. A disabled row's pin is
-    // disabled with it (`menuItemAdornment`, deliberately — a live-looking pin
-    // in a `pointer-events: none` row takes no click), so gating a PROMOTABLE
-    // row also takes away its make-this-the-default control. That is why the
-    // rows above, which are promotable, state their dependency and are not
-    // gated on it — except soft clipping, which drops the pin for the gate.
     toggleItem(
       'Show interbase indicators',
       model.showInterbaseIndicators,

@@ -1,6 +1,5 @@
 import { lazy } from 'react'
 
-import { makePin } from '@jbrowse/core/configuration'
 import { radioItem } from '@jbrowse/core/ui/menuItems'
 import { capitalizeFirst, getDialogHost } from '@jbrowse/core/util'
 import { heightModeMenuItems } from '@jbrowse/display-kit/heightModeMenu'
@@ -8,10 +7,8 @@ import HeightIcon from '@mui/icons-material/Height'
 
 import { COMPACTNESS_PRESETS } from './compactnessPresets.ts'
 
-import type { LinearAlignmentsDisplayConfigSchema } from '../configSchema.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { HeightMode } from '@jbrowse/display-kit/heightMode'
-import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 const SetFeatureHeightDialog = lazy(
   () => import('../dialogs/SetFeatureHeightDialog.tsx'),
@@ -77,14 +74,7 @@ export {
 // absorbs overflow — so picking a size never changes the mode and vice versa.
 // Each group reads as a plain "pick one". `configuredFeatureHeight` drives the
 // size group; `heightMode` the mode group.
-//
-// `type` + `configuration` spelled out rather than `extends ResolvableDisplay`:
-// that is an intersection alias whose `configuration` is `AnyConfigurationModel`,
-// which switches off the slot-name check on the `makePin` below. Same reason,
-// and the same spelling, as `ConfigSlotSelf` in this display.
-interface FeatureHeightModel extends IStateTreeNode, MaxHeightModel {
-  type: string
-  configuration: Instance<LinearAlignmentsDisplayConfigSchema>
+interface FeatureHeightModel extends MaxHeightModel {
   configuredFeatureHeight: number
   heightMode: HeightMode
   setFeatureHeight: (height?: number) => void
@@ -115,21 +105,14 @@ export function getFeatureHeightMenuItem(
     icon: HeightIcon,
     type: 'subMenu' as const,
     subMenu: [
-      // Size presets: each writes its exact height (preserving grow, dropping fit
-      // back to fixed); the pin applies that height to every open track of the
-      // display type and offers it as that type's default. The rows stay open
-      // (radioItem's default) so size + mode can both be set in one
-      // visit.
+      // Size presets: each writes its exact height (preserving grow, dropping
+      // fit back to fixed). The rows stay open (radioItem's default) so size +
+      // mode can both be set in one visit.
       ...PRESETS.map(preset =>
         needsContent(
-          radioItem(
-            preset.label,
-            sizeActive && matchesPreset(preset),
-            () => {
-              model.setFeatureHeight(preset.featureHeight)
-            },
-            { pin: makePin(model, 'featureHeight', preset.featureHeight) },
-          ),
+          radioItem(preset.label, sizeActive && matchesPreset(preset), () => {
+            model.setFeatureHeight(preset.featureHeight)
+          }),
           gate,
         ),
       ),

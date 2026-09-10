@@ -146,37 +146,6 @@ describe.each([true, false])('with promotedBase %p', promotedBase => {
     display.setShowLegend(promotedBase)
     expect(display.showLegend).toBe(promotedBase)
   })
-
-  // The pin is what `showLegendCheckboxItem` puts on the row, and it names the
-  // slot it promotes — the fact `promotableSlotsWithoutPin` audits.
-  it('the pin is over showLegend and its fill mirrors the row', () => {
-    const { display } = makeSession({ promotedBase })
-    expect(display.showLegendDisplayTypeDefault.slot).toBe('showLegend')
-    expect(display.showLegendDisplayTypeDefault.active).toBe(promotedBase)
-  })
-
-  // The pin is the legend checkbox over the open tracks: a click flips the
-  // row's state, and the snackbar's one action is what makes the new state the
-  // display type's default.
-  it('the pin flips the legend and offers the new state as the default', () => {
-    const { session, display } = makeSession({ promotedBase })
-    display.setShowLegend(promotedBase)
-    display.showLegendDisplayTypeDefault.toggle()
-    expect(display.showLegend).toBe(!promotedBase)
-    expect(display.showLegendDisplayTypeDefault.active).toBe(!promotedBase)
-    session.lastAction!.onClick()
-    expect(
-      session.getDisplayTypeDefault('TestLegendDisplay', 'showLegend'),
-    ).toBe(!promotedBase)
-
-    // flipping back offers the base state, which clears rather than stores
-    display.showLegendDisplayTypeDefault.toggle()
-    expect(display.showLegend).toBe(promotedBase)
-    session.lastAction!.onClick()
-    expect(
-      session.getDisplayTypeDefault('TestLegendDisplay', 'showLegend'),
-    ).toBeUndefined()
-  })
 })
 
 const genotypes: ColorScale = {

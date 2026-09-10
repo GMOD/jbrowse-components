@@ -47,8 +47,7 @@ function nearestSnpFrequencyOption(fraction: number) {
 // `showCoverage` off this is four live controls over a band that isn't there —
 // and unlike the sashimi and read-connection menus, which lead with their own
 // visibility toggle, there is nothing in here that could turn it back on. The
-// gate names that switch instead. Safe to grey because no row inside carries a
-// pin: a disabled row's pin is disabled with it (`menuItemAdornment`).
+// gate names that switch instead.
 export function getCoverageMenuItem(model: CoverageModel) {
   const sigma = model.numStdDev
   return makeScoreSubMenu(model, {

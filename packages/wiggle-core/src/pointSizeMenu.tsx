@@ -1,4 +1,5 @@
-import { makePromotableSizeMenu } from '@jbrowse/core/ui'
+import { getSlotDefinition } from '@jbrowse/core/configuration'
+import { makeSizeMenu } from '@jbrowse/core/ui'
 
 import type {
   ConfigModelForFields,
@@ -7,10 +8,8 @@ import type {
 import type { MenuItem } from '@jbrowse/core/ui'
 
 // Wires a display's shared `scatterPointSize`/`setScatterPointSize` (from
-// WiggleScoreConfigMixin) to makePromotableSizeMenu. Used by both the wiggle
-// scatter and GWAS Manhattan track menus so the slider/reset/pin behavior can't
-// drift. The `scatterPointSize` slot is promotable, so the row carries the
-// "default for all tracks of this type" pin.
+// WiggleScoreConfigMixin) to makeSizeMenu. Used by both the wiggle scatter and
+// GWAS Manhattan track menus so the slider/reset behavior can't drift.
 export function makeScatterPointSizeMenuItem(
   self: {
     scatterPointSize: number
@@ -22,12 +21,13 @@ export function makeScatterPointSizeMenuItem(
   >,
   opts: { label: string },
 ): MenuItem {
-  return makePromotableSizeMenu({
+  return makeSizeMenu({
     label: opts.label,
     title: 'Point size',
-    display: self,
-    slot: 'scatterPointSize',
     getValue: () => self.scatterPointSize,
+    isDefault:
+      self.scatterPointSize ===
+      getSlotDefinition(self.configuration, 'scatterPointSize').defaultValue,
     onChange: n => {
       self.setScatterPointSize(n)
     },

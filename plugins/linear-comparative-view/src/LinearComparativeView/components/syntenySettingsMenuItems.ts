@@ -1,4 +1,3 @@
-import { makeTogglePin } from '@jbrowse/core/configuration'
 import { makeSizeSubMenu } from '@jbrowse/core/ui'
 import { toggleItem, withSubHeader } from '@jbrowse/core/ui/menuItems'
 import { toLocale } from '@jbrowse/core/util'
@@ -21,40 +20,25 @@ import type { MenuItem } from '@jbrowse/core/ui'
 import type { SettingRowOptions } from '@jbrowse/core/ui/menuItems'
 
 /**
- * One RIBBONS checkbox whose state a reader can also make this session's
- * default for every synteny track, via the trailing pin.
- *
- * The checkbox and the pin write the same promotable config slot, exactly as
- * any other promotable setting's row: the checkbox writes this view's synteny
- * displays (every level — `setDrawCurves` fans out), the pin is that checkbox
- * over every open display of the type and offers the new state as the
- * session-wide default.
- *
- * `display` is the level the pin writes through — any one of them, since a
- * promoted default is keyed by display type rather than by track. A view with
- * no synteny display yet (the import form, a track still arriving) has no slot
- * to write and no ribbon to draw, so its row is disabled rather than a
- * checkbox that ticks nothing.
+ * One RIBBONS checkbox, writing this view's synteny displays (every level —
+ * `setDrawCurves` fans out). A view with no synteny display yet (the import
+ * form, a track still arriving) has no slot to write and no ribbon to draw, so
+ * its row is disabled rather than a checkbox that ticks nothing.
  */
 function ribbonToggle({
   display,
-  slot,
   value,
   setValue,
   label,
   ...opts
 }: {
   display: LinearSyntenyDisplayModel | undefined
-  slot: 'drawCurves' | 'drawLocationMarkers'
   value: boolean
   setValue: (value: boolean) => void
   label: string
 } & SettingRowOptions): MenuItem {
   return display
-    ? toggleItem(label, value, setValue, {
-        ...opts,
-        pin: makeTogglePin(display, slot),
-      })
+    ? toggleItem(label, value, setValue, opts)
     : toggleItem(label, value, setValue, {
         ...opts,
         disabled: true,
@@ -120,7 +104,6 @@ export function syntenySettingsMenuItems(
     ),
     ribbonToggle({
       display,
-      slot: 'drawCurves',
       label: 'Curved lines',
       value: model.effectiveDrawCurves,
       setValue: v => {
@@ -129,7 +112,6 @@ export function syntenySettingsMenuItems(
     }),
     ribbonToggle({
       display,
-      slot: 'drawLocationMarkers',
       label: 'Location markers',
       value: model.effectiveDrawLocationMarkers,
       setValue: v => {

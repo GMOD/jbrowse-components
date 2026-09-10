@@ -203,7 +203,6 @@ describe('canvas track menu shape', () => {
       'Name + description — hidden while collapsed',
     )
     expect(inert.type === 'radio' && inert.checked).toBe(true)
-    expect('pin' in inert && inert.pin?.label).toBe('Name + description')
   })
 
   it('says so for the subfeature label rung too', () => {
@@ -218,7 +217,6 @@ describe('canvas track menu shape', () => {
       'Below — hidden while collapsed',
     )
     expect(inert.type === 'radio' && inert.checked).toBe(true)
-    expect('pin' in inert && inert.pin?.label).toBe('Below')
     find(subMenuOf(display.trackMenuItems(), 'Show...'), 'Off')
   })
 })

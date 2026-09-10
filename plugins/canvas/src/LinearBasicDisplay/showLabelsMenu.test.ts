@@ -48,7 +48,7 @@ function radio(subMenu: MenuItem[], label: string) {
 }
 
 describe('Labels submenu', () => {
-  it('offers every rung, each carrying a "make default" pin', () => {
+  it('offers every rung', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     const subMenu = showSubMenu(display)
@@ -61,31 +61,20 @@ describe('Labels submenu', () => {
       'Description only',
       'None',
     ])
-    for (const label of labels) {
-      expect(radio(subMenu, label).pin).toBeDefined()
-    }
   })
 
-  it('checks the resolved rung and follows a session-wide default', () => {
+  it('checks the rung the track holds', () => {
     const { createDisplay } = createTestEnvironment()
-    const { display, session } = createDisplay()
+    const { display } = createDisplay()
 
     expect(display.showLabelsMode).toBe('auto')
     expect(radio(showSubMenu(display), 'Auto').checked).toBe(true)
 
-    session.setDisplayTypeDefault(display.type, 'showLabels', 'none')
+    display.setShowLabels('none')
     expect(display.showLabelsMode).toBe('none')
     expect(radio(showSubMenu(display), 'None').checked).toBe(true)
     expect(display.showLabels).toBe(false)
     expect(display.showDescriptions).toBe(false)
-  })
-
-  it('lets a track pin the base rung back over a session default', () => {
-    const { createDisplay } = createTestEnvironment()
-    const { display, session } = createDisplay()
-
-    session.setDisplayTypeDefault(display.type, 'showLabels', 'none')
-    expect(display.showLabelsMode).toBe('none')
 
     display.setShowLabels('auto')
     expect(display.showLabelsMode).toBe('auto')
