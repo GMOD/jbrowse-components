@@ -8,12 +8,15 @@ import type {
   BinStep,
   CoverageStep,
   FlattenStep,
+  StackStep,
   TransformStep,
 } from './markEncodingTypes.ts'
 import type { Feature, SimpleFeatureSerialized } from './simpleFeature.ts'
 
 export const DEFAULT_BIN_AS: [string, string] = ['start', 'end']
 export const DEFAULT_COVERAGE_AS = 'coverage'
+export const DEFAULT_STACK_AS = 'row'
+export const DEFAULT_STACK_FIELDS: [string, string] = ['start', 'end']
 
 /**
  * A feature with fields written over another's: what `formula` and `bin`
@@ -289,6 +292,36 @@ function aggregateValue(
 }
 
 /**
+ * The lowest row each feature fits on, greedy first fit in start order: the
+ * layout a pileup is, as a step in front of the encoder rather than a packer
+ * behind it. `rowEnds[r]` is where row `r` is free again, so the scan is over
+ * rows rather than over features.
+ */
+function stack(features: readonly Feature[], step: StackStep) {
+  const as = step.as ?? DEFAULT_STACK_AS
+  const [startField, endField] = step.fields ?? DEFAULT_STACK_FIELDS
+  const padding = step.padding ?? 0
+  const out: Feature[] = []
+  for (const members of groupMembers(features, step.groupby ?? [])) {
+    members.sort(
+      (a, b) => Number(a.get(startField)) - Number(b.get(startField)),
+    )
+    const rowEnds: number[] = []
+    for (const f of members) {
+      const start = Number(f.get(startField))
+      const end = Number(f.get(endField))
+      let row = 0
+      while (row < rowEnds.length && rowEnds[row]! > start) {
+        row++
+      }
+      rowEnds[row] = (end > start ? end : start) + padding
+      out.push(new DerivedFeature(f, { [as]: row }))
+    }
+  }
+  return out
+}
+
+/**
  * Piecewise-constant depth over the features' spans: one feature per run of
  * equal depth, where the depth is not zero. A sweep over the sorted edges,
  * so the input need not be sorted.
@@ -374,6 +407,10 @@ export function runTransforms(
       }
       case 'coverage': {
         current = coverage(current, step)
+        break
+      }
+      case 'stack': {
+        current = stack(current, step)
         break
       }
     }

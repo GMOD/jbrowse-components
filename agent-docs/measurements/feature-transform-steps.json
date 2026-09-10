@@ -5,7 +5,7 @@
   "source": {
     "kind": "bench",
     "repro": "node packages/core/benches/featureTransforms.bench.ts --rounds=11",
-    "notes": "1,000,000 synthetic SimpleFeatures (2 to 6 bp each, an integer score) through runTransforms and then the native encode of what the steps answered (y, a constant colour, no index), nine arms interleaved round-robin in one node 24 process, min of 11 rounds, load average under 2. A row is the steps plus the encode of their output. 'none' is the encode alone over the raw list; 'filter' is one jexl filter keeping every other feature; 'formula' is one jexl formula writing a field the encode then reads; 'flatten' and 'flatten-bin' read a second input list of 250,000 containers of four over the SAME feature objects, so the fan-out answers exactly the million 'none' encodes and the gap between the two rows is flatten's own cost — a second list of real SimpleFeatures put the untouched 'coverage' row from 427ms to 1000ms, so the fixture beside an arm is part of the arm; 'bin-count' bins at 10 kb and counts per bin, so the encode walks 300 bins in place of a million features; 'bin-mean' adds a mean score per bin; 'coverage' is the sweep over the spans, 1.6 runs per input feature here; 'bin-then-raw' is the bin-count layer and the raw layer over one fetched list, what a multiscale config costs the worker per region. The aggregate keyed its groups by raw field values through one Map per groupby field after a string key per feature measured 2.5x that; aggregate and coverage outputs are a plain data-backed feature with a lazy id after a SimpleFeature per output measured 1.9x that. The jexl arms cost what the jexl channel does (mark-encoding-jexl-channel). 'vs none' is typed rather than derived because it divides by another row. The 'per input feature' column divides by the arm's own input count, which the two flatten rows state as 250,000, so read those two against 'none' by wall rather than by that column."
+    "notes": "1,000,000 synthetic SimpleFeatures (2 to 6 bp each, an integer score) through runTransforms and then the native encode of what the steps answered (y, a constant colour, no index), ten arms interleaved round-robin in one node 24 process, min of 11 rounds, load average under 2. A row is the steps plus the encode of their output. 'none' is the encode alone over the raw list; 'filter' is one jexl filter keeping every other feature; 'formula' is one jexl formula writing a field the encode then reads; 'flatten' and 'flatten-bin' read a second input list of 250,000 containers of four over the SAME feature objects, so the fan-out answers exactly the million 'none' encodes and the gap between the two rows is flatten's own cost — a second list of real SimpleFeatures put the untouched 'coverage' row from 427ms to 1000ms, so the fixture beside an arm is part of the arm; 'bin-count' bins at 10 kb and counts per bin, so the encode walks 300 bins in place of a million features; 'bin-mean' adds a mean score per bin; 'coverage' is the sweep over the spans, 1.6 runs per input feature here; 'stack' is the greedy first-fit row assignment over those same spans, which pack about three deep in this fixture; 'bin-then-raw' is the bin-count layer and the raw layer over one fetched list, what a multiscale config costs the worker per region. The aggregate keyed its groups by raw field values through one Map per groupby field after a string key per feature measured 2.5x that; aggregate and coverage outputs are a plain data-backed feature with a lazy id after a SimpleFeature per output measured 1.9x that. The jexl arms cost what the jexl channel does (mark-encoding-jexl-channel). 'vs none' is typed rather than derived because it divides by another row. The 'per input feature' column divides by the arm's own input count, which the two flatten rows state as 250,000, so read those two against 'none' by wall rather than by that column."
   },
   "columns": [
     { "key": "arm", "label": "arm" },
@@ -22,14 +22,15 @@
     { "key": "vsNone", "label": "vs none", "format": "x", "align": "right" }
   ],
   "rows": [
-    { "values": { "arm": "none", "features": 1000000, "out": 1000000, "ms": 70, "vsNone": 1 } },
-    { "values": { "arm": "filter", "features": 1000000, "out": 500000, "ms": 205, "vsNone": 2.92 } },
-    { "values": { "arm": "formula", "features": 1000000, "out": 1000000, "ms": 404, "vsNone": 5.77 } },
-    { "values": { "arm": "flatten", "features": 250000, "out": 1000000, "ms": 216, "vsNone": 3.08 } },
-    { "values": { "arm": "flatten-bin", "features": 250000, "out": 301, "ms": 411, "vsNone": 5.86 } },
-    { "values": { "arm": "bin-count", "features": 1000000, "out": 300, "ms": 252, "vsNone": 3.6 } },
-    { "values": { "arm": "bin-mean", "features": 1000000, "out": 300, "ms": 294, "vsNone": 4.2 } },
-    { "values": { "arm": "coverage", "features": 1000000, "out": 1599999, "ms": 423, "vsNone": 6.04 } },
-    { "values": { "arm": "bin-then-raw", "features": 1000000, "out": 1000300, "ms": 329, "vsNone": 4.69 } }
+    { "values": { "arm": "none", "features": 1000000, "out": 1000000, "ms": 74, "vsNone": 1 } },
+    { "values": { "arm": "filter", "features": 1000000, "out": 500000, "ms": 223, "vsNone": 3.03 } },
+    { "values": { "arm": "formula", "features": 1000000, "out": 1000000, "ms": 420, "vsNone": 5.69 } },
+    { "values": { "arm": "flatten", "features": 250000, "out": 1000000, "ms": 217, "vsNone": 2.94 } },
+    { "values": { "arm": "flatten-bin", "features": 250000, "out": 300, "ms": 412, "vsNone": 5.58 } },
+    { "values": { "arm": "bin-count", "features": 1000000, "out": 300, "ms": 252, "vsNone": 3.41 } },
+    { "values": { "arm": "bin-mean", "features": 1000000, "out": 300, "ms": 305, "vsNone": 4.14 } },
+    { "values": { "arm": "coverage", "features": 1000000, "out": 1599999, "ms": 425, "vsNone": 5.76 } },
+    { "values": { "arm": "stack", "features": 1000000, "out": 1000000, "ms": 374, "vsNone": 5.07 } },
+    { "values": { "arm": "bin-then-raw", "features": 1000000, "out": 1000300, "ms": 335, "vsNone": 4.55 } }
   ]
 }

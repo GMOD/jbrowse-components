@@ -208,3 +208,64 @@ test('flatten twice reaches a gene’s exons, and a bin then counts them', () =>
     [30, 40, 1],
   ])
 })
+
+test('stack packs overlapping features onto the lowest free row, in start order', () => {
+  const out = runTransforms(
+    [
+      feature(50, 90),
+      feature(0, 20),
+      feature(10, 30),
+      feature(15, 25),
+      feature(25, 40),
+    ],
+    [{ type: 'stack' }],
+  )
+  expect(rows(out, 'start', 'end', 'row')).toEqual([
+    [0, 20, 0],
+    [10, 30, 1],
+    [15, 25, 2],
+    [25, 40, 0],
+    [50, 90, 0],
+  ])
+  expect(out[1]!.toJSON()).toMatchObject({ start: 10, end: 30, row: 1 })
+})
+
+test('stack padding keeps a row busy past the feature it holds', () => {
+  const out = runTransforms(
+    [feature(0, 20), feature(25, 40)],
+    [{ type: 'stack', padding: 10 }],
+  )
+  expect(rows(out, 'start', 'row')).toEqual([
+    [0, 0],
+    [25, 1],
+  ])
+})
+
+test('stack groups pack independently and each starts at row 0', () => {
+  const out = runTransforms(
+    [
+      feature(0, 20, { sample: 'a' }),
+      feature(5, 25, { sample: 'a' }),
+      feature(0, 20, { sample: 'b' }),
+      feature(5, 25, { sample: 'b' }),
+    ],
+    [{ type: 'stack', groupby: ['sample'] }],
+  )
+  expect(rows(out, 'sample', 'start', 'row')).toEqual([
+    ['a', 0, 0],
+    ['a', 5, 1],
+    ['b', 0, 0],
+    ['b', 5, 1],
+  ])
+})
+
+test('stack reads the interval fields the step names and writes the field as names', () => {
+  const out = runTransforms(
+    [feature(0, 100, { s: 0, e: 20 }), feature(0, 100, { s: 30, e: 40 })],
+    [{ type: 'stack', fields: ['s', 'e'], as: 'lane' }],
+  )
+  expect(rows(out, 's', 'lane')).toEqual([
+    [0, 0],
+    [30, 0],
+  ])
+})

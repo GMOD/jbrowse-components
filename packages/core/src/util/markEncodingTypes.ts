@@ -316,6 +316,24 @@ export interface FlattenStep {
 
 /**
  * #api
+ * Assign every feature the lowest row on which it overlaps nothing already
+ * there — greedy first fit in start order, the packing a pileup is — and
+ * write it to the field `as` (`row`). `fields` names the interval read
+ * (`start`, `end`); `padding` is bp of clearance kept between two features
+ * sharing a row; `groupby` packs each distinct value set on its own rows,
+ * each numbered from 0. The answer is the input in start order, so a `span`
+ * encoding `row` stacks it.
+ */
+export interface StackStep {
+  type: 'stack'
+  as?: string
+  fields?: [string, string]
+  padding?: number
+  groupby?: FieldRef[]
+}
+
+/**
+ * #api
  * One step over the features before a layer is encoded, named by `type` the
  * way GenomeSpy spells a transform; every step runs in order and the next
  * reads what the last answered.
@@ -327,6 +345,7 @@ export type TransformStep =
   | BinStep
   | AggregateStep
   | CoverageStep
+  | StackStep
 
 export type CoreEncodeFeaturesArgs = {
   adapterConfig: Record<string, unknown>
