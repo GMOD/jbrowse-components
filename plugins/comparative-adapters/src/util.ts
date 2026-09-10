@@ -641,6 +641,15 @@ export function pifVersionKnown(meta: PifMeta) {
   return meta.version === undefined || meta.version <= PIF_FORMAT_VERSION
 }
 
+/** Whether `pi:i:` on a row is the writer's row index (generation 2 on). */
+export function pifRowIdsKnown(meta: PifMeta) {
+  return (
+    meta.version !== undefined &&
+    meta.version >= 2 &&
+    meta.version <= PIF_FORMAT_VERSION
+  )
+}
+
 export function parsePifHeader(header: string): PifMeta {
   const meta: PifMeta = {}
   const line = header.split('\n').find(l => l.startsWith('#pif'))
@@ -1119,8 +1128,11 @@ export function makeIndexedSyntenyFeature({
   const coarseRow = tierLetter === 'T' || tierLetter === 'Q'
   // a version-2 row names its input row in `pi`, so the four rows of one
   // alignment share the in-memory adapters' id shape and a selection survives
-  // the tier switch; an older file has only the row's own offset
-  const rowIndex = typeof pi === 'string' ? +pi : undefined
+  // the tier switch. Gated on the header: an older file has only the row's
+  // own offset, and a `pi` there is some aligner's own tag, which as an id
+  // would collapse every row onto one
+  const rowIndex =
+    typeof pi === 'string' && pifRowIdsKnown(meta) ? +pi : undefined
   const syntenyId = rowIndex ?? fileOffset
   const uniqueId =
     rowIndex === undefined

@@ -43,7 +43,7 @@ test('make-pif', async () => {
 test('the four rows of one alignment share a pi:i: row index', async () => {
   await runInTmpDir(async () => {
     const lines = await pifLines(
-      pafRow(['cg:Z:100M', 'pi:i:99']) + pafRow(['cg:Z:100M'], { 0: 'q2' }),
+      pafRow(['cg:Z:100M', 'pi:f:0.99']) + pafRow(['cg:Z:100M'], { 0: 'q2' }),
     )
     const byRow = (i: number) =>
       lines.filter(l => tagValue(l, 'pi:i:') === String(i))

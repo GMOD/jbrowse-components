@@ -26,7 +26,7 @@ a one-letter prefix on the seqid (tabix column 1):
   ADR-104): indels longer than half of `--coarse` (default 10 kb) kept as
   `I`/`D`/`N`, everything between them one run, written `<own>:<mate>M` when the two sides differ. A run also closes before its folded skew passes `--coarse / 2`, so a straight
   line across a run is within `--coarse` of the true path. A fold that is a
-  single run carries no tag; the file's `#pif` header (`version`, `tiers`,
+  single run closing on the columns carries no tag; the `#pif` header (`version`, `writer`, `tiers`,
   `coarse` = the bound, `cigars` = all/some/none) is what lets a reader treat a
   tagless coarse row as one run within the bound (`coarseRowsAreBounded`,
   `PifFile.meta`), and `--coarse` must be positive so that reading always holds. The renderer walks `cr` where it would walk `cg` — `CIGAR_RUN`,

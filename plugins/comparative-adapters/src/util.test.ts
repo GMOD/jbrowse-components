@@ -492,7 +492,7 @@ describe('the implied fold of a tagless coarse row', () => {
     parsePifLine(
       `${prefix}chr1\t1000\t0\t500\t+\tq1\t1000\t0\t450\t400\t500\t60\tde:f:0.1${tags}`,
     )
-  const bounded = { coarseGap: 10000, cigars: 'all' as const }
+  const bounded = { version: 2, coarseGap: 10000, cigars: 'all' as const }
   const feature = (prefix: string, meta: PifMeta, tags?: string) =>
     makeIndexedSyntenyFeature({
       line: row(prefix, tags),
@@ -525,5 +525,13 @@ describe('the implied fold of a tagless coarse row', () => {
     expect(fine.get('syntenyId')).toBe(7)
     expect(fine.get('pi')).toBeUndefined()
     expect(feature('t', bounded).id()).toBe('1a')
+  })
+  // a `pi` on a version-1 or headerless row is some aligner's own tag, and
+  // taking it as an id would give every row the same one
+  test('a pi on a file older than version 2 is a tag, not an id', () => {
+    const v1 = { coarseGap: 10000, cigars: 'all' as const }
+    expect(feature('t', v1, '\tpi:i:7').id()).toBe('1a')
+    expect(feature('t', v1, '\tpi:i:7').get('syntenyId')).toBe(1)
+    expect(feature('t', {}, '\tpi:i:0.98').id()).toBe('1a')
   })
 })

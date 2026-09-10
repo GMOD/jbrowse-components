@@ -38,10 +38,14 @@ carries a one-letter prefix naming the perspective.
 A [coarse tier](#coarse-tier) repeats both lines under `T`/`Q`. The prefix is
 always the first character of column 1.
 
-Every line of one PAF row ends with `pi:i:<n>`, the row's index in the input. It
-is the one id the row's two or four lines share, so a reader can hold a
-selection across the tier switch and match a coarse line to its fine one. An
-incoming `pi:i:` or `cr:Z:` is dropped and rewritten.
+Every line of one PAF row carries `pi:i:<n>`, the 0-based index of that row
+among the alignments written: comment lines and rows with fewer than 12 columns
+are skipped and do not advance it. It is the one id the row's two or four lines
+share, so a reader can hold a selection across the tier switch and match a
+coarse line to its fine one. It is file-local, so two PIFs concatenated would
+repeat it. It sits after the input's own tags, before a coarse line's `cr:Z:`.
+An incoming `pi:` or `cr:` of any type is dropped and rewritten, and a reader
+takes `pi` as an id only under a header of version 2 or later.
 
 Sorted under `LC_ALL=C`, bgzipped, and indexed with:
 
@@ -106,7 +110,10 @@ One meta line, sorted first and kept by tabix (`tabix -H file.pif.gz`):
 | `coarse`  | the coarse tier's bound in bp, absent when there is no tier  |
 | `cigars`  | whether every input row had a CIGAR: `all`, `some` or `none` |
 
-Every field is optional, and files built before the header have none.
+Every field is optional, and files built before the header have none. A reader
+ignores a header key it does not know, so a new key needs no version bump, and a
+writer must not bump for one: `version` moves only when a reader of the previous
+generation would misread the rows.
 
 ## Coarse tier
 

@@ -328,6 +328,26 @@ describe('PairwiseIndexedPAFAdapter', () => {
       expect(features.length).toBe(1)
       expect(features[0]!.get('coarseCigar')).toBe('31198M4800D18803M')
     })
+
+    // the reason the format has pi:i: (version 2): the display holds a
+    // selection by uniqueId across the refetch a tier switch causes
+    it('the two tiers give one alignment the same id, and its two perspectives different ones', async () => {
+      const adapter = makeAdapter(pifInsCoarsePath, ['volvox_ins', 'volvox'])
+      const idFor = async (assemblyName: string, lodMode: 'fine' | 'coarse') =>
+        (
+          await firstValueFrom(
+            adapter
+              .getFeatures(
+                { refName: 'ctgA', start: 0, end: 60000, assemblyName },
+                { lodMode },
+              )
+              .pipe(toArray()),
+          )
+        ).map(f => f.id())
+      expect(await idFor('volvox', 'fine')).toEqual(['0-t-volvox'])
+      expect(await idFor('volvox', 'coarse')).toEqual(['0-t-volvox'])
+      expect(await idFor('volvox_ins', 'coarse')).toEqual(['0-q-volvox_ins'])
+    })
   })
 
   // A self-alignment names one assembly on both sides, and PIF files the two
@@ -399,7 +419,8 @@ describe('PairwiseIndexedPAFAdapter', () => {
     it('reports the header bound and the coarse tier of a two-tier file', async () => {
       const adapter = makeAdapter(pifInsCoarsePath, ['volvox_ins', 'volvox'])
       expect(await adapter.getHeader()).toEqual({
-        version: 1,
+        version: 2,
+        writer: expect.stringMatching(/^jbrowse-cli\//),
         tiers: ['fine', 'coarse'],
         coarseGap: 1000,
         cigars: 'all',

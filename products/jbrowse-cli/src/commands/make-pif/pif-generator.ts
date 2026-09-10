@@ -197,7 +197,7 @@ function processLine(
   // and every row of this alignment gets this pass's row index as `pi`, the
   // one id its four rows share across perspectives and tiers
   const { tags, cigarIdx } = foldCsIntoCg([
-    ...rest.filter(f => !f.startsWith('cr:Z:') && !f.startsWith('pi:i:')),
+    ...rest.filter(f => !f.startsWith('cr:') && !f.startsWith('pi:')),
     `pi:i:${stats.rows - 1}`,
   ])
   const cigar = cigarIdx === -1 ? undefined : tags[cigarIdx]!.slice(5)
