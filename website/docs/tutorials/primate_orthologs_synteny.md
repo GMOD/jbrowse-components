@@ -94,14 +94,13 @@ python3 symbols_to_blocks.py --anchor human -o primates.blocks \
 ```
 
 Symbols are compared case-folded, so a mouse `Atp5f1a` would meet the human
-`ATP5F1A`, and a gene whose name is an NCBI `LOC` placeholder joins nothing.
-Paralogs reach the table three ways, and none of them is a ribbon between the
-copies. A symbol carried by two genes in a lane genome fills that cell from the
-first copy in coordinate order and leaves the others out. The same symbol twice
-in human drops the second gene's row entirely, so that copy joins nothing in
-either direction. Copies RefSeq lettered apart, _AMY1A_ against _AMY1B_, are
-separate symbols and therefore separate rows. Every copy still draws in every
-lane, since the models come from each genome's own annotation. The helper prints
+`ATP5F1A`, and a gene whose name is an NCBI `LOC` placeholder joins nothing. A
+symbol several genes in one genome carry is a duplication, and a link joins one
+gene to one gene, so the helper gives each copy its own row and the lane draws a
+ribbon per copy from the one anchor gene. A column offering more than
+`--max-copies` genes is a gene family rather than a duplication, and its cell
+empties. Copies RefSeq lettered apart, _AMY1A_ against _AMY1B_, are separate
+symbols and so separate rows, joined to each other by nothing. The helper prints
 how much of each column it filled; for these eight the lanes come back nearly
 full, because the annotations share one naming pipeline.
 

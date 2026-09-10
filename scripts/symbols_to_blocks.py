@@ -16,10 +16,19 @@ NCBI's LOC ids; a PGAP bacterial annotation wants --unnamed '_RS[0-9]+$' for
 its locus tags.
 
 One row per anchor gene, in the anchor's coordinate order, so the table is
-reference-anchored the way jcvi's mcscan output is. Paralogs sharing a symbol
-collapse to one row: the first copy in file order takes the cell, and a second
-anchor gene of the same symbol is skipped, so that copy gets no row and joins
-nothing. A row that names only the anchor is dropped, since it links nothing.
+reference-anchored the way jcvi's mcscan output is. A row that names only the
+anchor is dropped, since it links nothing.
+
+**A symbol carried by several genes becomes several rows.** A link is one gene
+to one gene, so a genome with two copies of a symbol has no single correct cell,
+and taking the first copy hides the duplication. `--pick expand` (the default)
+emits one row per copy, index-paired across columns, so a symbol costs rows
+equal to its largest copy count rather than their product; each copy then draws
+its own ribbon. A symbol with more than `--max-copies` genes in a column is a
+gene family rather than a duplication and empties that cell. `--pick first`
+takes the first copy in file order, and `--pick single` empties any multi-copy
+cell for a strictly one-to-one table. `orthogroups_to_blocks.py` spells the same
+three over OrthoFinder's cells.
 
 The column order printed on stdout is what the JBrowse track's blockAssemblies
 and bedLocations have to list, in that order.
@@ -57,6 +66,25 @@ def genes(path, biotype):
     return out
 
 
+def symbol_rows(copies, pick, max_copies, counts=None):
+    """The table rows one symbol contributes, given each column's copies."""
+    if counts is not None:
+        counts['families'] += sum(1 for c in copies if len(c) > max_copies)
+    copies = [[] if len(c) > max_copies else c for c in copies]
+    if pick == 'first':
+        copies = [c[:1] for c in copies]
+    elif pick == 'single':
+        copies = [c if len(c) == 1 else [] for c in copies]
+    # index-paired: a single-copy column repeats its gene against each copy
+    # beside it, so a symbol costs the largest copy count in rows rather than
+    # their product, and the adapter draws a repeated pair once
+    rows = [
+        [c[i % len(c)] if c else '.' for c in copies]
+        for i in range(max((len(c) for c in copies), default=0))
+    ]
+    return [r for r in rows if sum(g != '.' for g in r) > 1]
+
+
 def main(argv):
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('genomes', nargs='+', metavar='NAME=GFF3', help='a column of the table and the BED it places')
@@ -66,6 +94,10 @@ def main(argv):
     p.add_argument('--biotype', default='protein_coding', help="keep genes of this gene_biotype only; '' keeps every gene")
     p.add_argument('--unnamed', default=r'^LOC\d+', help='a Name= matching this is an unnamed gene and joins nothing')
     p.add_argument('--keep-case', action='store_true', help='compare symbols as written instead of case-folded')
+    p.add_argument('--pick', choices=['expand', 'single', 'first'], default='expand',
+                   help='a symbol with several copies in a column: expand emits a row per copy, single empties the cell, first takes the first copy')
+    p.add_argument('--max-copies', type=int, default=4, metavar='N',
+                   help='a column offering more than N copies of a symbol is a gene family, and its cell is emptied')
     a = p.parse_args(argv)
 
     columns = OrderedDict()
@@ -93,33 +125,42 @@ def main(argv):
         table = {}
         for _, _, _, gid, _, sym in g:
             if named(sym):
-                table.setdefault(key(sym), gid)
+                table.setdefault(key(sym), []).append(gid)
         by_symbol[name] = table
-        print(f'{name}: {len(g)} genes, {len(table)} distinct symbols', file=sys.stderr)
+        dup = sum(1 for gids in table.values() if len(gids) > 1)
+        print(f'{name}: {len(g)} genes, {len(table)} distinct symbols, {dup} with copies', file=sys.stderr)
         if name == a.anchor:
             anchor_genes = sorted(g, key=lambda x: (x[0], x[1]))
 
     order = list(columns)
-    filled = {name: 0 for name in order}
+    filled = {name: set() for name in order}
     rows = 0
+    expanded = 0
+    families = 0
     seen = set()
     with open(a.out, 'w') as out:
         for _, _, _, _, _, sym in anchor_genes:
             if not named(sym) or key(sym) in seen:
                 continue
             seen.add(key(sym))
-            cells = [by_symbol[name].get(key(sym), '.') for name in order]
-            if sum(c != '.' for c in cells) < 2:
-                continue
-            out.write('\t'.join(cells) + '\n')
-            rows += 1
-            for name, c in zip(order, cells):
-                if c != '.':
-                    filled[name] += 1
-    print(f'{a.out}: {rows} rows', file=sys.stderr)
+            counts = {'families': 0}
+            new = symbol_rows(
+                [by_symbol[name].get(key(sym), []) for name in order],
+                a.pick, a.max_copies, counts)
+            families += counts['families']
+            expanded += len(new) > 1
+            for cells in new:
+                out.write('\t'.join(cells) + '\n')
+                rows += 1
+                for name, c in zip(order, cells):
+                    if c != '.':
+                        filled[name].add(c)
+    print(f'{a.out}: {rows} rows, {expanded} symbols expanded across rows', file=sys.stderr)
+    if families:
+        print(f'  {families} cells emptied by --max-copies {a.max_copies}', file=sys.stderr)
     for name in order:
-        pct = 100 * filled[name] / rows if rows else 0
-        print(f'  {name}: {filled[name]} ({pct:.0f}%)', file=sys.stderr)
+        pct = 100 * len(filled[name]) / rows if rows else 0
+        print(f'  {name}: {len(filled[name])} genes ({pct:.0f}%)', file=sys.stderr)
     print(' '.join(order))
 
 

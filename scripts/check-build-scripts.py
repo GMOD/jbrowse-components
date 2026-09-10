@@ -1807,6 +1807,28 @@ check("an orthogroup present in one genome only is dropped",
 check("a gene the BED does not have is not counted as an answer",
       og.orthogroup_rows(dup, "expand", 4, [None, {"Zm01b"}, None]),
       [["Os01g1", "Zm01b", "Sb01g"]])
+# symbols_to_blocks.py: the same three modes over a symbol join, where a column's
+# copies are the genes sharing one symbol. Expanding them is what draws a
+# duplication as a ribbon per copy; taking the first hid the second copy of the
+# ANCHOR too, which left that gene joined to nothing in either direction.
+sy = load("scripts/symbols_to_blocks.py", "symbols_to_blocks")
+sdup = [["h1"], ["c1a", "c1b"], ["g1"]]
+check("expand emits a row per copy of the symbol",
+      sy.symbol_rows(sdup, "expand", 4),
+      [["h1", "c1a", "g1"], ["h1", "c1b", "g1"]])
+check("a repeated anchor symbol keeps both of its copies",
+      sy.symbol_rows([["h1", "h1b"], ["c1"], []], "expand", 4),
+      [["h1", "c1", "."], ["h1b", "c1", "."]])
+check("single empties a multi-copy cell rather than choosing",
+      sy.symbol_rows(sdup, "single", 4), [["h1", ".", "g1"]])
+check("first takes the first copy in file order",
+      sy.symbol_rows(sdup, "first", 4), [["h1", "c1a", "g1"]])
+check("a symbol past --max-copies is a gene family and empties its cell",
+      sy.symbol_rows([["h1"], ["c1", "c2", "c3"], ["g1"]], "expand", 2),
+      [["h1", ".", "g1"]])
+check("a symbol only one genome names is dropped",
+      sy.symbol_rows([["h1"], [], []], "expand", 4), [])
+
 # an orthogroup is a set, not a reference-anchored row: unlike a jcvi .blocks
 # table no column anchors the others, so a pair that skips column 0 is a row
 check("a row survives without column 0, which anchors nothing",
