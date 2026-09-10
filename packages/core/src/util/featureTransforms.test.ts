@@ -118,3 +118,93 @@ test('an aggregate op over no field says so', () => {
     ),
   ).toThrow(/needs a field/)
 })
+
+test('flatten answers one feature per subfeature, reading the parent for what it lacks', () => {
+  const gene = new SimpleFeature({
+    uniqueId: 'gene1',
+    refName: 'ctgA',
+    start: 0,
+    end: 100,
+    name: 'BRCA1',
+    strand: 1,
+    subfeatures: [
+      { uniqueId: 'e1', refName: 'ctgA', start: 0, end: 10, type: 'exon' },
+      { uniqueId: 'e2', refName: 'ctgA', start: 40, end: 60, type: 'exon' },
+    ],
+  })
+  const out = runTransforms([gene], [{ type: 'flatten' }])
+  expect(rows(out, 'start', 'end', 'type', 'name', 'strand')).toEqual([
+    [0, 10, 'exon', 'BRCA1', 1],
+    [40, 60, 'exon', 'BRCA1', 1],
+  ])
+  expect(out.map(f => f.id())).toEqual(['e1', 'e2'])
+  expect(out[0]!.parent()!.id()).toBe('gene1')
+  expect(out[1]!.toJSON()).toMatchObject({ name: 'BRCA1', start: 40, end: 60 })
+})
+
+test('flatten drops a feature with nothing in the field unless keepEmpty says otherwise', () => {
+  const plain = feature(0, 10)
+  expect(
+    runTransforms([plain], [{ type: 'flatten', field: 'blocks' }]),
+  ).toEqual([])
+  expect(
+    runTransforms(
+      [plain],
+      [{ type: 'flatten', field: 'blocks', keepEmpty: true }],
+    ),
+  ).toHaveLength(1)
+})
+
+test('flatten fans out plain records and index names the position', () => {
+  const out = runTransforms(
+    [
+      feature(0, 100, {
+        blocks: [
+          { start: 5, end: 9 },
+          { start: 20, end: 25 },
+        ],
+      }),
+    ],
+    [{ type: 'flatten', field: 'blocks', index: 'blockNumber' }],
+  )
+  expect(rows(out, 'start', 'end', 'blockNumber')).toEqual([
+    [5, 9, 0],
+    [20, 25, 1],
+  ])
+  expect(out.map(f => f.id())).toEqual(['0-100#0', '0-100#1'])
+})
+
+test('flatten twice reaches a gene’s exons, and a bin then counts them', () => {
+  const gene = new SimpleFeature({
+    uniqueId: 'gene1',
+    refName: 'ctgA',
+    start: 0,
+    end: 100,
+    subfeatures: [
+      {
+        uniqueId: 't1',
+        refName: 'ctgA',
+        start: 0,
+        end: 100,
+        subfeatures: [
+          { uniqueId: 'e1', refName: 'ctgA', start: 0, end: 5 },
+          { uniqueId: 'e2', refName: 'ctgA', start: 6, end: 9 },
+          { uniqueId: 'e3', refName: 'ctgA', start: 30, end: 35 },
+        ],
+      },
+    ],
+  })
+  const out = runTransforms(
+    [gene],
+    [
+      { type: 'flatten' },
+      { type: 'flatten' },
+      { type: 'bin', step: 10 },
+      { type: 'aggregate', groupby: ['start', 'end'], ops: [{ op: 'count' }] },
+    ],
+  )
+  expect(rows(out, 'start', 'end', 'count')).toEqual([
+    [0, 10, 2],
+    [30, 40, 1],
+  ])
+})

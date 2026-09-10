@@ -1,5 +1,5 @@
 import { stringToJexlExpression } from './jexlStrings.ts'
-import { buildJexlContext } from './simpleFeature.ts'
+import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
 
 import type { JexlInstance } from './jexlStrings.ts'
 import type {
@@ -7,6 +7,7 @@ import type {
   AggregateStep,
   BinStep,
   CoverageStep,
+  FlattenStep,
   TransformStep,
 } from './markEncodingTypes.ts'
 import type { Feature, SimpleFeatureSerialized } from './simpleFeature.ts'
@@ -105,6 +106,67 @@ function formula(
         [as]: compiled.eval(buildJexlContext({ feature: f })),
       }),
   )
+}
+
+/**
+ * One element of a fanned-out array field, reading its own fields over the
+ * feature it came from: an exon that still knows its gene's name and strand.
+ */
+class FlattenedFeature implements Feature {
+  private readonly container: Feature
+  private readonly item: Feature
+
+  constructor(container: Feature, item: Feature) {
+    this.container = container
+    this.item = item
+  }
+
+  get = ((name: string) => {
+    const v = this.item.get(name)
+    return v === undefined ? this.container.get(name) : v
+  }) as Feature['get']
+
+  id() {
+    return this.item.id()
+  }
+
+  parent() {
+    return this.container
+  }
+
+  children() {
+    return this.item.children?.()
+  }
+
+  toJSON(): SimpleFeatureSerialized {
+    return { ...this.container.toJSON(), ...this.item.toJSON() }
+  }
+}
+
+function flatten(features: readonly Feature[], step: FlattenStep) {
+  const { field = 'subfeatures', index, keepEmpty } = step
+  const out: Feature[] = []
+  for (const f of features) {
+    const items = f.get(field)
+    if (!Array.isArray(items) || items.length === 0) {
+      if (keepEmpty) {
+        out.push(f)
+      }
+      continue
+    }
+    for (const [i, item] of items.entries()) {
+      const child =
+        typeof (item as Feature | undefined)?.get === 'function'
+          ? (item as Feature)
+          : new SimpleFeature({
+              ...(item as Record<string, unknown>),
+              uniqueId: `${f.id()}#${i}`,
+            })
+      const flat = new FlattenedFeature(f, child)
+      out.push(index ? new DerivedFeature(flat, { [index]: i }) : flat)
+    }
+  }
+  return out
 }
 
 function bin(features: readonly Feature[], step: BinStep) {
@@ -296,6 +358,10 @@ export function runTransforms(
       }
       case 'formula': {
         current = formula(current, step.expr, step.as, jexl)
+        break
+      }
+      case 'flatten': {
+        current = flatten(current, step)
         break
       }
       case 'bin': {

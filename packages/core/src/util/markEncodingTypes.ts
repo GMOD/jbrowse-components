@@ -270,6 +270,23 @@ export interface CoverageStep {
 
 /**
  * #api
+ * Fan each feature out into one feature per element of an array-valued field
+ * — `subfeatures`, so a gene answers its transcripts and a transcript its
+ * exons. Each answer reads the element's own fields first and the feature it
+ * came from for everything else, so an exon still knows its gene's name and
+ * strand. A feature whose field holds no array drops out unless `keepEmpty`
+ * says otherwise.
+ */
+export interface FlattenStep {
+  type: 'flatten'
+  field?: FieldRef
+  /** Written with the element's position in its parent's array. */
+  index?: string
+  keepEmpty?: boolean
+}
+
+/**
+ * #api
  * One step over the features before a layer is encoded, named by `type` the
  * way GenomeSpy spells a transform; every step runs in order and the next
  * reads what the last answered.
@@ -277,6 +294,7 @@ export interface CoverageStep {
 export type TransformStep =
   | FilterStep
   | FormulaStep
+  | FlattenStep
   | BinStep
   | AggregateStep
   | CoverageStep

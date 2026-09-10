@@ -32,7 +32,7 @@ render state rather than a new mechanism.
 ## Decision
 
 - **`TransformStep` is a union by `type`** — `filter`, `formula`, `bin`,
-  `aggregate`, `coverage` — and `runTransforms`
+  `aggregate`, `coverage`, and `flatten` since ADR-114 — and `runTransforms`
   (`packages/core/src/util/featureTransforms.ts`) walks it in order, each
   step reading what the last answered. `bin` writes the bin's edges over
   `start` and `end` by default, so an `aggregate` grouped by those two is a

@@ -20,7 +20,7 @@ BED score column, a segment ratio, a bedGraph-shaped interval.
 | Piece | Where | What it owns |
 | --- | --- | --- |
 | `MarkEncoding`, `encodeFeatures` | `packages/core/src/util/markEncoding.ts` | the declaration and its evaluation over the **lanes** the caller names: native `feature.get(field)` per channel, `jexl:` as the opt-in escape, a colour that is a constant, a jexl expression, a categorical palette or a ramp over a domain, a glyph that is a name, a jexl expression or a categorical scale over the glyph names, an integer `row`, the `y` extremes, a Flatbush over `(x, y, x2, y)` when `index` is named, and the `ScaleTable` per scaled channel |
-| `runTransforms` | `packages/core/src/util/featureTransforms.ts` | the transform stage: a typed step list — `filter`, `formula`, `bin`, `aggregate`, `coverage` — run in order over a feature list, each step reading what the last answered |
+| `runTransforms` | `packages/core/src/util/featureTransforms.ts` | the transform stage: a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage` — run in order over a feature list, each step reading what the last answered |
 | `CoreEncodeFeatures` | `packages/core/src/rpc/methods/CoreEncodeFeatures.ts` | one region's features fetched once, the request's shared `transform` steps run (the display's `jexlFilters` as `filter` steps), then each layer of the request — its own `transform`, an encoding and its lanes — run over that list; answers `{ layers: EncodedChannels[] }` with `layers[i]` for the request's `layers[i]`, the buffers transferred |
 | `LinearMarkDisplay` | `plugins/marks` | a `marks` slot of `{ shape, encoding, transform, minBpPerPx, maxBpPerPx }` sub-schemas, one `defineMark` per entry reading `layers[i]` through a lens that checks its shape's lanes are present (`SHAPE_LANES`) and `enabled` inside the entry's zoom range, the wiggle-core score axis, a legend from the union of the regions' scale tables, hover through each mark's `hitNearest` over its layer's Flatbush, spans stacked on `row` into `rowCount` bands |
 
@@ -90,6 +90,7 @@ walks it in order:
 | --- | --- | --- |
 | `filter` | the features a `jexl:` expression admits | none |
 | `formula` | every feature, with a `jexl:` expression's value in `as` | `as` |
+| `flatten` | one feature per element of an array-valued `field` (`subfeatures`), reading the element's fields over the feature it came from | the element's, and `index` |
 | `bin` | every feature, snapped to the genome-aligned bin of `step` bp its `field` (`start`) falls in | `start` and `end`, or the two names in `as` |
 | `aggregate` | one feature per distinct `groupby` value set, spanning its members' extent, with each of `ops` — `count`, or `sum`/`mean`/`min`/`max` over a field — in `as` or `count`/`<op>_<field>`; no `groupby` folds the region | the group's fields, the ops |
 | `coverage` | one feature per run of constant depth over the spans, where the depth is not zero | `as` (`coverage`) |

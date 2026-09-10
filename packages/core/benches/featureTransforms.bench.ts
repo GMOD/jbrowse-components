@@ -12,6 +12,9 @@
 //   none         the encode alone, over the raw list
 //   filter       one jexl filter keeping every other feature
 //   formula      one jexl formula writing a field, then y reads it
+//   flatten      each feature fanned out into its four subfeatures — its own
+//                input list, so the other arms stay what they were
+//   flatten-bin  the same fan-out binned at 10 kb and counted per bin
 //   bin-count    bin at 10 kb, aggregate count per bin
 //   bin-mean     bin at 10 kb, aggregate count and mean score per bin
 //   coverage     runs of constant depth over the spans
@@ -47,6 +50,22 @@ const features = Array.from({ length: n }, (_, i) => {
   })
 })
 
+// The flatten arms' own input: containers of four each over the SAME feature
+// objects, so the fan-out answers exactly the million `none` encodes and the
+// gap between the two rows is flatten's own cost. A second list of real
+// SimpleFeatures here doubled the live heap and put the untouched `coverage`
+// row from 427ms to 1000ms — a row moved by the fixture beside it measured
+// nothing.
+const GROUP = 4
+const nested = Array.from({ length: n / GROUP }, (_, i) => {
+  const members = features.slice(i * GROUP, i * GROUP + GROUP)
+  return {
+    get: (name: string) =>
+      name === 'subfeatures' ? members : members[0]!.get(name),
+    id: () => `group${i}`,
+  } as unknown as SimpleFeature
+})
+
 const BIN: TransformStep[] = [
   { type: 'bin', step: 10_000 },
   {
@@ -56,7 +75,12 @@ const BIN: TransformStep[] = [
   },
 ]
 
-const ARMS: { name: string; y: string; layers: TransformStep[][] }[] = [
+const ARMS: {
+  name: string
+  y: string
+  layers: TransformStep[][]
+  nested?: boolean
+}[] = [
   { name: 'none', y: 'score', layers: [[]] },
   {
     name: 'filter',
@@ -69,6 +93,18 @@ const ARMS: { name: string; y: string; layers: TransformStep[][] }[] = [
     layers: [
       [{ type: 'formula', expr: 'jexl:feature.score * 2', as: 'twice' }],
     ],
+  },
+  {
+    name: 'flatten',
+    y: 'score',
+    layers: [[{ type: 'flatten' }]],
+    nested: true,
+  },
+  {
+    name: 'flatten-bin',
+    y: 'count',
+    layers: [[{ type: 'flatten' }, ...BIN]],
+    nested: true,
   },
   { name: 'bin-count', y: 'count', layers: [BIN] },
   {
@@ -89,12 +125,15 @@ const ARMS: { name: string; y: string; layers: TransformStep[][] }[] = [
   { name: 'bin-then-raw', y: 'count', layers: [BIN, []] },
 ]
 
-const drivers = ARMS.map(({ y, layers }) => {
+const inputCount = (useNested?: boolean) => (useNested ? n / GROUP : n)
+
+const drivers = ARMS.map(({ y, layers, nested: useNested }) => {
   const lanes = ['y', 'color'] as const
+  const input = useNested ? nested : features
   return () => {
     let last = 0
     for (const [i, steps] of layers.entries()) {
-      const out = runTransforms(features, steps, jexl)
+      const out = runTransforms(input, steps, jexl)
       const yField = i === 0 ? y : 'score'
       last += encodeFeatures(out, { y: yField, color: 'red' }, lanes).count
     }
@@ -116,11 +155,13 @@ for (let r = 0; r < rounds; r++) {
 }
 
 console.log(`\nrounds=${rounds}, ${n.toLocaleString()} features, min per arm`)
-for (const [i, { name }] of ARMS.entries()) {
+for (const [i, { name, nested: useNested }] of ARMS.entries()) {
   const ms = best[i]!
+  const inputs = inputCount(useNested)
   console.log(
     `  ${name.padEnd(13)} ${ms.toFixed(1).padStart(8)}ms  ` +
-      `${((ms / n) * 1e6).toFixed(0).padStart(6)}ns/feature  ` +
+      `in=${inputs.toLocaleString().padStart(9)}  ` +
+      `${((ms / inputs) * 1e6).toFixed(0).padStart(6)}ns/input  ` +
       `${(ms / best[0]!).toFixed(2)}x none`,
   )
 }
