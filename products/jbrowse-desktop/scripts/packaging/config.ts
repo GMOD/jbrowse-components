@@ -42,13 +42,14 @@ export const APPLE_TEAM_ID = '9KR53J86Q2'
 export const GITHUB_OWNER = 'GMOD'
 export const GITHUB_REPO = 'jbrowse-components'
 
-// The `CN=` of the ssl.com certificate signWindowsFile signs with, which is
-// what lets a Windows client verify the installer it downloaded really came
-// from us (see appUpdateYml). Unset, that check is skipped — which is where
-// this stood after the electron-builder config went, since electron-builder
-// filled the field in from the certificate itself. Read it off a signed
-// release exe with `Get-AuthenticodeSignature`, or `osslsigncode verify`.
-export const WINDOWS_PUBLISHER_NAME = process.env.WINDOWS_PUBLISHER_NAME
+// The CN of the ssl.com certificate signWindowsFile signs with, which
+// app-update.yml carries so a client can check the installer it downloaded came
+// from us — absent, NsisUpdater skips that check entirely. Not a secret: it is
+// printed inside every signed exe we publish, and an unset environment variable
+// would silently mean no check. verifyWindowsSignature reads it back out of
+// what was just signed, so a reissue under another name fails the build rather
+// than every user's next update. The current certificate runs to 2027-07-10.
+export const WINDOWS_PUBLISHER_NAME = 'Evolutionary Software Foundation'
 
 // Where a packaged target lands on disk, from `unpackedApp`'s naming rule.
 export function packagedApp(target: Platform) {

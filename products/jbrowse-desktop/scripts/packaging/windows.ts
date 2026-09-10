@@ -11,6 +11,7 @@ import { createNsisScript } from './nsisScript.ts'
 import { packageApp } from './packager.ts'
 import { signWindowsFile } from './signing.ts'
 import { generateLatestYml, log, run, runQuiet } from './utils.ts'
+import { verifyWindowsSignature } from './verifyWindows.ts'
 
 // Convert Unix path to Windows path for Wine (e.g., /home/user -> Z:\home\user)
 function toWinePath(unixPath: string) {
@@ -100,6 +101,7 @@ async function createWindowsInstaller(electronAppDir: string) {
   }
 
   signWindowsFile(exePath)
+  verifyWindowsSignature(exePath)
   log(`Created: ${exeName}`)
   return exePath
 }
@@ -115,6 +117,7 @@ export async function buildWindows({ noInstaller = false } = {}) {
   }
 
   signWindowsFile(mainExe)
+  verifyWindowsSignature(mainExe)
 
   const installerPath = await createWindowsInstaller(electronAppDir)
   fs.rmSync(electronAppDir, { recursive: true })
