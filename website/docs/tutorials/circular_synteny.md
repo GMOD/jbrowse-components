@@ -301,7 +301,7 @@ the alignment: its span in each genome and which way round the two read. The
 widest ribbon on the three-chromosome circle is the X block that runs reverse
 between the two genomes, which is why it twists.
 
-<Figure src="/img/circular_synteny/ribbon_hover.png" caption="The widest X ribbon hovered on the three-chromosome circle. It is one reverse-strand block, and the tooltip names its span in each genome." />
+<Figure src="/img/circular_synteny/ribbon_hover.png" caption="The widest X ribbon hovered on the three-chromosome circle. It crosses itself between the two X arcs, which is the reverse strand; the tooltip names its span in each genome." />
 
 The tooltip's two loci are the row the PIF holds. `tabix` returns it from the
 blocks file at the human coordinate the tooltip starts at, and from the full
