@@ -23,9 +23,24 @@ export interface Updater {
     event: 'update-available' | 'update-downloaded',
     listener: (info: { version: string }) => void,
   ): unknown
+  on(
+    event: 'download-progress',
+    listener: (progress: { percent: number }) => void,
+  ): unknown
   checkForUpdates(): Promise<{ isUpdateAvailable: boolean } | null>
   downloadUpdate(): Promise<string[]>
   quitAndInstall(isSilent: boolean, isForceRunAfter: boolean): void
+}
+
+/**
+ * Where a download's progress is drawn: the dock on macOS, the taskbar button
+ * on Windows, the launcher on Unity. A fraction, or -1 to clear it.
+ *
+ * Narrowed to the one call rather than taking a BrowserWindow, so this module
+ * still says what it drives and the tests still need no electron.
+ */
+export interface ProgressBar {
+  setProgressBar(fraction: number): void
 }
 
 const RELEASE_NOTES_URL =
@@ -109,7 +124,11 @@ export async function askAboutVersion({
   return response
 }
 
-async function offerUpdate(autoUpdater: Updater, version: string) {
+async function offerUpdate(
+  autoUpdater: Updater,
+  getProgressBar: () => ProgressBar | null,
+  version: string,
+) {
   if (!interactive()) {
     console.log(`Update ${version} available (CI mode, skipping dialog)`)
     return
@@ -117,7 +136,7 @@ async function offerUpdate(autoUpdater: Updater, version: string) {
   const response = await askAboutVersion({
     version,
     title: 'Found updates',
-    message: `Version ${version} is available, do you want to update now? Note: the update will download in the background, and a dialog will appear once complete`,
+    message: `Version ${version} is available, do you want to update now? Note: the update downloads in the background — the progress is on the app's taskbar icon, and a dialog appears once it is complete`,
     buttons: ['Yes', 'No'],
   })
   if (response === 0) {
@@ -127,6 +146,7 @@ async function offerUpdate(autoUpdater: Updater, version: string) {
       // The user asked for this download, so its failure is theirs to hear
       // about: saying Yes to one that dies was otherwise indistinguishable
       // from saying No.
+      getProgressBar()?.setProgressBar(-1)
       await say(
         'Update download failed',
         `Version ${version} could not be downloaded. ${describeFailure(error)}`,
@@ -188,7 +208,16 @@ export async function checkForUpdatesManually(autoUpdater: Updater) {
   }
 }
 
-export function setupAutoUpdater(autoUpdater: Updater, logPath: string) {
+export function setupAutoUpdater({
+  autoUpdater,
+  logPath,
+  getProgressBar,
+}: {
+  autoUpdater: Updater
+  logPath: string
+  /** the main window, when there is one — a check can precede it, and outlive it */
+  getProgressBar: () => ProgressBar | null
+}) {
   autoUpdater.logger = createUpdateLog(logPath)
 
   // isUpdaterActive() refuses anything unpackaged, so a dev run cannot exercise
@@ -208,10 +237,18 @@ export function setupAutoUpdater(autoUpdater: Updater, logPath: string) {
   autoUpdater.disableDifferentialDownload = true
 
   autoUpdater.on('update-available', info => {
-    offerUpdate(autoUpdater, info.version).catch(logError)
+    offerUpdate(autoUpdater, getProgressBar, info.version).catch(logError)
+  })
+
+  // A quarter-gigabyte over a slow link is minutes in which the only thing that
+  // had happened was a dialog closing, which reads as an update that did not
+  // start — and quitting to "try again" is what actually loses it.
+  autoUpdater.on('download-progress', ({ percent }) => {
+    getProgressBar()?.setProgressBar(percent / 100)
   })
 
   autoUpdater.on('update-downloaded', info => {
+    getProgressBar()?.setProgressBar(-1)
     offerRestart(autoUpdater, info.version).catch(logError)
   })
 

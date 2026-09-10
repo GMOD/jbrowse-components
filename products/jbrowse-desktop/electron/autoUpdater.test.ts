@@ -39,7 +39,14 @@ const titles = () => showMessageBox.mock.calls.map(([options]) => options.title)
 const flush = () => new Promise(resolve => setTimeout(resolve, 0))
 
 type UpdateEvent = 'update-available' | 'update-downloaded'
-type UpdateListener = (info: { version: string }) => void
+type VersionListener = (info: { version: string }) => void
+type ProgressListener = (progress: { percent: number }) => void
+
+// A tuple union rather than two parameters, so destructuring narrows the
+// listener from the event name and neither store needs an assertion.
+type Subscribe =
+  | [event: UpdateEvent, listener: VersionListener]
+  | [event: 'download-progress', listener: ProgressListener]
 
 /**
  * A stand-in for the real updater — no cast anywhere, because `Updater` is the
@@ -47,31 +54,41 @@ type UpdateListener = (info: { version: string }) => void
  * members is one. That the real `autoUpdater` is also one is proved at
  * electron.ts's call site rather than here.
  *
- * `fire` delivers an event to whatever setupAutoUpdater subscribed. It takes
- * only a version, because that is the only field either handler reads and the
- * rest of an UpdateInfo would be noise at every call site.
+ * `fire` delivers an event to whatever setupAutoUpdater subscribed.
  */
 type FakeUpdater = Updater & {
   fire: (event: UpdateEvent, version: string) => void
+  report: (percent: number) => void
   checkForUpdates: jest.Mock<Promise<{ isUpdateAvailable: boolean } | null>, []>
   downloadUpdate: jest.Mock<Promise<string[]>, []>
   quitAndInstall: jest.Mock<void, [boolean, boolean]>
 }
 
 function fakeUpdater(): FakeUpdater {
-  const listeners = new Map<string, UpdateListener[]>()
+  const versions = new Map<UpdateEvent, VersionListener[]>()
+  const progress: ProgressListener[] = []
   return {
     autoDownload: true,
     disableWebInstaller: false,
     disableDifferentialDownload: false,
     forceDevUpdateConfig: false,
     logger: null,
-    on(event, listener) {
-      listeners.set(event, [...(listeners.get(event) ?? []), listener])
+    on(...args: Subscribe) {
+      const [event, listener] = args
+      if (event === 'download-progress') {
+        progress.push(listener)
+      } else {
+        versions.set(event, [...(versions.get(event) ?? []), listener])
+      }
     },
     fire(event, version) {
-      for (const listener of listeners.get(event) ?? []) {
+      for (const listener of versions.get(event) ?? []) {
         listener({ version })
+      }
+    },
+    report(percent) {
+      for (const listener of progress) {
+        listener({ percent })
       }
     },
     checkForUpdates: jest.fn(),
@@ -84,8 +101,20 @@ const available = (isUpdateAvailable: boolean) => ({ isUpdateAvailable })
 
 let logDir: string
 let logPath: string
+let progress: number[]
+
+function setup(autoUpdater: Updater) {
+  setupAutoUpdater({
+    autoUpdater,
+    logPath,
+    getProgressBar: () => ({
+      setProgressBar: (fraction: number) => progress.push(fraction),
+    }),
+  })
+}
 
 beforeEach(() => {
+  progress = []
   showMessageBox.mockReset()
   openExternal.mockReset()
   openExternal.mockResolvedValue(undefined)
@@ -198,7 +227,7 @@ test('a manual check on a build that cannot update says that', async () => {
 // so the offer hangs off the event rather than off either caller.
 test('an available update is offered and downloaded on yes', async () => {
   const updater = fakeUpdater()
-  setupAutoUpdater(updater, logPath)
+  setup(updater)
   click(0)
   updater.fire('update-available', '4.4.0')
   await flush()
@@ -208,7 +237,7 @@ test('an available update is offered and downloaded on yes', async () => {
 
 test('declining the offer downloads nothing', async () => {
   const updater = fakeUpdater()
-  setupAutoUpdater(updater, logPath)
+  setup(updater)
   click(1)
   updater.fire('update-available', '4.4.0')
   await flush()
@@ -221,7 +250,7 @@ test('declining the offer downloads nothing', async () => {
 test('a download that fails after yes is reported', async () => {
   const updater = fakeUpdater()
   updater.downloadUpdate.mockRejectedValue(new Error('disk full'))
-  setupAutoUpdater(updater, logPath)
+  setup(updater)
   click(0)
   clickThrough()
   updater.fire('update-available', '4.4.0')
@@ -232,7 +261,7 @@ test('a download that fails after yes is reported', async () => {
 
 test('restart now installs, later does not', async () => {
   const updater = fakeUpdater()
-  setupAutoUpdater(updater, logPath)
+  setup(updater)
   click(1)
   updater.fire('update-downloaded', '4.4.0')
   await flush()
@@ -249,7 +278,7 @@ test('under CI nothing opens a dialog', async () => {
   process.env.CI = 'true'
   const updater = fakeUpdater()
   updater.checkForUpdates.mockResolvedValue(available(false))
-  setupAutoUpdater(updater, logPath)
+  setup(updater)
   jest.spyOn(console, 'log').mockImplementation(() => {})
   updater.fire('update-available', '4.4.0')
   updater.fire('update-downloaded', '4.4.0')
@@ -266,7 +295,7 @@ test('under CI nothing opens a dialog', async () => {
 // a .blockmap beside each artifact that no packager here writes.
 test('the updater is configured before any event can arrive', () => {
   const updater = fakeUpdater()
-  setupAutoUpdater(updater, logPath)
+  setup(updater)
   expect(updater.autoDownload).toBe(false)
   expect(updater.disableWebInstaller).toBe(true)
   expect(updater.disableDifferentialDownload).toBe(true)
@@ -275,8 +304,38 @@ test('the updater is configured before any event can arrive', () => {
 // The renderer's menu bar is the only one Windows and Linux have, so without
 // this channel two of the three platforms have no manual check at all.
 test('the manual check is reachable from the renderer', () => {
-  setupAutoUpdater(fakeUpdater(), logPath)
+  setup(fakeUpdater())
   expect(jest.mocked(ipcMain.handle).mock.calls[0]![0]).toBe('checkForUpdates')
+})
+
+// A quarter-gigabyte over a slow link is minutes in which nothing at all had
+// happened since a dialog closed, which reads as an update that did not start.
+test('a download draws on the taskbar icon and clears when it lands', async () => {
+  const updater = fakeUpdater()
+  setup(updater)
+  updater.report(0)
+  updater.report(42.5)
+  updater.report(100)
+  expect(progress).toEqual([0, 0.425, 1])
+
+  click(1)
+  updater.fire('update-downloaded', '4.4.0')
+  await flush()
+  expect(progress.at(-1)).toBe(-1)
+})
+
+// otherwise the bar sits at whatever fraction it died on, for the life of the
+// window, describing a download that is not happening
+test('a failed download clears the taskbar too', async () => {
+  const updater = fakeUpdater()
+  updater.downloadUpdate.mockRejectedValue(new Error('disk full'))
+  setup(updater)
+  click(0)
+  clickThrough()
+  updater.report(30)
+  updater.fire('update-available', '4.4.0')
+  await flush()
+  expect(progress).toEqual([0.3, -1])
 })
 
 // A packaged app has no terminal, so the default console logger meant an update
@@ -284,7 +343,7 @@ test('the manual check is reachable from the renderer', () => {
 test('the updater writes to the log file it was given', () => {
   const updater = fakeUpdater()
   jest.spyOn(console, 'log').mockImplementation(() => {})
-  setupAutoUpdater(updater, logPath)
+  setup(updater)
   updater.logger!.info('checking for update')
 
   expect(fs.readFileSync(logPath, 'utf8')).toContain('checking for update')
@@ -296,11 +355,11 @@ test('the updater writes to the log file it was given', () => {
 // release.
 test('a dev run can be pointed at a feed, and is not by default', () => {
   const off = fakeUpdater()
-  setupAutoUpdater(off, logPath)
+  setup(off)
   expect(off.forceDevUpdateConfig).toBe(false)
 
   process.env.JBROWSE_DEV_UPDATE_CONFIG = '1'
   const on = fakeUpdater()
-  setupAutoUpdater(on, logPath)
+  setup(on)
   expect(on.forceDevUpdateConfig).toBe(true)
 })
