@@ -7,21 +7,6 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
 }
 
 /**
- * Fill in an assembly `sequence.adapter`'s `type` from its `uri` when the type
- * is omitted, so `sequence: { adapter: { uri: 'genome.fa.gz' } }` resolves to a
- * `BgzipFastaAdapter` (and `.fa` → indexed, `.2bit` → `TwoBitAdapter`). Uses the
- * same `Core-guessAdapterForLocation` extension point the "Add track" flow uses,
- * so every host describes a custom genome with just a URL and lets jbrowse-core
- * pick the adapter — no adapter-type table in the Python/R/JS bindings.
- *
- * The guesser also derives the index locations (`.fai`/`.gzi`) from the uri;
- * explicit adapter fields (e.g. a non-sibling `faiLocation`) are spread on top
- * so they win. A `uri` matching no sequence adapter is left untouched, so a
- * genuinely bad config still surfaces its own downstream error. Returns the same
- * object reference when there is nothing to expand, so callers can cheaply skip
- * a rebuild.
- */
-/**
  * Expand an assembly snapshot's own shorthands into the `sequence` an assembly
  * config declares: the flat `{ name, uri: 'genome.fa.gz' }` form, the
  * `sequence: { adapter: { uri } }` form, and the omitted
@@ -70,6 +55,21 @@ export function expandAssemblyShorthand<T>(
   return (sequence === snap.sequence ? snap : { ...rest, name, sequence }) as T
 }
 
+/**
+ * Fill in an assembly `sequence.adapter`'s `type` from its `uri` when the type
+ * is omitted, so `sequence: { adapter: { uri: 'genome.fa.gz' } }` resolves to a
+ * `BgzipFastaAdapter` (and `.fa` → indexed, `.2bit` → `TwoBitAdapter`). Uses the
+ * same `Core-guessAdapterForLocation` extension point the "Add track" flow uses,
+ * so every host describes a custom genome with just a URL and lets jbrowse-core
+ * pick the adapter — no adapter-type table in the Python/R/JS bindings.
+ *
+ * Only the type comes off the guess: the adapter's own `normalizeSnapshot`
+ * expands the `uri` into the location slots it declares, so the shorthand
+ * expands to the same thing here as it does when the config names the type.
+ * A `uri` matching no sequence adapter is left untouched, and the same object
+ * reference comes back when there is nothing to expand, so callers can cheaply
+ * skip a rebuild.
+ */
 export function expandAssemblySequenceAdapter(
   sequence: unknown,
   pluginManager: PluginManager,
