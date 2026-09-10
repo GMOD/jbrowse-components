@@ -99,13 +99,14 @@ export function fillSpanRect(
   height: number,
   widthCompensation = 0,
 ) {
+  const [left, width] = spanRectPx(px, px2, widthCompensation)
+  ctx.fillRect(left, top, width, height)
+}
+
+/** The `[left, width]` `fillSpanRect` fills, for a mark's ink. */
+export function spanRectPx(px: number, px2: number, widthCompensation = 0) {
   const [left, right] = expandToMinWidthPx(px, px2, 1)
-  ctx.fillRect(
-    left,
-    top,
-    Math.max(px2 - px + widthCompensation, right - left),
-    height,
-  )
+  return [left, Math.max(px2 - px + widthCompensation, right - left)] as const
 }
 
 // colorType: 1=insertion 2=softclip 3=hardclip, with anything else taking the

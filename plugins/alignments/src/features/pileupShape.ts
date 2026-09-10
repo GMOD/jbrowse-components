@@ -9,7 +9,11 @@
 // and the scalar decisions the two backends share come across through
 // `//! js-export` (`intronAlpha`, `sizeAlpha`, `frequencyFadeGate`,
 // `qualityFade`, `overlapFade`), which the rules here READ.
-import { fillSpanRect, insertionSizeAlpha } from '@jbrowse/alignments-core'
+import {
+  fillSpanRect,
+  insertionSizeAlpha,
+  spanRectPx,
+} from '@jbrowse/alignments-core'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { bpAtPx, bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
 import { inkOnRect } from '@jbrowse/render-core/marks/hit'
@@ -214,15 +218,23 @@ export interface PileupShapeSpec {
   paint: (state: RenderState) => PaintTables
   // The point glyph's second half: anything a feature draws ON the centred bar
   // is its own, and insertion's serif caps are the only such thing in tree.
-  decorate?: (
-    ctx: MarkContext2D,
-    xCenter: number,
-    top: number,
-    height: number,
-    channels: PileupChannels,
-    index: number,
-    pxPerBp: number,
-  ) => void
+  // `widthPx` is how far it reaches about the centre, so the ink covers it.
+  decorate?: {
+    draw: (
+      ctx: MarkContext2D,
+      xCenter: number,
+      top: number,
+      height: number,
+      channels: PileupChannels,
+      index: number,
+      pxPerBp: number,
+    ) => void
+    widthPx: (
+      channels: PileupChannels,
+      index: number,
+      pxPerBp: number,
+    ) => number
+  }
 }
 
 // Whether entry `index` belongs to this mark. One spelling for the walkers and
@@ -370,12 +382,10 @@ export function pileupShape(
     const height = centerline ? 1 : featureHeight
     const startBp = positions[i * stride]!
     if (point !== undefined) {
-      const w = pointWidthPx(
-        point,
-        c,
-        i,
-        fullBlockWidth / bpLength,
-        featureHeight,
+      const pxPerBp = fullBlockWidth / bpLength
+      const w = Math.max(
+        pointWidthPx(point, c, i, pxPerBp, featureHeight),
+        decorate?.widthPx(c, i, pxPerBp) ?? 0,
       )
       const x = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       return { left: x - w / 2, top, width: w, height }
@@ -396,8 +406,8 @@ export function pileupShape(
       bpLength,
       fullBlockWidth,
     )
-    const lo = x1 < x2 ? x1 : x2
-    return { left: lo, top, width: Math.abs(x2 - x1), height }
+    const [left, width] = spanRectPx(Math.min(x1, x2), Math.max(x1, x2))
+    return { left, top, width, height }
   }
   return {
     id,
@@ -520,7 +530,7 @@ export function pileupShape(
                 // no two edges to order, so a reversed block needs nothing here.
                 const x = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
                 ctx.fillRect(x - widthPx / 2, top, widthPx, bandHeight)
-                decorate?.(ctx, x, top, bandHeight, c, i, pxPerBp)
+                decorate?.draw(ctx, x, top, bandHeight, c, i, pxPerBp)
               } else if (cell !== undefined) {
                 ctx.fillRect(cell.cellX(startBp), top, cell.w, bandHeight)
               } else {
@@ -599,7 +609,10 @@ export function pileupShape(
         if (!contains || !hitPasses(hit, c, i, bpPerPx, filterByFrequency)) {
           continue
         }
-        const r = inkRect(c, block, state, i)!
+        const r = inkRect(c, block, state, i)
+        if (!r) {
+          continue
+        }
         const ink = inkOnRect(xPx, yPx, r.left, r.top, r.width, r.height)
         if (ink.distSq < bestDistSq) {
           bestDistSq = ink.distSq

@@ -246,6 +246,9 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
         renderBlocks={buildRenderBlocks(view.visibleRegions)}
         opts={opts}
       />
+      {isAxisHost(model) ? (
+        <SvgYAxis model={model} view={view} width={view.width} />
+      ) : null}
       {isLegendHost(model) ? (
         <SvgLegend
           model={model}
@@ -253,9 +256,6 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
           height={height}
           opts={opts}
         />
-      ) : null}
-      {isAxisHost(model) ? (
-        <SvgYAxis model={model} view={view} width={view.width} />
       ) : null}
     </SvgChrome>
   )

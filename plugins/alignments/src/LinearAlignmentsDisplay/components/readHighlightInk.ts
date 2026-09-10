@@ -79,9 +79,12 @@ export function readHighlightInk({
   const lit = new Map<string, Lit>()
   for (const id of ids) {
     const entry = readIdIndexMap.get(id)
-    const section = entry && sectionByGroup.get(entry.groupKey)
-    const data = section?.laidOutPileupMap.get(entry!.displayedRegionIndex)
-    if (!entry || !section || !data) {
+    if (!entry) {
+      continue
+    }
+    const section = sectionByGroup.get(entry.groupKey)
+    const data = section?.laidOutPileupMap.get(entry.displayedRegionIndex)
+    if (!section || !data) {
       continue
     }
     const key = `${entry.groupKey}\0${entry.displayedRegionIndex}`

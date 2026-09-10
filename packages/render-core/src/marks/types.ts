@@ -381,6 +381,7 @@ export function defineMark<
 }): Mark<TRegion, TState> {
   const { shape, channels, params, band, texture, enabled } = spec
   const hitNearest = shapeHitNearest(shape)
+  const shapeInk = shape.ink?.bind(shape)
   const lender = spec.bufferOf?.pass
   if (
     lender &&
@@ -501,7 +502,7 @@ export function defineMark<
           return hit && !bandExcludes(strip, hit.y) ? hit : undefined
         }
       : undefined,
-    ink: shape.ink
+    ink: shapeInk
       ? (region, block, state, i) => {
           const strip = band?.(state)
           const c = channels(region)
@@ -516,7 +517,7 @@ export function defineMark<
           if (shape.paintsBlock && !shape.paintsBlock(block, state, p)) {
             return undefined
           }
-          const r = shape.ink!(c, block, state, p, i)
+          const r = shapeInk(c, block, state, p, i)
           return r && strip ? clipToBand(r, strip) : r
         }
       : undefined,

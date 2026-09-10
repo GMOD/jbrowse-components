@@ -642,7 +642,7 @@ describe('computeArcsFromPileupData', () => {
     // returns a FLAT shape whose span falls back to the endpoint gap when TLEN
     // is 0 — which it always is across refs — so an interchromosomal arc would
     // carry |chr2bp - chr1bp| as a `maxFlatArcSpanBp`, `arcsYDomainBp` would max
-    // it across every group, and `insertSizeTickSections` would PRINT it on the
+    // it across every group, and the insert-size scale would PRINT it on the
     // ruler. The read cloud's Y axis IS insert size and this connection has
     // none, so it keeps the ticks.
     test('but the read cloud keeps the ticks, so nothing sizes its axis', () => {

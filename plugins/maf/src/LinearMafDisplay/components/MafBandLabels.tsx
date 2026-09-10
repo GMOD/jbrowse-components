@@ -31,10 +31,8 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 /**
- * The band titles for the SVG export. Same shape as wiggle-core's
- * `YScaleGutter` / `SvgYScaleGutter`: the on-screen and exported halves of one
- * piece of chrome,
- * side by side, so the x and the font can't be spelled two ways.
+ * The band titles for the SVG export, beside their on-screen half so the x
+ * and the font can't be spelled two ways.
  *
  * What is titled, and when, is `model.bandLabels` — the export used to draw no
  * titles at all, which lost them from the one figure that needs them most (both

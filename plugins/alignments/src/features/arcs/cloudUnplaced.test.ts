@@ -306,7 +306,7 @@ describe('a connection the view can place only one end of', () => {
 })
 
 // An unplaced connection's span is what used to set `arcsYDomainBp` for every
-// lane — `insertSizeTickSections` then LABELS the top of the axis with it, so
+// lane — the insert-size scale then LABELS the top of the axis with it, so
 // one mismapped mate printed "50Mb" over a band whose real content topped out
 // at a few kb. Taking the bar away is only half the fix if the span still sizes
 // the axis.

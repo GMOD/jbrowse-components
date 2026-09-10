@@ -1,4 +1,7 @@
-import { drawInsertionSerifs } from '@jbrowse/alignments-core'
+import {
+  drawInsertionSerifs,
+  insertionSerifsWidthPx,
+} from '@jbrowse/alignments-core'
 import { defineMark } from '@jbrowse/render-core/marks'
 
 import {
@@ -133,8 +136,12 @@ export const INSERTION_MARK = defineMark({
       opaqueCss: [rgb255(state.colors.colorInsertion)],
       fadedCss: [rgbaPrefix255(state.colors.colorInsertion)],
     }),
-    decorate: (ctx, x, top, height, c, i, pxPerBp) => {
-      drawInsertionSerifs(ctx, x, top, height, c.lengths![i]!, pxPerBp)
+    decorate: {
+      draw: (ctx, x, top, height, c, i, pxPerBp) => {
+        drawInsertionSerifs(ctx, x, top, height, c.lengths![i]!, pxPerBp)
+      },
+      widthPx: (c, i, pxPerBp) =>
+        insertionSerifsWidthPx(c.lengths![i]!, pxPerBp),
     },
   }),
   channels: insertionChannels,

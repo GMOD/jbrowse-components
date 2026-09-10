@@ -247,4 +247,26 @@ describe('the y axis', () => {
     )
     expect(labelsOf(container)).toEqual(['0', '10', 'TLEN'])
   })
+
+  // The chrome stacks the key over the axis on screen; a right-side axis and
+  // the key share the top-right corner, so the export keeps the same order.
+  test('the key draws over the axis, as on screen', async () => {
+    const host = axisHost([scale({ side: 'right' })])
+    const model = Object.create(host, {
+      showLegend: { value: true },
+      legendSpec: {
+        value: { items: [{ id: 'a', label: 'a', color: 'red' }] },
+      },
+      setShowLegend: { value: () => {} },
+    }) as TestDisplayModel
+    const { container } = await renderShell(model, [])
+    const legend = container.querySelector('[data-testid="color-legend"]')!
+    const axisLabel = [...container.querySelectorAll('text')].find(
+      t => !legend.contains(t),
+    )!
+    expect(
+      axisLabel.compareDocumentPosition(legend) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
 })

@@ -18,6 +18,7 @@ export {
   drawIndicatorTriangle,
   drawInsertionMarker,
   drawInsertionSerifs,
+  insertionSerifsWidthPx,
   formatInsertionLabel,
   getInsertionType,
   insertionBarWidth,
@@ -79,6 +80,7 @@ export {
   drawModCovSegments,
   drawSnpSegments,
   fillSpanRect,
+  spanRectPx,
 } from './rendererUtils.ts'
 export {
   coverageSegmentBuffers,

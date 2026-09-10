@@ -4,6 +4,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
 [
   "./BlockMsg",
   "./BottomRightIndicators",
+  "./ChromeHighlight",
   "./ChromeLegend",
   "./CoarseTierMixin",
   "./ContextMenuMixin",
@@ -45,6 +46,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
   "./heightMode",
   "./heightModeConfigSchemaFields",
   "./heightModeMenu",
+  "./highlightHost",
   "./installClearHoverOnViewportChange",
   "./installGlobalFetchAutorun",
   "./installPerRegionFetchAutoruns",

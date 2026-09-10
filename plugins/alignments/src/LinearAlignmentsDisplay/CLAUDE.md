@@ -106,8 +106,8 @@ Answerable from settings alone, before any data:
 Answerable only from the fetched lanes:
 
 - **`showsGroupLabels`** — are the chips and dividers drawn? What anything
-  dodging a chip must ask: one lane still draws a chip while
-  `scalebarOverlapLeft` is 0.
+  dodging a chip must ask (the coverage scale's `side`): one lane still draws a
+  chip.
 - **`isGrouped`** (>1 lane) — the scroll model, and nothing else. Ungrouped
   keeps coverage sticky; grouped scrolls the whole stack.
 - **`hasRegionData`** — has data arrived? **Never gate first paint on a laid-out

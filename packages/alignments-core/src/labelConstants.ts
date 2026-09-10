@@ -238,11 +238,18 @@ export function drawInsertionSerifs(
   length: number,
   pxPerBp: number,
 ) {
-  const isLong = length >= LONG_INSERTION_MIN_LENGTH
-  if (!isLong && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP) {
+  if (insertionSerifsWidthPx(length, pxPerBp) > 0) {
     drawSerif(ctx, xCenter, y, y + SERIF_H_PX)
     drawSerif(ctx, xCenter, y + height, y + height - SERIF_H_PX)
   }
+}
+
+/** How wide the caps reach about the bar's centre, 0 where none draw. */
+export function insertionSerifsWidthPx(length: number, pxPerBp: number) {
+  return length < LONG_INSERTION_MIN_LENGTH &&
+    pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP
+    ? 2 * SERIF_HALF_W_PX
+    : 0
 }
 
 // One serif cap: a wedge `SERIF_HALF_W_PX` either side of `xCenter` at `baseY`,
