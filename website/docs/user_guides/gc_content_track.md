@@ -52,11 +52,10 @@ sliding-window settings, each with a reset button:
 
 ## Display options
 
-The GC content track is a quantitative (wiggle) track under the hood, so it
-inherits the full set of
-[quantitative track](/docs/user_guides/quantitative_track) display options from
-the same track menu: XY plot / line / density / scatter rendering, linear vs log
-scale, autoscale modes, and manual min/max.
+The GC content track is a quantitative (wiggle) track, so it inherits the full
+set of [quantitative track](/docs/user_guides/quantitative_track) display
+options from the same track menu: XY plot / line / density / scatter rendering,
+linear vs log scale, autoscale modes, and manual min/max.
 
 ## See also
 

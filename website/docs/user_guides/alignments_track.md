@@ -209,7 +209,7 @@ happens to the read height, then to the track height:
 
 Fit mode is for the shape of a pileup: drag the track taller or shorter and the
 reads re-fit. Reads draw no taller than the Normal preset and no smaller than
-1px, so an extremely deep pileup still overflows. With grouping, each group's
+1px, so a deep enough pileup still overflows. With grouping, each group's
 coverage row is reserved first and the expanded groups share what is left, so
 collapsing a group gives the rest more height.
 

@@ -92,7 +92,8 @@ export {
  * #example custom-display-name-and-genetic-codes-sidecar
  * Sets a `displayName` for the assembly selector and loads the per-refName
  * genetic codes from a sidecar TSV (`geneticCodesLocation`) instead of inlining
- * them — handy when a config generator emits the mapping separately:
+ * them, which is the shape to use when a config generator emits the mapping
+ * separately:
  * ```js
  * {
  *   name: 'hg38',
