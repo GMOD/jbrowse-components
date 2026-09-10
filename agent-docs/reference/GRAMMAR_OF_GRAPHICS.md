@@ -115,8 +115,11 @@ The seams, named honestly:
   followed the view's `bpPerPx` would be resolved before the RPC and keyed
   into the fetch — a refetch per zoom step, the way wiggle's summary levels
   already work — and is the declared form of what the tier mixins do
-  imperatively; not built until a config asks for it. `window` and
-  `sample` are absent, and wiggle's binning is the adapter's and stays so.
+  imperatively; not built until a config asks for it. Until then a density
+  layer draws inside the fetch budget only: past it the region shows the
+  banner, and the density tier's sidecar (ADR-102) is the summary, on the
+  displays that compose it. `window` and `sample` are absent, and wiggle's
+  binning is the adapter's and stays so.
 - **No scale resolution across layers.** Every mark on a display shares one
   y. `resolve: { y: 'independent' }` with a second axis is absent, and so is
   faceting beyond stacking on `row`. Declined on review until a figure needs

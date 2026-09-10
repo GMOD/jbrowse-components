@@ -76,6 +76,12 @@ render state rather than a new mechanism.
   read-back returns covers all of it.
 - A layer's transform steps stay in the mark display's own config model;
   `CoreEncodeFeatures` takes them from any caller.
+- A bin summarizes what the fetch admits. Past the byte budget a region draws
+  the banner, not a density: the density tier
+  ([ADR-102](adr-102-the-density-tier-swaps-on-the-gates-verdict.md)) reads
+  a `make-density` sidecar in the banner's place, and the mark display does
+  not compose it. The zoom-following bin declined below is what would join
+  the two, and it would need a summary the adapter can serve.
 
 ## Rejected alternatives
 
