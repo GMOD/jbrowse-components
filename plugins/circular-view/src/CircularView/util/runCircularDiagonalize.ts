@@ -12,22 +12,12 @@ import type {
 
 /**
  * Reorder the second genome's chromosomes so the ribbons between the two arcs
- * read as a band rather than a hairball, in the shape both the menu dialog and
- * the init autorun can call. The caller gates the figure and the loading UI;
- * this just runs.
+ * read as a band, in the shape both the menu dialog and the init autorun can
+ * call. The caller gates the figure and the loading UI; this just runs.
  *
- * The circle's own contribution is the mirror. Everything else is the reorder a
- * synteny row and a dotplot run: the second assembly's regions go into
- * `diagonalizeRegions` as the axis being ordered and the first assembly's as the
- * reference. The regions on the circle are mirrored BACK into linear order on the
- * way in and the answer mirrored forward on the way out, which is also what
- * makes the pass idempotent — re-running an already-diagonalized circle reports
- * that it moved nothing.
- *
- * Every ribbon display, not `tracks[0].displays[0]`: a circle can carry several
- * synteny tracks over the one pair of genomes, and an order computed from one of
- * them ignores the alignments the others contribute. The shared RPC takes an
- * adapter list for exactly that.
+ * The reorder is the one a synteny row and a dotplot run. What the circle adds
+ * is the mirror, applied on the way out and undone on the way in — which is also
+ * what makes the pass idempotent. ADR-121.
  */
 export async function runCircularDiagonalize(
   model: CircularViewModel,
@@ -36,15 +26,13 @@ export async function runCircularDiagonalize(
   const displays = model.chordSyntenyDisplays
   const first = displays[0]
   const [referenceAssembly, currentAssembly] = model.assemblyNames
-  // Exactly two genomes, which is what a mirror is defined for. One is a
-  // self-alignment, where there is no second arc to reorder; three or more have
-  // no layout in which every pair reads as a band, so the circle says nothing
-  // rather than picking one pair's answer and calling it the figure.
+  // Exactly two genomes, which is what a mirror is defined for — see
+  // `canDiagonalize`.
   if (!first || model.assemblyNames.length !== 2 || !currentAssembly) {
     return undefined
   }
-  // the same rpcSessionId the ribbons fetch with (it lives on the track), so
-  // this lands on that worker and hits its already-parsed adapter
+  // the same rpcSessionId the ribbons fetch with, so this lands on that worker
+  // and hits its already-parsed adapter
   const sessionId = getRpcSessionId(first)
   const { assemblyManager, rpcManager } = getSession(model)
   const referenceRegions = model.displayedRegions.filter(
@@ -53,8 +41,9 @@ export async function runCircularDiagonalize(
   const currentRegions = mirrorRegionsForCircle(
     model.displayedRegions.filter(r => r.assemblyName === currentAssembly),
   )
-  // RefName reconciliation is resolved here on the main thread, since the worker
-  // has no assemblyManager — and per adapter, since each has its own namespace
+  // Every ribbon display, for the reason the dotplot's runner gives. RefName
+  // reconciliation resolves here, per adapter: the worker has no assemblyManager
+  // and each adapter has its own namespace.
   const adapters = await Promise.all(
     displays.map(d =>
       prepareDiagonalizeAdapter({

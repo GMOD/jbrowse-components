@@ -120,16 +120,10 @@ interface CircularViewInitSelf extends IStateTreeNode {
   autoDiagonalize: () => Promise<void>
 }
 
-/**
- * A ribbon display, as a chromosome reorder reads it: the adapter to fetch
- * alignments from, and an MST node to take the track's `rpcSessionId` off.
- *
- * Duck-typed rather than `Instance<ChordSyntenyDisplayStateModel>`, which is
- * the same reason the display's own state model is lazily registered — naming
- * that type here would pull `@jbrowse/synteny-core` into the eager bundle of
- * every product carrying this view, including the circular embed that ships no
- * synteny plugin at all (ADR-116).
- */
+// A ribbon display, as a chromosome reorder reads it. Duck-typed for the reason
+// the display's own state model is lazily registered: naming its type here pulls
+// `@jbrowse/synteny-core` into the eager bundle of every product carrying this
+// view, the circular embed that ships no synteny plugin included (ADR-116).
 interface ChordSyntenyDisplaySelf extends IStateTreeNode {
   type: string
   adapterConfig: Record<string, unknown>
@@ -205,9 +199,8 @@ async function applyInit(
     const { trackId, trackSnapshot, displaySnapshot } = normalizeTrackInit(t)
     await self.launchTrack(trackId, trackSnapshot, displaySnapshot)
   }
-  // after the tracks, because the reorder reads its alignments off their
-  // adapters — though not after their ribbon fetch, which it does not wait on:
-  // the reorder runs its own whole-genome fetch in the RPC
+  // after the tracks, whose adapters the reorder reads its alignments off; not
+  // after their ribbon fetch, which it runs its own fetch instead of waiting on
   if (init.autoDiagonalize) {
     await self.autoDiagonalize()
   }
@@ -635,11 +628,8 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        * Every ribbon display under this view's tracks, which is what a
        * chromosome reorder reads its alignments from. Filtered by `type` rather
-       * than taken as `tracks[i].displays[0]`, the same rule the dotplot's
-       * `dotplotDisplays` states: a hand-written or legacy session snapshot is
-       * hydrated verbatim, so a `displays` array that is empty or names a
-       * foreign display puts an `undefined` into a list every consumer
-       * dereferences.
+       * than taken as `tracks[i].displays[0]`, for the reason the dotplot's
+       * `dotplotDisplays` gives.
        */
       get chordSyntenyDisplays(): ChordSyntenyDisplaySelf[] {
         const out: ChordSyntenyDisplaySelf[] = []
@@ -656,7 +646,8 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #getter
        * Whether a chromosome reorder has anything to do: a ribbon track to take
        * alignments from, and exactly the two genomes a mirrored layout is
-       * defined for — see `mirrorRegionsForCircle`.
+       * defined for. One is a self-alignment, with no second arc to reorder;
+       * three or more have no layout in which every pair reads as a band.
        */
       get canDiagonalize() {
         return (
@@ -1158,13 +1149,8 @@ function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * The init-time reorder, behind the "Reordering chromosomes" screen the
-       * comparative views show. `withDiagonalizeProgress` drives that screen's
-       * label, its bar and its Cancel, and swallows the abort.
-       *
-       * The regions and the tracks are both in place by the time this runs, and
-       * the reorder fetches the whole-genome alignments it needs in its own RPC
-       * — so it does not wait on any ribbon fetch first.
+       * The init-time reorder, behind the "Reordering chromosomes" screen
+       * `withDiagonalizeProgress` drives.
        */
       async autoDiagonalize() {
         await withDiagonalizeProgress(self as CircularViewModel, async opts => {
@@ -1172,9 +1158,8 @@ function stateModelFactory(pluginManager: PluginManager) {
             await import('./util/runCircularDiagonalize.ts')
           await runCircularDiagonalize(self as CircularViewModel, opts)
           // only now is the figure the diagonalized one, so release the gate a
-          // capture waits on. A reorder that threw skips this line —
-          // `withDiagonalizeProgress` caught it — and the gate stays up, so the
-          // capture times out loudly rather than committing a hairball.
+          // capture waits on. A reorder that threw skips this line and the gate
+          // stays up, so the capture times out rather than committing a hairball
           if (isAlive(self)) {
             self.finishAutoDiagonalize()
           }

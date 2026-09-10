@@ -4,20 +4,14 @@ import { getMate } from '@jbrowse/synteny-core'
 import type { Feature } from '@jbrowse/core/util'
 
 /**
- * One ribbon per alignment, not one per perspective.
+ * One ribbon per alignment, not one per perspective. A pairwise file indexes
+ * every row from both ends and a two-assembly circle asks for the regions of
+ * both, so each alignment arrives twice and paints its ribbon on top of itself.
  *
- * A pairwise file indexes every row from both ends, and a two-assembly circle
- * asks for the regions of both — so each alignment comes back twice, anchored
- * on one genome with its mate on the other and then the other way round. Both
- * draw the same shape, so the figure paints every ribbon on top of itself: the
- * alpha a translucent fill was chosen for doubles, and a whole-genome alignment
- * costs twice the paths it needs.
- *
- * The key is the UNORDERED pair of loci, because that is what a ribbon is — two
- * spans with no anchor between them. That is the one thing separating it from
- * the adapter's own `createSideDedupe`, which keys on the ORIENTED alignment so
- * that the two ends of a tandem duplication each keep their own half in a
- * linear view. On the circle those two halves are one arc.
+ * The key is the UNORDERED pair of loci, which is what a ribbon is and the one
+ * thing separating this from the adapter's `createSideDedupe`: that keys on the
+ * ORIENTED alignment, so a tandem duplication's two ends each keep their own
+ * half in a linear view. On the circle those two halves are one arc.
  *
  * JSON rather than a joined string: a refName is free-form text, so a key made
  * by joining on any character it may carry can be read two ways.
