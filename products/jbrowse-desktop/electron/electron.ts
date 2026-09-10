@@ -299,7 +299,7 @@ function runApp() {
       registerBlatHandlers()
       registerPluginHandlers()
       registerDownloadHandler()
-      setupAutoUpdater(autoUpdater)
+      setupAutoUpdater(autoUpdater, paths.updateLogPath)
       // Register app-level event handlers before any await so a second-instance
       // launch or macOS open-file/open-url that fires during filesystem init is
       // not dropped for lack of a listener

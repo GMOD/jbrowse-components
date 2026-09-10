@@ -29,6 +29,7 @@ beforeEach(() => {
     faiDir: path.join(dir, 'fai'),
     autosaveDir: path.join(dir, 'autosaved'),
     nameIndicesDir: path.join(dir, 'nameIndices'),
+    updateLogPath: path.join(dir, 'update.log'),
     jbrowseDocDir: path.join(dir, 'JBrowse'),
     defaultSavePath: path.join(dir, 'JBrowse', 'untitled.jbrowse'),
   }

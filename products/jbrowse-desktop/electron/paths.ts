@@ -21,6 +21,7 @@ export interface AppPaths {
   nameIndicesDir: string
   jbrowseDocDir: string
   defaultSavePath: string
+  updateLogPath: string
 }
 
 export function initializePaths(): AppPaths {
@@ -36,6 +37,9 @@ export function initializePaths(): AppPaths {
     faiDir: path.join(userData, 'fai'),
     autosaveDir: path.join(userData, 'autosaved'),
     nameIndicesDir: path.join(userData, NAME_INDICES_DIR),
+    // Beside the app's own data, so "send me the file" is one path on every
+    // platform rather than a hunt through a log directory.
+    updateLogPath: path.join(userData, 'update.log'),
     jbrowseDocDir,
     defaultSavePath: path.join(jbrowseDocDir, 'untitled.jbrowse'),
   }

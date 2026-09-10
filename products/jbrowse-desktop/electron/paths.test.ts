@@ -25,6 +25,7 @@ function makePaths(root: string, sep: string): AppPaths {
     faiDir: join('fai'),
     autosaveDir: join('autosaved'),
     nameIndicesDir: join('nameIndices'),
+    updateLogPath: join('update.log'),
     jbrowseDocDir: join('JBrowse'),
     defaultSavePath: join('JBrowse', 'untitled.jbrowse'),
   }

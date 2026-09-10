@@ -1,4 +1,6 @@
-import { EventEmitter } from 'node:events'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 
 import { dialog, ipcMain, shell } from 'electron'
 
@@ -36,32 +38,41 @@ const titles = () => showMessageBox.mock.calls.map(([options]) => options.title)
 // has been asked for. A macrotask is past every await chain here.
 const flush = () => new Promise(resolve => setTimeout(resolve, 0))
 
-// Enough of electron-updater's surface for the module under test: the two
-// events it subscribes to, the three calls it makes, and the flags it sets.
+type UpdateEvent = 'update-available' | 'update-downloaded'
+
+/**
+ * Enough of electron-updater's surface for the module under test: the two
+ * events it subscribes to, the three calls it makes, and the flags it sets.
+ *
+ * `fire` takes only a version, because that is the only field either handler
+ * reads and the rest of an UpdateInfo would be noise at every call site. Its
+ * own listener map rather than an EventEmitter, which lint would rather were an
+ * EventTarget — and neither is really the point here.
+ */
 function fakeUpdater() {
-  const updater = new EventEmitter() as unknown as AppUpdater & {
-    checkForUpdates: jest.Mock
-    downloadUpdate: jest.Mock
-    quitAndInstall: jest.Mock
+  const listeners = new Map<string, ((info: { version: string }) => void)[]>()
+  const updater = {
+    on(event: string, listener: (info: { version: string }) => void) {
+      listeners.set(event, [...(listeners.get(event) ?? []), listener])
+      return updater
+    },
+    fire(event: UpdateEvent, version: string) {
+      for (const listener of listeners.get(event) ?? []) {
+        listener({ version })
+      }
+    },
+    checkForUpdates: jest.fn(),
+    downloadUpdate: jest.fn().mockResolvedValue([]),
+    quitAndInstall: jest.fn(),
   }
-  updater.checkForUpdates = jest.fn()
-  updater.downloadUpdate = jest.fn().mockResolvedValue([])
-  updater.quitAndInstall = jest.fn()
-  return updater
+  return updater as unknown as AppUpdater & typeof updater
 }
 
 const available = (isUpdateAvailable: boolean) =>
   ({ isUpdateAvailable }) as UpdateCheckResult
 
-// `version` is the only field either handler reads, so the rest of an
-// UpdateInfo would be noise at every call site.
-function emit(
-  updater: AppUpdater,
-  event: 'update-available' | 'update-downloaded',
-  version: string,
-) {
-  ;(updater as unknown as EventEmitter).emit(event, { version })
-}
+let logDir: string
+let logPath: string
 
 beforeEach(() => {
   showMessageBox.mockReset()
@@ -69,6 +80,13 @@ beforeEach(() => {
   openExternal.mockResolvedValue(undefined)
   jest.mocked(ipcMain.handle).mockReset()
   delete process.env.CI
+  delete process.env.JBROWSE_DEV_UPDATE_CONFIG
+  logDir = fs.mkdtempSync(path.join(os.tmpdir(), 'jbrowse-updater-'))
+  logPath = path.join(logDir, 'update.log')
+})
+
+afterEach(() => {
+  fs.rmSync(logDir, { recursive: true, force: true })
 })
 
 const question = {
@@ -169,9 +187,9 @@ test('a manual check on a build that cannot update says that', async () => {
 // so the offer hangs off the event rather than off either caller.
 test('an available update is offered and downloaded on yes', async () => {
   const updater = fakeUpdater()
-  setupAutoUpdater(updater)
+  setupAutoUpdater(updater, logPath)
   click(0)
-  emit(updater, 'update-available', '4.4.0')
+  updater.fire('update-available', '4.4.0')
   await flush()
   expect(titles()).toEqual(['Found updates'])
   expect(updater.downloadUpdate).toHaveBeenCalled()
@@ -179,9 +197,9 @@ test('an available update is offered and downloaded on yes', async () => {
 
 test('declining the offer downloads nothing', async () => {
   const updater = fakeUpdater()
-  setupAutoUpdater(updater)
+  setupAutoUpdater(updater, logPath)
   click(1)
-  emit(updater, 'update-available', '4.4.0')
+  updater.fire('update-available', '4.4.0')
   await flush()
   expect(updater.downloadUpdate).not.toHaveBeenCalled()
 })
@@ -192,10 +210,10 @@ test('declining the offer downloads nothing', async () => {
 test('a download that fails after yes is reported', async () => {
   const updater = fakeUpdater()
   updater.downloadUpdate.mockRejectedValue(new Error('disk full'))
-  setupAutoUpdater(updater)
+  setupAutoUpdater(updater, logPath)
   click(0)
   clickThrough()
-  emit(updater, 'update-available', '4.4.0')
+  updater.fire('update-available', '4.4.0')
   await flush()
   expect(titles()).toEqual(['Found updates', 'Update download failed'])
   expect(showMessageBox.mock.calls[1]![0].message).toContain('disk full')
@@ -203,13 +221,13 @@ test('a download that fails after yes is reported', async () => {
 
 test('restart now installs, later does not', async () => {
   const updater = fakeUpdater()
-  setupAutoUpdater(updater)
+  setupAutoUpdater(updater, logPath)
   click(1)
-  emit(updater, 'update-downloaded', '4.4.0')
+  updater.fire('update-downloaded', '4.4.0')
   await flush()
   expect(updater.quitAndInstall).not.toHaveBeenCalled()
   click(0)
-  emit(updater, 'update-downloaded', '4.4.0')
+  updater.fire('update-downloaded', '4.4.0')
   await flush()
   expect(updater.quitAndInstall).toHaveBeenCalledWith(true, true)
 })
@@ -220,10 +238,10 @@ test('under CI nothing opens a dialog', async () => {
   process.env.CI = 'true'
   const updater = fakeUpdater()
   updater.checkForUpdates.mockResolvedValue(available(false))
-  setupAutoUpdater(updater)
+  setupAutoUpdater(updater, logPath)
   jest.spyOn(console, 'log').mockImplementation(() => {})
-  emit(updater, 'update-available', '4.4.0')
-  emit(updater, 'update-downloaded', '4.4.0')
+  updater.fire('update-available', '4.4.0')
+  updater.fire('update-downloaded', '4.4.0')
   checkForUpdatesInBackground(updater)
   await checkForUpdatesManually(updater)
   await flush()
@@ -237,7 +255,7 @@ test('under CI nothing opens a dialog', async () => {
 // a .blockmap beside each artifact that no packager here writes.
 test('the updater is configured before any event can arrive', () => {
   const updater = fakeUpdater()
-  setupAutoUpdater(updater)
+  setupAutoUpdater(updater, logPath)
   expect(updater.autoDownload).toBe(false)
   expect(updater.disableWebInstaller).toBe(true)
   expect(updater.disableDifferentialDownload).toBe(true)
@@ -246,6 +264,32 @@ test('the updater is configured before any event can arrive', () => {
 // The renderer's menu bar is the only one Windows and Linux have, so without
 // this channel two of the three platforms have no manual check at all.
 test('the manual check is reachable from the renderer', () => {
-  setupAutoUpdater(fakeUpdater())
+  setupAutoUpdater(fakeUpdater(), logPath)
   expect(jest.mocked(ipcMain.handle).mock.calls[0]![0]).toBe('checkForUpdates')
+})
+
+// A packaged app has no terminal, so the default console logger meant an update
+// that went wrong on someone's machine left nothing to ask them for.
+test('the updater writes to the log file it was given', () => {
+  const updater = fakeUpdater()
+  jest.spyOn(console, 'log').mockImplementation(() => {})
+  setupAutoUpdater(updater, logPath)
+  updater.logger!.info('checking for update')
+
+  expect(fs.readFileSync(logPath, 'utf8')).toContain('checking for update')
+  jest.mocked(console.log).mockRestore()
+})
+
+// isUpdaterActive() refuses anything unpackaged, so without this the whole path
+// was unreachable from a dev run and could only be exercised by cutting a
+// release.
+test('a dev run can be pointed at a feed, and is not by default', () => {
+  const off = fakeUpdater()
+  setupAutoUpdater(off, logPath)
+  expect(off.forceDevUpdateConfig).toBe(false)
+
+  process.env.JBROWSE_DEV_UPDATE_CONFIG = '1'
+  const on = fakeUpdater()
+  setupAutoUpdater(on, logPath)
+  expect(on.forceDevUpdateConfig).toBe(true)
 })

@@ -1,6 +1,7 @@
 import { dialog, shell } from 'electron'
 
 import { ipcHandle } from './ipc/channels.ts'
+import { createUpdateLog } from './updateLog.ts'
 import { logError } from './util.ts'
 
 import type { AppUpdater } from 'electron-updater'
@@ -170,7 +171,22 @@ export async function checkForUpdatesManually(autoUpdater: AppUpdater) {
   }
 }
 
-export function setupAutoUpdater(autoUpdater: AppUpdater) {
+export function setupAutoUpdater(autoUpdater: AppUpdater, logPath: string) {
+  // Where an update that went wrong on someone else's machine can be read back
+  // from. See createUpdateLog.
+  autoUpdater.logger = createUpdateLog(logPath)
+
+  // Drives check → offer → download from an unpackaged `pnpm dev` run, which is
+  // otherwise unreachable: isUpdaterActive() refuses anything not packaged, so
+  // the only way to exercise any of this was to cut a release and wait. Put a
+  // dev-app-update.yml next to this package's package.json naming a feed — a
+  // `provider: generic` url over `python3 -m http.server` serving one
+  // latest-<platform>.yml and the artifact it names is enough — and set
+  // JBROWSE_DEV_UPDATE_CONFIG=1.
+  autoUpdater.forceDevUpdateConfig = Boolean(
+    process.env.JBROWSE_DEV_UPDATE_CONFIG,
+  )
+
   // The user is asked before any bytes are fetched.
   autoUpdater.autoDownload = false
   // One full installer per platform is all we publish; leaving this false only
