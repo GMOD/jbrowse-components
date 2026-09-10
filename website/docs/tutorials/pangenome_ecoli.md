@@ -855,7 +855,7 @@ marks are the segments it takes instead, in the MAF's own row order.
 
 The dropdown redraws the same nodes into either layout:
 
-<Video src="/media/pangenome/pggb_layout_switch.mp4" caption="The same 460 bp through the Layout dropdown. Sample rows holds the nodes to the reference axis, one row per strain; the force drawing lets the axis go, and the alternate routes hang off the backbone where the rows had flattened them." />
+<Video src="/media/pangenome/pggb_layout_switch.mp4" caption="The same 460 bp through the Layout dropdown. Sample rows holds the nodes to the reference axis, one row per strain; the force drawing drops the axis, and the alternate routes hang off the backbone where the rows had flattened them." />
 
 #### Who carries a segment
 
@@ -864,7 +864,7 @@ Clicking a node opens its details, which on a graph indexed this way include
 `build_pggb_tabix.sh` as an `SM:Z:` tag. **`contributingAssembly`** in the same
 panel is the field an rGFA has to use, and there `SR` is build order.
 
-<Figure caption="A backbone segment clicked in the graph. carriedBy names the four strains whose paths walk it; contributingAssembly says only K12, which is all an rGFA could report." src="/img/pangenome/pggb_carriage.png" />
+<Figure caption="A backbone segment clicked in the graph. carriedBy names the four strains whose paths walk it; contributingAssembly lists only K12, which is all an rGFA could report." src="/img/pangenome/pggb_carriage.png" />
 
 #### Carriage as a linear lane
 

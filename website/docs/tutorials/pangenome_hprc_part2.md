@@ -245,8 +245,8 @@ jexl:feature.inversion
 The _AMY1_ bubble row printed in
 [part 1](/docs/tutorials/pangenome_hprc#insertions-deletions-and-their-sizes)
 carries a `1` in that column, which few bubbles do. Their breakpoints are in the
-links index, stated as an orientation disagreement between two backbone
-segments, which makes them readable without the graph:
+links index, as a pair of backbone segments entered in opposite orientations,
+which makes them readable without the graph:
 
 - columns 4 and 5 name the two endpoints, each id ending in the `+` or `-` it is
   entered on

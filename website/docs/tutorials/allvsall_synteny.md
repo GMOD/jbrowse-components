@@ -314,14 +314,14 @@ they can sit on the K-12 row of the stack above since a synteny view's rows are
 ordinary linear genome views. For a real pangenome, index first with
 [make-pif](#large-files-index-with-make-pif):
 
-<Figure caption="The one-vs-all lanes on the K-12 row of the five-strain stack, both drawn from the same PAF and colored by strand. White gaps are where a strain breaks from the K-12 backbone. IAI39 sits directly below K-12, so its blue stretches and the blue crossings under them are the same inversions." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
+<Figure caption="The one-vs-all lanes on the K-12 row of the five-strain stack, both drawn from the same PAF and colored by strand. White gaps are where a strain has no alignment to the K-12 backbone. IAI39 sits directly below K-12, so its blue stretches and the blue crossings under them are the same inversions." src="/img/multiway_synteny/ecoli_one_vs_all_whole_genome.png" />
 
 ### Each strain's lane in its own coordinates
 
-On K-12's axis a strain leaving the backbone is a white gap, and the lane cannot
-say what that strain carries instead. **Display types → Multi-way synteny
-display** redraws the track with each strain's lane in its own coordinates, the
-reading
+On K-12's axis a stretch of a strain with no alignment to the backbone is a
+white gap, and the lane cannot show what that strain carries instead. **Display
+types → Multi-way synteny display** redraws the track with each strain's lane in
+its own coordinates, the reading
 [the ortholog-table tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
 walks through on gene names. With no gene names:
 

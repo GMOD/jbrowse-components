@@ -194,8 +194,8 @@ your own:
 - **`color`** paints each segment in the graph view's own **Stable rank**
   colors, so a segment is the same color in both panels.
 
-Each segment draws where its tags say it sits, so the GRCh38 backbone tiles the
-reference and the graph is queryable by locus.
+Each segment is drawn at the position its tags give, so the GRCh38 backbone
+tiles the reference and the graph is queryable by locus.
 
 The two files here are ours, and the first of them is one command over any rGFA.
 `gfa2bed -m` reads the `SN`/`SO`/`SR` tags, which is what puts each segment at a
