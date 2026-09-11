@@ -309,9 +309,11 @@ read off the graph.
 
 The same track feeds the graph view. **Launch → Graph genome view (this
 region)** in the linear view's own menu cuts the window from the database for
-the track's lanes, and the cut carries one W line per haplotype walk, named
-through the companion. For a figure of a chosen set, cut once and load the file.
-`gbz-base-query`, the reader's command line, takes `--keep` for each haplotype:
+the lanes on screen — whatever **Choose lanes...** is set to, or the track's
+configured lanes until you change it — and the cut carries one W line per
+haplotype walk, named through the companion. For a figure of a chosen set, cut
+once and load the file. `gbz-base-query`, the reader's command line, takes
+`--keep` for each haplotype:
 
 ```bash
 npx -p @gmod/gbz-base gbz-base-query \
