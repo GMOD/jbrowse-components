@@ -211,6 +211,13 @@ reference, so a mate-vs-mate alignment is a direct read. How it chains, what an
 `PANGENOME_GRAPHS.md` §"Pairwise alignments unpacked from the GFA"; this
 section is the HPRC run and how it compares with the TAF and impg routes.
 
+**This run is the v2.0 GFA, and the hosted files are not.** The script's default
+`GFA_URL` is release 2.1's `hprc-v2.1-mc-grch38.gfa.gz` and the published
+`hprc_multiway_gfa.pif.gz` came out of it: 4,609 rows, 541–606 per haplotype,
+per the generated `README_gfa.txt` beside it. Every number below, the agreement
+table included, is the earlier v2.0 run and has not been taken again — treat it
+as the shape of the comparison rather than as the current file's measurements.
+
 **What it costs.** 135,927,476 nodes, GRCh38 83,073,334 steps on 195 walks.
 The download is 38 min at 27 MB/s; `pigz -dc | python3 gfa_to_pairwise_paf.py
 --reference GRCh38#0 --queries <8> --max-gap 10000 --contig-lengths <fai>` then

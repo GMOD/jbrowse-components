@@ -47,7 +47,7 @@ assembly.
 - the finished index, chromosome lengths, annotations and config, rehosted so
   the lanes load without rerunning the pipeline:
   https://jbrowse.org/demos/hprc_multiway/config.json, with the build recorded
-  beside it at https://jbrowse.org/demos/hprc_multiway/README.txt
+  beside it at https://jbrowse.org/demos/hprc_multiway/README_gfa.txt
 
 ## The graph's own alignment, unpacked
 

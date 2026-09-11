@@ -5,6 +5,11 @@ These files are a redistribution, not original data. They are tabix-indexed BED
 projections of a graph published by the Human Pangenome Reference Consortium,
 built so that JBrowse can query a locus without downloading the graph.
 
+The hprc-v2.*-mc-grch38.* files below are that set. This prefix also serves two
+other demos' files, which have their own provenance: hprc_cfhr_* is the CFH
+panel that build_hprc_cfhr_synteny.sh cuts, and hprc2_pclai_chr1.bed.gz is a
+chr1 slice nothing in the repo reads any more.
+
 Source
 ------
 
@@ -15,8 +20,11 @@ Source
   Minigraph-Cactus graph, 464 haplotypes on a GRCh38 backbone. It comes from
   the graph's minigraph stage, so every segment carries rGFA tags (SN/SO/SR),
   which is what makes these coordinate projections possible. Release 2.1 is
-  the build whose gbz-base database HPRC also publishes, so the segment ids
-  here and the node ids read from that database are the same graph's.
+  the build whose gbz-base database HPRC also publishes, so the two describe
+  the same assemblies at the same locus — but not with the same ids. The
+  segment ids here are the minigraph stage's (sNNNNNN, 1..759,223); a cut from
+  the gbz-base database carries the base-level graph's own integer node ids,
+  which run to nine figures. Neither converts to the other.
 
   The release 2.0 projections (hprc-v2.0-mc-grch38.*) built 2026-07-23 from
   the top-level sv.gfa.gz stay hosted unchanged for anything pinned to them;
@@ -61,11 +69,25 @@ Files
                                              insertions, 90,204 deletions,
                                              4,404 same-length substitutions)
 
-  hprc-v2.1-mc-grch38.haplotype-index.db     the companion gbz-base index
-                                             (6.99 GB) that names the walks
+  hprc-v2.1-mc-grch38.haplotype-index.anchored.db
+                                             the companion gbz-base index
+                                             (7.87 GB) that names the walks
                                              read from HPRC's published
-                                             hprc-v2.1-mc-grch38.gbz.db; built
-                                             by scripts/build_hprc_gbz_index.sh
+                                             hprc-v2.1-mc-grch38.gbz.db, which
+                                             stores no map from a GBWT position
+                                             back to a sample; built by
+                                             scripts/build_hprc_gbz_index.sh.
+                                             Its anchors sit every 131 kb along
+                                             GRCh38 and CHM13, so a window for
+                                             a chosen set of lanes walks those
+                                             haplotypes from the anchor before
+                                             it. This is the one the configs
+                                             and tutorials load.
+
+  hprc-v2.1-mc-grch38.haplotype-index.db     the earlier companion (6.99 GB),
+                                             same map without the anchors,
+                                             hosted unchanged for anything
+                                             pinned to it
 
   hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa
                                              the KIV-2 bubble
@@ -76,14 +98,23 @@ Files
                                              haplotypes: 15,808 nodes, the
                                              GRCh38 walk and eight named W
                                              lines; the command is in the
-                                             pangenome_hprc tutorial
+                                             pangenome_hprc part 3 tutorial,
+                                             under "The graph view from the
+                                             GBZ, for a chosen set"
 
-  hprc-v2.0-mc-grch38.summary.bed.gz{,.tbi}  the MAF summary, from the v2.0
-                                             TAF (v2.1 publishes no indexed
-                                             alignment)
+  hprc-v2.0-mc-grch38.summary.bed.gz{,.tbi}  the MAF summary, by
+                                             scripts/build_hprc_maf_summary.sh
+                                             over the v2.0 TAF. v2.1 publishes
+                                             its alignment as a 53 GB MAF and
+                                             no TAF, and the graph and callset
+                                             are both v2.0 builds
 
   Stable names are PanSN (GRCh38#0#chr1), so a JBrowse track on an ordinary
-  hg38 assembly needs assemblyNameToPanSN: { "hg38": "GRCh38" }.
+  hg38 assembly needs assemblyNameToPanSN: { "hg38": "GRCh38" }, and one on
+  T2T-CHM13 needs { "hs1": "CHM13" } beside it. That covers segs, links, the
+  ref pair, the tier and bubbles. The alleles file is the exception: its rows
+  carry the reference's own refNames (chr1), since build_rgfa_alleles.sh drops
+  the prefix, so its track takes a plain BedTabixAdapter with no mapping.
 
 How they were built
 -------------------
@@ -156,15 +187,23 @@ repeat_density/ - per-class RepeatMasker density
   unmerged would double-count shared bp and report over 100%.
 
   What it is for: over the last 650 kb of chr17 in each assembly - the
-  subtelomere GRCh38 ends short of - the classes separate rather than move
-  together, which a single density track cannot show.
+  subtelomere GRCh38 ends short of - the total holds still while the classes
+  underneath it move in opposite directions, which a single density track
+  cannot show.
 
     class          GRCh38    CHM13
-    LINE           13.71%    70.05%     (L1 alone: 13.35% -> 66.70%)
-    SINE           13.58%    10.53%     goes down
-    LTR             6.10%     9.81%
-    DNA             2.29%     8.17%
-    all (merged)   37.22%    76.37%
+    LINE           13.71%    16.51%     goes up
+    SINE           13.58%     9.00%     goes down
+    LTR             6.10%     5.83%
+    DNA             2.29%     3.01%
+    all (merged)   37.22%    36.48%     flat
+
+  An earlier version of this table read LINE 70.05% and all 76.37%, and those
+  numbers were an artifact: hs1's rmsk bigBed is a bigRmskBed, whose outer span
+  is a whole fragmented element joined back together, so taking it counts bases
+  belonging to whichever younger element interrupted the older one. The script
+  expands the aligned blocks instead. Anything quoting the old table is quoting
+  the bug.
 
   Each assembly is measured over its OWN last 650 kb, not a lifted-over
   interval: there is no lift-over for sequence one of them does not have.

@@ -304,11 +304,11 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   whole-genome, unpacked from the graph** (`build_hprc_multiway_synteny.sh`):
   the same `HG01109.1 … HG00133.1` that `demos/hprc` slices to one window,
   read out of the minigraph-cactus GFA itself (`SOURCE=gfa`, the default: the
-  63 GB `hprc-v2.0-mc-grch38.gfa.gz` streamed once through
-  `gfa_to_pairwise_paf.py`, 28 min at 1.5 GB RSS, every haplotype's walk
-  aligned against GRCh38's through the nodes they share), then indexed by
-  `make-pif` into a single two-tier PIF (`hprc_multiway_gfa.pif.gz`, 127 MB,
-  4,146 PAF rows, 475–551 per haplotype). The served config points at it;
+  64 GB `hprc-v2.1-mc-grch38.gfa.gz` streamed once through
+  `gfa_to_pairwise_paf.py`, 28 min at 1.5 GB RSS on the v2.0 graph, every
+  haplotype's walk aligned against GRCh38's through the nodes they share), then
+  indexed by `make-pif` into a single two-tier PIF
+  (`hprc_multiway_gfa.pif.gz`, 128 MB, 4,609 PAF rows, 541–606 per haplotype). The served config points at it;
   `SOURCE=taf` builds the same thing from the graph's published projection
   (`hprc-v2.0-mc-grch38.full.taf.gz` through `taffy view -m` and
   `maf_to_pairwise_paf.py`, `hprc_multiway_graph.pif.gz`, 4,332 rows), and the

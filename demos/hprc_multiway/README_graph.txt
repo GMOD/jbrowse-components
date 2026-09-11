@@ -17,7 +17,7 @@ reads an =/X/I/D CIGAR off each row against the reference, and chains
 consecutive blocks into one PAF record while the haplotype continues on both
 sequences, bridging up to 10000 unaligned bp on either side as an indel.
 The PAF is indexed with `jbrowse make-pif --csi`,
-and each haplotype's contigs and lengths come from the same rows. Beside it,
+and each haplotype's contigs and lengths come from the same source. Beside it,
 each haplotype's CAT gene annotation from the release 2 annotation index
 
   https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv
@@ -25,8 +25,8 @@ each haplotype's CAT gene annotation from the release 2 annotation index
 with intron, start_codon and stop_codon rows dropped and genes over
 5000000 bp removed. HPRC data is released under CC0; see
 https://github.com/human-pangenomics/hpp_pangenome_resources for the release
-and its terms. Rebuilt by scripts/build_hprc_multiway_synteny.sh in
-https://github.com/GMOD/jbrowse-components.
+and its terms. Rebuilt by scripts/build_hprc_multiway_synteny.sh (SOURCE=taf)
+in https://github.com/GMOD/jbrowse-components.
 
 Files
 -----

@@ -14,8 +14,15 @@ plus each haplotype's CAT gene annotation from the release 2 annotation index
 with intron, start_codon and stop_codon rows dropped and genes over
 5000000 bp removed. HPRC data is released under CC0; see
 https://github.com/human-pangenomics/hpp_pangenome_resources for the release
-and its terms. Rebuilt by scripts/build_hprc_multiway_synteny.sh in
-https://github.com/GMOD/jbrowse-components.
+and its terms.
+
+Nothing in GMOD/jbrowse-components rebuilds this set. The impg filter it came
+from was replaced by two routes that read the alignment out of the graph
+itself, scripts/build_hprc_multiway_synteny.sh with SOURCE=gfa or SOURCE=taf,
+and those write the sets described in README_gfa.txt and README_graph.txt
+beside this file. config.json here serves the SOURCE=gfa set, and the tutorial
+at https://jbrowse.org/jb2/docs/tutorials/hprc_multiway_synteny/ walks that
+build. These files stay hosted for anything pointed at them.
 
 Files
 -----
