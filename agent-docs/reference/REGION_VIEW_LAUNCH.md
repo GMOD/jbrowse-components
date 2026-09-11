@@ -13,7 +13,7 @@ it, sourced from some track**.
 - **Linear synteny** — in this repo,
   `plugins/linear-comparative-view/src/LaunchSyntenyView/`.
 - **Graph genome** — external repo,
-  `~/src/jb2plugins/jbrowse-plugin-graphgenomeview/src/launchSubgraph/`.
+  `~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer/src/launchSubgraph/`.
 
 The graph one came first and is the reference implementation. The synteny one
 was written to match it deliberately rather than invent a second convention.
@@ -344,12 +344,12 @@ labels live in a chunk, not the entry):
 ```bash
 curl -s https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js \
   | grep -c 'Graph genome view (visible region)'
-md5sum ~/src/jb2plugins/jbrowse-plugin-graphgenomeview/dist/*.esm.js   # vs the hosted one
+md5sum ~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer/dist/*.esm.js   # vs the hosted one
 ```
 
 As of 2026-07-26 the hosted bundle carries all four launch labels, both halves of
 the hover sync, and the convention-6 fix (plugin `3146de4`, published by
-`jbrowse-plugin-graphgenomeview/scripts/betabuild.sh`, entry md5
+`jbrowse-plugin-graphgenomeviewer/scripts/betabuild.sh`, entry md5
 `0ce050e42b363d281fbc217f6afbab54`). The script
 ends by downloading what the CDN actually serves and diffing it against what it
 built, which is the check worth trusting — an S3 write alone left the edge

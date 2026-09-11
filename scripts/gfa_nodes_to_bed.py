@@ -10,7 +10,7 @@ deliberately absent from the output, the same asymmetry an rGFA rank>0 segment
 has.
 
 `score` is the node's depth: how many paths traverse it. That is the quantity
-jbrowse-plugin-graphgenomeview's "Depth" color scheme reads (a pangenome GFA
+jbrowse-plugin-graphgenomeviewer's "Depth" color scheme reads (a pangenome GFA
 carries no dp/RC/FC/KC tag, so the plugin counts P/W traversals, floor 1), and
 `itemRgb` is that scheme's own viridis ramp sampled the same way — over the
 subgraph's own min/max depth, not an absolute scale. So a JBrowse track reading
@@ -33,7 +33,7 @@ def open_maybe_gz(path):
     return gzip.open(path, "rt") if path.endswith(".gz") else open(path)
 
 
-# jbrowse-plugin-graphgenomeview DEPTH_GRADIENT (viridis), from
+# jbrowse-plugin-graphgenomeviewer DEPTH_GRADIENT (viridis), from
 # src/GraphGenomeView/renderer/GeometryBuilder.ts
 DEPTH_GRADIENT = [(68, 1, 84), (59, 82, 139), (33, 145, 140), (94, 201, 98), (253, 231, 37)]
 

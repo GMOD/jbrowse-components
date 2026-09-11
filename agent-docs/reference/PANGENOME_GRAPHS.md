@@ -11,20 +11,21 @@ findings that are expensive to re-derive. Replaces `GENERAL_GFA_HANDOFF.md` and
 `PANGENOME_PATHS_HANDOFF.md`, both of whose work shipped.
 
 The view itself is a third-party plugin,
-`~/src/jb2plugins/jbrowse-plugin-graphgenomeview` — build and deploy traps are
+`~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer` — build and deploy traps are
 in the `key_pattern_graphgenomeview_plugin_deploy_and_autofit` memory. User docs
 are `website/docs/user_guides/graph_genome_view.md`. The package, its bundle,
-its GitHub repo and its hosted prefix are all spelled
-`graphgenomeview**er**`; only the local checkout and `test_data/graphgenomeview/`
-drop the `er`.
+its GitHub repo, its hosted prefix and the local checkout are all spelled
+`graphgenomeview**er**`; only `test_data/graphgenomeview/` drops the `er`.
 
-**A publish is a two-sided move, and `test_data/graphgenomeview/README.md` is
-the rule**: the four figure fixtures pin `demos/graphgenomeviewer/<hash>/` while
-the `demos/` configs and the tutorials name the unversioned url, and
-`pnpm check-live-configs` fails both halves the wrong way round. So publishing
-the plugin gives readers the new build immediately and leaves the figures where
-they were until someone bumps the pin — which is the point, since a figure must
-not change without a commit here to attribute it to.
+**A publish moves the figures, and `test_data/graphgenomeview/README.md` is the
+rule**: every config names the unversioned url — the figure fixtures, the
+`demos/` configs and the tutorials alike — and `pnpm check-live-configs` refuses
+a pin in any of them. So publishing the plugin gives readers the new build
+immediately and moves the graph figures at the next regen, with no commit here
+to attribute the move to; `pnpm figures:report` after that regen is where it is
+read, and a spec that clicked a label the plugin renamed fails there rather than
+silently. The fixtures pinned `demos/graphgenomeviewer/<hash>/` until
+2026-09-06, and the pin cost a bump nobody remembered.
 
 **Read the build's date against the commits before assuming a bump re-renders
 anything.** The 2026-08-26 publish looked like it carried a visual change —
@@ -119,7 +120,7 @@ synthesized S-line → the parser → `node.samples`, and the end-to-end one is
 `rgfaBed.test.ts`'s "SM:Z: on a segs row reaches GraphNode.samples".
 
 **The linear side landed 2026-08-06 too** (plugin `f2108cc`, published as
-`0093d998d280`, which is what `test_data/graphgenomeview/*.json` now pins).
+`0093d998d280`).
 `getFeatures` parsed the tag column
 and then dropped it, so the whole tag route ended at the graph view and a
 LinearGenomeView lane colored by carriage was not expressible. `segmentSamples`
@@ -905,7 +906,7 @@ what `segs.bed.gz` does with tabix.
   nodes `s10274` (6 bytes, fine) and the tier names them
   `bb_GRCh38#0#chr1_0` (18 bytes, throws), so it was 100% failure on one index
   and 0% on the other with everything else identical. Patched in
-  `jbrowse-plugin-graphgenomeview/scripts/build-wasm.sh` — that plugin's repo,
+  `jbrowse-plugin-graphgenomeviewer/scripts/build-wasm.sh` — that plugin's repo,
   not this one — because that script overwrites the generated file wholesale.
 
   The general lesson is the cheaper one: **bisecting on inputs cannot find a bug
