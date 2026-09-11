@@ -396,7 +396,8 @@ tabix -p gff hprc_mhc_NA20809.2.genes.gff3.gz
 ```
 
 The segments track draws on the haplotype too once `assemblyNames` lists it and
-`assemblyNameToPanSN` says which haplotype the name means. This replaces the
+`assemblyNameToPanSN` says which haplotype the name means. `hg38` stays first,
+because a graph is cut on the first assembly its track names. This replaces the
 track [above](#load-the-graph), same `trackId`, one more assembly:
 
 ```json addtrack
