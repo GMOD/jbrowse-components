@@ -72,7 +72,18 @@ Read the graph plugin's `linearViewMenuItems.ts` before adding a third.
    A launcher with **no dialog** (the graph plugin) has nowhere to move the
    choice to, so it owes the submenu; it still branches on count inline in
    `subgraphMenuItems.ts`.
-5. **Never push a launch entry into a menu top level.** In the view and track
+5. **A launch is offered on the one assembly the source can be cut on, and
+   greyed out elsewhere naming it.** A track that declares several assemblies
+   does not accept a cut on all of them: a graph track names its reference
+   first, which is the rule `GbzBaseSyntenyAdapter` already applies to its
+   anchor, so the graph plugin offers the cut only from that assembly's view and
+   the view itself refuses the rest — an old saved session cannot draw in the
+   wrong frame either. Offering all of them is worse than it sounds: from a
+   haplotype's view the launch framed a GRCh38 backbone on the haplotype's own
+   contig, so the anchored layouts drew off screen and the ramp, hover band and
+   Highlight all put reference coordinates on a contig that has none of them,
+   with nothing erroring. Plugin `6a27768`.
+6. **Never push a launch entry into a menu top level.** In the view and track
    menus, group with `pushLaunchViewMenuItem` (`@jbrowse/core/ui`) so offers
    collect under one "Launch" submenu. In the linear view's rubberband
    menu, extend **`rubberBandLaunchMenuItems()`** on the model rather than
@@ -81,7 +92,7 @@ Read the graph plugin's `linearViewMenuItems.ts` before adding a third.
    grouping is decided once, in `LinearGenomeView/menuItems.ts`, instead of by
    whichever plugin's `Core-extendPluggableElement` callback runs first. That
    menu used to take these flat and was up to seven entries.
-6. **Take the widest block, never the first.** Both entry points hand the launch
+7. **Take the widest block, never the first.** Both entry points hand the launch
    one region, but a linear view can be showing several: `dynamicBlocks
    .contentBlocks` and `getSelectedRegions()` both return display order, and a
    launched view is anchored on one stable sequence. A view scrolled just past a
@@ -107,7 +118,7 @@ Read the graph plugin's `linearViewMenuItems.ts` before adding a third.
 |---|---|---|
 | dialog | none — menu click launches | yes — panel picker + window size |
 | what persists | `loadedTrackId` + `loadedRegion` view props | resolved locstrings in `init` |
-| size guard | `MAX_GRAPH_REGION_BP = 100_000`, disabled item + `disabledHelpText` | none |
+| size guard | `MAX_GRAPH_REGION_BP = 5_000_000`, disabled item + `disabledHelpText` on every entry point (the track menu's caught up 2026-09-11, having notified after the click until then) | none |
 | source linkage | `connectedViewId` → hover sync | none |
 | entry points | view menu, rubberband, track menu, feature context menu | view menu, rubberband (a synteny row's included — it reads the bands' tracks, `launchableTrackConfs`, and offers to replace the stack), MultiWaySyntenyDisplay track menu, alignment context menu (pairwise, multi-panel on a track declaring 3+ assemblies, and the mate assembly alone in an LGV), feature-detail links (the same three), a MAF row's drag-selection menu (`launchMafRowSynteny`, ribbons cut from the columns) |
 
