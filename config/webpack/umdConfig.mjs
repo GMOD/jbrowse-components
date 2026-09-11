@@ -11,7 +11,7 @@ export default function umdConfig({ filename, library, cssUse }) {
   return {
     mode,
     entry: './src/webpack.ts',
-    devtool: 'source-map',
+    devtool: false,
     output: {
       path: path.resolve('dist'),
       filename,
