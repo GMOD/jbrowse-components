@@ -348,6 +348,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     def: SlotDefinition,
     depth: number,
     legacyValues?: unknown[],
+    numbersLifted = false,
   ): JsonSchema {
     const frozen = def.type === 'frozen' || def.type === 'maybeFrozen'
     const description = [def.description?.trim(), frozen ? FROZEN_NOTE : '']
@@ -364,12 +365,17 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
           },
         ]
       : []
-    const shared = SHARED_SLOT_DEFS[def.type]
+    const shared = numbersLifted ? undefined : SHARED_SLOT_DEFS[def.type]
     const value = def.model
       ? mstSchema(def.model, depth)
       : frozen
         ? {}
-        : builtinSlot(def.type)
+        : numbersLifted
+          ? {
+              type: 'array',
+              items: { anyOf: [{ type: 'string' }, { type: 'number' }] },
+            }
+          : builtinSlot(def.type)
     const form =
       shared && !def.model && !legacyValues?.length
         ? ref(shared[0])
@@ -404,7 +410,12 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     const properties: Record<string, JsonSchema> = {}
     for (const [slot, entry] of Object.entries(meta.definition)) {
       if (isSlotDefinition(entry)) {
-        properties[slot] = slotSchema(entry, depth + 1, legacyValues[slot])
+        properties[slot] = slotSchema(
+          entry,
+          depth + 1,
+          legacyValues[slot],
+          entry.type === 'stringArray' && liftsNumbers(meta, slot),
+        )
       } else if (deps.isType(entry)) {
         properties[slot] = mstSchema(entry as MstType, depth + 1)
       }
@@ -429,6 +440,20 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
       properties[idName] = { type: 'string' }
     }
     return properties
+  }
+
+  // A `stringArray` slot whose sub-schema lift stringifies numbers — a ramp's
+  // `domain: [0, 100]` — admits numbers in the schema too, asked the same way.
+  function liftsNumbers(meta: SchemaMetadata, slot: string) {
+    try {
+      const out = meta.options.preProcessSnapshot?.({ [slot]: [1] }) as
+        | Record<string, unknown>
+        | undefined
+      const lifted = out?.[slot]
+      return Array.isArray(lifted) && lifted[0] === '1'
+    } catch {
+      return false
+    }
   }
 
   // What a sub-schema's own preProcessSnapshot lifts, asked by probing it: a

@@ -7139,7 +7139,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "domain": {
               "description": "pinned [min, max].",
-              "$ref": "#/$defs/StringArrayOrJexl"
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
             },
             "resolve": {
               "description": "shared or independent y axis.",
@@ -7207,7 +7224,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "domain": {
               "description": "category order, or a ramp [min, max].",
-              "$ref": "#/$defs/StringArrayOrJexl"
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
             },
             "ramp": {
               "description": "viridis, or CSS colour stops.",
@@ -7262,7 +7296,24 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             },
             "domain": {
               "description": "category order.",
-              "$ref": "#/$defs/StringArrayOrJexl"
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
             }
           },
           "patternProperties": {
