@@ -154,7 +154,10 @@ because that graph calls the reference `GRCh38` while the assembly is `hg38`.
 
 Then **Track menu → Launch → Graph genome view (this region)** cuts a subgraph
 from the index. The item is offered only for a track whose adapter can cut one,
-and past the size the view will draw it greys out and names its own limit.
+and past the size the view will draw it greys out and names its own limit. A cut
+is made on the graph's reference, the first assembly the track names, so from
+the view of a contributing haplotype the item greys out and says which view to
+open it from.
 
 How wide a window that is depends on the graph. A minigraph graph records
 structural variation and collapses everything smaller, so a legible window is
