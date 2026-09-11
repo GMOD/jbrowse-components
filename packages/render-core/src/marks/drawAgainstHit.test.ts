@@ -170,16 +170,24 @@ const barsInside: BarChannels = {
 
 describe('bar: every drawn rect answers its own hit, in both orientations', () => {
   test.each<[string, BarParams, BarChannels]>([
-    ['zero origin', { domain: [-1, 1], origin: 0, minWidthPx: 2 }, bars],
-    ['no floor', { domain: [-1, 1], origin: 0, minWidthPx: 0 }, bars],
+    [
+      'zero origin',
+      { domain: [-1, 1], origin: 0, minWidthPx: 2, seamPx: 0 },
+      bars,
+    ],
+    [
+      'no floor',
+      { domain: [-1, 1], origin: 0, minWidthPx: 0, seamPx: 0 },
+      bars,
+    ],
     [
       'origin below the domain',
-      { domain: [-1, 1], origin: -2, minWidthPx: 2 },
+      { domain: [-1, 1], origin: -2, minWidthPx: 2, seamPx: 0 },
       barsInside,
     ],
     [
       'clamped domain',
-      { domain: [-0.5, 0.5], origin: 0, minWidthPx: 2 },
+      { domain: [-0.5, 0.5], origin: 0, minWidthPx: 2, seamPx: 0 },
       barsInside,
     ],
   ])('%s', (_label, params, channels) => {
@@ -215,7 +223,7 @@ test('bar: a zero-height bar paints nothing and is never the answer', () => {
       flat,
       block,
       { canvasWidth: 60, canvasHeight: 100 },
-      { domain: [0, 1], origin: 0, minWidthPx: 2 },
+      { domain: [0, 1], origin: 0, minWidthPx: 2, seamPx: 0 },
       {
         maxDistSq: 400,
         sliceOne: (c, i) => ({

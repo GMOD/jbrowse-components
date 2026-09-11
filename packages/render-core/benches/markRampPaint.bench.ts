@@ -98,6 +98,7 @@ const base: Omit<BarParams, 'ramp'> = {
   domain: [0, 1],
   origin: 0,
   minWidthPx: 0,
+  seamPx: 0,
 }
 const ramp = {
   domain: [0, 1000] as [number, number],

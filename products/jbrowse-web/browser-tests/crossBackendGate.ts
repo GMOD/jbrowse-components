@@ -325,6 +325,7 @@ export const CI_GATE_SUITES = [
   'GWAS Tracks',
   'HiC Track',
   'MAF Track',
+  'Mark Display',
   'Miscellaneous Tracks',
   'Multi-Way Synteny Views',
   'Synteny Views',

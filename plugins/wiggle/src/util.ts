@@ -1,4 +1,5 @@
 import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
+import { CANVAS_SEAM_PX } from '@jbrowse/render-core/canvas2dUtils'
 import { MIN_FILL_WIDTH_PX } from '@jbrowse/wiggle-core'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -316,7 +317,7 @@ export function featuresToRaw(
 // shader). Anchoring the leftmost edge instead would shift every sub-floor bin
 // on a reversed block by up to the floor below — an actual mismatch, not this
 // deliberate sub-pixel one.
-export const WIGGLE_FUDGE_FACTOR = 0.8
+export const WIGGLE_FUDGE_FACTOR = CANVAS_SEAM_PX
 
 // The floor itself is NOT a second decision: it is wiggle.slang's own
 // `MIN_FILL_WIDTH_PX`, generated in (adr-051), under the name this module has

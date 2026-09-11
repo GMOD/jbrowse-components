@@ -744,3 +744,12 @@ export function regionAtPixel<
 >(regions: readonly R[], px: number): R | undefined {
   return regions.find(r => px >= r.screenStartPx && px < r.screenEndPx)
 }
+
+/**
+ * CSS px a Canvas2D painter adds to the drawn width of a rect whose neighbours
+ * abut it. `fillRect` antialiases each edge on its own, so two rects meeting on
+ * a fractional column each take partial coverage of it and a hairline of
+ * background shows through; abutting GPU quads share an exact clip-space edge
+ * and the rasterizer fills it once, so a shader grows no matching pad.
+ */
+export const CANVAS_SEAM_PX = 0.8

@@ -40,6 +40,8 @@ export interface BarParams {
    * a no-op for a caller whose bars tile.
    */
   minWidthPx: number
+  /** CSS px the painter alone adds to the drawn width; see `SpanParams.seamPx`. */
+  seamPx: number
 }
 
 // The rect one instance paints, in the frame's CSS px, or undefined for a bar
@@ -111,7 +113,7 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
       )
       if (r) {
         setFill(color[i]!)
-        ctx.fillRect(r.left, r.top, r.width, r.height)
+        ctx.fillRect(r.left, r.top, r.width + params.seamPx, r.height)
       }
     }
   },

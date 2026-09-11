@@ -41,7 +41,13 @@ function bars(values: number[]): BarChannels {
   }
 }
 
-const params: BarParams = { domain: [0, 2], origin: 0, minWidthPx: 0, ramp }
+const params: BarParams = {
+  domain: [0, 2],
+  origin: 0,
+  minWidthPx: 0,
+  seamPx: 0,
+  ramp,
+}
 
 test('the colour lane carries the value bits, so a ramp adds no instance byte', () => {
   const c = bars([0, 50, 100])

@@ -1,3 +1,4 @@
+import { CANVAS_SEAM_PX } from '@jbrowse/render-core/canvas2dUtils'
 import {
   barMark,
   defineMark,
@@ -170,6 +171,7 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
             ramp: s.colorRamps[i],
             origin: s.origin,
             minWidthPx: s.minWidthPx,
+            seamPx: CANVAS_SEAM_PX,
           }),
           texture: (s: MarkRenderState) => s.colorRamps[i]?.lut,
           enabled,
@@ -195,7 +197,7 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
           channels: (d: MarkRegionData) =>
             withLanes(d.layers[i], SHAPE_VALUE_LANES.span),
           params: (s: MarkRenderState) => ({
-            rowHeight: s.canvasHeight / s.rowCount,
+            rowHeight: Math.max(1, Math.floor(s.canvasHeight / s.rowCount)),
             rowProportion: 1,
             minWidthPx: s.minWidthPx,
             seamPx: 0,

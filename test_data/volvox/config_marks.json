@@ -1,0 +1,370 @@
+{
+  "assemblies": [
+    {
+      "name": "volvox",
+      "aliases": ["vvx"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox_refseq",
+        "metadata": {
+          "date": "2020-08-20"
+        },
+        "formatAbout": {
+          "config": "jexl:{extraField:'important data'}"
+        },
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "twoBitLocation": {
+            "uri": "volvox.2bit",
+            "locationType": "UriLocation"
+          }
+        },
+        "displays": [
+          {
+            "type": "LinearReferenceSequenceDisplay",
+            "displayId": "volvox_refseq-LinearReferenceSequenceDisplay"
+          },
+          {
+            "type": "LinearGCContentDisplay",
+            "displayId": "volvox_refseq-LinearGCContentDisplay",
+            "windowSize": 10,
+            "windowDelta": 10
+          }
+        ]
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "FromConfigAdapter",
+          "adapterId": "W6DyPGJ0UU",
+          "features": [
+            {
+              "refName": "ctgA",
+              "uniqueId": "alias1",
+              "aliases": ["A", "contigA"]
+            },
+            {
+              "refName": "ctgB",
+              "uniqueId": "alias2",
+              "aliases": ["B", "contigB"]
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "volvox-bed12.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox-bed12.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "trackId": "marks_bars",
+      "name": "Mark bars",
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "marks_bars-LinearMarkDisplay",
+          "marks": [
+            {
+              "shape": "bar",
+              "encoding": {
+                "y": "score",
+                "color": {
+                  "field": "name",
+                  "scale": "categorical"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "volvox-bed12.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox-bed12.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "trackId": "marks_points",
+      "name": "Mark points",
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "marks_points-LinearMarkDisplay",
+          "marks": [
+            {
+              "shape": "point",
+              "encoding": {
+                "y": "score",
+                "color": {
+                  "field": "name",
+                  "scale": "categorical"
+                },
+                "glyph": {
+                  "field": "name",
+                  "scale": "categorical",
+                  "domain": ["EDEN.1", "EDEN.2"],
+                  "range": ["triangle", "diamond"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "volvox-sorted.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox-sorted.bam.bai",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "trackId": "marks_pileup",
+      "name": "Mark pileup",
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "marks_pileup-LinearMarkDisplay",
+          "marks": [
+            {
+              "shape": "span",
+              "transform": [
+                {
+                  "type": "stack"
+                }
+              ],
+              "encoding": {
+                "row": "row",
+                "color": {
+                  "field": "strand",
+                  "scale": "categorical"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "volvox-sorted.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox-sorted.bam.bai",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "trackId": "marks_two_axes",
+      "name": "Mark two axes",
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "marks_two_axes-LinearMarkDisplay",
+          "marks": [
+            {
+              "shape": "bar",
+              "transform": [
+                {
+                  "type": "coverage"
+                }
+              ],
+              "encoding": {
+                "y": {
+                  "field": "coverage",
+                  "resolve": "independent"
+                },
+                "color": "#c8d8ee"
+              }
+            },
+            {
+              "shape": "point",
+              "encoding": {
+                "y": "score"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "volvox.sort.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.sort.gff3.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "trackId": "marks_density",
+      "name": "Mark density",
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "marks_density-LinearMarkDisplay",
+          "marks": [
+            {
+              "shape": "bar",
+              "encoding": {
+                "y": "score"
+              },
+              "maxBpPerPx": 20
+            },
+            {
+              "shape": "bar",
+              "transform": [
+                {
+                  "type": "bin",
+                  "step": "auto"
+                },
+                {
+                  "type": "aggregate",
+                  "groupby": ["start", "end"],
+                  "ops": [
+                    {
+                      "op": "count"
+                    }
+                  ]
+                }
+              ],
+              "encoding": {
+                "y": "count",
+                "color": "#c0c0c0"
+              },
+              "minBpPerPx": 20
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "volvox-sorted.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox-sorted.bam.bai",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "trackId": "marks_ramp",
+      "name": "Mark ramp",
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "marks_ramp-LinearMarkDisplay",
+          "marks": [
+            {
+              "shape": "bar",
+              "transform": [
+                {
+                  "type": "coverage"
+                }
+              ],
+              "encoding": {
+                "y": "coverage",
+                "color": {
+                  "field": "coverage",
+                  "scale": "linear",
+                  "ramp": ["white", "red"]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "VariantTrack",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "volvox.filtered.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox.filtered.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "trackId": "marks_variants",
+      "name": "Mark variants",
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "marks_variants-LinearMarkDisplay",
+          "marks": [
+            {
+              "shape": "span",
+              "transform": [
+                {
+                  "type": "stack",
+                  "padding": 2000
+                }
+              ],
+              "encoding": {
+                "row": "row",
+                "color": {
+                  "field": "type",
+                  "scale": "categorical"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
