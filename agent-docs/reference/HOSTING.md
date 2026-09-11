@@ -207,7 +207,9 @@ URL it names *and* every URL in its spec, then check the data matches the prose.
 
 **A field the code stopped needing cannot leave `demos/*/config.json` on its
 own**, because `check-live-configs --network` compares the repo copy against the
-hosted one and fails on the difference. Two are sitting there now: the
+hosted one and fails on the difference. `HOSTED_MIRRORS` there is the list of
+files under that comparison, and adding a hosted file to it is what puts the
+file under review at all. Two are sitting there now: the
 adapter-level `assemblyNames` that duplicates `blockAssemblies`, which
 `MCScanBlocksAdapter.mateAssemblies` defaults, and
 `jexl:feature.name ? randomColor(feature.name) : '#b0b0b0'`, where `randomColor`
@@ -227,6 +229,14 @@ modified, tool versions and the audits that ran — which is the half that was
 always done well, and is why the 27.4 h minigraph figure and the chrY finding
 are quotable at all. The rule the two halves add up to: **the build script is
 committed before the data is uploaded.**
+
+Those READMEs are the only written record of where a demo's data came from, and
+until 2026-09-11 all six of them were hand-written straight into the bucket:
+correcting one produced no diff, and a claim that went stale had no reader. They
+are `demos/<topic>/README*.txt` now, mirror-checked like the configs, and
+`deploy-demo.sh` refuses to publish a copy that differs from the tracked one.
+Six is the whole corpus — every other `README` under `demos/` belongs to a
+vendored app or a `node_modules` that was uploaded with it.
 
 A related drift that reachability checks cannot see: `demos/hprc/` holds both
 `hprc-v2.0-mc-grch38.*` and `hprc-v2.1-mc-grch38.*`, and consumers can sit on
