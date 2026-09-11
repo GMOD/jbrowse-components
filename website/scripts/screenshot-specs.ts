@@ -51,6 +51,7 @@ import { popgenSpecs } from './specs/popgen.ts'
 import { proteinStructuresSpecs } from './specs/protein_structures.ts'
 import { qcSpecs } from './specs/qc.ts'
 import { qtlSpecs } from './specs/qtl.ts'
+import { readMarksSpecs } from './specs/read_marks.ts'
 import { scatacSpecs } from './specs/scatac.ts'
 import { scrnaSpecs } from './specs/scrna.ts'
 import { svSpecs } from './specs/sv.ts'
@@ -94,6 +95,7 @@ export const specs: ScreenshotSpec[] = [
   ...mafSpecs,
   ...marksSpecs,
   ...aluAgeSpecs,
+  ...readMarksSpecs,
   ...msaSpecs,
   ...pangenomeSpecs,
   ...pangenomeCactusSpecs,

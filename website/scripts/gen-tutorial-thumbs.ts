@@ -564,6 +564,12 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'alu_age/binned.png',
     band: [0.42, 0.98],
   },
+  read_marks: {
+    // The chromosome frame below the app header and the view's toolbar: the
+    // grey insert-size cloud with the red count bars standing up out of it.
+    src: 'read_marks/chromosome.png',
+    band: [0.42, 0.98],
+  },
 }
 
 const WIDTH = 600

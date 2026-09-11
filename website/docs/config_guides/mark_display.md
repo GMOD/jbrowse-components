@@ -395,6 +395,24 @@ encoding is evaluated, and what a `jexl:` channel measured against a field read,
 is
 [MARK_ENCODING.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/MARK_ENCODING.md).
 
+## On the circular view
+
+A track with a mark display draws on the
+[circular view](/docs/user_guides/circular_view) as a ring: the display renders
+its strip as it would in a linear track and the view wraps it around the circle,
+so a `coverage` step over a BAM or a binned count over a BED is a Circos-style
+density ring with the same `marks` entry. A variant track keeps its chords
+unless the session names the mark display for it.
+
+## Tutorials
+
+- [](/docs/tutorials/alu_age) plots a BED column as bars coloured by another
+  column, counts the rows per zoom-following bin and reads a density sidecar
+  past the fetch budget.
+- [](/docs/tutorials/read_marks) plots a BAM's own fields: depth as a coverage
+  step, insert size as a point per pair on a second axis, the reads stacked and
+  coloured by a ramp, and a derived BED scanning a chromosome.
+
 ## When a plugin is the next step
 
 A drawing that is not a bar, a point or a span needs a **shape** of its own: one
