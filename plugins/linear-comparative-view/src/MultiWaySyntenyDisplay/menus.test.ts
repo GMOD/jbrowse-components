@@ -1,8 +1,8 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
+import { laneLocString } from './laneHeader.ts'
 import {
   laneHeaderMenuItems,
-  laneLocString,
   laneOrderMenuItem,
   laneRowMenuItems,
   laneSelectionMenuItems,
@@ -268,11 +268,11 @@ test('a lane with one contig and no pin offers nothing past the two hops', () =>
 })
 
 test("a mate lane's frame becomes a locstring in the lane assembly's own names", () => {
-  expect(laneLocString(peach)).toBe('Pp1:100-2,000')
+  expect(laneLocString(peach)).toBe('Pp1:101..2,000')
   expect(laneLocString({ ...peach, frame: undefined })).toBeUndefined()
   expect(
     laneLocString({ ...peach, frame: { ...peach.frame, min: -40, max: 0.2 } }),
-  ).toBe('Pp1:0-1')
+  ).toBe('Pp1:1')
 })
 
 test('a mate lane header opens its assembly elsewhere or re-anchors the track on it', () => {
@@ -289,8 +289,8 @@ test('a mate lane header opens its assembly elsewhere or re-anchors the track on
   click(items[4])
   click(items[5])
   expect(calls).toEqual([
-    'open peach Pp1:100-2,000',
-    'reanchor peach Pp1:100-2,000',
+    'open peach Pp1:101..2,000',
+    'reanchor peach Pp1:101..2,000',
   ])
 })
 

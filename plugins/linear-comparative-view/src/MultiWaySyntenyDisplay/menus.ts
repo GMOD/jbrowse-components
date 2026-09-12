@@ -1,9 +1,8 @@
 import { makeRadioSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
-import { toLocale } from '@jbrowse/core/util'
 import { openMateLabel } from '@jbrowse/core/util/tracks'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 
-import { frameStartBp } from './layoutMultiWay.ts'
+import { laneLocString } from './laneHeader.ts'
 import { ribbonColorModeOptions } from './ribbonColorModes.ts'
 
 import type { Lane } from './laneStack.ts'
@@ -142,17 +141,6 @@ export function laneRowMenuItems(
       },
     },
   ]
-}
-
-/** the mate lane's frame as a locstring the lane's own assembly resolves */
-export function laneLocString(lane: HeaderLane) {
-  const { frame } = lane
-  if (!frame) {
-    return undefined
-  }
-  const min = frameStartBp(frame)
-  const max = Math.max(min + 1, Math.round(frame.max))
-  return `${lane.canon(frame.refName)}:${toLocale(min)}-${toLocale(max)}`
 }
 
 /**
