@@ -296,7 +296,7 @@ If they could, it is a user guide wearing a tutorial's clothes."
   section. The opening video already shows all three views connected, so §3 and
   §4 re-derive what §2 demonstrated. `NLRP1` is the gene to spine it on: the only
   one whose figures carry a result rather than a demonstration.
-- **`dog10k_svs.md`** — the TL;DR states the anti-pattern in its own words
+- **`dog10k_svs.md`** — the opening paragraph states the anti-pattern in its own words
   ("Five loci, one recipe, a different class of variant each time"; the page has
   four). The `NHEJ1` spine is real. **The cheapest fix is one paragraph**:
   `:237-243` already says "the same track scrolled anywhere else is a screen of

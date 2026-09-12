@@ -496,7 +496,7 @@ reorderable just films the confusion.
 
 - **`dog10k_svs.md`** — two single-step interactions on 618 lines, each already
   in a figure within fifty lines of it, and `tutorial-corpus-audit.md` §5
-  names the page as the reorderable case in its own TL;DR's words.
+  names the page as the reorderable case in its own opening words.
 - **`mappability_qc.md`** — it HAS the shape: three numbered steps at `:168-179`
   with no figure near them, and a `Score → Summary score mode` flip whose losing
   half is in no picture. Both sit on a 30x remote CRAM that needs `forceLoad` to

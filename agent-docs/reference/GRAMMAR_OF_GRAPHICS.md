@@ -6,22 +6,10 @@ kind: spec
 
 # The mark layer against the grammar of graphics
 
-**TL;DR:** the grammar is a pipeline — data, transform, scale, mark, guide,
-layer, coordinates — and as of 2026-09-10 the tree has a declared answer at
-every one of the seven stages, with guides derived from declared scales on
-both surfaces and parity between backends pinned by tests. The coordinate
-stage is the circular view: a linear display draws on it as a ring, unchanged,
-through a strip the width of the circumference and a polar resampling of the
-picture the display made. Every channel now
-declares its scale on itself and the display resolves it, y resolves shared or
-independent across layers, and layout is a transform step; the seams left are
-that two channel vocabularies remain, that the config rung reaches three track
-types and not the formats' own meanings, and that a scale is still resolved
-over the loaded regions rather than the dataset. The gaps are scale resolution
-across layers for colour, conditional encoding, and the channels a runtime
-shader generator would give. A bin's width may now follow the zoom, and past
-the byte budget a layer may read the adapter's density sidecar, so the picture
-per zoom level holds at any scale. The positions behind each are in
+The grammar of graphics is a pipeline: data, transform, scale, mark, guide,
+layer, coordinates. This file reads the tree against those seven stages,
+names where each is answered and how far the answer reaches, and lists the
+seams and the gaps. It is the map across the decisions that built the layer —
 [ADR-095](../architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md)
 §"The grammar position", [ADR-106](../architecture-decision-records/adr-106-a-display-declares-its-marks.md),
 [ADR-107](../architecture-decision-records/adr-107-the-quantitative-class-is-authored-in-config.md),
@@ -29,13 +17,63 @@ per zoom level holds at any scale. The positions behind each are in
 [ADR-109](../architecture-decision-records/adr-109-a-display-declares-its-value-scale.md),
 [ADR-110](../architecture-decision-records/adr-110-a-display-declares-what-is-highlighted.md),
 [ADR-112](../architecture-decision-records/adr-112-a-layer-owns-its-transform-and-its-zoom-range.md),
-[ADR-113](../architecture-decision-records/adr-113-one-scale-rule-in-one-place.md)
-[ADR-114](../architecture-decision-records/adr-114-canvas-keeps-its-hand-written-packer.md)
-[ADR-115](../architecture-decision-records/adr-115-one-mark-may-read-its-own-axis.md)
-[ADR-117](../architecture-decision-records/adr-117-the-density-tier-is-a-mark-layer.md)
+[ADR-113](../architecture-decision-records/adr-113-one-scale-rule-in-one-place.md),
+[ADR-114](../architecture-decision-records/adr-114-canvas-keeps-its-hand-written-packer.md),
+[ADR-115](../architecture-decision-records/adr-115-one-mark-may-read-its-own-axis.md),
+[ADR-117](../architecture-decision-records/adr-117-the-density-tier-is-a-mark-layer.md),
 [ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)
-and [ADR-119](../architecture-decision-records/adr-119-the-circular-view-is-a-coordinate-stage-over-the-linear-displays.md);
-this file is the map across them.
+and [ADR-119](../architecture-decision-records/adr-119-the-circular-view-is-a-coordinate-stage-over-the-linear-displays.md)
+— and each position below points at the record that holds its measurement.
+
+## Two layers, two distances
+
+"Grammar" in this tree names two different things, and they have travelled
+different distances. Read anything below with the distinction in hand.
+
+**The mark layer is nearly everywhere.** A mark is one `defineMark`
+declaration binding a shape — a hand-written shader, its Canvas2D painter,
+its hit test and its SVG export, held to each other by
+`sweepDrawAgainstHit` — to a display's region payload and render state. Every
+rendering plugin declares them (`grep -rl "defineMark(" plugins` is the
+census): alignments a dozen across its pileup, coverage and arc bands,
+variants three, canvas two, and dotplot, gwas, hic, synteny, multi-way
+synteny, maf, wiggle and the mark display one list each. All but two of those
+displays build their rendering backend from the list through
+`createMarkBackend`, and the `GpuXxxRenderer` / `Canvas2DXxxRenderer` pair
+that used to sit around a mark list is gone from hic, wiggle, dotplot,
+synteny, multi-way, LD, GWAS and MAF. The pair that remains is the alignments
+display's, and it remains on a measurement: three mark lists over two region
+payloads, drawn in three
+scissored bands per stacked section, up to 120 section blocks a frame, with
+uniforms written once per section rather than once per mark
+(`benches/pileupUniformWrite.bench.ts` has the table) and an upload memo that
+re-packs only the read pass on a colour change and only the arc passes on an
+arc change. The generic backend draws one region per block through one list
+and has no home for any of that; it grows one the day a second display stacks
+sections, and not before (ADR-040's two-consumer bar). The reference sequence
+display keeps a Canvas2D-only renderer, having no GPU path to pair it with.
+
+**The grammar — a config-declared `encoding` and `transform`, run through
+one encoder — reaches three consumers.** The mark display (`plugins/marks`) is
+where a user gets all seven stages from JSON over any feature adapter, and
+`AlignmentsTrack`, `VariantTrack` and `FeatureTrack` may all carry it.
+Manhattan and wiggle's array-less fallback are the other two callers of
+`encodeFeatures`. Every format-typed display — canvas's feature glyphs, the
+alignments pileup, variants' genotype grid, wiggle's main path, Hi-C — still
+hand-wires features into its arrays, and two of those refusals are measured
+and stand: canvas's packer at 3.11x the encoder's cost
+([ADR-114](../architecture-decision-records/adr-114-canvas-keeps-its-hand-written-packer.md))
+and the pileup's layout at 4.23x
+([ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)),
+both dominated by materialising the `Feature[]` a step then re-reads rather
+than by the rule itself. So a reader gets a real grammar through `marks`, and
+a menu everywhere else; [SESSION_SPEC_FORMAT.md](SESSION_SPEC_FORMAT.md)
+§"The assessment" is the position that this is the right shape for a genome
+browser, because what the format-typed displays hold is layout, tiering and
+fetch shape, and those are not channels.
+
+What follows is the stage-by-stage reading, which is true of the mark display
+in full and of the format-typed displays only where it says so.
 
 ![The grammar's seven stages, and where the tree answers each](diagrams/grammar-pipeline.svg)
 
