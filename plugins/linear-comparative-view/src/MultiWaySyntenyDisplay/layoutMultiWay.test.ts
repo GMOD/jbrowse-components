@@ -8,6 +8,7 @@ import {
 } from './laneDecision.ts'
 import {
   clipGroupToAnchor,
+  frameReach,
   frameSpan,
   frameTickXs,
   laneFetchRegion,
@@ -1201,18 +1202,23 @@ test('the alignment shift cannot slide a lane below zero', () => {
   expect(frame.max).toBeGreaterThanOrEqual(frame.fitMax)
 })
 
-// `rowFrameX` extrapolates, so an endpoint the frame does not reach maps to
+// `rowFrameX` extrapolates, so an endpoint the lane does not reach maps to
 // tens of thousands of px: the rect drawn from it is clipped by the svg and
 // looks fine while the ribbon on it sweeps the page. The lane-links fetch asks
-// for the whole window the frame can SLIDE in, which is wider than the frame by
+// for the whole window the frame can SLIDE in, which is wider than the reach by
 // construction, so records outside it arrive on every fetch.
-test('a span outside the frame has no px pair to draw from', () => {
+test('a span outside the lane reach has no px pair to draw from', () => {
   const frame = computeRowFrame(groupFeatures(features), 'peach', 1000)!
+  const reach = frameReach(frame)
   const region = laneFetchRegion(frame)
-  expect(region.end).toBeGreaterThan(frame.max)
+  expect(region.start).toBeLessThanOrEqual(Math.max(0, reach.min))
+  expect(region.end).toBeGreaterThan(reach.max)
 
   expect(frameSpan(frame, frame.min + 10, frame.min + 20, 800)).toBeDefined()
-  expect(frameSpan(frame, region.end - 10, region.end, 800)).toBeUndefined()
+  expect(frameSpan(frame, reach.max - 10, reach.max + 10, 800)).toEqual([
+    1192, 1200,
+  ])
+  expect(frameSpan(frame, reach.max + 10, region.end, 800)).toBeUndefined()
 })
 
 // A lane's own contig is whichever explains the most of the ANCHOR window, the

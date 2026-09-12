@@ -118,11 +118,22 @@ describe('the map a lane answers intervals with', () => {
     expect(anchor!.spanOf('Pp1', 100, 200)).toBeUndefined()
   })
 
-  test('clips to the frame on a mate lane, and answers nothing off its contig', () => {
+  // Half a screen either side of the frame, because a pan translates the stack
+  // that far before the lanes re-lay out. Clipped at the frame, a mate lane's
+  // leading edge was blank for the whole pan while the anchor lane drew into it
+  test('clips a mate lane half a screen past its frame, and answers nothing off its contig', () => {
     const [, peach] = stack().lanes
-    expect(peach!.spanOf('Pp1', 1900, 2500)).toEqual([720, WIDTH])
-    expect(peach!.spanOf('Pp1', 3000, 4000)).toBeUndefined()
+    expect(peach!.spanOf('Pp1', 1900, 3000)).toEqual([720, 1.5 * WIDTH])
+    expect(peach!.spanOf('Pp1', 2250, 2500)).toEqual([1000, 1.5 * WIDTH])
+    expect(peach!.spanOf('Pp1', 2600, 4000)).toBeUndefined()
     expect(peach!.spanOf('Pp2', 1100, 1200)).toBeUndefined()
+  })
+
+  test('places only what the frame itself shows', () => {
+    const offFrame = groupFeatures([pairFeature('g3', 1150, 1200)])
+    const [, peach] = stack({ groups: offFrame }).lanes
+    expect(peach!.spanOf('Pp1', 2150, 2200)).toBeDefined()
+    expect(peach!.placements.size).toBe(0)
   })
 
   // A placement carries whatever refName the table's BED used and a gene
