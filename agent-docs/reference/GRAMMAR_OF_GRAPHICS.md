@@ -98,7 +98,22 @@ value the renderer places elsewhere, because the mixin derives the ticks from
 the declaration the shader's uniforms are written from. A highlight cannot
 box a place nothing painted, because it reads the same `ink` the hit test is
 derived from. Each guide has one source, and each source is tested against
-its consumer.
+its consumer. The two backends are held to each other in a browser as well:
+the cross-backend gate's `Mark Display` suite
+(`products/jbrowse-web/browser-tests/suites/mark-display.ts`) renders eight
+`marks` configs — a categorical bar chart with its key and axis, a glyph
+scale, a stacked pileup over a BAM, two axes, a multiscale pair, a
+quantitative ramp and a variant strip — on Canvas2D and WebGL and blocks CI
+past 1.5% drift. Its first run found two fractional-pixel drifts nothing on
+jsdom could see, a span row height of `canvasHeight / rowCount` and the
+Canvas2D seam between abutting bars, at 1.93% and 4.07%; closed, the ramp is
+the CI scope's worst pair at 0.91%, against a 1.5% threshold
+([CROSS_BACKEND_GATE.md](CROSS_BACKEND_GATE.md) §"What made a blocking gate
+possible" has the 2026-09-12 distribution). The same pass looked at the
+chrome-placed key and axis in a real browser for the first time and found the
+ramp key printing an unpinned domain end as the float it was measured as —
+Hi-C's `24.429380416870117` against a `0` with no gap — which is why a ramp's
+ends now print through `formatScore`, the rule the score caption already used.
 
 The seams, named honestly:
 

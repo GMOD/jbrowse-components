@@ -32,10 +32,31 @@ build.
    noisy, and on a blocking job margin is worth more than tightness.
 
    The number to check a change against is that distribution, not the max alone.
-   The worst pair has moved 0.51% → 0.62% since August and is
-   `targeted_bigwig-multibigwig-multirowline`; the top four are all wiggle line
+   The worst pair had moved 0.51% → 0.62% since August and was
+   `targeted_bigwig-multibigwig-multirowline`; the top four were all wiggle line
    plots, and all of them move between rasterizers, so that floor is genuine
    antialiasing.
+
+   **Re-baselined 2026-09-12 at `731d0536bf`**, the first distribution since
+   the mark-grammar pass (ADR-106 through ADR-119) and the ~900 commits around
+   it; the 66-pair numbers above are the pre-mark-grammar baseline. Same
+   command, `--ci-gate --drift-report` under swiftshader, on a quiet worktree:
+   154 tests, **104 pairs, max 0.91%, median 0.00%**, four over 0.5% and none
+   over 1%. The tail is now
+
+   | pair | drift |
+   | --- | --- |
+   | `targeted_mark-ramp` | 0.91% |
+   | `targeted_color-by-insert-size-orientation` | 0.69% |
+   | `targeted_bigwig-multibigwig-multirowline` | 0.62% |
+   | `targeted_alignments-volvox-sv` | 0.62% |
+   | `targeted_additional-line-wiggle` | 0.42% |
+
+   so the `Mark Display` suite brought the new worst pair with it — a
+   quantitative ramp over abutting coverage bars, where the two rasterizers
+   differ along every step edge — and 1.5% is still ~1.6x that. The wiggle
+   line plot that led the old tail is unchanged at 0.62%, which is the check
+   that the run measured the same thing.
 
    **What 1.5% costs, measured: a loaded full hand run can now flag a pair that
    is fine.** `pnpm test:browser:gate` over all 310 tests, on a run that
@@ -804,13 +825,12 @@ those then moved**, in the 902 commits between the last attempt's baseline
 - `Synteny Views` — 35 commits on `LinearSyntenyDisplay`, `8d0bb7ca4f` (the band
   keeps a white ground in every theme) among them.
 
-So a run taken now would sum a ramp change against four unrelated rewrites and
-quote it against a distribution recorded before any of them. **Re-baseline
-instead**: the current distribution at a current commit is worth having, and
-[todo/look-at-the-mark-layers-guides-in-a-real-browser.md](../todo/look-at-the-mark-layers-guides-in-a-real-browser.md)
-already owes a gate run for the mark-grammar pass (ADR-106 through ADR-109),
-which is the same command. Record the new distribution here, dated and with its
-commit, and treat the numbers above §1 as the pre-mark-grammar baseline.
+So a run taken then would have summed a ramp change against four unrelated
+rewrites and quoted it against a distribution recorded before any of them. The
+re-baseline went instead, on 2026-09-12, riding the gate run the mark-grammar
+pass owed; §"What made a blocking gate possible" holds the new distribution,
+dated and with its commit, and the 66-pair numbers there are the
+pre-mark-grammar baseline.
 
 The prediction stands unfalsified rather than wrong. Re-posing it needs a
 before/after across ONE commit pair on a site nothing else is touching — which
