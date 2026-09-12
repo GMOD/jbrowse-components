@@ -56,9 +56,10 @@ function laneCaption(lane: LaneChoice) {
  * Which lanes to draw, out of every lane the source offers. Opens on the lanes
  * the stack draws: the selection in force, or every lane, less the hidden ones.
  * Submit unhides what is ticked and writes the ticked set back, keeping chosen
- * lanes this window does not place; ticking every lane writes no selection at
- * all, so lanes the source places later are not shut out. Reset drops the
- * selection and unhides every lane.
+ * lanes this window does not place, so a Submit that changes no tick changes
+ * nothing. Ticking every lane of a selection that names no other writes no
+ * selection at all, so lanes the source places later are not shut out. Reset
+ * drops the selection.
  */
 const LaneSelectionDialog = observer(function LaneSelectionDialog({
   model,
@@ -70,19 +71,17 @@ const LaneSelectionDialog = observer(function LaneSelectionDialog({
   const { laneUniverse, laneSelection, hiddenLanes } = model
   const among = (names: readonly string[], name: string) =>
     names.some(other => model.isSameLane(other, name))
-  const [chosen, setChosen] = useState(
+  const selected = (name: string) =>
+    laneSelection === undefined || among(laneSelection, name)
+  const [drawn] = useState(
     () =>
       new Set(
         laneUniverse
-          .filter(
-            lane =>
-              (laneSelection === undefined ||
-                among(laneSelection, lane.name)) &&
-              !among(hiddenLanes, lane.name),
-          )
+          .filter(lane => selected(lane.name) && !among(hiddenLanes, lane.name))
           .map(lane => lane.name),
       ),
   )
+  const [chosen, setChosen] = useState(drawn)
   const [filter, setFilter] = useState('')
   const shown = laneUniverse.filter(lane => matchesFilter(lane, filter))
   const setShown = (ticked: boolean) => {
@@ -106,14 +105,24 @@ const LaneSelectionDialog = observer(function LaneSelectionDialog({
       submitText="Draw these lanes"
       submitDisabled={chosen.size === 0}
       onSubmit={() => {
+        if (
+          chosen.size === drawn.size &&
+          [...chosen].every(n => drawn.has(n))
+        ) {
+          handleClose()
+          return
+        }
         const ticked = laneUniverse
           .filter(lane => chosen.has(lane.name))
           .map(lane => lane.name)
         const stillHidden = hiddenLanes.filter(name => !among(ticked, name))
-        // an unticked lane that stays hidden needs no selection to keep it out
+        // the hide keeps an unticked hidden lane out, so the selection keeps
+        // whatever it said about that lane
         const kept = laneUniverse
           .filter(
-            lane => chosen.has(lane.name) || among(stillHidden, lane.name),
+            lane =>
+              chosen.has(lane.name) ||
+              (among(stillHidden, lane.name) && selected(lane.name)),
           )
           .map(lane => lane.name)
         const offWindow = (laneSelection ?? []).filter(
@@ -121,7 +130,7 @@ const LaneSelectionDialog = observer(function LaneSelectionDialog({
         )
         model.setHiddenLanes(stillHidden)
         model.setSelectedLanes(
-          kept.length === laneUniverse.length
+          kept.length === laneUniverse.length && offWindow.length === 0
             ? undefined
             : [...kept, ...offWindow],
         )
@@ -131,7 +140,6 @@ const LaneSelectionDialog = observer(function LaneSelectionDialog({
         handleClose()
       }}
       onReset={() => {
-        model.setHiddenLanes([])
         model.setSelectedLanes(undefined)
         handleClose()
       }}

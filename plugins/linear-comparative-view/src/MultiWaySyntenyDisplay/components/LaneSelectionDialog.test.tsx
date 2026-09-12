@@ -84,18 +84,39 @@ test('ticking every lane writes no selection, and Every lane drops one', () => {
   expect(calls).toEqual([undefined])
   fireEvent.click(screen.getByText('Every lane'))
   expect(calls).toEqual([undefined, undefined])
-  expect(hides).toEqual([[], []])
+  expect(hides).toEqual([[]])
 })
 
 // The picker states what the stack draws. A hidden lane opened ticked, and
 // ticking it wrote a selection the hide still kept out of the stack
-test('a hidden lane opens unticked, and a submit that leaves it alone changes nothing', () => {
-  const unchanged = renderDialog(undefined, { hidden: ['extra', 'elsewhere'] })
+test('a hidden lane opens unticked', () => {
+  renderDialog(undefined, { hidden: ['extra', 'elsewhere'] })
   expect(screen.getByText('3 of 4 lanes chosen', { exact: false })).toBeTruthy()
   expect(screen.getByLabelText('extra')).not.toBeChecked()
+})
+
+// Every tick left as it opened, over a selection naming lanes outside this
+// window and a hidden lane the selection never named: a write there either
+// dropped the far lanes or put the hidden one into the selection
+test('a submit that changes no tick writes nothing', () => {
+  const { calls, hides, closes } = renderDialog(
+    ['HG1.1', 'HG1#2', 'HG2#1', 'far-away'],
+    { hidden: ['extra'] },
+  )
   fireEvent.click(screen.getByText('Draw these lanes'))
-  expect(unchanged.calls).toEqual([undefined])
-  expect(unchanged.hides).toEqual([['extra', 'elsewhere']])
+  expect(calls).toEqual([])
+  expect(hides).toEqual([])
+  expect(closes).toHaveLength(1)
+})
+
+test('an unticked hidden lane stays out of a selection that left it out', () => {
+  const { calls, hides } = renderDialog(['HG1.1', 'HG2#1'], {
+    hidden: ['extra'],
+  })
+  fireEvent.click(screen.getByLabelText('HG1#2'))
+  fireEvent.click(screen.getByText('Draw these lanes'))
+  expect(hides).toEqual([['extra']])
+  expect(calls).toEqual([['HG1.1', 'HG1#2', 'HG2#1']])
 })
 
 test('ticking a hidden lane unhides it', () => {
