@@ -57,7 +57,7 @@ test('a ramp row draws a gradient bar under its caption, labelled at both ends',
   )
   expect(getByText('Contacts')).toBeTruthy()
   expect(getByText('0')).toBeTruthy()
-  expect(getByText('1,200').getAttribute('text-anchor')).toBe('end')
+  expect(getByText('1200').getAttribute('text-anchor')).toBe('end')
   const bar = container.querySelector('rect[fill^="url(#"]')!
   const gradient = container.querySelector('linearGradient')!
   expect(bar.getAttribute('fill')).toBe(`url(#${gradient.id})`)
