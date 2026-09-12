@@ -52,9 +52,7 @@ test('an init pass declares the diagonalize gate rather than only raising it', a
   expect(view.pendingAutoDiagonalize).toBe(false)
 })
 
-// A launch whose reorder failed leaves the gate raised on purpose, and the
-// import form's submit never goes through the init that would reassign it, so
-// a stack rebuilt from the form never settled
+// the import form's submit runs no init, so only the return can lower the gate
 test('returning to the import form lowers a failed launch reorder gate', async () => {
   const session = setup()
   const view = (await session.launchView('LinearSyntenyView', {

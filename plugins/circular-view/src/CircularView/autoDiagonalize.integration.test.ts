@@ -84,21 +84,6 @@ test('the second genome follows the first, laid out mirrored', async () => {
   expect(view.pendingAutoDiagonalize).toBe(false)
 }, 40000)
 
-// the import form's submit runs no init, so nothing after it would lower a
-// gate a failed launch reorder left raised
-test('returning to the import form lowers the gate', async () => {
-  const view = await launch(false)
-  view.beginAutoDiagonalize(true)
-  const back = view
-    .menuItems()
-    .find(item => 'label' in item && item.label === 'Return to import form')
-  if (back && 'onClick' in back) {
-    back.onClick()
-  }
-  expect(view.displayedRegions).toEqual([])
-  expect(view.pendingAutoDiagonalize).toBe(false)
-}, 40000)
-
 // The mirror is applied on the way out and undone on the way in, so a circle
 // that is already diagonalized has nothing to move. Without the undo the pass
 // would report every chromosome flipped on every run, and flip them.

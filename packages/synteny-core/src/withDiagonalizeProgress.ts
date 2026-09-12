@@ -23,10 +23,6 @@ interface DiagonalizeProgressModel extends IStateTreeNode {
  * the actual reorder with the supplied token + callback. Centralized so the
  * views report progress, failure and cancel identically.
  *
- * A failure reaches the user, not just the console: the view underneath is
- * the unordered one, and the gate the caller leaves raised holds its
- * readiness shut until a reorder succeeds.
- *
  * The token, the throttled+guarded status sink and the clear all come from
  * `createStopTokenRotation`, one per run rather than one per model — this is not
  * latest-wins (`awaitingAutoDiagonalize` admits one run at a time), so `begin()`

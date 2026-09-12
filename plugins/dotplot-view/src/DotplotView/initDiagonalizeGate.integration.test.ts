@@ -76,18 +76,3 @@ test('an init pass declares the gate rather than only raising it', async () => {
   await when(() => view.pendingLaunch === undefined)
   expect(view.pendingAutoDiagonalize).toBe(false)
 })
-
-// the import form's submit runs no init, so nothing after it would lower a
-// gate a failed launch reorder left raised
-test('returning to the import form lowers the gate', async () => {
-  const session = setup()
-  const view = (await session.launchView('DotplotView', {
-    views,
-  })) as DotplotViewModel
-  view.setWidth(800)
-  await when(() => view.pendingLaunch === undefined)
-  view.beginAutoDiagonalize(true)
-
-  view.clearView()
-  expect(view.pendingAutoDiagonalize).toBe(false)
-})

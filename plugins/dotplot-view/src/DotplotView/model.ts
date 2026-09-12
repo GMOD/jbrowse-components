@@ -1363,8 +1363,6 @@ export default function stateModelFactory(pm: PluginManager) {
           // until the next Launch cleared it. `LinearComparativeView.clearView`
           // already does this.
           self.volatileError = undefined
-          // the launch's reorder gate, which the form's submit never raises
-          // and so would never lower
           self.cancelAutoDiagonalize()
         },
         /**

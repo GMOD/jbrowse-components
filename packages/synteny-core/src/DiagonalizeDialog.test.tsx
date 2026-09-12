@@ -16,13 +16,11 @@ let settled = 0
 function renderDialog(
   run: (opts: DiagonalizeRunOpts) => Promise<DiagonalizeStats | undefined>,
   handleClose = () => {},
-  awaitingAutoDiagonalize = false,
 ) {
   return render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <DiagonalizeDialog
         model={{
-          awaitingAutoDiagonalize,
           finishAutoDiagonalize: () => {
             settled++
           },
@@ -67,7 +65,6 @@ test('a failed run can be retried in place', async () => {
     await screen.findByText('Done: reordered 3 regions, reversed 1'),
   ).toBeTruthy()
   expect(attempts).toBe(2)
-  // a manual reorder that succeeds is the reorder a failed launch still owed
   expect(settled).toBe(1)
 })
 
@@ -115,26 +112,7 @@ test('a stop reports what the cascade had already committed', async () => {
   // the point of the change: it reports rather than vanishing
   expect(closed).toBe(false)
   expect(screen.getByText('Close')).toBeTruthy()
-  // stopping is the user settling for this view
   expect(settled).toBe(1)
-})
-
-// the gate waits on a reorder that happened: a stack with no alignments to
-// reorder was not reordered, and the automatic one still running owns it
-test('a run that reorders nothing leaves the gate', async () => {
-  renderDialog(() => Promise.resolve(undefined))
-  fireEvent.click(screen.getByText('Start'))
-  expect(await screen.findByText('No alignments to reorder')).toBeTruthy()
-  expect(settled).toBe(0)
-})
-
-test('a run while the automatic reorder is still running leaves the gate', async () => {
-  renderDialog(() => Promise.resolve(stats), undefined, true)
-  fireEvent.click(screen.getByText('Start'))
-  expect(
-    await screen.findByText('Done: reordered 3 regions, reversed 1'),
-  ).toBeTruthy()
-  expect(settled).toBe(0)
 })
 
 // the dotplot applies once at the end, so an abort there really did change

@@ -54,7 +54,6 @@ test('a reorder that fails on its own keeps the gate raised', async () => {
   expect(self.awaitingAutoDiagonalize).toBe(false)
   expect(self.pendingAutoDiagonalize).toBe(true)
   expect(`${reported.mock.calls[0]?.[0]}`).toContain('the RPC died')
-  // and says so where the user is looking, not only in the console
   expect(errors).toEqual(['Reordering chromosomes failed: Error: the RPC died'])
   reported.mockRestore()
 })

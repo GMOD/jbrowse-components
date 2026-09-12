@@ -9,7 +9,7 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
  * #category view
  *
  * The auto-diagonalize lifecycle state shared by the comparative views
- * (LinearSyntenyView, DotplotView): the in-flight wait, its live RPC status and
+ * (LinearSyntenyView, DotplotView, CircularView): the in-flight wait, its live RPC status and
  * stop token, and the flag that gates `settled` so a screenshot or browser test
  * can't capture a pre-reorder hairball.
  *
@@ -81,8 +81,8 @@ export function DiagonalizeProgressMixin() {
       },
       /**
        * #action
-       * The init-time reorder resolved, so the view on screen is the
-       * diagonalized one — open the gate.
+       * A reorder resolved, the init's or a manual one, so the view on screen
+       * is the diagonalized one — open the gate.
        */
       finishAutoDiagonalize() {
         self.pendingAutoDiagonalize = false

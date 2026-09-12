@@ -60,10 +60,8 @@ function summarizeStopped({ totalReordered, totalReversed }: DiagonalizeStats) {
  * its auto-diagonalize path calls) and `description` the view's wording for
  * which axis/row moves.
  *
- * A run that reorders, or that the user stops, lowers the view's auto-reorder
- * gate, unless the automatic reorder that raised it is still running: a
- * launch whose automatic reorder failed otherwise stayed unsettled however many
- * manual reorders succeeded after it.
+ * A run that finishes or that the user stops lowers the view's auto-reorder
+ * gate, which a failed automatic reorder leaves raised.
  *
  * Deliberately explicit-start rather than run-on-mount: the reorder is an
  * expensive RPC that rewrites displayed regions, and starting on a click means
@@ -75,10 +73,7 @@ export default function DiagonalizeDialog({
   description,
   run,
 }: {
-  model: {
-    awaitingAutoDiagonalize: boolean
-    finishAutoDiagonalize: () => void
-  }
+  model: { finishAutoDiagonalize: () => void }
   handleClose: () => void
   description: string
   run: (opts: DiagonalizeRunOpts) => Promise<DiagonalizeStats | undefined>
@@ -120,18 +115,14 @@ export default function DiagonalizeDialog({
         },
         statusCallback,
       })
-      if (stats && !model.awaitingAutoDiagonalize) {
-        model.finishAutoDiagonalize()
-      }
+      model.finishAutoDiagonalize()
       setState({ phase: 'done', summary: summarize(stats) })
     } catch (error) {
       // A stop surfaces here as the abort rejecting out of the runner, which is
       // not a failure to report — but everything the cascade had already
       // committed still stands, so it reports that instead of vanishing.
       if (runRef.current.stopped) {
-        if (!model.awaitingAutoDiagonalize) {
-          model.finishAutoDiagonalize()
-        }
+        model.finishAutoDiagonalize()
         setState({
           phase: 'done',
           summary: summarizeStopped(runRef.current.applied),
