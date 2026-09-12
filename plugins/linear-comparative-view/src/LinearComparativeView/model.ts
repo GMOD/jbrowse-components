@@ -931,16 +931,12 @@ function stateModelFactory(pluginManager: PluginManager) {
         return [
           {
             label: 'Zoom to region(s)',
-            // held, or under the follow each row's move is a gesture that
-            // takes the anchor, and the last row the selection spans wins it
             onClick: () => {
-              self.holdFollowAnchor(() => {
-                for (const { view, leftOffset, rightOffset } of selection) {
-                  if (leftOffset && rightOffset) {
-                    view.moveTo(leftOffset, rightOffset)
-                  }
+              for (const { view, leftOffset, rightOffset } of selection) {
+                if (leftOffset && rightOffset) {
+                  view.moveTo(leftOffset, rightOffset)
                 }
-              })
+              }
             },
           },
         ]
