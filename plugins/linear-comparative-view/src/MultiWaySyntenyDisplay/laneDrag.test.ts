@@ -29,6 +29,9 @@ test('a lane moves to the row dropped on, and a drop on the anchor puts it first
   expect(moveLaneTo(['a', 'b', 'c'], 'c', 0)).toEqual(['c', 'a', 'b'])
   expect(moveLaneTo(['a', 'b', 'c'], 'c', -1)).toEqual(['c', 'a', 'b'])
   expect(moveLaneTo(['a', 'b', 'c'], 'b', 1)).toEqual(['a', 'b', 'c'])
+  expect(moveLaneTo(['a', 'b', 'c'], 'a', 1)).toEqual(['b', 'a', 'c'])
+  // off either end of the stack is the end, not a lane lost
+  expect(moveLaneTo(['a', 'b'], 'b', 2)).toEqual(['a', 'b'])
   expect(moveLaneTo(['a', 'b'], 'nobody', 0)).toEqual(['a', 'b'])
 })
 

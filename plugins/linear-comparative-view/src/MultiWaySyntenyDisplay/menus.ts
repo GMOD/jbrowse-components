@@ -3,6 +3,7 @@ import { assembleLocStringRaw } from '@jbrowse/core/util'
 import { openMateLabel } from '@jbrowse/core/util/tracks'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 
+import { moveLaneTo } from './laneDrag.ts'
 import { laneRegion } from './laneHeader.ts'
 import { ribbonColorModeOptions } from './ribbonColorModes.ts'
 
@@ -92,19 +93,6 @@ export function mergeRowOrder(previous: string[], next: string[]) {
   return out
 }
 
-/** `order` with `name` moved `delta` places, or unchanged where it cannot go. */
-export function moveLane(order: string[], name: string, delta: number) {
-  const from = order.indexOf(name)
-  const to = from + delta
-  if (from < 0 || to < 0 || to >= order.length) {
-    return order
-  }
-  const out = [...order]
-  out.splice(from, 1)
-  out.splice(to, 0, name)
-  return out
-}
-
 /** Move up / Move down / Hide lane for one mate lane, off the order it is in now */
 export function laneRowMenuItems(
   model: LaneOrderModel,
@@ -123,7 +111,7 @@ export function laneRowMenuItems(
       disabled: i <= 0,
       keepMenuOpen: true,
       onClick: () => {
-        model.setRowOrder(moveLane(lanes, name, -1))
+        model.setRowOrder(moveLaneTo(lanes, name, i - 1))
       },
     },
     {
@@ -131,7 +119,7 @@ export function laneRowMenuItems(
       disabled: i < 0 || i === lanes.length - 1,
       keepMenuOpen: true,
       onClick: () => {
-        model.setRowOrder(moveLane(lanes, name, 1))
+        model.setRowOrder(moveLaneTo(lanes, name, i + 1))
       },
     },
     {

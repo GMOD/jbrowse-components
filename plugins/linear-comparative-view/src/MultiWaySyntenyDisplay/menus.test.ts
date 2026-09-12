@@ -7,7 +7,6 @@ import {
   laneRowMenuItems,
   laneSelectionMenuItems,
   mergeRowOrder,
-  moveLane,
 } from './menus.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -35,17 +34,6 @@ test('a reorder keeps the pinned lanes it could not see, at their own index', ()
   expect(mergeRowOrder([], ['a', 'b'])).toEqual(['a', 'b'])
   // an absent lane pinned first stays first
   expect(mergeRowOrder(['gone', 'a'], ['a'])).toEqual(['gone', 'a'])
-})
-
-test('a lane moves one place and the others keep their order', () => {
-  expect(moveLane(['a', 'b', 'c'], 'c', -1)).toEqual(['a', 'c', 'b'])
-  expect(moveLane(['a', 'b', 'c'], 'a', 1)).toEqual(['b', 'a', 'c'])
-})
-
-test('a lane at the end of the stack does not fall off it', () => {
-  expect(moveLane(['a', 'b'], 'a', -1)).toEqual(['a', 'b'])
-  expect(moveLane(['a', 'b'], 'b', 1)).toEqual(['a', 'b'])
-  expect(moveLane(['a', 'b'], 'nobody', -1)).toEqual(['a', 'b'])
 })
 
 // The order written back is the WHOLE stack, not the one lane that moved:

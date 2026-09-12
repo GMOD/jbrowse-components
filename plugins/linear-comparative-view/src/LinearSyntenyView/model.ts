@@ -292,14 +292,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * Every synteny track across every level, in order, named as
+       * `ComparativeTrackModel` since a level's `tracks` types out as `any`
+       */
+      get syntenyTracks(): ComparativeTrackModel[] {
+        return self.levels.flatMap(l => l.tracks)
+      },
+      /**
+       * #getter
        * True if any track on any level has an adapter with tiered storage. Used
        * to gate the "Level of detail" row — PAFAdapter, BlastTabularAdapter and
        * friends have nothing to switch between.
        */
       get hasLodCapableAdapter() {
-        return self.levels
-          .flatMap(l => l.tracks)
-          .some((track: ComparativeTrackModel) => trackHasLodTiers(track))
+        return this.syntenyTracks.some(track => trackHasLodTiers(track))
       },
       /**
        * #getter
@@ -417,12 +423,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * out the same color would make that one legend lie.
        */
       colorableTrackConfigs() {
-        return self.levels
-          .flatMap(l => l.tracks)
-          .map((t: ComparativeTrackModel) => {
-            const { trackId, name } = t.configuration
-            return { trackId, name }
-          })
+        return this.syntenyTracks.map(t => {
+          const { trackId, name } = t.configuration
+          return { trackId, name }
+        })
       },
       /**
        * #method
@@ -433,20 +437,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       colorableAttributeNames() {
         return colorableColumns(
-          self.levels
-            .flatMap(l => l.tracks)
-            // Annotated for the reason ComparativeTrackModel documents, which is
-            // the PLUGGABLE track array rather than the levels cycle: a level's
-            // `tracks` is `IAnyType[]`, so `t` is `any` and the getConf call
-            // below is unchecked until the shape is named. Cutting the cycle at
-            // the display's `view` getter typed `levels` itself; it did not
-            // reach inside a level's tracks.
-            .flatMap((t: ComparativeTrackModel) => {
-              const declared = getConf(t, ['adapter', 'attributeColumns']) as
-                | string[]
-                | undefined
-              return declared ?? []
-            }),
+          this.syntenyTracks.flatMap(t => {
+            const declared = getConf(t, ['adapter', 'attributeColumns']) as
+              | string[]
+              | undefined
+            return declared ?? []
+          }),
         )
       },
       /**
