@@ -1,4 +1,5 @@
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import { DiagonalizeProgressMixin } from './DiagonalizeProgressMixin.ts'
 import { withDiagonalizeProgress } from './withDiagonalizeProgress.ts'
@@ -11,11 +12,22 @@ import { withDiagonalizeProgress } from './withDiagonalizeProgress.ts'
 // committing a hairball). Left raised on a cancel too, `settled` is false
 // forever and the capture tools hang on a view the user is done with.
 function viewWithGate() {
-  return DiagonalizeProgressMixin().create({})
+  const errors: string[] = []
+  const session = types
+    .model({ view: DiagonalizeProgressMixin() })
+    .volatile(() => ({ rpcManager: {}, configuration: {} }))
+    .actions(() => ({
+      notify() {},
+      notifyError(message: string) {
+        errors.push(message)
+      },
+    }))
+    .create({ view: {} })
+  return { self: session.view, errors }
 }
 
-test('a cancelled reorder lowers the gate', async () => {
-  const self = viewWithGate()
+test('a cancelled reorder lowers the gate, and reports no failure', async () => {
+  const { self, errors } = viewWithGate()
   self.beginAutoDiagonalize(true)
 
   const run = withDiagonalizeProgress(self, async ({ stopToken }) => {
@@ -27,11 +39,12 @@ test('a cancelled reorder lowers the gate', async () => {
 
   expect(self.awaitingAutoDiagonalize).toBe(false)
   expect(self.pendingAutoDiagonalize).toBe(false)
+  expect(errors).toEqual([])
 })
 
 test('a reorder that fails on its own keeps the gate raised', async () => {
   const reported = jest.spyOn(console, 'error').mockImplementation(() => {})
-  const self = viewWithGate()
+  const { self, errors } = viewWithGate()
   self.beginAutoDiagonalize(true)
 
   await withDiagonalizeProgress(self, async () => {
@@ -41,5 +54,10 @@ test('a reorder that fails on its own keeps the gate raised', async () => {
   expect(self.awaitingAutoDiagonalize).toBe(false)
   expect(self.pendingAutoDiagonalize).toBe(true)
   expect(`${reported.mock.calls[0]?.[0]}`).toContain('the RPC died')
+  // and says so where the user is looking, since the view it leaves is the
+  // unordered one
+  expect(errors).toEqual([
+    'Reordering chromosomes failed, so the view is in its original order: Error: the RPC died',
+  ])
   reported.mockRestore()
 })

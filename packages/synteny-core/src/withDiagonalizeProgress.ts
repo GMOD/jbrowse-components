@@ -1,4 +1,8 @@
-import { createStopTokenRotation, isAbortException } from '@jbrowse/core/util'
+import {
+  createStopTokenRotation,
+  getNotificationSink,
+  isAbortException,
+} from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { StatusChannel, StatusCallback } from '@jbrowse/core/util'
@@ -16,8 +20,12 @@ interface DiagonalizeProgressModel extends IStateTreeNode {
  * the awaiting flag, mints a stop token (so the spinner's Cancel can abort),
  * pipes the RPC's statusCallback into the model for the progress bar, swallows
  * the resulting abort, and clears all three volatiles in `finally`. `run` does
- * the actual reorder with the supplied token + callback. Centralized so both
- * views report progress and cancel identically.
+ * the actual reorder with the supplied token + callback. Centralized so the
+ * views report progress, failure and cancel identically.
+ *
+ * A failure reaches the user, not just the console: the view underneath is
+ * the unordered one, and the gate the caller leaves raised holds its
+ * readiness shut until a reorder succeeds.
  *
  * The token, the throttled+guarded status sink and the clear all come from
  * `createStopTokenRotation`, one per run rather than one per model — this is not
@@ -44,6 +52,12 @@ export async function withDiagonalizeProgress(
   } catch (e) {
     if (!isAbortException(e)) {
       console.error(e)
+      if (isAlive(model)) {
+        getNotificationSink(model).notifyError(
+          `Reordering chromosomes failed, so the view is in its original order: ${e}`,
+          e,
+        )
+      }
     }
   } finally {
     end()

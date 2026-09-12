@@ -11,6 +11,8 @@ import type {
   DiagonalizeStats,
 } from './diagonalizeTypes.ts'
 
+let settled = 0
+
 function renderDialog(
   run: (opts: DiagonalizeRunOpts) => Promise<DiagonalizeStats | undefined>,
   handleClose = () => {},
@@ -18,6 +20,11 @@ function renderDialog(
   return render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <DiagonalizeDialog
+        model={{
+          finishAutoDiagonalize: () => {
+            settled++
+          },
+        }}
         handleClose={handleClose}
         description="Reorders the vertical axis to match the horizontal."
         run={run}
@@ -31,6 +38,7 @@ const stats = { totalReordered: 3, totalReversed: 1 }
 let closed = false
 beforeEach(() => {
   closed = false
+  settled = 0
 })
 
 // The reorder is a long RPC over remote alignment files, so it fails for
@@ -49,6 +57,7 @@ test('a failed run can be retried in place', async () => {
   fireEvent.click(screen.getByText('Start'))
   expect(await screen.findByText(/tabix query failed/)).toBeTruthy()
   expect(`${reported.mock.calls[0]?.[0]}`).toContain('tabix query failed')
+  expect(settled).toBe(0)
   reported.mockRestore()
 
   fireEvent.click(screen.getByText('Retry'))
@@ -56,6 +65,8 @@ test('a failed run can be retried in place', async () => {
     await screen.findByText('Done: reordered 3 regions, reversed 1'),
   ).toBeTruthy()
   expect(attempts).toBe(2)
+  // a manual reorder that succeeds is the reorder a failed launch still owed
+  expect(settled).toBe(1)
 })
 
 // the reorder it just reported is the state of the view, so a second identical

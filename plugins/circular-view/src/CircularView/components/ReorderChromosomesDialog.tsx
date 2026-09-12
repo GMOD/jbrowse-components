@@ -17,6 +17,7 @@ export default function ReorderChromosomesDialog({
 }) {
   return (
     <DiagonalizeDialog
+      model={model}
       handleClose={handleClose}
       description="Reorders the second genome's chromosomes to follow the first, using all the alignment data across the chromosomes on the circle, and lays that genome out mirrored so its ribbons run between neighboring arcs."
       run={(opts: DiagonalizeRunOpts) => runCircularDiagonalize(model, opts)}

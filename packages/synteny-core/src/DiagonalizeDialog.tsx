@@ -54,21 +54,27 @@ function summarizeStopped({ totalReordered, totalReversed }: DiagonalizeStats) {
 }
 
 /**
- * The manual "Re-order chromosomes" dialog shared by the linear synteny and
- * dotplot views: explains what the reorder does, runs it on demand with a
- * progress bar, and can abort it mid-flight. `run` is the view's own reorder
- * (the same function its auto-diagonalize path calls) and `description` the
- * view's wording for which axis/row moves.
+ * The manual "Re-order chromosomes" dialog shared by the comparative views:
+ * explains what the reorder does, runs it on demand with a progress bar, and
+ * can abort it mid-flight. `run` is the view's own reorder (the same function
+ * its auto-diagonalize path calls) and `description` the view's wording for
+ * which axis/row moves.
+ *
+ * A run that finishes, or that the user stops, lowers the view's auto-reorder
+ * gate: a launch whose automatic reorder failed otherwise stayed unsettled
+ * however many manual reorders succeeded after it.
  *
  * Deliberately explicit-start rather than run-on-mount: the reorder is an
  * expensive RPC that rewrites displayed regions, and starting on a click means
  * no effect is needed to kick it off.
  */
 export default function DiagonalizeDialog({
+  model,
   handleClose,
   description,
   run,
 }: {
+  model: { finishAutoDiagonalize: () => void }
   handleClose: () => void
   description: string
   run: (opts: DiagonalizeRunOpts) => Promise<DiagonalizeStats | undefined>
@@ -110,12 +116,14 @@ export default function DiagonalizeDialog({
         },
         statusCallback,
       })
+      model.finishAutoDiagonalize()
       setState({ phase: 'done', summary: summarize(stats) })
     } catch (error) {
       // A stop surfaces here as the abort rejecting out of the runner, which is
       // not a failure to report — but everything the cascade had already
       // committed still stands, so it reports that instead of vanishing.
       if (runRef.current.stopped) {
+        model.finishAutoDiagonalize()
         setState({
           phase: 'done',
           summary: summarizeStopped(runRef.current.applied),

@@ -17,6 +17,7 @@ export default function ReorderChromosomesDialog({
 }) {
   return (
     <DiagonalizeDialog
+      model={model}
       handleClose={handleClose}
       description="Reorders each assembly row to match the row above it, using all alignment data across the currently displayed chromosomes."
       run={(opts: DiagonalizeRunOpts) => runDiagonalize(model, opts)}

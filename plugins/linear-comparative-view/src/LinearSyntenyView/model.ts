@@ -687,11 +687,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * #action
          * Also drops `init`, which `hasSomethingToShow` keys off while views is
          * empty — leaving it set would bounce "return to import form" straight
-         * back to the loading spinner.
+         * back to the loading spinner — and the launch's reorder gate, which
+         * the import form's submit never raises and so would never lower.
          */
         clearView() {
           superClearView()
           self.setLaunch(undefined)
+          self.cancelAutoDiagonalize()
         },
       }
     })

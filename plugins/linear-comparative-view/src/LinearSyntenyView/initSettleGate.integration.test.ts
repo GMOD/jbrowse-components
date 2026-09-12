@@ -52,6 +52,22 @@ test('an init pass declares the diagonalize gate rather than only raising it', a
   expect(view.pendingAutoDiagonalize).toBe(false)
 })
 
+// A launch whose reorder failed leaves the gate raised on purpose, and the
+// import form's submit never goes through the init that would reassign it, so
+// a stack rebuilt from the form never settled
+test('returning to the import form lowers a failed launch reorder gate', async () => {
+  const session = setup()
+  const view = (await session.launchView('LinearSyntenyView', {
+    views,
+  })) as LinearSyntenyViewModel
+  view.setWidth(800)
+  await when(() => view.pendingLaunch === undefined)
+  view.beginAutoDiagonalize(true)
+
+  view.clearView()
+  expect(view.pendingAutoDiagonalize).toBe(false)
+})
+
 // The levels exist from the moment the rows do, but `init` adds the synteny
 // tracks several awaits later — and an empty level clears its canvas, reports
 // it drawn, and settles vacuously over its (zero) displays. Left ungated, the

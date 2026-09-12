@@ -16,6 +16,7 @@ export default function ReorderChromosomesDialog({
 }) {
   return (
     <DiagonalizeDialog
+      model={model}
       handleClose={handleClose}
       description="Reorders the vertical axis to match the horizontal, using all alignments across the currently displayed chromosomes."
       run={(opts: DiagonalizeRunOpts) => runDotplotDiagonalize(model, opts)}
