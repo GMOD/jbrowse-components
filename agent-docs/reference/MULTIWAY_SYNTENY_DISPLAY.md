@@ -16,20 +16,21 @@ test gaps — lives in
 [../ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md),
 which is also the design record this file cites by section name.
 
-Read against the code on 2026-09-06 and re-checked on 2026-09-07 and 2026-09-09.
-Paths: `JC/` is `~/src/jbrowse-components`, `P/` is
+Read against the code on 2026-09-06 and re-checked on 2026-09-07, 2026-09-09 and
+2026-09-12. Paths: `JC/` is `~/src/jbrowse-components`, `P/` is
 `~/src/jb2plugins/jbrowse-plugin-graphgenomeviewer`, `G/` is
 `~/src/gbz-base-js`. The display is
 `JC/plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/`, abbreviated
-`MW/` below. Every measurement here was either taken against the hosted data on
-the reading date or is cited to the file that records it.
+`MW/` below, and cited by symbol rather than line, since its line numbers move
+with every change. Every measurement here was either taken against the hosted
+data on the reading date or is cited to the file that records it.
 
 ## Findings that have landed — do not re-fix them
 
 Re-checked against the code and every tutorial the display appears in.
 
 - **4.1**, alignment records drawn as affine blocks. `SPLIT_AT_GAP_BP = 10_000`
-  (`MW/afterAttach.ts:44`) rides both the anchor fetch and the pair fetch and is
+  (`MW/afterAttach.ts`) rides both the anchor fetch and the pair fetch and is
   honoured through `clipFeatureToRegion`, so a record is cut at every large
   indel and the hg38 page documents the cut rather than the artefact.
 - **4.2**, the two strand semantics. `configSchema.ts`, the `Color ribbons by`
@@ -42,7 +43,7 @@ Re-checked against the code and every tutorial the display appears in.
   the display's own lanes, the header's anchor rides along as `starAnchor`, two
   mates take the anchor between them, and a star with more offers **Repeat
   ⟨anchor⟩ between panels** — on by default, 2N-1 rows, every band a direct pair
-  (`MW/lanePanels.ts:52`; `LaunchSyntenyView/buildSyntenyViewSpec.ts:63`, `:99`;
+  (`lanePanelsForRegion`; `LaunchSyntenyView/buildSyntenyViewSpec.ts:63`, `:99`;
   `LaunchSyntenyViewForRegionDialog.tsx:259`, `:271`). §"The interaction
   surface" in the ideas file records the same landing; §2.2 below describes the
   route as it stood before it.
@@ -50,7 +51,7 @@ Re-checked against the code and every tutorial the display appears in.
   entry off the header, pinned by `lodMenuGate.test.ts`.
 - **4.8** in part: the grape page's "no GFF3"; `hprc_multiway_synteny.md`'s
   Lanes submenu, which documented it without `Show all lanes` and `Reset lane
-  order` (`MW/menus.ts:277-284`); and the figure-manifest gap for six multiway
+  order` (`laneOrderMenuItem`); and the figure-manifest gap for six multiway
   figures the docs reference are all closed. `user_guide.md` still has no
   multiway section, and `GbzBaseSyntenyAdapter` still has no config page (it is
   out-of-repo, and nothing the pangenome pages document about it is wrong) —
@@ -61,7 +62,7 @@ Re-checked against the code and every tutorial the display appears in.
   `ComparativeAdapterBase` emits its per-region streams in region order, pinned
   by a test in `clipFeatureToRegion.test.ts`; and `pickContig` caps `alsoOn` at
   `ALSO_ON_MAX = 3` with the remainder counted in `alsoOnMore`
-  (`MW/laneDecision.ts:80`, `:161-162`). §4 below carries what each found.
+  (`MW/laneDecision.ts`). §4 below carries what each found.
 
 Still open, and carried in
 [../ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md):
@@ -92,85 +93,92 @@ sketched in the plugin's vision documents.
 
 ### 1.1 The data model
 
-**One fetch, no lane filter.** `fetchPhases` in `MW/afterAttach.ts:38-60`
-issues one `CoreGetFeatures` over the anchor's merged static blocks with
-`opts: { mateShape: 'grouped', lodMode: lodTier, clipToRegion: true }` and no
-`targetAssemblyName`, so the adapter answers with every pair anchored on the
-queried assembly. `selectedLanes`, `hiddenLanes` and the config `lanes` slot
-never reach the fetch; they filter `rowAssemblies` locally
-(`MW/model.ts:734-756`). The design record says this is deliberate
+**One fetch.** `fetchPhases` in `MW/afterAttach.ts` issues one
+`CoreGetFeatures` over the anchor's merged static blocks with
+`opts: { mateShape: 'grouped', lodMode: lodTier, clipToRegion: true, splitAtGapBp }`
+and no `targetAssemblyName`, so the adapter answers with every pair anchored on
+the queried assembly. The lane selection reaches the fetch as `haplotypes` only
+for an adapter that declares its lanes (`fetchLaneSelection`), since that is the
+only kind that can answer for a subset more cheaply than for all of them;
+everywhere else `selectedLanes`, `hiddenLanes` and the config `lanes` slot
+filter `rowAssemblies` locally. The design record carries what a lane selection
+saves on a graph source
 ([../ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md)
-§"HPRC at scale: lane selection"; `P/agent-docs/GBZ_PLAN.md:297-301`) because a
-graph adapter has to identify every walk before it knows whose it is.
+§"HPRC at scale: lane selection"; `P/agent-docs/GBZ_PLAN.md:297-301`).
 
-**Groups.** `groupFeatures` (`MW/layoutMultiWay.ts:140-181`) folds features into
+**Groups.** `groupFeatures` (`MW/layoutMultiWay.ts`) folds features into
 `MultiWayGroup { key, anchor, mates: Map<assembly, MatePlacement[]>, feature, weight }`.
-The key is `name`, else `syntenyId`, else `feature.id()` (`:127-134`), so a
+The key is `name`, else `syntenyId`, else `feature.id()` (`groupKeyOf`), so a
 named table (MCScan blocks, gene-symbol join) chains a gene across every lane,
 while an alignment source makes every clipped record its own group. A mate's
-`orientation` is the *pair's* strand (`:58-70`), never the mate object's strand.
-`weight` is anchor bp for a nameless record and one per gene for a named one
-(`:72-85`; `voteEvidence`).
+`orientation` is the *pair's* strand (`MatePlacement`), never the mate object's
+strand. `weight` is anchor bp for a nameless record and one per gene for a named
+one (`voteEvidence`).
 
-**Lanes.** `rowAssembliesOf` (`:200-232`) orders mate assemblies by placement
-count over the whole fetched block set, then pins `rowOrder`; `rowAssemblies`
-(`MW/model.ts:734-756`) drops the anchor, `hiddenLanes`, and anything outside
-`laneSelection` (`selectedLanes ?? config.lanes`, `:663-671`). `laneUniverse`
-(`:687-720`) is the adapter header's declared `lanes` followed by anything the
-window placed that the header did not name. The header is read only when the
-adapter tiers or declares `adapterCapabilities: ['headerLanes']`
-(`:647-657`; `MW/afterAttach.ts:264-272`).
+**Lanes.** `rowAssembliesOf` orders mate assemblies by summed group weight over
+the whole fetched block set, then pins `rowOrder`; the model's `rowAssemblies`
+drops the anchor, `hiddenLanes`, and anything outside `laneSelection`
+(`selectedLanes ?? config.lanes`), all through `isSameLane`. `laneUniverse` is
+the adapter header's declared `lanes` followed by anything the window placed
+that the header did not name. The header is read only when the adapter tiers or
+declares `adapterCapabilities: ['headerLanes']` (`adapterDeclaresLanes`;
+`installLodTierInfoFetch` in `MW/afterAttach.ts`).
 
-**Frames.** `decideLaneFrames` (`MW/laneDecision.ts:470-597`) walks the lanes
-top down once per settled block set: contig by `preferIncumbent` with a 1.5×
-switch margin (`JC/plugins/linear-comparative-view/src/syntenyHysteresis.ts:10-25`),
-extent by `keepNearMedian` (`OUTLIER_REACH = 1.5` window spans), rung off
+**Frames.** `decideLaneFrames` (`MW/laneDecision.ts`) walks the lanes top down
+once per settled block set: contig by `preferIncumbent` with a 1.5× switch
+margin (`JC/plugins/linear-comparative-view/src/syntenyHysteresis.ts`), extent
+by `keepNearMedian` (`OUTLIER_REACH = 1.5` window spans), rung off
 `SCALE_LADDER = [1, 1.5, 2, 3, 5, 8, 12, 20, 40, 80]` with an 0.85 shrink room
-(`:52-86`), orientation by a 0.9 deadband over ≥5 shared groups against the
-lane *above* (`:298-347`), offset by the weighted-median displacement to the lane
-above clamped to the rung's slack (`:351-373`), and a placement hold while the
-frame still shows 90% of the placed weight (`:73`, `:520-548`). The decision is
+(`pickRung`), orientation by a 0.9 deadband over ≥5 shared groups against the
+lane *above* (`orientationVote`, `decideOrientation`), offset by the
+weighted-median displacement to the lane above clamped to the rung's slack
+(`alignFrameTo`), and a placement hold while the frame still shows 90% of the
+placed weight (`HOLD_COVERAGE`). The decision is
 `{refName, flipped, rung, pivotAnchor, pivotLaneBp, fitMin, fitMax, alsoOn, pinned}`
 and the drawn frame is derived from it against the live view on every pan
-(`frameFromDecision`, `:400-422`; `MW/model.ts:1034-1057`). This machinery is
+(`frameFromDecision`; the model's `rowFrames`). A mate lane draws its frame plus
+half a span either side (`frameReach`), the margin a pan translates into view
+before the lanes re-lay out, while its placements stay filtered at the frame
+edge (`groupRunsOnRow`). This machinery is
 measured (the stability table under
 [../ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md)
 §"Every per-settle choice holds until the evidence clearly moves") and is the
 best-engineered part of the display; nothing here recommends touching it.
 
-**Lane genes.** `laneGeneAdapters` (`MW/model.ts:908-950`) walks every session
-track (connections included) and keeps, per lane, the best-ranked single-assembly
-annotation track by adapter type (`MW/laneAnnotation.ts`). One `CoreGetFeatures`
-per lane over `laneFetchRegion(frame)`, a power-of-two grid off the rung span
-(`MW/layoutMultiWay.ts:386-414`), issued concurrently with per-lane staleness so
-a pan re-asks only the lanes whose grid cell moved (`MW/afterAttach.ts:113-200`,
-`:274-292`). Only lanes the session holds an assembly for get one
-(`MW/model.ts:1026-1036`).
+**Lane genes.** `laneGeneAdapters` walks every session track (connections
+included) and keeps, per lane, the best-ranked single-assembly annotation track
+by adapter type (`MW/laneAnnotation.ts`). One `CoreGetFeatures` per lane over
+`laneFetchRegion(frame)` — the window the frame can slide in plus its reach,
+snapped to a power-of-two grid off the rung span — issued concurrently with
+per-lane staleness so a pan re-asks only the lanes whose grid cell moved
+(`installLaneFetch` in `MW/afterAttach.ts`). Only lanes the session holds an
+assembly for get one (`laneGenesFetchSpecs`).
 
 **Lane links.** For a source whose features carry no `name` and whose header
 names no `anchorAssemblyName`, one `CoreGetFeatures` per *adjacent* lane pair
-with `targetAssemblyName: lower` (`MW/model.ts:1053-1090`;
-`MW/afterAttach.ts:294-311`). For a star (header names its anchor, or the pair
-fetch came back empty) the pair's links are composed through the anchor by
-`composeLaneLinks` (`MW/model.ts:1128-1175`; `MW/composeLaneLinks.ts:75-137`),
-which linearly interpolates each record between its clipped ends (`:37-52`).
+the session holds both assemblies of, with `targetAssemblyName: lower` and
+`absentPairIsEmpty` (`laneLinksFetchSpecs`). `pairLinks` composes a pair's links
+through the anchor (`MW/composeLaneLinks.ts`) for a star, for a pair whose fetch
+came back empty, and for a pair the session lacks an assembly of;
+`composeLaneLinks` linearly interpolates each record between its clipped ends
+(`projectOntoLane`).
 
 **Rendering.** Cells keyed by identity: `bands`, `ribbons:<row>` per gutter plus
 `ribbons:<row>><toRow>` per bridge, `ticks:<row>`, `glyphs:<row>` and
-`boxes:<row>` per lane (`MW/multiwayGeometry.ts:34-46`, `:177-312`;
-`MW/model.ts:1300-1330`). Ribbons ride the pairwise synteny GPU passes, lanes the
-feature track's glyph passes (`MW/GpuMultiWayRenderer.ts:35-38`); Canvas2D and
-SVG walk the same cells. A pan is one translate (`dragOffsetPx`,
-`MW/model.ts:974-981`); the DOM is 22 nodes at 7 lanes (design record §"The
+`boxes:<row>` per lane (the key functions and builders in
+`MW/multiwayGeometry.ts`; the model's `namedCells` and `namedLayers`). Ribbons
+ride the pairwise synteny marks and lanes the feature track's glyph marks, one
+mark list (`MULTIWAY_MARKS`, `MW/multiwayMarks.ts`) that `MW/MultiWayRenderer.ts`
+hands to `createMarkBackend`; Canvas2D and SVG walk the same cells. A pan is one
+translate (`dragOffsetPx`); the DOM is 22 nodes at 7 lanes (design record §"The
 backend landed 2026-08-27").
 
 **LOD.** `lodTier` resolves on the main thread off the settled zoom and the
-track's `coarseBpPerPxThreshold` (`MW/model.ts:246-270`;
-`JC/packages/synteny-core/src/lodTier.ts:109-131`) and is folded into
-`viewSignature`. The display itself reads no alignment string anywhere
-(`grep -i cigar MW/*.ts` finds only a comment at `MW/model.ts:251`), so for this
-display the tier is purely a byte knob: coarse rows have the same extents with
-folded CIGARs.
+track's `coarseBpPerPxThreshold` (`lodTierAt`,
+`JC/packages/synteny-core/src/lodTier.ts`) and is folded into `viewSignature`.
+The display itself reads no alignment string anywhere, so for this display the
+tier is purely a byte knob: coarse rows have the same extents with folded
+CIGARs.
 
 ### 1.2 What an adapter must provide
 
@@ -181,7 +189,8 @@ window on both axes (`JC/plugins/comparative-adapters/src/clipFeatureToRegion.ts
 CIGAR-exact clip when the record carries one, proportional otherwise, `:40-80`),
 with the CIGAR dropped after the clip; (b) optionally, direct records for a mate
 pair; (c) a `CoreGetInfo` header with `hasCoarseTier`, optionally
-`anchorAssemblyName` and `lanes[{name,label,group}]` (`MW/model.ts:143-200`).
+`anchorAssemblyName` and `lanes[{name,label,group}]` (`starAnchorOf`,
+`declaredLanesOf`).
 Today's providers:
 
 - `MCScanBlocksAdapter`: reads the whole table and every BED up front, answers
@@ -198,8 +207,11 @@ Today's providers:
   answer, not an error (`:78-98`). A PIF is a bgzipped PAF written twice, once
   per side, pre-oriented and tabix-indexed under `q`/`t` (fine) and `Q`/`T`
   (coarse) prefixes (`JC/plugins/comparative-adapters/src/util.ts:580-660`).
-- `MultiGenomeIndexedPAFAdapter`: one PanSN PIF, star or all-vs-all; an unstated
-  pair raises `noSuchPairError` (`JC/plugins/comparative-adapters/src/util.ts:265`).
+- `MultiGenomePAFAdapter` and `MultiGenomeIndexedPAFAdapter`: one PanSN file,
+  star or all-vs-all. The in-memory adapter raises `noSuchPairError` for a pair
+  the file states no alignment for, or answers empty under `absentPairIsEmpty`,
+  which the lane-links fetch passes; the indexed one cannot tell an unstated
+  pair from an empty window without a scan, and answers empty.
 - `GbzBaseSyntenyAdapter` (`P/src/GbzBaseSyntenyAdapter/GbzBaseSyntenyAdapter.ts`):
   anchor-only (`:368`, a lane-assembly region emits nothing), one record per
   haplotype contig after the sibling join (`G/src/subgraph.ts:255-300`), header
@@ -212,12 +224,12 @@ Today's providers:
 
 ### 1.3 Where the "one gene row per lane" simplification lives, and what it forecloses
 
-A lane is `Lane` in `MW/laneStack.ts:85-135`: an assembly name, a frame, a
+A lane is `Lane` in `MW/laneStack.ts`: an assembly name, a frame, a
 `hasAnnotation` flag, the group placements in px, and two functions. The session
 does not know lanes exist. Concretely:
 
 - One annotation per lane, chosen by rank, never by the user
-  (`MW/model.ts:908-950`). A lane cannot show a second track, a wiggle, variants,
+  (`laneGeneAdapters`). A lane cannot show a second track, a wiggle, variants,
   reads, or sequence, and the gene track it shows is not the track the user
   configured a display for; it is the raw adapter re-drawn through
   `geneGlyph.ts` with the canvas track's rules (design record §"Gene glyph
@@ -226,24 +238,23 @@ does not know lanes exist. Concretely:
   deliberately absent: the lanes re-fit to the anchor's viewport by design, and
   the launch above is the route to a lane you drive yourself" (design record
   §"Lane scale legibility, and what is still open on it").
-- One contig per lane (`pickContig`, `MW/laneDecision.ts:88-137`); a second copy
+- One contig per lane (`pickContig`, `MW/laneDecision.ts`); a second copy
   is named in the header and reachable by pin, never drawn beside the first
   (design record §"Multi-copy lanes").
 - Self-comparison lanes are dropped (`rowAssemblies` removes mates whose
-  assembly is the anchor's, `MW/model.ts:747`).
+  assembly is the anchor's).
 - The SVG export is the viewport at the current `scrollTop` (design record
   §"Lane scale legibility, and what is still open on it"), so a 44-lane figure
   is a screenshot of a scrolled canvas, not the stack.
 - Height is divided until `MIN_LANE_PITCH = 22` px, then fixed and scrolled
-  (`MW/laneStack.ts:14-24`); at the floor the glyph row is
-  `clamp(22 - 12 - 6, 5, 18) = 5` px (`:46-52`), which is the E. coli figure's
-  gene height.
+  (`laneContentHeight`); at the floor the glyph row is
+  `clamp(22 - 12 - 6, 5, 18) = 5` px (`laneGeometry`), which is the E. coli
+  figure's gene height.
 
 The escape hatches are two: **Open ⟨assembly⟩ at the matching region**
-(`openInNewView`, `MW/model.ts:1502-1521`), which opens an *unsynchronised* LGV
-with the multiway track and that genome's annotations, and **Launch → Linear
-synteny view (visible region)** (`MW/model.ts:1466-1490`), the stacked view §2.3
-costs out.
+(`openInNewView`), which opens an *unsynchronised* LGV with the multiway track
+and that genome's annotations, and **Launch → Linear synteny view (visible
+region)** (the model's `trackMenuItems`), the stacked view §2.3 costs out.
 
 ## 2. The two named tutorials
 
@@ -260,7 +271,7 @@ from its own tabix GFF3.
 
 **What the display does well here.** This is the case the display was built
 for. Group keys are gene symbols, so one anchor gene chains through every lane
-and `bridgeSkippedLanes` (`MW/multiwayGeometry.ts:229-258`) carries a group past
+and `bridgeSkippedLanes` (`buildRibbonGeometry`) carries a group past
 a lane that lacks it; the lane-genes fetch gives every lane real exon structure;
 colour by symbol (`jexl:feature.name ? randomColor(feature.name)`) makes a
 conserved gene one colour down the stack; the O-antigen figure is an honest
@@ -321,7 +332,7 @@ the window with *one whole-chain record* per lane:
 Before the gap split landed (§4.1), the display clipped that record to the
 window (CIGAR-exact at the two edges, `clipFeatureToRegion.ts`), drew it as one
 parallelogram and composed the mate-to-mate links between adjacent lanes by
-linear interpolation (`MW/composeLaneLinks.ts:37-52`). The tutorial's caption for
+linear interpolation (`projectOntoLane`). The tutorial's caption for
 the figure read "Every lane places the window as one straight block", and the
 text said "this is a neighbourhood conserved across the mammals, and the picture
 says so by having nothing to point at". Inside that same window the mouse chain
@@ -331,7 +342,7 @@ the display's blindness to the CIGAR, not conservation. At 189 bp/px (300 kb
 over 1588 px) the interpolation error at a composed mouse-to-dog link could
 reach 130 px, and a cow ribbon endpoint could be 470 px from where the alignment
 puts it. The `identity` colour mode cannot rescue that: a composed link carries
-no `identity` and keeps the slot colour (`MW/multiwayGeometry.ts:146-157`).
+no `identity` and keeps the slot colour (`ribbonColorer`).
 
 The second figure (17p near PMP22) is honest for a different reason: there the
 chains *break*, breaks are separate records, and separate records the display
@@ -356,22 +367,22 @@ against 64.23 MB on a whole-genome pass over a 130 MB PIF, 49× fewer bytes
 
 **Ribbons.** Only the anchor→first-mate gutter comes from group placements; from
 the second gutter down the ribbons are composed links
-(`MW/multiwayGeometry.ts:259-289`, `row > 0`). With one record per lane that is
+(`buildRibbonGeometry`, `row > 0`). With one record per lane that is
 one parallelogram per gutter. The gene glyphs are the real content of this
 picture, and they are correct: they are drawn at each genome's own coordinates
 from its own track.
 
 **A user who wants more than one row per genome, from this track.** **Launch →
 Linear synteny view (visible region)** seeds a dialog from the multiway track
-(`MW/model.ts:1466-1490`; `JC/plugins/linear-comparative-view/src/LaunchSyntenyView/regionLaunchMenuItems.ts:128-176`),
+(the model's `trackMenuItems`; `syntenyRegionMenuItems` in `JC/plugins/linear-comparative-view/src/LaunchSyntenyView/regionLaunchMenuItems.ts`),
 resolves one panel per mate, and builds a `LinearSyntenyView`. On the reading
 date it put the anchor at index 0 by default and **the same track on every
 level** (`LaunchSyntenyView/buildSyntenyViewSpec.ts:53-104`,
 `tracks: panels.map(() => [trackId])`). For a star that meant level 0 (anchor vs
 first mate) drew and every other level asked `MultiPairwiseSyntenyAdapter` for
 mate-vs-mate, which returns nothing by design
-(`MultiPairwiseSyntenyAdapter.ts:78-98`; a `MultiGenomeIndexedPAFAdapter` star
-raises `noSuchPairError` instead). Dragging the anchor to the middle of the
+(`MultiPairwiseSyntenyAdapter.ts:78-98`; a `MultiGenomePAFAdapter` star raises
+`noSuchPairError` instead). Dragging the anchor to the middle of the
 dialog's list got two drawing levels of eight
 (`LaunchSyntenyView/panelOrder.ts:65-75` says so in its comment). The stacked
 view has no notion of "every level anchored on the hub"; a level is
@@ -396,7 +407,7 @@ so an eight-mate launch is eight 40 px bands.
 | | MultiWay lanes (one track) | LinearSyntenyView (one LGV per row) |
 | --- | --- | --- |
 | **Control** | Order by drag/menu, hide, pick, pin contig, re-anchor; no per-lane zoom, no extra tracks, no per-lane locstring | Full LGV per row: any tracks, independent navigation, rubberband, feature detail; order by moving views; no densest-first, no bridging, no lane picker |
-| **State** | `rowOrder`, `hiddenLanes`, `selectedLanes`, `lodMode` on one display (`MW/model.ts:216-247`); features volatile | N `LinearGenomeView` models plus N-1 `LinearSyntenyLevel` models, each level holding its own full track model, display and rendering backend (`JC/plugins/linear-comparative-view/src/LinearComparativeView/model.ts:126-140`, `:433-467`; `LinearSyntenyViewHelper/stateModelFactory.ts:56-95`); every row's tracks persist |
+| **State** | `rowOrder`, `hiddenLanes`, `selectedLanes`, `lodMode` on one display; features volatile | N `LinearGenomeView` models plus N-1 `LinearSyntenyLevel` models, each level holding its own full track model, display and rendering backend (`LinearComparativeView`'s `levels` and `reconcileLevels`; `LinearSyntenyViewHelper`); every row's tracks persist |
 | **Fetches** | 1 star fetch (+ N children inside the adapter) + N lane-gene RPCs + (N-1) link RPCs for nameless non-star sources | N-1 synteny fetches (one per level, each its own display) + each row's own track fetches; each level refetches independently on its own pair of viewports |
 | **Performance** | One canvas, ~10 GPU draw calls per lane (§3), 22 px per lane floor | N LGV React trees and rulers, a synteny canvas per level; rows are ≥ ruler height each, so 8 rows fill a screen and 44 do not fit |
 | **Correctness** | Lane frames are affine fits (§4.1); composed links interpolate; ordering by placement count (§4.3) | CIGAR-exact ribbons and per-base detail on each level; but for a star only levels touching the anchor draw, and a level with an unstated pair is either blank (MultiPairwise) or an error (MultiGenome) |
@@ -416,13 +427,13 @@ N = mate lanes drawn (after selection).
 
 | cost | 8 | 64 | 464 | 4,000 | where |
 | --- | ---: | ---: | ---: | ---: | --- |
-| ortholog fetch (RPCs) | 1 | 1 | 1 | 1 | `MW/afterAttach.ts:50-58` |
+| ortholog fetch (RPCs) | 1 | 1 | 1 | 1 | `fetchPhases` |
 | …inside a `MultiPairwise` star: child tabix reads | 8 | 64 | 464 | 4,000 | `MultiPairwiseSyntenyAdapter.ts:150-185` |
 | …inside a PanSN PIF: records parsed | ≈lanes × records/lane | | | | one index read |
 | …inside GBZ: walks extracted, identified, aligned | every haplotype in the window (465 at KIV-2) regardless of N | same | same | same | `P/…/GbzBaseSyntenyAdapter.ts:381-412`; `P/agent-docs/HAPLOTYPE_WALKS_REVIEW.md:36-39` |
-| lane-gene RPCs (lanes the session holds) | 9 | 65 | 465 | 4,001 | `MW/model.ts:1004-1040` |
-| lane-link RPCs (nameless, non-star only) | 7 | 63 | 463 | 3,999 | `MW/model.ts:1053-1090` |
-| header read | 1 | 1 | 1 | 1 | `MW/afterAttach.ts:264-272` |
+| lane-gene RPCs (lanes the session holds) | 9 | 65 | 465 | 4,001 | `laneGenesFetchSpecs` |
+| lane-link RPCs (nameless, non-star only) | 7 | 63 | 463 | 3,999 | `laneLinksFetchSpecs` |
+| header read | 1 | 1 | 1 | 1 | `installLodTierInfoFetch` |
 
 The star fan-out is hidden inside one RPC but is still N HTTP range reads per
 window; `MultiPairwiseSyntenyAdapter` issues them concurrently. The lane-gene
@@ -434,7 +445,7 @@ sub-linear.
 ### 3.2 Main-thread work per settle
 
 - `groupFeatures`: O(records). `rowAssembliesOf`: O(groups × mates).
-- `laneGeneAdapters` (`MW/model.ts:908-950`): O(sessionTracks × lanes)
+- `laneGeneAdapters`: O(sessionTracks × lanes)
   `isSameAssemblyName` calls, recomputed whenever `rowAssemblies` changes. A hub
   session with 500 tracks and 464 lanes is 232,000 alias resolutions per
   recompute; at 4,000 lanes, 2 million. This is the first main-thread cliff
@@ -446,17 +457,17 @@ sub-linear.
   (`JC/plugins/linear-comparative-view/benches/multiwayZoomCost.probe.ts:19-25`).
   Linear extrapolation to 464 lanes at the same group count is ~0.8 s per
   settle, before rendering.
-- `pairLinks` composes every adjacent pair from scratch on every fetch commit
-  (`MW/model.ts:1128-1175`): O(N × records).
+- `pairLinks` composes every adjacent pair from scratch on every fetch commit:
+  O(N × records).
 
 ### 3.3 Rendering
 
-`renderLayers` (`MW/model.ts:1318-1330`) is `bands + (N gutters + bridges) + N tick
-layers + 2N glyph layers`, and `GpuMultiWayRenderer.render`
-(`MW/GpuMultiWayRenderer.ts:85-101`) loops over them writing uniforms and
-issuing a draw per pass. A glyph layer runs the feature track's rect, line,
-chevron and arrow marks (`MW/multiwayGlyphMarks.ts:27-37`;
-`JC/plugins/canvas/src/LinearBasicDisplay/marks/featureGlyphMarks.ts:29-62`), so
+`renderLayers` is `bands + (N gutters + bridges) + N tick layers + 2N glyph
+layers`, and the mark backend `MW/MultiWayRenderer.ts` builds over
+`MULTIWAY_MARKS` (`MW/multiwayMarks.ts`) draws one block per layer, a draw per
+mark. A glyph layer runs the feature track's line, chevron, rect and arrow
+marks (`featureGlyphMarks`,
+`JC/plugins/canvas/src/LinearBasicDisplay/marks/featureGlyphMarks.ts`), so
 the frame cost is roughly 10 draw calls per lane whatever is on screen: ~80 at
 8 lanes, ~4,600 at 464, ~40,000 at 4,000. Nothing culls layers that are scrolled
 out of the viewport. The pick does not draw at all: `pickRibbonAt` walks
@@ -466,7 +477,7 @@ of x-hulls and tests what comes back exactly ([SYNTENY_PICKING.md](SYNTENY_PICKI
 
 ### 3.4 Pixels
 
-`laneContentHeight = max(height, rows × 22)` (`MW/laneStack.ts:22-24`): 464 lanes
+`laneContentHeight = max(height, rows × 22)`: 464 lanes
 is a 10,208 px scrolling stack with 5 px gene rows; 4,000 lanes is 88,000 px. A
 scrolled stack is still fully laid out and fully drawn.
 
@@ -515,9 +526,9 @@ file says which have landed since, and the ones still open are in
 Verified in §2.2 with the TP53 records. The chain of causes: `clipToRegion`
 clips a record to the window on both axes exactly (`clipFeatureToRegion.ts:56-80`
 walks the ops) and then drops the alignment string; the display drew the clipped
-extent as one placement (`groupRunsOnRow`, `MW/layoutMultiWay.ts:319-349`);
-`composeLaneLinks.projectOntoLane` maps an anchor sub-interval into a lane by
-the record's overall ratio (`MW/composeLaneLinks.ts:37-52`). The tests pinned the
+extent as one placement (`groupRunsOnRow`); `composeLaneLinks.projectOntoLane`
+maps an anchor sub-interval into a lane by the record's overall ratio. The tests
+pinned the
 interpolation as specified (`MW/composeLaneLinks.test.ts`) and nothing measured
 either against a CIGAR oracle. The design record chose the affine placement
 ("per-base alignment lanes … the wrong one to bolt onto this display",
@@ -533,9 +544,9 @@ biology.
 against the anchor — "the record's strand, as the synteny view means it — and
 not the drawn twist: a lane whose every placement is inverted is drawn flipped,
 so its ribbons run straight while every one of them is an inversion"
-(`MW/multiwayGeometry.ts:123-131`, applied at `:253` and `:286`). The config slot
+(`MW/multiwayGeometry.ts`, applied in `buildRibbonGeometry`). The config slot
 said the opposite: "`strand` reads whether the ribbon is crossed — the lower
-placement runs the other way from the upper one" (`MW/configSchema.ts:86`); the
+placement runs the other way from the upper one" (`MW/configSchema.ts`); the
 design record said "Strand reads the DRAWN twist rather than a record's strand";
 the tutorial said "paints a ribbon that crosses" (`hg38_vertebrates_synteny.md`,
 "Color ribbons by → Strand"). For any lane drawn `[rev]` the code and the two
@@ -544,7 +555,7 @@ flipped lane. All three now state the record's strand.
 
 ### 4.3 "Densest first" rewarded fragmentation on an alignment source — fixed
 
-`rowAssembliesOf` sorted by placement *count* (`MW/layoutMultiWay.ts:207-221`).
+`rowAssembliesOf` sorted by placement *count*.
 For a named table that is "how many genes this lane shares". For a nameless
 source every record is one group with one placement, so a haplotype whose
 alignment *breaks* in the window had more placements than one that runs through.
@@ -559,7 +570,7 @@ by it now.
 
 §2.2 records the route as it stood: `buildSyntenyViewSpec` put the same track on
 every level and the anchor on top by default, so for a star every level but the
-first was empty (`MultiPairwise`) or an error (`MultiGenomeIndexedPAF`; GBZ
+first was empty (`MultiPairwise`) or an error (`MultiGenomePAF`; GBZ
 answers nothing for a lane region, `P/…/GbzBaseSyntenyAdapter.ts:366-368`). The
 dialog's own comment knew a three-panel launch "wants the anchor in the middle"
 (`LaunchSyntenyView/panelOrder.ts:65-68`). The block at the top of this file
@@ -568,7 +579,7 @@ says what replaced it.
 ### 4.5 Lane-link tier and window on a mate lane — open
 
 The pair fetch is issued at the *anchor's* tier over the upper lane's region
-(`MW/model.ts:1069-1086`), while that lane may be drawn at up to 80× the anchor's
+(`laneLinksFetchSpecs`), while that lane may be drawn at up to 80× the anchor's
 bp/px (`SCALE_LADDER`). Harmless for byte cost, wrong in principle for a tiered
 all-vs-all file. Carried in
 [../ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md)
@@ -578,16 +589,15 @@ all-vs-all file. Carried in
 
 The reading looked for the classic errors and did not find them: mate
 orientation is read from the pair, never the mate's transcription strand
-(`MW/layoutMultiWay.ts:58-70`, pinned by `layoutMultiWay.test.ts:881`); an
-inversion is an ordered span pair joined end to end so two lanes both reversed
-against the anchor draw straight between themselves (`groupRunSpansOnRow`,
-`:366-380`; `RibbonBuilder.add`, `MW/multiwayGeometry.ts:89-100`); a direct link
-reverses its lower span on `-` strand against lanes that are themselves mirrored
-by `rowFrameX` (`:275`), and the four flipped/unflipped cases worked by hand
-compose correctly; the anchor axis clips rather than tests
-(`MW/anchorAxis.ts:31-50`, three tests); a horizontally flipped view mirrors
-every lane without re-deciding (`frameFromDecision`, `MW/laneDecision.ts:400-422`,
-`laneDecision.test.ts:90`). Coordinates are chromosome-local numbers throughout,
+(`MatePlacement`, pinned in `layoutMultiWay.test.ts`); an inversion is an
+ordered span pair joined end to end so two lanes both reversed against the
+anchor draw straight between themselves (`groupRunSpansOnRow`;
+`RibbonBuilder.add`); a direct link reverses its lower span on `-` strand
+against lanes that are themselves mirrored by `rowFrameX`, and the four
+flipped/unflipped cases worked by hand compose correctly; the anchor axis clips
+rather than tests (`axisPlacement`, three tests); a horizontally flipped view
+mirrors every lane without re-deciding (`frameFromDecision`, pinned in
+`laneDecision.test.ts`). Coordinates are chromosome-local numbers throughout,
 no 2^32 issue.
 
 ### 4.10 The lane sort is exact, and its tie-break is file order
@@ -624,7 +634,7 @@ fixed it.
 ### 4.11 A long `alsoOn` overflowed an exported figure — fixed
 
 `pickContig` kept every contig at `ALSO_ON_SHARE` (0.2) of the chosen one's
-evidence, uncapped (`MW/laneDecision.ts:127` as it then read). On a chromosome
+evidence, uncapped. On a chromosome
 assembly that is one or two; on a fragmented
 one, ten scaffolds each clear the bar against every other. `LaneHeaders.tsx` is
 HTML so the label ellipsizes, and `SvgLaneHeaders.tsx:28-37` draws `row.label` as
@@ -633,7 +643,7 @@ its own scale label — the two presenters saying different things, which
 `laneHeader.ts:57-64` says the shared derivation exists to prevent. The cap
 landed at the source, where the header, the SVG and the `Show <contig> in this
 lane` menu all read one list: `ALSO_ON_MAX = 3` with the remainder counted in
-`alsoOnMore` (`MW/laneDecision.ts:80`, `:161-162`).
+`alsoOnMore`.
 
 ## 5. Suitability for graph pangenomes
 
