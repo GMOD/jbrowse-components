@@ -132,6 +132,11 @@ test('lane links are asked for only between lanes the session holds', () => {
   )
   expect([...display.rowFrames.values()].every(Boolean)).toBe(true)
   expect(display.laneLinksFetchSpecs).toEqual([])
+  // ...and composes that gutter through the anchor rather than leaving it
+  // empty, since composing needs no assembly
+  expect(
+    display.pairLinks.get('volvox_random|sample#1#undeclared')?.links.length,
+  ).toBeGreaterThan(0)
 
   display.setFeatures([
     nameless('f1', 'volvox_random'),

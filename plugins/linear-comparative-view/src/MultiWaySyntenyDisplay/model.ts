@@ -1317,11 +1317,13 @@ export function stateModelFactory(
        * #getter
        * the direct records between each adjacent mate-lane pair as the
        * ribbons read them: the pair's fetched links where the file holds any,
-       * else — a star of pairwise alignments states none, whether it
-       * announced itself one or its pair fetch came back empty — the links
-       * composed through the anchor from the groups, one record per placement
-       * either lane makes. Off the fetched sets alone, never the frames, so a
-       * settle recomposes nothing
+       * else the links composed through the anchor from the groups, one
+       * record per placement either lane makes — for a star, which states
+       * none; for a pair whose fetch came back empty; and for a pair
+       * `laneLinksFetchSpecs` never asks about because the session lacks one
+       * of its assemblies, which composing does not need. Off the fetched
+       * sets and the session's assemblies, never the frames, so a settle
+       * recomposes nothing
        */
       get pairLinks(): ReadonlyMap<string, { links: Feature[] }> {
         const out = new Map<string, { links: Feature[] }>()
@@ -1350,7 +1352,10 @@ export function stateModelFactory(
             out.set(pair, fetched)
           } else if (
             self.featuresAreNameless &&
-            (self.starAnchor !== undefined || fetched !== undefined)
+            (self.starAnchor !== undefined ||
+              fetched !== undefined ||
+              !self.holdsAssembly(upper) ||
+              !self.holdsAssembly(lower))
           ) {
             out.set(pair, {
               links: composeLaneLinks({
