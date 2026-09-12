@@ -49,7 +49,7 @@ test('a ramp row draws a gradient bar under its caption, labelled at both ends',
               { offset: 1, color: 'rgb(255,0,0)' },
             ],
             minLabel: '0',
-            maxLabel: '1,200',
+            maxLabel: '1200',
           },
         },
       ]}

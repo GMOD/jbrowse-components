@@ -1,4 +1,4 @@
-import { toLocale } from '../util/numericUtils.ts'
+import { formatScore } from '../util/numericUtils.ts'
 
 import type {
   LegendItem,
@@ -46,7 +46,9 @@ export interface RampStop {
  * A scalar through a color ramp: ADR-094's scalar-through-a-scale
  * cardinality. `stops` are what the painter samples — read them out of the
  * same LUT the GPU uploads (`stopsFromRampLut`) so the bar is byte-identical
- * to the plot. `format` prints the domain ends; `toLocale` by default.
+ * to the plot. `format` prints the domain ends; `formatScore` by default, so
+ * a domain measured off the data prints `24.4` and not the float it was
+ * measured as.
  */
 export interface RampScale {
   kind: 'ramp'
@@ -68,7 +70,7 @@ export type ColorScale = CategoricalScale | RampScale
 // draw a section's title only beside other sections, and a bar of numbers
 // with nothing saying what they count is not a key.
 function rampItem(
-  { title, domain, stops, format = toLocale }: RampScale,
+  { title, domain, stops, format = formatScore }: RampScale,
   lone: boolean,
 ): LegendItem {
   const [min, max] = domain

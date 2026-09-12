@@ -1,8 +1,7 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { measureLegendText } from '@jbrowse/core/ui/measureLegendText'
+import { formatScore } from '@jbrowse/core/util/numericUtils'
 import { stripAlpha } from '@jbrowse/core/util/svgColorProps'
-
-import { formatScore } from './formatScore.ts'
 
 export const SCORE_CAPTION_HEIGHT = 16
 

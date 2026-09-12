@@ -42,7 +42,7 @@ test('a categorical scale is one section, its entries the rows', () => {
 })
 
 // A lone section draws no title of its own, so a lone categorical scale
-// titles the box and a lone ramp carries its name on its row: a bar labelled 0 and 1,200 with nothing saying what is
+// titles the box and a lone ramp carries its name on its row: a bar labelled 0 and 1200 with nothing saying what is
 // being counted is not a key.
 test('a lone ramp names itself on its row, with the domain ends formatted', () => {
   const { title, sections } = legendSpecOf([contacts])
@@ -57,12 +57,26 @@ test('a lone ramp names itself on its row, with the domain ends formatted', () =
           gradient: {
             stops: contacts.stops,
             minLabel: '0',
-            maxLabel: '1,200',
+            maxLabel: '1200',
           },
         },
       ],
     },
   ])
+})
+
+// Hi-C's maximum is a percentile of the counts and a mark ramp's is the data's
+// own extent, so an end label prints through formatScore or it prints the
+// float — 0 and 24.429380416870117 met with no gap between them on screen.
+test('a domain measured off the data prints rounded ends', () => {
+  const { sections } = legendSpecOf([
+    { ...contacts, domain: [0, 24.429380416870117] },
+  ])
+  expect(sections?.[0]?.items[0]?.gradient).toEqual({
+    stops: contacts.stops,
+    minLabel: '0',
+    maxLabel: '24.4',
+  })
 })
 
 test('beside another section a ramp leaves the naming to its section title', () => {

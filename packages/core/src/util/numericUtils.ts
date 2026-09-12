@@ -116,6 +116,23 @@ export function reducePrecision(s: number, n = 3) {
 }
 
 /**
+ * A score as a guide prints it: three significant figures below 100, whole
+ * numbers above, trailing fractional zeros dropped. The decimal-point guard
+ * matters because toPrecision can round up out of the fractional form —
+ * 99.95 comes back as "100", where a bare trailing-zero strip would report 1.
+ */
+export function formatScore(n: number) {
+  if (n === 0) {
+    return '0'
+  }
+  if (Math.abs(n) >= 100) {
+    return n.toFixed(0)
+  }
+  const s = n.toPrecision(3)
+  return s.includes('.') ? s.replace(/\.?0+$/, '') : s
+}
+
+/**
  * A byte count as a person reads it. Shared by the region-too-large banner and
  * the save-track-data dialog, which quote the same index estimate and would
  * otherwise word the same number two ways.

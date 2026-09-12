@@ -128,7 +128,7 @@ export {
   default as ScoreDomainCaption,
   SCORE_CAPTION_HEIGHT,
 } from './ScoreDomainCaption.tsx'
-export { formatScore } from './formatScore.ts'
+export { formatScore } from '@jbrowse/core/util/numericUtils'
 export { CrossHatchLines, default as CrossHatches } from './CrossHatches.tsx'
 export { ScoreRuleLines, default as ScoreRules } from './ScoreRules.tsx'
 export type { ScoreRuleMark } from './ScoreRules.tsx'
