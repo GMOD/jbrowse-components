@@ -62,8 +62,18 @@ export function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
   }
 }
 
-/** the view menu's "Return to import form" row, which a stacked row leaves out */
-export const RETURN_TO_IMPORT_FORM_ID = 'returnToImportForm'
+const RETURN_TO_IMPORT_FORM_ID = 'returnToImportForm'
+
+/**
+ * A view's menu as a row of a stack offers it: without its own "Return to
+ * import form", which clears that one row inside the stack and blanks whatever
+ * joins it to its neighbours. The stack's own item is the way back.
+ */
+export function stackRowMenuItems(view: { menuItems: () => MenuItem[] }) {
+  return view
+    .menuItems()
+    .filter(item => !('id' in item && item.id === RETURN_TO_IMPORT_FORM_ID))
+}
 
 /**
  * Build the main view menu items

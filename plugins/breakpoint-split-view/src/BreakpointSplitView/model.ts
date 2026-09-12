@@ -18,7 +18,10 @@ import {
   withLaunchInput,
 } from '@jbrowse/core/util/withLaunchInput'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
-import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
+import {
+  installLinkedViewSync,
+  stackRowMenuItems,
+} from '@jbrowse/plugin-linear-genome-view'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -911,7 +914,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         return [
           ...self.views.map((view, idx) => ({
             label: `Row ${idx + 1} view menu`,
-            subMenu: view.menuItems(),
+            subMenu: stackRowMenuItems(view),
           })),
 
           ...(self.views.length > 1

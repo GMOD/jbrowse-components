@@ -1,5 +1,4 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
-import { RETURN_TO_IMPORT_FORM_ID } from '@jbrowse/plugin-linear-genome-view'
 
 import {
   displayCanShowCigar,
@@ -226,14 +225,7 @@ describe('rowMenuItems', () => {
       views: [
         {
           assemblyNames: ['hg002mat'],
-          menuItems: () => [
-            { label: 'Own', onClick: () => {} },
-            {
-              id: RETURN_TO_IMPORT_FORM_ID,
-              label: 'Return to import form',
-              onClick: () => {},
-            },
-          ],
+          menuItems: () => [{ label: 'Own', onClick: () => {} }],
         },
         {
           assemblyNames: ['hg002pat'],
@@ -254,8 +246,7 @@ describe('rowMenuItems', () => {
     return 'subMenu' in item ? resolveSubMenu(item) : []
   }
 
-  // a row's own return clears it inside the stack and blanks both bands
-  test('off, each row is its own menu less its return to the import form', () => {
+  test('off, each row is its own menu and nothing more', () => {
     const { items } = build(false)
     expect(items.map(i => ('label' in i ? i.label : ''))).toEqual([
       'hg002mat',
