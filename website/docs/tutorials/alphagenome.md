@@ -7,11 +7,11 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-**TL;DR:** AlphaGenome reads a megabase of DNA and says what it does: where it
-is transcribed, where the chromatin is open, how it splices, and how it folds.
-This page asks it about _TAL1_ in two cell lines, stacks the answers that share
-units on one axis, and then scores an oncogenic insertion against the reference
-to see the enhancer it creates.
+AlphaGenome reads a megabase of DNA and says what it does: where it is
+transcribed, where the chromatin is open, how it splices, and how it folds. We
+ask it about _TAL1_ in two cell lines, stack the answers that share units on one
+axis, and then score an oncogenic insertion against the reference to see the
+enhancer it creates.
 
 :::caution Experimental
 

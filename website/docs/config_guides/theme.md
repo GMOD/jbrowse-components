@@ -6,7 +6,7 @@ description:
 guide_category: Appearance
 ---
 
-**TL;DR:** set colors and sizing under a top-level `theme` in the
+Set colors and sizing under a top-level `theme` in the
 [`configuration`](/docs/config/jbrowseconfiguration) section. JBrowse's palette
 has four customizable colors (`primary`, `secondary`, `tertiary`, `quaternary`);
 add `"mode": "dark"` inside a palette for dark mode. `configuration.preferences`

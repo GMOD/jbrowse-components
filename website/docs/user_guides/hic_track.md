@@ -4,10 +4,10 @@ description: Contact matrix display
 guide_category: Track types
 ---
 
-**TL;DR:** Hi-C measures how often pairs of genomic loci contact each other in
-the nucleus. JBrowse draws it as a triangular contact matrix, brighter where
-contacts are more frequent, reading `.hic` files (Juicer and compatible
-pipelines) in place over HTTP range requests.
+Hi-C measures how often pairs of genomic loci contact each other in the nucleus.
+JBrowse draws it as a triangular contact matrix, brighter where contacts are
+more frequent, reading `.hic` files (Juicer and compatible pipelines) in place
+over HTTP range requests.
 
 ## Loading a Hi-C track
 

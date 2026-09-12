@@ -7,11 +7,11 @@ description:
 guide_category: Track types
 ---
 
-**TL;DR:** Gene and transcript features (GFF3, GTF, BED12, and similar) render
-as glyphs with their exons, UTRs, and CDS segments. Beyond that the track can
-translate the CDS in place (reading frame colors, amino-acid lettering, mature
-peptides), color each transcript from a value carried in the file, and reshape
-the view around a gene by collapsing its introns.
+Gene and transcript features (GFF3, GTF, BED12, and similar) render as glyphs
+with their exons, UTRs, and CDS segments. Beyond that the track can translate
+the CDS in place (reading frame colors, amino-acid lettering, mature peptides),
+color each transcript from a value carried in the file, and reshape the view
+around a gene by collapsing its introns.
 
 ## Choosing which transcripts to show
 

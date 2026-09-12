@@ -11,7 +11,7 @@ result as a folder of files on a web server. The same folder opens in
 ([](/docs/tutorials/cli_desktop)), and [](/docs/embedded_components) puts a view
 in your own web app.
 
-## TLDR
+## Four commands
 
 Adding an assembly or a track writes an entry to `config.json` and copies the
 data file next to it, so the folder is a self-contained static site: no

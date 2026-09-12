@@ -4,9 +4,9 @@ description: Add new drawer/panel UI components
 guide_category: Plugins
 ---
 
-**TL;DR:** Widgets are info panels shown in drawers, modals, or elsewhere in the
-app (the config editor, feature detail popups, the add-track form). A widget
-pairs a state model with a React component, registered via
+Widgets are info panels shown in drawers, modals, or elsewhere in the app (the
+config editor, feature detail popups, the add-track form). A widget pairs a
+state model with a React component, registered via
 `pluginManager.addWidgetType`.
 
 Register a widget in `index.ts`. `HelpWidget` is a whole one — the config

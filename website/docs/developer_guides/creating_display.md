@@ -7,8 +7,8 @@ guide_category: Plugins
 sidebar_label: Tracks and displays
 ---
 
-**TL;DR:** a new way to visualize data in an existing view is a display type; a
-track type is a new conceptual category of track.
+A new way to visualize data in an existing view is a display type; a track type
+is a new conceptual category of track.
 
 A track owns the high-level identity (an ID, a name, a default set of displays);
 a display shows that track inside a particular view and owns the drawing.

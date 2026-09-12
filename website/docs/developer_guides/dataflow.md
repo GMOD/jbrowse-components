@@ -6,9 +6,9 @@ description:
 guide_category: Core concepts
 ---
 
-**TL;DR:** A track's data crosses one boundary and lands in typed arrays of
-absolute genomic coordinates, and everything after that point is a redraw. A pan
-or a zoom therefore costs a frame and not a fetch.
+A track's data crosses one boundary and lands in typed arrays of absolute
+genomic coordinates, and everything after that point is a redraw. A pan or a
+zoom therefore costs a frame and not a fetch.
 
 <Figure caption="A pan or a zoom takes the dashed edge down the right: it re-enters at buffers the GPU already holds, and nothing above that point runs again. The three crossings carry the name of the figure that draws them in full." src="/img/dataflow.png" />
 

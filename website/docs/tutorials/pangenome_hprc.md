@@ -9,11 +9,11 @@ tutorial_category: Synteny & comparative genomics
 data: download
 ---
 
-**TL;DR:** a pangenome graph records what a set of genomes share and where they
-diverge, so sequence one person carries and the reference lacks is an object in
-the file. This page opens the Human Pangenome Reference Consortium's release 2
-graph at a locus, draws it beside GRCh38, and takes one allele off the drawing
-back to the coordinates it attaches at, and then to the haplotype it came from.
+A pangenome graph records what a set of genomes share and where they diverge, so
+sequence one person carries and the reference lacks is an object in the file. We
+open the Human Pangenome Reference Consortium's release 2 graph at a locus, draw
+it beside GRCh38, and take one allele off the drawing back to the coordinates it
+attaches at, and then to the haplotype it came from.
 [Part 2](/docs/tutorials/pangenome_hprc_part2) reads who carries that sequence
 off the rest of the release on the same axis, and
 [part 3](/docs/tutorials/pangenome_hprc_part3) takes the same haplotypes off

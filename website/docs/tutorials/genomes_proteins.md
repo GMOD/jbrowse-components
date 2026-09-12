@@ -8,10 +8,10 @@ guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
 ---
 
-**TL;DR:** genomes.jbrowse.org loads the protein3d and msaview plugins, so any
-gene in a linear genome view can be taken to a 3D structure or to a
-cross-species protein MSA with nothing prepared beforehand. Both views stay
-linked to the genome, so hovering a variant highlights the residue it lands on.
+genomes.jbrowse.org loads the protein3d and msaview plugins, so any gene in a
+linear genome view can be taken to a 3D structure or to a cross-species protein
+MSA with nothing prepared beforehand. Both views stay linked to the genome, so
+hovering a variant highlights the residue it lands on.
 
 ## Prerequisites
 

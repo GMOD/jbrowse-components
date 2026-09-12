@@ -4,9 +4,9 @@ description: UCSC track hubs, JB2 track hubs, and JBrowse 1 data directories
 guide_category: General usage
 ---
 
-**TL;DR:** A **connection** is a reusable pointer to an external track hub or
-data directory. Point JBrowse at a hub once and its tracks become available in
-the track selector.
+A **connection** is a reusable pointer to an external track hub or data
+directory. Point JBrowse at a hub once and its tracks become available in the
+track selector.
 
 JBrowse supports three built-in connection types:
 

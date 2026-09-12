@@ -9,7 +9,7 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
-**TL;DR:** T2T-HG002 v1.2 ships both haplotypes as contigs of one FASTA, named
+T2T-HG002 v1.2 ships both haplotypes as contigs of one FASTA, named
 `chr1_MATERNAL` and `chr1_PATERNAL`, so JBrowse loads it as a single assembly
 and maternal against paternal is a self-alignment. The Q100 project publishes
 the chain between them, so there is nothing to align.

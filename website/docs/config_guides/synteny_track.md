@@ -4,9 +4,9 @@ description: Synteny track config for dotplot and linear synteny views
 guide_category: Track types
 ---
 
-**TL;DR:** a `SyntenyTrack` pairs two assemblies from an alignment file and
-powers both the dotplot and linear synteny views. Pick the adapter by alignment
-format (PAF for minimap2). The one thing to get right is that `assemblyNames` is
+A `SyntenyTrack` pairs two assemblies from an alignment file and powers both the
+dotplot and linear synteny views. Pick the adapter by alignment format (PAF for
+minimap2). The one thing to get right is that `assemblyNames` is
 `[query, target]`, the reverse of the order minimap2 takes its inputs.
 
 ## Choosing an adapter

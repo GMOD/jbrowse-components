@@ -17,8 +17,8 @@ const { defaultsSession, trackId } = settingsVideoFixtures
 const SHARE_MODE_MENU = '[aria-label="Session sharing settings"]'
 
 export const configVideos: VideoSpec[] = [
-  // The page's own TL;DR, performed: "every setting in a track menu has a name,
-  // and JBrowse will tell you what it is." Three menu picks, then the route
+  // The page's own opening, performed: "every setting in a track menu has a
+  // name, and JBrowse will tell you what it is." Three menu picks, then the route
   // that hands the session back in a form the names are readable in — a claim
   // about a ROUND TRIP, and so the one thing display_settings.md's single
   // figure cannot make. That figure is the end of this route flattened into one

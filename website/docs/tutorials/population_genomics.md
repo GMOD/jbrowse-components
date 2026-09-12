@@ -8,8 +8,8 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-**TL;DR:** compute per-window Fst, nucleotide diversity (π), and Tajima's D from
-a multi-sample VCF, load them as bigWig quantitative tracks stacked in one view,
+Compute per-window Fst, nucleotide diversity (π), and Tajima's D from a
+multi-sample VCF, load them as bigWig quantitative tracks stacked in one view,
 each on its own y-axis, and read where the signals line up against genes.
 
 ## Prerequisites

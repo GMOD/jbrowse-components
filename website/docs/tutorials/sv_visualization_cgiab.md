@@ -8,11 +8,11 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-**TL;DR:** the Cancer Genome in a Bottle project publishes HG008, a matched
-tumor/normal PDAC cell line, as PacBio HiFi reads, a draft SV and CNV benchmark,
-and a telomere-to-telomere assembly of the tumor. Load them as tracks and read
-each benchmark call against the alignments and the copy number under it. The
-tumor is hypodiploid, so arm-level loss is the backdrop to every call.
+The Cancer Genome in a Bottle project publishes HG008, a matched tumor/normal
+PDAC cell line, as PacBio HiFi reads, a draft SV and CNV benchmark, and a
+telomere-to-telomere assembly of the tumor. Load them as tracks and read each
+benchmark call against the alignments and the copy number under it. The tumor is
+hypodiploid, so arm-level loss is the backdrop to every call.
 
 ## Prerequisites
 

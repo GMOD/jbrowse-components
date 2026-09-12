@@ -8,9 +8,9 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-**TL;DR:** `jb2export batch` renders every junction in a somatic callset as a
-breakpoint split view, so triage becomes a directory of images. The matched
-normal, rendered the same way, is the control.
+`jb2export batch` renders every junction in a somatic callset as a breakpoint
+split view, so triage becomes a directory of images. The matched normal,
+rendered the same way, is the control.
 
 ## Prerequisites
 

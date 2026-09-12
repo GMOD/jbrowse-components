@@ -7,10 +7,10 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-**TL;DR:** the BXD mice are inbred strains bred down from two parents, B6 and
-DBA/2, so each strain's genome is a mosaic of blocks from one or the other. We
-paint each strain by which parent gave it each block and stack that under a
-GeneNetwork QTL scan, so a trait peak sits over the blocks that drive it.
+The BXD mice are inbred strains bred down from two parents, B6 and DBA/2, so
+each strain's genome is a mosaic of blocks from one or the other. We paint each
+strain by which parent gave it each block and stack that under a GeneNetwork QTL
+scan, so a trait peak sits over the blocks that drive it.
 
 ## Prerequisites
 

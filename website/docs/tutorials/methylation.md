@@ -6,10 +6,10 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-**TL;DR:** JBrowse reads DNA methylation straight from the MM/ML tags nanopore
-and PacBio basecallers write. This tutorial follows one dataset, HG002 nanopore
-reads over an imprinting center, from per-read calls to an aggregate profile to
-the two parental alleles pulled apart.
+JBrowse reads DNA methylation straight from the MM/ML tags nanopore and PacBio
+basecallers write. We follow one dataset, HG002 nanopore reads over an
+imprinting center, from per-read calls to an aggregate profile to the two
+parental alleles pulled apart.
 
 ## Prerequisites
 

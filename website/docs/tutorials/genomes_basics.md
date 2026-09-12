@@ -9,9 +9,9 @@ guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
 ---
 
-**TL;DR:** genomes.jbrowse.org hosts a ready-made JBrowse config for every UCSC
-genome, and each one already carries that genome's UCSC track catalog. Any of
-those tracks is a checkbox away, with nothing to download, index or configure.
+genomes.jbrowse.org hosts a ready-made JBrowse config for every UCSC genome, and
+each one already carries that genome's UCSC track catalog. Any of those tracks
+is a checkbox away, with nothing to download, index or configure.
 
 ## Prerequisites
 

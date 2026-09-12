@@ -4,10 +4,9 @@ description: Add entirely new view panels such as DotplotView or CircularView
 guide_category: Plugins
 ---
 
-**TL;DR:** View types are top-level "panels" the session can contain alongside
-built-ins like `LinearGenomeView`, `DotplotView`, and `CircularView`. A view
-defines its own state model and React component; displaying genomic tracks is
-optional.
+View types are top-level "panels" the session can contain alongside built-ins
+like `LinearGenomeView`, `DotplotView`, and `CircularView`. A view defines its
+own state model and React component; displaying genomic tracks is optional.
 
 ## When to add a custom view type
 

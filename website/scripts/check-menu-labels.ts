@@ -9,8 +9,8 @@
 // hand in Aug 2026; this is what keeps them found.
 //
 // Scoped to `**A → B**` paths on purpose. A single bold label is usually prose
-// emphasis, and enforcing those needs enough heuristics (headings ending in `:`,
-// `TL;DR:`, data values) to cost more than it catches — measured at ~9%
+// emphasis, and enforcing those needs enough heuristics (headings ending in
+// `:`, data values) to cost more than it catches — measured at ~9%
 // unresolved against ~1% here. The arrow is what makes the intent explicit.
 //
 // Matching is **exact on the normalized label**, deliberately. The first cut

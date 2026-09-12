@@ -6,8 +6,8 @@ description:
 guide_category: Core configuration
 ---
 
-**TL;DR:** JBrowse fetches data files directly, so a file behind authentication
-needs JBrowse to present the credentials. Add an entry to the top-level
+JBrowse fetches data files directly, so a file behind authentication needs
+JBrowse to present the credentials. Add an entry to the top-level
 `internetAccounts` array with the `domains` its token applies to: a hostname, or
 a URL prefix to scope it to part of a server. The first account whose `domains`
 matches a URL wins, so order specific ones first. If you control the server

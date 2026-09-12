@@ -7,9 +7,9 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-**TL;DR:** align WGBS/EM-seq short reads with bwameth, load the plain BAM, and
-JBrowse colors per-read methylation straight from the C→T conversion, with CpG,
-CHG, and CHH each selectable. No MM/ML tags and no methylation caller.
+Align WGBS/EM-seq short reads with bwameth, load the plain BAM, and JBrowse
+colors per-read methylation straight from the C→T conversion, with CpG, CHG, and
+CHH each selectable. The route needs no MM/ML tags and no methylation caller.
 
 ## Prerequisites
 

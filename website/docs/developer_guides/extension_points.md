@@ -4,7 +4,7 @@ description: Callbacks registered by producers and consumed across the app
 guide_category: Core concepts
 ---
 
-**TL;DR:** Extension points are named callback chains. A producer fires one with
+Extension points are named callback chains. A producer fires one with
 `evaluateExtensionPoint`; plugins register callbacks with `addToExtensionPoint`,
 each receiving the previous callback's return value. Points that accumulate a
 list take `contributeToExtensionPoint` instead, where a callback returns only

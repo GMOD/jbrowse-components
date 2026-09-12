@@ -8,9 +8,9 @@ guide_category: Tutorials
 tutorial_category: Structural variation
 ---
 
-**TL;DR:** a pileup looks the same whether its reads belong at a locus or merely
-landed there. Four tracks tell the difference, and genomes.jbrowse.org publishes
-all of them for hg38, so this page is a click-path.
+A pileup looks the same whether its reads belong at a locus or merely landed
+there. Four tracks tell the difference, and genomes.jbrowse.org publishes all of
+them for hg38, so turning them on is a matter of clicking.
 
 ## Prerequisites
 

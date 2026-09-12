@@ -4,10 +4,10 @@ description: Import tabular data as a searchable feature table
 guide_category: Views
 ---
 
-**TL;DR:** The spreadsheet view loads a tabular file as an interactive table
-(one row per feature) that you can sort, filter, and jump from into a genome
-view. It backs the [SV inspector](/docs/user_guides/sv_inspector_view) but works
-on its own for any tabular genomic data.
+The spreadsheet view loads a tabular file as an interactive table (one row per
+feature) that you can sort, filter, and jump from into a genome view. It backs
+the [SV inspector](/docs/user_guides/sv_inspector_view) but works on its own for
+any tabular genomic data.
 
 ## Opening a spreadsheet view
 

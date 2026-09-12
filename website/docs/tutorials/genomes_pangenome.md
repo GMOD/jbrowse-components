@@ -8,9 +8,9 @@ guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
 ---
 
-**TL;DR:** genomes.jbrowse.org's HPRC page draws the human pangenome graph on
-any GRCh38 region you type, beside a linear view of the same window, and a row
-of chromosome buttons draws each whole chromosome off a bubble tier. Nothing is
+genomes.jbrowse.org's HPRC page draws the human pangenome graph on any GRCh38
+region you type, beside a linear view of the same window, and a row of
+chromosome buttons draws each whole chromosome off a bubble tier. Nothing is
 built by hand; the [HPRC pangenome tutorial](/docs/tutorials/pangenome_hprc) is
 where the files come from.
 

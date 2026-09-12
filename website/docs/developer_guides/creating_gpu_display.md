@@ -6,12 +6,12 @@ description:
 guide_category: Plugins
 ---
 
-**TL;DR:** A display declares what it draws as a list of **marks**: a shape
-bound to the display's payload and render state. `createMarkBackend` turns the
-list into the WebGPU, WebGL2 and Canvas2D backends, and the same painter is the
-SVG export. A **shape** is written once — one `.slang`, one uniform write, one
-Canvas2D painter, one hit test, all over one set of channel arrays — and only
-when no shared shape fits. This guide writes one.
+A display declares what it draws as a list of **marks**: a shape bound to the
+display's payload and render state. `createMarkBackend` turns the list into the
+WebGPU, WebGL2 and Canvas2D backends, and the same painter is the SVG export. A
+**shape** is written once — one `.slang`, one uniform write, one Canvas2D
+painter, one hit test, all over one set of channel arrays — and only when no
+shared shape fits. The sections below write one.
 
 :::note
 

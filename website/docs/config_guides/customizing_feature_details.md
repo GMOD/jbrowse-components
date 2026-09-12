@@ -6,11 +6,10 @@ description:
 guide_category: Callbacks
 ---
 
-**TL;DR:** the track slot `formatDetails` takes jexl callbacks that return an
-object of fields to merge onto a feature: a new key adds a row, an existing key
-overrides it, and `undefined`/`null` hides it. `formatAbout` does the same for
-the About track dialog. For complex logic, register a jexl function in a small
-plugin.
+The track slot `formatDetails` takes jexl callbacks that return an object of
+fields to merge onto a feature: a new key adds a row, an existing key overrides
+it, and `undefined`/`null` hides it. `formatAbout` does the same for the About
+track dialog. For complex logic, register a jexl function in a small plugin.
 
 ```json addtrack
 {

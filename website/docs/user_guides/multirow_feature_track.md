@@ -6,10 +6,10 @@ description:
 guide_category: Track types
 ---
 
-**TL;DR:** The multi-row feature display splits one interval file into a stack
-of labeled rows, one per value of a column you nominate, and paints each feature
-as a colored block. A cohort of per-sample interval data (chromatin states per
-cell type, copy number per tumor, ancestry per haplotype, genotype per strain)
+The multi-row feature display splits one interval file into a stack of labeled
+rows, one per value of a column you nominate, and paints each feature as a
+colored block. A cohort of per-sample interval data (chromatin states per cell
+type, copy number per tumor, ancestry per haplotype, genotype per strain)
 becomes a single track with one config, one adapter, and one fetch.
 
 Any BED, BigBed, GFF3, or GTF track can be switched to it from the track menu:

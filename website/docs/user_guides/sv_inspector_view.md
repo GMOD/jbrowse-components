@@ -4,9 +4,9 @@ description: Structural variant spreadsheet and circular view
 guide_category: Views
 ---
 
-**TL;DR:** The SV inspector is a combined variant table and whole-genome
-circular view for triaging structural variant calls. For an end-to-end
-walkthrough on real cancer sequencing data, see the
+The SV inspector is a combined variant table and whole-genome circular view for
+triaging structural variant calls. For an end-to-end walkthrough on real cancer
+sequencing data, see the
 [C-GIAB tutorial](/docs/tutorials/sv_visualization_cgiab).
 
 Launch it from the **Add** menu in the main menu bar; an import form then asks

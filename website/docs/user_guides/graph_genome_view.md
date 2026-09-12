@@ -6,9 +6,9 @@ description:
   beside a linear view of the same window
 ---
 
-**TL;DR:** The graph genome view draws a pangenome graph **as a graph**, beside
-a linear view of the same window, and moves between the two. The reference's own
-path through the graph is its **backbone**; every segment off that path is an
+The graph genome view draws a pangenome graph **as a graph**, beside a linear
+view of the same window, and moves between the two. The reference's own path
+through the graph is its **backbone**; every segment off that path is an
 alternate allele another assembly carries. Most other pangenome tracks are
 **projections**: the graph flattened onto one reference's coordinates as
 synteny, variants, alignment, or depth.

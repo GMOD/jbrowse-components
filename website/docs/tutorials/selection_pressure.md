@@ -8,9 +8,9 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
-**TL;DR:** dN/dS is a per-ortholog-pair measurement, so it is a colour on a
-synteny track. This builds a human against rhesus macaque ortholog table with
-jcvi and measures dN and dS on every pair with `kaks_from_pairs.py`.
+dN/dS is a per-ortholog-pair measurement, so it is a colour on a synteny track.
+jcvi builds a human against rhesus macaque ortholog table, and
+`kaks_from_pairs.py` measures dN and dS on every pair.
 
 ## Prerequisites
 

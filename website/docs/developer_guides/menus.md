@@ -5,7 +5,7 @@ description:
 guide_category: Plugins
 ---
 
-**TL;DR:** three surfaces, three mechanisms. The app menu bar takes
+Menus come in three surfaces with three mechanisms. The app menu bar takes
 contributions from a plugin's `configure()`, guarded by `isAbstractMenuManager`;
 a track menu and a right-click menu are the display model's `trackMenuItems()`
 and `contextMenuItems()`, captured from the super method where the display is

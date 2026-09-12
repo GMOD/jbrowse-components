@@ -8,13 +8,12 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-**TL;DR:** a fusion caller hands you a table of gene pairs and a junction
-coordinate, and nothing about the DNA event underneath. Load STAR-Fusion's
-short-read calls beside long RNA reads from the same cell line, count the
-molecules that cross each junction, then find where the chromosome actually
-broke: K562's BCR-ABL1 breaks 122 kb before the junction the caller reports,
-inside _ABL1_'s first intron, and the other junction of the same amplicon breaks
-on top of its own.
+A fusion caller hands you a table of gene pairs and a junction coordinate, and
+nothing about the DNA event underneath. Load STAR-Fusion's short-read calls
+beside long RNA reads from the same cell line, count the molecules that cross
+each junction, then find where the chromosome actually broke: K562's BCR-ABL1
+breaks 122 kb before the junction the caller reports, inside _ABL1_'s first
+intron, and the other junction of the same amplicon breaks on top of its own.
 
 ## Prerequisites
 

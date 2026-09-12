@@ -4,9 +4,9 @@ description: Multiple signal tracks displayed together
 guide_category: Track types
 ---
 
-**TL;DR:** A multi-quantitative track combines several quantitative signals
-(typically BigWig files) into one track with a shared Y axis. The track menu's
-**Plot type** submenu groups the modes by layout:
+A multi-quantitative track combines several quantitative signals (typically
+BigWig files) into one track with a shared Y axis. The track menu's **Plot
+type** submenu groups the modes by layout:
 
 - **Multi-row** (`XY plot`, `Density`, `Line (step)`, `Line (interpolated)`,
   `Scatter`) draws one plot per subtrack, stacked

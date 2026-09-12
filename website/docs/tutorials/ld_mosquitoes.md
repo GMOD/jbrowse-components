@@ -7,9 +7,9 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-**TL;DR:** a 22 Mb inversion reads as one block, from `plink2 --r2-phased`
-output through an [`LDTrack`](/docs/config/ldtrack). The same inversion also
-loads as a structural variant genotyped per mosquito.
+A 22 Mb inversion reads as one block, from `plink2 --r2-phased` output through
+an [`LDTrack`](/docs/config/ldtrack). The same inversion also loads as a
+structural variant genotyped per mosquito.
 
 ## Prerequisites
 

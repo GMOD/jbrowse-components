@@ -53,20 +53,18 @@ to refute it), and **moral framing** ("the honest outcome", "checked rather than
 trusted").
 
 **Ease the reader in.** Terse is not the goal; unargued is. One sentence of
-orientation saying what a step produces, then the mechanics. The TL;DR primes
-the page, not each section.
+orientation saying what a step produces, then the mechanics. The opening
+paragraph primes the page, not each section.
 
-**A TL;DR reads to someone who has never used JBrowse.** Say what the page looks
-at and why anyone would want to, in the reader's own terms, before any JBrowse
-noun. A display or adapter class name cannot be the thing carrying the meaning:
-`an LDTrackDisplay draws plink's pairwise r2 table` names nothing the reader
-recognises, where `we look at linkage disequilibrium around the lactase gene`
-does. Naming the feature afterwards is worth doing when it tells the reader a
-capability exists, and so is naming the outside tool the page integrates with,
-because which of the two computed the numbers is itself the methodological
-point. `check-tldr` fails the half of this a regex can judge, a type name before
-the first comma; the same name a clause later is the good case and is left to
-review.
+**The opening paragraph reads to someone who has never used JBrowse.** Say what
+the page looks at and why anyone would want to, in the reader's own terms,
+before any JBrowse noun. A display or adapter class name cannot be the thing
+carrying the meaning: `an LDTrackDisplay draws plink's pairwise r2 table` names
+nothing the reader recognises, where
+`we look at linkage disequilibrium around the lactase gene` does. Naming the
+feature afterwards is worth doing when it tells the reader a capability exists,
+and so is naming the outside tool the page integrates with, because which of the
+two computed the numbers is itself the methodological point.
 
 ## Commands
 
@@ -139,9 +137,9 @@ too, not only in the script's config patch.
 
 ## Page structure
 
-A tutorial with real requirements opens with `## Prerequisites` under the TL;DR:
-a bulleted list, optionally one short paragraph on installing what apt does not
-carry. Nothing else. The intro goes under its own `##` heading.
+A tutorial with real requirements puts `## Prerequisites` under the opening
+paragraph: a bulleted list, optionally one short paragraph on installing what
+apt does not carry. Nothing else. The intro goes under its own `##` heading.
 
 **`## Where the data comes from` is a source list, one bullet per file**, and
 each bullet ends in the raw full URL rather than a link label, because the host

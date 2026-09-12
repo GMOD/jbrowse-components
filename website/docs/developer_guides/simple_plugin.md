@@ -4,9 +4,8 @@ description: Scaffold a plugin from an official template
 guide_category: Getting started
 ---
 
-**TL;DR:** Clone an official template, follow its README, and copy from its
-worked example. Templates ship a working build and a local JBrowse instance to
-test against.
+Clone an official template, follow its README, and copy from its worked example.
+Templates ship a working build and a local JBrowse instance to test against.
 
 Plugins add new pluggable elements (views, tracks, displays, adapters, widgets,
 etc.) and can modify application behavior by watching state. See

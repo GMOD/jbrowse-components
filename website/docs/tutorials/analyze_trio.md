@@ -8,10 +8,9 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-**TL;DR:** hap-ibd tells which stretches of a phased child's genome came down
-from the mother and which from the father. We paint those as one colored row per
-parental haplotype, so a meiotic crossover reads as a color change along the
-row.
+hap-ibd tells which stretches of a phased child's genome came down from the
+mother and which from the father. We paint those as one colored row per parental
+haplotype, so a meiotic crossover reads as a color change along the row.
 
 ## Prerequisites
 

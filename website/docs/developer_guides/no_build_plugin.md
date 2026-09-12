@@ -6,9 +6,9 @@ description:
 guide_category: Getting started
 ---
 
-**TL;DR:** a no-build plugin is a single hand-edited `.js` file next to your
-`config.json`, referenced from the `plugins` array with `esmLoc`. It needs no
-bundler and no npm install, which makes it the right shape for
+A no-build plugin is a single hand-edited `.js` file next to your `config.json`,
+referenced from the `plugins` array with `esmLoc`. It needs no bundler and no
+npm install, which makes it the right shape for
 [jexl config callbacks or similar modifications](/docs/config_guides/customizing_feature_colors/)
 — at the cost of no JSX, no TypeScript, and no dependencies beyond what JBrowse
 re-exports.

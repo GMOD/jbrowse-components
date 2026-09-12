@@ -8,10 +8,10 @@ guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
 ---
 
-**TL;DR:** genomes.jbrowse.org already carries UCSC's pairwise liftOver
-alignments for every genome, so you can turn one on in a linear genome view and
-launch a two-panel linear synteny view from any chain block. JBrowse resolves
-the mate genome on demand, so the second assembly needs no setup.
+genomes.jbrowse.org already carries UCSC's pairwise liftOver alignments for
+every genome, so you can turn one on in a linear genome view and launch a
+two-panel linear synteny view from any chain block. JBrowse resolves the mate
+genome on demand, so the second assembly needs no setup.
 
 ## Prerequisites
 

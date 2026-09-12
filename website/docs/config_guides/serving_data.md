@@ -6,10 +6,10 @@ description:
 guide_category: Deployment
 ---
 
-**TL;DR:** JBrowse reads your data files directly over HTTP with byte-range
-requests, so the server has to return the raw bytes of a range, never a whole
-re-encoded file. The two settings that break that are `Content-Encoding: gzip`
-applied to BGZF files and a missing CORS policy on a separate data host.
+JBrowse reads your data files directly over HTTP with byte-range requests, so
+the server has to return the raw bytes of a range, never a whole re-encoded
+file. The two settings that break that are `Content-Encoding: gzip` applied to
+BGZF files and a missing CORS policy on a separate data host.
 
 ## What the server has to support
 

@@ -5,10 +5,10 @@ guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
 ---
 
-**TL;DR:** an RNA-seq read mapped back to the genome jumps the introns that were
-spliced out of it, and in a stranded library the pair flags mark which strand
-the transcript came from. Both are in the BAM already, in the CIGAR string and
-the flags, so splice arcs and strand coloring need no extra files and no
+An RNA-seq read mapped back to the genome jumps the introns that were spliced
+out of it, and in a stranded library the pair flags mark which strand the
+transcript came from. Both are in the BAM already, in the CIGAR string and the
+flags, so splice arcs and strand coloring need no extra files and no
 configuration.
 
 ## Prerequisites

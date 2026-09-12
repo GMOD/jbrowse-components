@@ -4,9 +4,9 @@ description: BigWig/BedGraph signal track config and display options
 guide_category: Track types
 ---
 
-**TL;DR:** a `QuantitativeTrack` shows a single BigWig or bedGraph signal. Scale
-and color options (`scaleType`, `autoscale`, `defaultRendering`, `color`, etc.)
-go in `displayDefaults`.
+A `QuantitativeTrack` shows a single BigWig or bedGraph signal. Scale and color
+options (`scaleType`, `autoscale`, `defaultRendering`, `color`, etc.) go in
+`displayDefaults`.
 
 ```json addtrack
 {

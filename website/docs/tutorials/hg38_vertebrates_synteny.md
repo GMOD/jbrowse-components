@@ -9,14 +9,14 @@ tutorial_category: Synteny & comparative genomics
 data: hosted
 ---
 
-**TL;DR:** we look at one human locus across eight other mammals at once, from
-alignments that already exist. UCSC publishes a liftOver chain from hg38 to
-every genome it hosts, and jbrowse.org keeps each of those chains as an indexed
-alignment file, so one track composes eight of them into a lane per genome under
-the human view, each lane drawing that genome's own RefSeq gene models from its
-UCSC hub. At _TP53_ the ape lanes come out nearly continuous and mouse, dog and
-cow show where their chains gap; eight megabases away every lane breaks and most
-reverse, and the page ends there.
+We look at one human locus across eight other mammals at once, from alignments
+that already exist. UCSC publishes a liftOver chain from hg38 to every genome it
+hosts, and jbrowse.org keeps each of those chains as an indexed alignment file,
+so one track composes eight of them into a lane per genome under the human view,
+each lane drawing that genome's own RefSeq gene models from its UCSC hub. At
+_TP53_ the ape lanes come out nearly continuous and mouse, dog and cow show
+where their chains gap; eight megabases away every lane breaks and most reverse,
+and the page ends there.
 
 ## Prerequisites
 

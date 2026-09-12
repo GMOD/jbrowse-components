@@ -4,8 +4,8 @@ description: Population-level variant views
 guide_category: Track types
 ---
 
-**TL;DR:** A VCF can carry genotypes for many samples. JBrowse shows them with
-one of two displays, switchable from the track menu:
+A VCF can carry genotypes for many samples. JBrowse shows them with one of two
+displays, switchable from the track menu:
 
 - Multi-sample variant display (regular) - variants drawn at their true genomic
   positions, one row per sample

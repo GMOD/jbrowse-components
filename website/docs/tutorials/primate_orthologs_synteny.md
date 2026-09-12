@@ -9,13 +9,12 @@ tutorial_category: Synteny & comparative genomics
 data: pipeline
 ---
 
-**TL;DR:** we look at one human locus across seven other primates at once. NCBI
-gives an orthologous gene the same symbol in every species it annotates, so an
-ortholog table is a join on the gene name, built from eight GFF3 files in
-seconds. Each primate then becomes a lane under the human view, in its own
-coordinates, carrying its own gene models. The join reaches exactly as far as
-the naming does, and the page ends on a gene family whose copies carry
-placeholder names.
+We look at one human locus across seven other primates at once. NCBI gives an
+orthologous gene the same symbol in every species it annotates, so an ortholog
+table is a join on the gene name, built from eight GFF3 files in seconds. Each
+primate then becomes a lane under the human view, in its own coordinates,
+carrying its own gene models. The join reaches exactly as far as the naming
+does, and the page ends on a gene family whose copies carry placeholder names.
 
 ## Prerequisites
 

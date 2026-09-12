@@ -4,10 +4,9 @@ description: Per-feature color callbacks using jexl or plugin code
 guide_category: Callbacks
 ---
 
-**TL;DR:** set a track's `color` in `displayDefaults`, either as a plain CSS
-color or a `jexl:` expression. When the logic outgrows one jexl line, add a
-function to the jexl language with a small plugin and call it from your
-callback.
+Set a track's `color` in `displayDefaults`, either as a plain CSS color or a
+`jexl:` expression. When the logic outgrows one jexl line, add a function to the
+jexl language with a small plugin and call it from your callback.
 
 The one-line forms (a solid color, a lookup table keyed on `feature.type`, a
 threshold, a gradient) are in the [cookbook](/docs/cookbook#colors). Past that,

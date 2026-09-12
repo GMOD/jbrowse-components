@@ -10,8 +10,8 @@ chromosome (e.g. `chr1` vs `1` vs `NC_000001.11`) as a single sequence. With an
 alias adapter configured on an assembly, JBrowse translates refNames so tracks
 using different conventions all line up.
 
-**TL;DR:** Configure an alias adapter on the assembly. Use `RefNameAliasAdapter`
-for a UCSC-style tab file, `NcbiSequenceReportAliasAdapter` for an NCBI
+Configure an alias adapter on the assembly. Use `RefNameAliasAdapter` for a
+UCSC-style tab file, `NcbiSequenceReportAliasAdapter` for an NCBI
 `sequence_report.tsv`. The primary refName must match your FASTA exactly.
 
 ## How resolution works

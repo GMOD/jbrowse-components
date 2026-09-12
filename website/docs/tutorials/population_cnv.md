@@ -7,11 +7,11 @@ guide_category: Tutorials
 tutorial_category: Structural variation
 ---
 
-**TL;DR:** copy number varies from person to person, and we show the whole 1000
-Genomes panel at once: one heatmap row per individual, colored by how far that
-person strays from the diploid baseline of 2. JBrowse renders that live from
-per-sample BigWigs, and past a few hundred samples the per-file requests
-dominate, so the second half packs the values into one Zarr store.
+Copy number varies from person to person, and we show the whole 1000 Genomes
+panel at once: one heatmap row per individual, colored by how far that person
+strays from the diploid baseline of 2. JBrowse renders that live from per-sample
+BigWigs, and past a few hundred samples the per-file requests dominate, so the
+second half packs the values into one Zarr store.
 
 ## Prerequisites
 

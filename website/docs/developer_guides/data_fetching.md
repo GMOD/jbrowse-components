@@ -5,11 +5,11 @@ description:
 guide_category: Core concepts
 ---
 
-**TL;DR:** Most linear displays compose `MultiRegionDisplayMixin`, which
-installs the autoruns that manage fetch lifecycle, cancellation, and cache
-invalidation. You override `fetchNeeded` (usually via `fetchEachRegion`) and
-declare `rpcProps` as the cache key. This chain is the thing to understand for
-writing a display, and for debugging unexpected refetches in any display.
+Most linear displays compose `MultiRegionDisplayMixin`, which installs the
+autoruns that manage fetch lifecycle, cancellation, and cache invalidation. You
+override `fetchNeeded` (usually via `fetchEachRegion`) and declare `rpcProps` as
+the cache key. This chain is the thing to understand for writing a display, and
+for debugging unexpected refetches in any display.
 
 The exceptions are displays whose data isn't partitioned by region at all; they
 compose `GlobalFetchMixin` and install their own fetch autorun. See

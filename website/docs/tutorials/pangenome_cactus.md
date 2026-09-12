@@ -7,11 +7,10 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
-**TL;DR:** one `cactus-pangenome` run over five _E. coli_ strains emits the
-graph, a VCF, an odgi, a HAL and short-read indexes, which become JBrowse tracks
-on the K12 axis: synteny, pangenome variants, a whole-genome MAF, depth,
-per-strain presence, and a pileup of an isolate outside the graph, mapped
-through it.
+One `cactus-pangenome` run over five _E. coli_ strains emits the graph, a VCF,
+an odgi, a HAL and short-read indexes, which become JBrowse tracks on the K12
+axis: synteny, pangenome variants, a whole-genome MAF, depth, per-strain
+presence, and a pileup of an isolate outside the graph, mapped through it.
 
 :::caution Experimental
 

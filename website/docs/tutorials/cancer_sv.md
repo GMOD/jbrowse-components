@@ -8,11 +8,11 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-**TL;DR:** a rearrangement can take several junctions to make, and the genes it
-brings together say nothing about how many. Search a somatic SV callset for
-chains of junctions a single long read could cross, rebuild the derivative
-allele from the reads that span it, and show that reconstruction against the
-reference as a synteny view.
+A rearrangement can take several junctions to make, and the genes it brings
+together say nothing about how many. Search a somatic SV callset for chains of
+junctions a single long read could cross, rebuild the derivative allele from the
+reads that span it, and show that reconstruction against the reference as a
+synteny view.
 
 ## Prerequisites
 

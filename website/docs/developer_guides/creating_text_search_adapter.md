@@ -4,10 +4,10 @@ description: Implement a custom backend for the search box
 guide_category: Plugins
 ---
 
-**TL;DR:** the search box queries one or more text search adapters and handles
-ranking and navigation itself. Extend `BaseAdapter`, implement `searchIndex()`
-returning `BaseResult[]`, give the config an `assemblyNames` slot, and register
-the type in your plugin.
+The search box queries one or more text search adapters and handles ranking and
+navigation itself. Extend `BaseAdapter`, implement `searchIndex()` returning
+`BaseResult[]`, give the config an `assemblyNames` slot, and register the type
+in your plugin.
 
 The built-ins are `TrixTextSearchAdapter` (pre-built trix indexes) and
 `JBrowse1TextSearchAdapter` (JBrowse 1 `names/` indexes). Add your own to search

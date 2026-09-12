@@ -4,10 +4,10 @@ description: Overview of all element types a plugin can register
 guide_category: Getting started
 ---
 
-**TL;DR:** the ten element types a plugin can register — adapters, text search
-adapters, displays, tracks, connections, views, widgets, RPC methods, internet
-accounts and add-track workflows — plus extension points, and which guide covers
-each. Drawing is implemented by the display types.
+A plugin can register ten element types: adapters, text search adapters,
+displays, tracks, connections, views, widgets, RPC methods, internet accounts
+and add-track workflows. Each has a guide of its own, and so do extension
+points; the display types are what draw.
 
 A plugin's `install` method adds these elements to the host application, while
 `configure` typically sets up

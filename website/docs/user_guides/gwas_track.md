@@ -6,9 +6,9 @@ description:
 guide_category: Track types
 ---
 
-**TL;DR:** The GWAS track renders results as a Manhattan plot: -log₁₀(p-value)
-on the Y axis, genomic position on the X axis. Points support LocusZoom-style r²
-LD coloring to show linkage to an index SNP.
+The GWAS track renders results as a Manhattan plot: -log₁₀(p-value) on the Y
+axis, genomic position on the X axis. Points support LocusZoom-style r² LD
+coloring to show linkage to an index SNP.
 
 <Figure caption="A GWAS track rendered as a Manhattan plot: each point is a variant, plotted by genomic position (X) and -log₁₀(p-value) (Y), so association peaks rise above the background." src="/img/gwas/manhattan.png" />
 

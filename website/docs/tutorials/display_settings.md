@@ -7,11 +7,10 @@ guide_category: Tutorials
 tutorial_category: Configuration & embedding
 ---
 
-**TL;DR:** every setting in a track menu has a name, and JBrowse will tell you
-what it is. Change the setting by clicking, read the session JSON back, and the
-same key works in a shareable link, in a saved session file, and in
-`config.json`. This page changes four settings on one CRAM track and follows
-them through all three.
+Every setting in a track menu has a name, and JBrowse will tell you what it is.
+Change the setting by clicking, read the session JSON back, and the same key
+works in a shareable link, in a saved session file, and in `config.json`. We
+change four settings on one CRAM track and follow them through all three.
 
 ## Prerequisites
 

@@ -5,9 +5,9 @@ description:
 guide_category: Track types
 ---
 
-**TL;DR:** a `VariantTrack` with a `VcfTabixAdapter` handles single- and
-multi-sample VCFs. Color variants with a `jexl:` expression on the display's
-`color` slot, and reach for the multi-sample or LD displays for cohort data.
+A `VariantTrack` with a `VcfTabixAdapter` handles single- and multi-sample VCFs.
+Color variants with a `jexl:` expression on the display's `color` slot, and
+reach for the multi-sample or LD displays for cohort data.
 
 ```json addtrack
 {

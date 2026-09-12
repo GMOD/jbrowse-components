@@ -8,10 +8,9 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
-**TL;DR:** align two assemblies with `minimap2 -c --eqx`, load the PAF as a
-synteny track, and read it whole-genome in a dotplot and base-level in the
-linear synteny view. `add-track -a` takes `query,target`, the reverse of the
-minimap2 argument order.
+Align two assemblies with `minimap2 -c --eqx`, load the PAF as a synteny track,
+and read it whole-genome in a dotplot and base-level in the linear synteny view.
+`add-track -a` takes `query,target`, the reverse of the minimap2 argument order.
 
 ## Prerequisites
 

@@ -7,10 +7,9 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-**TL;DR:** pool each cluster's cells into one coverage BigWig outside JBrowse,
-load the set as a single MultiWiggle track, and the browser shows one row per
-cell type. The same clustering also drives an embedded UMAP that filters those
-rows.
+Pool each cluster's cells into one coverage BigWig outside JBrowse, load the set
+as a single MultiWiggle track, and the browser shows one row per cell type. The
+same clustering also drives an embedded UMAP that filters those rows.
 
 ## Prerequisites
 

@@ -9,10 +9,10 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-**TL;DR:** score every window of the Dog10K phased panel for how far apart
-fourteen toy breeds and eleven giant breeds sit, draw that as a Manhattan track,
-then slice one peak out of the 397 GB SNV callset over HTTP, load it as a
-multi-sample variant track with a sample-metadata TSV, and cluster the rows.
+Score every window of the Dog10K phased panel for how far apart fourteen toy
+breeds and eleven giant breeds sit, draw that as a Manhattan track, then slice
+one peak out of the 397 GB SNV callset over HTTP, load it as a multi-sample
+variant track with a sample-metadata TSV, and cluster the rows.
 
 ## Prerequisites
 

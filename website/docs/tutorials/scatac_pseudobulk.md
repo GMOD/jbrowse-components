@@ -5,9 +5,8 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-**TL;DR:** pseudobulk outside JBrowse, pooling each cluster's cells into one
-coverage BigWig, then load the whole set as a single MultiWiggle track, which
-draws one row per file.
+Pool each cluster's cells into one coverage BigWig outside JBrowse, then load
+the whole set as a single MultiWiggle track, which draws one row per file.
 
 ## Prerequisites
 

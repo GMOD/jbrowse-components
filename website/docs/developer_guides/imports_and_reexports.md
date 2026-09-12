@@ -13,9 +13,9 @@ So "where does this import come from?" has two answers:
   must use the host's copy, not bundle its own.
 - Everything else is any other npm package. Your plugin bundles it normally.
 
-**TL;DR:** Import React, MobX, MST, MUI, and the `@jbrowse/core` APIs listed
-below normally (the plugin template externalizes them to the host's copy);
-everything else gets bundled into your plugin.
+Import React, MobX, MST, MUI, and the `@jbrowse/core` APIs listed below normally
+(the plugin template externalizes them to the host's copy); everything else gets
+bundled into your plugin.
 
 ## Why re-exports exist
 

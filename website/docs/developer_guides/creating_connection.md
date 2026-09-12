@@ -6,9 +6,9 @@ description:
 guide_category: Plugins
 ---
 
-**TL;DR:** A connection adds data to a JBrowse session in bulk. At its simplest
-it adds a pre-configured set of tracks; more powerfully, it dynamically creates
-tracks by querying a remote resource, such as a UCSC Track Hub.
+A connection adds data to a JBrowse session in bulk. At its simplest it adds a
+pre-configured set of tracks; more powerfully, it dynamically creates tracks by
+querying a remote resource, such as a UCSC Track Hub.
 
 ## Adding a connection type
 

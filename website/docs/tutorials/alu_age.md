@@ -11,15 +11,14 @@ tutorial_category: Configuration & embedding
 data: hosted
 ---
 
-**TL;DR:** we look at how old each Alu copy on human chromosome 1 is and where
-the young ones sit. RepeatMasker writes each copy's divergence from its
-subfamily consensus into a column of its annotation, and divergence accumulates
-with time, so the column is an age. One track plots that column as a bar per
-copy coloured by subfamily, counts the copies per bin once the view is too wide
-to show them, and draws a features-per-bin sidecar where the chromosome is too
-wide to fetch. The track is a mark display: a numeric column of any feature file
-becomes a plot with a JSON entry and no code, and the counting runs in the
-browser.
+We look at how old each Alu copy on human chromosome 1 is and where the young
+ones sit. RepeatMasker writes each copy's divergence from its subfamily
+consensus into a column of its annotation, and divergence accumulates with time,
+so the column is an age. One track plots that column as a bar per copy coloured
+by subfamily, counts the copies per bin once the view is too wide to show them,
+and draws a features-per-bin sidecar where the chromosome is too wide to fetch.
+The track is a mark display: a numeric column of any feature file becomes a plot
+with a JSON entry and no code, and the counting runs in the browser.
 
 ## Prerequisites
 

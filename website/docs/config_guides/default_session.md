@@ -6,10 +6,10 @@ description:
 guide_category: Appearance
 ---
 
-**TL;DR:** a `defaultSession` in `config.json` sets the initial state loaded for
-all users. Give each view an assembly, a location and the tracks to open, three
-lines you can write by hand or emit from a script. URL params like `&session=`
-and `&loc=` build a fresh session and ignore the `defaultSession`, unless
+A `defaultSession` in `config.json` sets the initial state loaded for all users.
+Give each view an assembly, a location and the tracks to open, three lines you
+can write by hand or emit from a script. URL params like `&session=` and `&loc=`
+build a fresh session and ignore the `defaultSession`, unless
 [`&extendSession=true`](/docs/urlparams#navigating-within-the-default-session)
 is set, which navigates within it while keeping its tracks and settings.
 

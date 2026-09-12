@@ -4,11 +4,11 @@ description: How to register and call RPC methods that run in web workers
 guide_category: Core concepts
 ---
 
-**TL;DR:** JBrowse runs data-intensive work — parsing adapters, computing
-layouts, encoding GPU buffers — in web workers behind an RPC layer. Subclass
-`RpcMethodType` with an `execute()`, register it with `addRpcMethod` in your
-plugin's `install()`, and call it with `rpcManager.call(sessionId, name, args)`.
-Only structured-clone-safe values cross the boundary.
+JBrowse runs data-intensive work — parsing adapters, computing layouts, encoding
+GPU buffers — in web workers behind an RPC layer. Subclass `RpcMethodType` with
+an `execute()`, register it with `addRpcMethod` in your plugin's `install()`,
+and call it with `rpcManager.call(sessionId, name, args)`. Only
+structured-clone-safe values cross the boundary.
 
 ## The RPC lifecycle
 

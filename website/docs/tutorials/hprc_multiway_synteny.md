@@ -10,15 +10,15 @@ tutorial_category: Synteny & comparative genomics
 data: pipeline
 ---
 
-**TL;DR:** we look at one human locus across eight assembled haplotypes from the
-Human Pangenome Reference Consortium, whole genome, without running an aligner.
-The consortium's pangenome graph carries every haplotype as a walk through
-shared nodes, so each haplotype's pairwise alignment to the reference is already
-inside it: a small converter walks the GFA once and unpacks each haplotype's
-alignment to GRCh38 into PAF, `jbrowse make-pif` indexes the result, and each
-haplotype becomes a lane under the reference carrying the consortium's own gene
-annotation of it. At the complement factor H cluster, half the lanes carry a
-deletion that removes two genes, and that is where the page ends.
+We look at one human locus across eight assembled haplotypes from the Human
+Pangenome Reference Consortium, whole genome, without running an aligner. The
+consortium's pangenome graph carries every haplotype as a walk through shared
+nodes, so each haplotype's pairwise alignment to the reference is already inside
+it: a small converter walks the GFA once and unpacks each haplotype's alignment
+to GRCh38 into PAF, `jbrowse make-pif` indexes the result, and each haplotype
+becomes a lane under the reference carrying the consortium's own gene annotation
+of it. At the complement factor H cluster, half the lanes carry a deletion that
+removes two genes, and that is where the page ends.
 
 ## Prerequisites
 

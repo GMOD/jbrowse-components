@@ -6,10 +6,10 @@ description:
 guide_category: Deployment
 ---
 
-**TL;DR:** JBrowse Web is a static site (HTML/JS/CSS plus `config.json`), served
-from any static host. Script the config generation so `trackId`s stay stable and
-share links stay [reproducible](/docs/urlparams#are-share-links-reproducible)
-across rebuilds.
+JBrowse Web is a static site (HTML/JS/CSS plus `config.json`), served from any
+static host. Script the config generation so `trackId`s stay stable and share
+links stay [reproducible](/docs/urlparams#are-share-links-reproducible) across
+rebuilds.
 
 Any static file host (Nginx, Apache, S3, GitHub Pages, a Docker image behind an
 ingress) serves the folder, and the data files are read from wherever they live

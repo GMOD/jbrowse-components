@@ -4,10 +4,10 @@ description: Sequence extraction for selected features
 guide_category: Sequence tools
 ---
 
-**TL;DR:** The feature details panel can extract and display the sequence
-underlying a selected feature. For a gene or transcript, choose CDS, protein
-translation, cDNA, or genomic with introns (plus optional flanking bases); for
-any other feature type it shows the literal underlying sequence.
+The feature details panel can extract and display the sequence underlying a
+selected feature. For a gene or transcript, choose CDS, protein translation,
+cDNA, or genomic with introns (plus optional flanking bases); for any other
+feature type it shows the literal underlying sequence.
 
 ## Gene features
 

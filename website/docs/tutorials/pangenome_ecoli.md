@@ -7,10 +7,10 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
-**TL;DR:** build a five-strain _E. coli_ graph with pggb, then load its linear
-projections (synteny, pangenome variants, whole-genome MAF, depth and per-strain
-presence) as ordinary JBrowse tracks on the K12 axis, and draw the graph itself
-beside them.
+Build a five-strain _E. coli_ graph with pggb, then load its linear projections
+(synteny, pangenome variants, whole-genome MAF, depth and per-strain presence)
+as ordinary JBrowse tracks on the K12 axis, and draw the graph itself beside
+them.
 
 :::caution Experimental
 

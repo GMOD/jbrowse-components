@@ -8,11 +8,10 @@ guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
 ---
 
-**TL;DR:** a RepeatMasker track is one packed lane of colored blocks. The same
-file opened as a
-[multi-row feature display](/docs/user_guides/multirow_feature_track) is one
-labelled lane per class, whose height is that class's share of the window. The
-class is already in the file, and the display discovers the lanes from it.
+A RepeatMasker track is one packed lane of colored blocks. The same file opened
+as a [multi-row feature display](/docs/user_guides/multirow_feature_track) is
+one labelled lane per class, whose height is that class's share of the window.
+The class is already in the file, and the display discovers the lanes from it.
 
 ## Prerequisites
 

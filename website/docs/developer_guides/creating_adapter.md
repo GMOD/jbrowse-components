@@ -5,9 +5,8 @@ description:
 guide_category: Plugins
 ---
 
-**TL;DR:** extend `BaseFeatureDataAdapter`, implement `getRefNames()` and
-`getFeatures()` (an rxjs stream of `SimpleFeature`s), and register the type in
-your plugin.
+Extend `BaseFeatureDataAdapter`, implement `getRefNames()` and `getFeatures()`
+(an rxjs stream of `SimpleFeature`s), and register the type in your plugin.
 
 An adapter is a class that fetches and parses your data and returns it in a
 format JBrowse understands. To display data from a new source with JBrowse's

@@ -25,7 +25,8 @@ export const repeatVideos: VideoSpec[] = [
   //
   // The `Partition by...` submenu is the payoff frame: its options are read off
   // the loaded features' own attribute names, so `repClass` and `repFamily`
-  // being in that list IS the TL;DR's "the class is already in the file".
+  // being in that list IS the page's opening claim that "the class is already
+  // in the file".
   {
     name: 'repeats/painting_display_switch',
     description:

@@ -8,9 +8,9 @@ guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
 ---
 
-**TL;DR:** a per-transcript statistic goes into the GFF3 attribute column, and a
-`jexl:` color callback on the gene track paints it. This page builds that GFF3
-from ENCODE quantifications and gives the track configuration that reads it.
+A per-transcript statistic goes into the GFF3 attribute column, and a `jexl:`
+color callback on the gene track paints it. We build that GFF3 from ENCODE
+quantifications, and the track configuration below reads it.
 
 ## Prerequisites
 

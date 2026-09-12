@@ -5,8 +5,8 @@ description:
 guide_category: Advanced topics
 ---
 
-**TL;DR:** most plugin logic is covered by fast Jest unit tests (adapters,
-models) and jsdom render tests (components); browser tests drive the built app.
+Most plugin logic is covered by fast Jest unit tests (adapters, models) and
+jsdom render tests (components); browser tests drive the built app.
 
 The [plugin templates](/docs/developer_guides/simple_plugin) ship with Jest
 preconfigured, so `pnpm test` works out of the box.

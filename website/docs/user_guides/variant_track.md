@@ -4,12 +4,12 @@ description: VCF variant display
 guide_category: Track types
 ---
 
-**TL;DR:** A variant track displays VCF records, one glyph per call, and a click
-opens a per-sample genotype table. The track menu's **Display types** switches
-to a multi-sample view (one row per sample), an LD heatmap, or a paired-arc view
-for breakends. **Color by...** buckets variants by SnpEff/VEP consequence
-severity or SV type with one click, or colors by any INFO field via a jexl
-expression (e.g. minor allele frequency).
+A variant track displays VCF records, one glyph per call, and a click opens a
+per-sample genotype table. The track menu's **Display types** switches to a
+multi-sample view (one row per sample), an LD heatmap, or a paired-arc view for
+breakends. **Color by...** buckets variants by SnpEff/VEP consequence severity
+or SV type with one click, or colors by any INFO field via a jexl expression
+(e.g. minor allele frequency).
 
 <Figure caption="Variant track indicating an SNV alongside the alignment track evidence." src="/img/variant_with_pileup.png" />
 

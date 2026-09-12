@@ -8,10 +8,10 @@ guide_category: Tutorials
 tutorial_category: Structural variation
 ---
 
-**TL;DR:** JBrowse fetches a Hi-C matrix for every _pair_ of regions on screen.
-Put a chr9 window and a chr22 window in one linear view and the space between
-them fills with the contacts between the two: background in a normal karyotype,
-and the Philadelphia chromosome in K562.
+JBrowse fetches a Hi-C matrix for every _pair_ of regions on screen. Put a chr9
+window and a chr22 window in one linear view and the space between them fills
+with the contacts between the two: background in a normal karyotype, and the
+Philadelphia chromosome in K562.
 
 ## Prerequisites
 

@@ -6,8 +6,8 @@ description:
 guide_category: Core configuration
 ---
 
-**TL;DR:** every field on a [config schema page](/docs/config_guide) lists a
-**Type**. This page says what each one accepts, so a `Type: fileLocation` or
+Every field on a [config schema page](/docs/config_guide) lists a **Type**. The
+sections below say what each one accepts, so a `Type: fileLocation` or
 `Type: frozen` on a slot tells you what to actually write. The `maybe*` types
 are the ordinary ones plus an "unset" state, described
 [in one section below](#the-maybe-types).

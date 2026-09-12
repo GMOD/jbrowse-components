@@ -8,12 +8,11 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
-**TL;DR:** a pairwise [jcvi](https://github.com/tanghaibao/jcvi) MCScan run
-writes two files that JBrowse loads as separate synteny tracks: `.anchors` (one
-orthologous gene pair per line, via `MCScanAnchorsAdapter`) and
-`.anchors.simple` (one synteny block per line, via
-`MCScanSimpleAnchorsAdapter`). Both pair genes by name, so each also needs a BED
-per genome mapping gene ids to coordinates.
+A pairwise [jcvi](https://github.com/tanghaibao/jcvi) MCScan run writes two
+files that JBrowse loads as separate synteny tracks: `.anchors` (one orthologous
+gene pair per line, via `MCScanAnchorsAdapter`) and `.anchors.simple` (one
+synteny block per line, via `MCScanSimpleAnchorsAdapter`). Both pair genes by
+name, so each also needs a BED per genome mapping gene ids to coordinates.
 
 ## Prerequisites
 

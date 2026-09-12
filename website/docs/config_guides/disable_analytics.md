@@ -4,9 +4,9 @@ description: Opt out of usage analytics
 guide_category: Deployment
 ---
 
-**TL;DR:** jbrowse-web and jbrowse-desktop report anonymous counts and type
-names on load, never file URLs or data, and `disableAnalytics: true` in the
-global `configuration` block turns both endpoints off.
+jbrowse-web and jbrowse-desktop report anonymous counts and type names on load,
+never file URLs or data, and `disableAnalytics: true` in the global
+`configuration` block turns both endpoints off.
 
 The report goes to Google Analytics and a JBrowse analytics endpoint on load. It
 carries the JBrowse version, counts of tracks, assemblies and open views, track

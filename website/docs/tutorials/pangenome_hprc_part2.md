@@ -9,11 +9,11 @@ tutorial_category: Synteny & comparative genomics
 data: hosted
 ---
 
-**TL;DR:** [part 1](/docs/tutorials/pangenome_hprc) ends holding one allele and
-the single haplotype the graph credits it to. This page reads everyone who
-carries that sequence off the rest of HPRC release 2, on the same GRCh38 axis:
-where the graph varies and by how much, what each alternative is, and which of
-the 464 haplotypes walk it. Every track here is a URL, read a window at a time.
+[Part 1](/docs/tutorials/pangenome_hprc) ends holding one allele and the single
+haplotype the graph credits it to. We read everyone who carries that sequence
+off the rest of HPRC release 2, on the same GRCh38 axis: where the graph varies
+and by how much, what each alternative is, and which of the 464 haplotypes walk
+it. Every track here is a URL, read a window at a time.
 
 ## Prerequisites
 

@@ -7,10 +7,10 @@ description:
 guide_category: Advanced topics
 ---
 
-**TL;DR:** JBrowse gives every track its own canvas, and on WebGL2 each canvas
-holds its own driver context — a browser hands out sixteen per page, so one view
-with seventeen GPU tracks exhausts them. WebGPU serves every canvas on a page
-from one device, which is why the ladder targets it first, then WebGL2, then
+JBrowse gives every track its own canvas, and on WebGL2 each canvas holds its
+own driver context — a browser hands out sixteen per page, so one view with
+seventeen GPU tracks exhausts them. WebGPU serves every canvas on a page from
+one device, which is why the ladder targets it first, then WebGL2, then
 Canvas2D. Three constraints follow from how a track gets its data, and every
 rendering library below fails at least one of them. Rust runs here in
 decompression, offline preprocessing and build tooling, because none of the

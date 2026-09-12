@@ -4,7 +4,7 @@ description: Per-track and aggregate full-text search indexes
 guide_category: Core configuration
 ---
 
-**TL;DR:** text searching comes in two forms, both built with
+Text searching comes in two forms, both built with
 [`jbrowse text-index`](/docs/cli#jbrowse-text-index). An **aggregate index**
 (top-level `aggregateTextSearchAdapters`) is searched across many tracks at
 once, for a genome-wide gene-name index. A **per-track index** (a track's

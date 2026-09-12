@@ -10,15 +10,15 @@ tutorial_category: Configuration & embedding
 data: hosted
 ---
 
-**TL;DR:** we find a deletion in a genome from the reads alone. A paired-end
-read pair that straddles a missing stretch of chromosome maps with its two ends
-further apart than the library was made, so its insert size gives the deletion
-away before any variant caller runs; and where one chromosome copy lacks the
-stretch, half the reads are gone with it. This page plots those two numbers, the
-depth and the insert size, as marks declared over the alignment file, first
-across one deletion and then along a whole chromosome. The track is a
-`LinearMarkDisplay`: a read's fields become channels of a plot with a JSON
-entry, the way a BED column does in the [Alu tutorial](/docs/tutorials/alu_age).
+We find a deletion in a genome from the reads alone. A paired-end read pair that
+straddles a missing stretch of chromosome maps with its two ends further apart
+than the library was made, so its insert size gives the deletion away before any
+variant caller runs; and where one chromosome copy lacks the stretch, half the
+reads are gone with it. We plot those two numbers, the depth and the insert
+size, as marks declared over the alignment file, first across one deletion and
+then along a whole chromosome. The track is a `LinearMarkDisplay`: a read's
+fields become channels of a plot with a JSON entry, the way a BED column does in
+the [Alu tutorial](/docs/tutorials/alu_age).
 
 ## Prerequisites
 

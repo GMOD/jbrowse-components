@@ -9,13 +9,13 @@ tutorial_category: Synteny & comparative genomics
 data: pipeline
 ---
 
-**TL;DR:** parts [1](/docs/tutorials/pangenome_hprc) and
+Parts [1](/docs/tutorials/pangenome_hprc) and
 [2](/docs/tutorials/pangenome_hprc_part2) draw everything on GRCh38's axis,
 which makes hundreds of haplotypes comparable in one lane and leaves each
-assembly's own coordinates out of the picture. This page starts from the
-multiple alignment both products were derived from, then puts each haplotype
-back on its own contigs, first from a gene table and then straight out of the
-graph, and ends on the one donor that has a published reference of its own.
+assembly's own coordinates out of the picture. We start from the multiple
+alignment both products were derived from, then put each haplotype back on its
+own contigs, first from a gene table and then straight out of the graph, and end
+on the one donor that has a published reference of its own.
 
 ## Prerequisites
 

@@ -6,11 +6,11 @@ description:
 guide_category: Core configuration
 ---
 
-**TL;DR:** a connection makes an external hub's tracks available in the track
-selector without configuring each track by hand. Admin-defined connections go in
-the top-level `connections` array; connections a user adds at runtime live in
-their session. This guide covers the config format; for in-app behavior see the
-[Connections user guide](/docs/user_guides/connections).
+A connection makes an external hub's tracks available in the track selector
+without configuring each track by hand. Admin-defined connections go in the
+top-level `connections` array; connections a user adds at runtime live in their
+session. The config format is below; the
+[Connections user guide](/docs/user_guides/connections) covers in-app behavior.
 
 ## Connection config format
 

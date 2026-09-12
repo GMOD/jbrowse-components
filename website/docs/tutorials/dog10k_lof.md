@@ -8,9 +8,9 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-**TL;DR:** derive a stop-gained variant's coordinate by translating the
-reference CDS, slice that gene out of the 397 GB Dog10K SNV callset over HTTP,
-and read the genotypes across breeds with the wild canids as the control.
+Derive a stop-gained variant's coordinate by translating the reference CDS,
+slice that gene out of the 397 GB Dog10K SNV callset over HTTP, and read the
+genotypes across breeds with the wild canids as the control.
 
 ## Prerequisites
 

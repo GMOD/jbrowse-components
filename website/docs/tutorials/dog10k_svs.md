@@ -8,10 +8,10 @@ guide_category: Tutorials
 tutorial_category: Structural variation
 ---
 
-**TL;DR:** slice a locus out of the Dog10K structural-variant callsets over
-HTTP, load it as a `VariantTrack` in the multi-sample variant display with breed
-labels, and read the genotypes against the gene model above it. Four loci, one
-recipe, a different class of variant each time.
+Slice a locus out of the Dog10K structural-variant callsets over HTTP, load it
+as a `VariantTrack` in the multi-sample variant display with breed labels, and
+read the genotypes against the gene model above it. Four loci run the same
+recipe, each on a different class of variant.
 
 ## Prerequisites
 

@@ -4,10 +4,10 @@ description: Side-by-side alignment of two genomes
 guide_category: Views
 ---
 
-**TL;DR:** The linear synteny view stacks two genomes, one above the other, and
-draws their alignments as ribbons connecting matching regions. Each panel
-behaves like a linear genome view, so you can scroll, zoom, and add tracks to
-either side independently while the ribbons follow.
+The linear synteny view stacks two genomes, one above the other, and draws their
+alignments as ribbons connecting matching regions. Each panel behaves like a
+linear genome view, so you can scroll, zoom, and add tracks to either side
+independently while the ribbons follow.
 
 Forward-strand alignments are drawn in one color and inverted alignments in
 another, so a ribbon that twists or crosses marks an inversion or rearrangement.

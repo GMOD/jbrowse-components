@@ -8,7 +8,7 @@ JBrowse uses `@jbrowse/mobx-state-tree`, an internal ESM fork of
 [MobX-State-Tree](https://mobx-state-tree.js.org/). The public API matches
 upstream MST, so the upstream documentation applies.
 
-**TL;DR:** Patterns for the MST idioms JBrowse relies on: driving side-effects
+The sections below cover the MST idioms JBrowse relies on: driving side-effects
 with `autorun`, composing models from mixins, `types.frozen`, volatile state,
 and using `self` over `this` in views.
 

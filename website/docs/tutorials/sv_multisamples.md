@@ -8,10 +8,10 @@ guide_category: Tutorials
 tutorial_category: Structural variation
 ---
 
-**TL;DR:** take one whole-gene deletion out of the 1000 Genomes ensemble SV
-callset, sort the cohort's genotypes at it, then open three of those samples'
-reads and watch the coverage go to zero, halve, and stay flat. The page ends on
-a call from the same cohort whose coverage does none of that.
+Take one whole-gene deletion out of the 1000 Genomes ensemble SV callset, sort
+the cohort's genotypes at it, then open three of those samples' reads and watch
+the coverage go to zero, halve, and stay flat. The page ends on a call from the
+same cohort whose coverage does none of that.
 
 ## Prerequisites
 

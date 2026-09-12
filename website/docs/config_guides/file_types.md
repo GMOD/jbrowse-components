@@ -6,11 +6,11 @@ description:
 guide_category: Core configuration
 ---
 
-**TL;DR:** every track reads data through an `adapter` whose `type` selects the
-reader, and the file's extension is what picks that type. Find your format in
-the tables below for the adapter that reads it and a link to its full config
-docs. Most adapters accept the [`uri` shorthand](#the-uri-shorthand), and a
-track over a format listed here can skip both keys — see
+Every track reads data through an `adapter` whose `type` selects the reader, and
+the file's extension is what picks that type. Find your format in the tables
+below for the adapter that reads it and a link to its full config docs. Most
+adapters accept the [`uri` shorthand](#the-uri-shorthand), and a track over a
+format listed here can skip both keys — see
 [the whole-track shorthand](#the-whole-track-shorthand).
 
 ## The `uri` shorthand

@@ -4,10 +4,10 @@ description: What changed for plugin authors and embedders in JBrowse 2 v5.0.0
 guide_category: Plugins
 ---
 
-**TL;DR:** Sessions and configs from v4 migrate automatically. Plugins do not:
-the renderer registry is gone, names left the `@jbrowse/core/*` re-export ABI,
-config models were flattened, display types collapsed, and the extension point
-APIs changed shape. Run your bundle against a v5 build before your users do.
+Sessions and configs from v4 migrate automatically. Plugins do not: the renderer
+registry is gone, names left the `@jbrowse/core/*` re-export ABI, config models
+were flattened, display types collapsed, and the extension point APIs changed
+shape. Run your bundle against a v5 build before your users do.
 
 ## For everyone
 

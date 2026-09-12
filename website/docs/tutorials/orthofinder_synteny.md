@@ -8,11 +8,11 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
-**TL;DR:** an [OrthoFinder](https://github.com/davidemms/OrthoFinder) run groups
-genes by homology and says nothing about position, so it produces a synteny
-track for genomes no aligner can line up. `Orthogroups.tsv` converts to the
-`.blocks` table `MCScanBlocksAdapter` reads, with one BED per genome, and a
-duplicated gene becomes several rows.
+An [OrthoFinder](https://github.com/davidemms/OrthoFinder) run groups genes by
+homology and says nothing about position, so it produces a synteny track for
+genomes no aligner can line up. `Orthogroups.tsv` converts to the `.blocks`
+table `MCScanBlocksAdapter` reads, with one BED per genome, and a duplicated
+gene becomes several rows.
 
 ## Prerequisites
 

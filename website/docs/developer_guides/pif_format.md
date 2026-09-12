@@ -6,16 +6,12 @@ guide_category: Advanced topics
 sidebar_label: PIF format
 ---
 
-**TL;DR:** PIF stores each PAF alignment twice, once indexed on each genome, so
-a tabix region query on either genome's coordinates fetches only the alignments
-that overlap it instead of loading the whole file. Convert with
-`jbrowse make-pif` and use it over plain PAF at whole-genome scale.
-
 PIF is a tabix-indexed transformation of
-[PAF](https://github.com/lh3/miniasm/blob/master/PAF.md). Plain PAF must be
-loaded entirely into memory. PIF stores each alignment twice, once indexed on
-each genome, so a region query fetches only the overlapping alignments and works
-from either genome's coordinates.
+[PAF](https://github.com/lh3/miniasm/blob/master/PAF.md). JBrowse has to load a
+plain PAF entirely into memory; PIF stores each alignment twice, once indexed on
+each genome, so a tabix region query on either genome's coordinates fetches only
+the alignments that overlap it. Convert with `jbrowse make-pif` and use it over
+plain PAF at whole-genome scale.
 
 ```bash
 jbrowse make-pif input.paf   # writes input.pif.gz and input.pif.gz.tbi

@@ -10,8 +10,8 @@ tutorial_category: Synteny & comparative genomics
 data: pipeline
 ---
 
-**TL;DR:** certain sets of genes have ridden the same chromosome together since
-before animals existed, and those sets have names.
+Certain sets of genes have ridden the same chromosome together since before
+animals existed, and those sets have names.
 [odp](https://github.com/conchoecia/odp) writes, for every pair of genomes it
 compares, a table of their orthologs with the set each one belongs to and a
 color for it. JBrowse loads that table as a synteny track, paints every ortholog

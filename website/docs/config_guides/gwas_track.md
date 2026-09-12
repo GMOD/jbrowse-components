@@ -6,11 +6,11 @@ description:
 guide_category: Track types
 ---
 
-**TL;DR:** a `GWASTrack` renders association results as a Manhattan plot. The
-main work is prep: a bgzipped, tabix-indexed BED-like file whose score column is
-in -log₁₀(p) units (or set `scoreTransform` to convert). Add a PLINK `.ld` file
-and `colorBy: "ld"` to color points by linkage disequilibrium to an index SNP.
-Any `FeatureTrack` can draw the same plot from one of its numeric columns — see
+A `GWASTrack` renders association results as a Manhattan plot. The main work is
+prep: a bgzipped, tabix-indexed BED-like file whose score column is in -log₁₀(p)
+units (or set `scoreTransform` to convert). Add a PLINK `.ld` file and
+`colorBy: "ld"` to color points by linkage disequilibrium to an index SNP. Any
+`FeatureTrack` can draw the same plot from one of its numeric columns — see
 [any scored feature file](#any-scored-feature-file).
 
 <Figure src="/img/gwas/manhattan.png" caption="A GWAS track rendered as a Manhattan plot: each point is a variant, plotted by genomic position (X) and -log₁₀(p-value) (Y), so association peaks rise above the background."/>

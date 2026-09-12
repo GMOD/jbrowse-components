@@ -8,13 +8,12 @@ tutorial_category: Synteny & comparative genomics
 data: pipeline
 ---
 
-**TL;DR:** you have a pangenome graph of your own and want to look at it a locus
-at a time. A graph file is not something a browser can seek into, so this page
-converts one, once, into a handful of small indexed files: the segments and
-links a window is cut from, a list of where the graph varies, a list of what the
-variation is, and a database holding each haplotype's walk. Every step is one
-command over the file you already have, and the output is plain BED and SQLite
-that anything can read.
+You have a pangenome graph of your own and want to look at it a locus at a time.
+A graph file is not something a browser can seek into, so we convert one, once,
+into a handful of small indexed files: the segments and links a window is cut
+from, a list of where the graph varies, a list of what the variation is, and a
+database holding each haplotype's walk. Every step is one command over the file
+you already have, and the output is plain BED and SQLite that anything can read.
 
 :::caution Experimental
 

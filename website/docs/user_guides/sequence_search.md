@@ -5,9 +5,9 @@ description:
 guide_category: Sequence tools
 ---
 
-**TL;DR:** The linear genome view's **Sequence search** menu item searches the
-reference sequence itself and adds the hits as a new track, whether or not a
-sequence track is displayed. Three modes:
+The linear genome view's **Sequence search** menu item searches the reference
+sequence itself and adds the hits as a new track, whether or not a sequence
+track is displayed. Three modes:
 
 - Sequence pattern - find every occurrence of a single DNA motif or regex across
   the reference.

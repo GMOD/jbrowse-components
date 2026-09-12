@@ -10,12 +10,12 @@ tutorial_category: Transcriptomics & proteins
 data: hosted
 ---
 
-**TL;DR:** the p53 protein has a predicted structure covering every residue and
-crystal structures covering the parts that fold. This page opens three of them
-in one view beside the _TP53_ gene, superposed and each mapped to the same
-transcript, then clicks a cancer hotspot on the crystal and reads it back to its
-codon and its ClinVar entries. The protein3d plugin does the mapping; Mol\*
-draws the structures.
+The p53 protein has a predicted structure covering every residue and crystal
+structures covering the parts that fold. We open three of them in one view
+beside the _TP53_ gene, superposed and each mapped to the same transcript, then
+click a cancer hotspot on the crystal and read it back to its codon and its
+ClinVar entries. The protein3d plugin does the mapping; Mol\* draws the
+structures.
 
 ## Prerequisites
 

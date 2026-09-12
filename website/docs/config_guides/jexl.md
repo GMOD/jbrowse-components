@@ -4,10 +4,9 @@ description: Dynamic configuration using jexl callback expressions
 guide_category: Callbacks
 ---
 
-**TL;DR:** a config callback is a string prefixed with `jexl:`. Read feature
-attributes as plain properties (`feature.strand`). When an expression outgrows
-one line, register your own function from a small plugin and call it like a
-built-in.
+A config callback is a string prefixed with `jexl:`. Read feature attributes as
+plain properties (`feature.strand`). When an expression outgrows one line,
+register your own function from a small plugin and call it like a built-in.
 
 A callback is a [Jexl](https://github.com/TomFrost/Jexl) expression in a slot
 that takes one, `"color": "jexl:feature.strand==-1?'red':'blue'"`. Any feature

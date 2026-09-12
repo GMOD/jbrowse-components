@@ -4,9 +4,9 @@ description: Configuration options common to all track types
 guide_category: Core configuration
 ---
 
-**TL;DR:** a track is a `trackId`, a `uri` and the `assemblyNames` it sits on;
-JBrowse reads the track type and adapter off the file's extension. Write `type`
-and `adapter` out when the extension does not say enough, and put appearance
+A track is a `trackId`, a `uri` and the `assemblyNames` it sits on; JBrowse
+reads the track type and adapter off the file's extension. Write `type` and
+`adapter` out when the extension does not say enough, and put appearance
 settings (`color`, `height`, etc.) in a `displayDefaults` object, which JBrowse
 routes to the right display.
 

@@ -6,10 +6,10 @@ description:
 guide_category: Advanced topics
 ---
 
-**TL;DR:** A track's cost splits three ways — a cold fetch in a worker, a frame
-on the main thread, and the bundle a page evaluates before either can run — and
-an optimization that moves one of them rarely touches the other two. This page
-says what dominates each, what we changed, and what each change measured.
+A track's cost splits three ways — a cold fetch in a worker, a frame on the main
+thread, and the bundle a page evaluates before either can run — and an
+optimization that moves one of them rarely touches the other two. The sections
+below say what dominates each, what we changed, and what each change measured.
 
 Everything here is measured, and every measurement names where to reproduce it.
 Several of the obvious next steps measured as losses, and those are on the page

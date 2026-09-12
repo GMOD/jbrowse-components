@@ -4,9 +4,9 @@ description: Adding first- and third-party plugins via config.json
 guide_category: Core configuration
 ---
 
-**TL;DR:** in jbrowse-web and jbrowse-desktop, add a plugin by listing its
-`name` (which must match the name the plugin registers itself under) and bundle
-`url` in the top-level `plugins` array.
+In jbrowse-web and jbrowse-desktop, add a plugin by listing its `name` (which
+must match the name the plugin registers itself under) and bundle `url` in the
+top-level `plugins` array.
 
 ```json
 {

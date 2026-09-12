@@ -4,8 +4,8 @@ description: Launching sidebar or popup widgets in the embedded LGV
 guide_category: Plugins
 ---
 
-**TL;DR:** Set `tracklist: true` in the view `init` for the track selector, or
-call `session.addWidget(...)` + `session.showWidget(...)` for any widget. Drawer
+Set `tracklist: true` in the view `init` for the track selector, or call
+`session.addWidget(...)` + `session.showWidget(...)` for any widget. Drawer
 position and width are controlled via session actions.
 
 In the embedded `@jbrowse/react-linear-genome-view2` component, widgets can show

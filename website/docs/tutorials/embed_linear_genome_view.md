@@ -5,8 +5,9 @@ guide_category: Tutorials
 tutorial_category: Configuration & embedding
 ---
 
-**TL;DR:** one `<script>` tag and no build step. Drop `assembly`, `tracks`, and
-`init` into `<LinearGenomeView>` and it owns the view engine itself.
+Embedding a genome browser in a web page takes one `<script>` tag and no build
+step. Drop `assembly`, `tracks`, and `init` into `<LinearGenomeView>` and the
+component owns the view engine itself.
 
 ## Prerequisites
 

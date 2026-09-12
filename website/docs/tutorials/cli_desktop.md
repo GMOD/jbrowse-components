@@ -6,10 +6,9 @@ guide_category: Tutorials
 tutorial_category: Configuration & embedding
 ---
 
-**TL;DR:** build a `config.json` from the command line with `@jbrowse/cli`. It
-records each data file by a path relative to the config, so the same folder
-opens in JBrowse Desktop or served on the web, and Desktop leaves the config it
-opens alone.
+Build a `config.json` from the command line with `@jbrowse/cli`. It records each
+data file by a path relative to the config, so the same folder opens in JBrowse
+Desktop or served on the web, and Desktop leaves the config it opens alone.
 
 ## Prerequisites
 

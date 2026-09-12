@@ -6,10 +6,10 @@ description:
 guide_category: Analysis
 ---
 
-**TL;DR:** Several track types stack one row per sample, and each can reorder
-those rows by similarity, drawing a dendrogram beside them. The **Clustering**
-submenu in the track menu is the same on all of them; only the item that runs it
-differs, naming what is being clustered.
+Several track types stack one row per sample, and each can reorder those rows by
+similarity, drawing a dendrogram beside them. The **Clustering** submenu in the
+track menu is the same on all of them; only the item that runs it differs,
+naming what is being clustered.
 
 | Track type                                                      | Runs it with                  | Clusters on                    |
 | --------------------------------------------------------------- | ----------------------------- | ------------------------------ |

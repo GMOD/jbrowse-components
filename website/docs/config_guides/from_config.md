@@ -5,7 +5,7 @@ description:
 guide_category: Core configuration
 ---
 
-**TL;DR:** the FromConfig adapters take their data from an array written into
+The FromConfig adapters take their data from an array written into
 `config.json`, for small datasets or for features an API handed you. There are
 three: `FromConfigAdapter` for features, `FromConfigSequenceAdapter` for
 sequence, and `FromConfigRegionsAdapter` for refNames and lengths with no

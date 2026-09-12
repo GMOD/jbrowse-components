@@ -4,10 +4,9 @@ description: Overall structure and key fields of the config.json file
 guide_category: Core configuration
 ---
 
-**TL;DR:** you rarely write `config.json` by hand. The
-[`@jbrowse/cli`](/docs/cli) commands (`jbrowse add-assembly`,
-`jbrowse add-track`) write it for you. The two fields that matter are
-[assemblies](/docs/config_guides/assemblies) and
+You rarely write `config.json` by hand. The [`@jbrowse/cli`](/docs/cli) commands
+(`jbrowse add-assembly`, `jbrowse add-track`) write it for you. The two fields
+that matter are [assemblies](/docs/config_guides/assemblies) and
 [tracks](/docs/config_guides/tracks); everything else is optional.
 
 ```json

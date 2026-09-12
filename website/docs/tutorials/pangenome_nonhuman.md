@@ -9,12 +9,12 @@ tutorial_category: Synteny & comparative genomics
 data: download
 ---
 
-**TL;DR:** the machinery on the
-[HPRC pangenome page](/docs/tutorials/pangenome_hprc/) is not human-specific.
-Two more graphs are hosted the same way, on references JBrowse already serves: a
-mouse strain graph over GRCm39 and the bovine super-pangenome over ARS-UCD1.2.
-Opening them needs no new adapters and no new track types. What differs between
-the three is **what each graph is able to say.**
+The machinery on the [HPRC pangenome page](/docs/tutorials/pangenome_hprc/) is
+not human-specific. Two more graphs are hosted the same way, on references
+JBrowse already serves: a mouse strain graph over GRCm39 and the bovine
+super-pangenome over ARS-UCD1.2. Opening them needs no new adapters and no new
+track types. What differs between the three is **what each graph is able to
+say.**
 
 ## The three graphs, and what separates them
 

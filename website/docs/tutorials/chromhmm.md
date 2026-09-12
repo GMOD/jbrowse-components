@@ -5,8 +5,8 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-**TL;DR:** ChromHMM labels each region of the genome with a chromatin state,
-promoter, enhancer, heterochromatin and so on, once per cell type. We merge many
+ChromHMM labels each region of the genome with a chromatin state, promoter,
+enhancer, heterochromatin and so on, once per cell type. We merge many
 per-cell-type segmentation BEDs into one file, which JBrowse draws as a single
 track with one color-coded row per cell type.
 

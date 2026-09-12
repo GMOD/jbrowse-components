@@ -6,11 +6,10 @@ description:
 guide_category: Core concepts
 ---
 
-**TL;DR:** JBrowse configuration is built with `ConfigurationSchema`, a thin
-wrapper around MST models. Every adapter, track, and display declares a schema
-of typed slots; instances are created from config JSON and observed reactively.
-Read slots with `getConf` (from a state model) or `readConfObject` (from a raw
-config node).
+JBrowse configuration is built with `ConfigurationSchema`, a thin wrapper around
+MST models. Every adapter, track, and display declares a schema of typed slots;
+instances are created from config JSON and observed reactively. Read slots with
+`getConf` (from a state model) or `readConfObject` (from a raw config node).
 
 ## Defining a schema
 

@@ -7,9 +7,9 @@ guide_category: Plugins
 sidebar_label: Plotting features
 ---
 
-**TL;DR:** A custom display that fetches features in a worker and declares what
-it draws as a list of **marks** — a shape bound to the display's payload. With
-one of the shared shapes you write no shader, no painter and no hit test;
+A custom display fetches features in a worker and declares what it draws as a
+list of **marks**, each a shape bound to the display's payload. With one of the
+shared shapes you write no shader, no painter and no hit test;
 `createMarkBackend` turns the list into the WebGPU, WebGL2 and Canvas2D
 backends, and the same painter is the SVG export. Only a drawing no shared shape
 fits needs a shape of its own, which is

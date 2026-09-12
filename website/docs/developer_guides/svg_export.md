@@ -4,7 +4,7 @@ description: How to implement renderSvg on a custom display type
 guide_category: Plugins
 ---
 
-**TL;DR:** implement `renderSvg()` on your display by returning
+Implement `renderSvg()` on your display by returning
 `renderDisplaySvg(model, opts, YourSvgBody)` and painting through `PaintLayer`.
 It is optional — a display without one is left out of the export, and the user
 is told which tracks were left out.

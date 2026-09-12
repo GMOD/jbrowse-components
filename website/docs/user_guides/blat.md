@@ -5,8 +5,8 @@ description:
 guide_category: Sequence tools
 ---
 
-**TL;DR:** The `blat` plugin adds two **Tools** menu items that answer "where is
-this sequence in the genome", **BLAT search** and **In-silico PCR**. Both query
+The `blat` plugin adds two **Tools** menu items that answer "where is this
+sequence in the genome", **BLAT search** and **In-silico PCR**. Both query
 UCSC-style sequence-search servers and turn the hits into a track built on the
 fly, with every hit listed so you can go to the one you want.
 

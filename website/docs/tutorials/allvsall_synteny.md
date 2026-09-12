@@ -6,10 +6,9 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
-**TL;DR:** a synteny track shows which stretches of DNA correspond between
-genomes. We stack five _E. coli_ strains in one linear view, built from a single
-all-vs-all PAF, the file minimap2 writes when every genome is aligned against
-every other.
+A synteny track shows which stretches of DNA correspond between genomes. We
+stack five _E. coli_ strains in one linear view, built from a single all-vs-all
+PAF, the file minimap2 writes when every genome is aligned against every other.
 
 ## Prerequisites
 

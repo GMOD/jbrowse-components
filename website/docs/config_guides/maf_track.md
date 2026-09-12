@@ -6,10 +6,10 @@ description:
 guide_category: Track types
 ---
 
-**TL;DR:** a `MafTrack` (with a `LinearMafDisplay`) shows a multiple alignment
-of several species against a reference, one row per species with a coverage
-summary on top. JBrowse reads three formats (BigMaf, tabix MAF, bgzipped TAF).
-Supply the species with a `samples` array, an `nhLocation` Newick tree, or both.
+A `MafTrack` (with a `LinearMafDisplay`) shows a multiple alignment of several
+species against a reference, one row per species with a coverage summary on top.
+JBrowse reads three formats (BigMaf, tabix MAF, bgzipped TAF). Supply the
+species with a `samples` array, an `nhLocation` Newick tree, or both.
 
 ## Adapters
 

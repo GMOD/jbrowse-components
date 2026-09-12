@@ -7,10 +7,10 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-**TL;DR:** we turn a TCGA project's somatic mutation calls into one matrix, each
-column a distinct mutation and each row a tumor. JBrowse groups the rows by
-whichever clinical field you point it at, receptor status or stage, so the
-mutations a subtype shares line up.
+We turn a TCGA project's somatic mutation calls into one matrix, each column a
+distinct mutation and each row a tumor. JBrowse groups the rows by whichever
+clinical field you point it at, receptor status or stage, so the mutations a
+subtype shares line up.
 
 ## Prerequisites
 

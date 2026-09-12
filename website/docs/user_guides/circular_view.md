@@ -6,13 +6,13 @@ description:
 guide_category: Views
 ---
 
-**TL;DR:** The circular genome view lays out an entire assembly as a ring and
-draws long-range structural variants as chords across the interior, one arc per
-event connecting its two breakpoints. An arc with its two ends in different
-chromosome segments is an inter-chromosomal event, which no single linear window
-can hold. Any track that draws in the linear genome view — a bigWig, a feature
-density, an alignment coverage — draws on the circle as a ring inside the
-ideogram, so a Circos-style figure is the same tracks opened on this view.
+The circular genome view lays out an entire assembly as a ring and draws
+long-range structural variants as chords across the interior, one arc per event
+connecting its two breakpoints. An arc with its two ends in different chromosome
+segments is an inter-chromosomal event, which no single linear window can hold.
+Any track that draws in the linear genome view — a bigWig, a feature density, an
+alignment coverage — draws on the circle as a ring inside the ideogram, so a
+Circos-style figure is the same tracks opened on this view.
 
 <Figure caption="A circular genome view of a structural-variant VCF. Each chord connects the two breakpoints of one variant; arcs spanning between different chromosomes are inter-chromosomal events (translocations/breakends)." src="/img/jbrowse-img/circular_chords.png" />
 

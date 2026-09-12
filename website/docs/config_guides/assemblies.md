@@ -5,10 +5,9 @@ description:
 guide_category: Core configuration
 ---
 
-**TL;DR:** at its flattest an assembly is just
-`{ "name": "hg38", "uri": "hg38.fa.gz" }`. JBrowse infers the adapter from the
-file extension and fills in the rest. See the
-[BaseAssembly config docs](/docs/config/baseassembly/) for the full slot
+At its flattest an assembly is just `{ "name": "hg38", "uri": "hg38.fa.gz" }`.
+JBrowse infers the adapter from the file extension and fills in the rest. See
+the [BaseAssembly config docs](/docs/config/baseassembly/) for the full slot
 reference.
 
 ## Shorthand and full forms

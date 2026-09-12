@@ -6,7 +6,7 @@ description:
 guide_category: General usage
 ---
 
-**TL;DR:** The `&hubURL=` query parameter opens a
+The `&hubURL=` query parameter opens a
 [UCSC track hub](/docs/user_guides/connections#ucsc-track-hub-url-format)
 straight from a link, with no config file to set up first. Whoever opens the
 link lands in JBrowse with the hub's assemblies and tracks already available.

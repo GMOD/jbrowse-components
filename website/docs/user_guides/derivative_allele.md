@@ -5,13 +5,13 @@ description:
 guide_category: Analysis
 ---
 
-**TL;DR:** A split read is an ordered, oriented list of reference intervals,
-which is what a derivative allele is. **Launch → Reconstruct derivative
-allele...** in the alignments track menu groups the reads in the window by the
-route their split alignments describe, lists each route with the number of reads
-that independently take it, and draws the chosen one as a synteny or breakpoint
-split view. It works from `SA` tags, so it needs long reads and an event large
-enough that the aligner wrote it as a split alignment.
+A split read is an ordered, oriented list of reference intervals, which is what
+a derivative allele is. **Launch → Reconstruct derivative allele...** in the
+alignments track menu groups the reads in the window by the route their split
+alignments describe, lists each route with the number of reads that
+independently take it, and draws the chosen one as a synteny or breakpoint split
+view. It works from `SA` tags, so it needs long reads and an event large enough
+that the aligner wrote it as a split alignment.
 
 Each route is written as a lettered string of reference pieces with a prime on
 an inverted one, and each row draws its segments to scale under its read count.

@@ -104,14 +104,13 @@ check by fixing the manifest, not by removing a skip.
   guide explaining a concept belongs in the user guide.
 - Cross-page anchors are `/docs/page#anchor` (no slash before `#`).
 
-## Voice and the TL;DR
+## Voice
 
 Dry and scientific — the figure carries the result, the prose says what was done
 and what it means. No drama, no conclusion one picture can't support.
 
-Every page under `user_guides/`, `config_guides/`, `developer_guides/` and
-`tutorials/` opens with a `**TL;DR:**` paragraph; `pnpm check-tldr` enforces
-that it exists and doesn't sell. Say what the page shows and the one thing that
-makes it work. The four ways it goes wrong: restating the title, restating
-itself, closing on a superlative, and crediting the result to the wrong
-mechanism.
+A page opens with a plain prose paragraph saying what it is about, with no
+summary label over it. Say what the page shows and the one thing that makes it
+work, in complete sentences and without "this page" or "this guide". The four
+ways it goes wrong: restating the title, restating the paragraph under it,
+closing on a superlative, and crediting the result to the wrong mechanism.

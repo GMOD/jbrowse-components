@@ -6,10 +6,9 @@ description:
 guide_category: Advanced topics
 ---
 
-**TL;DR:** Every ceiling on what JBrowse retains is scoped to a JS context,
-since a per-file ceiling multiplies by the open track count and bounds nothing.
-Those ceilings bound retained bytes; a tab's peak is made of things they do not
-reach.
+Every ceiling on what JBrowse retains is scoped to a JS context, since a
+per-file ceiling multiplies by the open track count and bounds nothing. Those
+ceilings bound retained bytes; a tab's peak is made of things they do not reach.
 
 [](/docs/developer_guides/optimizations) is where a track's _time_ goes; this
 page is what stays resident afterwards.

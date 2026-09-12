@@ -4,9 +4,9 @@ description: Custom UI in the Add track dialog for non-standard track types
 guide_category: Plugins
 ---
 
-**TL;DR:** Register a React component in the "Add track" widget for tracks that
-need custom logic. The Multi-wiggle track does this, producing a textbox to
-paste a list of files.
+Register a React component in the "Add track" widget for tracks that need custom
+logic. The Multi-wiggle track does this, producing a textbox to paste a list of
+files.
 
 The multi-wiggle workflow is the whole registration:
 

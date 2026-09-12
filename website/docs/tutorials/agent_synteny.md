@@ -10,12 +10,11 @@ tutorial_category: Synteny & comparative genomics
 data: pipeline
 ---
 
-**TL;DR:** four sentences typed at an AI agent, which aligns two fruit fly
-species that nobody has aligned to each other, builds the comparison in JBrowse
-Desktop, and answers where the two genomes run in opposite directions by
-totalling up the alignment file rather than describing the picture. This page is
-about what to ask for, what the agent does with it, and the two places it needs
-telling.
+Four sentences typed at an AI agent are enough to align two fruit fly species
+that nobody has aligned to each other, build the comparison in JBrowse Desktop,
+and answer where the two genomes run in opposite directions by totalling up the
+alignment file rather than describing the picture. The sections below cover what
+to ask for, what the agent does with it, and the two places it needs telling.
 
 ## Prerequisites
 

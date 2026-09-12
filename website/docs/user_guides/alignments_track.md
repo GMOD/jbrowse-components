@@ -4,11 +4,11 @@ description: Learn how to show BAM and CRAM files
 guide_category: Track types
 ---
 
-**TL;DR:** An alignments track shows BAM/CRAM reads two ways at once: a coverage
-histogram on top (read depth at each position) and a pileup below (one box per
-read). Zoom to base level and most of what you need is already on screen. Almost
-everything else is a track-menu option that changes how reads are sorted,
-colored, grouped, sized, or filtered.
+An alignments track shows BAM/CRAM reads two ways at once: a coverage histogram
+on top (read depth at each position) and a pileup below (one box per read). Zoom
+to base level and most of what you need is already on screen. Almost everything
+else is a track-menu option that changes how reads are sorted, colored, grouped,
+sized, or filtered.
 
 <Figure caption="An alignments track: coverage histogram on top, pileup below. Reads are grey; mismatches to the reference show as colored ticks in the pileup and as colored segments inside the coverage bars." src="/img/volvox_alignments.png" />
 

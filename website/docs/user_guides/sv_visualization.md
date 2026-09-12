@@ -4,12 +4,12 @@ description: Reading structural variant evidence off the reads
 guide_category: Analysis
 ---
 
-**TL;DR:** Triage structural variant (SV) candidates in the
+Triage structural variant (SV) candidates in the
 [SV inspector](/docs/user_guides/sv_inspector_view), then open the
 [alignments](/docs/user_guides/alignments_track) at each breakpoint for the
-read-level evidence. This page is what those read patterns mean: which color
-scheme lifts which pattern out of the pileup, what each SV type looks like in
-short and long reads, and which view to open once a breakpoint is found. The
+read-level evidence. The sections below say what those read patterns mean: which
+color scheme lifts which pattern out of the pileup, what each SV type looks like
+in short and long reads, and which view to open once a breakpoint is found. The
 [alignments track guide](/docs/user_guides/alignments_track) covers what each
 control does.
 

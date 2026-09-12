@@ -10,14 +10,14 @@ tutorial_category: Synteny & comparative genomics
 data: hosted
 ---
 
-**TL;DR:** we lay the human and mouse chromosomes around one circle and draw
-every block of UCSC's hg38-to-mm39 liftOver chain as a ribbon between the
-stretch it covers in each genome, so where the autosomes have been shuffled and
-where the X has not is one picture. `autoDiagonalize` orders the mouse arc to
-follow the human one, a gene density ring per genome sits inside the ideogram,
-and the page ends by reading one ribbon and one ring value back out of the PIF
-and bigWig they came from. The circle is a circular genome view opened on two
-assemblies at once, which a session spec does and the import form does not.
+We lay the human and mouse chromosomes around one circle and draw every block of
+UCSC's hg38-to-mm39 liftOver chain as a ribbon between the stretch it covers in
+each genome, so where the autosomes have been shuffled and where the X has not
+is one picture. `autoDiagonalize` orders the mouse arc to follow the human one,
+a gene density ring per genome sits inside the ideogram, and the page ends by
+reading one ribbon and one ring value back out of the PIF and bigWig they came
+from. The circle is a circular genome view opened on two assemblies at once,
+which a session spec does and the import form does not.
 
 ## Prerequisites
 

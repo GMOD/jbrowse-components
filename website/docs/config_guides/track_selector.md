@@ -4,9 +4,9 @@ description: Track grouping and display options for the hierarchical selector
 guide_category: Appearance
 ---
 
-**TL;DR:** control track grouping, sorting, and collapse with `hierarchical`
-settings under `configuration`. Add a `metadata` object to any track to gain
-filterable columns in the faceted selector.
+Control track grouping, sorting, and collapse with `hierarchical` settings under
+`configuration`. Add a `metadata` object to any track to gain filterable columns
+in the faceted selector.
 
 Tracks appear in config.json order unless `hierarchical` says otherwise.
 [](/docs/config/hierarchicalconfigschema) lists every slot; the ones people set:

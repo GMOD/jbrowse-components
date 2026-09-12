@@ -9,13 +9,13 @@ tutorial_category: Synteny & comparative genomics
 data: pipeline
 ---
 
-**TL;DR:** we look at one K-12 operon across forty-three other E. coli and
-Shigella genomes at once, without aligning any of them. RefSeq's bacterial
-pipeline gives an orthologous gene the same symbol in every strain it names, so
-the ortholog table is a join on the gene name over the GFF3 files, and each
-genome becomes a lane under the K-12 view carrying its own gene models. The join
-sees the core genome and nothing else: at a cluster that differs between strains
-the lanes draw their own genes and no ribbons, which is where the page ends.
+We look at one K-12 operon across forty-three other E. coli and Shigella genomes
+at once, without aligning any of them. RefSeq's bacterial pipeline gives an
+orthologous gene the same symbol in every strain it names, so the ortholog table
+is a join on the gene name over the GFF3 files, and each genome becomes a lane
+under the K-12 view carrying its own gene models. The join sees the core genome
+and nothing else: at a cluster that differs between strains the lanes draw their
+own genes and no ribbons, which is where the page ends.
 
 ## Prerequisites
 

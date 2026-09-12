@@ -7,8 +7,8 @@ description:
 guide_category: Track types
 ---
 
-**TL;DR:** `LinearMarkDisplay` goes on a `FeatureTrack`, an `AlignmentsTrack` or
-a `VariantTrack` and draws whatever its `marks` list declares — a `bar`, `point`
+`LinearMarkDisplay` goes on a `FeatureTrack`, an `AlignmentsTrack` or a
+`VariantTrack` and draws whatever its `marks` list declares — a `bar`, `point`
 or `span` per entry, each with an `encoding` naming which feature fields feed
 it, a `transform` list that can bin, count, stack or measure coverage before it,
 and a zoom range it draws in. A BED score column becomes a bar chart with one

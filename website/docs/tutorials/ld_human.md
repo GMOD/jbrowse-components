@@ -8,10 +8,9 @@ guide_category: Tutorials
 tutorial_category: Population genomics
 ---
 
-**TL;DR:** we look at linkage disequilibrium around the lactase gene, where
-selection for lactase persistence left one long block of correlated variants.
-PLINK correlates the phased genotypes and JBrowse draws the triangle from its
-output.
+We look at linkage disequilibrium around the lactase gene, where selection for
+lactase persistence left one long block of correlated variants. PLINK correlates
+the phased genotypes and JBrowse draws the triangle from its output.
 
 ## Prerequisites
 

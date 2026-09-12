@@ -4,10 +4,10 @@ description: Viewing multiple alignment format (MAF) data
 guide_category: Track types
 ---
 
-**TL;DR:** A MAF track shows a multiple sequence alignment of several species
-(or samples) against a reference genome: one row per aligned species at its true
-genomic position, with a coverage summary on top. It answers "how does this
-region compare across many genomes at once", the kind of multiz alignment UCSC
+A MAF track shows a multiple sequence alignment of several species (or samples)
+against a reference genome: one row per aligned species at its true genomic
+position, with a coverage summary on top. It answers "how does this region
+compare across many genomes at once", the kind of multiz alignment UCSC
 publishes (e.g. the human 470-way or the _C. elegans_ 26-way).
 
 JBrowse reads three formats, MAF (tabix-indexed BED), BigMaf, and bgzipped TAF
