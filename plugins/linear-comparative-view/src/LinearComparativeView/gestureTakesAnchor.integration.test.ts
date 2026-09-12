@@ -138,6 +138,24 @@ test('a band gesture over every row is held, not taken by the last row', async (
   expect(view.followAnchorIndex).toBe(0)
 })
 
+// The rubber band's zoom moves each row it spans from a menu click, a root
+// action per row, so the anchor ended on the bottom row
+test('the rubber band zoom over every row is held', async () => {
+  const view = await openStack()
+  for (const row of view.views) {
+    row.setOffsets(
+      { index: 0, offset: 1000, refName: 'ctgA', coord: 1000 },
+      { index: 0, offset: 3000, refName: 'ctgA', coord: 3000 },
+    )
+  }
+  const [zoom] = view.rubberBandMenuItems()
+  if (zoom && 'onClick' in zoom) {
+    zoom.onClick()
+  }
+  expect(view.views[2]!.offsetPx).toBeGreaterThan(0)
+  expect(view.followAnchorIndex).toBe(0)
+})
+
 // the view-wide zooms reach every row from one of the stack's own actions,
 // which nests the rows' zooms under it
 test('a view-wide zoom is not one either', async () => {
