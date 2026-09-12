@@ -6,8 +6,9 @@ sidebar_label: General -> LinearSyntenyViewHelper
 
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `linear-comparative-view` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LinearSyntenyViewHelper/stateModelFactory.ts).
 
-Holds one level of a linear synteny comparison: its track list, height and
-level index, composed with the shared rendering-lifecycle state.
+Holds one level of a linear synteny comparison: its track list and height,
+composed with the shared rendering-lifecycle state. Its index is where it
+sits in the view's `levels`, not a stored number.
 
 Nested in LinearComparativeView.levels, never in session.views: it is a track
 container, not a view, and satisfies core's `TrackContainer` so the
@@ -26,7 +27,6 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="property-type">**type**</span><br><code>type: 'LinearSyntenyViewHelper'</code> |  |
 | <span id="property-tracks">**tracks**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>tracks: types.array( pluginManager.pluggableMstType('track', 's…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>tracks: types.array(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.pluggableMstType('track', 'stateModel'),&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
 | <span id="property-height">**height**</span><br><code>height: types.stripDefault(types.number, 100)</code> |  |
-| <span id="property-level">**level**</span><br><code>level: types.number</code> |  |
 
 ## Volatiles
 
@@ -46,6 +46,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="getter-parentview">**parentView**</span><br><code>ParentViewDuck</code> |  | LinearSyntenyViewHelper |
+| <span id="getter-level">**level**</span><br><code>number</code> | the band between `views[level]` and `views[level + 1]` | LinearSyntenyViewHelper |
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> |  | LinearSyntenyViewHelper |
 | <span id="getter-linearsyntenydisplays">**linearSyntenyDisplays**</span><br><code>LinearSyntenyDisplayModel[]</code> | All synteny displays under this level's tracks. | LinearSyntenyViewHelper |
 | <span id="getter-bandtransformkey">**bandTransformKey**</span><br><code>string</code> | Every number that moves a ribbon under a stationary cursor — each connected row's `offsetPx` and `bpPerPx`, plus the band height — as one key, which `installClearHoverOnSurfaceMove` watches. Empty until both rows are there, which no viewport can produce. | LinearSyntenyViewHelper |

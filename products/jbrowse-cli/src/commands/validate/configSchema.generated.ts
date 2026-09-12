@@ -16696,9 +16696,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               },
               "height": {
                 "type": "number"
-              },
-              "level": {
-                "type": "number"
               }
             },
             "patternProperties": {
