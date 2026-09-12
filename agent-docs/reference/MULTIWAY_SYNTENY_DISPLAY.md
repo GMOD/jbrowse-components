@@ -156,10 +156,10 @@ assembly for get one (`laneGenesFetchSpecs`).
 
 **Lane links.** For a source whose features carry no `name` and whose header
 names no `anchorAssemblyName`, one `CoreGetFeatures` per *adjacent* lane pair
-the session holds both assemblies of, with `targetAssemblyName: lower` and
-`absentPairIsEmpty` (`laneLinksFetchSpecs`). `pairLinks` composes a pair's links
-through the anchor (`MW/composeLaneLinks.ts`) for a star, for a pair whose fetch
-came back empty, and for a pair the session lacks an assembly of;
+the session holds both assemblies of, with `targetAssemblyName: lower`
+(`laneLinksFetchSpecs`). `pairLinks` composes a pair's links through the anchor
+(`MW/composeLaneLinks.ts`) for a star, for a pair whose fetch came back empty or
+failed, and for a pair the session lacks an assembly of;
 `composeLaneLinks` linearly interpolates each record between its clipped ends
 (`projectOntoLane`).
 
@@ -209,9 +209,9 @@ Today's providers:
   (coarse) prefixes (`JC/plugins/comparative-adapters/src/util.ts:580-660`).
 - `MultiGenomePAFAdapter` and `MultiGenomeIndexedPAFAdapter`: one PanSN file,
   star or all-vs-all. The in-memory adapter raises `noSuchPairError` for a pair
-  the file states no alignment for, or answers empty under `absentPairIsEmpty`,
-  which the lane-links fetch passes; the indexed one cannot tell an unstated
-  pair from an empty window without a scan, and answers empty.
+  the file states no alignment for, which the lane-links fetch logs and stamps
+  empty; the indexed one cannot tell an unstated pair from an empty window
+  without a scan, and answers empty.
 - `GbzBaseSyntenyAdapter` (`P/src/GbzBaseSyntenyAdapter/GbzBaseSyntenyAdapter.ts`):
   anchor-only (`:368`, a lane-assembly region emits nothing), one record per
   haplotype contig after the sibling join (`G/src/subgraph.ts:255-300`), header

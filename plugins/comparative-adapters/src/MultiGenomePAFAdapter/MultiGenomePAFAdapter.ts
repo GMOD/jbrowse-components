@@ -151,7 +151,7 @@ export default class MultiGenomePAFAdapter extends ComparativeAdapterBase<MultiG
       const { records, sides, index, matesByPrefix, panSN } =
         await this.setup(opts)
       const { start: qstart, end: qend, refName: qref, assemblyName } = query
-      const { targetAssemblyName, absentPairIsEmpty } = opts
+      const { targetAssemblyName } = opts
       const asmByPrefix = assemblyByPanSNPrefix(this)
 
       // Tested against the inventory rather than the index, because a prefix
@@ -173,10 +173,6 @@ export default class MultiGenomePAFAdapter extends ComparativeAdapterBase<MultiG
         targetPrefix !== undefined &&
         !matesByPrefix.get(anchorPrefix)?.has(targetPrefix)
       ) {
-        if (absentPairIsEmpty) {
-          observer.complete()
-          return
-        }
         throw noSuchPairError({ assemblyName, targetAssemblyName })
       }
 

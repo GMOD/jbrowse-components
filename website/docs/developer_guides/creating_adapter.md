@@ -373,11 +373,6 @@ export interface ComparativeOptions extends BaseOptions {
   // than a ribbon across a 25 kb indel. Read off the alignment string the clip
   // walks anyway; a record with none is one run.
   splitAtGapBp?: number
-  // With `targetAssemblyName`, a pair the file states no alignment for comes
-  // back empty instead of throwing. For a caller with its own answer to an
-  // absent pair, the way the multi-way display composes one through the
-  // anchor; a synteny band has none, and has to say why it is blank.
-  absentPairIsEmpty?: boolean
 }
 ```
 
