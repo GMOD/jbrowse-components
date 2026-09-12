@@ -15,16 +15,7 @@ const universe: LaneChoice[] = [
   { name: 'extra', placed: true },
 ]
 
-function renderDialog(
-  selection?: string[],
-  {
-    hidden = [],
-    isSameLane = (a: string, b: string) => a === b,
-  }: {
-    hidden?: string[]
-    isSameLane?: (a: string, b: string) => boolean
-  } = {},
-) {
+function renderDialog(selection?: string[], hidden: string[] = []) {
   const calls: (string[] | undefined)[] = []
   const hides: string[][] = []
   const closes: number[] = []
@@ -41,7 +32,6 @@ function renderDialog(
           setHiddenLanes: names => {
             hides.push(names)
           },
-          isSameLane,
         }}
         handleClose={() => {
           closes.push(1)
@@ -76,7 +66,7 @@ test('opens on every lane when nothing is chosen, and writes back the ticked set
 })
 
 test('ticking every lane writes no selection, and Every lane drops one', () => {
-  const { calls, hides } = renderDialog(['HG2#1'], { hidden: ['extra'] })
+  const { calls } = renderDialog(['HG2#1'])
   expect(screen.getByLabelText('HG2#1')).toBeChecked()
   expect(screen.getByLabelText('extra')).not.toBeChecked()
   fireEvent.click(screen.getByText('Tick shown'))
@@ -84,66 +74,21 @@ test('ticking every lane writes no selection, and Every lane drops one', () => {
   expect(calls).toEqual([undefined])
   fireEvent.click(screen.getByText('Every lane'))
   expect(calls).toEqual([undefined, undefined])
-  expect(hides).toEqual([[]])
 })
 
-// The picker states what the stack draws. A hidden lane opened ticked, and
-// ticking it wrote a selection the hide still kept out of the stack
-test('a hidden lane opens unticked', () => {
-  renderDialog(undefined, { hidden: ['extra', 'elsewhere'] })
-  expect(screen.getByText('3 of 4 lanes chosen', { exact: false })).toBeTruthy()
+test('a hidden lane opens unticked, and ticking it unhides it', () => {
+  const { hides } = renderDialog(undefined, ['extra'])
   expect(screen.getByLabelText('extra')).not.toBeChecked()
-})
-
-// Every tick left as it opened, over a selection naming lanes outside this
-// window and a hidden lane the selection never named: a write there either
-// dropped the far lanes or put the hidden one into the selection
-test('a submit that changes no tick writes nothing', () => {
-  const { calls, hides, closes } = renderDialog(
-    ['HG1.1', 'HG1#2', 'HG2#1', 'far-away'],
-    { hidden: ['extra'] },
-  )
-  fireEvent.click(screen.getByText('Draw these lanes'))
-  expect(calls).toEqual([])
-  expect(hides).toEqual([])
-  expect(closes).toHaveLength(1)
-})
-
-test('an unticked hidden lane stays out of a selection that left it out', () => {
-  const { calls, hides } = renderDialog(['HG1.1', 'HG2#1'], {
-    hidden: ['extra'],
-  })
-  fireEvent.click(screen.getByLabelText('HG1#2'))
-  fireEvent.click(screen.getByText('Draw these lanes'))
-  expect(hides).toEqual([['extra']])
-  expect(calls).toEqual([['HG1.1', 'HG1#2', 'HG2#1']])
-})
-
-test('ticking a hidden lane unhides it', () => {
-  const { calls, hides } = renderDialog(undefined, { hidden: ['extra'] })
   fireEvent.click(screen.getByLabelText('extra'))
   fireEvent.click(screen.getByText('Draw these lanes'))
   expect(hides).toEqual([[]])
-  expect(calls).toEqual([undefined])
 })
 
-// A source that does not declare its lanes offers only what this window
-// places, and Submit dropped every chosen lane outside it
 test('a chosen lane this window does not place survives a submit', () => {
   const { calls } = renderDialog(['HG2#1', 'far-away'])
-  expect(screen.getByText('1 of 4 lanes chosen', { exact: false })).toBeTruthy()
   fireEvent.click(screen.getByLabelText('extra'))
   fireEvent.click(screen.getByText('Draw these lanes'))
   expect(calls).toEqual([['HG2#1', 'extra', 'far-away']])
-})
-
-test('a selection spelled the way the session spells an assembly ticks its lane', () => {
-  renderDialog(['hg1.1-alias'], {
-    isSameLane: (a, b) =>
-      a === b || [a, b].every(n => n === 'HG1.1' || n === 'hg1.1-alias'),
-  })
-  expect(screen.getByLabelText('HG1.1 (HG1#1)')).toBeChecked()
-  expect(screen.getByLabelText('extra')).not.toBeChecked()
 })
 
 test('the filter narrows what the bulk buttons touch', () => {

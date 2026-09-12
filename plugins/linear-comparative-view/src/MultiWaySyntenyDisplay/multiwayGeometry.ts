@@ -544,8 +544,7 @@ export interface LaneCells {
  * TWO cells, because `outlineColor` is a per-cell uniform the rect pass applies
  * to every rect it holds: the boxes take the lane's stroke as their border,
  * which is what makes a box read as a box rather than a washed-out gene, and a
- * gene takes none, the feature track's own default. The uniform is one color,
- * so the border is the stroke rather than each group's color.
+ * gene takes none, the feature track's own default.
  */
 export function buildLaneCells({
   lane,
@@ -654,19 +653,17 @@ export function buildLaneCells({
         continue
       }
       const color = pack(colors.colorOf('color', group.feature))
-      const [boxLeft, spanRight] =
-        span[0] <= span[1] ? span : [span[1], span[0]]
-      const boxRight = Math.max(boxLeft + 1, spanRight)
+      const [boxLeft, boxRight] = span[0] <= span[1] ? span : [span[1], span[0]]
       boxes.rect(
         boxLeft,
-        boxRight,
+        Math.max(boxLeft + 1, boxRight),
         y + 1,
         Math.max(1, glyphHeight - 2),
         withAbgrAlpha(color, BOX_ALPHA),
       )
       boxes.hits.push({
         x1: boxLeft,
-        x2: boxRight,
+        x2: Math.max(boxLeft + 1, boxRight),
         y1: y,
         y2: y + glyphHeight,
         feature: group.feature,

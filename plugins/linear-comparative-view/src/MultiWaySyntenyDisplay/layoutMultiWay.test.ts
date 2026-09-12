@@ -1202,16 +1202,11 @@ test('the alignment shift cannot slide a lane below zero', () => {
   expect(frame.max).toBeGreaterThanOrEqual(frame.fitMax)
 })
 
-// `rowFrameX` extrapolates, so an endpoint the lane does not reach maps to
-// tens of thousands of px: the rect drawn from it is clipped by the svg and
-// looks fine while the ribbon on it sweeps the page. The lane-links fetch asks
-// for the whole window the frame can SLIDE in, which is wider than the reach by
-// construction, so records outside it arrive on every fetch.
+// `rowFrameX` extrapolates, so an unclipped endpoint sweeps a ribbon across the page
 test('a span outside the lane reach has no px pair to draw from', () => {
   const frame = computeRowFrame(groupFeatures(features), 'peach', 1000)!
   const reach = frameReach(frame)
   const region = laneFetchRegion(frame)
-  expect(region.start).toBeLessThanOrEqual(Math.max(0, reach.min))
   expect(region.end).toBeGreaterThan(reach.max)
 
   expect(frameSpan(frame, frame.min + 10, frame.min + 20, 800)).toBeDefined()

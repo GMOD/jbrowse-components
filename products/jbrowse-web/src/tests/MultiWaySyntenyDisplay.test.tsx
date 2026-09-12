@@ -462,8 +462,6 @@ test('MultiWaySyntenyDisplay raises a lane menu from its label', async () => {
   await waitFor(() => {
     expect(queryByText('Hide lane')).toBeNull()
   })
-  // the menu went with its lane: a Show that brings the lane back used to
-  // raise it again at the old click point
   act(() => {
     display.setHiddenLanes([])
   })

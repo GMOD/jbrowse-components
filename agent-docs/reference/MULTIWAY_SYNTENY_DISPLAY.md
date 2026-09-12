@@ -118,7 +118,7 @@ one (`voteEvidence`).
 **Lanes.** `rowAssembliesOf` orders mate assemblies by summed group weight over
 the whole fetched block set, then pins `rowOrder`; the model's `rowAssemblies`
 drops the anchor, `hiddenLanes`, and anything outside `laneSelection`
-(`selectedLanes ?? config.lanes`), all through `isSameLane`. `laneUniverse` is
+(`selectedLanes ?? config.lanes`). `laneUniverse` is
 the adapter header's declared `lanes` followed by anything the window placed
 that the header did not name. The header is read only when the adapter tiers or
 declares `adapterCapabilities: ['headerLanes']` (`adapterDeclaresLanes`;

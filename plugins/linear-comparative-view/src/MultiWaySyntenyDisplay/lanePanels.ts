@@ -60,9 +60,7 @@ export function lanePanelsForRegion({
   groups: MultiWayGroup[]
   rowAssemblies: string[]
   laneDecisions: ReadonlyMap<string, LanePlacementDecision | undefined>
-  /** `region` is on the view's axis, so canonical */
   region: { refName: string; start: number; end: number }
-  /** a group's anchor refName as the view spells it */
   anchorCanon: (refName: string) => string
   trackAssemblyNames: string[]
 }): MateDiscoveryResult {

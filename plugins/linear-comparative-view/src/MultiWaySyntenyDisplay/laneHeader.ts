@@ -1,7 +1,5 @@
 import { assembleLocString, getBpDisplayStr } from '@jbrowse/core/util'
 
-import { frameStartBp } from './layoutMultiWay.ts'
-
 import type { Lane } from './laneStack.ts'
 
 // Where the header text sits above its lane's glyph row.
@@ -32,13 +30,17 @@ export interface LaneHeaderRow {
   isAnchor: boolean
 }
 
-/** a mate lane's frame as a region in the lane's own assembly's names */
+/**
+ * A mate lane's frame as a region in the lane's own assembly's names. A live
+ * pan derives the frame's `min` unclamped, so near a contig start it can be
+ * below zero.
+ */
 export function laneRegion(lane: Pick<Lane, 'frame' | 'canon'>) {
   const { frame } = lane
   if (!frame) {
     return undefined
   }
-  const start = frameStartBp(frame)
+  const start = Math.max(0, Math.round(frame.min))
   return {
     refName: lane.canon(frame.refName),
     start,

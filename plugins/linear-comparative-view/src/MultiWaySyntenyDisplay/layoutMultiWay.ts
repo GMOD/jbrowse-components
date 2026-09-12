@@ -104,15 +104,6 @@ export interface RowFrame {
   alsoOnMore: number
 }
 
-/**
- * A frame's left edge as a coordinate a reader can use. The settle-time fit
- * clamps at the contig start, but a live pan derives `min` from the pivot
- * unclamped, so content near a contig's start can put it below zero.
- */
-export function frameStartBp(frame: { min: number }) {
-  return Math.max(0, Math.round(frame.min))
-}
-
 // Both fetch shapes as one list: a grouped feature's `mates` carry their own
 // orientation, a pairwise feature's one `mate` takes the feature's `strand`.
 function matesOf(feature: Feature): SyntenyGroupedMate[] {
@@ -316,11 +307,7 @@ export function tickIntervalFor(spanBp: number) {
 // than as a scale, and the header's multiple is the legible statement
 const MAX_LANE_TICKS = 24
 
-/**
- * The frame plus half a screen either side: between settles the renderer
- * translates the stack rather than relaying it, so a pan shows this much of
- * every lane before the lanes re-lay out.
- */
+/** the frame plus the half screen either side a pan reveals before relayout */
 export function frameReach(frame: RowFrame) {
   const margin = (frame.max - frame.min) / 2
   return { min: frame.min - margin, max: frame.max + margin }
@@ -354,9 +341,7 @@ export function rowFrameX(frame: RowFrame, bp: number, width: number) {
  *
  * CLIPPED TO `frameReach`, not merely tested against it. `rowFrameX`
  * extrapolates, so an unclipped end maps to tens of thousands of pixels and
- * the ribbon keeping it sweeps across everything. The reach rather than the
- * frame, because the frame is exactly the canvas at the render origin and a
- * pan shows the margin past it.
+ * the ribbon keeping it sweeps across everything.
  *
  * Clipping in bp keeps the pair in the interval's own order and keeps a flipped
  * lane's mirroring intact, since `rowFrameX` is monotonic either way.

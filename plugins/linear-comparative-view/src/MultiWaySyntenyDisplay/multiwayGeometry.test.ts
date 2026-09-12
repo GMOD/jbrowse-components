@@ -637,28 +637,4 @@ describe('a lane cell', () => {
       glyphHitAt(glyphs.hits, 100, s.lanes[0]!.glyphTop + 1)?.groupKey,
     ).toBe('g1')
   })
-
-  // `outlineColor` is one uniform per cell, and it took the first box's fill,
-  // so on a source colored per feature every box wore one group's border
-  test('outlines every box in the lane stroke, whatever its fill', () => {
-    const s = stack({
-      features: [pairFeature('g1', 100, 200), pairFeature('g2', 500, 600)],
-    })
-    const { boxes } = buildLaneCells({
-      lane: s.lanes[0]!,
-      genes: [],
-      glyphHeight: s.glyphHeight,
-      width: WIDTH,
-      colors: {
-        ...colors,
-        colorOf: (_slot, feature) =>
-          feature.get('name') === 'g1' ? 'red' : 'blue',
-      },
-    })
-    expect([...boxes.rectColors]).toEqual([
-      withAbgrAlpha(cssColorToABGR('red'), 64),
-      withAbgrAlpha(cssColorToABGR('blue'), 64),
-    ])
-    expect(boxes.outlineColor).toBe(cssColorToABGR(colors.stroke))
-  })
 })

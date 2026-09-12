@@ -574,14 +574,6 @@ export function stateModelFactory(
       get hoveredGroupKey() {
         return self.hoverTarget?.groupKey
       },
-      /**
-       * #method
-       * whether two spellings name one lane: a session spec spells an
-       * assembly the way the session does, a placement the way the table did
-       */
-      isSameLane(a: string, b: string) {
-        return isSameAssemblyName(a, b, getSession(self).assemblyManager)
-      },
     }))
     .views(self => ({
       /**
@@ -909,7 +901,9 @@ export function stateModelFactory(
        * than as a lane
        */
       get rowAssemblies() {
-        const sameName = (a: string, b: string) => self.isSameLane(a, b)
+        const { assemblyManager } = getSession(self)
+        const sameName = (a: string, b: string) =>
+          isSameAssemblyName(a, b, assemblyManager)
         const selection = self.laneSelection
         return rowAssembliesOf(
           self.groups,
@@ -1333,13 +1327,9 @@ export function stateModelFactory(
        * #getter
        * the direct records between each adjacent mate-lane pair as the
        * ribbons read them: the pair's fetched links where the file holds any,
-       * else the links composed through the anchor from the groups, one
-       * record per placement either lane makes — for a star, which states
-       * none; for a pair whose fetch came back empty; and for a pair
-       * `laneLinksFetchSpecs` never asks about because the session lacks one
-       * of its assemblies, which composing does not need. Off the fetched
-       * sets and the session's assemblies, never the frames, so a settle
-       * recomposes nothing
+       * else the links composed through the anchor from the groups, one record
+       * per placement either lane makes. Off the fetched sets and the session's
+       * assemblies, never the frames, so a settle recomposes nothing
        */
       get pairLinks(): ReadonlyMap<string, { links: Feature[] }> {
         const out = new Map<string, { links: Feature[] }>()

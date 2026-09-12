@@ -44,9 +44,6 @@ const anchorLane = {
 const rowOf = (lane: Lane, visibleBpSpan = 2000) =>
   laneHeaderRows([lane], visibleBpSpan, 'chr1:1..2,000')[0]!
 
-// A live pan derives a frame's min from the pivot unclamped, so content near a
-// contig's start can put it below zero. The header prints the menu's own
-// locstring, which clamps.
 test('the header never prints a negative coordinate', () => {
   const row = rowOf(mateLane({}))
   expect(row.label).toContain('Pp1:1..1,960')
@@ -60,9 +57,6 @@ describe('the label', () => {
     expect(row.isAnchor).toBe(true)
   })
 
-  // one-based and a range, the way the anchor lane's header and the lane's
-  // own Open and Re-anchor locstring read; a bare zero-based start said
-  // neither which end a [rev] lane began at nor matched either of them
   test('names a mate lane by its contig and range, through the alias table', () => {
     const row = rowOf(
       mateLane({
