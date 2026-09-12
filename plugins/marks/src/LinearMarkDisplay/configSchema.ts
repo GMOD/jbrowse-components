@@ -191,8 +191,9 @@ const markValueSchema = ConfigurationSchema(
      * #slot marks.encoding.y.field
      * The feature field, or jexl callback over `feature`, plotted on the
      * score axis. A feature whose value is not a finite number is skipped.
-     * Empty for a mark with no value, which is what a span is. Writing
-     * `y: 'score'` directly on the encoding lands here.
+     * Empty for a mark with no value, which is what a span is; a bar or
+     * point must name one, and the config is refused where it does not.
+     * Writing `y: 'score'` directly on the encoding lands here.
      */
     field: {
       type: 'string',
@@ -457,18 +458,43 @@ const transformStepSchema = ConfigurationSchema(
   { preProcessSnapshot: liftAs },
 )
 
-// The chrome places one second axis, on the right, so a display declaring
-// two of them has no reading. Refused where the config is read rather than
-// where it is drawn, so the message names the marks.
-function checkOneIndependentAxis(snap: Record<string, unknown>) {
+type MarkYSnapshot = string | { field?: string; resolve?: string } | undefined
+
+interface MarkSnapshot {
+  shape?: string
+  encoding?: { y?: MarkYSnapshot }
+}
+
+function valueField(y: MarkYSnapshot) {
+  return typeof y === 'string' ? y : y?.field
+}
+
+// What a `marks` config cannot mean, refused where the config is read rather
+// than where it is drawn, so the message names the marks. A bar or point
+// stands at a value: with no `y` the encoder reads 0 for every feature and the
+// display draws nothing, silently. And the chrome places one second axis, on
+// the right, so two independent marks have no reading.
+function checkMarks(snap: Record<string, unknown>) {
   const { marks } = snap
   if (!Array.isArray(marks)) {
     return snap
   }
-  const asked = marks.flatMap((mark, i) => {
-    const y = (mark as { encoding?: { y?: unknown } }).encoding?.y
-    const resolve = (y as { resolve?: string } | undefined)?.resolve
-    return typeof y === 'object' && resolve === 'independent' ? [i] : []
+  const entries = marks as MarkSnapshot[]
+  const valueless = entries.flatMap((mark, i) => {
+    const shape = mark.shape ?? 'bar'
+    return (shape === 'bar' || shape === 'point') &&
+      !valueField(mark.encoding?.y)
+      ? [`${i} (${shape})`]
+      : []
+  })
+  if (valueless.length > 0) {
+    throw new Error(
+      `LinearMarkDisplay: a bar or point stands at a value and needs encoding.y to name the field it plots; mark${valueless.length > 1 ? 's' : ''} ${valueless.join(', ')} name${valueless.length > 1 ? '' : 's'} none`,
+    )
+  }
+  const asked = entries.flatMap((mark, i) => {
+    const y = mark.encoding?.y
+    return typeof y === 'object' && y.resolve === 'independent' ? [i] : []
   })
   if (asked.length > 1) {
     throw new Error(
@@ -662,7 +688,7 @@ export function configSchemaFactory() {
     {
       explicitlyTyped: true,
       explicitIdentifier: 'displayId',
-      preProcessSnapshot: checkOneIndependentAxis,
+      preProcessSnapshot: checkMarks,
     },
   )
 }

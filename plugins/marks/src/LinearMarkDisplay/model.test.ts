@@ -365,6 +365,24 @@ test('a display with no independent mark declares one axis and no captions', () 
   expect(display.renderState.independentY).toBeUndefined()
 })
 
+// The encoder reads a missing y as 0 for every feature, so before this a
+// bar with only a colour was an empty track with no message.
+test('a bar or point naming no y is refused where the config is read', () => {
+  expect(() =>
+    createTestEnvironment([
+      { shape: 'bar', encoding: { color: 'red' } },
+    ]).createDisplay(),
+  ).toThrow(/a bar or point stands at a value and needs encoding.y/)
+  expect(() =>
+    createTestEnvironment([
+      { shape: 'point', encoding: { y: { scale: 'log' } } },
+    ]).createDisplay(),
+  ).toThrow(/mark 0 \(point\) names none/)
+  expect(() =>
+    createTestEnvironment([{ shape: 'span', encoding: {} }]).createDisplay(),
+  ).not.toThrow()
+})
+
 test('two independent marks are refused where the config is read', () => {
   expect(() =>
     createTestEnvironment([
@@ -543,6 +561,67 @@ test('the legend reads the scale table the worker resolved', () => {
     },
   ])
   expect(display.showLegend).toBe(true)
+})
+
+// Colour and glyph over one field listed the same values twice under one
+// title, and on a short display the second key ran past the bottom edge.
+test('a glyph scale over the field the colour classifies folds into one key', () => {
+  const { createDisplay } = createTestEnvironment([
+    {
+      shape: 'point',
+      encoding: {
+        y: 'score',
+        color: { field: 'strand', scale: 'categorical' },
+        glyph: { field: 'strand', scale: 'categorical' },
+      },
+    },
+  ])
+  const { display } = createDisplay()
+  display.setRpcData(
+    0,
+    result([
+      {
+        y: [1, 2],
+        scale: {
+          kind: 'categorical',
+          field: 'strand',
+          entries: [
+            { label: '1', color: 0xff0000ff },
+            { label: '-1', color: 0xff00ff00 },
+          ],
+        },
+        glyphScale: {
+          kind: 'glyph',
+          field: 'strand',
+          entries: [
+            { label: '1', glyph: 'triangle' },
+            { label: '-1', glyph: 'diamond' },
+          ],
+        },
+      },
+    ]),
+    REGION,
+  )
+  expect(display.legendSections).toHaveLength(2)
+  expect(display.colorScales).toEqual([
+    {
+      kind: 'categorical',
+      id: 'mark-0-color',
+      title: 'strand',
+      entries: [
+        {
+          value: '1',
+          label: '1',
+          swatches: [{ color: 'rgba(255,0,0,1)', glyph: 'triangle' }],
+        },
+        {
+          value: '-1',
+          label: '-1',
+          swatches: [{ color: 'rgba(0,255,0,1)', glyph: 'diamond' }],
+        },
+      ],
+    },
+  ])
 })
 
 test('a glyph scale reaches the worker beside the colour, and its key draws the glyphs', () => {

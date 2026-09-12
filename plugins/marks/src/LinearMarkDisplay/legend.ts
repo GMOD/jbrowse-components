@@ -134,45 +134,91 @@ function missingRowLast(entries: { label: string }[]) {
   }
 }
 
+// A mark's glyph table over the same field its categorical colour reads:
+// the two keys would list the same values twice under one title, so the
+// colour key draws the glyph as its swatch and the glyph key is folded away.
+function glyphOverSameField(
+  sections: MarkLegendSection[],
+  colour: MarkLegendSection,
+) {
+  const field = colour.scale.kind === 'categorical' && colour.scale.field
+  const glyph = sections.find(
+    s =>
+      s.markIndex === colour.markIndex &&
+      s.channel === 'glyph' &&
+      s.scale.kind === 'glyph' &&
+      s.scale.field === field,
+  )
+  return glyph?.scale.kind === 'glyph' ? glyph : undefined
+}
+
 /**
  * The keys as the color scales `LegendMixin` derives the legend from. A
  * glyph table is a categorical scale whose swatches are the glyphs, drawn in
- * the text colour: the key describes the glyph channel, not the colour one.
+ * the text colour: the key describes the glyph channel, not the colour one —
+ * unless the colour is a categorical scale over the same field, when one key
+ * carries both, each swatch the value's glyph in the value's colour.
  */
 export function markColorScales(sections: MarkLegendSection[]): ColorScale[] {
-  return sections.map(({ markIndex, channel, scale }) => {
+  const folded = new Set<MarkLegendSection>()
+  return sections.flatMap((section): ColorScale[] => {
+    if (folded.has(section)) {
+      return []
+    }
+    const { markIndex, channel, scale } = section
     const id = `mark-${markIndex}-${channel}`
     switch (scale.kind) {
-      case 'categorical':
-        return {
-          kind: 'categorical',
-          id,
-          title: scale.field,
-          entries: scale.entries.map(e => ({
-            value: e.label,
-            label: e.label,
-            color: abgrToCssRgba(e.color),
-          })),
+      case 'categorical': {
+        const glyph = glyphOverSameField(sections, section)
+        if (glyph) {
+          folded.add(glyph)
         }
+        const glyphOf = (label: string) =>
+          glyph?.scale.kind === 'glyph'
+            ? glyph.scale.entries.find(e => e.label === label)?.glyph
+            : undefined
+        return [
+          {
+            kind: 'categorical',
+            id,
+            title: scale.field,
+            entries: scale.entries.map(e => {
+              const color = abgrToCssRgba(e.color)
+              const g = glyphOf(e.label)
+              return g
+                ? {
+                    value: e.label,
+                    label: e.label,
+                    swatches: [{ color, glyph: g }],
+                  }
+                : { value: e.label, label: e.label, color }
+            }),
+          },
+        ]
+      }
       case 'glyph':
-        return {
-          kind: 'categorical',
-          id,
-          title: scale.field,
-          entries: scale.entries.map(e => ({
-            value: e.label,
-            label: e.label,
-            swatches: [{ color: 'currentColor', glyph: e.glyph }],
-          })),
-        }
+        return [
+          {
+            kind: 'categorical',
+            id,
+            title: scale.field,
+            entries: scale.entries.map(e => ({
+              value: e.label,
+              label: e.label,
+              swatches: [{ color: 'currentColor', glyph: e.glyph }],
+            })),
+          },
+        ]
       case 'ramp':
-        return {
-          kind: 'ramp',
-          id,
-          title: scale.field,
-          domain: scale.domain,
-          stops: stopsFromRampLut(scale.lut, RAMP_STOPS),
-        }
+        return [
+          {
+            kind: 'ramp',
+            id,
+            title: scale.field,
+            domain: scale.domain,
+            stops: stopsFromRampLut(scale.lut, RAMP_STOPS),
+          },
+        ]
     }
   })
 }

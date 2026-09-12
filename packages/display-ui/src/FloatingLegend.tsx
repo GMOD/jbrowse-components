@@ -39,6 +39,9 @@ const useStyles = makeStyles()(theme => ({
     border: `1px solid ${theme.palette.divider}`,
     borderRadius: 3,
     padding: 3,
+    // Two keys on one short display ran past its bottom edge and were cut
+    // there; the box scrolls inside the display instead.
+    overflowY: 'auto',
     fontSize: 10,
     zIndex: 100,
     // the default; `maxWidth` overrides it per display
@@ -390,7 +393,7 @@ const FloatingLegend = observer(function FloatingLegend({
     <TrackOverlayPortal>
       <div
         className={cx(classes.legend, onDismiss && classes.withClose)}
-        style={{ top, maxWidth }}
+        style={{ top, maxWidth, maxHeight: `calc(100% - ${top + 4}px)` }}
         // Same doctrine as `plainChromeOverlays`' testids: a stable hook for the
         // harnesses that have to find this box. The build-your-own site's smoke
         // census needs it to prove the zero it reports for a page showing a
