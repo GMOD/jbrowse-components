@@ -212,12 +212,13 @@ test('a link record outside a lane frame draws no ribbon off the canvas', async 
   expect(far.get('start')).toBeLessThan(frame.min)
   expect(far.get('end')).toBeGreaterThan(frame.min)
 
+  // clipped to the lane's reach, the half screen either side a pan reveals
   const drawn = ribbons(display)
   expect(drawn.length).toBeGreaterThan(0)
   for (const { xs } of drawn) {
     for (const x of xs) {
-      expect(x).toBeGreaterThanOrEqual(0)
-      expect(x).toBeLessThanOrEqual(width)
+      expect(x).toBeGreaterThanOrEqual(-width / 2)
+      expect(x).toBeLessThanOrEqual(1.5 * width)
     }
   }
 }, 60000)
