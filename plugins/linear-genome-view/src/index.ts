@@ -120,6 +120,7 @@ export {
 // straight from the component rather than through `LinearGenomeView/index.ts`
 // so the view registration module holds no React component at all.
 export { default as SearchBox } from './LinearGenomeView/components/SearchBox.tsx'
+export { RETURN_TO_IMPORT_FORM_ID } from './LinearGenomeView/menuItems.ts'
 // The same two consumers, one composition further on: a header stacking several
 // views draws one search box per row beside the span it is showing, and
 // `HeaderSearchBoxRow` is the whole strip of them. `useSearchBoxPrefs` holds the

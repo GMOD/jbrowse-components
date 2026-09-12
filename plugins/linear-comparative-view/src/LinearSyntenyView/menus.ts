@@ -1,4 +1,5 @@
 import { makeRadioSubMenu, radioItems } from '@jbrowse/core/ui/menuItems'
+import { RETURN_TO_IMPORT_FORM_ID } from '@jbrowse/plugin-linear-genome-view'
 import AnchorIcon from '@mui/icons-material/Anchor'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
@@ -231,6 +232,10 @@ export function compactViewsMenuItems(model: RowMenusModel): MenuItem[] {
  * While following, each row's menu leads with taking the anchor and the anchor
  * row wears the mark: switching which row drives is otherwise a radio in the
  * sync submenu, two levels away from the row being looked at.
+ *
+ * Without the row's own "Return to import form", which clears one row inside
+ * the stack and blanks the bands on both sides of it; the stack's own item is
+ * the way back to the form.
  */
 export function rowMenuItems(model: RowMenusModel): MenuItem[] {
   const { followSynteny, followAnchorIndex } = model
@@ -251,7 +256,9 @@ export function rowMenuItems(model: RowMenusModel): MenuItem[] {
             { type: 'divider' },
           ] satisfies MenuItem[])
         : []),
-      ...model.views[idx]!.menuItems(),
+      ...model.views[idx]!.menuItems().filter(
+        item => !('id' in item && item.id === RETURN_TO_IMPORT_FORM_ID),
+      ),
     ],
   }))
 }

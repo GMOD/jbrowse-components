@@ -237,6 +237,23 @@ test('the header menu offers Add assembly row only once there is a row', async (
   expect(menuLabels(view)).toContain('Add assembly row...')
 })
 
+// The row's own menu comes from the LGV, whose return to the import form clears
+// that one row inside the stack
+test("a row's menu under Rows leaves out its own return to the import form", async () => {
+  const { view } = await openStack(2)
+  const rows = view
+    .headerMenuItems()
+    .find(item => 'label' in item && item.label === 'Rows')
+  const rowItem = (rows && 'subMenu' in rows ? resolveSubMenu(rows) : []).find(
+    item => 'label' in item && item.label === view.views[0]!.assemblyNames[0],
+  )
+  const labels = (
+    rowItem && 'subMenu' in rowItem ? resolveSubMenu(rowItem) : []
+  ).map(item => ('label' in item ? item.label : ''))
+  expect(labels).toContain('Collapse to ruler')
+  expect(labels).not.toContain('Return to import form')
+})
+
 // A six-row stack is the case that would grow the top level, so it is the one
 // worth asserting on.
 test('the header menu opens the same six rows at any row count', async () => {

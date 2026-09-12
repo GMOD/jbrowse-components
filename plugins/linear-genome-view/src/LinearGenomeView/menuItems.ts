@@ -62,6 +62,9 @@ export function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
   }
 }
 
+/** the view menu's "Return to import form" row, which a stacked row leaves out */
+export const RETURN_TO_IMPORT_FORM_ID = 'returnToImportForm'
+
 /**
  * Build the main view menu items
  */
@@ -79,6 +82,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
       },
     },
     {
+      id: RETURN_TO_IMPORT_FORM_ID,
       label: 'Return to import form',
       onClick: () => {
         session.queueDialog(handleClose => [
