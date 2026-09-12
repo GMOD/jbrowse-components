@@ -54,12 +54,16 @@ export function lanePanelsForRegion({
   rowAssemblies,
   laneDecisions,
   region,
+  anchorCanon,
   trackAssemblyNames,
 }: {
   groups: MultiWayGroup[]
   rowAssemblies: string[]
   laneDecisions: ReadonlyMap<string, LanePlacementDecision | undefined>
+  /** `region` is on the view's axis, so canonical */
   region: { refName: string; start: number; end: number }
+  /** a group's anchor refName as the view spells it */
+  anchorCanon: (refName: string) => string
   trackAssemblyNames: string[]
 }): MateDiscoveryResult {
   const mates: ResolvedPanel[] = []
@@ -73,7 +77,7 @@ export function lanePanelsForRegion({
       let mateHi = Number.NEGATIVE_INFINITY
       for (const group of groups) {
         const placed =
-          group.anchor.refName === region.refName &&
+          anchorCanon(group.anchor.refName) === region.refName &&
           doesIntersect2(
             region.start,
             region.end,

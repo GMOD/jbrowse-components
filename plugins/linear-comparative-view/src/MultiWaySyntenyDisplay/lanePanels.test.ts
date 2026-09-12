@@ -73,6 +73,7 @@ test('one panel per lane in the stack order, framed on what the lane places of t
       ['cow', decision('M1', [300, 1300])],
     ]),
     region: { refName: 'chr1', start: 0, end: 10_000 },
+    anchorCanon: refName => refName,
     trackAssemblyNames,
   })
   expect(mates).toEqual([
@@ -109,6 +110,7 @@ test('a region inside a placement takes the matching slice of the mate, from the
       ['dog', decision('M1', [20_000, 24_000], true)],
     ]),
     region: { refName: 'chr1', start: 2000, end: 4500 },
+    anchorCanon: refName => refName,
     trackAssemblyNames,
   })
   expect(
@@ -131,8 +133,29 @@ test('a lane the settle has not framed, or that places nothing of the region, ha
     rowAssemblies: ['mouse', 'dog'],
     laneDecisions: new Map([['mouse', decision('M1', [5000, 10_000])]]),
     region: { refName: 'chr1', start: 7000, end: 9000 },
+    anchorCanon: refName => refName,
     trackAssemblyNames,
   })
   expect(mates).toEqual([])
   expect(unconfigured).toEqual([])
+})
+
+// The region comes off the view and is canonical, while a group carries the
+// file's spelling: a table saying `1` against hg38's `chr1` found no panels
+test('matches the region through the anchor assembly alias table', () => {
+  const { mates } = lanePanelsForRegion({
+    groups: groupFeatures([
+      record('m-a', [1000, 3000], {
+        assemblyName: 'mouse',
+        start: 5000,
+        end: 7000,
+      }),
+    ]),
+    rowAssemblies: ['mouse'],
+    laneDecisions: new Map([['mouse', decision('M1', [5000, 7000])]]),
+    region: { refName: 'canonical1', start: 0, end: 10_000 },
+    anchorCanon: refName => (refName === 'chr1' ? 'canonical1' : refName),
+    trackAssemblyNames,
+  })
+  expect(mates.map(m => m.assemblyName)).toEqual(['mouse'])
 })

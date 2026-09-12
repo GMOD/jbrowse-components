@@ -1869,6 +1869,8 @@ export function stateModelFactory(
                 rowAssemblies: self.rowAssemblies,
                 laneDecisions: self.laneDecisions,
                 region,
+                anchorCanon: refName =>
+                  self.anchorAssembly?.getCanonicalRefName2(refName) ?? refName,
                 trackAssemblyNames: readConfObject(
                   self.parentTrack.configuration,
                   'assemblyNames',
