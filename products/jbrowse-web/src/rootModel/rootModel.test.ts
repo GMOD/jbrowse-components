@@ -509,7 +509,6 @@ test('keeps a synteny session whose level holds a track this build cannot make',
         levels: [
           {
             id: 'level0',
-            level: 0,
             tracks: [{ id: 'imagined', type: 'ImaginarySyntenyTrack' }],
           },
         ],

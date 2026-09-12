@@ -411,7 +411,7 @@ Two behavior changes carry no migration:
 - **A pre-`levels` `LinearSyntenyView` session** — one with a top-level `tracks`
   array of built track snapshots, the shape that predates synteny levels — is
   now read as a request to open those tracks rather than converted to
-  `levels[0]`. Write `levels: [{ "level": 0, "tracks": [...] }]` instead.
+  `levels[0]`. Write `levels: [{ "tracks": [...] }]` instead.
 - **`sameScale` re-fits on launch.** Setting it in a spec latched the shared
   zoom limit without re-zooming the rows, so rows placed by `loc`, and rows
   after an `autoDiagonalize`, kept a scale the mode said they should not have.

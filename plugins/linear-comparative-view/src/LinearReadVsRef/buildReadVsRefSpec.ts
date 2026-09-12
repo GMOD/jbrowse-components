@@ -123,7 +123,6 @@ export function buildReadVsRefSpec(args: BuildReadVsRefArgs): ReadVsRefSpec {
       // never becomes a band.
       levels: [
         {
-          level: 0,
           tracks: [
             {
               type: 'SyntenyTrack',

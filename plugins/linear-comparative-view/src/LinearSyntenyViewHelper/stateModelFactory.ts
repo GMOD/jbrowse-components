@@ -48,8 +48,9 @@ import type { ComparativeSurface } from '@jbrowse/synteny-core'
 
 /**
  * #stateModel LinearSyntenyViewHelper
- * Holds one level of a linear synteny comparison: its track list, height and
- * level index, composed with the shared rendering-lifecycle state.
+ * Holds one level of a linear synteny comparison: its track list and height,
+ * composed with the shared rendering-lifecycle state. Its index is where it
+ * sits in the view's `levels`, not a stored number.
  *
  * Nested in LinearComparativeView.levels, never in session.views: it is a track
  * container, not a view, and satisfies core's `TrackContainer` so the
@@ -83,10 +84,6 @@ export function linearSyntenyViewHelperModelFactory(
          * #property
          */
         height: types.stripDefault(types.number, 100),
-        /**
-         * #property
-         */
-        level: types.number,
       }),
     )
     .actions(self => ({
@@ -174,12 +171,19 @@ export function linearSyntenyViewHelperModelFactory(
       get parentView() {
         return getContainingView(self) as unknown as ParentViewDuck
       },
+      /**
+       * #getter
+       * the band between `views[level]` and `views[level + 1]`
+       */
+      get level() {
+        return this.parentView.levels.indexOf(self)
+      },
       // The pair of genome rows this level draws between, or [] for a trailing
       // level that has no row below it yet.
       get assemblyNames(): string[] {
         const { views } = this.parentView
-        const v0 = views[self.level]
-        const v1 = views[self.level + 1]
+        const v0 = views[this.level]
+        const v1 = views[this.level + 1]
         return v0 && v1
           ? [v0.assemblyNames[0] ?? '', v1.assemblyNames[0] ?? '']
           : []
@@ -208,8 +212,8 @@ export function linearSyntenyViewHelperModelFactory(
        */
       get bandTransformKey() {
         const { views } = this.parentView
-        const v0 = views[self.level]
-        const v1 = views[self.level + 1]
+        const v0 = views[this.level]
+        const v1 = views[this.level + 1]
         return v0 && v1
           ? `${v0.offsetPx}_${v0.bpPerPx}_${v1.offsetPx}_${v1.bpPerPx}_${self.height}`
           : ''

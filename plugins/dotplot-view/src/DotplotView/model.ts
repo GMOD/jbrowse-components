@@ -1655,7 +1655,7 @@ export default function stateModelFactory(pm: PluginManager) {
               // lives. `tracks` on the view means trackIds to open, so a built
               // track snapshot written there is a launch recipe and never
               // becomes a band.
-              levels: [{ level: 0, tracks }],
+              levels: [{ tracks }],
             }
 
             void session.launchView('LinearSyntenyView', viewSnapshot)

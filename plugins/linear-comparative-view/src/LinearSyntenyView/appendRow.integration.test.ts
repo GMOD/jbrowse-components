@@ -1,4 +1,5 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+import { getEnv } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { waitFor } from '@testing-library/react'
 import { when } from 'mobx'
@@ -235,6 +236,38 @@ test('the header menu offers Add assembly row only once there is a row', async (
 
   const { view } = await openStack(2)
   expect(menuLabels(view)).toContain('Add assembly row...')
+})
+
+// A level used to store its index beside its place in `levels`, and
+// `reconcileLevels` filled a gap with the array length, so a hand-written
+// `levels: [{ level: 1 }]` on three rows made two bands that both drew the
+// second gap and none the first
+test('a level is numbered by its place in the stack, whatever a snapshot says', async () => {
+  const session = createTestSession()
+  const names = ['volvox0', 'volvox1', 'volvox2']
+  for (const name of names) {
+    session.addAssemblyConf(assembly(name))
+  }
+  await getEnv(session)
+    .pluginManager.getViewType('LinearSyntenyView')
+    .loadStateModel()
+  // parsed, the way a saved session arrives: the key is no longer declared
+  const saved = JSON.parse(
+    JSON.stringify({
+      views: names.map(name => ({
+        type: 'LinearGenomeView',
+        hideHeader: true,
+        assembly: name,
+      })),
+      levels: [{ level: 1 }],
+    }),
+  )
+  const view = session.addView(
+    'LinearSyntenyView',
+    saved,
+  ) as LinearSyntenyViewModel
+  openViews.push({ session, view })
+  expect(view.levels.map(level => level.level)).toEqual([0, 1])
 })
 
 // The row's own menu comes from the LGV, whose return to the import form clears

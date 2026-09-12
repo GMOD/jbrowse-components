@@ -45,7 +45,6 @@ const syntenySession = {
       middleComparativeHeight: 174,
       levels: [
         {
-          level: 0,
           tracks: [
             {
               id: 's1',
@@ -261,7 +260,6 @@ const offscreenMateSession = {
       showOffscreenMates: true,
       levels: [
         {
-          level: 0,
           tracks: [
             {
               id: 's1',

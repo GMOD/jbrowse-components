@@ -40,6 +40,7 @@ export interface ParentViewDuck extends IStateTreeNode, FollowHost {
   // because reading `width` before first layout throws
   initialized: boolean
   views: LinearGenomeViewModel[]
+  levels: readonly IStateTreeNode[]
   scrollZoom: boolean
   overdrawPx: number
   initPending: boolean

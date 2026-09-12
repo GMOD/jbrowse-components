@@ -440,7 +440,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         while (self.levels.length < self.views.length - 1) {
           self.levels.push(
             cast({
-              level: self.levels.length,
               // A band added to a stack that already has one matches its
               // neighbour rather than arriving at the type's 100px default.
               // The default is only ever right for the first level: past that
@@ -958,7 +957,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       // reconcileLevels, which sizes it from the views
       const {
         tracks,
-        levels = tracks ? [{ tracks, level: 0 }] : [],
+        levels = tracks ? [{ tracks }] : [],
         ...rest
       } = snap || {}
       return {

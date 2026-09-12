@@ -385,7 +385,6 @@ export function buildDerivativeVsRefSpec(
       // never becomes a band.
       levels: [
         {
-          level: 0,
           tracks: [
             {
               type: 'SyntenyTrack',
