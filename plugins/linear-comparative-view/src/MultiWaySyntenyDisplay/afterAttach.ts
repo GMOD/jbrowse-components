@@ -353,6 +353,8 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
           lodMode: spec.lodTier,
           clipToRegion: true,
           splitAtGapBp: SPLIT_AT_GAP_BP,
+          // pairLinks composes a pair the file does not state
+          absentPairIsEmpty: true,
         },
       })
       return { key: spec.key, links }

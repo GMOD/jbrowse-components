@@ -485,6 +485,17 @@ describe('an assembly the file has never heard of', () => {
       )
     })
 
+    // a caller that composes the pair some other way asks for the blank
+    test('a caller with its own answer for an absent pair gets it empty', async () => {
+      expect(
+        await feats(
+          makeAdapter(['A', 'B', 'R'], {}, starPaf()),
+          { refName: 'chr1', start: 0, end: 2000, assemblyName: 'A' },
+          { targetAssemblyName: 'B', absentPairIsEmpty: true },
+        ),
+      ).toEqual([])
+    })
+
     // the pairs the file DOES state keep working
     test('a band the file does state still draws', async () => {
       const fa = await feats(
