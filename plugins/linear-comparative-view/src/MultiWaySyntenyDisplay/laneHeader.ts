@@ -32,18 +32,18 @@ export interface LaneHeaderRow {
   isAnchor: boolean
 }
 
-/** a mate lane's frame as a locstring the lane's own assembly resolves */
-export function laneLocString(lane: Pick<Lane, 'frame' | 'canon'>) {
+/** a mate lane's frame as a region in the lane's own assembly's names */
+export function laneRegion(lane: Pick<Lane, 'frame' | 'canon'>) {
   const { frame } = lane
   if (!frame) {
     return undefined
   }
   const start = frameStartBp(frame)
-  return assembleLocString({
+  return {
     refName: lane.canon(frame.refName),
     start,
     end: Math.max(start + 1, Math.round(frame.max)),
-  })
+  }
 }
 
 /**
@@ -88,7 +88,7 @@ export function laneHeaderRows(
     const where = lane.isAnchor
       ? anchorWhere
       : lane.frame &&
-        `${laneLocString(lane)}${lane.frame.flipped ? ' [rev]' : ''}`
+        `${assembleLocString(laneRegion(lane)!)}${lane.frame.flipped ? ' [rev]' : ''}`
     // the contigs the lane is NOT showing, named so the reader knows a second
     // copy exists and can pin the lane onto it from its menu. The cap's
     // remainder is counted rather than dropped, so a header on a fragmented

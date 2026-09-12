@@ -118,9 +118,7 @@ describe('the map a lane answers intervals with', () => {
     expect(anchor!.spanOf('Pp1', 100, 200)).toBeUndefined()
   })
 
-  // Half a screen either side of the frame, because a pan translates the stack
-  // that far before the lanes re-lay out. Clipped at the frame, a mate lane's
-  // leading edge was blank for the whole pan while the anchor lane drew into it
+  // half a screen either side, which a pan translates into view
   test('clips a mate lane half a screen past its frame, and answers nothing off its contig', () => {
     const [, peach] = stack().lanes
     expect(peach!.spanOf('Pp1', 1900, 3000)).toEqual([720, 1.5 * WIDTH])

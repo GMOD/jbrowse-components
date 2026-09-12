@@ -317,9 +317,9 @@ export function tickIntervalFor(spanBp: number) {
 const MAX_LANE_TICKS = 24
 
 /**
- * The frame plus half a screen either side: between settles the stack is
- * translated rather than relaid, so a pan shows this much of every lane before
- * the lanes re-lay out.
+ * The frame plus half a screen either side: between settles the renderer
+ * translates the stack rather than relaying it, so a pan shows this much of
+ * every lane before the lanes re-lay out.
  */
 export function frameReach(frame: RowFrame) {
   const margin = (frame.max - frame.min) / 2
@@ -355,9 +355,8 @@ export function rowFrameX(frame: RowFrame, bp: number, width: number) {
  * CLIPPED TO `frameReach`, not merely tested against it. `rowFrameX`
  * extrapolates, so an unclipped end maps to tens of thousands of pixels and
  * the ribbon keeping it sweeps across everything. The reach rather than the
- * frame, because the frame is exactly the canvas at the render origin: clipped
- * there, a mate lane's leading edge stayed blank through every pan while the
- * anchor lane drew into it.
+ * frame, because the frame is exactly the canvas at the render origin and a
+ * pan shows the margin past it.
  *
  * Clipping in bp keeps the pair in the interval's own order and keeps a flipped
  * lane's mirroring intact, since `rowFrameX` is monotonic either way.

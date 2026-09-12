@@ -1,8 +1,9 @@
 import { makeRadioSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
+import { assembleLocStringRaw } from '@jbrowse/core/util'
 import { openMateLabel } from '@jbrowse/core/util/tracks'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 
-import { laneLocString } from './laneHeader.ts'
+import { laneRegion } from './laneHeader.ts'
 import { ribbonColorModeOptions } from './ribbonColorModes.ts'
 
 import type { Lane } from './laneStack.ts'
@@ -174,7 +175,8 @@ export function laneHeaderMenuItems(
       },
     ]
   }
-  const loc = laneLocString(lane)
+  const region = laneRegion(lane)
+  const loc = region && assembleLocStringRaw(region)
   const held = model.holdsAssembly(name)
   return [
     ...laneRowMenuItems(model, name),

@@ -69,8 +69,7 @@ const LaneHeaders = observer(function LaneHeaders({
   const menuLane = menu
     ? lanes.find(lane => lane.assemblyName === menu.assemblyName)
     : undefined
-  // a menu whose lane left the stack is closed, not waiting: kept, it popped
-  // back up at the old click point whenever the lane returned
+  // the menu closes with its lane rather than waiting for the lane to return
   if (menu && !menuLane) {
     setMenu(undefined)
   }
