@@ -136,10 +136,19 @@ export function generateUcscTranscript(
   // below cannot express that: a thick point inside a block would emit a
   // zero-length CDS carrying a phase, and one outside every block would make
   // the whole transcript UTR.
+  //
+  // cdsStartStat and cdsEndStat `none` alone do not mean non-coding: UCSC's
+  // GENCODE bigGenePred (gencodeV44.bb through V50) writes `none` on every
+  // transcript, and reading it as non-coding stripped the CDS from all 370,886
+  // of V50's coding ones, TP53 included. exonFrames tells them apart there:
+  // every coding transcript has a block with a frame, every other one has -1
+  // throughout.
   const { cdsEndStat, cdsStartStat } = rest
   if (
     thickStart === thickEnd ||
-    (cdsStartStat === 'none' && cdsEndStat === 'none')
+    (cdsStartStat === 'none' &&
+      cdsEndStat === 'none' &&
+      !exonFrames?.some(frame => frame >= 0))
   ) {
     return {
       ...rest,

@@ -169,6 +169,57 @@ describe('generateUcscTranscript', () => {
     ])
   })
 
+  // UCSC's gencodeV50.bb writes cdsStartStat/cdsEndStat `none` on coding
+  // transcripts too. MT-CO1 (ENST00000361624.2): one block, thick over all of it.
+  it('keeps the CDS of a GENCODE coding transcript whose cdsStartStat is none', () => {
+    const result = generateUcscTranscript({
+      uniqueId: 'mt-co1',
+      start: 5903,
+      end: 7445,
+      refName: 'chrM',
+      strand: 1,
+      thickStart: 5903,
+      thickEnd: 7445,
+      blockCount: 1,
+      blockSizes: [1542],
+      chromStarts: [0],
+      cdsStartStat: 'none',
+      cdsEndStat: 'none',
+      exonFrames: '0,',
+      subfeatures: [{ type: 'block', start: 5903, end: 7445, refName: 'chrM' }],
+    })
+
+    expect(result.type).toBe('mRNA')
+    expect(result.subfeatures).toEqual([
+      { type: 'CDS', phase: 0, start: 5903, end: 7445, refName: 'chrM' },
+    ])
+  })
+
+  it('treats cdsStartStat none with only -1 exonFrames as non-coding, whatever its thick range', () => {
+    const result = generateUcscTranscript({
+      uniqueId: 'nc',
+      start: 1000,
+      end: 2000,
+      refName: 'chr1',
+      strand: 1,
+      thickStart: 1000,
+      thickEnd: 2000,
+      blockCount: 2,
+      blockSizes: [200, 200],
+      chromStarts: [0, 800],
+      cdsStartStat: 'none',
+      cdsEndStat: 'none',
+      exonFrames: '-1,-1,',
+      subfeatures: [
+        { type: 'block', start: 1000, end: 1200, refName: 'chr1' },
+        { type: 'block', start: 1800, end: 2000, refName: 'chr1' },
+      ],
+    })
+
+    expect(result.type).toBe('transcript')
+    expect(result.subfeatures.map(s => s.type)).toEqual(['exon', 'exon'])
+  })
+
   // A plain BED12 carries no cdsStartStat — those are bigGenePred's — so the
   // empty thick range is all there is to read the absence of a CDS off.
   it('handles a non-coding BED12, which has no cdsStartStat to say so', () => {
