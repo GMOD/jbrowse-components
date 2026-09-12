@@ -205,7 +205,7 @@ describe('assertBindingsMatchWgsl', () => {
     }).not.toThrow()
   })
 
-  // slangc drops a binding the shader body never reads — flatQuad.slang
+  // slangc drops a binding the shader body never reads — a shader that
   // declares a uniform block and then takes every value from its instance
   // attributes. That is DCE, and a pipeline layout may declare bindings the
   // shader doesn't use, so the check runs WGSL -> table only.

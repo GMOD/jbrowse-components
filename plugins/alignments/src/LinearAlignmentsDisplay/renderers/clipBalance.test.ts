@@ -163,7 +163,6 @@ function state(): RenderState {
     showModifications: false,
     showPerBaseQuality: false,
     showPerBaseLetter: false,
-    selectedChainReadIds: [],
     colors: makeTestPalette(),
     chainMode: false,
     showLinkedReadLines: false,

@@ -40,8 +40,9 @@ types").
   narrow upload paths (recolor, and arc-only), since layout allocates a fresh
   `readYs` the upload memo keys on. A value the layout only _sometimes_ spends
   goes in as a thunk.
-- **Tier 4 repaints the whole canvas**, so per-mousemove state must not be
-  there. Hover is a React overlay; selection stays in `renderState`.
+- **Tier 4 repaints the whole canvas**, so per-mousemove and per-click state
+  must not be there. Hover and selection are the chrome's highlight guide
+  (`hoverInk`, `selectionInk`), never `renderState`.
 
 ## A split segment's colour is framed by the chains on screen
 

@@ -93,14 +93,9 @@ export interface RenderState {
   // Canvas dimensions - passed in to avoid forced layout from reading clientWidth/clientHeight
   canvasWidth: number
   canvasHeight: number
-  // Hover highlight is NOT here — it's the chrome's guide (`hoverInk`) so a
-  // mousemove repaints only its divs, not the canvas. Selection stays
-  // canvas-side: it changes on click (rare) and belongs in SVG export.
-  selectedFeatureId?: string
-  // Every READ of the selected chain, keyed the same way as `selectedFeatureId`
-  // — `getSelectionBounds` resolves both through `readIdToIndex`. Not chain
-  // ids: `chainNames` is that space, and nothing in the renderers holds one.
-  selectedChainReadIds: string[]
+  // Neither the hover nor the selection is here: both are the chrome's
+  // highlight guide (`hoverInk`, `selectionInk`), so a mousemove or a click
+  // repaints its divs and not the canvas.
   // Color palette from theme
   colors: ColorPalette
   // Chain (linked-reads) layout is active. The `linkedReads` enum stops at the

@@ -1093,9 +1093,10 @@ consumed the bytes by the time `deleteBuffer` runs.
 This replaced a `warnIfMidFrame` console warning, which had it backwards on both
 sides — it fired for synteny's lazy per-mode upload deleting a pass the open frame
 never referenced (safe), and it did not fire at all for the case that actually
-dropped frames, alignments' `drawOverlayQuads` re-uploading `OVERLAY_REGION`
-once per section inside the block loop, because that release comes from
-`uploadBuffer` rather than from `deleteBuffer`. `MockHal.replacedWhileDrawn()`
+dropped frames, alignments' selection-frame overlay (since moved to the
+chrome's highlight guide) re-uploading its per-frame quads once per section
+inside the block loop, because that release comes from `uploadBuffer` rather
+than from `deleteBuffer`. `MockHal.replacedWhileDrawn()`
 is where a renderer test says which of the two shapes it has.
 
 **Implementations:** `WebGPUHal` (4× MSAA, device-lost recovery), `WebGL2Hal`
@@ -1284,8 +1285,9 @@ different slangc passes and only one of them is what the GPU runs, so
 `assertBindingsMatchWgsl` reads the `@binding(N) @group(0) var<…>` declarations
 back out of the WGSL and makes them agree with the table — the same doctrine as
 `assertVertexInputsMatch`, and one-directional for the same reason: slangc drops
-a binding the body never reads (`flatQuad.slang` declares a uniform block and
-then takes every value from its instance attributes), which is DCE and harmless,
+a binding the body never reads (the alignments selection frame's shader, since
+deleted, declared a uniform block and then took every value from its instance
+attributes), which is DCE and harmless,
 while a *declared* binding the table doesn't mention is one nothing would bind.
 This is what a `SLANG_VERSION` bump would trip if the sampler expansion — the one
 index the codegen invents, `index + 1` — ever changed.

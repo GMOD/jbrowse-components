@@ -80,7 +80,9 @@ which re-rasterizes every base. That measurement stands.
 
 Migrated, one commit each: the mark display (gains a hover it never had),
 multi-row, alignments (read and chain; the chain's strong shade is the
-rect's flag), variants (cells and the lane, both surfaces through one
+rect's flag — and on 2026-09-12 its selection box followed, off both
+canvases and out of the SVG export, deleting the `flatQuad` pass whose
+four quads were built per frame from the selection), variants (cells and the lane, both surfaces through one
 getter), gwas (the ring is `highlightStyle: 'ring'` around the point's ink
 grown to the ring's radius). The example plugin's `score` shape declares
 `ink`, its model answers `hoverInk`, and the developer guides teach that.

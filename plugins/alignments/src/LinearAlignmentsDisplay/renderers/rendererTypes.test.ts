@@ -1,6 +1,11 @@
-import { makePileupCellMapper } from './rendererTypes.ts'
+import {
+  buildReadIdToIndex,
+  computeArcBand,
+  interbaseRangeEnds,
+  makePileupCellMapper,
+} from './rendererTypes.ts'
 
-import type { DrawBlock } from './rendererTypes.ts'
+import type { ArcBandInput, DrawBlock, RenderState } from './rendererTypes.ts'
 
 // The 1bp-cell Canvas2D painters (mismatch, modification, per-base
 // quality/letter, soft-clip bases) all size their rects through
@@ -68,5 +73,208 @@ describe('makePileupCellMapper cellX', () => {
       false,
     )
     expect(m.cellX(100)).toBeCloseTo(20)
+  })
+})
+
+// Both take the coverage band as its RESERVED height now, so the one helper
+// serves the render state and `computeArcBand` with a single field.
+function makeState(
+  overrides: Partial<RenderState & ArcBandInput> = {},
+): RenderState & ArcBandInput {
+  return {
+    scrollTop: 0,
+    readConnectionsLineWidth: 1,
+    showOutline: false,
+    readConnectionsDown: false,
+    readConnectionsHeight: 100,
+    colorScheme: 0,
+    featureHeight: 10,
+    featureSpacing: 2,
+    coverageReservedPx: 0,
+    coverageHeight: 50,
+    coverageYOffset: 0,
+    coverageMinDepth: undefined,
+    coverageMaxDepth: undefined,
+    coverageScaleType: 0 as const,
+    coverageSymlogConstant: 1,
+    coverageSnpMinFrequency: 0,
+    showPerBaseQuality: false,
+    showPerBaseLetter: false,
+    showMismatches: true,
+    filterMismatchesByFrequency: true,
+    mismatchAlpha: false,
+    showSoftClipping: false,
+    showInterbaseIndicators: false,
+    showModifications: false,
+    canvasWidth: 800,
+    canvasHeight: 600,
+    colors: {} as RenderState['colors'],
+    chainMode: false,
+    readConnections: 'off',
+    showLinkedReadLines: false,
+    collapseGroupRows: false,
+    pileupTopOffset: 50,
+    coverageTopOffset: 0,
+    sections: [
+      {
+        pileupTopOffset: 50,
+        coverageTopOffset: 0,
+        covClipTop: 0,
+        covClipHeight: 600,
+        pileupClipTop: 50,
+        pileupClipHeight: 550,
+      },
+    ],
+    ...overrides,
+  }
+}
+
+describe('buildReadIdToIndex', () => {
+  it('maps each id to its index', () => {
+    const m = buildReadIdToIndex({
+      readKeys: ['a', 'b', 'c'],
+      readIdPrefix: undefined,
+    })
+    expect(m.get('a')).toBe(0)
+    expect(m.get('b')).toBe(1)
+    expect(m.get('c')).toBe(2)
+  })
+
+  // The numeric branch is where the string is built rather than read, so the
+  // map's keys are what a hover matches `featureIdUnderMouse` against.
+  it('spells numeric keys through the prefix', () => {
+    const m = buildReadIdToIndex({
+      readKeys: new Float64Array([7, 90210]),
+      readIdPrefix: 'abc-',
+    })
+    expect(m.get('abc-7')).toBe(0)
+    expect(m.get('abc-90210')).toBe(1)
+  })
+
+  it('returns empty map for no reads', () => {
+    expect(
+      buildReadIdToIndex({ readKeys: [], readIdPrefix: undefined }).size,
+    ).toBe(0)
+  })
+})
+
+describe('interbaseRangeEnds', () => {
+  it('computes cumulative ends', () => {
+    const { insEnd, scEnd, hcEnd } = interbaseRangeEnds({
+      numInsertions: 3,
+      numSoftclips: 5,
+      numHardclips: 2,
+    })
+    expect(insEnd).toBe(3)
+    expect(scEnd).toBe(8)
+    expect(hcEnd).toBe(10)
+  })
+
+  it('handles zeros', () => {
+    const { insEnd, scEnd, hcEnd } = interbaseRangeEnds({
+      numInsertions: 0,
+      numSoftclips: 0,
+      numHardclips: 0,
+    })
+    expect(insEnd).toBe(0)
+    expect(scEnd).toBe(0)
+    expect(hcEnd).toBe(0)
+  })
+})
+
+describe('computeArcBand', () => {
+  it('is undefined when readConnections is off', () => {
+    expect(computeArcBand(makeState())).toBeUndefined()
+  })
+
+  it('is undefined when readConnectionsHeight is 0', () => {
+    expect(
+      computeArcBand(
+        makeState({ readConnections: 'arc', readConnectionsHeight: 0 }),
+      ),
+    ).toBeUndefined()
+  })
+
+  it('up mode overlays the coverage band when coverage is shown', () => {
+    expect(
+      computeArcBand(
+        makeState({
+          readConnections: 'arc',
+          readConnectionsHeight: 60,
+          coverageReservedPx: 80,
+        }),
+      ),
+    ).toEqual({ top: 0, height: 80, down: false })
+  })
+
+  it('up mode takes its own band when coverage is hidden (decoupled)', () => {
+    expect(
+      computeArcBand(
+        makeState({
+          readConnections: 'arc',
+          readConnectionsHeight: 60,
+          coverageReservedPx: 0,
+        }),
+      ),
+    ).toEqual({ top: 0, height: 60, down: false })
+  })
+
+  // The scalebar-label inset belongs to the coverage histogram: overlaying it
+  // means anchoring on its baseline, which is coverageYOffset up from the
+  // bottom. Every case above passes coverageYOffset: 0, so neither side of that
+  // rule was pinned.
+  it('up mode anchors on the coverage baseline, inset and all', () => {
+    expect(
+      computeArcBand(
+        makeState({
+          readConnections: 'arc',
+          readConnectionsHeight: 60,
+          coverageReservedPx: 80,
+          coverageYOffset: 5,
+        }),
+      ),
+    ).toEqual({ top: 0, height: 75, down: false })
+  })
+
+  it('up mode keeps its whole band when there is no coverage to inset from', () => {
+    // `reservesArcsBand` reserves the full readConnectionsHeight here, so a
+    // band shorter than that floats the arcs above the bottom of their own
+    // strip and shortens availH — for a baseline that isn't on screen.
+    expect(
+      computeArcBand(
+        makeState({
+          readConnections: 'arc',
+          readConnectionsHeight: 60,
+          coverageReservedPx: 0,
+          coverageYOffset: 5,
+        }),
+      ),
+    ).toEqual({ top: 0, height: 60, down: false })
+  })
+
+  it('down mode sits below the coverage band', () => {
+    expect(
+      computeArcBand(
+        makeState({
+          readConnections: 'arc',
+          readConnectionsHeight: 60,
+          readConnectionsDown: true,
+          coverageReservedPx: 80,
+        }),
+      ),
+    ).toEqual({ top: 80, height: 60, down: true })
+  })
+
+  it('down mode renders at the top when coverage is hidden (decoupled)', () => {
+    expect(
+      computeArcBand(
+        makeState({
+          readConnections: 'arc',
+          readConnectionsHeight: 60,
+          readConnectionsDown: true,
+          coverageReservedPx: 0,
+        }),
+      ),
+    ).toEqual({ top: 0, height: 60, down: true })
   })
 })

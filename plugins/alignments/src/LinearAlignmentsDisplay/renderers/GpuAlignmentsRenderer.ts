@@ -12,15 +12,9 @@ import {
   uploadMarks,
 } from '@jbrowse/render-core/marks/backend'
 import { GpuRenderingBackendBase } from '@jbrowse/render-core/renderingBackendBase'
-import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
 import { READ_MARK } from '../../features/read/mark.ts'
-import * as flatQuadShader from '../../shaders/slang/flatQuad.generated.ts'
-import {
-  getSelectionBounds,
-  toClipRect,
-} from '../components/chainOverlayUtils.ts'
 import { ARC_BAND_UNIFORMS_SIZE_BYTES } from './arcBandUniforms.ts'
 import { ARC_BAND_MARKS } from './arcMarks.ts'
 import {
@@ -33,17 +27,12 @@ import {
   writePileupFrame,
   writePileupPalette,
 } from './pileupUniforms.ts'
-import {
-  lazyReadIdToIndex,
-  sectionRegionKey,
-  sectionRenderState,
-} from './rendererTypes.ts'
+import { sectionRegionKey, sectionRenderState } from './rendererTypes.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsPackData } from '../../features/arcs/packGpu.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { CoverageRegionFields } from '../../features/coverage/types.ts'
-import type { ChainBoundsRegion } from '../components/chainOverlayUtils.ts'
 import type { PileupUniformViews } from './pileupUniforms.ts'
 import type {
   AlignmentsRenderingBackend,
@@ -59,26 +48,10 @@ import type { MarkPlan } from '@jbrowse/render-core/marks'
 
 export { PALETTE_UNIFORM_FIELDS } from './pileupUniforms.ts'
 
-// The selection-frame overlay: the one pass with no feature folder and no
-// packer, because its instances aren't a region's data — they are four quads
-// built per frame from the current selection (see `drawOverlayQuads`), uploaded
-// under their own region key and deleted at the end of the frame.
-const PASS_FLAT_QUAD = 'flatQuad'
-const FLAT_QUAD_PASS = slangPass({
-  id: PASS_FLAT_QUAD,
-  mod: flatQuadShader,
-})
-
 // Pure LocalRegion constructor — the shape a region with no pileup feed gets
 // (arcs whose mate is off-screen bring their own region key).
 function emptyRegion(): RegionMeta {
   return {
-    readIdToIndex: lazyReadIdToIndex({
-      readKeys: [],
-      readIdPrefix: undefined,
-    }),
-    readPositions: new Uint32Array(0),
-    readYs: new Uint16Array(0),
     coveragePackedBuffer: EMPTY_BUFFER,
     coverageMaxDepth: 0,
     coverageBinSize: 1,
@@ -101,9 +74,6 @@ const EMPTY_BUFFER = new ArrayBuffer(0)
 function regionMeta(data: PileupDataResult): RegionMeta {
   const hasCoverage = data.coverageGpuBinCount > 0
   return {
-    readIdToIndex: lazyReadIdToIndex(data),
-    readPositions: data.readPositions,
-    readYs: data.readYs,
     coveragePackedBuffer: data.coveragePackedBuffer,
     coverageMaxDepth: hasCoverage ? data.coverageMaxDepth : 0,
     coverageBinSize: hasCoverage ? data.coverageBinSize : 1,
@@ -145,25 +115,17 @@ interface UploadedRegion {
   arcLineWidth: number
 }
 
-// Per-region data not tracked by the HAL. Extends ChainBoundsRegion so
-// `getChainBounds` accepts it directly, and the band region so the coverage
-// marks' params read the peaks off it; the buffers themselves are references
-// the model already holds.
-interface RegionMeta extends ChainBoundsRegion, AlignmentsCoverageRegion {}
+// Per-region data not tracked by the HAL: the coverage band's region, so the
+// coverage marks' params read the peaks off it; the buffers themselves are
+// references the model already holds.
+type RegionMeta = AlignmentsCoverageRegion
 
-// What `renderBlocks` reads per region: the pileup metadata plus the band's own
-// feed, which the arc marks take as their region the way the coverage marks take
-// the pileup payload.
+// What `renderBlocks` reads per region: the band metadata plus the arc band's
+// own feed, which the arc marks take as their region the way the coverage marks
+// take the pileup payload.
 interface LocalRegion extends RegionMeta {
   arcPack: ArcsPackData
 }
-
-const OVERLAY_REGION = 999999
-
-// A device-px vertical span: scissor/viewport top + height in backing-store px,
-// as `devicePxBand` returns it. Named locally because three method signatures
-// below take one.
-type DevBand = ReturnType<typeof devicePxBand>
 
 /**
  * The pileup band's passes, in `PILEUP_MARKS` order — each mark's own, which
@@ -191,78 +153,14 @@ const EMPTY_ARCS = emptyArcsUploadData()
 // would have drawn.
 const EMPTY_ARC_PACK: ArcsPackData = { arcs: EMPTY_ARCS, baseWidth: 0 }
 
-// Everything the HAL compiles, derived from the three mark lists plus the
-// packer-less overlay pass, so that registering a pass is not a fourth wiring
-// point a new mark can be missed from. `drawPass` on an unregistered id draws
-// nothing and throws nothing.
+// Everything the HAL compiles, derived from the three mark lists, so that
+// registering a pass is not a fourth wiring point a new mark can be missed
+// from. `drawPass` on an unregistered id draws nothing and throws nothing.
 export const ALIGNMENTS_PASSES: PipelineDescriptor[] = [
   ...PILEUP_PASSES,
   ...ALIGNMENTS_COVERAGE_MARKS.map(m => m.pass),
   ...ARC_PASSES,
-  FLAT_QUAD_PASS,
 ]
-
-// JBrowse brand blue (#00B8FF approx) in normalized linear RGB.
-const SELECTION_RGBA = [0, 0.722, 1, 1] as const
-
-// A clip-space selection rectangle, as returned by `toClipRect`.
-interface ClipRect {
-  sx1: number
-  sx2: number
-  syTop: number
-  syBot: number
-}
-
-// Append 4 quads forming a 2px-wide selection frame (top + bottom + two sides)
-// to `out`. Each edge straddles the rect boundary by 1 CSS px either side,
-// matching Canvas2D's strokeRect(lineWidth=2), whose stroke is centered on the
-// edge — quads built wholly inside the rect drew the box a pixel smaller and
-// half as thick on the GPU. tx/ty are 1 CSS px in clip space. Each quad is
-// 8 floats: x1,y1,x2,y2,r,g,b,a.
-function pushSelectionFrame(
-  out: number[],
-  c: ClipRect,
-  scissorW: number,
-  canvasHeight: number,
-) {
-  const tx = 2 / scissorW
-  const ty = 2 / canvasHeight
-  const [r, g, b, a] = SELECTION_RGBA
-  out.push(
-    c.sx1 - tx,
-    c.syTop + ty,
-    c.sx2 + tx,
-    c.syTop - ty,
-    r,
-    g,
-    b,
-    a,
-    c.sx1 - tx,
-    c.syBot + ty,
-    c.sx2 + tx,
-    c.syBot - ty,
-    r,
-    g,
-    b,
-    a,
-    c.sx1 - tx,
-    c.syTop,
-    c.sx1 + tx,
-    c.syBot,
-    r,
-    g,
-    b,
-    a,
-    c.sx2 - tx,
-    c.syTop,
-    c.sx2 + tx,
-    c.syBot,
-    r,
-    g,
-    b,
-    a,
-  )
-}
 
 export class GpuAlignmentsRenderer
   extends GpuRenderingBackendBase
@@ -534,7 +432,6 @@ export class GpuAlignmentsRenderer
     this.hal.clearScissor()
     this.hal.clearViewport()
     this.hal.endFrame()
-    this.hal.deleteRegion(OVERLAY_REGION)
     // No second clearing bracket for the nothing-drawn case: `beginFrame`
     // already cleared the canvas, and a frame with no draws submits that clear.
     return hasDrawn
@@ -610,7 +507,6 @@ export class GpuAlignmentsRenderer
     if (band.height > 0) {
       this.hal.setScissor(clip.pxX, band.top, clip.pxW, band.height)
       drawPlannedPasses(this.hal, pileup, regionKey)
-      this.renderFeatureOverlays(block, sectionState, region, clip, band, bufH)
     }
 
     // Up- and down-mode arcs both draw here, after the pileup, in their own
@@ -670,64 +566,6 @@ export class GpuAlignmentsRenderer
         regionKey,
       )
     }
-  }
-
-  private renderFeatureOverlays(
-    block: RenderBlock,
-    state: RenderState,
-    region: LocalRegion,
-    clip: BlockClipResult,
-    pileup: DevBand,
-    bufH: number,
-  ) {
-    // Chain selection supersedes single-read; shared with the Canvas2D renderer.
-    const bounds = getSelectionBounds(state, region)
-    if (bounds) {
-      const clippedBpStart = clip.bpStartHi + clip.bpStartLo
-      const bpLen = clip.clippedLengthBp
-      const quads: number[] = []
-      pushSelectionFrame(
-        quads,
-        toClipRect(
-          bounds.startBp,
-          bounds.endBp,
-          bounds.yRow,
-          state,
-          clippedBpStart,
-          bpLen,
-          state.pileupTopOffset,
-          state.canvasHeight,
-          block.reversed,
-        ),
-        clip.scissorW,
-        state.canvasHeight,
-      )
-      this.drawOverlayQuads(
-        new Float32Array(quads),
-        quads.length / 8,
-        clip,
-        pileup,
-        bufH,
-      )
-    }
-  }
-
-  private drawOverlayQuads(
-    quads: Float32Array,
-    count: number,
-    clip: BlockClipResult,
-    pileup: DevBand,
-    bufH: number,
-  ) {
-    this.hal.uploadBuffer(
-      OVERLAY_REGION,
-      PASS_FLAT_QUAD,
-      quads.buffer as ArrayBuffer,
-      count,
-    )
-    this.hal.setViewport(clip.pxX, 0, clip.pxW, bufH)
-    this.hal.setScissor(clip.pxX, pileup.top, clip.pxW, pileup.height)
-    this.hal.drawPass(PASS_FLAT_QUAD, OVERLAY_REGION)
   }
 
   override dispose() {

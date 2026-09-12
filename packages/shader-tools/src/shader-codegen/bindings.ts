@@ -181,9 +181,10 @@ function wgslBindingKind(addressSpace: string | undefined, type: string) {
  * for both.
  *
  * **One-directional, like the vertex-input check, and for the same reason.**
- * slangc drops a binding the shader body never reads: `flatQuad.slang` declares
- * `ConstantBuffer<Uniforms> u` and then takes every value from its instance
- * attributes, so reflection reports the uniform and the WGSL has no
+ * slangc drops a binding the shader body never reads: a shader declaring
+ * `ConstantBuffer<Uniforms> u` and then taking every value from its instance
+ * attributes (alignments' selection-frame shader did, until the frame became
+ * the chrome's guide) has reflection report the uniform while the WGSL has no
  * `@binding(1)` at all. That is DCE, not divergence, and it is harmless — a
  * pipeline layout may declare bindings the shader doesn't use. What must hold is
  * the other direction: nothing the WGSL *declares* may be missing from the table

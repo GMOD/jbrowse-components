@@ -216,10 +216,11 @@ function compare(
 // backend declared no uniform block at all, an EMPTY array means it declared one
 // whose members did not parse.
 //
-// The first is legitimate and happens — `flatQuad.slang` declares
-// `ConstantBuffer<Uniforms> u` and never reads it, so Slang eliminates the block
-// from both emitted backends while reflection goes on reporting it (and the
-// codegen goes on emitting a 912-byte `writeUniforms` nothing reads). The second
+// The first is legitimate and happens — a shader that declares
+// `ConstantBuffer<Uniforms> u` and never reads it (alignments' selection-frame
+// shader did) has Slang eliminate the block from both emitted backends while
+// reflection goes on reporting it (and the codegen goes on emitting a
+// `writeUniforms` nothing reads). The second
 // is the guard that silently stopped guarding, which is what the vertex-input
 // check learned to refuse.
 //

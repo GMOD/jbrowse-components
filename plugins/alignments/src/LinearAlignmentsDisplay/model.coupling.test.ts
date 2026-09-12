@@ -8,6 +8,7 @@ import { namesToBlock } from '../shared/readNameBlock.ts'
 import {
   bootAlignmentsDisplay,
   clickMenuItem,
+  createTestAlignmentsDisplay,
   findMenuItem,
   hasMenuItem,
   makeEmptyAlignmentsResult,
@@ -1371,5 +1372,44 @@ describe('per-lane state belongs to one grouping key space', () => {
     const display = collapsedUntaggedLane()
     display.setGroupBy({ type: 'tag', tag: 'HP' })
     expect(display.collapsedGroups.has('')).toBe(true)
+  })
+})
+
+// The selection used to ride `renderState` so the renderers could frame it,
+// which repainted every band on a click and put the box in the SVG export. It
+// is the chrome's guide now, like the hover: a click recomputes `selectionInk`
+// and nothing the canvas reads.
+describe('a selection is the chrome guide, not the canvas', () => {
+  test('selecting a read leaves renderState alone', () => {
+    const { session, display } = createTestAlignmentsDisplay()
+    let renderStates = 0
+    const stop = autorun(() => {
+      void display.renderState
+      renderStates++
+    })
+    expect(renderStates).toBe(1)
+    session.setSelection(
+      new SimpleFeature({ uniqueId: 'r1', refName: 'ctgA', start: 5, end: 9 }),
+    )
+    expect(display.selectedFeatureId).toBe('r1')
+    expect(renderStates).toBe(1)
+    expect('selectedFeatureId' in display.renderState).toBe(false)
+    expect('selectedChainReadIds' in display.renderState).toBe(false)
+    // Nothing fetched yet, so no read has ink to light.
+    expect(display.selectionInk).toEqual([])
+    stop()
+  })
+
+  test('a chain selection leaves renderState alone too', () => {
+    const { display } = createTestAlignmentsDisplay()
+    let renderStates = 0
+    const stop = autorun(() => {
+      void display.renderState
+      renderStates++
+    })
+    display.setSelectedChainReadIds(['r1', 'r2'])
+    expect(renderStates).toBe(1)
+    expect(display.selectionInk).toEqual([])
+    stop()
   })
 })

@@ -56,7 +56,6 @@ function baseState(overrides: Partial<RenderState> = {}): RenderState {
     showPerBaseLetter: false,
     canvasWidth: 100,
     canvasHeight: 100,
-    selectedChainReadIds: [],
     colors: {
       colorBaseA: [1, 0, 0],
       colorMutedSnpBase: [0.5, 0.5, 0.5],

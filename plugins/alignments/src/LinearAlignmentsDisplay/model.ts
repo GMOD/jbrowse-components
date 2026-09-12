@@ -2770,12 +2770,6 @@ export default function stateModelFactory(
             // this is not `view.width` and what SVG export does instead
             canvasWidth: self.canvasWidthPx,
             canvasHeight: self.height,
-            selectedFeatureId: self.selectedFeatureId,
-            // The renderers draw on `length > 0` with no mode check, so the
-            // gate lives in `selectedChainReadIdsInMode`. (The hover highlight
-            // is `hoverInk`, not here, so a hover never triggers a canvas
-            // repaint.)
-            selectedChainReadIds: self.selectedChainReadIdsInMode,
             colors: palette,
             chainMode: self.isChainMode,
             showLinkedReadLines: self.showLinkedReadLines,
@@ -2793,18 +2787,45 @@ export default function stateModelFactory(
          * repaint the whole pileup each move.
          */
         get hoverInk(): HighlightRect[] {
-          const view = self.host
           const chainReadIds = self.highlightedChainReadIds
-          const ids =
+          return this.readInk(
             chainReadIds.length > 0
               ? chainReadIds
               : self.featureIdUnderMouse
                 ? [self.featureIdUnderMouse]
-                : []
-          // Reading `readIdIndexMap` forces its (per-read) build over the whole
-          // fetched dataset — deferred until something is actually hovered /
-          // highlighted so it stays off the initial-render path.
-          return view.initialized && ids.length > 0
+                : [],
+            chainReadIds.length > 0,
+          )
+        },
+
+        /**
+         * #getter
+         * The boxes of the selected read, or of every read in the selected
+         * chain, for the chrome's highlight — the same walk as `hoverInk`, so
+         * a click repaints the guide's divs and not the canvas, and the box
+         * is not in the SVG export, as no display's selection is.
+         */
+        get selectionInk(): HighlightRect[] {
+          const chainReadIds = self.selectedChainReadIdsInMode
+          return this.readInk(
+            chainReadIds.length > 0
+              ? chainReadIds
+              : self.selectedFeatureId
+                ? [self.selectedFeatureId]
+                : [],
+            chainReadIds.length > 0,
+          )
+        },
+
+        /**
+         * #method
+         * The boxes the named reads painted, clipped to their sections.
+         * Reading `readIdIndexMap` forces its (per-read) build over the whole
+         * fetched dataset — deferred until something is actually hovered or
+         * selected so it stays off the initial-render path.
+         */
+        readInk(ids: readonly string[], strong: boolean): HighlightRect[] {
+          return self.host.initialized && ids.length > 0
             ? readHighlightInk({
                 blocks: self.renderBlocks,
                 sections: self.renderSections,
@@ -2812,7 +2833,7 @@ export default function stateModelFactory(
                 ids,
                 state: this.renderState,
                 scroll: self.scrollModel,
-                strong: chainReadIds.length > 0,
+                strong,
               })
             : []
         },

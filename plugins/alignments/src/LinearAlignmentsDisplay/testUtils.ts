@@ -83,9 +83,8 @@ export function makeTestPalette(
  *
  * An explicit literal rather than a cast, for `makeTestPalette`'s reason: a
  * `as unknown as RenderState` fixture silently stops covering a field the type
- * gains, and the renderers read this straight through to `drawSection` — the
- * shape that bit was `selectedChainReadIds`, absent from a hand-built state and
- * dereferenced unconditionally by `getSelectionBounds`.
+ * gains, and the renderers read this straight through to `drawSection`, where
+ * an array the fixture forgot is dereferenced unconditionally.
  */
 export function makeTestRenderState(
   overrides: Partial<RenderState> = {},
@@ -112,8 +111,6 @@ export function makeTestRenderState(
     showModifications: false,
     showPerBaseQuality: false,
     showPerBaseLetter: false,
-    selectedChainReadIds: [],
-    selectedFeatureId: undefined,
     colors: makeTestPalette(),
     chainMode: false,
     showLinkedReadLines: false,

@@ -144,8 +144,8 @@ test('catches a UNIFORMS_SIZE_BYTES that does not cover the last field', () => {
 
 describe('finding nothing', () => {
   test('a block Slang eliminated from every target is not an error', () => {
-    // `flatQuad.slang` declares a ConstantBuffer it never reads, so neither
-    // backend emits the block while reflection goes on reporting it.
+    // A shader that declares a ConstantBuffer it never reads has neither
+    // backend emit the block while reflection goes on reporting it.
     expect(
       assertUniformLayoutMatches('x.slang', EXPECTED, TOTAL, {
         wgsl: 'fn vs_main() {}',

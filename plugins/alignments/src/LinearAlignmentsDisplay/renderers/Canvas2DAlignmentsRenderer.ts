@@ -1,7 +1,6 @@
 import {
   forEachClippedBlock,
   prepareCanvas,
-  spanRect,
   withClip,
 } from '@jbrowse/render-core/canvas2dUtils'
 import { planMarks } from '@jbrowse/render-core/marks'
@@ -15,16 +14,10 @@ import {
   buildReadFields,
   emptyReadFields,
 } from '../../features/read/buildRegion.ts'
-import { getSelectionBounds } from '../components/chainOverlayUtils.ts'
 import { paintArcBand } from './arcMarks.ts'
 import { ALIGNMENTS_COVERAGE_MARKS } from './coverageMarks.ts'
 import { PILEUP_MARKS } from './pileupMarks.ts'
-import {
-  bpToScreenX,
-  pileupRowY,
-  sectionRegionKey,
-  sectionRenderState,
-} from './rendererTypes.ts'
+import { sectionRegionKey, sectionRenderState } from './rendererTypes.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
@@ -279,7 +272,8 @@ export class Canvas2DAlignmentsRenderer
  * Pure draw entry point. Takes any 2D-canvas-like context (real
  * CanvasRenderingContext2D or SvgCanvas) plus a prepared regions map and
  * paints the alignments display: arcs, coverage, pileup reads, mismatches,
- * insertions, soft/hard clips, modifications, and highlight/chain overlays.
+ * insertions, soft/hard clips and modifications. The hover and the selection
+ * are the chrome's guide and are not painted here or exported.
  *
  * No `this`, no DOM, no DPR scaling — just data → ctx. The on-screen
  * Canvas2DAlignmentsRenderer wraps this with prepareCanvas + lifecycle
@@ -377,7 +371,6 @@ export function drawAlignmentBlocks(
             for (const mark of pileup.marks) {
               mark.paintBlock(ctx, region, block, sectionState)
             }
-            drawSelectionOverlays(ctx, region, block, sectionState)
           },
         )
 
@@ -402,54 +395,4 @@ export function drawAlignmentBlocks(
     },
   )
   return painted
-}
-
-interface OverlayBounds {
-  startBp: number
-  endBp: number
-  yRow: number
-}
-
-interface OverlayBlock {
-  start: number
-  end: number
-  screenStartPx: number
-  screenEndPx: number
-  reversed?: boolean
-}
-
-function paintSelectionBox(
-  ctx: Ctx2D,
-  bounds: OverlayBounds,
-  block: OverlayBlock,
-  state: RenderState,
-) {
-  const bpLength = block.end - block.start
-  const fullBlockWidth = block.screenEndPx - block.screenStartPx
-  // On a reversed block bpToScreenX flips (startBp lands right of endBp), and a
-  // raw `x2 - x1` width goes negative. The raster canvas tolerates that, but
-  // SvgCanvas would emit `width="-…"` and the box silently vanished from SVG
-  // export.
-  const { left, width } = spanRect(
-    bp => bpToScreenX(bp, block, bpLength, fullBlockWidth),
-    bounds.startBp,
-    bounds.endBp,
-  )
-  const y = pileupRowY(bounds.yRow, state)
-  ctx.strokeStyle = '#00b8ff'
-  ctx.lineWidth = 2
-  ctx.strokeRect(left, y, width, state.featureHeight)
-}
-
-// Selection only — the hover highlight is the chrome's guide (`hoverInk`).
-function drawSelectionOverlays(
-  ctx: Ctx2D,
-  region: Canvas2DRegionData,
-  block: OverlayBlock,
-  state: RenderState,
-) {
-  const bounds = getSelectionBounds(state, region)
-  if (bounds) {
-    paintSelectionBox(ctx, bounds, block, state)
-  }
 }

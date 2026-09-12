@@ -1,12 +1,7 @@
-import { SvgCanvas } from '@jbrowse/core/util/SvgCanvas'
-
 import { makePileupDataResult } from '../../RenderAlignmentDataRPC/testPileupData.ts'
 import { READ_COLOR_CATEGORY } from '../colorUtils.ts'
 import { makeTestPalette } from '../testUtils.ts'
-import {
-  Canvas2DAlignmentsRenderer,
-  drawAlignmentsToCtx,
-} from './Canvas2DAlignmentsRenderer.ts'
+import { Canvas2DAlignmentsRenderer } from './Canvas2DAlignmentsRenderer.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { RenderState } from './rendererTypes.ts'
@@ -268,8 +263,6 @@ function state(overrides: Partial<RenderState> = {}): RenderState {
     showModifications: true,
     showPerBaseQuality: true,
     showPerBaseLetter: true,
-    selectedChainReadIds: [],
-    selectedFeatureId: undefined,
     // The shared fixture rather than a literal inside the cast below: this one
     // had already fallen a field behind (`colorFlatConnector`), and a layer that
     // reads a colour the cast let through as undefined fails at MODULE scope
@@ -420,65 +413,4 @@ it('the tolerance is far tighter than the bug it guards against', () => {
   // A one-base slip moves a mark PX_PER_BP; the tolerance only absorbs the
   // sub-pixel seam fudge. If this ever inverts, the mirror checks go blind.
   expect(FUDGE_TOLERANCE_PX).toBeLessThan(PX_PER_BP / 4)
-})
-
-// The selection box is the one span in the shared draw path emitted as
-// `strokeRect(x1, y, x2 - x1, h)`. On a reversed block bpToScreenX flips, so
-// x2 < x1 and the width goes negative. The raster canvas normalizes a negative
-// rect, but SvgCanvas emitted `width="-…"`, which SVG refuses to render — so a
-// selected read's box vanished only in SVG export of a reversed view. The
-// recording ctx above no-ops strokeRect, so this exercises the real SvgCanvas
-// export path (the same drawAlignmentsToCtx renderSvg.tsx calls).
-describe('reversed selection box SVG export', () => {
-  function exportSvg(reversed: boolean) {
-    const svg = new SvgCanvas()
-    drawAlignmentsToCtx(
-      svg,
-      {
-        sections: [
-          {
-            groupKey: '',
-            laidOutPileupMap: new Map([[0, pileupData()]]),
-            arcsRpcDataMap: new Map(),
-          },
-        ],
-        densityRegions: new Map(),
-        readConnectionsLineWidth: 1,
-      },
-      [
-        {
-          displayedRegionIndex: 0,
-          start: START,
-          end: END,
-          screenStartPx: 0,
-          screenEndPx: BLOCK_WIDTH,
-          reversed,
-        },
-      ],
-      // read r1 spans [1005,1020]: forward → [100,400], reversed → [600,900].
-      state({ selectedFeatureId: 'r1' }),
-    )
-    return svg.getSerializedSvg()
-  }
-
-  // The selection box is the only #00b8ff stroke; pull just that <rect>.
-  const selectionRect = (svg: string) =>
-    /<rect [^>]*stroke="#00b8ff"[^>]*\/>/.exec(svg)?.[0]
-
-  it('emits a valid positive-width rect (never width="-…")', () => {
-    const rev = exportSvg(true)
-    expect(rev).not.toContain('width="-')
-    const rect = selectionRect(rev)
-    expect(rect).toBeDefined()
-    // reversed: min(600,900)=600, width abs(900-600)=300.
-    expect(rect).toContain('x="600"')
-    expect(rect).toContain('width="300"')
-  })
-
-  it('mirrors the forward box: same width, edge W - x - w', () => {
-    const fwd = selectionRect(exportSvg(false))!
-    // forward: x=100, width=300 → mirror edge = 1000 - 100 - 300 = 600.
-    expect(fwd).toContain('x="100"')
-    expect(fwd).toContain('width="300"')
-  })
 })
