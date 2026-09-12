@@ -1,7 +1,6 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { observer } from 'mobx-react'
 
-import { laneHeaderRows } from '../laneHeader.ts'
 import { SvgLaneHeaders } from './SvgLaneHeaders.tsx'
 
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
@@ -55,7 +54,6 @@ const MultiWayOverlay = observer(function MultiWayOverlay({
   exportSVG?: boolean
 }) {
   const palette = usePalette()
-  const view = model.lgv
   if (!exportSVG) {
     return (
       <svg
@@ -75,11 +73,7 @@ const MultiWayOverlay = observer(function MultiWayOverlay({
   return (
     <g transform={`translate(0 ${-model.scrollTop})`}>
       <SvgLaneHeaders
-        rows={laneHeaderRows(
-          model.laneStack.lanes,
-          model.visibleBpSpan,
-          view.coarseVisibleLocStrings || view.visibleLocStrings,
-        )}
+        rows={model.laneHeaderRows}
         width={model.canvasWidth}
         palette={palette}
       />

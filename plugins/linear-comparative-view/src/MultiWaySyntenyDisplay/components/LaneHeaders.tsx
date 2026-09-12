@@ -10,7 +10,7 @@ import {
   laneOrderAfterDrop,
   pastDragSlop,
 } from '../laneDrag.ts'
-import { LABEL_FONT_SIZE, labelBoxTop, laneHeaderRows } from '../laneHeader.ts'
+import { LABEL_FONT_SIZE, labelBoxTop } from '../laneHeader.ts'
 import { laneHeaderMenuItems } from '../menus.ts'
 
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
@@ -55,14 +55,8 @@ const LaneHeaders = observer(function LaneHeaders({
   model: MultiWaySyntenyDisplayModel
 }) {
   const palette = usePalette()
-  const view = model.lgv
   const { lanes } = model.laneStack
-  const { visibleBpSpan, canvasWidth: width } = model
-  const rows = laneHeaderRows(
-    lanes,
-    visibleBpSpan,
-    view.coarseVisibleLocStrings || view.visibleLocStrings,
-  )
+  const { canvasWidth: width, laneHeaderRows: rows } = model
   const [drag, setDrag] = useState<LaneDrag>()
   const [dragY, setDragY] = useState<number>()
   const [menu, setMenu] = useState<LaneMenu>()

@@ -55,6 +55,7 @@ import LaneSelectionDialog from './components/LaneSelectionDialog.tsx'
 import { composeLaneLinks } from './composeLaneLinks.ts'
 import { annotationRank } from './laneAnnotation.ts'
 import { frameFromDecision } from './laneDecision.ts'
+import { laneHeaderRows } from './laneHeader.ts'
 import { lanePanelsForRegion } from './lanePanels.ts'
 import { buildLanes, laneContentHeight, laneGeometry } from './laneStack.ts'
 import {
@@ -842,9 +843,12 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       * where the anchor lane is looking, off the settled blocks where there
+       * are any, so a header reading it does not flicker through a pan
        */
       get anchorLocString() {
-        return self.lgv.visibleLocStrings
+        const view = self.lgv
+        return view.coarseVisibleLocStrings || view.visibleLocStrings
       },
       /**
        * #method
@@ -1313,6 +1317,18 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * what each lane's header says and where, for the on-screen headers and
+       * the export's captions alike
+       */
+      get laneHeaderRows() {
+        return laneHeaderRows(
+          self.laneStack.lanes,
+          self.visibleBpSpan,
+          self.anchorLocString,
+        )
+      },
       /**
        * #getter
        * the direct records between each adjacent mate-lane pair as the
