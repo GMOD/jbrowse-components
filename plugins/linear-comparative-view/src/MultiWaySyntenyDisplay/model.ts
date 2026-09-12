@@ -573,6 +573,14 @@ export function stateModelFactory(
       get hoveredGroupKey() {
         return self.hoverTarget?.groupKey
       },
+      /**
+       * #method
+       * whether two spellings name one lane: a session spec spells an
+       * assembly the way the session does, a placement the way the table did
+       */
+      isSameLane(a: string, b: string) {
+        return isSameAssemblyName(a, b, getSession(self).assemblyManager)
+      },
     }))
     .views(self => ({
       /**
@@ -897,9 +905,7 @@ export function stateModelFactory(
        * than as a lane
        */
       get rowAssemblies() {
-        const { assemblyManager } = getSession(self)
-        const sameName = (a: string, b: string) =>
-          isSameAssemblyName(a, b, assemblyManager)
+        const sameName = (a: string, b: string) => self.isSameLane(a, b)
         const selection = self.laneSelection
         return rowAssembliesOf(
           self.groups,

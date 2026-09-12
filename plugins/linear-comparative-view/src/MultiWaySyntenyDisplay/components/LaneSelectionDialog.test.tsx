@@ -15,8 +15,18 @@ const universe: LaneChoice[] = [
   { name: 'extra', placed: true },
 ]
 
-function renderDialog(selection?: string[]) {
+function renderDialog(
+  selection?: string[],
+  {
+    hidden = [],
+    isSameLane = (a: string, b: string) => a === b,
+  }: {
+    hidden?: string[]
+    isSameLane?: (a: string, b: string) => boolean
+  } = {},
+) {
   const calls: (string[] | undefined)[] = []
+  const hides: string[][] = []
   const closes: number[] = []
   render(
     <ThemeProvider theme={createJBrowseTheme()}>
@@ -27,6 +37,11 @@ function renderDialog(selection?: string[]) {
           setSelectedLanes: names => {
             calls.push(names)
           },
+          hiddenLanes: hidden,
+          setHiddenLanes: names => {
+            hides.push(names)
+          },
+          isSameLane,
         }}
         handleClose={() => {
           closes.push(1)
@@ -34,7 +49,7 @@ function renderDialog(selection?: string[]) {
       />
     </ThemeProvider>,
   )
-  return { calls, closes }
+  return { calls, hides, closes }
 }
 
 test('lanes run under their group, and a lane without one heads no run', () => {
@@ -61,7 +76,7 @@ test('opens on every lane when nothing is chosen, and writes back the ticked set
 })
 
 test('ticking every lane writes no selection, and Every lane drops one', () => {
-  const { calls } = renderDialog(['HG2#1'])
+  const { calls, hides } = renderDialog(['HG2#1'], { hidden: ['extra'] })
   expect(screen.getByLabelText('HG2#1')).toBeChecked()
   expect(screen.getByLabelText('extra')).not.toBeChecked()
   fireEvent.click(screen.getByText('Tick shown'))
@@ -69,6 +84,45 @@ test('ticking every lane writes no selection, and Every lane drops one', () => {
   expect(calls).toEqual([undefined])
   fireEvent.click(screen.getByText('Every lane'))
   expect(calls).toEqual([undefined, undefined])
+  expect(hides).toEqual([[], []])
+})
+
+// The picker states what the stack draws. A hidden lane opened ticked, and
+// ticking it wrote a selection the hide still kept out of the stack
+test('a hidden lane opens unticked, and a submit that leaves it alone changes nothing', () => {
+  const unchanged = renderDialog(undefined, { hidden: ['extra', 'elsewhere'] })
+  expect(screen.getByText('3 of 4 lanes chosen', { exact: false })).toBeTruthy()
+  expect(screen.getByLabelText('extra')).not.toBeChecked()
+  fireEvent.click(screen.getByText('Draw these lanes'))
+  expect(unchanged.calls).toEqual([undefined])
+  expect(unchanged.hides).toEqual([['extra', 'elsewhere']])
+})
+
+test('ticking a hidden lane unhides it', () => {
+  const { calls, hides } = renderDialog(undefined, { hidden: ['extra'] })
+  fireEvent.click(screen.getByLabelText('extra'))
+  fireEvent.click(screen.getByText('Draw these lanes'))
+  expect(hides).toEqual([[]])
+  expect(calls).toEqual([undefined])
+})
+
+// A source that does not declare its lanes offers only what this window
+// places, and Submit dropped every chosen lane outside it
+test('a chosen lane this window does not place survives a submit', () => {
+  const { calls } = renderDialog(['HG2#1', 'far-away'])
+  expect(screen.getByText('1 of 4 lanes chosen', { exact: false })).toBeTruthy()
+  fireEvent.click(screen.getByLabelText('extra'))
+  fireEvent.click(screen.getByText('Draw these lanes'))
+  expect(calls).toEqual([['HG2#1', 'extra', 'far-away']])
+})
+
+test('a selection spelled the way the session spells an assembly ticks its lane', () => {
+  renderDialog(['hg1.1-alias'], {
+    isSameLane: (a, b) =>
+      a === b || [a, b].every(n => n === 'HG1.1' || n === 'hg1.1-alias'),
+  })
+  expect(screen.getByLabelText('HG1.1 (HG1#1)')).toBeChecked()
+  expect(screen.getByLabelText('extra')).not.toBeChecked()
 })
 
 test('the filter narrows what the bulk buttons touch', () => {

@@ -6,10 +6,15 @@ import { observer } from 'mobx-react'
 
 import type { LaneChoice, LaneSelectionModel } from '../menus.ts'
 
-export type LaneSelectionDialogModel = Omit<
+export interface LaneSelectionDialogModel extends Omit<
   LaneSelectionModel,
   'openLaneSelection'
->
+> {
+  hiddenLanes: readonly string[]
+  setHiddenLanes: (names: string[]) => void
+  /** whether two spellings name one lane, as the stack compares them */
+  isSameLane: (a: string, b: string) => boolean
+}
 
 function matchesFilter(lane: LaneChoice, filter: string) {
   const needle = filter.trim().toLowerCase()
@@ -48,10 +53,12 @@ function laneCaption(lane: LaneChoice) {
 }
 
 /**
- * Which lanes to draw, out of every lane the source offers. Opens on the
- * selection in force, or on every lane when none is; Submit writes the ticked
- * set back, and ticking every lane writes no selection at all, so lanes the
- * source places later are not shut out. Reset drops the selection.
+ * Which lanes to draw, out of every lane the source offers. Opens on the lanes
+ * the stack draws: the selection in force, or every lane, less the hidden ones.
+ * Submit unhides what is ticked and writes the ticked set back, keeping chosen
+ * lanes this window does not place; ticking every lane writes no selection at
+ * all, so lanes the source places later are not shut out. Reset drops the
+ * selection and unhides every lane.
  */
 const LaneSelectionDialog = observer(function LaneSelectionDialog({
   model,
@@ -60,9 +67,21 @@ const LaneSelectionDialog = observer(function LaneSelectionDialog({
   model: LaneSelectionDialogModel
   handleClose: () => void
 }) {
-  const { laneUniverse, laneSelection } = model
+  const { laneUniverse, laneSelection, hiddenLanes } = model
+  const among = (names: readonly string[], name: string) =>
+    names.some(other => model.isSameLane(other, name))
   const [chosen, setChosen] = useState(
-    () => new Set(laneSelection ?? laneUniverse.map(lane => lane.name)),
+    () =>
+      new Set(
+        laneUniverse
+          .filter(
+            lane =>
+              (laneSelection === undefined ||
+                among(laneSelection, lane.name)) &&
+              !among(hiddenLanes, lane.name),
+          )
+          .map(lane => lane.name),
+      ),
   )
   const [filter, setFilter] = useState('')
   const shown = laneUniverse.filter(lane => matchesFilter(lane, filter))
@@ -87,12 +106,24 @@ const LaneSelectionDialog = observer(function LaneSelectionDialog({
       submitText="Draw these lanes"
       submitDisabled={chosen.size === 0}
       onSubmit={() => {
+        const ticked = laneUniverse
+          .filter(lane => chosen.has(lane.name))
+          .map(lane => lane.name)
+        const stillHidden = hiddenLanes.filter(name => !among(ticked, name))
+        // an unticked lane that stays hidden needs no selection to keep it out
+        const kept = laneUniverse
+          .filter(
+            lane => chosen.has(lane.name) || among(stillHidden, lane.name),
+          )
+          .map(lane => lane.name)
+        const offWindow = (laneSelection ?? []).filter(
+          name => !laneUniverse.some(lane => model.isSameLane(lane.name, name)),
+        )
+        model.setHiddenLanes(stillHidden)
         model.setSelectedLanes(
-          laneUniverse.every(lane => chosen.has(lane.name))
+          kept.length === laneUniverse.length
             ? undefined
-            : laneUniverse
-                .filter(lane => chosen.has(lane.name))
-                .map(lane => lane.name),
+            : [...kept, ...offWindow],
         )
         handleClose()
       }}
@@ -100,6 +131,7 @@ const LaneSelectionDialog = observer(function LaneSelectionDialog({
         handleClose()
       }}
       onReset={() => {
+        model.setHiddenLanes([])
         model.setSelectedLanes(undefined)
         handleClose()
       }}
