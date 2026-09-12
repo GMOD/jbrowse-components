@@ -56,8 +56,7 @@ into the graph as a walk through its nodes, and two walks that pass through one
 node carry identical sequence there. A haplotype's pairwise alignment to GRCh38
 is therefore its walk read against the reference walk: the nodes both traverse
 are matches, the nodes only one of them traverses between two shared ones are
-the indels and substitutions. Nothing is aligned on this page; what the lanes
-draw is the graph.
+the indels and substitutions.
 
 `gfa_to_pairwise_paf.py` streams the GFA once and keeps only the reference walks
 and the haplotypes asked for; every other walk is skipped unparsed, which is

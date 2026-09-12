@@ -244,9 +244,8 @@ anything.
 
 The display widens each insertion cell to a marker sized by the inserted bp, in
 that haplotype's own genotype color
-([`showInsertionGlyphs`](/docs/config/linearmultisamplevariantdisplay/#slot-showinsertionglyphs)),
-since an insertion consumes no reference. Only haplotypes carrying the allele
-widen.
+([`showInsertionGlyphs`](/docs/config/linearmultisamplevariantdisplay/#slot-showinsertionglyphs)).
+Only haplotypes carrying the allele widen.
 
 That leaves few enough alleles to draw each at its own genomic position, lined
 up with the genes above. **Clustering → Cluster rows by genotype... → Run
