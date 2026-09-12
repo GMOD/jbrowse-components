@@ -1283,6 +1283,7 @@ function stateModelFactory(pluginManager: PluginManager) {
             label: 'Return to import form',
             onClick: () => {
               self.setDisplayedRegions([])
+              self.cancelAutoDiagonalize()
             },
             icon: FolderOpenIcon,
           },

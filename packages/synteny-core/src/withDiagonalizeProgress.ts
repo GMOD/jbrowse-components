@@ -54,7 +54,7 @@ export async function withDiagonalizeProgress(
       console.error(e)
       if (isAlive(model)) {
         getNotificationSink(model).notifyError(
-          `Reordering chromosomes failed, so the view is in its original order: ${e}`,
+          `Reordering chromosomes failed: ${e}`,
           e,
         )
       }
