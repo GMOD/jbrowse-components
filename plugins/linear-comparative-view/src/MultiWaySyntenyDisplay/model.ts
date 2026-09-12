@@ -1412,7 +1412,7 @@ export function stateModelFactory(
       /**
        * #getter
        * two cells per lane — its gene models and baseline, and its placement
-       * boxes — since only the boxes carry an outline. Boxes first, so a hit
+       * boxes; see `buildLaneCells`. Boxes first, so a hit
        * test walking these in order answers the box over the gene the way the
        * draw order does. Colors come off `glyphColors`, so neither the hover —
        * a render parameter — nor a settle re-runs a jexl slot
