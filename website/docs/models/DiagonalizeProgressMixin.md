@@ -7,7 +7,7 @@ sidebar_label: Mixin -> DiagonalizeProgressMixin
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/DiagonalizeProgressMixin.ts).
 
 The auto-diagonalize lifecycle state shared by the comparative views
-(LinearSyntenyView, DotplotView): the in-flight wait, its live RPC status and
+(LinearSyntenyView, DotplotView, CircularView): the in-flight wait, its live RPC status and
 stop token, and the flag that gates `settled` so a screenshot or browser test
 can't capture a pre-reorder hairball.
 
@@ -33,6 +33,6 @@ views report progress, cancel, and gate identically.
 | --- | --- |
 | <span id="action-setawaitingautodiagonalize">**setAwaitingAutoDiagonalize**</span><br><code>(arg: boolean) =&gt; void</code> |  |
 | <span id="action-beginautodiagonalize">**beginAutoDiagonalize**</span><br><code>(requested: boolean) =&gt; void</code> | Declare the gate at the top of one init apply pass: a reorder is pending iff THIS init asked for one. Assigning rather than raising is what hands the gate over cleanly — a superseded init that asked for a reorder and then skipped it would otherwise leave the flag up with nothing coming, wedging `settled` forever. |
-| <span id="action-finishautodiagonalize">**finishAutoDiagonalize**</span><br><code>() =&gt; void</code> | The init-time reorder resolved, so the view on screen is the diagonalized one — open the gate. |
+| <span id="action-finishautodiagonalize">**finishAutoDiagonalize**</span><br><code>() =&gt; void</code> | A reorder resolved, the init's or a manual one, so the view on screen is the diagonalized one — open the gate. |
 | <span id="action-setdiagonalizestoptoken">**setDiagonalizeStopToken**</span><br><code>(arg?: StopToken &#124; undefined) =&gt; void</code> |  |
 | <span id="action-cancelautodiagonalize">**cancelAutoDiagonalize**</span><br><code>() =&gt; void</code> | Abort an in-flight auto-diagonalize; `withDiagonalizeProgress`'s finally clears the wait flag, revealing the (undiagonalized) view.<br><br>Lowers the gate too. The abort reaches the caller as a throw, which skips its `finishAutoDiagonalize()` — right for a reorder that failed on its own (`settled` stays false and a capture times out loudly rather than committing a hairball), wrong for one the user stopped: cancelling IS the user settling for this view, and a gate nothing will lower again leaves `settled` false forever. |
