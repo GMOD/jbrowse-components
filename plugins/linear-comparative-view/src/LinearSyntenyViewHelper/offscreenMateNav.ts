@@ -78,7 +78,6 @@ export function takeFollowAnchor(
   row: number,
 ): FollowAnchorTake {
   const previous = host.followAnchorIndex
-  const previousRow = host.views[previous]
   const anchored = host.views[row]
   const taken = host.followSynteny && previous !== row
   if (taken) {
@@ -88,15 +87,11 @@ export function takeFollowAnchor(
     taken,
     hold: fn => host.holdFollowAnchor(fn),
     release() {
-      // both by node, since a removal renumbers the rows; the setter does not
-      // clamp, so a removed previous holder's index is clamped here
+      // by node, since a removal renumbers the rows
       if (taken && isAlive(host)) {
         const holder = host.views.indexOf(anchored)
         if (holder !== -1 && host.followAnchorIndex === holder) {
-          const back = host.views.indexOf(previousRow)
-          host.setFollowAnchorIndex(
-            back !== -1 ? back : Math.min(previous, host.views.length - 1),
-          )
+          host.setFollowAnchorIndex(previous)
         }
       }
     },

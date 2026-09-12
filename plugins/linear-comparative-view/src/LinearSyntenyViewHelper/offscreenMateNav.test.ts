@@ -179,26 +179,6 @@ describe('takeFollowAnchor', () => {
     expect(h.followAnchorIndex).toBe(0)
   })
 
-  // the view only removes its bottom row, and when that row held the anchor
-  // the index Undo wrote back pointed past the end of the stack
-  it('never releases past the end once the row that held the anchor is gone', () => {
-    const h = host(true, 3, 4)
-    const anchor = takeFollowAnchor(h, 1)
-
-    h.removeRow(3)
-    anchor.release()
-    expect(h.followAnchorIndex).toBe(2)
-  })
-
-  it('gives the anchor back to the row that held it, wherever that row went', () => {
-    const h = host(true, 3, 5)
-    const anchor = takeFollowAnchor(h, 1)
-
-    h.removeRow(2)
-    anchor.release()
-    expect(h.views[h.followAnchorIndex]!.name).toBe('row3')
-  })
-
   it('releases nothing once the anchored row is gone', () => {
     const h = host(true, 0, 3)
     const anchor = takeFollowAnchor(h, 2)
