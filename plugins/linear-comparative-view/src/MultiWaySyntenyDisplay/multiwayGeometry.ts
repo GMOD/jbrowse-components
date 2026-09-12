@@ -416,6 +416,7 @@ class GlyphBuilder {
   arrowDirections: number[] = []
   arrowColors: number[] = []
   hits: GlyphHit[] = []
+  outlineColor = 0
 
   rect(x1: number, x2: number, y: number, height: number, color: number) {
     this.rectPositions.push(toU32(Math.min(x1, x2)), toU32(Math.max(x1, x2)))
@@ -423,26 +424,6 @@ class GlyphBuilder {
     this.rectHeights.push(height)
     this.rectColors.push(color)
     this.rectStrands.push(0)
-  }
-
-  // A filled rect with a 1px border of its own color, inside its edges where
-  // the rect pass's `rectDrawsOutline` would draw one. Not that uniform: it
-  // is one color per cell, and every box in a lane took the first box's.
-  box(
-    x1: number,
-    x2: number,
-    y: number,
-    height: number,
-    fill: number,
-    outline: number,
-  ) {
-    this.rect(x1, x2, y, height, fill)
-    if (x2 - x1 > 2 && height > 2) {
-      this.rect(x1, x2, y, 1, outline)
-      this.rect(x1, x2, y + height - 1, 1, outline)
-      this.rect(x1, x1 + 1, y + 1, height - 2, outline)
-      this.rect(x2 - 1, x2, y + 1, height - 2, outline)
-    }
   }
 
   line(
@@ -495,7 +476,7 @@ class GlyphBuilder {
       arrowWidthsBp: Uint32Array.from(this.arrowWidths),
       arrowDirections: Int8Array.from(this.arrowDirections),
       arrowColors: Uint32Array.from(this.arrowColors),
-      outlineColor: 0,
+      outlineColor: this.outlineColor,
       hits: this.hits,
     }
   }
@@ -560,10 +541,11 @@ export interface LaneCells {
  * does not name is the ordinary case. Culled to half a screen either side,
  * which is as far as a pan can carry the stack before it re-lays out.
  *
- * TWO cells, drawn genes first, so a box lies over everything a gene draws:
- * within one cell the arrows paint after every rect. Each box carries a border
- * of its own color, which is what makes it read as a box rather than a
- * washed-out gene.
+ * TWO cells, because `outlineColor` is a per-cell uniform the rect pass applies
+ * to every rect it holds: the boxes take the lane's stroke as their border,
+ * which is what makes a box read as a box rather than a washed-out gene, and a
+ * gene takes none, the feature track's own default. The uniform is one color,
+ * so the border is the stroke rather than each group's color.
  */
 export function buildLaneCells({
   lane,
@@ -587,6 +569,7 @@ export function buildLaneCells({
   // and in line.slang/arrow.slang's `snapBoxCenterY`
   const centerY = y + glyphHeight / 2
   const stroke = cssColorToABGR(colors.stroke)
+  boxes.outlineColor = stroke
   glyphs.line(
     -width,
     2 * width,
@@ -674,13 +657,12 @@ export function buildLaneCells({
       const [boxLeft, spanRight] =
         span[0] <= span[1] ? span : [span[1], span[0]]
       const boxRight = Math.max(boxLeft + 1, spanRight)
-      boxes.box(
+      boxes.rect(
         boxLeft,
         boxRight,
         y + 1,
         Math.max(1, glyphHeight - 2),
         withAbgrAlpha(color, BOX_ALPHA),
-        color,
       )
       boxes.hits.push({
         x1: boxLeft,

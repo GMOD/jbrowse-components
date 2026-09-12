@@ -623,12 +623,7 @@ describe('a lane cell', () => {
     expect(box.x1).toBe(400)
     expect(box.x2).toBe(480)
     expect(abgrAlpha(boxes.rectColors[0]!)).toBe(64)
-    // the border is the box's own four rects: `outlineColor` is one uniform per
-    // CELL, which handed every rect in it the first box's color
-    expect([...boxes.rectColors].slice(1, 5)).toEqual(
-      Array(4).fill(cssColorToABGR('goldenrod')),
-    )
-    expect(boxes.outlineColor).toBe(0)
+    expect(boxes.outlineColor).toBe(cssColorToABGR(colors.stroke))
     expect(glyphs.outlineColor).toBe(0)
     // g1 has no box — the gene covers it — so the GENE carries its key, and a
     // hover over the drawn gene lights the same group the box would have. g2
@@ -643,7 +638,9 @@ describe('a lane cell', () => {
     ).toBe('g1')
   })
 
-  test('outlines each box in its own color', () => {
+  // `outlineColor` is one uniform per cell, and it took the first box's fill,
+  // so on a source colored per feature every box wore one group's border
+  test('outlines every box in the lane stroke, whatever its fill', () => {
     const s = stack({
       features: [pairFeature('g1', 100, 200), pairFeature('g2', 500, 600)],
     })
@@ -658,13 +655,10 @@ describe('a lane cell', () => {
           feature.get('name') === 'g1' ? 'red' : 'blue',
       },
     })
-    const red = cssColorToABGR('red')
-    const blue = cssColorToABGR('blue')
     expect([...boxes.rectColors]).toEqual([
-      withAbgrAlpha(red, 64),
-      ...Array(4).fill(red),
-      withAbgrAlpha(blue, 64),
-      ...Array(4).fill(blue),
+      withAbgrAlpha(cssColorToABGR('red'), 64),
+      withAbgrAlpha(cssColorToABGR('blue'), 64),
     ])
+    expect(boxes.outlineColor).toBe(cssColorToABGR(colors.stroke))
   })
 })
