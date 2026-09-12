@@ -1,5 +1,6 @@
 import {
   DRAG_SLOP_PX,
+  dropMarkAt,
   dropRowAt,
   laneOrderAfterDrop,
   moveLaneTo,
@@ -59,4 +60,26 @@ test('a press arms the drag only once it has travelled', () => {
   expect(pastDragSlop(10, 10 + DRAG_SLOP_PX - 1)).toBe(false)
   expect(pastDragSlop(10, 10 + DRAG_SLOP_PX)).toBe(true)
   expect(pastDragSlop(10, 10 - DRAG_SLOP_PX)).toBe(true)
+})
+
+// The bar marks where the lane will land. Always drawn on the top edge, it
+// told a downward drag the lane would go above the lane it lands below
+test('the drop bar marks the edge the moved lane lands on', () => {
+  const stack = ['anchor', 'a', 'b', 'c'].map(assemblyName => ({
+    assemblyName,
+  })) as Lane[]
+  expect(dropMarkAt(stack, 'a', 3)).toEqual({ lane: stack[3], edge: 'bottom' })
+  expect(dropMarkAt(stack, 'a', 2)).toEqual({ lane: stack[2], edge: 'bottom' })
+  expect(laneOrderAfterDrop(['a', 'b', 'c'], 'a', 2)).toEqual(['b', 'a', 'c'])
+  expect(dropMarkAt(stack, 'c', 1)).toEqual({ lane: stack[1], edge: 'top' })
+  expect(dropMarkAt(stack, 'c', 0)).toEqual({ lane: stack[1], edge: 'top' })
+})
+
+test('a drop that moves nothing, or lands nowhere, marks nothing', () => {
+  const stack = ['anchor', 'a', 'b'].map(assemblyName => ({
+    assemblyName,
+  })) as Lane[]
+  expect(dropMarkAt(stack, 'b', 2)).toBeUndefined()
+  expect(dropMarkAt(stack, 'a', 0)).toBeUndefined()
+  expect(dropMarkAt(stack, 'a', undefined)).toBeUndefined()
 })

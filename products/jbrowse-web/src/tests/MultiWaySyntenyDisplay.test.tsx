@@ -1,6 +1,6 @@
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { BlockSet } from '@jbrowse/core/util/blockTypes'
-import { fireEvent, render, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, waitFor } from '@testing-library/react'
 import { LocalFile } from 'generic-filehandle2'
 import { renderToString } from 'react-dom/server'
 
@@ -462,6 +462,13 @@ test('MultiWaySyntenyDisplay raises a lane menu from its label', async () => {
   await waitFor(() => {
     expect(queryByText('Hide lane')).toBeNull()
   })
+  // the menu went with its lane: a Show that brings the lane back used to
+  // raise it again at the old click point
+  act(() => {
+    display.setHiddenLanes([])
+  })
+  expect(display.rowAssemblies).toEqual(['peach', 'cacao'])
+  expect(queryByText('Hide lane')).toBeNull()
 
   fireEvent.click(await findByTestId('multiway-lane-menu-grape'))
   expect(await findByText('Open grape in a new view')).toBeTruthy()

@@ -4,7 +4,12 @@ import { ContextMenu } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { observer } from 'mobx-react'
 
-import { dropRowAt, laneOrderAfterDrop, pastDragSlop } from '../laneDrag.ts'
+import {
+  dropMarkAt,
+  dropRowAt,
+  laneOrderAfterDrop,
+  pastDragSlop,
+} from '../laneDrag.ts'
 import { LABEL_FONT_SIZE, labelBoxTop, laneHeaderRows } from '../laneHeader.ts'
 import { laneHeaderMenuItems } from '../menus.ts'
 
@@ -64,6 +69,11 @@ const LaneHeaders = observer(function LaneHeaders({
   const menuLane = menu
     ? lanes.find(lane => lane.assemblyName === menu.assemblyName)
     : undefined
+  // a menu whose lane left the stack is closed, not waiting: kept, it popped
+  // back up at the old click point whenever the lane returned
+  if (menu && !menuLane) {
+    setMenu(undefined)
+  }
   const openMenu = (assemblyName: string, event: React.MouseEvent) => {
     event.preventDefault()
     event.stopPropagation()
@@ -75,12 +85,14 @@ const LaneHeaders = observer(function LaneHeaders({
   // pointer ys are viewport-relative and the lanes are laid out in the
   // stack's own px, so every crossing between the two adds the scroll
   const { scrollTop } = model
-  const dropRow =
-    dragY === undefined ? undefined : dropRowAt(lanes, dragY + scrollTop)
-  // A drop on the ANCHOR's band lands the lane first below it — "above the
-  // anchor" cannot be granted — so the bar goes on the first mate lane
-  const dropLane =
-    dropRow === undefined ? undefined : lanes[Math.max(1, dropRow)]
+  const dropMark =
+    drag && dragY !== undefined
+      ? dropMarkAt(
+          lanes,
+          drag.assemblyName,
+          dropRowAt(lanes, dragY + scrollTop),
+        )
+      : undefined
 
   // Window-level because a drag leaves the label the moment it starts, and in
   // an effect so a display that unmounts UNDER a held button takes them with
@@ -143,17 +155,18 @@ const LaneHeaders = observer(function LaneHeaders({
         lineHeight: 1,
       }}
     >
-      {dropLane && dropLane.assemblyName !== drag?.assemblyName ? (
+      {dropMark ? (
         <div
           data-testid="multiway-lane-drop"
           style={{
             position: 'absolute',
             left: 0,
-            top: dropLane.bandStart - scrollTop,
+            top: dropMark.lane.bandStart - scrollTop,
             width,
-            height: dropLane.bandEnd - dropLane.bandStart,
+            height: dropMark.lane.bandEnd - dropMark.lane.bandStart,
             background: palette.action.hover,
-            borderTop: `2px solid ${palette.primary.main}`,
+            [dropMark.edge === 'top' ? 'borderTop' : 'borderBottom']:
+              `2px solid ${palette.primary.main}`,
             boxSizing: 'border-box',
           }}
         />

@@ -44,6 +44,25 @@ export function laneOrderAfterDrop(
   return sameLaneOrder(moved, order) ? undefined : moved
 }
 
+/**
+ * Where the drop bar of a drag of `name` over `row` goes: the lane the drop
+ * lands beside, and the edge it lands on. Dropped below its own row a lane
+ * goes under the lane dropped on, and above its row over it. A drop on the
+ * anchor's band marks the first mate lane, where the drop puts it.
+ */
+export function dropMarkAt(
+  lanes: Lane[],
+  name: string,
+  row: number | undefined,
+) {
+  const target = row === undefined ? -1 : Math.max(1, row)
+  const from = lanes.findIndex(lane => lane.assemblyName === name)
+  const lane = lanes[target]
+  return lane && target !== from
+    ? { lane, edge: target > from ? ('bottom' as const) : ('top' as const) }
+    : undefined
+}
+
 export function pastDragSlop(startY: number, y: number) {
   return Math.abs(y - startY) >= DRAG_SLOP_PX
 }
