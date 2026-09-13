@@ -90,7 +90,6 @@ export interface ComparativeSurface {
  */
 export interface ComparativeDisplayFetchState {
   error: unknown
-  isMinimized: boolean
   /**
    * The states where the fetch autorun deliberately never runs, so no data is
    * coming — minimized, or a level whose two rows aren't both showing regions.
@@ -141,7 +140,9 @@ export function comparativeDisplayPhase(
     () =>
       computeLoadingTerm(
         {
-          isMinimized: display.isMinimized,
+          // synteny folds minimized into fetchInert; a minimized dotplot track
+          // still fetches and draws
+          isMinimized: false,
           fetchInert: display.fetchInert,
           // an LGV term: this family's displays draw onto a shared comparative
           // surface whose extent is the two views' whole span, not a block set

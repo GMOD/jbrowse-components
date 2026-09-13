@@ -22,7 +22,6 @@ const painted: ComparativeSurface = {
 
 const done = {
   error: undefined,
-  isMinimized: false,
   fetchInert: false,
   isLoadingOrCanceled: false,
   dataCurrent: true,
@@ -150,15 +149,6 @@ describe('comparativeDisplayPhase', () => {
           renderError: undefined,
           hostMounted: true,
         },
-      ),
-    ).toBe('ready')
-  })
-
-  it('is ready when minimized, whatever its fetchInert says', () => {
-    expect(
-      comparativeDisplayPhase(
-        { ...done, isMinimized: true, dataCurrent: false },
-        { ...painted, painted: false },
       ),
     ).toBe('ready')
   })

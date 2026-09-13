@@ -145,3 +145,10 @@ test('a minimized track whose display overrides fetchInert is ready too', async 
   track.setMinimized(true)
   expect(display.displayPhase).toBe('ready')
 })
+
+test('a minimized track still reports its error', async () => {
+  const { track, display } = await setup()
+  display.setError(new Error('boom'))
+  track.setMinimized(true)
+  expect(display.displayPhase).toBe('error')
+})

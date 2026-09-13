@@ -63,8 +63,9 @@ export function computeDisplayPhase(
 }
 
 /**
- * The terms the `loading` condition is built from, minus the thunks. All cheap flags on the display itself, so they are read eagerly the
- * same way `computeDisplayPhase` reads its terminals.
+ * The terms the `loading` condition is built from, minus the thunks. All cheap
+ * flags on the display itself, so they are read eagerly the same way
+ * `computeDisplayPhase` reads its terminals.
  */
 export interface DisplayLoadingInputs {
   /**

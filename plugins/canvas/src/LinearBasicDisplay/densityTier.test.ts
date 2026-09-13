@@ -1,6 +1,7 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { stageByteEstimate } from '@jbrowse/display-test-utils'
+import { autorun } from 'mobx'
 
 import {
   makeFeatureData,
@@ -242,13 +243,15 @@ describe('the band stands alone, and fetches nothing', () => {
     const { display, track } = refusableDisplay(DENSITY_ADAPTER)
     setConf(display, 'densityTier', 'density')
     expect(display.coarseTierStandsIn).toBe(true)
-    expect(display.displayPhase).toBe('loading')
+    const seen: string[] = []
+    const dispose = autorun(() => {
+      seen.push(display.displayPhase)
+    })
 
     track.setMinimized(true)
-    expect(display.displayPhase).toBe('ready')
-
     track.setMinimized(false)
-    expect(display.displayPhase).toBe('loading')
+    dispose()
+    expect(seen).toEqual(['loading', 'ready', 'loading'])
   })
 })
 
