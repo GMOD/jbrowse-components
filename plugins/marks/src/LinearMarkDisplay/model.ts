@@ -126,10 +126,10 @@ function encodingY(encoding: MarkEncoding | undefined) {
   return y === undefined ? undefined : valueField(y)
 }
 
-function highestRow(layers: Iterable<StoredLayer>) {
+function highestRow(layers: readonly StoredLayer[], visible: boolean[]) {
   let highest = 0
-  for (const { row } of layers) {
-    if (row) {
+  for (const [mark, { row }] of layers.entries()) {
+    if (row && visible[mark]) {
       for (let i = 0; i < row.length; i++) {
         if (row[i]! > highest) {
           highest = row[i]!
@@ -283,6 +283,12 @@ function markEntryOf(mark: MarkConfig): MarkEntry {
   }
 }
 
+// Which axis a mark's value reads, or none for a mark with no `y` field.
+function yRoleOf(mark: MarkConfig): 'shared' | 'independent' | 'none' {
+  const { field, resolve } = mark.encoding.y
+  return field === '' ? 'none' : resolve
+}
+
 function layerExtremes(entries: VisibleEntry<StoredLayer>[]) {
   let min = Infinity
   let max = -Infinity
@@ -376,66 +382,56 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * Whether each mark draws at the view's zoom: inside its
-       * `minBpPerPx`..`maxBpPerPx` range, where 0 is no bound. What the
-       * shared domain, the legend, the row count and the skipped chip fold.
+       * The marks at the view's zoom: whether each draws, inside its
+       * `minBpPerPx`..`maxBpPerPx` range where 0 is no bound, and the first
+       * drawing mark owning each role, -1 where none does. The shared value
+       * scale is one declaration and the menu edits it; the config schema
+       * refuses a second independent axis; the density sidecar stands in for
+       * one mark.
        */
-      get markVisible(): boolean[] {
+      get markView() {
         const { bpPerPx } = self.host
-        return self.conf.marks.map((m: MarkConfig) =>
+        const { marks } = self.conf
+        const visible: boolean[] = marks.map((m: MarkConfig) =>
           markDrawsAt(markEntryOf(m), bpPerPx),
         )
-      },
-      /**
-       * #method
-       * A region's layers with a mark outside its zoom range replaced by an
-       * empty one, so a fold over layers by index reads only what draws.
-       */
-      visibleLayers(data: MarkRegionData): StoredLayer[] {
-        const { markVisible } = this
-        return data.layers.map((layer, i) =>
-          markVisible[i]
-            ? layer
-            : {
-                ...layer,
-                count: 0,
-                row: undefined,
-                scale: undefined,
-                glyphScale: undefined,
-              },
-        )
+        const firstDrawing = (owns: (m: MarkConfig) => boolean) =>
+          marks.findIndex((m: MarkConfig, i: number) => visible[i] && owns(m))
+        return {
+          visible,
+          valueMark: firstDrawing(m => yRoleOf(m) === 'shared'),
+          independentMark: firstDrawing(m => yRoleOf(m) === 'independent'),
+          densityMark: firstDrawing(m => m.source === 'density'),
+        }
       },
       /**
        * #getter
-       * The mark reading its own axis: the first one drawing at this zoom
-       * whose `y` declares `resolve: 'independent'`, or -1. The config
-       * schema refuses a second, so this is the whole of the display's
-       * second axis.
+       * Whether each mark draws at the view's zoom: what the shared domain,
+       * the legend, the row count and the skipped chip fold.
+       */
+      get markVisible(): boolean[] {
+        return this.markView.visible
+      },
+      /**
+       * #getter
+       * The mark reading its own axis, or -1.
        */
       get independentMarkIndex(): number {
-        const { markVisible } = this
-        return self.conf.marks.findIndex(
-          (m: MarkConfig, i: number) =>
-            markVisible[i] &&
-            m.encoding.y.field !== '' &&
-            m.encoding.y.resolve === 'independent',
-        )
+        return this.markView.independentMark
       },
       /**
        * #getter
-       * Which mark owns the display's shared value scale: the first one
-       * drawing at this zoom whose `y` names a field and reads the shared
-       * axis. One declaration has to be the shared one, and the menu edits
-       * that one.
+       * The mark owning the display's shared value scale, or -1.
        */
       get valueMarkIndex(): number {
-        const { markVisible } = this
-        return self.conf.marks.findIndex(
-          (m: MarkConfig, i: number) =>
-            markVisible[i] &&
-            m.encoding.y.field !== '' &&
-            m.encoding.y.resolve !== 'independent',
-        )
+        return this.markView.valueMark
+      },
+      /**
+       * #getter
+       * The mark the density sidecar stands in for, or -1.
+       */
+      get densityMarkIndex(): number {
+        return this.markView.densityMark
       },
       /**
        * #getter
@@ -491,20 +487,6 @@ export function stateModelFactory(
        */
       get configuredFilters() {
         return () => configuredJexlFilters(self)
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * The mark the density sidecar stands in for: the first one drawing at
-       * this zoom whose `source` is `density`, or -1.
-       */
-      get densityMarkIndex(): number {
-        const { markVisible } = self
-        return self.conf.marks.findIndex(
-          (m: MarkConfig, i: number) =>
-            markVisible[i] && m.source === 'density',
-        )
       },
     }))
     .views(self => ({
@@ -747,9 +729,10 @@ export function stateModelFactory(
        * carries, plus one
        */
       get rowCount(): number {
+        const { markVisible } = self
         let highest = 0
         for (const data of self.rpcDataMap.values()) {
-          highest = Math.max(highest, highestRow(self.visibleLayers(data)))
+          highest = Math.max(highest, highestRow(data.layers, markVisible))
         }
         return highest + 1
       },
@@ -885,10 +868,9 @@ export function stateModelFactory(
        * drawing at the view's zoom
        */
       get legendSections() {
-        return buildMarkLegend(
-          [...self.rpcDataMap.values()].map(d => ({
-            layers: self.visibleLayers(d),
-          })),
+        const { markVisible } = self
+        return buildMarkLegend(self.rpcDataMap.values()).filter(
+          s => markVisible[s.markIndex],
         )
       },
       /**

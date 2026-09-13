@@ -425,6 +425,23 @@ test('a span stacked by a row field asks the worker for the row lane and bands t
   expect(display.renderState.rowCount).toBe(3)
 })
 
+test('a span outside its zoom range adds no bands', () => {
+  const { createDisplay } = createTestEnvironment([
+    { shape: 'span', encoding: { row: 'sampleIndex' }, minBpPerPx: 4 },
+    { shape: 'span', encoding: {} },
+  ])
+  const { display, view } = createDisplay()
+  display.setRpcData(
+    0,
+    result([{ y: [0, 0, 0], row: [0, 2, 1] }, { y: [0] }]),
+    REGION,
+  )
+  view.zoomTo(2)
+  expect(display.rowCount).toBe(1)
+  view.zoomTo(8)
+  expect(display.rowCount).toBe(3)
+})
+
 test("a transform list reaches the worker as its own layer's steps, defaults left off", () => {
   const { createDisplay } = createTestEnvironment([
     {
