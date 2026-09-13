@@ -1,8 +1,7 @@
-import { svgNodeId } from '@jbrowse/core/svg/svgId'
+/* eslint-disable react-refresh/only-export-components */
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import { SvgLaneHeaders } from './components/SvgLaneHeaders.tsx'
@@ -20,49 +19,45 @@ export async function renderMultiWaySvg(
   model: MultiWaySyntenyDisplayModel,
   opts?: ExportSvgDisplayOptions,
 ) {
-  return renderDisplaySvg(
-    model,
-    opts,
-    function MultiWaySvgBody(
-      props: LgvSvgBodyProps<MultiWaySyntenyDisplayModel>,
-    ) {
-      const { model, height, opts } = props
-      const width = model.canvasWidth
-      const palette = usePalette()
-      return (
-        <SvgClipRect
-          id={`multiway-${svgNodeId(model)}`}
-          width={width}
-          height={height}
-        >
-          <PaintLayer
-            width={width}
-            height={height}
-            opts={opts}
-            paint={ctx => {
-              const state = {
-                ...model.renderState,
-                hoveredFeatureId: 0,
-                clickedFeatureId: 0,
-              }
-              paintMarkBlocks(
-                ctx,
-                MULTIWAY_MARKS,
-                model.renderCells,
-                multiwayBlocks(state),
-                state,
-              )
-            }}
-          />
-          <g transform={`translate(0 ${-model.scrollTop})`}>
-            <SvgLaneHeaders
-              rows={model.laneHeaderRows}
-              width={width}
-              palette={palette}
-            />
-          </g>
-        </SvgClipRect>
-      )
-    },
+  return renderDisplaySvg(model, opts, MultiWaySvgBody)
+}
+
+function MultiWaySvgBody({
+  model,
+  height,
+  canvasWidth,
+  opts,
+}: LgvSvgBodyProps<MultiWaySyntenyDisplayModel>) {
+  const palette = usePalette()
+  const state = {
+    ...model.renderState,
+    canvasWidth,
+    hoveredFeatureId: 0,
+    clickedFeatureId: 0,
+  }
+  return (
+    <>
+      <PaintLayer
+        width={canvasWidth}
+        height={height}
+        opts={opts}
+        paint={ctx => {
+          paintMarkBlocks(
+            ctx,
+            MULTIWAY_MARKS,
+            model.renderCells,
+            multiwayBlocks(state),
+            state,
+          )
+        }}
+      />
+      <g transform={`translate(0 ${-model.scrollTop})`}>
+        <SvgLaneHeaders
+          rows={model.laneHeaderRows}
+          width={canvasWidth}
+          palette={palette}
+        />
+      </g>
+    </>
   )
 }
