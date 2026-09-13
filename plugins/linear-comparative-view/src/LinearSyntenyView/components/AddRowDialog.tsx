@@ -22,6 +22,7 @@ import {
 import { toJS } from 'mobx'
 import { observer } from 'mobx-react'
 
+import { matchingRowLoc, zoomedInWindow } from '../util/matchingRowLoc.ts'
 import { getAddRowOptions } from '../util/syntenyTracks.ts'
 
 import type { LinearComparativeViewModel } from '../../LinearComparativeView/model.ts'
@@ -94,12 +95,46 @@ const AddRowDialog = observer(function AddRowDialog({
   )
   const [customTrack, setCustomTrack] = useState<UserOpened['value']>()
   const [error, setError] = useState<unknown>()
+  const [locating, setLocating] = useState(false)
 
   const canSubmit =
     Boolean(terminalAssembly) &&
+    !locating &&
     (mode === 'existing'
       ? Boolean(selected)
       : Boolean(customTrack) && Boolean(newAssembly))
+
+  async function add(assembly: string, syntenyTrackId: string) {
+    const region = zoomedInWindow(views.at(-1)!)
+    let loc: string | undefined
+    if (region) {
+      setLocating(true)
+      try {
+        loc = await matchingRowLoc({
+          session,
+          trackId: syntenyTrackId,
+          region,
+          assembly,
+        })
+      } finally {
+        setLocating(false)
+      }
+    }
+    void model.appendRow({ assembly, loc, syntenyTrackId })
+    handleClose()
+  }
+
+  async function submit() {
+    if (mode === 'existing' && selected) {
+      await add(selected.newAssembly, selected.trackId)
+    } else if (mode === 'custom' && customTrack && newAssembly) {
+      if (!isSessionWithAddSessionTrack(session)) {
+        throw new Error("This session can't add tracks")
+      }
+      session.addSessionTrackConf(toJS(customTrack))
+      await add(newAssembly, customTrack.trackId)
+    }
+  }
 
   return (
     <SubmitDialog
@@ -111,33 +146,19 @@ const AddRowDialog = observer(function AddRowDialog({
       submitText="Add"
       submitDisabled={!canSubmit}
       onSubmit={() => {
-        try {
-          setError(undefined)
-          if (mode === 'existing' && selected) {
-            void model.appendRow({
-              assembly: selected.newAssembly,
-              syntenyTrackId: selected.trackId,
-            })
-            handleClose()
-          } else if (mode === 'custom' && customTrack && newAssembly) {
-            if (isSessionWithAddSessionTrack(session)) {
-              session.addSessionTrackConf(toJS(customTrack))
-              void model.appendRow({
-                assembly: newAssembly,
-                syntenyTrackId: customTrack.trackId,
-              })
-              handleClose()
-            } else {
-              setError(new Error("This session can't add tracks"))
-            }
-          }
-        } catch (e) {
+        setError(undefined)
+        submit().catch((e: unknown) => {
           console.error(e)
           setError(e)
-        }
+        })
       }}
     >
       {error ? <ErrorBanner error={error} /> : null}
+      {locating ? (
+        <Typography gutterBottom>
+          Finding the region that aligns to the {terminalAssembly} window...
+        </Typography>
+      ) : null}
       {terminalAssembly ? (
         <Typography gutterBottom>
           Add a new assembly row to the bottom of the view, connected to{' '}

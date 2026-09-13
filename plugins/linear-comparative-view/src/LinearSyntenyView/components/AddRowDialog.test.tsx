@@ -36,7 +36,14 @@ const assembly = (name: string) => ({
 // A two-row volvox/volvox2 view. `datasets` are the synteny tracks the session
 // holds, and `openTracks` names the ones the view itself opens on its band, so
 // a test can say both what exists and what is already drawn.
-async function openDialog(datasets: string[][], openTracks: string[] = []) {
+async function openDialog(
+  datasets: string[][],
+  openTracks: string[] = [],
+  {
+    adapter,
+    bottomLoc,
+  }: { adapter?: Record<string, unknown>; bottomLoc?: string } = {},
+) {
   const session = createTestSession()
   session.addAssemblyConf(assembly('volvox'))
   session.addAssemblyConf(assembly('volvox2'))
@@ -47,7 +54,7 @@ async function openDialog(datasets: string[][], openTracks: string[] = []) {
       trackId: `dataset${i}`,
       name: `dataset ${i}`,
       assemblyNames,
-      adapter: {
+      adapter: adapter ?? {
         type: 'PAFAdapter',
         pafLocation: { uri: 'volvox.paf', locationType: 'UriLocation' },
         queryAssembly: assemblyNames[0],
@@ -56,7 +63,7 @@ async function openDialog(datasets: string[][], openTracks: string[] = []) {
     })
   }
   const view = (await session.launchView('LinearSyntenyView', {
-    views: [{ assembly: 'volvox' }, { assembly: 'volvox2' }],
+    views: [{ assembly: 'volvox' }, { assembly: 'volvox2', loc: bottomLoc }],
     tracks: openTracks,
   })) as LinearSyntenyViewModel
   view.setWidth(800)
@@ -152,6 +159,41 @@ test('Add appends the picked dataset as a new bottom row', async () => {
     'volvox2',
     'volvox3',
   ])
+})
+
+// A row added under a zoomed-in stack opens on what aligns to the bottom row's
+// window, not on its whole genome.
+test('Add opens the new row on the region matching the bottom row', async () => {
+  const { view } = await openDialog([['volvox2', 'volvox3']], [], {
+    bottomLoc: 'ctgA:2001-4000',
+    adapter: {
+      type: 'FromConfigAdapter',
+      features: [
+        {
+          uniqueId: 'block',
+          refName: 'ctgA',
+          start: 2000,
+          end: 4000,
+          strand: 1,
+          assemblyName: 'volvox2',
+          CIGAR: '2000M',
+          mate: {
+            refName: 'ctgA',
+            start: 10000,
+            end: 12000,
+            assemblyName: 'volvox3',
+          },
+        },
+      ],
+    },
+  })
+  await when(() => view.views[1]!.visibleLocStrings === 'ctgA:2,001..4,000')
+
+  fireEvent.click(screen.getByRole('button', { name: 'Add' }))
+
+  await waitFor(() => {
+    expect(view.views[2]?.visibleLocStrings).toBe('ctgA:10,001..12,000')
+  })
 })
 
 // nothing to pick means nothing to add, so the button cannot be live — the
