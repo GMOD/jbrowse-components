@@ -1,4 +1,4 @@
-import { readHighlightInk } from './readHighlightInk.ts'
+import { readHighlightInk, readsToLight } from './readHighlightInk.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { RenderState } from '../renderers/rendererTypes.ts'
@@ -132,4 +132,37 @@ test('ungrouped, a row scrolling under the sticky coverage band is clipped to th
   expect(run(['read0'], open, { scrollTop: 3 })).toEqual([
     { left: 1, top: 100, width: 5, height: 7, strong: false },
   ])
+})
+
+describe('readsToLight', () => {
+  test('a chain lights strong in chain mode', () => {
+    expect(
+      readsToLight({
+        isChainMode: true,
+        chainReadIds: ['a', 'b', 'c'],
+        readId: undefined,
+      }),
+    ).toEqual({ ids: ['a', 'b', 'c'], strong: true })
+  })
+
+  // Outside chain mode the list is a hovered connector's two ends, which take
+  // the shade hovering either read would.
+  test('a connector outside chain mode lights its ends plain', () => {
+    expect(
+      readsToLight({
+        isChainMode: false,
+        chainReadIds: ['a', 'b'],
+        readId: undefined,
+      }),
+    ).toEqual({ ids: ['a', 'b'], strong: false })
+  })
+
+  test('a lone read lights plain', () => {
+    expect(
+      readsToLight({ isChainMode: true, chainReadIds: [], readId: 'a' }),
+    ).toEqual({ ids: ['a'], strong: false })
+    expect(
+      readsToLight({ isChainMode: false, chainReadIds: [], readId: undefined }),
+    ).toEqual({ ids: [], strong: false })
+  })
 })

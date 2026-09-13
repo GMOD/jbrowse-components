@@ -97,7 +97,10 @@ import {
   makeBpToScreenX,
 } from './components/alignmentComponentUtils.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
-import { readHighlightInk } from './components/readHighlightInk.ts'
+import {
+  readHighlightInk,
+  readsToLight,
+} from './components/readHighlightInk.ts'
 import { bandScreenTop } from './components/sectionScreen.ts'
 import { configSlotViews } from './configSlotViews.ts'
 import { colorSchemeIndexFor } from './constants.ts'
@@ -2788,15 +2791,12 @@ export default function stateModelFactory(
          * repaint the whole pileup each move.
          */
         get hoverInk(): HighlightRect[] {
-          const chainReadIds = self.highlightedChainReadIds
-          return this.readInk(
-            chainReadIds.length > 0
-              ? chainReadIds
-              : self.featureIdUnderMouse
-                ? [self.featureIdUnderMouse]
-                : [],
-            chainReadIds.length > 0,
-          )
+          const { ids, strong } = readsToLight({
+            isChainMode: self.isChainMode,
+            chainReadIds: self.highlightedChainReadIds,
+            readId: self.featureIdUnderMouse,
+          })
+          return this.readInk(ids, strong)
         },
 
         /**
@@ -2807,15 +2807,12 @@ export default function stateModelFactory(
          * is not in the SVG export, as no display's selection is.
          */
         get selectionInk(): HighlightRect[] {
-          const chainReadIds = self.selectedChainReadIdsInMode
-          return this.readInk(
-            chainReadIds.length > 0
-              ? chainReadIds
-              : self.selectedFeatureId
-                ? [self.selectedFeatureId]
-                : [],
-            chainReadIds.length > 0,
-          )
+          const { ids, strong } = readsToLight({
+            isChainMode: self.isChainMode,
+            chainReadIds: self.selectedChainReadIdsInMode,
+            readId: self.selectedFeatureId,
+          })
+          return this.readInk(ids, strong)
         },
 
         /**

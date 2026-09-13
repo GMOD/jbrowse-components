@@ -49,6 +49,25 @@ function mergeRow(rects: HighlightRect[]) {
 }
 
 /**
+ * Which reads a hover or a selection lights, and in which shade. The chain
+ * list outside chain mode is a connector's two ends, which light in the plain
+ * shade a read hover takes; only a chain takes the strong one.
+ */
+export function readsToLight({
+  isChainMode,
+  chainReadIds,
+  readId,
+}: {
+  isChainMode: boolean
+  chainReadIds: readonly string[]
+  readId: string | undefined
+}): { ids: readonly string[]; strong: boolean } {
+  return chainReadIds.length > 0
+    ? { ids: chainReadIds, strong: isChainMode }
+    : { ids: readId ? [readId] : [], strong: false }
+}
+
+/**
  * The boxes the hovered read, or the hovered chain's reads, painted: each
  * read is its exon segments through the read mark's ink, placed by the
  * section's own pileup top, clipped to the section's band on screen the way
