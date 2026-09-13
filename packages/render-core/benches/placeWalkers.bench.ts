@@ -28,15 +28,17 @@
 // interleaved rounds, ratio to retired:
 //
 //                 size   retired ns   control     ported
-//   cell          1M     33.4-36.0    0.99-1.01   1.00-1.01
+//   cell          1M     31.6-36.0    0.99-1.01   1.00-1.03
 //   cell          100K   36.2-39.8    0.99-1.00   0.98-0.99
-//   rect          1M     64.4-65.8    1.00-1.02   0.88-0.89
+//   rect          1M     58.1-66.5    1.00-1.02   0.87-0.89
 //   rect          100K   65.1-68.5    1.00-1.01   0.87-0.88
 //   rectOutline   1M     64.1-66.3    1.01-1.03   0.89-0.90
 //   span          1M     21.3-24.2    0.99-1.01   0.91-0.93
 //   span          100K   20.5-22.2    0.99        0.90-0.91
 //
-// A third rect 1M process read its control at 1.08x and is left out.
+// A third rect 1M process read its control at 1.08x and is left out. Three
+// of the cell 1M processes and two of the rect 1M ones ran after cell's and
+// rect's frames took their block from `bpProjection`; the rest ran before.
 //
 // WHERE THE FRAME IS ALLOCATED DECIDES IT. The placement functions read the
 // block off a frame object, and TurboFan scalar-replaces that object only when
@@ -48,7 +50,10 @@
 // 1.03-1.06x, and 0.97-0.98x under --max-inlined-bytecode-size-cumulative=2000.
 // A Float64Array frame read 0.93-0.96x with literal slot indices and
 // 1.12-1.18x with named ones, whose module-level constants TurboFan did not
-// fold; the frame carrying `makeBpMapper`'s closure read 1.07-1.10x.
+// fold; the frame carrying `makeBpMapper`'s closure read 1.07-1.10x. Across
+// three processes, a frame destructuring `bpProjection(block)` read 0.99-1.02x
+// beside 0.99-1.02x for the two ternaries it replaced, and one nesting it as
+// `px` read 1.06-1.11x.
 //
 // BYTECODE. `--print-bytecode --print-bytecode-filter=<name>` prints a
 // function's length; `--trace-turbo-inlining` prints each call site's size
@@ -56,7 +61,8 @@
 // `placeCellY` 60 and `placeCellX` 113 + 293 both inline into `paintBlock`, and
 // `projectBp` is 32. `placeRectY` 92 + 290 inlines and `placeRectX` 276 + 301
 // does not, as rectWalker.bench.ts found; rect's frame escapes into that call
-// either way, so `paintBlock` builds it with `rectFrame`, which inlines at 99.
+// either way, so `paintBlock` builds it with `rectFrame`, which inlines at 79
+// with `bpProjection`'s 84.
 // `placeSpan` 156 + 81 inlines, and so does `spanFrame` at 125 with
 // `bpProjection`'s 84, which leaves span's frame to scalar-replace.
 

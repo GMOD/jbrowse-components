@@ -1,5 +1,9 @@
 import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
-import { getDpr, projectBp } from '@jbrowse/render-core/canvas2dUtils'
+import {
+  bpProjection,
+  getDpr,
+  projectBp,
+} from '@jbrowse/render-core/canvas2dUtils'
 import { makeAbgrFill } from '@jbrowse/render-core/marks/colorFill'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
@@ -50,12 +54,12 @@ function cellFrame(
   frame: MarkFrame,
   params: CellParams,
 ): CellFrame {
-  const w = block.screenEndPx - block.screenStartPx
+  const { originPx, startBp, spanBp, signedSpanPx } = bpProjection(block)
   return {
-    originPx: block.reversed ? block.screenEndPx : block.screenStartPx,
-    startBp: block.start,
-    spanBp: block.end - block.start,
-    signedSpanPx: block.reversed ? -w : w,
+    originPx,
+    startBp,
+    spanBp,
+    signedSpanPx,
     canvasWidth: frame.canvasWidth,
     canvasHeight: frame.canvasHeight,
     rowHeight: params.rowHeight,
@@ -113,12 +117,12 @@ export const cellMark: MarkShape<CellChannels, CellParams> = {
     const { shapeType, color, count } = channels
     // `cellFrame` spelled out: TurboFan scalar-replaces a frame this function
     // allocates, and reloads a returned frame's fields on every instance.
-    const w = block.screenEndPx - block.screenStartPx
+    const { originPx, startBp, spanBp, signedSpanPx } = bpProjection(block)
     const g: CellFrame = {
-      originPx: block.reversed ? block.screenEndPx : block.screenStartPx,
-      startBp: block.start,
-      spanBp: block.end - block.start,
-      signedSpanPx: block.reversed ? -w : w,
+      originPx,
+      startBp,
+      spanBp,
+      signedSpanPx,
       canvasWidth: frame.canvasWidth,
       canvasHeight: frame.canvasHeight,
       rowHeight: params.rowHeight,

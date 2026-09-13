@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/core/util/colorBits'
 import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
 import {
+  bpProjection,
   clipBlockForCanvas,
   makeBpMapper,
   projectBp,
@@ -226,12 +227,12 @@ function rectFrame(
   frame: MarkFrame,
   params: FeatureGlyphParams,
 ): RectFrame {
-  const w = block.screenEndPx - block.screenStartPx
+  const { originPx, startBp, spanBp, signedSpanPx } = bpProjection(block)
   return {
-    originPx: block.reversed ? block.screenEndPx : block.screenStartPx,
-    startBp: block.start,
-    spanBp: block.end - block.start,
-    signedSpanPx: block.reversed ? -w : w,
+    originPx,
+    startBp,
+    spanBp,
+    signedSpanPx,
     scrollY: params.scrollY,
     canvasHeight: frame.canvasHeight,
     left: 0,
