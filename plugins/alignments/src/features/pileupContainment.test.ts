@@ -1,6 +1,6 @@
 import { insertionSizeAlpha } from '@jbrowse/alignments-core'
 import { bpAtPx, bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
-import { sweepDrawAgainstContainment } from '@jbrowse/render-core/marks/drawAgainstHit'
+import { sweepMarkAgainstHit } from '@jbrowse/render-core/marks/drawAgainstHit'
 
 import {
   getInsertionType,
@@ -36,7 +36,7 @@ import type { OverlapsUploadData } from './overlap/types.ts'
 import type { PerBaseLetterUploadData } from './perBaseLetter/types.ts'
 import type { PerBaseQualityUploadData } from './perBaseQuality/types.ts'
 import type { SoftclipBasesUploadData } from './softclipBases/types.ts'
-import type { Mark, MarkShape } from '@jbrowse/render-core/marks'
+import type { Mark } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // Each mark's hit rule restated from its declaration (row body, pivot, slice,
@@ -117,27 +117,6 @@ interface Case<R> {
   ) => boolean
 }
 
-type Counted<R> = R & { count: number }
-
-function shapeOf<R>(
-  mark: Mark<R, RenderState>,
-): MarkShape<Counted<R>, RenderState> {
-  return {
-    id: mark.pass.id,
-    pass: mark.pass,
-    writeUniforms() {},
-    paintBlock(ctx, region, block, _frame, state) {
-      mark.paintBlock(ctx, region, block, state)
-    },
-    ink(region, block, _frame, state, i) {
-      return mark.ink!(region, block, state, i)
-    },
-    hitNearest(region, block, _frame, state, x, y, candidates, maxDistSq) {
-      return mark.hitNearest!(region, block, state, x, y, candidates, maxDistSq)
-    },
-  }
-}
-
 function rowUnder(state: RenderState, yPx: number) {
   const pitch = state.featureHeight + state.featureSpacing
   const adjusted = yPx + state.scrollTop - state.pileupTopOffset
@@ -149,11 +128,10 @@ function rowUnder(state: RenderState, yPx: number) {
 
 function sweep<R>(c: Case<R>, block: RenderBlock, state: RenderState) {
   const rows = c.rows(c.region)
-  return sweepDrawAgainstContainment(
-    shapeOf(c.mark),
+  return sweepMarkAgainstHit(
+    c.mark,
     { ...c.region, count: rows.length },
     block,
-    state,
     state,
     {
       contains: (i, xPx, yPx) =>

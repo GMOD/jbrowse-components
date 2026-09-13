@@ -4,10 +4,7 @@ import {
   GLYPH_TRIANGLE,
 } from '../shaders/pointMark.consts.generated.ts'
 import { barMark } from './barMark.ts'
-import {
-  sweepDrawAgainstContainment,
-  sweepDrawAgainstHit,
-} from './drawAgainstHit.ts'
+import { sweepDrawAgainstHit } from './drawAgainstHit.ts'
 import { inkHitNearest } from './markHit.ts'
 import { pointMark } from './pointMark.ts'
 import { spanMark } from './spanMark.ts'
@@ -105,7 +102,7 @@ describe('containment: a rule in place of the painted box', () => {
     contains: (i: number, x: number, y: number) => boolean,
     shape: MarkShape<SpanChannels, SpanParams> = spanMark,
   ) =>
-    sweepDrawAgainstContainment(
+    sweepDrawAgainstHit(
       shape,
       spans,
       { ...block, reversed },

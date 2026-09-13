@@ -1,7 +1,13 @@
 import { inkOnRect, shapeHitNearest } from './markHit.ts'
 
 import type { RenderBlock } from '../renderBlock.ts'
-import type { MarkContext2D, MarkFrame, MarkHit, MarkShape } from './types.ts'
+import type {
+  Mark,
+  MarkContext2D,
+  MarkFrame,
+  MarkHit,
+  MarkShape,
+} from './types.ts'
 
 export interface RecordedRect {
   x: number
@@ -260,22 +266,38 @@ const EPS = 1e-9
 
 const MAX_VIOLATIONS = 10
 
-function inkViolations<C extends { count: number }, P>(
-  shape: MarkShape<C, P>,
+interface Counted {
+  count: number
+}
+
+/** The three members a sweep reads, in `Mark`'s spelling, so a mark passes as itself. */
+export type SweptMark<C, S extends MarkFrame> = Pick<
+  Mark<C, S>,
+  'paintBlock' | 'ink' | 'hitNearest'
+>
+
+export interface SweepOptions<C> {
+  maxDistSq?: number
+  step?: number
+  sliceOne?: (channels: C, index: number) => C
+  inkSlackPx?: number
+  contains?: (index: number, xPx: number, yPx: number) => boolean
+}
+
+function inkViolations<C extends Counted, S extends MarkFrame>(
+  mark: SweptMark<C, S>,
   channels: C,
   block: RenderBlock,
-  frame: MarkFrame,
-  params: P,
+  state: S,
   boxes: readonly (Box | undefined)[],
   inkSlackPx: number,
 ) {
   const violations: string[] = []
-  const { ink } = shape
-  if (!ink) {
+  if (!mark.ink) {
     return violations
   }
   for (let i = 0; i < channels.count; i++) {
-    const r = ink.call(shape, channels, block, frame, params, i)
+    const r = mark.ink(channels, block, state, i)
     const b = boxes[i]
     if (r && !b) {
       violations.push(`${i} painted nothing but has ink`)
@@ -342,103 +364,81 @@ function hitViolations(
  * hold `hitNearest` to what the painter actually put on the canvas.
  *
  * **What the painter drew for instance `i` has to be attributed to `i`,** and
- * there are two ways to get that. A shape whose every instance is one
- * `fillRect` gets it positionally, which is the default and needs nothing. A
- * shape that batches a colour run into one path (`point`'s glyphs), or that
- * skips an instance the view has scrolled past (`cell`'s off-canvas rows),
- * cannot be read that way at all — the batch has fewer rects than instances, or
- * the wrong ones. `sliceOne` is the way in for those: hand back one instance's
- * channels and the sweep paints it alone, so the attribution holds by
- * construction and a culled instance is visibly an empty painting.
+ * there are two ways to get that. A mark whose every instance is one `fillRect`
+ * gets it positionally, which is the default and needs nothing. A mark that
+ * batches a colour run into one path (`point`'s glyphs), or that skips an
+ * instance the view has scrolled past (`cell`'s off-canvas rows), cannot be read
+ * that way at all — the batch has fewer rects than instances, or the wrong ones.
+ * `sliceOne` is the way in for those: hand back one instance's channels and the
+ * sweep paints it alone, so the attribution holds by construction and a culled
+ * instance is visibly an empty painting.
  *
- * Four claims, all of them one-directional and true of every shape:
+ * Four claims, all of them one-directional and true of every mark:
  *
  * - an instance that painted nothing is never the answer,
- * - `hit.x`/`hit.y` — where the shape says its ink is — lies inside the box the
+ * - `hit.x`/`hit.y` — where the mark says its ink is — lies inside the box the
  *   painter drew for the instance the hit names,
  * - `hit.distSq` is no smaller than the distance to that box, since the box
  *   contains the ink and cannot be farther than it,
  * - `hit.distSq` IS the distance to `hit.x`/`hit.y`, which is `MarkHit`'s own
- *   contract rather than a fact about the painting: a shape that answers a
+ *   contract rather than a fact about the painting: a mark that answers a
  *   distance its own reported point does not support has two spellings of where
  *   its ink is, and the nearest-wins walk is resolved by the one the caller
  *   cannot see.
  *
- * The fourth claim is the strongest and is not universal: **a point on the box
- * has to answer that box**, the last-painted one where boxes overlap, since the
- * sweep hands candidates back to front. It holds only where the painted box IS
- * the hit target — every `fillRect` shape, and `cell`'s inversion triangle,
- * which answers as its bounding box on purpose — and not for a glyph, whose box
- * is a superset of its ink. So it runs exactly when the batch painted one rect
- * per instance, which is that set.
+ * The fifth is the containment rule: **a point the rule contains answers the
+ * nearest painted instance it contains**, the last-painted where tied, since the
+ * sweep hands candidates back to front. The default rule is the painted box, so
+ * a point on a box answers that box, and off every box a hit target wider than
+ * its ink may still answer. The default holds only where the box IS the hit
+ * target — every `fillRect` mark, and `cell`'s inversion triangle, which answers
+ * as its bounding box on purpose — and not for a glyph, whose box is a superset
+ * of its ink, so it runs exactly when the batch painted one rect per instance. A
+ * mark whose hit rule is not its box (the pileup's bp containment) passes
+ * `contains`, which is then the whole rule: the sweep covers the whole canvas,
+ * and a point the rule contains nowhere answers nothing.
  *
- * A shape declaring `ink` is held to a second clause, per instance: the box
- * the painter recorded for `i` lies inside `ink(i)`, and each edge of `ink(i)`
- * lies within `inkSlackPx` (default 1) of the painting's — so the rect is
- * tight to the ink within a pixel on every side, which admits a seam overdraw
- * or a pixel snap and rejects a rect that is the wrong row, the wrong width or
- * the whole canvas. An instance that painted nothing must answer no ink, and
- * one with ink must have painted.
+ * A mark declaring `ink` is held to one more clause, per instance: the box the
+ * painter recorded for `i` lies inside `ink(i)`, and each edge of `ink(i)` lies
+ * within `inkSlackPx` (default 1) of the painting's — so the rect is tight to
+ * the ink within a pixel on every side, which admits a seam overdraw or a pixel
+ * snap and rejects a rect that is the wrong row, the wrong width or the whole
+ * canvas. An instance that painted nothing must answer no ink, and one with ink
+ * must have painted.
  *
  * Returns the violations rather than asserting, so a test reads as
- * `expect(sweep(...)).toEqual([])`. `maxDistSq` is the caller's, because a
- * shape whose hit target is wider than its ink (`point`) needs a bound that
- * admits the whole rect.
+ * `expect(sweep(...)).toEqual([])`. `maxDistSq` is the bound the hit test is
+ * asked with, `Infinity` unless the caller's differs.
  */
-export function sweepDrawAgainstHit<C extends { count: number }, P>(
-  shape: MarkShape<C, P>,
+export function sweepMarkAgainstHit<C extends Counted, S extends MarkFrame>(
+  mark: SweptMark<NoInfer<C>, S>,
   channels: C,
   block: RenderBlock,
-  frame: MarkFrame,
-  params: P,
+  state: S,
   {
-    maxDistSq,
+    maxDistSq = Infinity,
     step = 0.5,
     sliceOne,
     inkSlackPx = 1,
-  }: {
-    maxDistSq: number
-    step?: number
-    sliceOne?: (channels: C, index: number) => C
-    inkSlackPx?: number
-  },
+    contains: rule,
+  }: SweepOptions<C> = {},
 ) {
   const { count } = channels
   const paint = (c: C) => {
     const { ctx, calls } = recordingContext()
-    shape.paintBlock(ctx, c, block, frame, params)
+    mark.paintBlock(ctx, c, block, state)
     return calls
   }
   const rects = paint(channels)
-  // Positional attribution, and the licence for the containment claim below.
   const perRect = rects.length === count
   if (!perRect && !sliceOne) {
     return [`painted ${rects.length} rects for ${count} instances`]
   }
-  const boxes = sliceOne
+  const boxes: readonly (Box | undefined)[] = sliceOne
     ? Array.from({ length: count }, (_, i) =>
         unionBox(paint(sliceOne(channels, i))),
       )
     : rects.map(r => ({ x: r.x, y: r.y, w: r.w, h: r.h }))
-
-  const violations = inkViolations(
-    shape,
-    channels,
-    block,
-    frame,
-    params,
-    boxes,
-    inkSlackPx,
-  )
-  if (violations.length >= MAX_VIOLATIONS) {
-    return violations
-  }
-  const hitNearest = shapeHitNearest(shape)
-  if (!hitNearest) {
-    return [`${shape.id} has no hit test`]
-  }
-
-  const candidates = Array.from({ length: count }, (_, k) => count - 1 - k)
   let yMin = Infinity
   let yMax = -Infinity
   for (const b of boxes) {
@@ -450,120 +450,57 @@ export function sweepDrawAgainstHit<C extends { count: number }, P>(
   if (yMin === Infinity) {
     return [`painted nothing for ${count} instances`]
   }
-  const x0 = Math.min(block.screenStartPx, block.screenEndPx) - 1
-  const x1 = Math.max(block.screenStartPx, block.screenEndPx) + 1
-  for (let y = Math.floor(yMin) - 1; y <= yMax + 1; y += step) {
-    for (let x = x0; x <= x1; x += step) {
-      let expected = -1
-      if (perRect) {
-        for (let k = count - 1; k >= 0; k--) {
-          if (contains(boxes[k]!, x, y)) {
-            expected = k
-            break
-          }
-        }
-      }
-      const hit = hitNearest(
-        channels,
-        block,
-        frame,
-        params,
-        x,
-        y,
-        candidates,
-        maxDistSq,
-      )
-      violations.push(...hitViolations(hit, boxes, x, y))
-      if (expected !== -1 && hit?.index !== expected) {
-        violations.push(
-          `(${x}, ${y}) is on rect ${expected}, answered ${hit?.index ?? 'nothing'}`,
-        )
-      }
-      if (violations.length >= MAX_VIOLATIONS) {
-        return violations
-      }
-    }
-  }
-  return violations
-}
 
-/**
- * `sweepDrawAgainstHit` for a shape whose hit rule is not its painted box, such
- * as the pileup's bp containment. The ink clause and the four hit claims are
- * the same; the fifth takes `contains` in place of the box, over the whole
- * canvas: every point answers the nearest painted instance the rule contains,
- * the last-painted where tied, and nothing where the rule contains none.
- */
-export function sweepDrawAgainstContainment<C extends { count: number }, P>(
-  shape: MarkShape<C, P>,
-  channels: C,
-  block: RenderBlock,
-  frame: MarkFrame,
-  params: P,
-  {
-    contains: ruleContains,
-    sliceOne,
-    maxDistSq = Infinity,
-    step = 0.5,
-    inkSlackPx = 1,
-  }: {
-    contains: (index: number, xPx: number, yPx: number) => boolean
-    sliceOne: (channels: C, index: number) => C
-    maxDistSq?: number
-    step?: number
-    inkSlackPx?: number
-  },
-) {
-  const { count } = channels
-  const boxes = Array.from({ length: count }, (_, i) => {
-    const { ctx, calls } = recordingContext()
-    shape.paintBlock(ctx, sliceOne(channels, i), block, frame, params)
-    return unionBox(calls)
-  })
-  if (boxes.every(b => b === undefined)) {
-    return [`painted nothing for ${count} instances`]
-  }
   const violations = inkViolations(
-    shape,
+    mark,
     channels,
     block,
-    frame,
-    params,
+    state,
     boxes,
     inkSlackPx,
   )
   if (violations.length >= MAX_VIOLATIONS) {
     return violations
   }
-  const hitNearest = shapeHitNearest(shape)
-  if (!hitNearest) {
-    return [`${shape.id} has no hit test`]
+  if (!mark.hitNearest) {
+    return ['no hit test']
   }
+
+  const claims =
+    rule ??
+    (perRect
+      ? (k: number, x: number, y: number) => contains(boxes[k]!, x, y)
+      : undefined)
   const candidates = Array.from({ length: count }, (_, k) => count - 1 - k)
   const x0 = Math.min(block.screenStartPx, block.screenEndPx) - 1
   const x1 = Math.max(block.screenStartPx, block.screenEndPx) + 1
+  const y0 = rule ? -1 : Math.floor(yMin) - 1
+  const y1 = rule ? state.canvasHeight + 1 : yMax + 1
   let answered = 0
-  for (let y = -1; y <= frame.canvasHeight + 1; y += step) {
+  for (let y = y0; y <= y1; y += step) {
     for (let x = x0; x <= x1; x += step) {
       let expected = -1
       let expectedDistSq = maxDistSq
-      for (const k of candidates) {
-        const b = boxes[k]
-        if (b && ruleContains(k, x, y)) {
-          const distSq = inkOnRect(x, y, b.x, b.y, b.w, b.h).distSq
-          if (
-            expected === -1 ? distSq < maxDistSq : distSq < expectedDistSq - EPS
-          ) {
-            expected = k
-            expectedDistSq = distSq
+      if (claims) {
+        for (const k of candidates) {
+          const b = boxes[k]
+          if (b && claims(k, x, y)) {
+            const distSq = inkOnRect(x, y, b.x, b.y, b.w, b.h).distSq
+            if (
+              expected === -1
+                ? distSq < maxDistSq
+                : distSq < expectedDistSq - EPS
+            ) {
+              expected = k
+              expectedDistSq = distSq
+            }
           }
         }
       }
-      const hit = hitNearest(
+      const hit = mark.hitNearest(
         channels,
         block,
-        frame,
-        params,
+        state,
         x,
         y,
         candidates,
@@ -573,7 +510,11 @@ export function sweepDrawAgainstContainment<C extends { count: number }, P>(
         answered++
       }
       violations.push(...hitViolations(hit, boxes, x, y))
-      if ((hit?.index ?? -1) !== expected) {
+      if (
+        expected === -1
+          ? rule !== undefined && hit !== undefined
+          : hit?.index !== expected
+      ) {
         violations.push(
           `(${x}, ${y}) should answer ${expected === -1 ? 'nothing' : expected}, answered ${hit?.index ?? 'nothing'}`,
         )
@@ -586,4 +527,34 @@ export function sweepDrawAgainstContainment<C extends { count: number }, P>(
   return answered === 0 && violations.length === 0
     ? [`no swept point answered any of ${count} instances`]
     : violations
+}
+
+/** `sweepMarkAgainstHit` for a `MarkShape`, its frame and its params. */
+export function sweepDrawAgainstHit<C extends Counted, P>(
+  shape: MarkShape<C, P>,
+  channels: C,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: P,
+  options: SweepOptions<C>,
+) {
+  const hitNearest = shapeHitNearest(shape)
+  return sweepMarkAgainstHit(
+    {
+      paintBlock: (ctx, c, b) => {
+        shape.paintBlock(ctx, c, b, frame, params)
+      },
+      ink: shape.ink
+        ? (c, b, _frame, i) => shape.ink?.(c, b, frame, params, i)
+        : undefined,
+      hitNearest: hitNearest
+        ? (c, b, _frame, x, y, candidates, bound) =>
+            hitNearest(c, b, frame, params, x, y, candidates, bound)
+        : undefined,
+    },
+    channels,
+    block,
+    frame,
+    options,
+  )
 }
