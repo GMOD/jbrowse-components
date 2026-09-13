@@ -113,20 +113,13 @@ per-site means. Deferred because it changes results and wants a UI knob (a
 pruning is the same idea one level up and a bigger job.
 
 **Matrix connector-line hover is thin and O(features)/mousemove.** In
-`LinesConnectingMatrixToGenomicPosition.tsx` the hover shows only `feature.get('name')`
-and rescans every line with `pointToSegmentDist` on each mousemove
-(`AllLines.onMouseMove`, ~:160-190); `getLineGeometry` is recomputed by several sibling
-components each render, and the crosshair-line and hovered-line are separate code paths
-computing the same `idx*w + w/2` geometry. Enrich the tooltip (position / ref / alt),
-add click-through to feature detail, and dedupe the geometry.
+`shared/ConnectorLines.tsx` the hover shows only the feature name and rescans
+every line with `pointToSegmentDist` on each mousemove. Enrich the tooltip
+(position / ref / alt) and add click-through to feature detail.
 
 **Matrix ref/no-call cells are silently non-interactive.** Hover requires a decoded
 genotype (`LinearMultiSampleVariantMatrixDisplay/components/VariantMatrixComponent.tsx:86`),
 so blank grid regions give no tooltip — reads as "the UI is dead here." Small fix.
-
-**Bug: multiallelic sites lose their VCF description.** `shared/buildVariantHit.ts:51`
-overwrites the real `description` with the literal `'multiple ALT alleles'` when
-`alt.length >= 3`, discarding the actual annotation. Straightforward correctness fix.
 
 **jb2export population coloring (`samplesTsv:` modifier).** The multi-sample variant
 matrix now renders real 1000 Genomes data correctly in jb2export — the old "static SSR

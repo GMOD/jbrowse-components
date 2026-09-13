@@ -14,13 +14,11 @@ separately and are tracked in `scripts/agent-demos/takes/protein.md`.
 MCP ships in v5.0.0 and three clients were wanted showing it running:
 Claude Code, Claude Desktop, the Chrome extension.
 
-## Claude Code over desktop MCP — three takes published, awaiting a verdict
+## Claude Code over desktop MCP — four takes published, awaiting a verdict
 
-Take 5 (the GEO ATAC take) was encoded but its mp4 was never pushed to the
-store and the scratchpad that held it is gone; only
-`scripts/agent-demos/take5-transcript.txt` remains. It was superseded on
-2026-09-01 by three shell-capable takes, each a real `claude -p` session with
-Bash beside the MCP tools: fold the transcript (HBB, ESMFold), two assemblies
+The GEO ATAC take is published as `agent_geo_ratio_take1`. Beside it are three
+shell-capable takes, each a real `claude -p` session with Bash beside the MCP
+tools: fold the transcript (HBB, ESMFold), two assemblies
 with no alignment (D. simulans against D. mauritiana), and the derivative allele
 (COLO829). Plans, verified numbers and rehearsal notes are
 `scripts/agent-demos/takes/*.md`; transcripts are beside them.

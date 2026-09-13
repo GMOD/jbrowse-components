@@ -32,9 +32,10 @@ hg38-minimal/
   data/hg38.fa.gz + .fai + .gzi
   data/ncbiRefSeq.gff.gz + .tbi
 ```
-Unlock: teach desktop's `LocalPathLocation` to resolve relative to the config
-file's dir (mirror existing `baseUri` logic). Works wherever extracted; also
-shareable peer-to-peer (USB / lab share) — big for air-gapped users.
+Desktop already rewrites a relative `uri` to a `localPath` against the config's
+own directory (`electron/ipc/relativeUrisToLocalPaths.ts`), so a pack works
+wherever it is extracted; also shareable peer-to-peer (USB / lab share) — big
+for air-gapped users.
 
 **B. In-app download manager + registry.** Curated `genomes.json` catalog on
 jbrowse.org (name, size, URL, checksum). App lists packs → user picks → download

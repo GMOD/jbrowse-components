@@ -83,5 +83,4 @@ twice or lifting the hit into model state, neither of which is a win.
 "Filter by..." on the multi-row painting (LinearBasicDisplay has it on the same
 data) and a per-feature "Color by..." menu are new UI. (The third,
 `showReferenceAlleles` collapsing into `referenceDrawingMode`, landed in the v5
-no-migrations cycle.) Wiggle's `useMouseState` in the body rather than
-`PointerLayer` is the same shape as MAF's pointer layer above and as low.
+no-migrations cycle.)

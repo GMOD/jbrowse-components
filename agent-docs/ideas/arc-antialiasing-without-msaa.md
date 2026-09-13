@@ -450,17 +450,14 @@ cannot be handed a pipeline built at 4. At 1 there is no target at all rather
 than a smaller one. `hal/webgpuHalSampleCount.test.ts` pins both attachment
 shapes.
 
-**Nothing is flipped.** It shipped with the default at 4, which is what every
-display asked for while it was a build constant, and the before/after captures
-of four scenes on a real WebGPU device are byte-identical. So what is left of
-this option is *the decision*, one display at a time — and the decision is the
-part this doc cannot make.
-
-**What a flip takes now.** One line in the display's renderer factory:
-`sampleCount: 1` beside `passes`. Nothing else moves. The
-displays that must NOT take it are Hi-C (`plugins/hic/.../HicRenderer.ts`) and
-LD (`plugins/variants/src/LDDisplay/components/LDRenderer.ts`), for the
-conflation reason option 5 records.
+**Synteny and dotplot are flipped** (`2d8a7fbe95`): `createRenderingBackend`
+allocates at 1 when every registered pass declares `//! coverage: analytic`,
+else 4, and `sampleCount` stays the per-display override in both directions.
+What is left of this option is *the decision* for the rest, one display at a
+time. The displays that must NOT take it are Hi-C
+(`plugins/hic/.../HicRenderer.ts`) and LD
+(`plugins/variants/src/LDDisplay/components/LDRenderer.ts`), for the conflation
+reason option 5 records.
 
 **What it costs: measured, and it is nothing.** The worry was a pass type shared
 between a 1x display and a 4x one compiling twice. It does not fire. Moved the

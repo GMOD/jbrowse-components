@@ -1,15 +1,9 @@
 ---
 name: alignments
-description: Read-pair curved links, coverage decomposition by MAPQ / discordancy / HP, three coverage-band additions off data already shipped (strand-split allele bars, variant-to-variant navigation, a bedGraph export), large-region viewing for dense BAM, SBX duplex `yc` coloring, why CRAM decode parallelism is not the lever the profile points at, and why coalescing the per-lane depth buffers does not by itself lift `MAX_GROUPS`, and why the pileup's low-frequency threshold wants a read-count floor rather than a depth ramp.
+description: Coverage decomposition by MAPQ / discordancy / HP, three coverage-band additions off data already shipped (strand-split allele bars, variant-to-variant navigation, a bedGraph export), large-region viewing for dense BAM, SBX duplex `yc` coloring, why CRAM decode parallelism is not the lever the profile points at, and why coalescing the per-lane depth buffers does not by itself lift `MAX_GROUPS`, and why the pileup's low-frequency threshold wants a read-count floor rather than a depth ramp.
 ---
 
 # Alignments
-
-**Curved read links.** Reuse breakpoint logic for a "link with curved lines" mode
-(better orientation encoding than straight connectors).
-
-**Long-range inter-region arcs.** UI toggle to draw arcs between distant regions.
-Missing in the 1kg demo — may be a bug or unimplemented; needs reproduction.
 
 **Auto-scale noise.** Per-track noise estimate (mean insertion rate) to auto-scale
 `featureFrequencyThreshold` (noisy → strict, clean → lenient).
@@ -50,8 +44,6 @@ way it resolved, so the automatic choice is visible and overridable rather than
 silent. What is undecided is the detection itself: what in the data says a
 library is stranded first-of-pair, and how wrong the guess can be before it is
 worse than the current explicit setting.
-
-**Legend.** Visual guide: strand colors, paired/unpaired styles, SNP colors.
 
 **Strand-split allele bars in the coverage band.** `mismatchStrands` already
 ships and `countSnpsAtPosition` already reads it — the tooltip's Strands column
@@ -172,18 +164,10 @@ infrequently, per-base pass is cheap → rpcProps). Start with MAPQ/discordancy 
 proof point. Cross-ref [bigly](https://github.com/brentp/bigly).
 
 **Large-region viewing for dense BAM/CRAM.** Today alignments can't show a whole
-chromosome for a dense BAM/CRAM. The limits stack in three tiers, and lifting one
-just exposes the next — so this is a program of work, not a single fix:
+chromosome for a dense BAM/CRAM. The width-driven limit is gone — the coverage
+band's GPU buffer is downsampled to a fixed bin cap — and the two that remain
+stack, so lifting one just exposes the next:
 
-- **Width-driven (the easy one, being addressed separately).** The coverage band
-  packs one 8-byte GPU record per bp (`packCoverageBinsForGpu`), so the vertex
-  buffer hits the ~1 GiB device limit at ~135 Mbp *regardless of read count*, and
-  `computeVisibleCoverageStats` re-scans the full per-bp depth array (~1 s at
-  145 Mbp, measured) on every pan/zoom settle. Fix: downsample to a fixed cap
-  (~8k bins) in the worker for both the GPU buffer and the shipped array, keeping
-  per-bp only as a worker-internal transient for the SNP/indel/frequency
-  denominators. This is the coverage-OOM work; it unblocks *sparse* tracks and
-  synteny at wide zoom but does **not** help dense BAM.
 - **Data-driven (the real ceiling for dense BAM).** One GPU instance per read, per
   mismatch, per gap. A 30× whole-chromosome BAM is ~29 M reads → the read pass
   buffer alone can exceed 1 GiB, with tens of millions more mismatch instances. No
