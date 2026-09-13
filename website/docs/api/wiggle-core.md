@@ -146,28 +146,6 @@ unless `nice: false` says it is already the one being drawn with.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
 
-## makeScoreNormalizer
-
-Returns a loop-hoistable function normalizing a score to [0,1].
-
-`symlogConstant` is only read for `SCALE_TYPE_SYMLOG`, and is expected to be
-already resolved by resolveSymlogConstant — the shader gets the same
-resolved number as a uniform, so the "auto" rule lives on this side only and
-the two backends compare like for like.
-
-A range that is zero **or negative** normalizes everything to 0, which is the
-rule `scoreScale.slang` spells as `range <= 0.0`. Testing `range === 0` here
-instead let a descending domain through to a negative `1 / range`, so every
-score saturated to 1 on this side while the shader flattened them all to 0 —
-one view, opposite plots. `normalizeScoreParity.test.ts` sweeps the two.
-
-```js
-// type signature
-(min: number, max: number, scaleType: WiggleScaleType, symlogConstant?: number) => (score: number) => number
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/normalize.ts)
-
 ## parseScoreRules
 
 Normalizes whatever a `scoreRules` config slot holds into `ScoreRule`s,
@@ -203,12 +181,12 @@ rather than hard-coded.
 
 ## scaleTypeFromString
 
-Maps the `'log'`/`'symlog'`/`'linear'` string to the numeric
-`WiggleScaleType`.
+Maps the `'log'`/`'symlog'`/`'linear'` string to the numeric code the
+shaders' `scaleType` uniform compares, render-core's `scaleTypeCode`.
 
 ```js
 // type signature
-(scaleType: string) => WiggleScaleType
+(scaleType: string) => ScaleTypeCode
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/normalize.ts)
