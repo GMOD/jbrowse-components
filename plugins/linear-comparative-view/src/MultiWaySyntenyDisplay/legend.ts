@@ -1,10 +1,14 @@
 import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
-import { categoricalColor, colorSchemes } from '@jbrowse/synteny-core'
+import {
+  categoricalColor,
+  colorByScale,
+  colorSchemes,
+} from '@jbrowse/synteny-core'
 
 import type { Span } from './layoutMultiWay.ts'
 import type { GlyphHit } from './multiwayRenderTypes.ts'
 import type { MultiWayRibbonColorBy } from './ribbonColorModes.ts'
-import type { CategoricalEntry } from '@jbrowse/core/ui/colorScale'
+import type { CategoricalEntry, ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
 import type { CategoricalMode } from '@jbrowse/synteny-core'
 
@@ -59,14 +63,9 @@ export function laneColorKey(
 }
 
 /**
- * What the ribbons' own colors mean: a fixed pair in `strand` mode, one row per
- * label in an `attribute:` mode, and nothing otherwise: `default` paints one
- * color, which keys nothing, and `identity` paints a continuous ramp, which a
- * row list cannot state — that one wants the gradient bar Hi-C and LD draw, and
- * does not have it here.
- *
- * The ribbon rows sit in their own titled section, which is what tells a reader
- * whether a color belongs to a glyph or to a ribbon.
+ * What the ribbons' own colors mean as rows: a fixed pair in `strand` mode, one
+ * row per label in an `attribute:` mode, and nothing otherwise, since `default`
+ * paints one color and `identity` a ramp (`ribbonColorScale`).
  */
 export function ribbonColorKey(
   colorBy: MultiWayRibbonColorBy,
@@ -99,4 +98,24 @@ export function ribbonColorKey(
     ]
   }
   return []
+}
+
+/**
+ * The ribbons' key in its own titled section, so a reader can tell a ribbon's
+ * color from a glyph's: the synteny view's identity bar where some ribbon
+ * carries an identity to paint, else `ribbonColorKey`'s rows
+ */
+export function ribbonColorScale(
+  colorBy: MultiWayRibbonColorBy,
+  labels: CategoricalMode | undefined,
+  paintsIdentity: boolean,
+): ColorScale {
+  return colorBy === 'identity' && paintsIdentity
+    ? { ...colorByScale('identity'), id: 'ribbons', title: 'Ribbon identity' }
+    : {
+        kind: 'categorical',
+        id: 'ribbons',
+        title: 'Ribbon colors',
+        entries: ribbonColorKey(colorBy, labels),
+      }
 }

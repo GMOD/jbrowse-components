@@ -1307,6 +1307,32 @@ test('the ribbon label table accumulates across fetches and resets on a mode pic
   expect(display.ribbonLabels).toBeUndefined()
 })
 
+test('identity ribbons key their ramp only when a record carries an identity', () => {
+  const display = createDisplay()
+  display.setRibbonColorBy('identity')
+  display.setFeatures([mateRecord('r1', 'volvox_random')])
+  expect(display.colorScales.map(scale => scale.id)).toEqual([])
+  display.setFeatures([
+    new SimpleFeature({
+      uniqueId: 'r2',
+      refName: 'ctgA',
+      start: 100,
+      end: 300,
+      strand: 1,
+      identity: 0.93,
+      mate: {
+        assemblyName: 'volvox_random',
+        refName: 'ctgB',
+        start: 100,
+        end: 300,
+      },
+    }),
+  ])
+  expect(display.colorScales.map(scale => [scale.id, scale.kind])).toEqual([
+    ['ribbons', 'ramp'],
+  ])
+})
+
 // The fetch asks for the view's static blocks, which reach past the window,
 // and `clipToRegion` cuts each record to what was ASKED FOR — so an adapter
 // answering one record per lane hands the fit a placement the width of the

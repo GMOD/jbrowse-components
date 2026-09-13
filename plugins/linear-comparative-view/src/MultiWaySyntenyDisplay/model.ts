@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { legendIsReadable, pushLaunchViewMenuItem } from '@jbrowse/core/ui'
+import { colorScaleIsEmpty } from '@jbrowse/core/ui/colorScale'
 import {
   doesIntersect2,
   getPaletteHost,
@@ -65,7 +66,7 @@ import {
   rowAssembliesOf,
   tickIntervalFor,
 } from './layoutMultiWay.ts'
-import { laneColorKey, ribbonColorKey } from './legend.ts'
+import { laneColorKey, ribbonColorScale } from './legend.ts'
 import {
   laneOrderMenuItem,
   laneSelectionMenuItems,
@@ -1526,11 +1527,15 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * what the ribbons' own colors mean, which is the strand pair or nothing:
-       * one flat color keys nothing and the identity ramp is not a row list
+       * whether any ribbon the stack draws carries an identity to paint: a
+       * gene table and a composed link carry none
        */
-      get ribbonLegend(): CategoricalEntry[] {
-        return ribbonColorKey(self.ribbonColorBy, self.ribbonLabels)
+      get ribbonsCarryIdentity() {
+        const carries = (f: Feature) => typeof f.get('identity') === 'number'
+        return (
+          (self.features ?? []).some(carries) ||
+          [...self.pairLinks.values()].some(({ links }) => links.some(carries))
+        )
       },
     }))
     .views(self => ({
@@ -1542,20 +1547,20 @@ export function stateModelFactory(
        * that paints one flat color has nothing for a key to say.
        */
       get colorScales(): ColorScale[] {
-        return [
+        const scales: ColorScale[] = [
           {
-            kind: 'categorical' as const,
+            kind: 'categorical',
             id: 'genes',
             title: 'Gene colors',
             entries: self.geneLegend,
           },
-          {
-            kind: 'categorical' as const,
-            id: 'ribbons',
-            title: 'Ribbon colors',
-            entries: self.ribbonLegend,
-          },
-        ].filter(scale => scale.entries.length > 0)
+          ribbonColorScale(
+            self.ribbonColorBy,
+            self.ribbonLabels,
+            self.ribbonColorBy === 'identity' && self.ribbonsCarryIdentity,
+          ),
+        ]
+        return scales.filter(scale => !colorScaleIsEmpty(scale))
       },
     }))
     .views(self => ({

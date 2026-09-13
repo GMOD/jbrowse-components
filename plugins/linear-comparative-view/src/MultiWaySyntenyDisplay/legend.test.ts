@@ -1,6 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { laneColorKey, ribbonColorKey } from './legend.ts'
+import { laneColorKey, ribbonColorKey, ribbonColorScale } from './legend.ts'
 
 import type { GlyphHit } from './multiwayRenderTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -91,9 +91,23 @@ test('the ribbon key is the strand pair, in two colors', () => {
 })
 
 // One flat color keys nothing, and a continuous ramp is not a row list.
-test('the other two ribbon modes key nothing', () => {
+test('the other two ribbon modes key no rows', () => {
   expect(ribbonColorKey('default')).toEqual([])
   expect(ribbonColorKey('identity')).toEqual([])
+})
+
+// Identity painted viridis with no key at all, so a reader had colors and no
+// way to read a number off them
+test('identity keys the ramp it paints, and nothing where no ribbon carries one', () => {
+  const scale = ribbonColorScale('identity', undefined, true)
+  expect(scale.kind).toBe('ramp')
+  expect(scale.id).toBe('ribbons')
+  expect(ribbonColorScale('identity', undefined, false)).toEqual({
+    kind: 'categorical',
+    id: 'ribbons',
+    title: 'Ribbon colors',
+    entries: [],
+  })
 })
 
 // A text column keys one row per label, with the file color where the file
