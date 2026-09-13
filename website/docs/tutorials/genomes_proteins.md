@@ -179,8 +179,10 @@ shared core is the control: NACHT, the winged helix, HD2, FIIND and CARD run
 across every row.
 
 The calls ride along on NCBI's own protein records. For a protein NCBI has no
-calls for, **File → Annotations → Open InterProScan results...** reads them from
-a file and **File → Annotations → Query InterProScan...** computes them.
+calls for, `react-msaview-cli interpro` writes a domain file from InterPro's
+precomputed matches, **File → Annotations → Open InterProScan results...** reads
+it in, and **File → Annotations → How to get a domain file...** opens the
+walkthrough.
 
 ### Checking the overlay against the residues
 
