@@ -345,31 +345,60 @@ function orientationVote(upperX: Map<string, number>, lane: LanePlacement[]) {
   const shared = lane
     .filter(p => upperX.has(p.key))
     .sort((a, b) => upperX.get(a.key)! - upperX.get(b.key)!)
-  const sharedGroups = new Set(shared.map(p => p.key)).size
-  if (sharedGroups < MIN_SHARED_FOR_ORIENTATION) {
+  const byKey = new Map<string, LanePlacement[]>()
+  for (const p of shared) {
+    const runs = byKey.get(p.key)
+    if (runs) {
+      runs.push(p)
+    } else {
+      byKey.set(p.key, [p])
+    }
+  }
+  if (byKey.size < MIN_SHARED_FOR_ORIENTATION) {
     return undefined
   }
-  let backwards = 0
-  let total = 0
-  for (let i = 0; i < shared.length; i++) {
-    const a = shared[i]!
-    for (let j = i + 1; j < shared.length; j++) {
-      const b = shared[j]!
-      if (a.key !== b.key) {
-        const w = a.group.weight * b.group.weight
-        total += w
-        if (b.center < a.center) {
-          backwards += w
-        }
-      }
-    }
+  let { total, backwards } = weightedPairs(shared)
+  for (const runs of byKey.values()) {
+    const same = weightedPairs(runs)
+    total -= same.total
+    backwards -= same.backwards
   }
   const share = total > 0 ? backwards / total : 0.5
   return {
     share,
-    shared: sharedGroups,
+    shared: byKey.size,
     backwards: share === 0.5 ? undefined : share > 0.5,
   }
+}
+
+// Every ordered pair of `runs` weighed by the product of the two groups'
+// weights, and the share of that weight on the pairs whose later run's center
+// lies before the earlier's. A Fenwick tree over the centers' ranks sums the
+// earlier weight at or below each run's center as it is reached, so this is
+// O(n log n) where pairing every run against every other was O(n²) per lane
+// per settle.
+function weightedPairs(runs: LanePlacement[]) {
+  const ranks = [...new Set(runs.map(r => r.center))].sort((a, b) => a - b)
+  const rankOf = new Map(ranks.map((center, i) => [center, i + 1]))
+  const tree = new Float64Array(ranks.length + 1)
+  let seen = 0
+  let total = 0
+  let backwards = 0
+  for (const run of runs) {
+    const rank = rankOf.get(run.center)!
+    const weight = run.group.weight
+    let atOrBelow = 0
+    for (let i = rank; i > 0; i -= i & -i) {
+      atOrBelow += tree[i]!
+    }
+    total += weight * seen
+    backwards += weight * (seen - atOrBelow)
+    for (let i = rank; i < tree.length; i += i & -i) {
+      tree[i]! += weight
+    }
+    seen += weight
+  }
+  return { total, backwards }
 }
 
 // A lane keeps reading the way it did — across a contig change too, since the
