@@ -79,3 +79,38 @@ it('draws no key once the row labels the stripe lives in are turned off', () => 
   display.setShowRowLabels(false)
   expect(display.rowGroupLegend).toEqual([])
 })
+
+// The chrome hands `focusLegendEntry` the scale id and the clicked row's value,
+// the same wiring the multi-wiggle and multi-sample variant keys focus through.
+describe('clicking a group swatch focuses its rows', () => {
+  // dog0-29 are Village dog and dog30-59 Wolf; the rest fall through to Breed.
+  it('narrows the rows to the clicked group', () => {
+    const display = makeDisplay(1987, 640)
+    expect(display.colorScales.map(s => s.id)).toContain('rowGroups')
+
+    display.focusLegendEntry('rowGroups', 'Wolf')
+
+    expect(display.sources.map(s => s.name)).toEqual(
+      Array.from({ length: 30 }, (_, i) => `dog${i + 30}`),
+    )
+  })
+
+  it('reaches a group the previous click hid', () => {
+    const display = makeDisplay(1987, 640)
+    display.focusLegendEntry('rowGroups', 'Wolf')
+
+    display.focusLegendEntry('rowGroups', 'Village dog')
+
+    expect(display.sources).toHaveLength(30)
+    expect(display.sources[0]!.group).toBe('Village dog')
+  })
+
+  // A feature-color row names a color, not a set of rows.
+  it('leaves the feature-color rows inert', () => {
+    const display = makeDisplay(1987, 640)
+
+    display.focusLegendEntry('features', 'Wolf')
+
+    expect(display.sources).toHaveLength(1987)
+  })
+})

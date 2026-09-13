@@ -2,9 +2,6 @@ import {
   drawnRowHeightPx,
   rowBandOffsetPx,
 } from '@jbrowse/render-core/shaders/rowRect'
-import { MULTI_ROW_MIN_CELL_PX } from '@jbrowse/render-core/shaders/rowRectConsts'
-
-export { MULTI_ROW_MIN_CELL_PX }
 
 // Higher than the multi-wiggle's xyplot rows, which sit on paper: blocks here
 // are saturated fills edge to edge and swallow a fainter line.

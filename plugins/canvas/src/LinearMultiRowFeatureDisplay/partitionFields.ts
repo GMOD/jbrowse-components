@@ -1,6 +1,7 @@
 import {
   AUTO_PARTITION_FIELD,
   MAX_COUNTED_PARTITION_VALUES,
+  resolvePartitionField,
 } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
@@ -27,8 +28,9 @@ export function answeredPartitionField(self: PartitionFieldSlice) {
 
 /**
  * What a fetch issued now should partition on under auto. Unlike
- * `effectivePartitionField` there is no display default to fall back to — this
- * is an instruction to the worker, where "no instruction" is a real answer.
+ * `effectivePartitionField` this does not guess at what auto would pick — it is
+ * an instruction to the worker, where "no instruction" is a real answer and the
+ * worker is the side that knows which columns the data carries.
  */
 export function pinnedPartitionField(self: PartitionFieldSlice) {
   return answeredPartitionField(self) ?? AUTO_PARTITION_FIELD
@@ -46,6 +48,22 @@ export function partitionCandidates(self: PartitionFieldSlice) {
     }
   }
   return [...names].sort()
+}
+
+/**
+ * The attribute the rows are partitioned on: what a region answered, else what
+ * the worker's own resolver would make of the slot. Answering through
+ * `resolvePartitionField` rather than a second copy of its default is what
+ * keeps the menu's checked radio and the clustering matrix naming the field the
+ * next fetch would use.
+ */
+export function effectivePartitionField(
+  self: PartitionFieldSlice & { partitionField: string },
+) {
+  return (
+    answeredPartitionField(self) ??
+    resolvePartitionField(self.partitionField, partitionCandidates(self))
+  )
 }
 
 /**

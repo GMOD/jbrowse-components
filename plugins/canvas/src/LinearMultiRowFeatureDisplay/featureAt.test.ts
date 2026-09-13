@@ -273,6 +273,43 @@ describe('featureAt', () => {
     })
   })
 
+  // `rowProportion` insets each row's band inside its slot, so a slot-relative
+  // row window names a row the painter never drew there.
+  describe('rowProportion insets the band', () => {
+    function inset() {
+      const { display } = createTestEnvironment({
+        displayConfig: { rowProportion: 0.5 },
+      }).createDisplay(CTGA_1KB)
+      display.setRpcData(
+        0,
+        region([
+          { row: 'a', start: 100, end: 200, id: 'top' },
+          { row: 'b', start: 100, end: 200, id: 'bottom' },
+        ]),
+        ctgA,
+      )
+      // 50px slots, so the drawn bands are [12.5, 37.5) and [62.5, 87.5).
+      expect(display.effectiveRowHeight).toBe(50)
+      return display
+    }
+
+    it('hits the lower half of a band', () => {
+      expect(inset().featureAt(150, 30)?.id).toBe('top')
+      expect(inset().featureAt(150, 80)?.id).toBe('bottom')
+    })
+
+    it('hits the upper half of a band', () => {
+      expect(inset().featureAt(150, 20)?.id).toBe('top')
+      expect(inset().featureAt(150, 70)?.id).toBe('bottom')
+    })
+
+    it('misses the gutter either side of a band', () => {
+      expect(inset().featureAt(150, 5)).toBeUndefined()
+      expect(inset().featureAt(150, 45)).toBeUndefined()
+      expect(inset().featureAt(150, 95)).toBeUndefined()
+    })
+  })
+
   describe('hidden legend categories', () => {
     // usedItemRgb suppresses the per-row palette, leaving the rows painting
     // their per-feature colors for the legend to key on.

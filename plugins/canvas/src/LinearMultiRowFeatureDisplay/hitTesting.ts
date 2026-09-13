@@ -121,6 +121,10 @@ function* channelsOnRows(
  * drawn pixel, so the walk from `nearest` to `lowest` finds whichever of them
  * actually put a block there. The mark then answers which of those rows'
  * blocks the pixel's centre is on.
+ *
+ * The row window is asked in band space because `rowProportion` insets each
+ * band inside its slot; `yPx` stays slot-relative, the space `spanMark`
+ * measures in.
  */
 function featureAtBase(
   self: MultiRowHitTestSlice,
@@ -135,18 +139,18 @@ function featureAtBase(
     return undefined
   }
   const rowHeight = self.effectiveRowHeight
-  const stack = { rowHeight }
+  const band = rowBand(rowHeight, self.rowProportion)
   const { nearest, lowest } = rowsUnderPointer(
     mouseY,
-    stack,
-    rowBand(rowHeight, self.rowProportion).height,
+    { rowHeight, topOffset: band.offset },
+    band.height,
   )
   const hit = MULTI_ROW_MARK.hitNearest?.(
     encoded,
     block,
     self.renderState,
     Math.floor(mouseX) + 0.5,
-    contentYAt(mouseY, stack),
+    contentYAt(mouseY, { rowHeight }),
     channelsOnRows(encoded, nearest, lowest),
     INSIDE_ONLY,
   )

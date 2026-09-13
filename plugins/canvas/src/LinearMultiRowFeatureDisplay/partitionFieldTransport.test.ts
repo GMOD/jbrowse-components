@@ -38,6 +38,19 @@ describe('partitionField reaches the worker unevaluated', () => {
 
     expect(display.rpcProps().partitionField).toBe('')
   })
+
+  // Everything asking "which attribute are these rows" reads
+  // `effectivePartitionField`, so before a region answers it has to say what
+  // the config asked for rather than the auto fallback nobody chose.
+  it('names the configured slot before any region has answered', () => {
+    const { createDisplay } = createTestEnvironment({
+      displayConfig: { partitionField: 'sample' },
+    })
+    const { display } = createDisplay()
+
+    expect(display.answeredPartitionField).toBeUndefined()
+    expect(display.effectivePartitionField).toBe('sample')
+  })
 })
 
 function regionData(resolvedPartitionField: string) {

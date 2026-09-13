@@ -31,6 +31,7 @@ import {
   buildSpatialIndex,
   computeClusterHierarchy,
   filterRowsBySubtree,
+  focusRowGroup,
   reconcileLayout,
   resetRowOrderMenuItems,
   rowLabelsCarryText,
@@ -59,6 +60,7 @@ import {
 } from './hitTesting.ts'
 import {
   answeredPartitionField,
+  effectivePartitionField,
   partitionCandidates,
   partitionRowCounts,
   pinnedPartitionField,
@@ -329,7 +331,7 @@ export default function stateModelFactory(
          * attribute are these rows" reads this rather than the raw slot above.
          */
         get effectivePartitionField(): string {
-          return this.answeredPartitionField ?? 'name'
+          return effectivePartitionField(self)
         },
         /**
          * #getter
@@ -377,6 +379,18 @@ export default function stateModelFactory(
        */
       get clusterableSources(): MultiRowSource[] {
         return filterRowsBySubtree(self.editableSources, self.subtreeFilter)
+      },
+      /**
+       * #getter
+       * The rows tagged with their `rowGroups` group and left in their own
+       * order, which is what a legend swatch focuses from: a second click on
+       * another group has to reach the rows the first click hid, and the
+       * filter matches the same `name`s.
+       */
+      get groupedSources(): MultiRowSource[] {
+        return applyRowGroups(self.editableSources, self.rowGroups, {
+          partition: false,
+        })
       },
     }))
     .views(self => ({
@@ -820,6 +834,18 @@ export default function stateModelFactory(
          */
         setColorRowLabels(f: boolean) {
           setConf(self, 'colorRowLabels', f)
+        },
+        /**
+         * #action
+         * `LegendMixin`'s hook: a click on a row-group swatch narrows the rows
+         * to that group. A feature-color row names a color rather than a set
+         * of rows — the "Categories" submenu is what acts on those — so it
+         * stays inert.
+         */
+        focusLegendEntry(scaleId: string, value: string) {
+          if (scaleId === 'rowGroups') {
+            focusRowGroup(self, self.groupedSources, s => s.group === value)
+          }
         },
         /**
          * #action

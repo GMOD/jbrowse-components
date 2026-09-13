@@ -66,10 +66,7 @@ interface MultiRowMenuSelf
   showBranchLength: boolean
   treeHasBranchLengths: boolean
   subtreeFilter?: readonly string[]
-  layout: readonly MultiRowSource[]
   rowOrderIsCustom: boolean
-  // Narrowed from TreeLayoutModel's optional: this menu gates on its length.
-  editableSources: MultiRowSource[]
   clusterTree?: string
   rowHeight: number
   setShowTree: (f: boolean) => void

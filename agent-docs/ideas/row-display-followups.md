@@ -1,6 +1,6 @@
 ---
 name: row-display-followups
-description: What the 2026-08-25 pass over the four row displays (multi-row features, multi-wiggle, MAF, the two multi-sample variant displays) left unbuilt — a fixed row height with a scroll viewport for multi-wiggle, legend-click focus on the multi-row key, one name for the "what do the rows look like" radio, MAF row separators, the row-source chain as mixin state, and a metadata filter dialog — with what each one costs and what already exists to build it from.
+description: What the 2026-08-25 pass over the four row displays (multi-row features, multi-wiggle, MAF, the two multi-sample variant displays) left unbuilt — a fixed row height with a scroll viewport for multi-wiggle, one name for the "what do the rows look like" radio, MAF row separators, the row-source chain as mixin state, and a metadata filter dialog — with what each one costs and what already exists to build it from.
 ---
 
 # Row display follow-ups
@@ -28,14 +28,6 @@ viewport under `plotGeometry`, and the per-row axes (the chrome's, off `valueSca
 culling to it. Declined in the pass because fit-to-height is what the display
 is for at cohort scale (a 1,000-row density matrix is read as a stack), and the
 hint's advice is right more often than a scrollbar would be.
-
-**Multi-row: legend-click focus on the row-group key.** The variant and wiggle
-keys focus rows through `FloatingLegend.onItemClick`; the multi-row painting
-draws its key with core's `SvgColorLegend` (`MultiRowColorLegend`), which the
-export shares, and its feature-category rows already toggle. Giving the
-`rowGroups` rows the same click means an `onEntryClick` on `SvgColorLegend`
-scoped to the `rowGroups` section, then `focusRows(self, rowsInGroup)` — the
-rows carry `group` already (`applyRowGroups`).
 
 **One name for the rows radio.** "Plot type" (wiggle), "Rendering mode"
 (variants) and "Row coloring" (MAF) are three names for the top-level radio
