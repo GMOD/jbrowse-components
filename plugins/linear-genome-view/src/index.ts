@@ -224,6 +224,7 @@ export {
   totalHeight,
   trackBoxHeight,
   trackBoxOffsets,
+  trackLabelMode,
   trackLabelLeftOffset,
 } from './LinearGenomeView/svgcomponents/util.ts'
 // Re-exported from core, where it moved so the circular view — which depends

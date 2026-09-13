@@ -12,7 +12,6 @@ import {
   SVGView,
   defaultTextHeight,
   getRowHeaderLayout,
-  labelOffset,
   notifySkippedSvgTracks,
   renderViewTracks,
   trackLabelLeftOffset,
@@ -95,7 +94,6 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     fontFamily,
     session,
   })
-  const textOffset = labelOffset(trackLabels, textHeight)
   const w = width + trackLabelOffset
 
   // stack the views top to bottom: one running top offset positions each group,
@@ -113,7 +111,8 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
       // the overlay group below — which is why they carry the view's own top.
       trackOffsets: getTrackOffsets(
         rowTracks[idx]!.tracks,
-        textOffset,
+        trackLabels,
+        textHeight,
         top + offset,
       ),
     }

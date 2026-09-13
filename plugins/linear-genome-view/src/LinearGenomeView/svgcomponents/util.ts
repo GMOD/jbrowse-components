@@ -16,7 +16,7 @@ import type { ReactNode } from 'react'
 // Just the per-track heights that the vertical-layout math needs; every track
 // shape fed into these helpers (including SvgDisplayResult.track) satisfies it.
 interface TrackHeights {
-  displays: { height: number }[]
+  displays: { height: number; prefersOffset?: boolean }[]
 }
 
 // A rendered track body plus the track it came from, as produced by each
@@ -246,9 +246,25 @@ export const refNameLabelBaselineY = labelBaselineFromTop(
   REF_NAME_LABEL_FONT_SIZE,
 )
 
-// space the label pushes a track down by; only 'offset' mode does
-export function labelOffset(trackLabels: TrackLabelMode, textHeight: number) {
-  return trackLabels === 'offset' ? textHeight : 0
+// The mode one track's label is drawn in. 'overlay' yields to 'offset' for a
+// display that `prefersOffset`, as TrackContainer does on screen: its left edge
+// carries content — an axis, a sample's genotypes — the label would print over.
+export function trackLabelMode(
+  track: TrackHeights,
+  trackLabels: TrackLabelMode,
+): TrackLabelMode {
+  return trackLabels === 'overlay' && track.displays[0]?.prefersOffset
+    ? 'offset'
+    : trackLabels
+}
+
+// space the label pushes a track's body down by; only 'offset' mode does
+export function labelOffset(
+  track: TrackHeights,
+  trackLabels: TrackLabelMode,
+  textHeight: number,
+) {
+  return trackLabelMode(track, trackLabels) === 'offset' ? textHeight : 0
 }
 
 // Gap between a 'left' track label's right edge and the track body.
@@ -302,29 +318,40 @@ export function trackLabelLeftOffset({
 
 // vertical box a single track occupies. Shared by totalHeight (sum) and
 // trackBoxOffsets (prefix-sum) so the two can't drift.
-export function trackBoxHeight(track: TrackHeights, textOffset: number) {
-  return track.displays[0]!.height + textOffset + trackSpacing
+export function trackBoxHeight(
+  track: TrackHeights,
+  trackLabels: TrackLabelMode,
+  textHeight: number,
+) {
+  return (
+    track.displays[0]!.height +
+    labelOffset(track, trackLabels, textHeight) +
+    trackSpacing
+  )
 }
 
 // Top y of each track's box within a stack of them. SVGTracks lays the bodies
 // out with it and the breakpoint-split export anchors its overlay ribbons with
 // it, so one implementation rather than two prefix-sums that must agree —
 // they drifted by trackSpacing per track when they didn't.
-export function trackBoxOffsets(tracks: TrackHeights[], textOffset: number) {
+export function trackBoxOffsets(
+  tracks: TrackHeights[],
+  trackLabels: TrackLabelMode,
+  textHeight: number,
+) {
   const offsets: number[] = []
   let total = 0
   for (const track of tracks) {
     offsets.push(total)
-    total += trackBoxHeight(track, textOffset)
+    total += trackBoxHeight(track, trackLabels, textHeight)
   }
   return offsets
 }
 
 export function totalHeight(
   tracks: TrackHeights[],
-  textHeight: number,
   trackLabels: TrackLabelMode,
+  textHeight: number,
 ) {
-  const textOffset = labelOffset(trackLabels, textHeight)
-  return sum(tracks.map(t => trackBoxHeight(t, textOffset)))
+  return sum(tracks.map(t => trackBoxHeight(t, trackLabels, textHeight)))
 }

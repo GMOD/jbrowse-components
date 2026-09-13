@@ -4,35 +4,52 @@ import { getTrackOffsets } from './util.ts'
 
 // only the fields the offset math reads; the real MST track is a pluggable
 // union TS widens to `any`, so a plain object drives this fine
-function track(trackId: string, height: number) {
-  return { configuration: { trackId }, displays: [{ height }] }
+function track(trackId: string, height: number, prefersOffset?: boolean) {
+  return { configuration: { trackId }, displays: [{ height, prefersOffset }] }
 }
 
-const TEXT_OFFSET = 20
+const TEXT_HEIGHT = 20
 
 test('anchors sit at the top of each rendered track body', () => {
   const tracks = [track('t1', 100), track('t2', 50)]
-  const offsets = getTrackOffsets(tracks, TEXT_OFFSET)
+  const offsets = getTrackOffsets(tracks, 'offset', TEXT_HEIGHT)
 
   // the first body starts below its own label band, not at the top of its box
-  expect(offsets.t1).toBe(TEXT_OFFSET)
+  expect(offsets.t1).toBe(TEXT_HEIGHT)
   // and each subsequent one a whole box further down. This is the invariant
   // that keeps the overlay ribbons on the tracks: SVGTracks lays the boxes out
-  // with the same trackBoxHeight and then translates each body down by
-  // textOffset, so anything else drifts by a label band or a track spacing.
-  expect(offsets.t2).toBe(TEXT_OFFSET + trackBoxHeight(tracks[0]!, TEXT_OFFSET))
+  // with the same trackBoxHeight and then translates each body down by its
+  // label band, so anything else drifts by a label band or a track spacing.
+  expect(offsets.t2).toBe(
+    TEXT_HEIGHT + trackBoxHeight(tracks[0]!, 'offset', TEXT_HEIGHT),
+  )
 })
 
 test('baseY shifts the whole view, and label-less mode has no band', () => {
   const tracks = [track('t1', 100), track('t2', 50)]
-  const offsets = getTrackOffsets(tracks, 0, 500)
+  const offsets = getTrackOffsets(tracks, 'none', TEXT_HEIGHT, 500)
 
   expect(offsets.t1).toBe(500)
-  expect(offsets.t2).toBe(500 + trackBoxHeight(tracks[0]!, 0))
+  expect(offsets.t2).toBe(500 + trackBoxHeight(tracks[0]!, 'none', TEXT_HEIGHT))
+})
+
+// An overlaid label yields to a band for a display that prefers one, as on
+// screen, so that track's body and every anchor below it move down by a band.
+test('overlay mode gives a band only to a track that prefers offset', () => {
+  const tracks = [track('t1', 100, true), track('t2', 50)]
+  const offsets = getTrackOffsets(tracks, 'overlay', TEXT_HEIGHT)
+
+  expect(offsets.t1).toBe(TEXT_HEIGHT)
+  expect(offsets.t2).toBe(trackBoxHeight(tracks[0]!, 'overlay', TEXT_HEIGHT))
+  expect(trackBoxHeight(tracks[0]!, 'overlay', TEXT_HEIGHT)).toBe(
+    trackBoxHeight(tracks[0]!, 'offset', TEXT_HEIGHT),
+  )
 })
 
 test('a track absent from the list has no anchor', () => {
   // the export leans on this: a track minimized in any view is filtered out
   // here, and is then skipped rather than anchored at the top of the view
-  expect(getTrackOffsets([track('t1', 100)], TEXT_OFFSET).t2).toBeUndefined()
+  expect(
+    getTrackOffsets([track('t1', 100)], 'offset', TEXT_HEIGHT).t2,
+  ).toBeUndefined()
 })

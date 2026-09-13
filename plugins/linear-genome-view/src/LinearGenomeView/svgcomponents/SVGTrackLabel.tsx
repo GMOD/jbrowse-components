@@ -78,6 +78,16 @@ export default function SVGTrackLabel({
     fontSize,
     x,
   })
+  // 'overlay' prints over the track's own data, which the on-screen label
+  // clears with a paper box, so it carries the halo text over a plot needs
+  const halo =
+    trackLabels === 'overlay'
+      ? {
+          stroke: stripAlpha(theme.palette.background.paper),
+          strokeWidth: 3,
+          paintOrder: 'stroke',
+        }
+      : {}
   return (
     <text
       x={pos.x}
@@ -85,6 +95,7 @@ export default function SVGTrackLabel({
       textAnchor={pos.textAnchor}
       fontSize={fontSize}
       fill={stripAlpha(theme.palette.text.primary)}
+      {...halo}
     >
       {trackName}
     </text>

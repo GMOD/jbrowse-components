@@ -127,7 +127,7 @@ export async function renderViewTracks<T extends SvgExportTrack>({
   return {
     tracks,
     displayResults,
-    tracksHeight: totalHeight(tracks, textHeight, trackLabels),
+    tracksHeight: totalHeight(tracks, trackLabels, textHeight),
     legendWidth,
     skippedTracks,
   }

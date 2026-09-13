@@ -116,3 +116,11 @@ test.each(['left', 'offset', 'overlay'] as const)(
     ).toBeNull()
   },
 )
+
+// An overlaid label prints over the track's own data, which the on-screen
+// label clears with a paper box; the export's needs the halo instead.
+test('overlay carries a halo and the other modes do not', () => {
+  expect(renderLabel('overlay')?.getAttribute('paint-order')).toBe('stroke')
+  expect(renderLabel('offset')?.getAttribute('paint-order')).toBeNull()
+  expect(renderLabel('left')?.getAttribute('paint-order')).toBeNull()
+})

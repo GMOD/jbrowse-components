@@ -5,7 +5,7 @@ import { getSession } from '@jbrowse/core/util'
 
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import SVGTrackLabel from './SVGTrackLabel.tsx'
-import { labelOffset, trackBoxOffsets } from './util.ts'
+import { labelOffset, trackBoxOffsets, trackLabelMode } from './util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { TrackLabelMode } from '../types.ts'
@@ -33,11 +33,11 @@ export default function SVGTracks({
   legendWidth?: number
 }) {
   const session = getSession(model)
-  const textOffset = labelOffset(trackLabels, textHeight)
   const x = Math.max(-model.offsetPx, 0)
   const offsets = trackBoxOffsets(
     displayResults.map(r => r.track),
-    textOffset,
+    trackLabels,
+    textHeight,
   )
   return (
     <>
@@ -46,6 +46,7 @@ export default function SVGTracks({
         const trackName = svgTrackName(track, session)
         const display = track.displays[0]!
         const currentOffset = offsets[i]!
+        const textOffset = labelOffset(track, trackLabels, textHeight)
         return (
           <g key={conf.trackId} transform={`translate(0 ${currentOffset})`}>
             {/* the box is inset by `textOffset` (the label band above the
@@ -69,7 +70,7 @@ export default function SVGTracks({
               trackName={trackName}
               fontSize={fontSize}
               textHeight={textHeight}
-              trackLabels={trackLabels}
+              trackLabels={trackLabelMode(track, trackLabels)}
               trackLabelOffset={trackLabelOffset}
               x={x}
             />
