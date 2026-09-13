@@ -8,6 +8,7 @@ import { abgrToCssRgba } from './colorFill.ts'
 import { appendGlyph, glyphBox } from './glyphPaint.ts'
 import { inkAtPoint, inkOnRect, nearestInk } from './markHit.ts'
 import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
+import { valueWindow } from './nearestMarkHit.ts'
 import { blockPx } from './spanMark.ts'
 
 import type { ColorChannel } from './markRamp.ts'
@@ -175,4 +176,6 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
         : inkAtPoint(xPx, yPx, xStart, cy)
     })
   },
+
+  valueWindow,
 }

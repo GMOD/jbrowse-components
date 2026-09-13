@@ -148,7 +148,6 @@ test('a span mark stacks on the row lane, the bands dividing the plot by rowCoun
     [block],
     new Map([[0, data]]),
     [mark!],
-    ['span'],
     stacked,
     REGIONS,
   )
@@ -161,7 +160,6 @@ test('a span mark stacks on the row lane, the bands dividing the plot by rowCoun
       [block],
       new Map([[0, data]]),
       [mark!],
-      ['span'],
       stacked,
       REGIONS,
     ),
@@ -224,7 +222,6 @@ test('an independent mark places its value through its own domain, and only it d
     [block],
     new Map([[0, data]]),
     marks,
-    ['bar', 'point'],
     independent,
     REGIONS,
   )
@@ -249,7 +246,6 @@ test('a mark outside its zoom range neither draws nor answers a hover', () => {
       [block],
       new Map([[0, data]]),
       [mark!],
-      ['bar'],
       { ...state, bpPerPx },
       REGIONS,
     )
@@ -283,16 +279,7 @@ describe('findMarkHit', () => {
 
   test('a cursor inside a bar hits it below its value', () => {
     // value 5 on a [0, 10] domain over 400 px is y=200; y=300 is value 2.5
-    const hit = findMarkHit(
-      402,
-      300,
-      [block],
-      regions,
-      marks,
-      ['bar', 'point'],
-      state,
-      REGIONS,
-    )
+    const hit = findMarkHit(402, 300, [block], regions, marks, state, REGIONS)
     expect(hit).toMatchObject({
       markIndex: 0,
       instance: 0,
@@ -306,31 +293,13 @@ describe('findMarkHit', () => {
 
   test('a cursor above a bar misses it', () => {
     expect(
-      findMarkHit(
-        402,
-        100,
-        [block],
-        regions,
-        marks,
-        ['bar', 'point'],
-        state,
-        REGIONS,
-      ),
+      findMarkHit(402, 100, [block], regions, marks, state, REGIONS),
     ).toBeUndefined()
   })
 
   test('a point answers at its glyph', () => {
     // 800 bp is x=640; value 8 is y=80
-    const hit = findMarkHit(
-      641,
-      81,
-      [block],
-      regions,
-      marks,
-      ['bar', 'point'],
-      state,
-      REGIONS,
-    )
+    const hit = findMarkHit(641, 81, [block], regions, marks, state, REGIONS)
     expect(hit).toMatchObject({ markIndex: 1, start: 800, y: 8, color: BLUE })
   })
 
@@ -346,7 +315,6 @@ describe('findMarkHit', () => {
       [block],
       logRegions,
       marks,
-      ['bar', 'point'],
       { ...state, domainY: [1, 1024], scaleTypeY: 'log' },
       REGIONS,
     )

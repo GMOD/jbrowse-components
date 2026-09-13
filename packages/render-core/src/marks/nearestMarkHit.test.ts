@@ -111,24 +111,28 @@ describe('nearestMarkHit', () => {
     expect(hitAt([{ under: points([500], [5]) }], 50, 60)).toBeUndefined()
   })
 
-  test('a block the radius does not reach, or with no region, is not asked', () => {
+  test('a block the radius does not reach, with no region, or whose mark is gated off, is not asked', () => {
     const asked: [number, number][] = []
     const record = (r: Region, mark: number, reach: HitWindow) => {
       asked.push([reach.block.displayedRegionIndex, mark])
       return everyInstance(r, mark)
     }
-    hitAt([{}, {}], 50, 50, record)
+    const both = { under: points([900], [9]), over: points([900], [9]) }
+    hitAt([both, both], 50, 50, record)
     expect(asked).toEqual([
       [0, 1],
       [0, 0],
     ])
     asked.length = 0
     // x=100 is within the radius of both columns
-    hitAt([undefined, {}], 100, 50, record)
+    hitAt([undefined, both], 100, 50, record)
     expect(asked).toEqual([
       [1, 1],
       [1, 0],
     ])
+    asked.length = 0
+    hitAt([{ over: both.over }, {}], 50, 50, record)
+    expect(asked).toEqual([[0, 1]])
   })
 
   test('undefined candidates leave the mark out of that block', () => {
@@ -140,20 +144,23 @@ describe('nearestMarkHit', () => {
     ).toBe(0)
   })
 
-  test('the window handed to candidates spans the radius in bp', () => {
-    const windows: [number, number][] = []
+  test('the window handed to candidates spans the radius in bp and in value', () => {
+    const windows: HitWindow[] = []
     hitAt([{ under: points([500], [5]) }], 50, 50, (r, mark, reach) => {
-      windows.push([reach.bpMin, reach.bpMax])
+      windows.push(reach)
       return everyInstance(r, mark)
     })
-    expect(windows[0]).toEqual([420, 580])
+    const [reach] = windows
+    expect([reach!.bpMin, reach!.bpMax]).toEqual([420, 580])
+    expect(reach!.valueMin).toBeCloseTo(4.2, 9)
+    expect(reach!.valueMax).toBeCloseTo(5.8, 9)
   })
 })
 
 describe('valueWindow', () => {
   test('reads the radius back through the scale', () => {
-    expect(valueWindow(50, 5, 100, { domain: [0, 10] })).toEqual([4.5, 5.5])
-    const [lo, hi] = valueWindow(50, 5, 100, {
+    expect(valueWindow(50, 5, frame, { domain: [0, 10] })).toEqual([4.5, 5.5])
+    const [lo, hi] = valueWindow(50, 5, frame, {
       domain: [1, 1024],
       scaleType: 'log',
     })
@@ -162,24 +169,23 @@ describe('valueWindow', () => {
   })
 
   test('an end within reach of a plot edge opens, where values clamp', () => {
-    expect(valueWindow(3, 5, 100, { domain: [0, 10] })[1]).toBe(Infinity)
-    expect(valueWindow(97, 5, 100, { domain: [0, 10] })[0]).toBe(-Infinity)
+    expect(valueWindow(3, 5, frame, { domain: [0, 10] })[1]).toBe(Infinity)
+    expect(valueWindow(97, 5, frame, { domain: [0, 10] })[0]).toBe(-Infinity)
   })
 
   test('a point inset from the edge is reachable from the full radius below it', () => {
     // the domain max draws at y=3.2, 6.8 px above a cursor at y=10
-    const [, hi] = valueWindow(10, 8, 100, { domain: [0, 10], insetPx: 3.2 })
+    const [, hi] = valueWindow(10, 8, frame, { domain: [0, 10], insetPx: 3.2 })
     expect(hi).toBeGreaterThanOrEqual(10)
   })
 
   test('a bar opens away from its origin on the cursor side', () => {
-    expect(valueWindow(20, 5, 100, { domain: [0, 10], origin: 0 })).toEqual([
+    expect(valueWindow(20, 5, frame, { domain: [0, 10], origin: 0 })).toEqual([
       7.5,
       Infinity,
     ])
-    expect(valueWindow(80, 5, 100, { domain: [-10, 10], origin: 0 })).toEqual([
-      -Infinity,
-      -5,
-    ])
+    expect(valueWindow(80, 5, frame, { domain: [-10, 10], origin: 0 })).toEqual(
+      [-Infinity, -5],
+    )
   })
 })

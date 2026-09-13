@@ -36,8 +36,9 @@ function* everyInstance(count: number) {
 // declares. What the display chooses is the candidates: every instance here,
 // which is enough at a few thousand boxes. A display with hundreds of
 // thousands asks the encoder for its `index` lane — a Flatbush over
-// (bp, score) — and answers with what that finds in `valueWindow` instead
-// (`findManhattanHit` in plugins/gwas is the worked form).
+// (bp, score) — and answers with what that finds between the reach's
+// `bpMin`/`valueMin` and `bpMax`/`valueMax` instead (`findManhattanHit` in
+// plugins/gwas is the worked form).
 export function findScoreHit(
   xPx: number,
   yPx: number,

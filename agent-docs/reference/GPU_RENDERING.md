@@ -630,8 +630,8 @@ same `ink` is what the chrome's highlight draws for the instances a display
 names (`inkOfInstances`, ADR-110), and `nearestMarkHit` beside it is the hover's
 walk: every block the grab radius reaches, marks on top asked first, over the
 candidates the display names per mark — what a (bp, value) Flatbush finds in
-`valueWindow`, or every instance. The mark display, Manhattan and the score
-example call it. A shape whose ink is not a box keeps a
+the reach, whose value bounds are the shape's `valueWindow` (`bar`, `point`),
+or every instance. The mark display, Manhattan and the score example call it. A shape whose ink is not a box keeps a
 `hitNearest` of its own: the synteny ribbons, the arcs, dotplot's capsule
 (`capsuleDistPx`, the shader's own metric), the pileup marks (bp containment,
 though they declare `ink` beside it), and `point`, whose glyph cluster resolves

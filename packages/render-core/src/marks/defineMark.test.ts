@@ -164,7 +164,9 @@ describe('a mark with a band', () => {
   })
 })
 
-describe('one gate for all four consumers', () => {
+const valueWindow = (): [number, number] => [0, 1]
+
+describe('one gate for every consumer', () => {
   interface Gated {
     span?: SpanChannels
   }
@@ -172,7 +174,7 @@ describe('one gate for all four consumers', () => {
     on: boolean
   }
   const gated = defineMark({
-    shape: { ...spanMark, paintsBlock: b => !b.reversed },
+    shape: { ...spanMark, paintsBlock: b => !b.reversed, valueWindow },
     channels: (d: Gated) => d.span,
     params: (s: GateState) => ({ ...s.span, scrollTop: -s.band.top }),
     band: (s: GateState) => s.band,
@@ -192,6 +194,7 @@ describe('one gate for all four consumers', () => {
       paints: rects.length,
       hit: gated.hitNearest!(region, b, s, 15, 35, [0], Infinity) !== undefined,
       ink: gated.ink!(region, b, s, 0) !== undefined,
+      window: gated.valueWindow!(region, b, s, 35, 8) !== undefined,
     }
   }
 
@@ -217,21 +220,23 @@ describe('one gate for all four consumers', () => {
     ],
     ['nothing in the region', {}, block, open],
     ['a block the shape declines', REGION, { ...block, reversed: true }, open],
-  ])('%s draws, paints, hits and inks nothing', (_, region, b, s) => {
+  ])('%s answers no consumer', (_, region, b, s) => {
     expect(consumers(region, b, s)).toEqual({
       draws: 0,
       paints: 0,
       hit: false,
       ink: false,
+      window: false,
     })
   })
 
-  test('an open gate draws, paints, hits and inks', () => {
+  test('an open gate answers every consumer', () => {
     expect(consumers(REGION, block, open)).toEqual({
       draws: 1,
       paints: 1,
       hit: true,
       ink: true,
+      window: true,
     })
   })
 
@@ -239,7 +244,7 @@ describe('one gate for all four consumers', () => {
     const read: string[] = []
     const logged = (on: boolean, height: number) =>
       defineMark({
-        shape: spanMark,
+        shape: { ...spanMark, valueWindow },
         channels: (d: Region) => {
           read.push('channels')
           return d.span
@@ -280,6 +285,9 @@ describe('one gate for all four consumers', () => {
         ink: during(() => {
           mark.ink!(REGION, block, s, 0)
         }),
+        window: during(() => {
+          mark.valueWindow!(REGION, block, s, 35, 8)
+        }),
       }
     }
     const everywhere = (reads: string[]) => ({
@@ -287,6 +295,7 @@ describe('one gate for all four consumers', () => {
       paint: reads,
       hit: reads,
       ink: reads,
+      window: reads,
     })
     expect(readsOf(logged(false, 20))).toEqual(everywhere(['enabled']))
     expect(readsOf(logged(true, 0))).toEqual(everywhere(['enabled', 'band']))

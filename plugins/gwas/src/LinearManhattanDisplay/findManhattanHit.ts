@@ -1,4 +1,4 @@
-import { nearestMarkHit, valueWindow } from '@jbrowse/render-core/marks'
+import { nearestMarkHit } from '@jbrowse/render-core/marks'
 
 import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 
@@ -35,12 +35,6 @@ export function findManhattanHit(
   state: ManhattanRenderState,
   displayedRegions: readonly { refName: string }[],
 ): ManhattanHit | undefined {
-  const [scoreMin, scoreMax] = valueWindow(
-    mouseY,
-    HIT_RADIUS_PX,
-    state.canvasHeight,
-    { domain: state.domainY },
-  )
   const hit = nearestMarkHit(
     MANHATTAN_MARKS,
     blocks,
@@ -50,10 +44,10 @@ export function findManhattanHit(
     mouseY,
     {
       radiusPx: HIT_RADIUS_PX,
-      candidates: (_data, _mark, { block, bpMin, bpMax }) =>
+      candidates: (_data, _mark, { block, bpMin, bpMax, valueMin, valueMax }) =>
         flatbushMap
           .get(block.displayedRegionIndex)
-          ?.search(bpMin, scoreMin, bpMax, scoreMax),
+          ?.search(bpMin, valueMin, bpMax, valueMax),
     },
   )
   if (!hit) {

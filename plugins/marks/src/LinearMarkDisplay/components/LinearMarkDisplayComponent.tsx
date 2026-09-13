@@ -27,7 +27,6 @@ const LinearMarkDisplayComponent = observer(
             model.renderBlocks,
             model.rpcDataMap,
             model.markList,
-            model.markShapes,
             model.renderState,
             model.host.displayedRegions,
           )

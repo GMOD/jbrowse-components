@@ -654,8 +654,9 @@ the answer:
 // declares. What the display chooses is the candidates: every instance here,
 // which is enough at a few thousand boxes. A display with hundreds of
 // thousands asks the encoder for its `index` lane — a Flatbush over
-// (bp, score) — and answers with what that finds in `valueWindow` instead
-// (`findManhattanHit` in plugins/gwas is the worked form).
+// (bp, score) — and answers with what that finds between the reach's
+// `bpMin`/`valueMin` and `bpMax`/`valueMax` instead (`findManhattanHit` in
+// plugins/gwas is the worked form).
 export function findScoreHit(
   xPx: number,
   yPx: number,
@@ -695,7 +696,8 @@ body reads back. A display with many features per block builds a spatial index
 (e.g.
 [`Flatbush`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/flatbush/index.ts))
 from `rpcDataMap` in a cached view, and its `candidates` answers what the index
-finds in `valueWindow` instead of every instance; `plugins/gwas`'s
+finds in the reach it is handed, which carries the values the shape can ink near
+the cursor as well as the bp, instead of every instance; `plugins/gwas`'s
 `findManhattanHit.ts` does that.
 
 ## SVG export

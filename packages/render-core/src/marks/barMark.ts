@@ -6,6 +6,7 @@ import { valueToYPxScaled } from '../shaders/pointMark.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { makeAbgrFill } from './colorFill.ts'
 import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
+import { valueWindow } from './nearestMarkHit.ts'
 import { blockPx } from './spanMark.ts'
 
 import type { ColorChannel } from './markRamp.ts'
@@ -125,4 +126,6 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
       frame.canvasHeight,
     )
   },
+
+  valueWindow,
 }

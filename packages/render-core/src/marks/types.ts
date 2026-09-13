@@ -233,6 +233,17 @@ export interface MarkShape<TChannels, TParams> {
     candidates: Iterable<number>,
     maxDistSq: number,
   ): MarkHit | undefined
+  /**
+   * The values an instance can hold and still put ink within `radiusPx` of
+   * canvas y `yPx`, which a display's index over (bp, value) is searched with.
+   * A shape with no value axis leaves it off.
+   */
+  valueWindow?(
+    yPx: number,
+    radiusPx: number,
+    frame: MarkFrame,
+    params: TParams,
+  ): [number, number]
 }
 
 /**
@@ -296,8 +307,8 @@ export interface Mark<TRegion, TState extends MarkFrame> {
   /**
    * The frame-level gate: whether the mark draws at all under `state`, read
    * off the display-wide state and nothing else. `planMarks` asks it once per
-   * frame; `drawRegion`, `paintBlock`, `hitNearest` and `ink` ask it per block,
-   * before any lens, so a switched-off layer neither draws nor answers a hover.
+   * frame; every other consumer asks it per block, before any lens, so a
+   * switched-off layer neither draws nor answers a hover.
    * A question about the block is `paintsBlock`, on the shape.
    */
   readonly enabled?: (state: TState) => boolean
@@ -348,6 +359,14 @@ export interface Mark<TRegion, TState extends MarkFrame> {
     state: TState,
     i: number,
   ): InkRect | undefined
+  /** The shape's `valueWindow` under the mark's gates, if they open. */
+  valueWindow?(
+    region: TRegion,
+    block: RenderBlock,
+    state: TState,
+    yPx: number,
+    radiusPx: number,
+  ): [number, number] | undefined
 }
 
 /**
@@ -403,7 +422,7 @@ export interface Mark<TRegion, TState extends MarkFrame> {
  * its shape puts ink.
  *
  * `enabled` is the setting that turns the mark off for a whole frame — the
- * pileup's "show mismatches" — and it is one gate for all four consumers: a
+ * pileup's "show mismatches" — and it is one gate for every consumer: a
  * mark that does not draw does not answer a hover either. It reads the state
  * alone so `planMarks` can resolve it once per frame; a gate that needs the
  * block is the shape's `paintsBlock`.
@@ -425,6 +444,7 @@ export function defineMark<
   const { shape, channels, params, band, texture, enabled } = spec
   const hitNearest = shapeHitNearest(shape)
   const shapeInk = shape.ink?.bind(shape)
+  const shapeValueWindow = shape.valueWindow?.bind(shape)
   const lender = spec.bufferOf?.pass
   if (
     lender &&
@@ -559,6 +579,12 @@ export function defineMark<
           }
           const r = shapeInk(open.channels, block, state, open.params, i)
           return r && open.strip ? clipToBand(r, open.strip) : r
+        }
+      : undefined,
+    valueWindow: shapeValueWindow
+      ? (region, block, state, yPx, radiusPx) => {
+          const open = resolve(region, block, state)
+          return open && shapeValueWindow(yPx, radiusPx, state, open.params)
         }
       : undefined,
   }

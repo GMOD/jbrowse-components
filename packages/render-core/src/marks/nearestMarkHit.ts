@@ -4,12 +4,20 @@ import { denormalizeScore, scaleTypeCode } from '../scoreScale.ts'
 import type { RenderBlock } from '../renderBlock.ts'
 import type { Mark, MarkFrame, MarkHit, MarkValueScaleType } from './types.ts'
 
-/** The bp a cursor's grab radius spans in one block. */
+/**
+ * What a cursor's grab radius spans in one block for one mark: the bp, and
+ * the values the mark's shape can put ink at, every value for a shape with no
+ * `valueWindow`.
+ */
 export interface HitWindow {
   block: RenderBlock
   bpMin: number
   bpMax: number
+  valueMin: number
+  valueMax: number
 }
+
+const EVERY_VALUE: [number, number] = [-Infinity, Infinity]
 
 /** A {@link MarkHit}, with the mark, block and region it was found in. */
 export interface NearestMarkHit<TRegion> extends MarkHit {
@@ -27,7 +35,8 @@ export interface NearestMarkHit<TRegion> extends MarkHit {
  *
  * `candidates` names the instances a mark is asked about in a block: what a
  * spatial index finds in the radius's reach, or every instance, back to
- * front. `undefined` leaves the mark out of that block.
+ * front. `undefined` leaves the mark out of that block, as does a gate of the
+ * mark's that closes.
  */
 export function nearestMarkHit<TRegion, TState extends MarkFrame>(
   marks: readonly Mark<TRegion, TState>[],
@@ -58,8 +67,9 @@ export function nearestMarkHit<TRegion, TState extends MarkFrame>(
     }
     const halfBp = (radiusPx * (block.end - block.start)) / widthPx
     const cursorBp = bpAtPxExact(xPx, block)
-    const reach = { block, bpMin: cursorBp - halfBp, bpMax: cursorBp + halfBp }
-    if (reach.bpMax < block.start || reach.bpMin > block.end) {
+    const bpMin = cursorBp - halfBp
+    const bpMax = cursorBp + halfBp
+    if (bpMax < block.start || bpMin > block.end) {
       continue
     }
     for (let m = marks.length - 1; m >= 0; m--) {
@@ -67,7 +77,18 @@ export function nearestMarkHit<TRegion, TState extends MarkFrame>(
       if (!mark.hitNearest) {
         continue
       }
-      const asked = candidates(region, m, reach)
+      const values = mark.valueWindow
+        ? mark.valueWindow(region, block, state, yPx, radiusPx)
+        : EVERY_VALUE
+      const asked =
+        values &&
+        candidates(region, m, {
+          block,
+          bpMin,
+          bpMax,
+          valueMin: values[0],
+          valueMax: values[1],
+        })
       const hit =
         asked &&
         mark.hitNearest(region, block, state, xPx, yPx, asked, bestDistSq)
@@ -89,19 +110,15 @@ export function nearestMarkHit<TRegion, TState extends MarkFrame>(
 }
 
 /**
- * The values an instance can hold and still put ink within `radiusPx` of
- * canvas y `yPx`: the query a spatial index over (bp, value) is asked with.
- * The scale is read back through `denormalizeScore`, and an end within reach
- * of a plot edge opens to infinity, where an out-of-domain value clamps.
- *
- * The anchor is the shape's: `insetPx` is a point's, and a bar passes its
- * `origin`, whose ink reaches from there to the value, so its window opens
- * away from the origin on the cursor's side.
+ * A value-scaled shape's `valueWindow`, read back through `denormalizeScore`.
+ * An end within reach of a plot edge opens to infinity, where an out-of-domain
+ * value clamps. A point passes its `insetPx`; a bar passes its `origin`, and
+ * its window opens away from the origin on the cursor's side.
  */
 export function valueWindow(
   yPx: number,
   radiusPx: number,
-  canvasHeight: number,
+  { canvasHeight }: MarkFrame,
   scale: {
     domain: [number, number]
     scaleType?: MarkValueScaleType

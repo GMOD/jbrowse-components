@@ -1,12 +1,5 @@
-import {
-  nearestMarkHit,
-  pointInsetPx,
-  valueWindow,
-} from '@jbrowse/render-core/marks'
+import { nearestMarkHit } from '@jbrowse/render-core/marks'
 
-import { markValueScale } from './markList.ts'
-
-import type { MarkShapeName } from './configSchema.ts'
 import type {
   DisplayMark,
   MarkRegionData,
@@ -33,25 +26,6 @@ export interface MarkHitInfo {
 
 const HIT_RADIUS_PX = 8
 
-// The value window mark `i`'s index is asked with, through the scale and the
-// anchor its params lens hands its shape; a span's ink is at every value.
-function markValueWindow(
-  shape: MarkShapeName,
-  i: number,
-  mouseY: number,
-  state: MarkRenderState,
-): [number, number] {
-  if (shape === 'span') {
-    return [-Infinity, Infinity]
-  }
-  return valueWindow(mouseY, HIT_RADIUS_PX, state.canvasHeight, {
-    ...markValueScale(state, i),
-    ...(shape === 'bar'
-      ? { origin: state.origin }
-      : { insetPx: pointInsetPx(state.pointDiameterPx) }),
-  })
-}
-
 /**
  * The mark instance nearest the cursor, marks on top asked first: each
  * mark's own hit test runs over the candidates its layer's Flatbush answers,
@@ -64,7 +38,6 @@ export function findMarkHit(
   blocks: RenderBlock[],
   regionData: ReadonlyMap<number, MarkRegionData>,
   marks: readonly DisplayMark[],
-  shapes: readonly MarkShapeName[],
   state: MarkRenderState,
   displayedRegions: readonly { refName: string }[],
 ): MarkHitInfo | undefined {
@@ -77,14 +50,8 @@ export function findMarkHit(
     mouseY,
     {
       radiusPx: HIT_RADIUS_PX,
-      candidates: (data, m, { bpMin, bpMax }) => {
-        const flatbush = data.layers[m]?.flatbush
-        if (!flatbush) {
-          return undefined
-        }
-        const [vMin, vMax] = markValueWindow(shapes[m]!, m, mouseY, state)
-        return flatbush.search(bpMin, vMin, bpMax, vMax)
-      },
+      candidates: (data, m, { bpMin, bpMax, valueMin, valueMax }) =>
+        data.layers[m]?.flatbush?.search(bpMin, valueMin, bpMax, valueMax),
     },
   )
   if (!hit) {
