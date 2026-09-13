@@ -45,8 +45,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-followapproximate">**followApproximate**</span><br><code>boolean</code> | a row was placed proportionally rather than by a CIGAR walk | LinearComparativeView |
 | <span id="getter-followpartial">**followPartial**</span><br><code>FollowPartialReport &#124; undefined</code> | the multi-contig answer refused as mostly filler, naming the region followed and the ones whose answers are off screen | LinearComparativeView |
 | <span id="getter-scrollzoom">**scrollZoom**</span><br><code>boolean</code> | scroll-to-zoom is a global, personal preference resolved from the session; toggling it in any view applies everywhere | LinearComparativeView |
-| <span id="getter-measured">**measured**</span><br><code>boolean</code> | the view has been laid out, so `width` is a number | LinearComparativeView |
-| <span id="getter-initialized">**initialized**</span><br><code>boolean</code> | measured, and every row initialized | LinearComparativeView |
+| <span id="getter-initialized">**initialized**</span><br><code>boolean</code> |  | LinearComparativeView |
 | <span id="getter-error">**error**</span><br><code>unknown</code> | Resolved like LGV's and dotplot's: it folds in the rows, whose assemblies are what `initialized` waits on, so an export or a launcher waiting on a stack with a failed row is told why rather than hanging. | LinearComparativeView |
 | <span id="getter-stackerror">**stackError**</span><br><code>unknown</code> | The failure that leaves the stack nothing to show: the view's own, or every row's. One failed row reports itself in its place in the stack. | LinearComparativeView |
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> |  | LinearComparativeView |
