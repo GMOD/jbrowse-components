@@ -13,10 +13,8 @@ Today the honest answer is that the parts which would empower them are the parts
 they cannot install, and the parts they can install ask them to adopt an
 application before they can draw one track.
 
-The rung-3 half of this — writing your own display — is already scoped in
-[deferred-architecture-review.md](deferred-architecture-review.md), which
-reached the same blocker from the other direction. Read that one for the
-custom-display page; this one is about the layering underneath it.
+The rung-3 half of this — writing your own display — is the public
+`plotting_features.md` guide; this one is about the layering underneath it.
 
 ## What bring-your-own is today
 
@@ -28,7 +26,7 @@ parachute from three places:
   named after the managed component they are declining to use
 - deep subpaths of `@jbrowse/core` — `util/hooks`, `ui/PaletteContext`,
   `util/usePanZoom`
-- `@jbrowse/display-ui`, which is not on npm
+- `@jbrowse/display-ui`
 
 Eighteen example files, 7,561 lines, and `check-duplication.mjs` reports 3,489
 of them as copies beyond the first. That number is the rule working
@@ -246,11 +244,10 @@ coordinate-system concepts. That is the differentiator.
 - **Rung 2 — your own chrome.** What bring-your-own documents today: JBrowse's
   engine, your pixels around the data.
 - **Rung 3 — your own display.** Your marks on JBrowse's coordinate system and
-  fetch pipeline. Already cheap and undocumented — `HicRenderer.ts` is 19 lines
-  of `ctx` calls, `Canvas2DSequenceRenderer.ts` 37,
-  `Canvas2DManhattanRenderer.ts` 117, and `createCanvas2DBackend` is a
-  first-class path rather than a fallback. Scoped in
-  [deferred-architecture-review.md](deferred-architecture-review.md).
+  fetch pipeline, registered with `addDisplayType` from any plugin — which
+  bundles `render-core` and `display-kit` rather than sharing the host's copy.
+  `plotting_features.md` and `creating_gpu_display.md` walk it, off
+  `example-plugins/score-example`.
 - **Rung 4 — your own everything.** `render-core` alone: you have your own data
   pipeline and you want the backend ladder, the precision math, and the
   context-loss and tab-visibility handling. This is the rung that answers "can
@@ -304,7 +301,6 @@ coordinate-system concepts. That is the differentiator.
 6. **Make `queueDialog` and `notify` seams rather than calls** — finding 3.
    Highest effort here, and it decides whether "your own UI" is true below the
    view.
-7. **A custom-display page**, once (1) lands.
 
 One small item with disproportionate effect: the
 `readSiteMode`/`watchSiteMode`/`useSiteMode` trio is **50 lines in every one of
