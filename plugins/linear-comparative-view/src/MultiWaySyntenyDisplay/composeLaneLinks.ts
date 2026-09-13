@@ -1,5 +1,7 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import { mateSlice } from '../mateBpAt.ts'
+
 import type { Feature } from '@jbrowse/core/util'
 
 /**
@@ -39,16 +41,13 @@ function projectOntoLane(
   anchorStart: number,
   anchorEnd: number,
 ) {
-  const scale =
-    (record.end - record.start) / (record.anchorEnd - record.anchorStart)
-  const from = (anchorStart - record.anchorStart) * scale
-  const to = (anchorEnd - record.anchorStart) * scale
-  return record.strand === -1
-    ? { start: Math.round(record.end - to), end: Math.round(record.end - from) }
-    : {
-        start: Math.round(record.start + from),
-        end: Math.round(record.start + to),
-      }
+  return mateSlice(
+    { start: record.anchorStart, end: record.anchorEnd },
+    record,
+    record.strand,
+    anchorStart,
+    anchorEnd,
+  )
 }
 
 function stillOpen(active: LanePlacementRecord[], next: LanePlacementRecord) {

@@ -1,5 +1,6 @@
 import { clamp, doesIntersect2 } from '@jbrowse/core/util'
 
+import { mateSlice } from '../mateBpAt.ts'
 import { voteEvidence } from '../syntenyHysteresis.ts'
 import { getMate, getMates, isNamedRecord } from '../syntenyMate.ts'
 
@@ -205,30 +206,20 @@ export function clipGroupToAnchor(
   end: number,
 ): MultiWayGroup {
   const { anchor } = group
-  const span = Math.max(anchor.end - anchor.start, 1)
-  const head = Math.max(start - anchor.start, 0) / span
-  const tail = Math.max(anchor.end - end, 0) / span
-  return head === 0 && tail === 0
+  const from = Math.max(anchor.start, start)
+  const to = Math.min(anchor.end, end)
+  return from === anchor.start && to === anchor.end
     ? group
     : {
         ...group,
-        anchor: {
-          ...anchor,
-          start: Math.max(anchor.start, start),
-          end: Math.min(anchor.end, end),
-        },
+        anchor: { ...anchor, start: from, end: to },
         mates: new Map(
           [...group.mates].map(([assemblyName, placements]) => [
             assemblyName,
-            placements.map(p => {
-              const width = p.end - p.start
-              const reversed = p.orientation < 0
-              return {
-                ...p,
-                start: Math.round(p.start + width * (reversed ? tail : head)),
-                end: Math.round(p.end - width * (reversed ? head : tail)),
-              }
-            }),
+            placements.map(p => ({
+              ...p,
+              ...mateSlice(anchor, p, p.orientation, from, to),
+            })),
           ]),
         ),
       }

@@ -1,4 +1,5 @@
 import { OUTLIER_REACH, keepNearMedian } from '../keepNearMedian.ts'
+import { mateBpAt } from '../mateBpAt.ts'
 import { voteEvidence } from '../syntenyHysteresis.ts'
 import { getAlignmentOps, getMate, isNamedRecord } from '../syntenyMate.ts'
 import { findPosInCigar } from './findPosInCigar.ts'
@@ -111,17 +112,14 @@ function resolveSpans({
   const clamp = (x: number) => Math.min(Math.max(x, featStart), featEnd)
   const lo = clamp(region.start)
   const hi = clamp(region.end)
-  const featLen = featEnd - featStart
-  const mateLen = mate.end - mate.start
-  // a zero-length block has no interior to interpolate across; both ends map to
-  // the mate's own start, which paddedLocString widens to one base
-  const mateOffset = (x: number) =>
-    featLen > 0 ? ((x - featStart) / featLen) * mateLen : 0
+  const block = { start: featStart, end: featEnd }
+  // a zero-length block maps both ends to the mate's own start, which
+  // paddedLocString widens to one base
   return {
     featStart: lo,
     featEnd: hi,
-    mateStart: mateOffsetToGenomic(mate, mateOffset(lo), strand),
-    mateEnd: mateOffsetToGenomic(mate, mateOffset(hi), strand),
+    mateStart: mateBpAt(block, mate, strand, lo),
+    mateEnd: mateBpAt(block, mate, strand, hi),
   }
 }
 
