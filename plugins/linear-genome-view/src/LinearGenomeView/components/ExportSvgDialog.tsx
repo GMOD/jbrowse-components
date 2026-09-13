@@ -8,6 +8,16 @@ import { MenuItem, TextField } from '@mui/material'
 import type { TrackLabelMode } from '../types.ts'
 import type { BaseExportSvgOptions } from '@jbrowse/core/ui'
 
+// The export mode matching a view's on-screen label setting, for a user who
+// has not picked one in this dialog before.
+function labelModeFor(viewTrackLabels: string | undefined): TrackLabelMode {
+  return viewTrackLabels === 'hidden'
+    ? 'none'
+    : viewTrackLabels === 'overlapping'
+      ? 'overlay'
+      : 'offset'
+}
+
 // Shared track-label + gridlines export dialog. Used by LGV, linear-synteny and
 // breakpoint-split views (their lazyDialogs re-export this).
 export default function ExportSvgDialog({
@@ -15,6 +25,7 @@ export default function ExportSvgDialog({
   handleClose,
 }: {
   model: {
+    effectiveTrackLabels?: string
     exportSvg(
       opts: BaseExportSvgOptions & {
         trackLabels: TrackLabelMode
@@ -26,7 +37,7 @@ export default function ExportSvgDialog({
 }) {
   const [trackLabels, setTrackLabels] = useExportSvgPreference<TrackLabelMode>(
     'tracklabels',
-    'offset',
+    labelModeFor(model.effectiveTrackLabels),
   )
   const [showGridlines, setShowGridlines] = useExportSvgPreference(
     'gridlines',
