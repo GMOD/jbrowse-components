@@ -56,8 +56,9 @@ so `clusterTree` has exactly one writer: the mixin's private
 pass — `setLayout`/`clearLayout` pass nothing, and `setClusterTree` (maf's
 supplied `.nh`) passes nothing because a phylogeny has no locus — so a tree with
 no provenance is also the signal it was supplied rather than computed.
-`SvgTreeSidebar` captions the export and `clusterProvenanceMenuItems` puts the
-locus in the menu.
+`SvgTreeSidebar` draws the same drift-only hint in the export
+(`SvgClusterProvenanceHint`), and `clusterProvenanceMenuItems` puts the locus in
+the menu.
 
 ## "Sort rows by … here" is three shared pieces and one per-display read
 
