@@ -1566,16 +1566,19 @@ export function stateModelFactory(
        * `MAX_LEGEND_ENTRIES` rather than `legendIsReadable`'s own default,
        * because this is a derived key and that is the bound a derived key stops
        * being one at.
+       *
+       * Over the settled window, not the live one: the cells are laid out
+       * against `renderOriginPx`, and the decision autorun restamps that at
+       * settle, so reading `dragOffsetPx` here only rebuilt the key on every
+       * pan frame.
        */
       get geneLegend(): CategoricalEntry[] {
         const hits = [boxesKey(0), glyphsKey(0)].flatMap(key => {
           const cell = self.laneGlyphCells.get(key)
           return cell?.kind === 'glyphs' ? cell.data.hits : []
         })
-        const items = laneColorKey(
-          hits,
-          [-self.dragOffsetPx, self.canvasWidth - self.dragOffsetPx],
-          feature => self.glyphColors.color.get(feature.id()),
+        const items = laneColorKey(hits, [0, self.canvasWidth], feature =>
+          self.glyphColors.color.get(feature.id()),
         )
         return legendIsReadable(items, MAX_LEGEND_ENTRIES) ? items : []
       },
