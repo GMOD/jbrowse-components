@@ -10,6 +10,10 @@ import type { LinearSyntenyViewHelperModel } from './stateModelFactory.ts'
 function level({ width = 800, height = 100, show = true } = {}) {
   const source = {
     level: 0,
+    rowPair: {
+      v0: { bpPerPx: 1, offsetPx: 0 },
+      v1: { bpPerPx: 1, offsetPx: 0 },
+    },
     height,
     groundColor: '#fff',
     linearSyntenyDisplays: [
@@ -33,7 +37,6 @@ function level({ width = 800, height = 100, show = true } = {}) {
       showOffscreenMates: show,
       minAlignmentLength: 0,
       overdrawPx: 1000,
-      views: [{ bpPerPx: 1, offsetPx: 0 }],
     },
   }
   return {

@@ -33,6 +33,7 @@ const TARGET_ROW = { bpPerPx: 99, offsetPx: 999 }
 function source(over: Record<string, unknown> = {}): OffscreenMateSource {
   return {
     level: 0,
+    rowPair: { v0: QUERY_ROW, v1: TARGET_ROW },
     height: 100,
     linearSyntenyDisplays: [{ featureData: { offscreenMates: mates(3) } }],
     parentView: {
@@ -40,7 +41,6 @@ function source(over: Record<string, unknown> = {}): OffscreenMateSource {
       minAlignmentLength: 0,
       overdrawPx: 1000,
       width: 800,
-      views: [QUERY_ROW, TARGET_ROW],
     },
     ...over,
   }
@@ -52,6 +52,7 @@ function source(over: Record<string, unknown> = {}): OffscreenMateSource {
 function bothSides(over: Record<string, unknown> = {}): OffscreenMateSource {
   return {
     level: 0,
+    rowPair: { v0: QUERY_ROW, v1: QUERY_ROW },
     height: 100,
     linearSyntenyDisplays: [
       {
@@ -67,7 +68,6 @@ function bothSides(over: Record<string, unknown> = {}): OffscreenMateSource {
       minAlignmentLength: 0,
       overdrawPx: 1000,
       width: 800,
-      views: [QUERY_ROW, QUERY_ROW],
     },
     ...over,
   }
@@ -90,30 +90,18 @@ test('query-axis marks are measured against the query row, not the row below', (
   ])
 })
 
-test('an interior level reads its own upper row', () => {
-  expect(
-    offscreenMateStrips(
-      source({
-        level: 1,
-        parentView: {
-          showOffscreenMates: true,
-          minAlignmentLength: 0,
-          views: [{ bpPerPx: 1, offsetPx: 1 }, QUERY_ROW, TARGET_ROW],
-        },
-      }),
-    ),
-  ).toMatchObject([{ bpPerPx: 2, offsetPx: 10 }])
+test('an interior level navigates the rows by its own place in the stack', () => {
+  expect(offscreenMateStrips(bothSides({ level: 1 }))).toMatchObject([
+    { side: 'top', navRow: 2 },
+    { side: 'bottom', navRow: 1 },
+  ])
 })
 
 test('the toggle off draws nothing', () => {
   expect(
     offscreenMateStrips(
       source({
-        parentView: {
-          showOffscreenMates: false,
-          minAlignmentLength: 0,
-          views: [QUERY_ROW, TARGET_ROW],
-        },
+        parentView: { showOffscreenMates: false, minAlignmentLength: 0 },
       }),
     ),
   ).toEqual([])
@@ -149,17 +137,7 @@ test('every display on the level is drawn, not just the first', () => {
 })
 
 test('a level whose row is gone draws nothing rather than throwing', () => {
-  expect(
-    offscreenMateStrips(
-      source({
-        parentView: {
-          showOffscreenMates: true,
-          minAlignmentLength: 0,
-          views: [],
-        },
-      }),
-    ),
-  ).toEqual([])
+  expect(offscreenMateStrips(source({ rowPair: undefined }))).toEqual([])
 })
 
 // The mirror class hangs off the OTHER edge against the OTHER ruler, and a
@@ -209,11 +187,7 @@ test('below the strip answers nothing, leaving the ribbons to the pick engine', 
 
 test('with the toggle off nothing is hittable, since nothing is drawn', () => {
   const s = source({
-    parentView: {
-      showOffscreenMates: false,
-      minAlignmentLength: 0,
-      views: [QUERY_ROW, TARGET_ROW],
-    },
+    parentView: { showOffscreenMates: false, minAlignmentLength: 0 },
   })
   expect(hit(s, 1, 1)).toBeUndefined()
 })

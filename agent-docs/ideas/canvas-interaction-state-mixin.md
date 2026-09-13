@@ -47,6 +47,3 @@ Picking. What a hit IS — a glyph, a ribbon target, a dotplot cell — is each
 display's geometry, so the mixin takes the display's `hitTest` as its input
 rather than owning one. The mixin's value is the lifecycle around the hit, not
 the hit.
-
-A smaller seam in the same neighbourhood, separate because it is pairwise-only:
-[level-row-pair-getter](level-row-pair-getter.md).

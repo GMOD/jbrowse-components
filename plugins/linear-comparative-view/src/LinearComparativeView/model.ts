@@ -299,7 +299,7 @@ function stateModelFactory(pluginManager: PluginManager) {
                     movingIndex,
                     // the level's LOWER row is the one on the alignments' mate
                     // axis whichever direction the level runs in
-                    mateAssembly: self.views[level.level + 1]?.assemblyNames[0],
+                    mateAssembly: level.rowPair?.v1.assemblyNames[0],
                   },
                 ]
               : []

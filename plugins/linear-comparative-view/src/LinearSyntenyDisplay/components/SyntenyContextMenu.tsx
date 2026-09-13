@@ -17,13 +17,12 @@ export default function SyntenyContextMenu({
   model: LinearSyntenyDisplayModel
   anchorEl: ClickCoord
 }) {
-  const { view } = model
   // read at render, so the last-resort reporter below cannot itself throw on a
   // display destroyed while its move was in flight
   const session = getSession(model)
   const { clientX, clientY, feature } = anchorEl
-  const topView = view.views[model.level]
-  const bottomView = view.views[model.level + 1]
+  const topView = model.parentHelper.rowPair?.v0
+  const bottomView = model.parentHelper.rowPair?.v1
 
   // MOVE ONE PANEL, KEEPING THE OTHER, which is what someone whose panels have
   // drifted out of correspondence actually wants and what "Center on feature"

@@ -89,11 +89,19 @@ export interface ParentViewDuck extends IStateTreeNode, FollowHost {
   linkViews: boolean
 }
 
+// The two genome rows a level draws between. `v0` is the upper row, which is
+// the alignments' query axis; `v1` the lower, their mate axis.
+export interface RowPair {
+  v0: LinearGenomeViewModel
+  v1: LinearGenomeViewModel
+}
+
 // One level of the stack, as seen from a synteny display nested inside it. Same
 // circular-import reason as ParentViewDuck.
 export interface LevelDuck {
   height: number
   level: number
+  rowPair: RowPair | undefined
   // the shared band, joined for the display: paint from the level, the two
   // not-the-answer-yet flags from the view above it
   surfaceReadiness: ComparativeSurface

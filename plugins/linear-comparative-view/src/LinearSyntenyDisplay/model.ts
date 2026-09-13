@@ -305,8 +305,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * Index of the level (row gap) this display draws in: between
-       * `view.views[level]` and `view.views[level + 1]`.
+       * Index of the level (row gap) this display draws in.
        */
       get level() {
         return this.parentHelper.level
@@ -610,8 +609,9 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         if (colorBy !== 'query' && colorBy !== 'target') {
           return undefined
         }
-        const level = colorBy === 'query' ? this.level : this.level + 1
-        const assemblyName = this.view.views[level]?.assemblyNames[0]
+        const pair = this.parentHelper.rowPair
+        const row = colorBy === 'query' ? pair?.v0 : pair?.v1
+        const assemblyName = row?.assemblyNames[0]
         return assemblyName === undefined
           ? undefined
           : getSession(self).assemblyManager.get(assemblyName)?.refNames
@@ -660,12 +660,10 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       get effectiveColorBy(): SyntenyColorBy {
         const colorBy = this.colorByMode
         if (colorBy === 'reference') {
-          const { anchorAssemblyName: anchor, views } = this.view
-          // this level draws between views[level] (query) and views[level+1]
-          // (target); color by whichever side is the anchor so every level
-          // keys on the same reference assembly's chromosome names
-          const queryAsm = views[this.level]?.assemblyNames[0]
-          const targetAsm = views[this.level + 1]?.assemblyNames[0]
+          const anchor = this.view.anchorAssemblyName
+          const pair = this.parentHelper.rowPair
+          const queryAsm = pair?.v0.assemblyNames[0]
+          const targetAsm = pair?.v1.assemblyNames[0]
           return targetAsm === anchor && queryAsm !== anchor
             ? 'target'
             : 'query'
@@ -714,15 +712,13 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * not the whole stack. Single source of truth for that gate.
        */
       get connectedViews() {
-        const { views } = this.view
-        const v0 = views[this.level]
-        const v1 = views[this.level + 1]
+        const pair = this.parentHelper.rowPair
         return this.view.initialized &&
-          v0?.initialized &&
-          v1?.initialized &&
-          v0.displayedRegions.length > 0 &&
-          v1.displayedRegions.length > 0
-          ? { v0, v1 }
+          pair?.v0.initialized &&
+          pair.v1.initialized &&
+          pair.v0.displayedRegions.length > 0 &&
+          pair.v1.displayedRegions.length > 0
+          ? pair
           : undefined
       },
       /**

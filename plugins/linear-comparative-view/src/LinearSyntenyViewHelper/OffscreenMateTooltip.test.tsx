@@ -27,7 +27,6 @@ function source(counts: Record<string, number>) {
     parentView: {
       showOffscreenMates: true,
       minAlignmentLength: 0,
-      views: [{ bpPerPx: 1, offsetPx: 0 }],
     },
   } as OffscreenMateSource
 }
@@ -127,7 +126,6 @@ function bothLanes() {
     parentView: {
       showOffscreenMates: true,
       minAlignmentLength: 0,
-      views: [{ bpPerPx: 1, offsetPx: 0 }],
     },
   } as unknown as OffscreenMateSource
 }

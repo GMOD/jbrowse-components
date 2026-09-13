@@ -23,10 +23,16 @@ export interface OffscreenMateStrip extends OffscreenMateLane {
   navRow: number
 }
 
+interface StripRow {
+  bpPerPx: number
+  offsetPx: number
+}
+
 // The structural slice the overlay, the hit tests and the SVG export read, so
 // where a mark lands is checkable without a canvas
 export interface OffscreenMateSource {
   level: number
+  rowPair: { v0: StripRow; v1: StripRow } | undefined
   height: number
   linearSyntenyDisplays: (MarkColorDisplay & {
     featureData?: {
@@ -41,7 +47,6 @@ export interface OffscreenMateSource {
     minAlignmentLength: number
     overdrawPx: number
     width: number
-    views: { bpPerPx: number; offsetPx: number }[]
   }
 }
 
@@ -83,42 +88,28 @@ function lane(
   return out
 }
 
-// One strip per band edge that has anything. A level sits between rows
-// `level` and `level + 1`: the query row's marks hang off the top edge against
-// its own ruler, the target row's off the bottom against its.
+// One strip per band edge that has anything: the query row's marks hang off the
+// top edge against its own ruler, the target row's off the bottom against its.
 export function offscreenMateStrips(
   model: OffscreenMateSource,
 ): OffscreenMateStrip[] {
-  const { parentView, height } = model
-  if (!parentView.showOffscreenMates) {
+  const { parentView, height, rowPair, level } = model
+  if (!parentView.showOffscreenMates || !rowPair) {
     return []
   }
-  const { minAlignmentLength, overdrawPx, width, views } = parentView
-  const above = views[model.level]
-  const below = views[model.level + 1]
+  const { minAlignmentLength, overdrawPx, width } = parentView
+  const { v0, v1 } = rowPair
   const sides = [
-    {
-      side: 'top' as const,
-      row: above,
-      mateRow: below,
-      navRow: model.level + 1,
-    },
-    {
-      side: 'bottom' as const,
-      row: below,
-      mateRow: above,
-      navRow: model.level,
-    },
+    { side: 'top' as const, row: v0, mateRow: v1, navRow: level + 1 },
+    { side: 'bottom' as const, row: v1, mateRow: v0, navRow: level },
   ]
   return sides.flatMap(({ side, row, mateRow, navRow }) => {
-    const mateBand = mateRow
-      ? {
-          lo: (mateRow.offsetPx - overdrawPx) * mateRow.bpPerPx,
-          hi: (mateRow.offsetPx + width + overdrawPx) * mateRow.bpPerPx,
-        }
-      : undefined
+    const mateBand = {
+      lo: (mateRow.offsetPx - overdrawPx) * mateRow.bpPerPx,
+      hi: (mateRow.offsetPx + width + overdrawPx) * mateRow.bpPerPx,
+    }
     const datasets = lane(model, side, mateBand)
-    return row && datasets.length > 0
+    return datasets.length > 0
       ? [
           {
             datasets,

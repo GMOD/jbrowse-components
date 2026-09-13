@@ -39,7 +39,7 @@ import type {
 } from '../LinearSyntenyDisplay/syntenyRenderingBackendTypes.ts'
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { OffscreenMateNavHit } from './offscreenMateStrip.ts'
-import type { ParentViewDuck } from './parentViewDuck.ts'
+import type { ParentViewDuck, RowPair } from './parentViewDuck.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { DisplayInitialSnapshot } from '@jbrowse/core/util/tracks'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -172,19 +172,31 @@ export function linearSyntenyViewHelperModelFactory(
       },
       /**
        * #getter
-       * the band between `views[level]` and `views[level + 1]`
+       * this level's place in the stack, and so which rows it draws between
        */
       get level() {
         return this.parentView.levels.indexOf(self)
       },
-      // The pair of genome rows this level draws between, or [] for a trailing
-      // level that has no row below it yet.
-      get assemblyNames(): string[] {
+      /**
+       * #getter
+       * The two rows this level draws between — the upper one is the query
+       * axis — or undefined for a level with no row below it. Ungated: whether
+       * those rows are ready to draw is `connectedViews`' question.
+       */
+      get rowPair(): RowPair | undefined {
         const { views } = this.parentView
         const v0 = views[this.level]
         const v1 = views[this.level + 1]
-        return v0 && v1
-          ? [v0.assemblyNames[0] ?? '', v1.assemblyNames[0] ?? '']
+        return v0 && v1 ? { v0, v1 } : undefined
+      },
+      /**
+       * #getter
+       * the assemblies of `rowPair`, or [] without one
+       */
+      get assemblyNames(): string[] {
+        const pair = this.rowPair
+        return pair
+          ? [pair.v0.assemblyNames[0] ?? '', pair.v1.assemblyNames[0] ?? '']
           : []
       },
       /**
@@ -210,11 +222,9 @@ export function linearSyntenyViewHelperModelFactory(
        * rows are there, which no viewport can produce.
        */
       get bandTransformKey() {
-        const { views } = this.parentView
-        const v0 = views[this.level]
-        const v1 = views[this.level + 1]
-        return v0 && v1
-          ? `${v0.offsetPx}_${v0.bpPerPx}_${v1.offsetPx}_${v1.bpPerPx}_${self.height}`
+        const pair = this.rowPair
+        return pair
+          ? `${pair.v0.offsetPx}_${pair.v0.bpPerPx}_${pair.v1.offsetPx}_${pair.v1.bpPerPx}_${self.height}`
           : ''
       },
       /**
