@@ -27,16 +27,12 @@ export interface NearestMarkHit<TRegion> extends MarkHit {
 }
 
 /**
- * The instance nearest `(xPx, yPx)` within `radiusPx`, over every block whose
- * column the radius reaches and whose region `regionOf` answers. Marks are
- * asked last to first, so on a tie the one painted on top wins; each mark's
- * `hitNearest` measures its own ink, and only a strictly nearer hit replaces
- * the best.
- *
- * `candidates` names the instances a mark is asked about in a block: what a
- * spatial index finds in the radius's reach, or every instance, back to
- * front. `undefined` leaves the mark out of that block, as does a gate of the
- * mark's that closes.
+ * The instance nearest `(xPx, yPx)` within `radiusPx`, over the blocks the
+ * radius reaches. Marks are asked last to first and only a strictly nearer hit
+ * replaces the best, so a tie goes to the mark on top. `candidates` names what
+ * a mark is asked about in a block: what an index finds in the reach, or
+ * `backToFront` over every instance. `undefined` leaves the mark out, as a
+ * closed gate does.
  */
 export function nearestMarkHit<TRegion, TState extends MarkFrame>(
   marks: readonly Mark<TRegion, TState>[],

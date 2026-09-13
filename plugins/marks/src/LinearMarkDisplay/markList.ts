@@ -22,19 +22,14 @@ import type {
   MarkValueScaleType,
 } from '@jbrowse/render-core/marks'
 
-/**
- * One encoded layer as the display stores it: the worker's channels — the
- * lanes its shape asked for — and the Flatbush wrapped once at the commit.
- */
+/** An encoded layer, its Flatbush wrapped once at the commit. */
 export interface StoredLayer extends EncodedChannels {
   flatbush?: Flatbush
 }
 
 /**
- * The lanes each shape reads, which is what the worker is asked to fill:
- * `index` on every one, for the hover. `color` and `colorValue` are both
- * named where a shape resolves a ramp itself — the encoder fills whichever
- * the colour declaration calls for.
+ * The lanes the worker fills for each shape. The encoder fills whichever of
+ * `color` and `colorValue` the colour declaration calls for.
  */
 export const SHAPE_LANES = {
   bar: ['y', 'color', 'colorValue', 'index'],
@@ -42,18 +37,17 @@ export const SHAPE_LANES = {
   span: ['row', 'color', 'index'],
 } as const satisfies Record<MarkShapeName, readonly LaneName[]>
 
-// The lanes a shape's channel type requires by name; its colour is checked
-// apart, being either lane.
 type ChannelLane = Exclude<LaneName, 'index'>
 
+// Colour is checked apart from these, since either of two lanes carries it.
 const SHAPE_VALUE_LANES = {
   bar: ['y'],
   point: ['y', 'glyph'],
   span: ['row', 'color'],
 } as const satisfies Record<MarkShapeName, readonly ChannelLane[]>
 
-// Whether a layer carries what a shape reads. A region whose payload predates
-// a shape change packs nothing rather than a lane of zeros.
+// A payload fetched before a shape change packs nothing rather than a lane of
+// zeros.
 function hasLanes<L extends ChannelLane>(
   layer: StoredLayer,
   lanes: readonly L[],
@@ -83,39 +77,26 @@ export interface MarkRegionData {
 
 export interface MarkRenderState extends MarkFrame {
   domainY: [number, number]
-  /** How the shared y domain is read, off the declared value scale. */
   scaleTypeY: MarkValueScaleType
-  /**
-   * The one mark reading its own y, where a mark declared
-   * `resolve: 'independent'`: its domain is folded from its layers alone and
-   * the chrome draws it as the right-hand axis.
-   */
+  /** The mark that declared `resolve: 'independent'`, on its own domain. */
   independentY?: {
     markIndex: number
     domain: [number, number]
     scaleType: MarkValueScaleType
   }
-  /**
-   * Mark `i`'s quantitative colour scale, or undefined where its colour is
-   * not a ramp: the domain unioned over the loaded regions and the LUT the
-   * pass binds, so a pan that widens it writes one uniform and no bytes.
-   */
+  /** Mark `i`'s colour ramp, undefined where its colour is not one. */
   colorRamps: (MarkRamp | undefined)[]
-  /** The view's zoom, what a mark's range is checked against. */
   bpPerPx: number
   origin: number
   minWidthPx: number
   pointDiameterPx: number
-  /** Bands a span mark stacks into: the highest `row` any loaded layer carries, plus one. */
+  /** The highest `row` any loaded layer carries, plus one. */
   rowCount: number
 }
 
 export type DisplayMark = Mark<MarkRegionData, MarkRenderState>
 
-/**
- * One `marks` entry as the list is built from it: the shape, and the zoom
- * range it draws in, in bp per px, where 0 is no bound.
- */
+/** A `marks` entry's shape and zoom range in bp per px, 0 for no bound. */
 export interface MarkEntry {
   shape: MarkShapeName
   minBpPerPx: number
@@ -123,10 +104,8 @@ export interface MarkEntry {
 }
 
 /**
- * The y scale mark `i` places its value through: the display's shared one,
- * or its own where it declared an independent axis. Every reader of a
- * mark's domain — the shapes' uniforms and the hit test's value window —
- * goes through this, so the two cannot disagree.
+ * The y scale mark `i` places its value through: its own where it declared an
+ * independent axis, else the display's.
  */
 export function markValueScale(state: MarkRenderState, i: number) {
   const { independentY } = state
@@ -146,17 +125,12 @@ export function markDrawsAt(
 }
 
 // A pass id keys the instance buffer and texture, so two marks on one shape
-// need two ids — the shape's own, suffixed by the mark's index. The pipeline is
-// keyed by content, so the clone compiles nothing.
+// need two ids; pipelines are keyed by content, so the clone compiles nothing.
 function withPassId<C, P>(shape: MarkShape<C, P>, id: string): MarkShape<C, P> {
   return { ...shape, id, pass: { ...shape.pass, id } }
 }
 
-/**
- * The mark list a `marks` config declares: mark `i` reads `layers[i]`, places
- * its value through the scale `markValueScale` hands it, and is off outside
- * its zoom range — for the draw, the hover and the highlight alike.
- */
+/** One mark per `marks` entry, reading `layers[i]` inside its zoom range. */
 export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
   return entries.map((entry, i) => {
     const { shape } = entry

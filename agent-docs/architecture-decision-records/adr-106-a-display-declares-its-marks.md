@@ -132,6 +132,9 @@ cannot is layout, tiering, fetch shape and per-display meaning.
 
 ## Consequences
 
+- A block's marks share one uniform write where they share a writer and a
+  `params` lens (`StagedUniforms`, 2026-09-07): the coverage band's five marks
+  and the feature glyphs' five had each restated the previous mark's struct.
 - ADR-090's "the worked example needs no shader of its own" is true only where
   a shared shape fits; the example keeps its shader as a plugin-local shape and
   the guide says when `span` or `point` would have done. Measured on

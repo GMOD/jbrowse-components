@@ -6,22 +6,13 @@ import { ScoreScaleMixin } from './ScoreScaleMixin.ts'
 import type { scoreAxisConfigSchemaFields } from './scoreAxisConfigSchemaFields.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 
-/**
- * The one slot this mixin reads that no shared field table holds: its
- * composers agree on the type and give it their own default and `advanced`
- * flag. A runtime value so `RestatedMixinSlots.test.ts` can check the
- * restatement against every real declaration.
- */
+/** The one slot its composers each declare, with their own default. */
 export const wiggleScoreConfigExtraSlots = {
   scatterPointSize: { type: 'number', defaultValue: 2 },
 } as const
 
-/**
- * Exactly the slots this mixin reads. `LinearMarkDisplay` composes it and
- * declares none of wiggle's slots, and `getConf` on an undeclared slot answers
- * `undefined` silently, so a wider host would be a wrong value no layer
- * reports.
- */
+// Exactly the slots read here: `getConf` answers a slot a composer never
+// declared with a silent `undefined`, which a wider host type would hide.
 export interface WiggleScoreConfigHost {
   configuration: ConfigModelForFields<
     typeof scoreAxisConfigSchemaFields & typeof wiggleScoreConfigExtraSlots
@@ -35,12 +26,9 @@ const confNode = (self: object) => self as WiggleScoreConfigHost
  * #category display
  *
  * The score-plot config every display with a score axis shares: the axis
- * (`ScoreScaleMixin`), the cross-hatch toggle and the scatter point size.
- * `LinearMarkDisplay` composes it as is; a display plotting one configured
- * feature field composes `ScoreFieldConfigMixin`, which adds `scoreField`.
- *
- * Config only: the strict-`bpPerPx` fetch rule and wiggle's palette,
- * rendering-type, summary-mode and resolution config are `WiggleCommonMixin`'s.
+ * (`ScoreScaleMixin`), the cross-hatch toggle and the scatter point size. A
+ * display plotting one configured field composes `ScoreFieldConfigMixin`,
+ * which adds `scoreField`.
  */
 export function WiggleScoreConfigMixin() {
   return types
@@ -54,18 +42,15 @@ export function WiggleScoreConfigMixin() {
       },
       /**
        * #getter
-       * The configured cross-hatch setting, which the menu toggles. A slot
-       * rather than a display prop because MST drops a snapshot key the schema
-       * never declares, so a prop cannot be set from a config. Read
-       * `showCrossHatches` for what draws.
+       * The configured cross-hatch setting the menu toggles; `showCrossHatches`
+       * is what draws.
        */
       get displayCrossHatches(): boolean {
         return getConf(confNode(self), 'displayCrossHatches')
       },
       /**
        * #getter
-       * Whether score maps to color instead of height. A display overrides
-       * this from its own rendering-type table; the base is false.
+       * Whether score maps to color instead of height; a display overrides it.
        */
       get isDensityMode(): boolean {
         return false
@@ -92,10 +77,8 @@ export function WiggleScoreConfigMixin() {
     .views(self => ({
       /**
        * #getter
-       * Whether the score-axis cross hatches draw. Density spends color, not
-       * height, on the score, so it has no axis to rule — and its track menu
-       * drops the toggle, which would strand hatches enabled in another plot
-       * type. Every consumer reads this, never `displayCrossHatches`.
+       * Whether the score-axis cross hatches draw: never in density mode, which
+       * has no height axis to rule and no toggle in its menu.
        */
       get showCrossHatches() {
         return self.displayCrossHatches && !self.isDensityMode

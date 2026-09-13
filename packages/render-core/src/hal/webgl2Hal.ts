@@ -67,8 +67,7 @@ function bindUniformBlock(
   }
 }
 
-// Set `DEBUG.webgl2 = true` in devtools (or `?webgl2-debug=1` in URL) to
-// enable verbose logging. Kept guarded so production builds stay quiet.
+// `DEBUG.webgl2 = true` in devtools, or `?webgl2-debug=1`, logs verbosely.
 function debugEnabled() {
   if (typeof window === 'undefined') {
     return false
@@ -138,67 +137,35 @@ interface RegionPassBuffer {
   count: number
 }
 
-// Module-scope lifecycle tracking — Firefox caps active WebGL contexts
-// around 16 and Chrome around 8. Context leaks force the oldest contexts to
-// lose. These counters surface the leak when it happens.
+// Live-context counts for the debug log: a leaked context evicts the oldest
+// once the browser's cap is reached.
 let totalCreated = 0
 let totalDisposed = 0
 
-// The vertex-buffer ceiling this HAL refuses past, in bytes.
-//
-// WebGL2 exposes no max-buffer-size parameter, so unlike WebGPU there is
-// nothing to ask — but "ask the driver" was never what the guard was for. Its
-// job is to turn one pathological upload into the "zoom in" banner, and without
-// it the same upload that banners on WebGPU takes Chrome's context down here
-// instead. That is strictly worse than a blank track on a page at the context
-// ceiling: the loss evicts a sibling, whose recovery evicts another, and
-// GPU_CONTEXT_BUDGET.md is that cascade.
-//
-// 256 MiB is WebGPU's *spec default* `maxBufferSize`. It is not parity with
-// what the WebGPU backend actually refuses at: `gpuDevice.acquire` raises the
-// limit to `adapter.limits.maxBufferSize`, which is 2147483644 bytes (~2 GiB)
-// on the Firefox Nightly / Intel UHD 630 this was checked on, so WebGL2 is the
-// stricter of the two and a region can banner here while rendering there. That
-// asymmetry is accepted — a quarter-gigabyte single vertex buffer is not
-// something to hand an API that answers a failed allocation by dropping the
-// context.
-//
-// Deliberately a ceiling and not a budget: it catches the single upload
-// nothing else bounds, and says nothing about the total, which is
-// ARCHITECTURAL_LIMITS.md §"No session-level GPU memory budget".
+// WebGPU's spec-default `maxBufferSize`, since WebGL2 has none to query: an
+// upload past it banners rather than dropping the context
+// (ARCHITECTURAL_LIMITS.md).
 const MAX_VERTEX_BUFFER_BYTES = 256 * 1024 * 1024
 
-// Behavioral parity with WebGPUHal is enforced by tests, not by this file:
-// products/jbrowse-web/browser-tests/compare-backends.ts pixel-diffs webgl vs
-// webgpu vs canvas2d output, and shared buffer bookkeeping is covered by
-// hal/regionRegistry.test.ts. Neither HAL is where attribute layout is checked —
-// `assertVertexInputsMatch` does that at `pnpm gen:shaders` time, per shader and
-// per target. Mirror any behavior change in webgpuHal.ts — and note that
-// `GpuHalBase` already holds the parts that were only ever mirrored: the
-// descriptor map, the buffer registry, both upload shells and their over-limit
-// wording, and the dispose guard.
 export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
-  // Filled on first draw by `getPass`; `null` is a pass whose program failed to
-  // link, so the failure is reported once rather than every frame.
+  // `null` is a pass whose link failed, so it is reported once, not per frame.
   private passes = new Map<string, PassState | null>()
-  // This context's programs by what `link` reads: the vertex source, then the
-  // fragment source, attribute names and sampler as JSON. Passes differing only
-  // in id share one; a failed link keeps its error.
+  // By vertex source, then fragment source, attribute names and sampler as
+  // JSON: every pass id over one program shares it, and a failed link keeps
+  // its error.
   private programs = new Map<string, Map<string, LinkedProgram | Error>>()
   private passTextures = new Map<string, WebGLTexture>()
   private ubo: WebGLBuffer
-  // Asked once: `getParameter` is a synchronous driver query and `limits()` is
-  // now read on every upload, not only on a texture one.
+  // `getParameter` is a synchronous driver query; `limits()` runs per upload.
   private maxTextureDim: number
   private debug = false
   private instanceId = 0
   private firstDrawSeen = new Set<string>()
 
-  // Latched on context loss, never cleared. GL objects from before the loss are
-  // invalid even after restore — isContextLost()===false by then, so a live
-  // check alone can't guard dispose().
+  // Never cleared: GL objects from before a loss stay invalid after restore,
+  // when isContextLost() already answers false.
   private contextWasLost = false
 
   private contextLostListener: ((e: Event) => void) | null = null
@@ -242,23 +209,14 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     canvas.addEventListener('webglcontextrestored', onContextRestored, false)
     this.contextLostListener = onContextLost
     this.contextRestoredListener = onContextRestored
-    // premultipliedAlpha:true is required for correct AA edge blending.
-    // The canvas is cleared to (0,0,0,0) and drawn with SRC_ALPHA,ONE_MINUS_SRC_ALPHA
-    // blend, which produces premultiplied-alpha values in the framebuffer
-    // (edge pixel: rgb = color*alpha, a = alpha).  With premultipliedAlpha:true
-    // the browser compositor reads those as premultiplied and composites correctly:
-    //   output = fb.rgb + bg*(1-fb.a)
-    // With premultipliedAlpha:false the compositor treats them as straight alpha and
-    // multiplies rgb by alpha a second time, making AA edges appear too dark.
-    // The WebGPU HAL uses alphaMode:'premultiplied' for the same reason.
+    // The blend leaves premultiplied values in the framebuffer, which a
+    // straight-alpha compositor would darken at AA edges; WebGPU's alphaMode
+    // matches.
     const gl = canvas.getContext('webgl2', {
       antialias: true,
       premultipliedAlpha: true,
     })
     if (!gl) {
-      // Was a bare 'WebGL2 not supported', which is the wrong diagnosis for the
-      // case that actually reaches here in production: a re-init on a canvas the
-      // WebGPU rung already committed. See canvasContext.ts.
       throw canvasContextError(canvas, 'webgl2')
     }
     noteCanvasContext(canvas, 'webgl2')
@@ -269,11 +227,9 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
     gl.bufferData(gl.UNIFORM_BUFFER, this.uniformByteSize, gl.DYNAMIC_DRAW)
 
-    // Programs link on first draw (`getPass`): linking costs tens of ms of
-    // main-thread driver time, and a three-track LGV declared 29 passes and
-    // drew with 14. The first descriptor links here as a canary, so a GL stack
-    // that cannot compile our shaders at all throws from the constructor while
-    // `createGpuHal`'s ladder can still fall back to Canvas2D.
+    // Programs link on first draw (`getPass`). The first links here as a
+    // canary, so a GL stack that cannot compile our shaders throws while
+    // `createGpuHal` can still fall back to Canvas2D.
     const canary = descriptors[0]
     if (canary) {
       this.passes.set(canary.id, {
@@ -285,11 +241,8 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     gl.enable(gl.BLEND)
   }
 
-  // A fixed buffer ceiling rather than a queried one — see
-  // MAX_VERTEX_BUFFER_BYTES for why the guard exists at all and why the number
-  // is WebGPU's. Past it, an unguarded bufferData loses the context in Chrome
-  // and throws RangeError in Firefox; neither is a getError() case, so the
-  // base's report is the only place the display can be told.
+  // Past the ceiling an unguarded bufferData loses the context in Chrome and
+  // throws in Firefox, neither of them a getError() case.
   protected limits() {
     return {
       maxBufferBytes: MAX_VERTEX_BUFFER_BYTES,
@@ -305,10 +258,8 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     return { vbo, count }
   }
 
-  // No mid-frame deferral, unlike `WebGPUHal`'s hook: GL is immediate-mode, so
-  // a draw already issued has consumed the buffer and deleting it between
-  // beginFrame and endFrame is defined. The parity that matters is the
-  // caller's — the same upload sequence is legal on both.
+  // No mid-frame deferral, unlike `WebGPUHal`: GL is immediate-mode, so a draw
+  // already issued has consumed the buffer.
   protected destroyBuffer(buf: RegionPassBuffer) {
     const gl = this.gl
     if (!this.contextWasLost && !gl.isContextLost()) {
@@ -316,8 +267,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     }
   }
 
-  // The program `desc` draws with, linking it on the first ask for its content.
-  // Throws on a failed link, and again for every later ask of that content.
+  // Throws on a failed link, and again on every later ask for that content.
   private link(desc: PipelineDescriptor): LinkedProgram {
     const gl = this.gl
     const tb = desc.textures?.[0]
@@ -382,7 +332,6 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     return linked
   }
 
-  // Undefined for an unknown id or a pass whose program failed to link.
   private getPass(passId: string) {
     const existing = this.passes.get(passId)
     if (existing !== undefined) {
@@ -484,8 +433,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
 
   drawPass(passId: string, regionKey: number, bufferPassId?: string) {
     const gl = this.gl
-    // Buffer first, program second: a pass with nothing to draw must not be
-    // the reason its shader gets compiled.
+    // Buffer first, so a pass with nothing to draw links no program.
     const regionBuf = this.regions.get(regionKey, bufferPassId ?? passId)
     if (!regionBuf || regionBuf.count === 0) {
       return
@@ -539,10 +487,6 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
       )
     }
 
-    // Remove canvas event listeners to prevent closure references from keeping
-    // the context alive after disposal. This is critical for test suites where
-    // multiple contexts are created in sequence (e.g. Puppeteer page navigation).
-    // Double-dispose is short-circuited above, so listeners are guaranteed set.
     if (this.contextLostListener) {
       this.canvas.removeEventListener(
         'webglcontextlost',
@@ -574,13 +518,8 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     this.passes.clear()
     this.programs.clear()
     this.passTextures.clear()
-
-    // Firefox appears to treat WEBGL_lose_context.loseContext() as a
-    // driver-wide reset: calling it on one disposed HAL synchronously
-    // knocks out sibling live contexts too, so tracks go blank en masse.
-    // Chrome only needs this as a test-suite optimisation; for production we
-    // let the browser reclaim the context when the canvas is GC'd. If we
-    // need explicit release again, gate it on navigator.userAgent.
+    // No WEBGL_lose_context.loseContext(): Firefox treats it as a driver-wide
+    // reset that blanks sibling live contexts, so the canvas's GC reclaims it.
   }
 
   private applyBlendState(desc: PipelineDescriptor) {
@@ -592,17 +531,11 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     gl.enable(gl.BLEND)
     const bs = desc.blendState
     if (bs?.op === 'max') {
-      // MIN/MAX ignore blend factors: the framebuffer keeps the per-channel
-      // max(src, dst). Used by same-color AA lines so overlapping segments union
-      // instead of darkening. Reset explicitly below for every other pass.
       gl.blendEquation(gl.MAX)
     } else {
       gl.blendEquation(gl.FUNC_ADD)
-      // RGB and alpha get different blend factors (blendFuncSeparate):
-      //   RGB:   out = src_rgb * srcFactor + dst_rgb * dstFactor  (default: src-alpha / 1-src-alpha)
-      //   Alpha: out = src_alpha * 1 + dst_alpha * (1 - src_alpha)
-      // The alpha channel uses ONE/ONE_MINUS_SRC_ALPHA regardless of the custom blend state;
-      // using the RGB srcFactor for alpha too would give out_alpha = src_alpha² + ..., which is wrong.
+      // Alpha keeps ONE / ONE_MINUS_SRC_ALPHA whatever the RGB factors: the
+      // RGB srcFactor on alpha would square it.
       const src = bs ? glBlendFactor(gl, bs.srcFactor) : gl.SRC_ALPHA
       const dst = bs ? glBlendFactor(gl, bs.dstFactor) : gl.ONE_MINUS_SRC_ALPHA
       gl.blendFuncSeparate(src, dst, gl.ONE, gl.ONE_MINUS_SRC_ALPHA)

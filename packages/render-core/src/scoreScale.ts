@@ -23,13 +23,9 @@ function symlog(x: number, c: number) {
 
 /**
  * `normalizeScore` with the per-domain arithmetic hoisted out of a per-feature
- * loop: the `[0, 1]` fraction a score sits at in the domain, clamped, and on a
- * domain with no range 1 above its min and 0 elsewhere. The generated
- * `normalizeScore` is the oracle `normalizeScoreParity.test.ts` sweeps it
- * against.
- *
- * `symlogConstant` is read only for `SCALE_TYPE_SYMLOG`, already resolved by
- * `resolveSymlogConstant`, which is the number the shader gets as a uniform.
+ * loop: the clamped `[0, 1]` fraction a score sits at, and on a domain with no
+ * range 1 above its min and 0 elsewhere. `symlogConstant` is the resolved one
+ * the shader gets as a uniform.
  */
 export function makeScoreNormalizer(
   min: number,
@@ -81,10 +77,8 @@ function atFraction(t: number, tMin: number, tMax: number) {
 }
 
 /**
- * The score at fraction `t` of the domain, unclamped: `normalizeScore`'s
- * inverse, through the same log floor and symlog constant. A domain with no
- * range answers its min, floored for log, for every `t`, which is where the
- * forward step sits.
+ * `normalizeScore`'s unclamped inverse, the score at fraction `t`. A domain
+ * with no range answers its min, floored for log, where the forward step sits.
  */
 export function denormalizeScore(
   t: number,
