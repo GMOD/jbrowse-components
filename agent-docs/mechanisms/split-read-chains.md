@@ -138,9 +138,12 @@ There are two right answers and the choice is per consumer:
   evidence.
 
 Either way the gap is carried as a field (`hiddenSegmentsBetween`,
-`hiddenSegmentsBefore`) rather than being the silence left by a `continue`. The
-same-strand case is still open:
-[a-same-strand-junction-across-unfetched-segments-is-still-drawn-solid](../ideas/a-same-strand-junction-across-unfetched-segments-is-still-drawn-solid.md).
+`hiddenSegmentsBefore`) rather than being the silence left by a `continue`. A
+same-strand junction reaches the overlay too, though the straight-line pass
+would otherwise own it: that pass leaves any pair with hidden segments alone
+(`isGpuLinkedReadLine`), and where both ends share a row, as a chain's do, the
+dashed line bows up over the row instead of lying on the chain's connecting
+line.
 
 ## 6. A per-region answer about a chain is an answer about the region
 

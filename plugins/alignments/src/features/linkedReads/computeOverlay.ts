@@ -13,7 +13,11 @@ import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
 import { linkedReadColorSlot } from '../../shaders/slang/alignmentsUniforms.js.generated.ts'
 import { readIdAt } from '../../shared/readIdentity.ts'
 import { readNameAt } from '../../shared/readNameBlock.ts'
-import { connectionLabel, iterLinkedPairs } from './compute.ts'
+import {
+  connectionLabel,
+  isGpuLinkedReadLine,
+  iterLinkedPairs,
+} from './compute.ts'
 
 import type { LaidOutPileupData } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
@@ -66,14 +70,14 @@ export function bezierArcKey(arc: Pick<PileupArc, 'id1' | 'id2'>) {
   return `${arc.id1}:${arc.id2}`
 }
 
-// A linked pair becomes an overlay arc unless it's a normal-orientation pair
-// wholly within one region — those straight connectors are drawn by the GPU /
-// Canvas2D pipeline, not here. Applied once, by `enumerateBezierPairs`, so the
-// arc emitter (computePileupBezierArcs) and the legend
-// (bezierConnectionColorTypes) work from one already-narrowed list and the key
-// can never list a connection color the overlay didn't draw.
-export function isBezierArcPair({ e1, e2, c }: LinkedPair): boolean {
-  return !(c.isNormal && e1.displayedRegionIndex === e2.displayedRegionIndex)
+// A linked pair becomes an overlay arc unless the GPU / Canvas2D pipeline draws
+// it (`isGpuLinkedReadLine`), which cannot dash a line or name the loci it
+// skips. Applied once, by `enumerateBezierPairs`, so the arc emitter
+// (computePileupBezierArcs) and the legend (bezierConnectionColorTypes) work
+// from one already-narrowed list and the key can never list a connection color
+// the overlay didn't draw.
+export function isBezierArcPair(pair: LinkedPair): boolean {
+  return !isGpuLinkedReadLine(pair)
 }
 
 // The two ends sit in different displayed regions, so no per-region pass can
@@ -259,18 +263,16 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
       continue
     }
 
-    // Normal-orientation pairs draw as a plain line (the within-region ones
-    // never reach here — the GPU / Canvas2D pipeline owns those). Everything
-    // curving here is therefore discordant, so it dips, matching
-    // BreakpointSplitView: a line is normal, a curve below the reads is not.
-    // A same-strand split junction between two chromosomes keeps its strand
-    // label but not the line: the split view curves every cross-ref connection
-    // and the arc band draws none, so a straight line across chromosomes would
-    // be the one mark calling a translocation normal.
-    // Endpoint 2 is a split junction's 5' leading edge (folds back) for a split
-    // read, or the mate's 3' edge for a pair.
+    // A normal pair on one chromosome is a plain line and everything else dips
+    // below the reads, matching BreakpointSplitView; a straight line across
+    // chromosomes would be the one mark calling a translocation normal. A
+    // hidden-segment line whose ends share a row, as a chain's do, would lie
+    // on the chain's connecting line, so it bows up over the row instead, as
+    // the split view bows a same-level normal link.
+    const hidden = !!hiddenSegmentsBetween?.length
+    const plain = c.isNormal && r1.refName === r2.refName
     const d =
-      c.isNormal && r1.refName === r2.refName
+      plain && !(hidden && sy1 === sy2)
         ? `M ${sx1} ${sy1} L ${sx2} ${sy2}`
         : bezierConnectorPath({
             x1: sx1,
@@ -282,7 +284,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
             leadingEnd2: c.isSplit,
             reversed1: !!r1.reversed,
             reversed2: !!r2.reversed,
-            dip: true,
+            dip: !plain,
           })
     const stroke = rgb255(linkedReadPalette[linkedReadColorSlot(c.colorType)]!)
 
@@ -297,7 +299,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
       readName: readNameAt(e1.data, e1.readIdx),
       x1: sx1,
       x2: sx2,
-      dash: hiddenSegmentsBetween?.length ? HIDDEN_SEGMENT_DASH : undefined,
+      dash: hidden ? HIDDEN_SEGMENT_DASH : undefined,
       hiddenSegmentsBetween,
     })
   }

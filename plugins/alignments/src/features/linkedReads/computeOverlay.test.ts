@@ -29,6 +29,7 @@ import {
   LINKED_READ_COLOR_PAIR_RR,
   LINKED_READ_COLOR_PAIR_UNKNOWN,
   LINKED_READ_COLOR_SPLIT_INV,
+  computeLinkedReadLinesByRegion,
 } from './compute.ts'
 import {
   bezierConnectionLegendItems,
@@ -693,8 +694,7 @@ describe('enumerateBezierPairs — a junction across segments nothing fetched', 
     ).toBeUndefined()
   })
 
-  // The straight-line pass draws none of the junctions this marks, so it omits
-  // the normalizer and skips the SA parse entirely.
+  // Without a normalizer no junction reports hidden segments.
   it('skips the walk when no normalizer is passed', () => {
     expect(
       enumerateBezierPairs(sections)[0]!.hiddenSegmentsBetween,
@@ -798,6 +798,70 @@ describe('enumerateBezierPairs — crossRegion scope', () => {
       x1: 2500,
       x2: 9000,
     })
+  })
+})
+
+// A read that leaves chr3 forward, hops 199bp on chr10, and lands back on chr3
+// forward 1.5kb on. The two chr3 arms are a normal-orientation pair in one
+// region, which the straight-line pass would join solid as a plain deletion.
+describe('a same-strand junction across segments nothing fetched', () => {
+  const sameStrand = (ys: number[]) =>
+    new Map([
+      [
+        0,
+        makeData({
+          names: ['chain3', 'chain3'],
+          ids: ['chain3-primary', 'chain3-supp'],
+          flags: [0, SAM_FLAG_SUPPLEMENTARY],
+          strands: [1, 1],
+          positions: [
+            [1000, 1500],
+            [3000, 3500],
+          ],
+          clipAtStart: [0, 699],
+          suppAlignments: [
+            'chr10,600001,+,500S199M500S,60,0;chr3,3001,+,699S500M,60,0',
+            'chr3,1001,+,500M699S,60,0;chr10,600001,+,500S199M500S,60,0',
+          ],
+          ys,
+        }),
+      ],
+    ])
+  const identity = (refName: string) => refName
+  const arcOf = (ys: number[]) =>
+    computePileupBezierArcs({
+      colors: PALETTE,
+      ...baseOpts,
+      displayedRegions: [{ refName: 'chr3' }],
+      pairs: enumerateBezierPairs(sameStrand(ys), 'all', identity),
+    })
+
+  it('leaves the straight-line pass for the overlay', () => {
+    const map = sameStrand([0, 1])
+    expect(computeLinkedReadLinesByRegion(map).get(0)?.numLinkedReadLines).toBe(
+      1,
+    )
+    expect(computeLinkedReadLinesByRegion(map, identity).size).toBe(0)
+  })
+
+  it('draws a dashed straight line between rows, naming the loci', () => {
+    const arcs = arcOf([0, 1])
+    expect(arcs).toHaveLength(1)
+    expect(arcs[0]!.d).toBe('M 1500 5 L 3000 17')
+    expect(arcs[0]!.dash).toBe(HIDDEN_SEGMENT_DASH)
+    expect(arcs[0]!.hiddenSegmentsBetween).toEqual(['chr10:600,001-600,199'])
+  })
+
+  // A chain puts both ends on one row, where a straight dash would lie on the
+  // chain's own connecting line.
+  it('bows up over the row when both ends share it', () => {
+    const [arc] = arcOf([2, 2])
+    const cp = controlPoints(arc!.d)
+    expect(cp.sy1).toBe(29)
+    expect(cp.sy2).toBe(29)
+    expect(cp.cp1y).toBeLessThan(29)
+    expect(cp.cp2y).toBeLessThan(29)
+    expect(arc!.dash).toBe(HIDDEN_SEGMENT_DASH)
   })
 })
 

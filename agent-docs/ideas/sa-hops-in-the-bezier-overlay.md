@@ -20,10 +20,9 @@ and names the hidden loci in the hover. It did NOT go through
 `unpairedReadChain`, as this file and the backlog both once proposed — `SegAln`
 carries no route back to the `ReadEntry`, and the overlay needs the entry at
 both ends for its `readYs` row and `displayedRegionIndex`, so it copied
-`markHiddenSegments`' clip window instead. What is left of the correctness half
-is the same-strand case, which `isNormal` routes to the straight-line pass:
-[TODO.md](../TODO.md), "A same-strand junction across unfetched segments is
-still drawn solid".
+`markHiddenSegments`' clip window instead. The same-strand case, which
+`isNormal` routed to the straight-line pass, is fixed too: that pass leaves any
+pair with hidden segments to the overlay (`isGpuLinkedReadLine`).
 
 Read [`reference/SV_MULTIHOP.md`](../reference/SV_MULTIHOP.md) before starting
 any of it — it carries the line this feature area does not cross, and the three
@@ -128,14 +127,11 @@ matters.
   quiet run, and gate the lift on `readSuppAlignments` being present anyway,
   since the worker ships it only when some read carries an SA tag and the
   deep short-read view then pays nothing.
-- **The lift does not fix chain mode on its own.** `buildChainConnectingData`
-  draws ONE solid span per chain per region, min start to max end, with no
-  notion of junctions. A same-strand hidden hop dashed by the overlay would
-  be painted exactly on top of that span and vanish; only a curve (an
-  inverted or cross-ref hop) rises clear of it. So in chain mode the span has
-  to become per-junction segments before a dash can mean anything there —
-  `a-same-strand-junction-across-unfetched-segments-is-still-drawn-solid.md`
-  carries both halves.
+- **A mark on a chain's row has to clear its span.** `buildChainConnectingData`
+  draws ONE solid span per chain per region, min start to max end, so a dash
+  lying on the row vanishes into it. `computePileupBezierArcs` bows a
+  hidden-segment line whose ends share a row for that reason, and a one-ended
+  hop's mark needs the same.
 - **Gate on the settings that exist**: `drawLongRange` ("Draw long-range
   read-connection arcs") and `drawInter` ("Draw inter-chromosomal
   read-connection arcs"), combined by `emitsOffScreenPartner` — which exists
@@ -169,6 +165,14 @@ not plumbing:
   but that helper REPLACES the view's regions with one window per segment. A
   dashed arc wants the hidden windows INSERTED between the two it joins, in
   read order, so it is the same undo-able call with a different region list.
+- **`viewSplitAlignmentRegionsInCurrentView` loses read order**, which a region
+  list built from a dashed arc needs. It hands its windows to `gatherOverlaps`,
+  which buckets by refName and sorts each bucket by start, so chr3 → chr10 →
+  chr12 → chr3 comes out chr3, chr3, chr10, chr12, and integer-like refNames
+  order numerically, so even two contigs can swap. Its docstring promises read
+  order; the one order test uses two non-numeric contigs. Two visits to one
+  contig inside the padding also merge, which `buildSplitViewFromPath` exists
+  to avoid.
 - **The gesture is the open half.** `PileupBezierOverlay` has no context menu,
   and a plain click already selects the nearer endpoint. Either a right-click
   item on the arc target (the display's `openContextMenu` builds its items from

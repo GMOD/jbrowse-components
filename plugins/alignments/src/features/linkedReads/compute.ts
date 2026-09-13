@@ -243,9 +243,9 @@ export interface LinkedPair {
 // rules that define "a linked pair" live in one place.
 //
 // `canonicalRefName` is what lets a junction report the segments it skipped
-// (`hiddenSegmentsBetween`) in the view's own refName spelling. Only the emitter
-// that can DRAW that — the overlay, which dashes the arc — passes one; the
-// straight-line pass omits it and skips the SA parse.
+// (`hiddenSegmentsBetween`) in the view's own refName spelling. Both emitters
+// pass one: the overlay dashes such a junction, and the straight-line pass
+// leaves it to the overlay.
 export function* iterLinkedPairs(
   laidOutPileupMap: ReadonlyMap<number, LaidOutPileupData>,
   canonicalRefName?: CanonicalRefName,
@@ -276,18 +276,38 @@ export function* iterLinkedPairs(
   }
 }
 
-// Build per-region straight-line records for normal-orientation pairs whose
-// mates are wholly contained in a single displayedRegion. Returns one map
-// entry per region that has at least one line, in the same
+// The pairs the GPU / Canvas2D straight-line pass draws: normal orientation,
+// both ends in one displayed region, and no unfetched segment between them.
+// The overlay takes every other pair (`isBezierArcPair`), since only it can
+// dash a hidden-segment junction and name the loci in a hover.
+export function isGpuLinkedReadLine({
+  e1,
+  e2,
+  c,
+  hiddenSegmentsBetween,
+}: LinkedPair): boolean {
+  return (
+    c.isNormal &&
+    e1.displayedRegionIndex === e2.displayedRegionIndex &&
+    !hiddenSegmentsBetween?.length
+  )
+}
+
+// Build per-region straight-line records for `isGpuLinkedReadLine` pairs.
+// Returns one map entry per region that has at least one line, in the same
 // `LinkedReadLinesUploadData` shape the GPU/Canvas2D renderers consume so the
 // chain-layout post-pass can spread it straight onto `LaidOutPileupData` with no
-// field renaming. Cross-region pairs are excluded — those keep flowing through
-// the SVG bezier overlay's straight fallback path.
+// field renaming.
+//
+// `canonicalRefName` turns on the SA walk that finds hidden segments; without
+// it no pair has any, and a junction across unfetched segments would be drawn
+// here solid as well as by the overlay.
 //
 // Output positions are absolute genomic uint32 (worker contract); per-endpoint
 // Y is needed because mates can sit on different rows when sorting is on.
 export function computeLinkedReadLinesByRegion(
   laidOutPileupMap: ReadonlyMap<number, LaidOutPileupData>,
+  canonicalRefName?: CanonicalRefName,
 ): Map<number, LinkedReadLinesUploadData> {
   // Collect raw records first by region, then materialize typed arrays.
   const acc = new Map<
@@ -299,9 +319,9 @@ export function computeLinkedReadLinesByRegion(
     }
   >()
 
-  for (const { e1, e2, c } of iterLinkedPairs(laidOutPileupMap)) {
-    const sameRegion = e1.displayedRegionIndex === e2.displayedRegionIndex
-    if (sameRegion && c.isNormal) {
+  for (const pair of iterLinkedPairs(laidOutPileupMap, canonicalRefName)) {
+    if (isGpuLinkedReadLine(pair)) {
+      const { e1, e2, c } = pair
       const idx = e1.displayedRegionIndex
       const bucket = getOrCreate(acc, idx, () => ({
         positions: [],

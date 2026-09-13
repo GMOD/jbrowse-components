@@ -239,9 +239,7 @@ function hiddenSegments<E extends MinEntry>(
 // emitting nothing there (`unpairedChainArcs`), which is right for an aggregate
 // where a wrong junction would be counted.
 //
-// `canonicalRefName` omitted skips the SA walk entirely: the straight-line pass
-// (`computeLinkedReadLinesByRegion`) draws no junction this can mark, so it has
-// no use for the parse.
+// `canonicalRefName` omitted skips the SA walk entirely.
 function splitJunctions<E extends MinEntry>(
   segs: E[],
   canonicalRefName: CanonicalRefName | undefined,

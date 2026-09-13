@@ -26,6 +26,7 @@ import type {
   RowCap,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types.ts'
+import type { CanonicalRefName } from '../features/arcs/arcTypes.ts'
 import type { ColorBy, SortedBy } from '../shared/types.ts'
 import type { RefNamePosition } from './colorTagUtils.ts'
 import type { ReadColorOpts } from './colorUtils.ts'
@@ -157,6 +158,9 @@ export interface GroupLayoutContext {
   // menu click and nothing in steady state, which is not the trap that split
   // guards against (an input that changes at drag/frame rate).
   showLinkedReadLines: boolean
+  // What lets the straight-line pass see a junction's hidden segments and leave
+  // it to the overlay (`isGpuLinkedReadLine`).
+  canonicalRefName?: CanonicalRefName
   // Draw each group as a single row, overlap depth carried by the tint layer
   // instead of by stacking (`collapsedLayout.ts`). A group the user has sized
   // explicitly opts back out, which is what makes the label chip's expand
@@ -210,7 +214,9 @@ function layoutOneGroup(
         largeFeaturesFirst: ctx.largeFeaturesFirst,
         splicedReadsFirst: ctx.splicedReadsFirst,
       })
-  return ctx.showLinkedReadLines ? attachLinkedReadLines(base) : base
+  return ctx.showLinkedReadLines
+    ? attachLinkedReadLines(base, ctx.canonicalRefName)
+    : base
 }
 
 // Per-read color inputs. A separate bundle from `GroupLayoutContext` because

@@ -1592,6 +1592,7 @@ export default function stateModelFactory(
             splicedReadsFirst: self.splicedReadsFirst,
             regions: self.loadedRegions,
             showLinkedReadLines: self.showLinkedReadLines,
+            canonicalRefName: this.canonicalRefName,
             collapseGroupRows: this.collapseGroupRows,
           }
         },

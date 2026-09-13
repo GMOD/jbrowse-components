@@ -33,10 +33,11 @@ const MAX_BOW_PX = 30
 
 // A discordant connection bows *down* instead of up, so the two classes read
 // apart at a glance. Both renderers follow this: BreakpointSplitView dips its
-// same-level discordant links, and the pileup overlay dips every curve it draws
-// (its normal-orientation pairs are plain lines, so a curve there is always
-// discordant). Keep it that way — a renderer that opts out makes "below the
-// reads" mean two different things in two views of the same data.
+// same-level discordant links, and the pileup overlay dips every discordant
+// curve it draws (a normal-orientation pair is a plain line, or bows up over its
+// row where a hidden-segment one would lie on a chain's connecting line). Keep
+// it that way — a renderer that opts out makes "below the reads" mean two
+// different things in two views of the same data.
 //
 // Depth comes from the connection's own horizontal span
 // rather than reaching for some fixed row: with "view as pairs" / "link

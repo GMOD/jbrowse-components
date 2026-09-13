@@ -24,6 +24,7 @@ import type {
   RowCapSource,
   WorkerPileupData,
 } from '../RenderAlignmentDataRPC/types'
+import type { CanonicalRefName } from '../features/arcs/arcTypes.ts'
 import type { OverlapsUploadData } from '../features/overlap/types.ts'
 import type { Span } from './spanOverlaps.ts'
 
@@ -438,8 +439,12 @@ function cloneWithChainLayout(
 // the whole map. Driven by `showBezierConnections`, orthogonal to layout.
 export function attachLinkedReadLines(
   laidOutMap: Map<number, LaidOutPileupData>,
+  canonicalRefName?: CanonicalRefName,
 ): Map<number, LaidOutPileupData> {
-  const linesByIdx = computeLinkedReadLinesByRegion(laidOutMap)
+  const linesByIdx = computeLinkedReadLinesByRegion(
+    laidOutMap,
+    canonicalRefName,
+  )
   if (linesByIdx.size === 0) {
     return laidOutMap
   }
