@@ -243,8 +243,9 @@ path through the graph and emits one record per haplotype walk, in that
 haplotype's contig coordinates and carrying the walk's CIGAR. Upstream gbz-base
 reports `unknown#1`, `unknown#2` for those walks, so the companion file at
 `haplotypeIndexLocation` names them and carries anchors a named set can be
-walked from. The lanes on screen, the track's own or whatever the reader picks
-from **Choose lanes...**, reach the adapter as the set to fetch.
+walked from. The lanes in force, the track's own or whatever the reader picks
+from **Choose lanes...**, reach the adapter as the set to fetch. A lane hidden
+from its header menu stays in that set, so showing it again draws it at once.
 
 `context` defaults to 1000, the nodes read on either side of the window.
 `nodeLimit` refuses a window that would not fit and names a zoom that would.

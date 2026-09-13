@@ -130,7 +130,7 @@ which the `mate` object does not currently say.
 
 **HPRC at scale: lane selection.** Two haplotypes are a figure; 464 are not a
 lane stack. The selection half landed 2026-09-06 as display state and a dialog
-rather than as `TreeSidebarMixin`: `selectedLanes` (a session property, so a
+rather than as `TreeSidebarMixin`: `laneFilter` (a session property, so a
 shared session carries it; the track's own `assemblyNames` is what a hosted
 track opens on) narrows `rowAssemblies`, and for a source whose header declares
 its lanes the selection also rides the fetch as `haplotypes`
@@ -161,7 +161,7 @@ steps:
    cluster-by-identity ordering; rows at 1-2 px each, 464 or 4,000 of them; a
    click or a lasso yields a haplotype set.
 2. **This display as the locus reading** for that set: the set becomes
-   `selectedLanes` (session state already), and — once the reader takes a
+   `laneFilter` (session state already), and — once the reader takes a
    filter — the fetch.
 3. **The graph view** taking the same set: `haplotypes` on `GetSubgraph`
    (`HAPLOTYPE_WALKS_VISION.md:70-73`), Sample rows drawing the chosen set.
@@ -268,11 +268,11 @@ beside toggles for `drawCurves`, `bridgeSkippedLanes` and `showLaneTicks`
 the lane that moved — `rowOrder` pins what it names and leaves the rest
 densest-first, so pinning one lane would leave the others free to re-sort under
 it between two moves. Since 2026-08-27 a mate lane's label drags too
-(`laneDrag.ts`, the headers in `MultiWayOverlay.tsx`): the band under the
+(`laneDrag.ts`, the headers in `LaneHeaders.tsx`): the band under the
 pointer is the drop row, the drop writes the whole order back the way the menu
 does, and a drop on the anchor's band lands the lane first below it. Hide lane
-writes `selectedLanes`, the picker's own property, and `rowAssemblies` filters
-on it so every layer and fetch forgets the lane at once. The label also carries a menu (right-click, or the ⋮ at its end;
+writes `laneFilter`, the picker's own property, and `rowAssemblies` filters
+on it so every layer forgets the lane at once; the fetch keeps it. The label also carries a menu (right-click, or the ⋮ at its end;
 `laneHeaderMenuItems` in `menus.ts`): the track menu's own Move up/Move
 down/Hide lane row, **Open ⟨assembly⟩ at the matching region** —
 `openAssemblyInLinearView` on the lane's frame with this track and the genome's

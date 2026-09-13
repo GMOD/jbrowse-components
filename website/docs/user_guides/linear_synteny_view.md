@@ -99,7 +99,7 @@ configured but closed is what the import form above is for.
   anchored on that row, which is how a stack is re-anchored on any of its
   genomes.
 - **A row of a [](/docs/user_guides/maf_track)** opens as a synteny view too:
-  drag-select across the rows and pick **Launch synteny view, \<ref\> vs...**,
+  drag-select across the rows and pick **Linear synteny view, \<ref\> vs...**,
   then the sample. The ribbons are cut from the alignment's own columns, so no
   synteny file is involved.
 

@@ -142,7 +142,7 @@ reference at the centre, which is the shape a lane stack anchored on hg38 reads.
 The [linear synteny view guide](/docs/user_guides/linear_synteny_view) covers
 the lane controls, the ribbons and the launches each lane header offers.
 
-<Figure caption="The header menu of one haplotype lane: re-anchor the view on it, open it at the matching region in its own view, or move and hide the lane." src="/img/multiway_synteny/hprc_lane_menu.png" />
+<Figure caption="The header menu of one haplotype lane: open it at the matching region in its own view, or move and hide the lane. The menu offers to re-anchor on the haplotype too, since a PIF header names no anchor, but every record here pairs a haplotype with GRCh38, so a stack anchored on a haplotype draws GRCh38 as its one lane." src="/img/multiway_synteny/hprc_lane_menu.png" />
 
 ## The CFH cluster, eight haplotypes
 
