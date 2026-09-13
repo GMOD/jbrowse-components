@@ -79,7 +79,8 @@ export {
   drawModCovSegments,
   drawSnpSegments,
   fillSpanRect,
-  spanRectPx,
+  spanRectLeftPx,
+  spanRectWidthPx,
 } from './rendererUtils.ts'
 export {
   coverageSegmentBuffers,

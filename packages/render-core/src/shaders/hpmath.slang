@@ -9,7 +9,7 @@
 // sub-pixel span is widened. `pnpm gen:shaders` transliterates them into
 // hpmath.js.generated.ts; nothing downstream re-derives them by hand.
 //
-// `expandToMinWidthPx` is exported too, but by `coverageBar.slang`, into
+// `expandToMinWidthLeftPx`/`RightPx` are exported too, but by `coverageBar.slang`, into
 // @jbrowse/alignments-core — the twin's consumer (`fillSpanRect`) lives in a
 // package that cannot import render-core, and this file's own redirect would
 // move every export above with it. adr-051 §"a shader may also export a
@@ -25,6 +25,7 @@
 //! js-skip: clipLenToPx — the inverse of pxToClipLen, same reason
 //! js-skip: extendToMinWidthX — clip-space wrapper over the exported extendToMinWidthPx, which is the decision
 //! js-skip: expandToMinWidthX — clip-space wrapper over expandToMinWidthPx, same reason as extendToMinWidthX
+//! js-skip: expandToMinWidthPx — the float2 over expandToMinWidthLeftPx and RightPx, which coverageBar.slang exports as the twins; a float2 twin is a tuple per call, and the pileup walk allocating one per span measured 0.85x against 0.78x of its hand painter
 //! js-skip: snapToPixelX — clip in, clip out; its px core is `floor(x + 0.5)`, which is Math.round and needs no twin
 //! js-skip: snapBoxCenterY — clip-space wrapper over the exported snapBoxCenterYPx
 module hpmath;
@@ -173,12 +174,23 @@ public float extendToMinWidthX(
 // what lets the alignments passes (clip space, a 1 CSS px floor) and the variant
 // matrix (physical px, its own MIN_COL_PX) run one rule instead of two spellings
 // of it.
+// The two edges as scalars, which is what the Canvas2D twins export: a
+// `float2` twin comes back as a tuple, and the pileup walk allocating one per
+// span measured 0.85x against 0.78x of its hand painter
+// (plugins/alignments/benches/rectWalker.bench.ts).
+public float expandToMinWidthLeftPx(float x1, float x2, float minWidth) {
+  return x2 - x1 < minWidth ? (x1 + x2) * 0.5 - minWidth * 0.5 : x1;
+}
+
+public float expandToMinWidthRightPx(float x1, float x2, float minWidth) {
+  return x2 - x1 < minWidth ? (x1 + x2) * 0.5 + minWidth * 0.5 : x2;
+}
+
 public float2 expandToMinWidthPx(float x1, float x2, float minWidth) {
-  if (x2 - x1 < minWidth) {
-    float mid = (x1 + x2) * 0.5;
-    return float2(mid - minWidth * 0.5, mid + minWidth * 0.5);
-  }
-  return float2(x1, x2);
+  return float2(
+    expandToMinWidthLeftPx(x1, x2, minWidth),
+    expandToMinWidthRightPx(x1, x2, minWidth)
+  );
 }
 
 public float2 expandToMinWidthX(

@@ -4,11 +4,22 @@
 // Scalar twins of coverageBar.slang, transliterated from slangc's WGSL so
 // the Canvas2D and SVG paths run the shader's own math. See adr-051.
 
-export function expandToMinWidthPx(x1: number, x2: number, minWidth: number): [number, number] {
+export function expandToMinWidthLeftPx(x1: number, x2: number, minWidth: number): number {
+  let _t0: number
   if (((x2 - x1) < minWidth)) {
-    let mid = ((x1 + x2) * 0.5)
-    let _t0 = (minWidth * 0.5)
-    return [(mid - _t0), (mid + _t0)]
+    _t0 = (((x1 + x2) * 0.5) - (minWidth * 0.5))
+  } else {
+    _t0 = x1
   }
-  return [x1, x2]
+  return _t0
+}
+
+export function expandToMinWidthRightPx(x1: number, x2: number, minWidth: number): number {
+  let _t0: number
+  if (((x2 - x1) < minWidth)) {
+    _t0 = (((x1 + x2) * 0.5) + (minWidth * 0.5))
+  } else {
+    _t0 = x2
+  }
+  return _t0
 }

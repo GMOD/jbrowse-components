@@ -24,7 +24,7 @@
 //! js-export: covEffectiveHeightPx, covBottomOffsetPx, normalizeDepthScalar, covBarHeightPx, covSegBottomPx, covSegTopPx
 //! js-export-out: packages/alignments-core/src/coverageBandLayout.generated.ts
 //! consts-out: packages/alignments-core/src/indicatorTriangle.generated.ts
-//! js-skip: covExpandMinWidthX — the clip-space half of the rule; nothing outside a shader is in clip space, so what a painter wants is the px core, and coverageBar.slang exports that (hpmath's expandToMinWidthPx, into alignments-core's spanMinWidth.generated.ts) for fillSpanRect to place its left edge with
+//! js-skip: covExpandMinWidthX — the clip-space half of the rule; nothing outside a shader is in clip space, so what a painter wants is the px core, and coverageBar.slang exports that (hpmath's expandToMinWidthLeftPx and RightPx, into alignments-core's spanMinWidth.generated.ts) for fillSpanRect to place its edges with
 module coverageBand;
 
 import colorPack;

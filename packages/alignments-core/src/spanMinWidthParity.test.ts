@@ -1,7 +1,10 @@
 import { fillSpanRect } from './rendererUtils.ts'
-import { expandToMinWidthPx } from './spanMinWidth.generated.ts'
+import {
+  expandToMinWidthLeftPx,
+  expandToMinWidthRightPx,
+} from './spanMinWidth.generated.ts'
 
-// The retirement gate for `expandToMinWidthPx`, which `coverageBar.slang` lifts
+// The retirement gate for `expandToMinWidthLeftPx`/`RightPx`, which `coverageBar.slang` lifts
 // out of `hpmath.slang` into this package (adr-051). `fillSpanRect` open-coded
 // the midpoint rule as `w < 1 ? (px + px2) / 2 - 0.5 : px`; that spelling is
 // kept below as the fixture and swept, the pattern `hpmathParity.test.ts` set.
@@ -26,7 +29,7 @@ const LEFTS = [-53.5, -1, -0.25, 0, 0.5, 17, 1920.75]
 test('the generated rule reproduces the left edge fillSpanRect open-coded', () => {
   for (const px of LEFTS) {
     for (const span of SPANS) {
-      expect(expandToMinWidthPx(px, px + span, 1)[0]).toBe(
+      expect(expandToMinWidthLeftPx(px, px + span, 1)).toBe(
         retiredMinWidthLeft(px, px + span),
       )
     }
@@ -36,7 +39,8 @@ test('the generated rule reproduces the left edge fillSpanRect open-coded', () =
 test('a sub-pixel span comes back exactly 1 px wide, centred on itself', () => {
   for (const px of LEFTS) {
     for (const span of SPANS.filter(s => s < 1)) {
-      const [left, right] = expandToMinWidthPx(px, px + span, 1)
+      const left = expandToMinWidthLeftPx(px, px + span, 1)
+      const right = expandToMinWidthRightPx(px, px + span, 1)
       expect(right - left).toBeCloseTo(1, 10)
       expect((left + right) / 2).toBeCloseTo(px + span / 2, 10)
     }
@@ -46,10 +50,8 @@ test('a sub-pixel span comes back exactly 1 px wide, centred on itself', () => {
 test('a span already at least 1 px is left alone, both edges', () => {
   for (const px of LEFTS) {
     for (const span of SPANS.filter(s => s >= 1)) {
-      expect(expandToMinWidthPx(px, px + span, 1)).toStrictEqual([
-        px,
-        px + span,
-      ])
+      expect(expandToMinWidthLeftPx(px, px + span, 1)).toBe(px)
+      expect(expandToMinWidthRightPx(px, px + span, 1)).toBe(px + span)
     }
   }
 })

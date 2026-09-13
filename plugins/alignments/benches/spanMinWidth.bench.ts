@@ -9,16 +9,16 @@
 // fixture — are in `agent-docs/reference/BENCHMARKING.md`.
 //
 // THE QUESTION. `fillSpanRect` widens a sub-pixel mark to 1 CSS px about its
-// midpoint, and it used to spell that rule itself. It now destructures
-// `spanRectPx`, which indexes the `float2` that `expandToMinWidthPx`, generated
-// from `hpmath.slang` (adr-051), returns — and the emitter's tuple convention
-// makes that a `[number, number]`. So the one helper every coverage painter
-// runs per covered bp now allocates, against a bar that file's own comment used
-// to state.
+// midpoint, and it used to spell that rule itself. It now places through the
+// scalar twins `expandToMinWidthLeftPx` and `RightPx`, generated from
+// `hpmath.slang` (adr-051). Between the two it indexed the `float2` twin's
+// `[number, number]`, so the one helper every coverage painter runs per covered
+// bp allocated; the scalar twins are what `rectWalker.bench.ts` measured the
+// pileup walk wanting.
 //
 // ARMS, each its own function literal with its own driver written out longhand,
 // because a shared driver goes polymorphic and prices every arm for it:
-//   generated  `fillSpanRect` as it ships — `spanRectPx` over the twin
+//   generated  `fillSpanRect` as it ships — the two scalar twins
 //   inline     the retired spelling, `w < 1 ? (px + px2) / 2 - 0.5 : px`
 //   control    a second, separately-declared copy of `inline`. A row whose
 //              control is far from 1.00 measured nothing.
@@ -35,6 +35,17 @@
 //   pileup-spans    3.5-3.6     12.1-12.9      3.42-3.59x   0.99-1.02x
 //   band-subpixel   2.4-2.5     9.2-9.7        3.76-3.91x   1.01-1.02x
 //   band-wide       4.8-4.9     8.6-8.7        1.78-1.80x   1.01x
+//
+// Over the scalar twins, one process per fixture at load 1.2, controls 1.00x:
+//
+//                   inline ns   generated ns   generated
+//   pileup-spans    3.6         9.1            2.56x
+//   band-subpixel   2.5         7.7            3.04x
+//   band-wide       2.4         7.4            3.11x
+//
+// Four more processes at load 5-11 read 3.1-3.9x. The inline arm's own ns
+// moved between the two tables, so the ratio is the unstable number here and
+// the generated ns the steadier one.
 //
 // The RATIO is large and the ABSOLUTE is not: band-subpixel's +7 ns per mark
 // is ~21 microseconds on a 3000-mark frame, about 0.13% of a 16 ms budget, with

@@ -41,7 +41,10 @@ import {
   INSTANCE_STRIDE_BYTES as SNP_STRIDE_BYTES,
   INSTANCE_STRIDE_WORDS as SNP_STRIDE,
 } from './snpCoverageLayout.generated.ts'
-import { expandToMinWidthPx } from './spanMinWidth.generated.ts'
+import {
+  expandToMinWidthLeftPx,
+  expandToMinWidthRightPx,
+} from './spanMinWidth.generated.ts'
 
 import type { SnpBaseColors } from './labelConstants.ts'
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
@@ -57,7 +60,7 @@ type Ctx = MarkContext2D
 /**
  * One sub-pixel-safe bar spanning ordered edges `px`..`px2`, widened to a 1 CSS
  * px minimum about its MIDPOINT — the shader's own rule, not a twin of it.
- * `expandToMinWidthPx` is generated from `hpmath.slang` by `pnpm gen:shaders`,
+ * `expandToMinWidthLeftPx`/`RightPx` are generated from `hpmath.slang` by `pnpm gen:shaders`,
  * lifted by `coverageBar.slang` because this package cannot import render-core
  * (adr-051). The band spells it `covExpandMinWidthX` and the pileup's gap pass
  * `expandMinWidthX`; both are this with a 1 CSS px floor.
@@ -85,11 +88,9 @@ type Ctx = MarkContext2D
  * snapped left edge — see the `js-skip: expandMinWidthX` note in
  * alignmentsUniforms.slang).
  *
- * This is the one place in the file that allocates per call: a `float2` twin
- * comes back as a `[number, number]`, and these loops run per covered bp. It
- * buys the rule by construction instead of by transcription, which is the trade
- * adr-051 exists to make — but it is the trade, and it is unmeasured on a quiet
- * machine.
+ * The twins are the scalar edges, not the `float2`: a tuple per call measured
+ * the pileup walk at 0.85x of its hand painter against 0.78x with scalars
+ * (`plugins/alignments/benches/rectWalker.bench.ts`).
  */
 export function fillSpanRect(
   ctx: Ctx,
@@ -99,21 +100,35 @@ export function fillSpanRect(
   height: number,
   widthCompensation = 0,
 ) {
-  const [left, width] = spanRectPx(px, px2, widthCompensation)
-  ctx.fillRect(left, top, width, height)
+  const left = spanRectLeftPx(px, px2)
+  ctx.fillRect(
+    left,
+    top,
+    spanRectWidthPx(px, px2, left, widthCompensation),
+    height,
+  )
+}
+
+/** The left edge `fillSpanRect` fills from, for a mark's ink. */
+export function spanRectLeftPx(px: number, px2: number) {
+  return expandToMinWidthLeftPx(px, px2, 1)
 }
 
 /**
- * The `[left, width]` `fillSpanRect` fills, for a mark's ink. Indexed rather
- * than destructured: 103 bytes of bytecode against 245 is what lets the pileup
- * walk inline it (`plugins/alignments/benches/rectWalker.bench.ts`).
+ * The width `fillSpanRect` fills from `left`, which the caller has from
+ * `spanRectLeftPx`: two twin calls per span rather than three, which is the
+ * pileup walk's inlining budget (`benches/rectWalker.bench.ts`).
  */
-export function spanRectPx(px: number, px2: number, widthCompensation = 0) {
-  const edges = expandToMinWidthPx(px, px2, 1)
-  return [
-    edges[0],
-    Math.max(px2 - px + widthCompensation, edges[1] - edges[0]),
-  ] as const
+export function spanRectWidthPx(
+  px: number,
+  px2: number,
+  left: number,
+  widthCompensation = 0,
+) {
+  return Math.max(
+    px2 - px + widthCompensation,
+    expandToMinWidthRightPx(px, px2, 1) - left,
+  )
 }
 
 // colorType: 1=insertion 2=softclip 3=hardclip, with anything else taking the

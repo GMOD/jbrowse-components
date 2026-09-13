@@ -11,7 +11,7 @@
 // keeps "a shader may export a function it only imports" for. Consumer:
 // `fillSpanRect`, the one Canvas2D spelling the band and the pileup's span
 // marks share.
-//! js-export: expandToMinWidthPx
+//! js-export: expandToMinWidthLeftPx, expandToMinWidthRightPx
 //! js-export-out: packages/alignments-core/src/spanMinWidth.generated.ts
 
 import coverageBand;

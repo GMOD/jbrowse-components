@@ -36,15 +36,26 @@
 // `place` is 811 bytes of bytecode against the 460 any callee may be, and
 // `placeFade` at 436 + 391 never inlines, because a callee's bytecode spends
 // the 920-byte cumulative budget and the same statements in the loop body do
-// not. The loop has no slack either: `spanRectPx` inlines at 103 bytes indexed
-// and not at 245 destructured, and with one `frequencyFade` call site per rule
-// rather than one for the four rules that fade by frequency, `qualityFade` fell
-// out of the budget and mismatch read 1.09x.
+// not. The loop has no slack either: the retired `spanRectPx` inlined at 103
+// bytes indexed and not at 245 destructured, and with one `frequencyFade` call
+// site per rule rather than one for the four rules that fade by frequency,
+// `qualityFade` fell out of the budget and mismatch read 1.09x.
+//
+// THE SPAN'S TWO EDGES ARE SCALAR TWINS, NOT A TUPLE. Three sequential
+// processes each at 1M, AC, load about 1, controls 0.99-1.02x, deletion
+// against hand: `spanRectPx` over the `float2` twin's tuple 0.83-0.85x;
+// `spanRectLeftPx` plus `spanRectWidthPx` over the scalar twins 0.81-0.83x;
+// the same arithmetic written into the loop 0.78-0.79x, which is the inlining
+// budget spending the two calls. Mismatch, a cell, reads 1.00-1.03x under all
+// three. The same walk written in MoonBit and compiled to JS, with every array
+// read and context write an extern, matched hand exactly in both orientations
+// and read 0.79-0.80x on deletion and 1.03-1.06x on mismatch: the tuple it
+// never allocated was its whole margin.
 
 import { execSync } from 'node:child_process'
 import { performance } from 'node:perf_hooks'
 
-import { fillSpanRect, insertionSizeAlpha } from '@jbrowse/alignments-core'
+import { insertionSizeAlpha } from '@jbrowse/alignments-core'
 import { makeCellLeftMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { abgrToCssRgba } from '@jbrowse/render-core/marks/colorFill'
 import { recordingContext } from '@jbrowse/render-core/marks/drawAgainstHit'
@@ -760,6 +771,42 @@ function makePileupCellMapper(
       reversed: block.reversed,
     }),
   }
+}
+
+// The `fillSpanRect` the hand painters were copied with, verbatim: two tuples
+// per span, the `float2` twin's and `spanRectPx`'s, which production no longer
+// allocates.
+function expandToMinWidthPx(
+  x1: number,
+  x2: number,
+  minWidth: number,
+): [number, number] {
+  if (x2 - x1 < minWidth) {
+    const mid = (x1 + x2) * 0.5
+    const half = minWidth * 0.5
+    return [mid - half, mid + half]
+  }
+  return [x1, x2]
+}
+
+function spanRectPx(px: number, px2: number, widthCompensation = 0) {
+  const edges = expandToMinWidthPx(px, px2, 1)
+  return [
+    edges[0],
+    Math.max(px2 - px + widthCompensation, edges[1] - edges[0]),
+  ] as const
+}
+
+function fillSpanRect(
+  ctx: MarkContext2D,
+  px: number,
+  px2: number,
+  top: number,
+  height: number,
+  widthCompensation = 0,
+) {
+  const [left, width] = spanRectPx(px, px2, widthCompensation)
+  ctx.fillRect(left, top, width, height)
 }
 
 const PX_EPS = 1e-9

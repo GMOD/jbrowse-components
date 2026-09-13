@@ -2,7 +2,11 @@
 // a shader, its packer and the rule codes one row-instanced pass draws and
 // hit-tests by. A new rule is a code and a case here, never a function on the
 // mark; plugins/alignments/src/CLAUDE.md says what the codes were measured at.
-import { insertionSizeAlpha, spanRectPx } from '@jbrowse/alignments-core'
+import {
+  insertionSizeAlpha,
+  spanRectLeftPx,
+  spanRectWidthPx,
+} from '@jbrowse/alignments-core'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import {
   bpAtPx,
@@ -455,9 +459,10 @@ function walk(
         width = widthPx
       } else {
         const x2 = projectBp(f, positions[offset + 1]!)
-        const rect = spanRectPx(x < x2 ? x : x2, x < x2 ? x2 : x)
-        left = rect[0]
-        width = rect[1]
+        const lo = x < x2 ? x : x2
+        const hi = x < x2 ? x2 : x
+        left = spanRectLeftPx(lo, hi)
+        width = spanRectWidthPx(lo, hi, left)
       }
     }
     if (ctx === undefined) {
