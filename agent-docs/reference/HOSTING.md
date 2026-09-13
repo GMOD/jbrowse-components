@@ -107,21 +107,20 @@ addressing, manifest grammar and hash through
 
 ## Hosted PIFs and the coarse tier
 
-`make-pif` emits the coarse tier (uppercase `T`/`Q` seqids) by default; most
-hosted PIFs predate that. `tabix -l <url> | grep -c '^[TQ]'` is the whole check,
-no download. Audited 2026-08-02:
+`make-pif` emits the coarse tier (uppercase `T`/`Q` seqids) by default.
+`tabix -l <url> | grep -c '^[TQ]'` is the whole check,
+no download; `tabix -H <url>` shows the `#pif` header. Audited 2026-09-13:
 
-| file | coarse tier |
-| --- | --- |
-| `genomes/hs1_vs_mm39/hs1ToMm39.over.chain.pif.gz` | yes |
-| `demos/cgiab/HG008T_v3.2.pif.gz` | yes (2026-08-02) |
-| `demos/ecoli_pangenome/ecoli_{pggb,cactus}_ava.pif.gz` | yes (2026-07-25) |
-| `ucsc/hg38/liftOver/hg38To*.over.pif.gz`, the eight vertebrate chains | yes (2026-09-11, version 2) |
-| `ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz` | no |
-| `demos/hpylori/26695_vs_chc155.pif.gz` | no |
+| file | coarse tier | `#pif` header |
+| --- | --- | --- |
+| `ucsc/hg38/liftOver/hg38To*.over.pif.gz`, the eight vertebrate chains and `hg38ToHs1` | yes | version 2 (2026-09-11) |
+| `demos/hprc_multiway/hprc_multiway_gfa.pif.gz` | yes | version 1 |
+| `genomes/hs1_vs_mm39/hs1ToMm39.over.chain.pif.gz` | yes | none |
+| `demos/cgiab/HG008T_v3.2.pif.gz` | yes | none |
+| `demos/ecoli_pangenome/ecoli_{pggb,cactus}_ava.pif.gz`, `ecoli_pggb_untangle.pif.gz` | no | none |
+| `demos/hpylori/26695_vs_chc155.pif.gz` | no | none |
 
-- **Every file above but the eight vertebrate chains predates the coarse CIGAR
-  and the `#pif` header.** Since
+- **A file with no `#pif` header predates the coarse CIGAR.** Since
   2026-09-02 `make-pif` writes a `cr:Z:` tag on a coarse row (ADR-104) so the
   indels it keeps draw as wedges, and a header stating the bound; these files'
   coarse rows are the older split pieces with no alignment string and draw as

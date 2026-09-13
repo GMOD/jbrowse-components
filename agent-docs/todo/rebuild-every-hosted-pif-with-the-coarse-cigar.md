@@ -1,6 +1,6 @@
 ---
 name: rebuild-every-hosted-pif-with-the-coarse-cigar
-description: eight hosted PIFs predate the cr:Z: coarse CIGAR and the #pif header, so the coarse tier draws as plain ribbons on jbrowse.org until each is rebuilt; DEMO_DATASETS.md holds the current per-file measurement, and HOSTING.md's table is a month behind it
+description: two eukaryote-scale hosted PIFs, hs1ToMm39 and the CGIAB HG008T one, predate the cr:Z: coarse CIGAR and the #pif header, so their coarse tier draws as plain ribbons on jbrowse.org until each is rebuilt; the hg38 liftOvers were rebuilt on 2026-09-11, and HOSTING.md's table holds every hosted file's state
 metadata:
   area: synteny, PIF, hosting
   category: ready
@@ -18,26 +18,19 @@ coarse tier draws as plain ribbons and a 240 kb insertion that the rebuilt file
 draws as a wedge is a white seam. The measurement that the rebuild pays is
 [measurements/pif-coarse-fold-bytes.json](../measurements/pif-coarse-fold-bytes.json).
 
-**Take the file list from
-[reference/DEMO_DATASETS.md](../reference/DEMO_DATASETS.md) §`demos/hg38_vertebrates`,
-not from [reference/HOSTING.md](../reference/HOSTING.md).** HOSTING.md's table
-was audited 2026-08-02 and lists six files; DEMO_DATASETS.md measured the eight
-hg38 liftOvers on 2026-09-05 and found three of them — calJac4, canFam6 and
-bosTau9 — already carrying `coarse:i:10000 cigars:Z:all`. Four of the five that
-do not (gorGor6, ponAbe3, rheMac10, mm39) appear in no HOSTING.md row at all, so
-working from that table both re-does finished files and misses owed ones.
-`MultiPairwiseSyntenyAdapter` offers the coarse tier only when every child
-carries one, which is why those five hold the whole hg38 vertebrates track on
-the fine tier at every zoom.
+**The file list is [reference/HOSTING.md](../reference/HOSTING.md) §"Hosted PIFs
+and the coarse tier"**, audited 2026-09-13. The eight hg38 vertebrate liftOvers
+and `hg38ToHs1` carry a version-2 header since their 2026-09-11 rebuild. Two
+files still owed are at a scale where the coarse tier engages: `hs1ToMm39` and
+`cgiab/HG008T_v3.2`, both with old-style coarse rows and no header. The E. coli
+and H. pylori PIFs have no header either, but a bacterial genome never reaches
+the coarse bound.
 
 What is owed, per file:
 
 - Get the source. On this machine (checked 2026-09-09) `~/data` holds
-  `hs1ToMm39/hs1ToMm39.over.chain.gz` and nothing else on the list; the hg38
-  liftOver chains are UCSC's and the rebuild is chain → PAF → `make-pif`.
-  `scripts/verify-hs1-mm39-dotplot.mjs` shows how the hs1/mm39 chain was
-  handled, `scripts/build_hpylori_synteny.sh` and
-  `scripts/build_ecoli_pangenome_graph.sh` build two of the others.
+  `hs1ToMm39/hs1ToMm39.over.chain.gz`; `scripts/verify-hs1-mm39-dotplot.mjs`
+  shows how that chain was handled.
 - Rebuild with the current `make-pif`. A hub that must serve a JBrowse older
   than 2026-09-02 builds with `--no-coarse`;
   `website/docs/developer_guides/pif_format.md` says why.

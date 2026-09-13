@@ -66,7 +66,7 @@ Re-checked against the code and every tutorial the display appears in.
 
 Still open, and carried in
 [../ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md):
-**4.5** (the pair fetch's tier and window), **4.7** (the serialisation boundary
+**4.7** (the serialisation boundary
 no test names), **4.9** (what the tests do not pin), and the remainder of
 **4.8**.
 
@@ -186,12 +186,14 @@ CIGARs.
 
 ### 1.2 What an adapter must provide
 
-The contract is stated in
-[../handoffs/multiway-graph-native.md](../handoffs/multiway-graph-native.md)`:15-27`
-and matches the code: (a) anchor-with-no-target records, each clipped to the
+The display asks for: (a) anchor-with-no-target records, each clipped to the
 window on both axes (`JC/plugins/comparative-adapters/src/clipFeatureToRegion.ts`;
 CIGAR-exact clip when the record carries one, proportional otherwise, `:40-80`),
-with the CIGAR dropped after the clip; (b) optionally, direct records for a mate
+cut at every indel of `SPLIT_AT_GAP_BP` or more into one feature per gap-free
+run, with the CIGAR dropped after the clip. A nameless record's group key is
+its id, so a source answering per window has to mint the same id for the same
+run on every refetch, or the clicked outline and the hover re-resolve to
+another group; `clipToRegion`'s region suffix is the pattern; (b) optionally, direct records for a mate
 pair; (c) a `CoreGetInfo` header with `hasCoarseTier`, optionally
 `anchorAssemblyName` and `lanes[{name,label,group}]` (`starAnchorOf`,
 `declaredLanesOf`).
@@ -581,14 +583,16 @@ dialog's own comment knew a three-panel launch "wants the anchor in the middle"
 (`LaunchSyntenyView/panelOrder.ts:65-68`). The block at the top of this file
 says what replaced it.
 
-### 4.5 Lane-link tier and window on a mate lane — open
+### 4.5 Lane-link tier on a mate lane — checked, not a defect
 
 The pair fetch is issued at the *anchor's* tier over the upper lane's region
 (`laneLinksFetchSpecs`), while that lane may be drawn at up to 80× the anchor's
-bp/px (`SCALE_LADDER`). Harmless for byte cost, wrong in principle for a tiered
-all-vs-all file. Carried in
-[../ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md)
-§"Genome scale over an alignment-level source".
+bp/px (`SCALE_LADDER`). The ladder only zooms a lane out, so an anchor past the
+coarse bound puts the lane past it too: the tier is never wrong output, and the
+most it costs is fine bytes the lane could have skipped. No hosted source pays
+that — the E. coli all-vs-all files carry no coarse tier, and the HPRC PIF's
+only target is GRCh38, so its pair queries answer empty (`tabix -l`,
+2026-09-13).
 
 ### 4.6 Coordinates, inversions and the reversed anchor — checked, correct
 
@@ -634,7 +638,9 @@ different datasets. The 2026-09-09 reshoot settled it, and the two now agree
 haplotype for haplotype. `multiway_synteny/hg38_vertebrates_17p_break` was stale
 the same way against `05ec50660e` — it drew the marmoset lane `[rev]` at
 `2.4Mbp 2x` where the code decides forward at rung 3 — and the same reshoot
-fixed it.
+fixed it, along with `multiway_synteny/hprc_chr1_whole`, whose earlier capture
+drew three haplotype lanes at `373 Mbp 1.5×` where the cut records now frame
+them at `249 Mbp 1×`.
 
 ### 4.11 A long `alsoOn` overflowed an exported figure — fixed
 
@@ -682,9 +688,10 @@ chooses.
 
 ### 5.2 Row-per-haplotype is not the frame at 464 or 4,000
 
-The plugin's own documents already say so ("464 haplotypes are not a lane
-stack", [../handoffs/multiway-graph-native.md](../handoffs/multiway-graph-native.md);
-"89 lanes is not a lane stack any more than 464 are", `GBZ_HANDOFF.md:298-301`).
+The design record and the plugin already say so ("464 are not a lane stack",
+[../ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md)
+§"HPRC at scale: lane selection"; "89 lanes is not a lane stack any more than
+464 are", `GBZ_HANDOFF.md:298-301`).
 The three reasons are independent and each is sufficient:
 
 - *Pixels.* 22 px per lane with a 5 px gene row is not a reading at 464, and a

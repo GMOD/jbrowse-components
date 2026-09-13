@@ -132,9 +132,9 @@ which the `mate` object does not currently say.
 lane stack. The selection half landed 2026-09-06 as display state and a dialog
 rather than as `TreeSidebarMixin`: `selectedLanes` (a session property, so a
 shared session carries it; the track's own `assemblyNames` is what a hosted
-track opens on) narrows `rowAssemblies` locally, without a refetch, since a graph
-adapter has to identify every walk before it knows whose it is and a filter
-sent with the fetch could save nothing. The universe the picker offers is the
+track opens on) narrows `rowAssemblies`, and for a source whose header declares
+its lanes the selection also rides the fetch as `haplotypes`
+(`fetchLaneSelection`). The universe the picker offers is the
 header's `lanes` (an adapter declaring `adapterCapabilities: ['headerLanes']`
 has its `CoreGetInfo` read even without a tier slot; `GbzBaseSyntenyAdapter`
 names every haplotype, grouped by sample and labelled by PanSN prefix) plus any
@@ -294,11 +294,9 @@ contig went back in as the incumbent and the switch margin held it against a
 comparable copy; a decision now records `pinned`, and an incumbent whose pin is
 gone is no incumbent, so the lane votes fresh once. The SVG export also baked
 the hover and the click into the paint and drew the group outline; it exports
-with both ids zeroed and without `GroupHighlight`. Selection is still a
-per-glyph recolour through the jexl slot rather than a per-draw id: the feature
-glyph passes' shared uniforms (`featureGlyphUniforms.slang`) carry no
-highlighted feature the way the synteny passes carry `hoveredFeatureId`, so
-moving it there is a pass change, not a display one.
+with both ids zeroed. The lane hover and the selection are the chrome's
+highlight (`hoverInk`, `selectionInk`), so neither touches the glyph cells nor
+reaches an export.
 
 **A ribbon bridges a lane that places nothing for its group**
 (`bridgeSkippedLanes`, on by default, 2026-08-27). A ribbon joined ADJACENT
@@ -344,7 +342,7 @@ gets its adjacent-pair links composed through the anchor (`composeLaneLinks`,
 read by `pairLinks`) where the file states none: without a fetch when the
 header names its anchor, after an empty pair fetch otherwise.
 
-Two things on that fetch are still open. **The bytes.** The eight hosted hg38
+One thing on that fetch is still open. **The bytes.** The eight hosted hg38
 liftOver PIFs carry a coarse tier since their 2026-09-11 rebuild, worth 49× on a
 whole-genome pass (1.31 MB against 64.23 MB over a 130 MB PIF,
 `../measurements/pif-tier-wire-bytes.json`), but at TP53 zoom the star still
@@ -357,10 +355,12 @@ display-level default of `lodMode: 'coarse'` when `hasLodCapableAdapter` is a
 two-line change. The coarse tier can never engage on a bacterial genome at the
 default threshold (E. coli whole-chromosome is ~3.2 kb/px against a 10,000
 threshold, [HOSTING.md](../reference/HOSTING.md)`:107-137`), so the E. coli case
-is bounded by lanes, not bytes. **The pair fetch's tier and window.** It is
-issued at the ANCHOR's tier over the upper lane's region (`model.ts:1069-1086`)
-while that lane may be drawn at up to 80× the anchor's bp/px (`SCALE_LADDER`):
-harmless for byte cost, wrong in principle for a tiered all-vs-all file.
+is bounded by lanes, not bytes. The pair fetch asks at the ANCHOR's tier over
+the upper lane's region (`laneLinksFetchSpecs`), and that is never wrong
+output: `SCALE_LADDER` only zooms a lane out, so an anchor past the coarse
+bound puts every lane past it too, and the worst case is fine bytes a lane
+could have skipped. No hosted source pays even that — the E. coli all-vs-all
+files have no coarse tier, and the HPRC PIF holds no mate-versus-mate rows.
 
 **Lane scale legibility, and what is still open on it.** Every lane sits in its
 own frame, and until 2026-08-24 nothing in the picture said so: the view's
@@ -802,9 +802,6 @@ oracle; ordering semantics for a nameless source; `laneGeneAdapters` cost or
 correctness with hundreds of tracks; a window on a lane whose record carries an
 interior gap; the picker above ~10 lanes; anything at 44 or 464 lanes beyond
 the height assertion.
-[../handoffs/multiway-graph-native.md](../handoffs/multiway-graph-native.md)
-("Smaller items") adds a hung lane fetch holding the first-load phase at
-`loading` with no deadline.
 
 One of those gaps is a near-miss worth its own sentence.
 `SyntenyFeature.get('name')` answers the mate's refName when the record has no
