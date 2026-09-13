@@ -43,9 +43,10 @@ its layer ids (`HIT_GATES`) forcing every drawn layer to state a hit-testing
 story, checked against each layer's actual `enabled` behaviour. **Retired with
 the registry**: a display on the mark list has the property structurally
 rather than by table, because `defineMark` runs one mark's gates — `enabled`,
-`channels` answering undefined, the `band`, and `paintsBlock` — over the GPU
-draw, the Canvas2D paint and `hitNearest` alike. Don't build one for a mark
-display; it would restate what `defineMark` already enforces.
+the `band`, `channels` answering undefined, and `paintsBlock`, in that order —
+over the GPU draw, the Canvas2D paint, `hitNearest` and `ink` alike. Don't
+build one for a mark display; it would restate what `defineMark` already
+enforces.
 
 ## A registry is two maps over one list, never a table of uniform rows
 

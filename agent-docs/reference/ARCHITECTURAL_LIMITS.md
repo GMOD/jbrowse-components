@@ -190,11 +190,13 @@ render-pass, texture and pipeline decision it makes, with 1 meaning no target at
 all rather than a smaller one. The obstacle that used to be stated here — the
 multisample state is baked into the pipeline and pipelines come from a
 device-wide cache — is gone: `getOrBuildPipeline` keys on the sample count as
-well as on descriptor identity. **A split costs no duplicate compiles**, which
-was the worry and is now a measurement: with one display family moved to 1 and
-the rest left at 4, a four-track scene compiled 8 pipelines and an eight-track
-scene 32, the same totals as the all-4x build, because no `PipelineDescriptor`
-object is reachable from two displays' pass lists.
+part of each pipeline's recipe. **A split costs no duplicate compiles** within
+one display family, which was the worry and is a measurement: with one family
+moved to 1 and the rest left at 4, a four-track scene compiled 8 pipelines and
+an eight-track scene 32, the same totals as the all-4x build. That ran on the
+cache keyed by descriptor object. The content key since then shares a shader
+across families, so a split now compiles such a shader once per sample count in
+use.
 
 **Every display still asks for 4**, so none of those bytes have gone anywhere
 yet. Which displays should drop to 1 is a look-at-the-pixels decision taken one
@@ -268,9 +270,9 @@ has neither problem: linking is synchronous there anyway.
 
 **The set is also shared across displays**, which is what keeps the 22 ms from
 multiplying — `hal/deviceGpuCache.ts` memoizes pipelines and the two bind group
-layouts per device, keyed on the `PipelineDescriptor` object itself. A/B'd by
-bypassing the pipeline memo and nothing else, one page load per row, cycling
-real alignments tracks:
+layouts per device. When this was measured it keyed on the `PipelineDescriptor`
+object; A/B'd by bypassing the pipeline memo and nothing else, one page load per
+row, cycling real alignments tracks:
 
 <!-- prettier-ignore -->
 | tracks | pipelines + WGSL parses | | summed resolve | | slowest one | | to all-drawn | |
@@ -299,15 +301,14 @@ objects and 92 shader modules held for the page's life against 23 — not a
 number anyone feels at four tracks. Seventeen would be 391.
 
 It stays flat because those tracks share a display type and therefore the same
-module-const pass array. A session of four *different* display types builds four
-sets, correctly — that half is reasoned from descriptor identity and pinned in
-`deviceGpuCache.test.ts`, not measured here. The cache is exact rather than
-approximate because `slangPass` reads `wgslSource` off a generated const, so
-descriptor identity already means "same shader, same layout, same blend, same
-topology" — and two passes sharing a `.slang` shape module get separate entries,
-because `slangPass` built them separate objects. It holds the in-flight promise
-rather than the resolved pipeline, which is the half that matters: many tracks
-mount in one tick, so a memo of finished compiles would miss on all of them.
+module-const pass array. The key has since become what a pipeline compiles —
+`PipelineRecipe`, the only input `buildPipeline` reads — so passes over one
+shader share an entry across display types and within one: the 22 passes
+alignments declared on 2026-09-13 compile 18, where the descriptor key built 22 —
+counted off the pass list, not re-measured in a browser. It holds the in-flight
+promise rather than the resolved
+pipeline, which is the half that matters: many tracks mount in one tick, so a
+memo of finished compiles would miss on all of them.
 
 **Retire when** never, unless a machine turns up where the batch is not
 concurrent. Re-run the probe there before building anything; the numbers above

@@ -145,8 +145,9 @@ export function markDrawsAt(
   )
 }
 
-// A pass id keys the pipeline and the instance buffer, so two marks on one
-// shape need two ids — the shape's own, suffixed by the mark's index.
+// A pass id keys the instance buffer and texture, so two marks on one shape
+// need two ids — the shape's own, suffixed by the mark's index. The pipeline is
+// keyed by content, so the clone compiles nothing.
 function withPassId<C, P>(shape: MarkShape<C, P>, id: string): MarkShape<C, P> {
   return { ...shape, id, pass: { ...shape.pass, id } }
 }

@@ -17,8 +17,8 @@
 //
 //   pipelines   how many GPURenderPipelines the page builds in total. Before
 //               `hal/deviceGpuCache.ts` this was 23 x tracks; the cache keys on
-//               the descriptor object, which is a module const shared by every
-//               display of a type, so it should stay flat at 23.
+//               what each pipeline compiles, so it should stay flat at the
+//               number of distinct recipes in one track's pass list.
 //   readyMs     navigation to every display reporting data-display-drawn, which
 //               is the number a user feels.
 //

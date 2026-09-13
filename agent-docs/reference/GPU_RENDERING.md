@@ -504,13 +504,16 @@ touching either path, preserve whichever of these the display uses:
   and what draws from that one declaration. Don't add registries to a renderer
   you can check by reading.
 
-  **The `id` is the last unkeyed thing, and it is two keys.** A pass id names
-  the pipeline in both HALs *and* the instance buffer in `RegionRegistry`, so two
-  passes sharing one collide in both: the second registration replaces the
-  first's pipeline, both upload to a single buffer, and the wider stride reads
-  off the end of it. `assertUniquePassIds` runs in `createRenderingBackend` and
-  in `MockHal`'s constructor — the latter being what puts it in front of the
-  backend suites, which all build one from their display's real pass list.
+  **The `id` is the last unkeyed thing, and it names a slot.** A pass id names
+  the descriptor a draw uses, the instance buffer in `RegionRegistry` and the
+  pass's texture, so two passes sharing one collide in all three: the later
+  descriptor answers both ids' draws, both upload to a single buffer, and the
+  wider stride reads off the end of it. It no longer keys the compile, so a
+  second id over one shader — a marks display's `withPassId` clone, a ring
+  view's eight rings — costs a descriptor and no pipeline. `assertUniquePassIds`
+  runs in `createRenderingBackend` and in `MockHal`'s constructor — the latter
+  being what puts it in front of the backend suites, which all build one from
+  their display's real pass list.
 - **A per-instance vertex budget is a cap, and the other backend has no such
   cap.** Where one instance draws an unbounded number of marks — canvas's chevron
   pass, whose instance is an intron line and whose marks are the strand chevrons
@@ -987,16 +990,19 @@ the whole declared list before `WebGPUHal.create` returns, so a track's first
 paint waits on every pass it could ever draw. Measured, that costs less than it
 reads: the 23 resolve concurrently, so the batch is ~22 ms of wall time and none
 of it on the main thread. And pipelines are **shared across displays** —
-`hal/deviceGpuCache.ts` memoizes them per device on the descriptor's own
-identity, so a four-track session builds 23 of them, not 92. Both numbers, and
-why going lazy here would cost more than it saves, are in
+`hal/deviceGpuCache.ts` memoizes them per device, so a four-track session built
+23 of them, not 92. Both numbers, and why going lazy here would cost more than
+it saves, are in
 [ARCHITECTURAL_LIMITS.md](ARCHITECTURAL_LIMITS.md#every-webgpu-display-resolves-its-whole-pass-list-before-it-can-paint).
 
-A descriptor's identity is what makes that cache correct rather than clever: a
-plugin's `*_PASSES` is a module-level const and `slangPass` reads `wgslSource`
-off a generated const, so every display of a type hands the HAL the *same*
-objects. WebGL2 has no counterpart and wants none — a program belongs to the
-context that linked it, and each display owns a context.
+**Both HALs key a compile by what it compiles, never by the pass id.** WebGPU
+keys a `PipelineRecipe` — WGSL, vertex buffer layout, blend, topology, textured
+or not, sample count — and `buildPipeline` reads nothing else, so the key cannot
+miss an input. WebGL2 keeps the same kind of map per context, because a program
+belongs to the context that linked it: vertex source, fragment source, attribute
+names and sampler unit. Every id over one shader shares the compile —
+alignments' skip and deletion, the circular view's eight ring passes.
+`deviceGpuCache.test.ts` and `webgl2HalPrograms.test.ts` pin both keys.
 
 The type says so; the **identifiers around it still say "pass"** — `passId`,
 `drawPass`, `slangPass`, `InstancePass`, every plugin's `*_PASSES` array. Those

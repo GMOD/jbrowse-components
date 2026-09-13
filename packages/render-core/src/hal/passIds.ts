@@ -3,13 +3,14 @@ import type { PipelineDescriptor } from './types.ts'
 /**
  * Throw if two passes in one display's registry share an `id`.
  *
- * A pass id is two keys at once — the pipeline (`pipelines.set(desc.id, …)` in
- * both HALs) and the instance buffer (`uploadBuffer(regionKey, passId, …)`).
- * A duplicate therefore collides both: the second registration replaces the
- * first's pipeline, both passes upload to one buffer so the last write wins,
- * and whichever shader has the larger stride reads off the end of it. No
- * validation error, no throw, no failing test — just wrong pixels on the GPU
- * backends while Canvas2D keeps drawing correctly.
+ * A pass id names a slot: the descriptor a draw of that id uses, its instance
+ * buffer per region, and its texture. Compiled pipelines and programs are keyed
+ * by content instead, so a second id over one shader costs no compile. A
+ * duplicate id collides the slot: the later descriptor answers every draw of
+ * it, both passes upload to one buffer so the last write wins, and whichever
+ * shader has the larger stride reads off the end of it. No validation error, no
+ * throw, no failing test — just wrong pixels on the GPU backends while Canvas2D
+ * keeps drawing correctly.
  *
  * Nothing structural stops it. A display's pass list is concatenated from
  * several registries (`ALIGNMENTS_PASSES` merges three plus a standalone
@@ -32,9 +33,9 @@ export function assertUniquePassIds(passes: readonly PipelineDescriptor[]) {
   if (duplicates.size > 0) {
     throw new Error(
       `duplicate pass id(s) ${[...duplicates].map(id => `'${id}'`).join(', ')}` +
-        ` — a pass id keys both the pipeline and the instance buffer, so two` +
-        ` passes sharing one draw each other's instances through their own` +
-        ` shader. Rename one.`,
+        ` — a pass id keys the descriptor, the instance buffer and the` +
+        ` texture, so two passes sharing one draw each other's instances` +
+        ` through one shader. Rename one.`,
     )
   }
 }

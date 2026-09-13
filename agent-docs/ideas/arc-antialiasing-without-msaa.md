@@ -445,7 +445,7 @@ desktop discrete GPUs where it certainly is not.
 `RenderingBackendOptions.sampleCount`, threaded through `createGpuHal` into
 `WebGPUHal`, read by `buildPipeline` (`multisample`), `recreateMsaaTexture`,
 `beginFrame`'s missing-target guard and the render pass's attachment shape — and
-`getOrBuildPipeline` keys on it alongside descriptor identity, so a display at 1
+`getOrBuildPipeline` keys on it alongside the rest of the recipe, so a display at 1
 cannot be handed a pipeline built at 4. At 1 there is no target at all rather
 than a smaller one. `hal/webgpuHalSampleCount.test.ts` pins both attachment
 shapes.

@@ -12,7 +12,7 @@ import type { BlendState, PipelineDescriptor, SampleCount } from './types.ts'
  * so `WebGL2Hal` keeps the same content-keyed map per context instead. WebGPU
  * hands every display one device (`gpuDevice.ts`), and a `GPURenderPipeline` is
  * a device object. Ten alignments tracks once compiled 230 pipelines for 23
- * distinct programs.
+ * passes.
  *
  * Per copy of this module rather than on the `globalThis` cell, for the reason
  * `createHal.ts` gives for `warnedSoftwareRasterizer`: a second bundled copy
