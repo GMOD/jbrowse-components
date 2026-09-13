@@ -48,11 +48,14 @@ export interface LaneChoice {
   placed: boolean
 }
 
+export type LaneFilter = { only: string[] } | { except: string[] }
+
 export interface LaneSelectionModel {
   laneUniverse: LaneChoice[]
-  laneSelection: readonly string[] | undefined
-  selectedLanes: readonly string[] | undefined
+  laneFilter: LaneFilter | undefined
   configuredLanes: readonly string[]
+  drawsLane: (assemblyName: string) => boolean
+  chooseLanes: (names: string[]) => void
   setSelectedLanes: (names: string[] | undefined) => void
   openLaneSelection: () => void
 }
@@ -280,7 +283,7 @@ export function laneResetLabel(
  * reader may want back out of.
  */
 export function laneSelectionMenuItems(model: LaneSelectionModel): MenuItem[] {
-  const chosen = model.selectedLanes
+  const chosen = model.laneFilter
   if (model.laneUniverse.length < 2 && chosen === undefined) {
     return []
   }

@@ -51,10 +51,9 @@ function laneCaption(lane: LaneChoice) {
 
 /**
  * Which lanes to draw, out of every lane the source offers. Opens on the lanes
- * the stack draws and writes the ticked set back. Every lane ticked writes no
- * selection, so a lane the source places later is not shut out, except over a
- * config naming its own lanes, where no selection means those. Reset drops
- * the selection.
+ * the stack draws and hands a changed ticked set to `chooseLanes`; an
+ * unchanged Submit writes nothing, so hidden lanes stay hidden rather than
+ * becoming a list. Reset drops the choice.
  */
 const LaneSelectionDialog = observer(function LaneSelectionDialog({
   model,
@@ -63,13 +62,13 @@ const LaneSelectionDialog = observer(function LaneSelectionDialog({
   model: LaneSelectionDialogModel
   handleClose: () => void
 }) {
-  const { laneUniverse, laneSelection, configuredLanes } = model
+  const { laneUniverse } = model
   const [drawn] = useState(
     () =>
       new Set(
         laneUniverse
           .map(lane => lane.name)
-          .filter(name => laneSelection?.includes(name) ?? true),
+          .filter(name => model.drawsLane(name)),
       ),
   )
   const [chosen, setChosen] = useState(drawn)
@@ -100,20 +99,10 @@ const LaneSelectionDialog = observer(function LaneSelectionDialog({
           chosen.size !== drawn.size ||
           [...chosen].some(n => !drawn.has(n))
         ) {
-          const offWindow = (laneSelection ?? []).filter(
-            name => !laneUniverse.some(lane => lane.name === name),
-          )
-          model.setSelectedLanes(
-            chosen.size === laneUniverse.length &&
-              offWindow.length === 0 &&
-              configuredLanes.length === 0
-              ? undefined
-              : [
-                  ...laneUniverse
-                    .filter(lane => chosen.has(lane.name))
-                    .map(lane => lane.name),
-                  ...offWindow,
-                ],
+          model.chooseLanes(
+            laneUniverse
+              .filter(lane => chosen.has(lane.name))
+              .map(lane => lane.name),
           )
         }
         handleClose()

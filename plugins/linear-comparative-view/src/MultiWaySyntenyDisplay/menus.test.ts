@@ -301,10 +301,10 @@ test('the picker is offered once there are lanes to choose among, and a choice o
       name: `lane${i}`,
       placed: true,
     })),
-    laneSelection:
-      chosen ?? (configuredLanes.length ? configuredLanes : undefined),
-    selectedLanes: chosen,
+    laneFilter: chosen && { only: chosen },
     configuredLanes,
+    drawsLane: () => true,
+    chooseLanes: () => {},
     setSelectedLanes: (names: string[] | undefined) => {
       calls.push(`select ${names === undefined ? 'reset' : names.join(',')}`)
     },

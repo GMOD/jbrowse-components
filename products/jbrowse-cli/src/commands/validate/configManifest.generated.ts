@@ -3780,7 +3780,7 @@ export const configManifest: ConfigManifest = {
         "configuration",
         "lodMode",
         "rowOrder",
-        "selectedLanes"
+        "laneFilter"
       ]
     },
     "LinearReferenceSequenceDisplay": {

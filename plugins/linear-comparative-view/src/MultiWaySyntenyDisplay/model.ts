@@ -24,7 +24,7 @@ import {
 import GlobalFetchMixin from '@jbrowse/display-kit/GlobalFetchMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
-import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { sharedBackendKey } from '@jbrowse/render-core/sharedBackendKey'
@@ -99,7 +99,7 @@ import type { LaneGene } from './geneGlyph.ts'
 import type { AnchorCoord, LaneDecision } from './laneDecision.ts'
 import type { LaneStack } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
-import type { LaneChoice } from './menus.ts'
+import type { LaneChoice, LaneFilter } from './menus.ts'
 import type { MultiWayRibbonColorBy, TickGeometry } from './multiwayGeometry.ts'
 import type {
   MultiWayCell,
@@ -294,12 +294,13 @@ export function stateModelFactory(
         rowOrder: types.array(types.string),
         /**
          * #property
-         * the lanes the stack draws, by assembly name, as the picker and Hide
-         * lane wrote them; undefined is `configuredLanes`, or every lane where
-         * there are none. Session state rather than adapter config: a
-         * choice made in front of this picture, which a shared session carries
+         * the reader's lanes, by assembly name: `only` the ones the picker
+         * ticked, or the lanes in force `except` the ones Hide lane took out.
+         * Undefined is `configuredLanes`, or every lane where there are none.
+         * Session state rather than adapter config: a choice made in front of
+         * this picture, which a shared session carries
          */
-        selectedLanes: types.maybe(types.array(types.string)),
+        laneFilter: types.frozen<LaneFilter | undefined>(),
       }),
     )
     .volatile(() => ({
@@ -507,10 +508,11 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * undefined puts the choice back to `configuredLanes`, or every lane
+         * draw only `names`; undefined puts the lanes back to
+         * `configuredLanes`, or every lane
          */
         setSelectedLanes(names: string[] | undefined) {
-          self.selectedLanes = names === undefined ? undefined : cast(names)
+          self.laneFilter = names === undefined ? undefined : { only: names }
         },
         /**
          * #action
@@ -784,14 +786,41 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * the lanes in force: the reader's choice, else `configuredLanes` where
-       * there are any, else undefined for every lane
+       * the lanes in force: the picker's choice, else `configuredLanes` where
+       * there are any, else undefined for every lane. A hidden lane is still
+       * in force, so hiding one refetches nothing
        */
       get laneSelection(): readonly string[] | undefined {
+        const filter = self.laneFilter
         const configured = self.configuredLanes
-        return (
-          self.selectedLanes ?? (configured.length ? configured : undefined)
-        )
+        return filter && 'only' in filter
+          ? filter.only
+          : configured.length
+            ? configured
+            : undefined
+      },
+      /**
+       * #getter
+       * `laneSelection` and the hidden lanes, by canonical name
+       */
+      get drawnLaneKeys() {
+        const filter = self.laneFilter
+        const selection = this.laneSelection
+        return {
+          chosen: selection && new Set(selection.map(self.laneKey)),
+          hidden: new Set(
+            filter && 'except' in filter ? filter.except.map(self.laneKey) : [],
+          ),
+        }
+      },
+      /**
+       * #method
+       * whether the stack draws `assemblyName` wherever a window places it
+       */
+      drawsLane(assemblyName: string) {
+        const key = self.laneKey(assemblyName)
+        const { chosen, hidden } = this.drawnLaneKeys
+        return (chosen === undefined || chosen.has(key)) && !hidden.has(key)
       },
     }))
     .views(self => ({
@@ -862,9 +891,7 @@ export function stateModelFactory(
        * every lane the picker can offer: the header's declared lanes in the
        * source's order, then the genomes the track config names, then any
        * lane the fetched window places that neither named. The anchor is
-       * never a lane. The config's names are what let Hide lane write a
-       * selection without shutting out a genome this window happens not to
-       * place
+       * never a lane
        */
       get laneUniverse(): LaneChoice[] {
         const anchor = self.laneKey(self.anchorAssemblyName)
@@ -900,22 +927,20 @@ export function stateModelFactory(
       /**
        * #getter
        * mate assemblies densest-first, one lane each below the anchor lane,
-       * with any `rowOrder` lanes pinned above them, narrowed to the lane
-       * selection where one is in force. A paralogy record's mate is the
-       * anchor assembly itself; those draw on the anchor's own axis rather
-       * than as a lane
+       * with any `rowOrder` lanes pinned above them, narrowed to the lanes
+       * the stack draws. A paralogy record's mate is the anchor assembly
+       * itself; those draw on the anchor's own axis rather than as a lane
        */
       get rowAssemblies() {
         const { assemblyManager } = getSession(self)
         const anchor = self.laneKey(self.anchorAssemblyName)
-        const selection = self.laneSelection
-        const chosen = selection && new Set(selection.map(self.laneKey))
         return rowAssembliesOf(self.groups, [...self.rowOrder], (a, b) =>
           isSameAssemblyName(a, b, assemblyManager),
-        ).filter(assemblyName => {
-          const key = self.laneKey(assemblyName)
-          return key !== anchor && (chosen === undefined || chosen.has(key))
-        })
+        ).filter(
+          assemblyName =>
+            self.laneKey(assemblyName) !== anchor &&
+            self.drawsLane(assemblyName),
+        )
       },
       /**
        * #getter
@@ -944,6 +969,71 @@ export function stateModelFactory(
     .actions(self => ({
       /**
        * #action
+       * the picker's submit: `names` plus the picked lanes no window has
+       * offered here, or no choice at all where that is what the lanes come
+       * back to
+       */
+      chooseLanes(names: string[]) {
+        const offered = new Set(
+          self.laneUniverse.map(lane => self.laneKey(lane.name)),
+        )
+        const offWindow = (self.laneSelection ?? []).filter(
+          name => !offered.has(self.laneKey(name)),
+        )
+        const picked = new Set(names.map(self.laneKey))
+        const byDefault = new Set(
+          self.configuredLanes.length
+            ? self.configuredLanes.map(self.laneKey)
+            : offered,
+        )
+        self.setSelectedLanes(
+          offWindow.length === 0 &&
+            picked.size === byDefault.size &&
+            [...picked].every(key => byDefault.has(key))
+            ? undefined
+            : [...names, ...offWindow],
+        )
+      },
+      /**
+       * #action
+       * out of the picker's choice where there is one, else hidden from the
+       * lanes in force
+       */
+      hideLane(assemblyName: string) {
+        const key = self.laneKey(assemblyName)
+        const filter = self.laneFilter
+        if (filter && 'only' in filter) {
+          self.setSelectedLanes(
+            filter.only.filter(name => self.laneKey(name) !== key),
+          )
+        } else if (!self.drawnLaneKeys.hidden.has(key)) {
+          self.laneFilter = {
+            except: [...(filter?.except ?? []), assemblyName],
+          }
+        }
+      },
+      /**
+       * #action
+       * drawn again: unhidden, or added to the lanes in force where they
+       * leave it out
+       */
+      showLane(assemblyName: string) {
+        const key = self.laneKey(assemblyName)
+        const filter = self.laneFilter
+        const selection = self.laneSelection
+        if (filter && 'except' in filter) {
+          const except = filter.except.filter(
+            name => self.laneKey(name) !== key,
+          )
+          self.laneFilter = except.length ? { except } : undefined
+        } else if (selection && !self.drawnLaneKeys.chosen?.has(key)) {
+          self.setSelectedLanes([...selection, assemblyName])
+        }
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
        * the lane picker, over `laneUniverse`
        */
       openLaneSelection() {
@@ -951,28 +1041,6 @@ export function stateModelFactory(
           LaneSelectionDialog,
           { model: self, handleClose },
         ])
-      },
-      /**
-       * #action
-       * the selection in force, or every lane, less this one
-       */
-      hideLane(assemblyName: string) {
-        const key = self.laneKey(assemblyName)
-        const lanes =
-          self.laneSelection ?? self.laneUniverse.map(lane => lane.name)
-        self.setSelectedLanes(lanes.filter(name => self.laneKey(name) !== key))
-      },
-      /**
-       * #action
-       * this lane added to a selection in force; every lane is already drawn
-       * without one
-       */
-      showLane(assemblyName: string) {
-        const key = self.laneKey(assemblyName)
-        const selection = self.laneSelection
-        if (selection && !selection.some(name => self.laneKey(name) === key)) {
-          self.setSelectedLanes([...selection, assemblyName])
-        }
       },
     }))
     .views(self => ({

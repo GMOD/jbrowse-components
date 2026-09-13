@@ -380,7 +380,7 @@ test('re-anchoring under a lane selection keeps the outgoing anchor drawn', asyn
   expect(session.notifications.at(-1)?.message).toBe(
     'Re-anchored on volvox_random',
   )
-  expect(display.selectedLanes).toEqual(['volvox_random', 'volvox'])
+  expect(display.laneFilter).toEqual({ only: ['volvox_random', 'volvox'] })
 })
 
 test('with every lane drawn, re-anchoring writes no selection', async () => {
@@ -390,7 +390,22 @@ test('with every lane drawn, re-anchoring writes no selection', async () => {
     await new Promise(resolve => setTimeout(resolve, 10))
   }
   expect(session.notifications).toHaveLength(1)
-  expect(display.selectedLanes).toBeUndefined()
+  expect(display.laneFilter).toBeUndefined()
+})
+
+// A genome hidden as a mate lane stays hidden while it is the anchor, so
+// re-anchoring away from it has to unhide it
+test('re-anchoring unhides the outgoing anchor', async () => {
+  const { display, session } = createDisplayWithSession()
+  display.hideLane('volvox')
+  display.reanchor('volvox_random', 'ctgA:1-100')
+  for (let i = 0; i < 50 && !session.notifications.length; i++) {
+    await new Promise(resolve => setTimeout(resolve, 10))
+  }
+  expect(session.notifications.at(-1)?.message).toBe(
+    'Re-anchored on volvox_random',
+  )
+  expect(display.laneFilter).toBeUndefined()
 })
 
 // The clicked ribbon keeps an outline the way the pairwise view's does: the
@@ -1117,24 +1132,81 @@ test('an adapter that neither tiers nor declares lanes is never asked for a head
   ])
 })
 
-// Hide lane writes a selection, so a lane the window does not place yet has to
-// be in what it writes, or a pan onto it would find it shut out
-test('hiding a lane keeps every other lane the track names, placed here or not', () => {
+// A hide with no choice in force takes one lane out and nothing else, so a lane
+// no config or header names still draws when a pan first places it
+test('hiding a lane leaves every other lane drawn, including ones placed later', () => {
   const display = createDisplay()
   display.setFeatures([
     mateRecord('r1', 'sample#1#a'),
     mateRecord('r2', 'sample#1#b'),
   ])
   display.hideLane('sample#1#a')
-  expect(display.selectedLanes).toEqual(['volvox_random', 'sample#1#b'])
+  expect(display.laneFilter).toEqual({ except: ['sample#1#a'] })
   expect(display.rowAssemblies).toEqual(['sample#1#b'])
   display.setFeatures([
     mateRecord('r1', 'sample#1#a'),
-    mateRecord('r3', 'volvox_random'),
+    mateRecord('r2', 'sample#1#b'),
+    mateRecord('r3', 'sample#1#c'),
   ])
-  expect(display.rowAssemblies).toEqual(['volvox_random'])
+  expect(display.rowAssemblies).toEqual(['sample#1#b', 'sample#1#c'])
   display.showLane('sample#1#a')
-  expect(display.rowAssemblies).toEqual(['sample#1#a', 'volvox_random'])
+  expect(display.laneFilter).toBeUndefined()
+})
+
+// A graph refetch walks the haplotypes over the network, and a hide changes
+// only what is drawn
+test('hiding a lane on a graph track refetches nothing', () => {
+  const { display } = createDisplayWithSession({
+    syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
+    trackAssemblyNames: ['volvox', 'HG00097.1', 'HG00099.1'],
+  })
+  display.setFeatures([
+    mateRecord('r1', 'HG00097.1'),
+    mateRecord('r2', 'HG00099.1'),
+  ])
+  const key = display.rpcPropsCacheKey
+  display.hideLane('HG00097.1')
+  expect(display.rowAssemblies).toEqual(['HG00099.1'])
+  expect(display.rpcPropsCacheKey).toBe(key)
+})
+
+describe('the picker submit', () => {
+  const lanes = () => [
+    mateRecord('r1', 'volvox_random'),
+    mateRecord('r2', 'sample#1#a'),
+  ]
+
+  test('every lane ticked writes no choice, so later lanes are not shut out', () => {
+    const display = createDisplay()
+    display.setFeatures(lanes())
+    display.hideLane('sample#1#a')
+    display.chooseLanes(['volvox_random', 'sample#1#a'])
+    expect(display.laneFilter).toBeUndefined()
+    display.chooseLanes(['sample#1#a'])
+    expect(display.laneFilter).toEqual({ only: ['sample#1#a'] })
+  })
+
+  // No choice over a track naming its own lanes means those lanes, so every
+  // lane ticked has to be written out, and ticking exactly those writes none
+  test("over a track naming its lanes, every lane is written out and the track's own are no choice", () => {
+    const { display } = createDisplayWithSession({
+      syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
+      trackAssemblyNames: ['volvox', 'HG00097.1'],
+    })
+    display.setDeclaredLanes([{ name: 'HG00097.1' }, { name: 'HG00099.1' }])
+    display.chooseLanes(['HG00097.1', 'HG00099.1'])
+    expect(display.laneFilter).toEqual({ only: ['HG00097.1', 'HG00099.1'] })
+    display.chooseLanes(['HG00097.1'])
+    expect(display.laneFilter).toBeUndefined()
+  })
+
+  test('a chosen lane this window does not place survives', () => {
+    const display = createDisplay()
+    display.setFeatures(lanes())
+    display.setSelectedLanes(['volvox_random', 'far#1#away'])
+    display.chooseLanes(['sample#1#a'])
+    expect(display.laneFilter).toEqual({ only: ['sample#1#a', 'far#1#away'] })
+  })
 })
 
 // A star's mate lanes are aligned to its anchor only, and a graph source
@@ -1174,20 +1246,19 @@ test('a lane selection narrows the stack and survives a refetch', () => {
   expect(display.rowAssemblies).toEqual(['volvox_random', 'sample#1#a'])
   display.setFeatures(window())
   expect(display.rowAssemblies).toEqual(['volvox_random', 'sample#1#a'])
-  expect(getSnapshot(display).selectedLanes).toEqual([
-    'sample#1#a',
-    'volvox_random',
-  ])
+  expect(getSnapshot(display).laneFilter).toEqual({
+    only: ['sample#1#a', 'volvox_random'],
+  })
   // pins apply inside the selection, and a hide narrows it
   display.setRowOrder(['sample#1#a'])
   expect(display.rowAssemblies).toEqual(['sample#1#a', 'volvox_random'])
   display.hideLane('volvox_random')
   expect(display.rowAssemblies).toEqual(['sample#1#a'])
-  expect(display.selectedLanes).toEqual(['sample#1#a'])
+  expect(display.laneFilter).toEqual({ only: ['sample#1#a'] })
 
   display.setSelectedLanes(undefined)
   expect(display.laneSelection).toBeUndefined()
-  expect(getSnapshot(display).selectedLanes).toBeUndefined()
+  expect(getSnapshot(display).laneFilter).toBeUndefined()
 })
 
 // A graph names 464 haplotypes and its track names the eight the session
