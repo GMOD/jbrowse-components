@@ -26,7 +26,10 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  * pair) and not the one this feature is really for (a distant or
  * inter-chromosomal mate), which is why it survived. `gatherOverlaps` merges
  * within a refName and never across one, so two chromosomes stay the two regions
- * the caller wants.
+ * the caller wants. It also orders them — by position on one refName, and
+ * across two by its object keys, so numeric names sort ascending — which a pair
+ * can take where a split read (`viewSplitAlignmentRegionsInCurrentView`) could
+ * not: two mates have no read order to lose.
  *
  * Takes the already-normalized `MateFields` rather than the Feature: the caller
  * has to run `getMateFields` anyway to decide whether to offer this at all, and
