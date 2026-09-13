@@ -2,7 +2,7 @@
   "plugins": [
     {
       "name": "Arg",
-      "umdUrl": "https://jbrowse.org/demos/arg/b7922fe8fab6/jbrowse-plugin-arg.umd.js"
+      "umdUrl": "https://jbrowse.org/demos/arg/367573d768a1/jbrowse-plugin-arg.umd.js"
     }
   ],
   "assemblies": [
@@ -140,13 +140,51 @@
           "locationType": "UriLocation"
         },
         "refName": "chr1"
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "sim_introgression_painting",
+      "name": "Simulated introgression, painted by each haplotype's nearest relatives",
+      "assemblyNames": ["sim"],
+      "category": ["Ancestral recombination graph"],
+      "adapter": {
+        "type": "ArgAdapter",
+        "treesLocation": {
+          "uri": "https://jbrowse.org/demos/arg/sim/introgression.trees",
+          "locationType": "UriLocation"
+        },
+        "refName": "chr1"
       },
       "displays": [
         {
-          "type": "LinearArgDisplay",
-          "displayId": "sim_introgression-LinearArgDisplay",
-          "drawMode": "painting",
-          "height": 280
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "sim_introgression_painting-LinearMultiRowFeatureDisplay",
+          "partitionField": "row",
+          "color": "jexl:get(feature,'color')",
+          "height": 280,
+          "rowGroups": [
+            {
+              "match": "^A ",
+              "group": "A",
+              "color": "#0072b2"
+            },
+            {
+              "match": "^B ",
+              "group": "B",
+              "color": "#e69f00"
+            }
+          ],
+          "legend": [
+            {
+              "label": "relatives mostly A",
+              "color": "#0072b2"
+            },
+            {
+              "label": "relatives mostly B",
+              "color": "#e69f00"
+            }
+          ]
         }
       ]
     }
