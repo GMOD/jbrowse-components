@@ -6,7 +6,7 @@ import {
   remapRetiredAutoscale,
   scoreAxisConfigSchemaFields,
   scoreFieldConfigSchemaFields,
-} from '@jbrowse/plugin-wiggle'
+} from '@jbrowse/wiggle-core'
 
 import { DEFAULT_POINT_DIAMETER_PX } from './manhattanRenderingBackendTypes.ts'
 

@@ -21,17 +21,15 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  WiggleScoreConfigMixin,
-  makePointSizeSubMenu,
-} from '@jbrowse/plugin-wiggle'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { inkOfInstances } from '@jbrowse/render-core/marks'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 import {
   SCALE_TYPE_LINEAR,
+  WiggleScoreConfigMixin,
   axisPlotBox,
   makeCrossHatchItem,
+  makePointSizeSubMenu,
   makeScoreNormalizer,
   makeScoreSubMenu,
   resolveRenderState,

@@ -2,13 +2,11 @@ import { types } from '@jbrowse/mobx-state-tree'
 import {
   DEFAULT_GAP_BREAK_MULTIPLE,
   scoreAxisConfigSchemaFields,
+  scoreFieldConfigSchemaFields,
 } from '@jbrowse/wiggle-core'
 
 import { WIGGLE_NEG_COLOR_DEFAULT, WIGGLE_POS_COLOR_DEFAULT } from '../util.ts'
 import { DENSITY_COLOR_RAMPS } from './densityColorRamp.ts'
-import { scoreFieldConfigSchemaFields } from './scoreFieldConfigSchemaFields.ts'
-
-import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 
 export const wiggleConfigSchemaFields = {
   ...scoreAxisConfigSchemaFields,
@@ -87,13 +85,3 @@ export const wiggleConfigSchemaFields = {
     advanced: true,
   },
 } as const
-
-/**
- * What `WiggleScoreConfigMixin` asks a composing display's `configuration` to
- * be — this table, which already spreads the score axis. Narrow so
- * `getConf`/`setConf` still check the slot name; see
- * `ConfigModelForFields`.
- */
-export type WiggleConfigModel = ConfigModelForFields<
-  typeof wiggleConfigSchemaFields
->

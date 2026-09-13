@@ -1,8 +1,8 @@
 import { getConf, setConf } from '@jbrowse/core/configuration'
 
 import type { WiggleCommonHost } from './WiggleCommonMixin.ts'
-import type { ConfNode as WiggleScoreConfigHost } from './WiggleScoreConfigMixin.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
+import type { WiggleScoreConfigHost } from '@jbrowse/wiggle-core'
 
 // The two wiggle mixins both cast to reach their composing display's
 // `configuration`, and what they cast to decides whether the slot names below

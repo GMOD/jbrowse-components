@@ -88,34 +88,28 @@ export {
   bedGraphFormatOptions,
   stringifyBedGraph,
 } from './saveTrackFormats/bedGraph.ts'
-// The score axis alone, for a display that has one without wiggle's palette and
-// rendering vocabulary (GWAS Manhattan), plus the snapshot remap that keeps
-// retired autoscale values loading.
-// re-exported from `@jbrowse/wiggle-core`, where it moved to sit beside the
-// `ScoreScaleMixin` that reads it. Kept here because it is this plugin's
-// published surface and gwas imports it by this path.
-export { scoreAxisConfigSchemaFields } from '@jbrowse/wiggle-core'
-export { remapRetiredAutoscale } from './shared/remapRetiredAutoscale.ts'
 export { DENSITY_COLOR_RAMPS } from './shared/densityColorRamp.ts'
 export type { DensityRampName } from './shared/densityColorRamp.ts'
 // The one slot every score-summarizing display declares with a different
 // default, so gccontent states its default without restating the enumeration.
 export { summaryScoreModeConfigSchemaFields } from './shared/summaryScoreModeConfigSchemaFields.ts'
+export { wiggleCommonExtraSlots } from './shared/WiggleCommonMixin.ts'
+// Score-plot pieces that moved to `@jbrowse/wiggle-core`, re-exported under the
+// names this plugin published them as.
 export {
   DEFAULT_SCORE_FIELD,
-  scoreFieldConfigSchemaFields,
-} from './shared/scoreFieldConfigSchemaFields.ts'
-export { wiggleCommonExtraSlots } from './shared/WiggleCommonMixin.ts'
-export {
   WiggleScoreConfigMixin,
+  makePointSizeSubMenu,
+  remapRetiredAutoscale,
+  scoreAxisConfigSchemaFields,
+  scoreFieldConfigSchemaFields,
+  wiggleMouseHandlers,
   wiggleScoreConfigExtraSlots,
-} from './shared/WiggleScoreConfigMixin.ts'
-export { WiggleFamilySvgFrame } from './shared/WiggleFamilySvg.tsx'
+  ScorePlotSvgFrame as WiggleFamilySvgFrame,
+} from '@jbrowse/wiggle-core'
 export type {
-  WiggleFamilySvgModel,
-  WiggleFamilySvgLayout,
-} from './shared/WiggleFamilySvg.tsx'
-export { wiggleMouseHandlers } from './shared/wiggleMouseHandlers.ts'
-export { makePointSizeSubMenu } from './shared/wiggleMenuItems.tsx'
+  ScorePlotSvgLayout as WiggleFamilySvgLayout,
+  ScorePlotSvgModel as WiggleFamilySvgModel,
+} from '@jbrowse/wiggle-core'
 export type { WiggleDisplayModel } from './LinearWiggleDisplay/components/wiggleDisplayTypes.ts'
 export type { MultiWiggleDisplayModel } from './MultiLinearWiggleDisplay/components/multiWiggleDisplayTypes.ts'

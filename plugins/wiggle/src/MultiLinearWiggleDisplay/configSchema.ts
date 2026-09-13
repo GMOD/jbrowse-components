@@ -5,8 +5,8 @@ import {
   rowSeparatorsConfigSchemaFields,
   treeSidebarConfigSchemaFields,
 } from '@jbrowse/tree-sidebar'
+import { remapRetiredAutoscale } from '@jbrowse/wiggle-core'
 
-import { remapRetiredAutoscale } from '../shared/remapRetiredAutoscale.ts'
 import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
 import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
 import { MULTI_WIGGLE_RENDERING_TYPES } from '../util.ts'

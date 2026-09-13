@@ -64,7 +64,10 @@ export {
 } from './scoreRuleMarks.ts'
 export type { ScoreRule, ScoreRuleMark } from './scoreRuleMarks.ts'
 export { makeResolutionSubMenuItem } from './ResolutionStepper.tsx'
-export { makeScatterPointSizeMenuItem } from './pointSizeMenu.tsx'
+export {
+  makePointSizeSubMenu,
+  makeScatterPointSizeMenuItem,
+} from './pointSizeMenu.tsx'
 export {
   SMALL_POINT_MAX_DIAMETER_PX,
   appendPointMarker,
@@ -81,6 +84,23 @@ export {
 } from './scoreMenuItems.ts'
 export type { ScoreScaleModel } from './scoreMenuItems.ts'
 export { ScoreScaleMixin } from './ScoreScaleMixin.ts'
+export {
+  WiggleScoreConfigMixin,
+  wiggleScoreConfigExtraSlots,
+} from './WiggleScoreConfigMixin.ts'
+export type { WiggleScoreConfigHost } from './WiggleScoreConfigMixin.ts'
+export {
+  DEFAULT_SCORE_FIELD,
+  scoreFieldConfigSchemaFields,
+} from './scoreFieldConfigSchemaFields.ts'
+export { remapRetiredAutoscale } from './remapRetiredAutoscale.ts'
+
+export { ScorePlotSvgFrame } from './ScorePlotSvgFrame.tsx'
+export type {
+  ScorePlotSvgLayout,
+  ScorePlotSvgModel,
+} from './ScorePlotSvgFrame.tsx'
+export { wiggleMouseHandlers } from './wiggleMouseHandlers.ts'
 
 export {
   MIN_FILL_WIDTH_PX,

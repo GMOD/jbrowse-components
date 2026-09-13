@@ -1,8 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
+import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core'
 
-import { WiggleFamilySvgFrame } from '../shared/WiggleFamilySvg.tsx'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import { WIGGLE_MARKS } from '../shared/wiggleMarks.ts'
 
@@ -22,7 +22,7 @@ export async function renderSvg(
 function WiggleSvgBody(props: LgvSvgBodyProps<LinearWiggleDisplayModel>) {
   const { model } = props
   return (
-    <WiggleFamilySvgFrame
+    <ScorePlotSvgFrame
       {...props}
       clipIdPrefix="wiggle"
       paint={(ctx, { canvasWidth: w, drawHeight, renderBlocks }) => {

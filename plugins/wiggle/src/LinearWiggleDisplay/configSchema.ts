@@ -1,9 +1,9 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { trackHeightConfigSchemaFields } from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
 import { types } from '@jbrowse/mobx-state-tree'
+import { remapRetiredAutoscale } from '@jbrowse/wiggle-core'
 
 import { colorImpliesSolid } from '../shared/colorImpliesSolid.ts'
-import { remapRetiredAutoscale } from '../shared/remapRetiredAutoscale.ts'
 import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'
 import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
 import { WIGGLE_POS_COLOR_DEFAULT, WIGGLE_RENDERING_TYPES } from '../util.ts'

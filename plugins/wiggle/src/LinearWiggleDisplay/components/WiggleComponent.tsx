@@ -3,12 +3,12 @@ import { useCallback } from 'react'
 import { Crosshairs } from '@jbrowse/core/ui'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { PointerLayer } from '@jbrowse/display-ui'
+import { wiggleMouseHandlers } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
 import { findSourceHit, hitTestMouse } from '../../shared/wiggleHitTest.ts'
-import { wiggleMouseHandlers } from '../../shared/wiggleMouseHandlers.ts'
 
 import type { WiggleDisplayModel } from './wiggleDisplayTypes.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'

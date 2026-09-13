@@ -1,7 +1,3 @@
-// 'global'/'globalsd' autoscale were retired: they scoped stats to all loaded
-// regions rather than the file, so they barely differed from local/localsd and
-// were rarely used. Old configs/sessions may still carry them — map onto the
-// local equivalents so the narrowed `autoscale` enum doesn't reject the snapshot.
 const RETIRED_AUTOSCALE: Record<string, string> = {
   global: 'local',
   globalsd: 'localsd',
@@ -13,6 +9,11 @@ function mapRetiredAutoscale(value: unknown): unknown {
     : value
 }
 
+/**
+ * A `preProcessSnapshot` for a schema spreading `scoreAxisConfigSchemaFields`:
+ * maps the retired `global`/`globalsd` autoscale values an old config may carry
+ * onto their local equivalents, which the narrowed enum accepts.
+ */
 export function remapRetiredAutoscale(snap: Record<string, unknown>) {
   const autoscale = mapRetiredAutoscale(snap.autoscale)
   return autoscale === snap.autoscale ? snap : { ...snap, autoscale }

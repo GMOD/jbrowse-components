@@ -2,25 +2,23 @@ import { getSlotDefinition } from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import { makeRadioSubMenu, radioItems } from '@jbrowse/core/ui/menuItems'
 import {
+  makePointSizeSubMenu,
   makeResolutionSubMenuItem,
-  makeScatterPointSizeMenuItem,
   makeScoreSubMenu,
 } from '@jbrowse/wiggle-core'
 import LineWeightIcon from '@mui/icons-material/LineWeight'
-import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 
 import {
   RESOLUTION_MAX,
   RESOLUTION_MIN,
   RESOLUTION_STEP,
-} from './WiggleScoreConfigMixin.ts'
+} from './WiggleCommonMixin.ts'
 import { isLineMode, isScatterMode } from './wiggleComponentUtils.ts'
 
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { ScoreScaleModel } from '@jbrowse/wiggle-core'
-import type { ElementType } from 'react'
 
 export function makeRenderingTypeSubMenu(
   self: { renderingType: string; setRenderingType: (t: string) => void },
@@ -64,37 +62,11 @@ export function makeGroupedRenderingTypeSubMenu(
   }
 }
 
-// A top-level size submenu holding one inline slider row (value + reset),
-// present only in the rendering types the size applies to: point size in the
-// scatter variants ('scatter'/'multirowscatter'/'multiscatter'), line width in
-// the line ones. Both are top-level rather than nested under Score because they
-// describe the mark, not the axis. The row is a thunk so a rendering type that
-// doesn't take the size never builds one it won't show.
-function sizeSubMenu(
-  applies: boolean,
-  label: string,
-  icon: ElementType,
-  row: () => MenuItem,
-): MenuItem[] {
-  return applies ? [{ label, icon, subMenu: [row()] }] : []
-}
-
-export function makePointSizeSubMenu(
-  self: Parameters<typeof makeScatterPointSizeMenuItem>[0],
-  { label, applies }: { label: string; applies: boolean },
-): MenuItem[] {
-  return sizeSubMenu(applies, label, ScatterPlotIcon, () =>
-    makeScatterPointSizeMenuItem(self, { label }),
-  )
-}
-
 export function makePointSizeMenuItems(
   self: { renderingType: string } & Parameters<typeof makePointSizeSubMenu>[0],
 ): MenuItem[] {
   return makePointSizeSubMenu(self, {
     label: 'Scatter point size',
-    // the rendering-type table both backends branch on, not a substring test:
-    // whether a plot draws points is the same question the encoder asks
     applies: isScatterMode(self.renderingType),
   })
 }
@@ -107,33 +79,35 @@ export function makeLineWidthMenuItems(self: {
     lineWidth: { type: 'number'; defaultValue: number }
   }>
 }): MenuItem[] {
-  return sizeSubMenu(
-    isLineMode(self.renderingType),
-    'Line width',
-    LineWeightIcon,
-    () =>
-      makeSizeMenu({
-        label: 'Line width',
-        title: 'Line width',
-        // integer px with a floor of 1: the default range/step (0.5-12 by 0.5)
-        // crowds 1px into a few px at the far-left edge between 0.5 and 1.5, so a
-        // mouse drag can't reliably land on it. 1px as the leftmost stop makes it
-        // selectable by dragging fully left.
-        min: 1,
-        max: 10,
-        step: 1,
-        getValue: () => self.lineWidth,
-        isDefault:
-          self.lineWidth ===
-          getSlotDefinition(self.configuration, 'lineWidth').defaultValue,
-        onChange: n => {
-          self.setLineWidth(n)
+  return isLineMode(self.renderingType)
+    ? [
+        {
+          label: 'Line width',
+          icon: LineWeightIcon,
+          subMenu: [
+            makeSizeMenu({
+              label: 'Line width',
+              title: 'Line width',
+              // whole px from 1, so a drag fully left lands on 1px rather than
+              // crowding it into the default 0.5-step range's first stops
+              min: 1,
+              max: 10,
+              step: 1,
+              getValue: () => self.lineWidth,
+              isDefault:
+                self.lineWidth ===
+                getSlotDefinition(self.configuration, 'lineWidth').defaultValue,
+              onChange: n => {
+                self.setLineWidth(n)
+              },
+              onReset: () => {
+                self.setLineWidth(undefined)
+              },
+            }),
+          ],
         },
-        onReset: () => {
-          self.setLineWidth(undefined)
-        },
-      }),
-  )
+      ]
+    : []
 }
 
 function formatResolution(n: number) {

@@ -10,9 +10,8 @@ import {
 import SkippedFeaturesIndicator from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import TrackControl from '@jbrowse/display-kit/TrackControl'
 import { PointerLayer } from '@jbrowse/display-ui'
-import { wiggleMouseHandlers } from '@jbrowse/plugin-wiggle'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
-import { axisPlotBox } from '@jbrowse/wiggle-core'
+import { axisPlotBox, wiggleMouseHandlers } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import { findMarkHit } from '../findMarkHit.ts'

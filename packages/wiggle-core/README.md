@@ -1,6 +1,7 @@
 # @jbrowse/wiggle-core
 
-Shared scale and autoscale utilities for wiggle and coverage displays
+Score-axis scale, autoscale, config mixins and plot chrome shared by wiggle,
+Manhattan, mark and coverage displays
 
 <!-- API_DOCS_START -->
 

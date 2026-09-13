@@ -14,7 +14,7 @@ import type { ScoreRuleMark, WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 export type ManhattanContextMenuInfo = ContextMenuAnchor & { hit: ManhattanHit }
 
 // Component-facing slice of LinearManhattanDisplayModel. Hand-rolled because
-// `renderSvg.tsx` intersects this with the wiggle-family SVG contract and
+// `renderSvg.tsx` intersects this with `ScorePlotSvgModel` and
 // naming the inferred model there closes a type cycle; the component takes the
 // same slice so the two can't disagree about what a manhattan display is.
 export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<

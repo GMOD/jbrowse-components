@@ -35,7 +35,6 @@
     "@jbrowse/display-ui": "workspace:^",
     "@jbrowse/mobx-state-tree": "^6.5.1",
     "@jbrowse/plugin-linear-genome-view": "workspace:^",
-    "@jbrowse/plugin-wiggle": "workspace:^",
     "@jbrowse/render-core": "workspace:^",
     "@jbrowse/wiggle-core": "workspace:^",
     "@mui/icons-material": "^9.4.0",
@@ -56,6 +55,7 @@
   },
   "sideEffects": false,
   "devDependencies": {
-    "@jbrowse/display-test-utils": "workspace:^"
+    "@jbrowse/display-test-utils": "workspace:^",
+    "@jbrowse/plugin-wiggle": "workspace:^"
   }
 }

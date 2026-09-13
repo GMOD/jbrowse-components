@@ -1,12 +1,14 @@
 import { getSlotDefinition } from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
+import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// Wires a display's shared `scatterPointSize`/`setScatterPointSize` (from
-// WiggleScoreConfigMixin) to makeSizeMenu. Used by both the wiggle scatter and
-// GWAS Manhattan track menus so the slider/reset behavior can't drift.
+/**
+ * The point-size slider row over `WiggleScoreConfigMixin`'s
+ * `scatterPointSize`, so every score plot's menu resets and clamps alike.
+ */
 export function makeScatterPointSizeMenuItem(
   self: {
     scatterPointSize: number
@@ -31,4 +33,24 @@ export function makeScatterPointSizeMenuItem(
       self.setScatterPointSize(undefined)
     },
   })
+}
+
+/**
+ * A top-level submenu holding the point-size row, or nothing where the plot
+ * draws no points. Top-level rather than under Score because the size
+ * describes the mark, not the axis.
+ */
+export function makePointSizeSubMenu(
+  self: Parameters<typeof makeScatterPointSizeMenuItem>[0],
+  { label, applies }: { label: string; applies: boolean },
+): MenuItem[] {
+  return applies
+    ? [
+        {
+          label,
+          icon: ScatterPlotIcon,
+          subMenu: [makeScatterPointSizeMenuItem(self, { label })],
+        },
+      ]
+    : []
 }

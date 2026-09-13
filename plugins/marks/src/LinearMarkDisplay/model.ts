@@ -41,15 +41,13 @@ import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/display-ui'
 import { cast, types } from '@jbrowse/mobx-state-tree'
-import {
-  WiggleScoreConfigMixin,
-  makePointSizeSubMenu,
-} from '@jbrowse/plugin-wiggle'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { inkOfInstances, pointInsetPx } from '@jbrowse/render-core/marks'
 import {
+  WiggleScoreConfigMixin,
   axisPlotBox,
   makeCrossHatchItem,
+  makePointSizeSubMenu,
   makeScoreSubMenu,
   resolveRenderState,
   visibleStatsDomain,

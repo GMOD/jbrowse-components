@@ -2,17 +2,13 @@ import { getConf, setConf } from '@jbrowse/core/configuration'
 import { getEnv, openFeatureWidget } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
+  WiggleScoreConfigMixin,
   autoscaleDomainFromStats,
   computeScoreStats,
   visibleStatsDomain,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 
-import {
-  RESOLUTION_MAX,
-  RESOLUTION_MIN,
-  WiggleScoreConfigMixin,
-} from './WiggleScoreConfigMixin.ts'
 import { wiggleFeatureWidgetData } from './wiggleHitTest.ts'
 
 import type { WiggleHoveredFeature } from '../util.ts'
@@ -25,18 +21,10 @@ import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 /**
- * The slots this mixin reads that no shared table can hold. `defaultRendering`
- * is given a different enum and default by each wiggle display (`xyplot` vs
- * `multirowxy`), so only its TYPE is common, which is all the cast needs;
- * `minimalTicks` is declared per display because the shared field table is
- * spread by `LinearManhattanDisplay` too, which owns its own axis. Naming them
- * keeps the other slot names below checked; widening the cast to cover them
- * gives up all of them.
- *
- * A runtime value rather than a bare type so the restatement can be checked
- * against the real declarations — see `legendMixinSlots` for why, and
- * `RestatedMixinSlots.test.ts` for the comparison. `defaultValue` is a
- * placeholder; the test checks the key's presence and its `type`.
+ * The slots this mixin reads that no shared table can hold: each wiggle
+ * display gives `defaultRendering` its own enum and default, and declares
+ * `minimalTicks` itself. A runtime value so `RestatedMixinSlots.test.ts` can
+ * check the restated types; `defaultValue` is a placeholder.
  */
 export const wiggleCommonExtraSlots = {
   defaultRendering: { type: 'stringEnum', defaultValue: '' },
@@ -62,21 +50,25 @@ const ownAdapterConfig = (self: object) =>
 // mixin bring and this one only reads through.
 const regionStore = (self: object) => self as RegionStoreSelf
 
+// Resolution multiplies the bins fetched, stepped by `RESOLUTION_STEP`. Only
+// the coarse side needs a floor; past raw per-base data a finer request returns
+// the same bins, so the ceiling is only high. The track-menu stepper disables
+// at the edges `setResolution` clamps to.
+export const RESOLUTION_MIN = 1 / 16
+export const RESOLUTION_MAX = 1024
+export const RESOLUTION_STEP = 2
+
 /**
  * #stateModel WiggleCommonMixin
  * #category display
  *
- * Extends WiggleScoreConfigMixin with the narrowed rpcDataMap and the autoscale
- * domain — plus the wiggle-specific config that used to sit in that mixin (the
- * pos/neg palette, rendering type, summary mode, resolution and the line/gap
- * settings). They live here because this is where they are *read*: the other
- * composer of WiggleScoreConfigMixin, LinearManhattanDisplay, touches none of
- * them and was inheriting a config schema advertising them anyway. Moved onto
- * this chain with `.props()`/`.views()` rather than a new mixin composed in, so
- * no `types.compose` layer is added (ADR-041).
+ * Extends `WiggleScoreConfigMixin` with the narrowed rpcDataMap, the autoscale
+ * domain and the wiggle-specific config: the pos/neg palette, rendering type,
+ * summary mode, resolution and the line/gap settings. Extended on this chain
+ * with `.props()`/`.views()` rather than a mixin composed in, so no
+ * `types.compose` layer is added (ADR-041).
  *
- * Used by LinearWiggleDisplay and MultiLinearWiggleDisplay. Displays that own a
- * different rpcDataMap type should compose WiggleScoreConfigMixin directly.
+ * Used by LinearWiggleDisplay and MultiLinearWiggleDisplay.
  */
 export function WiggleCommonMixin() {
   return WiggleScoreConfigMixin()
@@ -106,9 +98,9 @@ export function WiggleCommonMixin() {
        * bpPerPx, so data fetched at another zoom is the wrong summary, however
        * well the viewport still sits inside it.
        *
-       * On this mixin, not the score-config one below it: the rule is about
-       * what a fetch returns, and `LinearManhattanDisplay` composes that mixin
-       * for the score axis while fetching untransformed SNPs.
+       * Here rather than on `WiggleScoreConfigMixin`: the rule is about what a
+       * fetch returns, and `LinearManhattanDisplay` composes that mixin while
+       * fetching untransformed SNPs.
        */
       get zoomFetchKey(): string {
         return String(regionHost(self).bpPerPx)
@@ -118,17 +110,9 @@ export function WiggleCommonMixin() {
        * Raw `symlogConstant` slot; `0` means "derive from the domain". Resolve
        * it with `resolveSymlogConstant` once the domain is known.
        *
-       * Here rather than on `WiggleScoreConfigMixin` because the slot is in
-       * `wiggleConfigSchemaFields`, which is this mixin's host table. It sat
-       * one level up, whose OTHER composer is `LinearManhattanDisplay` --
-       * linear-only by construction, so its schema declares no
-       * `symlogConstant` and the getter answered `undefined` while typed
-       * `number`. Inert, because nothing on that path reads it, and invisible:
-       * `getConf` on an undeclared slot returns `undefined` and reports
-       * nothing at any layer. That is the same reasoning the getter already
-       * carried for moving off `ScoreScaleMixin` (the alignments coverage band
-       * composes that against a schema that never declares it) -- it just
-       * stopped one mixin too high.
+       * Here rather than on the score config because only the wiggle schemas
+       * declare the slot, and `getConf` answers `undefined` silently for a
+       * composer that does not.
        */
       get symlogConstant(): number {
         return getConf(confNode(self), 'symlogConstant')

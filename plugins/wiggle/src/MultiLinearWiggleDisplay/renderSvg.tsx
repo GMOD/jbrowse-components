@@ -6,8 +6,8 @@ import {
   SvgTreePath,
   treeSidebarOffset,
 } from '@jbrowse/tree-sidebar'
+import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core'
 
-import { WiggleFamilySvgFrame } from '../shared/WiggleFamilySvg.tsx'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import { WIGGLE_MARKS } from '../shared/wiggleMarks.ts'
 import MultiWiggleRowLabels from './MultiWiggleRowLabels.tsx'
@@ -100,7 +100,7 @@ function MultiWiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
   const gpuProps = model.gpuProps()
 
   return (
-    <WiggleFamilySvgFrame
+    <ScorePlotSvgFrame
       {...props}
       clipIdPrefix="wiggle"
       plotGeometry={model.plotGeometry}

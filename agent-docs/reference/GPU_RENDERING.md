@@ -724,12 +724,11 @@ tier the fetch reads from. That's a fetch/adapter concern, not a backend one —
 
 ### Wiggle-family contract
 
-Wiggle-style per-position GPU displays (wiggle, multi-wiggle, Manhattan) share
-types and scale utilities across two packages:
+Displays with a score axis (wiggle, multi-wiggle, Manhattan, marks) share types,
+scale utilities and score-plot pieces across two packages:
 
-`@jbrowse/wiggle-core` — the cross-plugin contract. Import types and pure
-utilities from here so new plugins don't drag in the wiggle plugin's MST
-factories or RPC methods:
+`@jbrowse/wiggle-core` — the cross-plugin contract. A plugin imports from here
+so it takes no dependency on the wiggle plugin's MST factories or RPC methods:
 
 - `renderingBackendTypes.ts` — `WiggleRenderingBackend`, `WiggleGPURenderState`, `SourceRenderData`
 - `dataTypes.ts` — `WiggleDataResult`, `WiggleSourceData`, `WiggleFeatureArrays`
@@ -738,33 +737,27 @@ factories or RPC methods:
 - `scale.ts` / `autoscale.ts` — `getNiceDomain`, `getScale`, autoscale helpers
 - `scoreMenuItems.ts` — `makeScoreSubMenu(self, opts)` + `ScoreScaleModel`: the shared Score submenu
 - `pointMarker.ts` / `resolveRenderState.ts` / `transferables.ts` / `YScaleBar` — the shared scatter glyph (wiggle + Manhattan), render-state resolution, worker transfer-list collection, and the Y-axis overlay
+- `WiggleScoreConfigMixin` — the score-plot config: the axis (`ScoreScaleMixin`, which the alignments coverage band composes alone), the plotted `scoreField`, the cross-hatch toggle and the point size
+- `ScorePlotSvgFrame` — the SVG-export body of a display drawing on the score axis
 
-`@jbrowse/plugin-wiggle` — composable model pieces. These live in the plugin
-because they depend on `BaseDisplay` / `MultiRegionDisplayMixin` and wire up RPC
-methods:
+`@jbrowse/plugin-wiggle` — the wiggle displays' own model pieces:
 
 - `linearWiggleDisplayConfigSchema` / `linearWiggleDisplayModelFactory` — the full
   LinearWiggleDisplay config + model. Composed **wholesale** by GC-content's
-  `LinearGCContentDisplay`. The config schema is reused more widely (Manhattan
-  extends it); the model factory is not. The config schema comes off the plugin
-  barrel; the model factory does **not** and cannot — it is
+  `LinearGCContentDisplay`. The config schema comes off the plugin barrel; the
+  model factory does **not** and cannot — it is
   `@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel`, because the display
   registers a state model loader and a value edge from the eager barrel would
   undo that. A display composing it is itself lazily registered, so it reaches
   the subpath from inside its own loader.
-- `WiggleScoreConfigMixin()` / `WiggleCommonMixin()` — score/color config pieces
-  composed à la carte by displays that build their own model. The score *axis*
-  alone (`scaleType` / `autoscale` / min-max + setters, i.e. the `ScoreScaleModel`
-  interface) is `ScoreScaleMixin` in `@jbrowse/wiggle-core`, which
-  `WiggleScoreConfigMixin` composes and which the alignments coverage band
-  composes directly — that band wants the axis and none of the color/resolution
-  config, and hand-wrote an identical copy of it until 2026-08.
+- `WiggleCommonMixin()` — `WiggleScoreConfigMixin` plus wiggle's palette,
+  rendering type, summary mode, resolution and the strict-`bpPerPx`
+  `zoomFetchKey`.
 
 GWAS's Manhattan does **not** compose `linearWiggleDisplayModelFactory`. It builds
 its own model — `BaseDisplay` + `TrackHeightMixin()` + `MultiRegionDisplayMixin()`
-+ `WiggleScoreConfigMixin()` — pulls score utilities and
-`makeScoreSubMenu` from `@jbrowse/wiggle-core`, and extends
-`linearWiggleDisplayConfigSchema` as its `baseConfiguration`. It ships its own
++ `WiggleScoreConfigMixin()` — and declares its own config schema over
+`scoreAxisConfigSchemaFields`, all from `@jbrowse/wiggle-core`. It ships its own
 `GetManhattanData` RPC (per-feature points, not pre-binned density), implements
 its own `ManhattanRenderingBackend` with its own pass, and is zoom-independent:
 it overrides neither per-region cache hook, so it sits on the empty

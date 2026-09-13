@@ -1405,9 +1405,6 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
-      '@jbrowse/plugin-wiggle':
-        specifier: workspace:^
-        version: link:../wiggle
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
@@ -1704,9 +1701,6 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../linear-genome-view
-      '@jbrowse/plugin-wiggle':
-        specifier: workspace:^
-        version: link:../wiggle
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
@@ -1732,6 +1726,9 @@ importers:
       '@jbrowse/display-test-utils':
         specifier: workspace:^
         version: link:../../packages/display-test-utils
+      '@jbrowse/plugin-wiggle':
+        specifier: workspace:^
+        version: link:../wiggle
 
   plugins/menus:
     dependencies:
