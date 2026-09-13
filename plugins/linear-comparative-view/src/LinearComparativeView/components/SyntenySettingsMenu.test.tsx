@@ -241,26 +241,22 @@ test('the CIGAR row sets the mode it names', async () => {
 // visit — which is what `CascadingMenu` gives a checkbox row by its type.
 test('a checkbox row writes its boolean and leaves the menu up', async () => {
   const view = await openMenu()
-  // the row shows the resolved value, and the click writes the `drawCurves`
-  // slot on the view's synteny displays
-  expect(view.effectiveDrawCurves).toBe(false)
+  expect(view.drawCurves).toBe(false)
   fireEvent.click(screen.getByText('Curved lines'))
-  expect(view.effectiveDrawCurves).toBe(true)
+  expect(view.drawCurves).toBe(true)
   expect(screen.getByText('Location markers')).toBeTruthy()
 })
 
 // The half the click test cannot see. It asserts false -> click -> true, which
 // a row hardcoded to `checked: false` satisfies too, because `!false` is still
 // true — so both ribbon rows could render permanently unticked with every suite
-// green. What goes wrong for a reader is a track configured curved: the ribbons
-// draw curved and the row says they do not. So read the row back with the
-// setting resolved true.
+// green, while the ribbons draw curved. So read the row back with the setting
+// true.
 test('a checkbox row renders the value it resolved, not a constant', async () => {
   const view = await openMenu()
   act(() => {
     view.setDrawCurves(true)
   })
-  expect(view.effectiveDrawCurves).toBe(true)
   expect(curvedLinesRow()).toBeChecked()
   act(() => {
     view.setDrawCurves(false)

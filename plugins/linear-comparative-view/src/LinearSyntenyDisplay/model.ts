@@ -1,4 +1,4 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   findParentThatIs,
@@ -510,23 +510,6 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
         return getContainingView(self) as unknown as ParentViewDuck
       },
       /**
-       * #getter
-       * Whether this level draws bezier ribbons, from the `drawCurves` slot.
-       * The view settings checkbox writes the slot on every level at once
-       * (`setDrawCurves`), so there is no view tier over this.
-       */
-      get effectiveDrawCurves(): boolean {
-        return getConf(self, 'drawCurves')
-      },
-      /**
-       * #getter
-       * Whether this level continues the query row's ruler through its ribbons.
-       * Read exactly as `effectiveDrawCurves` above.
-       */
-      get effectiveDrawLocationMarkers(): boolean {
-        return getConf(self, 'drawLocationMarkers')
-      },
-      /**
        * #method
        * The parent feature under an INSTANCE index (what the pick engine and
        * the hover/click state carry). Without instanceData the two spaces
@@ -576,7 +559,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           colorBy: this.effectiveColorBy,
           trackColor: this.trackColor,
           opacityByIdentity,
-          drawLocationMarkers: this.effectiveDrawLocationMarkers,
+          drawLocationMarkers: this.view.drawLocationMarkers,
           groundColor: this.groundColor,
           nameOrder: this.paintedChromosomeOrder,
           attributeRanges: this.view.attributeRanges,
@@ -890,7 +873,7 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
           offsetPx1: v1.offsetPx,
           bpPerPx0: v0.bpPerPx,
           bpPerPx1: v1.bpPerPx,
-          drawCurves: this.effectiveDrawCurves,
+          drawCurves: view.drawCurves,
         }
       },
     }))

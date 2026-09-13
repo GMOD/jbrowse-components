@@ -31,9 +31,7 @@ export type FadeThinMode = 'auto' | 'on' | 'off'
  * registers exactly these, and the Record it takes makes an unregistered one a
  * compile error.
  *
- * A new display setting does not belong here — see `LinearSyntenyViewInit` —
- * unless, like `drawCurves`, it lives on the synteny DISPLAYS' config rather
- * than on the view, so applying it is a write the launcher has to fan out.
+ * A new display setting does not belong here — see `LinearSyntenyViewInit`.
  *
  * #launchKeys LinearSyntenyView — the URL parameters page renders this
  * interface, and the one it extends, as the view's launch-key table. The `//`
@@ -90,23 +88,14 @@ export interface LinearSyntenyViewCommands extends SyntenyViewSharedCommands {
   // by the per-row stretch — and orthologs between two rows line up at the same
   // scale on both. Applied last, after any autoDiagonalize pass.
   sameScale?: boolean
-  // Draw the ribbons as bezier curves rather than straight chords. Writes the
-  // `drawCurves` config slot on every synteny track the launch opens; omit it
-  // to leave each track at its configured value.
-  drawCurves?: boolean
-  // Continue the query row's scalebar grid down through the ribbons: a tick at
-  // each round query coordinate, joined to the coordinate the alignment pairs
-  // it with. The same config-slot write as `drawCurves`.
-  drawLocationMarkers?: boolean
 }
 
 /**
  * What a `LinearSyntenyView` can be launched with — a session spec, a config
  * `defaultSession` view, a share link, all one shape.
  *
- * The commands above — `drawCurves` and `drawLocationMarkers` among them, which
- * are commands writing a display config slot rather than view properties —
- * plus every declared property of the view (`colorBy`, `cigarMode`, `alpha`,
+ * The commands above plus every declared property of the view (`colorBy`,
+ * `cigarMode`, `drawCurves`, `alpha`,
  * `opacityByIdentity`, `lodMode`, and whatever the model grows next), each in
  * its own type. None of them is listed anywhere: the type comes off the state
  * model, so declaring a property is the whole of making it authorable.

@@ -14,37 +14,8 @@ import {
   DEFAULT_MIN_ALIGNMENT_LENGTH,
 } from '../../LinearSyntenyView/consts.ts'
 
-import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
 import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { SettingRowOptions } from '@jbrowse/core/ui/menuItems'
-
-/**
- * One RIBBONS checkbox, writing this view's synteny displays (every level —
- * `setDrawCurves` fans out). A view with no synteny display yet (the import
- * form, a track still arriving) has no slot to write and no ribbon to draw, so
- * its row is disabled rather than a checkbox that ticks nothing.
- */
-function ribbonToggle({
-  display,
-  value,
-  setValue,
-  label,
-  ...opts
-}: {
-  display: LinearSyntenyDisplayModel | undefined
-  value: boolean
-  setValue: (value: boolean) => void
-  label: string
-} & SettingRowOptions): MenuItem {
-  return display
-    ? toggleItem(label, value, setValue, opts)
-    : toggleItem(label, value, setValue, {
-        ...opts,
-        disabled: true,
-        disabledHelpText: 'Add a synteny track first — this is a track setting',
-      })
-}
 
 /**
  * Every setting that decides what the ribbons look like and how much detail
@@ -84,7 +55,6 @@ export function syntenySettingsMenuItems(
   model: LinearSyntenyViewModel,
 ): MenuItem[] {
   const { cigarMode, hasCigarData } = model
-  const display = model.allSyntenyDisplays[0]
   return [
     { type: 'subHeader', label: 'Ribbons' },
     toggleItem(
@@ -98,24 +68,20 @@ export function syntenySettingsMenuItems(
           'Fade each ribbon by its sequence identity, whatever the color mode.',
       },
     ),
-    ribbonToggle({
-      display,
-      label: 'Curved lines',
-      value: model.effectiveDrawCurves,
-      setValue: v => {
-        model.setDrawCurves(v)
-      },
+    toggleItem('Curved lines', model.drawCurves, v => {
+      model.setDrawCurves(v)
     }),
-    ribbonToggle({
-      display,
-      label: 'Location markers',
-      value: model.effectiveDrawLocationMarkers,
-      setValue: v => {
+    toggleItem(
+      'Location markers',
+      model.drawLocationMarkers,
+      v => {
         model.setDrawLocationMarkers(v)
       },
-      helpText:
-        "Carry the upper row's scalebar ticks down through the ribbons to the coordinates they pair with.",
-    }),
+      {
+        helpText:
+          "Carry the upper row's scalebar ticks down through the ribbons to the coordinates they pair with.",
+      },
+    ),
     makeSizeSubMenu({
       label: 'opacity',
       title: 'Opacity',

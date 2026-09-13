@@ -159,7 +159,7 @@ prop list found nothing else.
 | --- | --- | --- |
 | LGV | `loc`, `grow`, `assembly`, `displayedRegionNames`, `tracklist`, `nav`, `tracks`, `highlight` | `bpPerPx`/`offsetPx` are `passThrough` — no longer declared properties, still converted by the model's own preprocessor |
 | dotplot | `views`, `tracks`, `highlight`, `autoDiagonalize` | `views` is unconditional: the model declares `hview`/`vview` and derives `views` as a getter |
-| synteny | `views`, `tracks`, `levelHeights`, `autoDiagonalize`, `collapseEmptyRows`, `drawCurves`, `drawLocationMarkers`, `sameScale` | `tracks` is unconditional: the levels between the rows hold theirs, so the view declares no top-level `tracks` |
+| synteny | `views`, `tracks`, `levelHeights`, `autoDiagonalize`, `collapseEmptyRows`, `sameScale` | `tracks` is unconditional: the levels between the rows hold theirs, so the view declares no top-level `tracks` |
 | circular | `assembly`, `displayedRegionNames`, `tracks` | `displayedRegions` is the resolved form of the second |
 | spreadsheet | `assembly`, `uri`, `fileType`, `filterText` | four plain lifts; the view declares no property of any of those names |
 | sv-inspector | `assembly`, `uri`, `fileType`, `filterText` | written out rather than borrowed from the spreadsheet's, so the Record fails the build when a view's commands and its registration disagree |

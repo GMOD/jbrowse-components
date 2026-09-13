@@ -46,12 +46,14 @@ test('any declared property lands natively, named nowhere in the launch path', a
   const view = await open({
     views: ROWS,
     opacityByIdentity: true,
+    drawLocationMarkers: true,
     lodMode: 'coarse',
     overdrawPx: 42,
     cigarMode: 'matches',
     alpha: 0.55,
   })
   expect(view.opacityByIdentity).toBe(true)
+  expect(view.drawLocationMarkers).toBe(true)
   expect(view.lodMode).toBe('coarse')
   expect(view.overdrawPx).toBe(42)
   expect(view.cigarMode).toBe('matches')
@@ -71,8 +73,7 @@ test('a property a composed mixin contributes lands too', async () => {
 test('an omitted property keeps its default', async () => {
   const view = await open({ views: ROWS })
   expect(view.cigarMode).toBe('full')
-  // nothing set it, and straight is the slot's default
-  expect(view.effectiveDrawCurves).toBe(false)
+  expect(view.drawCurves).toBe(false)
 })
 
 describe('the v4 nested form', () => {

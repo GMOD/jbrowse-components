@@ -26,7 +26,5 @@ export const linearSyntenyLaunchKeys =
     levelHeights: { kind: 'launch' },
     autoDiagonalize: { kind: 'launch' },
     collapseEmptyRows: { kind: 'launch' },
-    drawCurves: { kind: 'launch' },
-    drawLocationMarkers: { kind: 'launch' },
     sameScale: { kind: 'replay' },
   })

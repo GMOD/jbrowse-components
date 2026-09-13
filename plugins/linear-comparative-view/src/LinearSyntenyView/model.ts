@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { getConf, setConf } from '@jbrowse/core/configuration'
+import { getConf } from '@jbrowse/core/configuration'
 import { getDialogHost, getSession } from '@jbrowse/core/util'
 import { computeViewStatus } from '@jbrowse/core/util/viewStatus'
 import {
@@ -85,8 +85,8 @@ const AddRowDialog = lazy(() => import('./components/AddRowDialog.tsx'))
  * }
  * ```
  * The launch keys are `views`, `tracks`, `levelHeights`, `autoDiagonalize`,
- * `sameScale`, `collapseEmptyRows`, `drawCurves` and `drawLocationMarkers`;
- * everything else is a property below and needs no list to join.
+ * `sameScale` and `collapseEmptyRows`; everything else is a property below and
+ * needs no list to join.
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
   const model = types
@@ -112,6 +112,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           types.enumeration(['off', 'matches', 'full'] as const),
           'full',
         ),
+        /**
+         * #property
+         * Draw every band's ribbons as bezier curves rather than straight chords.
+         */
+        drawCurves: types.stripDefault(types.boolean, false),
+        /**
+         * #property
+         * Continue the query row's scalebar grid down through every band: a tick
+         * at each round query coordinate, joined to the coordinate the alignment
+         * pairs it with.
+         */
+        drawLocationMarkers: types.stripDefault(types.boolean, false),
         /**
          * #property
          * Mark the alignments the view cannot draw a ribbon for, along both
@@ -261,34 +273,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       get drawCIGARMatchesOnly() {
         return self.cigarMode === 'matches'
-      },
-      /**
-       * #getter
-       * What the "Curved lines" checkbox shows: the first synteny display's
-       * `drawCurves` slot.
-       *
-       * THE FIRST DISPLAY, not a vote across them. The value is per track
-       * config, so two levels differ only when one of their tracks was authored
-       * with a value of its own, and a checkbox has one bit to say it with. With
-       * NO display — an import form, or a level whose track has not arrived —
-       * there is no config to read, and `false` matches both slots' defaults.
-       */
-      get effectiveDrawCurves(): boolean {
-        return this.ribbonSettingsSample?.effectiveDrawCurves ?? false
-      },
-      /**
-       * #getter
-       * The "Location markers" twin of `effectiveDrawCurves`.
-       */
-      get effectiveDrawLocationMarkers(): boolean {
-        return this.ribbonSettingsSample?.effectiveDrawLocationMarkers ?? false
-      },
-      /**
-       * #getter
-       * The level the two getters above read their slots off.
-       */
-      get ribbonSettingsSample() {
-        return self.allSyntenyDisplays[0]
       },
       /**
        * #getter
@@ -583,13 +567,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Write the `drawCurves` config slot on every synteny display this view
-       * is showing — the settings checkbox means every level.
        */
       setDrawCurves(arg: boolean) {
-        for (const d of self.allSyntenyDisplays) {
-          setConf(d, 'drawCurves', arg)
-        }
+        self.drawCurves = arg
       },
       /**
        * #action
@@ -599,13 +579,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * The "Location markers" twin of `setDrawCurves`: the same config-slot
-       * write, on every synteny display this view is showing.
        */
       setDrawLocationMarkers(arg: boolean) {
-        for (const d of self.allSyntenyDisplays) {
-          setConf(d, 'drawLocationMarkers', arg)
-        }
+        self.drawLocationMarkers = arg
       },
       /**
        * #action

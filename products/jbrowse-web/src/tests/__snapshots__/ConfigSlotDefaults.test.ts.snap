@@ -745,10 +745,7 @@ exports[`every registered schema slot default 1`] = `
     "showReverse": "boolean = true",
     "showTranslation": "boolean = true",
   },
-  "display: LinearSyntenyDisplay": {
-    "drawCurves": "boolean = false",
-    "drawLocationMarkers": "boolean = false",
-  },
+  "display: LinearSyntenyDisplay": {},
   "display: LinearVariantDisplay": {
     "canonicalTranscriptField": "string = "tag"",
     "canonicalTranscriptTags": "stringArray = ["MANE Select","MANE_Select","RefSeq Select","Ensembl_canonical","MANE Plus Clinical","MANE_Plus_Clinical"]",

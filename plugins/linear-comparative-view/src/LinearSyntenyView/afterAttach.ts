@@ -253,24 +253,10 @@ async function runAutoDiagonalize(self: LinearSyntenyViewModel) {
   })
 }
 
-// The launch keys whose destination is neither the view's own state nor a row:
-// `levelHeights` lands after the auto-scale pass it is allowed to override, and
-// the two ribbon settings are config slots on every synteny display this launch
-// opened, so applying them is a fan-out write.
-function applyLaunchSettings(
-  self: LinearSyntenyViewModel,
-  init: SyntenyLaunch,
-) {
-  if (init.levelHeights) {
-    for (const [i, h] of init.levelHeights.entries()) {
-      self.levels[i]?.setHeight(h)
-    }
-  }
-  if (init.drawCurves !== undefined) {
-    self.setDrawCurves(init.drawCurves)
-  }
-  if (init.drawLocationMarkers !== undefined) {
-    self.setDrawLocationMarkers(init.drawLocationMarkers)
+// `levelHeights` lands after the auto-scale pass it is allowed to override.
+function applyLevelHeights(self: LinearSyntenyViewModel, init: SyntenyLaunch) {
+  for (const [i, h] of (init.levelHeights ?? []).entries()) {
+    self.levels[i]?.setHeight(h)
   }
 }
 
@@ -309,10 +295,10 @@ async function applyInit(
   await applyInitSyntenyTracks(self, init)
   // split the band budget across however many levels this view has, so a
   // multi-way stack doesn't spend the whole viewport on ribbons. A no-op at two
-  // levels (a pairwise view keeps the 100px default), and applyLaunchSettings
+  // levels (a pairwise view keeps the 100px default), and applyLevelHeights
   // runs after, so an explicit `levelHeights` wins.
   self.autoScaleLevelHeights()
-  applyLaunchSettings(self, init)
+  applyLevelHeights(self, init)
   if (init.autoDiagonalize) {
     await runAutoDiagonalize(self)
   }

@@ -61,6 +61,8 @@ export interface ParentViewDuck extends IStateTreeNode, FollowHost {
   opacityByIdentity: boolean
   drawCIGAR: boolean
   drawCIGARMatchesOnly: boolean
+  drawCurves: boolean
+  drawLocationMarkers: boolean
   lodMode: LodMode
   // The assembly the chromosome-painting modes key on, so a region keeps its
   // color as it is traced across levels. Undefined until a row knows its own.

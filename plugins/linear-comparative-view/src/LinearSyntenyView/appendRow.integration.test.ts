@@ -210,6 +210,34 @@ test('a track added in the same tick shows on the level it was added for', async
   expect(view.levels[0]!.tracks.length).toBe(0)
 })
 
+// Curved lines is the view's setting, so a band added after the checkbox was
+// ticked draws curved too, whatever track it carries. As a slot on each
+// display, the checkbox wrote only the tracks already open and kept reading
+// the first of them while the new band drew straight.
+test('a band appended after Curved lines is ticked draws curved', async () => {
+  const { session, view } = await openStack(2)
+  view.setDrawCurves(true)
+  session.addSessionTrackConf({
+    type: 'SyntenyTrack',
+    trackId: 'another',
+    name: 'another',
+    assemblyNames: ['volvox1', 'volvox0'],
+    adapter: {
+      type: 'PAFAdapter',
+      pafLocation: { uri: 'volvox.paf', locationType: 'UriLocation' },
+      queryAssembly: 'volvox1',
+      targetAssembly: 'volvox0',
+    },
+  })
+
+  await view.appendRow({ assembly: 'volvox0', syntenyTrackId: 'another' })
+
+  const band = view.levels[1]!.linearSyntenyDisplays[0]!
+  await waitFor(() => {
+    expect(band.renderParams?.drawCurves).toBe(true)
+  })
+})
+
 // flattened one level: the row-management commands live in the "Rows" group
 const menuLabels = (view: LinearSyntenyViewModel) =>
   view
