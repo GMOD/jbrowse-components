@@ -51,6 +51,27 @@
 // read and context write an extern, matched hand exactly in both orientations
 // and read 0.79-0.80x on deletion and 1.03-1.06x on mismatch: the tuple it
 // never allocated was its whole margin.
+//
+// The 0.03 the two twin calls still cost is the walk's own bytecode against
+// the inlining budget, not the twins' shape or the wrappers' — three
+// sequential processes each: the generated twins hand-rewritten as one
+// ternary each read 0.80-0.83x, and the walk calling the twins directly
+// with `Math.max` inline, no `spanRectLeftPx`/`WidthPx`, read 0.82-0.83x.
+// Nor is it the `keys` read site going polymorphic between the `Uint8Array`
+// marks and modification's `Uint32Array`: with every warm fixture's keys a
+// `Uint8Array` it read 0.81-0.82x and 0.99-1.02x, unchanged.
+//
+// WHAT THE COUNTING STUB CANNOT SEE, and is not pursued because Canvas2D is
+// the fallback: a real context parses every `fillStyle` string. On a
+// mismatch-shaped fixture of 100K cells, half faded to a random alpha, in
+// headless Chrome on software raster with a control at 0.99x, one fillStyle
+// for the whole paint read 0.49x of the production spelling, the faded alpha
+// quantized to 1/255 and its string memoized per (colour, step) 0.83x,
+// skipping a write of the style already set 0.84x, and the instances ordered
+// by colour then step 0.56x. node-canvas read 0.88x and 0.52x for the
+// memoized and single-style arms at 1M. Ordering by colour in the worker is
+// out regardless: the mismatch arrays are position-sorted for
+// `positionIndex.ts` and `coverageDownsampling.ts` to binary-search.
 
 import { execSync } from 'node:child_process'
 import { performance } from 'node:perf_hooks'
