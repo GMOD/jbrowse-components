@@ -72,7 +72,7 @@ function samples([min, max]: [number, number]) {
 }
 
 describe.each(LINEAR_DOMAINS)('linear domain %j', (min, max) => {
-  const normalize = makeScoreNormalizer(min, max, SCALE_TYPE_LINEAR)
+  const normalize = makeScoreNormalizer(min, max, SCALE_TYPE_LINEAR, 1)
   test.each(samples([min, max]))('score %p', score => {
     expect(normalizeScore(score, min, max, SCALE_TYPE_LINEAR, 1)).toBeCloseTo(
       normalize(score),
@@ -82,7 +82,7 @@ describe.each(LINEAR_DOMAINS)('linear domain %j', (min, max) => {
 })
 
 describe.each(LOG_DOMAINS)('log domain %j', (min, max) => {
-  const normalize = makeScoreNormalizer(min, max, SCALE_TYPE_LOG)
+  const normalize = makeScoreNormalizer(min, max, SCALE_TYPE_LOG, 1)
   test.each(samples([min, max]))('score %p', score => {
     // 6 places, not bit equality: the shader's log2 is float32 and JS's is
     // float64, so the two agree to about 1e-15 and the tolerance is the

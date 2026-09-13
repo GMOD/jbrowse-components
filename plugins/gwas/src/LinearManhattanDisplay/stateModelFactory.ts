@@ -398,7 +398,7 @@ export function stateModelFactory(
             rules: [{ value: line, color: SIGNIFICANCE_LINE_COLOR }],
             domain,
             box: axisPlotBox(self.height),
-            normalize: makeScoreNormalizer(min, max, SCALE_TYPE_LINEAR),
+            normalize: makeScoreNormalizer(min, max, SCALE_TYPE_LINEAR, 1),
           })
         },
         /**

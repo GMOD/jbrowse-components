@@ -64,7 +64,7 @@ describe.each(DOMAINS)('symlog domain [%f, %f]', (min, max) => {
     const normalize = makeScoreNormalizer(min, max, SCALE_TYPE_SYMLOG, c)
     // what log does with the same domain: floored to [1, max], so a depth of 1
     // lands on 0 — indistinguishable from a position with no reads at all
-    const log = makeScoreNormalizer(Math.max(min, 1), max, SCALE_TYPE_LOG)
+    const log = makeScoreNormalizer(Math.max(min, 1), max, SCALE_TYPE_LOG, 1)
     expect(log(1)).toBe(0)
     expect(normalize(1)).toBeGreaterThan(0)
   })
@@ -76,6 +76,7 @@ describe.each(DOMAINS)('domain [%f, %f]', (min, max) => {
       min,
       max,
       isLog ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
+      1,
     )
     for (const depth of DEPTHS) {
       expect(normalizeDepthScalar(
@@ -162,7 +163,7 @@ describe('a log depth domain floors at one read', () => {
 
   test('a single-read domain steps at one read on both backends', () => {
     const [min, max] = coverageDepthDomain([0.0078125, 1], 'log')
-    const normalize = makeScoreNormalizer(min, max, SCALE_TYPE_LOG)
+    const normalize = makeScoreNormalizer(min, max, SCALE_TYPE_LOG, 1)
     for (const [depth, expected] of [
       [0, 0],
       [1, 0],

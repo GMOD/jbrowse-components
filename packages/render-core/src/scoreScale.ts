@@ -35,7 +35,7 @@ export function makeScoreNormalizer(
   min: number,
   max: number,
   scaleType: ScaleTypeCode,
-  symlogConstant = 1,
+  symlogConstant: number,
 ): (score: number) => number {
   if (scaleType === SCALE_TYPE_SYMLOG) {
     const c = symlogConstant
@@ -91,7 +91,7 @@ export function denormalizeScore(
   min: number,
   max: number,
   scaleType: ScaleTypeCode,
-  symlogConstant = 1,
+  symlogConstant: number,
 ) {
   if (scaleType === SCALE_TYPE_SYMLOG) {
     const c = symlogConstant

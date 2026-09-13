@@ -118,6 +118,7 @@ export function valueWindow(
       domain[0],
       domain[1],
       code,
+      1,
     )
   const lo =
     yPx + radiusPx >= canvasHeight - inset ? -Infinity : valueAt(yPx + radiusPx)

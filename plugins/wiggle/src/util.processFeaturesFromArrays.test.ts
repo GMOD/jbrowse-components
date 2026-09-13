@@ -24,6 +24,7 @@ const normalizeScore = (
     min,
     max,
     isLog ? SCALE_TYPE_LOG : SCALE_TYPE_LINEAR,
+    1,
   )(score)
 
 describe('processFeaturesFromArrays', () => {

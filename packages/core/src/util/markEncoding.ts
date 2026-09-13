@@ -402,6 +402,7 @@ export function encodeFeatures<L extends LaneName>(
         domain[0],
         domain[1],
         scaleTypeCode(scaled.scale),
+        1,
       )
       for (let i = 0; i < count; i++) {
         const v = rampValues[i]!

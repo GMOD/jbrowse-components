@@ -73,7 +73,7 @@ describe('the symlog constant is why this is not just log(x+1)', () => {
     const normalize = makeScoreNormalizer(0, 1, SCALE_TYPE_SYMLOG, 1)
     // log1p is very nearly linear across [0,1], so the small end gets no more
     // of the axis than a linear scale would have given it
-    const linear = makeScoreNormalizer(0, 1, 0)
+    const linear = makeScoreNormalizer(0, 1, 0, 1)
     expect(normalize(0.01)).toBeCloseTo(linear(0.01), 2)
   })
 
@@ -81,7 +81,7 @@ describe('the symlog constant is why this is not just log(x+1)', () => {
     const c = resolveSymlogConstant(domain[0], domain[1], 0)
     expect(c).toBe(0.001)
     const normalize = makeScoreNormalizer(0, 1, SCALE_TYPE_SYMLOG, c)
-    const linear = makeScoreNormalizer(0, 1, 0)
+    const linear = makeScoreNormalizer(0, 1, 0, 1)
     // 0.01 is 1% of the way up a linear axis; symlog gives it a third of one
     expect(normalize(0.01)).toBeGreaterThan(10 * linear(0.01))
     expect(normalize(0.0001)).toBeGreaterThan(0)

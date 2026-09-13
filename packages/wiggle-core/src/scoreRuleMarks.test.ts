@@ -13,7 +13,7 @@ import {
 } from './scoreRuleMarks.ts'
 
 const linear = (min: number, max: number) =>
-  makeScoreNormalizer(min, max, SCALE_TYPE_LINEAR)
+  makeScoreNormalizer(min, max, SCALE_TYPE_LINEAR, 1)
 
 describe('parseScoreRules', () => {
   test('takes bare numbers and objects, drops the unusable', () => {

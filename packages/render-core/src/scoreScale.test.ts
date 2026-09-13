@@ -60,8 +60,8 @@ describe.each(CASES)('$name', ({ scaleType, domain, c }) => {
 test('a domain with no range answers where the forward step sits', () => {
   for (const scaleType of [0, SCALE_TYPE_LOG, SCALE_TYPE_SYMLOG] as const) {
     for (const t of FRACTIONS) {
-      expect(denormalizeScore(t, 5, 5, scaleType)).toBeCloseTo(5, 9)
+      expect(denormalizeScore(t, 5, 5, scaleType, 1)).toBeCloseTo(5, 9)
     }
   }
-  expect(denormalizeScore(0.5, 0, 0, SCALE_TYPE_LOG)).toBe(1)
+  expect(denormalizeScore(0.5, 0, 0, SCALE_TYPE_LOG, 1)).toBe(1)
 })
