@@ -18,26 +18,20 @@ export interface TrackHeightHost {
 
 const confNode = (self: object) => self as TrackHeightHost
 
+const SUBPIXEL_OVERFLOW = 0.5
+
 /**
  * #stateModel TrackHeightMixin
  * #category display
- * #crossCuttingMixin Internal vertical scroll. `scrollableHeight` (default `Infinity` = doesn't scroll). Brings the clamped `setScrollTop` and the autorun that re-clamps when content shrinks
+ * #crossCuttingMixin Internal vertical scroll. `scrollContentHeight` and `scrollViewportHeight` (both default 0 = doesn't scroll). Brings the derived `scrollableHeight`, the clamped `setScrollTop` and the autorun that re-clamps when content shrinks
  *
- * The display height is stored directly on the `height` config slot (drag-resize
- * writes it via `setSlot`), so it survives a track being unticked and reticked —
- * the config node outlives the ephemeral display instance. Displays with an
- * auto-fit mode declare `height` as a `maybeNumber` slot (default `undefined`)
- * and override the `height` getter to fall back to their computed content
- * height when unset.
+ * The display height lives on the `height` config slot, so it survives a track
+ * being unticked and reticked. Displays with an auto-fit mode override the
+ * `height` getter.
  *
- * It also owns the **internal vertical scroll** every canvas display that
- * scrolls its own content shares: the `scrollTop` volatile, a `setScrollTop`
- * clamped against the overridable `scrollableHeight` hook, and the autorun that
- * re-clamps when the content shrinks. Four displays (alignments, canvas, MAF,
- * multi-sample variants) each carried their own copy of the last two, with four
- * copies of the same "a virtual-scrolled canvas has no overflow container to
- * self-correct" paragraph; a display now opts into all of it by overriding one
- * getter.
+ * It also owns the **internal vertical scroll** of every display that paints a
+ * fixed canvas at `-scrollTop`: a display overrides the two height hooks, and
+ * passes itself to `ScrollChrome` and the wheel hooks.
  */
 export default function TrackHeightMixin() {
   return types
@@ -70,28 +64,35 @@ export default function TrackHeightMixin() {
       },
       /**
        * #getter
-       * Overridable hook: how far this display's content can scroll past its
-       * viewport, in px. `Infinity` (the default) means "this display doesn't
-       * scroll internally" — `setScrollTop` then never clamps and the re-clamp
-       * autorun below is inert, so a non-scrolling display pays nothing and,
-       * crucially, never evaluates a getter that would read view geometry.
-       *
-       * A display that scrolls a canvas overrides this with `max(0, contentHeight
-       * - viewportHeight)`, and gets the clamped setter plus the shrink autorun
-       * for free. It is the single "does it scroll, and by how much" answer: the
-       * wheel handler (`useVirtualScrollWheel`) and `VerticalScrollbar` read the
-       * same getter.
+       * Overridable hook: the height of the content that scrolls, in px.
+       */
+      get scrollContentHeight(): number {
+        return 0
+      },
+      /**
+       * #getter
+       * Overridable hook: the height of the window it scrolls behind, in px.
+       */
+      get scrollViewportHeight(): number {
+        return 0
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * How far the content scrolls. A sub-pixel overflow is 0: a fit mode that
+       * divides the viewport across n rows multiplies back to a few ULPs over
+       * it, and an extent of 1e-14px still draws a scrollbar and holds the
+       * wheel away from the page.
        */
       get scrollableHeight(): number {
-        return Number.POSITIVE_INFINITY
+        const overflow = self.scrollContentHeight - self.scrollViewportHeight
+        return overflow > SUBPIXEL_OVERFLOW ? overflow : 0
       },
     }))
     .actions(self => ({
       /**
        * #action
-       * Clamped into `[0, scrollableHeight]`, so no caller has to remember the
-       * bound. Unbounded for a display that leaves `scrollableHeight` at its
-       * `Infinity` default.
        */
       setScrollTop(scrollTop: number) {
         const next = clamp(scrollTop, 0, self.scrollableHeight)
@@ -120,46 +121,23 @@ export default function TrackHeightMixin() {
     .actions(self => ({
       /**
        * #action
-       * Grow the track by exactly the content it is currently hiding, so a
-       * display scrolled over a taller stack ends up showing all of it. The
-       * track's resize handle runs this on a double click.
-       *
-       * `scrollableHeight` is the whole measurement — it is already every
-       * scrolling display's answer to "how much is off the bottom", so no
-       * display has to supply a second one. A display that doesn't scroll
-       * internally leaves it at `Infinity` and gets a no-op, as does one
-       * already showing everything (0).
-       *
-       * Routed through `resizeHeight` rather than `setHeight` so grow mode's
-       * override still gets to leave grow first; going straight to the slot
-       * would let the reactive height re-derive `grownHeight` and the double
-       * click would appear to do nothing.
+       * Grow the track by the content it is hiding, for the resize handle's
+       * double click. Goes through `resizeHeight` so grow mode's override
+       * leaves grow first.
        */
       expandToContentHeight() {
         const hidden = self.scrollableHeight
-        return Number.isFinite(hidden) && hidden > 0
-          ? self.resizeHeight(hidden)
-          : 0
+        return hidden > 0 ? self.resizeHeight(hidden) : 0
       },
       afterAttach() {
-        // Keep scrollTop inside the content by construction. Any geometry change
-        // — a shorter track, a smaller row height, a group collapse, a filter, a
-        // drag-resize — can drop the scroll extent below the current offset, and
-        // a virtual-scrolled canvas has no overflow container to self-correct.
-        // Enforcing the bound reactively here is what lets every
-        // geometry-changing action stay ignorant of it.
-        //
-        // Deliberately reads nothing but `scrollableHeight`: for a display that
-        // leaves the hook at `Infinity` the body registers no dependency at all,
-        // so this stays inert (and view-free) on the ten displays that don't
-        // scroll. The `isFinite` test is what makes that true — `Infinity` is
-        // never exceeded, but the comparison alone would still read `scrollTop`.
+        // No overflow container self-corrects a virtual scroll, so whatever
+        // shrinks the extent below the offset is caught here.
         addDisposer(
           self,
           autorun(
             () => {
               const max = self.scrollableHeight
-              if (Number.isFinite(max) && self.scrollTop > max) {
+              if (self.scrollTop > max) {
                 self.setScrollTop(max)
               }
             },

@@ -37,7 +37,8 @@ function harness(init: { rowHeight: number; scrollTop: number; nrow: number }) {
         return state.scrollTop
       },
       nrow: state.nrow,
-      viewportHeight: 100,
+      scrollViewportHeight: 100,
+      scrollableHeight: 0,
       setRowHeight: (n: number) => {
         state.rowHeight = n
       },

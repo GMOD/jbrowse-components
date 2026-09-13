@@ -2,6 +2,7 @@ import { useId, useRef, useState } from 'react'
 
 import { ScrollChrome, useMouseState } from '@jbrowse/core/ui'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
+import { useRowVirtualScroll } from '@jbrowse/core/util/useRowVirtualScroll'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { openContextMenuFromEvent } from '@jbrowse/display-kit/DisplayContextMenu'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
@@ -35,7 +36,6 @@ import SummaryBarsOverlay from './SummaryBarsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { resolveMafPointerHit } from './mafHitTest.ts'
 import { useDragSelection } from './useDragSelection.ts'
-import { useMafVirtualScroll } from './useMafVirtualScroll.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
@@ -130,7 +130,6 @@ const MafBody = observer(function MafBody({
   const {
     height,
     rowsHeight,
-    rowsContentHeight,
     rowsTopOffset,
     scrollTop,
     effectiveRowHeight,
@@ -138,11 +137,9 @@ const MafBody = observer(function MafBody({
     colorPalette,
   } = model
   const canvasId = useId()
-  // The rows container, not the canvas: it is the same rectangle but also
-  // covers the tree sidebar, so a wheel over the species names scrolls the rows
-  // it labels rather than falling through to the view.
+  // the rows container, so a wheel over the species names scrolls their rows
   const [rowsEl, setRowsEl] = useState<HTMLDivElement | null>(null)
-  useMafVirtualScroll(rowsEl, model)
+  useRowVirtualScroll(rowsEl, model, model.view.scrollZoom)
   const [coverageResizeActive, setCoverageResizeActive] = useState(false)
   const [conservationResizeActive, setConservationResizeActive] =
     useState(false)
@@ -307,16 +304,7 @@ const MafBody = observer(function MafBody({
       </div>
       {/* Offset below the stacked bands, which are pinned: only the rows
           scroll. */}
-      <ScrollChrome
-        scrollTop={scrollTop}
-        setScrollTop={n => {
-          model.setScrollTop(n)
-        }}
-        viewportHeight={rowsHeight}
-        contentHeight={rowsContentHeight}
-        controlsId={canvasId}
-        top={rowsTopOffset}
-      />
+      <ScrollChrome model={model} controlsId={canvasId} top={rowsTopOffset} />
       <MsaHighlightOverlay model={model} view={view} height={height} />
       {pointer && !contextCoord && !resizeActive ? (
         <div style={{ position: 'relative' }}>

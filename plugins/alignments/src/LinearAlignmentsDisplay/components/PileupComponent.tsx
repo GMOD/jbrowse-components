@@ -52,20 +52,10 @@ const PileupBody = observer(function PileupBody({
     handleClick,
   } = useAlignmentsBase(model)
 
-  const { scrollZoom } = model.view
   const canvasId = useId()
   const [panel, setPanel] = useState<HTMLDivElement | null>(null)
 
-  // The pileup's viewport is its own, not the track's: ungrouped, the coverage
-  // band above it is sticky and doesn't scroll. Bound to the panel below rather
-  // than to `canvas`, so the overlays that answer the pointer — group chips,
-  // sashimi and cross-region arcs, the resize handles — don't each punch a hole
-  // in the gesture: they are the canvas's SIBLINGS, so a wheel over one never
-  // reaches a listener on the canvas. See `useVirtualScrollWheel`.
-  usePanelVirtualScroll(panel, model, {
-    viewportHeight: model.pileupViewportHeight,
-    scrollZoom,
-  })
+  usePanelVirtualScroll(panel, model, model.view.scrollZoom)
 
   if (!width) {
     return null
@@ -120,12 +110,7 @@ const PileupBody = observer(function PileupBody({
       {/* the pileup's own viewport, so in ungrouped mode it starts below the
           pinned coverage band rather than fading the band itself */}
       <ScrollChrome
-        scrollTop={model.scrollTop}
-        setScrollTop={n => {
-          model.setScrollTop(n)
-        }}
-        viewportHeight={model.pileupViewportHeight}
-        contentHeight={model.pileupContentHeight}
+        model={model}
         controlsId={canvasId}
         top={stickyBandHeight}
       />

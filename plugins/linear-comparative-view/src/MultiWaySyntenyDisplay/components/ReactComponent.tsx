@@ -29,15 +29,7 @@ const MultiWayBody = observer(function MultiWayBody({
   const canvasId = useId()
   const [panel, setPanel] = useState<HTMLDivElement | null>(null)
 
-  // The wheel rule and the zoom-on-scroll arbitration are the canvas
-  // display's, shared as usePanelVirtualScroll; the panel wraps the canvas
-  // and every overlay drawn over it so a wheel over a lane header is still
-  // the panel's (see useVirtualScrollWheel). Inert while the stack fits the
-  // track, since scrollableHeight is 0 there.
-  usePanelVirtualScroll(panel, model, {
-    viewportHeight: height,
-    scrollZoom: model.lgv.scrollZoom,
-  })
+  usePanelVirtualScroll(panel, model, model.lgv.scrollZoom)
 
   return (
     <>
@@ -59,15 +51,7 @@ const MultiWayBody = observer(function MultiWayBody({
         />
         <LaneHeaders model={model} />
       </div>
-      <ScrollChrome
-        scrollTop={model.scrollTop}
-        setScrollTop={n => {
-          model.setScrollTop(n)
-        }}
-        viewportHeight={height}
-        contentHeight={model.scrollContentHeight}
-        controlsId={canvasId}
-      />
+      <ScrollChrome model={model} controlsId={canvasId} />
       <PointerLayer mouseTracker={mouseTracker}>
         {mouse =>
           mouse && hoverTarget ? (

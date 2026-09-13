@@ -38,12 +38,13 @@ gesture.
 | Handler | Concern | Wheel rule |
 | --- | --- | --- |
 | `wheelZoom.ts` (LGV) | zoom + horizontal genome pan | `defaultPrevented` → bail (a panel below consumed it). `shift && scrollZoom` → bail (page-scroll escape). `ctrl/meta` or (`scrollZoom && |dy|≥|dx|`) → zoom. else → horizontal pan via `deltaX`, **only when `|dx| > |dy|`**. |
-| `usePanelVirtualScroll.ts` (pileup, canvas basic) | panel vertical scroll | skip if `(scrollZoom && !shift) || ctrl || meta`. else scroll inner (latched), **unless `|dx| > |dy|` and the latch is open**. → plain wheel scrolls when zoom OFF; needs `shift` when zoom ON. |
+| `usePanelVirtualScroll.ts` (pileup, canvas basic, multi-way synteny) | panel vertical scroll | skip if `(scrollZoom && !shift) || ctrl || meta`. else scroll inner (latched), **unless `|dx| > |dy|` and the latch is open**. → plain wheel scrolls when zoom OFF; needs `shift` when zoom ON. |
 | `useRowVirtualScroll.ts` (both variant displays, MAF) | rows vertical scroll + row height | skip if `ctrl || meta`. `shift` → **change row height**. else if `!scrollZoom` → scroll inner (latched), under the same `|dx| > |dy|` exception. |
 
 Each of those last two is **one rule across several call sites**, not one rule
 per display, so each is written once in `packages/core/src/util/` and every
-consumer supplies only its own viewport height plus `scrollZoom`. That is the
+consumer supplies only itself (its `TrackHeightMixin` scroll hooks) plus
+`scrollZoom`. That is the
 decision below applied, not an exception to it: unify where there is one true
 rule.
 

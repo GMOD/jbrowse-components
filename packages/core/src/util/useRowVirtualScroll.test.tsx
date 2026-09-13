@@ -55,6 +55,7 @@ function Harness({
       effectiveRowHeight: rowHeight,
       scrollTop,
       nrow: NROW,
+      scrollViewportHeight: VIEWPORT,
       scrollableHeight: Math.max(0, NROW * rowHeight - VIEWPORT),
       setRowHeight: n => {
         setRowHeight(n)
@@ -65,7 +66,7 @@ function Harness({
         onScrollTop(n)
       },
     },
-    { viewportHeight: VIEWPORT, scrollZoom },
+    scrollZoom,
   )
   return <div ref={setEl} />
 }

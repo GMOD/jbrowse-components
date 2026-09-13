@@ -1,5 +1,7 @@
 import { useId, useState } from 'react'
 
+import { ScrollChrome } from '@jbrowse/core/ui'
+import { useRowVirtualScroll } from '@jbrowse/core/util/useRowVirtualScroll'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 import { PointerLayer } from '@jbrowse/display-ui'
@@ -9,8 +11,6 @@ import { observer } from 'mobx-react'
 
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
 import VariantOverlay from '../../shared/components/MultiSampleVariantOverlay.tsx'
-import VariantScrollbar from '../../shared/components/VariantScrollbar.tsx'
-import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 import { hoverVariantSurface } from '../../shared/variantSurface.ts'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantMatrixBody, {
@@ -68,12 +68,9 @@ const VariantMatrixDisplayComponent = observer(
     const { model } = props
     const { rowsTopOffset, height } = model
     const canvasId = useId()
-    // The rows panel, not the canvas: a canvas holds no DOM children, so the
-    // dendrogram beside the matrix is a sibling, and a wheel over it never
-    // reached a canvas-bound listener — it fell through and panned the view
-    // instead of scrolling the rows it was over. Same shape MAF uses.
+    // the rows panel, so a wheel over the dendrogram beside the matrix is theirs
     const [rowsEl, setRowsEl] = useState<HTMLDivElement | null>(null)
-    useVariantVirtualScroll(rowsEl, model)
+    useRowVirtualScroll(rowsEl, model, model.view.scrollZoom)
     return (
       <DisplayChrome
         model={model}
@@ -150,16 +147,13 @@ const VariantMatrixDisplayComponent = observer(
                   container already carries. */}
               <TreeSidebar model={model} top={rowsTopOffset} />
             </div>
-            {/* Outside `MatrixBodyOffset`, and it has to be: every child in
-                there is absolutely positioned, so the box shrink-to-fits to 0x0
-                — fine for a child placed by `left`/`top`, fatal for one placed
-                by `right`. The scrollbar's `right: 0` resolved against a
-                zero-width box put the thumb 12px LEFT of it (clipped away by
-                `contain: strict`), and the edge fade's `left: 0; right: 0` made
-                it zero-wide. It would also have panned horizontally with the
-                matrix, which a scrollbar must not do. Out here the box is the
-                display's own, and `rowsTopOffset` is applied once. */}
-            <VariantScrollbar model={model} controlsId={canvasId} />
+            {/* Outside `MatrixBodyOffset`, a 0x0 box that pans with the matrix:
+                anything placed by `right` belongs to the display (CLAUDE.md). */}
+            <ScrollChrome
+              model={model}
+              controlsId={canvasId}
+              top={rowsTopOffset}
+            />
             <VariantOverlay model={model} top={rowsTopOffset} />
             <PointerLayer
               mouseTracker={mouseTracker}

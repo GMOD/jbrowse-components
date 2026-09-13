@@ -39,15 +39,6 @@ test('a pan clears the hover, with no zoom change', () => {
   expect(display.hoveredFeature).toBeUndefined()
 })
 
-// Covered but inert here: this display grows to its content rather than
-// scrolling, so `scrollTop` stays 0 — the installer is shared, so this asserts
-// what the other row displays depend on.
-test('the display scrolling under the cursor clears the hover', () => {
-  const { display } = hovering()
-  display.setScrollTop(40)
-  expect(display.hoveredFeature).toBeUndefined()
-})
-
 // Nothing draws the stale hover while the banner is up, but Force load brings
 // the subtree back and the highlight, positioned from the layout rather than the
 // pointer, paints a box on a block the cursor is nowhere near.

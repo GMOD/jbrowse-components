@@ -1587,16 +1587,15 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
-         * Max valid `scrollTop`: how far the rows can scroll before the bottom
-         * row reaches the viewport floor. Zero when the rows fit — which auto-fit
-         * mode always does, since `effectiveRowHeight` derives from
-         * `availableHeight`. `scrollableHeight > 0` is therefore also the "does
-         * this display scroll" answer; both displays scroll virtually (fixed
-         * canvas + VerticalScrollbar overlay), so there is no native overflow
-         * container to gate separately.
          */
-        get scrollableHeight() {
-          return Math.max(0, this.totalHeight - self.availableHeight)
+        get scrollContentHeight() {
+          return this.totalHeight
+        },
+        /**
+         * #getter
+         */
+        get scrollViewportHeight() {
+          return self.availableHeight
         },
         /**
          * #method

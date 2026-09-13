@@ -42,20 +42,17 @@ function flushRaf() {
 // pointer are what a wheel over them targets.
 function Harness({ onScroll }: { onScroll: (n: number) => void }) {
   const [panel, setPanel] = useState<HTMLDivElement | null>(null)
-  const scrollTopRef = useRef(0)
-  useVirtualScrollWheel(panel, (e, applyScroll) => {
-    applyScroll(
-      e,
-      {
-        scrollTop: scrollTopRef.current,
-        viewportHeight: 100,
-        scrollableHeight: 200,
-      },
-      n => {
-        scrollTopRef.current = n
-        onScroll(n)
-      },
-    )
+  const model = useRef({
+    scrollTop: 0,
+    scrollViewportHeight: 100,
+    scrollableHeight: 200,
+    setScrollTop(n: number) {
+      model.scrollTop = n
+      onScroll(n)
+    },
+  }).current
+  useVirtualScrollWheel(panel, model, (_e, scroll) => {
+    scroll()
   })
   return (
     <div data-gesture-owner="true" data-testid="layer">

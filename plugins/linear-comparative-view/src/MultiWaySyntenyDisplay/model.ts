@@ -1162,11 +1162,9 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * `TrackHeightMixin`'s hook: 0 — no scroll, today's divide-the-height
-       * layout — until the lane count pushes the stack past the track height
        */
-      get scrollableHeight() {
-        return self.scrollContentHeight - self.height
+      get scrollViewportHeight() {
+        return self.height
       },
       /**
        * #getter

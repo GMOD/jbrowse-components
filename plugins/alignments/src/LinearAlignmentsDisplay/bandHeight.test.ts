@@ -46,13 +46,13 @@ describe('resizable band height floor', () => {
 
   // The other half of the rule, which this family did not have until the two
   // clampBandHeight implementations were merged: without a ceiling a band
-  // dragged past the display height takes `pileupViewportHeight` to 0 and its
+  // dragged past the display height takes `scrollViewportHeight` to 0 and its
   // own handle off the bottom edge, so there is no gesture left that shrinks it.
   it('stops a drag from squashing the pileup to nothing', () => {
     const display = createDisplay()
     display.setCoverageHeight(5000)
     expect(display.coverageHeight).toBe(display.height - 20)
-    expect(display.pileupViewportHeight).toBeGreaterThan(0)
+    expect(display.scrollViewportHeight).toBeGreaterThan(0)
   })
 
   it('brings a band already over its ceiling back inside', () => {

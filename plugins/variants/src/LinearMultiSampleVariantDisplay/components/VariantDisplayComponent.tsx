@@ -1,5 +1,7 @@
 import { useId, useState } from 'react'
 
+import { ScrollChrome } from '@jbrowse/core/ui'
+import { useRowVirtualScroll } from '@jbrowse/core/util/useRowVirtualScroll'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { DisplayContextMenu } from '@jbrowse/display-kit/DisplayContextMenu'
 import { PointerLayer } from '@jbrowse/display-ui'
@@ -9,8 +11,6 @@ import { observer } from 'mobx-react'
 
 import Crosshair from '../../shared/components/MultiSampleVariantCrosshairs.tsx'
 import VariantOverlay from '../../shared/components/MultiSampleVariantOverlay.tsx'
-import VariantScrollbar from '../../shared/components/VariantScrollbar.tsx'
-import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 import { hoverVariantSurface } from '../../shared/variantSurface.ts'
 import VariantBody, { variantRowsSurface } from './VariantComponent.tsx'
 import VariantLaneOverlay, {
@@ -31,12 +31,9 @@ const VariantDisplayComponent = observer(
     const { model } = props
     const { rowsTopOffset } = model
     const canvasId = useId()
-    // The rows panel, not the canvas: a canvas holds no DOM children, so the
-    // dendrogram and the row labels beside it are siblings, and a wheel over
-    // them never reached a canvas-bound listener — it fell through and panned
-    // the view instead of scrolling the rows it was over. Same shape MAF uses.
+    // the rows panel, so a wheel over the dendrogram beside the canvas is theirs
     const [rowsEl, setRowsEl] = useState<HTMLDivElement | null>(null)
-    useVariantVirtualScroll(rowsEl, model)
+    useRowVirtualScroll(rowsEl, model, model.view.scrollZoom)
     return (
       <DisplayChrome
         model={model}
@@ -103,15 +100,13 @@ const VariantDisplayComponent = observer(
                   the portaled half takes it explicitly (`top`). */}
               <TreeSidebar model={model} top={rowsTopOffset} />
             </div>
-            {/* Outside that container, and it has to be: the panel is sized to
-                the rows, so a child placed by `right` would anchor to the
-                canvas width rather than to the display. It used to shrink to
-                0x0, where the scrollbar's `right: 0` put the thumb 12px LEFT of
-                the display (clipped away by `contain: strict`) and the edge
-                fade's `left: 0; right: 0` made it zero-wide. Out here the box
-                is the display's own, and `rowsTopOffset` is applied once rather
-                than twice. */}
-            <VariantScrollbar model={model} controlsId={canvasId} />
+            {/* On the display's own box: the rows panel is canvas-wide, and
+                anything placed by `right` belongs to the display (CLAUDE.md). */}
+            <ScrollChrome
+              model={model}
+              controlsId={canvasId}
+              top={rowsTopOffset}
+            />
             <VariantOverlay model={model} top={rowsTopOffset} />
             {/* The crosshairs are gated to the rows: drawn over the variant
                 lane they would name a genotype row the pointer is not on. The

@@ -254,7 +254,7 @@ function stateModelFactory(schema: LGVSyntenyDisplayConfigModel) {
          */
         setHideSelfAlignments(flag: boolean) {
           setConf(self, 'hideSelfAlignments', flag)
-          self.scrollTop = 0
+          self.setScrollTop(0)
         },
         /**
          * #action

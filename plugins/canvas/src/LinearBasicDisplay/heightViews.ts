@@ -17,6 +17,7 @@ export interface HeightHost {
   fitMeasureFeatureIds: ReadonlySet<string> | undefined
   morphFromTops: Map<string, number> | undefined
   morphFromMaxY: number
+  scrollableHeight: number
 }
 
 export function heightViews(self: HeightHost) {
@@ -67,7 +68,7 @@ export function heightViews(self: HeightHost) {
      * #getter
      */
     get hasOverflow() {
-      return this.scrollExtentMaxY > self.height
+      return self.scrollableHeight > 0
     },
 
     /**
@@ -99,8 +100,8 @@ export function heightViews(self: HeightHost) {
     /**
      * #getter
      */
-    get scrollableHeight() {
-      return Math.max(0, this.scrollExtentMaxY - self.height)
+    get scrollViewportHeight() {
+      return self.height
     },
 
     /**

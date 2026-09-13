@@ -63,11 +63,25 @@ const scrolling = (contentHeight: number) =>
       }),
     )
     .views(self => ({
-      get scrollableHeight() {
-        return Math.max(0, contentHeight - self.height)
+      get scrollContentHeight() {
+        return contentHeight
+      },
+      get scrollViewportHeight() {
+        return self.height
       },
     }))
     .create({ type: 'test', configuration: { height: 100 } })
+
+// A fit mode divides the viewport across n rows and multiplies back, which
+// lands a few ULPs over it for about one row count in twenty — 11 rows at the
+// variant displays' default height among them.
+test('a sub-pixel overflow is no scroll at all', () => {
+  const m = scrolling((100 / 11) * 11)
+  expect(m.scrollContentHeight).toBeGreaterThan(m.scrollViewportHeight)
+  expect(m.scrollableHeight).toBe(0)
+  m.setScrollTop(10)
+  expect(m.scrollTop).toBe(0)
+})
 
 test('expandToContentHeight grows the track onto the hidden content', () => {
   const m = scrolling(340)
@@ -82,8 +96,8 @@ test('expandToContentHeight is a no-op once everything fits', () => {
   expect(m.height).toBe(100)
 })
 
-// The `Infinity` default — a display that doesn't scroll internally has no
-// hidden content to expand onto, and must not be resized to it.
+// A display that doesn't scroll internally has no hidden content to expand
+// onto, and must not be resized to it.
 test('expandToContentHeight is a no-op for a non-scrolling display', () => {
   const m = create()
   expect(m.expandToContentHeight()).toBe(0)
@@ -107,8 +121,11 @@ test('expandToContentHeight goes through an overriding resizeHeight', () => {
       }),
     )
     .views(() => ({
-      get scrollableHeight() {
-        return 50
+      get scrollContentHeight() {
+        return 150
+      },
+      get scrollViewportHeight() {
+        return 100
       },
     }))
     .actions(() => ({

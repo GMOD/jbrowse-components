@@ -23,7 +23,7 @@ describe('matrixCellAt', () => {
   })
 
   // applyRowResizeWheel leaves scrollTop fractional; the matrix composes it
-  // through useVariantVirtualScroll like the sibling does. The two orderings
+  // through useRowVirtualScroll like the sibling does. The two orderings
   // only disagree once the fractional part carries across a row boundary, so
   // an ordinary 10px row cannot discriminate them.
   it('floors mouseY before adding a fractional scrollTop', () => {

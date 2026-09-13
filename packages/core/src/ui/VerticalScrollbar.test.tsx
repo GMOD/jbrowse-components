@@ -47,10 +47,12 @@ function setup(scrollTop = 0) {
   const setScrollTop = jest.fn()
   const { container, rerender } = render(
     <VerticalScrollbar
-      scrollTop={scrollTop}
-      setScrollTop={setScrollTop}
-      viewportHeight={VIEWPORT}
-      contentHeight={CONTENT}
+      model={{
+        scrollTop,
+        setScrollTop,
+        scrollViewportHeight: VIEWPORT,
+        scrollableHeight: CONTENT - VIEWPORT,
+      }}
       controlsId="canvas"
     />,
   )
@@ -70,10 +72,12 @@ function setup(scrollTop = 0) {
 test('renders nothing when the content fits the viewport', () => {
   const { container } = render(
     <VerticalScrollbar
-      scrollTop={0}
-      setScrollTop={jest.fn()}
-      viewportHeight={100}
-      contentHeight={100}
+      model={{
+        scrollTop: 0,
+        setScrollTop: jest.fn(),
+        scrollViewportHeight: 100,
+        scrollableHeight: 0,
+      }}
       controlsId="canvas"
     />,
   )

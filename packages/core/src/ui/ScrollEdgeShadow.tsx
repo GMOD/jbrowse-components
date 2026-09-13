@@ -1,5 +1,9 @@
+import { observer } from 'mobx-react'
+
 import { clamp } from '../util/numericUtils.ts'
 import { makeStyles } from '../util/tss-react/index.ts'
+
+import type { VirtualScrollModel } from '../util/useVirtualScrollWheel.ts'
 
 /**
  * How deep each edge fade is. Enough to read as a soft edge under the content
@@ -8,17 +12,7 @@ import { makeStyles } from '../util/tss-react/index.ts'
  */
 const SHADOW_HEIGHT = 16
 
-/**
- * Sub-pixel slack before an edge counts as scrolled away from. A fit/grow mode
- * scale leaves float epsilon in `contentHeight`, and without this a track that
- * exactly fits draws a permanent bottom fade — the one thing this must never
- * do, since "nothing is hidden" is the state it exists to distinguish.
- *
- * `VerticalScrollbar` has no equivalent and so still draws a full-height thumb
- * on that same sub-pixel overflow. Deliberately not lifted there: a thumb
- * filling its track reads as "nothing to scroll", where a permanent fade reads
- * as "something is hidden" — the wrong answer rather than a redundant one.
- */
+// Slack at each edge, so a float residue in `scrollTop` doesn't mark one.
 const EPSILON = 0.5
 
 const useStyles = makeStyles()(theme => {
@@ -49,8 +43,7 @@ const useStyles = makeStyles()(theme => {
 
 /**
  * The "there is more content this way" edge shadow for a display that scrolls
- * its content virtually — the same displays that mount `VerticalScrollbar`,
- * drawn from the same three numbers.
+ * its content virtually, mounted beside `VerticalScrollbar` by `ScrollChrome`.
  *
  * It answers a question the scrollbar technically also answers and in practice
  * does not: **is this track showing me all of its features?** A 6px thumb on a
@@ -82,33 +75,21 @@ const useStyles = makeStyles()(theme => {
  * — autogrow/fit, and the truncation warning for features that were dropped
  * rather than merely scrolled away). This says *that*; that says *what to do*.
  */
-export default function ScrollEdgeShadow({
-  scrollTop,
-  viewportHeight,
-  contentHeight,
+const ScrollEdgeShadow = observer(function ScrollEdgeShadow({
+  model,
   top = 0,
 }: {
-  scrollTop: number
-  /** the visible viewport height */
-  viewportHeight: number
-  /** the full scrollable content height */
-  contentHeight: number
+  model: VirtualScrollModel
   /** viewport offset from the top, for a display with a sticky band above it */
   top?: number
 }) {
   const { classes, cx } = useStyles()
-  const scrollableHeight = Math.max(0, contentHeight - viewportHeight)
+  const { scrollableHeight, scrollViewportHeight: viewportHeight } = model
   if (scrollableHeight <= 0) {
     return null
   }
-  const clamped = clamp(scrollTop, 0, scrollableHeight)
-  // never deeper than the viewport itself: the bottom edge is placed by
-  // subtracting this from the viewport's floor, so an unclamped SHADOW_HEIGHT
-  // on a viewport shorter than it puts the ink above the viewport's own top,
-  // over whatever pinned band the display stacked there. Reachable both ways —
-  // the variants displays floor availableHeight at 0 because lineZoneHeight can
-  // exceed the display height on its own, and the pileup's coverage band drags
-  // up to the same place.
+  const clamped = clamp(model.scrollTop, 0, scrollableHeight)
+  // never deeper than the viewport, or the bottom edge inks the band above it
   const height = Math.min(SHADOW_HEIGHT, viewportHeight)
   return (
     <>
@@ -128,4 +109,6 @@ export default function ScrollEdgeShadow({
       ) : null}
     </>
   )
-}
+})
+
+export default ScrollEdgeShadow

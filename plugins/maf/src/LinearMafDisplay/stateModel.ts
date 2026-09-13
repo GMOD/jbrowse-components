@@ -1250,13 +1250,15 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Max valid `scrollTop`: how far the rows scroll before the last one
-         * reaches the viewport floor. Zero when they fit, so this doubles as the
-         * "does this display scroll" answer (the scrollbar and the wheel handler
-         * both read it). Fit-to-height always fits.
          */
-        get scrollableHeight() {
-          return Math.max(0, self.rowsContentHeight - self.rowsHeight)
+        get scrollContentHeight() {
+          return self.rowsContentHeight
+        },
+        /**
+         * #getter
+         */
+        get scrollViewportHeight() {
+          return self.rowsHeight
         },
       }))
       .views(self => ({

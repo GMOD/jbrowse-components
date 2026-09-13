@@ -44,6 +44,20 @@ describe('row height resolution', () => {
     expect(m.scrollableHeight).toBe(0)
   })
 
+  // `effectiveRowHeight * nrow` lands a few ULPs past `availableHeight` for 28
+  // of the first 400 row counts at the default height, 11 the first of them.
+  it('fit mode scrolls at no row count', () => {
+    const m = createDisplay()
+    const scrolling = []
+    for (let n = 1; n < 400; n++) {
+      m.setSources(Array.from({ length: n }, (_, i) => ({ name: `s${i}` })))
+      if (m.scrollableHeight !== 0) {
+        scrolling.push(n)
+      }
+    }
+    expect(scrolling).toEqual([])
+  })
+
   // A pinned rowHeight taller than the fit height makes the rows overflow the
   // viewport; totalHeight tracks nrow and the excess becomes scrollable.
   it('a pinned rowHeight taller than fit overflows and scrolls', () => {

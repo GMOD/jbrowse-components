@@ -2362,24 +2362,19 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Height of the scrollable viewport. Ungrouped excludes the sticky
-         * coverage band; grouped scrolls the entire display.
+         * Ungrouped excludes the sticky coverage band; grouped scrolls the
+         * entire display.
          */
-        get pileupViewportHeight() {
+        get scrollViewportHeight() {
           return Math.max(0, self.height - this.stickyBandHeight)
         },
 
         /**
          * #getter
-         * Total scrollable content height. Grouped is the full stacked-sections
-         * height; ungrouped is the pileup band alone (coverage is sticky), which
-         * is the stacked height minus that sticky coverage band. Both read the
-         * laid-out `sections` so the scroll extent tracks the geometry actually
-         * drawn — when `showPileup` is off or the group is collapsed the section
-         * reserves no pileup rows, so this collapses to 0 and no phantom scroll
-         * region opens up below the coverage band.
+         * The laid-out `sections` less the sticky band, so a hidden pileup or a
+         * collapsed group opens no phantom scroll below the coverage band.
          */
-        get pileupContentHeight() {
+        get scrollContentHeight() {
           return Math.max(
             0,
             this.sections.contentHeight - this.stickyBandHeight,
@@ -2705,16 +2700,6 @@ export default function stateModelFactory(
             fitTargetHeight: self.fitTargetHeight,
             totalOverhead: self.totalBandOverhead,
           })
-        },
-
-        /**
-         * #getter
-         */
-        get scrollableHeight() {
-          return Math.max(
-            0,
-            self.pileupContentHeight - self.pileupViewportHeight,
-          )
         },
 
         // Only the tag NAME is sent to the worker (to extract per-read
@@ -3169,7 +3154,7 @@ export default function stateModelFactory(
          * The legal range for any of the three drag-resizable bands stacked over
          * the pileup (coverage, read connections, sashimi).
          *
-         * The ceiling is what makes the drag recoverable. `pileupViewportHeight`
+         * The ceiling is what makes the drag recoverable. `scrollViewportHeight`
          * floors at 0, so without one a band dragged past the display height
          * squashes the pileup to nothing *and* carries its own resize handle off
          * the bottom edge — leaving no way back except growing the track. Each

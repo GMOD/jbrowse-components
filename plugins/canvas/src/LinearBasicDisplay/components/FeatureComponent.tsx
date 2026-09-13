@@ -170,12 +170,7 @@ const FeatureBody = observer(function FeatureBody({
   const width = view.initialized ? model.canvasWidthPx : undefined
   const height = model.height
 
-  // Bound to the panel wrapper rather than the canvas, so a wheel over a floating
-  // label — clickable, so it answers the pointer itself — is still the panel's.
-  usePanelVirtualScroll(panel, model, {
-    viewportHeight: model.height,
-    scrollZoom: view.scrollZoom,
-  })
+  usePanelVirtualScroll(panel, model, view.scrollZoom)
 
   // The model decides when to morph; the frame loop that advances it lives here
   // because it is a DOM-side effect.
@@ -356,18 +351,7 @@ const FeatureBody = observer(function FeatureBody({
         </OverlayScrollLayer>
       </div>
 
-      {/* scrollContentHeight, not contentHeight: these report where a scroll can
-          go, and the drawing height also covers fetch-buffer rows no scroll
-          reaches. */}
-      <ScrollChrome
-        scrollTop={model.scrollTop}
-        setScrollTop={n => {
-          model.setScrollTop(n)
-        }}
-        viewportHeight={model.height}
-        contentHeight={model.scrollContentHeight}
-        controlsId={canvasId}
-      />
+      <ScrollChrome model={model} controlsId={canvasId} />
 
       <BottomRightIndicators
         scrollbarWidth={model.hasOverflow ? VERTICAL_SCROLLBAR_CLEARANCE : 0}

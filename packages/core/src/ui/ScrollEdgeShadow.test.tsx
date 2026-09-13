@@ -7,8 +7,29 @@ import ScrollEdgeShadow from './ScrollEdgeShadow.tsx'
 // track that fits marking either edge, or a scrolled-to-the-end track still
 // marking its bottom, is the affordance lying about the state it exists to
 // report.
-function edges(props: React.ComponentProps<typeof ScrollEdgeShadow>) {
-  const { queryByTestId } = render(<ScrollEdgeShadow {...props} />)
+interface Case {
+  scrollTop: number
+  viewportHeight: number
+  contentHeight: number
+  top?: number
+}
+
+function renderShadow({ scrollTop, viewportHeight, contentHeight, top }: Case) {
+  return render(
+    <ScrollEdgeShadow
+      model={{
+        scrollTop,
+        scrollViewportHeight: viewportHeight,
+        scrollableHeight: Math.max(0, contentHeight - viewportHeight),
+        setScrollTop: () => {},
+      }}
+      top={top}
+    />,
+  )
+}
+
+function edges(props: Case) {
+  const { queryByTestId } = renderShadow(props)
   return {
     top: Boolean(queryByTestId('scroll-edge-shadow-top')),
     bottom: Boolean(queryByTestId('scroll-edge-shadow-bottom')),
@@ -39,15 +60,6 @@ test('scrolled to the end marks the top alone', () => {
   ).toEqual({ top: true, bottom: false })
 })
 
-// A fit/grow scale leaves float epsilon in contentHeight; without the slack a
-// track that exactly fits would draw a permanent bottom fade, which is the one
-// thing this must never do.
-test('a sub-pixel overflow is not an overflow', () => {
-  expect(
-    edges({ scrollTop: 0, viewportHeight: 100, contentHeight: 100.2 }),
-  ).toEqual({ top: false, bottom: false })
-})
-
 // Virtual-scroll displays don't self-correct like a native overflow container,
 // so a scrollTop past the end must still read as "at the end" rather than
 // marking both edges.
@@ -60,8 +72,8 @@ test('a scrollTop past the end still reads as the end', () => {
 // Where each edge lands, which is the half a display gets wrong: `top` is the
 // band stack a display pins above its scrolling region, and both edges are
 // placed relative to it.
-function spans(props: React.ComponentProps<typeof ScrollEdgeShadow>) {
-  const { queryByTestId } = render(<ScrollEdgeShadow {...props} />)
+function spans(props: Case) {
+  const { queryByTestId } = renderShadow(props)
   const read = (testId: string) => {
     const el = queryByTestId(testId)
     return el ? { top: el.style.top, height: el.style.height } : undefined

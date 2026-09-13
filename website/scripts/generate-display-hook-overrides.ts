@@ -195,9 +195,16 @@ const HOOKS: Hook[] = [
       'a no-op, right for a display that derives its hover from the live pointer; a display that STORES one and sits here keeps naming what used to be under the cursor after a zoom, a scroll or the too-large banner, since the viewport-change clear both foundations install calls this',
   },
   {
-    name: 'scrollableHeight',
+    name: 'scrollContentHeight',
     owner: 'packages/display-kit/src/TrackHeightMixin.tsx',
-    ifNotOverridden: '`Infinity` — the display does not scroll internally',
+    ifNotOverridden:
+      '0 — the display does not scroll internally, and `setScrollTop` holds it at 0',
+  },
+  {
+    name: 'scrollViewportHeight',
+    owner: 'packages/display-kit/src/TrackHeightMixin.tsx',
+    ifNotOverridden:
+      '0, so a display overriding `scrollContentHeight` alone scrolls its whole content past an empty window — override both',
   },
   {
     name: 'growTargetHeight',
