@@ -26,6 +26,11 @@
 //                generated scalar twins
 //   placedFlat   the same with the twins' arithmetic written into `place`
 //   placedSplit  rect: placedFlat's placement as an x and a y function
+//   splitTwins   span, rect, cell: an x and a y placement function that call
+//                the lifted twins, per-block values on a frame object
+//   splitTwinsOut  rect and cell: splitTwins over bench-local out-parameter
+//                copies of the pair twins (`rectSpanPx`, `snapVariantCellX`),
+//                sizing a float2 emitter that writes into its caller's array
 //
 // pileupShape's ten painters are closures of one function literal, so hand and
 // control for deletion and mismatch are one factory each, warmed with every
@@ -76,6 +81,24 @@
 // instance pays a call. Written to inline, the same design beats the copy —
 // `placedFlat` cell at 0.87-0.90x of perShape, and rect, whose flat placement is
 // still over the limit, at 0.94-0.96x split in two.
+//
+// SPLIT PLACEMENT OVER THE TWINS. Three processes at 1M, AC, load 3.0-6.2, the
+// controls 0.97-1.03x:
+//
+//             splitTwins   splitTwinsOut
+//   span      0.93-0.95
+//   rect      0.86-0.89    0.83-0.84
+//   cell      0.98-1.00    1.01-1.06
+//
+// Bytecode against the 460-byte budget, own plus already inlined: `placeSpanX`
+// 119 + 80-97 and `placeSpanY` 54 inline; `placeCellY` 74 and `placeCellX`
+// 114 + 309 inline; `placeRectTwinY` 112 + 258 inlines, while `placeRectTwinX`
+// at 277 + 317 does not, and neither does `placeRectTwinXOut` at 145 + 310 —
+// the loop spends its cumulative budget on the y side first. `placeCellXOut`
+// at 99 + 371 misses too, which is why the out-parameter cell is the slower
+// one. So split placement over the lifted twins holds at or under hand on all
+// three shapes, and a float2 emitter writing into the caller buys 3-5% on rect
+// alone.
 
 import { execSync } from 'node:child_process'
 import { performance } from 'node:perf_hooks'
@@ -1679,6 +1702,463 @@ function rectPlacedSplitInk(
   ]
 }
 
+function blockPxAt(p: FlatPx, bp: number) {
+  return p.origin + p.dir * (((bp - p.bpStart) / p.bpSpan) * p.pxSpan)
+}
+
+interface SpanFrame extends FlatPx {
+  minWidthPx: number
+  seamPx: number
+  rowHeight: number
+  scrollTop: number
+  offset: number
+  height: number
+}
+
+function spanFrameOf(block: RenderBlock, params: SpanParams): SpanFrame {
+  return {
+    ...flatPx(block),
+    minWidthPx: params.minWidthPx,
+    seamPx: params.seamPx,
+    rowHeight: params.rowHeight,
+    scrollTop: params.scrollTop,
+    offset: rowBandOffsetPx(params.rowHeight, params.rowProportion),
+    height: drawnRowHeightPx(params.rowHeight, params.rowProportion),
+  }
+}
+
+const SPAN_TWIN_BOX = new Float64Array(4)
+
+function placeSpanY(
+  c: SpanChannels,
+  g: SpanFrame,
+  i: number,
+  out: Float64Array,
+) {
+  out[1] = g.offset + g.rowHeight * c.row[i]! - g.scrollTop
+  out[3] = g.height
+}
+
+function placeSpanX(
+  c: SpanChannels,
+  g: SpanFrame,
+  i: number,
+  out: Float64Array,
+) {
+  const xa = blockPxAt(g, c.x[i]!)
+  const xb = blockPxAt(g, c.x2[i]!)
+  const width = Math.max(g.minWidthPx, Math.abs(xb - xa))
+  out[0] = spanLeft(xa, xb, width)
+  out[2] = width
+}
+
+function spanSplitTwins(
+  ctx: MarkContext2D,
+  c: SpanChannels,
+  block: RenderBlock,
+  _frame: MarkFrame,
+  params: SpanParams,
+) {
+  const { color, count } = c
+  const g = spanFrameOf(block, params)
+  const box = SPAN_TWIN_BOX
+  let last = -1
+  for (let i = 0; i < count; i++) {
+    placeSpanY(c, g, i, box)
+    placeSpanX(c, g, i, box)
+    const abgr = color[i]!
+    if (abgr !== last) {
+      last = abgr
+      ctx.fillStyle = abgrToCssRgba(abgr)
+    }
+    ctx.fillRect(box[0]!, box[1]!, box[2]! + g.seamPx, box[3]!)
+  }
+}
+
+function spanSplitTwinsInk(
+  c: SpanChannels,
+  block: RenderBlock,
+  params: SpanParams,
+  i: number,
+) {
+  const g = spanFrameOf(block, params)
+  placeSpanY(c, g, i, SPAN_TWIN_BOX)
+  placeSpanX(c, g, i, SPAN_TWIN_BOX)
+  return [
+    SPAN_TWIN_BOX[0]!,
+    SPAN_TWIN_BOX[1]!,
+    SPAN_TWIN_BOX[2]! + g.seamPx,
+    SPAN_TWIN_BOX[3]!,
+  ]
+}
+
+const CELL_TWIN_BOX = new Float64Array(4)
+
+function cellTwinFrameOf(
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: CellParams,
+) {
+  return {
+    ...flatPx(block),
+    canvasWidth: frame.canvasWidth,
+    canvasHeight: frame.canvasHeight,
+    rowHeight: params.rowHeight,
+    scrollTop: params.scrollTop,
+    height: drawnCellHeightPx(params.rowHeight),
+  }
+}
+
+type CellTwinFrame = ReturnType<typeof cellTwinFrameOf>
+
+function placeCellY(
+  c: CellChannels,
+  g: CellTwinFrame,
+  i: number,
+  out: Float64Array,
+) {
+  const top = c.row[i]! * g.rowHeight - g.scrollTop
+  if (!(top + g.height >= 0 && top <= g.canvasHeight)) {
+    return false
+  }
+  out[1] = top
+  out[3] = g.height
+  return true
+}
+
+function placeCellX(
+  c: CellChannels,
+  g: CellTwinFrame,
+  i: number,
+  out: Float64Array,
+) {
+  const x1 = blockPxAt(g, c.startEnd[i * 2]!)
+  const x2 = blockPxAt(g, c.startEnd[i * 2 + 1]!)
+  const width = snappedCellWidthPx(x1, x2, g.canvasWidth)
+  out[0] = snappedCellLeftPx(x1, x2, g.canvasWidth, width)
+  out[2] = width
+}
+
+function cellSplitTwins(
+  ctx: MarkContext2D,
+  c: CellChannels,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: CellParams,
+) {
+  const { shapeType, color, count } = c
+  const g = cellTwinFrameOf(block, frame, params)
+  const box = CELL_TWIN_BOX
+  let last = -1
+  for (let i = 0; i < count; i++) {
+    if (placeCellY(c, g, i, box)) {
+      placeCellX(c, g, i, box)
+      const abgr = color[i]!
+      if (abgr !== last) {
+        last = abgr
+        ctx.fillStyle = abgrToCssRgba(abgr)
+      }
+      drawVariantShape(ctx, shapeType[i]!, box[0]!, box[1]!, box[2]!, box[3]!)
+    }
+  }
+}
+
+function cellSplitTwinsInk(
+  c: CellChannels,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: CellParams,
+  i: number,
+) {
+  const g = cellTwinFrameOf(block, frame, params)
+  if (!placeCellY(c, g, i, CELL_TWIN_BOX)) {
+    return undefined
+  }
+  placeCellX(c, g, i, CELL_TWIN_BOX)
+  return [...CELL_TWIN_BOX]
+}
+
+function snapVariantCellXInto(
+  x1: number,
+  x2: number,
+  canvasWidth: number,
+  out: Float64Array,
+  o: number,
+) {
+  const width = snappedCellWidthPx(x1, x2, canvasWidth)
+  out[o] = snappedCellLeftPx(x1, x2, canvasWidth, width)
+  out[o + 1] = width
+}
+
+const CELL_OUT_BOX = new Float64Array(4)
+const CELL_OUT_PAIR = new Float64Array(2)
+
+function placeCellXOut(
+  c: CellChannels,
+  g: CellTwinFrame,
+  i: number,
+  out: Float64Array,
+) {
+  snapVariantCellXInto(
+    blockPxAt(g, c.startEnd[i * 2]!),
+    blockPxAt(g, c.startEnd[i * 2 + 1]!),
+    g.canvasWidth,
+    CELL_OUT_PAIR,
+    0,
+  )
+  out[0] = CELL_OUT_PAIR[0]!
+  out[2] = CELL_OUT_PAIR[1]!
+}
+
+function cellSplitTwinsOut(
+  ctx: MarkContext2D,
+  c: CellChannels,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: CellParams,
+) {
+  const { shapeType, color, count } = c
+  const g = cellTwinFrameOf(block, frame, params)
+  const box = CELL_OUT_BOX
+  let last = -1
+  for (let i = 0; i < count; i++) {
+    if (placeCellY(c, g, i, box)) {
+      placeCellXOut(c, g, i, box)
+      const abgr = color[i]!
+      if (abgr !== last) {
+        last = abgr
+        ctx.fillStyle = abgrToCssRgba(abgr)
+      }
+      drawVariantShape(ctx, shapeType[i]!, box[0]!, box[1]!, box[2]!, box[3]!)
+    }
+  }
+}
+
+function cellSplitTwinsOutInk(
+  c: CellChannels,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: CellParams,
+  i: number,
+) {
+  const g = cellTwinFrameOf(block, frame, params)
+  if (!placeCellY(c, g, i, CELL_OUT_BOX)) {
+    return undefined
+  }
+  placeCellXOut(c, g, i, CELL_OUT_BOX)
+  return [...CELL_OUT_BOX]
+}
+
+function rectTwinFrameOf(
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: FeatureGlyphParams,
+) {
+  return {
+    ...flatPx(block),
+    canvasHeight: frame.canvasHeight,
+    scrollY: params.scrollY,
+  }
+}
+
+type RectTwinFrame = ReturnType<typeof rectTwinFrameOf>
+
+function placeRectTwinY(
+  c: RectChannelsLike,
+  g: RectTwinFrame,
+  i: number,
+  out: Float64Array,
+) {
+  const boxTop = c.y[i]!
+  const boxHeight = c.height[i]!
+  const visibleTop = boxTop - g.scrollY
+  if (
+    !(
+      visibleTop + boxHeight >= -GLYPH_Y_SLACK_PX &&
+      visibleTop <= g.canvasHeight + GLYPH_Y_SLACK_PX
+    )
+  ) {
+    return false
+  }
+  out[1] = snapBoxTopPx(boxTop, boxHeight, g.scrollY)
+  out[3] = snapBoxHeightPx(boxHeight)
+  return true
+}
+
+function placeRectTwinX(
+  c: RectChannelsLike,
+  g: RectTwinFrame,
+  i: number,
+  out: Float64Array,
+) {
+  const startBp = c.startEnd[i * 2]!
+  const endBp = c.startEnd[i * 2 + 1]!
+  const [s1, s2] = rectSpanPx(
+    blockPxAt(g, startBp),
+    blockPxAt(g, endBp),
+    startBp === endBp,
+  )
+  const width = Math.abs(s2 - s1)
+  out[0] = spanLeft(s1, s2, width)
+  out[2] = width
+}
+
+const RECT_TWIN_BOX = new Float64Array(4)
+
+function rectSplitTwins(
+  ctx: MarkContext2D,
+  c: RectChannelsLike,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: FeatureGlyphParams,
+) {
+  const { color, densityFade, count } = c
+  const g = rectTwinFrameOf(block, frame, params)
+  const box = RECT_TWIN_BOX
+  const outlineStyle = params.outlineColor
+    ? abgrToCssRgba(params.outlineColor)
+    : undefined
+  if (outlineStyle !== undefined) {
+    ctx.strokeStyle = outlineStyle
+    ctx.lineWidth = 1
+  }
+  let last = -1
+  for (let i = 0; i < count; i++) {
+    if (placeRectTwinY(c, g, i, box)) {
+      placeRectTwinX(c, g, i, box)
+      const abgr = color[i]!
+      const faded = densityFade[i]!
+      const key = faded ? abgr + 0x1_0000_0000 : abgr
+      if (key !== last) {
+        last = key
+        const alpha = (abgrAlpha(abgr) / 255) * (faded ? MIN_DENSITY_ALPHA : 1)
+        ctx.fillStyle = `rgba(${abgrRed(abgr)},${abgrGreen(abgr)},${abgrBlue(abgr)},${alpha})`
+      }
+      const left = box[0]!
+      const top = box[1]!
+      const width = box[2]!
+      const height = box[3]!
+      ctx.fillRect(left, top, width, height)
+      if (outlineStyle !== undefined && rectDrawsOutline(width, height)) {
+        strokeRectInside(ctx, left, top, width, height)
+      }
+    }
+  }
+}
+
+function rectSplitTwinsInk(
+  c: RectChannelsLike,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: FeatureGlyphParams,
+  i: number,
+) {
+  const g = rectTwinFrameOf(block, frame, params)
+  if (!placeRectTwinY(c, g, i, RECT_TWIN_BOX)) {
+    return undefined
+  }
+  placeRectTwinX(c, g, i, RECT_TWIN_BOX)
+  return [...RECT_TWIN_BOX]
+}
+
+function rectSpanPxInto(
+  x1Px: number,
+  x2Px: number,
+  isPoint: boolean,
+  out: Float64Array,
+  o: number,
+) {
+  if (isPoint) {
+    out[o] = Math.floor(x1Px - 1 + 0.5)
+    out[o + 1] = Math.floor(x1Px + 1 + 0.5)
+    return
+  }
+  const left = Math.floor(x1Px + 0.5)
+  out[o] = left
+  out[o + 1] = extendToMinWidthPx(left, Math.floor(x2Px + 0.5), 2)
+}
+
+const RECT_OUT_BOX = new Float64Array(4)
+const RECT_OUT_PAIR = new Float64Array(2)
+
+function placeRectTwinXOut(
+  c: RectChannelsLike,
+  g: RectTwinFrame,
+  i: number,
+  out: Float64Array,
+) {
+  const startBp = c.startEnd[i * 2]!
+  const endBp = c.startEnd[i * 2 + 1]!
+  rectSpanPxInto(
+    blockPxAt(g, startBp),
+    blockPxAt(g, endBp),
+    startBp === endBp,
+    RECT_OUT_PAIR,
+    0,
+  )
+  const s1 = RECT_OUT_PAIR[0]!
+  const s2 = RECT_OUT_PAIR[1]!
+  const width = Math.abs(s2 - s1)
+  out[0] = spanLeft(s1, s2, width)
+  out[2] = width
+}
+
+function rectSplitTwinsOut(
+  ctx: MarkContext2D,
+  c: RectChannelsLike,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: FeatureGlyphParams,
+) {
+  const { color, densityFade, count } = c
+  const g = rectTwinFrameOf(block, frame, params)
+  const box = RECT_OUT_BOX
+  const outlineStyle = params.outlineColor
+    ? abgrToCssRgba(params.outlineColor)
+    : undefined
+  if (outlineStyle !== undefined) {
+    ctx.strokeStyle = outlineStyle
+    ctx.lineWidth = 1
+  }
+  let last = -1
+  for (let i = 0; i < count; i++) {
+    if (placeRectTwinY(c, g, i, box)) {
+      placeRectTwinXOut(c, g, i, box)
+      const abgr = color[i]!
+      const faded = densityFade[i]!
+      const key = faded ? abgr + 0x1_0000_0000 : abgr
+      if (key !== last) {
+        last = key
+        const alpha = (abgrAlpha(abgr) / 255) * (faded ? MIN_DENSITY_ALPHA : 1)
+        ctx.fillStyle = `rgba(${abgrRed(abgr)},${abgrGreen(abgr)},${abgrBlue(abgr)},${alpha})`
+      }
+      const left = box[0]!
+      const top = box[1]!
+      const width = box[2]!
+      const height = box[3]!
+      ctx.fillRect(left, top, width, height)
+      if (outlineStyle !== undefined && rectDrawsOutline(width, height)) {
+        strokeRectInside(ctx, left, top, width, height)
+      }
+    }
+  }
+}
+
+function rectSplitTwinsOutInk(
+  c: RectChannelsLike,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: FeatureGlyphParams,
+  i: number,
+) {
+  const g = rectTwinFrameOf(block, frame, params)
+  if (!placeRectTwinY(c, g, i, RECT_OUT_BOX)) {
+    return undefined
+  }
+  placeRectTwinXOut(c, g, i, RECT_OUT_BOX)
+  return [...RECT_OUT_BOX]
+}
+
 const BASE_PLAN: WalkPlan = {
   layout: WLayout.pair,
   x: WX.floor,
@@ -2335,6 +2815,8 @@ type ArmName =
   | 'placed'
   | 'placedFlat'
   | 'placedSplit'
+  | 'splitTwins'
+  | 'splitTwinsOut'
 
 const ARM_NAMES: readonly ArmName[] = [
   'hand',
@@ -2344,6 +2826,8 @@ const ARM_NAMES: readonly ArmName[] = [
   'placed',
   'placedFlat',
   'placedSplit',
+  'splitTwins',
+  'splitTwinsOut',
 ]
 
 interface Placement {
@@ -2685,14 +3169,25 @@ function buildShapes(
           paint: paintWith(spanControl, span.channels, FRAME, span.params),
         },
         ...walked(walkers.shared, walkers.span, spanPlanOf, spanWalk),
+        {
+          name: 'splitTwins',
+          paint: paintWith(spanSplitTwins, span.channels, FRAME, span.params),
+        },
       ],
       instances: [spanWalk.from, spanWalk.to],
-      placements: walkPlacements(
-        walkers.shared,
-        walkers.span,
-        spanPlanOf(span.forward),
-        spanWalk,
-      ),
+      placements: [
+        ...walkPlacements(
+          walkers.shared,
+          walkers.span,
+          spanPlanOf(span.forward),
+          spanWalk,
+        ),
+        {
+          name: 'splitTwins',
+          at: i =>
+            spanSplitTwinsInk(span.channels, span.forward, span.params, i),
+        },
+      ],
     },
     {
       name: 'deletion',
@@ -2816,6 +3311,19 @@ function buildShapes(
             rects.params,
           ),
         },
+        {
+          name: 'splitTwins',
+          paint: paintWith(rectSplitTwins, rects.channels, FRAME, rects.params),
+        },
+        {
+          name: 'splitTwinsOut',
+          paint: paintWith(
+            rectSplitTwinsOut,
+            rects.channels,
+            FRAME,
+            rects.params,
+          ),
+        },
       ],
       instances: [0, rects.channels.count],
       placements: [
@@ -2858,6 +3366,28 @@ function buildShapes(
               i,
             ),
         },
+        {
+          name: 'splitTwins',
+          at: i =>
+            rectSplitTwinsInk(
+              rects.channels,
+              rects.forward,
+              FRAME,
+              rects.params,
+              i,
+            ),
+        },
+        {
+          name: 'splitTwinsOut',
+          at: i =>
+            rectSplitTwinsOutInk(
+              rects.channels,
+              rects.forward,
+              FRAME,
+              rects.params,
+              i,
+            ),
+        },
       ],
     },
     {
@@ -2889,6 +3419,19 @@ function buildShapes(
           name: 'placedFlat',
           paint: paintWith(cellPlacedFlat, cells.channels, FRAME, cells.params),
         },
+        {
+          name: 'splitTwins',
+          paint: paintWith(cellSplitTwins, cells.channels, FRAME, cells.params),
+        },
+        {
+          name: 'splitTwinsOut',
+          paint: paintWith(
+            cellSplitTwinsOut,
+            cells.channels,
+            FRAME,
+            cells.params,
+          ),
+        },
       ],
       instances: [0, cells.channels.count],
       placements: [
@@ -2913,6 +3456,28 @@ function buildShapes(
           name: 'placedFlat',
           at: i =>
             cellPlacedFlatInk(
+              cells.channels,
+              cells.forward,
+              FRAME,
+              cells.params,
+              i,
+            ),
+        },
+        {
+          name: 'splitTwins',
+          at: i =>
+            cellSplitTwinsInk(
+              cells.channels,
+              cells.forward,
+              FRAME,
+              cells.params,
+              i,
+            ),
+        },
+        {
+          name: 'splitTwinsOut',
+          at: i =>
+            cellSplitTwinsOutInk(
               cells.channels,
               cells.forward,
               FRAME,
@@ -3045,7 +3610,7 @@ async function main() {
     `${'shape'.padEnd(10)}${'entries'.padStart(9)}${'painted'.padStart(9)}${'styles'.padStart(9)}${'hand'.padStart(20)}${ARM_NAMES.slice(
       1,
     )
-      .map(name => name.padStart(12))
+      .map(name => name.padStart(14))
       .join('')}`,
   )
   for (const [s, shape] of shapes.entries()) {
@@ -3054,7 +3619,7 @@ async function main() {
     const hand = times[0]!
     const cells = ARM_NAMES.slice(1).map(name => {
       const k = shape.arms.findIndex(arm => arm.name === name)
-      return (k === -1 ? '-' : `${(times[k]! / hand).toFixed(2)}x`).padStart(12)
+      return (k === -1 ? '-' : `${(times[k]! / hand).toFixed(2)}x`).padStart(14)
     })
     const handCell = `${hand.toFixed(2)}ms ${((hand / shape.entries) * 1e6).toFixed(1)}ns`
     console.log(
