@@ -1,6 +1,6 @@
 ---
 name: tutorial-corpus-audit
-description: Two passes over website/docs/tutorials/ — four measurements taken 2026-08-31 (no destination named, nothing starts from scratch, prose per figure, claims that do not survive checking) and the 2026-08-21 structural read (which pages are user guides wearing a tutorial's clothes, the three that want splitting at a named line, and the four duplication clusters that turned out not to exist). Population genomics ranks last on every measurement. Read before restructuring a tutorial, proposing to dedupe the corpus, or quoting one of its censuses.
+description: Two passes over website/docs/tutorials/ — four measurements taken 2026-08-31 (no destination named, nothing starts from scratch, prose per figure, claims that do not survive checking) and the 2026-08-21 structural read (which pages are user guides wearing a tutorial's clothes, the two that want splitting at a named line, and the four duplication clusters that turned out not to exist). Population genomics ranks last on every measurement. Read before restructuring a tutorial, proposing to dedupe the corpus, or quoting one of its censuses.
 ---
 
 # The tutorial corpus, audited
@@ -20,40 +20,7 @@ pages head three different rankings.
 `check-prereq-tools` asserts every tool a `## Prerequisites` names gets run on
 the page. Nothing asserts the reverse.
 
-| | count |
-| --- | --- |
-| pages linking neither quickstart | 21 / 48 |
-| of those, ending on `npx --yes serve <build>/jbrowse2` | 11 |
-| of those, mentioning **Add track** anywhere | 1 |
-
-    allvsall_synteny, analyze_trio, cancer_sv, display_settings, dtu,
-    genomes_basics, genomes_pangenome, genomes_proteins, genomes_synteny,
-    hic_structural_variants, homoeolog_synteny, k562_fusions, ld_human,
-    ld_mosquitoes, mappability_qc, multiway_synteny_grape_peach_cacao,
-    population_genomics, repeatmasker_classes, selection_pressure,
-    sv_callset_review, sv_contact_maps
-
-The dominant ending is a **third route** that is neither quickstart: the build
-script downloads its own JBrowse, writes a config into it, and the reader serves
-that directory. Every one of those scripts also writes plain local files, which
-is the Desktop case, and the page does not say so.
-
-Two pages already carry the line. `population_cnv` §Prerequisites, first bullet:
-
-> a JBrowse instance to paste a track into (see the web quickstart, or the
-> desktop quickstart: every file here is a URL, so Desktop needs nothing hosted)
-
-`dog10k_selection` §Prerequisites, closing sentence:
-
-> The scripts write local files, which JBrowse Desktop opens by path and JBrowse
-> Web takes through **Add track**.
-
-**Landed 2026-08-31.** One bullet on 15 pages, in whichever of those two shapes
-matches the data; `display_settings` already named both apps and grew the links;
-`sv_callset_review` scopes its line to the one section that opens a browser.
-**21 → 4.**
-
-The remaining four are `genomes_basics`, `genomes_pangenome`, `genomes_proteins`
+Four pages link neither quickstart: `genomes_basics`, `genomes_pangenome`, `genomes_proteins`
 and `genomes_synteny`, and they are correct as they stand: each is a click-path
 through genomes.jbrowse.org, so the hosted site *is* the destination and the
 prerequisite already reads "nothing to install".
@@ -64,10 +31,6 @@ genomes.jbrowse.org — that third arm is what keeps the four above passing, and
 check without it would push a wrong bullet onto them.
 
 ## 2. Nothing starts from scratch, and nothing is Desktop
-
-From `ideas/tutorial-tours-from-scratch.md`: 13 of 21 tours open with the data
-already drawn, one opens on an app with nothing in it, none opens on an app with
-no assembly.
 
 ### The Desktop conclusion in that doc is too wide
 
@@ -95,7 +58,7 @@ them.
 
 **Proposal.** `desktop/open_a_local_file` — start screen, genome opened, a build
 script's own output file opened from disk, track drawing. One clip, linkable from
-the 11 pages in §1.
+every page whose build script ends on `npx --yes serve <build>/jbrowse2`.
 
 **Cheaper, first.** Ranks 2 and 3 of that doc's table are already drivable in the
 web harness (`test_data/empty.json`, no assemblies; `test_data/hg38_only.json`,
@@ -159,15 +122,6 @@ Two checkers could hold it and neither reaches the corpus:
   draws it. **A caption arm is not worth building.** Recorded because the blunt
   grep is the obvious first move and it overstates by ~2x.
 
-Worked example of the prose case:
-
-    scripts/build_dog10k_wolfdog_ancestry.sh:284
-    echo "Wolf blocks per animal on $CHROM (count, median kb, longest kb):"
-
-`local_ancestry` states the Tamaskan's longest as 1.5 Mb, the Shiloh Shepherd's
-as 17.5 Mb, every other breed as stopping at 2.4 Mb — three figures transcribed
-from a run nobody can re-take, on a page whose figure shows the contrast.
-
 **Fix.** Widen `check-quoted-figures` scope from the measurement marker to all of
 `tutorials/`, and add a caption arm, both ratcheted from the counts above. The
 rule needs no writing.
@@ -179,44 +133,14 @@ rule needs no writing.
 - **Result.** Block lengths, window counts, sample counts, file sizes. The
   figure carries it; the prose copy rots alone.
 
-Two hard cases:
+One hard case:
 
 - `dog10k_selection`'s `"significanceLine": 0.295` is a result inside a config
   block, the one place a result cannot be cut. The page already says the line is
   a quantile of its own windows and that rebinning means re-taking it. Pattern
   to copy.
-- `local_ancestry`'s 17.5 Mb against 2.4 Mb is a result and the page's finding.
-  It goes; the figure replaces it. If the Shiloh row is not visibly unlike every
-  other breed row, the figure is what needs fixing.
 
 ## 4. Claims that do not survive checking
-
-Fixed 2026-08-31, each edit net shorter than what it replaced:
-
-| page | was | now |
-| --- | --- | --- |
-| `ld_human` | "the 89 kb of _LCT_ and _MCM6_ that selection acted on" | `rs4988235` named as an enhancer variant in _MCM6_ intron 13 |
-| `ld_mosquitoes` | "arrangements **cannot recombine** in a heterozygote" | crossing over suppressed in a heterokaryotype; gene flux still crosses |
-| `population_genomics` | caption: "the joint trough being the hard-sweep signature" | caption stops at the observation |
-| `population_genomics` | "a few megabases past each breakpoint, the margin Corbett-Detig & Hartl report" | differentiation decays outside the breakpoints |
-
-Why each was wrong:
-
-- **89 kb** is the span of the two gene bodies. Selection acted on one
-  regulatory variant, and the swept haplotype is far wider than the two genes —
-  which is what the triangle in the same figure draws. The page was arguing
-  against its own picture.
-- **"cannot recombine"** overstates suppression. Gene flux (double crossovers,
-  gene conversion) crosses between arrangements and reaches an inversion's
-  interior more than its breakpoint-proximal regions, so LD and differentiation
-  across a long inversion are not expected to be uniform. `ld_mosquitoes:204`
-  then read its figure as uniform and stated it as mechanism; it now names the
-  thinning the table was built at (one variant per 50 kb, 0.2 MAF).
-- **hard sweep** contradicts Schmidt et al. 2010, cited two paragraphs above,
-  which describes staged adaptation at _Cyp6g1_ — and the page's own prose says a
-  duplication is still segregating alongside the resistance allele.
-- **"a few megabases"** was a citation-shaped number, unverified against the
-  paper, restating what the caption two lines up already says.
 
 ### The prose that should be a figure instead
 
@@ -288,9 +212,6 @@ If they could, it is a user guide wearing a tutorial's clothes."
   half of this entry is done and not worth re-proposing: the page visits five
   sets, and each owns one `##` that leads with its organisms and names its set
   id.
-- **`scatac_pseudobulk.md`** — three of six sections are self-declared
-  alternatives, and `:92-93` says so: "Every route ends the same way ... the rest
-  of this page does not care which produced them."
 - **`genomes_proteins.md`** — two independent launchers off one menu, three genes
   each demonstrating one capability, plus a comparison table and an install
   section. The opening video already shows all three views connected, so §3 and
@@ -307,11 +228,6 @@ If they could, it is a user guide wearing a tutorial's clothes."
   says it replaces the previous section's reading; `## Thin the matrix down to
   recurrent mutations` says it empties the window the histology figure is built
   on. Both belong in `user_guides/multivariant_track` and `clustering`.
-- **`ld_mosquitoes.md`** — `:197-208` restates
-  `config_guides/variant_track#linkage-disequilibrium-ld-display`, which it links
-  in its own opening line. Delete it; move the plink2 note (`--r2 dprime` also
-  switches r² to the haplotype-frequency estimate, and plink2 removed `--r2`)
-  into the guide, which lacks it.
 
 **On `ld_human` vs `ld_mosquitoes`: keep two pages.** This is the "second dataset
 the first raised the question for" case — `ld_human` establishes live r² from a
@@ -349,9 +265,6 @@ donor.
   `hg002_haplotypes` page. Page B has a real chain: index → tier finds the bubble
   → fine index opens it → carriage says who → the node's menu opens CFT073 → the
   file cut brings the paths back.
-- **`pangenome_hprc.md`** (58 KB) — cut at `## The variant callset` (line 855).
-  The page announces its own failure at `:51-55`: "opens three of its products".
-  The 6.3 KB RepeatMasker excursion at `:460-614` belongs to neither half.
 
 ## 7. Duplication: four expected clusters that do not exist
 
@@ -395,8 +308,7 @@ with no chains", §"Sorting the queue is what makes it finishable".
 
 ## Order
 
-§1 is one line per page plus a ratchet, widest reach. §4's edits are landed; its
-two figures are unshot. §3 is a scope change to an existing checker plus a rule
+§1 is one checker, widest reach. §4's two figures are unshot. §3 is a scope change to an existing checker plus a rule
 in `docs/tutorials/CLAUDE.md`. §2 is the only real work. §5-7 are editorial calls
 on pages that already work, so they wait on someone deciding to take a page
 apart; §6 is the cheapest of the three, because each cut is at a line number.

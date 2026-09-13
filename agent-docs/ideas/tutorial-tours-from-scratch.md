@@ -1,21 +1,10 @@
 ---
 name: tutorial-tours-from-scratch
-description: Ten proposed video tours that open on an app with no genome or no track, the four starting points the harness can actually drive, and the ten numbered machinery gaps behind them. Read before proposing a tour for an entry-point page or a zero-figure user guide.
+description: Proposed video tours that open on an app with no genome or no track, the four starting points the harness can actually drive, and the numbered machinery gaps behind them. Read before proposing a tour for an entry-point page or a zero-figure user guide.
 audience: internal
 ---
 
 # Tours that start near scratch
-
-Twenty-one tours exist across 43 tutorials and 30 user guides. Before the three
-this doc's first three proposals became, **one opened on an app with nothing in
-it** (`sv/inspector_route`, `sessionSpec(DEMO_CONFIG, {
-views: [] })`). Two more are adjacent: `synteny/three_strain_import` opens on an
-empty import form, `proteins/gene_explorer` opens outside JBrowse entirely. Two
-open with an assembly and one light track and no subject data, so the tour can
-add it (`pangenome/hprc_end_to_end`, `ui/open_track_url`). The other thirteen
-open with the data already drawn.
-
-**No tour anywhere opens on an app with no assembly.**
 
 ## What "from scratch" can mean, ranked by what the harness can drive
 
@@ -55,40 +44,12 @@ minutes of fetching under a cut.
 
 **Tutorials come first, and they are in
 [tutorial-tour-candidates.md](tutorial-tour-candidates.md).** That is Colin's
-standing preference and this file's list does not reflect it: three of its four
-filmed-or-top entries are user guides, which is the wrong end of the corpus to
-have started at. What stays here is the from-scratch analysis, the harness gaps,
-and the user-guide proposals for when the tutorial list is worked down.
+standing preference. What stays here is the from-scratch analysis, the harness
+gaps, and the user-guide proposals for when the tutorial list is worked down.
 
 Ordered by (value to a reader) / (risk the harness chokes). Each names the prose
 it would let its page delete, since a tour that only adds is the weaker kind.
 
-**The first three are filmed** (`9649aa585a`), which took one harness fix and
-one new testid; see the gaps below. Two more have since left this list for the
-tutorial one (4 and 10), so the five that remain here are all user guides.
-
-1. ~~**`ui/sequence_search_motifs`**~~ **filmed** — `user_guides/sequence_search.md`, 106 lines
-   and **zero figures**, three dialog modes never pictured. Opens on an LGV with
-   **no tracks at all** and ends with one lane per restriction enzyme, produced
-   from the reference itself. Deletes the `Launch as one track` /
-   `Launch one track per motif` bullets. Nothing fetches, so this is the cheapest
-   clip in the corpus and the pilot.
-2. ~~**`ui/bulk_add_tracks`**~~ **filmed** — `user_guides/basic_usage.md`. Five URLs pasted
-   scrambled, each index away from its data file, and the preview table sorts
-   them. Deletes ten lines that have no figure. The order is the point and
-   only a clip can scramble it.
-3. ~~**`ui/add_genome`**~~ **filmed** — `quickstart_adminserver.md`, opening on
-   `test_data/empty.json`, **no assemblies**. Tools → Assembly manager → Add new
-   assembly → Open from a URL → three URLs → the form names the genome itself.
-   The prose it replaces is *wrong*: the button is `Add new assembly`, there is
-   no "Create New Assembly" anywhere in the tree, and there is no `type:` picker
-   on the happy path (`packages/core/src/ui/AddGenomePane.tsx:170-200`).
-4. ~~**`genomes/find_a_track`**~~ **moved** — it is a TUTORIAL page, so it is
-   candidate 17 in [tutorial-tour-candidates.md](tutorial-tour-candidates.md)
-   now. Same proposal: typing `phyloP` into **Filter tracks** collapses ~570
-   categories to two hits, the page's headline claim ("a checkbox away") is
-   three clicks in one paragraph with no figure, and a drawer figure was made
-   and cut twice.
 5. **`ui/open_connection_hub`** — `user_guides/connections.md`, 105 lines and
    **zero figures**. Opens on `hg38_only.json` (`"tracks": []`), so everything on
    screen at the end came from the hub. Films the behaviour the page asserts and
@@ -106,14 +67,6 @@ tutorial one (4 and 10), so the five that remain here are all user guides.
 9. **`ui/plugin_store_install`** — `user_guides/plugin_store.md`, 40 lines with
    **no menu path anywhere on it**. The tour supplies the missing route and shows
    the consequence: a menu that was not there a second earlier.
-10. ~~**`ui/settings_to_json`**~~ **filmed**, as `config/settings_to_json` and on
-    the tutorial list, where it is candidate 15. **The pileup objection that
-    ranked it tenth here was wrong**, and it is the whole reason this one was
-    ranked last: `volvox-sv.cram` is 42 KB of local `test_data` over 10 kb,
-    against two tours already filming a 200x ONT CRAM and a remote 5mC pileup.
-    A pileup is a size question, not a kind. What was right is the drag — gap 4 below still
-    stands, so the tour takes the three MENU settings and the fixture pins the
-    height.
 
 ## Machinery gaps
 
@@ -128,34 +81,25 @@ tutorial one (4 and 10), so the five that remain here are all user guides.
    `ScreenshotSpec` has both, and a no-config tour needs both.
 3. **`scrollTo` cannot scroll a drawer or a dialog.** `scrollPage` walks up from
    `[data-testid^="view-container-"]` (`video-overlay.ts:214-239`), so on a tour
-   whose subject IS the drawer it scrolls the views instead. Blocks proposals 2
-   and 9; today the only lever is a taller viewport.
+   whose subject IS the drawer it scrolls the views instead. Blocks proposal 9;
+   today the only lever is a taller viewport.
 4. **`ResizeHandle` publishes no selector** (`packages/core/src/ui/ResizeHandle.tsx:69-87`)
    — a bare `<div>` with emotion classes. A track-height drag is therefore
-   measured pixels, which is the one thing this corpus refuses, so proposal 10
-   drops its drag. Two-line fix on the component.
-5. **A multiline field could not be cleared** — FIXED. `clear: true` triple-
-   clicked, which selects one LINE, so on a textarea it left every other line in
-   place and typed the new value into the middle of them. It cost a whole take
-   of `sequence_search_motifs`: the enzyme list stopped parsing, both submit
-   buttons went disabled, and the tour clicked one and filmed nothing happening.
-   `actions.ts` calls `select()` now.
-6. **The bulk-add paste box had no testid** — FIXED (`bulk_track_urls`). Worth
-   noting what the gap looked like from outside: `Open` is a prefix of `Open
-   from a URL`, `Open track...` and `Open file from URL or local computer`, so
-   there was no text to match on either.
-7. **The LGV import form's Open button has no testid**
+   measured pixels, which is the one thing this corpus refuses, so
+   `config/settings_to_json` drops its drag. Two-line fix on the component.
+
+7) **The LGV import form's Open button has no testid**
    (`ImportForm.tsx:196-203`), and `Open` is a prefix of `Open from a URL`,
    `Open track...` and `Open file from URL or local computer`. `videos/sv.ts:200-209`
-   records what that cost once already. Three of the ten proposals click it.
-8. **Nothing pairs a typed URL with the page that prints it.**
+   records what that cost once already.
+8) **Nothing pairs a typed URL with the page that prints it.**
    `validateVideoSpecs` demands a `pastedTrackConfigs` entry only for a `type`
    step whose value starts with `{`, and `check-paste-configs` compares against
    `json*` fences only. The exposure is already live: `sv/inspector_route` types
    a VCF URL against the one at `sv_inspector_view.md:44`, and a rehost moves one
-   and not the other. **Six of the ten proposals type a URL, and two of the three filmed ones do.** Extending the pair
+   and not the other. Extending the pair
    to `{ video, doc, text }` needs no new mechanism.
-9. **There is no embedded mode for a tour.** `VideoSpec` carries a `url` and
+9) **There is no embedded mode for a tour.** `VideoSpec` carries a `url` and
    nothing else, and `generate-video.ts` serves the jbrowse-web build
    (`dev-harness.ts`, `jbrowseWebRoot`); the screenshot harness has had
    `mode: 'embedded'` with a `viewState` prop all along
@@ -166,7 +110,7 @@ tutorial one (4 and 10), so the five that remain here are all user guides.
    UMAP-filters-the-rows link, which lives in the react-LGV examples site.
    Neither is a tour worth building the mode FOR — recorded so the next survey
    does not re-derive it.
-10. **A dialog's own scrollable field cannot be scrolled by the harness.** Gap 3
+10) **A dialog's own scrollable field cannot be scrolled by the harness.** Gap 3
     covers the drawer and the dialog as containers; this is one level in from
     that. `config/settings_to_json` ends on a 20-row readable-JSON panel whose
     keys are most of the way down an 80-line session, and the only lever is to
