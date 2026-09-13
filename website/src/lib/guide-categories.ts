@@ -125,6 +125,8 @@ export const TUTORIAL_ORDER = [
   'pangenome_ecoli',
   'pangenome_cactus',
   'pangenome_hprc',
+  'pangenome_graph_reading',
+  'pangenome_graph_nested',
   'pangenome_prepare_graph',
   'sv_visualization_cgiab',
   'sv_multisamples',

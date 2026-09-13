@@ -31,6 +31,7 @@ import { genomesBasicsSpecs } from './specs/genomes_basics.ts'
 import { ecoliGraphSpecs } from './specs/graph-ecoli.ts'
 import { hprcGraphSpecs } from './specs/graph-hprc.ts'
 import { nonHumanGraphSpecs } from './specs/graph-nonhuman.ts'
+import { graphReadingSpecs } from './specs/graph-reading.ts'
 import { gwasSpecs } from './specs/gwas.ts'
 import { hg002HaplotypeSpecs } from './specs/hg002_haplotypes.ts'
 import { hicSpecs } from './specs/hic.ts'
@@ -103,6 +104,7 @@ export const specs: ScreenshotSpec[] = [
   ...ecoliGraphSpecs,
   ...hprcGraphSpecs,
   ...nonHumanGraphSpecs,
+  ...graphReadingSpecs,
   ...cookbookSpecs,
   ...embeddedSpecs,
   ...jbrowseImgSpecs,

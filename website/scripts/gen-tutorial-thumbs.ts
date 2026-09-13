@@ -461,6 +461,17 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'pangenome/hprc_c4_subgraph.png',
     band: [0.49, 1],
   },
+  pangenome_graph_reading: {
+    // The KIV-2 window force-directed with its bubbles haloed: the knot of
+    // loops and the labels naming each bubble, below the linear lanes.
+    src: 'pangenome/graph_kiv2_halos.png',
+    band: [0.62, 1],
+  },
+  pangenome_graph_nested: {
+    // The Dock2 bubble as one haloed superbubble, the graph pane only.
+    src: 'pangenome/graph_mouse_dock2_halos.png',
+    band: [0.5, 1],
+  },
   pangenome_hprc_part3: {
     // The eight lanes with their own contig names and coordinates in the row
     // labels, which is the whole of what this half is about. Cropped from the
