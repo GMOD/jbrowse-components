@@ -87,7 +87,7 @@ src/
     index.ts                     registers the display type; the model and the component both load lazily
     model.ts                     MST model: rpcDataMap, renderState, fetchNeeded, startRenderingBackend, renderSvg
     renderSvg.tsx                SVG export: the mark list painted through renderDisplaySvg
-    scoreMark.ts                 the `score` shape: score.slang's pass, its uniform write, its painter (also the SVG export) and its ink, which is the hit test and the highlight
+    scoreMark.ts                 the `score` shape: score.slang's pass, its uniform write, and the placement its painter (also the SVG export) and its ink (the hit test and the highlight) both read
     scoreMarks.ts                ScoreRenderState, the mark list (one `score` mark over the RPC payload) and the backend type
     components/
       ScoreDisplayComponent.tsx  React: DisplayChrome wrapping the canvas; builds the backend from the mark list

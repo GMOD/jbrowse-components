@@ -149,6 +149,11 @@ Canvas2D-vs-GPU parity gate cannot catch the strand case.
   reads it; `sweepDrawAgainstHit` holds the box to the painting within a pixel.
   A shape writes `hitNearest` only where its ink is not a box, or its hit rule
   is not the box (`point`'s glyph cluster). ADR-110.
+- **A box shape places each instance once**, through module-level placement
+  functions that call the generated twins and write onto a per-block frame
+  object that `paintBlock`, `ink` and any `hitNearest` share —
+  `plugins/alignments/benches/rectWalker.bench.ts` is the record of the design,
+  and `benches/placeWalkers.bench.ts` holds each port to the painter it retired.
 - **A pass that samples a colour ramp declares it as `texture` on `defineMark`**
   rather than uploading one itself: the backend binds the 256-entry LUT once per
   pass, re-uploads only when the bytes' identity moves, and binds an inert table
