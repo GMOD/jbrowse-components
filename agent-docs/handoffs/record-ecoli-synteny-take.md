@@ -1,6 +1,6 @@
 ---
 name: record-ecoli-synteny-take
-description: The E. coli synteny take is written, verified from the CLI on two machines and still never shot — two Linux attempts on 2026-09-09 each ended in a harness fix rather than a clip — four turns that align two strains with minimap2 on camera and land on the LEE island. Everything it needs is in the tree and it runs on either platform's TUI harness. Read before filming any agent-client clip, and before reaching for the Claude-app harness, which was tried and judged not showcase material.
+description: The E. coli synteny take is written, verified from the CLI on two machines and still never shot — a third Linux attempt reached turn four before the recorder's 600-second cap and a gene track stuck loading in the synteny row stopped it — four turns that align two strains with minimap2 on camera and land on the LEE island. Everything it needs is in the tree and it runs on either platform's TUI harness. Read before filming any agent-client clip, and before reaching for the Claude-app harness, which was tried and judged not showcase material.
 ---
 
 # Record the E. coli synteny take
@@ -98,6 +98,31 @@ and the app side by side with the agent's own answer on screen.
   because a cap firing mid-turn types the next prompt into a working session —
   `recordDemoMac.mjs` has passed 40 minutes for exactly that reason and
   `recordDemoTui.mjs` now does too.
+
+## A third attempt, 2026-09-10 00:10, and where it stopped
+
+`~/jbrowse-ecoli-take/demo.mp4` is 10:00 of a take that went further than
+either earlier attempt. The agent aligned the pair, merged the two genark
+configs and opened the synteny view by 00:14. It added the dotplot, and by
+00:17 it had answered turn three from the PAF: 83 blocks, 912,869 bp of Sakai
+unaligned across 82 gaps, the largest ten tabled. Turn four read `stx1A`/`stx1B`
+off the Sakai gene track and navigated the Sakai row to
+`NC_002695v2:2,923,000-2,927,000`, the Stx1 prophage rather than LEE. Then it
+stalled on camera: three `waitReady` calls (30 s, 30 s, 60 s) each reported
+`GCF_000008865.2-ncbiGene` as `phase: loading`. The synteny view drew no track
+under the Sakai row, and its ribbons were gone.
+
+- **The recording stopped at 600 s whatever the turns were doing.**
+  `recordDemoTui.mjs` handed `recorder.py` a fixed 600-second cap, so raising
+  the turn cap to 40 minutes still left a four-turn take a ten-minute camera.
+  The cap now derives from the turn cap.
+- **The stalled display is not UCSC being slow.** The Sakai bigBed returned 6
+  features for that window in 522 ms on 2026-09-13, and the agent had already
+  read them. The autosave holding the stalled state is
+  `~/jbrowse-ecoli-take/userdata/autosaved/1789013548075-0.json`.
+- The session ran on Sonnet 5 (`start-session.sh` passes `--model sonnet`) and
+  reached 156k of its 200k context by turn four, which leaves one more
+  diagnose-and-retry loop before it compacts on camera.
 
 **Check UCSC before shooting.** The take's own data is local, but its SYSTEM
 tells the agent to merge the two hosted genark configs, and turn four reads gene
