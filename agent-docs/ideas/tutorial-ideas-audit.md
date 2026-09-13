@@ -134,10 +134,10 @@ neighbor, or the same variant in a constrained versus unconstrained gene).
 
 **Notebooks, Python and R.** `jbrowse-anywidget` (`~/src/jbrowse-anywidget`) and
 JBrowseR (`~/src/JBrowseR`) are both being revitalized, so the tutorial should
-cover both rather than only the Python side. Today `docs/jbrowse_jupyter.md`
+cover both rather than only the Python side. Today `docs/jbrowse_anywidget.md`
 describes the anywidget and six tutorials embed copy-paste snippets, but nothing
 teaches the loop: set `view.location`, read it back after the user pans, drive a
-synteny view or dotplot through `JBrowseApp`. Note `docs/jbrowse_jupyter.md`
+synteny view or dotplot through `JBrowseApp`. Note `docs/jbrowse_anywidget.md`
 already calls the anywidget the modern replacement for the Dash-based
 `jbrowse-jupyter`, so the tutorial should not send readers to the old package.
 
@@ -177,8 +177,8 @@ reasons, and the guide adapter emits sequence-property triage metrics
 
 **GWAS to a fine-mapped locus.** `GWASTrack` plus `PlinkLDAdapter` /
 `PlinkLDTabixAdapter` ship with LocusZoom-style r-squared coloring and
-right-click re-anchoring of the index SNP. The gallery card
-(`gallery/gwas_bmi_fto`) points at a user guide because no tutorial exists.
+right-click re-anchoring of the index SNP. Only a user guide
+covers it.
 Distinct from `ld_human.md`, which teaches the triangle at a kb-scale sweep.
 
 **Long-read transcriptome and isoforms.** Would double the thinnest category.
@@ -197,7 +197,7 @@ genes and annotation section on the landing page.
 
 **Non-model organism with no config.** `&hubURL=` against a UCSC GenArk hub is
 the fastest path from nothing to a browser for a plant or animal lab, and today
-it is a gallery card plus a 46-line user guide. Overlaps with
+it is a user guide. Overlaps with
 genomes.jbrowse.org, so decide whether the walkthrough teaches the hub parameter
 or the hosted instance, and cross-link the other.
 
@@ -306,7 +306,8 @@ your lab's data tutorial, one tier up in scale.
 
 ### The genomes.jbrowse.org pages (2026-08-08 audit)
 
-`genomes_basics`, `genomes_synteny` and `genomes_msa` read against the live
+`genomes_basics`, `genomes_synteny` and `genomes_msa` (since merged into
+`genomes_proteins`) read against the live
 `hg38` hub config, the jb2hubs feature flags, and the JBrowse source for every UI
 label they name. What was wrong is fixed. What is left needs a figure or a
 decision.
@@ -323,15 +324,13 @@ on a stub. Only `/orthologs` of that set is live in production, and its per-row
 **Synteny** links are deliberately ungated, so they work there too
 (`jb2hubs/agent-docs/ORTHOLOGS_LAUNCH_FOLLOWUPS.md`). Check the flag before
 linking anything else on that site, and expect `/protein-browser` to overlap
-`genomes_msa` heavily when it ships.
+`genomes_proteins` heavily when it ships.
 
-**UniProt in genome coordinates is now used, the rest of the set is not.**
-`genomes_msa` gained a section pairing the MSA's CDD overlay with
-`hg38-unipDomain` (verified against the UCSC API: Pyrin, NACHT, FIIND and CARD
-over NLRP1, minus strand). Fourteen more UniProt tracks are in the same config,
-covering chains, disulfide bonds, transmembrane segments, modified residues and
-sequence conflicts. That is the "UniProt protein features on the genome" idea
-above, reachable off the hosted hub rather than off `config_demo.json`.
+**UniProt in genome coordinates is unused.** The hosted `hg38` hub carries
+`hg38-unipDomain` and fourteen more UniProt tracks (chains, disulfide bonds,
+transmembrane segments, modified residues, sequence conflicts). That is the
+"UniProt protein features on the genome" idea above, reachable off the hosted
+hub rather than off `config_demo.json`.
 
 **`genomes_synteny` follows two datasets, and the obvious fix is wrong.** Prose
 is TNNT3/hs1, the walkthrough figure is FTO/panTro6, and `tutorials/CLAUDE.md`
@@ -396,7 +395,7 @@ not as a data-loading walkthrough.
 
 **Three bring-your-own examples nobody has written**, from a headless one-line
 note (`064dd09cca`): session save/restore, linked views, and base-level
-sequence. None of the eighteen pages under
+sequence. None of the nineteen pages under
 `products/jbrowse-build-your-own/examples-site/src/examples/` covers any of
 them. That site's arc is one page adds one thing, so each is a page rather than
 a section — see [lightweight-toolkit](lightweight-toolkit.md) for what the

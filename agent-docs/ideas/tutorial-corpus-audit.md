@@ -123,8 +123,7 @@ Two checkers could hold it and neither reaches the corpus:
   grep is the obvious first move and it overstates by ~2x.
 
 **Fix.** Widen `check-quoted-figures` scope from the measurement marker to all of
-`tutorials/`, and add a caption arm, both ratcheted from the counts above. The
-rule needs no writing.
+`tutorials/`, ratcheted from the counts above. The rule needs no writing.
 
 ### Which numbers stay
 
