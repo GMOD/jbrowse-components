@@ -911,6 +911,25 @@ test('a lane annotated through a connection has an annotation', () => {
   ).toBe(true)
 })
 
+test('two mates spelling one assembly two ways both draw from its one gene track', () => {
+  const { display } = createDisplayWithSession({
+    geneTracks: [
+      { trackId: 'volvox_genes', assemblyNames: ['volvox'] },
+      { trackId: 'volvox_random_genes', assemblyNames: ['volvox_random'] },
+    ],
+    assemblyAliases: { 'sample#1#vr': 'volvox_random' },
+  })
+  display.setFeatures([
+    mateRecord('f1', 'volvox_random', 'gene1'),
+    mateRecord('f2', 'sample#1#vr', 'gene2'),
+  ])
+  expect([...display.laneGeneAdapters.keys()]).toEqual([
+    'volvox',
+    'volvox_random',
+    'sample#1#vr',
+  ])
+})
+
 // A star of pairwise alignments — the HPRC vs-GRCh38 PAF, a
 // MultiPairwiseSyntenyAdapter — holds no mate-vs-mate rows, so the second
 // gutter down had nothing to draw. Wherever two lanes cover one stretch of the

@@ -1060,25 +1060,21 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * per lane, the session's own gene track for that assembly: the
-       * best-ranked feature track declared for it alone. The real pipelines
-       * this display connects to (jcvi MCScan, HPRC CAT) derive their gene BEDs
-       * from exactly these annotations, so the lane's exon structure comes
-       * from the file the table was built from.
-       *
-       * RANKED, not a set. GFF3 only was too narrow — a lane annotated by a
-       * GTF or a BigBed read as `· no annotation`, which is the header
-       * asserting something false about a track sitting in the same session,
-       * with no error to debug from. But a flat widening picks by declaration
-       * order, and the config shape this display meets (`hg38-genes` beside
-       * `hg38-rmsk`) has the repeats in BED and the genes in GFF3 — so
-       * "anything with features" would newly prefer the repeats. Rank instead,
-       * and the old behaviour is what the top rank already gives.
+       * per lane, the session's best-ranked annotation track declared for
+       * that assembly alone (`annotationRank`). Ranked rather than first
+       * found, since a config routinely puts `hg38-rmsk` in BED beside
+       * `hg38-genes` in GFF3. One pass over the tracks against the lanes'
+       * canonical names, so a cohort of lanes costs no more than one
        */
       get laneGeneAdapters() {
         const session = getSession(self)
-        const { assemblyManager } = session
-        const lanes = [self.anchorAssemblyName, ...self.rowAssemblies]
+        // two mates can spell one assembly two ways, and both lanes draw from
+        // the one track
+        const lanesByKey = new Map<string, string[]>()
+        for (const lane of [self.anchorAssemblyName, ...self.rowAssemblies]) {
+          const key = self.laneKey(lane)
+          lanesByKey.set(key, [...(lanesByKey.get(key) ?? []), lane])
+        }
         const best = new Map<
           string,
           { rank: number; track: AnyConfigurationModel }
@@ -1092,26 +1088,25 @@ export function stateModelFactory(
             typeof type === 'string' ? type : undefined,
           )
           if (names.length === 1 && rank !== undefined) {
-            // every lane the track answers for, not the first: two mates can
-            // spell one assembly two ways and both lanes draw from the one
-            // track
-            for (const lane of lanes) {
-              const held = best.get(lane)
-              if (
-                (held === undefined || rank < held.rank) &&
-                isSameAssemblyName(names[0], lane, assemblyManager)
-              ) {
-                best.set(lane, { rank, track })
-              }
+            const key = self.laneKey(names[0]!)
+            const held = best.get(key)
+            if (
+              lanesByKey.has(key) &&
+              (held === undefined || rank < held.rank)
+            ) {
+              best.set(key, { rank, track })
             }
           }
         }
         const out = new Map<string, Record<string, unknown>>()
-        for (const [lane, { track }] of best) {
-          out.set(
-            lane,
-            readConfObject(track, 'adapter') as Record<string, unknown>,
-          )
+        for (const [key, { track }] of best) {
+          const adapter = readConfObject(track, 'adapter') as Record<
+            string,
+            unknown
+          >
+          for (const lane of lanesByKey.get(key)!) {
+            out.set(lane, adapter)
+          }
         }
         return out
       },

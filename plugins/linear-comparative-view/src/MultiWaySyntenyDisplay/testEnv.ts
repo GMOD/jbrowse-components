@@ -62,11 +62,13 @@ export function createDisplayWithSession({
   geneTracks = [{ trackId: 'volvox_genes', assemblyNames: ['volvox'] }],
   connectionGeneTracks = [],
   rpc = async () => [],
+  assemblyAliases = {},
 }: {
   syntenyAdapter?: Record<string, unknown>
   geneTracks?: GeneTrackSpec[]
   connectionGeneTracks?: GeneTrackSpec[]
   rpc?: RpcCall
+  assemblyAliases?: Record<string, string>
 } = {}) {
   const pluginManager = new PluginManager()
   const configSchema = configSchemaFactory()
@@ -200,7 +202,7 @@ export function createDisplayWithSession({
         // before the RPC; without it a test that commits features watches them
         // fail on a TypeError a lane's own error handling then swallows
         waitForAssembly: () => Promise.resolve(testAssembly()),
-        getCanonicalAssemblyName: () => undefined,
+        getCanonicalAssemblyName: (name: string) => assemblyAliases[name],
         // an all-vs-all file's other samples are lanes the session cannot
         // navigate or fetch against
         has: (name: string) => HELD_ASSEMBLIES.has(name),
