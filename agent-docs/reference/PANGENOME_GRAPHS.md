@@ -919,8 +919,8 @@ what `segs.bed.gz` does with tabix.
 
 ## Open
 
-The queue, with what each one is blocked on, is
-[Pangenome graph view queue](../ideas/pangenome-graph-view-the-open-queue.md).
+The graph view's own queue is in the plugin repo's
+[`agent-docs/IDEAS.md`](https://github.com/GMOD/jbrowse-plugin-graphgenomeviewer/blob/main/agent-docs/IDEAS.md).
 
 - ~~**The `samples` column is emitted but not read.**~~ Done 2026-08-02, as the
   general tag column above: `SM:Z:` reaches `GraphNode.tags.SM`. What is still
