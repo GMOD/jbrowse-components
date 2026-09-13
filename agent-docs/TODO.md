@@ -67,7 +67,7 @@ re-baseline rode the mark display's run into
 [reference/CROSS_BACKEND_GATE.md](reference/CROSS_BACKEND_GATE.md) on
 2026-09-12. What is left is the hosted data the release will serve, then the
 release candidate's two weeks in real use, which rises to the top of the file
-the moment a date exists ([reference/RELEASE_VALIDATION.md](reference/RELEASE_VALIDATION.md)).
+the moment a date exists.
 
 <!-- BEGIN GENERATED TODO READY INDEX -->
 

@@ -8,11 +8,9 @@ kind: spec
 # Track registration: session, catalog, delta
 
 A track config reaches a session by one of three routes, and which one it takes
-depends on who is asking and what already exists. This is the one-page spec
-[RELEASE_VALIDATION.md](RELEASE_VALIDATION.md) asks for on a
-second cross-cutting concept: enumerate the leaves, group by what a consumer can
-tell apart, report both counts. [REGION_TOO_LARGE.md](REGION_TOO_LARGE.md) is
-the template and the first of these.
+depends on who is asking and what already exists. This spec enumerates the
+leaves, groups them by what a consumer can tell apart, and reports both counts,
+on the template of [REGION_TOO_LARGE.md](REGION_TOO_LARGE.md).
 
 | Code | Path |
 | --- | --- |
