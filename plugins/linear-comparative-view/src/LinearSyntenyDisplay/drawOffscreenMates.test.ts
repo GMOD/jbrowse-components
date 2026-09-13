@@ -108,6 +108,7 @@ const params = {
   width: 100,
   height: 50,
   side: 'top' as const,
+  mateBand: { lo: -Infinity, hi: Infinity },
   minAlignmentLength: 0,
   markColor: 'red',
   labelColor: 'blue',

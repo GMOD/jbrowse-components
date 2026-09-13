@@ -80,7 +80,7 @@ export interface OffscreenMateLane {
   datasets: OffscreenMateDataset[]
   // the facing axis's drawable span in its cumBp, the same band
   // `isRibbonCulled` keeps a ribbon for; read only by datasets with `mateAxis`
-  mateBand?: MateBand
+  mateBand: MateBand
   bpPerPx: number
   offsetPx: number
   side: OffscreenMateSide
@@ -123,15 +123,8 @@ export function datasetMayHide(
     : band !== undefined && (mateAxis.lo < band.lo || mateAxis.hi > band.hi)
 }
 
-function ribbonDrawn(
-  mateAxis: MateAxisPlacement,
-  i: number,
-  band: MateBand | undefined,
-) {
-  return (
-    band === undefined ||
-    (mateAxis.ends[i]! >= band.lo && mateAxis.starts[i]! <= band.hi)
-  )
+function ribbonDrawn(mateAxis: MateAxisPlacement, i: number, band: MateBand) {
+  return mateAxis.ends[i]! >= band.lo && mateAxis.starts[i]! <= band.hi
 }
 
 function offscreenMateRefName(data: OffscreenMateDataset, i: number) {
