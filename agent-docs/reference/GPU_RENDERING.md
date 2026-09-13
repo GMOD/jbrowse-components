@@ -978,9 +978,9 @@ WebGPU's own and the collision inverts what two of them appear to do.
 
 **`PipelineDescriptor` is a pipeline state object (PSO).** It carries shader
 source, the vertex input layout, blend state, primitive topology and texture
-bindings, and each one becomes exactly one `GPURenderPipeline`
-(`resolvePipelines`, `webgpuHal.ts`) or one linked program + VAO (`compilePass`,
-`webgl2Hal.ts`).
+bindings, and it compiles to one `GPURenderPipeline` (`resolvePipelines`,
+`webgpuHal.ts`) or one linked program + VAO (`link`, `webgl2Hal.ts`), shared by
+every descriptor that differs from it only in `id`.
 
 **The two HALs build them at opposite times, and that is not cosmetic.** WebGL2
 builds a pass on its first *draw* (`getPass`), keeping one canary link in the
@@ -1283,7 +1283,7 @@ The LD compute driver now builds both its layout and its bind group from
 `BINDINGS`, matching buffers by *kind* rather than name, since the two kernels
 call their input `genotypes` and `haps`. The render HALs still build the two
 shapes they implement, but `pnpm gen:shaders` refuses a render shader whose table
-is not one of them — the check `createUniformOnlyBindGroupLayout`'s comment
+is not one of them — the check the comment above `createUniformOnlyBindGroup`
 ("Binding index 1 matches what the codegen emits") never had.
 
 **Reflection and the emitted WGSL are cross-checked.** They are two outputs of
