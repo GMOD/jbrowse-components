@@ -345,10 +345,9 @@ const LegendItemList = observer(function LegendItemList({
 // is more than one section, so a single-scheme legend looks unchanged. `title`
 // is a heading for the whole box, shown regardless of section count.
 //
-// `onItemClick` makes the rows act — for a key whose entries name groups of
-// rows, clicking one focuses those rows. It is handed the section too, so a
-// display with several vocabularies can act on the one that names rows and
-// leave the others inert.
+// `onItemClick` makes the rows of a section declaring `focusesRows` act —
+// clicking an entry focuses the rows it names. A section coloring features or
+// cells stays inert text beside it.
 const FloatingLegend = observer(function FloatingLegend({
   items,
   sections,
@@ -450,7 +449,7 @@ const FloatingLegend = observer(function FloatingLegend({
               items={section.items}
               maxItems={maxItems}
               onItemClick={
-                onItemClick
+                onItemClick && section.focusesRows
                   ? item => {
                       onItemClick(item, section)
                     }

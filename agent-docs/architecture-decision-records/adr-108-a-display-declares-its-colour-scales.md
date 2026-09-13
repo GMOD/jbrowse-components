@@ -42,7 +42,9 @@ once per display already, so the scale is what that resolution returns.
   and gains the `colorScales` hook (a getter, default `[]`), the derived
   `legendSpec`, `dismissedLegendSections` / `dismissLegendSection` (re-showing
   clears them; the variants override is gone), an optional `focusLegendEntry`
-  action for a clickable row, and `svgLegendWidth()` for a display that reserves
+  action for the rows of a scale declaring `focusesRows` (a scale coloring
+  features or cells renders inert text beside it), and `svgLegendWidth()` for a
+  display that reserves
   an export gutter (HiC, LD).
 - **Placement is the chrome's.** `DisplayChromeBase` mounts `ChromeLegend` for
   any model `isLegendHost` recognises, and `renderDisplaySvg` appends `SvgLegend`

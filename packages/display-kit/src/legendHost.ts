@@ -14,8 +14,8 @@ export interface LegendHost extends IStateTreeNode {
   setShowLegend(arg: boolean): void
   dismissLegendSection(id: string): void
   /**
-   * A display whose key rows act — a row naming a group of rows focuses them —
-   * answers this; without it the rows are inert.
+   * A display whose key rows act answers this for the scales it declared with
+   * `focusesRows`; a click on one of their entries focuses the rows it names.
    */
   focusLegendEntry?(scaleId: string, value: string): void
   /** Width the LGV export reserves beside the plot for this legend, 0 to float it over the plot. */

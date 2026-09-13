@@ -106,14 +106,21 @@ describe('FloatingLegend', () => {
   // can only count a legend that some page actually raises, and no page there
   // turns on a colorBy that raises one. A browser check that never runs is not
   // a check.
-  // A key whose rows name groups of rows can focus one; a key with no handler
-  // stays inert text, so a display keying features rather than rows offers no
-  // dead buttons.
-  it('makes the rows act only when given a handler', () => {
+  // Only a section whose entries name rows acts, and only with a handler: a
+  // display keying features beside its row groups offers no dead buttons.
+  it('makes the rows act only in a section that names rows, given a handler', () => {
     const clicked: string[] = []
+    const groups = { id: 'group', title: 'Population', items: items(2) }
     const { getByText, rerender } = render(
       <FloatingLegend
-        sections={[{ id: 'group', title: 'Population', items: items(2) }]}
+        sections={[
+          {
+            id: 'genotypes',
+            title: 'Genotypes',
+            items: [{ label: 'ref', color: 'red', value: 'ref' }],
+          },
+          { ...groups, focusesRows: true },
+        ]}
         onItemClick={(item, section) => {
           clicked.push(`${section.id}:${item.label}`)
         }}
@@ -121,8 +128,9 @@ describe('FloatingLegend', () => {
     )
     fireEvent.click(getByText('item1'))
     expect(clicked).toEqual(['group:item1'])
+    expect(getByText('ref').closest('button')).toBeNull()
 
-    rerender(<FloatingLegend items={items(2)} />)
+    rerender(<FloatingLegend sections={[groups]} onItemClick={jest.fn()} />)
     expect(getByText('item1').closest('button')).toBeNull()
   })
 

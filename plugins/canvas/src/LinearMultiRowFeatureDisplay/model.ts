@@ -622,6 +622,7 @@ export default function stateModelFactory(
             kind: 'categorical' as const,
             id: 'rowGroups',
             title: 'Row groups',
+            focusesRows: true,
             entries: self.rowGroupLegend.map(({ label, color }) => ({
               value: label,
               label,

@@ -449,6 +449,7 @@ export default function stateModelFactory(
           scales.push({
             kind: 'categorical',
             id: 'sources',
+            focusesRows: true,
             entries: self.legendItems.map(({ label, color }) => ({
               value: label,
               label,

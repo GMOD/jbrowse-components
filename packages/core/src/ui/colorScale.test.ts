@@ -41,6 +41,12 @@ test('a categorical scale is one section, its entries the rows', () => {
   ])
 })
 
+test('a scale whose values name rows says so on its section', () => {
+  const { sections } = legendSpecOf([{ ...svType, focusesRows: true }])
+  expect(sections?.[0]?.focusesRows).toBe(true)
+  expect(legendSpecOf([svType]).sections?.[0]?.focusesRows).toBeUndefined()
+})
+
 // A lone section draws no title of its own, so a lone categorical scale
 // titles the box and a lone ramp carries its name on its row: a bar labelled 0 and 1200 with nothing saying what is
 // being counted is not a key.

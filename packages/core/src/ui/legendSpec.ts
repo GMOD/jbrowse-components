@@ -72,6 +72,10 @@ export interface LegendSection {
   id: string
   title?: string
   items: LegendItem[]
+  // Its items name sets of rows, so `FloatingLegend` renders them as buttons
+  // when it has an `onItemClick`; without this the section stays inert text
+  // even beside one that acts.
+  focusesRows?: boolean
 }
 
 // What a display says about its colors, once. `FloatingLegend` renders this on

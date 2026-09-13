@@ -334,6 +334,7 @@ export function getVariantColorScales({
             kind: 'categorical' as const,
             id: 'group',
             title: capitalizeFirst(colorBy) || 'Samples',
+            focusesRows: true,
             entries: groupEntries,
           },
         ]

@@ -31,6 +31,10 @@ export interface CategoricalScale {
   id: string
   title?: string
   entries: CategoricalEntry[]
+  // Each value names a set of the display's rows, so a click on its key row
+  // can focus them (`LegendHost.focusLegendEntry`). A scale coloring features
+  // or cells leaves this unset and its rows stay inert.
+  focusesRows?: boolean
 }
 
 /** One stop of a continuous ramp, `offset` in `[0, 1]`. */
@@ -81,14 +85,14 @@ function rampItem(
 }
 
 function sectionOf(scale: ColorScale, lone: boolean): LegendSection {
-  return {
-    id: scale.id,
-    title: scale.title,
-    items:
-      scale.kind === 'categorical'
-        ? scale.entries.map(entry => ({ ...entry }))
-        : [rampItem(scale, lone)],
-  }
+  return scale.kind === 'categorical'
+    ? {
+        id: scale.id,
+        title: scale.title,
+        items: scale.entries.map(entry => ({ ...entry })),
+        focusesRows: scale.focusesRows,
+      }
+    : { id: scale.id, title: scale.title, items: [rampItem(scale, lone)] }
 }
 
 /**
