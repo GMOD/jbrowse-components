@@ -279,4 +279,8 @@ shapes' `ink`. A transform is a `type` on `TransformStep`, an arm in
 that wants it, not a display whose code it resembles (ADR-118). A new shape clears ADR-040's bar with two consumers. A
 display that wants the encoding for a meaning it cannot say hands the encoder
 a reader and says so at the call. Anything that composes a display stack from
-a declaration is what ADR-091 measured and refused.
+a declaration is what ADR-091 measured and refused. One rule-coded walker
+painting every box shape's Canvas2D output is refused too: at 1M instances it
+ran 1.09-1.11x the hand painter on span and 1.35x on variant cells, where a
+per-shape copy of the same source ran 0.68-0.92x
+(`plugins/alignments/benches/rectWalker.bench.ts`).

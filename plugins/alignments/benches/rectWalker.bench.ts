@@ -13,13 +13,19 @@
 // ARMS, per shape — span (render-core spanMark), deletion and mismatch
 // (pileupShape), rect (canvas rectShape), cell (variants cellMark):
 //
-//   hand      today's painter, copied verbatim
-//   control   a separately declared copy of hand
-//   walker    `walkRects` below: one function literal over rule codes, warmed
-//             with every consumer's channels, which is its production state
-//   perShape  a copy of `walkRects` per shape, loaded as its own module
-//             instance (`?copy=`) and warmed with that shape alone, standing in
-//             for a generated per-shape walker
+//   hand         today's painter, copied verbatim
+//   control      a separately declared copy of hand
+//   walker       `walkRects` below: one function literal over rule codes,
+//                warmed with every consumer's channels, its production state
+//   perShape     a copy of `walkRects` per shape, loaded as its own module
+//                instance (`?copy=`) and warmed with that shape alone, standing
+//                in for a generated per-shape walker
+//   placed       rect and cell: the paint loop calls a module-level `place`
+//                that writes one instance's box into a scratch `Float64Array`,
+//                the placement ink and hit would read too; `place` calls the
+//                generated scalar twins
+//   placedFlat   the same with the twins' arithmetic written into `place`
+//   placedSplit  rect: placedFlat's placement as an x and a y function
 //
 // pileupShape's ten painters are closures of one function literal, so hand and
 // control for deletion and mismatch are one factory each, warmed with every
@@ -36,7 +42,7 @@
 // IDENTITY. After timing and before anything prints, every arm and the
 // production painter are recorded through `recordingContext` — rects plus every
 // fillStyle, strokeStyle and lineWidth write, in order — in both orientations,
-// and must match hand exactly; the walker's single-instance placements must
+// and must match hand exactly; every arm's single-instance placements must
 // match the painting. Every timed run is also checked against the production
 // painter's counts and coordinate sum.
 //
@@ -48,27 +54,28 @@
 // at 40-47 ns against 21-25, so the control read 0.60-1.72x. The walker arms
 // hold no per-call closure.
 //
-// WHAT IT SAYS. Two processes per size, AC power, load 1.8-2.3, min of 25
-// interleaved rounds, ratio to hand:
+// WHAT IT SAYS. 1M instances, four processes (two for placedSplit), AC power,
+// load 2.0-3.9, min of 25 interleaved rounds, ratio to hand; one 100K process
+// agrees within 0.05 on every cell:
 //
-//                  hand ns    control    walker     perShape
-//   span      1M   21.7-21.9  1.00-1.02  1.09-1.11  0.87
-//            100K  21.3       1.00-1.01  1.09-1.10  0.86
-//   deletion  1M   97.9-99.5  0.99-1.00  0.75-0.77  0.68-0.70
-//            100K  93.6-96.1  1.01-1.02  0.76-0.77  0.70-0.72
-//   mismatch  1M   86.9-88.1  0.94-0.99  0.91-0.92  0.82-0.85
-//            100K  83.8-85.3  0.97-1.00  0.89-0.93  0.82-0.83
-//   rect      1M   58.3-59.8  0.97-1.00  0.95-0.96  0.70-0.72
-//            100K  56.8-57.6  0.99-1.00  0.96-0.98  0.71-0.72
-//   cell      1M   38.0-38.6  0.98-1.00  1.35       0.91-0.92
-//            100K  36.8-37.9  1.00       1.34-1.35  0.92-0.93
+//             hand ns    control    walker     perShape   placed     flat       split
+//   span      21.1-21.8  1.00-1.02  1.09-1.13  0.86-0.88
+//   deletion  94.5-97.7  0.99-1.02  0.75-0.77  0.69-0.71
+//   mismatch  83.2-85.7  0.97-1.04  0.92-0.99  0.83-0.88
+//   rect      56.3-58.9  0.97-1.00  0.79-0.96  0.70-0.72  0.74-0.79  0.73-0.77  0.68-0.69
+//   cell      36.8-37.5  0.98-1.01  1.34-1.46  0.91-0.94  1.08-1.11  0.82-0.83
 //
-// The shared walker misses hand speed on span and cell. Its one compile stops
-// inlining with `snappedCellWidthPx`, `snapBoxTopPx` and `drawVariantShape`
-// still candidates, and its keyed loads see every consumer's arrays. A
-// per-shape copy of the same source beats hand on every shape. That lead comes
-// with scalar cores in place of tuple twins and no per-call closures, which a
-// hand painter could take too; no arm here measures that.
+// The shared walker is refused: it misses hand speed on span and cell. Its one
+// compile stops inlining with `snappedCellWidthPx`, `snapBoxTopPx` and
+// `drawVariantShape` still candidates, and its keyed loads see every consumer's
+// arrays. A per-shape copy of the same source beats hand on every shape.
+//
+// `placed` misses that copy by 6-10% on rect and 15-19% on cell, per process.
+// TurboFan inlines no callee whose bytecode, counting what it already inlined,
+// passes 460 bytes: `placeCell` is 186 + 371 and `placeRect` 343 + 464, so each
+// instance pays a call. Written to inline, the same design beats the copy —
+// `placedFlat` cell at 0.87-0.90x of perShape, and rect, whose flat placement is
+// still over the limit, at 0.94-0.96x split in two.
 
 import { execSync } from 'node:child_process'
 import { performance } from 'node:perf_hooks'
@@ -1097,6 +1104,581 @@ function cellControl(
   }
 }
 
+interface BlockPx {
+  reversed: boolean
+  bpStart: number
+  bpSpan: number
+  pxStart: number
+  pxEnd: number
+  pxSpan: number
+}
+
+function mapperPx(p: BlockPx, bp: number) {
+  return p.reversed
+    ? p.pxEnd - ((bp - p.bpStart) / p.bpSpan) * p.pxSpan
+    : p.pxStart + ((bp - p.bpStart) / p.bpSpan) * p.pxSpan
+}
+
+interface CellFrame extends BlockPx {
+  canvasWidth: number
+  canvasHeight: number
+  rowHeight: number
+  scrollTop: number
+  height: number
+}
+
+function cellFrameOf(
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: CellParams,
+): CellFrame {
+  return {
+    ...blockProjection(block),
+    canvasWidth: frame.canvasWidth,
+    canvasHeight: frame.canvasHeight,
+    rowHeight: params.rowHeight,
+    scrollTop: params.scrollTop,
+    height: drawnCellHeightPx(params.rowHeight),
+  }
+}
+
+const CELL_BOX = new Float64Array(4)
+
+function placeCell(
+  c: CellChannels,
+  g: CellFrame,
+  i: number,
+  out: Float64Array,
+) {
+  const top = c.row[i]! * g.rowHeight - g.scrollTop
+  if (!(top + g.height >= 0 && top <= g.canvasHeight)) {
+    return false
+  }
+  const x1 = mapperPx(g, c.startEnd[i * 2]!)
+  const x2 = mapperPx(g, c.startEnd[i * 2 + 1]!)
+  const width = snappedCellWidthPx(x1, x2, g.canvasWidth)
+  out[0] = snappedCellLeftPx(x1, x2, g.canvasWidth, width)
+  out[1] = top
+  out[2] = width
+  out[3] = g.height
+  return true
+}
+
+function cellPlaced(
+  ctx: MarkContext2D,
+  c: CellChannels,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: CellParams,
+) {
+  const { shapeType, color, count } = c
+  const g = cellFrameOf(block, frame, params)
+  let last = -1
+  for (let i = 0; i < count; i++) {
+    if (placeCell(c, g, i, CELL_BOX)) {
+      const abgr = color[i]!
+      if (abgr !== last) {
+        last = abgr
+        ctx.fillStyle = abgrToCssRgba(abgr)
+      }
+      drawVariantShape(
+        ctx,
+        shapeType[i]!,
+        CELL_BOX[0]!,
+        CELL_BOX[1]!,
+        CELL_BOX[2]!,
+        CELL_BOX[3]!,
+      )
+    }
+  }
+}
+
+function cellPlacedInk(
+  c: CellChannels,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: CellParams,
+  i: number,
+) {
+  return placeCell(c, cellFrameOf(block, frame, params), i, CELL_BOX)
+    ? [CELL_BOX[0]!, CELL_BOX[1]!, CELL_BOX[2]!, CELL_BOX[3]!]
+    : undefined
+}
+
+interface RectFrame extends BlockPx {
+  canvasHeight: number
+  scrollY: number
+}
+
+function rectFrameOf(
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: FeatureGlyphParams,
+): RectFrame {
+  return {
+    ...blockProjection(block),
+    canvasHeight: frame.canvasHeight,
+    scrollY: params.scrollY,
+  }
+}
+
+const RECT_BOX = new Float64Array(4)
+
+function placeRect(
+  c: RectChannelsLike,
+  g: RectFrame,
+  i: number,
+  out: Float64Array,
+) {
+  const boxTop = c.y[i]!
+  const boxHeight = c.height[i]!
+  const visibleTop = boxTop - g.scrollY
+  if (
+    !(
+      visibleTop + boxHeight >= -GLYPH_Y_SLACK_PX &&
+      visibleTop <= g.canvasHeight + GLYPH_Y_SLACK_PX
+    )
+  ) {
+    return false
+  }
+  const startBp = c.startEnd[i * 2]!
+  const endBp = c.startEnd[i * 2 + 1]!
+  const x1 = mapperPx(g, startBp)
+  let s1 = 0
+  let s2 = 0
+  if (startBp === endBp) {
+    s1 = Math.floor(x1 - 1 + 0.5)
+    s2 = Math.floor(x1 + 1 + 0.5)
+  } else {
+    s1 = Math.floor(x1 + 0.5)
+    s2 = extendToMinWidthPx(s1, Math.floor(mapperPx(g, endBp) + 0.5), 2)
+  }
+  const width = Math.abs(s2 - s1)
+  out[0] = s2 < s1 ? s1 - width : s1
+  out[1] = snapBoxTopPx(boxTop, boxHeight, g.scrollY)
+  out[2] = width
+  out[3] = snapBoxHeightPx(boxHeight)
+  return true
+}
+
+function rectPlaced(
+  ctx: MarkContext2D,
+  c: RectChannelsLike,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: FeatureGlyphParams,
+) {
+  const { color, densityFade, count } = c
+  const g = rectFrameOf(block, frame, params)
+  const outlineStyle = params.outlineColor
+    ? abgrToCssRgba(params.outlineColor)
+    : undefined
+  if (outlineStyle !== undefined) {
+    ctx.strokeStyle = outlineStyle
+    ctx.lineWidth = 1
+  }
+  let last = -1
+  for (let i = 0; i < count; i++) {
+    if (placeRect(c, g, i, RECT_BOX)) {
+      const abgr = color[i]!
+      const faded = densityFade[i]!
+      const key = faded ? abgr + 0x1_0000_0000 : abgr
+      if (key !== last) {
+        last = key
+        const alpha = (abgrAlpha(abgr) / 255) * (faded ? MIN_DENSITY_ALPHA : 1)
+        ctx.fillStyle = `rgba(${abgrRed(abgr)},${abgrGreen(abgr)},${abgrBlue(abgr)},${alpha})`
+      }
+      const left = RECT_BOX[0]!
+      const top = RECT_BOX[1]!
+      const width = RECT_BOX[2]!
+      const height = RECT_BOX[3]!
+      ctx.fillRect(left, top, width, height)
+      if (outlineStyle !== undefined && rectDrawsOutline(width, height)) {
+        strokeRectInside(ctx, left, top, width, height)
+      }
+    }
+  }
+}
+
+function rectPlacedInk(
+  c: RectChannelsLike,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: FeatureGlyphParams,
+  i: number,
+) {
+  return placeRect(c, rectFrameOf(block, frame, params), i, RECT_BOX)
+    ? [RECT_BOX[0]!, RECT_BOX[1]!, RECT_BOX[2]!, RECT_BOX[3]!]
+    : undefined
+}
+
+interface FlatPx {
+  origin: number
+  dir: number
+  bpStart: number
+  bpSpan: number
+  pxSpan: number
+}
+
+function flatPx(block: RenderBlock): FlatPx {
+  return {
+    origin: block.reversed ? block.screenEndPx : block.screenStartPx,
+    dir: block.reversed ? -1 : 1,
+    bpStart: block.start,
+    bpSpan: block.end - block.start,
+    pxSpan: block.screenEndPx - block.screenStartPx,
+  }
+}
+
+interface CellFlatFrame extends FlatPx {
+  half: number
+  canvasHeight: number
+  rowHeight: number
+  scrollTop: number
+  height: number
+}
+
+function cellFlatFrameOf(
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: CellParams,
+): CellFlatFrame {
+  return {
+    ...flatPx(block),
+    half: frame.canvasWidth * 0.5,
+    canvasHeight: frame.canvasHeight,
+    rowHeight: params.rowHeight,
+    scrollTop: params.scrollTop,
+    height: drawnCellHeightPx(params.rowHeight),
+  }
+}
+
+const CELL_FLAT_BOX = new Float64Array(4)
+
+function placeCellFlat(
+  c: CellChannels,
+  g: CellFlatFrame,
+  i: number,
+  out: Float64Array,
+) {
+  const { origin, dir, bpStart, bpSpan, pxSpan, half, height } = g
+  const top = c.row[i]! * g.rowHeight - g.scrollTop
+  if (!(top + height >= 0 && top <= g.canvasHeight)) {
+    return false
+  }
+  const x1 = origin + dir * (((c.startEnd[i * 2]! - bpStart) / bpSpan) * pxSpan)
+  const x2 =
+    origin + dir * (((c.startEnd[i * 2 + 1]! - bpStart) / bpSpan) * pxSpan)
+  const edge1 = Math.floor(x1 - half + 0.5) + half
+  const span = Math.abs(Math.floor(x2 - half + 0.5) + half - edge1)
+  const width = span > 2 ? span : 2
+  out[0] = x2 < x1 ? edge1 - width : edge1
+  out[1] = top
+  out[2] = width
+  out[3] = height
+  return true
+}
+
+function cellPlacedFlat(
+  ctx: MarkContext2D,
+  c: CellChannels,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: CellParams,
+) {
+  const { shapeType, color, count } = c
+  const g = cellFlatFrameOf(block, frame, params)
+  let last = -1
+  for (let i = 0; i < count; i++) {
+    if (placeCellFlat(c, g, i, CELL_FLAT_BOX)) {
+      const abgr = color[i]!
+      if (abgr !== last) {
+        last = abgr
+        ctx.fillStyle = abgrToCssRgba(abgr)
+      }
+      drawVariantShape(
+        ctx,
+        shapeType[i]!,
+        CELL_FLAT_BOX[0]!,
+        CELL_FLAT_BOX[1]!,
+        CELL_FLAT_BOX[2]!,
+        CELL_FLAT_BOX[3]!,
+      )
+    }
+  }
+}
+
+function cellPlacedFlatInk(
+  c: CellChannels,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: CellParams,
+  i: number,
+) {
+  return placeCellFlat(
+    c,
+    cellFlatFrameOf(block, frame, params),
+    i,
+    CELL_FLAT_BOX,
+  )
+    ? [
+        CELL_FLAT_BOX[0]!,
+        CELL_FLAT_BOX[1]!,
+        CELL_FLAT_BOX[2]!,
+        CELL_FLAT_BOX[3]!,
+      ]
+    : undefined
+}
+
+interface RectFlatFrame extends FlatPx {
+  canvasHeight: number
+  scrollY: number
+}
+
+function rectFlatFrameOf(
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: FeatureGlyphParams,
+): RectFlatFrame {
+  return {
+    ...flatPx(block),
+    canvasHeight: frame.canvasHeight,
+    scrollY: params.scrollY,
+  }
+}
+
+const RECT_FLAT_BOX = new Float64Array(4)
+
+function placeRectFlat(
+  c: RectChannelsLike,
+  g: RectFlatFrame,
+  i: number,
+  out: Float64Array,
+) {
+  const { origin, dir, bpStart, bpSpan, pxSpan, scrollY } = g
+  const boxTop = c.y[i]!
+  const boxHeight = c.height[i]!
+  const visibleTop = boxTop - scrollY
+  if (
+    !(
+      visibleTop + boxHeight >= -GLYPH_Y_SLACK_PX &&
+      visibleTop <= g.canvasHeight + GLYPH_Y_SLACK_PX
+    )
+  ) {
+    return false
+  }
+  const a = c.startEnd[i * 2]!
+  const b = c.startEnd[i * 2 + 1]!
+  const x1 = origin + dir * (((a - bpStart) / bpSpan) * pxSpan)
+  let s1 = 0
+  let s2 = 0
+  if (a === b) {
+    s1 = Math.floor(x1 - 1 + 0.5)
+    s2 = Math.floor(x1 + 1 + 0.5)
+  } else {
+    s1 = Math.floor(x1 + 0.5)
+    const right = Math.floor(
+      origin + dir * (((b - bpStart) / bpSpan) * pxSpan) + 0.5,
+    )
+    const dx = right - s1
+    s2 = Math.abs(dx) < 2 ? s1 + (dx < 0 ? -2 : 2) : right
+  }
+  const width = Math.abs(s2 - s1)
+  const rounded = Math.floor(boxHeight + 0.5)
+  const height =
+    rounded - 2 * Math.floor(rounded * 0.5) === 0 &&
+    rounded >= 2 &&
+    rounded <= 4
+      ? rounded + 1
+      : rounded
+  out[0] = s2 < s1 ? s1 - width : s1
+  out[1] = Math.floor(boxTop + boxHeight * 0.5 - height * 0.5 - scrollY + 0.5)
+  out[2] = width
+  out[3] = height
+  return true
+}
+
+function rectPlacedFlat(
+  ctx: MarkContext2D,
+  c: RectChannelsLike,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: FeatureGlyphParams,
+) {
+  const { color, densityFade, count } = c
+  const g = rectFlatFrameOf(block, frame, params)
+  const outlineStyle = params.outlineColor
+    ? abgrToCssRgba(params.outlineColor)
+    : undefined
+  if (outlineStyle !== undefined) {
+    ctx.strokeStyle = outlineStyle
+    ctx.lineWidth = 1
+  }
+  let last = -1
+  for (let i = 0; i < count; i++) {
+    if (placeRectFlat(c, g, i, RECT_FLAT_BOX)) {
+      const abgr = color[i]!
+      const faded = densityFade[i]!
+      const key = faded ? abgr + 0x1_0000_0000 : abgr
+      if (key !== last) {
+        last = key
+        const alpha = (abgrAlpha(abgr) / 255) * (faded ? MIN_DENSITY_ALPHA : 1)
+        ctx.fillStyle = `rgba(${abgrRed(abgr)},${abgrGreen(abgr)},${abgrBlue(abgr)},${alpha})`
+      }
+      const left = RECT_FLAT_BOX[0]!
+      const top = RECT_FLAT_BOX[1]!
+      const width = RECT_FLAT_BOX[2]!
+      const height = RECT_FLAT_BOX[3]!
+      ctx.fillRect(left, top, width, height)
+      if (outlineStyle !== undefined && rectDrawsOutline(width, height)) {
+        strokeRectInside(ctx, left, top, width, height)
+      }
+    }
+  }
+}
+
+function rectPlacedFlatInk(
+  c: RectChannelsLike,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: FeatureGlyphParams,
+  i: number,
+) {
+  return placeRectFlat(
+    c,
+    rectFlatFrameOf(block, frame, params),
+    i,
+    RECT_FLAT_BOX,
+  )
+    ? [
+        RECT_FLAT_BOX[0]!,
+        RECT_FLAT_BOX[1]!,
+        RECT_FLAT_BOX[2]!,
+        RECT_FLAT_BOX[3]!,
+      ]
+    : undefined
+}
+
+const RECT_SPLIT_BOX = new Float64Array(4)
+
+function placeRectY(
+  c: RectChannelsLike,
+  g: RectFlatFrame,
+  i: number,
+  out: Float64Array,
+) {
+  const { scrollY } = g
+  const boxTop = c.y[i]!
+  const boxHeight = c.height[i]!
+  const visibleTop = boxTop - scrollY
+  if (
+    !(
+      visibleTop + boxHeight >= -GLYPH_Y_SLACK_PX &&
+      visibleTop <= g.canvasHeight + GLYPH_Y_SLACK_PX
+    )
+  ) {
+    return false
+  }
+  const rounded = Math.floor(boxHeight + 0.5)
+  const height =
+    rounded - 2 * Math.floor(rounded * 0.5) === 0 &&
+    rounded >= 2 &&
+    rounded <= 4
+      ? rounded + 1
+      : rounded
+  out[1] = Math.floor(boxTop + boxHeight * 0.5 - height * 0.5 - scrollY + 0.5)
+  out[3] = height
+  return true
+}
+
+function placeRectX(
+  c: RectChannelsLike,
+  g: RectFlatFrame,
+  i: number,
+  out: Float64Array,
+) {
+  const { origin, dir, bpStart, bpSpan, pxSpan } = g
+  const a = c.startEnd[i * 2]!
+  const b = c.startEnd[i * 2 + 1]!
+  const x1 = origin + dir * (((a - bpStart) / bpSpan) * pxSpan)
+  let s1 = 0
+  let s2 = 0
+  if (a === b) {
+    s1 = Math.floor(x1 - 1 + 0.5)
+    s2 = Math.floor(x1 + 1 + 0.5)
+  } else {
+    s1 = Math.floor(x1 + 0.5)
+    const right = Math.floor(
+      origin + dir * (((b - bpStart) / bpSpan) * pxSpan) + 0.5,
+    )
+    const dx = right - s1
+    s2 = Math.abs(dx) < 2 ? s1 + (dx < 0 ? -2 : 2) : right
+  }
+  const width = Math.abs(s2 - s1)
+  out[0] = s2 < s1 ? s1 - width : s1
+  out[2] = width
+}
+
+function rectPlacedSplit(
+  ctx: MarkContext2D,
+  c: RectChannelsLike,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: FeatureGlyphParams,
+) {
+  const { color, densityFade, count } = c
+  const g = rectFlatFrameOf(block, frame, params)
+  const outlineStyle = params.outlineColor
+    ? abgrToCssRgba(params.outlineColor)
+    : undefined
+  if (outlineStyle !== undefined) {
+    ctx.strokeStyle = outlineStyle
+    ctx.lineWidth = 1
+  }
+  let last = -1
+  for (let i = 0; i < count; i++) {
+    if (placeRectY(c, g, i, RECT_SPLIT_BOX)) {
+      placeRectX(c, g, i, RECT_SPLIT_BOX)
+      const abgr = color[i]!
+      const faded = densityFade[i]!
+      const key = faded ? abgr + 0x1_0000_0000 : abgr
+      if (key !== last) {
+        last = key
+        const alpha = (abgrAlpha(abgr) / 255) * (faded ? MIN_DENSITY_ALPHA : 1)
+        ctx.fillStyle = `rgba(${abgrRed(abgr)},${abgrGreen(abgr)},${abgrBlue(abgr)},${alpha})`
+      }
+      const left = RECT_SPLIT_BOX[0]!
+      const top = RECT_SPLIT_BOX[1]!
+      const width = RECT_SPLIT_BOX[2]!
+      const height = RECT_SPLIT_BOX[3]!
+      ctx.fillRect(left, top, width, height)
+      if (outlineStyle !== undefined && rectDrawsOutline(width, height)) {
+        strokeRectInside(ctx, left, top, width, height)
+      }
+    }
+  }
+}
+
+function rectPlacedSplitInk(
+  c: RectChannelsLike,
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: FeatureGlyphParams,
+  i: number,
+) {
+  const g = rectFlatFrameOf(block, frame, params)
+  if (!placeRectY(c, g, i, RECT_SPLIT_BOX)) {
+    return undefined
+  }
+  placeRectX(c, g, i, RECT_SPLIT_BOX)
+  return [
+    RECT_SPLIT_BOX[0]!,
+    RECT_SPLIT_BOX[1]!,
+    RECT_SPLIT_BOX[2]!,
+    RECT_SPLIT_BOX[3]!,
+  ]
+}
+
 const BASE_PLAN: WalkPlan = {
   layout: WLayout.pair,
   x: WX.floor,
@@ -1745,16 +2327,39 @@ type Painter = (ctx: MarkContext2D, block: RenderBlock) => void
 
 type Walk = typeof walkRects
 
+type ArmName =
+  | 'hand'
+  | 'control'
+  | 'walker'
+  | 'perShape'
+  | 'placed'
+  | 'placedFlat'
+  | 'placedSplit'
+
+const ARM_NAMES: readonly ArmName[] = [
+  'hand',
+  'control',
+  'walker',
+  'perShape',
+  'placed',
+  'placedFlat',
+  'placedSplit',
+]
+
+interface Placement {
+  name: ArmName
+  at: (i: number) => readonly number[] | undefined
+}
+
 interface Shape {
   name: string
   entries: number
   forward: RenderBlock
   reversed: RenderBlock
   reference: Painter
-  arms: [hand: Painter, control: Painter, walker: Painter, perShape: Painter]
-  plan: (block: RenderBlock) => WalkPlan
-  channels: WalkChannels
-  perShapeWalk: Walk
+  arms: { name: ArmName; paint: Painter }[]
+  instances: readonly [from: number, to: number]
+  placements: Placement[]
 }
 
 function paintWith<C, F, P>(
@@ -1781,6 +2386,20 @@ function walkWith(
 ): Painter {
   return (ctx, block) => {
     walk(ctx, plan(block), channels, channels.from, channels.to, undefined)
+  }
+}
+
+function walkPlacement(
+  name: ArmName,
+  walk: Walk,
+  plan: WalkPlan,
+  channels: WalkChannels,
+): Placement {
+  const out = new Float64Array(4)
+  return {
+    name,
+    at: i =>
+      walk(undefined, plan, channels, i, i + 1, out) ? [...out] : undefined,
   }
 }
 
@@ -1918,22 +2537,25 @@ function firstDifference(a: Recording, b: Recording) {
   return undefined
 }
 
-function placementDifference(shape: Shape, walk: Walk, painted: Recording) {
-  const plan = shape.plan(shape.forward)
-  const { channels } = shape
-  const out = new Float64Array(4)
+function placementDifference(
+  shape: Shape,
+  placement: Placement,
+  painted: Recording,
+) {
+  const [from, to] = shape.instances
   let k = 0
-  for (let i = channels.from; i < channels.to; i++) {
-    if (walk(undefined, plan, channels, i, i + 1, out)) {
+  for (let i = from; i < to; i++) {
+    const box = placement.at(i)
+    if (box) {
       const q = painted.calls[k]
       if (
         !q ||
-        Math.abs(out[0]! - q.x) > 1e-9 ||
-        Math.abs(out[1]! - q.y) > 1e-9 ||
-        Math.abs(out[2]! - q.w) > 1e-9 ||
-        Math.abs(out[3]! - q.h) > 1e-9
+        Math.abs(box[0]! - q.x) > 1e-9 ||
+        Math.abs(box[1]! - q.y) > 1e-9 ||
+        Math.abs(box[2]! - q.w) > 1e-9 ||
+        Math.abs(box[3]! - q.h) > 1e-9
       ) {
-        return `instance ${i} placed (${out.join(', ')}), painted ${JSON.stringify(q)}`
+        return `instance ${i} placed (${box.join(', ')}), painted ${JSON.stringify(q)}`
       }
       k++
     }
@@ -1953,25 +2575,22 @@ function sameCounts(a: CountingContext, b: CountingContext) {
   )
 }
 
-const ARM_NAMES = ['hand', 'control', 'walker', 'perShape'] as const
-
 function exitOnIdentityFailure(shapes: Shape[]) {
   for (const shape of shapes) {
     for (const block of [shape.forward, shape.reversed]) {
       const orientation = block.reversed ? 'reversed' : 'forward'
-      const hand = record(shape.arms[0], block)
+      const [hand, ...rest] = shape.arms
+      const handRecording = record(hand!.paint, block)
       const failures = [
         [
           'the production painter',
-          firstDifference(record(shape.reference, block), hand),
+          firstDifference(record(shape.reference, block), handRecording),
         ],
+        ...rest.map(arm => [
+          arm.name,
+          firstDifference(handRecording, record(arm.paint, block)),
+        ]),
       ]
-      for (let k = 1; k < shape.arms.length; k++) {
-        failures.push([
-          ARM_NAMES[k]!,
-          firstDifference(hand, record(shape.arms[k]!, block)),
-        ])
-      }
       for (const [against, diff] of failures) {
         if (diff) {
           console.error(
@@ -2024,6 +2643,26 @@ function buildShapes(
   const cellPlanOf = (block: RenderBlock) =>
     cellPlan(block, FRAME, cells.params)
 
+  const walked = (
+    shared: Walk,
+    perShape: Walk,
+    planOf: (block: RenderBlock) => WalkPlan,
+    channels: WalkChannels,
+  ) => [
+    { name: 'walker' as const, paint: walkWith(shared, planOf, channels) },
+    { name: 'perShape' as const, paint: walkWith(perShape, planOf, channels) },
+  ]
+
+  const walkPlacements = (
+    shared: Walk,
+    perShape: Walk,
+    plan: WalkPlan,
+    channels: WalkChannels,
+  ) => [
+    walkPlacement('walker', shared, plan, channels),
+    walkPlacement('perShape', perShape, plan, channels),
+  ]
+
   const shapes: Shape[] = [
     {
       name: 'span',
@@ -2037,14 +2676,23 @@ function buildShapes(
         span.params,
       ),
       arms: [
-        paintWith(spanHand, span.channels, FRAME, span.params),
-        paintWith(spanControl, span.channels, FRAME, span.params),
-        walkWith(walkers.shared, spanPlanOf, spanWalk),
-        walkWith(walkers.span, spanPlanOf, spanWalk),
+        {
+          name: 'hand',
+          paint: paintWith(spanHand, span.channels, FRAME, span.params),
+        },
+        {
+          name: 'control',
+          paint: paintWith(spanControl, span.channels, FRAME, span.params),
+        },
+        ...walked(walkers.shared, walkers.span, spanPlanOf, spanWalk),
       ],
-      plan: spanPlanOf,
-      channels: spanWalk,
-      perShapeWalk: walkers.span,
+      instances: [spanWalk.from, spanWalk.to],
+      placements: walkPlacements(
+        walkers.shared,
+        walkers.span,
+        spanPlanOf(span.forward),
+        spanWalk,
+      ),
     },
     {
       name: 'deletion',
@@ -2055,19 +2703,38 @@ function buildShapes(
         DELETION_MARK.paintBlock(ctx, gaps.region, block, state)
       },
       arms: [
-        paintWith(pileupHand(DELETION_SPEC).paintBlock, deletion, state, state),
-        paintWith(
-          pileupControl(DELETION_SPEC).paintBlock,
-          deletion,
-          state,
-          state,
+        {
+          name: 'hand',
+          paint: paintWith(
+            pileupHand(DELETION_SPEC).paintBlock,
+            deletion,
+            state,
+            state,
+          ),
+        },
+        {
+          name: 'control',
+          paint: paintWith(
+            pileupControl(DELETION_SPEC).paintBlock,
+            deletion,
+            state,
+            state,
+          ),
+        },
+        ...walked(
+          walkers.shared,
+          walkers.deletion,
+          deletionPlanOf,
+          deletionWalk,
         ),
-        walkWith(walkers.shared, deletionPlanOf, deletionWalk),
-        walkWith(walkers.deletion, deletionPlanOf, deletionWalk),
       ],
-      plan: deletionPlanOf,
-      channels: deletionWalk,
-      perShapeWalk: walkers.deletion,
+      instances: [deletionWalk.from, deletionWalk.to],
+      placements: walkPlacements(
+        walkers.shared,
+        walkers.deletion,
+        deletionPlanOf(gaps.forward),
+        deletionWalk,
+      ),
     },
     {
       name: 'mismatch',
@@ -2078,24 +2745,38 @@ function buildShapes(
         MISMATCH_MARK.paintBlock(ctx, mismatches.region, block, state)
       },
       arms: [
-        paintWith(
-          pileupHand(MISMATCH_SPEC).paintBlock,
-          mismatches.channels,
-          state,
-          state,
+        {
+          name: 'hand',
+          paint: paintWith(
+            pileupHand(MISMATCH_SPEC).paintBlock,
+            mismatches.channels,
+            state,
+            state,
+          ),
+        },
+        {
+          name: 'control',
+          paint: paintWith(
+            pileupControl(MISMATCH_SPEC).paintBlock,
+            mismatches.channels,
+            state,
+            state,
+          ),
+        },
+        ...walked(
+          walkers.shared,
+          walkers.mismatch,
+          mismatchPlanOf,
+          mismatchWalk,
         ),
-        paintWith(
-          pileupControl(MISMATCH_SPEC).paintBlock,
-          mismatches.channels,
-          state,
-          state,
-        ),
-        walkWith(walkers.shared, mismatchPlanOf, mismatchWalk),
-        walkWith(walkers.mismatch, mismatchPlanOf, mismatchWalk),
       ],
-      plan: mismatchPlanOf,
-      channels: mismatchWalk,
-      perShapeWalk: walkers.mismatch,
+      instances: [mismatchWalk.from, mismatchWalk.to],
+      placements: walkPlacements(
+        walkers.shared,
+        walkers.mismatch,
+        mismatchPlanOf(mismatches.forward),
+        mismatchWalk,
+      ),
     },
     {
       name: 'rect',
@@ -2109,14 +2790,75 @@ function buildShapes(
         rects.params,
       ),
       arms: [
-        paintWith(rectHand, rects.channels, FRAME, rects.params),
-        paintWith(rectControl, rects.channels, FRAME, rects.params),
-        walkWith(walkers.shared, rectPlanOf, rectWalk),
-        walkWith(walkers.rect, rectPlanOf, rectWalk),
+        {
+          name: 'hand',
+          paint: paintWith(rectHand, rects.channels, FRAME, rects.params),
+        },
+        {
+          name: 'control',
+          paint: paintWith(rectControl, rects.channels, FRAME, rects.params),
+        },
+        ...walked(walkers.shared, walkers.rect, rectPlanOf, rectWalk),
+        {
+          name: 'placed',
+          paint: paintWith(rectPlaced, rects.channels, FRAME, rects.params),
+        },
+        {
+          name: 'placedFlat',
+          paint: paintWith(rectPlacedFlat, rects.channels, FRAME, rects.params),
+        },
+        {
+          name: 'placedSplit',
+          paint: paintWith(
+            rectPlacedSplit,
+            rects.channels,
+            FRAME,
+            rects.params,
+          ),
+        },
       ],
-      plan: rectPlanOf,
-      channels: rectWalk,
-      perShapeWalk: walkers.rect,
+      instances: [0, rects.channels.count],
+      placements: [
+        ...walkPlacements(
+          walkers.shared,
+          walkers.rect,
+          rectPlanOf(rects.forward),
+          rectWalk,
+        ),
+        {
+          name: 'placed',
+          at: i =>
+            rectPlacedInk(
+              rects.channels,
+              rects.forward,
+              FRAME,
+              rects.params,
+              i,
+            ),
+        },
+        {
+          name: 'placedFlat',
+          at: i =>
+            rectPlacedFlatInk(
+              rects.channels,
+              rects.forward,
+              FRAME,
+              rects.params,
+              i,
+            ),
+        },
+        {
+          name: 'placedSplit',
+          at: i =>
+            rectPlacedSplitInk(
+              rects.channels,
+              rects.forward,
+              FRAME,
+              rects.params,
+              i,
+            ),
+        },
+      ],
     },
     {
       name: 'cell',
@@ -2130,14 +2872,55 @@ function buildShapes(
         cells.params,
       ),
       arms: [
-        paintWith(cellHand, cells.channels, FRAME, cells.params),
-        paintWith(cellControl, cells.channels, FRAME, cells.params),
-        walkWith(walkers.shared, cellPlanOf, cellWalk),
-        walkWith(walkers.cell, cellPlanOf, cellWalk),
+        {
+          name: 'hand',
+          paint: paintWith(cellHand, cells.channels, FRAME, cells.params),
+        },
+        {
+          name: 'control',
+          paint: paintWith(cellControl, cells.channels, FRAME, cells.params),
+        },
+        ...walked(walkers.shared, walkers.cell, cellPlanOf, cellWalk),
+        {
+          name: 'placed',
+          paint: paintWith(cellPlaced, cells.channels, FRAME, cells.params),
+        },
+        {
+          name: 'placedFlat',
+          paint: paintWith(cellPlacedFlat, cells.channels, FRAME, cells.params),
+        },
       ],
-      plan: cellPlanOf,
-      channels: cellWalk,
-      perShapeWalk: walkers.cell,
+      instances: [0, cells.channels.count],
+      placements: [
+        ...walkPlacements(
+          walkers.shared,
+          walkers.cell,
+          cellPlanOf(cells.forward),
+          cellWalk,
+        ),
+        {
+          name: 'placed',
+          at: i =>
+            cellPlacedInk(
+              cells.channels,
+              cells.forward,
+              FRAME,
+              cells.params,
+              i,
+            ),
+        },
+        {
+          name: 'placedFlat',
+          at: i =>
+            cellPlacedFlatInk(
+              cells.channels,
+              cells.forward,
+              FRAME,
+              cells.params,
+              i,
+            ),
+        },
+      ],
     },
   ]
 
@@ -2163,7 +2946,7 @@ function warm(built: ReturnType<typeof buildShapes>, times: number) {
   for (let w = 0; w < times; w++) {
     for (const shape of built.shapes) {
       for (const arm of shape.arms) {
-        arm(new CountingContext(), shape.forward)
+        arm.paint(new CountingContext(), shape.forward)
       }
     }
     for (const warmer of built.warmers) {
@@ -2205,20 +2988,21 @@ async function main() {
     return signature
   })
 
-  const best = shapes.map(() => ARM_NAMES.map(() => Infinity))
+  const best = shapes.map(shape => shape.arms.map(() => Infinity))
   for (let r = 0; r < rounds; r++) {
     for (let s = 0; s < shapes.length; s++) {
       const shapeIndex = (r + s) % shapes.length
       const shape = shapes[shapeIndex]!
-      for (let k = 0; k < ARM_NAMES.length; k++) {
-        const armIndex = (r + k) % ARM_NAMES.length
+      const { arms } = shape
+      for (let k = 0; k < arms.length; k++) {
+        const armIndex = (r + k) % arms.length
         const ctx = new CountingContext()
         const t0 = performance.now()
-        shape.arms[armIndex]!(ctx, shape.forward)
+        arms[armIndex]!.paint(ctx, shape.forward)
         const ms = performance.now() - t0
         if (!sameCounts(ctx, expected[shapeIndex]!)) {
           console.error(
-            `TIMED RUN DIFFERS ${shape.name} ${ARM_NAMES[armIndex]} in round ${r}`,
+            `TIMED RUN DIFFERS ${shape.name} ${arms[armIndex]!.name} in round ${r}`,
           )
           process.exit(1)
         }
@@ -2232,14 +3016,11 @@ async function main() {
     if (outline && shape.name === 'rect') {
       continue
     }
-    const painted = record(shape.arms[0], shape.forward)
-    for (const [name, walk] of [
-      ['walker', walkers.shared],
-      ['perShape', shape.perShapeWalk],
-    ] as const) {
-      const diff = placementDifference(shape, walk, painted)
+    const painted = record(shape.arms[0]!.paint, shape.forward)
+    for (const placement of shape.placements) {
+      const diff = placementDifference(shape, placement, painted)
       if (diff) {
-        console.error(`PLACEMENT FAIL ${shape.name} ${name}: ${diff}`)
+        console.error(`PLACEMENT FAIL ${shape.name} ${placement.name}: ${diff}`)
         process.exit(1)
       }
     }
@@ -2257,19 +3038,27 @@ async function main() {
     `${provisional ? 'PROVISIONAL: ' : ''}--size=${size}, ${rounds} interleaved rounds, min per arm${outline ? ', outlines on' : ''}`,
   )
   console.log(
-    'identity: every arm matches hand and hand the production painter, both orientations; walker placements match the painting',
+    'identity: every arm matches hand and hand the production painter, both orientations; every placement matches the painting',
   )
   console.log('')
   console.log(
-    `${'shape'.padEnd(10)}${'entries'.padStart(9)}${'painted'.padStart(9)}${'styles'.padStart(9)}${'hand'.padStart(20)}${'control'.padStart(9)}${'walker'.padStart(9)}${'perShape'.padStart(10)}`,
+    `${'shape'.padEnd(10)}${'entries'.padStart(9)}${'painted'.padStart(9)}${'styles'.padStart(9)}${'hand'.padStart(20)}${ARM_NAMES.slice(
+      1,
+    )
+      .map(name => name.padStart(12))
+      .join('')}`,
   )
   for (const [s, shape] of shapes.entries()) {
     const want = expected[s]!
-    const [hand, control, walked, perShaped] = best[s]!
-    const ratio = (ms: number) => `${(ms / hand!).toFixed(2)}x`
-    const handCell = `${hand!.toFixed(2)}ms ${((hand! / shape.entries) * 1e6).toFixed(1)}ns`
+    const times = best[s]!
+    const hand = times[0]!
+    const cells = ARM_NAMES.slice(1).map(name => {
+      const k = shape.arms.findIndex(arm => arm.name === name)
+      return (k === -1 ? '-' : `${(times[k]! / hand).toFixed(2)}x`).padStart(12)
+    })
+    const handCell = `${hand.toFixed(2)}ms ${((hand / shape.entries) * 1e6).toFixed(1)}ns`
     console.log(
-      `${shape.name.padEnd(10)}${String(shape.entries).padStart(9)}${String(want.fills + want.paths).padStart(9)}${String(want.styles).padStart(9)}${handCell.padStart(20)}${ratio(control!).padStart(9)}${ratio(walked!).padStart(9)}${ratio(perShaped!).padStart(10)}`,
+      `${shape.name.padEnd(10)}${String(shape.entries).padStart(9)}${String(want.fills + want.paths).padStart(9)}${String(want.styles).padStart(9)}${handCell.padStart(20)}${cells.join('')}`,
     )
   }
 }
