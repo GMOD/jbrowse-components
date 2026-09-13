@@ -4,10 +4,11 @@ import {
   GLYPH_TRIANGLE,
 } from '../shaders/pointMark.consts.generated.ts'
 import { barMark } from './barMark.ts'
-import { sweepDrawAgainstHit } from './drawAgainstHit.ts'
+import { sweepMarkAgainstHit } from './drawAgainstHit.ts'
 import { inkHitNearest } from './markHit.ts'
 import { pointMark } from './pointMark.ts'
 import { spanMark } from './spanMark.ts'
+import { defineMark } from './types.ts'
 
 import type { BarChannels, BarParams } from './barMark.ts'
 import type { PointChannels, PointParams } from './pointMark.ts'
@@ -58,12 +59,15 @@ describe('span: every drawn rect answers its own hit, in both orientations', () 
     const params = { ...spanParams, ...overrides }
     for (const reversed of [false, true]) {
       expect(
-        sweepDrawAgainstHit(
-          spanMark,
+        sweepMarkAgainstHit(
+          defineMark({
+            shape: spanMark,
+            channels: (c: SpanChannels) => c,
+            params: () => params,
+          }),
           spans,
           { ...block, reversed },
           frame,
-          params,
           { maxDistSq: Number.MIN_VALUE },
         ),
       ).toEqual([])
@@ -102,12 +106,15 @@ describe('containment: a rule in place of the painted box', () => {
     contains: (i: number, x: number, y: number) => boolean,
     shape: MarkShape<SpanChannels, SpanParams> = spanMark,
   ) =>
-    sweepDrawAgainstHit(
-      shape,
+    sweepMarkAgainstHit(
+      defineMark({
+        shape,
+        channels: (c: SpanChannels) => c,
+        params: () => spanParams,
+      }),
       spans,
       { ...block, reversed },
       frame,
-      spanParams,
       { contains, sliceOne: sliceSpan, maxDistSq: Number.MIN_VALUE },
     )
 
@@ -160,12 +167,15 @@ const pointParams: PointParams = { domain: [0, 1], diameterPx: 6 }
 test('point: every drawn bar answers its own hit, in both orientations', () => {
   for (const reversed of [false, true]) {
     expect(
-      sweepDrawAgainstHit(
-        pointMark,
+      sweepMarkAgainstHit(
+        defineMark({
+          shape: pointMark,
+          channels: (c: PointChannels) => c,
+          params: () => pointParams,
+        }),
         points,
         { ...block, reversed },
         { canvasWidth: 60, canvasHeight: 100 },
-        pointParams,
         { maxDistSq: Number.MIN_VALUE },
       ),
     ).toEqual([])
@@ -208,12 +218,15 @@ describe('point: a glyph hit lands on the glyph the painter drew', () => {
   test.each([2, 6])('diameter %i', diameterPx => {
     for (const reversed of [false, true]) {
       expect(
-        sweepDrawAgainstHit(
-          pointMark,
+        sweepMarkAgainstHit(
+          defineMark({
+            shape: pointMark,
+            channels: (c: PointChannels) => c,
+            params: () => ({ domain: [0, 1], diameterPx }),
+          }),
           glyphs,
           { ...block, reversed },
           { canvasWidth: 60, canvasHeight: 100 },
-          { domain: [0, 1], diameterPx },
           // Wide enough that every swept point gets an answer, so the claims are
           // made everywhere rather than only on top of a glyph.
           { maxDistSq: 400, sliceOne: slicePoint },
@@ -267,12 +280,15 @@ describe('bar: every drawn rect answers its own hit, in both orientations', () =
   ])('%s', (_label, params, channels) => {
     for (const reversed of [false, true]) {
       expect(
-        sweepDrawAgainstHit(
-          barMark,
+        sweepMarkAgainstHit(
+          defineMark({
+            shape: barMark,
+            channels: (c: BarChannels) => c,
+            params: () => params,
+          }),
           channels,
           { ...block, reversed },
           { canvasWidth: 60, canvasHeight: 100 },
-          params,
           { maxDistSq: Number.MIN_VALUE },
         ),
       ).toEqual([])
@@ -292,12 +308,15 @@ test('bar: a zero-height bar paints nothing and is never the answer', () => {
     count: 2,
   }
   expect(
-    sweepDrawAgainstHit(
-      barMark,
+    sweepMarkAgainstHit(
+      defineMark({
+        shape: barMark,
+        channels: (c: BarChannels) => c,
+        params: () => ({ domain: [0, 1], origin: 0, minWidthPx: 2, seamPx: 0 }),
+      }),
       flat,
       block,
       { canvasWidth: 60, canvasHeight: 100 },
-      { domain: [0, 1], origin: 0, minWidthPx: 2, seamPx: 0 },
       {
         maxDistSq: 400,
         sliceOne: (c, i) => ({

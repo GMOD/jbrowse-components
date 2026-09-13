@@ -1,13 +1,7 @@
-import { inkOnRect, shapeHitNearest } from './markHit.ts'
+import { inkOnRect } from './markHit.ts'
 
 import type { RenderBlock } from '../renderBlock.ts'
-import type {
-  Mark,
-  MarkContext2D,
-  MarkFrame,
-  MarkHit,
-  MarkShape,
-} from './types.ts'
+import type { Mark, MarkContext2D, MarkFrame, MarkHit } from './types.ts'
 
 export interface RecordedRect {
   x: number
@@ -270,12 +264,6 @@ interface Counted {
   count: number
 }
 
-/** The three members a sweep reads, in `Mark`'s spelling, so a mark passes as itself. */
-export type SweptMark<C, S extends MarkFrame> = Pick<
-  Mark<C, S>,
-  'paintBlock' | 'ink' | 'hitNearest'
->
-
 export interface SweepOptions<C> {
   maxDistSq?: number
   step?: number
@@ -285,7 +273,7 @@ export interface SweepOptions<C> {
 }
 
 function inkViolations<C extends Counted, S extends MarkFrame>(
-  mark: SweptMark<C, S>,
+  mark: Mark<C, S>,
   channels: C,
   block: RenderBlock,
   state: S,
@@ -411,7 +399,7 @@ function hitViolations(
  * asked with, `Infinity` unless the caller's differs.
  */
 export function sweepMarkAgainstHit<C extends Counted, S extends MarkFrame>(
-  mark: SweptMark<NoInfer<C>, S>,
+  mark: Mark<NoInfer<C>, S>,
   channels: C,
   block: RenderBlock,
   state: S,
@@ -527,34 +515,4 @@ export function sweepMarkAgainstHit<C extends Counted, S extends MarkFrame>(
   return answered === 0 && violations.length === 0
     ? [`no swept point answered any of ${count} instances`]
     : violations
-}
-
-/** `sweepMarkAgainstHit` for a `MarkShape`, its frame and its params. */
-export function sweepDrawAgainstHit<C extends Counted, P>(
-  shape: MarkShape<C, P>,
-  channels: C,
-  block: RenderBlock,
-  frame: MarkFrame,
-  params: P,
-  options: SweepOptions<C>,
-) {
-  const hitNearest = shapeHitNearest(shape)
-  return sweepMarkAgainstHit(
-    {
-      paintBlock: (ctx, c, b) => {
-        shape.paintBlock(ctx, c, b, frame, params)
-      },
-      ink: shape.ink
-        ? (c, b, _frame, i) => shape.ink?.(c, b, frame, params, i)
-        : undefined,
-      hitNearest: hitNearest
-        ? (c, b, _frame, x, y, candidates, bound) =>
-            hitNearest(c, b, frame, params, x, y, candidates, bound)
-        : undefined,
-    },
-    channels,
-    block,
-    frame,
-    options,
-  )
 }

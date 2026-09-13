@@ -1,8 +1,9 @@
 import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
 import { COVERAGE_BAND_LAYER_ORDER } from '@jbrowse/render-core/coverageBand'
 import { MockHal } from '@jbrowse/render-core/hal'
+import { defineMark } from '@jbrowse/render-core/marks'
 import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
-import { sweepDrawAgainstHit } from '@jbrowse/render-core/marks/drawAgainstHit'
+import { sweepMarkAgainstHit } from '@jbrowse/render-core/marks/drawAgainstHit'
 import { UNIFORM_OFFSET_F32 } from '@jbrowse/render-core/shaders/coverageBar'
 import { SCALE_TYPE_LINEAR } from '@jbrowse/wiggle-core/normalize'
 
@@ -352,13 +353,17 @@ describe.each([0, 40])('interbase at band top %i', top => {
   test.each([false, true])(
     'every drawn bar answers its own hit, reversed=%s',
     reversed => {
+      const channels = interbaseChannels(SWEEP_SEGMENTS)
       expect(
-        sweepDrawAgainstHit(
-          coverageInterbaseShape,
-          interbaseChannels(SWEEP_SEGMENTS),
+        sweepMarkAgainstHit(
+          defineMark({
+            shape: coverageInterbaseShape,
+            channels: (c: typeof channels) => c,
+            params: () => sweepParams({ top }),
+          }),
+          channels,
           { ...block, reversed },
           SWEEP_FRAME,
-          sweepParams({ top }),
           { maxDistSq: Number.MIN_VALUE },
         ),
       ).toEqual([])
@@ -427,13 +432,17 @@ describe.each([0, 40])('indicators at band top %i', top => {
   test.each([false, true])(
     'every drawn triangle answers its own hit, reversed=%s',
     reversed => {
+      const channels = indicatorChannels(SWEEP_INDICATORS)
       expect(
-        sweepDrawAgainstHit(
-          coverageIndicatorShape,
-          indicatorChannels(SWEEP_INDICATORS),
+        sweepMarkAgainstHit(
+          defineMark({
+            shape: coverageIndicatorShape,
+            channels: (c: typeof channels) => c,
+            params: () => sweepParams({ top }),
+          }),
+          channels,
           { ...block, reversed },
           SWEEP_FRAME,
-          sweepParams({ top }),
           { maxDistSq: Number.MIN_VALUE },
         ),
       ).toEqual([])

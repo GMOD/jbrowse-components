@@ -33,7 +33,7 @@ different distances. Read anything below with the distinction in hand.
 **The mark layer is nearly everywhere.** A mark is one `defineMark`
 declaration binding a shape — a hand-written shader, its Canvas2D painter,
 its hit test and its SVG export, held to each other by
-`sweepDrawAgainstHit` — to a display's region payload and render state. Every
+`sweepMarkAgainstHit` — to a display's region payload and render state. Every
 rendering plugin declares them (`grep -rl "defineMark(" plugins` is the
 census): alignments a dozen across its pileup, coverage and arc bands,
 variants three, canvas two, and dotplot, gwas, hic, synteny, multi-way
@@ -127,7 +127,7 @@ that is a different sentence from making the alignments pileup declarable.
 
 The claim the tree can make that the grammars cannot is **parity, pinned**.
 A shape's painter, its shader and its hit test are held to each other by
-`sweepDrawAgainstHit` (`packages/render-core/src/marks/drawAgainstHit.ts`):
+`sweepMarkAgainstHit` (`packages/render-core/src/marks/drawAgainstHit.ts`):
 every pixel the painter inks answers the instance it belongs to, in both
 orientations, and the box a shape declares as its `ink` is within a pixel of
 what it painted. A legend cannot list a colour nothing painted, because it

@@ -1,7 +1,7 @@
 import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
 import { MockHal } from '@jbrowse/render-core/hal'
-import { paintMarkBlocks } from '@jbrowse/render-core/marks'
-import { sweepDrawAgainstHit } from '@jbrowse/render-core/marks/drawAgainstHit'
+import { defineMark, paintMarkBlocks } from '@jbrowse/render-core/marks'
+import { sweepMarkAgainstHit } from '@jbrowse/render-core/marks/drawAgainstHit'
 
 import { HIDDEN_ROW } from '../../shared/constants.ts'
 import { cellMark } from './cellMark.ts'
@@ -9,6 +9,7 @@ import * as shader from './shaders/variant.iface.generated.ts'
 import { HIT_TOLERANCE_PX } from './variantHitTest.ts'
 import { VARIANT_MARKS } from './variantMarks.ts'
 
+import type { CellChannels } from './cellMark.ts'
 import type {
   VariantRenderBlock,
   VariantRenderState,
@@ -258,12 +259,15 @@ describe('draw against hit', () => {
       for (const maxDistSq of [Number.MIN_VALUE, HIT_TOLERANCE_PX ** 2]) {
         test(`rowHeight ${rowHeight}, reversed ${reversed}, bound ${maxDistSq}`, () => {
           expect(
-            sweepDrawAgainstHit(
-              cellMark,
+            sweepMarkAgainstHit(
+              defineMark({
+                shape: cellMark,
+                channels: (c: CellChannels) => c,
+                params: () => ({ rowHeight, scrollTop: 0 }),
+              }),
               cells,
               makeBlock({ reversed }),
               frame,
-              { rowHeight, scrollTop: 0 },
               { maxDistSq },
             ),
           ).toEqual([])
@@ -286,12 +290,15 @@ describe('draw against hit', () => {
 
   test('a row scrolled off the canvas is painted by nobody and answers nobody', () => {
     expect(
-      sweepDrawAgainstHit(
-        cellMark,
+      sweepMarkAgainstHit(
+        defineMark({
+          shape: cellMark,
+          channels: (c: CellChannels) => c,
+          params: () => ({ rowHeight: 10, scrollTop: 25 }),
+        }),
         cells,
         makeBlock(),
         { canvasWidth: 800, canvasHeight: 12 },
-        { rowHeight: 10, scrollTop: 25 },
         { maxDistSq: HIT_TOLERANCE_PX ** 2, sliceOne: sliceCell },
       ),
     ).toEqual([])

@@ -20,8 +20,8 @@ import type { InkRect, Mark } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // The pileup marks keep their bp-containment hit tests (ADR-110 §Kept), so
-// `sweepDrawAgainstHit`'s box-containment clause is not theirs to pass. This
-// holds the half that is: what the painter records for one instance lies
+// `sweepMarkAgainstHit`'s default box-containment rule is not theirs to pass.
+// This holds the half that is: what the painter records for one instance lies
 // inside the mark's `ink` for it, and the ink is within a pixel of the
 // painting on every side — on both orientations, at a zoom where a one-base
 // error is 20 px and one where a cell is a quarter of a pixel.

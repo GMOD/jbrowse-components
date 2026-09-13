@@ -1,7 +1,7 @@
 import { MockHal } from '@jbrowse/render-core/hal'
-import { paintMarkBlocks } from '@jbrowse/render-core/marks'
+import { defineMark, paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
-import { sweepDrawAgainstHit } from '@jbrowse/render-core/marks/drawAgainstHit'
+import { sweepMarkAgainstHit } from '@jbrowse/render-core/marks/drawAgainstHit'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
 import { DOTPLOT_MARKS, segmentMark } from './dotplotMarks.ts'
@@ -426,15 +426,18 @@ describe("every stroked segment answers its own hit, within its caps' slack", ()
     // is what says the shape reads none of it.
     for (const reversed of [false, true]) {
       expect(
-        sweepDrawAgainstHit(
-          segmentMark,
+        sweepMarkAgainstHit(
+          defineMark({
+            shape: segmentMark,
+            channels: (c: DotplotGeometryData) => c,
+            params: () => sweepParams,
+          }),
           channels,
           {
             ...canvasWideBlocks([0], sweepFrame.canvasWidth)[0]!,
             reversed,
           },
           sweepFrame,
-          sweepParams,
           { maxDistSq: SWEEP_MAX_DIST_SQ },
         ),
       ).toEqual([])

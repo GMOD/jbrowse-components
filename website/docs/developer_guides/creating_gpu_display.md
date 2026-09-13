@@ -558,7 +558,8 @@ display that stacks strips on one canvas. A first shape wants none of them.
 ## Step 5: The parity gate
 
 The painter and the ink are two spellings of where the ink is, and they drift.
-`sweepDrawAgainstHit` paints a block into a recording context and holds `ink` to
+`sweepMarkAgainstHit` takes a mark, so the test binds the shape to fixed params
+with `defineMark`. It paints a block into a recording context and holds `ink` to
 what the painter put down — the painting lies inside the box, and every edge of
 the box is within a pixel of it — then walks the block in half-pixel steps and
 holds the hit test to both: a point on a box answers that box, a hit's `x`/`y`
@@ -568,7 +569,8 @@ in both orientations:
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/scoreMark.test.ts -->
 
 ```ts
-import { sweepDrawAgainstHit } from '@jbrowse/render-core/marks/drawAgainstHit'
+import { defineMark } from '@jbrowse/render-core/marks'
+import { sweepMarkAgainstHit } from '@jbrowse/render-core/marks/drawAgainstHit'
 
 import { scoreMark } from './scoreMark.ts'
 
@@ -603,12 +605,15 @@ describe('score: every drawn box answers its own hit', () => {
     for (const maxDistSq of [Number.MIN_VALUE, 16]) {
       test(`reversed ${reversed}, bound ${maxDistSq}`, () => {
         expect(
-          sweepDrawAgainstHit(
-            scoreMark,
+          sweepMarkAgainstHit(
+            defineMark({
+              shape: scoreMark,
+              channels: (c: ScoreChannels) => c,
+              params: () => ({ color: 0xff0000ff, domain: [0, 1] }),
+            }),
             channels,
             { ...block, reversed },
             frame,
-            { color: 0xff0000ff, domain: [0, 1] },
             { maxDistSq },
           ),
         ).toEqual([])

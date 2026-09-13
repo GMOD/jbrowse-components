@@ -10,10 +10,10 @@ import {
   spanLeft,
   strokeRectInside,
 } from '@jbrowse/render-core/canvas2dUtils'
-import { blockPx } from '@jbrowse/render-core/marks'
+import { blockPx, defineMark } from '@jbrowse/render-core/marks'
 import {
   recordingContext,
-  sweepDrawAgainstHit,
+  sweepMarkAgainstHit,
 } from '@jbrowse/render-core/marks/drawAgainstHit'
 import {
   snapBoxHeightPx,
@@ -70,12 +70,15 @@ const sliceRect = (c: RectChannels, i: number): RectChannels => ({
 describe('rect: the box is the fill, snapped as the painter snaps it', () => {
   test.each([false, true])('reversed %s', reversed => {
     expect(
-      sweepDrawAgainstHit(
-        rectShape,
+      sweepMarkAgainstHit(
+        defineMark({
+          shape: rectShape,
+          channels: (c: RectChannels) => c,
+          params: () => ({ scrollY: 0, outlineColor: 0 }),
+        }),
         rects,
         { ...block, reversed },
         frame,
-        { scrollY: 0, outlineColor: 0 },
         { maxDistSq: Number.MIN_VALUE, sliceOne: sliceRect },
       ),
     ).toEqual([])
@@ -105,12 +108,15 @@ const sliceArrow = (c: ArrowChannels, i: number): ArrowChannels => ({
 describe('arrow: the box holds the stem and the head', () => {
   test.each([false, true])('reversed %s', reversed => {
     expect(
-      sweepDrawAgainstHit(
-        arrowShape,
+      sweepMarkAgainstHit(
+        defineMark({
+          shape: arrowShape,
+          channels: (c: ArrowChannels) => c,
+          params: () => ({ scrollY: 0, outlineColor: 0 }),
+        }),
         arrows,
         { ...block, reversed },
         frame,
-        { scrollY: 0, outlineColor: 0 },
         { maxDistSq: 100, sliceOne: sliceArrow },
       ),
     ).toEqual([])

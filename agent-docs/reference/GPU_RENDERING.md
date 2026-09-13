@@ -1971,7 +1971,7 @@ does the shared-shape version); keep them in step with any change here.
   `MarkShape` of your own beside `my.slang` (`pnpm gen:shaders` emits
   `my.generated.ts`; `slangPass()` builds the `PipelineDescriptor`): its
   `writeUniforms`, its `paintBlock` (also the SVG export) and its `ink`,
-  held to each other by a `sweepDrawAgainstHit` test.
+  held to each other by a `sweepMarkAgainstHit` test.
 - **Marks + backend** — `defineMark({ shape, channels, params })`, one per
   shape, and `createMarkBackend(canvas, MARKS)` from
   `@jbrowse/render-core/marks/backend`, imported from the lazily loaded

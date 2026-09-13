@@ -146,7 +146,7 @@ Canvas2D-vs-GPU parity gate cannot catch the strand case.
   what keeps a throwing painter from leaving every later frame clipped.
 - **A shape whose instance is a box declares `ink` and no `hitNearest`** —
   `defineMark` derives the hit test from the box and the chrome's highlight
-  reads it; `sweepDrawAgainstHit` holds the box to the painting within a pixel.
+  reads it; `sweepMarkAgainstHit` holds the box to the painting within a pixel.
   A shape writes `hitNearest` only where its ink is not a box, or its hit rule
   is not the box (`point`'s glyph cluster). ADR-110.
 - **A box shape places each instance once**, through module-level placement
