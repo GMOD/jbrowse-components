@@ -1,6 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
 import { MANHATTAN_MARKS } from './manhattanMarks.ts'
@@ -29,13 +28,9 @@ function ManhattanSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
     <ScorePlotSvgFrame
       {...props}
       clipIdPrefix="manhattan"
-      paint={(ctx, { canvasWidth: w, drawHeight, renderBlocks }) => {
-        paintMarkBlocks(ctx, MANHATTAN_MARKS, model.rpcDataMap, renderBlocks, {
-          ...model.renderState,
-          canvasWidth: w,
-          canvasHeight: drawHeight,
-        })
-      }}
+      marks={MANHATTAN_MARKS}
+      regions={model.rpcDataMap}
+      renderState={model.renderState}
     />
   )
 }

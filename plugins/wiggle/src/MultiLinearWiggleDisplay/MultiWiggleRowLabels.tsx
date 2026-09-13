@@ -1,5 +1,6 @@
+import { AXIS_GUTTER_WIDTH_PX, axisGutterLeft } from '@jbrowse/display-ui'
 import { SvgRowLabels } from '@jbrowse/tree-sidebar'
-import { AXIS_GUTTER_WIDTH_PX, axisDrawn } from '@jbrowse/wiggle-core'
+import { axisDrawn } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import type { YAxis } from '@jbrowse/wiggle-core'
@@ -26,13 +27,17 @@ interface LabelModel {
 // `valueScales`, and they take the fixed-width strip at the left of each row:
 // a sample name can be arbitrarily long, so the labels start after that strip
 // and keep growing rightward over the plot. `labelOffset` is where they would
-// start with no axis — past the dendrogram.
+// start with no axis — past the dendrogram. `exportContentLeft` is the export
+// shell's, which moves an axis nothing pushes right into the margin, so the
+// labels follow it there.
 export default observer(function MultiWiggleRowLabels({
   model,
   labelOffset,
+  exportContentLeft,
 }: {
   model: LabelModel
   labelOffset: number
+  exportContentLeft?: number
 }) {
   const { sources, isOverlay, effectiveRowHeight, numSources, showRowLabels } =
     model
@@ -48,7 +53,9 @@ export default observer(function MultiWiggleRowLabels({
         axis
           ? Math.max(
               labelOffset,
-              (axis.left ?? 0) + AXIS_GUTTER_WIDTH_PX + AXIS_TO_LABEL_GAP_PX,
+              axisGutterLeft({ left: axis.left }, 0, 0, exportContentLeft) +
+                AXIS_GUTTER_WIDTH_PX +
+                AXIS_TO_LABEL_GAP_PX,
             )
           : labelOffset
       }

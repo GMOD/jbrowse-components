@@ -145,6 +145,18 @@ function layerGapLimitBp(
   })
 }
 
+export function encodeWiggleRegions(model: {
+  rpcDataMap: ReadonlyMap<number, WiggleDataResult>
+  gpuProps: () => WiggleGpuProps
+}) {
+  const gpuProps = model.gpuProps()
+  const regions = new Map<number, SourceRenderData[]>()
+  for (const [idx, data] of model.rpcDataMap) {
+    regions.set(idx, buildSourceRenderData(data, gpuProps))
+  }
+  return regions
+}
+
 export function buildSourceRenderData(
   data: WiggleDataResult,
   gpuProps: WiggleGpuProps,

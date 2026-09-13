@@ -1,14 +1,9 @@
 /* eslint-disable react-refresh/only-export-components */
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { paintMarkBlocks } from '@jbrowse/render-core/marks'
-import {
-  SvgClusterProvenanceCaption,
-  SvgTreePath,
-  treeSidebarOffset,
-} from '@jbrowse/tree-sidebar'
+import { SvgTreeSidebar, treeSidebarOffset } from '@jbrowse/tree-sidebar'
 import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
-import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
+import { encodeWiggleRegions } from '../shared/buildSourceRenderData.ts'
 import { WIGGLE_MARKS } from '../shared/wiggleMarks.ts'
 import MultiWiggleRowLabels from './MultiWiggleRowLabels.tsx'
 import MultiWiggleRowSeparators from './MultiWiggleRowSeparators.tsx'
@@ -25,7 +20,6 @@ import type {
   ClusterProvenance,
 } from '@jbrowse/tree-sidebar'
 import type {
-  SourceRenderData,
   WiggleDataResult,
   WiggleGPURenderState,
   YAxis,
@@ -84,54 +78,36 @@ export async function renderSvg(
 }
 
 function MultiWiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
-  const { model, canvasWidth } = props
-  const { rpcDataMap, renderState } = model
-
+  const { model, view, canvasWidth } = props
   // No data-size gate: renderState is always defined (a [0,1] stub until
   // autoscale resolves), so an empty region paints an empty plot; the per-row
   // axes are the shell's, off `valueScales`, and draw only where a real domain
-  // exists. Wiggle can't use the shared SvgTreeSidebar: its row labels live in
-  // MultiWiggleRowLabels (shared with the on-screen path). So keep the split,
-  // but derive the label offset and the tree from the one `treeSidebarOffset`
-  // gate so a blank gutter can't appear.
-  const { hierarchy } = model
-  const labelOffset = treeSidebarOffset(model)
-
-  const gpuProps = model.gpuProps()
-
+  // exists. The row labels are `MultiWiggleRowLabels`, shared with the screen,
+  // so the sidebar draws only the tree.
   return (
     <ScorePlotSvgFrame
       {...props}
       clipIdPrefix="wiggle"
       plotGeometry={model.plotGeometry}
-      paint={(ctx, { canvasWidth: w, drawHeight, renderBlocks }) => {
-        const regions = new Map<number, SourceRenderData[]>()
-        for (const [idx, data] of rpcDataMap) {
-          regions.set(idx, buildSourceRenderData(data, gpuProps))
-        }
-        paintMarkBlocks(ctx, WIGGLE_MARKS, regions, renderBlocks, {
-          ...renderState,
-          canvasWidth: w,
-          canvasHeight: drawHeight,
-        })
-      }}
-      overlay={<MultiWiggleRowSeparators model={model} width={canvasWidth} />}
-      legend={
-        <>
-          <MultiWiggleRowLabels model={model} labelOffset={labelOffset} />
-          {labelOffset && hierarchy ? (
-            <>
-              <SvgTreePath hierarchy={hierarchy} />
-              {/* The same caption component `SvgTreeSidebar` draws for the
-                  displays that can use that wrapper — see there for why this
-                  display can't, and there for the caption's own rationale. */}
-              <SvgClusterProvenanceCaption
-                clusterProvenance={model.clusterProvenance}
-              />
-            </>
-          ) : null}
-        </>
-      }
-    />
+      marks={WIGGLE_MARKS}
+      regions={encodeWiggleRegions(model)}
+      renderState={model.renderState}
+    >
+      <MultiWiggleRowSeparators model={model} width={canvasWidth} />
+      <MultiWiggleRowLabels
+        model={model}
+        labelOffset={treeSidebarOffset(model)}
+        exportContentLeft={Math.max(-view.offsetPx, 0)}
+      />
+      <SvgTreeSidebar
+        showTree={model.showTree}
+        showLabels={false}
+        hierarchy={model.hierarchy}
+        sources={[]}
+        rowHeight={model.effectiveRowHeight}
+        treeAreaWidth={model.treeAreaWidth}
+        clusterProvenance={model.clusterProvenance}
+      />
+    </ScorePlotSvgFrame>
   )
 }

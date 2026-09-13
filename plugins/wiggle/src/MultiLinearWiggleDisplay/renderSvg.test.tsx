@@ -224,9 +224,14 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
     expect(html).toContain('>b</text>')
   })
 
-  // The dendrogram is the display's own, not the shared SvgTreeSidebar: the row
-  // labels live in MultiWiggleRowLabels. Both derive their offset from
-  // treeSidebarOffset, so a blank gutter can't appear.
+  // With no tree the shell moves the axis into the export margin, so the
+  // labels start at the content edge rather than past a strip the axis left.
+  it('starts the labels at the content edge when the axis sits in the margin', async () => {
+    const html = render(await renderSvg(makeModel()))
+    expect(html).toContain('translate(4 0)')
+    expect(html).not.toContain('translate(54 0)')
+  })
+
   it('draws the dendrogram and shifts the labels past it', async () => {
     const html = render(
       await renderSvg(

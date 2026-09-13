@@ -5,7 +5,6 @@ import { treeIsShowing, treeSidebarOffset } from './treeSidebarGeometry.ts'
 
 import type { ClusterProvenance } from './clusterProvenance.ts'
 import type { ClusterHierarchyNode, RowLabelSource } from './types.ts'
-import type { ReactNode } from 'react'
 
 // The SVG-export counterpart of the on-screen `TreeSidebar`: the left sidebar's
 // dendrogram plus its row labels, rendered together. Every clusterable display's
@@ -24,7 +23,6 @@ export function SvgTreeSidebar({
   showLabels = true,
   scrollTop,
   availableHeight,
-  labels,
   clusterProvenance,
 }: {
   showTree: boolean
@@ -37,13 +35,6 @@ export function SvgTreeSidebar({
   showLabels?: boolean
   scrollTop?: number
   availableHeight?: number
-  // Replaces the default `SvgRowLabels` with the caller's own label renderer,
-  // drawn at the same tree-aware offset. For a display whose on-screen sidebar
-  // is more than a label box — variants prefixes each label with a `color`
-  // swatch, which `SvgRowLabels` has no notion of — pass the live component
-  // itself, so the export can't drift from what the screen shows. It gets the
-  // same offset gate, which is the whole reason this wrapper exists.
-  labels?: ReactNode
   // What the tree was computed from, captioned above it. Undefined for a tree
   // that arrives as data (maf's `.nh` phylogeny), which has no locus.
   clusterProvenance?: ClusterProvenance
@@ -60,23 +51,18 @@ export function SvgTreeSidebar({
   return (
     <>
       {/* see SvgClusterProvenanceCaption for why the locus travels with the
-          exported figure, and why multi-wiggle draws the same caption without
-          going through this component */}
+          exported figure */}
       {drawnTree ? (
         <SvgClusterProvenanceCaption clusterProvenance={clusterProvenance} />
       ) : null}
       {showLabels && sources.length ? (
-        labels === undefined ? (
-          <SvgRowLabels
-            sources={sources}
-            rowHeight={rowHeight}
-            labelOffset={labelOffset}
-            scrollTop={scrollTop}
-            availableHeight={availableHeight}
-          />
-        ) : (
-          <g transform={`translate(${labelOffset} 0)`}>{labels}</g>
-        )
+        <SvgRowLabels
+          sources={sources}
+          rowHeight={rowHeight}
+          labelOffset={labelOffset}
+          scrollTop={scrollTop}
+          availableHeight={availableHeight}
+        />
       ) : null}
       {drawnTree ? (
         <SvgTreePath hierarchy={drawnTree} scrollTop={scrollTop} />

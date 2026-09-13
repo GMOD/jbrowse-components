@@ -1,15 +1,13 @@
 /* eslint-disable react-refresh/only-export-components */
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
-import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
+import { encodeWiggleRegions } from '../shared/buildSourceRenderData.ts'
 import { WIGGLE_MARKS } from '../shared/wiggleMarks.ts'
 
 import type { LinearWiggleDisplayModel } from './model.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
-import type { SourceRenderData } from '@jbrowse/wiggle-core'
 import type React from 'react'
 
 export async function renderSvg(
@@ -25,18 +23,10 @@ function WiggleSvgBody(props: LgvSvgBodyProps<LinearWiggleDisplayModel>) {
     <ScorePlotSvgFrame
       {...props}
       clipIdPrefix="wiggle"
-      paint={(ctx, { canvasWidth: w, drawHeight, renderBlocks }) => {
-        const gpuProps = model.gpuProps()
-        const regions = new Map<number, SourceRenderData[]>()
-        for (const [idx, data] of model.rpcDataMap) {
-          regions.set(idx, buildSourceRenderData(data, gpuProps))
-        }
-        paintMarkBlocks(ctx, WIGGLE_MARKS, regions, renderBlocks, {
-          ...model.renderState,
-          canvasWidth: w,
-          canvasHeight: drawHeight,
-        })
-      }}
+      plotGeometry={model.plotGeometry}
+      marks={WIGGLE_MARKS}
+      regions={encodeWiggleRegions(model)}
+      renderState={model.renderState}
     />
   )
 }

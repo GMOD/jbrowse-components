@@ -1,6 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
 import type { MarkDisplayModel } from './components/markDisplayTypes.ts'
@@ -24,13 +23,9 @@ function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
     <ScorePlotSvgFrame
       {...props}
       clipIdPrefix="marks"
-      paint={(ctx, { canvasWidth: w, drawHeight, renderBlocks }) => {
-        paintMarkBlocks(ctx, model.markList, model.rpcDataMap, renderBlocks, {
-          ...model.renderState,
-          canvasWidth: w,
-          canvasHeight: drawHeight,
-        })
-      }}
+      marks={model.markList}
+      regions={model.rpcDataMap}
+      renderState={model.renderState}
     />
   )
 }
