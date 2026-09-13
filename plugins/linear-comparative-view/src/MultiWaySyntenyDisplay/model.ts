@@ -57,6 +57,14 @@ import { annotationRank } from './laneAnnotation.ts'
 import { frameFromDecision } from './laneDecision.ts'
 import { laneHeaderRows } from './laneHeader.ts'
 import { lanePanelsForRegion } from './lanePanels.ts'
+import {
+  hiddenLanesOf,
+  laneFilterOf,
+  lanesInForce,
+  pickedLanes,
+  withLaneHidden,
+  withLaneShown,
+} from './laneSelection.ts'
 import { buildLanes, laneContentHeight, laneGeometry } from './laneStack.ts'
 import {
   clipGroupToAnchor,
@@ -97,9 +105,10 @@ import type { LanePlacementRecord } from './composeLaneLinks.ts'
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
 import type { LaneGene } from './geneGlyph.ts'
 import type { AnchorCoord, LaneDecision } from './laneDecision.ts'
+import type { LaneFilter } from './laneSelection.ts'
 import type { LaneStack } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
-import type { LaneChoice, LaneFilter } from './menus.ts'
+import type { LaneChoice } from './menus.ts'
 import type { MultiWayRibbonColorBy, TickGeometry } from './multiwayGeometry.ts'
 import type {
   MultiWayCell,
@@ -517,11 +526,11 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * draw only `names`; undefined puts the lanes back to
-         * `configuredLanes`, or every lane
+         * draw only `names`, unhiding everything; undefined puts the lanes
+         * back to `configuredLanes`, or every lane
          */
         setSelectedLanes(names: string[] | undefined) {
-          self.laneFilter = names === undefined ? undefined : { only: names }
+          self.laneFilter = laneFilterOf(names, [])
         },
         /**
          * #action
@@ -800,22 +809,14 @@ export function stateModelFactory(
        * in force, so hiding one refetches nothing
        */
       get laneSelection(): readonly string[] | undefined {
-        const filter = self.laneFilter
-        const configured = self.configuredLanes
-        return filter && 'only' in filter
-          ? filter.only
-          : configured.length
-            ? configured
-            : undefined
+        return lanesInForce(self.laneFilter, self.configuredLanes)
       },
       /**
        * #getter
-       * the lanes Hide lane took out of `laneSelection`, or out of every lane
-       * where there is none
+       * the lanes Hide lane took out of the drawing
        */
       get hiddenLanes(): readonly string[] {
-        const filter = self.laneFilter
-        return filter && 'except' in filter ? filter.except : []
+        return hiddenLanesOf(self.laneFilter)
       },
     }))
     .views(self => ({
@@ -977,62 +978,42 @@ export function stateModelFactory(
        * back to
        */
       chooseLanes(names: string[]) {
-        const offered = new Set(
-          self.laneUniverse.map(lane => self.laneKey(lane.name)),
-        )
-        const offWindow = (self.laneSelection ?? []).filter(
-          name => !offered.has(self.laneKey(name)),
-        )
-        const picked = new Set(names.map(self.laneKey))
-        const byDefault = new Set(
-          self.configuredLanes.length
-            ? self.configuredLanes.map(self.laneKey)
-            : offered,
-        )
         self.setSelectedLanes(
-          offWindow.length === 0 &&
-            picked.size === byDefault.size &&
-            [...picked].every(key => byDefault.has(key))
-            ? undefined
-            : [...names, ...offWindow],
+          pickedLanes(
+            {
+              picked: names,
+              offered: self.laneUniverse.map(lane => lane.name),
+              inForce: self.laneSelection,
+              configured: self.configuredLanes,
+            },
+            self.laneKey,
+          ),
         )
       },
       /**
        * #action
-       * out of the picker's choice where there is one, else hidden from the
-       * lanes in force
+       * out of the drawing, whatever choice is in force: the lane stays
+       * fetched, so this refetches nothing
        */
       hideLane(assemblyName: string) {
-        const key = self.laneKey(assemblyName)
-        const filter = self.laneFilter
-        if (filter && 'only' in filter) {
-          self.setSelectedLanes(
-            filter.only.filter(name => self.laneKey(name) !== key),
-          )
-        } else if (!self.hiddenLanes.some(name => self.laneKey(name) === key)) {
-          self.laneFilter = { except: [...self.hiddenLanes, assemblyName] }
-        }
+        self.laneFilter = withLaneHidden(
+          self.laneFilter,
+          assemblyName,
+          self.laneKey,
+        )
       },
       /**
        * #action
-       * drawn again: unhidden, or added to the lanes in force where they
+       * drawn again: unhidden, and added to the lanes in force where they
        * leave it out
        */
       showLane(assemblyName: string) {
-        const key = self.laneKey(assemblyName)
-        const filter = self.laneFilter
-        const selection = self.laneSelection
-        if (filter && 'except' in filter) {
-          const except = filter.except.filter(
-            name => self.laneKey(name) !== key,
-          )
-          self.laneFilter = except.length ? { except } : undefined
-        } else if (
-          selection &&
-          !selection.some(name => self.laneKey(name) === key)
-        ) {
-          self.setSelectedLanes([...selection, assemblyName])
-        }
+        self.laneFilter = withLaneShown(
+          self.laneFilter,
+          self.configuredLanes,
+          assemblyName,
+          self.laneKey,
+        )
       },
     }))
     .actions(self => ({

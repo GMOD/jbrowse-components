@@ -1195,6 +1195,32 @@ test('hiding a lane on a graph track refetches nothing', () => {
   expect(display.rpcPropsCacheKey).toBe(key)
 })
 
+// A picker choice in force is also what a graph track fetches, so a hide has
+// to leave it alone: it takes the lane out of the drawing only
+test('hiding a lane under a picker choice keeps the choice and refetches nothing', () => {
+  const { display } = createDisplayWithSession({
+    syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
+    trackAssemblyNames: ['volvox', 'HG00097.1'],
+  })
+  display.setDeclaredLanes([{ name: 'HG00097.1' }, { name: 'HG00099.1' }])
+  display.setFeatures([
+    mateRecord('r1', 'HG00097.1'),
+    mateRecord('r2', 'HG00099.1'),
+  ])
+  display.chooseLanes(['HG00097.1', 'HG00099.1'])
+  const key = display.rpcPropsCacheKey
+  display.hideLane('HG00097.1')
+  expect(display.laneFilter).toEqual({
+    only: ['HG00097.1', 'HG00099.1'],
+    except: ['HG00097.1'],
+  })
+  expect(display.rowAssemblies).toEqual(['HG00099.1'])
+  expect(display.rpcPropsCacheKey).toBe(key)
+  display.showLane('HG00097.1')
+  expect(display.laneFilter).toEqual({ only: ['HG00097.1', 'HG00099.1'] })
+  expect(display.rowAssemblies).toEqual(['HG00097.1', 'HG00099.1'])
+})
+
 describe('the picker submit', () => {
   const lanes = () => [
     mateRecord('r1', 'volvox_random'),
@@ -1274,12 +1300,16 @@ test('a lane selection narrows the stack and survives a refetch', () => {
   expect(getSnapshot(display).laneFilter).toEqual({
     only: ['sample#1#a', 'volvox_random'],
   })
-  // pins apply inside the selection, and a hide narrows it
+  // pins apply inside the selection, and a hide takes a lane out of the
+  // drawing without rewriting the choice
   display.setRowOrder(['sample#1#a'])
   expect(display.rowAssemblies).toEqual(['sample#1#a', 'volvox_random'])
   display.hideLane('volvox_random')
   expect(display.rowAssemblies).toEqual(['sample#1#a'])
-  expect(display.laneFilter).toEqual({ only: ['sample#1#a'] })
+  expect(display.laneFilter).toEqual({
+    only: ['sample#1#a', 'volvox_random'],
+    except: ['volvox_random'],
+  })
 
   display.setSelectedLanes(undefined)
   expect(display.laneSelection).toBeUndefined()

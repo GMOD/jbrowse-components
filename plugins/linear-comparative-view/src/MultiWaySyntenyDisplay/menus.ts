@@ -7,6 +7,7 @@ import { moveLaneTo } from './laneDrag.ts'
 import { laneRegion } from './laneHeader.ts'
 import { ribbonColorModeOptions } from './ribbonColorModes.ts'
 
+import type { LaneFilter } from './laneSelection.ts'
 import type { Lane } from './laneStack.ts'
 import type { MultiWayRibbonColorBy } from './ribbonColorModes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -49,8 +50,6 @@ export interface LaneChoice {
   placed: boolean
   drawn: boolean
 }
-
-export type LaneFilter = { only: string[] } | { except: string[] }
 
 export interface LaneSelectionModel {
   laneUniverse: LaneChoice[]
