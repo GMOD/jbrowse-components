@@ -94,6 +94,7 @@ export type { DensityRampName } from './shared/densityColorRamp.ts'
 // default, so gccontent states its default without restating the enumeration.
 export { summaryScoreModeConfigSchemaFields } from './shared/summaryScoreModeConfigSchemaFields.ts'
 export { wiggleCommonExtraSlots } from './shared/WiggleCommonMixin.ts'
+export { wiggleMouseHandlers } from './shared/wiggleMouseHandlers.ts'
 // Score-plot pieces that moved to `@jbrowse/wiggle-core`, re-exported under the
 // names this plugin published them as.
 export {
@@ -110,6 +111,5 @@ export type {
   ScorePlotSvgLayout as WiggleFamilySvgLayout,
   ScorePlotSvgModel as WiggleFamilySvgModel,
 } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
-export { wiggleMouseHandlers } from '@jbrowse/wiggle-core/wiggleMouseHandlers'
 export type { WiggleDisplayModel } from './LinearWiggleDisplay/components/wiggleDisplayTypes.ts'
 export type { MultiWiggleDisplayModel } from './MultiLinearWiggleDisplay/components/multiWiggleDisplayTypes.ts'

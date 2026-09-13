@@ -11,8 +11,6 @@ import { PointerLayer, axisPlotBox } from '@jbrowse/display-ui'
 import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { observer } from 'mobx-react'
 
-import { wiggleMouseHandlers } from './wiggleMouseHandlers.ts'
-
 import type {
   ContextMenuAnchor,
   MenuItem,
@@ -91,15 +89,22 @@ export const ScorePlotChrome = observer(function ScorePlotChrome<
     [marks],
   )
   const hitAt = (x: number, y: number) => findHit(x, y - box.yTop)
-  const { onPointerPosition, onClick } = wiggleMouseHandlers(model, hitAt)
   return (
     <DisplayChrome
       model={model}
       factory={factory}
       testid={testid}
       style={{ width, height, whiteSpace: 'nowrap', textAlign: 'left' }}
-      onPointerPosition={onPointerPosition}
-      onClick={onClick}
+      onPointerPosition={state => {
+        model.setHoveredFeature(state ? hitAt(state.x, state.y) : undefined)
+      }}
+      onClick={event => {
+        const { x, y } = eventPoint(event)
+        const hit = hitAt(x, y)
+        if (hit) {
+          model.selectFeature(hit)
+        }
+      }}
       onContextMenu={
         contextMenu
           ? event => {

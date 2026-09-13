@@ -178,9 +178,9 @@ call `useMouseTracking`, one of which had already dropped `onMouseLeave`.
 - **The measurement is off `event.currentTarget`**, which is the chrome
   container — so there is no ref to pass, no way to bind the handlers and the
   measured box to different elements, and a caller's own `ref` needs no merging.
-  `wiggleMouseHandlers`' click path resolves its hit the same way, from the
-  click rather than from a hover a previous frame recorded (the viewport moves
-  under a stationary cursor).
+  `ScorePlotChrome`'s click resolves its hit the same way, from the click
+  rather than from a hover a previous frame recorded (the viewport moves under
+  a stationary cursor).
 - **The position travels as the `MouseState` itself**, not as `[number, number]`
   tuples with a `[0, 0]` sentinel for "no pointer" — that sentinel reads as
   "pointer at the origin", so every consumer needed a second guard to make it

@@ -10,11 +10,11 @@ import {
   TreeSidebar,
   treeSidebarOffset,
 } from '@jbrowse/tree-sidebar'
-import { wiggleMouseHandlers } from '@jbrowse/wiggle-core/wiggleMouseHandlers'
 import { observer } from 'mobx-react'
 
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
+import { wiggleMouseHandlers } from '../../shared/wiggleMouseHandlers.ts'
 import MultiWiggleRowLabels from '../MultiWiggleRowLabels.tsx'
 import MultiWiggleRowSeparators from '../MultiWiggleRowSeparators.tsx'
 import MultiWiggleHint from './MultiWiggleHint.tsx'
