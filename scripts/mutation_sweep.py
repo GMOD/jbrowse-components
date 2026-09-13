@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Operator-swap mutation sweep for one unit of the release-validation sample.
+"""Operator-swap mutation sweep for one directory or file.
 
 Mutates one comparison or boolean operator at a time in the unit's sources and
-reruns every test jest says is related to them. A mutant nothing fails on is a
+reruns the tests that name them. A mutant nothing fails on is a
 behavior no test pins.
 
     scripts/mutation_sweep.py plugins/variants/src/shared

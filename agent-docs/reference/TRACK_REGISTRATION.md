@@ -9,7 +9,7 @@ kind: spec
 
 A track config reaches a session by one of three routes, and which one it takes
 depends on who is asking and what already exists. This is the one-page spec
-[RELEASE_VALIDATION_SAMPLING.md](RELEASE_VALIDATION_SAMPLING.md) asks for on a
+[RELEASE_VALIDATION.md](RELEASE_VALIDATION.md) asks for on a
 second cross-cutting concept: enumerate the leaves, group by what a consumer can
 tell apart, report both counts. [REGION_TOO_LARGE.md](REGION_TOO_LARGE.md) is
 the template and the first of these.

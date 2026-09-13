@@ -50,7 +50,7 @@ existed on 2026-08-25 and all four closed, and two of them were mostly settled
 material: `per-base-subpixel-bin` became
 [reference/PER_BASE_SUBPIXEL_BIN.md](../reference/PER_BASE_SUBPIXEL_BIN.md) plus
 one idea and three TODO entries, and `release-validation-by-sampling` became
-[reference/RELEASE_VALIDATION_SAMPLING.md](../reference/RELEASE_VALIDATION_SAMPLING.md)
+[reference/RELEASE_VALIDATION.md](../reference/RELEASE_VALIDATION.md)
 plus two. Two signals that a handoff has stopped being one: it **publishes a
 measurement** — `generate-measurement-tables` allows exactly one publisher per
 record, so a handoff holding a table is the permanent home of that record until

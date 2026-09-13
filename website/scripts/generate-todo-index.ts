@@ -36,27 +36,25 @@ import {
 } from './check-utils.ts'
 import { repoRoot } from './paths.ts'
 
-// `clause` is what the counts sentence says about a category — the predicate,
-// so a category can say "are ordinary work" or "open with" as its own grammar
-// wants. It is the one piece of prose here that is a judgement rather than a
-// rendering.
 const TABLES = [
   {
     category: 'ready',
     marker: 'TODO READY INDEX',
-    clause: 'are ordinary work someone can pick up',
+    verb: ['is', 'are'],
+    clause: 'ordinary work someone can pick up',
   },
   {
     category: 'visual-call',
     marker: 'TODO VISUAL-CALL INDEX',
-    clause:
-      "are blocked on a visual call that is not the implementer's to make",
+    verb: ['is', 'are'],
+    clause: "blocked on a visual call that is not the implementer's to make",
   },
   {
     category: 'measure-first',
     marker: 'TODO MEASURE-FIRST INDEX',
+    verb: ['opens', 'open'],
     clause:
-      'open with an instruction to go measure something, because the premise is not established and building first would be guessing',
+      'with an instruction to go measure something, because the premise is not established and building first would be guessing',
   },
 ]
 
@@ -200,10 +198,10 @@ for (const { category, marker } of TABLES) {
   })
 }
 
-const clauses = TABLES.map(
-  ({ category, clause }) =>
-    `${numberWord(byCategory(category).length)} ${clause}`,
-)
+const clauses = TABLES.map(({ category, verb, clause }) => {
+  const n = byCategory(category).length
+  return `${numberWord(n)} ${verb[n === 1 ? 0 : 1]} ${clause}`
+})
 content = spliceGeneratedBlock({
   path: todoPath,
   marker: 'TODO COUNTS',
@@ -211,7 +209,7 @@ content = spliceGeneratedBlock({
   // Wrapped, because this block is prose in a hand-wrapped file rather than a
   // table — an 80-column paragraph among 80-column paragraphs.
   body: wrap(
-    `${numberWord(entries.length, true)} entries are on the list: ${clauses
+    `${numberWord(entries.length, true)} ${entries.length === 1 ? 'entry is' : 'entries are'} on the list: ${clauses
       .slice(0, -1)
       .join(', ')}, and ${clauses.at(-1)}.`,
   ),
