@@ -955,25 +955,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         ]
       },
     }))
-    .preProcessSnapshot<
-      // legacy snapshots stored `tracks` at the top level before the `levels`
-      // restructure; accept the loose shape and let MST revalidate at runtime
-      | ({ tracks?: unknown; levels?: unknown } & Record<string, unknown>)
-      | undefined
-    >(snap => {
-      // only invent a level for a legacy snapshot that actually carried
-      // top-level `tracks`; otherwise leave levels to afterAttach's
-      // reconcileLevels, which sizes it from the views
-      const {
-        tracks,
-        levels = tracks ? [{ tracks }] : [],
-        ...rest
-      } = snap || {}
-      return {
-        ...rest,
-        levels,
-      }
-    })
 }
 
 export type LinearComparativeViewStateModel = ReturnType<

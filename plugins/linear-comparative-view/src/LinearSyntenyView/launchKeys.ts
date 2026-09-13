@@ -10,8 +10,7 @@ import type { LinearSyntenyViewCommands } from './types.ts'
 //
 // `tracks` is an unconditional lift. The view declares no top-level `tracks` —
 // the levels between the rows hold theirs — so a spec's per-level trackId list
-// collides with nothing. `LinearComparativeView`'s pre-`levels` conversion of a
-// legacy top-level `tracks` runs after this, and so no longer sees one.
+// collides with nothing.
 //
 // `sameScale` is `replay`, the one kind that is not remapped: the value lands
 // on the declared property, and a copy rides in the blob because launching also

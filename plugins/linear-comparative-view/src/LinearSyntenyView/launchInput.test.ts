@@ -160,11 +160,9 @@ describe('the rows discriminator', () => {
   })
 })
 
-// LinearComparativeView converts a pre-`levels` snapshot's top-level `tracks`
-// into a level, and a composed base's preprocessor runs AFTER everything the
-// subclass adds — so the lift has to happen first or a spec's per-level trackId
-// list becomes `levels[0].tracks` and is never opened.
-test('the tracks lift wins over the base pre-levels conversion', async () => {
+// The view declares no top-level `tracks`: a spec's per-level trackId list is
+// lifted into the launch whole, and no level is invented for it.
+test('the tracks lift leaves the levels to the launch', async () => {
   const view = await open({ views: ROWS, tracks: [['a_track']] })
   expect(view.launch).toEqual({ views: ROWS, tracks: [['a_track']] })
   expect(getSnapshot(view).levels).toEqual([])
