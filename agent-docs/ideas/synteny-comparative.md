@@ -1,6 +1,6 @@
 ---
 name: synteny-comparative
-description: SV-type classification, `syntenyGroupId`, all-vs-all PAF, PIF limits, block-level chaining, the `featureId` instance ceiling, polyploidy-aware many-to-many synteny, the 2026-07 vendor-format survey, and why Canvas2D's one-number sub-pixel fade is only worth closing for the SVG export.
+description: SV-type classification, `syntenyGroupId`, PIF limits, block-level chaining, the `featureId` instance ceiling, polyploidy-aware many-to-many synteny, the 2026-07 vendor-format survey, and why Canvas2D's one-number sub-pixel fade is only worth closing for the SVG export.
 ---
 
 # Synteny / comparative
@@ -57,13 +57,6 @@ triplication in the grape/peach/cacao demo, where one grape chromosome maps to ~
 - **Iterative up/down sweeps** (Sugiyama median heuristic — a 3-approximation, Eades &
   Wormald 1994) for the no-pinned-focus case, and/or an optional simulated-annealing
   polish on the true crossing count (AccuSyn) seeded from the barycenter layout.
-
-Already landed (2026-07): the reversal decision no longer rides on the strand vote alone
-(it falls back to the length-weighted ref-vs-query position covariance when the vote is
-within 80/20), the global input sort is gone (accumulation is per pair, so only intra-pair
-order can perturb a float sum), and the anchor/position tie-breaks are explicit refName
-comparisons instead of side effects of that sort. Orderings on real fixtures were
-unchanged; only ambiguous-vote reversals moved.
 
 Why deferred, not done: it **changes documented tie-breaking semantics**, not just adds.
 The `base-count tie` test in `diagonalize.test.ts` pins `[qY, qX, qZ]` (a tied qX snapped
@@ -154,52 +147,8 @@ Encouragingly the geometry is already generic over an arbitrary view *pair* —
 `views[level+1]` in `LinearSyntenyDisplay/afterAttach.ts` and the `connectedViews` getter). So
 non-adjacent ribbons are a level-model + z-ordering change, not a geometry rewrite — but a
 separate, larger step. The id is the prerequisite, not the whole feature. Start with MCScan
-(already block-structured) for populating the field. See "All-vs-all PAF → any-vs-any
-multi-way synteny" and "Block-level synteny data" below.
-
-**All-vs-all PAF → any-vs-any multi-way synteny** (tracks GMOD/jbrowse-components PR
-#4985 "All-vs-all PAF adapter"; planning only, no code). Goal: a single all-vs-all PAF
-(e.g. `minimap2 all.fa all.fa`, PanSN-prefixed refNames from fastix/PGGB) drives an N-row
-LinearSyntenyView where any pair of assemblies compares, without hand-configuring A-vs-B
-and B-vs-C tracks separately. Tractable because the multi-way machinery already exists (N
-views, N-1 levels, per-level displays sharing one adapterConfig, distinct `displayKey` per
-display) and two facts let one all-vs-all track serve every level: RPC associates a
-feature with top/bottom view purely by **refName**
-(`executeSyntenyFeaturesAndPositions.ts:188` checks `v1RefNames`/`v2RefNames` membership,
-not assemblyName), and `getSyntenyTracks.ts:18` returns a track for an adjacent-pair query
-whenever its `assemblyNames` is a **superset** of the pair. PR #4985's stub is still
-fundamentally 2-way (fixed `[query, target]` pair, mate hardcoded to
-`assemblyNames[+flip]`, strips only a hardcoded haplotype prefix) — true any-vs-any needs
-the mate's assembly parsed from the mate endpoint's own PanSN prefix.
-
-The one real design decision is the refName model: PanSN names (`HG002#1#chr1`) are
-globally unique, bare names (`chr1`) collide across assemblies, and since the RPC filters
-on refName, the adapter's `getRefNames` defines the namespace. Resolution: make prefix
-stripping a config slot (`stripAssemblyPrefix`/`prefixSeparator`, default = strip on `#`)
-and add an RPC assemblyName guard unconditionally
-(`feature.assemblyName === topAssembly && mate.assemblyName === bottomAssembly`) as a
-no-op safety net for existing pairwise adapters — bare-refName users get correct results
-with zero extra config, PanSN users flip one flag.
-
-Phasing: **1** — `MultiGenomePAFAdapter` evolving PR #4985: full N-list `assemblyNames`
-(or auto-derived from distinct PanSN prefixes during `setup()`), a `parsePanSN(name, sep)`
-helper replacing the hardcoded flip logic, per-assembly `getRefNames`, and fixing
-`getWeightedMeans` keying (`PAFAdapter/util.ts:68` uses raw `qname-tname`) to parsed
-assembly+refName. **2** — RPC guard: derive top/bottom assembly from view snaps in
-`executeSyntenyFeaturesAndPositions` and add the two-clause check (~5 lines,
-backward-compatible). **3** — MVP via the existing N-row import form, picking the one
-all-vs-all track per pair (already qualifies via the superset match) — no new UI. **4**
-(deferred) — a specialized import form: one all-vs-all track/file → auto-detect
-assemblies → order/select rows → auto-wire all levels, skipping the N-1 manual pickers.
-Later optimization: thread the target assembly into `getFeatures` so the adapter
-pre-filters, instead of the RPC discarding A→C rows while drawing A↔B.
-
-Open items: confirm the PanSN separator/haplotype convention holds across real files;
-decide `assemblyNames` explicit-config vs. auto-detected-from-file (auto is nicer but
-unknown until `setup()`, which the import form must await). This work is also the trigger
-for the `featureId`-as-Float32 16.7M-instance cap noted below — dense all-vs-all
-whole-genome PAF is the likeliest path to hit it, so fold the `uint` fix in here rather
-than doing it speculatively.
+(already block-structured) for populating the field. See "Block-level synteny data"
+below.
 
 **PIF / tabix indexing weaknesses + improvements** (the all-vs-all adapter now
 ships in two forms: in-memory `MultiGenomePAFAdapter` and tabix-indexed
@@ -278,11 +227,10 @@ it to `float` `hoveredFeatureId`/`clickedFeatureId` uniforms
 adjacent indices collide in Float32 and hover/click highlights the wrong
 feature (visual identity only — coords/colors stay correct; `color` already
 goes through the `u32` view). This one is **genome-size-independent** and the
-likeliest to surface first, via dense all-vs-all whole-genome PAF (see
-"All-vs-all PAF → any-vs-any multi-way synteny" above). Fix: flip the
+likeliest to surface first, via dense all-vs-all whole-genome PAF. Fix: flip the
 `featureId` attribute + both uniforms from `float` to `uint` and regen the
-`.iface` (the interleave buffer already has a `u32` view). Fold into the
-all-vs-all PAF work rather than doing it speculatively.
+`.iface` (the interleave buffer already has a `u32` view). Do it when a real
+all-vs-all file reaches the cap rather than speculatively.
 
 ### Vendor-format leaf adapters + coloring conventions (2026-07 vendor survey)
 
@@ -335,15 +283,7 @@ template: "one file backs N-1 pairwise tracks, no renderer change").
   fade — a discrete-bin mode is a possible legend-friendlier variant, but continuous is
   arguably better and this would add a knob, so likely YAGNI.
 
-### Synteny shader dedup (done 2026-07) + what's deliberately NOT unified
-
-The two fill fragments (`syntenyFill{Straight,Curve}.slang`) duplicated the edge-lerp +
-per-edge slope-foreshortening + `pf0/pf1` block; only `s`/`sd`/`dydt` differ. Extracted one
-`fillEdges(corners, s, sd, dydt) -> FillEdges` into `syntenyTypes.slang` (straight passes
-`s=t, sd=1, dydt=h`; curve passes `s=sBlend(t), sd=sBlendDeriv(t), dydt=h·yCurveDeriv(t)`),
-plus a shared `edgeNormal(tangent)` for the two edge passes. This centralizes the drift-prone
-slope formula (the hard-won boundary-fuzz fix in `perpCoverage`) in one place; slangc keeps
-it a real function, `.iface` byte layouts unchanged, 142 plugin tests green.
+### Synteny shaders: what's deliberately NOT unified
 
 **Do NOT unify further.** The *vertex* stages stay separate on purpose: straight is one quad
 (6 verts), curve tessellates 8 segments × 6 with Newton-inverted `t` + bezier-bulge padding —
@@ -369,34 +309,11 @@ a caption/legend say "crossings here are the grape triplication" instead of look
 
 ### Block-level synteny data: importing / generating from external tools
 
-Status: **partially implemented.** A coarse LOD *tier* (Route B's tiering
-architecture) now ships; true cross-row block **chaining** (Route B's algorithm)
-does not. Read "Implemented so far" before extending.
+A coarse LOD *tier* (Route B's tiering architecture) ships —
+[SYNTENY_LOD.md](../reference/SYNTENY_LOD.md) — and true cross-row block
+**chaining** (Route B's algorithm) does not.
 
-#### Implemented so far
-
-- **Coarse LOD tier in `make-pif`** (`products/jbrowse-cli/src/commands/make-pif/`).
-  `make-pif` emits the uppercase `T`/`Q` coarse tier **by default** (`--no-coarse`
-  to opt out, `--coarse <bp>` to set the gap). A coarse row replaces the CIGAR
-  with its fold, a `cr:Z:` coarse CIGAR keeping only the indels `>=` the gap
-  (`DEFAULT_COARSE_GAP = 10kb`) and one run between each pair of them
-  (`coarsenCigar` in `@jbrowse/cigar-utils`; ADR-104).
-- **`lodMode` (`auto | fine | coarse`)** plumbed model → RFC → RPC → adapter
-  (`BaseOptions.lodMode`; `LinearSyntenyView`/`DotplotView` models; consumed in
-  `PairwiseIndexedPAFAdapter.pickPifPrefix`). `auto` switches to coarse at
-  `bpPerPx >= coarseBpPerPxThreshold` when a coarse tier exists; a manual
-  `coarse` override falls back to fine when no coarse tier is present.
-- **Coarse-row identity** reuses the `de:f:` convention. minimap2's `de:f:` is
-  *gap-compressed* divergence (indel runs counted once), so the row's own tag —
-  when present — is written verbatim onto every coarse piece of that row,
-  including split pieces. This keeps split and un-split rows coloring identically
-  and continuous with the fine tier across the LOD switch. Only a row carrying
-  no tag falls back to a computed value, and that fallback is itself
-  gap-compressed (`gapCompressedDivergence` in `cigar-utils.ts`), never the
-  per-base `1 - numMatches/blockLen` proxy, which roughly doubles divergence by
-  counting every indel base.
-
-**Important:** this is a per-row *strip + split* pass, the opposite of the
+**Important:** the coarse tier is a per-row *strip + split* pass, the opposite of the
 block *merge* below. It coarsens each alignment individually; it does **not**
 collapse runs of separate collinear alignments into blocks. The hairball's
 structural cause (many separate small alignments) is untouched — only per-ribbon

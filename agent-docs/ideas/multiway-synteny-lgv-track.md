@@ -5,25 +5,13 @@ description: Follow-ups to the multi-way synteny LGV track — per-base alignmen
 
 # Multi-way synteny LGV track follow-ups
 
-What shipped 2026-08-22 (`MultiWaySyntenyDisplay`, plugins/linear-comparative-view):
-one lane per genome inside a plain LGV, the anchor lane on the view's axis and
-every other lane in its own local coordinate frame — the non-anchored move that
-clears the "projecting the graph onto the reference axis" rejection, because nothing is
-projected: the ribbons carry the correspondence. Sources are anything whose
-features carry a `mate` per other assembly (MCScan blocks tables, all-vs-all
-PAF); lanes draw gene models from each assembly's own GFF3 track; an
-alignment-level source additionally fetches each adjacent lane pair's direct
-records. The walkthrough is the second half of
-`multiway_synteny_grape_peach_cacao.md`, and each demo set's own tutorial
-carries its lanes.
-
-How the display works once built — the lane stack and its frames, the adapter
-contract, the cost of a lane at 8, 64, 464 and 4,000, the two named tutorials
-and the correctness findings that have landed — is
+How the display works — the lane stack and its frames, the adapter contract,
+the cost of a lane at 8, 64, 464 and 4,000, the two named tutorials and the
+correctness findings that have landed — is
 [../reference/MULTIWAY_SYNTENY_DISPLAY.md](../reference/MULTIWAY_SYNTENY_DISPLAY.md),
-whose landed block names what not to re-fix. What follows here is what was
-deliberately NOT built, with the reasoning that shaped each cut, and what the
-2026-09-06 reading of the display left open.
+whose landed block names what not to re-fix. What follows is what was
+deliberately NOT built, with the reasoning that shaped each cut, and what is
+still open.
 
 **Per-base alignment lanes (CIGAR in row-local frames).** The most-wanted
 extension and the wrong one to bolt onto this display. The backend draws
@@ -236,119 +224,22 @@ already does at cohort scale. Give the cut a sample set (`keepHaplotypes` →
 the shared nodes — with the cut holding only the chosen set that is nearly
 attribution-free — and route carriage questions to the matrix.
 
-**The interaction surface.** What shipped since: hovering a ribbon highlights
-its whole ortholog group across every lane (`hoveredGroupKey`, main-thread
-recolor); clicking one keeps the group's ribbons outlined through the pairwise
-edge passes and opens the pair's details, surviving the refetch the widget's
-own resize causes because the click stores the group KEY rather than an index
-(2026-09-04, the worked example in
-`mechanisms/ui-state-holds-keys-not-indices.md`); and the track menu carries
-**Launch → Linear synteny view (visible region)** — the
-`syntenyRegionMenuItems` dialog seeded from this track alone, which is the
-"lane you want to drive independently" handoff. Lane order is
-densest-first by default (`rowAssembliesOf` sums the placed group weight — one
-per gene on a named table, anchor bp on an alignment source, so a lane whose
-alignment breaks into two records does not outrank one that runs through —
-over the fetched block set, not the viewport, so it holds still across a pan),
-which is what the tutorial used to tell a reader to hand-author `rowOrder` for.
-
-Since 2026-09-06 that launch seeds its panels from the display itself
-(`lanePanelsForRegion`: one panel per lane in `rowAssemblies` order, framed on
-what the lane places of the visible region on the contig its decision chose)
-rather than the `SyntenyDiscoverMates` RPC over the dataset, and hands the
-dialog `starAnchor` when the header named one: two mates take the anchor
-between them, and a star with more offers **Repeat ⟨anchor⟩ between panels**
-(on by default, 2N-1 rows, every band a direct pair) or names the bands that
-will be empty without it.
-
-`rowOrder` has a UI as of 2026-08-26: **Lanes** on the track menu, a row per
-lane with Move up/Move down/Hide lane and a reset,
-beside toggles for `drawCurves`, `bridgeSkippedLanes` and `showLaneTicks`
-(`menus.ts`). A move writes back the WHOLE order it is looking at rather than
-the lane that moved — `rowOrder` pins what it names and leaves the rest
-densest-first, so pinning one lane would leave the others free to re-sort under
-it between two moves. Since 2026-08-27 a mate lane's label drags too
-(`laneDrag.ts`, the headers in `LaneHeaders.tsx`): the band under the
-pointer is the drop row, the drop writes the whole order back the way the menu
-does, and a drop on the anchor's band lands the lane first below it. Hide lane
-writes `laneFilter`, the picker's own property, and `rowAssemblies` filters
-on it so every layer forgets the lane at once; the fetch keeps it. The label also carries a menu (right-click, or the ⋮ at its end;
-`laneHeaderMenuItems` in `menus.ts`): the track menu's own Move up/Move
-down/Hide lane row, **Open ⟨assembly⟩ at the matching region** —
-`openAssemblyInLinearView` on the lane's frame with this track and the genome's
-annotation along, keyed so a second click re-navigates — and **Re-anchor on
-⟨assembly⟩**,
-which is `navToLocString` on the HOSTING view with the lane's assembly, since
-the anchor lane reads off `lgv.assemblyNames[0]` and the old anchor drops into
-a mate lane on its own. Both hops are dead while the lane places nothing or the
-session does not hold the genome; the anchor lane's menu is the open-in-new-view
-copy of the view region alone.
-
-Two of those surfaces were doing more than they said (2026-09-05). A plain
-click on a mate lane's label armed the drag and the release wrote the unmoved
-order back, which pinned every lane, ended the densest-first sort and rebuilt
-every cell; the drop now writes only an order that differs elementwise from
-`rowAssemblies` (`laneOrderAfterDrop`), and the drop bar arms only past a few
-px of travel. "Let the lane choose" after a pin was a no-op, since the released
-contig went back in as the incumbent and the switch margin held it against a
-comparable copy; a decision now records `pinned`, and an incumbent whose pin is
-gone is no incumbent, so the lane votes fresh once. The SVG export also baked
-the hover and the click into the paint and drew the group outline; it exports
-with both ids zeroed. The lane hover and the selection are the chrome's
-highlight (`hoverInk`, `selectionInk`), so neither touches the glyph cells nor
-reaches an export.
-
-**A ribbon bridges a lane that places nothing for its group**
-(`bridgeSkippedLanes`, on by default, 2026-08-27). A ribbon joined ADJACENT
-lanes only, so a group the middle lane's table did not name broke the chain
-there, and the reader saw two disconnected halves for what the data says is one
-group. `buildRibbonGeometry` now walks down from the upper lane to the next
-lane that places the group and draws that pair in its own layer
-(`ribbons:<row>><toRow>`, spanning the skipped bands). It is a separate cell
-and layer rather than a longer ribbon in the pair's cell because the pick
-engine reads a ribbon's y extent off its layer. Half opacity was tried first
-and dropped: over the 0.3 base it was invisible against the band, and a ribbon
-crossing a band with no glyph at either edge already reads as passing through. Hiding the sparse lane
-is the other answer to the same picture, and the two compose. The stacked
+**Ribbons across a skipped lane in the stacked view.** The display bridges a
+lane that places nothing for a group (`bridgeSkippedLanes`). The stacked
 `LinearSyntenyView` has the same gap and no such fix: a level is defined as the
 gap between `views[level]` and `views[level + 1]` in ten files, so a track that
 joins row 0 to row 2 across row 1 is a level with a span, not a setting.
 
-**Genome scale over an alignment-level source (2026-09-05).** Four things
-stood between the display and a whole-chromosome human window on an indexed
-PIF, and all four were the display's own. The ortholog fetch and the lane-link
-fetch passed no `lodMode`, so a tiered file was always read at its fine tier —
-at 10 kb/px a genome-wide fine fetch, the regime
-[SYNTENY_LOD.md](../reference/SYNTENY_LOD.md) costs out; the display now has
-LGVSyntenyDisplay's machinery whole (`lodMode`, `LodTierInfoMixin`, `lodTier`
-off the settled zoom in `viewSignature`, the tier on both RPCs, the shared
-"Level of detail" submenu gated on `trackHasLodTiers` and withdrawn once the
-header's `hasCoarseTier` reads false, so a gene table sees none of it and a
-star of headerless PIFs stops offering a switch that switches nothing). Bridging walked every nameless group down to the next lane that
-placed it, and a one-record alignment has exactly one mate, so on an all-vs-all
-file every anchor record whose mate was not lane 1 fanned across the gutters
-over the direct links the pairs fetch for themselves; a bridge now needs a
-group that can span lanes (`groupSpansLanes`: named, or carrying several
-mates). The lane-genes and lane-link fetches folded every lane into one key and
-reissued every lane when it moved, 44 tabix RPCs for a pan that moved one
-lane's quantized window; each lane's held result now carries the region key it
-was fetched under, the skeleton's predicate gate (`heldAnswers`) asks only the
-stale lanes, and the rest keep their identity. And `laneGlyphCells` resolved the
-`color`/`utrColor` jexl slots per gene per settle; `glyphColors` resolves them
-per fetched set and the cells read the map. Same pass: a lane annotated through
-a connection reads its annotation (`allSessionTracks`, the hop's own source),
-and a star source — the HPRC vs-GRCh38 PAF, `MultiPairwiseSyntenyAdapter` —
-gets its adjacent-pair links composed through the anchor (`composeLaneLinks`,
-read by `pairLinks`) where the file states none: without a fetch when the
-header names its anchor, after an empty pair fetch otherwise. Only
-`MultiPairwiseSyntenyAdapter`'s header names one; a multi-genome PIF's header is
-its `#pif` line, so the HPRC demo's star (`hprc_multiway_gfa.pif.gz`, GRCh38 its
-only target) asks every adjacent haplotype pair on each lane-window move and
-holds first load (`awaitingDependentData`) until those empty answers land. The
-adapter could name the anchor when its seqid index holds one target sample;
-time the tutorial's first load before building it.
+**Naming the star anchor for a multi-genome PIF.** Only
+`MultiPairwiseSyntenyAdapter`'s header names a star's anchor; a multi-genome
+PIF's header is its `#pif` line, so the HPRC demo's star
+(`hprc_multiway_gfa.pif.gz`, GRCh38 its only target) asks every adjacent
+haplotype pair on each lane-window move and holds first load
+(`awaitingDependentData`) until those empty answers land. The adapter could
+name the anchor when its seqid index holds one target sample; time the
+tutorial's first load before building it.
 
-One thing on that fetch is still open. **The bytes.** The eight hosted hg38
+**The bytes at a zoomed-in star.** The eight hosted hg38
 liftOver PIFs carry a coarse tier since their 2026-09-11 rebuild, worth 49× on a
 whole-genome pass (1.31 MB against 64.23 MB over a 130 MB PIF,
 `../measurements/pif-tier-wire-bytes.json`), but at TP53 zoom the star still
@@ -368,45 +259,10 @@ bound puts every lane past it too, and the worst case is fine bytes a lane
 could have skipped. No hosted source pays even that — the E. coli all-vs-all
 files have no coarse tier, and the HPRC PIF holds no mate-versus-mate rows.
 
-**Lane scale legibility, and what is still open on it.** Every lane sits in its
-own frame, and until 2026-08-24 nothing in the picture said so: the view's
-gridlines (`Gridlines.tsx`, painted under track content at the ANCHOR's bp
-ticks, full track height, inside `ZoomTransform`) ran through every lane and
-were the most confident regularity on the page. What shipped: an opaque band
-per mate lane, tiling the whole area below the anchor so those gridlines stop
-where they are true; each lane's own ticks at one shared interval
-(`tickIntervalFor`/`frameTickXs`), so tick spacing reads as bp/px across frames;
-a header stating span and the anchor multiple where it is not 1, on the anchor
-lane too; frames snapped to a `SCALE_LADDER` rung with the center on an eighth
-of the span, so the scale is a round number and a small pan stops re-fitting
-every lane; and straight chords by default (`drawCurves`, matching
-`LinearSyntenyView`), whose slant is the offset between two frames.
-
-A second pass on 2026-08-24 took on the ribbon zigzag. Three things caused it.
-`groupSpanOnRow` filtered placements on refName only, so the repeat hit
-`computeRowFrame`'s median filter had just thrown out of the FRAME came back as
-a drawn span — `rowFrameX` extrapolates, the rect was clipped by the svg and
-looked fine, and the ribbon kept the endpoint and swept the page. A lane's
-horizontal position was an accident of where its leftmost placement fell.
-And orientation was decided against the anchor rather than against the lane
-the ribbons are actually drawn to.
-
-`decideLaneFrames` walks the lanes top down and fixes the second and third.
-Splitting a lane's bp→px map into a scale and an offset lets the two be chosen
-for different reasons: the scale off the ladder for honesty, the offset for
-legibility. Minimizing `sum |x_upper(g) - x_lane(g)|` at fixed scale is L1, and
-since a ribbon only joins ADJACENT lanes the objective is a chain — it
-decomposes into one choice per lane and each choice is the weighted median of
-the displacement to the lane above, clamped to the slack the rung left over the
-fitted extent — and held, once made, while the frame still shows what it placed
-(the incumbent rule below). What it cannot fix is two lanes on different rungs:
-their spacing genuinely differs by the rung ratio, so the medians align and the
-ends fan, and that fan IS the scale difference.
-
-Still open on the zigzag: collapsing collinear runs into block ribbons
-(DAGchainer's chaining, per lane pair — walk the shared groups in the upper
+**Collinear runs as block ribbons.** Collapsing collinear runs into block
+ribbons (DAGchainer's chaining, per lane pair — walk the shared groups in the upper
 lane's order and extend a run while the lower lane's rank advances by one in the
-same direction). Most of the remaining ribbons are individually thin and
+same direction). Most ribbons are individually thin and
 collectively collinear, and one band per run would cut both the clutter and the
 svg node count. It is parked because it changes what a ribbon IS: hover reads
 one ortholog group today, and a run either becomes the hover unit or has to
@@ -417,100 +273,25 @@ property that keeps chains running.
 
 Still open: a **Match anchor scale** mode (one line in `computeRowFrame` — every
 lane's span is the anchor's, and content that does not fit runs off the lane
-edge, which is itself the information). The height story SHIPPED 2026-09-04:
-below `MIN_LANE_PITCH` (22px, under the figure corpus's tightest committed
-stack) the lanes stop dividing the height and scroll instead —
-`laneContentHeight` in `laneStack.ts`, `scrollableHeight` through
-`TrackHeightMixin`, the canvas display's `usePanelVirtualScroll` +
-`VerticalScrollbar` wheel arbitration — so the 44-genome demo is readable at
-the default height, and above the floor the layout is byte-identical to
-before. The SVG export stays a viewport export at the current `scrollTop`,
-which is the policy every virtual-scrolled display shares (the export
-composition sizes each track's box from `display.height`); a full-stack export
-would be a cross-cutting export-layout change. Two smaller height-adjacent
-items are open: an auto-collapse for lanes placing nothing (the stacked view's
-`collapseEmptyRows` has no lane counterpart, and Hide lane is purely
-manual — the stability walk above shows 33/259 empty steps per lane), and a
-user-guide section for the lanes UI, since the Lanes menu, the label drag and
-Hide lane appear in no user-facing page and a 47-lane reader is never told
-they can hide the Shigella lanes. `website/docs/user_guide.md` has no multiway
-section at all: it links the two tutorials and stops, which is where that
-section would go. The one other documentation gap the 2026-09-06 reading left
-open is `GbzBaseSyntenyAdapter`, whose slots `pangenome_hprc.md` documents with
-no config page behind them — the adapter lives in another repository, and
-nothing the pangenome pages say about it is wrong. Ribbon color modes shipped
-2026-08-27 as `ribbonColorBy` (`default`/`strand`/`identity`, **Color ribbons
-by** on the track menu): a main-thread recolor off the synteny view's own
-scheme and ramp, no refetch. Strand reads the RECORD — the two runs'
-orientations against the anchor multiplied out, so between the anchor and
-the first lane it is the record's strand and between two mate lanes it is
-their relative strand — and not the drawn twist: a lane whose every placement
-is inverted is drawn flipped, so its ribbons run straight on screen while
-every one of them is an inversion, and the color says so where the twist
-cannot (`ribbonColorer` in `multiwayGeometry.ts`; the flipped-lane case is
-pinned in `multiwayGeometry.test.ts`). The 2026-08-27 entry here said the
-opposite, and the slot doc and the hg38 tutorial repeated it, until
-2026-09-06. Identity reads the group feature's `identity` (a pair without one keeps the slot color — the synteny view's missing-value red would read as a value here), which on an
-N-genome MCScan table is the row's (`attributeColumns`) and so one value per
-group; an all-vs-all PAF's is per pair only on the direct-record ribbons, since
-a group keeps its first pairwise feature. Per-lane pan/zoom stays deliberately absent: the lanes re-fit to the
-anchor's viewport by design, and the launch above is the route to a lane you
-drive yourself.
+edge, which is itself the information); an auto-collapse for lanes placing
+nothing (the stacked view's `collapseEmptyRows` has no lane counterpart, and
+Hide lane is purely manual — the stability walk below shows 33/259 empty steps
+per lane); and a user-guide section for the lanes UI, since the Lanes menu, the
+label drag and Hide lane appear in no user-facing page and a 47-lane reader is
+never told they can hide the Shigella lanes. `website/docs/user_guide.md` has
+no multiway section at all. `GbzBaseSyntenyAdapter`'s slots are documented by
+`pangenome_hprc.md` with no config page behind them, because the adapter lives
+in another repository. Per-lane pan/zoom stays deliberately absent: the lanes
+re-fit to the anchor's viewport by design, and the launch to a linear synteny
+view is the route to a lane you drive yourself.
 
-**Gene glyph rendering.** The lanes draw the canvas gene track's geometry —
-merged CDS full height, exon-minus-CDS thinner in `utrDefaultColor`, intron
-chevrons, a downstream arrowhead, direction resolved in pixel space so flipped
-lanes point the way they read — through that track's own rect, line, chevron
-and arrow passes and its Canvas2D painters, exported from `@jbrowse/plugin-canvas`
-for exactly this. `geneGlyphGeometry` is the interval math; `multiwayGeometry.ts`
-packs each lane into two cells in the stack's px, offset into the passes'
-unsigned coordinate by `PX_ORIGIN`, so a lane's `bpRangeX` uniform is a px
-range and the drag is the only per-frame input.
+**`syntenyGroupId` belongs in the synteny view first.** The display groups on
+gene name with `syntenyId` as the nameless fallback; the first-class
+`syntenyGroupId` this approximates is specified in
+[synteny-comparative](synteny-comparative.md) §"syntenyGroupId for cross-row
+block identity" and should be built there, not here — this display becomes its
+third consumer, after colorBy:group and cross-row hover in the synteny view.
 
-**Don't restate that track's rules — take them, and let the test say so.**
-`geneGlyphParity.test.ts` runs one gene through `buildFeatureRenderData` and
-through `buildLaneCells` and compares; it is insensitive to what the shared
-constants ARE and fails the moment either side keeps a copy of one. It exists
-because the hand-matched version drifted in four places at once while every
-expected value in the directory stayed green: `line`/`arrow` take a box CENTRE
-where `rect` takes its top, the connector is one line per intron gap (the
-chevron pass spaces marks along each line it is handed), `outlineColor` is a
-per-CELL uniform — which is why the placement boxes get a `boxes:<row>` cell of
-their own and the gene cell carries no outline, the feature track's own default
-— and the subpart tests are `isCDS`/`isExon`/`isUTR` rather than `type ===`.
-What the lanes still own is the merge across transcripts: the feature track is
-per-transcript everywhere and its container glyph emits nothing of its own, so
-there is no counterpart to lift.
-
-**A lane draws annotation where it has it and the table's box where it does
-not, per GROUP.** The choice was per LANE until 2026-08-26, so one drawn gene
-suppressed every placement box on that lane — and a table naming genes the
-lane's GFF3 does not is the ordinary case rather than a corner, since the two
-are different releases. The demo shows it: `grape.blocks` pairs four genes and
-`grape_genes.gff3` names two, and the other two hung their ribbons off nothing.
-`isAnnotated` tests in PX rather than bp, which is what lets one rule cover both
-kinds of lane — the anchor lane's genes and its group spans both come through
-the view's axis, a mate lane's both come through its frame, and neither pair is
-comparable in bp with the other.
-
-**Launch-side outlier robustness — shipped.** Found filming the grasses launch
-tour: `resolvePanel`'s span union kept every block on the winning contig, so
-one stray same-contig orthogroup hit stretched a launched panel to tens of
-megabases (brachypodium came back `1:5,237,628..54,451,482` for a 185 kb rice
-window whose lane frame was 185 kb). `computeRowFrame`'s length-weighted-median
-filter is now `keepNearMedian`, shared with `resolvePanel`, which applies it
-on the winning contig with the region of interest as the unit. The grasses
-launch tour (`multiway_launch_stack`) filmed that row being unticked, and no
-longer does: the dialog prints brachypodium at 176 kb against rice's 170,
-sorghum's 178 and setaria's 166, so the step dropped a good panel while saying
-it was out of scale. Maize is the wide row now at 454 kb and is deliberately
-NOT the replacement — the set exists partly to show maize's WGD, so unticking
-it would teach the reader to discard the finding. The display groups on gene name with `syntenyId` as
-the nameless fallback; the first-class `syntenyGroupId` this approximates is
-specified in [synteny-comparative](synteny-comparative.md) §"syntenyGroupId for
-cross-row block identity" and should be built there, not here — this display
-becomes its third consumer, after colorBy:group and cross-row hover in the
-synteny view.
 
 **What the phase covers, and the scrim race behind it.** `displayPhase` holds
 at `loading` for the two dependent fetches until they FIRST land, and not for
@@ -601,43 +382,7 @@ lane decision is already a `{pivotAnchor, pivotLaneBp, rung, flipped}` and
 product answer and the one still to build — the lane stack stays the overview
 and the drill-down is a full LGV that tracks the lane.
 
-**Every per-settle choice holds until the evidence clearly moves.** A lane's
-frame was a pure computed until 2026-08-26, re-run on every coarse-block update
-and every scroll pixel: contig, orientation and rung decided from scratch, the
-offset re-fitted and clamped to the rung's slack. So a lane froze under a drag
-while the anchor slid out from under it, lurched by hundreds of px each time
-the settled blocks refreshed, and re-voted everything at settle. `laneDecision.ts`
-makes the decision once per settled block set (`installLaneFrameDecision`)
-carrying the previous one, and every choice has an incumbent: the contig by
-`preferIncumbent`'s switch margin; the cluster the fit is centred on by the same
-rule (`keepNearMedian` takes the incumbent centre — cacao's fit swung between
-1.2 Mb and 4.7 Mb on consecutive steps as the median hopped between two
-paleo-blocks); the rung by a shrink room; the orientation by the follow's 0.9
-deadband over at least five shared groups, carried across a contig change since
-the anchor-order sum a fresh lane falls back on is the noisiest vote there is;
-and the placement by coverage, held while the frame still shows 90% of the
-placed weight.
-
-A group a lane places twice was one sample over the two copies' bounding box,
-weighted by its width, so two copies 300 kb apart outweighed the collinear
-genes and the weighted median slid the lane to put the gap under the anchor
-gene; since 2026-09-05 each run is its own placement at its own length
-(`LanePlacement`), the orientation vote skips pairs within one group, and the
-lane below aligns to the heaviest run. The same day the lane genes came out of
-`buildLanes`: only the glyph cells read them, and a stack that carried them
-gave the ribbon and tick cells a new identity on every gene commit — every
-ribbon re-uploaded and the hover cleared for a commit that moved no ribbon.
-
-What a decision states is `{refName, flipped, rung, pivotAnchor, pivotLaneBp}`
-— the lane bp pinned under one anchor coordinate, at a rung of the anchor's
-span. The frame is derived from that against the live view
-(`frameFromDecision`), so a pan translates every lane 1:1 with the anchor and a
-zoom scales it about the pivot: the data × view-transform contract the GPU
-displays draw under. The stack is laid out against the scroll offset of the
-last settle (`renderOriginPx`) and translated by `dragOffsetPx`, which is the
-one live number in `renderState`: a pan uploads nothing and redraws one frame.
-
-Measured on the deployed `demos/grape_peach_cacao` — a 2Mb window walked across
+**Lane stability, measured.** On the deployed `demos/grape_peach_cacao` — a 2Mb window walked across
 grape chr1 in 100kb steps, 259 steps, every lane read out of `decideLaneFrames`
 itself with the previous step's decision carried in. A CHANGE IS NOT A FLICKER,
 so a lane moving from one syntenic block to the next and staying is counted
@@ -674,7 +419,7 @@ blocks reads close to even under it — the near-tie the deadband was built to
 hold — where the neighbour rule read each block's run. The vote earned its
 change on an alignment source (calJac4's chain, below), and this is what it
 costs on a gene table; a weight that reads the block on both would be the
-fix, and the 2026-08-26 paragraph after this is the bar it has to clear.
+fix, and the paragraph after this is the bar it has to clear.
 
 What was true of the 2026-09-02 table, kept because it is the bar: the drawn
 flip changes that remained (3 to 8 per lane) were lanes moving between
@@ -734,54 +479,9 @@ rule's choice and the hysteresis's hold, not a fact of the data — which is
 why the deadband exists, and why the drawn direction of a near-even lane
 should not be read as a claim.
 
-**What it took, beyond the deadband.** The contig vote was steady before any
-incumbent — weighting a contig by how much of the ANCHOR it explains is
-decisive on paleopolyploid data — and the orientation was not: both of its
-votes moved in the same places, so overriding one with the other bought
-nothing. The deadband alone did not close it either. The last oscillations came
-from a contig change resetting the orientation to the anchor-order fallback,
-which the vote then corrected a step later, and from three reversed genes
-mirroring a whole lane. The rung had an oscillation of its own, since the
-cluster `keepNearMedian` keeps is a discrete choice too.
-
-**Anchor bp is the wrong weight for a gene table (2026-09-02).** The vote
-above was measured on grape, where it was steady, and it is still the right
-weight for an alignment source: a 2 Mb block has to outweigh twenty repeat
-hits. On a gene-symbol table over eight primates it put the chimp lane on
-chr2B at a 3 Mb window across the human chr2 fusion because _DPP10_ alone is
-1.5 Mb of anchor, against 0.4 Mb for the fifteen orthologs on chr2A — and
-chr2A did not reach the `alsoOn` bar either. `MultiWayGroup.weight` now
-carries the evidence per group: anchor bp for a nameless record, one per gene
-for a named one, and `resolvePanel` votes with the same rule so a launched
-panel still opens on the lane's contig. The rule is `voteEvidence` in
-`syntenyHysteresis.ts` since 2026-09-04, when the synteny follow's envelope
-vote — the third voter over the same data — turned out to still weigh anchor
-bp; a cross-import test in `followWindowMapping.test.ts` now pins all three to
-one contig. `ALSO_ON_SHARE` dropped from a half to
-a fifth with it, so the far side of a breakpoint stays named through most of
-a walk across it. The grape stability walk was re-run after the change, and
-that 2026-09-02 run is the one the paragraph under the table quotes as the bar.
-
-Measured on a real drag in the browser (`website/scripts/multiway-drag.probe.ts`,
-the tutorial's own session at 1588 px, headless): before, each mate lane moved
-on 6 of 50 drag frames, in steps of −8 px to −3060 px, every lane slid 50 to
-260 px at settle, and a monotonic 12-step zoom-out re-snapped tomato's rung
-1.5 → 1.0 → 2.0 → 3.0 with two lane-gene refetches. After: every lane moves on
-every frame with a median slip of 0.0 px against the anchor, three of six
-lanes never leave it, five of six hold still at settle, the zoom-out moves
-tomato's rung monotonically (1.5 → 2 → 3 → 5) and refetches nothing, and the
-React flush per scroll frame is 2.0 ms where the per-frame relayout it
-replaces cost 15.0 ms.
-
-**The backend landed 2026-08-27** — ribbons and ticks on the pairwise synteny
-passes, lanes and bands on the feature track's glyph passes, Canvas2D and the
-SVG export off the same cells (`multiwayRenderTypes.ts`, `multiwayGeometry.ts`,
-`GpuMultiWayRenderer.ts`, `Canvas2DMultiWayRenderer.ts`). The same probe on
-the same session, 1588 px, headless: the display's DOM is 22 nodes (the
-headers) where it was 774; React per scroll frame 1.1 ms (was 2.0, and 4.8
-before the model change); a zoom step is 2.0 ms of React where it re-rendered
-every SVG element at 35 ms, with 12.7 ms of MobX per step packing the cells —
-the next lever, if one is wanted, is that rebuild rather than the frame.
+**The next render lever is the cell rebuild, not the frame.** A zoom step is
+2.0 ms of React and 12.7 ms of MobX packing the cells, so if a lever is wanted
+it is that rebuild.
 
 **A broken hold re-aligns, and sliding the least distance instead was tried
 and measured out (2026-08-26).** When a hold breaks — the lane's content has
