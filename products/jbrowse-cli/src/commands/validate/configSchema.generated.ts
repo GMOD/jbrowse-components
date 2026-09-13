@@ -4839,7 +4839,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": true
         },
         "showLegend": {
-          "description": "show the color key naming the anchor lane's drawn colors, and the ribbon strand colors where \`ribbonColorBy\` paints them. Derived from what is on screen, so it draws nothing until the \`color\` slot resolves to more than one color — a flat default color has nothing to key. Defaults to on.",
+          "description": "show the color key: the anchor lane's drawn gene colors, and what \`ribbonColorBy\` paints — the strand colors, the identity ramp, or a column's labels. Derived from what is on screen, so a \`color\` slot resolving to one color and a ribbon mode painting nothing key nothing. Defaults to on.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
         },
