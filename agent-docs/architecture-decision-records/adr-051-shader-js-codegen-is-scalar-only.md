@@ -478,7 +478,8 @@ implementations have to be *meant* to agree:
 - **`scoreToY` (wiggle)** — the normalizer moved out to
   `render-core/src/shaders/scoreScale.slang`, where the coverage band reads it
   too, and the degenerate (`min == max`) domain it used to diverge on now
-  answers 0 on both sides. What is left of `scoreToY` once the normalizer is set
+  answers 0 on both sides (amended 2026-09-13: a step at the min, on both
+  sides and on the mark shapes). What is left of `scoreToY` once the normalizer is set
   aside is `(1 - norm) * h` — a multiply, in the `computeCorners` class — and
   the Canvas2D side composes the same normalizer with its own plot box.
   `densityGradientT` still takes *normalized* scores, which is the right split

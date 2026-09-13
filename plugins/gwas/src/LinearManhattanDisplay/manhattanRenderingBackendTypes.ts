@@ -1,4 +1,4 @@
-import { valueToYPx } from '@jbrowse/render-core/shaders/pointMark'
+import { valueToYPxScaled } from '@jbrowse/render-core/shaders/pointMark'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
@@ -30,7 +30,7 @@ export function scoreToY(
   domainY: [number, number],
   canvasHeight: number,
 ) {
-  return valueToYPx(score, domainY[0], domainY[1], canvasHeight)
+  return valueToYPxScaled(score, domainY[0], domainY[1], canvasHeight, 0)
 }
 
 // Inverse of scoreToY (unclamped): canvas Y (px from top) → score. The hover

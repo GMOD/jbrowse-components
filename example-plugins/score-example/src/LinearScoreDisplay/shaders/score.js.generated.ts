@@ -16,8 +16,56 @@ function _min(a: number, b: number) {
   return b < a || Number.isNaN(a) ? b : a
 }
 
+function symlogTransform(x: number, c: number): number {
+  return ((((Math.sign(x)) | 0)) * Math.log((1.0 + Math.abs((x / c)))))
+}
+
+function normalizeScore(score: number, domainMin: number, domainMax: number, scaleType: number, symlogConstant: number): number {
+  let tMax: number
+  let tMin: number
+  let t: number
+  if ((scaleType == 2)) {
+    let _t0 = symlogTransform(score, symlogConstant)
+    let _t1 = symlogTransform(domainMin, symlogConstant)
+    tMax = symlogTransform(domainMax, symlogConstant)
+    tMin = _t1
+    t = _t0
+  } else {
+    if ((scaleType == 1)) {
+      if ((domainMin > 0.0)) {
+        tMax = domainMin
+      } else {
+        tMax = 1.0
+      }
+      let _t2 = Math.log2(_max(score, tMax))
+      let _t3 = Math.log2(tMax)
+      tMax = Math.log2(_max(domainMax, tMax))
+      tMin = _t3
+      t = _t2
+    } else {
+      tMax = domainMax
+      tMin = domainMin
+      t = score
+    }
+  }
+  let tRange = (tMax - tMin)
+  if ((tRange <= 0.0)) {
+    if ((t > tMin)) {
+      tMax = 1.0
+    } else {
+      tMax = 0.0
+    }
+    return tMax
+  }
+  return _clamp(((t - tMin) / tRange), 0.0, 1.0)
+}
+
+function valueToYPxScaled(value: number, domainMin: number, domainMax: number, h: number, scaleType: number): number {
+  return ((1.0 - normalizeScore(value, domainMin, domainMax, scaleType, 1.0)) * h)
+}
+
 function valueToYPx(value: number, domainMin: number, domainMax: number, h: number): number {
-  return ((1.0 - _clamp(((value - domainMin) / _max((domainMax - domainMin), 9.99999997475242708e-07)), 0.0, 1.0)) * h)
+  return valueToYPxScaled(value, domainMin, domainMax, h, 0)
 }
 
 export function scoreBarHeightPx(score: number, domainMin: number, domainMax: number, canvasHeight: number): number {

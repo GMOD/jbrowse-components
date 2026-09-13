@@ -1,5 +1,5 @@
 // The `point` mark shape: one glyph per instance, placed at a genomic x and at
-// a y read off a per-instance value through a linear domain scale. The glyph
+// a y read off a per-instance value through `valueScale`. The glyph
 // channel picks between a disc, an inverted triangle and a diamond, and an
 // instance whose x..x2 extent is wider than the glyph draws as a horizontal bar
 // instead — the shape's own answer to "this datum has extent".
@@ -7,9 +7,8 @@
 // All four are a 6-vertex quad; the fragment shader carves the shape.
 //! targets: wgsl, glsl
 //! export-consts: DIAMOND_GLYPH_SCALE, GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DIAMOND
-//! js-export: valueToYPx, valueToYPxScaled, pointDrawsBar, pointYPx
-// `valueToYPx` is `valueScale`'s; it is lifted here, once, for every consumer
-// of the scale — the bar shape's painter and hit test import this twin too.
+//! js-export: valueToYPxScaled, pointDrawsBar, pointYPx
+// `valueScale`'s twin is lifted here, once, for the bar shape too.
 
 import antialias;
 import hpmath;

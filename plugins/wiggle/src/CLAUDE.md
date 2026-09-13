@@ -112,11 +112,10 @@ flattening any domain under 1 — the floor is the domain's own min.
 **Both halves live in render-core, not here** — `src/shaders/scoreScale.slang`
 and `src/scoreScale.ts` beside it, which wiggle-core re-exports. The coverage
 band, the mark shapes and core's worker-resolved colour ramp normalize through
-the same three branches, and `wiggleCommon.slang` had a copy that disagreed with
-it on a degenerate (`min === max`) domain. Both answer 0 there now, which is
-what `makeScoreNormalizer` has always answered. `wiggleCommon` keeps `scoreToY`,
-the plot-box wrapper, and `js-skip`s it — the Canvas2D side composes the
-normalizer with its own box.
+the same three branches. **A domain with no range is a step for all of them**: a
+score above the min draws at the top, anything else on the baseline.
+`wiggleCommon` keeps `scoreToY`, the plot-box wrapper, and `js-skip`s it — the
+Canvas2D side composes the normalizer with its own box.
 
 ## `rowIndex` is the position in the display's own `sources`
 

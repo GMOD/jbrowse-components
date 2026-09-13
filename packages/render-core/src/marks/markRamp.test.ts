@@ -82,6 +82,15 @@ test('the bake reads the LUT at the value fraction, floors and ceilings clamped'
   ])
 })
 
+test('a domain with no range steps: the ceiling above its min, the floor at or below', () => {
+  const c = bars([4, 5, 6])
+  const grey = (v: number) => (0xff000000 | (v << 16) | (v << 8) | v) >>> 0
+  for (const scale of ['linear', 'log'] as const) {
+    const colors = paintColors(c, 3, { ...ramp, domain: [5, 5], scale })
+    expect([...(colors as Uint32Array)]).toEqual([grey(0), grey(0), grey(255)])
+  }
+})
+
 test('an unchanged domain reuses the bake; a widened one redoes it', () => {
   const c = bars([0, 50, 100])
   const first = paintColors(c, 3, ramp)

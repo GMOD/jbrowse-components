@@ -198,12 +198,15 @@ const CASES: {
   },
 ]
 
+// A unit either side too, so a degenerate domain's sweep straddles its step.
 function samples([min, max]: [number, number]) {
   const span = max - min
   return [
     min - span,
+    min - 1,
     ...[0, 0.001, 0.1, 0.25, 0.5, 0.75, 0.999, 1].map(f => min + f * span),
     max + span / 2,
+    max + 1,
   ]
 }
 
@@ -261,9 +264,8 @@ describe.each(CASES)(
       })
 
       test('the far end of the domain is the track color', () => {
-        // maxDist picks whichever end sits further from the pivot; on a
-        // degenerate domain every score normalizes to 0 = zeroNorm, so the far
-        // end is white like everything else. The GPU side is exact — t is
+        // maxDist picks whichever end sits further from the pivot, and a
+        // degenerate domain has no far end. The GPU side is exact — t is
         // x / max(x, ...) = 1 — while the Canvas factory hoists the
         // normalizer's reciprocal out of its loop, so its t can land at
         // 0.99999… and one LUT bucket short: within one channel step, not
@@ -289,6 +291,16 @@ describe.each(CASES)(
     })
   },
 )
+
+test('a score above a degenerate domain is the track colour on both backends', () => {
+  const canvasFn = makeDensityRgbStringFn(5, 5, SCALE_TYPE_LINEAR, 0, 0, 255)
+  const gpu = (score: number) =>
+    gpuDensityChannels(score, 5, 5, SCALE_TYPE_LINEAR, 1, 0, [0, 0, 255])
+  expect(gpu(6)).toEqual([0, 0, 255])
+  expect(canvasFn(6)).toBe('rgb(0,0,255)')
+  expect(gpu(5)).toEqual([255, 255, 255])
+  expect(canvasFn(5)).toBe('rgb(255,255,255)')
+})
 
 // The named-ramp gauge (agent-docs/architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md): a named
 // ramp on a density track colours both backends through ONE 256-entry LUT —

@@ -23,9 +23,10 @@ function symlog(x: number, c: number) {
 
 /**
  * `normalizeScore` with the per-domain arithmetic hoisted out of a per-feature
- * loop: the `[0, 1]` fraction a score sits at in the domain, clamped. The
- * generated `normalizeScore` is the oracle `normalizeScoreParity.test.ts`
- * sweeps it against.
+ * loop: the `[0, 1]` fraction a score sits at in the domain, clamped, and on a
+ * domain with no range 1 above its min and 0 elsewhere. The generated
+ * `normalizeScore` is the oracle `normalizeScoreParity.test.ts` sweeps it
+ * against.
  *
  * `symlogConstant` is read only for `SCALE_TYPE_SYMLOG`, already resolved by
  * `resolveSymlogConstant`, which is the number the shader gets as a uniform.
@@ -42,7 +43,7 @@ export function makeScoreNormalizer(
     const tMax = symlog(max, c)
     const tRange = tMax - tMin
     if (tRange <= 0) {
-      return () => 0
+      return (score: number) => (symlog(score, c) > tMin ? 1 : 0)
     }
     const invRange = 1 / tRange
     return (score: number) =>
@@ -54,7 +55,8 @@ export function makeScoreNormalizer(
     const logMax = Math.log2(Math.max(max, floor))
     const logRange = logMax - logMin
     if (logRange <= 0) {
-      return () => 0
+      return (score: number) =>
+        Math.log2(Math.max(score, floor)) > logMin ? 1 : 0
     }
     const invLogRange = 1 / logRange
     return (score: number) => {
@@ -64,7 +66,7 @@ export function makeScoreNormalizer(
   }
   const range = max - min
   if (range <= 0) {
-    return () => 0
+    return (score: number) => (score > min ? 1 : 0)
   }
   const invRange = 1 / range
   return (score: number) => Math.max(0, Math.min(1, (score - min) * invRange))

@@ -25,12 +25,16 @@ import {
 // one, so a region whose peak exceeded the nice rounded domain drew past the top
 // of its band on one backend only.
 
+// The last two have no range: an all-zero stretch, and the log domain a
+// single-read pileup floors to.
 const DOMAINS: [number, number][] = [
   [0, 100],
   [0, 1],
   [10, 60],
   [1, 1024],
   [0.01, 0.5],
+  [0, 0],
+  [1, 1],
 ]
 
 const DEPTHS = [0, 0.5, 1, 5, 9, 10, 11, 37, 60, 99, 100, 1024, 5000]
@@ -154,6 +158,21 @@ describe('a log depth domain floors at one read', () => {
       150,
       'log',
     ).items.map(t => t.value)).toEqual([1])
+  })
+
+  test('a single-read domain steps at one read on both backends', () => {
+    const [min, max] = coverageDepthDomain([0.0078125, 1], 'log')
+    const normalize = makeScoreNormalizer(min, max, SCALE_TYPE_LOG)
+    for (const [depth, expected] of [
+      [0, 0],
+      [1, 0],
+      [2, 1],
+    ]) {
+      expect(normalize(depth!)).toBe(expected)
+      expect(
+        normalizeDepthScalar(depth!, min, max, SCALE_TYPE_LOG, 1),
+      ).toBe(expected)
+    }
   })
 
   test('an ordinary log domain is untouched, and so is any linear one', () => {

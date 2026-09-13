@@ -21,44 +21,47 @@ function symlogTransform(x: number, c: number): number {
 }
 
 function normalizeScore(score: number, domainMin: number, domainMax: number, scaleType: number, symlogConstant: number): number {
+  let tMax: number
+  let tMin: number
+  let t: number
   if ((scaleType == 2)) {
-    let tMin = symlogTransform(domainMin, symlogConstant)
-    let tRange = (symlogTransform(domainMax, symlogConstant) - tMin)
-    if ((tRange <= 0.0)) {
-      return 0.0
-    }
-    return _clamp(((symlogTransform(score, symlogConstant) - tMin) / tRange), 0.0, 1.0)
-  }
-  if ((scaleType == 1)) {
-    let floorV: number
-    if ((domainMin > 0.0)) {
-      floorV = domainMin
+    let _t0 = symlogTransform(score, symlogConstant)
+    let _t1 = symlogTransform(domainMin, symlogConstant)
+    tMax = symlogTransform(domainMax, symlogConstant)
+    tMin = _t1
+    t = _t0
+  } else {
+    if ((scaleType == 1)) {
+      if ((domainMin > 0.0)) {
+        tMax = domainMin
+      } else {
+        tMax = 1.0
+      }
+      let _t2 = Math.log2(_max(score, tMax))
+      let _t3 = Math.log2(tMax)
+      tMax = Math.log2(_max(domainMax, tMax))
+      tMin = _t3
+      t = _t2
     } else {
-      floorV = 1.0
+      tMax = domainMax
+      tMin = domainMin
+      t = score
     }
-    let logMin = Math.log2(floorV)
-    let logRange = (Math.log2(_max(domainMax, floorV)) - logMin)
-    if ((logRange <= 0.0)) {
-      return 0.0
+  }
+  let tRange = (tMax - tMin)
+  if ((tRange <= 0.0)) {
+    if ((t > tMin)) {
+      tMax = 1.0
+    } else {
+      tMax = 0.0
     }
-    return _clamp(((Math.log2(_max(score, floorV)) - logMin) / logRange), 0.0, 1.0)
+    return tMax
   }
-  let range = (domainMax - domainMin)
-  if ((range <= 0.0)) {
-    return 0.0
-  }
-  return _clamp(((score - domainMin) / range), 0.0, 1.0)
-}
-
-export function valueToYPx(value: number, domainMin: number, domainMax: number, h: number): number {
-  return ((1.0 - _clamp(((value - domainMin) / _max((domainMax - domainMin), 9.99999997475242708e-07)), 0.0, 1.0)) * h)
+  return _clamp(((t - tMin) / tRange), 0.0, 1.0)
 }
 
 export function valueToYPxScaled(value: number, domainMin: number, domainMax: number, h: number, scaleType: number): number {
-  if ((scaleType == 1)) {
-    return ((1.0 - normalizeScore(value, domainMin, domainMax, 1, 1.0)) * h)
-  }
-  return valueToYPx(value, domainMin, domainMax, h)
+  return ((1.0 - normalizeScore(value, domainMin, domainMax, scaleType, 1.0)) * h)
 }
 
 export function pointYPx(value: number, domainMin: number, domainMax: number, h: number, scaleType: number, insetPx: number): number {

@@ -217,7 +217,7 @@ wide zoom.
 
 `packages/render-core/src/marks/barMark.ts` and `shaders/barMark.slang`: a rect
 from `x` to `x2` standing between `origin` and `y` on `valueScale.slang`'s
-`valueToYPx`, the scale `pointMark` reads too — the composition
+`valueToYPxScaled`, the scale `pointMark` reads too — the composition
 [ADR-095](../architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md)
 adopted, with [ADR-097](../architecture-decision-records/adr-097-the-y-channel-shares-its-scale-and-not-its-anchor.md)'s
 split kept: the scale is shared, the anchor (a glyph centre against a bar's

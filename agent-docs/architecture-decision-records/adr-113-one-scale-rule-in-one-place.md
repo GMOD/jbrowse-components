@@ -199,6 +199,10 @@ table says `pinned`, and a pinned ramp is every region's whatever they hold.
   disagree on a degenerate domain by the full canvas height, and that value is
   pinned across backends (ADR-097, `scoreToYParity.test.ts`). The log arm
   composes; the linear one stays.
+  **Amended 2026-09-13: taken.** `normalizeScore` and `makeScoreNormalizer`
+  adopted `valueToYPx`'s answer, a step at the domain's min, so the linear arm
+  composes too and wiggle, the coverage band and the ramps place a score above
+  a pinned domain where the mark shapes already did.
 - **Shipping the declared y scale to the worker.** It would be read by
   nothing there and would key the fetch on the axis, so toggling linear/log
   from the menu would refetch every loaded region.

@@ -209,6 +209,25 @@ test('a pinned ramp domain wins over the region extremes', () => {
   expect(r.color[1]).toBe(cssColorToABGR('rgb(102,102,102)'))
 })
 
+test('a pinned ramp domain with no range steps at its value', () => {
+  const r = encodeFeatures(
+    features,
+    {
+      color: {
+        field: 'score',
+        scale: 'linear',
+        domain: [25, 25],
+        ramp: ['black', 'white'],
+      },
+    },
+    ALL,
+    { jexl },
+  )
+  expect(r.color[0]).toBe(cssColorToABGR('black'))
+  expect(r.color[1]).toBe(cssColorToABGR('white'))
+  expect(r.color[2]).toBe(cssColorToABGR('black'))
+})
+
 test('the colorValue lane ships the raw values and the region extent instead of colours', () => {
   const r = encodeFeatures(
     features,

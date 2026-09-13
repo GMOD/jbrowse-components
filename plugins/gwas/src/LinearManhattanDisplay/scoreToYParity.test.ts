@@ -1,4 +1,4 @@
-import { valueToYPx } from '@jbrowse/render-core/shaders/pointMark'
+import { valueToYPxScaled } from '@jbrowse/render-core/shaders/pointMark'
 
 import { scoreToY, yToScore } from './manhattanRenderingBackendTypes.ts'
 
@@ -38,11 +38,11 @@ const DOMAINS: [number, number][] = [
 const SCORES = [-100, -1, 0, 0.5, 2, 5, 7.5, 8, 10, 1e6]
 const HEIGHTS = [1, 100, 337]
 
-test('the generated valueToYPx reproduces the hand-written twin it replaced', () => {
+test('the generated linear scale reproduces the hand-written twin it replaced', () => {
   for (const domain of DOMAINS) {
     for (const score of SCORES) {
       for (const h of HEIGHTS) {
-        expect(valueToYPx(score, domain[0], domain[1], h)).toBeCloseTo(
+        expect(valueToYPxScaled(score, domain[0], domain[1], h, 0)).toBeCloseTo(
           retiredScoreToY(score, domain, h),
           9,
         )

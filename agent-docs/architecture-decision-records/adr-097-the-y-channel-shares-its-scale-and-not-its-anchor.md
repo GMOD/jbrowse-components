@@ -113,6 +113,9 @@ one-paragraph verdicts were recorded and later dropped.
   pins `scaleType: 'linear'` in its domain builder, its `ticks` getter and its
   track menu, so composing would add `scaleType` and `symlogConstant` uniforms
   with exactly one value each — ADR-040's single-caller parameter.
+  **Amended 2026-09-13:** the first kill condition is gone. Manhattan draws
+  through the `point` shape, whose scale composes `scoreScale`, and
+  `normalizeScore` steps on a degenerate domain as `scoreToYPx` did.
 - **The coverage band's tick anchor onto wiggle's `scoreToAxisY`** agrees
   everywhere the band is taller than its two 5px label insets and diverges
   below: at `covHeight = 8` the coverage anchor answers 3 for every normalized

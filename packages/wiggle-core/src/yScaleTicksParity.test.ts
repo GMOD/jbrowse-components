@@ -81,8 +81,9 @@ const CASES = [
   { name: 'short track', scaleType: 'linear', raw: [0, 30], height: 60 },
   // A window whose scores are all one value autoscales to a domain of no
   // width — an all-zero coverage stretch is the everyday one. d3 answers the
-  // midpoint for every input there while `makeScoreNormalizer` answers 0, so
-  // the tick floated at half height over a plot drawn along the baseline.
+  // midpoint for every input there while `makeScoreNormalizer` puts that value
+  // on the baseline, so the tick floated at half height over a plot drawn along
+  // it.
   {
     name: 'flat domain at zero',
     scaleType: 'linear',

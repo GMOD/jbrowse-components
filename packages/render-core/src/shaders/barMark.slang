@@ -5,7 +5,7 @@
 //
 // The scale is `valueScale`'s and the anchor is this shape's own (ADR-097): the
 // point shape centres a glyph on the value, this one grows from the baseline to
-// it, and both read one `valueToYPx`.
+// it, and both read one `valueToYPxScaled`.
 //
 // The two HORIZONTAL cuts are antialiased analytically, as wiggle's xyplot bar
 // does: the top cut IS the datum, so it must not quantise to the output grid,

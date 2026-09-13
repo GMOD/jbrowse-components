@@ -41,7 +41,8 @@ export function computeYTicks(opts: {
   const { yTop, yBottom } = axisPlotBox(height, offset)
   // A window whose scores are all one value (an all-zero coverage stretch) has
   // a domain of no width. d3 answers the midpoint for every input there while
-  // `makeScoreNormalizer` answers 0, and the renderer is the one to agree with.
+  // `makeScoreNormalizer` puts that value on the baseline, and the renderer is
+  // the one to agree with.
   if (domainMin === domainMax) {
     return { items: [{ value: domainMin, y: yBottom }], yTop, yBottom }
   }

@@ -120,38 +120,46 @@ describe.each(SYMLOG_DOMAINS)('symlog domain %j', (min, max) => {
   })
 })
 
-// A degenerate domain used to be the one place the two disagreed — the shader
-// divided by a 1e-6 floor and saturated where JS answered 0. Returning 0 avoids
-// the NaN that floor was there for just as well, so both now answer 0 and the
-// exception is gone. Pinned because it is the kind of agreement that is only
-// visible at an input nothing reaches in production.
+// A domain with no range is a step on both sides: a score above the domain's
+// min, floored for log, saturates and any other sits on the baseline, so a
+// score above a pinned domain draws off the top on wiggle, the coverage band
+// and the mark shapes alike.
 describe('a degenerate domain', () => {
-  test('both answer 0', () => {
-    expect(makeScoreNormalizer(5, 5, SCALE_TYPE_LINEAR)(9)).toBe(0)
-    expect(normalizeScore(9, 5, 5, SCALE_TYPE_LINEAR, 1)).toBe(0)
-    expect(normalizeScore(9, 5, 5, SCALE_TYPE_LOG, 1)).toBe(0)
-    expect(normalizeScore(9, 5, 5, SCALE_TYPE_SYMLOG, 1)).toBe(0)
+  const SCALE_TYPES = [SCALE_TYPE_LINEAR, SCALE_TYPE_LOG, SCALE_TYPE_SYMLOG]
+  const step = (score: number, min: number, scaleType: number) =>
+    score > (scaleType === SCALE_TYPE_LOG && min <= 0 ? 1 : min) ? 1 : 0
+
+  test('both step at the min', () => {
+    for (const scaleType of SCALE_TYPES) {
+      const normalize = makeScoreNormalizer(5, 5, scaleType, 1)
+      for (const [score, expected] of [
+        [9, 1],
+        [5.5, 1],
+        [5, 0],
+        [4, 0],
+      ]) {
+        expect(normalize(score!)).toBe(expected)
+        expect(normalizeScore(score!, 5, 5, scaleType, 1)).toBe(expected)
+      }
+    }
   })
 
   // Reachable from Track menu → Set min/max score by filling in only the min:
   // the dialog checks `max > min` solely when BOTH fields carry a number, and
   // `autoscale: localpercentile` (the config default) can put the 99th
   // percentile below whatever was typed.
-  test('both answer 0 on a descending one', () => {
+  test('both step at the min on a descending one', () => {
     for (const [min, max] of [
       [200, 60],
       [-1, -40],
       [0.5, -0.5],
     ] as [number, number][]) {
-      for (const scaleType of [
-        SCALE_TYPE_LINEAR,
-        SCALE_TYPE_LOG,
-        SCALE_TYPE_SYMLOG,
-      ]) {
+      for (const scaleType of SCALE_TYPES) {
         const normalize = makeScoreNormalizer(min, max, scaleType, 1)
-        for (const score of [min, max, 0, 1, 10, (min + max) / 2]) {
-          expect(normalize(score)).toBe(0)
-          expect(normalizeScore(score, min, max, scaleType, 1)).toBe(0)
+        for (const score of [min, max, 0, 1, 10, 300, (min + max) / 2]) {
+          const expected = step(score, min, scaleType)
+          expect(normalize(score)).toBe(expected)
+          expect(normalizeScore(score, min, max, scaleType, 1)).toBe(expected)
         }
       }
     }
