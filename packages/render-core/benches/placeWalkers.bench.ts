@@ -14,9 +14,11 @@
 //   ported    the production shape's `paintBlock`, imported
 //
 // Each arm has its own driver literal, and every call before the timed rounds
-// is a forward block on the counting context: rectWalker.bench.ts found the
-// retired painters bimodal on call feedback a reversed block or a second
-// context clears, which is also why OSR is off.
+// is a forward block on the counting context, with OSR off. The retired span
+// painter calls two per-call closures per instance, and whether TurboFan
+// inlines them depends on when a GC clears their call feedback: a reversed
+// block, a second context or OSR-compiled entry before timing put it, its
+// control or both at 40-47 ns against 21-25, so the control read 0.60-1.72x.
 //
 // IDENTITY. After timing and before anything prints, all three arms are
 // recorded through `recordingContext` — rects plus every fillStyle,
@@ -60,9 +62,8 @@
 // beside what its optimized code already inlined, against the 460-byte budget.
 // `placeCellY` 60 and `placeCellX` 113 + 293 both inline into `paintBlock`, and
 // `projectBp` is 32. `placeRectY` 92 + 290 inlines and `placeRectX` 276 + 301
-// does not, as rectWalker.bench.ts found; rect's frame escapes into that call
-// either way, so `paintBlock` builds it with `rectFrame`, which inlines at 79
-// with `bpProjection`'s 84.
+// does not; rect's frame escapes into that call either way, so `paintBlock`
+// builds it with `rectFrame`, which inlines at 79 with `bpProjection`'s 84.
 // `placeSpan` 156 + 81 inlines, and so does `spanFrame` at 125 with
 // `bpProjection`'s 84, which leaves span's frame to scalar-replace.
 
