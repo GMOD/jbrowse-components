@@ -347,12 +347,12 @@ liftOver PIFs carry a coarse tier since their 2026-09-11 rebuild, worth 49× on 
 whole-genome pass (1.31 MB against 64.23 MB over a 130 MB PIF,
 `../measurements/pif-tier-wire-bytes.json`), but at TP53 zoom the star still
 reads the fine tier: 0.7-0.78 MB of CIGAR text per lane for one 300 kb window,
-parsed and walked in the worker to produce one clipped extent. Let this display prefer
-`coarse` whenever the star has it: it drops the CIGAR after the clip, and the
-split it does ask for is at 10 kb, the coarse tier's own bound, so the cut is
-the same on either tier and the fine tier buys it nothing but bytes — a
-display-level default of `lodMode: 'coarse'` when `hasLodCapableAdapter` is a
-two-line change. The coarse tier can never engage on a bacterial genome at the
+parsed and walked in the worker to produce one clipped extent. Serving `coarse`
+there is a trade, not a two-line change: the 10 kb gap cuts come out the same,
+since the coarse tier keeps every indel over half its bound, but a record
+crossing the window edge is clipped by walking whichever CIGAR the row carries
+(`clipFeatureToRegion`), and a coarse run is only within 10 kb of the true path
+— about 50 px at the TP53 window. The coarse tier can never engage on a bacterial genome at the
 default threshold (E. coli whole-chromosome is ~3.2 kb/px against a 10,000
 threshold, [HOSTING.md](../reference/HOSTING.md)`:107-137`), so the E. coli case
 is bounded by lanes, not bytes. The pair fetch asks at the ANCHOR's tier over
