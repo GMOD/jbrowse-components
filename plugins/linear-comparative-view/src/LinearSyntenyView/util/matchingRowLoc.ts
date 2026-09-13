@@ -16,6 +16,7 @@ import type {
   RpcHost,
   TrackCatalog,
 } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
@@ -39,11 +40,13 @@ export async function matchingRowLoc({
   trackId,
   region,
   assembly,
+  stopToken = createStopToken(),
 }: {
   session: AssemblyHost & RpcHost & TrackCatalog
   trackId: string
   region: Region
   assembly: string
+  stopToken?: StopToken
 }) {
   const track = allSessionTracks(session).find(
     t => readConfObject(t, 'trackId') === trackId,
@@ -52,7 +55,7 @@ export async function matchingRowLoc({
     return undefined
   }
   const { mates } = await makeMateDiscovery({ session, track, region })(
-    createStopToken(),
+    stopToken,
     () => {},
   )
   const panel = mates.find(m =>

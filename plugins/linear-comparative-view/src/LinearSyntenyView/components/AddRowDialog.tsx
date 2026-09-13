@@ -1,12 +1,19 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { AssemblySelector, ErrorBanner, SubmitDialog } from '@jbrowse/core/ui'
 import {
   getEnv,
   getSession,
+  isAbortException,
   isSessionWithAddSessionTrack,
 } from '@jbrowse/core/util'
+import {
+  createStopToken,
+  isStopped,
+  stopStopToken,
+} from '@jbrowse/core/util/stopToken'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
   ImportSyntenyOpenCustomTrack,
   defaultSyntenyFileFormats,
@@ -27,6 +34,7 @@ import { getAddRowOptions } from '../util/syntenyTracks.ts'
 
 import type { LinearComparativeViewModel } from '../../LinearComparativeView/model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
 
 type UserOpened = Extract<ImportFormSyntenyTrack, { type: 'userOpened' }>
@@ -95,32 +103,68 @@ const AddRowDialog = observer(function AddRowDialog({
   )
   const [customTrack, setCustomTrack] = useState<UserOpened['value']>()
   const [error, setError] = useState<unknown>()
-  const [locating, setLocating] = useState(false)
+  const [isLocating, setLocating] = useState(false)
+  const locating = useRef<StopToken>(undefined)
+  useEffect(
+    () => () => {
+      stopStopToken(locating.current)
+    },
+    [],
+  )
 
   const canSubmit =
     Boolean(terminalAssembly) &&
-    !locating &&
+    !isLocating &&
     (mode === 'existing'
       ? Boolean(selected)
       : Boolean(customTrack) && Boolean(newAssembly))
 
+  // The region lookup outlives a Cancel, so the answer has to check that the
+  // dialog is still the one asking: a row appended after Cancel is a row the
+  // reader refused, and appending onto a closed view throws. A lookup that
+  // fails still adds the row, on its whole genome — the alignment is a
+  // convenience, and a broken track reports itself on the band.
   async function add(assembly: string, syntenyTrackId: string) {
     const region = zoomedInWindow(views.at(-1)!)
+    const stopToken = createStopToken()
+    locating.current = stopToken
     setLocating(true)
     try {
-      const loc =
-        region &&
-        (await matchingRowLoc({
-          session,
-          trackId: syntenyTrackId,
-          region,
-          assembly,
-        }))
+      const loc = region
+        ? await matchingRowLoc({
+            session,
+            trackId: syntenyTrackId,
+            region,
+            assembly,
+            stopToken,
+          }).catch((e: unknown) => {
+            if (isAbortException(e)) {
+              throw e
+            }
+            console.warn(e)
+            return undefined
+          })
+        : undefined
+      if (isStopped(stopToken) || !isAlive(model)) {
+        return
+      }
       void model.appendRow({ assembly, loc, syntenyTrackId })
       handleClose()
+    } catch (e) {
+      if (!isAbortException(e)) {
+        throw e
+      }
     } finally {
-      setLocating(false)
+      if (locating.current === stopToken) {
+        locating.current = undefined
+        setLocating(false)
+      }
     }
+  }
+
+  function cancel() {
+    stopStopToken(locating.current)
+    handleClose()
   }
 
   async function submit() {
@@ -139,9 +183,7 @@ const AddRowDialog = observer(function AddRowDialog({
     <SubmitDialog
       open
       title="Add assembly row"
-      onCancel={() => {
-        handleClose()
-      }}
+      onCancel={cancel}
       submitText="Add"
       submitDisabled={!canSubmit}
       onSubmit={() => {
@@ -153,7 +195,7 @@ const AddRowDialog = observer(function AddRowDialog({
       }}
     >
       {error ? <ErrorBanner error={error} /> : null}
-      {locating ? (
+      {isLocating ? (
         <Typography gutterBottom>
           Finding the region that aligns to the {terminalAssembly} window...
         </Typography>

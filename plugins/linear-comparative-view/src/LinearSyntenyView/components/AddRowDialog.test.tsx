@@ -9,9 +9,27 @@ import { when } from 'mobx'
 import AddRowDialog from './AddRowDialog.tsx'
 
 import type { LinearSyntenyViewModel } from '../model.ts'
+import type * as MatchingRowLoc from '../util/matchingRowLoc.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
+
+// a hook to hold or fail the region lookup, which in-process resolves before a
+// test can click a second button; unset, the real lookup runs
+let mockLookup: (() => Promise<string | undefined>) | undefined
+jest.mock('../util/matchingRowLoc.ts', () => {
+  const actual = jest.requireActual<typeof MatchingRowLoc>(
+    '../util/matchingRowLoc.ts',
+  )
+  return {
+    ...actual,
+    matchingRowLoc: (args: Parameters<typeof actual.matchingRowLoc>[0]) =>
+      mockLookup ? mockLookup() : actual.matchingRowLoc(args),
+  }
+})
+afterEach(() => {
+  mockLookup = undefined
+})
 
 const assembly = (name: string) => ({
   name,
@@ -194,6 +212,47 @@ test('Add opens the new row on the region matching the bottom row', async () => 
   await waitFor(() => {
     expect(view.views[2]?.visibleLocStrings).toBe('ctgA:10,001..12,000')
   })
+})
+
+// The region lookup runs on after Cancel; the row it was for must not land.
+test('Cancel during the region lookup adds no row', async () => {
+  let release: (loc: string) => void = () => {}
+  mockLookup = () =>
+    new Promise(resolve => {
+      release = resolve
+    })
+  const { view, closed } = await openDialog([['volvox2', 'volvox3']], [], {
+    bottomLoc: 'ctgA:2001-4000',
+  })
+  await when(() => view.views[1]!.visibleLocStrings === 'ctgA:2,001..4,000')
+
+  fireEvent.click(screen.getByRole('button', { name: 'Add' }))
+  await screen.findByText(/Finding the region/)
+  fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+  expect(closed.yes).toBe(true)
+
+  release('ctgA:10001-12000')
+  await new Promise(resolve => setTimeout(resolve, 50))
+  expect(view.views.length).toBe(2)
+})
+
+// The alignment is a convenience: a lookup that fails still adds the row, on
+// its whole genome, and a broken track reports itself on the band.
+test('a failed region lookup still adds the row, on its whole genome', async () => {
+  jest.spyOn(console, 'warn').mockImplementation()
+  mockLookup = () => Promise.reject(new Error('index unreachable'))
+  const { view, closed } = await openDialog([['volvox2', 'volvox3']], [], {
+    bottomLoc: 'ctgA:2001-4000',
+  })
+  await when(() => view.views[1]!.visibleLocStrings === 'ctgA:2,001..4,000')
+
+  fireEvent.click(screen.getByRole('button', { name: 'Add' }))
+  await waitFor(() => {
+    expect(closed.yes).toBe(true)
+  })
+  expect(view.views.length).toBe(3)
+  await when(() => view.views[2]!.initialized)
+  expect(view.views[2]!.visibleLocStrings).toBe('ctgA:1..16,000')
 })
 
 // nothing to pick means nothing to add, so the button cannot be live — the
