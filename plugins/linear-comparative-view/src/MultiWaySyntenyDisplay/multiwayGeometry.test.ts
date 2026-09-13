@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/core/util/colorBits'
 
 import { KIND_BASE, KIND_MARKER } from '../LinearSyntenyRPC/syntenyColors.ts'
+import { composeLaneLinks } from './composeLaneLinks.ts'
 import { LaneGene } from './geneGlyph.ts'
 import { buildLanes } from './laneStack.ts'
 import { groupFeatures } from './layoutMultiWay.ts'
@@ -19,6 +20,7 @@ import {
 } from './multiwayGeometry.ts'
 import { PX_ORIGIN } from './multiwayRenderTypes.ts'
 
+import type { LanePlacementRecord } from './composeLaneLinks.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
 import type { MultiWayCell } from './multiwayRenderTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -32,6 +34,23 @@ function ribbonData(cells: Map<string, MultiWayCell>, key: string) {
     throw new Error(`${key} is not a ribbon cell`)
   }
   return cell.data
+}
+
+function placement(
+  refName: string,
+  start: number,
+  end: number,
+): LanePlacementRecord {
+  return {
+    anchorRefName: 'chr1',
+    anchorStart: 100,
+    anchorEnd: 200,
+    refName,
+    start,
+    end,
+    strand: 1,
+    feature: new SimpleFeature({ uniqueId: refName, refName, start, end }),
+  }
 }
 
 function pairFeature(
@@ -440,6 +459,38 @@ describe('the ribbons', () => {
     ])
     expect(targets[data.instanceFeatureIdx[1]!]!.feature).toBe(link)
     expect(targets[data.instanceFeatureIdx[1]!]!.label).toContain('peach')
+  })
+
+  // A star states no mate-vs-mate pair, so below the first gutter every
+  // ribbon is interpolated through the anchor, and its tooltip read exactly
+  // like an alignment's
+  test('say a composed link was composed, and through which anchor span', () => {
+    const s = stack({
+      features: [
+        pairFeature('g1', 100, 200),
+        pairFeature('g1', 100, 200, { mate: 'cacao', mateRef: 'Tc1' }),
+      ],
+      assemblyNames: ['grape', 'peach', 'cacao'],
+    })
+    const [composed] = composeLaneLinks({
+      upper: [placement('Pp1', 1500, 1600)],
+      lower: [placement('Tc1', 1500, 1600)],
+      upperAssemblyName: 'peach',
+      lowerAssemblyName: 'cacao',
+    })
+    const { targets } = buildRibbonGeometry({
+      stack: s,
+      laneLinks: new Map([['peach|cacao', { links: [composed!] }]]),
+      ribbonColor: 'grey',
+      drawCurves: false,
+      bridgeSkippedLanes: false,
+    })
+    const target = targets.find(t => t.feature === composed)
+    expect(target!.label.split('\n')).toEqual([
+      'peach Pp1:1,500-1,600',
+      'cacao Tc1:1,500-1,600',
+      'composed through grape chr1:100-200, not aligned directly',
+    ])
   })
 })
 

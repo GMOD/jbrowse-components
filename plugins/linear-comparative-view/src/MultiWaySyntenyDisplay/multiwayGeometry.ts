@@ -312,9 +312,20 @@ export function buildRibbonGeometry({
       if (s1 && s2 && wideEnough(s1, s2)) {
         const ordered: Span = link.get('strand') === -1 ? [s2[1], s2[0]] : s2
         const idx = targets.length
+        const via = link.get('composedThrough') as
+          | { refName: string; start: number; end: number }
+          | undefined
         targets.push({
           feature: link,
-          label: `${upper.assemblyName} ${link.get('refName')}:${fmt(link.get('start'))}-${fmt(link.get('end'))}\n${lower.assemblyName} ${mate.refName}:${fmt(mate.start)}-${fmt(mate.end)}`,
+          label: [
+            `${upper.assemblyName} ${link.get('refName')}:${fmt(link.get('start'))}-${fmt(link.get('end'))}`,
+            `${lower.assemblyName} ${mate.refName}:${fmt(mate.start)}-${fmt(mate.end)}`,
+            ...(via && anchor
+              ? [
+                  `composed through ${anchor.assemblyName} ${via.refName}:${fmt(via.start)}-${fmt(via.end)}, not aligned directly`,
+                ]
+              : []),
+          ].join('\n'),
         })
         ribbons.add(
           s1,
