@@ -1,15 +1,19 @@
 import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
-import { getDpr, makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
-import { blockPx } from '@jbrowse/render-core/marks'
+import { getDpr, projectBp } from '@jbrowse/render-core/canvas2dUtils'
 import { makeAbgrFill } from '@jbrowse/render-core/marks/colorFill'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as shader from './shaders/variant.generated.ts'
-import { drawnCellHeightPx } from './shaders/variant.js.generated.ts'
-import { snapVariantCellX } from './snapVariantCellX.ts'
+import {
+  drawnCellHeightPx,
+  snappedCellLeftPx,
+  snappedCellWidthPx,
+} from './shaders/variant.js.generated.ts'
 import { drawVariantShape } from './variantShape.ts'
 
-import type { MarkShape } from '@jbrowse/render-core/marks'
+import type { BpProjection } from '@jbrowse/render-core/canvas2dUtils'
+import type { MarkFrame, MarkShape } from '@jbrowse/render-core/marks'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 /**
  * The `cell` shape's channels: a glyph from `startEnd[2i]` to `startEnd[2i+1]`
@@ -30,12 +34,60 @@ export interface CellParams {
   scrollTop: number
 }
 
+interface CellFrame extends BpProjection {
+  canvasWidth: number
+  canvasHeight: number
+  rowHeight: number
+  scrollTop: number
+  height: number
+  left: number
+  top: number
+  width: number
+}
+
+function cellFrame(
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: CellParams,
+): CellFrame {
+  const w = block.screenEndPx - block.screenStartPx
+  return {
+    originPx: block.reversed ? block.screenEndPx : block.screenStartPx,
+    startBp: block.start,
+    spanBp: block.end - block.start,
+    signedSpanPx: block.reversed ? -w : w,
+    canvasWidth: frame.canvasWidth,
+    canvasHeight: frame.canvasHeight,
+    rowHeight: params.rowHeight,
+    scrollTop: params.scrollTop,
+    height: drawnCellHeightPx(params.rowHeight),
+    left: 0,
+    top: 0,
+    width: 0,
+  }
+}
+
+function placeCellY(c: CellChannels, g: CellFrame, i: number) {
+  const top = c.row[i]! * g.rowHeight - g.scrollTop
+  if (!(top + g.height >= 0 && top <= g.canvasHeight)) {
+    return false
+  }
+  g.top = top
+  return true
+}
+
+function placeCellX(c: CellChannels, g: CellFrame, i: number) {
+  const x1 = projectBp(g, c.startEnd[i * 2]!)
+  const x2 = projectBp(g, c.startEnd[i * 2 + 1]!)
+  const width = snappedCellWidthPx(x1, x2, g.canvasWidth)
+  g.left = snappedCellLeftPx(x1, x2, g.canvasWidth, width)
+  g.width = width
+}
+
 /**
- * A pixel-snapped matrix cell: `span` plus a glyph lane, on the half-canvas
- * snap grid `variant.slang` owns with its 2 px floors. This display's own
- * shape rather than render-core's — the shader's generated twins
- * (`snapVariantCellX`, `drawnCellHeightPx`) are what its ink reads, so the
- * shape stays beside them.
+ * A pixel-snapped matrix cell on the half-canvas snap grid `variant.slang`
+ * owns, its x through the shader's generated twins. An inversion's triangle
+ * inks its bounding box.
  */
 export const cellMark: MarkShape<CellChannels, CellParams> = {
   id: 'cell',
@@ -48,8 +100,6 @@ export const cellMark: MarkShape<CellChannels, CellParams> = {
     shader.writeUniforms(scratch, {
       bpRangeX: bpRangeXTuple(clip, block.reversed),
       canvasHeight: frame.canvasHeight,
-      // The FULL width anchors the snap grid the painter and the hit test snap
-      // against; the clipped block's span is what clip-space x covers.
       canvasWidth: frame.canvasWidth,
       viewportWidth: clip.scissorW,
       rowHeight: params.rowHeight,
@@ -60,43 +110,40 @@ export const cellMark: MarkShape<CellChannels, CellParams> = {
   },
 
   paintBlock(ctx, channels, block, frame, params) {
-    const { startEnd, row, shapeType, color, count } = channels
-    const { canvasWidth, canvasHeight } = frame
-    const { rowHeight, scrollTop } = params
-    const h = drawnCellHeightPx(rowHeight)
-    const toX = makeBpMapper(block)
+    const { shapeType, color, count } = channels
+    // `cellFrame` spelled out: TurboFan scalar-replaces a frame this function
+    // allocates, and reloads a returned frame's fields on every instance.
+    const w = block.screenEndPx - block.screenStartPx
+    const g: CellFrame = {
+      originPx: block.reversed ? block.screenEndPx : block.screenStartPx,
+      startBp: block.start,
+      spanBp: block.end - block.start,
+      signedSpanPx: block.reversed ? -w : w,
+      canvasWidth: frame.canvasWidth,
+      canvasHeight: frame.canvasHeight,
+      rowHeight: params.rowHeight,
+      scrollTop: params.scrollTop,
+      height: drawnCellHeightPx(params.rowHeight),
+      left: 0,
+      top: 0,
+      width: 0,
+    }
     const setFill = makeAbgrFill(ctx)
     for (let i = 0; i < count; i++) {
-      const y = row[i]! * rowHeight - scrollTop
-      if (y + h >= 0 && y <= canvasHeight) {
-        const { x, width } = snapVariantCellX(
-          toX(startEnd[i * 2]!),
-          toX(startEnd[i * 2 + 1]!),
-          canvasWidth,
-        )
+      if (placeCellY(channels, g, i)) {
+        placeCellX(channels, g, i)
         setFill(color[i]!)
-        drawVariantShape(ctx, shapeType[i]!, x, y, width, h)
+        drawVariantShape(ctx, shapeType[i]!, g.left, g.top, g.width, g.height)
       }
     }
   },
 
-  // An inversion's triangle is its bounding box, the same box the display's
-  // picker measured before this existed. The off-canvas test is
-  // `paintBlock`'s: a row the viewport has scrolled past is ink nobody drew.
   ink(channels, block, frame, params, i) {
-    const { startEnd, row } = channels
-    const { canvasWidth, canvasHeight } = frame
-    const { rowHeight, scrollTop } = params
-    const height = drawnCellHeightPx(rowHeight)
-    const top = row[i]! * rowHeight - scrollTop
-    if (top + height < 0 || top > canvasHeight) {
+    const g = cellFrame(block, frame, params)
+    if (!placeCellY(channels, g, i)) {
       return undefined
     }
-    const { x, width } = snapVariantCellX(
-      blockPx(block, startEnd[i * 2]!),
-      blockPx(block, startEnd[i * 2 + 1]!),
-      canvasWidth,
-    )
-    return { left: x, top, width, height }
+    placeCellX(channels, g, i)
+    return { left: g.left, top: g.top, width: g.width, height: g.height }
   },
 }

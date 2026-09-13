@@ -1,6 +1,7 @@
 import { insertionBarWidth } from '@jbrowse/alignments-core'
+import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 
-import { snapVariantCellX } from './snapVariantCellX.ts'
+import { cellMark } from './cellMark.ts'
 import {
   MAX_INSERTION_MARKER_WIDTH_PX,
   variantCellSpanPx,
@@ -220,46 +221,67 @@ describe('variantCellSpanPx with insertion widening switched off', () => {
   })
 })
 
-// The lane's mark, the hover box and the click target all describe a cell that
-// `cellMark` painted through `snapVariantCellX`. This function used to
-// take min/max raw and share only the 2px floor, so all three sat up to half a
-// pixel off the cell they were about — and the marks are AT that 2px floor
-// wherever the snap fires, so the offset is a quarter of the mark.
 describe('the span is the one the cell painter drew', () => {
-  test.each([0, 0.2, 0.37, 0.5, 0.74, 0.9])(
-    'agrees for a sub-pixel record at +%fpx',
+  function spanAndInk(
+    startBp: number,
+    endBp: number,
+    canvasWidth: number,
+    reversed: boolean,
+  ) {
+    const block = {
+      displayedRegionIndex: 0,
+      start: 0,
+      end: canvasWidth * 100,
+      screenStartPx: 0,
+      screenEndPx: canvasWidth,
+      reversed,
+    }
+    const toX = makeBpMapper(block)
+    const ink = cellMark.ink!(
+      {
+        startEnd: Uint32Array.of(startBp, endBp),
+        row: Uint32Array.of(0),
+        shapeType: Uint8Array.of(0),
+        color: Uint32Array.of(0),
+        count: 1,
+      },
+      block,
+      { canvasWidth, canvasHeight: TALL_ROW },
+      { rowHeight: TALL_ROW, scrollTop: 0 },
+      0,
+    )!
+    const span = variantCellSpanPx({
+      x1: toX(startBp),
+      x2: toX(endBp),
+      canvasWidth,
+      insertedBp: 0,
+      insertionsWiden: false,
+      pxPerBp: 0.01,
+      drawnRowHeight: TALL_ROW,
+    })
+    return { span: [span.left, span.width], ink: [ink.left, ink.width] }
+  }
+
+  test.each([0, 20, 37, 50, 74, 90])(
+    'agrees for a sub-pixel record at +%i/100 px',
     frac => {
-      const x1 = 100 + frac
-      const x2 = x1 + 0.4
-      const painted = snapVariantCellX(x1, x2, CANVAS)
-      const span = variantCellSpanPx({
-        x1,
-        x2,
-        canvasWidth: CANVAS,
-        insertedBp: 0,
-        insertionsWiden: false,
-        pxPerBp: 0.4,
-        drawnRowHeight: TALL_ROW,
-      })
-      expect([span.left, span.width]).toEqual([painted.x, painted.width])
+      const { span, ink } = spanAndInk(
+        10_000 + frac,
+        10_040 + frac,
+        CANVAS,
+        false,
+      )
+      expect(span).toEqual(ink)
     },
   )
 
-  // An odd canvas puts the grid on half-pixels, so this would pass by accident
-  // on an even one whatever the inputs.
-  test('agrees on an odd canvas width too', () => {
-    const painted = snapVariantCellX(100.3, 100.7, 801)
-    const span = variantCellSpanPx({
-      x1: 100.3,
-      x2: 100.7,
-      canvasWidth: 801,
-      insertedBp: 0,
-      insertionsWiden: false,
-      pxPerBp: 0.4,
-      drawnRowHeight: TALL_ROW,
-    })
-    expect([span.left, span.width]).toEqual([painted.x, painted.width])
-  })
+  test.each([false, true])(
+    'agrees on an odd canvas, whose grid sits on half-pixels, reversed %s',
+    reversed => {
+      const { span, ink } = spanAndInk(10_030, 10_070, 801, reversed)
+      expect(span).toEqual(ink)
+    },
+  )
 })
 
 test('MAX_INSERTION_MARKER_WIDTH_PX really is the cap the hit-test pads by', () => {

@@ -539,6 +539,21 @@ export function makeBpMapper(bounds: BpRegionBounds) {
 }
 
 /**
+ * `makeBpMapper` as four numbers, for a placement function reading its block
+ * off a frame object: `projectBp` returns the mapper's value bit for bit.
+ */
+export interface BpProjection {
+  originPx: number
+  startBp: number
+  spanBp: number
+  signedSpanPx: number
+}
+
+export function projectBp(p: BpProjection, bp: number) {
+  return p.originPx + ((bp - p.startBp) / p.spanBp) * p.signedSpanPx
+}
+
+/**
  * Left edge of the **1bp cell** covering `bp` — for painters that fill a rect
  * per base (MAF alignment cells, the alignments pileup's mismatch /
  * modification / per-base quality+letter / soft-clip base layers).
