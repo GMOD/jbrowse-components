@@ -334,7 +334,7 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
   })
 
   // The third, for alignment-level sources: the direct records between each
-  // ADJACENT mate-lane pair, out of the same all-vs-all track. The specs exist
+  // ADJACENT mate-lane pair, out of the same track. The specs exist
   // only when the source names no genes, so a gene table never issues these,
   // and not for a star that announced its anchor, whose pairs `pairLinks`
   // composes instead.

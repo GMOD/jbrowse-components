@@ -207,7 +207,7 @@ export interface RibbonGeometry {
 /**
  * The ortholog ribbons between each adjacent lane pair, one per pair of runs
  * both lanes place, and from the second gutter down the direct alignment
- * records an all-vs-all source fetched for that pair.
+ * records an alignment source fetched for that pair.
  */
 export function buildRibbonGeometry({
   stack,

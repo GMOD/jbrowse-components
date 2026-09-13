@@ -188,8 +188,7 @@ export async function run(args?: string[]) {
     'For pairwise synteny adapters (PAF/Delta/Chain) --assemblyNames is ' +
     'query,target — the reverse of the minimap2/nucmer input order. For the ' +
     'multi-genome PAF adapters (MultiGenomePAFAdapter, MultiGenomeIndexedPAFAdapter) it is ' +
-    'instead the full list of assemblies the file covers, in any order, since ' +
-    'one multi-genome file backs every pair.'
+    'instead the full list of assemblies the file covers, in any order.'
 
   const examples = [
     '# copy /path/to/my.bam and /path/to/my.bam.bai to current directory and adds track to config.json',

@@ -30,7 +30,7 @@ export function getAssemblyNamesFromConf(adapter: BaseFeatureDataAdapter) {
   return assemblyNames
 }
 
-// The two all-vs-all PAF adapters (in-memory MultiGenomePAFAdapter and
+// The two multi-genome PAF adapters (in-memory MultiGenomePAFAdapter and
 // tabix-indexed MultiGenomeIndexedPAFAdapter) share this assembly-name <-> PanSN
 // sample-prefix mapping; only the record fetch differs. Free functions rather
 // than a shared base class so each adapter keeps its own concrete config type
@@ -71,7 +71,7 @@ export function resolvePanSNPrefix(
 
 // Memoized per adapter, and safe to be: the map is config-derived, and an edit
 // produces a new snapshot, hence a new cache key and a new adapter (see
-// dataAdapterCache). Both all-vs-all adapters call this per getFeatures — per
+// dataAdapterCache). Both multi-genome adapters call this per getFeatures — per
 // band, per region, per pan/zoom. Weak so the map dies with the adapter.
 const asmByPrefixCache = new WeakMap<
   BaseFeatureDataAdapter,
@@ -141,10 +141,10 @@ export function panSNInventory(seqNames: Iterable<string>) {
 export type PanSNInventory = ReturnType<typeof panSNInventory>
 
 /**
- * What an all-vs-all adapter raises when a query's assembly resolves to a PanSN
+ * What a multi-genome adapter raises when a query's assembly resolves to a PanSN
  * prefix that names nothing in the file.
  *
- * This is a thrown error rather than an empty result on purpose. Both all-vs-all
+ * This is a thrown error rather than an empty result on purpose. Both multi-genome
  * adapters answer `hasDataForRefName` with `true` unconditionally (deciding it
  * properly is a getFeatures), so nothing downstream filters the track out, and
  * `getRefNames` legitimately returns `[]` for an assembly the file does not
@@ -173,19 +173,19 @@ export function noPanSNMatchError({
   const rest = samples.length - shown.length
   const list = `${shown.join(', ')}${rest > 0 ? `, and ${rest} more` : ''}`
   // A file with no separator anywhere is a different mistake with a different
-  // remedy — usually a pairwise PAF opened with an all-vs-all adapter — and
+  // remedy — usually a pairwise PAF opened with a multi-genome adapter — and
   // listing its contigs as if they were samples reads as nonsense.
   return new Error(
     anyPanSN
       ? `No sequences in this file belong to assembly "${assemblyName}"${
           prefix === assemblyName ? '' : ` (PanSN prefix "${prefix}")`
         }. Its samples are: ${list}. If this assembly is one of them under another name, map it with the adapter's assemblyNameToPanSN slot, e.g. {"${assemblyName}": "${example}"}.`
-      : `This file's sequence names carry no PanSN sample prefix ("${example}" rather than "${assemblyName}#1#${example}"), so an all-vs-all adapter cannot tell which assembly each side of an alignment belongs to. Use a pairwise adapter for a two-genome PAF, or rewrite the names as sample#haplotype#contig.`,
+      : `This file's sequence names carry no PanSN sample prefix ("${example}" rather than "${assemblyName}#1#${example}"), so a multi-genome adapter cannot tell which assembly each side of an alignment belongs to. Use a pairwise adapter for a two-genome PAF, or rewrite the names as sample#haplotype#contig.`,
   )
 }
 
 /**
- * Both ends of an all-vs-all `getFeatures` resolved to the PanSN prefixes the
+ * Both ends of a multi-genome `getFeatures` resolved to the PanSN prefixes the
  * file is keyed on, having established that the file holds them.
  *
  * Resolution and validation together, because separating them is what let a
@@ -207,7 +207,7 @@ export function noPanSNMatchError({
  * from its setup, the indexed one probes a seqid index and pays a fetch for the
  * inventory, which is why that one is a thunk taken only on the failing path.
  */
-export async function resolveAllVsAllQuery({
+export async function resolvePanSNQuery({
   adapter,
   assemblyName,
   targetAssemblyName,
@@ -245,7 +245,7 @@ export async function resolveAllVsAllQuery({
 }
 
 /**
- * What an all-vs-all adapter raises when both assemblies of a synteny band are
+ * What a multi-genome adapter raises when both assemblies of a synteny band are
  * in the file but the file states no alignment between them.
  *
  * Distinct from {@link noPanSNMatchError}, which is a misconfigured track. This
@@ -686,7 +686,7 @@ export function coarseRowsAreBounded(meta: PifMeta) {
 }
 
 /**
- * Whether an all-vs-all row is a degenerate self-diagonal: the SAME sequence
+ * Whether a multi-genome row is a degenerate self-diagonal: the SAME sequence
  * aligned to itself at the same coordinates, which minimap2 emits once per
  * sequence unless run with `-X`. Dropped from both of its sides.
  *
@@ -694,7 +694,7 @@ export function coarseRowsAreBounded(meta: PifMeta) {
  * `grape#1#chr1` vs `grape#2#chr1` shares both of those yet is a real
  * hap1-vs-hap2 alignment, and two samples that share a contig name (both
  * `chr1`) can align at identical coordinates in a conserved region. Shared by
- * the in-memory and indexed all-vs-all adapters so that reasoning lives once.
+ * the in-memory and indexed multi-genome adapters so that reasoning lives once.
  */
 export function isSelfDiagonal(a: AlignedSide) {
   return (
@@ -705,7 +705,7 @@ export function isSelfDiagonal(a: AlignedSide) {
 }
 
 /**
- * One side of one all-vs-all alignment: the locus it draws at plus the locus it
+ * One side of one multi-genome alignment: the locus it draws at plus the locus it
  * draws to, both under their full PanSN names. The in-memory adapter builds this
  * by orienting a PAF record ({@link orientPafRecord}); the indexed one reads it
  * straight off a PIF row, which make-pif already oriented. Every predicate below
@@ -729,7 +729,7 @@ export interface AlignedSide {
 }
 
 /**
- * Whether one side of an all-vs-all record draws in the current query.
+ * Whether one side of a multi-genome record draws in the current query.
  *
  * `anchorPrefix` is the assembly being viewed and `targetPrefix` the assembly on
  * the other band of a two-row synteny view, or `undefined` for the one-vs-all

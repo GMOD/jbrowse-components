@@ -13,7 +13,7 @@ import {
   makeIndexedSyntenyFeature,
   markReciprocalDuplicates,
   panSNInventory,
-  resolveAllVsAllQuery,
+  resolvePanSNQuery,
   resolveCoarseTier,
   resolvePanSNPrefix,
   restatementContext,
@@ -119,7 +119,7 @@ export default class MultiGenomeIndexedPAFAdapter extends ComparativeAdapterBase
       // about the rows, and the seqid list is all this has without a scan. The
       // make-pif warning covers the same ground at build time.
       const seqIndex = await this.seqIndex(opts)
-      const { anchorPrefix, targetPrefix } = await resolveAllVsAllQuery({
+      const { anchorPrefix, targetPrefix } = await resolvePanSNQuery({
         adapter: this,
         assemblyName,
         targetAssemblyName: opts.targetAssemblyName,

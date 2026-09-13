@@ -6,16 +6,16 @@ import { multiGenomePAFTypes } from '@jbrowse/synteny-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 // lazies
-const AllVsAllAddTrackComponent = lazy(
-  () => import('./AllVsAllAddTrackComponent.tsx'),
+const MultiGenomeAddTrackComponent = lazy(
+  () => import('./MultiGenomeAddTrackComponent.tsx'),
 )
 
-export default function AllVsAllAddTrackComponentF(
+export default function MultiGenomeAddTrackComponentF(
   pluginManager: PluginManager,
 ) {
   addAddTrackComponent(pluginManager, {
     adapterTypes: multiGenomePAFTypes,
-    component: AllVsAllAddTrackComponent,
+    component: MultiGenomeAddTrackComponent,
     ownsAssembly: true,
   })
 }

@@ -185,7 +185,7 @@ export async function run(args?: string[]) {
     )
   }
 
-  // An all-vs-all PAF that does not state every pair indexes perfectly well and
+  // A multi-genome PAF that does not state every pair indexes perfectly well and
   // then draws an empty synteny band for each pair the aligner never emitted,
   // which reads as "no homology here" rather than as "never computed". This is
   // the moment someone is looking at the file, and the census it needs was
@@ -212,7 +212,7 @@ export async function run(args?: string[]) {
 
   const nextCommand =
     samples.size > 0
-      ? 'Next, add it as an all-vs-all synteny track (PanSN names detected):\n' +
+      ? 'Next, add it as a multi-genome synteny track (PanSN names detected):\n' +
         `  jbrowse add-track ${outputFile} --adapterType MultiGenomeIndexedPAFAdapter -a ${[...samples].sort().join(',')} --load copy`
       : 'Next, add it as a synteny track (set -a to your query,target assembly names):\n' +
         `  jbrowse add-track ${outputFile} -a query,target --load copy`

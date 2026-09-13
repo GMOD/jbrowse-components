@@ -261,9 +261,9 @@ Options:
   -a, --assemblyNames        Assembly name or names for track as comma separated
                              string. For pairwise synteny tracks the order is
                              query,target (reverse of minimap2/nucmer argument
-                             order); for all-vs-all adapters
-                             (MultiGenomePAFAdapter/MultiGenomeIndexedPAFAdapter) list
-                             every assembly the file covers, in any order
+                             order); for the multi-genome PAF adapters
+                             (MultiGenomePAFAdapter/MultiGenomeIndexedPAFAdapter)
+                             list every assembly the file covers, in any order
 
       --category             Optional comma separated string of categories to
                              group tracks
@@ -349,10 +349,9 @@ Gff3TabixAdapter, GtfTabixAdapter, BedTabixAdapter, BigBedAdapter,
 VcfTabixAdapter and SplitVcfTabixAdapter.
 
 For pairwise synteny adapters (PAF/Delta/Chain) --assemblyNames is query,target
-— the reverse of the minimap2/nucmer input order. For the all-vs-all adapters
-(MultiGenomePAFAdapter, MultiGenomeIndexedPAFAdapter) it is instead the full list of
-assemblies the file covers, in any order, since one all-vs-all file backs every
-pair.
+— the reverse of the minimap2/nucmer input order. For the multi-genome PAF
+adapters (MultiGenomePAFAdapter, MultiGenomeIndexedPAFAdapter) it is instead the
+full list of assemblies the file covers, in any order.
 
 Examples:
 
@@ -422,6 +421,13 @@ naming a trackId that does not exist, a duplicate trackId. Exits 1.
 
 Types registered by plugins are not known to this command, so they come through
 as warnings rather than errors.
+
+The same checks are published as a JSON Schema at
+https://jbrowse.org/jb2/schema/v5/config.json: a "$schema" line naming it at the
+top of a config.json gives an editor completion and validation for every slot.
+This command runs that schema first, then the cross-references a schema cannot
+express — a trackId a session names that no track defines, an assembly a track
+names that none defines.
 
 Examples:
 

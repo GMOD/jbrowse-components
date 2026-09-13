@@ -214,7 +214,7 @@ which fetches only the alignments in view
 | MCScan blocks | [](/docs/config/mcscanblocksadapter) | [](/docs/config/syntenytrack) | Multi-genome, reference-anchored; also needs one BED per assembly |
 | MCScan simple anchors | [](/docs/config/mcscansimpleanchorsadapter) | [](/docs/config/syntenytrack) | Gene-level synteny; also needs one BED per assembly |
 | Multi-genome indexed PAF (PIF) | [](/docs/config/multigenomeindexedpafadapter) | [](/docs/config/syntenytrack) | The tabix-indexed form of multi-genome PAF |
-| Multi-genome PAF | [](/docs/config/multigenomepafadapter) | [](/docs/config/syntenytrack) | PanSN-prefixed; one file backs every pair in a multi-way view |
+| Multi-genome PAF | [](/docs/config/multigenomepafadapter) | [](/docs/config/syntenytrack) | PanSN-prefixed; all-vs-all or a star against one reference, in one file |
 | PAF | [](/docs/config/pafadapter) | [](/docs/config/syntenytrack) | Loaded entirely into memory; convert to PIF for large alignments |
 | Several pairwise alignments sharing one genome | [](/docs/config/multipairwisesyntenyadapter) | [](/docs/config/syntenytrack) | One anchor genome aligned to each of N others, as N pairwise files |
 

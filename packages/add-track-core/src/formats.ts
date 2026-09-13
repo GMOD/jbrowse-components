@@ -405,7 +405,7 @@ export const formats: FormatEntry[] = [
     },
   },
   {
-    // an all-vs-all PAF looks like any `.paf`; the assembly list and the PanSN
+    // a multi-genome PAF looks like any `.paf`; the assembly list and the PanSN
     // mapping come from its add-track form
     spec: {
       kind: 'single',
@@ -414,7 +414,7 @@ export const formats: FormatEntry[] = [
     },
   },
   {
-    // likewise an all-vs-all PIF against a pairwise one
+    // likewise a multi-genome PIF against a pairwise one
     spec: {
       kind: 'indexed',
       adapterType: 'MultiGenomeIndexedPAFAdapter',

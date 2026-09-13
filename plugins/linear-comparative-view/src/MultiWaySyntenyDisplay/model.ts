@@ -336,9 +336,10 @@ export function stateModelFactory(
       /**
        * #volatile
        * alignments between ADJACENT mate lanes, fetched per pair from the same
-       * track when the source is an all-vs-all alignment file — the direct
-       * records the file holds for that pair, at the lanes' own coordinates —
-       * each beside the region key it was fetched under, merged per pair
+       * track when the source is an alignment file naming no star anchor — the
+       * direct records the file holds for that pair, at the lanes' own
+       * coordinates — each beside the region key it was fetched under, merged
+       * per pair
        */
       laneLinks: undefined as Map<string, HeldLaneLinks> | undefined,
       /**
@@ -620,7 +621,7 @@ export function stateModelFactory(
       /**
        * #getter
        * a gene-level source names its features and groups chain on the names;
-       * an alignment-level source (all-vs-all PAF) names nothing, which is
+       * an alignment-level source (a multi-genome PAF) names nothing, which is
        * what makes the per-pair link fetch worth issuing
        */
       get featuresAreNameless() {
@@ -1265,14 +1266,15 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * one spec per ADJACENT mate-lane pair when the source is an all-vs-all
-       * alignment file: the upper lane's window queried against the lower
-       * lane's assembly at the settled tier, which an all-vs-all adapter
-       * answers with the direct records it holds for that pair. None for a
-       * source that announced itself a star, which holds no such rows. Only
+       * one spec per ADJACENT mate-lane pair when the source is an alignment
+       * file naming no star anchor: the upper lane's window queried against
+       * the lower lane's assembly at the settled tier, which a multi-genome
+       * adapter answers with the direct records it holds for that pair — none,
+       * for a star that did not name its anchor. None for a source that
+       * announced itself a star, which holds no such rows. Only
        * pairs the session holds both assemblies of: the fetch renames its
        * region through the assembly manager, which refuses a PanSN sample the
-       * config never declared, and an all-vs-all file routinely carries more
+       * config never declared, and a multi-genome file routinely carries more
        * of those than the config names
        */
       get laneLinksFetchSpecs(): LaneLinksFetchSpec[] {

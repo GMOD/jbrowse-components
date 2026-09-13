@@ -19,7 +19,7 @@ import {
   markReciprocalDuplicates,
   noSuchPairError,
   panSNInventory,
-  resolveAllVsAllQuery,
+  resolvePanSNQuery,
   resolvePanSNPrefix,
   sideDraws,
 } from '../util.ts'
@@ -157,7 +157,7 @@ export default class MultiGenomePAFAdapter extends ComparativeAdapterBase<MultiG
       // Tested against the inventory rather than the index, because a prefix
       // whose every alignment was a self-diagonal IS in the file and legitimately
       // draws nothing.
-      const { anchorPrefix, targetPrefix } = await resolveAllVsAllQuery({
+      const { anchorPrefix, targetPrefix } = await resolvePanSNQuery({
         adapter: this,
         assemblyName,
         targetAssemblyName,

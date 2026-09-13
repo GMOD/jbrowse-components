@@ -17,7 +17,7 @@ launcher's dialog separates "no mate aligns" from "mates align but none is a
 declared assembly". That was the ten-line half, taken first on purpose: the
 error carries the information at the moment it is needed.
 
-What is left is discovery. `AllVsAllAddTrackComponent` collects assembly names
+What is left is discovery. `MultiGenomeAddTrackComponent` collects assembly names
 only, and the config editor renders `assemblyNameToPanSN` — a `frozen` slot — as
 a raw JSON textarea, so **nothing in the UI ever lists a file's PanSN prefixes**
 and the mapping can only be written from `tabix -l`. Read the tabix contig list

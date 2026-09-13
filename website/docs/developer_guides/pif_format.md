@@ -184,10 +184,11 @@ coarse rows split at large indels with no alignment string, and draws as plain
 ribbons. A JBrowse older than `cr:Z:` reads a new file and draws every coarse
 row as one straight ribbon, so build with `--no-coarse` to serve such clients.
 
-## All-vs-all
+## Multi-genome
 
-An all-vs-all PAF takes the same format and the same command. What carries the
-extra genomes is the sequence names, following the
+A PAF aligning more than two genomes, all-vs-all or each against one reference,
+takes the same format and the same command. What carries the extra genomes is
+the sequence names, following the
 [PanSN](https://github.com/pangenome/PanSN-spec) convention
 `sample#haplotype#contig`:
 
@@ -270,7 +271,7 @@ row as a wedge in both.
 }
 ```
 
-An all-vs-all file, where `assemblyNames` are PanSN prefixes:
+A multi-genome file, where `assemblyNames` are PanSN prefixes:
 
 ```json addtrack
 {

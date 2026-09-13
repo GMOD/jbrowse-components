@@ -25,7 +25,7 @@ minimap2). The one thing to get right is that `assemblyNames` is
 | MCScan blocks | [](/docs/config/mcscanblocksadapter) | [](/docs/config/syntenytrack) | Multi-genome, reference-anchored; also needs one BED per assembly |
 | MCScan simple anchors | [](/docs/config/mcscansimpleanchorsadapter) | [](/docs/config/syntenytrack) | Gene-level synteny; also needs one BED per assembly |
 | Multi-genome indexed PAF (PIF) | [](/docs/config/multigenomeindexedpafadapter) | [](/docs/config/syntenytrack) | The tabix-indexed form of multi-genome PAF |
-| Multi-genome PAF | [](/docs/config/multigenomepafadapter) | [](/docs/config/syntenytrack) | PanSN-prefixed; one file backs every pair in a multi-way view |
+| Multi-genome PAF | [](/docs/config/multigenomepafadapter) | [](/docs/config/syntenytrack) | PanSN-prefixed; all-vs-all or a star against one reference, in one file |
 | PAF | [](/docs/config/pafadapter) | [](/docs/config/syntenytrack) | Loaded entirely into memory; convert to PIF for large alignments |
 | Several pairwise alignments sharing one genome | [](/docs/config/multipairwisesyntenyadapter) | [](/docs/config/syntenytrack) | One anchor genome aligned to each of N others, as N pairwise files |
 
@@ -44,13 +44,13 @@ explains them.
 - **PIF** JBrowse's indexed PAF, made with
   [`jbrowse make-pif`](/docs/cli#jbrowse-make-pif). The browser fetches only the
   region on screen, which is what makes a whole-genome alignment usable
-- **pairwise vs all-vs-all** a pairwise file compares two genomes. An all-vs-all
-  file holds many, which lets a linear synteny view stack more than two rows.
-  Its sequence names carry a [PanSN](https://github.com/pangenome/PanSN-spec)
-  prefix (`sample#haplotype#contig`, e.g. `K12#1#chr`) so the adapter can tell
-  which genome each row belongs to; `make-pif` passes names through unchanged,
-  so the naming comes first
-  ([all-vs-all tutorial](/docs/tutorials/allvsall_synteny))
+- **pairwise vs multi-genome** a pairwise file compares two genomes. A
+  multi-genome file holds many, aligned all-vs-all or each against one
+  reference, which lets a linear synteny view stack more than two rows. Its
+  sequence names carry a [PanSN](https://github.com/pangenome/PanSN-spec) prefix
+  (`sample#haplotype#contig`, e.g. `K12#1#chr`) so the adapter can tell which
+  genome each row belongs to; `make-pif` passes names through unchanged, so the
+  naming comes first ([all-vs-all tutorial](/docs/tutorials/allvsall_synteny))
 - **chain** UCSC's format, from lastz and liftOver. Prefer `*.over.chain.gz` or
   `*.rbest.chain.gz` over a raw `*.all.chain.gz`, which also holds every match
   driven by repeats and gene copies and fills the view with clutter
@@ -109,10 +109,10 @@ Each adapter's config page lists its slots. Across all of them:
 
 - **`assemblyNames` on a pairwise adapter** is exactly `[query, target]`. Most
   also take `queryAssembly`/`targetAssembly`, which cannot be read in the wrong
-  order; the MCScan anchors adapters take only `assemblyNames`. On an all-vs-all
-  adapter it is the full list of genomes in the file, in any order, and on
-  `MCScanBlocksAdapter` it is an optional narrowing of `blockAssemblies` rather
-  than an ordered pair
+  order; the MCScan anchors adapters take only `assemblyNames`. On a
+  multi-genome adapter it is the full list of genomes in the file, in any order,
+  and on `MCScanBlocksAdapter` it is an optional narrowing of `blockAssemblies`
+  rather than an ordered pair
 - **Every adapter except the two indexed PAF adapters reads the whole file into
   memory.** Convert a large alignment to PIF and use `PairwiseIndexedPAFAdapter`
   or `MultiGenomeIndexedPAFAdapter`; `MultiPairwiseSyntenyAdapter` reads no file
@@ -191,9 +191,9 @@ Both tutorials that build these files check the ids before loading anything:
 
 ### PanSN depth: sample or haplotype
 
-The two all-vs-all adapters match a JBrowse assembly to PAF records by the PanSN
-prefix on each sequence name, assuming the assembly name is the sample name.
-Where the two differ, `assemblyNameToPanSN` maps one to the other, and the
+The two multi-genome adapters match a JBrowse assembly to PAF records by the
+PanSN prefix on each sequence name, assuming the assembly name is the sample
+name. Where the two differ, `assemblyNameToPanSN` maps one to the other, and the
 prefix may name a whole sample (`grape`) or a single haplotype (`grape#1`):
 
 ```json addtrack

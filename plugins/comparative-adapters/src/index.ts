@@ -1,6 +1,5 @@
 import Plugin from '@jbrowse/core/Plugin'
 
-import AllVsAllAddTrackComponentF from './AllVsAllAddTrackComponent/index.tsx'
 import BlastTabularAdapterF from './BlastTabularAdapter/index.ts'
 import ChainAdapterF from './ChainAdapter/index.ts'
 import ComparativeAddTrackComponentF from './ComparativeAddTrackComponent/index.tsx'
@@ -11,6 +10,7 @@ import MCScanBlocksAdapterF from './MCScanBlocksAdapter/index.ts'
 import MCScanBlocksAddTrackComponentF from './MCScanBlocksAddTrackComponent/index.tsx'
 import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter/index.ts'
 import MashMapAdapterF from './MashMapAdapter/index.ts'
+import MultiGenomeAddTrackComponentF from './MultiGenomeAddTrackComponent/index.tsx'
 import MultiGenomeIndexedPAFAdapterF from './MultiGenomeIndexedPAFAdapter/index.ts'
 import MultiGenomePAFAdapterF from './MultiGenomePAFAdapter/index.ts'
 import MultiPairwiseSyntenyAdapterF from './MultiPairwiseSyntenyAdapter/index.ts'
@@ -38,6 +38,6 @@ export default class ComparativeAdaptersPlugin extends Plugin {
     ComparativeAddTrackComponentF(pluginManager)
     MCScanAddTrackComponentF(pluginManager)
     MCScanBlocksAddTrackComponentF(pluginManager)
-    AllVsAllAddTrackComponentF(pluginManager)
+    MultiGenomeAddTrackComponentF(pluginManager)
   }
 }
