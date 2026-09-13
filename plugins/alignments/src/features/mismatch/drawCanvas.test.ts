@@ -111,11 +111,11 @@ function drawOne(state: RenderState, qual: number) {
   return fills[0]
 }
 
-// A mismatch cell must cover its own base in both orientations. `bpToScreenX`
+// A mismatch cell must cover its own base in both orientations. `makeBpMapper`
 // returns the cell's *right* edge on a reversed block (bp runs leftward), so a
 // painter that treats it as the left edge lands a full base off once a base is
 // wider than a pixel — invisible zoomed out (width floors to 1px), glaring
-// zoomed in. makePileupCellMapper owns that pivot for every 1bp-cell painter.
+// zoomed in. `makeCellLeftMapper` owns that pivot for every 1bp-cell painter.
 describe('mismatch cell geometry', () => {
   // BLOCK is bp 100..110 across 100px => 10 px/bp, so bp 100 owns [0,10]
   // forward. Reversed, bp 100 is the rightmost base and owns [90,100].

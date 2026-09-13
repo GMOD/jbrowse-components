@@ -4,7 +4,14 @@
 // mark; plugins/alignments/src/CLAUDE.md says what the codes were measured at.
 import { insertionSizeAlpha, spanRectPx } from '@jbrowse/alignments-core'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
-import { bpAtPx, bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
+import {
+  bpAtPx,
+  bpAtPxExact,
+  bpProjection,
+  makeCellLeftMapper,
+  projectBp,
+  pxPerBpOf,
+} from '@jbrowse/render-core/canvas2dUtils'
 import { inkOnRect } from '@jbrowse/render-core/marks/hit'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
@@ -16,10 +23,9 @@ import {
 } from '../LinearAlignmentsDisplay/constants.ts'
 import { writePileupUniforms } from '../LinearAlignmentsDisplay/renderers/pileupUniforms.ts'
 import {
-  bpToScreenX,
   frequencyFade,
   intronAlpha,
-  makePileupCellMapper,
+  pileupCellWidth,
   pileupRowOffCanvas,
   pileupRowY,
   sizeAlpha,
@@ -31,6 +37,7 @@ import {
 } from '../shaders/slang/overlap.js.generated.ts'
 
 import type { RenderState } from '../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import type { BpProjection } from '@jbrowse/render-core/canvas2dUtils'
 import type {
   InkRect,
   MarkContext2D,
@@ -84,7 +91,7 @@ export interface PileupChannels {
  *
  * - `span` widens about the mark's midpoint (`fillSpanRect`, the twin of the
  *   shader's `expandMinWidthX`) and contains the FRACTIONAL `genomicPos`.
- * - `cell` floors one-sidedly into the base's own cell (`makePileupCellMapper`,
+ * - `cell` floors one-sidedly into the base's own cell (`makeCellLeftMapper`,
  *   matching mismatch.slang's snapped left edge) and contains the INTEGER
  *   `basePos`.
  * - `point` has NO genomic extent — it sits on the edge BETWEEN two reference
@@ -312,15 +319,13 @@ function pointWidthPx(
     : CLIP_BAR_WIDTH_PX
 }
 
-interface PileupFrame {
-  block: RenderBlock
+interface PileupFrame extends BpProjection {
   state: RenderState
-  bpLength: number
-  fullBlockWidth: number
   pxPerBp: number
+  bpPerPx: number
   fade: FadeRule
   point: PointRule | undefined
-  cell: ReturnType<typeof makePileupCellMapper> | undefined
+  cell: { w: number; cellX: (bp: number) => number } | undefined
   decorate: PileupShapeSpec['decorate']
   bandOffset: number
   bandHeight: number
@@ -359,7 +364,7 @@ function walk(
 ) {
   const { positions, stride, rows, kinds, kind, freqs, quals, lengths } = c
   const { keys } = c
-  const { state, block, bpLength, fullBlockWidth, pxPerBp } = f
+  const { state, pxPerBp } = f
   const { fade, point, cell, decorate, bandOffset, bandHeight } = f
   const { constantAlpha } = f
   const { rule, opaqueCss, fadedCss } = f.tables
@@ -444,17 +449,12 @@ function walk(
       left = cell.cellX(startBp)
       width = cell.w
     } else {
-      x = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
+      x = projectBp(f, startBp)
       if (point !== undefined) {
         left = x - widthPx / 2
         width = widthPx
       } else {
-        const x2 = bpToScreenX(
-          positions[offset + 1]!,
-          block,
-          bpLength,
-          fullBlockWidth,
-        )
+        const x2 = projectBp(f, positions[offset + 1]!)
         const rect = spanRectPx(x < x2 ? x : x2, x < x2 ? x2 : x)
         left = rect[0]
         width = rect[1]
@@ -535,20 +535,22 @@ export function pileupShape(
     state: RenderState,
     tables = UNPAINTED,
   ): PileupFrame => {
-    const bpLength = block.end - block.start
-    const fullBlockWidth = block.screenEndPx - block.screenStartPx
     const { featureHeight } = state
+    const bpPerPx =
+      (block.end - block.start) / (block.screenEndPx - block.screenStartPx)
     return {
-      block,
+      ...bpProjection(block),
       state,
-      bpLength,
-      fullBlockWidth,
-      pxPerBp: fullBlockWidth / bpLength,
+      pxPerBp: pxPerBpOf(block),
+      bpPerPx,
       fade,
       point,
       cell:
         pivot === 'cell'
-          ? makePileupCellMapper(block, bpLength, fullBlockWidth, contiguous)
+          ? {
+              w: pileupCellWidth(bpPerPx, contiguous),
+              cellX: makeCellLeftMapper(block),
+            }
           : undefined,
       decorate,
       bandOffset: centerline ? featureHeight / 2 - 0.5 : 0,
@@ -619,7 +621,7 @@ export function pileupShape(
         return undefined
       }
       const f = frameOf(block, state)
-      const bpPerPx = f.bpLength / f.fullBlockWidth
+      const { bpPerPx } = f
       const genomicPos = bpAtPxExact(xPx, block)
       const basePos = bpAtPx(xPx, block)
       const filterByFrequency = state.filterMismatchesByFrequency

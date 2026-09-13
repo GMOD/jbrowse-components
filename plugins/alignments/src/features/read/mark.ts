@@ -1,11 +1,15 @@
-import { spanLeft, strokeRectInside } from '@jbrowse/render-core/canvas2dUtils'
+import {
+  makeBpMapper,
+  pxPerBpOf,
+  spanLeft,
+  strokeRectInside,
+} from '@jbrowse/render-core/canvas2dUtils'
 import { defineMark } from '@jbrowse/render-core/marks'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { readColorFromCategoryIndex } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { writePileupUniforms } from '../../LinearAlignmentsDisplay/renderers/pileupUniforms.ts'
 import {
-  bpToScreenX,
   pileupRowOffCanvas,
   pileupRowY,
   shouldOutlineReads,
@@ -228,11 +232,10 @@ function drawReads(
   },
   state: RenderState,
 ) {
-  const bpLength = block.end - block.start
-  const fullBlockWidth = block.screenEndPx - block.screenStartPx
+  const toX = makeBpMapper(block)
   const fH = state.featureHeight
   const chevronFrame: ChevronFrame = {
-    pxPerBp: fullBlockWidth / bpLength,
+    pxPerBp: pxPerBpOf(block),
     chainMode: state.chainMode,
     colorScheme: state.colorScheme,
     featureHeight: fH,
@@ -269,18 +272,8 @@ function drawReads(
     if (pileupRowOffCanvas(y, state)) {
       continue
     }
-    const xStart = bpToScreenX(
-      region.segmentPositions[s * 2]!,
-      block,
-      bpLength,
-      fullBlockWidth,
-    )
-    const xEnd = bpToScreenX(
-      region.segmentPositions[s * 2 + 1]!,
-      block,
-      bpLength,
-      fullBlockWidth,
-    )
+    const xStart = toX(region.segmentPositions[s * 2]!)
+    const xEnd = toX(region.segmentPositions[s * 2 + 1]!)
     // The 1 px floor grows away from the read's start, like every pileup cell
     // (`pileupCellX`) and read.slang's body quad, so a reversed block mirrors a
     // forward one. Anchoring the leftmost edge instead slid a sub-pixel read
@@ -374,20 +367,9 @@ const readShape: MarkShape<ReadMarkRegion, RenderState> = {
     if (pileupRowOffCanvas(y, state)) {
       return undefined
     }
-    const bpLength = block.end - block.start
-    const fullBlockWidth = block.screenEndPx - block.screenStartPx
-    const xStart = bpToScreenX(
-      region.segmentPositions[s * 2]!,
-      block,
-      bpLength,
-      fullBlockWidth,
-    )
-    const xEnd = bpToScreenX(
-      region.segmentPositions[s * 2 + 1]!,
-      block,
-      bpLength,
-      fullBlockWidth,
-    )
+    const toX = makeBpMapper(block)
+    const xStart = toX(region.segmentPositions[s * 2]!)
+    const xEnd = toX(region.segmentPositions[s * 2 + 1]!)
     const w = Math.max(1, Math.abs(xEnd - xStart))
     const xL = spanLeft(xStart, xEnd, w)
     const capsEdge = chevronCapsEdge(
@@ -398,7 +380,7 @@ const readShape: MarkShape<ReadMarkRegion, RenderState> = {
       capsEdge !== 0 &&
       showChevron(
         {
-          pxPerBp: fullBlockWidth / bpLength,
+          pxPerBp: pxPerBpOf(block),
           chainMode: state.chainMode,
           colorScheme: state.colorScheme,
           featureHeight: state.featureHeight,

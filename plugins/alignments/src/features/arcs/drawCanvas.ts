@@ -1,5 +1,6 @@
+import { makeBpMapper, pxPerBpOf } from '@jbrowse/render-core/canvas2dUtils'
+
 import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
-import { bpToScreenX } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { buildArcColorPalette } from '../../shaders/palettes.ts'
 // The palette-index rule, generated from alignmentsUniforms.slang (adr-051) —
 // imported from the generated module directly, with no re-export hop.
@@ -18,11 +19,11 @@ import { arcAvailH, arcYScale } from './arcYScale.ts'
 import { arcMark } from './mark.ts'
 import { ARC_SHAPE_FLAT_SPLIT, isFlatArcShape } from './shapes.ts'
 
-import type { DrawBlock } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import type { ColorPalette } from '../../shaders/colors.ts'
 import type { ArcBandFrame, ArcDome } from './mark.ts'
 import type { ArcsUploadData } from './types.ts'
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
+import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
 // The band frame `arcMark` resolves into, plus what only the paint spends. A
 // third declaration of those seven fields used to live here, beside
@@ -59,8 +60,6 @@ export interface DrawArcsOpts extends ArcBandFrame {
 // height than they are plotted into.
 export function arcDrawOpts({
   block,
-  bpLength,
-  fullBlockWidth,
   arcsTop,
   arcsH,
   pairedArcsDown,
@@ -69,9 +68,7 @@ export function arcDrawOpts({
   lineWidth,
   colors,
 }: {
-  block: DrawBlock
-  bpLength: number
-  fullBlockWidth: number
+  block: BpRegionBounds
   arcsTop: number
   arcsH: number
   pairedArcsDown: boolean
@@ -83,10 +80,10 @@ export function arcDrawOpts({
   const { domainBp, log } = arcYScale(
     arcsYDomainBp,
     arcAvailH(arcsH),
-    fullBlockWidth / bpLength,
+    pxPerBpOf(block),
   )
   return {
-    bpToScreenX: bp => bpToScreenX(bp, block, bpLength, fullBlockWidth),
+    bpToScreenX: makeBpMapper(block),
     arcsYDomainBp: domainBp,
     arcsYLog: log,
     arcsTop,

@@ -28,7 +28,7 @@ const TEST_BP = 1005
 // Forward: bp 1005 is 5bp from the low edge => [100,120].
 const FORWARD_LEFT = 100
 // Reversed: bp runs leftward, so bp 1005 spans [80,100] — its left edge is
-// bpToScreenX(1006), NOT bpToScreenX(1005) (which is 100, the right edge).
+// the mapper at 1006, NOT at 1005 (which is 100, the right edge).
 const REVERSED_LEFT = 80
 
 function recordingCtx() {

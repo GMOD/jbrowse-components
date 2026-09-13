@@ -1,11 +1,11 @@
 /* eslint-disable unicorn/prefer-path2d -- every path here is one instance's own coordinates, built once and stroked once */
+import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { defineMark } from '@jbrowse/render-core/marks'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { writePileupUniforms } from '../../LinearAlignmentsDisplay/renderers/pileupUniforms.ts'
 import {
-  bpToScreenX,
   pileupRowOffCanvas,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
@@ -59,8 +59,7 @@ const connectingLineShape: MarkShape<ConnectingLinesUploadData, RenderState> = {
   },
   writeUniforms: writePileupUniforms,
   paintBlock(ctx, region, block, _frame, state) {
-    const bpLength = block.end - block.start
-    const fullBlockWidth = block.screenEndPx - block.screenStartPx
+    const toX = makeBpMapper(block)
     const numLines = region.connectingLinePositions.length / 2
     const fH = state.featureHeight
     ctx.strokeStyle = rgba255(
@@ -75,8 +74,8 @@ const connectingLineShape: MarkShape<ConnectingLinesUploadData, RenderState> = {
       }
       const startBp = region.connectingLinePositions[i * 2]!
       const endBp = region.connectingLinePositions[i * 2 + 1]!
-      const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
+      const x1 = toX(startBp)
+      const x2 = toX(endBp)
       // Snap to the same pixel row the shader picks (`floor(center - 0.5)`,
       // then a 1px-tall quad); a centered 1px stroke sits at that row's
       // half-pixel.

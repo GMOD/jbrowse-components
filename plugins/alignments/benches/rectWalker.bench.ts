@@ -26,7 +26,10 @@
 //
 // WHAT IT SAYS. Three processes at 1M, AC, load 0.7-2.1, controls 0.99-1.01x:
 // pileupShared paints deletion at 0.82-0.85x of hand and mismatch at
-// 0.98-1.02x. `walk` is a loop because a placement call per instance does not
+// 0.98-1.02x, and read 0.84-0.85x and 1.00-1.01x over two processes at load
+// 3.1-5.1 after the walk moved from alignments' own `bpToScreenX` to
+// `projectBp` over render-core's `bpProjection`, which the hand arms keep
+// verbatim. `walk` is a loop because a placement call per instance does not
 // fit TurboFan's inlining budget: one process each at 1M, AC, load 2.0-2.7,
 // controls 0.93-1.01x, `place(c, frame, i, out)` read 1.20x on deletion and
 // 1.32x on mismatch, and `placeRow`, `placeFade` and `placeX` 1.22x and 1.12x.
@@ -42,6 +45,7 @@ import { execSync } from 'node:child_process'
 import { performance } from 'node:perf_hooks'
 
 import { fillSpanRect, insertionSizeAlpha } from '@jbrowse/alignments-core'
+import { makeCellLeftMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { abgrToCssRgba } from '@jbrowse/render-core/marks/colorFill'
 import { recordingContext } from '@jbrowse/render-core/marks/drawAgainstHit'
 
@@ -55,10 +59,9 @@ import {
   LONG_INSERTION_MIN_LENGTH,
 } from '../src/LinearAlignmentsDisplay/constants.ts'
 import {
-  bpToScreenX,
   frequencyFade,
   intronAlpha,
-  makePileupCellMapper,
+  pileupCellWidth,
   pileupRowOffCanvas,
   pileupRowY,
   sizeAlpha,
@@ -727,6 +730,40 @@ function pileupWarmFixtures(n: number) {
   ]
 }
 
+// The projection and cell mapper the hand painters were copied with, verbatim.
+// Production projects through render-core's `bpProjection`, which reaches the
+// same px by a different rounding on a reversed block.
+function bpToScreenX(
+  absBp: number,
+  block: RenderBlock,
+  bpLength: number,
+  fullBlockWidth: number,
+) {
+  const bpEdge = block.reversed ? block.end : block.start
+  const offset = block.reversed ? bpEdge - absBp : absBp - bpEdge
+  return block.screenStartPx + (offset / bpLength) * fullBlockWidth
+}
+
+function makePileupCellMapper(
+  block: RenderBlock,
+  bpLength: number,
+  fullBlockWidth: number,
+  contiguous: boolean,
+) {
+  return {
+    w: pileupCellWidth(bpLength / fullBlockWidth, contiguous),
+    cellX: makeCellLeftMapper({
+      start: block.start,
+      end: block.start + bpLength,
+      screenStartPx: block.screenStartPx,
+      screenEndPx: block.screenStartPx + fullBlockWidth,
+      reversed: block.reversed,
+    }),
+  }
+}
+
+const PX_EPS = 1e-9
+
 type Painter = (ctx: MarkContext2D, block: RenderBlock) => void
 
 interface Shape {
@@ -883,9 +920,9 @@ function firstDifference(a: Recording, b: Recording) {
     const p = a.calls[i]!
     const q = b.calls[i]!
     if (
-      p.x !== q.x ||
+      Math.abs(p.x - q.x) > PX_EPS ||
       p.y !== q.y ||
-      p.w !== q.w ||
+      Math.abs(p.w - q.w) > PX_EPS ||
       p.h !== q.h ||
       p.fillStyle !== q.fillStyle
     ) {

@@ -1,5 +1,3 @@
-import { makeCellLeftMapper } from '@jbrowse/render-core/canvas2dUtils'
-
 import {
   frequencyFadeGate,
   sizeAlpha,
@@ -367,43 +365,10 @@ export function frequencyFade(
 // Canvas2D-only compensation; keeping it here means every base-wall layer shares
 // one rule instead of hardcoding (or forgetting) the `+ 0.5` locally.
 const PILEUP_CELL_SEAM_FUDGE_PX = 0.5
-// Private on purpose: a width alone invites pairing it with a bare
-// `bpToScreenX`, which is the reversed-block bug makePileupCellMapper exists to
-// prevent. Go through the mapper — it hands back the matching left edge.
-function pileupCellWidth(bpPerPx: number, contiguous: boolean) {
+// Paired with render-core's `makeCellLeftMapper`, which owns the reversed-block
+// pivot the width goes with.
+export function pileupCellWidth(bpPerPx: number, contiguous: boolean) {
   return Math.max(1, 1 / bpPerPx) + (contiguous ? PILEUP_CELL_SEAM_FUDGE_PX : 0)
-}
-
-/**
- * Per-block mapper for the 1bp-cell painters (mismatch, modification, per-base
- * quality/letter, soft-clip bases): `cellX(bp)` is the LEFT edge of base `bp`'s
- * cell and `w` its width.
- *
- * Returning both together is the point — a bare width invites pairing it with a
- * bare `bpToScreenX`, which is the reversed-block bug that hit all five layers
- * (see `makeCellLeftMapper`, which owns the pivot for every plugin). Width stays
- * local because the floor-and-seam-fudge rule is ours alone.
- *
- * `bpLength`/`fullBlockWidth` are the same block's clip-derived span
- * (`clipBlockForCanvas` defines them as `end - start` / `screenEndPx -
- * screenStartPx`), so reconstructing `screenEndPx` here is exact.
- */
-export function makePileupCellMapper(
-  block: DrawBlock,
-  bpLength: number,
-  fullBlockWidth: number,
-  contiguous: boolean,
-) {
-  return {
-    w: pileupCellWidth(bpLength / fullBlockWidth, contiguous),
-    cellX: makeCellLeftMapper({
-      start: block.start,
-      end: block.start + bpLength,
-      screenStartPx: block.screenStartPx,
-      screenEndPx: block.screenStartPx + fullBlockWidth,
-      reversed: block.reversed,
-    }),
-  }
 }
 
 // Introns (skip/N gaps) draw as 1px centerlines; once reads get compact the
@@ -440,27 +405,4 @@ export function pileupRowY(yRow: number, state: RenderState) {
 // (chevrons extend horizontally, not vertically).
 export function pileupRowOffCanvas(y: number, state: RenderState) {
   return y + state.featureHeight < -1 || y > state.canvasHeight + 1
-}
-
-// Block geometry shared by every Canvas2D feature draw function. Defining
-// the shape here breaks an otherwise-cyclic dependency between the per-
-// feature drawCanvas modules and Canvas2DAlignmentsRenderer.
-export interface DrawBlock {
-  start: number
-  end: number
-  screenStartPx: number
-  reversed?: boolean
-}
-
-// Linear interpolation from an absolute bp position into the block's screen-
-// pixel x. `reversed` blocks flip the mapping (low-bp edge on the right).
-export function bpToScreenX(
-  absBp: number,
-  block: DrawBlock,
-  bpLength: number,
-  fullBlockWidth: number,
-) {
-  const bpEdge = block.reversed ? block.end : block.start
-  const offset = block.reversed ? bpEdge - absBp : absBp - bpEdge
-  return block.screenStartPx + (offset / bpLength) * fullBlockWidth
 }

@@ -127,8 +127,6 @@ function arcLayerShape(
         data.arcs,
         arcDrawOpts({
           block,
-          bpLength: block.end - block.start,
-          fullBlockWidth: block.screenEndPx - block.screenStartPx,
           arcsTop: p.band.top,
           arcsH: p.band.height,
           pairedArcsDown: p.band.down,

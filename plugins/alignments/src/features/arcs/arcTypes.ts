@@ -133,7 +133,7 @@ export interface ComputedArc {
  * These are separated out because **no per-region pass can draw them**, and the
  * failure is not that they go missing. Both renderers map bp to x through the
  * block's own range — `bpToClipX` off `u.bpHi/bpLo/bpLen` on the GPU,
- * `bpToScreenX(bp, block, …)` on Canvas2D — and the GPU additionally draws into
+ * `makeBpMapper(block)` on Canvas2D — and the GPU additionally draws into
  * a viewport that IS the block. So an arc with one foot outside gets its far
  * foot extrapolated at the block's own scale, which lands nowhere near where the
  * other block actually sits, and the scissor cuts what is left. Handed to both

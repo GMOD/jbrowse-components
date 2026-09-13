@@ -1,10 +1,9 @@
 // Sanity tests that absolute-coordinate worker output maps correctly to
 // pixel/clip space for both forward and reversed regions. Models the
-// Canvas2D `bpToScreenX` and the GPU `hpClipX + flipX` pipeline in JS so
+// Canvas2D `makeBpMapper` and the GPU `hpClipX + flipX` pipeline in JS so
 // we can assert on numeric output.
 
 describe('absolute coords → pixel mapping, forward vs reversed', () => {
-  // Canvas2D: identical shape to Canvas2DAlignmentsRenderer.bpToScreenX
   function canvas2dBpToScreenX(
     absBp: number,
     start: number,

@@ -1,13 +1,11 @@
 /* eslint-disable unicorn/prefer-path2d -- every path here is one instance's own coordinates, built once and stroked once */
+import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { defineMark } from '@jbrowse/render-core/marks'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { writePileupUniforms } from '../../LinearAlignmentsDisplay/renderers/pileupUniforms.ts'
-import {
-  bpToScreenX,
-  pileupRowY,
-} from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
+import { pileupRowY } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { buildLinkedReadColorPalette } from '../../shaders/palettes.ts'
 // The palette-index rule, generated from alignmentsUniforms.slang (adr-051) —
 // the same import the bezier overlay makes. This pass once spelled it
@@ -85,8 +83,7 @@ const linkedReadLineShape: MarkShape<LinkedReadLinesUploadData, RenderState> = {
   },
   writeUniforms: writePileupUniforms,
   paintBlock(ctx, region, block, _frame, state) {
-    const bpLength = block.end - block.start
-    const fullBlockWidth = block.screenEndPx - block.screenStartPx
+    const toX = makeBpMapper(block)
     const fH = state.featureHeight
     // From linkedReadLine.slang, like the alpha. It was a bare 1.5 here and
     // nothing at all on the GPU, which drew a native line list at a fixed
@@ -101,8 +98,8 @@ const linkedReadLineShape: MarkShape<LinkedReadLinesUploadData, RenderState> = {
       if (!offCanvas) {
         const startBp = region.linkedReadLinePositions[i * 2]!
         const endBp = region.linkedReadLinePositions[i * 2 + 1]!
-        const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-        const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
+        const x1 = toX(startBp)
+        const x2 = toX(endBp)
         ctx.strokeStyle =
           css[linkedReadColorSlot(region.linkedReadLineColorTypes[i]!)]!
         ctx.beginPath()

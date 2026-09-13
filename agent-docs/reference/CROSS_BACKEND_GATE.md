@@ -539,7 +539,7 @@ where they live:
 
 - **`pileupCellX`** (`alignmentsUniforms.slang`) snaps a cell's left edge to a
   pixel column, then extends to a 1 CSS px minimum from that anchor.
-- **`makePileupCellMapper`** (`rendererTypes.ts`) leaves the left edge fractional
+- **`pileupCellWidth`** (`rendererTypes.ts`) leaves the left edge fractional
   and draws `max(1, 1/bpPerPx) + PILEUP_CELL_SEAM_FUDGE_PX`, the half pixel that
   closes Canvas2D's AA hairlines between abutting cells.
 
