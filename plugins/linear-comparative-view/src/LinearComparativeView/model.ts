@@ -200,24 +200,16 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * the view has been laid out, so `width` is a number
-       */
-      get measured() {
-        /* oxlint-disable typescript/no-unnecessary-condition -- width is nominally number but undefined before first layout */
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        return self.width !== undefined
-        /* oxlint-enable typescript/no-unnecessary-condition */
-      },
-      /**
-       * #getter
-       * measured, and every row initialized
        */
       get initialized() {
+        /* oxlint-disable typescript/no-unnecessary-condition -- width is nominally number but undefined before first layout */
         return (
-          this.measured &&
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          self.width !== undefined &&
           self.views.length > 0 &&
           self.views.every(view => view.initialized)
         )
+        /* oxlint-enable typescript/no-unnecessary-condition */
       },
 
       /**

@@ -689,19 +689,10 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       },
       /**
        * #getter
-       * The level's `rowPair`, or undefined until both rows are initialized
-       * with regions. Gated on those two rows alone, so a row loading or failed
-       * elsewhere in the stack holds back only the bands that touch it. The one
-       * gate render and fetch share.
+       * the level's `connectedRows`
        */
       get connectedViews() {
-        const pair = this.parentHelper.rowPair
-        return pair?.v0.initialized &&
-          pair.v1.initialized &&
-          pair.v0.displayedRegions.length > 0 &&
-          pair.v1.displayedRegions.length > 0
-          ? pair
-          : undefined
+        return this.parentHelper.connectedRows
       },
       /**
        * #getter

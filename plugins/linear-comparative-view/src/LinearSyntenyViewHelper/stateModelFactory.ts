@@ -181,13 +181,30 @@ export function linearSyntenyViewHelperModelFactory(
        * #getter
        * The two rows this level draws between — the upper one is the query
        * axis — or undefined for a level with no row below it. Ungated: whether
-       * those rows are ready to draw is `connectedViews`' question.
+       * those rows are ready to draw is `connectedRows`' question.
        */
       get rowPair(): RowPair | undefined {
         const { views } = this.parentView
         const v0 = views[this.level]
         const v1 = views[this.level + 1]
         return v0 && v1 ? { v0, v1 } : undefined
+      },
+      /**
+       * #getter
+       * `rowPair` once both rows are initialized with regions, which is also
+       * when the view has a width to draw at. Gated on those two rows alone, so
+       * a row loading or failed elsewhere in the stack holds back only the
+       * bands beside it. The one gate the band's canvas and its displays' fetch
+       * share.
+       */
+      get connectedRows(): RowPair | undefined {
+        const pair = this.rowPair
+        return pair?.v0.initialized &&
+          pair.v1.initialized &&
+          pair.v0.displayedRegions.length > 0 &&
+          pair.v1.displayedRegions.length > 0
+          ? pair
+          : undefined
       },
       /**
        * #getter
@@ -437,10 +454,11 @@ export function linearSyntenyViewHelperModelFactory(
        * #getter
        * Render-lifecycle precondition, overriding `RenderLifecycleMixin`'s
        * default-true hook: the render callback sizes the canvas off
-       * `parentView.width`, which is undefined before the view is measured.
+       * `parentView.width`, and a paint before both rows are up would mark the
+       * band drawn over ribbons that have not started to fetch.
        */
       get canRender() {
-        return self.parentView.measured
+        return !!self.connectedRows
       },
       /**
        * #getter
@@ -451,17 +469,15 @@ export function linearSyntenyViewHelperModelFactory(
        * a track still fetching and the wrong one for a band with nothing to
        * draw on it.
        *
-       * `measured` is the other half: a stack that has not been laid out has no
+       * `connectedRows` is the other half: a band whose rows are not up has no
        * tracks either and is *not* finished. This family carries a second guard
        * one layer up — `ComparativeSurface.initPending`, for the level that
        * exists from the moment its rows do while init adds its tracks several
-       * awaits later — but that one is about the init blob, not about layout,
+       * awaits later — but that one is about the init blob, not about the rows,
        * so it does not stand in for this.
        */
       get paintInert() {
-        return (
-          self.parentView.measured && self.linearSyntenyDisplays.length === 0
-        )
+        return !!self.connectedRows && self.linearSyntenyDisplays.length === 0
       },
     }))
     .views(self => {

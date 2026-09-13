@@ -36,8 +36,6 @@ import type {
 // So a member belongs HERE rather than in an import.
 export interface ParentViewDuck extends IStateTreeNode, FollowHost {
   width: number
-  // the level's `canRender` precondition: `width` is undefined before layout
-  measured: boolean
   views: LinearGenomeViewModel[]
   levels: readonly IStateTreeNode[]
   scrollZoom: boolean
@@ -103,6 +101,7 @@ export interface LevelDuck {
   height: number
   level: number
   rowPair: RowPair | undefined
+  connectedRows: RowPair | undefined
   // the shared band, joined for the display: paint from the level, the two
   // not-the-answer-yet flags from the view above it
   surfaceReadiness: ComparativeSurface
