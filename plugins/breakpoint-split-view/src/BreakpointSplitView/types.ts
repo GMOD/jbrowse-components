@@ -51,7 +51,7 @@ export interface OverlayLevel {
   height: number
   /** height of the coverage subtrack sitting above the pileup */
   coverageOffset: number
-  /** the track body's vertical scroll; zeroed for SVG export */
+  /** the track body's vertical scroll */
   scrollTop: number
   /** the view's horizontal scroll, to turn absolute bp px into screen px */
   offsetPx: number

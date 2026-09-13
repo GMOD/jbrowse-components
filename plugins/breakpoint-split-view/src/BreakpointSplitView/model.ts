@@ -442,7 +442,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * geometry per view level, then returns getX/getY closures for converting
        * feature layout records to SVG coordinates.
        *
-       * `yOffsetsOverride` — SVG export: fixed track tops, scrollTops zeroed.
+       * `yOffsetsOverride` — SVG export: fixed track tops. Each track keeps
+       * its scroll, which the exported bodies draw at too.
        * Live rendering stacks each view's `height` and reads its
        * `getTrackYOffset`, which the LGV keeps equal to the pixels (its label
        * bands are measured into the model), so the overlay re-renders from
@@ -479,7 +480,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               viewTop + view.getTrackYOffset(trackId)!,
             height: d.height,
             coverageOffset: d.coverageDisplayHeight ?? 0,
-            scrollTop: yOffsetsOverride ? 0 : (d.scrollTop ?? 0),
+            scrollTop: d.scrollTop ?? 0,
             offsetPx: view.offsetPx,
             linksReads: d.linkedReads !== undefined && d.linkedReads !== 'off',
           })

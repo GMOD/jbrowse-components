@@ -34,7 +34,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   // each panel's OWN launch — carrying its loc and, decisively, its tracks —
   // is still being applied. Reading `views` there exported correctly
   // positioned, correctly labelled, completely empty panels.
-  await Promise.all(model.views.map(view => awaitViewInitialized(view)))
+  await awaitSvgRenders(model.views.map(view => awaitViewInitialized(view)))
   const {
     fontSize = 13,
     // destructured after fontSize so the label band can scale with it
@@ -43,14 +43,14 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     rulerHeight = 30,
     trackLabels = 'offset',
     showGridlines = false,
-    Wrapper = ({ children }) => children,
+    Wrapper,
     themeName,
     fontFamily,
   } = opts
 
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
-  const { width, views } = model
+  const { views } = model
   // EVERY ROW SAYS WHAT IT SPANS (review of jbrowse-img/sv_review_pair: "it
   // might be helpful to have scale indicators and/or trying to keep each row on
   // the same relative scale"). A breakpoint stack is N loci a reader compares
@@ -82,6 +82,9 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     rowTracks.flatMap(r => r.skippedTracks),
   )
   const heights = rowTracks.map(r => r.tracksHeight + offset)
+  // after the waits: a resize during the fetch would otherwise size the canvas
+  // and the overlay clip for the old width while SVGView re-reads the new one
+  const { width } = model
 
   // one gutter for the whole export, wide enough for the widest label in any
   // view, so the stacked views stay aligned with each other
