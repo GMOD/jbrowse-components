@@ -438,13 +438,14 @@ test('sameScale keeps the rows where views[].loc put them', async () => {
 })
 
 // A row is not `initialized` until it has been measured and its assembly has
-// landed, so every appended row puts the stack briefly out of reach of an
-// answer. Read as "no shared ceiling" that is destructive and one-way: it
-// clamps the rows down to their own fits, and restoring the ceiling cannot lift
-// them back, since a row already in range is one zoomTo leaves alone. The mode
-// stays on and the radio keeps saying "same bp per pixel" over a stack that is
-// no longer on one.
-test('appending a row that cannot answer yet leaves the stack alone', async () => {
+// landed, and a row whose assembly fails never is. Read as "no shared ceiling"
+// either is destructive and one-way: it clamps the rows down to their own
+// fits, and restoring the ceiling cannot lift them back, since a row already
+// in range is one zoomTo leaves alone. The mode stays on and the radio keeps
+// saying "same bp per pixel" over a stack that is no longer on one. So a
+// failed row is left out of the answer rather than holding it off for good.
+test('appending a row whose assembly fails leaves the stack on its scale', async () => {
+  jest.spyOn(console, 'error').mockImplementation()
   const view = await launch({ views })
   view.showAllRegionsAcrossRows(true)
   const [small, large] = view.views
@@ -452,8 +453,13 @@ test('appending a row that cannot answer yet leaves the stack alone', async () =
   expect(shared).toBeCloseTo(large!.bpPerPx)
 
   await view.appendRow({ assembly: 'not-loaded-yet' })
+  await when(() => !!view.views[2]!.error)
 
-  expect(view.sharedFit).toEqual({ answered: false })
+  expect(view.views[2]!.initialized).toBe(false)
+  expect(view.sharedFit).toEqual({
+    answered: true,
+    bpPerPx: expect.closeTo(shared) as number,
+  })
   expect(small!.bpPerPx).toBeCloseTo(shared)
   expect(large!.bpPerPx).toBeCloseTo(shared)
 })

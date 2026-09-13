@@ -2,6 +2,7 @@ import type { SharedFit } from '@jbrowse/plugin-linear-genome-view'
 
 interface FitRow {
   initialized: boolean
+  error: unknown
   fitBpPerPx: number
 }
 
@@ -18,14 +19,17 @@ interface FitRow {
  * request to release the stack, and the clamp that follows is one-way: it drags
  * every row down to its own fit, where restoring the ceiling cannot lift them.
  *
- * `every` short-circuits, leaving later rows unread and untracked — which
- * converges anyway, since the row that WAS read is the one whose flip re-runs
- * this.
+ * A row whose assembly failed never initializes, so it is left out rather than
+ * holding the stack unanswered for good: unanswered lets every other row fall
+ * back to its own fit, and the one-way clamp then loses the shared scale until
+ * the failed row is removed. A stack of only failed rows has no answer.
  */
 export function sharedFit(rows: FitRow[], sameScale: boolean): SharedFit {
-  return sameScale
-    ? rows.length > 0 && rows.every(r => r.initialized)
-      ? { answered: true, bpPerPx: Math.max(...rows.map(r => r.fitBpPerPx)) }
-      : { answered: false }
-    : { answered: true, bpPerPx: 0 }
+  if (!sameScale) {
+    return { answered: true, bpPerPx: 0 }
+  }
+  const live = rows.filter(r => !r.error)
+  return live.length > 0 && live.every(r => r.initialized)
+    ? { answered: true, bpPerPx: Math.max(...live.map(r => r.fitBpPerPx)) }
+    : { answered: false }
 }

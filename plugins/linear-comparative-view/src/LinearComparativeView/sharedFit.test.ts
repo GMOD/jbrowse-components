@@ -1,8 +1,9 @@
 import { sharedFit } from './sharedFit.ts'
 
-const row = (fitBpPerPx: number, initialized = true) => ({
+const row = (fitBpPerPx: number, initialized = true, error?: unknown) => ({
   fitBpPerPx,
   initialized,
+  error,
 })
 
 test('the coarsest row fit is the one every row shares', () => {
@@ -40,4 +41,16 @@ test('mode off and not-yet-measured are different answers', () => {
   expect(sharedFit([row(22, false)], false)).not.toEqual(
     sharedFit([row(22, false)], true),
   )
+})
+
+// a failed row never initializes, and holding the stack unanswered for it lets
+// every other row fall back to its own fit, where the one-way clamp strands them
+test('a failed row is left out rather than holding the stack off', () => {
+  expect(sharedFit([row(22), row(0, false, new Error('gone'))], true)).toEqual({
+    answered: true,
+    bpPerPx: 22,
+  })
+  expect(sharedFit([row(0, false, new Error('gone'))], true)).toEqual({
+    answered: false,
+  })
 })

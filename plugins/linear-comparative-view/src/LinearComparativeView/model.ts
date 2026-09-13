@@ -725,8 +725,9 @@ function stateModelFactory(pluginManager: PluginManager) {
        * the old offset.
        */
       squareView() {
-        const average = avg(self.views.map(v => v.bpPerPx))
-        for (const view of self.views) {
+        const live = self.views.filter(v => v.initialized)
+        const average = avg(live.map(v => v.bpPerPx))
+        for (const view of live) {
           view.zoomTo(average)
           // a discrete jump, so the coarse blocks flush rather than waiting out
           // their debounce — `setNewView`/`centerAt` did this for us before
