@@ -8,7 +8,11 @@ import { notifySkippedSvgTracks } from '@jbrowse/core/svg/trackNames'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession, radToDeg } from '@jbrowse/core/util'
 
-import { renderRingsSvg } from '../../rings/ringSvg.tsx'
+import {
+  canRasterizeRings,
+  paintRingsSvg,
+  renderRingBodies,
+} from '../../rings/ringSvg.tsx'
 import { Rulers } from '../components/Ruler.tsx'
 import { labelGutterPx } from '../rulerLabels.ts'
 
@@ -39,27 +43,41 @@ export async function renderToSvg(
   // partition for the three LGV-family exports, and this was the view that
   // depends on neither it nor the LGV plugin and so never got it.
   // a ring display's export is rendered for its strip and warped by
-  // `renderRingsSvg`, so it is left out of the chord exports here
-  const { ringDisplays } = model.ringHost
+  // `paintRingsSvg`, so it is left out of the chord exports here
+  const { ringHost } = model
+  const { ringDisplays } = ringHost
+  const isRing = (t: (typeof model.tracks)[number]) =>
+    ringDisplays.includes(t.displays[0])
   const exportable = model.tracks.filter(
-    t => t.displays[0]?.renderSvg && !ringDisplays.includes(t.displays[0]),
+    t => t.displays[0]?.renderSvg && !isRing(t),
   )
   notifySkippedSvgTracks(
     session,
     model.tracks.filter(t => !t.displays[0]?.renderSvg),
   )
+  const ringsDrawable = canRasterizeRings()
+  if (!ringsDrawable) {
+    notifySkippedSvgTracks(
+      session,
+      model.tracks.filter(t => t.displays[0]?.renderSvg && isRing(t)),
+      'Ring tracks are rasterized, and this environment cannot decode an image.',
+    )
+  }
 
-  // `awaitSvgRenders` over `Promise.all`: a chord track whose data won't load
-  // fails the export (a radial display has no box to draw the failure in), and
-  // two broken tracks are reported as two
-  const displayResults = await awaitSvgRenders(
-    exportable.map(async track => ({
-      id: track.id,
-      result: await track.displays[0]!.renderSvg({ ...opts, theme }),
-    })),
-  )
+  // `awaitSvgRenders` over `Promise.all`: a chord or ring track whose data
+  // won't load fails the export (a radial display has no box to draw the
+  // failure in), and every broken track is named, whichever kind it is
+  const [displayResults, ringBodies] = await awaitSvgRenders([
+    awaitSvgRenders(
+      exportable.map(async track => ({
+        id: track.id,
+        result: await track.displays[0]!.renderSvg({ ...opts, theme }),
+      })),
+    ),
+    ringsDrawable ? renderRingBodies(ringHost, opts, theme) : [],
+  ])
 
-  // Deliberately read after that wait, not before. The figure's size and center
+  // Deliberately read after those waits, not before. The figure's size and center
   // both follow bpPerPx, and its rotation is a live property; a zoom or a
   // rotation landing while a track's features are still in flight moves all
   // three. Everything below the wrapper — the rulers, the chords, the label
@@ -78,7 +96,7 @@ export async function renderToSvg(
   const gutterPx = Math.max(paddingPx, labelGutterPx(model))
   const figureSize = 2 * (radiusPx + gutterPx)
   const center = radiusPx + gutterPx
-  const rings = await renderRingsSvg(model.ringHost, opts, theme, {
+  const rings = await paintRingsSvg(ringHost, ringBodies, opts, theme, {
     size: figureSize,
     center,
     offsetRadians,

@@ -56,3 +56,25 @@ test('a bigwig track on a circular view draws as a ring', async () => {
     { timeout },
   )
 }, 60000)
+
+// jsdom's Image has no `decode`, and node (jbrowse-img) has no Image at all, so
+// a ring cannot be rasterized there. The export used to swallow that per ring
+// and save the figure with an empty annulus and nothing said.
+test('an export that cannot rasterize a ring names it', async () => {
+  const { view: created, session } = await createView({
+    ...config,
+    defaultSession: {
+      name: 'ring',
+      views: [{ id: 'ring_view', ...ringView }],
+    },
+  })
+  const view = created as unknown as CircularViewModel
+  await findDisplayPainted('wiggle-display', { timeout })
+
+  const svg = await view.exportSvg({ save: false })
+  expect(svg).toContain('<svg')
+  expect(svg).not.toContain('<image')
+  expect(session.snackbarMessages.map(m => m.message).join('\n')).toMatch(
+    /Not included in the SVG: .*cannot decode an image/,
+  )
+}, 60000)

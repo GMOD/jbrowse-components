@@ -1,16 +1,18 @@
+import { SvgThemeProviders } from '@jbrowse/core/svg/SvgExport'
+import { serializeSvg } from '@jbrowse/core/svg/serializeSvg'
+import { awaitSvgRenders } from '@jbrowse/core/svg/svgReady'
 import { createSvgRasterCanvas } from '@jbrowse/core/util/createSvgRasterCanvas'
-import { renderToStaticMarkup } from '@jbrowse/core/util/renderToStaticMarkup'
 import { canvasWideBlock } from '@jbrowse/render-core/renderBlock'
 
 import { ringShape } from './ringShape.ts'
 
 import type { ExportSvgOptions } from '../CircularView/model.ts'
-import type { RingHostModel } from './ringHost.ts'
+import type { RingDisplay, RingHostModel } from './ringHost.ts'
 import type { SvgRasterCanvasOpts } from '@jbrowse/core/util/createSvgRasterCanvas'
 import type { ThemeOptions } from '@mui/material'
 import type { ReactNode } from 'react'
 
-interface RingSvgDisplay {
+type RingSvgDisplay = RingDisplay & {
   renderSvg?: (
     opts: ExportSvgOptions & {
       theme?: ThemeOptions
@@ -18,6 +20,19 @@ interface RingSvgDisplay {
       plotOnly?: boolean
     },
   ) => Promise<ReactNode>
+}
+
+export interface RingBody {
+  display: RingDisplay
+  body: ReactNode
+}
+
+/**
+ * Whether this environment can decode an SVG strip into pixels to warp. Node
+ * has no `Image`, and jsdom's has no `decode`.
+ */
+export function canRasterizeRings() {
+  return typeof Image !== 'undefined' && 'decode' in Image.prototype
 }
 
 async function rasterize(
@@ -35,58 +50,76 @@ async function rasterize(
 }
 
 /**
- * The rings of an export, as one raster: every ring display's own SVG export
- * is rendered for its strip, rasterized, and warped into its annulus by the
- * Canvas2D ring painter — the same resampling the screen shows. An SVG has
- * no polar transform, so the alternative was re-tessellating every path of
- * every display; the raster is what the screen drew, and costs no display a
- * line.
- *
- * Nothing where the page cannot decode an image — a jsdom export — so the
- * chords and ruler still export there.
+ * Every ring display's own SVG export, plot only. The first half of a ring
+ * export, and the only half that waits on data, so the view fans it out beside
+ * its chord renders and reads the figure geometry after both.
  */
-export async function renderRingsSvg(
+export function renderRingBodies(
   host: RingHostModel,
+  opts: ExportSvgOptions,
+  theme: ThemeOptions | undefined,
+) {
+  const displays = host.ringDisplays as RingSvgDisplay[]
+  return awaitSvgRenders(
+    displays
+      .filter(display => display.renderSvg)
+      .map(async display => ({
+        display,
+        body: await display.renderSvg!({
+          ...opts,
+          theme,
+          rasterizeLayers: true,
+          plotOnly: true,
+        }),
+      })),
+  )
+}
+
+/**
+ * The rings of an export, as one raster: each body is rendered for its strip,
+ * rasterized, and warped into its annulus by the Canvas2D ring painter — the
+ * same resampling the screen shows. An SVG has no polar transform, so the
+ * alternative was re-tessellating every path of every display; the raster is
+ * what the screen drew, and costs no display a line.
+ *
+ * The annuli and strip sizes are read here, after the bodies' waits, since a
+ * display that grows to its data only reaches its height once they resolve.
+ */
+export async function paintRingsSvg(
+  host: RingHostModel,
+  bodies: RingBody[],
   opts: ExportSvgOptions & SvgRasterCanvasOpts,
   theme: ThemeOptions | undefined,
   figure: { size: number; center: number; offsetRadians: number },
 ) {
   const { rings, width } = host
-  if (rings.length === 0 || typeof Image === 'undefined') {
+  const drawn = rings.flatMap(ring => {
+    const found = bodies.find(b => b.display === ring.display)
+    return found ? [{ ring, body: found.body }] : []
+  })
+  if (drawn.length === 0) {
     return null
   }
   const { canvas, ctx } = createSvgRasterCanvas(figure.size, figure.size, opts)
   const shape = ringShape('ringExport')
   const block = canvasWideBlock(0, figure.size)
   const frame = { canvasWidth: figure.size, canvasHeight: figure.size }
-  for (const ring of rings) {
-    const display = ring.display as RingSvgDisplay
-    if (!display.renderSvg) {
-      continue
-    }
+  for (const { ring, body } of drawn) {
     const { height } = ring.display
-    const body = await display.renderSvg({
-      ...opts,
-      theme,
-      rasterizeLayers: true,
-      plotOnly: true,
-    })
-    const markup = renderToStaticMarkup(
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        xmlnsXlink="http://www.w3.org/1999/xlink"
-        width={width}
-        height={height}
-      >
-        {body}
-      </svg>,
+    const markup = serializeSvg(
+      <SvgThemeProviders theme={theme}>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          xmlnsXlink="http://www.w3.org/1999/xlink"
+          width={width}
+          height={height}
+          fontFamily={opts.fontFamily || undefined}
+        >
+          {body}
+        </svg>
+      </SvgThemeProviders>,
     )
-    let strip: HTMLCanvasElement
-    try {
-      strip = await rasterize(markup, width, height, opts)
-    } catch {
-      continue
-    }
+    const strip = await rasterize(markup, width, height, opts)
     shape.paintBlock(
       ctx,
       {

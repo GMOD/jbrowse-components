@@ -47,4 +47,12 @@ describe('notifySkippedSvgTracks', () => {
     expect(notifications[0]!.message).toContain('one, two')
     expect(notifications[0]!.message).toContain('Their display types do not')
   })
+
+  it('says why when the reason is not a missing renderSvg', () => {
+    const { session, notifications } = mockSession()
+    notifySkippedSvgTracks(session, [track('ring')], 'No decoder here.')
+    expect(notifications[0]!.message).toBe(
+      'Not included in the SVG: ring. No decoder here.',
+    )
+  })
 })

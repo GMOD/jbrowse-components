@@ -20,10 +20,10 @@ export function svgTrackName(
 }
 
 /**
- * Tell the user which visible tracks the export left out because their display
- * type implements no `renderSvg`. Called once per export, after the renders —
- * the stacked views flatten every row's `skippedTracks` into one call rather
- * than notifying per row.
+ * Tell the user which visible tracks the export left out, by default because
+ * their display type implements no `renderSvg`. Called once per reason per
+ * export, after the renders — the stacked views flatten every row's
+ * `skippedTracks` into one call rather than notifying per row.
  *
  * Skipping is deliberate (see `SvgExportTrack.renderSvg`), so this is
  * informational rather than an error. But it is not silent: a figure that is
@@ -33,15 +33,11 @@ export function svgTrackName(
 export function notifySkippedSvgTracks(
   session: NotificationSink & TrackCatalog,
   skipped: { configuration: AnyConfigurationModel }[],
+  reason = `${skipped.length === 1 ? 'Its display type does' : 'Their display types do'} not support SVG export.`,
 ) {
   if (skipped.length === 0) {
     return
   }
   const names = skipped.map(t => svgTrackName(t, session)).join(', ')
-  session.notify(
-    `Not included in the SVG: ${names}. ${
-      skipped.length === 1 ? 'Its display type does' : 'Their display types do'
-    } not support SVG export.`,
-    'info',
-  )
+  session.notify(`Not included in the SVG: ${names}. ${reason}`, 'info')
 }
