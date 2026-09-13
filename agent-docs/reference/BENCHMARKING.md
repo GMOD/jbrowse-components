@@ -70,6 +70,14 @@ function directly can be inlined; one reached through a parameter often cannot.
 That is a structural advantage unrelated to either implementation. Pass all arms
 in the same way.
 
+**An arm declared in the bench against one imported from a module.** A verbatim
+copy of `makeBpMapper`'s two-literal form, declared beside its painter, compiled
+to the same loop as its imported copy up to register choice and ran it in
+0.86-0.91x the time. Against the declared copy the imported production form read
+**1.08-1.09x**; against an imported copy, 0.98-1.01x. When the candidate is
+production code the bench imports, import the baseline and the control too, as
+`packages/render-core/benches/twoLiteralBpMapper.ts` does.
+
 **Running arms in blocks lets the second inherit the first's warmup.** Flipped
 one case from **1.375x to 0.954x** on its own. This is the interleaving rule
 again, from the other direction.

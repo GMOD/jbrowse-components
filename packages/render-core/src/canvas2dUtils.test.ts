@@ -3,6 +3,7 @@ import {
   MAX_DPR,
   bpAtPx,
   bpAtPxExact,
+  bpProjection,
   devicePxSpan,
   forEachClippedBlock,
   getDpr,
@@ -10,6 +11,7 @@ import {
   makeBpMapper,
   makeCellLeftMapper,
   maxCanvasCssPx,
+  projectBp,
   regionAtPixel,
   spanLeft,
   spanRect,
@@ -200,6 +202,107 @@ describe('spanRect', () => {
         expect(left).toBe(spanLeft(toX(a), toX(b), width))
       }
     }
+  })
+})
+
+describe('makeBpMapper', () => {
+  function twoLiteralMakeBpMapper(bounds: BpRegionBounds) {
+    const { start, end, screenStartPx, screenEndPx, reversed } = bounds
+    const span = end - start
+    const w = screenEndPx - screenStartPx
+    return reversed
+      ? (bp: number) => screenEndPx - ((bp - start) / span) * w
+      : (bp: number) => screenStartPx + ((bp - start) / span) * w
+  }
+
+  function seeded(seed: number) {
+    let s = seed
+    return () => {
+      s = (s * 1664525 + 1013904223) >>> 0
+      return s / 4294967296
+    }
+  }
+
+  function logUniform(rand: () => number, lo: number, hi: number) {
+    return lo * (hi / lo) ** rand()
+  }
+
+  const edgeBlocks: BpRegionBounds[] = [
+    { start: 100, end: 110, screenStartPx: 0, screenEndPx: 100 },
+    {
+      start: 14468.99356617647,
+      end: 14499.99356617647,
+      screenStartPx: 0,
+      screenEndPx: 1088,
+    },
+    { start: 1000, end: 6000, screenStartPx: 12.25, screenEndPx: 12.55 },
+    { start: 0, end: 248_956_422, screenStartPx: 0, screenEndPx: 1600 },
+    {
+      start: 2 ** 31 - 7919.5,
+      end: 2 ** 31 + 4096.25,
+      screenStartPx: -333.3333,
+      screenEndPx: 1234.5678,
+    },
+    {
+      start: 2 ** 32 - 20_001,
+      end: 2 ** 32 - 1,
+      screenStartPx: 800.1,
+      screenEndPx: 1600,
+    },
+    { start: 5000, end: 5000, screenStartPx: 10, screenEndPx: 20 },
+    { start: 5000, end: 5010, screenStartPx: 20, screenEndPx: 20 },
+    { start: 5000, end: 5000, screenStartPx: 20, screenEndPx: 20 },
+  ]
+
+  function randomBlock(rand: () => number): BpRegionBounds {
+    const start = Math.floor(rand() * 2 ** 32) + (rand() < 0.5 ? rand() : 0)
+    const span = logUniform(rand, 1, 20_000)
+    const screenStartPx = (rand() - 0.5) * 8000
+    return {
+      start,
+      end: start + (rand() < 0.5 ? Math.ceil(span) : span),
+      screenStartPx,
+      screenEndPx: screenStartPx + logUniform(rand, 1e-3, 8000),
+    }
+  }
+
+  function bpsAcross({ start, end }: BpRegionBounds) {
+    const bps = [start - 1, start, end, end + 1]
+    const step = Math.max(0.5, (end - start) / 20_000)
+    for (let bp = Math.floor(start) - 2; bp <= Math.ceil(end) + 2; bp += step) {
+      bps.push(bp)
+    }
+    return bps
+  }
+
+  test('returns the two-literal mapper it replaced, bit for bit', () => {
+    const rand = seeded(2026)
+    const blocks = [
+      ...edgeBlocks,
+      ...Array.from({ length: 100 }, () => randomBlock(rand)),
+    ]
+    const mismatches: string[] = []
+    let checked = 0
+    for (const block of blocks) {
+      for (const bounds of [block, { ...block, reversed: true }]) {
+        const expected = twoLiteralMakeBpMapper(bounds)
+        const toX = makeBpMapper(bounds)
+        const projection = bpProjection(bounds)
+        for (const bp of bpsAcross(bounds)) {
+          const want = expected(bp)
+          const got = toX(bp)
+          const projected = projectBp(projection, bp)
+          if (!Object.is(got, want) || !Object.is(projected, want)) {
+            mismatches.push(
+              `${JSON.stringify(bounds)} bp ${bp}: ${got} and ${projected} against ${want}`,
+            )
+          }
+          checked++
+        }
+      }
+    }
+    expect(mismatches.slice(0, 5)).toEqual([])
+    expect(checked).toBeGreaterThan(500_000)
   })
 })
 

@@ -526,21 +526,9 @@ export function bpToScreenPx(
   return reversed ? screenEndPx - frac * w : screenStartPx + frac * w
 }
 
-// Closure-style bp→screen-px mapper bound to one region. Consumers that walk
-// many bp positions inside one block (label/peptide overlays, rect/line draws)
-// want a 1-arg call instead of repeating 6 args at every site.
-export function makeBpMapper(bounds: BpRegionBounds) {
-  const { start, end, screenStartPx, screenEndPx, reversed } = bounds
-  const span = end - start
-  const w = screenEndPx - screenStartPx
-  return reversed
-    ? (bp: number) => screenEndPx - ((bp - start) / span) * w
-    : (bp: number) => screenStartPx + ((bp - start) / span) * w
-}
-
 /**
- * `makeBpMapper` as four numbers, for a placement function reading its block
- * off a frame object: `projectBp` returns the mapper's value bit for bit.
+ * A block's bp→px projection as four numbers, for a placement function reading
+ * its block off a frame object. `makeBpMapper` closes over the same four.
  */
 export interface BpProjection {
   originPx: number
@@ -562,6 +550,16 @@ export function bpProjection(bounds: BpRegionBounds): BpProjection {
 
 export function projectBp(p: BpProjection, bp: number) {
   return p.originPx + ((bp - p.startBp) / p.spanBp) * p.signedSpanPx
+}
+
+/**
+ * One closure literal for both orientations. Split per orientation, a paint
+ * loop's mapper call goes megamorphic on a view mixing them, and the loop ran
+ * 1.9-2.3x slower (`benches/bpMapper.bench.ts`).
+ */
+export function makeBpMapper(bounds: BpRegionBounds) {
+  const { originPx, startBp, spanBp, signedSpanPx } = bpProjection(bounds)
+  return (bp: number) => originPx + ((bp - startBp) / spanBp) * signedSpanPx
 }
 
 /**
