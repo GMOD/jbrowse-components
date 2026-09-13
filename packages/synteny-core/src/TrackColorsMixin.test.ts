@@ -134,3 +134,23 @@ describe('a categorical column', () => {
     })
   })
 })
+
+// A launched stack puts one track on every level, so the view lists it once per
+// level. The legend names a track once, in the color it paints.
+test('the track legend lists a track on several levels once', () => {
+  const view = TrackColorsMixin()
+    .views(() => ({
+      colorableTrackConfigs() {
+        return [
+          { trackId: 'ortho', name: 'orthogroups' },
+          { trackId: 'ortho', name: 'orthogroups' },
+          { trackId: 'other', name: 'other' },
+        ]
+      },
+    }))
+    .create({ colorBy: 'track' })
+  expect(view.colorLegendChips).toEqual([
+    { label: 'orthogroups', color: view.trackColorFor('ortho') },
+    { label: 'other', color: view.trackColorFor('other') },
+  ])
+})

@@ -292,16 +292,20 @@ export function TrackColorsMixin() {
       /**
        * #getter
        * Legend rows naming the overlaid tracks — one per track with its palette
-       * color, and only under `colorBy: 'track'`, since every other mode has a
-       * fixed legend of its own.
+       * color, however many levels it is on, and only under `colorBy: 'track'`,
+       * since every other mode has a fixed legend of its own.
        */
       get colorLegendChips(): ColorChip[] {
-        return self.colorByMode === 'track'
-          ? self.colorableTracks.map(t => ({
-              color: this.trackColorFor(t.trackId),
-              label: t.name,
-            }))
-          : []
+        if (self.colorByMode !== 'track') {
+          return []
+        }
+        const names = new Map(
+          self.colorableTracks.map(t => [t.trackId, t.name]),
+        )
+        return [...names].map(([trackId, label]) => ({
+          color: this.trackColorFor(trackId),
+          label,
+        }))
       },
     }))
     .views(self => ({
