@@ -3465,14 +3465,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "displayId",
           "type": "identifier"
-        },
-        {
-          "name": "drawCurves",
-          "type": "(JexlString | boolean)"
-        },
-        {
-          "name": "drawLocationMarkers",
-          "type": "(JexlString | boolean)"
         }
       ],
       "stateModelProps": [
@@ -5949,6 +5941,8 @@ export const configManifest: ConfigManifest = {
         "trackColors",
         "hideUnlabelled",
         "cigarMode",
+        "drawCurves",
+        "drawLocationMarkers",
         "showOffscreenMates",
         "overdrawPx",
         "alpha",
@@ -5961,8 +5955,6 @@ export const configManifest: ConfigManifest = {
       "launchKeys": [
         "autoDiagonalize",
         "collapseEmptyRows",
-        "drawCurves",
-        "drawLocationMarkers",
         "levelHeights",
         "sameScale",
         "tracks",

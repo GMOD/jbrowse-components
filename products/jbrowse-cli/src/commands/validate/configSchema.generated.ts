@@ -4361,18 +4361,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     },
     "LinearSyntenyDisplaySlots": {
       "type": "object",
-      "properties": {
-        "drawCurves": {
-          "description": "Draw each ribbon as a bezier curve rather than a straight chord. Defaults to off (straight chords). The row is on the VIEW's settings menu (\`Curved lines\`) — this display curates no track menu of its own — and the checkbox writes this slot on every level of the view, as an init spec's \`drawCurves\` key does for the tracks it opens.",
-          "$ref": "#/$defs/BooleanOrJexl",
-          "default": false
-        },
-        "drawLocationMarkers": {
-          "description": "Continue the query row's scalebar grid down through the ribbons: a tick at each round query coordinate, joined to the coordinate the alignment pairs it with. Defaults to off, through the same settings-menu row and init key as \`drawCurves\` above.",
-          "$ref": "#/$defs/BooleanOrJexl",
-          "default": false
-        }
-      }
+      "properties": {}
     },
     "LinearSyntenyDisplay": {
       "title": "LinearSyntenyDisplay",
@@ -16770,6 +16759,12 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "full"
           ]
         },
+        "drawCurves": {
+          "type": "boolean"
+        },
+        "drawLocationMarkers": {
+          "type": "boolean"
+        },
         "showOffscreenMates": {
           "type": "boolean"
         },
@@ -16824,12 +16819,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Launch key, resolved by the LinearSyntenyView launcher on open."
         },
         "collapseEmptyRows": {
-          "description": "Launch key, resolved by the LinearSyntenyView launcher on open."
-        },
-        "drawCurves": {
-          "description": "Launch key, resolved by the LinearSyntenyView launcher on open."
-        },
-        "drawLocationMarkers": {
           "description": "Launch key, resolved by the LinearSyntenyView launcher on open."
         }
       }
