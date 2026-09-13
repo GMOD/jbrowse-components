@@ -285,17 +285,17 @@ ran 1.09-1.13x the hand painter on span and 1.34-1.46x on variant cells, where
 a per-shape copy of the same source ran 0.69-0.94x on all five shapes it
 painted.
 
-A box shape places each instance through module-level x and y functions over
-the generated twins instead, which ran 0.93-0.95x the hand painter on span,
-0.86-0.89x on canvas rects and 0.98-1.00x on variant cells at 1M. One `place`
-call per instance, writing the box paint, ink and hit would all read, missed
-the per-shape copy by 6-10% on rects and 15-19% on cells, because TurboFan
-inlines no callee past 460 bytes of bytecode counting what it has already
-inlined. Writing the twins' arithmetic into `place` beat the copy, at
-0.87-0.90x on cells and 0.94-0.96x on rects split in two, and is the hand
-transcription ADR-051 rejects. Out-parameter copies of the pair twins read
-0.83-0.84x on rects and 1.01-1.06x on cells, and were not pursued. Every one
-of those arms is in
+A box shape places each instance through module-level functions over the
+generated twins instead, which, split into an x and a y function, ran
+0.93-0.95x the hand painter on span, 0.86-0.89x on canvas rects and 0.98-1.00x
+on variant cells at 1M. One `place` call per instance, writing the box that
+paint, ink and hit would all read, missed the per-shape copy by 6-10% on rects
+and 15-19% on cells, because TurboFan inlines no callee past 460 bytes of
+bytecode counting what it has already inlined. Writing the twins' arithmetic
+into `place` beat the copy, at 0.87-0.90x on cells and 0.94-0.96x on rects
+split in two, and is the hand transcription ADR-051 rejects. Out-parameter
+copies of the pair twins read 0.83-0.84x on rects and 1.01-1.06x on cells, and
+were not pursued. Every one of those arms is in
 `git show 89f3a8ce8b:plugins/alignments/benches/rectWalker.bench.ts`, and
 `packages/render-core/benches/placeWalkers.bench.ts` holds each port to the
 painter it retired.
