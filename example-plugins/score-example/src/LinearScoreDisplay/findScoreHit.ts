@@ -1,4 +1,6 @@
-// #exampleFile shared | the display's hit walk: hands every instance of each block to the mark's `hitNearest`, which its `ink` implies
+// #exampleFile shared | the display's hit: `nearestMarkHit` asks the mark's `hitNearest`, which its `ink` implies, about every instance under the cursor
+import { nearestMarkHit } from '@jbrowse/render-core/marks'
+
 import { SCORE_MARKS } from './scoreMarks.ts'
 
 import type { ScoreRegionData } from '../ScoreRPC/rpcTypes.ts'
@@ -21,8 +23,6 @@ export interface ScoreHit {
 // feature is hoverable
 const HIT_RADIUS_PX = 4
 
-const MARK = SCORE_MARKS[0]!
-
 // Back to front, so on a tie the last-painted box — the one on top — wins
 function* everyInstance(count: number) {
   for (let i = count - 1; i >= 0; i--) {
@@ -31,12 +31,13 @@ function* everyInstance(count: number) {
 }
 
 // #region hit
-// Where the ink is stays with the shape: `hitNearest` measures the cursor
-// against the rect its `ink` declares. This display hands in every
-// instance of every block under the cursor, which is enough at a few thousand
-// boxes; a display with hundreds of thousands of instances asks the encoder
-// for its `index` lane — a Flatbush over (bp, score) — and hands in what that
-// answers instead (`findManhattanHit` in plugins/gwas is the worked form).
+// `nearestMarkHit` walks the blocks under the cursor and asks the mark's
+// `hitNearest`, which measures the cursor against the rect its `ink`
+// declares. What the display chooses is the candidates: every instance here,
+// which is enough at a few thousand boxes. A display with hundreds of
+// thousands asks the encoder for its `index` lane — a Flatbush over
+// (bp, score) — and answers with what that finds in `valueWindow` instead
+// (`findManhattanHit` in plugins/gwas is the worked form).
 export function findScoreHit(
   xPx: number,
   yPx: number,
@@ -44,34 +45,28 @@ export function findScoreHit(
   regions: ReadonlyMap<number, ScoreRegionData>,
   state: ScoreRenderState,
 ): ScoreHit | undefined {
-  let bestDistSq = HIT_RADIUS_PX ** 2
-  let best: ScoreHit | undefined
-  for (const block of blocks) {
-    const data = regions.get(block.displayedRegionIndex)
-    if (data) {
-      const hit = MARK.hitNearest?.(
-        data,
-        block,
-        state,
-        xPx,
-        yPx,
-        everyInstance(data.count),
-        bestDistSq,
-      )
-      if (hit) {
-        bestDistSq = hit.distSq
-        best = {
-          start: data.x[hit.index]!,
-          end: data.x2[hit.index]!,
-          score: data.y[hit.index]!,
-          x: hit.x,
-          y: hit.y,
-          regionIndex: block.displayedRegionIndex,
-          instance: hit.index,
-        }
+  const hit = nearestMarkHit(
+    SCORE_MARKS,
+    blocks,
+    index => regions.get(index),
+    state,
+    xPx,
+    yPx,
+    {
+      radiusPx: HIT_RADIUS_PX,
+      candidates: data => everyInstance(data.count),
+    },
+  )
+  return hit
+    ? {
+        start: hit.region.x[hit.index]!,
+        end: hit.region.x2[hit.index]!,
+        score: hit.region.y[hit.index]!,
+        x: hit.x,
+        y: hit.y,
+        regionIndex: hit.block.displayedRegionIndex,
+        instance: hit.index,
       }
-    }
-  }
-  return best
+    : undefined
 }
 // #endregion

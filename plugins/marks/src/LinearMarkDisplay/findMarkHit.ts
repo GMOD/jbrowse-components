@@ -1,8 +1,8 @@
-import { bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
 import {
-  denormalizeScore,
-  scaleTypeCode,
-} from '@jbrowse/render-core/scoreScale'
+  nearestMarkHit,
+  pointInsetPx,
+  valueWindow,
+} from '@jbrowse/render-core/marks'
 
 import { markValueScale } from './markList.ts'
 
@@ -33,40 +33,23 @@ export interface MarkHitInfo {
 
 const HIT_RADIUS_PX = 8
 
-// The value window mark `markIndex` is asked about at cursor score `s`, read
-// through that mark's own y scale: a point's
-// ink is at its value, a bar's reaches from the origin to it, a span's is
-// everywhere. Widened to the canvas edges where the cursor is within reach of
-// one, so a value clamped to the top or bottom stays catchable.
-function valueWindow(
+// The value window mark `i`'s index is asked with, through the scale and the
+// anchor its params lens hands its shape; a span's ink is at every value.
+function markValueWindow(
   shape: MarkShapeName,
-  markIndex: number,
+  i: number,
   mouseY: number,
   state: MarkRenderState,
 ): [number, number] {
-  const { canvasHeight, origin } = state
   if (shape === 'span') {
     return [-Infinity, Infinity]
   }
-  const { domain, scaleType } = markValueScale(state, markIndex)
-  const valueAt = (y: number) =>
-    denormalizeScore(
-      1 - y / canvasHeight,
-      domain[0],
-      domain[1],
-      scaleTypeCode(scaleType),
-    )
-  const lo =
-    mouseY >= canvasHeight - HIT_RADIUS_PX
-      ? -Infinity
-      : valueAt(mouseY + HIT_RADIUS_PX)
-  const hi =
-    mouseY <= HIT_RADIUS_PX ? Infinity : valueAt(mouseY - HIT_RADIUS_PX)
-  if (shape === 'bar') {
-    const s = valueAt(mouseY)
-    return s >= origin ? [lo, Infinity] : [-Infinity, hi]
-  }
-  return [lo, hi]
+  return valueWindow(mouseY, HIT_RADIUS_PX, state.canvasHeight, {
+    ...markValueScale(state, i),
+    ...(shape === 'bar'
+      ? { origin: state.origin }
+      : { insetPx: pointInsetPx(state.pointDiameterPx) }),
+  })
 }
 
 /**
@@ -85,60 +68,43 @@ export function findMarkHit(
   state: MarkRenderState,
   refNames: ReadonlyMap<number, string>,
 ): MarkHitInfo | undefined {
-  let bestDistSq = HIT_RADIUS_PX * HIT_RADIUS_PX
-  let best: MarkHitInfo | undefined
-  for (const block of blocks) {
-    const regionIndex = block.displayedRegionIndex
-    const data = regionData.get(regionIndex)
-    const refName = refNames.get(regionIndex)
-    const blockWidthPx = block.screenEndPx - block.screenStartPx
-    if (!data || !refName || blockWidthPx <= 0) {
-      continue
-    }
-    const bpPerPx = (block.end - block.start) / blockWidthPx
-    const mouseBp = bpAtPxExact(mouseX, block)
-    const halfBp = HIT_RADIUS_PX * bpPerPx
-    const bpMin = mouseBp - halfBp
-    const bpMax = mouseBp + halfBp
-    if (bpMax < block.start || bpMin > block.end) {
-      continue
-    }
-    for (let m = marks.length - 1; m >= 0; m--) {
-      const layer = data.layers[m]
-      const mark = marks[m]!
-      const shape = shapes[m]!
-      if (!layer?.flatbush || !mark.hitNearest) {
-        continue
-      }
-      const [vMin, vMax] = valueWindow(shape, m, mouseY, state)
-      const hit = mark.hitNearest(
-        data,
-        block,
-        state,
-        mouseX,
-        mouseY,
-        layer.flatbush.search(bpMin, vMin, bpMax, vMax),
-        bestDistSq,
-      )
-      if (hit) {
-        bestDistSq = hit.distSq
-        best = {
-          markIndex: m,
-          regionIndex,
-          instance: hit.index,
-          refName,
-          start: layer.x[hit.index]!,
-          end: layer.x2[hit.index]!,
-          y: layer.y?.[hit.index],
-          color: layer.color?.[hit.index],
-          colorValue: layer.colorValue?.[hit.index],
-          screenX: hit.x,
-          screenY: hit.y,
+  const hit = nearestMarkHit(
+    marks,
+    blocks,
+    index => (refNames.has(index) ? regionData.get(index) : undefined),
+    state,
+    mouseX,
+    mouseY,
+    {
+      radiusPx: HIT_RADIUS_PX,
+      candidates: (data, m, { bpMin, bpMax }) => {
+        const flatbush = data.layers[m]?.flatbush
+        if (!flatbush) {
+          return undefined
         }
-      }
-    }
+        const [vMin, vMax] = markValueWindow(shapes[m]!, m, mouseY, state)
+        return flatbush.search(bpMin, vMin, bpMax, vMax)
+      },
+    },
+  )
+  if (!hit) {
+    return undefined
   }
-  return best
+  const layer = hit.region.layers[hit.mark]!
+  const regionIndex = hit.block.displayedRegionIndex
+  return {
+    markIndex: hit.mark,
+    regionIndex,
+    instance: hit.index,
+    refName: refNames.get(regionIndex)!,
+    start: layer.x[hit.index]!,
+    end: layer.x2[hit.index]!,
+    y: layer.y?.[hit.index],
+    color: layer.color?.[hit.index],
+    colorValue: layer.colorValue?.[hit.index],
+    screenX: hit.x,
+    screenY: hit.y,
+  }
 }
 
 export function sameMarkHit(a: MarkHitInfo, b: MarkHitInfo) {

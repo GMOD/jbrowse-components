@@ -1,5 +1,4 @@
-import { bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
-import { denormalizeScore } from '@jbrowse/render-core/scoreScale'
+import { nearestMarkHit, valueWindow } from '@jbrowse/render-core/marks'
 
 import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 
@@ -23,21 +22,10 @@ export interface ManhattanHit {
 
 const HIT_RADIUS_PX = 8
 
-const MARK = MANHATTAN_MARKS[0]!
-
-// 2D hit test. The Flatbush index over (bp, score) is built worker-side per
-// region and wrapped by the display model's `flatbushes` map (kept in lockstep
-// with rpcDataMap so it survives mousemoves without rebuild). Here we derive a
-// (bp, score) query box from the mouse position + current view; the mark's own
-// `hitNearest` then measures pixel distance to the glyph it drew.
-//
-// Where the ink is stays with the shape rather than here — the bar-vs-glyph
-// branch is a rule the shader, the painter and this share, and the copy that
-// used to live in this file is what drifts.
-//
-// Edge-clamped points (out-of-domain scores pinned to the canvas top/bottom)
-// are still catchable because the query window is widened to ±Inf in score when
-// the mouse is within hit-radius of the canvas edge.
+/**
+ * The point nearest the cursor, asked of each region's worker-built Flatbush
+ * over (bp, score) within the grab radius's value window.
+ */
 export function findManhattanHit(
   mouseX: number,
   mouseY: number,
@@ -47,66 +35,42 @@ export function findManhattanHit(
   state: ManhattanRenderState,
   refNames: ReadonlyMap<number, string>,
 ): ManhattanHit | undefined {
-  const { domainY, canvasHeight } = state
-
-  let bestDistSq = HIT_RADIUS_PX * HIT_RADIUS_PX
-  let best: ManhattanHit | undefined
-
-  for (const block of blocks) {
-    const data = regionData.get(block.displayedRegionIndex)
-    const flatbush = flatbushMap.get(block.displayedRegionIndex)
-    const refName = refNames.get(block.displayedRegionIndex)
-    if (!data || !flatbush || !refName) {
-      continue
-    }
-    const { screenStartPx, screenEndPx, start, end } = block
-    const blockWidthPx = screenEndPx - screenStartPx
-    if (blockWidthPx <= 0) {
-      continue
-    }
-    const bpPerPx = (end - start) / blockWidthPx
-    const mouseBp = bpAtPxExact(mouseX, block)
-    const halfBp = HIT_RADIUS_PX * bpPerPx
-    const candBpMin = mouseBp - halfBp
-    const candBpMax = mouseBp + halfBp
-    if (candBpMax < start || candBpMin > end) {
-      continue
-    }
-
-    const scoreAt = (y: number) =>
-      denormalizeScore(1 - y / canvasHeight, domainY[0], domainY[1], 0)
-    const candScoreMin =
-      mouseY >= canvasHeight - HIT_RADIUS_PX
-        ? -Infinity
-        : scoreAt(mouseY + HIT_RADIUS_PX)
-    const candScoreMax =
-      mouseY <= HIT_RADIUS_PX ? Infinity : scoreAt(mouseY - HIT_RADIUS_PX)
-
-    const hit = MARK.hitNearest?.(
-      data,
-      block,
-      state,
-      mouseX,
-      mouseY,
-      flatbush.search(candBpMin, candScoreMin, candBpMax, candScoreMax),
-      bestDistSq,
-    )
-    if (hit) {
-      bestDistSq = hit.distSq
-      // NaN r² (SNP absent from LD data) normalizes to undefined here so the
-      // tooltip and feature widget can treat "no r²" uniformly.
-      const raw = data.r2s?.[hit.index]
-      best = {
-        refName,
-        start: data.x[hit.index]!,
-        end: data.x2[hit.index]!,
-        score: data.y[hit.index]!,
-        r2: Number.isFinite(raw) ? raw : undefined,
-        regionIndex: block.displayedRegionIndex,
-        instance: hit.index,
-      }
-    }
+  const [scoreMin, scoreMax] = valueWindow(
+    mouseY,
+    HIT_RADIUS_PX,
+    state.canvasHeight,
+    { domain: state.domainY },
+  )
+  const hit = nearestMarkHit(
+    MANHATTAN_MARKS,
+    blocks,
+    index => (refNames.has(index) ? regionData.get(index) : undefined),
+    state,
+    mouseX,
+    mouseY,
+    {
+      radiusPx: HIT_RADIUS_PX,
+      candidates: (_data, _mark, { block, bpMin, bpMax }) =>
+        flatbushMap
+          .get(block.displayedRegionIndex)
+          ?.search(bpMin, scoreMin, bpMax, scoreMax),
+    },
+  )
+  if (!hit) {
+    return undefined
   }
-
-  return best
+  const { region: data, index, block } = hit
+  const regionIndex = block.displayedRegionIndex
+  // NaN r² (SNP absent from LD data) normalizes to undefined so the tooltip and
+  // feature widget can treat "no r²" uniformly.
+  const r2 = data.r2s?.[index]
+  return {
+    refName: refNames.get(regionIndex)!,
+    start: data.x[index]!,
+    end: data.x2[index]!,
+    score: data.y[index]!,
+    r2: Number.isFinite(r2) ? r2 : undefined,
+    regionIndex,
+    instance: index,
+  }
 }

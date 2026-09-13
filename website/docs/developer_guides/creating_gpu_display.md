@@ -579,7 +579,7 @@ describe('score: every drawn box answers its own hit', () => {
 
 `scoreMarks.test.ts` beside it is the mark-level suite: which payload array
 reaches which lane, the uniforms a block writes through `MockHal`, what the
-painter draws for one feature, and what the display's hit walk answers. Together
+painter draws for one feature, and what the display's hit test answers. Together
 they replace the pixel comparison a GPU-vs-Canvas2D gate would need.
 
 ## Step 6: MST model
@@ -669,18 +669,20 @@ its painter and its hit test are things a state model can legitimately reach,
 and a state model is eager; the backend costs the GPU stack, so it is imported
 once, from the lazily loaded component, and from nowhere else.
 
-The hover hands the mark's `hitNearest` — the one its `ink` implies — every
-instance of every block under the cursor and stores what comes back:
+The hover asks render-core's `nearestMarkHit` for the nearest instance, handing
+the mark's `hitNearest` — the one its `ink` implies — every instance of every
+block under the cursor, and stores what comes back:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/findScoreHit.ts#hit -->
 
 ```ts
-// Where the ink is stays with the shape: `hitNearest` measures the cursor
-// against the rect its `ink` declares. This display hands in every
-// instance of every block under the cursor, which is enough at a few thousand
-// boxes; a display with hundreds of thousands of instances asks the encoder
-// for its `index` lane — a Flatbush over (bp, score) — and hands in what that
-// answers instead (`findManhattanHit` in plugins/gwas is the worked form).
+// `nearestMarkHit` walks the blocks under the cursor and asks the mark's
+// `hitNearest`, which measures the cursor against the rect its `ink`
+// declares. What the display chooses is the candidates: every instance here,
+// which is enough at a few thousand boxes. A display with hundreds of
+// thousands asks the encoder for its `index` lane — a Flatbush over
+// (bp, score) — and answers with what that finds in `valueWindow` instead
+// (`findManhattanHit` in plugins/gwas is the worked form).
 export function findScoreHit(
   xPx: number,
   yPx: number,
@@ -688,35 +690,29 @@ export function findScoreHit(
   regions: ReadonlyMap<number, ScoreRegionData>,
   state: ScoreRenderState,
 ): ScoreHit | undefined {
-  let bestDistSq = HIT_RADIUS_PX ** 2
-  let best: ScoreHit | undefined
-  for (const block of blocks) {
-    const data = regions.get(block.displayedRegionIndex)
-    if (data) {
-      const hit = MARK.hitNearest?.(
-        data,
-        block,
-        state,
-        xPx,
-        yPx,
-        everyInstance(data.count),
-        bestDistSq,
-      )
-      if (hit) {
-        bestDistSq = hit.distSq
-        best = {
-          start: data.x[hit.index]!,
-          end: data.x2[hit.index]!,
-          score: data.y[hit.index]!,
-          x: hit.x,
-          y: hit.y,
-          regionIndex: block.displayedRegionIndex,
-          instance: hit.index,
-        }
+  const hit = nearestMarkHit(
+    SCORE_MARKS,
+    blocks,
+    index => regions.get(index),
+    state,
+    xPx,
+    yPx,
+    {
+      radiusPx: HIT_RADIUS_PX,
+      candidates: data => everyInstance(data.count),
+    },
+  )
+  return hit
+    ? {
+        start: hit.region.x[hit.index]!,
+        end: hit.region.x2[hit.index]!,
+        score: hit.region.y[hit.index]!,
+        x: hit.x,
+        y: hit.y,
+        regionIndex: hit.block.displayedRegionIndex,
+        instance: hit.index,
       }
-    }
-  }
-  return best
+    : undefined
 }
 ```
 
