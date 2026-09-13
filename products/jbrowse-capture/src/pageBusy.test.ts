@@ -24,8 +24,16 @@ test.each([
 
 // A display that has finished publishes the same attribute with another value,
 // so the selector has to name the value rather than the attribute.
-test('a display that reports ready is not busy', () => {
-  document.body.innerHTML = '<div data-display-phase="ready"></div>'
+test.each(['ready', 'canceled'])(
+  'a display that reports %s is not busy',
+  phase => {
+    document.body.innerHTML = `<div data-display-phase="${phase}"></div>`
+    expect(isPageBusyInPage(BUSY_SELECTOR)).toBe(false)
+  },
+)
+
+test('the canceled overlay is not busy', () => {
+  document.body.innerHTML = '<div data-testid="loading-overlay-canceled"></div>'
   expect(isPageBusyInPage(BUSY_SELECTOR)).toBe(false)
 })
 

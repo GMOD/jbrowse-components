@@ -380,7 +380,12 @@ const MyLoading = observer(function MyLoading({
   const { statusMessage, statusProgress, fetchCanceled } = model
   return (
     <div style={{ ...overlayBox, alignItems: 'flex-start' }}>
-      <div style={card} data-testid="loading-overlay">
+      <div
+        style={card}
+        data-testid={
+          fetchCanceled ? 'loading-overlay-canceled' : 'loading-overlay'
+        }
+      >
         {fetchCanceled ? (
           <>
             <span>Stopped</span>

@@ -127,6 +127,8 @@ test('a cancelable fetch offers cancel, and a canceled one offers retry', async 
   // the scrim stays up but flips to the canceled affordance
   await findByTestId('loading-overlay-retry')
   expect(queryByTestId('loading-overlay-cancel')).toBeNull()
+  expect(queryByTestId('loading-overlay')).toBeNull()
+  expect(queryByTestId('loading-overlay-canceled')).toBeTruthy()
   expect(model.displayPhase).toBe('canceled')
 })
 

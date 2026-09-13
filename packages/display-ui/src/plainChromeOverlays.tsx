@@ -33,9 +33,9 @@ import type {
 // host's own cascade drives them. Restyle by wrapping these, or write your own
 // set against the same interface.
 //
-// The testids are NOT cosmetic. `loading-overlay`, `loading-overlay-cancel`,
-// `loading-overlay-retry`, `progress-chip`, `reload_button` and
-// `use_canvas2d_button` are a contract across four test systems (jest, browser
+// The testids are NOT cosmetic. `loading-overlay`, `loading-overlay-canceled`,
+// `loading-overlay-cancel`, `loading-overlay-retry`, `progress-chip`,
+// `reload_button` and `use_canvas2d_button` are a contract across four test systems (jest, browser
 // tests, screenshot harness, jbrowse-img), so a replacement set that wants to
 // run the existing suites has to keep them.
 
@@ -271,7 +271,12 @@ const PlainLoading = observer(function PlainLoading({
   }
   const { statusMessage, statusProgress, fetchCanceled } = model
   return (
-    <div style={overlayBox} data-testid="loading-overlay">
+    <div
+      style={overlayBox}
+      data-testid={
+        fetchCanceled ? 'loading-overlay-canceled' : 'loading-overlay'
+      }
+    >
       <div
         style={{ ...chip, display: 'flex', alignItems: 'center' }}
         role="status"

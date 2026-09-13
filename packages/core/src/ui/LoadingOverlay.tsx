@@ -154,8 +154,13 @@ export default function LoadingOverlay({
   // swallow clicks/hovers over the top-center of every track it overlays. There
   // is no fade transition, so mount/unmount is visually identical to toggling
   // opacity anyway.
+  // `loading-overlay` is a readiness selector meaning work in flight, so the
+  // canceled state, which is finished, publishes its own
   return shown ? (
-    <span className={classes.overlay} data-testid="loading-overlay">
+    <span
+      className={classes.overlay}
+      data-testid={canceled ? 'loading-overlay-canceled' : 'loading-overlay'}
+    >
       <span className={classes.content}>
         {canceled ? (
           <span className={classes.row}>

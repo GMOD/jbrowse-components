@@ -262,7 +262,7 @@ test('a canceled phase keeps the scrim, now offering Retry', async () => {
   const model = TestChromeModel.create({})
   model.setLoadingCondition(true)
   model.setCanvasDrawn(true)
-  const { findByTestId } = renderChrome(model, 'chrome')
+  const { findByTestId, queryByTestId } = renderChrome(model, 'chrome')
 
   const el = await findByTestId('chrome')
   await findByTestId('loading-overlay', {}, { timeout: 5000 })
@@ -273,6 +273,8 @@ test('a canceled phase keeps the scrim, now offering Retry', async () => {
 
   expect(el.dataset.displayPhase).toBe('canceled')
   await findByTestId('loading-overlay-retry')
+  expect(queryByTestId('loading-overlay-canceled')).toBeTruthy()
+  expect(queryByTestId('loading-overlay')).toBeNull()
 })
 
 // The reader outside the display. `data-display-drawn` is what

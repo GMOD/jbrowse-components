@@ -188,9 +188,9 @@ export async function assertRenderSettled(
         })
       }
     }
-    // loading overlay (LoadingOverlay: data-testid="loading-overlay")
+    // loading overlay, or its canceled state (LoadingOverlay)
     for (const el of document.querySelectorAll(
-      '[data-testid="loading-overlay"]',
+      '[data-testid="loading-overlay"], [data-testid="loading-overlay-canceled"]',
     )) {
       if (isVisible(el)) {
         found.push({

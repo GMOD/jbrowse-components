@@ -160,6 +160,16 @@ describe('LoadingOverlay canceled state', () => {
     expect(onRetry).toHaveBeenCalledTimes(1)
   })
 
+  // `loading-overlay` is what every readiness reader takes for work in flight
+  it('does not publish the loading testid', () => {
+    const { getByTestId, queryByTestId } = render(
+      <LoadingOverlay isVisible canceled />,
+    )
+    flash()
+    expect(getByTestId('loading-overlay-canceled')).toBeTruthy()
+    expect(queryByTestId('loading-overlay')).toBeNull()
+  })
+
   it('omits the retry button when no onRetry is given', () => {
     const { getByText, queryByTestId } = render(
       <LoadingOverlay isVisible canceled />,
