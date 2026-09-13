@@ -99,6 +99,11 @@ function XxxSvgBody({
 `buildRenderBlocks(view.visibleRegions)` once, for the same reason it resolves
 `canvasWidth`. Don't re-derive it in a body.
 
+The shell also clips the body to `view.width × height` under
+`display-clip-<node id>`, with the axes and legend outside that clip, so a body
+opens with no `SvgClipRect` of its own. A clip inside a body is for a box
+narrower than the display's, like MAF's rows under its bands.
+
 The body is passed as a **component**, not a callback returning JSX, and that is
 load-bearing rather than stylistic: `SvgChrome` renders its terminal box
 *instead of* its children, so a body expressed as a component never runs in a
@@ -557,6 +562,12 @@ supply their own `dataCurrent` thunk:
   bespoke `<DisplayError>` because a radial display has no width/height box to
   host a message rect — which is why the export has nothing sensibly sized to
   draw there either, and draws nothing.
+- **circular rings**: a linear display on the circle exports through its own
+  `renderSvg` (plot only), in the same `awaitSvgRenders` fan-out as the chords;
+  the annuli and strip heights are read after both waits, then each strip is
+  serialized, rasterized and warped by the ring painter. Where no image decoder
+  exists (node, jsdom) the rings are skipped up front and named through
+  `notifySkippedSvgTracks`, never embedded blank.
 
 So both halves are uniform across **every** display (LGV, arc, synteny, dotplot,
 circular): the readiness gate, and the answer to a failed track — the display
@@ -586,7 +597,7 @@ serializes as empty. Omitting `opts` pins a layer to vector even when
 peptide overlays, so exported text stays crisp.
 
 **A scale small enough to round to zero must not go in the ctx matrix.**
-`wrapSvgExport` serializes every `transform` rounded to 2 decimals, which
+`serializeSvg` writes every `transform` rounded to 2 decimals, which
 `SvgCanvas` is built around — it folds a shape's origin into the translation so
 the rounding only perturbs the shape's own width and height. What that leaves
 exposed is the *linear* part: a `ctx.scale` below 0.005 rounds to `0`, and the
@@ -664,8 +675,13 @@ flavor of drift).
   `opts.createCanvas` fallback ritual.
 - `PaintLayer({ width, height, opts, paint }) → ReactNode` — raster-vs-vector
   dispatch (`@jbrowse/core/util/paintLayer`).
-- `SvgExport` — `SvgChrome`/`SVGMessageBox` (the "region too large" terminal) +
-  `SvgClipRect` (clipPath wrapper), in `@jbrowse/core/svg/SvgExport`.
+- `SvgExport` — `SvgChrome`/`SVGMessageBox` (the "region too large" terminal),
+  `SvgClipRect` (clipPath wrapper) and `SvgThemeProviders`, in
+  `@jbrowse/core/svg/SvgExport`.
+- `serializeSvg(node)` — one standalone document to file markup
+  (`@jbrowse/core/svg/serializeSvg`); see below.
+- `exportViewSvg(view, opts, load)` — the body of every view's `exportSvg`
+  action, over `ViewExportSvgOptions` (`@jbrowse/core/svg/exportViewSvg`).
 - `Ctx2D = CanvasRenderingContext2D | SvgCanvas` — the shared type alias every
   `drawXxxBlocks` signature uses.
 
@@ -697,11 +713,39 @@ saved SVGs of an unchanged view showed changes that weren't real, and `jest -t`
 on any export test but the first failed its checked-in snapshot with a diff that
 was nothing but renumbering.
 
-So it is reset per **document**, by `resetSvgClipIds()` in `wrapSvgExport` —
-which is the only place that can do it. `wrapSvgExport` is the single funnel
-every view's `renderToSvg` ends in, and the `renderToStaticMarkup` it wraps is
+So each **document** gets its own numbering run, from `withFreshSvgClipIds` in
+`serializeSvg` — which is the only place that can do it. `serializeSvg` is the
+funnel every view's `renderToSvg` ends in (through `wrapSvgExport`) and every
+ring strip goes through, and the `renderToStaticMarkup` it wraps is
 synchronous, so a whole document's ids are minted with no other export able to
 interleave. Anything resetting on a boundary an `await` can cross would let two
 exports share a numbering run and collide. `wrapSvgExport.test.tsx` pins both
 halves: export-after-export equality, and distinct ids for the layers of one
 document.
+
+The run **puts the counter back** when it ends. A live figure
+(`useViewSvgFigure`) mints from the same counter into the page's DOM, where it
+relies on the counter never restarting; a reset that stuck made the next live
+figure reuse an id an earlier one still pointed at. `serializeSvg.test.tsx`
+pins it.
+
+## Serialization: `serializeSvg`
+
+A React render into an HTML container is not an SVG file, and `serializeSvg`
+applies the difference once, for every document:
+
+- **XML entities only.** HTML serialization writes U+00A0 as `&nbsp;`, which XML
+  does not define, so one no-break space in a pasted feature label made the
+  `.svg`, the dialog's PNG path and `rsvg-convert` all fail to parse. It becomes
+  `&#160;`.
+- **SVG 1.1 colours.** Theme palette entries are routinely `rgba()`
+  (`divider`, `text.primary`), and Illustrator and older Inkscape drop an
+  element whose fill they cannot parse. `splitPaintAlpha` splits any colour a
+  `<color>` cannot carry into `rgb()` plus a `*-opacity`, folding into an
+  opacity the element already has; `SvgCanvas.paintAttr` uses the same split.
+  A component can pass a translucent colour directly.
+- **Rounded numbers**, in a whitelist of numeric attributes (above).
+
+Every place an export tree renders mounts `SvgThemeProviders` — the file, a
+live figure, a ring strip — or a `usePalette` body draws in the default light
+theme whatever the user picked.

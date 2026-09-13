@@ -52,12 +52,6 @@ These look like leftovers and are not:
   practice — a worker gets plain objects, so `isStateTreeNode` is false there —
   and fixing it means deciding whether the region is dropped (changing the
   returned array's length, which positional callers rely on) or replaced.
-- `renderToStaticMarkup` drops rgba alpha rather than converting it. Now
-  explained and pinned by tests; rewriting `fill="rgba(r,g,b,a)"` into
-  `fill="rgb(r,g,b)" fill-opacity="a"` would preserve the appearance and let
-  `CrossHatches` / `RowSeparatorLines` drop their workarounds, but it
-  changes exported pixels, so it needs a visual pass before regenerating
-  snapshots.
 - `fileHandleStore.ts` has no delete path, so handles accumulate in IndexedDB
   forever. Wiring deletion to a lifecycle (track removal? session close?) is a
   design decision, not a mechanical fix. (The permanently-cached rejected
