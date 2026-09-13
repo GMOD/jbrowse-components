@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import { getConf } from '@jbrowse/core/configuration'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import HighlightsMixin from '@jbrowse/core/pluggableElementTypes/models/HighlightsMixin'
+import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   clamp,
@@ -80,6 +81,7 @@ import type {
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { ViewExportSvgOptions } from '@jbrowse/core/svg/exportViewSvg'
 import type { PxToBpResult } from '@jbrowse/core/util/Base1DUtils'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { DisplayInitialSnapshot } from '@jbrowse/core/util/tracks'
@@ -93,7 +95,6 @@ import type {
   ComparativeTrackModel,
   LodMode,
 } from '@jbrowse/synteny-core'
-import type React from 'react'
 
 // lazies
 const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
@@ -227,21 +228,7 @@ import {
 // negative, feeding negative canvas dimensions and an inverted maxBpPerPx.
 const minHeight = 120
 
-export interface ExportSvgOptions {
-  rasterizeLayers?: boolean
-  format?: 'svg' | 'png'
-  filename?: string
-  /**
-   * Whether to hand the result to the browser's download path. Default true,
-   * which is the dialog. False returns the markup and writes nothing — the
-   * caller has somewhere of its own to put it, and a download it did not ask
-   * for would land beside that under a name it did not choose.
-   */
-  save?: boolean
-  Wrapper?: React.FC<{ children: React.ReactNode }>
-  themeName?: string
-  fontFamily?: string
-}
+export type ExportSvgOptions = ViewExportSvgOptions
 
 /**
  * #stateModel DotplotView
@@ -1694,19 +1681,14 @@ export default function stateModelFactory(pm: PluginManager) {
          * renders the view to SVG markup, which it returns; saves it through
          * FileSaver unless `save: false`
          */
-        // Promise<string> is stated, against the house preference for inferred
-        // return types: renderToSvg is typed against this very model, so an
-        // inferred return makes the model type reference itself (TS2456).
+        // Promise<string> is stated: renderToSvg is typed against this very
+        // model, so an inferred return makes the type reference itself (TS2456)
         async exportSvg(opts: ExportSvgOptions = {}): Promise<string> {
-          const { renderToSvg } =
-            await import('./svgcomponents/SVGDotplotView.tsx')
-          const html = await renderToSvg(self as DotplotViewModel, opts)
-          if (opts.save !== false) {
-            const { saveSvgAsImage } =
-              await import('@jbrowse/core/svg/saveSvgAsImage')
-            await saveSvgAsImage(html, opts)
-          }
-          return html
+          return exportViewSvg(
+            self as DotplotViewModel,
+            opts,
+            () => import('./svgcomponents/SVGDotplotView.tsx'),
+          )
         },
         // if any of our assemblies are temporary assemblies. Both hooks, and
         // `releaseTemporaryAssemblies` says why: `removeView` detaches before

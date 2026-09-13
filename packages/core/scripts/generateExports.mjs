@@ -29,9 +29,12 @@ const preservedExports = [
   // exportsSurface.test.ts now fails on that gap rather than waiting for it to
   // be noticed.
   '@jbrowse/core/util/mst-reflection',
-  // published and still in src; its in-repo importers moved to
-  // `svg/serializeSvg`, which reaches it by relative path
+  // Published and still in src, with their in-repo importers moved behind a
+  // module that reaches them by relative path: `svg/serializeSvg` and
+  // `svg/exportViewSvg`. The util barrel's own comment points a plugin at the
+  // second subpath for a lazy import.
   '@jbrowse/core/util/renderToStaticMarkup',
+  '@jbrowse/core/svg/saveSvgAsImage',
   // The registry a plugin's jbrequire resolves against, and the module bag it
   // is filled from. In-repo only handleMcpRequest.ts names either by subpath —
   // PluginManager and PluginLoader reach the registry by relative path, which

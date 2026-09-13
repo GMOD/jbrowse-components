@@ -30,7 +30,7 @@ export async function renderToSvg(
   if (!model.displayedRegions.length) {
     throw new Error('Cannot export: no regions are displayed')
   }
-  const { themeName = 'default', fontFamily, Wrapper } = opts
+  const { themeName, fontFamily, Wrapper } = opts
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)
 

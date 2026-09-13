@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { BaseViewModel } from '@jbrowse/core/pluggableElementTypes/models'
+import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
   clamp,
@@ -44,12 +45,12 @@ import { calculateStaticSlices } from './slices.ts'
 import type { SliceRegion } from './slices.ts'
 import type { CircularViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { ViewExportSvgOptions } from '@jbrowse/core/svg/exportViewSvg'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util/types'
 import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
 import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
-import type { FC, ReactNode } from 'react'
 
 const twoPi = 2 * Math.PI
 
@@ -91,21 +92,7 @@ const ReorderChromosomesDialog = lazy(
   () => import('./components/ReorderChromosomesDialog.tsx'),
 )
 
-export interface ExportSvgOptions {
-  /**
-   * Whether to hand the result to the browser's download path. Default true,
-   * which is the dialog. False returns the markup and writes nothing — the
-   * caller has somewhere of its own to put it, and a download it did not ask
-   * for would land beside that under a name it did not choose.
-   */
-  save?: boolean
-  rasterizeLayers?: boolean
-  format?: 'svg' | 'png'
-  filename?: string
-  Wrapper?: FC<{ children: ReactNode }>
-  themeName?: string
-  fontFamily?: string
-}
+export type ExportSvgOptions = ViewExportSvgOptions
 
 // the part of the view `applyInit` drives. Duck-typed rather than the model's
 // own Instance so the helper can live above the factory that defines it
@@ -1171,19 +1158,14 @@ function stateModelFactory(pluginManager: PluginManager) {
        * renders the view to SVG markup, which it returns; saves it through
        * FileSaver unless `save: false`
        */
-      // Promise<string> is stated, against the house preference for inferred
-      // return types: renderToSvg is typed against this very model, so an
-      // inferred return makes the model type reference itself (TS2456).
+      // Promise<string> is stated: renderToSvg is typed against this very
+      // model, so an inferred return makes the type reference itself (TS2456)
       async exportSvg(opts: ExportSvgOptions = {}): Promise<string> {
-        const { renderToSvg } =
-          await import('./svgcomponents/SVGCircularView.tsx')
-        const html = await renderToSvg(self as CircularViewModel, opts)
-        if (opts.save !== false) {
-          const { saveSvgAsImage } =
-            await import('@jbrowse/core/svg/saveSvgAsImage')
-          await saveSvgAsImage(html, opts)
-        }
-        return html
+        return exportViewSvg(
+          self as CircularViewModel,
+          opts,
+          () => import('./svgcomponents/SVGCircularView.tsx'),
+        )
       },
     }))
     .actions(self => ({

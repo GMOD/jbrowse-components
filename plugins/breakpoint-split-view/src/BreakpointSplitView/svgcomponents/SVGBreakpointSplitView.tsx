@@ -44,7 +44,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
     trackLabels = 'offset',
     showGridlines = false,
     Wrapper = ({ children }) => children,
-    themeName = 'default',
+    themeName,
     fontFamily,
   } = opts
 

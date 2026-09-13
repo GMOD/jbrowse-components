@@ -38,7 +38,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     textHeight = defaultTextHeight(fontSize),
     rulerHeight = 34,
     trackLabels = 'offset',
-    themeName = 'default',
+    themeName,
     fontFamily,
     showGridlines = false,
     Wrapper,

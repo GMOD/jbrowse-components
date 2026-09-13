@@ -21,7 +21,7 @@ export async function renderToSvg(
   opts: ExportSvgOptions,
 ) {
   await awaitViewInitialized(model)
-  const { themeName = 'default', fontFamily, Wrapper } = opts
+  const { themeName, fontFamily, Wrapper } = opts
 
   const session = getSession(model)
   const theme = session.getActiveThemeOptions?.(themeName)

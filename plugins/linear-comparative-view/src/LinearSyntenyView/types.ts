@@ -2,12 +2,8 @@ import type { LinearSyntenyViewStateModel } from './model.ts'
 import type { HighlightType } from '@jbrowse/core/util/highlights'
 import type { TrackInit } from '@jbrowse/core/util/tracks'
 import type { ViewInit } from '@jbrowse/core/util/withLaunchInput'
-import type {
-  LinearGenomeViewLaunchProps,
-  TrackLabelMode,
-} from '@jbrowse/plugin-linear-genome-view'
+import type { LinearGenomeViewLaunchProps } from '@jbrowse/plugin-linear-genome-view'
 import type { SyntenyViewSharedCommands } from '@jbrowse/synteny-core'
-import type React from 'react'
 
 export type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
 export type { CigarMode } from './cigarModes.ts'
@@ -110,26 +106,4 @@ export type LinearSyntenyViewSpec = LinearSyntenyViewInit & {
   views: NonNullable<LinearSyntenyViewCommands['views']>
 }
 
-export interface ExportSvgOptions {
-  rasterizeLayers?: boolean
-  format?: 'svg' | 'png'
-  filename?: string
-  /**
-   * Whether to hand the result to the browser's download path. Default true,
-   * which is the dialog. False returns the markup and writes nothing — the
-   * caller has somewhere of its own to put it, and a download it did not ask
-   * for would land beside that under a name it did not choose.
-   */
-  save?: boolean
-  Wrapper?: React.FC<{ children: React.ReactNode }>
-  fontSize?: number
-  rulerHeight?: number
-  textHeight?: number
-  themeName?: string
-  fontFamily?: string
-  trackLabels?: TrackLabelMode
-  showGridlines?: boolean
-  // headless canvas factory for `rasterizeLayers` (jbrowse-img passes
-  // node-canvas); without it the raster path needs a DOM canvas
-  createCanvas?: (width: number, height: number) => HTMLCanvasElement
-}
+export type { ExportSvgOptions } from '@jbrowse/display-kit/types'

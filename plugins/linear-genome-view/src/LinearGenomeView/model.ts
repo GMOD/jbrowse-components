@@ -5,6 +5,7 @@ import {
   BaseViewModel,
   HighlightsMixin,
 } from '@jbrowse/core/pluggableElementTypes/models'
+import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import { VIEW_HEADER_HEIGHT } from '@jbrowse/core/ui'
 import {
   assembleLocString,
@@ -1784,19 +1785,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * renders the view to SVG markup, which it returns; saves it through
        * FileSaver unless `save: false`
        */
-      // Promise<string> is stated, against the house preference for inferred
-      // return types: renderToSvg is typed against this very model, so an
-      // inferred return makes the model type reference itself (TS2456).
+      // Promise<string> is stated: renderToSvg is typed against this very
+      // model, so an inferred return makes the type reference itself (TS2456)
       async exportSvg(opts: ExportSvgOptions = {}): Promise<string> {
-        const { renderToSvg } =
-          await import('./svgcomponents/SVGLinearGenomeView.tsx')
-        const html = await renderToSvg(self as LinearGenomeViewModel, opts)
-        if (opts.save !== false) {
-          const { saveSvgAsImage } =
-            await import('@jbrowse/core/svg/saveSvgAsImage')
-          await saveSvgAsImage(html, opts)
-        }
-        return html
+        return exportViewSvg(
+          self as LinearGenomeViewModel,
+          opts,
+          () => import('./svgcomponents/SVGLinearGenomeView.tsx'),
+        )
       },
     }))
     .actions(self => {

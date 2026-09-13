@@ -1,4 +1,5 @@
 import type { DisplayModel } from '@jbrowse/core/pluggableElementTypes/models'
+import type { ViewExportSvgOptions } from '@jbrowse/core/svg/exportViewSvg'
 import type { ThemeOptions } from '@mui/material'
 
 /**
@@ -33,26 +34,12 @@ export type LinearDisplayModel = DisplayModel & {
 
 export type TrackLabelMode = 'offset' | 'overlay' | 'left' | 'none'
 
-export interface ExportSvgOptions {
-  rasterizeLayers?: boolean
-  format?: 'svg' | 'png'
-  filename?: string
-  /**
-   * Whether to hand the result to the browser's download path. Default true,
-   * which is the dialog. False returns the markup and writes nothing — the
-   * caller has somewhere of its own to put it, and a download it did not ask
-   * for would land beside that under a name it did not choose.
-   */
-  save?: boolean
-  Wrapper?: React.FC<{ children: React.ReactNode }>
+export interface ExportSvgOptions extends ViewExportSvgOptions {
   fontSize?: number
   rulerHeight?: number
   textHeight?: number
   trackLabels?: TrackLabelMode
-  themeName?: string
-  fontFamily?: string
   showGridlines?: boolean
-  createCanvas?: (width: number, height: number) => HTMLCanvasElement
 }
 
 export interface ExportSvgDisplayOptions extends ExportSvgOptions {

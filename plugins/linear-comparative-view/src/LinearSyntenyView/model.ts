@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import { getConf } from '@jbrowse/core/configuration'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
+import { exportViewSvg } from '@jbrowse/core/svg/exportViewSvg'
 import {
   avg,
   getDialogHost,
@@ -1449,19 +1450,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      // Promise<string> is stated, against the house preference for inferred
-      // return types: renderToSvg is typed against this very model, so an
-      // inferred return makes the model type reference itself (TS2456).
-      async exportSvg(opts: ExportSvgOptions): Promise<string> {
-        const { renderToSvg } =
-          await import('./svgcomponents/SVGLinearSyntenyView.tsx')
-        const html = await renderToSvg(self as LinearSyntenyViewModel, opts)
-        if (opts.save !== false) {
-          const { saveSvgAsImage } =
-            await import('@jbrowse/core/svg/saveSvgAsImage')
-          await saveSvgAsImage(html, opts)
-        }
-        return html
+      // Promise<string> is stated: renderToSvg is typed against this very
+      // model, so an inferred return makes the type reference itself (TS2456)
+      async exportSvg(opts: ExportSvgOptions = {}): Promise<string> {
+        return exportViewSvg(
+          self as LinearSyntenyViewModel,
+          opts,
+          () => import('./svgcomponents/SVGLinearSyntenyView.tsx'),
+        )
       },
     }))
     .views(self => {

@@ -40,7 +40,7 @@ export async function renderToSvg(
     trackLabels = 'offset',
     showGridlines = false,
     Wrapper,
-    themeName = 'default',
+    themeName,
     fontFamily,
   } = opts
   const session = getSession(model)
