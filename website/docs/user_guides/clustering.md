@@ -15,7 +15,7 @@ naming what is being clustered.
 | --------------------------------------------------------------- | ----------------------------- | ------------------------------ |
 | [Multi-sample variant](/docs/user_guides/multivariant_track)    | Cluster rows by genotype...   | per-sample genotypes           |
 | [Multi-quantitative](/docs/user_guides/multiquantitative_track) | Cluster rows by score...      | each subtrack's signal profile |
-| [Multi-row feature](/docs/user_guides/multirow_feature_track)   | Cluster rows by similarity... | each row's painted intervals   |
+| [Multi-row feature](/docs/user_guides/multirow_feature_track)   | Cluster rows by similarity... | a feature attribute per bin    |
 
 <Video src="/media/pangenome/hprc_cluster_callset.mp4" caption="Cluster rows by genotype on a multi-sample variant track: the rows arrive in the callset's own order, and the run reorders them and draws the dendrogram beside them." />
 
@@ -62,13 +62,14 @@ Every display opens the same dialog, with two modes:
 Both modes cluster the same rows with the same linkage by default (average, or
 UPGMA), so manual mode reproduces auto mode.
 
-The multi-row feature display clusters on the color each row is painted, so the
-coloring is an input: change **Color by...** and the same rows over the same
-locus give a different tree. The coloring in force is recorded in the caption
-alongside the locus. A painting with a handful of distinct colors is treated as
-categorical, and distance is then the number of bins whose colors differ; a
-palette with many colors is treated as continuous, and rows painted similar
-shades land closer together.
+The multi-row feature display clusters on a feature attribute, binned across the
+window: **Cluster on** in the dialog's advanced options picks which one, and the
+caption records it alongside the locus. By default the display follows the
+coloring — the attribute a `jexl:` color expression reads, else the feature
+name. A numeric attribute is averaged per bin and rows with similar values land
+closer together; any other attribute is categorical, and distance is the number
+of bins whose values differ. **Presence only** drops the values and clusters on
+which bins each row covers at all.
 
 ## Reading and using the dendrogram
 

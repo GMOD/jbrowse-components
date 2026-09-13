@@ -64,6 +64,7 @@ import {
   partitionCandidates,
   partitionRowCounts,
   pinnedPartitionField,
+  resolveClusterField,
   regionHasPinnedData,
 } from './partitionFields.ts'
 import {
@@ -228,6 +229,13 @@ export default function stateModelFactory(
       },
       /**
        * #getter
+       * The raw `clusterField` slot, `auto` until the user picks one.
+       */
+      get clusterField(): string {
+        return self.conf.clusterField
+      },
+      /**
+       * #getter
        * Feature attribute holding a signed bp length change vs the reference;
        * empty turns the indel-glyph pass off.
        */
@@ -332,6 +340,19 @@ export default function stateModelFactory(
          */
         get effectivePartitionField(): string {
           return effectivePartitionField(self)
+        },
+        /**
+         * #getter
+         * The attribute each row's blocks are clustered on, resolving `auto`
+         * off the coloring; empty clusters on presence alone.
+         */
+        get effectiveClusterField(): string {
+          return resolveClusterField({
+            clusterField: self.clusterField,
+            colorConfig: self.colorConfig,
+            candidates: partitionCandidates(self),
+            partitionField: effectivePartitionField(self),
+          })
         },
         /**
          * #getter
@@ -878,6 +899,14 @@ export default function stateModelFactory(
           setConf(self, 'partitionField', field)
           self.clearLayout()
           self.hiddenCategories.clear()
+        },
+        /**
+         * #action
+         * Recluster on a different feature attribute; empty clusters on
+         * presence alone.
+         */
+        setClusterField(field: string) {
+          setConf(self, 'clusterField', field)
         },
         /**
          * #action

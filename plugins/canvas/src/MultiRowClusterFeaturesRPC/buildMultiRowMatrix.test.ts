@@ -8,209 +8,142 @@ function buildRows(args: Parameters<typeof buildMultiRowMatrix>[0]) {
   return [...buildMultiRowMatrix(args).values()].map(row => [...row])
 }
 
-const RED = [255, 0, 0]
-const BLUE = [0, 0, 255]
-const GAP = [-255, -255, -255]
-
 const dist = (a: number[], b: number[]) =>
   Math.hypot(...a.map((v, i) => v - b[i]!))
 
-// Pushes the palette past MAX_CATEGORICAL_COLORS onto the RGB path, on a row
-// name no `sources` entry reads, so it contributes no bin to any output row.
-const PALETTE_FILLER: MatrixFeature[] = Array.from({ length: 13 }, (_, i) => ({
-  regionIndex: 0,
-  row: '__not_a_source__',
-  start: 0,
-  end: 1,
-  colorKey: `#${`0${(i + 1).toString(16)}`.repeat(3)}`,
-}))
+function feature(
+  row: string,
+  start: number,
+  end: number,
+  value = '',
+  regionIndex = 0,
+): MatrixFeature {
+  return { regionIndex, row, start, end, value }
+}
 
-describe('continuous palettes: rgb channels', () => {
-  test('rows in `sources` order; bins carry rgb channels; gaps are -255', () => {
+describe('presence: one channel per bin', () => {
+  test('an empty clusterField marks the bins each row covers', () => {
     const matrix = buildRows({
       sources: ['s1', 's2', 's3'],
       regions: [{ start: 0, end: 10 }],
+      clusterField: '',
       maxBins: 4, // midpoints at 1.25, 3.75, 6.25, 8.75
       features: [
-        { regionIndex: 0, row: 's1', start: 0, end: 10, colorKey: 'red' },
-        { regionIndex: 0, row: 's2', start: 0, end: 5, colorKey: 'blue' },
-        ...PALETTE_FILLER,
+        feature('s1', 0, 10, 'ignored'),
+        feature('s2', 0, 5, 'ignored'),
       ],
     })
-    expect(matrix[0]).toEqual([...RED, ...RED, ...RED, ...RED])
-    expect(matrix[1]).toEqual([...BLUE, ...BLUE, ...GAP, ...GAP])
-    expect(matrix[2]).toEqual([...GAP, ...GAP, ...GAP, ...GAP])
+    expect(matrix[0]).toEqual([1, 1, 1, 1])
+    expect(matrix[1]).toEqual([1, 1, 0, 0])
+    expect(matrix[2]).toEqual([0, 0, 0, 0])
   })
 
-  test('later feature on a row wins the bin (paint order)', () => {
+  test('a field whose every value is empty falls back to presence', () => {
     const [row] = buildRows({
       sources: ['s1'],
       regions: [{ start: 0, end: 10 }],
-      maxBins: 2, // midpoints at 2.5, 7.5
-      features: [
-        { regionIndex: 0, row: 's1', start: 0, end: 10, colorKey: 'red' },
-        { regionIndex: 0, row: 's1', start: 0, end: 5, colorKey: 'blue' },
-        ...PALETTE_FILLER,
-      ],
+      clusterField: 'state',
+      maxBins: 2,
+      features: [feature('s1', 0, 5)],
     })
-    expect(row).toEqual([...BLUE, ...RED])
+    expect(row).toEqual([1, 0])
   })
 
   test('a feature between two midpoints covers nothing', () => {
     const [row] = buildRows({
       sources: ['s1'],
       regions: [{ start: 0, end: 10 }],
+      clusterField: '',
       maxBins: 2, // midpoints at 2.5, 7.5
-      features: [
-        { regionIndex: 0, row: 's1', start: 4, end: 6, colorKey: 'red' },
-        ...PALETTE_FILLER,
-      ],
+      features: [feature('s1', 4, 6)],
     })
-    expect(row).toEqual([...GAP, ...GAP])
+    expect(row).toEqual([0, 0])
   })
 
   test('a feature hanging off either end covers the bins it reaches', () => {
     const [row] = buildRows({
       sources: ['s1'],
       regions: [{ start: 0, end: 10 }],
-      maxBins: 4, // midpoints at 1.25, 3.75, 6.25, 8.75
-      features: [
-        { regionIndex: 0, row: 's1', start: -100, end: 7, colorKey: 'red' },
-        ...PALETTE_FILLER,
-      ],
+      clusterField: '',
+      maxBins: 4,
+      features: [feature('s1', -100, 7)],
     })
-    expect(row).toEqual([...RED, ...RED, ...RED, ...GAP])
-  })
-
-  test('bins split across regions proportional to width', () => {
-    const matrix = buildRows({
-      sources: ['s1'],
-      regions: [
-        { start: 0, end: 10 },
-        { start: 100, end: 110 },
-      ],
-      maxBins: 4, // 2 bins per equal-width region
-      features: [
-        { regionIndex: 1, row: 's1', start: 100, end: 110, colorKey: 'red' },
-        ...PALETTE_FILLER,
-      ],
-    })
-    expect(matrix[0]).toEqual([...GAP, ...GAP, ...RED, ...RED])
-  })
-
-  test('features only cover bins in their own region (same-coord chromosomes)', () => {
-    const matrix = buildRows({
-      sources: ['s1', 's2'],
-      regions: [
-        { start: 0, end: 10 },
-        { start: 0, end: 10 },
-      ],
-      maxBins: 4, // 2 bins per region
-      features: [
-        { regionIndex: 0, row: 's1', start: 0, end: 10, colorKey: 'blue' },
-        { regionIndex: 1, row: 's2', start: 0, end: 10, colorKey: 'red' },
-        ...PALETTE_FILLER,
-      ],
-    })
-    expect(matrix[0]).toEqual([...BLUE, ...BLUE, ...GAP, ...GAP])
-    expect(matrix[1]).toEqual([...GAP, ...GAP, ...RED, ...RED])
-  })
-
-  test('similar colors are closer than dissimilar ones regardless of insertion order', () => {
-    const [seenFirst, seenMid, seenLast] = buildRows({
-      sources: ['seenFirst', 'seenMid', 'seenLast'],
-      regions: [{ start: 0, end: 10 }],
-      maxBins: 2,
-      features: [
-        {
-          regionIndex: 0,
-          row: 'seenFirst',
-          start: 0,
-          end: 10,
-          colorKey: '#00ff00',
-        },
-        {
-          regionIndex: 0,
-          row: 'seenMid',
-          start: 0,
-          end: 10,
-          colorKey: '#ff0000',
-        },
-        {
-          regionIndex: 0,
-          row: 'seenLast',
-          start: 0,
-          end: 10,
-          colorKey: '#00fa00',
-        },
-        ...PALETTE_FILLER,
-      ],
-    })
-    expect(dist(seenFirst!, seenLast!)).toBeLessThan(dist(seenFirst!, seenMid!))
-    expect(dist(seenFirst!, seenLast!)).toBeLessThan(dist(seenMid!, seenLast!))
-  })
-
-  test('a gap sits outside the color cube', () => {
-    const [black, white, gray, absent] = buildRows({
-      sources: ['black', 'white', 'gray', 'absent'],
-      regions: [{ start: 0, end: 10 }],
-      maxBins: 2,
-      features: [
-        {
-          regionIndex: 0,
-          row: 'black',
-          start: 0,
-          end: 10,
-          colorKey: '#000000',
-        },
-        {
-          regionIndex: 0,
-          row: 'white',
-          start: 0,
-          end: 10,
-          colorKey: '#ffffff',
-        },
-        { regionIndex: 0, row: 'gray', start: 0, end: 10, colorKey: '#808080' },
-        ...PALETTE_FILLER,
-      ],
-    })
-    expect(dist(black!, absent!)).toBeGreaterThanOrEqual(dist(black!, white!))
-    expect(dist(gray!, absent!)).toBeGreaterThan(dist(gray!, black!))
-    expect(dist(gray!, absent!)).toBeGreaterThan(dist(gray!, white!))
+    expect(row).toEqual([1, 1, 1, 0])
   })
 })
 
-describe('categorical palettes: one channel per color', () => {
-  test('three categories are equidistant, which the rgb encoding is not', () => {
-    const [red, blue, purple] = buildRows({
-      sources: ['red', 'blue', 'purple'],
+describe('scalar: the mean over each bin', () => {
+  test('numeric values become one channel per bin, uncovered 0', () => {
+    const matrix = buildRows({
+      sources: ['s1', 's2'],
       regions: [{ start: 0, end: 10 }],
-      maxBins: 2,
-      features: [
-        { regionIndex: 0, row: 'red', start: 0, end: 10, colorKey: '#ff0000' },
-        { regionIndex: 0, row: 'blue', start: 0, end: 10, colorKey: '#0000ff' },
-        {
-          regionIndex: 0,
-          row: 'purple',
-          start: 0,
-          end: 10,
-          colorKey: '#800080',
-        },
-      ],
+      clusterField: 'segmean',
+      maxBins: 4,
+      features: [feature('s1', 0, 10, '2.5'), feature('s2', 0, 5, '-1')],
     })
-    expect(dist(red!, blue!)).toBeCloseTo(dist(red!, purple!))
-    expect(dist(red!, purple!)).toBeCloseTo(dist(blue!, purple!))
+    expect(matrix[0]).toEqual([2.5, 2.5, 2.5, 2.5])
+    expect(matrix[1]).toEqual([-1, -1, 0, 0])
   })
 
-  test('each bin is a one-hot over the colors plus a gap slot', () => {
+  test('several features in a bin average rather than last-wins', () => {
+    const [row] = buildRows({
+      sources: ['s1'],
+      regions: [{ start: 0, end: 10 }],
+      clusterField: 'segmean',
+      maxBins: 2, // midpoints at 2.5, 7.5
+      features: [feature('s1', 0, 10, '1'), feature('s1', 0, 5, '3')],
+    })
+    expect(row).toEqual([2, 1])
+  })
+
+  test('a feature with no value contributes nothing to its bins', () => {
+    const [row] = buildRows({
+      sources: ['s1'],
+      regions: [{ start: 0, end: 10 }],
+      clusterField: 'segmean',
+      maxBins: 2,
+      features: [feature('s1', 0, 10, ''), feature('s1', 0, 5, '4')],
+    })
+    expect(row).toEqual([4, 0])
+  })
+
+  test('one non-numeric value puts the whole field on the categorical path', () => {
+    const [row] = buildRows({
+      sources: ['s1'],
+      regions: [{ start: 0, end: 10 }],
+      clusterField: 'segmean',
+      maxBins: 1,
+      features: [feature('s1', 0, 10, '1'), feature('other', 0, 10, 'NA')],
+    })
+    // Two distinct values plus the gap slot.
+    expect(row).toHaveLength(3)
+  })
+})
+
+describe('categorical: one channel per distinct value', () => {
+  test('three values are equidistant', () => {
+    const [enh, tss, quies] = buildRows({
+      sources: ['enh', 'tss', 'quies'],
+      regions: [{ start: 0, end: 10 }],
+      clusterField: 'state',
+      maxBins: 2,
+      features: [
+        feature('enh', 0, 10, 'Enhancer'),
+        feature('tss', 0, 10, 'TSS'),
+        feature('quies', 0, 10, 'Quiescent'),
+      ],
+    })
+    expect(dist(enh!, tss!)).toBeCloseTo(dist(enh!, quies!))
+    expect(dist(enh!, quies!)).toBeCloseTo(dist(tss!, quies!))
+  })
+
+  test('each bin is a one-hot over the values plus a gap slot', () => {
     const [s1, s2] = buildRows({
       sources: ['s1', 's2'],
       regions: [{ start: 0, end: 10 }],
+      clusterField: 'state',
       maxBins: 4,
-      features: [
-        { regionIndex: 0, row: 's1', start: 0, end: 10, colorKey: 'red' },
-        { regionIndex: 0, row: 's2', start: 0, end: 5, colorKey: 'blue' },
-      ],
+      features: [feature('s1', 0, 10, 'A'), feature('s2', 0, 5, 'B')],
     })
     const channels = 3
     expect(s1).toHaveLength(4 * channels)
@@ -226,51 +159,98 @@ describe('categorical palettes: one channel per color', () => {
     const [same, oneOff] = buildRows({
       sources: ['same', 'oneOff'],
       regions: [{ start: 0, end: 10 }],
+      clusterField: 'state',
       maxBins: 4, // midpoints 1.25, 3.75, 6.25, 8.75
       features: [
-        { regionIndex: 0, row: 'same', start: 0, end: 10, colorKey: 'red' },
-        { regionIndex: 0, row: 'oneOff', start: 0, end: 10, colorKey: 'red' },
-        { regionIndex: 0, row: 'oneOff', start: 8, end: 10, colorKey: 'blue' },
+        feature('same', 0, 10, 'A'),
+        feature('oneOff', 0, 10, 'A'),
+        feature('oneOff', 8, 10, 'B'),
       ],
     })
     expect(dist(same!, oneOff!)).toBeCloseTo(Math.sqrt(2 * 1))
   })
 
-  test('absent is a category: two absent rows agree, and absence is no farther than any other mismatch', () => {
+  test('absent is a category: two absent rows agree', () => {
     const [painted, absentA, absentB] = buildRows({
       sources: ['painted', 'absentA', 'absentB'],
       regions: [{ start: 0, end: 10 }],
+      clusterField: 'state',
       maxBins: 2,
-      features: [
-        {
-          regionIndex: 0,
-          row: 'painted',
-          start: 0,
-          end: 10,
-          colorKey: 'red',
-        },
-        { regionIndex: 0, row: 'other', start: 0, end: 10, colorKey: 'blue' },
-      ],
+      features: [feature('painted', 0, 10, 'A'), feature('other', 0, 10, 'B')],
     })
     expect(dist(absentA!, absentB!)).toBe(0)
-    expect(dist(painted!, absentA!)).toBeCloseTo(Math.abs(2))
+    expect(dist(painted!, absentA!)).toBeCloseTo(2)
   })
 
-  test('switches to rgb once the palette outgrows the categorical ceiling', () => {
-    const build = (numColors: number) =>
+  test('later feature on a row wins the bin (paint order)', () => {
+    const [row] = buildRows({
+      sources: ['s1'],
+      regions: [{ start: 0, end: 10 }],
+      clusterField: 'state',
+      maxBins: 2, // midpoints at 2.5, 7.5
+      features: [feature('s1', 0, 10, 'A'), feature('s1', 0, 5, 'B')],
+    })
+    // Slots are A, B, gap: the first bin took B, the second kept A.
+    expect(row).toEqual([0, 1, 0, 1, 0, 0])
+  })
+})
+
+describe('the width budget', () => {
+  test('a wide vocabulary buys its channels out of the bins', () => {
+    const build = (numValues: number) =>
       buildRows({
         sources: ['s1'],
-        regions: [{ start: 0, end: 10 }],
-        maxBins: 1,
-        features: Array.from({ length: numColors }, (_, i) => ({
-          regionIndex: 0,
-          row: `row${i}`,
-          start: 0,
-          end: 10,
-          colorKey: `#${`0${(i + 1).toString(16)}`.repeat(3)}`,
-        })),
+        regions: [{ start: 0, end: 1000 }],
+        clusterField: 'state',
+        maxCells: 100,
+        features: Array.from({ length: numValues }, (_, i) =>
+          feature(`row${i}`, 0, 1000, `v${i}`),
+        ),
       })
-    expect(build(12)[0]).toHaveLength(13)
-    expect(build(13)[0]).toHaveLength(3)
+    // 4 values + gap = 5 channels, so 20 bins; 9 + gap = 10 channels, 10 bins.
+    expect(build(4)[0]).toHaveLength(100)
+    expect(build(9)[0]).toHaveLength(100)
+  })
+
+  test('maxBins still caps a narrow encoding', () => {
+    const [row] = buildRows({
+      sources: ['s1'],
+      regions: [{ start: 0, end: 10_000 }],
+      clusterField: '',
+      maxBins: 50,
+      features: [feature('s1', 0, 10_000)],
+    })
+    expect(row).toHaveLength(50)
+  })
+})
+
+describe('regions', () => {
+  test('bins split across regions proportional to width', () => {
+    const matrix = buildRows({
+      sources: ['s1'],
+      regions: [
+        { start: 0, end: 10 },
+        { start: 100, end: 110 },
+      ],
+      clusterField: '',
+      maxBins: 4, // 2 bins per equal-width region
+      features: [feature('s1', 100, 110, '', 1)],
+    })
+    expect(matrix[0]).toEqual([0, 0, 1, 1])
+  })
+
+  test('features only cover bins in their own region (same-coord chromosomes)', () => {
+    const matrix = buildRows({
+      sources: ['s1', 's2'],
+      regions: [
+        { start: 0, end: 10 },
+        { start: 0, end: 10 },
+      ],
+      clusterField: '',
+      maxBins: 4,
+      features: [feature('s1', 0, 10), feature('s2', 0, 10, '', 1)],
+    })
+    expect(matrix[0]).toEqual([1, 1, 0, 0])
+    expect(matrix[1]).toEqual([0, 0, 1, 1])
   })
 })

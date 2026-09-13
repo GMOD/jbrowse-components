@@ -21,14 +21,18 @@ export interface MultiRowClusterModel extends ClusterRunModel<MultiRowSource> {
   // The resolved field, never the raw slot: the matrix has to bucket each
   // feature into the row the painting drew it in.
   effectivePartitionField: string
-  colorConfig: string | undefined
+  // Resolved likewise: `auto` names no attribute the worker could read.
+  effectiveClusterField: string
 }
 
 export interface MultiRowClusterDialogModel
   extends
     IStateTreeNode,
     MultiRowClusterModel,
-    Pick<TreeLayoutModel<MultiRowSource>, 'setLayout'> {}
+    Pick<TreeLayoutModel<MultiRowSource>, 'setLayout'> {
+  partitionCandidates: string[]
+  setClusterField: (field: string) => void
+}
 
 /**
  * `useFetch` serializes its key on every render, so this names only the run
@@ -42,7 +46,7 @@ export function featureMatrixKey(model: MultiRowClusterModel) {
         'featureMatrix',
         clusterableSources.map(s => s.name).join('\t'),
         model.effectivePartitionField,
-        model.colorConfig,
+        model.effectiveClusterField,
       ] as const)
     : null
 }
@@ -66,17 +70,16 @@ export async function runMultiRowClustering({
     clusterableSources,
     adapterConfig,
     effectivePartitionField,
-    colorConfig,
+    effectiveClusterField,
   } = model
   await applyClusterRun({
     model,
     rows: clusterableSources,
-    // This display clusters on the rendered color of each bin, so the color
-    // scheme is not a display preference here — it is the matrix, and the
-    // caption has to say which coloring produced a given tree.
+    // Both fields are the matrix, not a display preference, so the caption has
+    // to say which pair produced a given tree.
     provenance: clusterProvenanceFromRegions(regions, [
       { name: 'rows', value: effectivePartitionField },
-      ...(colorConfig ? [{ name: 'color', value: colorConfig }] : []),
+      { name: 'field', value: effectiveClusterField || 'presence' },
     ]),
     matrix: () =>
       rpcManager.call(sessionId, 'MultiRowClusterFeatures', {
@@ -84,7 +87,7 @@ export async function runMultiRowClustering({
         sources: clusterableSources.map(s => s.name),
         adapterConfig,
         partitionField: effectivePartitionField,
-        colorConfig,
+        clusterField: effectiveClusterField,
         stopToken,
         statusCallback,
       }),

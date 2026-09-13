@@ -174,8 +174,8 @@ applies at render time with no refetch.
 
 Two more track-menu actions turn the painting into a comparison:
 
-- **Clustering → Cluster rows by similarity** reorders the rows by their state
-  colors across the region in view and draws the dendrogram in the sidebar
+- **Clustering → Cluster rows by similarity** reorders the rows by the state
+  each carries across the region in view and draws the dendrogram in the sidebar
 - Right-click a column and pick **Sort rows by color here** to rank the rows by
   the state each carries at that base
 

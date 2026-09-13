@@ -179,20 +179,19 @@ export function resolvePartitionField(
 }
 
 /**
- * The clustering RPC resolves rows through this same function — were the two to
- * drift, the cluster order would describe rows the painting never drew.
+ * Reads one feature attribute, or derives it from a `jexl:` expression. Both
+ * the row a feature paints in and the value it clusters on come through here —
+ * were the two to drift, the cluster order would describe rows the painting
+ * never drew.
  */
-export function makeFeaturePartitionResolver(
-  partitionField: string,
-  jexl: JexlInstance,
-) {
-  if (!isCallbackValue(partitionField)) {
-    return (feature: Feature) => columnValue(feature.get(partitionField))
+export function makeFeatureValueResolver(field: string, jexl: JexlInstance) {
+  if (!isCallbackValue(field)) {
+    return (feature: Feature) => columnValue(feature.get(field))
   }
-  const cfg = { partitionField }
+  const cfg = { field }
   return (feature: Feature) => {
     try {
-      return columnValue(readConfigValue(cfg, 'partitionField', feature, jexl))
+      return columnValue(readConfigValue(cfg, 'field', feature, jexl))
     } catch {
       return ''
     }
@@ -232,7 +231,7 @@ export function packMultiRowFeatures({
     partitionCandidates,
   )
   const candidateValues = createCandidateValueCounter(partitionCandidates)
-  const featurePartition = makeFeaturePartitionResolver(
+  const featurePartition = makeFeatureValueResolver(
     resolvedPartitionField,
     jexl,
   )

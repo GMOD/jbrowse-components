@@ -125,7 +125,8 @@ settings do the rest:
 
 Open the track at whole-genome zoom, then run **Clustering → Cluster rows by
 similarity** from the track menu (see [](/docs/user_guides/clustering)), which
-sorts the stack into blocks of shared copy-number profile.
+averages `segmean` across each bin and sorts the stack into blocks of shared
+copy-number profile.
 
 A vertical stripe is one locus called the same way across many rows. A whole row
 tending red or blue is one heavily aneuploid tumor, and clustering pulls those

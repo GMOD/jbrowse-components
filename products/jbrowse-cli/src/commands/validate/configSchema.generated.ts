@@ -3740,6 +3740,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
+        "clusterField": {
+          "description": "feature attribute the rows cluster on, or a jexl expression deriving one. 'auto' = the attribute the color slot reads, else name; empty = cluster on presence alone.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": "auto"
+        },
         "lengthField": {
           "description": "feature attribute holding a signed bp length change vs the reference; enables indel glyphs. Empty = off.",
           "$ref": "#/$defs/StringOrJexl",

@@ -659,6 +659,7 @@ exports[`every registered schema slot default 1`] = `
     "showLegend": "boolean = true",
   },
   "display: LinearMultiRowFeatureDisplay": {
+    "clusterField": "string = "auto"",
     "color": "maybeColor = undefined",
     "colorRowLabels": "boolean = false",
     "densityTier": "stringEnum = "auto" of ["auto","features","density"]",

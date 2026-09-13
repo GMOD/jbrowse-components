@@ -1,3 +1,5 @@
+import { isCallbackValue } from '@jbrowse/core/configuration'
+
 import {
   AUTO_PARTITION_FIELD,
   MAX_COUNTED_PARTITION_VALUES,
@@ -136,4 +138,45 @@ export function partitionRowCountHint(rowCount: PartitionRowCount | undefined) {
       : rowCount.count === 1
         ? '1 row'
         : `${rowCount.count} rows`
+}
+
+export const AUTO_CLUSTER_FIELD = 'auto'
+
+// Either spelling of an attribute read inside a jexl color expression, matched
+// as one alternation so the earliest of the two wins.
+const COLOR_ATTRIBUTE =
+  /get\(feature,['"]([^'"]+)['"]\)|\bfeature\.([A-Za-z_]\w*)/
+
+function colorAttribute(colorConfig: string | undefined) {
+  const match = isCallbackValue(colorConfig)
+    ? COLOR_ATTRIBUTE.exec(colorConfig)
+    : null
+  return match ? (match[1] ?? match[2]) : undefined
+}
+
+/**
+ * The attribute the rows cluster on. Under `auto` this follows the coloring —
+ * a color expression reading an attribute is the user saying that attribute is
+ * what the picture is about — and falls back to `name`, or to presence alone
+ * where `name` is what the rows already are.
+ */
+export function resolveClusterField({
+  clusterField,
+  colorConfig,
+  candidates,
+  partitionField,
+}: {
+  clusterField: string
+  colorConfig: string | undefined
+  candidates: string[]
+  partitionField: string
+}) {
+  if (clusterField !== AUTO_CLUSTER_FIELD) {
+    return clusterField
+  }
+  const fromColor = colorAttribute(colorConfig)
+  if (fromColor !== undefined && candidates.includes(fromColor)) {
+    return fromColor
+  }
+  return candidates.includes('name') && partitionField !== 'name' ? 'name' : ''
 }

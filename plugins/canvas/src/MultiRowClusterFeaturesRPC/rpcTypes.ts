@@ -12,7 +12,8 @@ export interface MultiRowClusterFeaturesArgs {
   // the returned `order` indexes back into this row list
   sources: string[]
   partitionField: string
-  colorConfig: string | undefined
+  // '' clusters on presence alone: which bins each row covers
+  clusterField: string
 }
 
 export interface MultiRowClusterFeaturesResult {

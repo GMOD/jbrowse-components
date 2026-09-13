@@ -20,7 +20,7 @@ function makeModel(names: string[]) {
     layout: [],
     adapterConfig: { type: 'BedTabixAdapter' },
     effectivePartitionField: 'sample',
-    colorConfig: 'jexl:get(feature,"color")',
+    effectiveClusterField: 'state',
     setLayoutAndClusterTree,
   } satisfies MultiRowClusterModel
   return { model, setLayoutAndClusterTree }
@@ -47,6 +47,7 @@ test('calls the registry RPC and applies the clustered order + tree', async () =
   expect(method).toBe('MultiRowClusterFeatures')
   expect(args.sources).toEqual(['a', 'b', 'c'])
   expect(args.partitionField).toBe('sample')
+  expect(args.clusterField).toBe('state')
   expect(args.regions).toHaveLength(1)
 
   // Order [2,0,1] reorders [a,b,c] to [c,a,b].
@@ -70,7 +71,7 @@ test('clusters the focused clade and keeps the hidden rows', async () => {
       layout: [],
       adapterConfig: { type: 'BedTabixAdapter' },
       effectivePartitionField: 'sample',
-      colorConfig: undefined,
+      effectiveClusterField: '',
       setLayoutAndClusterTree,
     },
     regions,
@@ -99,7 +100,7 @@ describe('featureMatrixKey', () => {
     layout: [],
     adapterConfig: { type: 'BedTabixAdapter' },
     effectivePartitionField: 'repClass',
-    colorConfig: undefined,
+    effectiveClusterField: 'name',
     setLayoutAndClusterTree: () => {},
   } satisfies MultiRowClusterModel
 
@@ -108,16 +109,16 @@ describe('featureMatrixKey', () => {
       'featureMatrix',
       'LINE\tSINE',
       'repClass',
-      undefined,
+      'name',
     ])
   })
 
   it('moves when a run argument moves, and not otherwise', () => {
     const base = featureMatrixKey(model)
 
-    expect(featureMatrixKey({ ...model, colorConfig: 'jexl:x' })).not.toEqual(
-      base,
-    )
+    expect(
+      featureMatrixKey({ ...model, effectiveClusterField: '' }),
+    ).not.toEqual(base)
     // The layout is not a run argument: the matrix is keyed by row name, and
     // reordering the rows does not change what the worker returns.
     expect(featureMatrixKey({ ...model, layout: [{ name: 'SINE' }] })).toEqual(

@@ -1,5 +1,3 @@
-import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
-
 // `regionIndex` is required because genomic coordinates repeat across
 // chromosomes, so start/end alone cannot say which region a feature covers.
 export interface MatrixFeature {
@@ -7,7 +5,7 @@ export interface MatrixFeature {
   row: string
   start: number
   end: number
-  colorKey: string
+  value: string
 }
 
 interface Bin {
@@ -15,31 +13,67 @@ interface Bin {
   mid: number
 }
 
-const RGB_CHANNELS = 3
+type Encoding = 'presence' | 'scalar' | 'categorical'
 
-// A gap sits one full channel range below black, just outside the color cube, so
-// "no feature here" is at least as far from any color as black is from white
-// without being an unbounded outlier that clusters rows by gap pattern alone.
-const GAP_CHANNEL = -255
+function chooseEncoding(clusterField: string, values: Set<string>): Encoding {
+  if (clusterField === '') {
+    return 'presence'
+  }
+  let anyValue = false
+  for (const v of values) {
+    if (v !== '') {
+      anyValue = true
+      if (!Number.isFinite(Number(v))) {
+        return 'categorical'
+      }
+    }
+  }
+  return anyValue ? 'scalar' : 'presence'
+}
 
-// The categorical encoding costs one channel per color, so this ceiling is also
-// what keeps the matrix a comparable width to the RGB path's bins x 3.
-const MAX_CATEGORICAL_COLORS = 12
-
-// Few enough distinct colors and each bin gets a one-hot channel, so Euclidean
-// distance over a row is a mismatch count; past that the r,g,b channels carry a
-// continuous palette, whose ordering nothing categorical can use.
+/**
+ * One row per source, one to several channels per bin, keyed in `sources`
+ * order. Presence marks the bins a row covers, a numeric attribute becomes the
+ * mean over each bin, and anything else is one-hot over its distinct values so
+ * Euclidean distance counts mismatched bins.
+ */
 export function buildMultiRowMatrix({
   sources,
   regions,
   features,
+  clusterField,
   maxBins = 1000,
+  maxCells = 13_000,
 }: {
   sources: string[]
   regions: { start: number; end: number }[]
   features: MatrixFeature[]
+  clusterField: string
   maxBins?: number
+  maxCells?: number
 }): Map<string, Float32Array<ArrayBuffer>> {
+  const distinctValues = new Set<string>()
+  for (const f of features) {
+    distinctValues.add(f.value)
+  }
+  const encoding = chooseEncoding(clusterField, distinctValues)
+  // The categorical path gives the gap the last slot of its own, so "absent" is
+  // one more category and two absent rows still agree at that bin.
+  const channels = encoding === 'categorical' ? distinctValues.size + 1 : 1
+  const slotOf = new Map<string, number>()
+  if (encoding === 'categorical') {
+    for (const value of distinctValues) {
+      slotOf.set(value, slotOf.size)
+    }
+  }
+
+  // A wide vocabulary buys its channels out of the bins rather than off an
+  // unbounded row: same cell budget, fewer and wider bins.
+  const binCount = Math.max(
+    1,
+    Math.min(maxBins, Math.floor(maxCells / channels)),
+  )
+
   const totalWidth =
     regions.reduce((a, r) => a + Math.max(0, r.end - r.start), 0) || 1
   const bins: Bin[] = []
@@ -49,7 +83,7 @@ export function buildMultiRowMatrix({
   for (const [regionIndex, r] of regions.entries()) {
     regionBinStart.push(bins.length)
     const w = Math.max(0, r.end - r.start)
-    const nb = Math.max(1, Math.round((maxBins * w) / totalWidth))
+    const nb = Math.max(1, Math.round((binCount * w) / totalWidth))
     for (let i = 0; i < nb; i++) {
       bins.push({ regionIndex, mid: r.start + ((i + 0.5) * w) / nb })
     }
@@ -83,64 +117,52 @@ export function buildMultiRowMatrix({
     arr.push(f)
   }
 
-  const distinctColors = new Set<string>()
-  for (const f of features) {
-    distinctColors.add(f.colorKey)
-  }
-  const categorical = distinctColors.size <= MAX_CATEGORICAL_COLORS
-
-  // The categorical path gives the gap the last slot of its own, so "absent" is
-  // one more category and two absent rows still agree at that bin.
-  const channels = categorical ? distinctColors.size + 1 : RGB_CHANNELS
-  const slotOf = new Map<string, number>()
-  if (categorical) {
-    for (const key of distinctColors) {
-      slotOf.set(key, slotOf.size)
-    }
-  }
-  const rgbCache = new Map<string, [number, number, number]>()
-  function rgbOf(key: string) {
-    let rgb = rgbCache.get(key)
-    if (!rgb) {
-      rgb = cssColorToRgb(key)
-      rgbCache.set(key, rgb)
-    }
-    return rgb
-  }
-
   const matrix = new Map<string, Float32Array<ArrayBuffer>>()
   // Refilled per row, and assigned in feature order so a later feature
   // overwrites the bins it shares with an earlier one: last covering wins.
   const coveringPerBin = new Array<MatrixFeature | undefined>(bins.length)
+  // The scalar path averages instead, the way a wiggle column does: several
+  // features commonly land in one bin, and last-wins would sample one of them
+  // at random.
+  const sums = new Float64Array(encoding === 'scalar' ? bins.length : 0)
+  const counts = new Int32Array(encoding === 'scalar' ? bins.length : 0)
   for (const name of sources) {
     const intervals = byRow.get(name) ?? []
     const row = new Float32Array(bins.length * channels)
     coveringPerBin.fill(undefined)
+    sums.fill(0)
+    counts.fill(0)
     for (const f of intervals) {
       const end = regionBinStart[f.regionIndex + 1]
       if (end === undefined) {
         continue
       }
+      const scalar = f.value === '' ? undefined : Number(f.value)
       for (
         let i = firstBinAtOrAfter(f.regionIndex, f.start);
         i < end && bins[i]!.mid < f.end;
         i++
       ) {
-        coveringPerBin[i] = f
+        if (encoding !== 'scalar') {
+          coveringPerBin[i] = f
+        } else if (scalar !== undefined) {
+          sums[i] = sums[i]! + scalar
+          counts[i] = counts[i]! + 1
+        }
       }
     }
     for (let binIndex = 0; binIndex < bins.length; binIndex++) {
-      const covering = coveringPerBin[binIndex]
-      const o = binIndex * channels
-      if (categorical) {
-        row[o + (covering ? slotOf.get(covering.colorKey)! : channels - 1)] = 1
+      if (encoding === 'scalar') {
+        const n = counts[binIndex]!
+        row[binIndex] = n > 1 ? sums[binIndex]! / n : sums[binIndex]!
+      } else if (encoding === 'presence') {
+        row[binIndex] = coveringPerBin[binIndex] ? 1 : 0
       } else {
-        const [r, g, b] = covering
-          ? rgbOf(covering.colorKey)
-          : [GAP_CHANNEL, GAP_CHANNEL, GAP_CHANNEL]
-        row[o] = r
-        row[o + 1] = g
-        row[o + 2] = b
+        const covering = coveringPerBin[binIndex]
+        row[
+          binIndex * channels +
+            (covering ? slotOf.get(covering.value)! : channels - 1)
+        ] = 1
       }
     }
     matrix.set(name, row)

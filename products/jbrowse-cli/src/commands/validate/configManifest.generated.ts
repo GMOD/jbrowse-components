@@ -3058,6 +3058,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
+          "name": "clusterField",
+          "type": "(JexlString | string)"
+        },
+        {
           "name": "lengthField",
           "type": "(JexlString | string)"
         },

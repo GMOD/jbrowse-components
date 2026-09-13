@@ -2,10 +2,7 @@ import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeature
 import { createStatusFanOut, updateStatus } from '@jbrowse/core/util'
 import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
 
-import {
-  makeFeatureColorResolver,
-  makeFeaturePartitionResolver,
-} from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
+import { makeFeatureValueResolver } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 import { dedupeFeaturesById } from '../RenderFeatureDataRPC/dedupeFeatures.ts'
 import { buildMultiRowMatrix } from './buildMultiRowMatrix.ts'
 
@@ -30,7 +27,7 @@ export async function collectMultiRowMatrix({
     regions,
     sources,
     partitionField,
-    colorConfig,
+    clusterField,
     stopToken,
     statusCallback,
   } = args
@@ -40,11 +37,13 @@ export async function collectMultiRowMatrix({
     adapterConfig,
   })
 
-  const featureColor = makeFeatureColorResolver(colorConfig, pluginManager.jexl)
-  const featurePartition = makeFeaturePartitionResolver(
+  const featurePartition = makeFeatureValueResolver(
     partitionField,
     pluginManager.jexl,
   )
+  const featureValue = clusterField
+    ? makeFeatureValueResolver(clusterField, pluginManager.jexl)
+    : () => ''
   // Each concurrent download gets its own status slot so they aggregate into one
   // bar rather than clobbering the shared field.
   const slot = createStatusFanOut(statusCallback)
@@ -72,10 +71,10 @@ export async function collectMultiRowMatrix({
         row: featurePartition(f),
         start: f.get('start'),
         end: f.get('end'),
-        colorKey: featureColor(f).css,
+        value: featureValue(f),
       })
     }
   }
 
-  return buildMultiRowMatrix({ sources, regions, features })
+  return buildMultiRowMatrix({ sources, regions, features, clusterField })
 }
