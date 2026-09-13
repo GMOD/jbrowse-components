@@ -1,5 +1,10 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
-import { bpToScreenPx, makeBpMapper, spanLeft } from '../canvas2dUtils.ts'
+import {
+  bpProjection,
+  bpToScreenPx,
+  projectBp,
+  spanLeft,
+} from '../canvas2dUtils.ts'
 import {
   drawnRowHeightPx,
   rowBandOffsetPx,
@@ -8,6 +13,7 @@ import * as shader from '../shaders/spanMark.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { makeAbgrFill } from './colorFill.ts'
 
+import type { BpProjection } from '../canvas2dUtils.ts'
 import type { RenderBlock } from '../renderBlock.ts'
 import type { MarkShape } from './types.ts'
 
@@ -19,12 +25,7 @@ export interface SpanChannels {
   x: Uint32Array
   x2: Uint32Array
   row: Uint32Array
-  /**
-   * Packed ABGR, resolved in the worker — a span's colour has no ramp arm.
-   * `rowRect`'s uniform struct is shared with four other consumers, and a
-   * sampler on it would move all of them for a channel no config asks for
-   * on a span (ADR-113).
-   */
+  /** Packed ABGR, resolved in the worker: a span has no ramp arm (ADR-113). */
   color: Uint32Array
   count: number
 }
@@ -35,36 +36,20 @@ export interface SpanParams {
   /** Fraction of the row the rect fills, leaving inter-row gaps. */
   rowProportion: number
   /**
-   * Narrowest a span is painted, in CSS px. Zero is a no-op and is what a
-   * caller whose marks TILE writes — widening a sub-pixel cell inside a run
-   * paints ink the data does not contain. A caller whose marks are sparse
-   * intervals floors, because at chromosome zoom the alternative is a smudge.
+   * Narrowest a span is painted, in CSS px. A caller whose marks tile writes
+   * zero; one whose marks are sparse intervals floors them.
    */
   minWidthPx: number
   /**
-   * CSS px of overlap added to each span's right edge by the **painter only**.
-   *
-   * The GPU pass needs none: abutting quads share an exact clip-space edge and
-   * the rasterizer fills it once. Canvas2D antialiases each `fillRect`
-   * independently, so two runs meeting on a fractional pixel each take partial
-   * coverage of it and a hairline of background shows through. Which callers
-   * want it splits on the same axis `minWidthPx` does — MAF's cells tile, so it
-   * pads; the multi-row painter's features are sparse intervals with background
-   * between them by right, so it writes 0.
-   *
-   * Padding the drawn width and not the anchor is what keeps it growing
-   * rightward on both orientations, so a reversed block's spans stay exact
-   * mirrors of a forward block's. Wiggle's `WIGGLE_FUDGE_FACTOR` is the same
-   * rule spelled per display; the shader must not grow a matching pad.
+   * CSS px the **painter alone** adds to each span's right edge, closing the
+   * hairline two antialiased `fillRect`s leave where tiling runs meet on a
+   * fractional pixel. The GPU pass needs none, and the ink excludes it.
    */
   seamPx: number
   /** Rows-area scroll offset in CSS px; 0 for a canvas sized to its content. */
   scrollTop: number
 }
 
-// Per instance rather than through `makeBpMapper`: `ink` is asked one
-// instance at a time, and a closure per ask is the allocation the mapper
-// exists to hoist out of a loop.
 export function blockPx(block: RenderBlock, bp: number) {
   return bpToScreenPx(
     bp,
@@ -74,6 +59,45 @@ export function blockPx(block: RenderBlock, bp: number) {
     block.screenEndPx,
     block.reversed,
   )
+}
+
+interface SpanFrame extends BpProjection {
+  rowHeight: number
+  scrollTop: number
+  bandOffsetPx: number
+  minWidthPx: number
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
+function spanFrame(block: RenderBlock, params: SpanParams): SpanFrame {
+  const { rowHeight, rowProportion } = params
+  const { originPx, startBp, spanBp, signedSpanPx } = bpProjection(block)
+  return {
+    originPx,
+    startBp,
+    spanBp,
+    signedSpanPx,
+    rowHeight,
+    scrollTop: params.scrollTop,
+    bandOffsetPx: rowBandOffsetPx(rowHeight, rowProportion),
+    minWidthPx: params.minWidthPx,
+    left: 0,
+    top: 0,
+    width: 0,
+    height: drawnRowHeightPx(rowHeight, rowProportion),
+  }
+}
+
+function placeSpan(c: SpanChannels, g: SpanFrame, i: number) {
+  const xa = projectBp(g, c.x[i]!)
+  const xb = projectBp(g, c.x2[i]!)
+  const width = Math.max(g.minWidthPx, Math.abs(xb - xa))
+  g.left = spanLeft(xa, xb, width)
+  g.top = g.bandOffsetPx + g.rowHeight * c.row[i]! - g.scrollTop
+  g.width = width
 }
 
 export const spanMark: MarkShape<SpanChannels, SpanParams> = {
@@ -87,9 +111,6 @@ export const spanMark: MarkShape<SpanChannels, SpanParams> = {
     shader.writeUniforms(scratch, {
       bpRangeX: bpRangeXTuple(clip, block.reversed),
       canvasHeight: frame.canvasHeight,
-      // CSS px, not physical: `extendToMinWidthX` divides `minCellPx` by this
-      // to reach clip space, so a CSS width is what makes the floor a CSS-pixel
-      // one and matches the painter's `Math.max` below.
       minCellDenomPx: clip.scissorW,
       minCellPx: params.minWidthPx,
       zero: 0,
@@ -100,40 +121,20 @@ export const spanMark: MarkShape<SpanChannels, SpanParams> = {
   },
 
   paintBlock(ctx, channels, block, _frame, params) {
-    const { x, x2, row, color, count } = channels
-    const { rowHeight, rowProportion, minWidthPx, seamPx, scrollTop } = params
-    const h = drawnRowHeightPx(rowHeight, rowProportion)
-    const offset = rowBandOffsetPx(rowHeight, rowProportion)
-    const bpToPx = makeBpMapper(block)
+    const { color, count } = channels
+    const { seamPx } = params
+    const g = spanFrame(block, params)
     const setFill = makeAbgrFill(ctx)
     for (let i = 0; i < count; i++) {
-      const xa = bpToPx(x[i]!)
-      const xb = bpToPx(x2[i]!)
-      const width = Math.max(minWidthPx, Math.abs(xb - xa))
+      placeSpan(channels, g, i)
       setFill(color[i]!)
-      ctx.fillRect(
-        spanLeft(xa, xb, width),
-        offset + rowHeight * row[i]! - scrollTop,
-        width + seamPx,
-        h,
-      )
+      ctx.fillRect(g.left, g.top, g.width + seamPx, g.height)
     }
   },
 
   ink(channels, block, _frame, params, i) {
-    const { x, x2, row } = channels
-    const { rowHeight, rowProportion, minWidthPx, scrollTop } = params
-    const xa = blockPx(block, x[i]!)
-    const xb = blockPx(block, x2[i]!)
-    const width = Math.max(minWidthPx, Math.abs(xb - xa))
-    return {
-      left: spanLeft(xa, xb, width),
-      top:
-        rowBandOffsetPx(rowHeight, rowProportion) +
-        rowHeight * row[i]! -
-        scrollTop,
-      width,
-      height: drawnRowHeightPx(rowHeight, rowProportion),
-    }
+    const g = spanFrame(block, params)
+    placeSpan(channels, g, i)
+    return { left: g.left, top: g.top, width: g.width, height: g.height }
   },
 }

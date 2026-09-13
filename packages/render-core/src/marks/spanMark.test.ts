@@ -1,11 +1,17 @@
+import { makeBpMapper, spanLeft } from '../canvas2dUtils.ts'
 import { MULTI_ROW_MIN_CELL_PX } from '../shaders/rowRect.generated.ts'
+import {
+  drawnRowHeightPx,
+  rowBandOffsetPx,
+} from '../shaders/rowRect.js.generated.ts'
 import * as shader from '../shaders/spanMark.iface.generated.ts'
-import { abgrToCssRgba } from './colorFill.ts'
+import { abgrToCssRgba, makeAbgrFill } from './colorFill.ts'
 import { recordingContext as mockCtx } from './drawAgainstHit.ts'
 import { shapeHitNearest } from './markHit.ts'
-import { spanMark } from './spanMark.ts'
+import { blockPx, spanMark } from './spanMark.ts'
 
 import type { SpanChannels, SpanParams } from './spanMark.ts'
+import type { MarkShape } from './types.ts'
 
 const RED = 0xff0000ff
 const BLUE = 0xffff0000
@@ -187,5 +193,166 @@ describe('the hit test derived from ink', () => {
     const c = channels([10], [20], [0], [RED])
     const seamed = { ...params, minWidthPx: 0, seamPx: 0.4 }
     expect(hit(c, 200.3, 10, block, seamed)).toBeUndefined()
+  })
+})
+
+const retiredSpan: Required<
+  Pick<MarkShape<SpanChannels, SpanParams>, 'paintBlock' | 'ink'>
+> = {
+  paintBlock(ctx, channels, block, _frame, params) {
+    const { x, x2, row, color, count } = channels
+    const { rowHeight, rowProportion, minWidthPx, seamPx, scrollTop } = params
+    const h = drawnRowHeightPx(rowHeight, rowProportion)
+    const offset = rowBandOffsetPx(rowHeight, rowProportion)
+    const bpToPx = makeBpMapper(block)
+    const setFill = makeAbgrFill(ctx)
+    for (let i = 0; i < count; i++) {
+      const xa = bpToPx(x[i]!)
+      const xb = bpToPx(x2[i]!)
+      const width = Math.max(minWidthPx, Math.abs(xb - xa))
+      setFill(color[i]!)
+      ctx.fillRect(
+        spanLeft(xa, xb, width),
+        offset + rowHeight * row[i]! - scrollTop,
+        width + seamPx,
+        h,
+      )
+    }
+  },
+
+  ink(channels, block, _frame, params, i) {
+    const { x, x2, row } = channels
+    const { rowHeight, rowProportion, minWidthPx, scrollTop } = params
+    const xa = blockPx(block, x[i]!)
+    const xb = blockPx(block, x2[i]!)
+    const width = Math.max(minWidthPx, Math.abs(xb - xa))
+    return {
+      left: spanLeft(xa, xb, width),
+      top:
+        rowBandOffsetPx(rowHeight, rowProportion) +
+        rowHeight * row[i]! -
+        scrollTop,
+      width,
+      height: drawnRowHeightPx(rowHeight, rowProportion),
+    }
+  },
+}
+
+function rng(seed: number) {
+  let s = seed
+  return () => {
+    s = (s * 1664525 + 1013904223) >>> 0
+    return s / 4294967296
+  }
+}
+
+function styleRecording() {
+  const recording = mockCtx()
+  const styles: string[] = []
+  for (const key of ['fillStyle', 'strokeStyle', 'lineWidth'] as const) {
+    let value: unknown = recording.ctx[key]
+    Object.defineProperty(recording.ctx, key, {
+      get: () => value,
+      set: (v: unknown) => {
+        styles.push(`${key} ${String(v)}`)
+        value = v
+      },
+    })
+  }
+  return { ...recording, styles }
+}
+
+function manySpans(regionStart: number, regionBp: number): SpanChannels {
+  const rand = rng(regionBp)
+  const count = 4000
+  const x = new Uint32Array(count)
+  const x2 = new Uint32Array(count)
+  const row = new Uint32Array(count)
+  const color = new Uint32Array(count)
+  const palette = [RED, BLUE, 0x8033cc66, 0xff999999]
+  let pick = 0
+  for (let i = 0; i < count; i++) {
+    const start = regionStart + Math.floor(rand() * regionBp * 1.1) - 20
+    const kind = rand()
+    x[i] = start
+    x2[i] =
+      kind < 0.05
+        ? start
+        : kind < 0.5
+          ? start + 1 + Math.floor(rand() * 4)
+          : start + Math.floor(rand() * regionBp * 0.1)
+    row[i] = Math.floor(rand() * 80)
+    if (rand() < 0.08) {
+      pick = Math.floor(rand() * palette.length)
+    }
+    color[i] = palette[pick]!
+  }
+  return { x, x2, row, color, count }
+}
+
+describe('span places each rect as the painter it retired did', () => {
+  describe.each([
+    { name: 'sub-pixel', start: 1_000_000, bp: 4_000_000, px: [12.5, 987.75] },
+    { name: 'zoomed in', start: 5_000, bp: 300, px: [0, 1000] },
+    { name: 'clipped', start: 31_337, bp: 7_777, px: [-250.5, 1250.25] },
+  ])('$name', ({ start, bp, px }) => {
+    const spans = manySpans(start, bp)
+    describe.each([false, true])('reversed %s', reversed => {
+      const regionBlock = {
+        displayedRegionIndex: 0,
+        start,
+        end: start + bp,
+        screenStartPx: px[0]!,
+        screenEndPx: px[1]!,
+        reversed,
+      }
+      test.each<[string, SpanParams]>([
+        [
+          'tiling, seamed, scrolled',
+          {
+            rowHeight: 7,
+            rowProportion: 0.75,
+            minWidthPx: 0,
+            seamPx: 0.4,
+            scrollTop: 13.5,
+          },
+        ],
+        [
+          'floored, sub-pixel rows',
+          {
+            rowHeight: 0.8,
+            rowProportion: 1,
+            minWidthPx: MULTI_ROW_MIN_CELL_PX,
+            seamPx: 0,
+            scrollTop: 0,
+          },
+        ],
+      ])('%s', (_, spanParams) => {
+        const painted = styleRecording()
+        spanMark.paintBlock(painted.ctx, spans, regionBlock, frame, spanParams)
+        const expected = styleRecording()
+        retiredSpan.paintBlock(
+          expected.ctx,
+          spans,
+          regionBlock,
+          frame,
+          spanParams,
+        )
+        expect(painted.calls).toHaveLength(spans.count)
+        expect(new Set(expected.styles).size).toBeGreaterThan(2)
+        expect(painted.calls).toEqual(expected.calls)
+        expect(painted.styles).toEqual(expected.styles)
+        const instances = Array.from({ length: spans.count }, (_, i) => i)
+        expect(
+          instances.map(i =>
+            spanMark.ink!(spans, regionBlock, frame, spanParams, i),
+          ),
+        ).toEqual(
+          instances.map(i =>
+            retiredSpan.ink(spans, regionBlock, frame, spanParams, i),
+          ),
+        )
+      })
+    })
   })
 })

@@ -3,7 +3,7 @@
 //
 //   node --no-use-osr packages/render-core/benches/placeWalkers.bench.ts --shape=cell --size=1m
 //
-// Flags: --shape=cell|rect|rectOutline, --size=100k|1m, one of each per
+// Flags: --shape=cell|rect|rectOutline|span, --size=100k|1m, one of each per
 // process (BENCHMARKING.md, "Looping several DATASETS"), --rounds=<n>
 // (default 25). rectOutline is rect with its outline stroke on.
 //
@@ -33,6 +33,8 @@
 //   rect          1M     64.4-65.8    1.00-1.02   0.88-0.89
 //   rect          100K   65.1-68.5    1.00-1.01   0.87-0.88
 //   rectOutline   1M     64.1-66.3    1.01-1.03   0.89-0.90
+//   span          1M     21.3-24.2    0.99-1.01   0.91-0.93
+//   span          100K   20.5-22.2    0.99        0.90-0.91
 //
 // A third rect 1M process read its control at 1.08x and is left out.
 //
@@ -55,6 +57,8 @@
 // `projectBp` is 32. `placeRectY` 92 + 290 inlines and `placeRectX` 276 + 301
 // does not, as rectWalker.bench.ts found; rect's frame escapes into that call
 // either way, so `paintBlock` builds it with `rectFrame`, which inlines at 99.
+// `placeSpan` 156 + 81 inlines, and so does `spanFrame` at 125 with
+// `bpProjection`'s 84, which leaves span's frame to scalar-replace.
 
 import { execSync } from 'node:child_process'
 import { performance } from 'node:perf_hooks'
@@ -86,10 +90,15 @@ import {
 } from '../src/canvas2dUtils.ts'
 import { abgrToCssRgba, makeAbgrFill } from '../src/marks/colorFill.ts'
 import { recordingContext } from '../src/marks/drawAgainstHit.ts'
+import { spanMark } from '../src/marks/spanMark.ts'
 import {
   snapBoxHeightPx,
   snapBoxTopPx,
 } from '../src/shaders/hpmath.js.generated.ts'
+import {
+  drawnRowHeightPx,
+  rowBandOffsetPx,
+} from '../src/shaders/rowRect.js.generated.ts'
 
 import type {
   FeatureGlyphParams,
@@ -99,6 +108,7 @@ import type {
   CellChannels,
   CellParams,
 } from '../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/cellMark.ts'
+import type { SpanChannels, SpanParams } from '../src/marks/spanMark.ts'
 import type { MarkContext2D, MarkFrame, MarkShape } from '../src/marks/types.ts'
 import type { RenderBlock } from '../src/renderBlock.ts'
 
@@ -671,10 +681,110 @@ function rectBench(n: number, outline: boolean): Bench {
   }
 }
 
+const retiredSpan: Pick<MarkShape<SpanChannels, SpanParams>, 'paintBlock'> = {
+  paintBlock(ctx, channels, block, _frame, params) {
+    const { x, x2, row, color, count } = channels
+    const { rowHeight, rowProportion, minWidthPx, seamPx, scrollTop } = params
+    const h = drawnRowHeightPx(rowHeight, rowProportion)
+    const offset = rowBandOffsetPx(rowHeight, rowProportion)
+    const bpToPx = makeBpMapper(block)
+    const setFill = makeAbgrFill(ctx)
+    for (let i = 0; i < count; i++) {
+      const xa = bpToPx(x[i]!)
+      const xb = bpToPx(x2[i]!)
+      const width = Math.max(minWidthPx, Math.abs(xb - xa))
+      setFill(color[i]!)
+      ctx.fillRect(
+        spanLeft(xa, xb, width),
+        offset + rowHeight * row[i]! - scrollTop,
+        width + seamPx,
+        h,
+      )
+    }
+  },
+}
+
+const controlSpan: Pick<MarkShape<SpanChannels, SpanParams>, 'paintBlock'> = {
+  paintBlock(ctx, channels, block, _frame, params) {
+    const { x, x2, row, color, count } = channels
+    const { rowHeight, rowProportion, minWidthPx, seamPx, scrollTop } = params
+    const h = drawnRowHeightPx(rowHeight, rowProportion)
+    const offset = rowBandOffsetPx(rowHeight, rowProportion)
+    const bpToPx = makeBpMapper(block)
+    const setFill = makeAbgrFill(ctx)
+    for (let i = 0; i < count; i++) {
+      const xa = bpToPx(x[i]!)
+      const xb = bpToPx(x2[i]!)
+      const width = Math.max(minWidthPx, Math.abs(xb - xa))
+      setFill(color[i]!)
+      ctx.fillRect(
+        spanLeft(xa, xb, width),
+        offset + rowHeight * row[i]! - scrollTop,
+        width + seamPx,
+        h,
+      )
+    }
+  },
+}
+
+function spanBench(n: number): Bench {
+  const rand = rng(11)
+  const bpLength = 400_000
+  const { forward, reversed } = blocksOf(20_000_000, bpLength)
+  const x = new Uint32Array(n)
+  const x2 = new Uint32Array(n)
+  const row = new Uint32Array(n)
+  for (let i = 0; i < n; i++) {
+    x[i] = forward.start + Math.floor((i / n) * bpLength)
+    x2[i] = x[i]! + 1 + geometric(rand, 60)
+    row[i] = Math.floor(rand() * 100)
+  }
+  const channels: SpanChannels = {
+    x,
+    x2,
+    row,
+    color: runs(rand, n, 12),
+    count: n,
+  }
+  const params: SpanParams = {
+    rowHeight: 10,
+    rowProportion: 0.8,
+    minWidthPx: 1,
+    seamPx: 0,
+    scrollTop: 0,
+  }
+  return {
+    entries: n,
+    forward,
+    reversed,
+    arms: [
+      {
+        name: 'retired',
+        paint: (ctx, block) => {
+          retiredSpan.paintBlock(ctx, channels, block, FRAME, params)
+        },
+      },
+      {
+        name: 'control',
+        paint: (ctx, block) => {
+          controlSpan.paintBlock(ctx, channels, block, FRAME, params)
+        },
+      },
+      {
+        name: 'ported',
+        paint: (ctx, block) => {
+          spanMark.paintBlock(ctx, channels, block, FRAME, params)
+        },
+      },
+    ],
+  }
+}
+
 const BENCHES: Record<string, (n: number) => Bench> = {
   cell: cellBench,
   rect: n => rectBench(n, false),
   rectOutline: n => rectBench(n, true),
+  span: spanBench,
 }
 
 function warm(bench: Bench, times: number) {

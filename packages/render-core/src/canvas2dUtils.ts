@@ -549,6 +549,17 @@ export interface BpProjection {
   signedSpanPx: number
 }
 
+export function bpProjection(bounds: BpRegionBounds): BpProjection {
+  const { start, end, screenStartPx, screenEndPx, reversed } = bounds
+  const w = screenEndPx - screenStartPx
+  return {
+    originPx: reversed ? screenEndPx : screenStartPx,
+    startBp: start,
+    spanBp: end - start,
+    signedSpanPx: reversed ? -w : w,
+  }
+}
+
 export function projectBp(p: BpProjection, bp: number) {
   return p.originPx + ((bp - p.startBp) / p.spanBp) * p.signedSpanPx
 }
