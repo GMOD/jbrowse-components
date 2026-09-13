@@ -2,7 +2,7 @@
   "plugins": [
     {
       "name": "Arg",
-      "umdUrl": "https://jbrowse.org/demos/arg/a241db6652a1/jbrowse-plugin-arg.umd.js"
+      "umdUrl": "https://jbrowse.org/demos/arg/b7922fe8fab6/jbrowse-plugin-arg.umd.js"
     }
   ],
   "assemblies": [
@@ -22,6 +22,18 @@
         "adapter": {
           "type": "RefNameAliasAdapter",
           "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.txt"
+        }
+      }
+    },
+    {
+      "name": "sim",
+      "displayName": "Simulated 2 Mb chromosome",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "sim-refseq",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "uri": "https://jbrowse.org/demos/arg/sim/sim.fa"
         }
       }
     }
@@ -97,6 +109,44 @@
           "type": "LinearMultiSampleVariantMatrixDisplay",
           "displayId": "prnp_variants-matrix",
           "height": 200
+        }
+      ]
+    },
+    {
+      "type": "ArgTrack",
+      "trackId": "sim_sweep",
+      "name": "Simulated: a beneficial mutation swept to fixation at 1 Mb",
+      "assemblyNames": ["sim"],
+      "category": ["Ancestral recombination graph"],
+      "adapter": {
+        "type": "ArgAdapter",
+        "treesLocation": {
+          "uri": "https://jbrowse.org/demos/arg/sim/sweep.trees",
+          "locationType": "UriLocation"
+        },
+        "refName": "chr1"
+      }
+    },
+    {
+      "type": "ArgTrack",
+      "trackId": "sim_introgression",
+      "name": "Simulated: population A took in 3% of its DNA from B, 500 generations ago",
+      "assemblyNames": ["sim"],
+      "category": ["Ancestral recombination graph"],
+      "adapter": {
+        "type": "ArgAdapter",
+        "treesLocation": {
+          "uri": "https://jbrowse.org/demos/arg/sim/introgression.trees",
+          "locationType": "UriLocation"
+        },
+        "refName": "chr1"
+      },
+      "displays": [
+        {
+          "type": "LinearArgDisplay",
+          "displayId": "sim_introgression-LinearArgDisplay",
+          "drawMode": "painting",
+          "height": 280
         }
       ]
     }
