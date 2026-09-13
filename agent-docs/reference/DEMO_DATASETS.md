@@ -308,7 +308,7 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   `gfa_to_pairwise_paf.py`, 28 min at 1.5 GB RSS on the v2.0 graph, every
   haplotype's walk aligned against GRCh38's through the nodes they share), then
   indexed by `make-pif` into a single two-tier PIF
-  (`hprc_multiway_gfa.pif.gz`, 128 MB, 4,609 PAF rows, 541–606 per haplotype). The served config points at it;
+  (`hprc_multiway_gfa.pif.gz`, 127 MB, 4,609 PAF rows, 541–606 per haplotype). The served config points at it;
   `SOURCE=taf` builds the same thing from the graph's published projection
   (`hprc-v2.0-mc-grch38.full.taf.gz` through `taffy view -m` and
   `maf_to_pairwise_paf.py`, `hprc_multiway_graph.pif.gz`, 4,332 rows), and the

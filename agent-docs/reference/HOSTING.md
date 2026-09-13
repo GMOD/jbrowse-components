@@ -117,13 +117,12 @@ no download; `tabix -H <url>` shows the `#pif` header. Audited 2026-09-13:
 | `genomes/hs1_vs_mm39/hs1ToMm39.over.chain.pif.gz` | yes | version 2 |
 | `demos/cgiab/HG008T_v3.2.pif.gz` | yes | version 2 |
 | `demos/scratch/hs1_chrY_self.pif.gz` | no, by design | version 2 |
-| `demos/hprc_multiway/hprc_multiway_gfa.pif.gz` | yes | version 1 |
+| `demos/hprc_multiway/hprc_multiway_gfa.pif.gz` | yes | version 2 |
 | `demos/ecoli_pangenome/ecoli_{pggb,cactus}_ava.pif.gz`, `ecoli_pggb_untangle.pif.gz` | no | none |
 | `demos/hpylori/26695_vs_chc155.pif.gz` | no | none |
 
 jb2hubs rebuilds its liftOver PIFs whenever its pinned `@jbrowse/cli` changes,
-so those need no hand rebuild; `lib/chainpif.sh` there holds the stamps. The
-hosted `hprc_multiway_gfa` has the coarse CIGAR and lacks only `pi:i:`.
+so those need no hand rebuild; `lib/chainpif.sh` there holds the stamps.
 
 - **A file with no `#pif` header predates the coarse CIGAR.** Since
   2026-09-02 `make-pif` writes a `cr:Z:` tag on a coarse row (ADR-104) so the
