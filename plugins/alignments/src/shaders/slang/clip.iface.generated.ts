@@ -9,7 +9,7 @@ export const BINDINGS: readonly ShaderBinding[] = [
 
 export const VERTS_PER_INSTANCE = 6
 
-export const UNIFORMS_SIZE_BYTES = 640
+export const UNIFORMS_SIZE_BYTES = 624
 
 // Word indices into a Float32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
@@ -24,8 +24,8 @@ export const UNIFORM_OFFSET_F32 = {
   featHeight: 8,
   featSpacing: 9,
   reversed: 15,
-  pxPerBp: 156,
-  devicePixelRatio: 157,
+  pxPerBp: 152,
+  devicePixelRatio: 153,
 } as const
 
 // Word indices into a Uint32Array view over the uniform buffer.
@@ -61,7 +61,7 @@ export const UNIFORM_OFFSET_I32 = {
 // consecutive: std140 pads every array element to 16 bytes.
 export const UNIFORM_SLOT_ARRAYS = {
   linkedReadColor: [32, 36, 40, 44, 48, 52, 56, 60] as const,
-  readCategoryColor: [64, 68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 144, 148, 152] as const,
+  readCategoryColor: [64, 68, 72, 76, 80, 84, 88, 92, 96, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 144, 148] as const,
 } as const
 
 // Element `i` of the `linkedReadColor` uniform array (4 components).
@@ -128,7 +128,7 @@ export interface Uniforms {
   colorOverlapTint: number
   colorOverlap: number
   linkedReadColor: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
-  readCategoryColor: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
+  readCategoryColor: [[number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number], [number, number, number, number]]
   pxPerBp: number
   devicePixelRatio: number
 }
@@ -286,12 +286,8 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[149] = uniforms.readCategoryColor[21][1]
   f32[150] = uniforms.readCategoryColor[21][2]
   f32[151] = uniforms.readCategoryColor[21][3]
-  f32[152] = uniforms.readCategoryColor[22][0]
-  f32[153] = uniforms.readCategoryColor[22][1]
-  f32[154] = uniforms.readCategoryColor[22][2]
-  f32[155] = uniforms.readCategoryColor[22][3]
-  f32[156] = uniforms.pxPerBp
-  f32[157] = uniforms.devicePixelRatio
+  f32[152] = uniforms.pxPerBp
+  f32[153] = uniforms.devicePixelRatio
 }
 
 export const INSTANCE_STRIDE_BYTES = 16

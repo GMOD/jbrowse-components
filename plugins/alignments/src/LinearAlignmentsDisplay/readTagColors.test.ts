@@ -1,4 +1,5 @@
 import { refNamePaletteColorAt } from '@jbrowse/core/ui/colors'
+import { colorFwdStrand, colorRevStrand } from '@jbrowse/core/ui/palette'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
 import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
@@ -89,11 +90,22 @@ describe('categorical tag colors', () => {
   })
 
   // "No color", so the shader and the Canvas2D twin both fall back to
-  // colorPairLR — the same neutral an uncolored read paints, and (unlike the
-  // fixed colorNeutralRead this used to pack) one that darkens with the theme
-  // instead of leaving untagged reads brighter than their neighbours.
+  // colorPairLR, which darkens with the theme.
   test('a read the tag is absent from packs the palette fallback, not a strand color', () => {
     expect([...build([''])]).toEqual([0])
+  })
+})
+
+describe('strand tag colors', () => {
+  test('a value that is neither strand packs the palette fallback', () => {
+    const colorBy: ColorBy = { type: 'tag', tag: 'XS' }
+    const [fwd, rev, dot, absent] = buildReadTagColors(
+      pileupWith(['+', '-', '.', '']),
+      colorBy,
+    )
+    expect(fwd).toBe(packed(colorFwdStrand))
+    expect(rev).toBe(packed(colorRevStrand))
+    expect([dot, absent]).toEqual([0, 0])
   })
 })
 

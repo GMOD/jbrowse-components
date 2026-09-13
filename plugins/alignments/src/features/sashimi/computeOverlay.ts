@@ -1,6 +1,6 @@
 import {
   colorFwdStrand,
-  colorNeutralRead,
+  colorPairLR,
   colorRevStrand,
 } from '@jbrowse/core/ui/palette'
 import { measureText } from '@jbrowse/core/util'
@@ -84,7 +84,7 @@ function getArcColor(strand: number) {
     ? colorFwdStrand
     : strand === -1
       ? colorRevStrand
-      : colorNeutralRead
+      : colorPairLR
 }
 
 // Type size of the arc's count label. Owned here rather than by

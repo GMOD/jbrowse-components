@@ -85,9 +85,6 @@ describe('readColorCategory', () => {
     expect(readColorCategory(0, makeData({ strand: -1 }), 'strand')).toBe(
       'revStrand',
     )
-    expect(readColorCategory(0, makeData({ strand: 0 }), 'strand')).toBe(
-      'noStrand',
-    )
   })
 
   test('insertSize scheme buckets against thresholds', () => {
@@ -496,7 +493,7 @@ describe('getReadColor maps each category to its palette color', () => {
     const data = makeData({ mapq: 255 })
     expect(readColorCategory(0, data, 'mappingQuality')).toBe('mapqUnavailable')
     expect(getReadColor(0, data, 'mappingQuality', palette)).toBe(
-      rgb255(palette.colorNeutralRead),
+      rgb255(palette.colorPairLR),
     )
   })
 })

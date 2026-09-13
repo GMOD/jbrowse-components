@@ -1,6 +1,6 @@
 ---
 name: alignments-color-parity
-description: How a pileup's three colour vocabularies (read fills, arc overlays, linked-read connectors) are derived from one table rather than tested against each other, and the one meaning still split. Read before touching arc colour or the alignments legend.
+description: How a pileup's three colour vocabularies (read fills, arc overlays, linked-read connectors) are derived from one table rather than tested against each other. Read before touching arc colour or the alignments legend.
 audience: internal
 kind: spec
 ---
@@ -190,14 +190,3 @@ capability that was given up with it.
 `readInsertSizes` is already `Math.abs(template_length)` — set at extraction in
 `buildBaseFeatureData` — so neither side needs to abs it and a negative TLEN is
 not a source of divergence. It looks like one; it is not.
-
-## The one meaning still split
-
-A pair with **no computed orientation (`po === 0`)** is `nonSplit` to the read
-fills — deliberately the neutral grey, "distinct from the strand-colored split
-segments" — while the arcs have no such slot and fall to their baseline, which
-is `pairLR`. `swatchPaletteKeys` maps those to `colorNeutralRead` and
-`colorPairLR`: two greys, not the same grey, and two legend rows for one thing.
-
-Pinned by the last `describe` in `overlayPaletteParity.test.ts`. Closing it is a
-decision rather than a refactor — see TODO.

@@ -41,7 +41,6 @@ export function makeTestPalette(
   return {
     colorFwdStrand: z,
     colorRevStrand: z,
-    colorNeutralRead: z,
     colorPairLR: z,
     colorPairRL: z,
     colorPairRR: z,

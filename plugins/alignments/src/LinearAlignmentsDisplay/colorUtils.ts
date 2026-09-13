@@ -11,7 +11,6 @@ import {
   RC_MOD_REV,
   RC_NON_SPLIT,
   RC_NORMAL_INSERT,
-  RC_NO_STRAND,
   RC_NO_TAG_VALUE,
   RC_PAIR_LL,
   RC_PAIR_LR,
@@ -70,7 +69,6 @@ export type ReadColorCategory =
   | 'interchrom'
   | 'fwdStrand'
   | 'revStrand'
-  | 'noStrand'
   | 'nonSplit'
   | 'pairLR'
   | 'pairRL'
@@ -88,7 +86,7 @@ export type ReadColorCategory =
   | 'modRev'
 
 function strandCategory(strand: number): ReadColorCategory {
-  return strand > 0 ? 'fwdStrand' : strand < 0 ? 'revStrand' : 'noStrand'
+  return strand < 0 ? 'revStrand' : 'fwdStrand'
 }
 
 const pairOrientationCategories: Record<number, ReadColorCategory> = {
@@ -162,7 +160,6 @@ export const READ_COLOR_CATEGORY: Record<ReadColorCategory, number> = {
   interchrom: RC_INTERCHROM,
   fwdStrand: RC_FWD_STRAND,
   revStrand: RC_REV_STRAND,
-  noStrand: RC_NO_STRAND,
   nonSplit: RC_NON_SPLIT,
   pairLR: RC_PAIR_LR,
   pairRL: RC_PAIR_RL,
@@ -506,12 +503,11 @@ export function getReadColor(
 export const swatchPaletteKeys = {
   fwdStrand: 'colorFwdStrand',
   revStrand: 'colorRevStrand',
-  noStrand: 'colorNeutralRead',
   modFwd: 'colorModificationFwd',
   modRev: 'colorModificationRev',
-  // non-split read under the pair-orientation scheme: reuses the neutral grey,
-  // but a distinct category so the legend can label it "Non-split read"
-  nonSplit: 'colorNeutralRead',
+  // non-split read under the pair-orientation scheme: the neutral grey, but a
+  // distinct category so the legend can label it "Non-split read"
+  nonSplit: 'colorPairLR',
   pairLR: 'colorPairLR',
   pairRL: 'colorPairRL',
   pairRR: 'colorPairRR',
@@ -531,9 +527,9 @@ export const swatchPaletteKeys = {
   // read a CPU-baked scheme resolved no color for: the shader's tagColor==0
   // fallback, which is the same neutral 'plain' paints
   noTagValue: 'colorPairLR',
-  // MAPQ 255 = "unavailable". The same grey `noStrand` uses for an unknown
-  // strand, and for the same reason: the answer is missing, not extreme.
-  mapqUnavailable: 'colorNeutralRead',
+  // MAPQ 255 = "unavailable": the neutral grey, because the answer is missing,
+  // not extreme.
+  mapqUnavailable: 'colorPairLR',
 } satisfies Partial<Record<ReadColorCategory, keyof ColorPalette>>
 
 export type SwatchCategory = keyof typeof swatchPaletteKeys

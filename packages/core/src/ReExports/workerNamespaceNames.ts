@@ -206,7 +206,6 @@ export const CORE_UI_NAMES = [
   'colorInterchrom',
   'colorLongInsert',
   'colorLongreadInv',
-  'colorNeutralRead',
   'colorPairLL',
   'colorPairLR',
   'colorPairLRDark',

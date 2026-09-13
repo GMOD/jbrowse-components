@@ -89,33 +89,6 @@ describe('getReadDisplayLegendItems', () => {
     ).toEqual(['Split segment (same strand)', 'Split segment (inverted)'])
   })
 
-  // `noStrand` is the defensive branch of `strandCategory` (strand 0). NEITHER
-  // feature source this pipeline serves emits one — `SamRecordFeature.strand` is
-  // `flags & SAM_FLAG_REVERSE ? -1 : 1`, PAF parses `'-' ? -1 : 1` — so this
-  // asserts a row nothing currently reaches. It is here because the legend table
-  // is now exhaustive over `SwatchCategory` by type, and the pair of tests below
-  // is what says which wording that completeness bought: a bucket the renderer
-  // has a palette slot and a shader index for is no longer one the key can drop
-  // silently if a future adapter does emit it.
-  //
-  // (A previous test asserted the opposite — that `noStrand` "is never a real
-  // read bucket" — which was true, but reasoned from the BAM flag alone about a
-  // pipeline that also serves flagless PAF. Right answer, wrong argument.)
-  test('the unstranded bucket has a row if it is ever produced', () => {
-    expect(labels('strand', ['fwdStrand', 'revStrand', 'noStrand'])).toEqual([
-      'Forward strand',
-      'Reverse strand',
-      'Unstranded',
-    ])
-  })
-
-  test('a non-strand scheme reframes the unstranded bucket as a split read too', () => {
-    expect(labels('insertSize', ['noStrand', 'normalInsert'])).toEqual([
-      'Split segment (strand unknown)',
-      'Normal',
-    ])
-  })
-
   test('pair-orientation scheme: split-read strand framing + non-split bucket', () => {
     // fwd/rev come only from split segments here, and po=0 non-split reads are
     // their own grey bucket.
@@ -381,27 +354,21 @@ describe('getReadDisplayLegendItems', () => {
   })
 
   test('strand-encoding tags (XS/TS/ts) show the strand key, not a value list', () => {
-    // A value these tags do not encode opens no row of its own — the pair IS
-    // the key. It does count as unstranded, which is the neutral row below.
     expect(
       tagLabels({ type: 'tag', tag: 'ts' }, new Set(['foo'])),
     ).not.toContain('foo')
-    expect(tagLabels({ type: 'tag', tag: 'XS' })).toEqual([
-      'Forward strand',
-      'Reverse strand',
-    ])
+    expect(
+      tagLabels({ type: 'tag', tag: 'XS' }, new Set(['+', '-', ''])),
+    ).toEqual(['Forward strand', 'Reverse strand'])
   })
 
-  // A strand tag paints a THIRD colour: `buildReadTagColors` resolves anything
-  // that is neither '+' nor '-' — a read the tag is absent from arrives as ''
-  // — to colorNeutralRead. It is the one grey `noTagValue` cannot rescue, since
-  // the resolver packs it as a colour rather than as 0, so those reads classify
-  // as `tag` and the cross-cutting tail never keys them.
-  test('a strand tag keys the neutral it paints untagged reads', () => {
+  // A tag value that is neither '+' nor '-' packs 0, so the read classifies as
+  // `noTagValue` and the tail keys it in the neutral grey, like any untagged read.
+  test('a read with no strand tag value is keyed through noTagValue', () => {
     const items = getReadDisplayLegendItems({
       colorBy: { type: 'tag', tag: 'XS' },
-      presentCategories: new Set<ReadColorCategory>(['tag']),
-      palette: makeTestPalette({ colorNeutralRead: [0.5, 0.5, 0.5] }),
+      presentCategories: new Set<ReadColorCategory>(['tag', 'noTagValue']),
+      palette: makeTestPalette({ colorPairLR: [0.5, 0.5, 0.5] }),
       presentTagValues: new Set(['+', '-', '']),
     })
     expect(items.map(i => i.label)).toEqual([
@@ -409,22 +376,7 @@ describe('getReadDisplayLegendItems', () => {
       'Reverse strand',
       'No XS value',
     ])
-    // the swatch is the palette's own neutral, the colour buildReadTagColors
-    // packs for those reads — not a fourth grey invented here
     expect(items.at(-1)!.color).toBe('rgb(128,128,128)')
-  })
-
-  test('…and omits it when every read on screen carries a strand', () => {
-    expect(tagLabels({ type: 'tag', tag: 'XS' }, new Set(['+', '-']))).toEqual([
-      'Forward strand',
-      'Reverse strand',
-    ])
-    // undefined is "the caller can't tell", which stays silent rather than
-    // guessing a row on
-    expect(tagLabels({ type: 'tag', tag: 'XS' })).toEqual([
-      'Forward strand',
-      'Reverse strand',
-    ])
   })
 
   test('a strand tag still keys the cross-cutting buckets it paints', () => {
@@ -866,11 +818,9 @@ describe('getAlignmentsColorScales', () => {
   })
 
   // The merge is about what a color means in the OTHER vocabulary, so two read
-  // rows sharing a palette entry are two meanings and stay two rows. Three
-  // category triples alias in the real palette — noStrand/nonSplit/
-  // mapqUnavailable, pairLR/normalInsert/noTagValue, supplementary/splitDeletion
-  // — and no scheme emits two of one today, so this pins the shape rather than a
-  // live case: fed the concatenation, the same rules dropped the second row.
+  // rows sharing a palette entry are two meanings and stay two rows — pairLR,
+  // normalInsert, noTagValue, nonSplit and mapqUnavailable all paint colorPairLR.
+  // Fed the concatenation, the same rules dropped the second row.
   test('two read rows in one color are two meanings, not one', () => {
     const [reads] = getAlignmentsColorScales(
       model(

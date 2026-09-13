@@ -65,13 +65,11 @@ export type { LegendItem } from '@jbrowse/core/ui'
 // state on their own: they are about what a color means in a DIFFERENT
 // vocabulary, so only the arcs are ever folded. Handed the concatenation, the
 // same rules also collapsed two READ rows that happen to share a palette entry
-// — and three triples do (`{noStrand, nonSplit, mapqUnavailable}` on
-// colorNeutralRead, `{pairLR, normalInsert, noTagValue}` on colorPairLR,
-// `{supplementary, splitDeletion}` on colorSupplementary), each member a
-// distinct bucket the renderer paints for a distinct reason. No scheme emits
-// two of one triple today, so nothing was being dropped; the drop would have
-// been silent when one did, which is the wrong way round for a box whose claim
-// is that it names every color drawn.
+// — and two groups do (`{pairLR, normalInsert, noTagValue, nonSplit,
+// mapqUnavailable}` on colorPairLR, `{supplementary, splitDeletion}` on
+// colorSupplementary), each member a distinct bucket the renderer paints for a
+// distinct reason. A scheme that emits two of one group keeps both rows, since
+// the box claims to name every reason a color is drawn.
 function oneRowPerMeaning(
   reads: LegendItem[],
   arcs: LegendItem[],
@@ -263,18 +261,10 @@ function hslRamp(
 // correct BY CONSTRUCTION — "the legend can never list a color the renderer
 // didn't paint (or omit one it did)" — and as an array only the first half of
 // that held: `swatchPaletteKeys` is exhaustive over the categories, but leaving
-// one out HERE compiled. `noStrand` was left out, and nothing said so.
-//
-// Nothing draws it today, which is why it went unnoticed: `strandCategory`
-// emits it for strand 0, and neither feature source this pipeline serves can
-// produce one — `SamRecordFeature.strand` is `flags & SAM_FLAG_REVERSE ? -1 : 1`
-// and PAF parses `'-' ? -1 : 1`. So this is the latent half of the invariant,
-// not a swatch users are missing; `presentCategories` filters the row out until
-// something does emit the bucket. The type is the point.
+// one out HERE compiled.
 const CATEGORY_LEGEND: Record<SwatchCategory, string> = {
   fwdStrand: 'Forward strand',
   revStrand: 'Reverse strand',
-  noStrand: 'Unstranded',
   // the modification scheme's read body, under the marks it paints on top
   modFwd: 'Read, forward strand',
   modRev: 'Read, reverse strand',
@@ -405,9 +395,6 @@ export function readColorCategoryLabel(
 const SPLIT_STRAND_LABELS: Partial<Record<SwatchCategory, string>> = {
   fwdStrand: 'Split segment (same strand)',
   revStrand: 'Split segment (inverted)',
-  // the same argument, for the third member of the triple: under a non-strand
-  // scheme an unstranded bucket can only have come from that same branch
-  noStrand: 'Split segment (strand unknown)',
 }
 
 // The first-of-pair-strand scheme colors by the FRAGMENT strand inferred from
@@ -868,22 +855,6 @@ function isStrandTag(colorBy: ColorBy | undefined) {
   )
 }
 
-// A strand tag paints a THIRD color, and the box has to name it: any read whose
-// value is neither '+' nor '-' takes colorNeutralRead (buildReadTagColors), and
-// a read the tag is absent from arrives here as the empty string
-// (extractFeatureTagValue). Two rows was the claim that such a read needs no
-// entry — but that neutral is a real fill, drawn over however much of the
-// pileup lacks the tag, and it is the one grey `noTagValue` cannot rescue: the
-// resolver packs it as a color rather than as 0, so `readColorCategory` files
-// those reads under `tag` and the cross-cutting tail never keys them.
-//
-// Asked of the values on screen, like every other present-gated row, so a track
-// whose reads all carry XS gets no row for a fill nothing draws. `undefined`
-// means the caller cannot tell, and stays silent rather than guessing a row on.
-function hasUnstrandedValue(present: ReadonlySet<string> | undefined) {
-  return present !== undefined && [...present].some(v => v !== '+' && v !== '-')
-}
-
 // The scheme's own key, before the cross-cutting buckets are appended. Every
 // branch returns just its own swatches; nothing here reads presentCategories.
 //
@@ -926,14 +897,6 @@ function schemeLegend({
     return [
       { color: rgb255(palette.colorFwdStrand), label: 'Forward strand' },
       { color: rgb255(palette.colorRevStrand), label: 'Reverse strand' },
-      ...(hasUnstrandedValue(presentTagValues)
-        ? [
-            {
-              color: rgb255(palette.colorNeutralRead),
-              label: `No ${colorBy.tag} value`,
-            },
-          ]
-        : []),
     ]
   }
   if (colorType === 'tag' || colorType === 'mateRefName') {

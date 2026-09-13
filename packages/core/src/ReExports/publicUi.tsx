@@ -112,7 +112,6 @@ export {
   colorInterchrom,
   colorLongInsert,
   colorLongreadInv,
-  colorNeutralRead,
   colorPairLL,
   colorPairLR,
   colorPairLRDark,

@@ -1,8 +1,4 @@
-import {
-  colorFwdStrand,
-  colorNeutralRead,
-  colorRevStrand,
-} from '@jbrowse/core/ui/palette'
+import { colorFwdStrand, colorRevStrand } from '@jbrowse/core/ui/palette'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
 import { bakedValueColor } from './colorTagUtils.ts'
@@ -25,7 +21,6 @@ function packRgb([r, g, b]: ColorRgbTuple) {
 // (its single source of truth) so it can't drift from "Color by strand".
 const fwdStrand = packRgb(cssColorToRgb(colorFwdStrand))
 const revStrand = packRgb(cssColorToRgb(colorRevStrand))
-const noStrand = packRgb(cssColorToRgb(colorNeutralRead))
 
 // Resolve one read's per-read string (+ its strand, for the `ts` orientation
 // tag) to a packed ABGR u32; 0 means "no color" (shader palette fallback).
@@ -47,10 +42,11 @@ function makeColorResolver(
 ): ColorResolver {
   // The strand tags first, and they have to be: they are `type: 'tag'` like any
   // other, but encode a strand rather than a categorical value, so they take
-  // the fixed strand colors instead of a per-value one.
+  // the fixed strand colors instead of a per-value one. A value that is neither
+  // strand packs 0, the same neutral fallback as an absent tag below.
   const tag = colorBy.type === 'tag' ? colorBy.tag : undefined
   if (tag === 'XS' || tag === 'TS') {
-    return val => (val === '-' ? revStrand : val === '+' ? fwdStrand : noStrand)
+    return val => (val === '-' ? revStrand : val === '+' ? fwdStrand : 0)
   }
   if (tag === 'ts') {
     return (val, strand) =>
@@ -62,7 +58,7 @@ function makeColorResolver(
           ? strand === -1
             ? revStrand
             : fwdStrand
-          : noStrand
+          : 0
   }
   // Chromosome painting and categorical tags alike: the color is a pure
   // function of the value (`bakedValueColor`), so nothing has to have
@@ -70,14 +66,8 @@ function makeColorResolver(
   //
   // A read the scheme resolved no value for — no mate, or the tag absent, both
   // arriving as the empty string — packs 0. That is "no color", the shader's
-  // palette fallback (colorPairLR, the same neutral an uncolored read paints)
-  // rather than colorNeutralRead, and it is also what `readColorCategory` reads
-  // to file the read under `noTagValue`. The tag encodes no strand, so "no
-  // strand" was never the right neutral for it, and being a fixed light grey it
-  // painted untagged reads BRIGHTER than ordinary reads under the dark theme,
-  // where colorPairLR darkens and colorNeutralRead does not. The strand tags
-  // above keep colorNeutralRead: there, absent genuinely means "strand
-  // unknown".
+  // palette fallback (colorPairLR, which darkens with the theme), and it is also
+  // what `readColorCategory` reads to file the read under `noTagValue`.
   //
   // Values repeat across every read carrying them, and across regions, so the
   // pack is cached per distinct value. That cache is the ONLY thing the old

@@ -1,6 +1,6 @@
 import {
   colorFwdStrand,
-  colorNeutralRead,
+  colorPairLR,
   colorRevStrand,
 } from '@jbrowse/core/ui/theme'
 
@@ -235,7 +235,7 @@ test('tints arcs with the read-alignment strand colors', () => {
   const strokeByStart = new Map(arcs.map(a => [a.start, a.stroke]))
   expect(strokeByStart.get(100)).toBe(colorFwdStrand)
   expect(strokeByStart.get(300)).toBe(colorRevStrand)
-  expect(strokeByStart.get(500)).toBe(colorNeutralRead)
+  expect(strokeByStart.get(500)).toBe(colorPairLR)
 })
 
 test('places each arc on the side its junction key was assigned', () => {
