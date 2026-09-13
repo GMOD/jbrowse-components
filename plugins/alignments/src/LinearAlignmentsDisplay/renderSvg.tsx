@@ -1,12 +1,10 @@
 /* eslint-disable react-refresh/only-export-components */
 import { Fragment } from 'react'
 
-import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 
 import { getMismatchContrastMap } from '../shared/util.ts'
 import CrossRegionArcsSvg from './components/CrossRegionArcsSvg.tsx'
@@ -113,33 +111,27 @@ function AlignmentsSvgBody({
   // share their geometry helpers with the overlays so the paths can't drift.
   return (
     <>
-      <SvgClipRect
-        id={`alignments-clip-${svgNodeId(model)}`}
+      <PaintLayer
         width={canvasWidth}
         height={displayHeight}
-      >
-        <PaintLayer
-          width={canvasWidth}
-          height={displayHeight}
-          opts={opts}
-          paint={ctx => {
-            drawAlignmentsToCtx(
-              ctx,
-              {
-                sections: model.sourceSections,
-                densityRegions: model.densityCoverageRegions,
-                readConnectionsLineWidth: model.readConnectionsLineWidth,
-              },
-              renderBlocks,
-              state,
-            )
-            drawAlignmentLabels(ctx, labels, contrastMap, palette)
-          }}
-        />
-        <SashimiArcsSvg model={model} width={canvasWidth} palette={palette} />
-        <CrossRegionArcsSvg model={model} width={canvasWidth} />
-        <PileupBezierArcsSvg model={model} view={model.view} />
-      </SvgClipRect>
+        opts={opts}
+        paint={ctx => {
+          drawAlignmentsToCtx(
+            ctx,
+            {
+              sections: model.sourceSections,
+              densityRegions: model.densityCoverageRegions,
+              readConnectionsLineWidth: model.readConnectionsLineWidth,
+            },
+            renderBlocks,
+            state,
+          )
+          drawAlignmentLabels(ctx, labels, contrastMap, palette)
+        }}
+      />
+      <SashimiArcsSvg model={model} width={canvasWidth} palette={palette} />
+      <CrossRegionArcsSvg model={model} width={canvasWidth} />
+      <PileupBezierArcsSvg model={model} view={model.view} />
       {model.showsGroupLabels ? (
         <GroupLabelBoxes
           sections={screenSections}

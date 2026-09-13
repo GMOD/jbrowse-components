@@ -22,7 +22,6 @@ function WiggleSvgBody(props: LgvSvgBodyProps<LinearWiggleDisplayModel>) {
   return (
     <ScorePlotSvgFrame
       {...props}
-      clipIdPrefix="wiggle"
       plotGeometry={model.plotGeometry}
       marks={WIGGLE_MARKS}
       regions={encodeWiggleRegions(model)}

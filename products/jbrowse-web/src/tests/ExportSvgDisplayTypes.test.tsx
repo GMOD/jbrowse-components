@@ -59,7 +59,7 @@ const canvasFactory = nodeCreateCanvas as unknown as (
 ) => HTMLCanvasElement
 
 // MST model identifiers (ElementId) use nanoid(10) and land in SVG clip-path
-// IDs like `wiggle-clip-W5TXi8qP1v`. Replace every random 10-char suffix so
+// IDs like `display-clip-W5TXi8qP1v`. Replace every random 10-char suffix so
 // snapshots are stable across runs.
 function normalizeSvg(svg: string) {
   const seen = new Map<string, string>()

@@ -87,7 +87,6 @@ function MultiWiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
   return (
     <ScorePlotSvgFrame
       {...props}
-      clipIdPrefix="wiggle"
       plotGeometry={model.plotGeometry}
       marks={WIGGLE_MARKS}
       regions={encodeWiggleRegions(model)}

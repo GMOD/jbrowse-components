@@ -22,7 +22,6 @@ function MarkSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
   return (
     <ScorePlotSvgFrame
       {...props}
-      clipIdPrefix="marks"
       marks={model.markList}
       regions={model.rpcDataMap}
       renderState={model.renderState}

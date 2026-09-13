@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- the shell and the key it appends are one module */
 import { Fragment } from 'react'
 
-import { SvgChrome } from '@jbrowse/core/svg/SvgExport'
+import { SvgChrome, SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 import SvgColorLegend from '@jbrowse/core/ui/SvgColorLegend'
@@ -42,6 +42,7 @@ import type React from 'react'
  * height its box occupies.
  */
 export interface LgvSvgExportable extends SvgExportable, IStateTreeNode {
+  id: string
   height: number
   /**
    * Whether the display paints its own body in the too-large terminal instead
@@ -202,7 +203,8 @@ export function SvgYAxis({
 /**
  * The async shell every LGV display's `renderSvg` opens with: await readiness,
  * resolve the view geometry once, mount the single terminal-state gate around
- * the display's own body, and append the legend of a display that has one.
+ * the display's own body, clip the body to its box under a model-scoped id, and
+ * append the axes and legend of a display that has them, outside that clip.
  *
  * A display that failed to load fails the whole export, in `awaitSvgReady`
  * itself. `regionTooLarge` is the other terminal and stays drawn: see
@@ -239,14 +241,20 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
       width={view.width}
       height={height}
     >
-      <Body
-        model={model}
-        view={view}
+      <SvgClipRect
+        id={`display-clip-${svgNodeId(model)}`}
+        width={view.width}
         height={height}
-        canvasWidth={view.width}
-        renderBlocks={buildRenderBlocks(view.visibleRegions)}
-        opts={opts}
-      />
+      >
+        <Body
+          model={model}
+          view={view}
+          height={height}
+          canvasWidth={view.width}
+          renderBlocks={buildRenderBlocks(view.visibleRegions)}
+          opts={opts}
+        />
+      </SvgClipRect>
       {isAxisHost(model) && !opts?.plotOnly ? (
         <SvgYAxis model={model} view={view} width={view.width} />
       ) : null}

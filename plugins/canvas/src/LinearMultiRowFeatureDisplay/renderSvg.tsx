@@ -1,9 +1,7 @@
-import { svgNodeId } from '@jbrowse/core/svg/svgId'
 /* eslint-disable react-refresh/only-export-components */
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { RowSeparatorLines, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
@@ -81,43 +79,37 @@ function MultiRowSvgBody({
   const exportPalette = resolvePalette({ configTheme: opts?.theme })
   return (
     <>
-      <SvgClipRect
-        id={`multirow-clip-${svgNodeId(self)}`}
+      <PaintLayer
         width={canvasWidth}
         height={height}
-      >
-        <PaintLayer
-          width={canvasWidth}
-          height={height}
-          opts={opts}
-          paint={ctx => {
-            if (self.coarseTierStandsIn) {
-              drawDensityBand(ctx, renderBlocks, self.densityBandLayer, {
-                canvasWidth,
-                bandHeight: height,
-                readout: self.densityPeakReadout,
-                palette: exportPalette,
-              })
-            }
-            paintMarkBlocks(
-              ctx,
-              MULTI_ROW_MARKS,
-              self.encodedChannels,
-              renderBlocks,
-              state,
-            )
-            // Same layer, after the blocks, so the export stacks them the way
-            // the on-screen overlay composites over the canvas.
-            drawMultiRowIndelGlyphs(
-              ctx,
-              self.drawnRegionData,
-              renderBlocks,
-              state,
-              exportPalette.insertion,
-            )
-          }}
-        />
-      </SvgClipRect>
+        opts={opts}
+        paint={ctx => {
+          if (self.coarseTierStandsIn) {
+            drawDensityBand(ctx, renderBlocks, self.densityBandLayer, {
+              canvasWidth,
+              bandHeight: height,
+              readout: self.densityPeakReadout,
+              palette: exportPalette,
+            })
+          }
+          paintMarkBlocks(
+            ctx,
+            MULTI_ROW_MARKS,
+            self.encodedChannels,
+            renderBlocks,
+            state,
+          )
+          // Same layer, after the blocks, so the export stacks them the way
+          // the on-screen overlay composites over the canvas.
+          drawMultiRowIndelGlyphs(
+            ctx,
+            self.drawnRegionData,
+            renderBlocks,
+            state,
+            exportPalette.insertion,
+          )
+        }}
+      />
       {/* Before the sidebar, so the tree panel paints over the lines */}
       {self.showRowSeparators ? (
         <RowSeparatorLines

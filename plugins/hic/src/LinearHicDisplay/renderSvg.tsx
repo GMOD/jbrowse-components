@@ -1,8 +1,6 @@
-import { svgNodeId } from '@jbrowse/core/svg/svgId'
 /* eslint-disable react-refresh/only-export-components */
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
@@ -35,25 +33,19 @@ function HicSvgBody({
   // is the layer's.
   const exportState = { ...renderState, canvasWidth: visibleWidth }
   return (
-    <SvgClipRect
-      id={`hic-clip-${svgNodeId(self)}`}
+    <PaintLayer
       width={visibleWidth}
       height={height}
-    >
-      <PaintLayer
-        width={visibleWidth}
-        height={height}
-        opts={opts}
-        paint={ctx => {
-          paintMarkBlocks(
-            ctx,
-            HIC_MARKS,
-            hicRegions,
-            canvasWideBlocks([0], visibleWidth),
-            exportState,
-          )
-        }}
-      />
-    </SvgClipRect>
+      opts={opts}
+      paint={ctx => {
+        paintMarkBlocks(
+          ctx,
+          HIC_MARKS,
+          hicRegions,
+          canvasWideBlocks([0], visibleWidth),
+          exportState,
+        )
+      }}
+    />
   )
 }

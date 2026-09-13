@@ -1,6 +1,4 @@
-import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 
 import { ArcsSvg } from './Arcs.tsx'
 
@@ -41,19 +39,7 @@ export async function renderArcSvg(
     model as ArcDisplayModel,
     undefined,
     function ArcsSvgBody(props: LgvSvgBodyProps<ArcDisplayModel>) {
-      // the display's own `canvasWidth`, not the shell's viewport-width prop of
-      // the same name: arcs are laid out across the whole scrolled content and a
-      // bezier legitimately bows outside the viewport on its way between two
-      // endpoints inside it
-      return (
-        <SvgClipRect
-          id={`arc-${svgNodeId(props.model)}`}
-          width={props.model.canvasWidth}
-          height={props.height}
-        >
-          <ArcsSvg arcs={props.model.laidOutArcs} />
-        </SvgClipRect>
-      )
+      return <ArcsSvg arcs={props.model.laidOutArcs} />
     },
   )
 }

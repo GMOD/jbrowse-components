@@ -1,5 +1,3 @@
-import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
-import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { axisPlotBox } from '@jbrowse/display-ui'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
@@ -24,19 +22,16 @@ export interface ScorePlotSvgModel extends SvgExportable {
  * `children` draw over the plot, in the same untranslated space as the axis.
  */
 export function ScorePlotSvgFrame<TRegion, TState extends MarkFrame>({
-  model,
   height,
   canvasWidth,
   renderBlocks,
   opts,
-  clipIdPrefix,
   plotGeometry = axisPlotBox(height),
   marks,
   regions,
   renderState,
   children,
 }: LgvSvgBodyProps<ScorePlotSvgModel> & {
-  clipIdPrefix: string
   plotGeometry?: { yTop: number; plotHeight: number }
   marks: readonly Mark<TRegion, TState>[]
   regions: ReadonlyMap<number, TRegion>
@@ -46,26 +41,20 @@ export function ScorePlotSvgFrame<TRegion, TState extends MarkFrame>({
   const { yTop, plotHeight } = plotGeometry
   return (
     <>
-      <SvgClipRect
-        id={`${clipIdPrefix}-clip-${svgNodeId(model)}`}
-        width={canvasWidth}
-        height={height}
-      >
-        <g transform={`translate(0,${yTop})`}>
-          <PaintLayer
-            width={canvasWidth}
-            height={plotHeight}
-            opts={opts}
-            paint={ctx => {
-              paintMarkBlocks(ctx, marks, regions, renderBlocks, {
-                ...renderState,
-                canvasWidth,
-                canvasHeight: plotHeight,
-              })
-            }}
-          />
-        </g>
-      </SvgClipRect>
+      <g transform={`translate(0,${yTop})`}>
+        <PaintLayer
+          width={canvasWidth}
+          height={plotHeight}
+          opts={opts}
+          paint={ctx => {
+            paintMarkBlocks(ctx, marks, regions, renderBlocks, {
+              ...renderState,
+              canvasWidth,
+              canvasHeight: plotHeight,
+            })
+          }}
+        />
+      </g>
       {children}
     </>
   )

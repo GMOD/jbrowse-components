@@ -1,12 +1,12 @@
 /* eslint-disable react-refresh/only-export-components */
 import React from 'react'
 
+import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette, colorLongreadInv } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 import { SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
@@ -51,7 +51,6 @@ export async function renderSvg(
 function MafSvgBody({
   model,
   view,
-  height,
   canvasWidth: width,
   renderBlocks,
   opts,
@@ -110,11 +109,7 @@ function MafSvgBody({
   )
 
   return (
-    <SvgClipRect
-      id={`maf-clip-${svgNodeId(model)}`}
-      width={width}
-      height={height}
-    >
+    <>
       {coverageBandActive ? (
         <PaintLayer
           width={width}
@@ -168,59 +163,76 @@ function MafSvgBody({
         </g>
       ) : null}
       <g transform={`translate(0, ${rowsTopOffset})`}>
-        <PaintLayer
+        {/* The row painters cull by row, not by pixel, so the partly scrolled
+            top row starts above the box; on screen its canvas clips it, and a
+            vector layer has no canvas edge to do that. */}
+        <SvgClipRect
+          id={`maf-rows-${svgNodeId(model)}`}
           width={width}
           height={rowsHeight}
-          opts={opts}
-          paint={ctx => {
-            // One rows rendering at a time, and which one is the model's
-            // decision — `rowsCanvas2dMode` is what MafRowsCanvas paints from,
-            // through the same `drawMafRowsCanvas2d`, so the export can't
-            // disagree with the screen. Codon cells are drawn by drawMafCodons
-            // below, so that mode paints nothing here.
-            if (rowsCanvas2dMode !== undefined) {
-              drawMafRowsCanvas2d(ctx, model, renderBlocks, width)
-            } else if (basesRenderingActive) {
-              paintMarkBlocks(
+        >
+          <PaintLayer
+            width={width}
+            height={rowsHeight}
+            opts={opts}
+            paint={ctx => {
+              // One rows rendering at a time, and which one is the model's
+              // decision — `rowsCanvas2dMode` is what MafRowsCanvas paints from,
+              // through the same `drawMafRowsCanvas2d`, so the export can't
+              // disagree with the screen. Codon cells are drawn by drawMafCodons
+              // below, so that mode paints nothing here.
+              if (rowsCanvas2dMode !== undefined) {
+                drawMafRowsCanvas2d(ctx, model, renderBlocks, width)
+              } else if (basesRenderingActive) {
+                paintMarkBlocks(
+                  ctx,
+                  [MAF_ROW_MARK],
+                  svgCells,
+                  renderBlocks,
+                  svgState,
+                )
+              }
+              drawMafEmptyLines(ctx, model.visibleEmptyLines, svgState.palette)
+              drawMafSummaryBars(
                 ctx,
-                [MAF_ROW_MARK],
-                svgCells,
-                renderBlocks,
-                svgState,
+                model.visibleSummaryBars,
+                svgState.palette,
               )
-            }
-            drawMafEmptyLines(ctx, model.visibleEmptyLines, svgState.palette)
-            drawMafSummaryBars(ctx, model.visibleSummaryBars, svgState.palette)
-            drawMafAnnotations(
-              ctx,
-              model.visibleFrames,
-              getFrameColors(palette),
-            )
-            // Insertion markers + deletion count labels render from the same
-            // positioned markers the on-screen overlays use, so export matches
-            // the screen. Insertions are base-level only (gated like the live
-            // InsertionsOverlay); deletion labels draw in every mode.
-            if (basesRenderingActive) {
-              drawMafInsertions(
+              drawMafAnnotations(
                 ctx,
-                model.visibleInsertions,
-                svgState.palette.insertionColor,
-                1 / view.bpPerPx,
+                model.visibleFrames,
+                getFrameColors(palette),
               )
-            }
-            // `svgState.palette`, so the count follows the export theme the
-            // gap cells under it were painted from
-            drawMafDeletionLabels(ctx, model.visibleDeletions, svgState.palette)
-            drawMafLabels(
-              ctx,
-              model.visibleLabels,
-              contrast,
-              state.mismatchRendering,
-            )
-            drawMafCodons(ctx, model.visibleCodons, getCodonColors(palette))
-            drawInversions(ctx, model.visibleInversions, colorLongreadInv)
-          }}
-        />
+              // Insertion markers + deletion count labels render from the same
+              // positioned markers the on-screen overlays use, so export matches
+              // the screen. Insertions are base-level only (gated like the live
+              // InsertionsOverlay); deletion labels draw in every mode.
+              if (basesRenderingActive) {
+                drawMafInsertions(
+                  ctx,
+                  model.visibleInsertions,
+                  svgState.palette.insertionColor,
+                  1 / view.bpPerPx,
+                )
+              }
+              // `svgState.palette`, so the count follows the export theme the
+              // gap cells under it were painted from
+              drawMafDeletionLabels(
+                ctx,
+                model.visibleDeletions,
+                svgState.palette,
+              )
+              drawMafLabels(
+                ctx,
+                model.visibleLabels,
+                contrast,
+                state.mismatchRendering,
+              )
+              drawMafCodons(ctx, model.visibleCodons, getCodonColors(palette))
+              drawInversions(ctx, model.visibleInversions, colorLongreadInv)
+            }}
+          />
+        </SvgClipRect>
         <SvgTreeSidebar
           showTree={showTree}
           hierarchy={hierarchy}
@@ -237,9 +249,9 @@ function MafSvgBody({
         />
       </g>
       {/* The same titles the display shows on screen (`MafBandLabels`), and for
-          the same reason: with both bands drawn they are told apart only by
-          their Y-axis units, and an exported figure can't be hovered. */}
+        the same reason: with both bands drawn they are told apart only by
+        their Y-axis units, and an exported figure can't be hovered. */}
       <SvgBandLabels labels={model.bandLabels} theme={theme} />
-    </SvgClipRect>
+    </>
   )
 }

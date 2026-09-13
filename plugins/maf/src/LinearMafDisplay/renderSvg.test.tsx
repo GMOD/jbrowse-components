@@ -47,6 +47,19 @@ test('an exported dendrogram carries the locus it was clustered on', async () =>
   expect(draw(await renderSvg(display, {}))).toContain('ctgA')
 })
 
+// The row painters cull by row, so a partly scrolled top row starts above the
+// rows box. The screen's canvas edge clips it; a vector export needs a clip of
+// its own or the row's letters land on the bands above.
+test('the rows layer is clipped to the rows box', async () => {
+  const { display } = clusteredDisplay()
+  const svg = draw(await renderSvg(display, {}))
+  const clip =
+    /<clipPath id="(maf-rows-[^"]+)"><rect[^>]*height="([^"]+)"/.exec(svg)
+  expect(clip).not.toBeNull()
+  expect(Number(clip![2])).toBe(display.rowsHeight)
+  expect(svg).toContain(`clip-path="url(#${clip![1]})"`)
+})
+
 // The key is the only decoder an exported figure ships with, and dismissing it
 // on screen used to leave it in the figure: maf was the one row display with no
 // `showLegend` at all.

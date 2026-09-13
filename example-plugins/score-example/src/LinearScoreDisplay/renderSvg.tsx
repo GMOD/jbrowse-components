@@ -1,9 +1,7 @@
 // #exampleFile shared | SVG export: the mark list painted through renderDisplaySvg
 /* eslint-disable react-refresh/only-export-components */
-import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import { SCORE_MARKS } from './scoreMarks.ts'
@@ -20,7 +18,6 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 // model's own instance type, which would close a type cycle through the
 // `renderSvg` action that imports this file.
 interface ScoreSvgModel extends LgvSvgExportable {
-  id: string
   rpcDataMap: ReadonlyMap<number, ScoreRegionData>
   renderState: ScoreRenderState
 }
@@ -35,7 +32,8 @@ export async function renderSvg(
 
 // The same painter the Canvas2D backend runs, handed an SVG context. The
 // export's width is the shell's, not the on-screen renderState's, which
-// subtracts the track outline the export does not draw.
+// subtracts the track outline the export does not draw. The shell clips the
+// body to its box.
 function ScoreSvgBody({
   model,
   height,
@@ -45,26 +43,14 @@ function ScoreSvgBody({
 }: LgvSvgBodyProps<ScoreSvgModel>) {
   const state = { ...model.renderState, canvasWidth, canvasHeight: height }
   return (
-    <SvgClipRect
-      id={`score-clip-${svgNodeId(model)}`}
+    <PaintLayer
       width={canvasWidth}
       height={height}
-    >
-      <PaintLayer
-        width={canvasWidth}
-        height={height}
-        opts={opts}
-        paint={ctx => {
-          paintMarkBlocks(
-            ctx,
-            SCORE_MARKS,
-            model.rpcDataMap,
-            renderBlocks,
-            state,
-          )
-        }}
-      />
-    </SvgClipRect>
+      opts={opts}
+      paint={ctx => {
+        paintMarkBlocks(ctx, SCORE_MARKS, model.rpcDataMap, renderBlocks, state)
+      }}
+    />
   )
 }
 // #endregion

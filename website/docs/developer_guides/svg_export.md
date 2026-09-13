@@ -127,12 +127,10 @@ shows the error and saves nothing. The one terminal an export does draw is
 <!-- include: plugins/sequence/src/LinearReferenceSequenceDisplay/renderSvg.tsx -->
 
 ```tsx
-import { svgNodeId } from '@jbrowse/core/svg/svgId'
 /* eslint-disable react-refresh/only-export-components */
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 
 import { drawSequenceBlocks } from './components/drawSequence.ts'
 import { buildColorPalette } from './components/sequenceGeometry.ts'
@@ -195,20 +193,14 @@ function SequenceSvgBody({
   // Sequence is text-heavy; routed through PaintLayer so rasterizeLayers can
   // PNG-embed when set, but the default (vector) path keeps letters crisp.
   return (
-    <SvgClipRect
-      id={`sequence-clip-${svgNodeId(model)}`}
+    <PaintLayer
       width={canvasWidth}
       height={height}
-    >
-      <PaintLayer
-        width={canvasWidth}
-        height={height}
-        opts={opts}
-        paint={ctx => {
-          drawSequenceBlocks(ctx, sequenceData, renderBlocks, state)
-        }}
-      />
-    </SvgClipRect>
+      opts={opts}
+      paint={ctx => {
+        drawSequenceBlocks(ctx, sequenceData, renderBlocks, state)
+      }}
+    />
   )
 }
 ```

@@ -207,7 +207,7 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
     // PaintLayer with no rasterizeLayers serializes an SvgCanvas, so the bars
     // arrive as vector fills rather than an embedded PNG.
     expect(html).not.toContain('<image')
-    expect(html).toContain('clip-path="url(#wiggle-clip-test)"')
+    expect(html).toContain('clip-path="url(#display-clip-test)"')
     // 0..500 of a 1000bp region over 800px is 400px, plus the Canvas2D fudge
     // factor. Score 5 of a [0,10] domain fills the lower half of a 50px row, so
     // row 0's bar sits at y=25 and row 1's at y=75 — the per-row placement the

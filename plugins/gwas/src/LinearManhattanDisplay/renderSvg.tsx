@@ -27,7 +27,6 @@ function ManhattanSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
   return (
     <ScorePlotSvgFrame
       {...props}
-      clipIdPrefix="manhattan"
       marks={MANHATTAN_MARKS}
       regions={model.rpcDataMap}
       renderState={model.renderState}

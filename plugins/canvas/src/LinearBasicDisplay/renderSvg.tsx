@@ -1,9 +1,7 @@
-import { svgNodeId } from '@jbrowse/core/svg/svgId'
 /* eslint-disable react-refresh/only-export-components */
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
-import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
@@ -92,11 +90,7 @@ function CanvasFeaturesSvgBody({
   const cullBand = labelCullBand(labelScrollBucket(scrollY), height)
 
   return (
-    <SvgClipRect
-      id={`canvas-features-clip-${svgNodeId(model)}`}
-      width={canvasWidth}
-      height={height}
-    >
+    <>
       {model.coarseTierStandsIn ? (
         <PaintLayer
           width={canvasWidth}
@@ -127,13 +121,13 @@ function CanvasFeaturesSvgBody({
         }}
       />
       {/* The three overlays the app canvas never paints — on-screen they are the
-          highlight boxes (a DOM layer), the floating labels (another) and the
-          peptide letters (their own canvas) — baked in here in the on-screen
-          stacking order: boxes over the glyphs, labels over the boxes, peptides
-          over both. One layer rather than three because the order within a
-          layer already gives that, and because `opts` is deliberately withheld:
-          all three stay vector even when `rasterizeLayers` is on, so exported
-          text and box edges remain crisp. */}
+        highlight boxes (a DOM layer), the floating labels (another) and the
+        peptide letters (their own canvas) — baked in here in the on-screen
+        stacking order: boxes over the glyphs, labels over the boxes, peptides
+        over both. One layer rather than three because the order within a
+        layer already gives that, and because `opts` is deliberately withheld:
+        all three stay vector even when `rasterizeLayers` is on, so exported
+        text and box edges remain crisp. */}
       <PaintLayer
         width={canvasWidth}
         height={height}
@@ -166,6 +160,6 @@ function CanvasFeaturesSvgBody({
           }
         }}
       />
-    </SvgClipRect>
+    </>
   )
 }
