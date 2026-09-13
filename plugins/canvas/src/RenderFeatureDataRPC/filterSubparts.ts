@@ -114,23 +114,31 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
   return subparts
 }
 
+// The slot is one string for the whole track and this runs once per
+// transcript, so the split is kept for as long as the string stays the same.
+let allowedSubParts: { slot: string; types: Set<string> } | undefined
+
+function allowedSubPartTypes(subParts: string) {
+  if (allowedSubParts?.slot !== subParts) {
+    allowedSubParts = {
+      slot: subParts,
+      types: new Set(subParts.split(',').map(t => t.trim().toLowerCase())),
+    }
+  }
+  return allowedSubParts.types
+}
+
 export function getSubparts(f: Feature, config: DisplayConfig) {
   let c = getSubfeatures(f)
   if (c.length === 0) {
     return []
   }
-  const hasUTRs = c.some(isUTR)
   // Only the processed-transcript glyph reaches here, so every feature is a
-  // coding transcript. Gated on !hasUTRs because makeUTRs would otherwise push a
-  // second, derived set on top of the real UTR subfeatures.
-  const impliedUTRs = !hasUTRs && config.impliedUTRs
-
-  if (impliedUTRs) {
+  // coding transcript. Gated on the real UTR rows because makeUTRs would
+  // otherwise push a second, derived set on top of them.
+  if (config.impliedUTRs && !c.some(isUTR)) {
     c = makeUTRs(f, c)
   }
-
-  const allowedTypes = new Set(
-    config.subParts.split(',').map(t => t.trim().toLowerCase()),
-  )
+  const allowedTypes = allowedSubPartTypes(config.subParts)
   return c.filter(child => allowedTypes.has(featureType(child).toLowerCase()))
 }

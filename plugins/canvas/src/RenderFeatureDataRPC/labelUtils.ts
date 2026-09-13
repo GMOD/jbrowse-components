@@ -1,5 +1,5 @@
 import { readConfigValueSafe } from './renderConfig.ts'
-import { hasVisibleText, truncateLabel } from './util.ts'
+import { hasVisibleText } from './util.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
 import type { GlyphType } from './types.ts'
@@ -94,9 +94,7 @@ export function reservesBelowLabelRow(args: {
   return (
     SELF_LABELING_GLYPHS[glyphType] &&
     config.subfeatureLabels === 'below' &&
-    hasVisibleText(
-      truncateLabel(subfeatureLabelText(feature, config, jexl) ?? ''),
-    )
+    hasVisibleText(subfeatureLabelText(feature, config, jexl))
   )
 }
 
@@ -114,8 +112,7 @@ export function sharedChildLabelRows(
   config: DisplayConfig,
   labels: (string | undefined)[],
 ) {
-  return config.subfeatureLabels === 'below' &&
-    labels.some(label => hasVisibleText(truncateLabel(label ?? '')))
+  return config.subfeatureLabels === 'below' && labels.some(hasVisibleText)
     ? 1
     : 0
 }

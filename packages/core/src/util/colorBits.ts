@@ -168,9 +168,23 @@ export function packAbgr(r: number, g: number, b: number, a: number) {
   return ((a << 24) | (b << 16) | (g << 8) | r) >>> 0
 }
 
+// A packer resolves the same few strings once per primitive, so the parse is
+// cached by string. Capped, because BED itemRgb triples are unbounded.
+const ABGR_CACHE_LIMIT = 4096
+const abgrByCss = new Map<string, number>()
+
 export function cssColorToABGR(color: string) {
+  const cached = abgrByCss.get(color)
+  if (cached !== undefined) {
+    return cached
+  }
   const c = parseCssColor(color)
-  return packAbgr(getRed(c), getGreen(c), getBlue(c), getAlpha(c))
+  const packed = packAbgr(getRed(c), getGreen(c), getBlue(c), getAlpha(c))
+  if (abgrByCss.size >= ABGR_CACHE_LIMIT) {
+    abgrByCss.clear()
+  }
+  abgrByCss.set(color, packed)
+  return packed
 }
 
 // Replace the alpha byte of an ABGR-packed u32, keeping its RGB. RGB already

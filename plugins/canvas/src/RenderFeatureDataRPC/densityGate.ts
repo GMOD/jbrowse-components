@@ -8,13 +8,13 @@ import type { StopToken, StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 type Region = RenderFeatureDataArgs['region']
 
-// A region with no span occupies no pixels, so nothing in it is dense.
+// A region with no span occupies no pixels, so nothing in it is dense. Shared
+// with the main-thread banner, which must agree with the worker's verdict.
 export function featuresPerPx(
   featureCount: number,
-  region: { start: number; end: number },
+  widthBp: number,
   bpPerPx: number,
 ) {
-  const widthBp = region.end - region.start
   return widthBp > 0 ? featureCount / (widthBp / bpPerPx) : 0
 }
 
@@ -73,7 +73,7 @@ export function exactDensityTooLargeResult(
   bytes: number | undefined,
 ): RegionTooLargeResult | undefined {
   return overDensityBudget(
-    featuresPerPx(featureCount, region, bpPerPx),
+    featuresPerPx(featureCount, region.end - region.start, bpPerPx),
     maxFeatureDensity,
   )
     ? tooManyFeaturesResult(featureCount, bytes)

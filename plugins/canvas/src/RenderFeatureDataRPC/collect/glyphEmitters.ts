@@ -43,10 +43,6 @@ import type {
 } from './renderContext.ts'
 import type { Feature } from '@jbrowse/core/util'
 
-function resolveSubfeatureLabel(feature: Feature, ctx: RenderContext) {
-  return subfeatureLabelText(feature, ctx.config, ctx.jexl)
-}
-
 function emitExonRects(
   transcript: FeatureLayout,
   place: GlyphPlacement,
@@ -54,23 +50,39 @@ function emitExonRects(
   collector: Collector,
 ) {
   const { baseTopPx, flatbushIdx, labelRowsAbove } = place
+  const height = transcript.height
   const transcriptFeature = transcript.feature
   const aminoAcidsBySeg = aminoAcidsByFeature(transcriptFeature, ctx)
+  if (!aminoAcidsBySeg) {
+    for (const child of transcript.children) {
+      pushBoxRect(
+        {
+          feature: child.feature,
+          topPx: baseTopPx,
+          height,
+          flatbushIdx,
+          labelRowsAbove,
+        },
+        ctx,
+        collector,
+      )
+    }
+    return
+  }
+
   // The residues are deduped and the CHILDREN are not, so two copies of one CDS
   // row resolve the same map entry and would emit every residue of it twice. A
   // repeat is skipped outright rather than falling through to the box below,
   // which would paint a flat rect over the codons it duplicates.
   const drawnSegments = new Set<string>()
+  const strand = transcriptFeature.get('strand') ?? 0
 
   for (const childLayout of transcript.children) {
     const childFeature = childLayout.feature
-    const childStart = childFeature.get('start')
-    const childEnd = childFeature.get('end')
-
     // Segments key off CDS bounds, so a child that matches one is coding and
     // UTR sizing never applies on this branch.
-    const key = `${childStart}-${childEnd}`
-    const aminoAcids = aminoAcidsBySeg?.get(key)
+    const key = `${childFeature.get('start')}-${childFeature.get('end')}`
+    const aminoAcids = aminoAcidsBySeg.get(key)
 
     if (aminoAcids?.length) {
       if (drawnSegments.has(key)) {
@@ -82,8 +94,8 @@ function emitExonRects(
           aminoAcids,
           baseColor: boxColor(childFeature, ctx),
           topPx: baseTopPx,
-          height: transcript.height,
-          strand: transcriptFeature.get('strand') ?? 0,
+          height,
+          strand,
           flatbushIdx,
           labelRowsAbove,
         },
@@ -94,7 +106,7 @@ function emitExonRects(
         {
           feature: childFeature,
           topPx: baseTopPx,
-          height: transcript.height,
+          height,
           flatbushIdx,
           labelRowsAbove,
         },
@@ -147,7 +159,11 @@ function processTranscriptLayout(
         heightPx: transcript.height,
         labelRowsAbove,
         ownsLabelRow: transcript.ownsLabelRow,
-        displayLabel: resolveSubfeatureLabel(transcriptFeature, ctx),
+        displayLabel: subfeatureLabelText(
+          transcriptFeature,
+          ctx.config,
+          ctx.jexl,
+        ),
         transcript: transcriptCoords(transcript),
       },
       ctx,
@@ -284,7 +300,7 @@ function processMatureProteinLayout(
         collector,
       )
     }
-    const childLabel = resolveSubfeatureLabel(childFeature, ctx)
+    const childLabel = subfeatureLabelText(childFeature, ctx.config, ctx.jexl)
     const displayLabel =
       disambiguateWithCds &&
       cdsLabel &&
@@ -376,7 +392,7 @@ function processRepeatRegionLayout(
       collector,
     )
 
-    const displayLabel = resolveSubfeatureLabel(childFeature, ctx)
+    const displayLabel = subfeatureLabelText(childFeature, ctx.config, ctx.jexl)
     registerSubfeature(
       {
         feature: childFeature,
@@ -551,7 +567,7 @@ function emitBox(
         // `Box` labels itself, so a leaf child of a gene spends its own `below`
         // row and the parent's `labelRows` already counts it.
         ownsLabelRow: layout.ownsLabelRow,
-        displayLabel: resolveSubfeatureLabel(feature, ctx),
+        displayLabel: subfeatureLabelText(feature, ctx.config, ctx.jexl),
       },
       ctx,
       collector,

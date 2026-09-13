@@ -7,6 +7,7 @@ import {
   isCodingFeature,
 } from './glyphUtils.ts'
 
+import type { Span } from '../../shared/mergeSpans.ts'
 import type { DisplayConfig } from '../renderConfig.ts'
 import type { IsoformStack } from '../rpcTypes.ts'
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
@@ -37,31 +38,33 @@ function getIsoforms(
 }
 
 // "Longest coding" is the longest protein — summed CDS length, not the widest
-// genomic footprint an isoform with a large intron could win. Segments dedupe by
-// start-end, because a duplicated CDS row is a real GFF3 quirk that would
-// otherwise inflate one isoform past a genuinely longer protein.
+// genomic footprint an isoform with a large intron could win. A duplicated CDS
+// row is a real GFF3 quirk that would otherwise inflate one isoform past a
+// genuinely longer protein, so equal spans count once.
 function codingLength(feature: Feature): number {
-  const seen = new Set<string>()
-  let sum = 0
+  const spans: Span[] = []
   const walk = (f: Feature) => {
     for (const sub of getSubfeatures(f)) {
       if (isCDS(sub)) {
-        const start = sub.get('start')
-        const end = sub.get('end')
-        const key = `${start}-${end}`
-        if (!seen.has(key)) {
-          seen.add(key)
-          sum += end - start
-        }
+        spans.push([sub.get('start'), sub.get('end')])
       } else {
         walk(sub)
       }
     }
   }
   walk(feature)
-  return sum === 0 && isCDS(feature)
-    ? feature.get('end') - feature.get('start')
-    : sum
+  if (spans.length === 0) {
+    return isCDS(feature) ? feature.get('end') - feature.get('start') : 0
+  }
+  spans.sort((a, b) => a[0] - b[0] || a[1] - b[1])
+  let sum = 0
+  for (const [i, span] of spans.entries()) {
+    const prev = spans[i - 1]
+    if (!prev || prev[0] !== span[0] || prev[1] !== span[1]) {
+      sum += span[1] - span[0]
+    }
+  }
+  return sum
 }
 
 // A position in `canonicalTranscriptTags` rather than a boolean, because the
@@ -88,24 +91,31 @@ function canonicalRank(feature: Feature, field: string, wanted: string[]) {
 interface IsoformScore {
   canonical: number
   coding: boolean
+  // protein length for a coding isoform, genomic span otherwise
+  size: number
 }
 
-// Protein length is deliberately absent: only the ranking needs it, and every
-// gene on screen would pay `codingLength`'s subtree walk on every layout while
-// the ranking runs only when a gene actually collapses.
+// Scored once per child: the ranking reads these for every gene that stacks
+// more than one child, not only for the ones `longestCoding` collapses.
 function scoreIsoforms(features: Feature[], config: DisplayConfig) {
   const { canonicalTranscriptField: field, canonicalTranscriptTags } = config
   const wanted = canonicalTranscriptTags.map(t => t.toLowerCase())
   return new Map<string, IsoformScore>(
-    features.map(feature => [
-      feature.id(),
-      {
-        canonical: wanted.length
-          ? canonicalRank(feature, field, wanted)
-          : Infinity,
-        coding: isCodingFeature(feature),
-      },
-    ]),
+    features.map(feature => {
+      const coding = isCodingFeature(feature)
+      return [
+        feature.id(),
+        {
+          canonical: wanted.length
+            ? canonicalRank(feature, field, wanted)
+            : Infinity,
+          coding,
+          size: coding
+            ? codingLength(feature)
+            : feature.get('end') - feature.get('start'),
+        },
+      ]
+    }),
   )
 }
 
@@ -117,18 +127,7 @@ type Scores = ReturnType<typeof scoreIsoforms>
 // sort would break the other way — hence the explicit index term.
 function rankIsoforms(isoforms: Feature[], scores: Scores): Feature[] {
   return isoforms
-    .map((feature, index) => {
-      const { canonical, coding } = scores.get(feature.id())!
-      return {
-        feature,
-        index,
-        canonical,
-        coding,
-        size: coding
-          ? codingLength(feature)
-          : feature.get('end') - feature.get('start'),
-      }
-    })
+    .map((feature, index) => ({ feature, index, ...scores.get(feature.id())! }))
     .sort(
       (a, b) =>
         a.canonical - b.canonical ||

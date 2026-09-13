@@ -16,26 +16,25 @@ import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAda
 describe('featuresPerPx', () => {
   it('sparse features stay below the limit', () => {
     // 100 features / (10000bp / 10bpPerPx = 1000px) = 0.1 features/px
-    expect(featuresPerPx(100, { start: 0, end: 10_000 }, 10)).toBeCloseTo(0.1)
+    expect(featuresPerPx(100, 10_000, 10)).toBeCloseTo(0.1)
   })
 
   it('dense features exceed the limit', () => {
     // 50000 / 1000px = 50 features/px
-    expect(featuresPerPx(50_000, { start: 0, end: 10_000 }, 10)).toBe(50)
+    expect(featuresPerPx(50_000, 10_000, 10)).toBe(50)
   })
 
   it('same count is denser when zoomed in (fewer px)', () => {
-    const region = { start: 0, end: 10_000 }
-    expect(featuresPerPx(5000, region, 100)).toBeGreaterThan(
-      featuresPerPx(5000, region, 10),
+    expect(featuresPerPx(5000, 10_000, 100)).toBeGreaterThan(
+      featuresPerPx(5000, 10_000, 10),
     )
   })
 
   // unguarded this is `count / 0` -> Infinity: a refusal to fetch nothing
   it('is zero, not Infinity, for a region with no span', () => {
-    expect(featuresPerPx(5000, { start: 100, end: 100 }, 10)).toBe(0)
-    expect(featuresPerPx(0, { start: 100, end: 100 }, 10)).toBe(0)
-    expect(featuresPerPx(5000, { start: 200, end: 100 }, 10)).toBe(0)
+    expect(featuresPerPx(5000, 0, 10)).toBe(0)
+    expect(featuresPerPx(0, 0, 10)).toBe(0)
+    expect(featuresPerPx(5000, -100, 10)).toBe(0)
   })
 })
 
