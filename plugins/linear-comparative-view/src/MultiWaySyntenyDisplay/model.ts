@@ -9,7 +9,6 @@ import { legendIsReadable, pushLaunchViewMenuItem } from '@jbrowse/core/ui'
 import { colorScaleIsEmpty } from '@jbrowse/core/ui/colorScale'
 import {
   doesIntersect2,
-  getPaletteHost,
   getSession,
   isFeature,
   openFeatureWidget,
@@ -98,7 +97,7 @@ import type { LanePlacementRecord } from './composeLaneLinks.ts'
 import type { MultiWaySyntenyDisplayConfigModel } from './configSchema.ts'
 import type { LaneGene } from './geneGlyph.ts'
 import type { AnchorCoord, LaneDecision } from './laneDecision.ts'
-import type { Lane, LaneStack } from './laneStack.ts'
+import type { LaneStack } from './laneStack.ts'
 import type { RowFrame, Span } from './layoutMultiWay.ts'
 import type { LaneChoice } from './menus.ts'
 import type { MultiWayRibbonColorBy, TickGeometry } from './multiwayGeometry.ts'
@@ -112,6 +111,10 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem, MouseState } from '@jbrowse/core/ui'
 import type { CategoricalEntry, ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
+import type {
+  HighlightRect,
+  HighlightStyle,
+} from '@jbrowse/display-kit/highlightHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { AttributeRange, LodMode, LodTier } from '@jbrowse/synteny-core'
@@ -679,24 +682,6 @@ export function stateModelFactory(
       get showLaneTicks(): boolean {
         return getConf(self, 'showLaneTicks')
       },
-      /**
-       * #getter
-       * every feature id a lane can draw — the group features and the lane
-       * genes, which is what `laneGlyphCells` colors. Rebuilt per fetch
-       * commit, not per frame
-       */
-      get ownFeatureIds() {
-        const out = new Set<string>()
-        for (const f of self.features ?? []) {
-          out.add(f.id())
-        }
-        for (const { genes } of self.laneGenes?.values() ?? []) {
-          for (const g of genes) {
-            out.add(g.feature.id())
-          }
-        }
-        return out
-      },
     }))
     .views(self => ({
       /**
@@ -731,17 +716,12 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * the session selection where it names a feature THIS display draws,
-       * else undefined — the gate that keeps a selection in some other track
-       * from recomputing and re-uploading every lane's glyph cells, since an
-       * unchanged undefined invalidates nothing downstream
        */
       get selectedFeatureId() {
         if (isAlive(self)) {
           const { selection } = getSession(self)
           if (isFeature(selection)) {
-            const id = selection.id()
-            return self.ownFeatureIds.has(id) ? id : undefined
+            return selection.id()
           }
         }
         return undefined
@@ -1429,9 +1409,6 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      get palette() {
-        return getPaletteHost(self).palette
-      },
       /**
        * #getter
        * the ribbons between each adjacent lane pair as the synteny passes'
@@ -1483,18 +1460,17 @@ export function stateModelFactory(
        * two cells per lane — its gene models and baseline, and its placement
        * boxes; see `buildLaneCells`. Boxes first, so a hit
        * test walking these in order answers the box over the gene the way the
-       * draw order does. Colors come off `glyphColors`, so neither the hover —
-       * a render parameter — nor a settle re-runs a jexl slot
+       * draw order does. Colors come off `glyphColors`, so a settle re-runs no
+       * jexl slot, and neither the hover nor the selection reads these: the
+       * chrome draws both
        */
       get laneGlyphCells() {
-        const { palette, selectedFeatureId, laneGenes, glyphColors } = self
+        const { laneGenes, glyphColors } = self
         const { lanes, glyphHeight } = self.laneStack
         const ink = bandInk()
         const colorOf = (slot: 'color' | 'utrColor', feature: Feature) =>
-          selectedFeatureId === feature.id()
-            ? palette.highlight.main
-            : (glyphColors[slot].get(feature.id()) ??
-              readConfObject(self.configuration, slot, { feature }))
+          glyphColors[slot].get(feature.id()) ??
+          readConfObject(self.configuration, slot, { feature })
         const out = new Map<string, MultiWayCell>()
         lanes.forEach((lane, row) => {
           const { glyphs, boxes } = buildLaneCells({
@@ -1637,19 +1613,55 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * the hovered group's placement in every lane that places it
+       * The hovered group's placement in every lane that places it, for the
+       * chrome's highlight. A ribbon joins ADJACENT lanes only, so a group the
+       * middle lane does not place would light nothing there without this.
        */
-      get hoveredGroupOutlines(): { lane: Lane; span: Span }[] {
-        const { hoveredGroupKey } = self
-        if (hoveredGroupKey === undefined) {
-          return []
-        }
-        return self.laneStack.lanes.flatMap(lane =>
-          (lane.placements.get(hoveredGroupKey)?.spans ?? []).map(span => ({
-            lane,
-            span,
-          })),
-        )
+      get hoverInk(): HighlightRect[] {
+        const { hoveredGroupKey, dragOffsetPx, scrollTop } = self
+        const { lanes, glyphHeight } = self.laneStack
+        return hoveredGroupKey === undefined
+          ? []
+          : lanes.flatMap(lane =>
+              (lane.placements.get(hoveredGroupKey)?.spans ?? []).map(
+                ([a, b]) => ({
+                  left: Math.min(a, b) + dragOffsetPx,
+                  top: lane.glyphTop - scrollTop,
+                  width: Math.abs(b - a),
+                  height: glyphHeight,
+                }),
+              ),
+            )
+      },
+      /**
+       * #getter
+       * Every gene or placement box drawing the selected feature, for the
+       * chrome's highlight — off the hit boxes the hit test reads, so what
+       * lights is what a click there would select.
+       */
+      get selectionInk(): HighlightRect[] {
+        const { selectedFeatureId, dragOffsetPx, scrollTop } = self
+        return selectedFeatureId === undefined
+          ? []
+          : [...self.laneGlyphCells.values()].flatMap(cell =>
+              cell.kind === 'glyphs'
+                ? cell.data.hits
+                    .filter(hit => hit.feature.id() === selectedFeatureId)
+                    .map(hit => ({
+                      left: hit.x1 + dragOffsetPx,
+                      top: hit.y1 - scrollTop,
+                      width: hit.x2 - hit.x1,
+                      height: hit.y2 - hit.y1,
+                    }))
+                : [],
+            )
+      },
+      /**
+       * #getter
+       * A wash and a border: the glyph colours are the data.
+       */
+      get highlightStyle(): HighlightStyle {
+        return 'box'
       },
     }))
     .views(self => ({

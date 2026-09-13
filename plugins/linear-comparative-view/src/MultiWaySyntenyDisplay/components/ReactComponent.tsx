@@ -9,7 +9,6 @@ import { observer } from 'mobx-react'
 
 import { MultiWayRenderer } from '../MultiWayRenderer.ts'
 import LaneHeaders from './LaneHeaders.tsx'
-import MultiWayOverlay from './MultiWayOverlay.tsx'
 
 import type { MultiWaySyntenyDisplayModel } from '../model.ts'
 import type { MouseTracker } from '@jbrowse/core/ui'
@@ -57,7 +56,6 @@ const MultiWayBody = observer(function MultiWayBody({
             cursor: hoverTarget ? 'pointer' : undefined,
           }}
         />
-        <MultiWayOverlay model={model} />
         <LaneHeaders model={model} />
       </div>
       <ScrollChrome

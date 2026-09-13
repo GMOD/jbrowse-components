@@ -5,7 +5,6 @@ import { LocalFile } from 'generic-filehandle2'
 import { renderToString } from 'react-dom/server'
 
 import LaneHeaders from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/components/LaneHeaders.tsx'
-import MultiWayOverlay from '../../../../plugins/linear-comparative-view/src/MultiWaySyntenyDisplay/components/MultiWayOverlay.tsx'
 import { getMates } from '../../../../plugins/linear-comparative-view/src/syntenyMate.ts'
 import configSnapshot from '../../test_data/multiway_blocks/config.json' with { type: 'json' }
 import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
@@ -319,31 +318,19 @@ test('MultiWaySyntenyDisplay outlines a hovered group in every lane that places 
     },
     { timeout: 30000 },
   )
-  const { queryAllByTestId } = render(<MultiWayOverlay model={display} />)
-  const expectOutlines = async (count: number) => {
-    await waitFor(() => {
-      expect(queryAllByTestId('multiway-hover-outline')).toHaveLength(count)
-    })
-  }
-  const exportedOutlines = async () =>
-    renderToString(<>{await display.renderSvg()}</>).match(
-      /data-testid="multiway-hover-outline"/g,
-    )?.length ?? 0
-
   const hoverGroup = (groupKey: string) => {
     const { targets, groupTarget } = display.ribbonGeometry
     const targetIdx = groupTarget.get(groupKey)!
     display.setHoverTarget({ ...targets[targetIdx]!, targetIdx })
   }
 
-  await expectOutlines(0)
+  expect(display.hoverInk).toHaveLength(0)
   hoverGroup('g1')
-  await expectOutlines(3)
-  expect(await exportedOutlines()).toBe(0)
+  expect(display.hoverInk).toHaveLength(3)
   hoverGroup('g2')
-  await expectOutlines(2)
+  expect(display.hoverInk).toHaveLength(2)
   display.setHoverTarget(undefined)
-  await expectOutlines(0)
+  expect(display.hoverInk).toHaveLength(0)
 
   // ...and the pointer reaches that state on its own. The assertions above
   // hover a RIBBON, which carries its group, and that is how the gene case
@@ -368,7 +355,7 @@ test('MultiWaySyntenyDisplay outlines a hovered group in every lane that places 
   )
   expect(geneHit?.groupKey).toBe('g1')
   display.setHoverTarget(geneHit)
-  await expectOutlines(3)
+  expect(display.hoverInk).toHaveLength(3)
 }, 40000)
 
 // The menu's Move up/down is two clicks away from the picture; the label is

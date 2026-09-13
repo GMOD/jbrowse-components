@@ -1,10 +1,11 @@
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
-import MultiWayOverlay from './components/MultiWayOverlay.tsx'
+import { SvgLaneHeaders } from './components/SvgLaneHeaders.tsx'
 import { MULTIWAY_MARKS, multiwayBlocks } from './multiwayMarks.ts'
 
 import type { MultiWaySyntenyDisplayModel } from './model.ts'
@@ -27,6 +28,7 @@ export async function renderMultiWaySvg(
     ) {
       const { model, height, opts } = props
       const width = model.canvasWidth
+      const palette = usePalette()
       return (
         <SvgClipRect
           id={`multiway-${svgNodeId(model)}`}
@@ -52,7 +54,13 @@ export async function renderMultiWaySvg(
               )
             }}
           />
-          <MultiWayOverlay model={model} exportSVG />
+          <g transform={`translate(0 ${-model.scrollTop})`}>
+            <SvgLaneHeaders
+              rows={model.laneHeaderRows}
+              width={width}
+              palette={palette}
+            />
+          </g>
         </SvgClipRect>
       )
     },
