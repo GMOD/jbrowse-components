@@ -473,7 +473,7 @@ Both files go somewhere that serves range requests, and their two URLs are the
     "haplotypeIndexLocation": {
       "uri": "https://example.com/graphs/my_graph.haplotype-index.db"
     },
-    "assemblyNames": ["hg38", "HG00097.1", "HG00099.1"],
+    "assemblyNames": ["hg38"],
     "assemblyNameToPanSN": {
       "hg38": "GRCh38#0",
       "HG00097.1": "HG00097#1",
@@ -486,8 +486,7 @@ Both files go somewhere that serves range requests, and their two URLs are the
     {
       "type": "MultiWaySyntenyDisplay",
       "displayId": "my_graph_lanes-MultiWaySyntenyDisplay",
-      "height": 600,
-      "lanes": ["HG00097.1", "HG00099.1"]
+      "height": 600
     }
   ]
 }

@@ -4599,10 +4599,6 @@
           "description": "draw each lane's own coordinate ticks, at one interval shared by every lane. Equal spacing between two lanes means equal bp-per-pixel; a lane whose ticks crowd together is zoomed out. Turning this off leaves the header's span and multiple as the only scale statement.",
           "$ref": "#/$defs/BooleanOrJexl",
           "default": true
-        },
-        "lanes": {
-          "description": "the mate lanes to draw, by assembly name, until the reader chooses a set from the lane picker; empty draws every lane the source places. The way a hosted config points this display at a graph of hundreds of haplotypes and opens on the eight it means to show.",
-          "$ref": "#/$defs/StringArrayOrJexl"
         }
       }
     },

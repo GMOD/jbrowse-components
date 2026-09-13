@@ -292,8 +292,8 @@ export function stateModelFactory(
         /**
          * #property
          * the lanes the stack draws, by assembly name, as the picker and Hide
-         * lane wrote them; undefined is the config's `lanes`, or every lane
-         * where that names none. Session state rather than adapter config: a
+         * lane wrote them; undefined is `configuredLanes`, or every lane where
+         * there are none. Session state rather than adapter config: a
          * choice made in front of this picture, which a shared session carries
          */
         selectedLanes: types.maybe(types.array(types.string)),
@@ -503,7 +503,7 @@ export function stateModelFactory(
         },
         /**
          * #action
-         * undefined puts the choice back to the config's `lanes`, or every lane
+         * undefined puts the choice back to `configuredLanes`, or every lane
          */
         setSelectedLanes(names: string[] | undefined) {
           self.selectedLanes = names === undefined ? undefined : cast(names)
@@ -770,12 +770,6 @@ export function stateModelFactory(
         )
       },
       /**
-       * #getter
-       */
-      get configuredLanes(): string[] {
-        return readConfObject(self.configuration, 'lanes')
-      },
-      /**
        * #method
        * the one spelling two names for the same assembly share
        */
@@ -790,8 +784,27 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * the lanes in force: the reader's choice, else the config's `lanes`
-       * where it names any, else undefined for every lane
+       * the lanes a source declaring its own opens on: the track's assemblies
+       * beside the anchor, since a graph naming 464 haplotypes on a track
+       * naming eight means those eight. Empty for every other source
+       */
+      get configuredLanes(): string[] {
+        const anchor = self.laneKey(self.anchorAssemblyName)
+        return self.adapterDeclaresLanes
+          ? (
+              readConfObject(
+                self.parentTrack.configuration,
+                'assemblyNames',
+              ) as string[]
+            ).filter(name => self.laneKey(name) !== anchor)
+          : []
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * the lanes in force: the reader's choice, else `configuredLanes` where
+       * there are any, else undefined for every lane
        */
       get laneSelection(): readonly string[] | undefined {
         const configured = self.configuredLanes
@@ -827,7 +840,7 @@ export function stateModelFactory(
        * sanctioned way to say so is a field here, which `rpcPropsCacheKey`
        * folds into `currentFetchKey`, rather than a term hand-folded into
        * `viewSignature`. Reads only user-controlled state (the picker's choice,
-       * else the config's `lanes`), never anything a fetch produced, which is
+       * else the track's config), never anything a fetch produced, which is
        * what the loop trap forbids.
        */
       rpcProps() {

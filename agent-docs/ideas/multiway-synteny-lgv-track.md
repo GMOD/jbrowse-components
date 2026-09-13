@@ -131,8 +131,8 @@ which the `mate` object does not currently say.
 **HPRC at scale: lane selection.** Two haplotypes are a figure; 464 are not a
 lane stack. The selection half landed 2026-09-06 as display state and a dialog
 rather than as `TreeSidebarMixin`: `selectedLanes` (a session property, so a
-shared session carries it; the config's `lanes` slot is what a hosted track
-opens on) narrows `rowAssemblies` locally, without a refetch, since a graph
+shared session carries it; the track's own `assemblyNames` is what a hosted
+track opens on) narrows `rowAssemblies` locally, without a refetch, since a graph
 adapter has to identify every walk before it knows whose it is and a filter
 sent with the fetch could save nothing. The universe the picker offers is the
 header's `lanes` (an adapter declaring `adapterCapabilities: ['headerLanes']`
@@ -167,9 +167,9 @@ steps:
    (`HAPLOTYPE_WALKS_VISION.md:70-73`), Sample rows drawing the chosen set.
 
 Two smaller things go with that and are worth doing before anyone opens a
-hundred lanes: make a graph source require a lane set — the `lanes` slot is
-already how `demos/hprc_multiway` opens on eight, and "every lane the source
-places" should not be the default when the header declares more than, say, 32,
+hundred lanes: make a graph source require a lane set — the track's
+`assemblyNames` is already how `demos/hprc_multiway` opens on eight, and "every
+lane the source places" should not be the default when the header declares more than, say, 32,
 which is a refusal with the picker open; cull scrolled-out layers in
 `renderLayers`. `laneGeneAdapters`, once listed as a third, has been a one-pass
 join since 2026-09-12. The picker dialog

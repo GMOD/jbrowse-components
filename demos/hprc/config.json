@@ -502,17 +502,7 @@
           "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db",
           "locationType": "UriLocation"
         },
-        "assemblyNames": [
-          "hg38",
-          "HG00097.1",
-          "HG00099.1",
-          "HG00128.1",
-          "HG00133.1",
-          "HG01109.1",
-          "HG01123.1",
-          "HG01960.1",
-          "HG02055.1"
-        ],
+        "assemblyNames": ["hg38"],
         "assemblyNameToPanSN": {
           "hg38": "GRCh38#0",
           "HG00097.1": "HG00097#1",
@@ -531,17 +521,7 @@
         {
           "type": "MultiWaySyntenyDisplay",
           "displayId": "hprc_v2_1_gbz_lanes-MultiWaySyntenyDisplay",
-          "height": 600,
-          "lanes": [
-            "HG00097.1",
-            "HG00099.1",
-            "HG00128.1",
-            "HG00133.1",
-            "HG01109.1",
-            "HG01123.1",
-            "HG01960.1",
-            "HG02055.1"
-          ]
+          "height": 600
         }
       ]
     }

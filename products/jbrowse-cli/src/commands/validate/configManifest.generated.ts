@@ -3780,10 +3780,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "showLaneTicks",
           "type": "(JexlString | boolean)"
-        },
-        {
-          "name": "lanes",
-          "type": "(JexlString | string[])"
         }
       ],
       "stateModelProps": [

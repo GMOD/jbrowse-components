@@ -1097,6 +1097,9 @@ test('an adapter declaring its lanes has its header read once, and the universe 
     ['volvox_random', false],
     ['sample#1#undeclared', true],
   ])
+  // the track names volvox_random, so that is the lane the stack opens on
+  expect(display.rowAssemblies).toEqual([])
+  display.setSelectedLanes(['HG1#2', 'sample#1#undeclared'])
   expect(display.rowAssemblies).toEqual(['HG1#2', 'sample#1#undeclared'])
 })
 
@@ -1153,9 +1156,8 @@ test('a mate lane can become the anchor only on a source that aligns lanes to ea
 })
 
 // The selection is the reader's picture, so it is display state: it narrows
-// the stack the same way after every refetch, a snapshot carries it, and the
-// config's `lanes` is what a hosted track opens on until the reader chooses.
-test('a lane selection narrows the stack, survives a refetch, and is what the config opens on', () => {
+// the stack the same way after every refetch and a snapshot carries it.
+test('a lane selection narrows the stack and survives a refetch', () => {
   const display = createDisplay()
   const window = () => [
     mateRecord('r1', 'volvox_random'),
@@ -1169,10 +1171,6 @@ test('a lane selection narrows the stack, survives a refetch, and is what the co
     'sample#1#b',
   ])
   expect(display.laneSelection).toBeUndefined()
-
-  setConf(display, 'lanes', ['sample#1#b', 'not#placed'])
-  expect(display.laneSelection).toEqual(['sample#1#b', 'not#placed'])
-  expect(display.rowAssemblies).toEqual(['sample#1#b'])
 
   display.setSelectedLanes(['sample#1#a', 'volvox_random'])
   expect(display.rowAssemblies).toEqual(['volvox_random', 'sample#1#a'])
@@ -1190,8 +1188,26 @@ test('a lane selection narrows the stack, survives a refetch, and is what the co
   expect(display.selectedLanes).toEqual(['sample#1#a'])
 
   display.setSelectedLanes(undefined)
-  expect(display.laneSelection).toEqual(['sample#1#b', 'not#placed'])
+  expect(display.laneSelection).toBeUndefined()
   expect(getSnapshot(display).selectedLanes).toBeUndefined()
+})
+
+// A graph names 464 haplotypes and its track names the eight the session
+// loads, so a GBZ config lists its lanes once, in the track's assemblyNames.
+test('a graph track opens on its own assemblies beside the anchor', () => {
+  const { display } = createDisplayWithSession({
+    syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
+    trackAssemblyNames: ['volvox', 'HG00097.1', 'HG00099.1'],
+  })
+  expect(display.laneSelection).toEqual(['HG00097.1', 'HG00099.1'])
+  expect(display.rpcProps()).toEqual({
+    haplotypes: ['HG00097.1', 'HG00099.1'],
+  })
+  display.setSelectedLanes(['HG00097.1'])
+  const labels = display
+    .trackMenuItems()
+    .map(i => ('label' in i ? i.label : '—'))
+  expect(labels).toContain("The track's lanes (2)")
 })
 
 // The bug this locks down: `laneSelection` existed and narrowed the DRAWING,
@@ -1214,6 +1230,7 @@ test('a lane selection reaches the fetch only where the adapter can cut on it', 
   // every one and discarding
   const { display: graph } = createDisplayWithSession({
     syntenyAdapter: { type: 'GbzBaseSyntenyAdapter' },
+    trackAssemblyNames: ['volvox'],
   })
   const everyLane = graph.rpcPropsCacheKey
   expect(graph.fetchLaneSelection).toBeUndefined()
@@ -1248,8 +1265,6 @@ test('the track menu offers the picker once there is a choice, and the way back 
   expect(labels()).toContain('Choose lanes...')
   display.setSelectedLanes(['sample#1#a'])
   expect(labels()).toContain('Every lane (2)')
-  setConf(display, 'lanes', ['volvox_random'])
-  expect(labels()).toContain("The track's lanes (1)")
 })
 
 test('declaredLanesOf reads a header that names lanes and nothing else', () => {

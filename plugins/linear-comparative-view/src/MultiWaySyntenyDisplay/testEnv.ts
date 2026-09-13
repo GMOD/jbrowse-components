@@ -59,12 +59,14 @@ export type RpcCall = (
  */
 export function createDisplayWithSession({
   syntenyAdapter = { type: 'MCScanBlocksAdapter' },
+  trackAssemblyNames = ['volvox', 'volvox_random'],
   geneTracks = [{ trackId: 'volvox_genes', assemblyNames: ['volvox'] }],
   connectionGeneTracks = [],
   rpc = async () => [],
   assemblyAliases = {},
 }: {
   syntenyAdapter?: Record<string, unknown>
+  trackAssemblyNames?: string[]
   geneTracks?: GeneTrackSpec[]
   connectionGeneTracks?: GeneTrackSpec[]
   rpc?: RpcCall
@@ -160,7 +162,7 @@ export function createDisplayWithSession({
     {
       type: 'SyntenyTrack',
       trackId: 'multiway_track',
-      assemblyNames: ['volvox', 'volvox_random'],
+      assemblyNames: trackAssemblyNames,
       adapter: syntenyAdapter,
     },
     { pluginManager },

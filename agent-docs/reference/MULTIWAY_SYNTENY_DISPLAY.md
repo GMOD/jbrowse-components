@@ -100,8 +100,9 @@ and no `targetAssemblyName`, so the adapter answers with every pair anchored on
 the queried assembly. The lane selection reaches the fetch as `haplotypes` only
 for an adapter that declares its lanes (`fetchLaneSelection`), since that is the
 only kind that can answer for a subset more cheaply than for all of them;
-everywhere else `selectedLanes` and the config `lanes` slot filter
-`rowAssemblies` locally. The design record carries what a lane selection
+everywhere else `selectedLanes` filters `rowAssemblies` locally. Before a
+reader chooses, a lane-declaring source opens on the track's own
+`assemblyNames` beside the anchor (`configuredLanes`). The design record carries what a lane selection
 saves on a graph source
 ([../ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md)
 §"HPRC at scale: lane selection"; `P/agent-docs/GBZ_PLAN.md:297-301`).

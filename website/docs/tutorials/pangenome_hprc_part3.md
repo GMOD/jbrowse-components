@@ -160,17 +160,7 @@ the window, and those are the gene models the lanes draw.
     "haplotypeIndexLocation": {
       "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db"
     },
-    "assemblyNames": [
-      "hg38",
-      "HG00097.1",
-      "HG00099.1",
-      "HG00128.1",
-      "HG00133.1",
-      "HG01109.1",
-      "HG01123.1",
-      "HG01960.1",
-      "HG02055.1"
-    ],
+    "assemblyNames": ["hg38"],
     "assemblyNameToPanSN": {
       "hg38": "GRCh38#0",
       "HG00097.1": "HG00097#1",
@@ -189,27 +179,16 @@ the window, and those are the gene models the lanes draw.
     {
       "type": "MultiWaySyntenyDisplay",
       "displayId": "hprc_v2_1_gbz_lanes-MultiWaySyntenyDisplay",
-      "height": 600,
-      "lanes": [
-        "HG00097.1",
-        "HG00099.1",
-        "HG00128.1",
-        "HG00133.1",
-        "HG01109.1",
-        "HG01123.1",
-        "HG01960.1",
-        "HG02055.1"
-      ]
+      "height": 600
     }
   ]
 }
 ```
 
-The eight lanes are listed twice: in `assemblyNames` so each lane is the
-assembly the session already holds, and in the display's `lanes` so the track
-opens on them. **Choose lanes...** on the track menu lists every haplotype the
-graph names, grouped by sample. Ticking every one draws the whole cohort, and
-the dialog's reset goes back to the eight.
+The track opens on the assemblies its `assemblyNames` lists beside hg38, and
+`assemblyNameToPanSN` says which haplotype each one is. **Choose lanes...** on
+the track menu lists every haplotype the graph names, grouped by sample. Ticking
+every one draws the whole cohort, and the dialog's reset goes back to the eight.
 
 The session below opens the CFH cluster at chr1:196,640,000-196,900,000:
 
@@ -264,8 +243,8 @@ path through the graph and emits one record per haplotype walk, in that
 haplotype's contig coordinates and carrying the walk's CIGAR. Upstream gbz-base
 reports `unknown#1`, `unknown#2` for those walks, so the companion file at
 `haplotypeIndexLocation` names them and carries anchors a named set can be
-walked from. The display's `lanes`, and whatever the reader picks from **Choose
-lanes...**, reach the adapter as the set to fetch.
+walked from. The lanes on screen, the track's own or whatever the reader picks
+from **Choose lanes...**, reach the adapter as the set to fetch.
 
 `context` defaults to 1000, the nodes read on either side of the window.
 `nodeLimit` refuses a window that would not fit and names a zoom that would.
@@ -301,22 +280,18 @@ CHM13 is the contributor with a published reference behind it, T2T-CHM13v2.0,
 which UCSC serves as `hs1`; [](/docs/tutorials/hg002_haplotypes) loads HG002,
 the other donor with a reference of its own.
 
-It loads under its own name with the graph's spelling, `CHM13`, as an alias, the
-same join
-[part 1 makes for NA20809](/docs/tutorials/pangenome_hprc#loading-a-haplotype-as-an-assembly):
-
 ```json addassembly
 {
   "name": "hs1",
   "displayName": "Human (T2T-CHM13v2.0/hs1)",
-  "aliases": ["CHM13", "T2T-CHM13v2.0"],
   "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit"
 }
 ```
 
-The segments track draws on hs1 once `hs1` joins its `assemblyNames` and
-`"hs1": "CHM13"` its `assemblyNameToPanSN`, the two edits part 1 makes for
-NA20809.2.
+The segments track draws on hs1, and a CHM13 node opens there, once `hs1` joins
+its `assemblyNames` and `"hs1": "CHM13"` its `assemblyNameToPanSN`, the two
+edits
+[part 1 makes for NA20809.2](/docs/tutorials/pangenome_hprc#loading-a-haplotype-as-an-assembly).
 
 With both assemblies loaded a CHM13 node opens on either one, and on hs1 its
 coordinates are the donor's own. The node in the figure below is 142 kb of chr17

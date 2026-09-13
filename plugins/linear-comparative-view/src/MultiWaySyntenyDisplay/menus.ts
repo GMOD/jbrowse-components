@@ -262,8 +262,8 @@ export function laneOrderMenuItem(model: LaneOrderModel): MenuItem[] {
 }
 
 /**
- * What the picker's Reset and the track menu's undo go back to: the config's
- * `lanes` where it names some, else every lane
+ * What the picker's Reset and the track menu's undo go back to: the track's
+ * lanes where it declares some, else every lane
  */
 export function laneResetLabel(
   model: Pick<LaneSelectionModel, 'configuredLanes' | 'laneUniverse'>,

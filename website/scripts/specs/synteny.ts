@@ -1370,9 +1370,9 @@ export const syntenySpecs: ScreenshotSpec[] = [
   // graph for pangenome_hprc_part3.md's walks section. hprc_v2_1_gbz_lanes is
   // GbzBaseSyntenyAdapter over HPRC's published release 2.1 gbz-base database
   // and our companion haplotype index, both read by range request at capture
-  // time. The display's `lanes` slot in the hosted config makes it eight lanes
-  // and not 464: four homozygous reference at the CFHR3/CFHR1 site and four
-  // homozygous for the deletion, picked by build_hprc_cfhr_synteny.sh.
+  // time. The track's own assemblyNames make it eight lanes and not 464: four
+  // homozygous reference at the CFHR3/CFHR1 site and four homozygous for the
+  // deletion, picked by build_hprc_cfhr_synteny.sh.
   // `rowOrder` puts every non-carrier above every carrier, so the ribbon over
   // the deletion narrows to a point at the one boundary between the groups.
   {

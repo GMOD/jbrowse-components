@@ -345,7 +345,6 @@ whose accession is on the
 ```json addassembly
 {
   "name": "NA20809.2",
-  "aliases": ["NA20809#2"],
   "displayName": "NA20809 haplotype 2 (HPRC release 2, GCA_044166615.1)",
   "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCA/044/166/615/GCA_044166615.1/GCA_044166615.1.2bit",
   "refNameAliases": {
@@ -353,11 +352,6 @@ whose accession is on the
   }
 }
 ```
-
-The alias is the whole of the join: the view resolves a node's haplotype
-(`NA20809#2`) against the loaded assemblies by name and alias, then its sample
-(`NA20809`), so the assembly can carry any name the session likes as long as one
-of the two is among its `aliases`.
 
 A launched view carries the session's annotation for the assembly it opens. The
 CAT index names one GFF3 per haplotype in its `location` column, whole-genome
@@ -387,9 +381,12 @@ tabix -p gff hprc_mhc_NA20809.2.genes.gff3.gz
 ```
 
 The segments track draws on the haplotype too once `assemblyNames` lists it and
-`assemblyNameToPanSN` says which haplotype the name means. `hg38` stays first,
-because a graph is cut on the first assembly its track names. This replaces the
-track [above](#load-the-graph), same `trackId`, one more assembly:
+`assemblyNameToPanSN` says which haplotype the name means. That entry is the
+whole of the join: a graph cut from the track reads the same map to open a node
+credited to `NA20809#2` on `NA20809.2`, so the assembly can carry any name the
+session likes. `hg38` stays first, because a graph is cut on the first assembly
+its track names. This replaces the track [above](#load-the-graph), same
+`trackId`, one more assembly:
 
 ```json addtrack
 {
