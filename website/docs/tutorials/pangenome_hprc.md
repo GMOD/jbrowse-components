@@ -74,13 +74,13 @@ its own length, attached to the reference either side of what it stands in for.
 This page finds it, reads where it sits on GRCh38, and then loads the haplotype
 it came from to see what the swap did to the genes there.
 
-Three words carry the drawing, and the rest of the page rests on all three. The
-chain of segments running across the drawing is the **backbone**, which is
-GRCh38's own path through the graph. Each place that chain opens out and closes
-again is a **bubble**, one locus where the haplotypes disagree. Each loop inside
-a bubble is an **allele**, a stretch of sequence some haplotype carries in place
-of the reference's. A deletion is an **edge**, a dashed arc from one backbone
-segment to another that skips what lies between.
+Four words carry the drawing, and the rest of the page rests on them. The chain
+of segments running across the drawing is the **backbone**, which is GRCh38's
+own path through the graph. Each place that chain opens out and closes again is
+a **bubble**, one locus where the haplotypes disagree. Each loop inside a bubble
+is an **allele**, a stretch of sequence some haplotype carries in place of the
+reference's. A deletion is an **edge**, a dashed arc from one backbone segment
+to another that skips what lies between.
 
 <Figure caption="The C4 locus cut as a force-directed graph, under the hg38 genes and the rGFA segments for the same window. The labels name a backbone segment, an allele, and a bubble whose two routes are the reference path and the dashed arc that skips it." src="/img/pangenome/hprc_graph_anatomy.png" />
 
@@ -172,7 +172,9 @@ your own:
 Each segment is drawn at the position its tags give, so the GRCh38 backbone
 tiles the reference. Both files are ours, and the first is one command over any
 rGFA: `gfa2bed -m` reads the `SN`/`SO`/`SR` tags, which is what puts each
-segment at a reference coordinate.
+segment at a reference coordinate. Every segment in `sv.gfa`, the minigraph
+stage of the Minigraph-Cactus build, carries those tags, so JBrowse opens any
+locus in it with no extraction step.
 
 <!-- from: scripts/build_rgfa_tabix.sh -->
 
@@ -186,18 +188,10 @@ The links index comes from the same script's second pass over the L-lines.
 [`build_rgfa_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_tabix.sh)
 is what we ran on HPRC's `sv.gfa.gz`, and
 [Preparing your own graph](/docs/tutorials/pangenome_prepare_graph) walks it.
-
-### Why this graph opens by locus {#regular-gfa-vs-rgfa}
-
-Every segment in `sv.gfa`, the minigraph stage of the Minigraph-Cactus build,
-carries the `SN`/`SO`/`SR` tags that state where the segment sits and which
-segments are the reference, so JBrowse opens any locus in it with no extraction
-step. The base-level `gfa.gz` beside it states the same thing inside its path
-lines, and
-[Preparing your own graph](/docs/tutorials/pangenome_prepare_graph#what-your-graph-can-produce)
-sets out which builder each format takes. Of a PanSN name only the sample half
-needs configuring; the contig half is ordinary refName aliasing your assembly
-already does.
+The base-level `gfa.gz` beside `sv.gfa` keeps positions in its path lines
+instead, and
+[the same page](/docs/tutorials/pangenome_prepare_graph#what-your-graph-can-produce)
+sets out which builder each format takes.
 
 ## Open a locus as a graph
 
@@ -230,14 +224,36 @@ covers what each does on a graph small enough to watch it happen.
 
 ## Reading the drawing
 
+### The Layout dropdown
+
+The [guide](/docs/user_guides/graph_genome_view#three-layouts) sets out what the
+three modes put on each axis. Here is the same MHC class II window drawn in two
+of them:
+
+<Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed. Right, anchored: every x is a GRCh38 coordinate, so each allele hangs below where it attaches." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
+
+Both halves ring the allele [the route](#the-route-end-to-end) follows, which
+the right-click menu on the left is open on. The anchored half labels it by its
+net size, a deletion, since the allele is shorter than the backbone it replaces.
+
+Each locus below is a window small enough to draw:
+
+| Locus        | Window                         |
+| ------------ | ------------------------------ |
+| MHC class II | `chr6:32,510,000-32,600,000`   |
+| KIR          | `chr19:54,750,000-54,840,000`  |
+| AMY1         | `chr1:103,690,000-103,780,000` |
+| C4           | `chr6:31,980,000-32,050,000`   |
+| LPA KIV-2    | `chr6:160,525,000-160,655,000` |
+
+<Figure caption="The KIV-2 repeat inside LPA as a force-directed graph, under the RefSeq genes, the bubbles lane and the rGFA segments. The bubble the lane reports across the repeat is the chain of loops below it, with one dashed arc bypassing the reference between two of them." src="/img/pangenome/hprc_lpa_kiv2.png" />
+
 ### Insertions, deletions and their sizes
 
 Every node and every deletion arc carries its own size. Extra sequence is a
-node, drawn as a tube. Missing sequence is an **edge**: a link from one backbone
-segment to another that is not its neighbour, taken by the haplotypes that skip
-what lies between. Those edges are dashed and near-black, off the color ramp.
-Read one on the [anchored layout](#the-layout-dropdown), where x is GRCh38 bp,
-so the arc spans exactly the sequence it removes.
+node, drawn as a tube. Missing sequence is an edge, dashed and near-black, off
+the color ramp. Read one on the [anchored layout](#the-layout-dropdown), where x
+is GRCh38 bp, so the arc spans exactly the sequence it removes.
 
 <Figure caption="The complement factor H cluster on chr1: two HPRC haplotypes aligned to GRCh38, above the same window as an anchored graph. The dashed arc under the graph's reference row spans the gap that removes CFHR3 and CFHR1." src="/img/pangenome/hprc_cfhr_deletion.png" />
 
@@ -271,30 +287,6 @@ sequence a bubble can hold. A count per haplotype is in the `.gbz`, which
 carries a walk each, and
 [reading it is a query](/docs/tutorials/pangenome_hprc_part3#walks-from-the-graph).
 
-### The Layout dropdown
-
-The [guide](/docs/user_guides/graph_genome_view#three-layouts) sets out what the
-three modes put on each axis. Here is the same MHC class II window drawn in two
-of them:
-
-<Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed. Right, anchored: every x is a GRCh38 coordinate, so each allele hangs below where it attaches." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
-
-Both halves ring the same node, the 1.8 kb allele the right-click menu on the
-left is open on. The anchored half labels it a 10.2 kb deletion, the net of 1.8
-kb standing in for 12.
-
-Each locus below is a window small enough to draw:
-
-| Locus        | Window                         |
-| ------------ | ------------------------------ |
-| MHC class II | `chr6:32,510,000-32,600,000`   |
-| KIR          | `chr19:54,750,000-54,840,000`  |
-| AMY1         | `chr1:103,690,000-103,780,000` |
-| C4           | `chr6:31,980,000-32,050,000`   |
-| LPA KIV-2    | `chr6:160,525,000-160,655,000` |
-
-<Figure caption="The KIV-2 repeat inside LPA as a force-directed graph, under the RefSeq genes, the bubbles lane and the rGFA segments. The bubble the lane reports across the repeat is the chain of loops below it, with one dashed arc bypassing the reference between two of them." src="/img/pangenome/hprc_lpa_kiv2.png" />
-
 ## From a node back to a coordinate
 
 **Right-click a node** for two answers that persist past a hover:
@@ -323,10 +315,9 @@ callset's to say:
 [part 2](/docs/tutorials/pangenome_hprc_part2#carriage-at-the-graphs-own-granularity)
 reads one genotype per haplotype at the site under the node you clicked.
 
-The [layout figure above](#the-layout-dropdown) has that menu open on a 1.8 kb
-allele of NA20809 haplotype 2, over the band **Highlight in hg38** left in the
-linear view: the 12 kb of backbone the allele attaches across, which here is
-_HLA-DRB5_. On that interval part 2's lanes read the
+The [layout figure above](#the-layout-dropdown) has that menu open on the
+route's allele, over the band **Highlight in hg38** left in the linear view. On
+that interval part 2's lanes read the
 [bubble track](/docs/tutorials/pangenome_hprc_part2#the-bubble-track) for the
 bubble the allele belongs to and the
 [variant callset](/docs/tutorials/pangenome_hprc_part2#the-variant-callset) for
