@@ -799,18 +799,6 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * displayedRegionIndex → refName, for the hit test
-       */
-      get regionRefNames(): ReadonlyMap<number, string> {
-        return new Map(
-          self.host.visibleRegions.map(r => [
-            r.displayedRegionIndex,
-            r.refName,
-          ]),
-        )
-      },
-      /**
-       * #getter
        * The box the hovered instance painted, for the chrome's highlight; the
        * context menu's hit stands in while a menu is open. In the chrome's px,
        * so the plot's inset is added to the canvas box.

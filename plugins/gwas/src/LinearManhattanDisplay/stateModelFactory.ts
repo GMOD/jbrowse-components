@@ -493,24 +493,6 @@ export function stateModelFactory(
             ]),
           )
         },
-        /**
-         * #getter
-         * displayedRegionIndex → refName lookup.
-         *
-         * Rebuilt per mousemove, NOT cached: its only reader is `computeHit`,
-         * which runs in a pointer handler where nothing is tracked, and MobX
-         * discards an unobserved computed's value as it hands it over. One entry
-         * per visible region — typically one to three — so the rebuild is a Map
-         * of a few strings and is left alone deliberately. A version that walked
-         * the loaded data would want the keep-alive autorun canvas installs as
-         * `CanvasHitIndexes`.
-         */
-        get regionRefNames(): ReadonlyMap<number, string> {
-          const view = self.host
-          return new Map(
-            view.visibleRegions.map(r => [r.displayedRegionIndex, r.refName]),
-          )
-        },
       }))
       .views(self => ({
         /**
@@ -546,10 +528,6 @@ export function stateModelFactory(
               }
             }
           }
-          // refName from displayedRegions (not visible-only regionRefNames):
-          // rpcDataMap keeps buffered regions that may have scrolled off-screen,
-          // and the top hit can live in one of them — resolving via visible
-          // regions alone would drop it and stall the LD auto-index autorun.
           const view = self.host
           const refName =
             bestIdx === -1 ? undefined : view.displayedRegions[bestIdx]?.refName

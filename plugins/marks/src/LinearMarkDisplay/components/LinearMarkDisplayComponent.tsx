@@ -29,7 +29,7 @@ const LinearMarkDisplayComponent = observer(
             model.markList,
             model.markShapes,
             model.renderState,
-            model.regionRefNames,
+            model.host.displayedRegions,
           )
         }
         contextMenu={model}

@@ -28,7 +28,7 @@ const LinearManhattanDisplayComponent = observer(
             model.rpcDataMap,
             model.flatbushes,
             model.renderState,
-            model.regionRefNames,
+            model.host.displayedRegions,
           )
         }
         contextMenu={model}

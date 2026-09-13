@@ -33,7 +33,7 @@ export function findManhattanHit(
   regionData: ReadonlyMap<number, ManhattanRpcResult>,
   flatbushMap: ReadonlyMap<number, Flatbush>,
   state: ManhattanRenderState,
-  refNames: ReadonlyMap<number, string>,
+  displayedRegions: readonly { refName: string }[],
 ): ManhattanHit | undefined {
   const [scoreMin, scoreMax] = valueWindow(
     mouseY,
@@ -44,7 +44,7 @@ export function findManhattanHit(
   const hit = nearestMarkHit(
     MANHATTAN_MARKS,
     blocks,
-    index => (refNames.has(index) ? regionData.get(index) : undefined),
+    index => regionData.get(index),
     state,
     mouseX,
     mouseY,
@@ -65,7 +65,7 @@ export function findManhattanHit(
   // feature widget can treat "no r²" uniformly.
   const r2 = data.r2s?.[index]
   return {
-    refName: refNames.get(regionIndex)!,
+    refName: displayedRegions[regionIndex]!.refName,
     start: data.x[index]!,
     end: data.x2[index]!,
     score: data.y[index]!,

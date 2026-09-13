@@ -25,7 +25,6 @@ export interface MarkDisplayModel extends WiggleGpuDisplayModel<
 > {
   configuration: { displayId: string }
   renderBlocks: RenderBlock[]
-  regionRefNames: ReadonlyMap<number, string>
   markList: DisplayMark[]
   markShapes: MarkShapeName[]
   renderState: MarkRenderState

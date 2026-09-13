@@ -25,7 +25,6 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   // hook the browser tests use to target one track's display
   configuration: { displayId: string }
   renderBlocks: RenderBlock[]
-  regionRefNames: ReadonlyMap<number, string>
   flatbushes: ReadonlyMap<number, Flatbush>
   renderState: ManhattanRenderState
   scatterPointSize: number

@@ -24,7 +24,7 @@ const state: ManhattanRenderState = {
   pointDiameterPx: 4,
 }
 
-const refNames = new Map([[0, 'chr1']])
+const regions = [{ refName: 'chr1' }]
 
 function mkData(positions: number[], scores: number[]) {
   const result = manhattanFixture({ x: positions, y: scores })
@@ -40,14 +40,14 @@ test('returns undefined when nothing within hit radius', () => {
   // bp=500 → screen (50, 50). Mouse far away at (0,0).
   const { data, flatbushes } = mkData([500], [5])
   expect(
-    findManhattanHit(0, 0, [block], data, flatbushes, state, refNames),
+    findManhattanHit(0, 0, [block], data, flatbushes, state, regions),
   ).toBeUndefined()
 })
 
 test('finds nearest point within hit radius', () => {
   const { data, flatbushes } = mkData([500], [5])
   expect(
-    findManhattanHit(51, 49, [block], data, flatbushes, state, refNames),
+    findManhattanHit(51, 49, [block], data, flatbushes, state, regions),
   ).toEqual({
     refName: 'chr1',
     start: 500,
@@ -68,14 +68,14 @@ test('picks closest of two candidates', () => {
     data,
     flatbushes,
     state,
-    refNames,
+    regions,
   )
   expect(hit?.start).toBe(510)
 })
 
 test('skips blocks with no data', () => {
   expect(
-    findManhattanHit(50, 50, [block], new Map(), new Map(), state, refNames),
+    findManhattanHit(50, 50, [block], new Map(), new Map(), state, regions),
   ).toBeUndefined()
 })
 
@@ -89,7 +89,7 @@ test('respects reversed block direction', () => {
     data,
     flatbushes,
     state,
-    refNames,
+    regions,
   )
   expect(hit?.start).toBe(900)
 })
@@ -107,7 +107,7 @@ test('finds the right point in a dense array via Flatbush', () => {
     data,
     flatbushes,
     state,
-    refNames,
+    regions,
   )
   expect(hit?.start).toBe(500)
 })
@@ -124,7 +124,7 @@ test('Flatbush Y-prune rejects same-X point at a far-off score', () => {
     data,
     flatbushes,
     state,
-    refNames,
+    regions,
   )
   expect(hit?.score).toBe(5)
 })

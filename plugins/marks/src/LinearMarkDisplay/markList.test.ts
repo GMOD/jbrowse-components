@@ -83,6 +83,8 @@ const block = {
   reversed: false,
 }
 
+const REGIONS = [{ refName: 'ctgA' }]
+
 test('mark i reads layers[i], and every mark gets its own pass id', () => {
   const marks = buildMarkList(entries('bar', 'point', 'span'))
   expect(marks.map(m => m.pass.id)).toEqual(['bar#0', 'point#1', 'span#2'])
@@ -148,7 +150,7 @@ test('a span mark stacks on the row lane, the bands dividing the plot by rowCoun
     [mark!],
     ['span'],
     stacked,
-    new Map([[0, 'ctgA']]),
+    REGIONS,
   )
   expect(hit).toMatchObject({ instance: 1, start: 500, color: BLUE })
   expect(hit?.y).toBeUndefined()
@@ -161,7 +163,7 @@ test('a span mark stacks on the row lane, the bands dividing the plot by rowCoun
       [mark!],
       ['span'],
       stacked,
-      new Map([[0, 'ctgA']]),
+      REGIONS,
     ),
   ).toBeUndefined()
 })
@@ -224,7 +226,7 @@ test('an independent mark places its value through its own domain, and only it d
     marks,
     ['bar', 'point'],
     independent,
-    new Map([[0, 'ctgA']]),
+    REGIONS,
   )
   expect(hit).toMatchObject({ markIndex: 1, start: 800, y: 80 })
 })
@@ -240,7 +242,6 @@ test('a mark outside its zoom range neither draws nor answers a hover', () => {
     y: 1,
   })!
   const data = { layers: [layer([500], [5], [RED])] }
-  const refNames = new Map([[0, 'ctgA']])
   const hitAt = (bpPerPx: number) =>
     findMarkHit(
       402,
@@ -250,7 +251,7 @@ test('a mark outside its zoom range neither draws nor answers a hover', () => {
       [mark!],
       ['bar'],
       { ...state, bpPerPx },
-      refNames,
+      REGIONS,
     )
   mark!.drawRegion(hal, scratch, block, clip, data, state, 0)
   expect(hal.getLastUniformsF32()).toBeNull()
@@ -270,7 +271,6 @@ test('a mark outside its zoom range neither draws nor answers a hover', () => {
 
 describe('findMarkHit', () => {
   const marks = buildMarkList(entries('bar', 'point'))
-  const refNames = new Map([[0, 'ctgA']])
   // a bar at 500 bp reaching from the origin to 5, a point at 800 bp at 8
   const regions = new Map<number, MarkRegionData>([
     [
@@ -291,7 +291,7 @@ describe('findMarkHit', () => {
       marks,
       ['bar', 'point'],
       state,
-      refNames,
+      REGIONS,
     )
     expect(hit).toMatchObject({
       markIndex: 0,
@@ -314,7 +314,7 @@ describe('findMarkHit', () => {
         marks,
         ['bar', 'point'],
         state,
-        refNames,
+        REGIONS,
       ),
     ).toBeUndefined()
   })
@@ -329,7 +329,7 @@ describe('findMarkHit', () => {
       marks,
       ['bar', 'point'],
       state,
-      refNames,
+      REGIONS,
     )
     expect(hit).toMatchObject({ markIndex: 1, start: 800, y: 8, color: BLUE })
   })
@@ -348,7 +348,7 @@ describe('findMarkHit', () => {
       marks,
       ['bar', 'point'],
       { ...state, domainY: [1, 1024], scaleTypeY: 'log' },
-      refNames,
+      REGIONS,
     )
     expect(hit).toMatchObject({ markIndex: 1, start: 800, y: 32 })
   })

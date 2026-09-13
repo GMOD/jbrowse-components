@@ -66,12 +66,12 @@ export function findMarkHit(
   marks: readonly DisplayMark[],
   shapes: readonly MarkShapeName[],
   state: MarkRenderState,
-  refNames: ReadonlyMap<number, string>,
+  displayedRegions: readonly { refName: string }[],
 ): MarkHitInfo | undefined {
   const hit = nearestMarkHit(
     marks,
     blocks,
-    index => (refNames.has(index) ? regionData.get(index) : undefined),
+    index => regionData.get(index),
     state,
     mouseX,
     mouseY,
@@ -96,7 +96,7 @@ export function findMarkHit(
     markIndex: hit.mark,
     regionIndex,
     instance: hit.index,
-    refName: refNames.get(regionIndex)!,
+    refName: displayedRegions[regionIndex]!.refName,
     start: layer.x[hit.index]!,
     end: layer.x2[hit.index]!,
     y: layer.y?.[hit.index],
