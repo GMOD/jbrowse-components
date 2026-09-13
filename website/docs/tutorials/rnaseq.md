@@ -279,8 +279,14 @@ the apex, and `minScore` is the same read-support floor the sashimi menu offers,
 applied to the file's whole-library counts. The extra columns arrive as text, so
 the callback compares against `'1'` rather than `1`.
 
+A per-transcript result, such as a differential transcript usage test, goes into
+the gene track's GFF3 instead, and
+[differential transcript usage](/docs/tutorials/dtu) paints its statistic onto
+each isoform.
+
 ## See also
 
+- [](/docs/tutorials/dtu)
 - [](/docs/tutorials/scrna_pseudobulk)
 - [](/docs/tutorials/methylation)
 - [](/docs/user_guides/alignments_track)
