@@ -55,7 +55,7 @@ import type {
   BpRegionBounds,
   RenderBlock,
 } from '@jbrowse/render-core/renderBlock'
-import type { WiggleScaleType } from '@jbrowse/wiggle-core/normalize'
+import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
 /**
  * What a region carries for the band: the worker-packed buffers and the peaks
@@ -88,7 +88,7 @@ export interface CoverageBandState {
   top: number
   domainMin: number
   domainMax: number | undefined
-  scaleType: WiggleScaleType
+  scaleType: ScaleTypeCode
   symlogConstant: number
   /** SNP slices under this allele fraction are not drawn. */
   snpMinFrequency: number

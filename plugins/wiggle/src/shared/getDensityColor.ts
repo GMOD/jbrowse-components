@@ -3,7 +3,7 @@ import { makeScoreNormalizer } from '@jbrowse/wiggle-core'
 
 import { densityGradientT } from './shaders/wiggleCommon.js.generated.ts'
 
-import type { WiggleScaleType } from '@jbrowse/wiggle-core'
+import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
 // Density-color factory: maps a score to an "rgb(r,g,b)" string that fades
 // from white at the pivot (`origin`, default 0) toward the (r,g,b) color as
@@ -12,7 +12,7 @@ import type { WiggleScaleType } from '@jbrowse/wiggle-core'
 export function makeDensityRgbStringFn(
   domainMin: number,
   domainMax: number,
-  scaleType: WiggleScaleType,
+  scaleType: ScaleTypeCode,
   r: number,
   g: number,
   b: number,
@@ -62,7 +62,7 @@ export function makeDensityRgbStringFn(
 export function makeDensityLutFillFn(
   domainMin: number,
   domainMax: number,
-  scaleType: WiggleScaleType,
+  scaleType: ScaleTypeCode,
   ramp: Uint8Array,
   origin = 0,
   symlogConstant = 1,

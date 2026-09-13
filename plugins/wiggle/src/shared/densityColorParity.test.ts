@@ -17,7 +17,7 @@ import {
   WGSL_SOURCE,
 } from './shaders/wiggleDensity.generated.ts'
 
-import type { WiggleScaleType } from '@jbrowse/wiggle-core'
+import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
 // Gate C of agent-docs/architecture-decision-records/adr-095-a-shape-composes-a-scale-at-compile-time.md: both backends land on
 // the same density colour, swept across every scale type. The GPU path is
@@ -136,7 +136,7 @@ function maxAdjacentStep(lut: Uint8Array) {
 const CASES: {
   name: string
   domain: [number, number]
-  scaleType: WiggleScaleType
+  scaleType: ScaleTypeCode
   symlogConstant: number
   origin: number
 }[] = [

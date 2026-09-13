@@ -28,12 +28,12 @@ import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
 import type { InstancePass } from '@jbrowse/render-core/instancePass'
 import type { MarkFrame, MarkShape } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import type {
   SourceRenderData,
   WiggleGPURenderState,
   WiggleRenderingType,
 } from '@jbrowse/wiggle-core'
-import type { WiggleScaleType } from '@jbrowse/wiggle-core/normalize'
 
 /**
  * Everything but the block geometry that both backends read, taken **off the
@@ -48,7 +48,7 @@ import type { WiggleScaleType } from '@jbrowse/wiggle-core/normalize'
  */
 interface WiggleParams {
   renderingType: WiggleRenderingType
-  scaleType: WiggleScaleType
+  scaleType: ScaleTypeCode
   symlogConstant: number
   domainY: [number, number]
   numRows: number

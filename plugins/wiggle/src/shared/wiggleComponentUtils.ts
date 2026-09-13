@@ -2,6 +2,7 @@
 // sits, what a rendering-type name means, and the render state handed to the
 // backend each frame. Layer building lives in wiggleLayers.ts and hit testing
 // in wiggleHitTest.ts.
+import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import {
   RENDERING_TYPE_DENSITY,
   RENDERING_TYPE_LINE,
@@ -10,7 +11,6 @@ import {
   RENDERING_TYPE_XYPLOT,
   resolveRenderState,
   resolveSymlogConstant,
-  scaleTypeFromString,
 } from '@jbrowse/wiggle-core'
 
 import { MULTI_WIGGLE_OVERLAY_TYPES } from '../renderingTypes.ts'
@@ -103,7 +103,7 @@ export function makeWiggleRenderState(
 ): WiggleGPURenderState {
   return resolveRenderState(self.domain, domainY => ({
     domainY,
-    scaleType: scaleTypeFromString(self.scaleType),
+    scaleType: scaleTypeCode(self.scaleType),
     symlogConstant: resolveSymlogConstant(
       domainY[0],
       domainY[1],

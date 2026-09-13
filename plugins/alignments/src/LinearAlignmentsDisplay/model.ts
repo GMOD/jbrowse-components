@@ -40,12 +40,12 @@ import { subPixelBinBp } from '@jbrowse/display-kit/subPixelBinBp'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
+import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import {
   ScoreScaleMixin,
   domainFromStats,
   getNiceDomain,
   resolveSymlogConstant,
-  scaleTypeFromString,
   visibleStatsDomain,
 } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
@@ -918,7 +918,7 @@ export default function stateModelFactory(
          * #getter
          */
         get coverageScaleType() {
-          return scaleTypeFromString(self.scaleType)
+          return scaleTypeCode(self.scaleType)
         },
 
         /**

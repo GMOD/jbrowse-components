@@ -11,9 +11,7 @@ export {
   SCALE_TYPE_SYMLOG,
   makeScoreNormalizer,
   resolveSymlogConstant,
-  scaleTypeFromString,
 } from './normalize.ts'
-export type { WiggleScaleType } from './normalize.ts'
 
 export {
   autoscaleDomainFromStats,

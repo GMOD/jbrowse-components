@@ -14,7 +14,8 @@ import {
 
 import type { MarkContext2D } from '@jbrowse/render-core/marks'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-import type { WiggleScaleType, SourceRenderData } from '@jbrowse/wiggle-core'
+import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
+import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
 // One source's features painted into one block's row. Shared by every render
 // mode; each mode adds its own color/size fields (see the per-fn args below).
@@ -26,7 +27,7 @@ export interface RowDraw {
   rowHeight: number
   rowTop: number
   domainY: [number, number]
-  scaleType: WiggleScaleType
+  scaleType: ScaleTypeCode
   // symlog's linear-region width, already resolved from the domain. Unread by
   // the other scales, but carried on every row draw so the Canvas2D fallback
   // and the SVG export normalize with the number the shader was handed.
@@ -45,7 +46,7 @@ const NO_COLOR = -1
 function makeScoreToY(
   rowHeight: number,
   domainY: [number, number],
-  scaleType: WiggleScaleType,
+  scaleType: ScaleTypeCode,
   symlogConstant: number,
 ) {
   const normalize = makeScoreNormalizer(

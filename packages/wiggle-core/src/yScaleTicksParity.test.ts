@@ -3,13 +3,10 @@ import {
   clampStrokeInsideAxis,
   scoreToAxisY,
 } from '@jbrowse/display-ui'
+import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
 import { computeYTicks } from './computeYTicks.ts'
-import {
-  makeScoreNormalizer,
-  resolveSymlogConstant,
-  scaleTypeFromString,
-} from './normalize.ts'
+import { makeScoreNormalizer, resolveSymlogConstant } from './normalize.ts'
 import { getNiceDomain } from './scale.ts'
 
 // The invariant `YScaleTicks` documents, over the pair that broke it: the axis
@@ -115,7 +112,7 @@ describe.each(CASES)('$name', ({ scaleType, raw, height }) => {
     const normalize = makeScoreNormalizer(
       domain[0],
       domain[1],
-      scaleTypeFromString(scaleType),
+      scaleTypeCode(scaleType),
       resolveSymlogConstant(domain[0], domain[1], 0),
     )
     expect(ticks.items.length).toBeGreaterThan(0)
@@ -134,7 +131,7 @@ describe.each(CASES)('$name', ({ scaleType, raw, height }) => {
     const normalize = makeScoreNormalizer(
       domain[0],
       domain[1],
-      scaleTypeFromString(scaleType),
+      scaleTypeCode(scaleType),
       resolveSymlogConstant(domain[0], domain[1], 0),
     )
     // the shape of the sub-1 log bug: normalize collapsed to `() => 0`, so
@@ -177,7 +174,7 @@ describe('a raw, un-niced domain', () => {
     const normalize = makeScoreNormalizer(
       domain[0],
       domain[1],
-      scaleTypeFromString(scaleType),
+      scaleTypeCode(scaleType),
       resolveSymlogConstant(domain[0], domain[1], 0),
     )
     for (const { value, y } of ticks.items) {

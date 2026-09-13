@@ -22,8 +22,8 @@
 // `scoreScale` module, which is what branches on them; the evaluator resolves
 // them through the import, so the `export-consts` list below still emits all of
 // it as one file. Generated into @jbrowse/wiggle-core (see consts-out) because
-// that is where `WiggleRenderingType` and `WiggleScaleType` are declared, and
-// the plugin reads them back from there.
+// that is where `WiggleRenderingType` is declared, and the plugin reads them
+// back from there.
 //! export-consts: RENDERING_TYPE_XYPLOT, RENDERING_TYPE_DENSITY, RENDERING_TYPE_LINE, RENDERING_TYPE_SCATTER, RENDERING_TYPE_LINE_CENTER, SCALE_TYPE_LOG, SCALE_TYPE_SYMLOG, NO_PREV_START, MIN_FILL_WIDTH_PX
 //! consts-out: packages/wiggle-core/src/wiggleRenderModes.generated.ts
 //! js-export: densityGradientT

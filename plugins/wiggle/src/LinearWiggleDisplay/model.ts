@@ -17,13 +17,13 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { fetchAllRegions } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { types } from '@jbrowse/mobx-state-tree'
+import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import {
   axisPlotBox,
   makeCrossHatchItem,
   makeScoreNormalizer,
   parseScoreRules,
   resolveSymlogConstant,
-  scaleTypeFromString,
   scoreRuleMarks,
 } from '@jbrowse/wiggle-core'
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -239,7 +239,7 @@ export default function stateModelFactory(
           normalize: makeScoreNormalizer(
             min,
             max,
-            scaleTypeFromString(self.scaleType),
+            scaleTypeCode(self.scaleType),
             resolveSymlogConstant(min, max, self.symlogConstant),
           ),
         })

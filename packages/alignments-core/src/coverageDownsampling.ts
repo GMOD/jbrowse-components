@@ -4,11 +4,11 @@
 // builders), so the barrel would drag React + MUI into every consumer of
 // alignments-core. The type imports below are erased, so they can keep using the
 // barrel.
+import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
 import {
   makeScoreNormalizer,
   resolveSymlogConstant,
-  scaleTypeFromString,
 } from '@jbrowse/wiggle-core/normalize'
 
 import { coverageLayout } from './coverageBandBox.ts'
@@ -214,7 +214,7 @@ export function computeCoverageTicks(
   const normalize = makeScoreNormalizer(
     domainMin,
     max,
-    scaleTypeFromString(scaleType),
+    scaleTypeCode(scaleType),
     resolveSymlogConstant(domainMin, max, symlogConstant),
   )
   const yOf = (value: number) => yBottom - normalize(value) * effectiveH

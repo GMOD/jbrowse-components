@@ -10,8 +10,7 @@
 //! js-skip: symlogTransform — the JS twin (render-core scoreScale.ts) spells it Math.log1p, which is accurate near zero where the shader's log(1.0 + x) is not; a generated twin would be a faithful copy of the worse of the two. What both backends must agree on is normalizeScore, which is exported and swept by normalizeScoreParity.test.ts
 module scoreScale;
 
-// Emitted into @jbrowse/wiggle-core through `wiggleCommon.slang`'s
-// `export-consts`, beside `WiggleScaleType`. Linear is "neither of these".
+// `ScaleTypeCode` in scoreScale.ts is these two and 0, for linear.
 public static const int SCALE_TYPE_LOG = 1;
 public static const int SCALE_TYPE_SYMLOG = 2;
 

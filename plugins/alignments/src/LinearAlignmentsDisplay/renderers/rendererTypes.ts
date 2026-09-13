@@ -16,7 +16,7 @@ import type { ReadIdentity } from '../../shared/readIdentity.ts'
 import type { ReadConnectionsMode } from '../constants.ts'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { RenderingBackend } from '@jbrowse/render-core/renderingBackendBase'
-import type { WiggleScaleType } from '@jbrowse/wiggle-core'
+import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
 
 export type { ColorPalette, RGBColor } from '../../shaders/colors.ts'
 export { interbaseRangeEnds } from '../../shared/uploadTypes.ts'
@@ -73,7 +73,7 @@ export interface RenderState {
   // the coverage marks' params are the one place they are read, together.
   coverageMinDepth: number | undefined
   coverageMaxDepth: number | undefined
-  coverageScaleType: WiggleScaleType
+  coverageScaleType: ScaleTypeCode
   coverageSymlogConstant: number
   // Allele-fraction floor for the band's coloured segments: a segment whose
   // share of its position's depth is below this is not drawn, and the grey

@@ -1,8 +1,6 @@
 import { cssColorToRgb } from '@jbrowse/core/util/colorBits'
-import {
-  resolveSymlogConstant,
-  scaleTypeFromString,
-} from '@jbrowse/wiggle-core'
+import { scaleTypeCode } from '@jbrowse/render-core/scoreScale'
+import { resolveSymlogConstant } from '@jbrowse/wiggle-core'
 
 import { formatScore } from '../util.ts'
 import {
@@ -53,7 +51,7 @@ export function scoreRampScale(
   ramp: ScoreRamp,
 ): RampScale {
   const [min, max] = domain
-  const type = scaleTypeFromString(scaleType)
+  const type = scaleTypeCode(scaleType)
   const c = resolveSymlogConstant(min, max, symlogConstant)
   let colorAt: (score: number) => string
   if (ramp.rampLut) {
