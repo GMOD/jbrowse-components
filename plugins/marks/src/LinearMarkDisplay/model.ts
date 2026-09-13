@@ -283,6 +283,14 @@ function markEntryOf(mark: MarkConfig): MarkEntry {
   }
 }
 
+/** The marks at the view's zoom: which draw, and which own each role. */
+export interface MarkView {
+  visible: boolean[]
+  valueMark: number
+  independentMark: number
+  densityMark: number
+}
+
 // Which axis a mark's value reads, or none for a mark with no `y` field.
 function yRoleOf(mark: MarkConfig): 'shared' | 'independent' | 'none' {
   const { field, resolve } = mark.encoding.y
@@ -389,7 +397,7 @@ export function stateModelFactory(
        * refuses a second independent axis; the density sidecar stands in for
        * one mark.
        */
-      get markView() {
+      get markView(): MarkView {
         const { bpPerPx } = self.host
         const { marks } = self.conf
         const visible: boolean[] = marks.map((m: MarkConfig) =>
