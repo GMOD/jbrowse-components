@@ -15,13 +15,13 @@ test('both hosts check the slot names their mixin reads', () => {
     // @ts-expect-error
     getConf(score, 'displayCrossHatche'),
     // @ts-expect-error
-    getConf(field, 'scoreFeild'),
+    getConf(field, 'scoreFields'),
   ]
   const writes = () => {
     // @ts-expect-error
     setConf(score, 'displayCrossHatche', true)
     // @ts-expect-error
-    setConf(field, 'scoreFeild', 'score')
+    setConf(field, 'scoreFields', 'score')
   }
   expect([scoreConfigPin, scoreFieldPin, reads, writes]).toHaveLength(4)
 })
