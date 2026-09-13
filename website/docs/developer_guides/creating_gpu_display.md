@@ -679,11 +679,11 @@ block under the cursor, and stores what comes back:
 // `nearestMarkHit` walks the blocks under the cursor and asks the mark's
 // `hitNearest`, which measures the cursor against the rect its `ink`
 // declares. What the display chooses is the candidates: every instance here,
-// which is enough at a few thousand boxes. A display with hundreds of
-// thousands asks the encoder for its `index` lane — a Flatbush over
-// (bp, score) — and answers with what that finds between the reach's
-// `bpMin`/`valueMin` and `bpMax`/`valueMax` instead (`findManhattanHit` in
-// plugins/gwas is the worked form).
+// back to front so a tie goes to the box painted on top, which is enough at a
+// few thousand boxes. A display with hundreds of thousands asks the encoder for
+// its `index` lane — a Flatbush over (bp, score) — and answers with what that
+// finds between the reach's `bpMin`/`valueMin` and `bpMax`/`valueMax` instead
+// (`findManhattanHit` in plugins/gwas is the worked form).
 export function findScoreHit(
   xPx: number,
   yPx: number,
@@ -700,7 +700,7 @@ export function findScoreHit(
     yPx,
     {
       radiusPx: HIT_RADIUS_PX,
-      candidates: data => everyInstance(data.count),
+      candidates: data => backToFront(0, data.count),
     },
   )
   return hit

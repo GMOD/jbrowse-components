@@ -1,5 +1,5 @@
 // #exampleFile shared | the display's hit: `nearestMarkHit` asks the mark's `hitNearest`, which its `ink` implies, about every instance under the cursor
-import { nearestMarkHit } from '@jbrowse/render-core/marks'
+import { backToFront, nearestMarkHit } from '@jbrowse/render-core/marks'
 
 import { SCORE_MARKS } from './scoreMarks.ts'
 
@@ -23,22 +23,15 @@ export interface ScoreHit {
 // feature is hoverable
 const HIT_RADIUS_PX = 4
 
-// Back to front, so on a tie the last-painted box — the one on top — wins
-function* everyInstance(count: number) {
-  for (let i = count - 1; i >= 0; i--) {
-    yield i
-  }
-}
-
 // #region hit
 // `nearestMarkHit` walks the blocks under the cursor and asks the mark's
 // `hitNearest`, which measures the cursor against the rect its `ink`
 // declares. What the display chooses is the candidates: every instance here,
-// which is enough at a few thousand boxes. A display with hundreds of
-// thousands asks the encoder for its `index` lane — a Flatbush over
-// (bp, score) — and answers with what that finds between the reach's
-// `bpMin`/`valueMin` and `bpMax`/`valueMax` instead (`findManhattanHit` in
-// plugins/gwas is the worked form).
+// back to front so a tie goes to the box painted on top, which is enough at a
+// few thousand boxes. A display with hundreds of thousands asks the encoder for
+// its `index` lane — a Flatbush over (bp, score) — and answers with what that
+// finds between the reach's `bpMin`/`valueMin` and `bpMax`/`valueMax` instead
+// (`findManhattanHit` in plugins/gwas is the worked form).
 export function findScoreHit(
   xPx: number,
   yPx: number,
@@ -55,7 +48,7 @@ export function findScoreHit(
     yPx,
     {
       radiusPx: HIT_RADIUS_PX,
-      candidates: data => everyInstance(data.count),
+      candidates: data => backToFront(0, data.count),
     },
   )
   return hit

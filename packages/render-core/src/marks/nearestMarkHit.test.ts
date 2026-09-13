@@ -1,4 +1,4 @@
-import { nearestMarkHit, valueWindow } from './nearestMarkHit.ts'
+import { backToFront, nearestMarkHit, valueWindow } from './nearestMarkHit.ts'
 import { pointMark } from './pointMark.ts'
 import { defineMark } from './types.ts'
 
@@ -49,8 +49,7 @@ const markOn = (lane: keyof Region) =>
 const MARKS = [markOn('under'), markOn('over')]
 
 function everyInstance(r: Region, mark: number) {
-  const count = (mark === 0 ? r.under : r.over)?.count ?? 0
-  return Array.from({ length: count }, (_, i) => count - 1 - i)
+  return backToFront(0, (mark === 0 ? r.under : r.over)?.count ?? 0)
 }
 
 function hitAt(
@@ -155,6 +154,11 @@ describe('nearestMarkHit', () => {
     expect(reach!.valueMin).toBeCloseTo(4.2, 9)
     expect(reach!.valueMax).toBeCloseTo(5.8, 9)
   })
+})
+
+test('backToFront walks a range from its end', () => {
+  expect([...backToFront(2, 5)]).toEqual([4, 3, 2])
+  expect([...backToFront(3, 3)]).toEqual([])
 })
 
 describe('valueWindow', () => {

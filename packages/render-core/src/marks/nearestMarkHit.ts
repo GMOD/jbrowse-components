@@ -109,6 +109,37 @@ export function nearestMarkHit<TRegion, TState extends MarkFrame>(
   return best
 }
 
+/** `[end - 1 .. start]`: every instance as candidates, back to front. */
+export function backToFront(start: number, end: number): Iterable<number> {
+  return new ReverseRange(start, end)
+}
+
+// A class rather than a generator: `for..of` steps this in a few ns where a
+// generator yields in tens.
+class ReverseRange implements Iterable<number>, Iterator<number> {
+  private i: number
+  private readonly start: number
+  private readonly result = { value: 0, done: false }
+  constructor(start: number, end: number) {
+    this.start = start
+    this.i = end
+  }
+  [Symbol.iterator]() {
+    return this
+  }
+  next(): IteratorResult<number> {
+    const r = this.result
+    if (this.i > this.start) {
+      this.i--
+      r.value = this.i
+      r.done = false
+    } else {
+      r.done = true
+    }
+    return r
+  }
+}
+
 /**
  * A value-scaled shape's `valueWindow`, read back through `denormalizeScore`.
  * An end within reach of a plot edge opens to infinity, where an out-of-domain
