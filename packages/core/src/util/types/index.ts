@@ -707,7 +707,8 @@ export interface AbstractViewModel {
   /**
    * The same, counting the views this one is nested inside — a synteny row has
    * no container of its own to write `bodyMounted`, so that flag alone reads
-   * `true` for a row whose whole stack is off screen. This is what a display's
+   * `true` for a row whose whole stack is off screen — and false while the body
+   * renders none of its displays (`rendersDisplays`). This is what a display's
    * phase asks.
    */
   effectiveBodyMounted: boolean

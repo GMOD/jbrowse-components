@@ -417,6 +417,14 @@ So readiness asks `effectiveBodyMounted` (`BaseViewModel`), which folds in the
 answer of every view this one is nested inside. `computeLoadingTerm` takes it as
 the `hostMounted` thunk, so a display never spells the walk itself.
 
+A body in the DOM can still render none of its displays: a linear genome view
+collapsed to its ruler (`scalebarOnly`, and every synteny row after
+`compactAllViews`) mounts only the scalebar. The view says so through the
+`rendersDisplays` hook, which `effectiveBodyMounted` folds in for that view
+alone. The walk up the nesting reads only the ancestors' `bodyMounted`, so a
+container that renders no displays of its own leaves its rows waiting on the
+paint they will make.
+
 ## Cross-view note
 
 All seven view types take their settings the same way and share the partition;

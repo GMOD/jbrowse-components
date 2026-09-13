@@ -30,6 +30,13 @@ function containingViewOf(node: IAnyStateTreeNode) {
   return undefined
 }
 
+function bodyInDom(view: { bodyMounted?: boolean }): boolean {
+  const parent = containingViewOf(view)
+  return (
+    view.bodyMounted !== false && (parent === undefined || bodyInDom(parent))
+  )
+}
+
 /**
  * #stateModel BaseViewModel
  * #category view
@@ -83,24 +90,26 @@ const BaseViewModel = types
     /**
      * #getter
      * Overridable hook (default true): whether this view's mounted body
-     * renders its displays. A linear genome view collapsed to its ruler mounts
-     * the scalebar and none of its tracks, so a display in it can no more paint
-     * than one in a view scrolled off screen.
+     * renders its own displays. A linear genome view collapsed to its ruler
+     * mounts the scalebar and none of its tracks, so a display in it can no
+     * more paint than one in a view scrolled off screen. Views nested in this
+     * one are unaffected: they paint wherever their own body is.
      */
     get rendersDisplays(): boolean {
       return true
     },
     /**
      * #getter
-     * Whether this view's body is in the DOM, counting the views it is nested
-     * inside — which is the question a display's phase actually asks.
+     * Whether this view's displays have a canvas to paint into: its body is in
+     * the DOM, counting the views it is nested inside, and the body renders
+     * them (`rendersDisplays`). This is the question a display's phase asks.
      *
-     * `bodyMounted` alone answers it only for a view a container renders
-     * directly. A view nested in another view (a synteny row, a breakpoint
-     * panel) has no container writing its flag, so it reads `true` forever
-     * while its whole subtree is out of the DOM, and every display in it waits
-     * for a first paint that nothing will make — the hang this flag exists to
-     * prevent, one level down.
+     * `bodyMounted` alone answers the DOM half only for a view a container
+     * renders directly. A view nested in another view (a synteny row, a
+     * breakpoint panel) has no container writing its flag, so it reads `true`
+     * forever while its whole subtree is out of the DOM, and every display in
+     * it waits for a first paint that nothing will make — the hang this flag
+     * exists to prevent, one level down.
      *
      * An ancestor that does not carry the flag at all leaves the answer alone
      * rather than excusing the paint: only an explicit `false` unmounts, so a
@@ -108,11 +117,7 @@ const BaseViewModel = types
      * that shows up as a slow test rather than as a picture of an empty view.
      */
     get effectiveBodyMounted(): boolean {
-      return (
-        self.bodyMounted &&
-        this.rendersDisplays &&
-        containingViewOf(self)?.effectiveBodyMounted !== false
-      )
+      return this.rendersDisplays && bodyInDom(self)
     },
     /**
      * #method

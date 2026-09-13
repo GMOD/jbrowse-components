@@ -10,7 +10,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // container writing `bodyMounted`, so the row's own flag stays at its default
 // `true` while the whole subtree is out of the DOM, and the row's displays wait
 // for a first paint that nothing will ever make.
-function nestedDisplay() {
+function nestedDisplay({ outerRendersDisplays = true } = {}) {
   const Display = types.compose(
     'TestNestedDisplay',
     GlobalFetchMixin(),
@@ -29,14 +29,20 @@ function nestedDisplay() {
       initialized: true,
       hasVisibleContent: true,
     }))
-  const Stack = types.compose(
-    'TestStack',
-    BaseViewModel,
-    types.model({
-      type: types.literal('TestStack'),
-      views: types.array(Row),
-    }),
-  )
+  const Stack = types
+    .compose(
+      'TestStack',
+      BaseViewModel,
+      types.model({
+        type: types.literal('TestStack'),
+        views: types.array(Row),
+      }),
+    )
+    .views(() => ({
+      get rendersDisplays() {
+        return outerRendersDisplays
+      },
+    }))
   const stack = Stack.create({
     type: 'TestStack',
     views: [{ type: 'TestRow', display: { type: 'TestNestedDisplay' } }],
@@ -68,5 +74,10 @@ test('scrolling the outer view back puts the wait back', () => {
   const { stack, display } = nestedDisplay()
   stack.setBodyMounted(false)
   stack.setBodyMounted(true)
+  expect(display.displayPhase).toBe('loading')
+})
+
+test('an outer view that renders no displays of its own leaves its rows waiting', () => {
+  const { display } = nestedDisplay({ outerRendersDisplays: false })
   expect(display.displayPhase).toBe('loading')
 })

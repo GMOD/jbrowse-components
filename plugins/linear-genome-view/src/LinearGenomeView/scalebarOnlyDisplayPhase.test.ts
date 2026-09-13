@@ -7,7 +7,7 @@ jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 // into it (or whose canvas the collapse tore down) has no canvas to paint.
 // Its phase used to wait on that paint forever, parking the app's readiness
 // marker at `loading` until the view was expanded.
-async function setup() {
+async function setup({ settle = true } = {}) {
   const session = createTestSession({
     sessionSnapshot: {
       views: [
@@ -59,10 +59,12 @@ async function setup() {
   })
   await view.launchTrack('genes')
   const display = view.tracks[0].displays[0]
-  await waitFor(() => {
-    expect(display.isLoadingOrCanceled).toBe(false)
-    expect(display.phaseViewportCurrent).toBe(true)
-  })
+  if (settle) {
+    await waitFor(() => {
+      expect(display.isLoadingOrCanceled).toBe(false)
+      expect(display.phaseViewportCurrent).toBe(true)
+    })
+  }
   return { view, display }
 }
 
@@ -75,5 +77,28 @@ test('a collapsed view excuses the paint of a display it does not render', async
   expect(display.displayPhase).toBe('ready')
 
   view.setScalebarOnly(false)
+  expect(display.displayPhase).toBe('loading')
+})
+
+test('collapsing a painted view stays ready, and expanding waits for the repaint', async () => {
+  const { view, display } = await setup()
+  display.markCanvasDrawn()
+  expect(display.displayPhase).toBe('ready')
+
+  view.setScalebarOnly(true)
+  display.stopRenderingBackend()
+  expect(display.displayPhase).toBe('ready')
+
+  view.setScalebarOnly(false)
+  expect(display.displayPhase).toBe('loading')
+
+  display.markCanvasDrawn()
+  expect(display.displayPhase).toBe('ready')
+})
+
+test('collapsing mid-fetch still reads loading', async () => {
+  const { view, display } = await setup({ settle: false })
+  view.setScalebarOnly(true)
+  expect(display.isLoadingOrCanceled).toBe(true)
   expect(display.displayPhase).toBe('loading')
 })
