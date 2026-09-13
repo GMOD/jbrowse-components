@@ -318,11 +318,11 @@ export function buildRibbonGeometry({
         targets.push({
           feature: link,
           label: [
-            `${upper.assemblyName} ${link.get('refName')}:${fmt(link.get('start'))}-${fmt(link.get('end'))}`,
-            `${lower.assemblyName} ${mate.refName}:${fmt(mate.start)}-${fmt(mate.end)}`,
+            `${upper.assemblyName} ${upper.canon(link.get('refName'))}:${fmt(link.get('start'))}-${fmt(link.get('end'))}`,
+            `${lower.assemblyName} ${lower.canon(mate.refName)}:${fmt(mate.start)}-${fmt(mate.end)}`,
             ...(via && anchor
               ? [
-                  `composed through ${anchor.assemblyName} ${via.refName}:${fmt(via.start)}-${fmt(via.end)}, not aligned directly`,
+                  `composed through ${anchor.assemblyName} ${anchor.canon(via.refName)}:${fmt(via.start)}-${fmt(via.end)}, not aligned directly`,
                 ]
               : []),
           ].join('\n'),
