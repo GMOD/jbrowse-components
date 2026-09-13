@@ -23,6 +23,9 @@ import type {
 // the view.
 const mockView = {
   width: 800,
+  dynamicBlocks: {
+    contentBlocks: [{ refName: 'ctgA', start: 1000, end: 2000 }],
+  },
   visibleRegions: [
     {
       displayedRegionIndex: 0,

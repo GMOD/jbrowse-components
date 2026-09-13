@@ -21,6 +21,7 @@ import type React from 'react'
 const mockView = {
   width: 800,
   offsetPx: 0,
+  dynamicBlocks: { contentBlocks: [{ refName: 'ctgA', start: 0, end: 1000 }] },
   visibleRegions: [
     {
       refName: 'ctgA',
@@ -282,10 +283,10 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
     ).not.toContain('stroke="#0008"')
   })
 
-  // The locus travels with the figure — a shared link otherwise hands over a
-  // dendrogram with no way to learn where it was computed.
-  it('captions a computed tree with its locus', async () => {
-    const html = render(
+  // As on screen, the tree's locus is said only once the view has left it: a
+  // tree computed on the figure's own span is what a reader assumes.
+  it('warns only when the tree was clustered somewhere else', async () => {
+    const onSpan = render(
       await renderSvg(
         makeModel({
           showTree: true,
@@ -296,7 +297,19 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
         }),
       ),
     )
-    expect(html).toContain('ctgA')
+    expect(onSpan).not.toContain('⚠')
+    const elsewhere = render(
+      await renderSvg(
+        makeModel({
+          showTree: true,
+          hierarchy: makeHierarchy(),
+          clusterProvenance: {
+            regions: [{ refName: 'ctgB', start: 0, end: 1000 }],
+          },
+        }),
+      ),
+    )
+    expect(elsewhere).toContain('⚠ ctgB:1..1,000')
   })
 
   // The key is the chrome's, off `legendSpec`, and both surfaces read

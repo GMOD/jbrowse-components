@@ -24,8 +24,8 @@ import type { TreeSidebarModel } from './types.ts'
  * well, and it was the wrong trade — it is the reading a viewer already assumes,
  * and on a captured figure it is text over the rows saying so. The locus is
  * still always retrievable (`clusterProvenanceMenuItems` in the Clustering
- * submenu, and `SvgTreeSidebar`'s export caption, which is the copy that ends up
- * under a figure); it is just no longer imposed on the frame.
+ * submenu); it is just no longer imposed on the frame, on screen or in an
+ * export, whose `SvgClusterProvenanceHint` makes the same call.
  *
  * Drift being an overlap fraction rather than an equality test is what makes
  * that safe: ordinary panning inside the clustered region does not trip it, so

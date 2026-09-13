@@ -39,12 +39,15 @@ function clusteredDisplay() {
   return { display, view }
 }
 
-// The exported figure is where "which locus is this tree from" has no other
-// answer: the on-screen chip only draws once the view has drifted off the
-// clustered span, and a shared PNG cannot be hovered.
-test('an exported dendrogram carries the locus it was clustered on', async () => {
+// The export says where the tree came from when the screen does: only once the
+// view has drifted off the clustered span.
+test('an exported dendrogram warns when it was clustered elsewhere', async () => {
   const { display } = clusteredDisplay()
-  expect(draw(await renderSvg(display, {}))).toContain('ctgA')
+  expect(draw(await renderSvg(display, {}))).not.toContain('⚠')
+  display.setLayoutAndClusterTree([...display.sources], '(hg38:1,mm10:1);', {
+    regions: [{ refName: 'ctgB', start: 0, end: 1000 }],
+  })
+  expect(draw(await renderSvg(display, {}))).toContain('⚠ ctgB:1..1,000')
 })
 
 // The row painters cull by row, so a partly scrolled top row starts above the

@@ -49,7 +49,7 @@ export async function renderSvg(
 
 function VariantSvgBody({
   model,
-  height,
+  view,
   canvasWidth,
   opts,
 }: LgvSvgBodyProps<RenderSvgModel>) {
@@ -79,9 +79,8 @@ function VariantSvgBody({
   return (
     <SvgVariantOverlay
       model={model}
-      idPrefix="variant-clip"
       width={canvasWidth}
-      height={height}
+      contentBlocks={view.dynamicBlocks.contentBlocks}
       // Its own paint layer in the band above the rows, untranslated — the
       // same split the screen takes (a separate canvas outside the offset
       // container), so the lane cannot pick up the rows' scroll.

@@ -1,14 +1,13 @@
-import { svgNodeId } from '@jbrowse/core/svg/svgId'
-import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
 import { RowSeparatorLines, SvgTreeSidebar } from '@jbrowse/tree-sidebar'
 
 import { SEPARATOR_OPACITY } from '../constants.ts'
 
 import type { RenderSvgBaseModel } from '../renderSvgUtils.ts'
+import type { ClusterProvenanceRegion } from '@jbrowse/tree-sidebar'
 import type React from 'react'
 
-// The frame both multi-sample variant SVG exports end in: the display-band clip,
-// the row content and the tree/label sidebar. Row content and sidebar are
+// The frame both multi-sample variant SVG exports end in: the row content and
+// the tree/label sidebar, inside the export shell's clip. Row content and sidebar are
 // translated below `rowsTopOffset` together — the same offset the on-screen
 // canvas and `TreeSidebar` take — so a display with bands above its rows can't
 // export its rows 20px high while its labels stay put. `variantLane` and
@@ -22,17 +21,15 @@ import type React from 'react'
 // channel the on-screen `RowLabelsOverlay` reads too.
 const SvgVariantOverlay = ({
   model,
-  idPrefix,
   width,
-  height,
+  contentBlocks,
   variantLane,
   lineZone,
   children,
 }: {
   model: RenderSvgBaseModel
-  idPrefix: string
   width: number
-  height: number
+  contentBlocks: readonly ClusterProvenanceRegion[]
   // The variant lane's own painted band, from the display that draws one.
   // Untranslated: it sits at the top of the display, above `lineZone`.
   variantLane?: React.ReactNode
@@ -52,11 +49,7 @@ const SvgVariantOverlay = ({
     rowsTopOffset,
   } = model
   return (
-    <SvgClipRect
-      id={`${idPrefix}-${svgNodeId(model)}`}
-      width={width}
-      height={height}
-    >
+    <>
       {variantLane}
       {lineZone}
       <g transform={`translate(0 ${rowsTopOffset})`}>
@@ -81,9 +74,10 @@ const SvgVariantOverlay = ({
           scrollTop={scrollTop}
           availableHeight={availableHeight}
           clusterProvenance={model.clusterProvenance}
+          contentBlocks={contentBlocks}
         />
       </g>
-    </SvgClipRect>
+    </>
   )
 }
 

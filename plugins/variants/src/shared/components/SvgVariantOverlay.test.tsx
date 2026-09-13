@@ -36,9 +36,8 @@ function renderOverlay(model: ReturnType<typeof createDisplay>) {
     <svg>
       <SvgVariantOverlay
         model={model}
-        idPrefix="variant-clip"
         width={800}
-        height={model.height}
+        contentBlocks={model.view.dynamicBlocks.contentBlocks}
       >
         <g />
       </SvgVariantOverlay>

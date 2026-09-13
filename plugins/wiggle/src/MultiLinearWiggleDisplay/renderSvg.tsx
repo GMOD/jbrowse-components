@@ -106,6 +106,7 @@ function MultiWiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
         rowHeight={model.effectiveRowHeight}
         treeAreaWidth={model.treeAreaWidth}
         clusterProvenance={model.clusterProvenance}
+        contentBlocks={view.dynamicBlocks.contentBlocks}
       />
     </ScorePlotSvgFrame>
   )

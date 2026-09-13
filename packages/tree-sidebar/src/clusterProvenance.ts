@@ -70,8 +70,7 @@ export function clusterProvenanceLocLabel(provenance: ClusterProvenance) {
   return rest.length ? `${loc} +${rest.length} more` : loc
 }
 
-// The full sentence, for a tooltip and for the SVG export's caption — the one
-// that ends up under a figure.
+// The full sentence, for a tooltip and the Clustering submenu.
 export function describeClusterProvenance(provenance: ClusterProvenance) {
   const parts = [`Clustered on ${clusterProvenanceLocLabel(provenance)}`]
   for (const { name, value } of provenance.settings ?? []) {
