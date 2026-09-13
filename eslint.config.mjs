@@ -79,7 +79,7 @@ const noSetSlot = {
   selector:
     "CallExpression[callee.property.name='setSlot'][callee.object.property.name='configuration']",
   message:
-    'Write config with `setConf`, not `configuration.setSlot`. A promotable slot resolves only through `resolveConf`, and setSlot writes past that. See the MST section of CLAUDE.md.',
+    'Write config with `setConf`, not `configuration.setSlot`. See the MST section of CLAUDE.md.',
 }
 const noAnyStateTreeNode = {
   selector:
@@ -793,11 +793,8 @@ export default defineConfig(
     },
   },
   {
-    // setConf-over-setSlot is a source rule, not a test rule. 44 of the 47
-    // findings are fixtures reaching straight for a slot, where there is no
-    // promotable-slot resolution to route around and `setSlot` is the shorter
-    // way to say it. In source there were three, one of which is `setConf`
-    // itself.
+    // setConf-over-setSlot is a source rule, not a test rule: fixtures reach
+    // straight for a slot, and `setSlot` is the shorter way to say it.
     ignores: ['**/*.test.{ts,tsx}', '**/tests/**', '**/browser-tests/**'],
     rules: {
       'no-restricted-syntax': ['error', ...sourceRestrictedSyntax],

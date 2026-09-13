@@ -132,7 +132,7 @@ export function takeSnackbarAction(
   session: {
     notifications: { message: string; actions: SnackAction[] }[]
   },
-  name = 'Set as the default',
+  name: string,
 ) {
   const last = session.notifications.at(-1)
   const found = last?.actions.find(action => action.name === name)
