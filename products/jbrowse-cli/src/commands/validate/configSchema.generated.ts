@@ -16651,6 +16651,61 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "minimized": {
           "type": "boolean"
         },
+        "colorBy": {
+          "type": "string"
+        },
+        "trackColors": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "hideUnlabelled": {
+          "type": "boolean"
+        },
+        "cigarMode": {
+          "enum": [
+            "off",
+            "matches",
+            "full"
+          ]
+        },
+        "drawCurves": {
+          "type": "boolean"
+        },
+        "drawLocationMarkers": {
+          "type": "boolean"
+        },
+        "showOffscreenMates": {
+          "type": "boolean"
+        },
+        "overdrawPx": {
+          "type": "number"
+        },
+        "alpha": {
+          "type": "number"
+        },
+        "minAlignmentLength": {
+          "type": "number"
+        },
+        "lodMode": {
+          "enum": [
+            "auto",
+            "fine",
+            "coarse"
+          ]
+        },
+        "opacityByIdentity": {
+          "type": "boolean"
+        },
+        "fadeThinAlignmentsMode": {
+          "enum": [
+            "auto",
+            "on",
+            "off"
+          ]
+        },
+        "launch": {},
         "trackSelectorType": {
           "type": "string"
         },
@@ -16740,61 +16795,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "$ref": "#/$defs/View"
           }
         },
-        "colorBy": {
-          "type": "string"
-        },
-        "trackColors": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "hideUnlabelled": {
-          "type": "boolean"
-        },
-        "cigarMode": {
-          "enum": [
-            "off",
-            "matches",
-            "full"
-          ]
-        },
-        "drawCurves": {
-          "type": "boolean"
-        },
-        "drawLocationMarkers": {
-          "type": "boolean"
-        },
-        "showOffscreenMates": {
-          "type": "boolean"
-        },
-        "overdrawPx": {
-          "type": "number"
-        },
-        "alpha": {
-          "type": "number"
-        },
-        "minAlignmentLength": {
-          "type": "number"
-        },
-        "lodMode": {
-          "enum": [
-            "auto",
-            "fine",
-            "coarse"
-          ]
-        },
-        "opacityByIdentity": {
-          "type": "boolean"
-        },
-        "fadeThinAlignmentsMode": {
-          "enum": [
-            "auto",
-            "on",
-            "off"
-          ]
-        },
-        "launch": {},
         "tracks": {
           "type": "array",
           "description": "Tracks to open, each by id or as an object of inline display settings.",
