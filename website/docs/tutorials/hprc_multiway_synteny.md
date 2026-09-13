@@ -10,15 +10,14 @@ tutorial_category: Synteny & comparative genomics
 data: pipeline
 ---
 
-We look at one human locus across eight assembled haplotypes from the Human
-Pangenome Reference Consortium, whole genome, without running an aligner. The
-consortium's pangenome graph carries every haplotype as a walk through shared
-nodes, so each haplotype's pairwise alignment to the reference is already inside
-it: a small converter walks the GFA once and unpacks each haplotype's alignment
-to GRCh38 into PAF, `jbrowse make-pif` indexes the result, and each haplotype
-becomes a lane under the reference carrying the consortium's own gene annotation
-of it. At the complement factor H cluster, half the lanes carry a deletion that
-removes two genes, and that is where the page ends.
+At the complement factor H cluster on chr1, four of eight assembled human
+haplotypes from the Human Pangenome Reference Consortium carry a deletion that
+removes two genes. We stack the eight under GRCh38, whole genome, each on its
+own coordinates and carrying the consortium's own gene annotation of it, without
+running an aligner. The consortium's pangenome graph carries every haplotype as
+a walk through shared nodes, so each haplotype's pairwise alignment to the
+reference is already inside it: a small converter unpacks those alignments from
+the graph into PAF, and `jbrowse make-pif` indexes the result.
 
 ## Prerequisites
 
@@ -61,19 +60,20 @@ the indels and substitutions.
 `gfa_to_pairwise_paf.py` streams the GFA once and keeps only the reference walks
 and the haplotypes asked for; every other walk is skipped unparsed, which is
 what makes the whole graph tractable on a laptop. For each haplotype it chains
-the shared nodes in reference order into records, one per run that stays on one
-strand and skips at most `--max-gap` private bases on either side, and writes an
-`=`/`X`/`I`/`D` CIGAR off the node lengths with PanSN names, which is what
-`make-pif` and the adapter below expect. A walk states where a contig's piece
-starts and ends but not the contig's full length, so `--contig-lengths` takes
-the assemblies' `.fai` files and `--chrom-sizes-dir` writes each haplotype's
-contigs and lengths, which is all an assembly needs when its lane never reads
-sequence:
+the shared nodes in reference order into records and writes an `=`/`X`/`I`/`D`
+CIGAR off the node lengths with PanSN names, which is what `make-pif` and the
+adapter below expect:[^converter-report]
 
 <!-- from: scripts/build_hprc_multiway_synteny.sh -->
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/gfa_to_pairwise_paf.py
+# --max-gap: a record stays on one strand and skips at most this many private
+#   bases on either side, and a longer skip starts the next record
+# --contig-lengths: a walk states where a contig's piece starts and ends but
+#   not the contig's full length, so the assemblies' .fai files supply it
+# --chrom-sizes-dir: writes each haplotype's contigs and lengths, which is all
+#   an assembly needs when its lane never reads sequence
 pigz -dc hprc-v2.1-mc-grch38.gfa.gz \
   | python3 gfa_to_pairwise_paf.py --reference GRCh38#0 \
       --queries HG01109#1,HG00099#1 --max-gap 10000 \
@@ -81,13 +81,8 @@ pigz -dc hprc-v2.1-mc-grch38.gfa.gz \
       --chrom-sizes-dir sizes/ > hprc_multiway_gfa.paf
 ```
 
-The converter reports on stderr, per haplotype, the walks it read, the records
-it wrote and the bases it aligned, and a haplotype that wrote none is a wrong
-sample spelling. The graph is written one chromosome at a time with the
-reference walk first, which is the order the converter expects; a graph whose
-haplotype walks precede the reference's wants `--hold-queries`. `make-pif`
-sorts, bgzips and indexes the PAF with a fine tier for the per-base CIGARs and a
-coarse one for whole-chromosome zooms:
+`make-pif` sorts, bgzips and indexes the PAF with a fine tier for the per-base
+CIGARs and a coarse one for whole-chromosome zooms:
 
 <!-- from: scripts/build_hprc_multiway_synteny.sh -->
 
@@ -152,11 +147,11 @@ the lane controls, the ribbons and the launches each lane header offers.
 ## The CFH cluster, eight haplotypes
 
 The eight are the panel the
-[pangenome page](/docs/tutorials/pangenome_hprc_part3#every-haplotype-in-its-own-coordinates)
+[pangenome page](/docs/tutorials/pangenome_hprc_part3#picking-the-panel-out-of-the-callset)
 picks out of the release's callset at the CFHR3/CFHR1 deletion. HG01109,
 HG01123, HG01960 and HG02055 carry it; HG00097, HG00099, HG00128 and HG00133 do
-not. That page draws the panel from a gene table over one window; here the same
-haplotypes are placed by the graph's alignment, whole genome.
+not. That page reads the panel's walks out of the graph one window at a time;
+here the same haplotypes are placed by the graph's alignment, whole genome.
 
 ```json session config=https://jbrowse.org/demos/hprc_multiway/config.json
 {
@@ -239,3 +234,10 @@ bash build_hprc_multiway_synteny.sh
   https://doi.org/10.1038/s41587-023-01793-w
 - Armstrong J, et al. Progressive Cactus is a multiple-genome aligner for the
   thousand-genome era. Nature (2020). https://doi.org/10.1038/s41586-020-2871-y
+
+[^converter-report]:
+    The converter reports on stderr, per haplotype, the walks it read, the
+    records it wrote and the bases it aligned, and a haplotype that wrote none
+    is a wrong sample spelling. The graph is written one chromosome at a time
+    with the reference walk first, which is the order the converter expects; a
+    graph whose haplotype walks precede the reference's wants `--hold-queries`.

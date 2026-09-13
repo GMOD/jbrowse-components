@@ -1366,126 +1366,15 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The human pangenome case of the same track: the CFH cluster over hg38 with
-  // a lane per HPRC haplotype, from the gene-name join table
-  // build_hprc_cfhr_synteny.sh writes out of the CAT annotations (CAT reuses
-  // the GENCODE gene names on every haplotype, so the join IS the ortholog
-  // table). The panel is 4 haplotypes homozygous reference at the CFHR3/CFHR1
-  // site and 4 homozygous for the deletion, each picked out of the wave
-  // callset and kept only where its own CAT annotation agrees with that
-  // genotype.
-  //
-  // rowOrder puts every non-carrier above every carrier, because a ribbon
-  // connects ADJACENT lanes only: the CFHR3 and CFHR1 chains then run down
-  // through the lanes that kept the genes and stop at the first lane that lost
-  // them, which is the whole reading.
-  {
-    mode: 'url',
-    name: 'multiway_synteny/hprc_cfhr_lanes',
-    url: sessionSpec(
-      encodeURIComponent('https://jbrowse.org/demos/hprc/config.json'),
-      {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'hg38',
-            loc: 'chr1:196,480,000-196,980,000',
-            tracks: [
-              {
-                trackId: 'hg38_ncbiRefSeq_ucsc',
-                type: 'LinearBasicDisplay',
-                showOnlyGenes: true,
-                displayMode: 'compact',
-              },
-              {
-                trackId: 'hprc_cfhr_multiway',
-                type: 'MultiWaySyntenyDisplay',
-                rowOrder: [
-                  'HG00097.1',
-                  'HG00099.1',
-                  'HG00128.1',
-                  'HG00133.1',
-                  'HG01109.1',
-                  'HG01123.1',
-                  'HG01960.1',
-                  'HG02055.1',
-                ],
-                // nine lanes: 240 leaves them at the glyph-height floor with
-                // the headers colliding into the glyphs
-                height: 460,
-              },
-            ],
-          },
-        ],
-      },
-    ),
-    readySelector: displaySettled('multiway-synteny-display'),
-    readyTimeout: 120000,
-    settleMs: 15000,
-    viewportHeight: 860,
-  },
-
-  // The same panel cut to the deletion itself, for pangenome_hprc.md: close
-  // enough that each ribbon connects one gene to one gene, so the two chains
-  // that stop are countable rather than inferred from a band.
-  {
-    mode: 'url',
-    name: 'pangenome/hprc_cfhr_lane_stack',
-    url: sessionSpec(
-      encodeURIComponent('https://jbrowse.org/demos/hprc/config.json'),
-      {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'hg38',
-            loc: 'chr1:196,640,000-196,900,000',
-            tracks: [
-              {
-                trackId: 'hg38_ncbiRefSeq_ucsc',
-                type: 'LinearBasicDisplay',
-                showOnlyGenes: true,
-                displayMode: 'compact',
-              },
-              {
-                trackId: 'hprc_cfhr_multiway',
-                type: 'MultiWaySyntenyDisplay',
-                rowOrder: [
-                  'HG00097.1',
-                  'HG00099.1',
-                  'HG00128.1',
-                  'HG00133.1',
-                  'HG01109.1',
-                  'HG01123.1',
-                  'HG01960.1',
-                  'HG02055.1',
-                ],
-                height: 460,
-              },
-            ],
-          },
-        ],
-      },
-    ),
-    readySelector: displaySettled('multiway-synteny-display'),
-    readyTimeout: 120000,
-    settleMs: 15000,
-    viewportHeight: 860,
-  },
-
-  // THE SAME EIGHT LANES READ FROM THE GRAPH, for pangenome_hprc.md's walks
-  // section: no PAF, no gene table, no offline step. hprc_v2_1_gbz_lanes is
+  // The CFH cluster over hg38 with a lane per HPRC haplotype, read from the
+  // graph for pangenome_hprc_part3.md's walks section. hprc_v2_1_gbz_lanes is
   // GbzBaseSyntenyAdapter over HPRC's published release 2.1 gbz-base database
   // and our companion haplotype index, both read by range request at capture
-  // time (the CFH window is about 8 s hosted, GBZ_HANDOFF.md in the plugin has
-  // the table). The display's `lanes` slot in the hosted config is what makes
-  // it eight lanes and not 464; `rowOrder` here matches the gene-table stack
-  // above so the two figures read lane for lane. What the graph states is the
-  // walk, one CIGAR per haplotype against hg38; the gene models each lane
-  // draws over it are the session's CAT annotation of that assembly, which the
-  // display picks up per lane, so the frame reads like the gene-table stack
-  // with the alignment underneath it coming from the graph. The records'
-  // CIGARs are checked against upstream gbz-base's own query output in the
-  // reader's test suite (test/oracle.test.ts there).
+  // time. The display's `lanes` slot in the hosted config makes it eight lanes
+  // and not 464: four homozygous reference at the CFHR3/CFHR1 site and four
+  // homozygous for the deletion, picked by build_hprc_cfhr_synteny.sh.
+  // `rowOrder` puts every non-carrier above every carrier, so the ribbon over
+  // the deletion narrows to a point at the one boundary between the groups.
   {
     mode: 'url',
     name: 'pangenome/hprc_gbz_cfhr_lanes',

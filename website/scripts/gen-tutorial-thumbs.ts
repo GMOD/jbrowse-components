@@ -466,7 +466,7 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     // labels, which is the whole of what this half is about. Cropped from the
     // left so those labels survive the 5:3 cover-crop -- a centre crop keeps
     // ribbons and loses the names.
-    src: 'pangenome/hprc_cfhr_lane_stack.png',
+    src: 'pangenome/hprc_gbz_cfhr_lanes.png',
     band: [0.34, 0.95],
     position: 'left',
   },

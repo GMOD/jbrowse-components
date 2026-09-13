@@ -14,8 +14,8 @@ Parts [1](/docs/tutorials/pangenome_hprc) and
 which makes hundreds of haplotypes comparable in one lane and leaves each
 assembly's own coordinates out of the picture. We start from the multiple
 alignment both products were derived from, then put each haplotype back on its
-own contigs, first from a gene table and then straight out of the graph, and end
-on the one donor that has a published reference of its own.
+own contigs straight out of the graph, and end on the one donor that has a
+published reference of its own.
 
 ## Prerequisites
 
@@ -24,7 +24,7 @@ on the one donor that has a published reference of its own.
 - [the GraphGenomeView plugin](/docs/tutorials/pangenome_hprc#the-graphgenomeview-plugin),
   for the tracks that use `GbzBaseSyntenyAdapter` and `RgfaTabixAdapter`; every
   other track here is a URL you can paste
-- htslib (`bgzip`, `tabix`), to slice the annotations the lanes carry
+- `bcftools`, to genotype the panel out of the callset
 
 ## Where the data comes from
 
@@ -36,7 +36,7 @@ UCSC and the companion index we host.
 
 - the multiple alignment the graph and the callset are both derived from:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz
-- the release's all-vs-GRCh38 alignment, sliced for the CFHR synteny figure:
+- the release's all-vs-GRCh38 alignment, which the panel's build script slices:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/impg/pafs/hprc465vsgrch38.aln.paf.gz
 - the CAT gene annotation index, one GFF3 per haplotype:
   https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv
@@ -96,30 +96,29 @@ who carries what, across for where each segment starts and stops.
 Clustering the alignment is a run, since HPRC's file ships no guide tree to
 order its rows by. **Cluster rows by identity...** under the track menu's
 **Clustering** submenu computes it over the window in view, and **Reset row
-order** puts back whatever the file supplied. The alignment draws thirty-two
-haplotype rows because a row needs enough height for its name beside it; drop
-`subtreeFilter` from the session and every haplotype is there.
+order** puts back whatever the file supplied. The figure keeps thirty-two
+haplotype rows so each has the height for its name beside it; the track as
+configured above draws every haplotype.
 
 The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
 per-row identity and codon view, all derived from the alignment with no extra
 files.
 
-## Every haplotype in its own coordinates
+## Every haplotype's walk, straight from the graph {#walks-from-the-graph}
 
 The alignment above draws each haplotype on GRCh38's axis. A
 [multi-way synteny track](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
 is the other reading: one lane per haplotype, each in that assembly's own contig
-coordinates and carrying that assembly's own CAT gene models, with ribbons
-connecting a gene to its copy in the lane below.
-
-Eight haplotypes carry that stack, and this section fills their lanes from the
-annotations before the session opens; [the next one](#walks-from-the-graph)
-draws the same eight from the graph itself. No aligner is in the loop: CAT
-projects the GENCODE gene set onto every release 2 assembly, so joining the
-annotations by gene name is already the ortholog table.
+coordinates and carrying that assembly's own CAT gene models. The graph already
+states what the lanes need. A `.gbz` holds one walk per haplotype, and release
+2.1 publishes that graph as a **gbz-base database**, the graph in SQLite with
+its tables laid out so a window is a handful of range requests. Every
+graph-derived track on this page reads release **2.1**, so a segment id in the
+rGFA tracks and a node id in this database are the same graph's.
 
 ### Picking the panel out of the callset
 
+Eight haplotypes carry the stack at the CFH cluster.
 `build_hprc_cfhr_synteny.sh` genotypes the CFHR3/CFHR1 deletion over all 464
 haplotypes and keeps the homozygous samples whose own CAT annotation agrees with
 the genotype:
@@ -133,88 +132,11 @@ the genotype:
 bcftools view -r chr1:196753075-196753075 -Oz -o cfhr_site.vcf.gz "$WAVE"
 ```
 
-Each kept haplotype's annotation then reduces to one plain BED of its gene rows,
-keyed on the CAT `Name` that every assembly shares:
+HG01109, HG01123, HG01960 and HG02055 carry the deletion; HG00097, HG00099,
+HG00128 and HG00133 do not. The script also slices each one's CAT annotation to
+the window, and those are the gene models the lanes draw.
 
-<!-- from: scripts/build_hprc_cfhr_synteny.sh -->
-
-```bash
-# one plain BED per genome, from the gene rows of its own annotation
-gzip -dc hprc_cfhr_HG00099.1.genes.gff3.gz \
-  | awk -F'\t' -v OFS='\t' '$3=="gene" {
-      match($9, /Name=[^;]*/)
-      print $1, $4 - 1, $5, substr($9, RSTART+5, RLENGTH-5), 0, $7
-    }' > hprc_cfhr_HG00099.1.bed
-```
-
-Joining those BEDs on that fourth column gives the table the track loads: one
-row per GRCh38 gene in the window, one column per haplotype, `.` where an
-annotation has no copy.
-
-### Reading it
-
-The session below opens the CFH cluster at chr1:196,640,000-196,900,000, one
-lane per haplotype:
-
-```json session config=https://jbrowse.org/demos/hprc/config.json
-{
-  "defaultSession": {
-    "name": "CFH cluster, one lane per haplotype",
-    "views": [
-      {
-        "type": "LinearGenomeView",
-        "assembly": "hg38",
-        "loc": "chr1:196,640,000-196,900,000",
-        "tracks": [
-          {
-            "trackId": "hg38_ncbiRefSeq_ucsc",
-            "type": "LinearBasicDisplay",
-            "showOnlyGenes": true,
-            "displayMode": "compact"
-          },
-          {
-            "trackId": "hprc_cfhr_multiway",
-            "type": "MultiWaySyntenyDisplay",
-            "rowOrder": [
-              "HG00097.1",
-              "HG00099.1",
-              "HG00128.1",
-              "HG00133.1",
-              "HG01109.1",
-              "HG01123.1",
-              "HG01960.1",
-              "HG02055.1"
-            ],
-            "height": 460
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-`rowOrder` puts every non-carrier above every carrier, which is what makes the
-deletion readable: a ribbon bridges past a lane that places nothing, so a chain
-stops at the first carrier lane. Every lane sits at a different coordinate on a
-different contig, and the flanking genes still line up down the stack because a
-lane is fitted to the orthologs. The two chains that stop are _CFHR3_ and
-_CFHR1_, which the carriers' own annotations do not have.
-
-<Figure caption="The CFH cluster on chr1 as one multi-way synteny track: hg38 genes over a lane per HPRC haplotype, each on its own contig and carrying its own CAT gene models. The CFHR3 and CFHR1 chains run through the non-carrier lanes and stop where the carriers begin, and every flanking gene's chain runs the whole way down." src="/img/pangenome/hprc_cfhr_lane_stack.png" />
-
-The same eight lanes over 500 kb bring in more flanking genes, which are the
-control on that reading.
-
-<Figure caption="The complement factor H cluster on chr1 over 500 kb: hg38 genes over a lane per HPRC haplotype, the ones homozygous reference at the CFHR3/CFHR1 site above the ones homozygous for the deletion, each carrying its own CAT gene models on its own contig. The CFHR3 and CFHR1 chains stop where the carriers begin, and every flanking gene's chain runs the whole way down." src="/img/multiway_synteny/hprc_cfhr_lanes.png" />
-
-## Every haplotype's walk, straight from the graph {#walks-from-the-graph}
-
-The graph states the same thing already: a `.gbz` holds one walk per haplotype,
-and release 2.1 publishes that graph as a **gbz-base database**, the graph in
-SQLite with its tables laid out so a window is a handful of range requests.
-Every graph-derived track on this page reads release **2.1**, so a segment id in
-the rGFA tracks and a node id in this database are the same graph's.
+### The lanes from the database
 
 ```json addtrack
 {
@@ -288,7 +210,53 @@ assembly the session already holds, and in the display's `lanes` so the track
 opens on them. **Choose lanes...** on the track menu lists every haplotype the
 graph names, grouped by sample, and **Every lane** is the whole cohort.
 
-<Figure caption="The CFH cluster's eight lanes read from the graph at load time, in the same lane order as the gene-table stack above, from two hosted files and no offline step. Each lane is one haplotype's walk aligned to hg38 as a CIGAR, and because the eight assemblies are in the session, each draws that haplotype's own CAT genes at its own coordinates over it." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
+The session below opens the CFH cluster at chr1:196,640,000-196,900,000:
+
+```json session config=https://jbrowse.org/demos/hprc/config.json
+{
+  "defaultSession": {
+    "name": "CFH cluster, one lane per haplotype walk",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "assembly": "hg38",
+        "loc": "chr1:196,640,000-196,900,000",
+        "tracks": [
+          {
+            "trackId": "hg38_ncbiRefSeq_ucsc",
+            "type": "LinearBasicDisplay",
+            "showOnlyGenes": true,
+            "displayMode": "compact"
+          },
+          {
+            "trackId": "hprc_v2_1_gbz_lanes",
+            "type": "MultiWaySyntenyDisplay",
+            "rowOrder": [
+              "HG00097.1",
+              "HG00099.1",
+              "HG00128.1",
+              "HG00133.1",
+              "HG01109.1",
+              "HG01123.1",
+              "HG01960.1",
+              "HG02055.1"
+            ],
+            "height": 460
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+`rowOrder` puts every non-carrier above every carrier, which is what makes the
+deletion readable. Every lane sits at a different coordinate on a different
+contig. Between the last non-carrier and the first carrier the ribbon over
+_CFHR3_ and _CFHR1_ narrows to a point, because the carriers' walks skip that
+stretch of GRCh38, and the carriers' own annotations have no model there.
+
+<Figure caption="The CFH cluster's eight lanes read from the graph at load time, the non-carriers above the carriers, from two hosted files and no offline step. Each lane is one haplotype's walk aligned to hg38 as a CIGAR, and because the eight assemblies are in the session, each draws that haplotype's own CAT genes at its own coordinates over it." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
 
 `GbzBaseSyntenyAdapter` answers a window: it locates the window on GRCh38's own
 path through the graph and emits one record per haplotype walk, in that
@@ -311,23 +279,8 @@ The same track feeds the graph view. **Launch → Graph genome view (this
 region)** in the linear view's own menu cuts the window from the database for
 the lanes on screen, which are the track's configured lanes until **Choose
 lanes...** picks others. The cut carries one W line per haplotype walk, named
-through the companion. For a figure of a chosen set, cut once and load the file.
-`gbz-base-query`, the reader's command line, takes `--keep` for each haplotype:
-
-```bash
-npx -p @gmod/gbz-base gbz-base-query \
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.gbz.db \
-  --haplotype-index https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.haplotype-index.anchored.db \
-  --sample GRCh38 --contig chr6 --interval 160616002..160646753 \
-  --context 1000 --snarls --format gfa \
-  --keep HG00097#1 --keep HG00099#1 --keep HG00128#1 --keep HG00133#1 \
-  --keep HG01109#1 --keep HG01123#1 --keep HG01960#1 --keep HG02055#1 \
-  > hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa
-```
-
-The graph view opens that file (**Add → Graph genome view**, then the file's URL
-in the load form, or a session with `gfaLocation`), in Sample rows with `GRCh38`
-as the reference path.
+through the companion, and **Sample rows** in the **Layout** dropdown gives each
+haplotype a row.
 
 <Figure caption="The KIV-2 array cut from the GBZ for the eight haplotypes, in Sample rows over the same window as the rGFA segments lane. Each row is a haplotype of the eight; an allele is drawn in the row of the first of them to walk it, so a row holds what that haplotype is the first to carry, and the hover on any node lists every haplotype that walks it." src="/img/pangenome/hprc_kiv2_gbz_walks.png" />
 
@@ -344,13 +297,12 @@ under [Reproduce it end to end](#reproduce-it-end-to-end).
 ## T2T-CHM13 as hs1 {#the-one-donor-worth-loading}
 
 CHM13 is the contributor with a published reference behind it, T2T-CHM13v2.0,
-which UCSC serves as `hs1` with RefSeq genes and RepeatMasker;
-[](/docs/tutorials/hg002_haplotypes) loads HG002, the other donor with a
-reference of its own.
+which UCSC serves as `hs1`; [](/docs/tutorials/hg002_haplotypes) loads HG002,
+the other donor with a reference of its own.
 
-Load it under its own name, with the graph's spelling as an alias. The view
-resolves a donor through `assemblyManager`, which is keyed by name and aliases
-alike, so `hs1` is what the launch opens and `CHM13` is what the graph says:
+It loads under its own name with the graph's spelling, `CHM13`, as an alias, the
+same join
+[part 1 makes for NA20809](/docs/tutorials/pangenome_hprc#loading-a-haplotype-as-an-assembly):
 
 ```json addassembly
 {
@@ -361,44 +313,9 @@ alike, so `hs1` is what the launch opens and `CHM13` is what the graph says:
 }
 ```
 
-Its genes are the same UCSC RefSeq set the hg38 lane above reads, on hs1:
-
-```json addtrack
-{
-  "type": "FeatureTrack",
-  "trackId": "hs1_ncbiRefSeq_ucsc",
-  "name": "NCBI RefSeq genes (hs1)",
-  "assemblyNames": ["hs1"],
-  "adapter": {
-    "type": "Gff3TabixAdapter",
-    "uri": "https://jbrowse.org/ucsc/hs1/hs1.gff.gz",
-    "csi": true
-  }
-}
-```
-
-The segments track can draw on hs1 as well, which is where the
-`assemblyNameToPanSN` map earns its second entry: `hs1` asks for `CHM13#0#chr17`
-the same way `hg38` asks for `GRCh38#0#chr17`. This replaces the track
-[part 1 loads](/docs/tutorials/pangenome_hprc#load-the-graph), same `trackId`,
-one more assembly:
-
-```json addtrack
-{
-  "type": "FeatureTrack",
-  "trackId": "hprc_minigraph_segments",
-  "name": "HPRC release 2 graph (rGFA segments)",
-  "assemblyNames": ["hg38", "hs1"],
-  "adapter": {
-    "type": "RgfaTabixAdapter",
-    "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38",
-    "assemblyNameToPanSN": { "hg38": "GRCh38", "hs1": "CHM13" }
-  },
-  "displayDefaults": {
-    "color": "jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'"
-  }
-}
-```
+The segments track draws on hs1 once `hs1` joins its `assemblyNames` and
+`"hs1": "CHM13"` its `assemblyNameToPanSN`, the two edits part 1 makes for
+NA20809.2.
 
 With both assemblies loaded a CHM13 node opens on either one, and on hs1 its
 coordinates are the donor's own. The node in the figure below is 142 kb of chr17
@@ -449,8 +366,8 @@ bash build_hprc_gbz_index.sh out
 shows, which takes about a quarter of an hour on 24 cores. The database it
 accompanies is read straight from HPRC's bucket and never downloaded.
 
-The [gene-table lanes](#every-haplotype-in-its-own-coordinates) read release 2's
-published all-vs-GRCh38 PAF:
+The [panel](#picking-the-panel-out-of-the-callset) and its CAT annotations have
+a script of their own:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_cfhr_synteny.sh
@@ -459,8 +376,9 @@ bash build_hprc_cfhr_synteny.sh       # writes ./hprc_cfhr_synteny_build/
 
 [`build_hprc_cfhr_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_cfhr_synteny.sh)
 picks four carriers and four non-carriers of the deletion out of the callset
-(`CARRIERS` and `NONCARRIERS`), slices their alignments out of that PAF, and
-slices each haplotype's CAT annotation to the same window.
+(`CARRIERS` and `NONCARRIERS`), slices their alignments out of release 2's
+all-vs-GRCh38 PAF, and slices each haplotype's CAT annotation to the same
+window.
 
 ## See also
 
