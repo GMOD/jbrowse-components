@@ -7,12 +7,9 @@ sidebar_label: Mixin -> WiggleScoreConfigMixin
 Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/WiggleScoreConfigMixin.ts).
 
 The score-plot config every display with a score axis shares: the axis
-(`ScoreScaleMixin`), the cross-hatch toggle and the scatter point size.
-`LinearMarkDisplay` composes it as is; a display plotting one configured
-feature field composes `ScoreFieldConfigMixin`, which adds `scoreField`.
-
-Config only: the strict-`bpPerPx` fetch rule and wiggle's palette,
-rendering-type, summary-mode and resolution config are `WiggleCommonMixin`'s.
+(`ScoreScaleMixin`), the cross-hatch toggle and the scatter point size. A
+display plotting one configured field composes `ScoreFieldConfigMixin`,
+which adds `scoreField`.
 
 Members a composed model contributes are listed here too, so these tables are the whole surface.
 
@@ -22,9 +19,9 @@ Members a composed model contributes are listed here too, so these tables are th
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="getter-scatterpointsize">**scatterPointSize**</span><br><code>number</code> |  | WiggleScoreConfigMixin |
-| <span id="getter-displaycrosshatches">**displayCrossHatches**</span><br><code>boolean</code> | The configured cross-hatch setting, which the menu toggles. A slot rather than a display prop because MST drops a snapshot key the schema never declares, so a prop cannot be set from a config. Read `showCrossHatches` for what draws. | WiggleScoreConfigMixin |
-| <span id="getter-isdensitymode">**isDensityMode**</span><br><code>boolean</code> | Whether score maps to color instead of height. A display overrides this from its own rendering-type table; the base is false. | WiggleScoreConfigMixin |
-| <span id="getter-showcrosshatches">**showCrossHatches**</span><br><code>boolean</code> | Whether the score-axis cross hatches draw. Density spends color, not height, on the score, so it has no axis to rule — and its track menu drops the toggle, which would strand hatches enabled in another plot type. Every consumer reads this, never `displayCrossHatches`. | WiggleScoreConfigMixin |
+| <span id="getter-displaycrosshatches">**displayCrossHatches**</span><br><code>boolean</code> | The configured cross-hatch setting the menu toggles; `showCrossHatches` is what draws. | WiggleScoreConfigMixin |
+| <span id="getter-isdensitymode">**isDensityMode**</span><br><code>boolean</code> | Whether score maps to color instead of height; a display overrides it. | WiggleScoreConfigMixin |
+| <span id="getter-showcrosshatches">**showCrossHatches**</span><br><code>boolean</code> | Whether the score-axis cross hatches draw: never in density mode, which has no height axis to rule and no toggle in its menu. | WiggleScoreConfigMixin |
 | <span id="getter-declaredvaluescale">**declaredValueScale**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ scaleType?: string &#124; undefined; domain?: [number &#124; undefined,…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ scaleType?: string &#124; undefined; domain?: [number &#124; undefined, number &#124; undefined] &#124; undefined; } &#124; undefined</code></pre></dialog></span> | <span data-pagefind-ignore>Overridable hook: a value scale the display declares somewhere other than these slots — the mark display's `encoding.y`. Where it answers, it is the owner and the slots below stand in only for the ends it leaves open, so a scale is read from one place whichever place that is. Default none, which is every display whose axis IS these slots.</span> | [ScoreScaleMixin](../scorescalemixin#getter-declaredvaluescale) |
 | <span id="getter-scaletype">**scaleType**</span><br><code>string</code> |  | [ScoreScaleMixin](../scorescalemixin#getter-scaletype) |
 | <span id="getter-autoscaletype">**autoscaleType**</span><br><code>string</code> |  | [ScoreScaleMixin](../scorescalemixin#getter-autoscaletype) |

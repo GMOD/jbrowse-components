@@ -179,18 +179,6 @@ rather than hard-coded.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/normalize.ts)
 
-## scaleTypeFromString
-
-Maps the `'log'`/`'symlog'`/`'linear'` string to the numeric code the
-shaders' `scaleType` uniform compares, render-core's `scaleTypeCode`.
-
-```js
-// type signature
-(scaleType: string) => ScaleTypeCode
-```
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/normalize.ts)
-
 ## ScoreRule
 
 One horizontal rule across a score plot, at a score the user chose.
