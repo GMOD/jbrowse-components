@@ -222,7 +222,7 @@ export function recordingContext() {
 }
 
 /** The extent of a painting, in canvas px. */
-interface Box {
+export interface Box {
   x: number
   y: number
   w: number
@@ -272,7 +272,11 @@ export interface SweepOptions<C> {
   contains?: (index: number, xPx: number, yPx: number) => boolean
 }
 
-function inkViolations<C extends Counted, S extends MarkFrame>(
+/**
+ * The ink clause of {@link sweepMarkAgainstHit} alone, for a mark with no
+ * `hitNearest`: `boxes[i]` is what the painter recorded for instance `i`.
+ */
+export function inkViolations<C, S extends MarkFrame>(
   mark: Mark<C, S>,
   channels: C,
   block: RenderBlock,
@@ -284,7 +288,7 @@ function inkViolations<C extends Counted, S extends MarkFrame>(
   if (!mark.ink) {
     return violations
   }
-  for (let i = 0; i < channels.count; i++) {
+  for (let i = 0; i < boxes.length; i++) {
     const r = mark.ink(channels, block, state, i)
     const b = boxes[i]
     if (r && !b) {
