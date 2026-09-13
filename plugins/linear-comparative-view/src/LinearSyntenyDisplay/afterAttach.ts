@@ -8,7 +8,10 @@ import {
 } from '@jbrowse/synteny-core'
 import { reaction, untracked } from 'mobx'
 
-import { renameOffscreenMates } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
+import {
+  emptyOffscreenMates,
+  renameOffscreenMates,
+} from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 
 import type { LinearSyntenyDisplayModel } from './model.ts'
 
@@ -23,19 +26,28 @@ export function doAfterAttach(
 ) {
   installLodTierInfoFetch(self)
 
-  // Ribbon corners are stored relative to a cumBp layout the fetch saw, so a
-  // rewritten region list (a flip, a mate-mark drop, the follow's locstring
-  // fallback) leaves every ribbon and mark at a locus that no longer exists
-  // until the refetch lands. One blank frame is honest; a wrong one is not.
-  // The feature lanes stay: they name loci in bp, and a row the follow places
-  // from has just rewritten its regions when the follow walks them.
+  // Ribbon corners and off-screen mate marks are stored in a cumBp layout the
+  // fetch saw, so a rewritten region list (a flip, a mate-mark drop, the
+  // follow's locstring fallback) leaves every ribbon and mark at a locus that
+  // no longer exists until the refetch lands. One blank frame is honest; a
+  // wrong one is not. The feature lanes stay: they name loci in bp, and a row
+  // the follow places from has just rewritten its regions when the follow
+  // walks them.
   addDisposer(
     self,
     reaction(
       () => self.regionSignature,
       () => {
-        if (self.instanceData) {
-          self.setRpcData(self.featureData, undefined)
+        const { featureData } = self
+        if (self.instanceData && featureData) {
+          self.setRpcData(
+            {
+              ...featureData,
+              offscreenMates: emptyOffscreenMates(),
+              targetOffscreenMates: emptyOffscreenMates(),
+            },
+            undefined,
+          )
         }
       },
       { name: 'SyntenyBlankOnRegionChange' },

@@ -1,5 +1,7 @@
 import { packSyntenyLanes } from '@jbrowse/synteny-core'
 
+import { emptyOffscreenMates } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
+
 import type { SyntenyFeatureData } from './model.ts'
 import type { PickCanvasLike } from './syntenyPickEngine.ts'
 
@@ -120,19 +122,6 @@ export interface FeatureBlock {
   mateStart?: number
   mateEnd?: number
   mateAssembly?: string
-}
-
-function emptyOffscreenMates(): SyntenyFeatureData['offscreenMates'] {
-  return {
-    mateRefNameDict: [],
-    counts: new Uint32Array(0),
-    starts: new Float64Array(0),
-    ends: new Float64Array(0),
-    mateRefNameIds: new Uint32Array(0),
-    lengths: new Float32Array(0),
-    mateStarts: new Float64Array(0),
-    mateEnds: new Float64Array(0),
-  }
 }
 
 /**

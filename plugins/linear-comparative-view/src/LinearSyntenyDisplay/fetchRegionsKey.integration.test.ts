@@ -8,6 +8,8 @@
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
+import { emptyOffscreenMates } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
+
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
@@ -84,26 +86,44 @@ test('a pan of the lower row past its buffer moves the key with the bidirectiona
 // loci that no longer exist. A pan keeps it; a region change drops it. The
 // feature lanes name loci in bp and stay, because the follow walks them to
 // place the other row from exactly such a rewrite.
-test('a rewritten region list drops the held geometry and keeps the features, a pan keeps both', async () => {
+// The off-screen mate marks go with the geometry: they are placed in the same
+// cumBp layout, and a mark left behind draws and answers clicks at the wrong
+// locus until the refetch lands.
+test('a rewritten region list drops the held geometry and the mate marks, keeps the features, a pan keeps all three', async () => {
   const { view, display } = await openSynteny()
   const d = display as unknown as {
     instanceData: unknown
-    featureData: unknown
+    featureData: { featureIds: string[]; offscreenMates: { starts: unknown } }
     setRpcData: (a: unknown, b: unknown) => void
+  }
+  const marks = {
+    ...emptyOffscreenMates(),
+    mateRefNameDict: ['ctgB'],
+    counts: new Uint32Array([1]),
+    starts: new Float64Array([100]),
+    ends: new Float64Array([200]),
+    mateRefNameIds: new Uint32Array([0]),
+    lengths: new Float32Array([100]),
+    mateStarts: new Float64Array([0]),
+    mateEnds: new Float64Array([100]),
   }
   d.setRpcData(
     {
       attributeRanges: [],
-      featureIds: [],
+      featureIds: ['f1'],
       starts: new Float64Array(0),
       ends: new Float64Array(0),
+      offscreenMates: marks,
+      targetOffscreenMates: marks,
     },
     { instanceCount: 0 },
   )
   expect(d.instanceData).toBeDefined()
   view.views[0]!.horizontalScroll(100)
   expect(d.instanceData).toBeDefined()
+  expect(d.featureData.offscreenMates.starts).toHaveLength(1)
   view.views[0]!.horizontallyFlip()
   expect(d.instanceData).toBeUndefined()
-  expect(d.featureData).toBeDefined()
+  expect(d.featureData.featureIds).toEqual(['f1'])
+  expect(d.featureData.offscreenMates.starts).toHaveLength(0)
 })

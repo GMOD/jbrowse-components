@@ -31,6 +31,19 @@ export interface OffscreenMateData {
   mateEnds: ArrayLike<number>
 }
 
+export function emptyOffscreenMates(): OffscreenMateData {
+  return {
+    mateRefNameDict: [],
+    counts: new Uint32Array(0),
+    starts: new Float64Array(0),
+    ends: new Float64Array(0),
+    mateRefNameIds: new Uint32Array(0),
+    lengths: new Float32Array(0),
+    mateStarts: new Float64Array(0),
+    mateEnds: new Float64Array(0),
+  }
+}
+
 // A collector rather than a second pass, so a whole-genome PAF does not hold
 // one object per dropped alignment until the loop ends
 export function createOffscreenMateCollector(queryIndex: BpRegionIndex) {
