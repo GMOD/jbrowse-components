@@ -13,7 +13,6 @@ import {
   LABEL_COLOR,
   LABEL_HALO_COLOR,
   LABEL_HALO_EM,
-  SELECTED_COLOR,
   drawArcs,
 } from './drawArcs.ts'
 
@@ -107,6 +106,10 @@ function captionFor(arcs: readonly LaidOutArc[], arcKey?: string) {
 // would clip the arcs to a box inside the box they were laid out in. No cull
 // either: the export captures the whole region.
 //
+// Draws no selection: a feature left selected from its detail widget would
+// otherwise mark every figure exported afterwards, and no display's selection
+// is exported.
+//
 // Not an observer, and it takes the arcs rather than the model: a figure is
 // frozen, and `useFrozenFigureContract` fails any observer mounted inside one.
 // It reads `laidOutArcs` — a computed over `bpToPx` and `offsetPx` — so as an
@@ -114,7 +117,7 @@ function captionFor(arcs: readonly LaidOutArc[], arcKey?: string) {
 // the next time the underlying view panned.
 export function ArcsSvg({ arcs }: { arcs: readonly LaidOutArc[] }) {
   return arcs.map(arc => {
-    const stroke = getStrokeProps(arc.selected ? SELECTED_COLOR : arc.color)
+    const stroke = getStrokeProps(arc.color)
     return (
       <g key={arc.key}>
         <path
@@ -167,12 +170,7 @@ function ArcLabel({ arc }: { arc: LaidOutArc }) {
       >
         {arc.label}
       </text>
-      <text
-        {...font}
-        x={x}
-        y={y}
-        fill={arc.selected ? SELECTED_COLOR : LABEL_COLOR}
-      >
+      <text {...font} x={x} y={y} fill={LABEL_COLOR}>
         {arc.label}
       </text>
     </>

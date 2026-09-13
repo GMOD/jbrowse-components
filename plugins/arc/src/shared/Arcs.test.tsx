@@ -280,3 +280,24 @@ test('semicircle mode lays out semicircles, and they paint', () => {
   // 30px along the baseline from the flank, which is empty band
   expect(inkAt(canvas, x - 30, y)).toBe(false)
 })
+
+// A feature left selected from its detail widget would otherwise mark every
+// figure exported afterwards; no display's selection is exported.
+test('the export draws a selected arc in its own colour', () => {
+  const { display } = oneArc()
+  const [arc] = display.laidOutArcs
+  const { container } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <svg>
+        <ArcsSvg arcs={[{ ...arc!, selected: true }]} />
+      </svg>
+    </ThemeProvider>,
+  )
+  const strokes = [...container.querySelectorAll('path')].map(p =>
+    p.getAttribute('stroke'),
+  )
+  expect(strokes).not.toContain('#ff0000')
+  expect(
+    container.querySelector('text:last-of-type')?.getAttribute('fill'),
+  ).not.toBe('red')
+})

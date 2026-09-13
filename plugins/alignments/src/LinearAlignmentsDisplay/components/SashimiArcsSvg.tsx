@@ -1,16 +1,8 @@
-import { Fragment } from 'react'
-
 import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 
 import SashimiArcLabels from './SashimiArcLabels.tsx'
-import SashimiSelectionOutline from './SashimiSelectionOutline.tsx'
-import {
-  SASHIMI_SIDES,
-  sashimiArcKey,
-  sashimiSelectionKey,
-  sashimiSideBand,
-} from './sashimiArcs.ts'
+import { SASHIMI_SIDES, sashimiArcKey, sashimiSideBand } from './sashimiArcs.ts'
 import { bandScreenTop } from './sectionScreen.ts'
 
 import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
@@ -30,7 +22,6 @@ import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 // overrun it produced a figure the screen never showed.
 function SashimiSide({
   arcs,
-  groupKey,
   top,
   height,
   clipped,
@@ -38,10 +29,8 @@ function SashimiSide({
   width,
   showLabels,
   palette,
-  selectedKey,
 }: {
   arcs: SashimiArc[]
-  groupKey: string
   top: number
   height: number
   clipped: boolean
@@ -49,7 +38,6 @@ function SashimiSide({
   width: number
   showLabels: boolean
   palette: JBrowsePalette
-  selectedKey: string | undefined
 }) {
   if (arcs.length === 0) {
     return null
@@ -57,17 +45,13 @@ function SashimiSide({
   const body = (
     <>
       {arcs.map(arc => (
-        <Fragment key={sashimiArcKey(arc)}>
-          {sashimiSelectionKey(groupKey, arc) === selectedKey ? (
-            <SashimiSelectionOutline arc={arc} palette={palette} />
-          ) : null}
-          <path
-            d={arc.d}
-            stroke={arc.stroke}
-            strokeWidth={arc.strokeWidth}
-            fill="none"
-          />
-        </Fragment>
+        <path
+          key={sashimiArcKey(arc)}
+          d={arc.d}
+          stroke={arc.stroke}
+          strokeWidth={arc.strokeWidth}
+          fill="none"
+        />
       ))}
       <SashimiArcLabels arcs={arcs} show={showLabels} palette={palette} />
     </>
@@ -86,7 +70,8 @@ function SashimiSide({
 }
 
 // Static sashimi arcs for SVG export — the very same `sashimiArcSections`
-// geometry the on-screen overlay renders, minus the hover/click handlers. Band
+// geometry the on-screen overlay renders, minus the hover/click handlers and
+// the selected junction's outline, as no display's selection is exported. Band
 // tops are content-space and go through `bandScreenTop`, the same projection
 // SashimiArcsOverlay uses, so a scrolled export puts the arcs on the reads they
 // belong to. (They sat at their raw content tops while the export pinned
@@ -120,7 +105,6 @@ export default function SashimiArcsSvg({
         <SashimiSide
           key={`${section.groupKey}-${side}`}
           arcs={section[side]}
-          groupKey={section.groupKey}
           top={bandScreenTop(band.top, scroll)}
           height={band.height}
           clipped={band.clipped}
@@ -128,7 +112,6 @@ export default function SashimiArcsSvg({
           width={width}
           showLabels={model.showSashimiLabels}
           palette={palette}
-          selectedKey={model.selectedSashimiKey}
         />
       )
     }),

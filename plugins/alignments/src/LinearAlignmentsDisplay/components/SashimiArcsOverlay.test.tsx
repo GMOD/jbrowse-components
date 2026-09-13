@@ -167,7 +167,9 @@ describe('sashimi selection', () => {
     expect(strokeWidths(container)).toEqual(['2'])
   })
 
-  it('draws the selected junction outline in the export', () => {
+  // a junction left selected from the detail widget would otherwise mark every
+  // figure exported afterwards; no display's selection is exported
+  it('leaves the selected junction outline out of the export', () => {
     const { container } = render(
       <svg>
         <SashimiArcsSvg
@@ -177,7 +179,7 @@ describe('sashimi selection', () => {
         />
       </svg>,
     )
-    expect(strokeWidths(container)).toEqual(['6', '2'])
+    expect(strokeWidths(container)).toEqual(['2'])
   })
 
   it('records the clicked junction on the model, not in the component', () => {
