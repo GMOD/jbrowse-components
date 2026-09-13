@@ -1093,9 +1093,21 @@ test('an adapter declaring its lanes has its header read once, and the universe 
   expect(calls.filter(c => c.name === 'CoreGetInfo')).toHaveLength(1)
   expect(display.starAnchor).toBe('volvox')
   expect(display.laneUniverse).toEqual([
-    { name: 'HG1#1', label: 'HG1#1', group: 'HG1', placed: false },
-    { name: 'HG1#2', label: undefined, group: 'HG1', placed: false },
-    { name: 'volvox_random', placed: false },
+    {
+      name: 'HG1#1',
+      label: 'HG1#1',
+      group: 'HG1',
+      placed: false,
+      drawn: false,
+    },
+    {
+      name: 'HG1#2',
+      label: undefined,
+      group: 'HG1',
+      placed: false,
+      drawn: false,
+    },
+    { name: 'volvox_random', placed: false, drawn: true },
   ])
   expect(display.rowAssemblies).toEqual([])
 
@@ -1128,7 +1140,7 @@ test('an adapter that neither tiers nor declares lanes is never asked for a head
   expect(calls).not.toContain('CoreGetInfo')
   expect(display.declaredLanes).toBeUndefined()
   expect(display.laneUniverse).toEqual([
-    { name: 'volvox_random', placed: false },
+    { name: 'volvox_random', placed: false, drawn: true },
   ])
 })
 
@@ -1141,7 +1153,10 @@ test('hiding a lane leaves every other lane drawn, including ones placed later',
     mateRecord('r2', 'sample#1#b'),
   ])
   display.hideLane('sample#1#a')
-  expect(display.laneFilter).toEqual({ except: ['sample#1#a'] })
+  expect(display.hiddenLanes).toEqual(['sample#1#a'])
+  expect(
+    display.laneUniverse.map(lane => [lane.name, lane.drawn]),
+  ).toContainEqual(['sample#1#a', false])
   expect(display.rowAssemblies).toEqual(['sample#1#b'])
   display.setFeatures([
     mateRecord('r1', 'sample#1#a'),

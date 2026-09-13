@@ -9,10 +9,10 @@ import LaneSelectionDialog, { laneRuns } from './LaneSelectionDialog.tsx'
 import type { LaneChoice } from '../menus.ts'
 
 const universe: LaneChoice[] = [
-  { name: 'HG1.1', label: 'HG1#1', group: 'HG1', placed: true },
-  { name: 'HG1#2', label: 'HG1#2', group: 'HG1', placed: false },
-  { name: 'HG2#1', label: 'HG2#1', group: 'HG2', placed: true },
-  { name: 'extra', placed: true },
+  { name: 'HG1.1', label: 'HG1#1', group: 'HG1', placed: true, drawn: true },
+  { name: 'HG1#2', label: 'HG1#2', group: 'HG1', placed: false, drawn: true },
+  { name: 'HG2#1', label: 'HG2#1', group: 'HG2', placed: true, drawn: true },
+  { name: 'extra', placed: true, drawn: true },
 ]
 
 function renderDialog(drawn?: string[], configuredLanes: string[] = []) {
@@ -23,10 +23,12 @@ function renderDialog(drawn?: string[], configuredLanes: string[] = []) {
     <ThemeProvider theme={createJBrowseTheme()}>
       <LaneSelectionDialog
         model={{
-          laneUniverse: universe,
+          laneUniverse: universe.map(lane => ({
+            ...lane,
+            drawn: drawn?.includes(lane.name) ?? true,
+          })),
           laneFilter: drawn && { only: drawn },
           configuredLanes,
-          drawsLane: name => drawn?.includes(name) ?? true,
           chooseLanes: names => {
             chosen.push(names)
           },

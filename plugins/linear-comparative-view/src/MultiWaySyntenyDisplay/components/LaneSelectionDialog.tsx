@@ -65,11 +65,7 @@ const LaneSelectionDialog = observer(function LaneSelectionDialog({
   const { laneUniverse } = model
   const [drawn] = useState(
     () =>
-      new Set(
-        laneUniverse
-          .map(lane => lane.name)
-          .filter(name => model.drawsLane(name)),
-      ),
+      new Set(laneUniverse.filter(lane => lane.drawn).map(lane => lane.name)),
   )
   const [chosen, setChosen] = useState(drawn)
   const [filter, setFilter] = useState('')

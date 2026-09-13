@@ -39,13 +39,15 @@ export type HeaderLane = Pick<
  * fetched window, or both. `label` is the source's own name for it where that
  * differs from the assembly name (a haplotype's PanSN prefix against the
  * assembly it is loaded as) and `group` gathers lanes that belong together
- * (a diploid sample's two haplotypes)
+ * (a diploid sample's two haplotypes). `drawn` is whether the stack draws the
+ * lane wherever a window places it
  */
 export interface LaneChoice {
   name: string
   label?: string
   group?: string
   placed: boolean
+  drawn: boolean
 }
 
 export type LaneFilter = { only: string[] } | { except: string[] }
@@ -54,7 +56,6 @@ export interface LaneSelectionModel {
   laneUniverse: LaneChoice[]
   laneFilter: LaneFilter | undefined
   configuredLanes: readonly string[]
-  drawsLane: (assemblyName: string) => boolean
   chooseLanes: (names: string[]) => void
   setSelectedLanes: (names: string[] | undefined) => void
   openLaneSelection: () => void

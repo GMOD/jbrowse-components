@@ -801,26 +801,12 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * `laneSelection` and the hidden lanes, by canonical name
+       * the lanes Hide lane took out of `laneSelection`, or out of every lane
+       * where there is none
        */
-      get drawnLaneKeys() {
+      get hiddenLanes(): readonly string[] {
         const filter = self.laneFilter
-        const selection = this.laneSelection
-        return {
-          chosen: selection && new Set(selection.map(self.laneKey)),
-          hidden: new Set(
-            filter && 'except' in filter ? filter.except.map(self.laneKey) : [],
-          ),
-        }
-      },
-      /**
-       * #method
-       * whether the stack draws `assemblyName` wherever a window places it
-       */
-      drawsLane(assemblyName: string) {
-        const key = self.laneKey(assemblyName)
-        const { chosen, hidden } = this.drawnLaneKeys
-        return (chosen === undefined || chosen.has(key)) && !hidden.has(key)
+        return filter && 'except' in filter ? filter.except : []
       },
     }))
     .views(self => ({
@@ -890,8 +876,8 @@ export function stateModelFactory(
        * #getter
        * every lane the picker can offer: the header's declared lanes in the
        * source's order, then the genomes the track config names, then any
-       * lane the fetched window places that neither named. The anchor is
-       * never a lane
+       * lane the fetched window places that neither named, each saying
+       * whether the stack draws it. The anchor is never a lane
        */
       get laneUniverse(): LaneChoice[] {
         const anchor = self.laneKey(self.anchorAssemblyName)
@@ -901,11 +887,19 @@ export function stateModelFactory(
             placed.add(self.laneKey(name))
           }
         }
+        const selection = self.laneSelection
+        const chosen = selection && new Set(selection.map(self.laneKey))
+        const hidden = new Set(self.hiddenLanes.map(self.laneKey))
         const out = new Map<string, LaneChoice>()
         const offer = (lane: DeclaredLane) => {
           const key = self.laneKey(lane.name)
           if (key !== anchor && !out.has(key)) {
-            out.set(key, { ...lane, placed: placed.has(key) })
+            out.set(key, {
+              ...lane,
+              placed: placed.has(key),
+              drawn:
+                (chosen === undefined || chosen.has(key)) && !hidden.has(key),
+            })
           }
         }
         for (const lane of self.declaredLanes ?? []) {
@@ -933,14 +927,14 @@ export function stateModelFactory(
        */
       get rowAssemblies() {
         const { assemblyManager } = getSession(self)
-        const anchor = self.laneKey(self.anchorAssemblyName)
+        const drawn = new Set(
+          this.laneUniverse
+            .filter(lane => lane.drawn)
+            .map(lane => self.laneKey(lane.name)),
+        )
         return rowAssembliesOf(self.groups, [...self.rowOrder], (a, b) =>
           isSameAssemblyName(a, b, assemblyManager),
-        ).filter(
-          assemblyName =>
-            self.laneKey(assemblyName) !== anchor &&
-            self.drawsLane(assemblyName),
-        )
+        ).filter(assemblyName => drawn.has(self.laneKey(assemblyName)))
       },
       /**
        * #getter
@@ -1006,10 +1000,8 @@ export function stateModelFactory(
           self.setSelectedLanes(
             filter.only.filter(name => self.laneKey(name) !== key),
           )
-        } else if (!self.drawnLaneKeys.hidden.has(key)) {
-          self.laneFilter = {
-            except: [...(filter?.except ?? []), assemblyName],
-          }
+        } else if (!self.hiddenLanes.some(name => self.laneKey(name) === key)) {
+          self.laneFilter = { except: [...self.hiddenLanes, assemblyName] }
         }
       },
       /**
@@ -1026,7 +1018,10 @@ export function stateModelFactory(
             name => self.laneKey(name) !== key,
           )
           self.laneFilter = except.length ? { except } : undefined
-        } else if (selection && !self.drawnLaneKeys.chosen?.has(key)) {
+        } else if (
+          selection &&
+          !selection.some(name => self.laneKey(name) === key)
+        ) {
           self.setSelectedLanes([...selection, assemblyName])
         }
       },

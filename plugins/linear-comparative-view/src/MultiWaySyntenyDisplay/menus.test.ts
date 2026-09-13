@@ -300,10 +300,10 @@ test('the picker is offered once there are lanes to choose among, and a choice o
     laneUniverse: Array.from({ length: universe }, (_, i) => ({
       name: `lane${i}`,
       placed: true,
+      drawn: true,
     })),
     laneFilter: chosen && { only: chosen },
     configuredLanes,
-    drawsLane: () => true,
     chooseLanes: () => {},
     setSelectedLanes: (names: string[] | undefined) => {
       calls.push(`select ${names === undefined ? 'reset' : names.join(',')}`)

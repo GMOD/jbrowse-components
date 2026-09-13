@@ -118,7 +118,8 @@ one (`voteEvidence`).
 
 **Lanes.** `rowAssembliesOf` orders mate assemblies by summed group weight over
 the whole fetched block set, then pins `rowOrder`; the model's `rowAssemblies`
-keeps the lanes `drawsLane` admits, compared on canonical names (`laneKey`).
+keeps the lanes `laneUniverse` marks `drawn`, compared on canonical names
+(`laneKey`).
 `laneFilter` holds the reader's choice as `{ only }`, which the picker writes and
 which replaces `configuredLanes` as `laneSelection`, or `{ except }`, which Hide
 lane writes when no `only` is in force. An `except` lane stays in the fetch, so
