@@ -209,7 +209,8 @@ work:
 - **The audit script and its baseline stay.** Their value is diagnostic —
   telling you whether narrowing a particular factory would buy anything — rather
   than a number to drive toward. The populations that remain are counted in
-  [TODO.md](../TODO.md)'s entry for the baseline, and most of the surface left
+  [the-config-read-baseline-is-mostly-not-display-debt](../ideas/the-config-read-baseline-is-mostly-not-display-debt.md),
+  and most of the surface left
   is reads against a track or assembly config that no display narrowing reaches.
 - **The general principle**: when a compile-time guard is structurally unable to
   cover a surface, and the surface has a single runtime funnel, guard the

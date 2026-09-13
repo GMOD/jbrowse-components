@@ -973,7 +973,6 @@ export default defineConfig(
   // exports what it always did (it is a plugin ABI module), and this is only
   // about how the package talks to itself. Flat config overrides rather than
   // merges, so the global paths and patterns are restated here.
-  // See agent-docs/ideas/barrels-block-extraction.md.
   {
     files: ['packages/core/src/util/*.{ts,tsx}'],
     ignores: ['**/*.test.{ts,tsx}'],

@@ -12,9 +12,7 @@ import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 // entries. Nothing here knows what a session, a view or a track is, which is the
 // point — `./index.ts` next door carries the application's session family, and a
 // coordinate utility importing `Region` from there pulls PluginManager and every
-// widget into its type graph. See
-// `agent-docs/ideas/barrels-block-extraction.md`, and
-// `scripts/moduleClosure.ts` for the number.
+// widget into its type graph. `scripts/moduleClosure.ts` has the number.
 //
 // The only dependency is `./mst.ts`, whose own graph is itself and nanoid: these
 // stay `SnapshotIn` of the MST models rather than hand-written shapes so the two

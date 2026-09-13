@@ -6,7 +6,7 @@ import { closure } from './moduleClosure.ts'
 // today (`node --experimental-strip-types scripts/moduleClosure.ts` prints
 // them), and the ceiling is roughly half again as much. A file here failing
 // means a new import edge pulled a graph in — usually one written through a
-// barrel. `agent-docs/ideas/barrels-block-extraction.md` is the writeup.
+// barrel.
 //
 // The type ceilings on the three `util/` leaves are the load-bearing ones: each
 // is a coordinate or file-location helper, and reaching a few hundred files

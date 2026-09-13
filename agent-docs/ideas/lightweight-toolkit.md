@@ -1,6 +1,6 @@
 ---
 name: lightweight-toolkit
-description: Bring-your-own is a docs site, not a package, so there is nothing to install when someone wants the engine without the app. The four rungs an escape parachute actually has, the six silent failures a newcomer hits on the way to one track, and the 81-member session interface that makes a small host impossible. The two packages that were 404 on npm first published 2026-08-31.
+description: Bring-your-own is a docs site, not a package, so there is nothing to install when someone wants the engine without the app. The four rungs an escape parachute actually has, the six silent failures a newcomer hits on the way to one track, and the 81-member session interface that makes a small host impossible.
 ---
 
 # JBrowse as a lightweight toolkit
@@ -61,7 +61,7 @@ a sentence anywhere that could be fed back into it. The ceremony runs to roughly
 120 lines before any of their own code starts, of which about 15 are genuinely
 theirs.
 
-## Five findings
+## Four findings
 
 ### 1. The unit of reuse is a product, not a library
 
@@ -201,37 +201,12 @@ payload is already just "this model, edited". A `requestSettings(self, schema)`
 whose default implementation is today's `queueDialog` would cover the majority
 without touching the minority that pass real arguments.
 
-### 4. The view has a lifecycle and publishes it as nine unrelated getters
-
-`ready`, `error`, `initialized`, `showLoading`, `loadingMessage`,
-`loadingProgress`, `hasSomethingToShow`, `assemblyErrors`,
-`assembliesInitialized`. Every example on the site re-derives a gate from them,
-and they do not agree.
-
-Displays already solved this. `displayPhase`
-(`packages/render-core/src/displayPhase.ts`) is one discriminated getter whose
-docstring gives the reason: the precedence lives in a single function "instead
-of being re-encoded by subtraction (`&& !regionTooLarge && !error &&
-!renderError`) in every display model." **`view.ready` is exactly that
-subtraction** — `!showLoading && !this.error` — and the subtraction is being
-re-encoded in every host instead of every display.
-
-A `view.status` getter of the same shape makes the gate a `switch`, makes the
-trap unrepresentable, and tells a reader the states exist. It is finishing a
-pattern rather than introducing one. **Landed** — see item 3 below, including
-the fourth state the two-state framing above misses.
-
-### 5. The engine kernel is the most reusable thing here, and it was 404 on npm until 2026-08-31
+### 4. The engine kernel is the most reusable thing here
 
 `@jbrowse/render-core` carries the HAL, the WebGPU → WebGL2 → Canvas2D ladder,
 the upload/render lifecycle, instance passes, hi-DPI handling, context-loss
 recovery, the float32 bp-precision math, and the Slang toolchain. It and
-`@jbrowse/display-ui` (which the bring-your-own examples import 19 times) first
-published 2026-08-31, along with the other fourteen packages that had never
-been on npm — a manual first publish, because `publish.yml` authenticates only
-by trusted publishing and npm cannot configure a trusted publisher for a
-package that does not exist. The versions published are each manifest's current
-one; the v5.0.0 tag republishes everything uniformly.
+`@jbrowse/display-ui` are both on npm.
 
 Worth saying plainly because it reads as a limitation and is not: `render-core`
 is a **genomic** visualization engine, not a general one. `hpmath`,
@@ -257,62 +232,28 @@ coordinate-system concepts. That is the differentiator.
 
 ## Work, in order of leverage over cost
 
-1. ~~**Publish `render-core` and `display-ui`.**~~ **Done**, 2026-08-31 — see
-   finding 5. The examples site imports published packages again.
-2. **Name the engine and export its types.** Move the `createViewState`
+1. **Name the engine and export its types.** Move the `createViewState`
    composition somewhere whose subject is the headless engine, taking the plugin
    set as an argument; `@jbrowse/react-linear-genome-view2` keeps its API and
    becomes a preset over it. Export the view and session types — all 18 examples
    write `type BrowserView = ReturnType<typeof makeView>['view']` because there
    is no name to import.
-3. ~~**`view.status`**, shaped like `displayPhase`.~~ **Done**, on all four
-   views: `LinearGenomeView` and `LinearSyntenyView` first, then `DotplotView`
-   and `CircularView` on 2026-08-31. `computeViewStatus` in
-   `@jbrowse/core/util/viewStatus` holds the precedence and takes the loading
-   term as a thunk, so each of the last two was an import and one getter
-   delegating to it, with nothing else in the model touched. The estimate held
-   because the getters it reads through really were the same spelling in all
-   four: `loadingMessage` and `loadingProgress` are character-identical, and
-   `error`/`hasSomethingToShow`/`showLoading` differ only in what each view's
-   own `showLoading` folds in — dotplot's auto-diagonalize wait, which the thunk
-   inherits for free.
-
-   Two things came out of building it that reading did not. `noRegions` is a
-   fourth state, not a rename: `view.ready` is true when nothing has navigated
-   the view, so a host gating on it mounts tracks over an empty view. And that
-   state was unreachable on the whole examples site, because all eighteen
-   `createViewState` calls passed `init` — including on the page whose argument
-   for `status` over `ready` is that state.
-4. **Publish the display-mount contract.** `check-duplication.mjs`'s `COPIED`
+2. **Publish the display-mount contract.** `check-duplication.mjs`'s `COPIED`
    entry calls `TrackRow` the reader's own to write, which conflates the box
    (theirs, to style) with the slot/containment/Suspense contract (not theirs).
    The repo's own "publish the block" rule has fired six times; the 14-of-15
    evidence says this is the seventh, and it is the one case where every copy
    agreed and every copy was wrong.
-5. ~~**Narrow the session at the display boundary**~~ — finding 2. **Done**,
-   2026-08-23; see the status under that finding for the numbers and for the
-   `SessionWithX` family, which is what is left. This is what
-   makes a small host possible rather than merely tidy.
-   [barrels-block-extraction](barrels-block-extraction.md) reaches the same
-   `util/types/index.ts` split from the packaging side, where the blocker is
-   that a 300-line coordinate utility cannot leave `@jbrowse/core` while
-   `Region` shares a file with `AbstractSessionModel`. Two independent arguments
-   for one move, so this ranks above its position here.
-6. **Make `queueDialog` and `notify` seams rather than calls** — finding 3.
+3. **Make `queueDialog` and `notify` seams rather than calls** — finding 3.
    Highest effort here, and it decides whether "your own UI" is true below the
    view.
 
 One small item with disproportionate effect: the
 `readSiteMode`/`watchSiteMode`/`useSiteMode` trio is **50 lines in every one of
-the 18 example files**, a fifth of the floor example. `SessionPaletteProvider`
-now reads `prefers-color-scheme` itself when given no `mode` — **landed
-2026-08-31**, and it cost what it looked like it would: `mode` became optional,
-and an absent one resolves through `useSessionPalette`, so the session write the
-worker's baked labels derive from is the same write an explicit mode makes.
-Passing a mode subscribes to nothing and is byte-for-byte what it was.
-
-The remainder is the sweep of the 18 example files, which is deliberately not
-done here: those copies still watch `data-theme` on `<html>` for the site's own
+the 18 example files**, a fifth of the floor example, and
+`SessionPaletteProvider` now reads `prefers-color-scheme` itself when given no
+`mode`. What is left is the sweep of the 18 example files, which is deliberately not
+done yet: those copies still watch `data-theme` on `<html>` for the site's own
 toggle, which no media query can see, so each one is a judgement about what that
 page is demonstrating rather than a delete. `check-duplication.mjs` expects the
 copies until then.

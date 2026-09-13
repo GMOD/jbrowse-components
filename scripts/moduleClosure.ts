@@ -5,7 +5,7 @@ import ts from 'typescript'
 
 // Measures the module graph reachable from an entry file: how many files, and
 // how many lines, a module would have to bring with it to move into a package
-// of its own. `agent-docs/ideas/barrels-block-extraction.md` is the writeup.
+// of its own.
 //
 // The runtime closure follows only edges that survive to JS; the type closure
 // follows every import. Both matter for extraction — a type closure reaching
