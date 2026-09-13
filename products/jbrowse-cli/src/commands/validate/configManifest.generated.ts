@@ -3792,7 +3792,6 @@ export const configManifest: ConfigManifest = {
         "configuration",
         "lodMode",
         "rowOrder",
-        "hiddenLanes",
         "selectedLanes"
       ]
     },

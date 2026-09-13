@@ -208,7 +208,8 @@ the window, and those are the gene models the lanes draw.
 The eight lanes are listed twice: in `assemblyNames` so each lane is the
 assembly the session already holds, and in the display's `lanes` so the track
 opens on them. **Choose lanes...** on the track menu lists every haplotype the
-graph names, grouped by sample, and **Every lane** is the whole cohort.
+graph names, grouped by sample. Ticking every one draws the whole cohort, and
+the dialog's reset goes back to the eight.
 
 The session below opens the CFH cluster at chr1:196,640,000-196,900,000:
 

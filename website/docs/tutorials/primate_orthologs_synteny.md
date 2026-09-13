@@ -223,8 +223,8 @@ genes sits directly under the anchor: a ribbon joins adjacent lanes only, and a
 sparse lane in the middle would cut every chain running through it. That makes
 lane order a property of the window rather than of the phylogeny, and it differs
 between the pictures below. **Move up** and **Move down** on a lane's header
-menu pin an order, **Reset lane order** gives it back, and a session or a config
-authors the same thing as `rowOrder`.
+menu pin an order, **Lanes → Reset lane order** on the track menu gives it back,
+and a session or a config authors the same thing as `rowOrder`.
 
 ```json session config=https://jbrowse.org/demos/primate_orthologs/config.json
 {

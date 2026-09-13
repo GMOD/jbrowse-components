@@ -166,14 +166,13 @@ steps:
 3. **The graph view** taking the same set: `haplotypes` on `GetSubgraph`
    (`HAPLOTYPE_WALKS_VISION.md:70-73`), Sample rows drawing the chosen set.
 
-Three smaller things go with that and are worth doing before anyone opens a
+Two smaller things go with that and are worth doing before anyone opens a
 hundred lanes: make a graph source require a lane set — the `lanes` slot is
 already how `demos/hprc_multiway` opens on eight, and "every lane the source
 places" should not be the default when the header declares more than, say, 32,
 which is a refusal with the picker open; cull scrolled-out layers in
-`renderLayers`; and cache `laneGeneAdapters` by (track set, lane set), since it
-is O(sessionTracks × lanes) `isSameAssemblyName` calls on every `rowAssemblies`
-change and is the first main-thread cliff at cohort scale. The picker dialog
+`renderLayers`. `laneGeneAdapters`, once listed as a third, has been a one-pass
+join since 2026-09-12. The picker dialog
 itself is fine to ~500 and should not be made to scale further.
 
 The ORDER of whatever set that picks is its own file —
@@ -263,7 +262,7 @@ between them, and a star with more offers **Repeat ⟨anchor⟩ between panels**
 will be empty without it.
 
 `rowOrder` has a UI as of 2026-08-26: **Lanes** on the track menu, a row per
-lane with Move up/Move down/Hide lane, a Show row per hidden lane and a reset,
+lane with Move up/Move down/Hide lane and a reset,
 beside toggles for `drawCurves`, `bridgeSkippedLanes` and `showLaneTicks`
 (`menus.ts`). A move writes back the WHOLE order it is looking at rather than
 the lane that moved — `rowOrder` pins what it names and leaves the rest
@@ -271,10 +270,9 @@ densest-first, so pinning one lane would leave the others free to re-sort under
 it between two moves. Since 2026-08-27 a mate lane's label drags too
 (`laneDrag.ts`, the headers in `MultiWayOverlay.tsx`): the band under the
 pointer is the drop row, the drop writes the whole order back the way the menu
-does, and a drop on the anchor's band lands the lane first below it. Hidden
-lanes are `hiddenLanes`, a declared property beside `rowOrder`, and
-`rowAssemblies` filters them out so every layer and fetch forgets the lane at
-once. The label also carries a menu (right-click, or the ⋮ at its end;
+does, and a drop on the anchor's band lands the lane first below it. Hide lane
+writes `selectedLanes`, the picker's own property, and `rowAssemblies` filters
+on it so every layer and fetch forgets the lane at once. The label also carries a menu (right-click, or the ⋮ at its end;
 `laneHeaderMenuItems` in `menus.ts`): the track menu's own Move up/Move
 down/Hide lane row, **Open ⟨assembly⟩ at the matching region** —
 `openAssemblyInLinearView` on the lane's frame with this track and the genome's
@@ -346,13 +344,12 @@ gets its adjacent-pair links composed through the anchor (`composeLaneLinks`,
 read by `pairLinks`) where the file states none: without a fetch when the
 header names its anchor, after an empty pair fetch otherwise.
 
-Two things on that fetch are still open. **The bytes.** Five of the eight
-hosted hg38 liftOver PIFs predate the coarse tier, so the vertebrates star
-serves fine detail at every zoom — 0.7-0.78 MB of CIGAR text per lane for one
-300 kb window at TP53, parsed and walked in the worker to produce one clipped
-extent — and the rebuild is worth 49× on a whole-genome pass, 1.31 MB against
-64.23 MB over a 130 MB PIF
-(`../measurements/pif-tier-wire-bytes.json`). Then let this display prefer
+Two things on that fetch are still open. **The bytes.** The eight hosted hg38
+liftOver PIFs carry a coarse tier since their 2026-09-11 rebuild, worth 49× on a
+whole-genome pass (1.31 MB against 64.23 MB over a 130 MB PIF,
+`../measurements/pif-tier-wire-bytes.json`), but at TP53 zoom the star still
+reads the fine tier: 0.7-0.78 MB of CIGAR text per lane for one 300 kb window,
+parsed and walked in the worker to produce one clipped extent. Let this display prefer
 `coarse` whenever the star has it: it drops the CIGAR after the clip, and the
 split it does ask for is at 10 kb, the coarse tier's own bound, so the cut is
 the same on either tier and the fine tier buys it nothing but bytes — a
@@ -426,10 +423,10 @@ which is the policy every virtual-scrolled display shares (the export
 composition sizes each track's box from `display.height`); a full-stack export
 would be a cross-cutting export-layout change. Two smaller height-adjacent
 items are open: an auto-collapse for lanes placing nothing (the stacked view's
-`collapseEmptyRows` has no lane counterpart, and `hiddenLanes` is purely
+`collapseEmptyRows` has no lane counterpart, and Hide lane is purely
 manual — the stability walk above shows 33/259 empty steps per lane), and a
 user-guide section for the lanes UI, since the Lanes menu, the label drag and
-`hiddenLanes` appear in no user-facing page and a 47-lane reader is never told
+Hide lane appear in no user-facing page and a 47-lane reader is never told
 they can hide the Shigella lanes. `website/docs/user_guide.md` has no multiway
 section at all: it links the two tutorials and stops, which is where that
 section would go. The one other documentation gap the 2026-09-06 reading left

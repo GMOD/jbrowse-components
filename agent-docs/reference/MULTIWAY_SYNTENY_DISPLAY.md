@@ -100,8 +100,8 @@ and no `targetAssemblyName`, so the adapter answers with every pair anchored on
 the queried assembly. The lane selection reaches the fetch as `haplotypes` only
 for an adapter that declares its lanes (`fetchLaneSelection`), since that is the
 only kind that can answer for a subset more cheaply than for all of them;
-everywhere else `selectedLanes`, `hiddenLanes` and the config `lanes` slot
-filter `rowAssemblies` locally. The design record carries what a lane selection
+everywhere else `selectedLanes` and the config `lanes` slot filter
+`rowAssemblies` locally. The design record carries what a lane selection
 saves on a graph source
 ([../ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md)
 §"HPRC at scale: lane selection"; `P/agent-docs/GBZ_PLAN.md:297-301`).
@@ -117,10 +117,13 @@ one (`voteEvidence`).
 
 **Lanes.** `rowAssembliesOf` orders mate assemblies by summed group weight over
 the whole fetched block set, then pins `rowOrder`; the model's `rowAssemblies`
-drops the anchor, `hiddenLanes`, and anything outside `laneSelection`
-(`selectedLanes ?? config.lanes`). `laneUniverse` is
-the adapter header's declared `lanes` followed by anything the window placed
-that the header did not name. The header is read only when the adapter tiers or
+drops the anchor and anything outside `laneSelection`
+(`selectedLanes ?? config.lanes`), compared on canonical names (`laneKey`).
+Hide lane writes `selectedLanes` too: the selection in force, or the whole
+`laneUniverse`, less that lane. `laneUniverse` is the adapter header's declared
+`lanes`, then the track config's `assemblyNames`, then anything the window
+placed that neither named; the config's names are what keep a hide from shutting
+out a genome the current window does not place. The header is read only when the adapter tiers or
 declares `adapterCapabilities: ['headerLanes']` (`adapterDeclaresLanes`;
 `installLodTierInfoFetch` in `MW/afterAttach.ts`).
 
@@ -295,7 +298,7 @@ negative (each lane draws its own cluster and no ribbon). The adapter loads
   staleness gate reduces a pan to the lanes whose grid cell moved, design record
   §"Genome scale over an alignment-level source"). Fine at 44, and the reason
   the cost is linear in lanes.
-- *No hiding of empty lanes automatically* (`hiddenLanes` is manual, design
+- *No hiding of empty lanes automatically* (Hide lane is manual, design
   record §"Lane scale legibility, and what is still open on it").
 
 **A user who wants more than one row per genome.** Nothing in-display. The
@@ -310,11 +313,12 @@ The costs are in §2.3.
 
 **Data.** `JC/website/docs/tutorials/hg38_vertebrates_synteny.md`: a
 `MultiPairwiseSyntenyAdapter` over eight UCSC liftOver chains converted to
-indexed PAF (`hg38To<Genome>.over.pif.gz`, 23-179 MB each, measured on
-2026-09-06 via `Content-Length`), hub assemblies and `ncbiRefSeq` tracks lifted
-from each genome's hub config. Five of the eight PIFs predate the coarse tier
-(no `#pif` header; [DEMO_DATASETS.md](DEMO_DATASETS.md)`:373-386`), so the star
-serves the fine tier at every zoom. The hosted config's display height is 200
+indexed PAF (`hg38To<Genome>.over.pif.gz`, 26-173 MB each, measured on
+2026-09-12 via `Content-Length`), hub assemblies and `ncbiRefSeq` tracks lifted
+from each genome's hub config. All eight PIFs carry a coarse tier and a
+version-2 `#pif` header since their 2026-09-11 rebuild
+([DEMO_DATASETS.md](DEMO_DATASETS.md), `demos/hg38_vertebrates`), so the star
+offers **Level of detail**. The hosted config's display height is 200
 (nine rows at the 22 px floor is 198), while the tutorial session overrides it
 to 600.
 
@@ -351,8 +355,8 @@ does draw.
 **Fetch cost of "fine at every zoom".** A 300 kb window pulls the whole chain
 row per lane: 0.7-0.78 MB of CIGAR text for mouse, dog and cow, parsed and
 walked in the worker for every static-block change, to produce one clipped
-extent. The five headerless PIFs pin the star to fine
-([SYNTENY_LOD.md](SYNTENY_LOD.md)`:135-143`), and the display cannot ask for
+extent. Until the 2026-09-11 rebuild five headerless PIFs pinned the star to
+fine ([SYNTENY_LOD.md](SYNTENY_LOD.md)`:135-143`), and the display cannot ask for
 coarse on its own behalf even though it discards the CIGAR. The tutorial's
 statement that the **Level of detail** entry "is offered once every child
 carries a coarse tier" (`hg38_vertebrates_synteny.md`, "The composed track") was
@@ -407,7 +411,7 @@ so an eight-mate launch is eight 40 px bands.
 | | MultiWay lanes (one track) | LinearSyntenyView (one LGV per row) |
 | --- | --- | --- |
 | **Control** | Order by drag/menu, hide, pick, pin contig, re-anchor; no per-lane zoom, no extra tracks, no per-lane locstring | Full LGV per row: any tracks, independent navigation, rubberband, feature detail; order by moving views; no densest-first, no bridging, no lane picker |
-| **State** | `rowOrder`, `hiddenLanes`, `selectedLanes`, `lodMode` on one display; features volatile | N `LinearGenomeView` models plus N-1 `LinearSyntenyLevel` models, each level holding its own full track model, display and rendering backend (`LinearComparativeView`'s `levels` and `reconcileLevels`; `LinearSyntenyViewHelper`); every row's tracks persist |
+| **State** | `rowOrder`, `selectedLanes`, `lodMode` on one display; features volatile | N `LinearGenomeView` models plus N-1 `LinearSyntenyLevel` models, each level holding its own full track model, display and rendering backend (`LinearComparativeView`'s `levels` and `reconcileLevels`; `LinearSyntenyViewHelper`); every row's tracks persist |
 | **Fetches** | 1 star fetch (+ N children inside the adapter) + N lane-gene RPCs + (N-1) link RPCs for nameless non-star sources | N-1 synteny fetches (one per level, each its own display) + each row's own track fetches; each level refetches independently on its own pair of viewports |
 | **Performance** | One canvas, ~10 GPU draw calls per lane (§3), 22 px per lane floor | N LGV React trees and rulers, a synteny canvas per level; rows are ≥ ruler height each, so 8 rows fill a screen and 44 do not fit |
 | **Correctness** | Lane frames are affine fits (§4.1); composed links interpolate; ordering by placement count (§4.3) | CIGAR-exact ribbons and per-base detail on each level; but for a star only levels touching the anchor draw, and a level with an unstated pair is either blank (MultiPairwise) or an error (MultiGenome) |
@@ -445,11 +449,11 @@ sub-linear.
 ### 3.2 Main-thread work per settle
 
 - `groupFeatures`: O(records). `rowAssembliesOf`: O(groups × mates).
-- `laneGeneAdapters`: O(sessionTracks × lanes)
-  `isSameAssemblyName` calls, recomputed whenever `rowAssemblies` changes. A hub
-  session with 500 tracks and 464 lanes is 232,000 alias resolutions per
-  recompute; at 4,000 lanes, 2 million. This is the first main-thread cliff
-  at cohort scale and it is not in any test.
+- `laneGeneAdapters`: O(sessionTracks + lanes) since 2026-09-12, one canonical
+  name per track and per lane joined in a map, recomputed whenever
+  `rowAssemblies` changes. It was O(sessionTracks × lanes) `isSameAssemblyName`
+  calls, 232,000 alias resolutions for a 500-track hub session at 464 lanes;
+  neither cost was measured.
 - `decideLaneFrames`: per lane, `fitLane` scans every group and
   `orientationVote` sorts the shared set: O(N × G log G). Measured at 7 lanes
   and 660 groups: 12.7 ms of MobX per zoom step packing the cells (design record

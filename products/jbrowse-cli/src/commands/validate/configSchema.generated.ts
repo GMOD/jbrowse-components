@@ -12439,12 +12439,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             "type": "string"
           }
         },
-        "hiddenLanes": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
         "selectedLanes": {
           "type": "array",
           "items": {

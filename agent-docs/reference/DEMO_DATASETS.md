@@ -423,23 +423,21 @@ Hosting, CDN and upload mechanics are in [HOSTING.md](HOSTING.md).
   `uri` leaves nine `<g>.chrom.sizes` pointing at the demo's own folder.
   Whether a liftOver PIF carries a coarse tier depends on when it was rebuilt
   (`tabix -H` for the header, `tabix -l | grep -c '^[TQ]'` for the tier),
-  measured 2026-09-05:
+  measured 2026-09-12, after the 2026-09-11 rebuild:
 
   | PIF | size | coarse seqids | `#pif` header |
   | --- | ---: | ---: | --- |
-  | hg38ToPanTro6 | 23 MB | 0 | no |
-  | hg38ToGorGor6 | 27 MB | 0 | no |
-  | hg38ToPonAbe3 | 42 MB | 0 | no |
-  | hg38ToRheMac10 | 68 MB | 0 | no |
-  | hg38ToCalJac4 | 125 MB | 614 | yes, `coarse:i:10000 cigars:Z:all` |
-  | hg38ToMm39 | 126 MB | 0 | no |
-  | hg38ToCanFam6 | 170 MB | 397 | yes |
-  | hg38ToBosTau9 | 160 MB | 541 | yes |
+  | hg38ToPanTro6 | 26 MB | 922 | version 2 |
+  | hg38ToGorGor6 | 30 MB | 1272 | version 2 |
+  | hg38ToPonAbe3 | 46 MB | 816 | version 2 |
+  | hg38ToRheMac10 | 73 MB | 725 | version 2 |
+  | hg38ToCalJac4 | 127 MB | 614 | version 2 |
+  | hg38ToMm39 | 136 MB | 383 | version 2 |
+  | hg38ToCanFam6 | 173 MB | 397 | version 2 |
+  | hg38ToBosTau9 | 162 MB | 541 | version 2 |
 
   `MultiPairwiseSyntenyAdapter` offers the coarse tier only when every child
-  carries one, so with five of eight lacking it this track serves the fine tier
-  at every zoom; rebuilding those five PIFs is what would turn it on, and the
-  [HOSTING.md](HOSTING.md) table's "no" for PanTro6 still holds. Locus
+  carries one, which all eight now do. Locus
   `chr17:7,400,000-7,700,000` (TP53), the same window `demos/primate_orthologs`
   was picked on.
 

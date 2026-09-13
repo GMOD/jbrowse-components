@@ -116,11 +116,12 @@ no download. Audited 2026-08-02:
 | `genomes/hs1_vs_mm39/hs1ToMm39.over.chain.pif.gz` | yes |
 | `demos/cgiab/HG008T_v3.2.pif.gz` | yes (2026-08-02) |
 | `demos/ecoli_pangenome/ecoli_{pggb,cactus}_ava.pif.gz` | yes (2026-07-25) |
-| `ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz` | no |
+| `ucsc/hg38/liftOver/hg38To*.over.pif.gz`, the eight vertebrate chains | yes (2026-09-11, version 2) |
 | `ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz` | no |
 | `demos/hpylori/26695_vs_chc155.pif.gz` | no |
 
-- **Every file above predates the coarse CIGAR and the `#pif` header.** Since
+- **Every file above but the eight vertebrate chains predates the coarse CIGAR
+  and the `#pif` header.** Since
   2026-09-02 `make-pif` writes a `cr:Z:` tag on a coarse row (ADR-104) so the
   indels it keeps draw as wedges, and a header stating the bound; these files'
   coarse rows are the older split pieces with no alignment string and draw as

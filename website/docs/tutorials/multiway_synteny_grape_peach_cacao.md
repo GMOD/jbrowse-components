@@ -517,9 +517,10 @@ Two routes reach the stacked view from the lanes:
   view**. The dialog opens a row per genome with arrows to order them; moving
   grape between peach and cacao is the reference-in-the-middle layout from
   [Direct vs transitive pairs](#direct-vs-transitive-pairs)
-- **From a lane's header**, right-click the lane's name: **Re-anchor on peach**
-  turns the whole track around on that genome, and **Open peach at the matching
-  region** opens it on its own with its gene track
+- **From a lane's header**, click the ⋮ beside the lane's name or right-click
+  the name: **Re-anchor on peach** turns the whole track around on that genome,
+  and **Open peach at the matching region** opens it on its own with its gene
+  track
 
 <Figure caption="A lane header's menu: reorder or hide the lane, open peach on its own at the span the lane is drawing, or re-anchor the whole track on it." src="/img/multiway_synteny/lane_header_menu.png" />
 
