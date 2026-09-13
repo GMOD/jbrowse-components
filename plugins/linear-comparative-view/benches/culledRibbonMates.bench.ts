@@ -171,7 +171,17 @@ for (const count of [10_000, 50_000, 100_000, 250_000, 500_000]) {
 
   const { mateAxis, ...noMateAxis } = data
   const control = min(() => {
-    drawOffscreenMates(ctx, [{ ...lane, datasets: [noMateAxis] }], band)
+    drawOffscreenMates(
+      ctx,
+      [
+        {
+          ...lane,
+          datasets: [noMateAxis],
+          mateBand: { lo: -Infinity, hi: Infinity },
+        },
+      ],
+      band,
+    )
   })
 
   const covering = { lo: -1, hi: GENOME_BP * 4 }

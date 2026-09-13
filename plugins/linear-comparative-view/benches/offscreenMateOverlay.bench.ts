@@ -110,6 +110,7 @@ const FIXTURES = [
 function layoutFor(data: OffscreenMateData): OffscreenMateLane {
   return {
     datasets: [data],
+    mateBand: { lo: -Infinity, hi: Infinity },
     bpPerPx: GENOME_BP / WIDTH,
     offsetPx: 0,
     side: 'top',
