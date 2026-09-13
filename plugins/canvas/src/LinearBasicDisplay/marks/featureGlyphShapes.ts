@@ -10,6 +10,7 @@ import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
 import {
   clipBlockForCanvas,
   makeBpMapper,
+  projectBp,
   spanLeft,
   strokeRectInside,
 } from '@jbrowse/render-core/canvas2dUtils'
@@ -69,6 +70,7 @@ import {
 } from '../passes/shaders/rect.js.generated.ts'
 
 import type { BlockClipResult } from '@jbrowse/render-core/blockClipUtils'
+import type { BpProjection } from '@jbrowse/render-core/canvas2dUtils'
 import type {
   MarkContext2D,
   MarkFrame,
@@ -126,10 +128,6 @@ const CHEVRON_HALF_H = CHEVRON_H_PX * 0.5
 // arrowhead, a continuation triangle, plus the ≤1px center-row snap.
 const GLYPH_Y_SLACK_PX = 8
 
-// Changes no pixel — the block scissor already hides what this rejects. It pays
-// for itself because a fixed-height display scrolls over content many times its
-// height: thousands of no-op `fillRect`s a frame, and on the export path an
-// element serialized into the file and then clipped away.
 function rowVisible(
   scrollY: number,
   canvasHeight: number,
@@ -200,9 +198,8 @@ function canvasEdgesOf(block: RenderBlock, frame: MarkFrame) {
     : undefined
 }
 
-// The fade folds into the color's alpha rather than globalAlpha, which SvgCanvas
-// does not have, so the export path fades too. It is part of the run's key as
-// well, since an 8-bit alpha cannot carry the multiplication exactly.
+// The fade goes into the colour's alpha, since SvgCanvas has no `globalAlpha`,
+// and into the run's key.
 function makeRectFill(ctx: MarkContext2D) {
   let last: number | undefined
   return (c: number, fade: number | undefined) => {
@@ -215,16 +212,57 @@ function makeRectFill(ctx: MarkContext2D) {
   }
 }
 
-// `rectSpanPx` returns the shader's signed edge pair, which the GPU lerps between
-// and never has to order; Canvas2D needs the leftmost, so `spanLeft` picks it.
-function paintedRectSpan(
-  startBp: number,
-  endBp: number,
-  toX: (bp: number) => number,
-): [xLeft: number, width: number] {
-  const [sx1, sx2] = rectSpanPx(toX(startBp), toX(endBp), startBp === endBp)
-  const width = Math.abs(sx2 - sx1)
-  return [spanLeft(sx1, sx2, width), width]
+interface RectFrame extends BpProjection {
+  scrollY: number
+  canvasHeight: number
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
+function rectFrame(
+  block: RenderBlock,
+  frame: MarkFrame,
+  params: FeatureGlyphParams,
+): RectFrame {
+  const w = block.screenEndPx - block.screenStartPx
+  return {
+    originPx: block.reversed ? block.screenEndPx : block.screenStartPx,
+    startBp: block.start,
+    spanBp: block.end - block.start,
+    signedSpanPx: block.reversed ? -w : w,
+    scrollY: params.scrollY,
+    canvasHeight: frame.canvasHeight,
+    left: 0,
+    top: 0,
+    width: 0,
+    height: 0,
+  }
+}
+
+function placeRectY(c: RectChannels, g: RectFrame, i: number) {
+  const boxTop = c.y[i]!
+  const boxHeight = c.height[i]!
+  if (!rowVisible(g.scrollY, g.canvasHeight, boxTop, boxHeight)) {
+    return false
+  }
+  g.top = snapBoxTopPx(boxTop, boxHeight, g.scrollY)
+  g.height = snapBoxHeightPx(boxHeight)
+  return true
+}
+
+function placeRectX(c: RectChannels, g: RectFrame, i: number) {
+  const startBp = c.startEnd[i * 2]!
+  const endBp = c.startEnd[i * 2 + 1]!
+  const [x1, x2] = rectSpanPx(
+    projectBp(g, startBp),
+    projectBp(g, endBp),
+    startBp === endBp,
+  )
+  const width = Math.abs(x2 - x1)
+  g.left = spanLeft(x1, x2, width)
+  g.width = width
 }
 
 export const rectShape: MarkShape<RectChannels, FeatureGlyphParams> = {
@@ -233,53 +271,34 @@ export const rectShape: MarkShape<RectChannels, FeatureGlyphParams> = {
   writeUniforms: writeFeatureGlyphUniforms,
 
   paintBlock(ctx, channels, block, frame, params) {
-    const { startEnd, y: ys, height, color, densityFade, count } = channels
-    const { scrollY, outlineColor } = params
-    const { canvasHeight } = frame
-    const toX = makeBpMapper(block)
+    const { color, densityFade, count } = channels
+    const { outlineColor } = params
+    const g = rectFrame(block, frame, params)
     const setFill = makeRectFill(ctx)
-    // outlineColor is per-region, so the stroke state hoists out of the loop
-    // instead of being re-parsed on every outlined rect.
     const outlineStyle = outlineColor ? abgrToCssRgba(outlineColor) : undefined
     if (outlineStyle !== undefined) {
       ctx.strokeStyle = outlineStyle
       ctx.lineWidth = 1
     }
     for (let i = 0; i < count; i++) {
-      if (!rowVisible(scrollY, canvasHeight, ys[i]!, height[i]!)) {
-        continue
-      }
-      const y = snapBoxTopPx(ys[i]!, height[i]!, scrollY)
-      const h = snapBoxHeightPx(height[i]!)
-      const [xLeft, w] = paintedRectSpan(
-        startEnd[i * 2]!,
-        startEnd[i * 2 + 1]!,
-        toX,
-      )
-      setFill(color[i]!, densityFade[i])
-      ctx.fillRect(xLeft, y, w, h)
-      if (outlineStyle !== undefined && rectDrawsOutline(w, h)) {
-        strokeRectInside(ctx, xLeft, y, w, h)
+      if (placeRectY(channels, g, i)) {
+        placeRectX(channels, g, i)
+        setFill(color[i]!, densityFade[i])
+        ctx.fillRect(g.left, g.top, g.width, g.height)
+        if (outlineStyle !== undefined && rectDrawsOutline(g.width, g.height)) {
+          strokeRectInside(ctx, g.left, g.top, g.width, g.height)
+        }
       }
     }
   },
 
   ink(channels, block, frame, params, i) {
-    const { startEnd, y: ys, height } = channels
-    if (!rowVisible(params.scrollY, frame.canvasHeight, ys[i]!, height[i]!)) {
+    const g = rectFrame(block, frame, params)
+    if (!placeRectY(channels, g, i)) {
       return undefined
     }
-    const [left, width] = paintedRectSpan(
-      startEnd[i * 2]!,
-      startEnd[i * 2 + 1]!,
-      bp => blockPx(block, bp),
-    )
-    return {
-      left,
-      top: snapBoxTopPx(ys[i]!, height[i]!, params.scrollY),
-      width,
-      height: snapBoxHeightPx(height[i]!),
-    }
+    placeRectX(channels, g, i)
+    return { left: g.left, top: g.top, width: g.width, height: g.height }
   },
 }
 

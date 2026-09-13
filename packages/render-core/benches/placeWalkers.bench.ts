@@ -3,8 +3,9 @@
 //
 //   node --no-use-osr packages/render-core/benches/placeWalkers.bench.ts --shape=cell --size=1m
 //
-// Flags: --shape=cell, --size=100k|1m, one of each per process
-// (BENCHMARKING.md, "Looping several DATASETS"), --rounds=<n> (default 25).
+// Flags: --shape=cell|rect|rectOutline, --size=100k|1m, one of each per
+// process (BENCHMARKING.md, "Looping several DATASETS"), --rounds=<n>
+// (default 25). rectOutline is rect with its outline stroke on.
 //
 // ARMS, each a whole `paintBlock` over one block on a counting context:
 //
@@ -26,8 +27,14 @@
 // WHAT IT SAYS. Separate processes, AC power, load under 4, min of 25
 // interleaved rounds, ratio to retired:
 //
-//            size   retired ns   control     ported
-//   cell     1M     33.4-36.0    0.99-1.01   1.00-1.01
+//                 size   retired ns   control     ported
+//   cell          1M     33.4-36.0    0.99-1.01   1.00-1.01
+//   cell          100K   36.2-39.8    0.99-1.00   0.98-0.99
+//   rect          1M     64.4-65.8    1.00-1.02   0.88-0.89
+//   rect          100K   65.1-68.5    1.00-1.01   0.87-0.88
+//   rectOutline   1M     64.1-66.3    1.01-1.03   0.89-0.90
+//
+// A third rect 1M process read its control at 1.08x and is left out.
 //
 // WHERE THE FRAME IS ALLOCATED DECIDES IT. The placement functions read the
 // block off a frame object, and TurboFan scalar-replaces that object only when
@@ -45,11 +52,19 @@
 // function's length; `--trace-turbo-inlining` prints each call site's size
 // beside what its optimized code already inlined, against the 460-byte budget.
 // `placeCellY` 60 and `placeCellX` 113 + 293 both inline into `paintBlock`, and
-// `projectBp` is 32.
+// `projectBp` is 32. `placeRectY` 92 + 290 inlines and `placeRectX` 276 + 301
+// does not, as rectWalker.bench.ts found; rect's frame escapes into that call
+// either way, so `paintBlock` builds it with `rectFrame`, which inlines at 99.
 
 import { execSync } from 'node:child_process'
 import { performance } from 'node:perf_hooks'
 
+import { MIN_DENSITY_ALPHA } from '../../../plugins/canvas/src/LinearBasicDisplay/components/sharedRendererConstants.ts'
+import { rectShape } from '../../../plugins/canvas/src/LinearBasicDisplay/marks/featureGlyphShapes.ts'
+import {
+  rectDrawsOutline,
+  rectSpanPx,
+} from '../../../plugins/canvas/src/LinearBasicDisplay/passes/shaders/rect.js.generated.ts'
 import { cellMark } from '../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/cellMark.ts'
 import { drawnCellHeightPx } from '../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/shaders/variant.js.generated.ts'
 import { snapVariantCellX } from '../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/snapVariantCellX.ts'
@@ -58,10 +73,28 @@ import {
   SHAPE_TRI_LEFT,
   drawVariantShape,
 } from '../../../plugins/variants/src/LinearMultiSampleVariantDisplay/components/variantShape.ts'
-import { makeBpMapper } from '../src/canvas2dUtils.ts'
-import { makeAbgrFill } from '../src/marks/colorFill.ts'
+import {
+  abgrAlpha,
+  abgrBlue,
+  abgrGreen,
+  abgrRed,
+} from '../../core/src/util/colorBits.ts'
+import {
+  makeBpMapper,
+  spanLeft,
+  strokeRectInside,
+} from '../src/canvas2dUtils.ts'
+import { abgrToCssRgba, makeAbgrFill } from '../src/marks/colorFill.ts'
 import { recordingContext } from '../src/marks/drawAgainstHit.ts'
+import {
+  snapBoxHeightPx,
+  snapBoxTopPx,
+} from '../src/shaders/hpmath.js.generated.ts'
 
+import type {
+  FeatureGlyphParams,
+  RectChannels,
+} from '../../../plugins/canvas/src/LinearBasicDisplay/marks/featureGlyphShapes.ts'
 import type {
   CellChannels,
   CellParams,
@@ -410,8 +443,238 @@ function cellBench(n: number): Bench {
   }
 }
 
+const PALETTE = Uint32Array.of(
+  0xff3355cc,
+  0xff22aa44,
+  0xffcc8811,
+  0xff884499,
+  0xff1177ee,
+  0xff999999,
+  0xff0044aa,
+  0xffee2266,
+)
+
+function runs(rand: () => number, n: number, meanRun: number) {
+  const out = new Uint32Array(n)
+  let pick = 0
+  for (let i = 0; i < n; i++) {
+    if (rand() < 1 / meanRun) {
+      pick = Math.floor(rand() * PALETTE.length)
+    }
+    out[i] = PALETTE[pick]!
+  }
+  return out
+}
+
+function geometric(rand: () => number, mean: number) {
+  return Math.floor(-Math.log(1 - rand()) * mean)
+}
+
+const GLYPH_Y_SLACK_PX = 8
+
+function rowVisibleRetired(
+  scrollY: number,
+  canvasHeight: number,
+  topY: number,
+  heightPx: number,
+) {
+  const y = topY - scrollY
+  return (
+    y + heightPx >= -GLYPH_Y_SLACK_PX && y <= canvasHeight + GLYPH_Y_SLACK_PX
+  )
+}
+
+function makeRectFillRetired(ctx: MarkContext2D) {
+  let last: number | undefined
+  return (c: number, fade: number | undefined) => {
+    const key = fade ? c + 0x1_0000_0000 : c
+    if (key !== last) {
+      last = key
+      const a = (abgrAlpha(c) / 255) * (fade ? MIN_DENSITY_ALPHA : 1)
+      ctx.fillStyle = `rgba(${abgrRed(c)},${abgrGreen(c)},${abgrBlue(c)},${a})`
+    }
+  }
+}
+
+function paintedRectSpanRetired(
+  startBp: number,
+  endBp: number,
+  toX: (bp: number) => number,
+): [xLeft: number, width: number] {
+  const [sx1, sx2] = rectSpanPx(toX(startBp), toX(endBp), startBp === endBp)
+  const width = Math.abs(sx2 - sx1)
+  return [spanLeft(sx1, sx2, width), width]
+}
+
+const retiredRect: Pick<
+  MarkShape<RectChannels, FeatureGlyphParams>,
+  'paintBlock'
+> = {
+  paintBlock(ctx, channels, block, frame, params) {
+    const { startEnd, y: ys, height, color, densityFade, count } = channels
+    const { scrollY, outlineColor } = params
+    const { canvasHeight } = frame
+    const toX = makeBpMapper(block)
+    const setFill = makeRectFillRetired(ctx)
+    const outlineStyle = outlineColor ? abgrToCssRgba(outlineColor) : undefined
+    if (outlineStyle !== undefined) {
+      ctx.strokeStyle = outlineStyle
+      ctx.lineWidth = 1
+    }
+    for (let i = 0; i < count; i++) {
+      if (!rowVisibleRetired(scrollY, canvasHeight, ys[i]!, height[i]!)) {
+        continue
+      }
+      const y = snapBoxTopPx(ys[i]!, height[i]!, scrollY)
+      const h = snapBoxHeightPx(height[i]!)
+      const [xLeft, w] = paintedRectSpanRetired(
+        startEnd[i * 2]!,
+        startEnd[i * 2 + 1]!,
+        toX,
+      )
+      setFill(color[i]!, densityFade[i])
+      ctx.fillRect(xLeft, y, w, h)
+      if (outlineStyle !== undefined && rectDrawsOutline(w, h)) {
+        strokeRectInside(ctx, xLeft, y, w, h)
+      }
+    }
+  },
+}
+
+function rowVisibleControl(
+  scrollY: number,
+  canvasHeight: number,
+  topY: number,
+  heightPx: number,
+) {
+  const y = topY - scrollY
+  return (
+    y + heightPx >= -GLYPH_Y_SLACK_PX && y <= canvasHeight + GLYPH_Y_SLACK_PX
+  )
+}
+
+function makeRectFillControl(ctx: MarkContext2D) {
+  let last: number | undefined
+  return (c: number, fade: number | undefined) => {
+    const key = fade ? c + 0x1_0000_0000 : c
+    if (key !== last) {
+      last = key
+      const a = (abgrAlpha(c) / 255) * (fade ? MIN_DENSITY_ALPHA : 1)
+      ctx.fillStyle = `rgba(${abgrRed(c)},${abgrGreen(c)},${abgrBlue(c)},${a})`
+    }
+  }
+}
+
+function paintedRectSpanControl(
+  startBp: number,
+  endBp: number,
+  toX: (bp: number) => number,
+): [xLeft: number, width: number] {
+  const [sx1, sx2] = rectSpanPx(toX(startBp), toX(endBp), startBp === endBp)
+  const width = Math.abs(sx2 - sx1)
+  return [spanLeft(sx1, sx2, width), width]
+}
+
+const controlRect: Pick<
+  MarkShape<RectChannels, FeatureGlyphParams>,
+  'paintBlock'
+> = {
+  paintBlock(ctx, channels, block, frame, params) {
+    const { startEnd, y: ys, height, color, densityFade, count } = channels
+    const { scrollY, outlineColor } = params
+    const { canvasHeight } = frame
+    const toX = makeBpMapper(block)
+    const setFill = makeRectFillControl(ctx)
+    const outlineStyle = outlineColor ? abgrToCssRgba(outlineColor) : undefined
+    if (outlineStyle !== undefined) {
+      ctx.strokeStyle = outlineStyle
+      ctx.lineWidth = 1
+    }
+    for (let i = 0; i < count; i++) {
+      if (!rowVisibleControl(scrollY, canvasHeight, ys[i]!, height[i]!)) {
+        continue
+      }
+      const y = snapBoxTopPx(ys[i]!, height[i]!, scrollY)
+      const h = snapBoxHeightPx(height[i]!)
+      const [xLeft, w] = paintedRectSpanControl(
+        startEnd[i * 2]!,
+        startEnd[i * 2 + 1]!,
+        toX,
+      )
+      setFill(color[i]!, densityFade[i])
+      ctx.fillRect(xLeft, y, w, h)
+      if (outlineStyle !== undefined && rectDrawsOutline(w, h)) {
+        strokeRectInside(ctx, xLeft, y, w, h)
+      }
+    }
+  },
+}
+
+function rectBench(n: number, outline: boolean): Bench {
+  const rand = rng(53)
+  const bpLength = 2_000_000
+  const { forward, reversed } = blocksOf(40_000_000, bpLength)
+  const startEnd = new Uint32Array(n * 2)
+  const y = new Float32Array(n)
+  const height = new Float32Array(n)
+  const densityFade = new Uint32Array(n)
+  let faded = 0
+  for (let i = 0; i < n; i++) {
+    const start = forward.start + Math.floor((i / n) * bpLength)
+    startEnd[i * 2] = start
+    startEnd[i * 2 + 1] =
+      rand() < 0.02 ? start : start + 200 + geometric(rand, 3000)
+    y[i] = Math.floor(rand() * 90) * 12
+    height[i] = rand() < 0.8 ? 10 : 6
+    if (rand() < 0.05) {
+      faded = faded ? 0 : 1
+    }
+    densityFade[i] = faded
+  }
+  const channels: RectChannels = {
+    startEnd,
+    y,
+    height,
+    color: runs(rand, n, 20),
+    densityFade,
+    strand: new Float32Array(n).fill(1),
+    count: n,
+  }
+  const params: FeatureGlyphParams = {
+    scrollY: 0,
+    outlineColor: outline ? 0xff222222 : 0,
+  }
+  return {
+    entries: n,
+    forward,
+    reversed,
+    arms: [
+      {
+        name: 'retired',
+        paint: (ctx, block) => {
+          retiredRect.paintBlock(ctx, channels, block, FRAME, params)
+        },
+      },
+      {
+        name: 'control',
+        paint: (ctx, block) => {
+          controlRect.paintBlock(ctx, channels, block, FRAME, params)
+        },
+      },
+      {
+        name: 'ported',
+        paint: (ctx, block) => {
+          rectShape.paintBlock(ctx, channels, block, FRAME, params)
+        },
+      },
+    ],
+  }
+}
+
 const BENCHES: Record<string, (n: number) => Bench> = {
   cell: cellBench,
+  rect: n => rectBench(n, false),
+  rectOutline: n => rectBench(n, true),
 }
 
 function warm(bench: Bench, times: number) {
