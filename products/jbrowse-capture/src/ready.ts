@@ -121,9 +121,16 @@ export async function waitForJBrowseReady(
   // the run, while the CLI's own warning recommended raising `--settle` to fix
   // exactly that.
   const pendingStates = await pendingDisplayStates(page)
-  if (pendingStates.length > 0) {
+  const canceled = pendingStates.filter(d => d.phase === 'canceled')
+  const unpainted = pendingStates.filter(d => d.phase !== 'canceled')
+  if (unpainted.length > 0) {
     unsettled.push(
-      `display(s) never painted: ${describePendingDisplays(pendingStates)}`,
+      `display(s) never painted: ${describePendingDisplays(unpainted)}`,
+    )
+  }
+  if (canceled.length > 0) {
+    unsettled.push(
+      `display(s) canceled, which lasts until Retry: ${describePendingDisplays(canceled)}`,
     )
   }
   if (!allowUnsettled && unsettled.length > 0) {
@@ -132,9 +139,13 @@ export async function waitForJBrowseReady(
     // an image and an exit code of 0 whether it had settled or not. A caller
     // that genuinely wants the frame anyway asks for it by name.
     throw new Error(
-      `gave up waiting after ${timeout}ms: ${unsettled.join('; ')}. ` +
-        'Raise the timeout, or pass allowUnsettled (--allowUnsettled) to ' +
-        'capture the frame as it stands.',
+      unsettled.length === 1 && canceled.length > 0
+        ? `${unsettled[0]}. No timeout lifts a cancel; press Retry on the ` +
+            'track, or pass allowUnsettled (--allowUnsettled) to capture the ' +
+            'frame as it stands.'
+        : `gave up waiting after ${timeout}ms: ${unsettled.join('; ')}. ` +
+            'Raise the timeout, or pass allowUnsettled (--allowUnsettled) to ' +
+            'capture the frame as it stands.',
     )
   }
   return { pending: pendingStates.map(d => d.name), pendingStates, unsettled }

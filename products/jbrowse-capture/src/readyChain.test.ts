@@ -159,7 +159,9 @@ test('a canceled display fails the chain at once rather than timing out', async 
   const start = Date.now()
   await expect(
     waitForJBrowseReady(fakePage(), { timeout: 30000 }),
-  ).rejects.toThrow(/pileup is canceled/)
+  ).rejects.toThrow(
+    /^display\(s\) canceled, which lasts until Retry: pileup is canceled\. No timeout/,
+  )
   expect(Date.now() - start).toBeLessThan(10000)
 }, 15000)
 
