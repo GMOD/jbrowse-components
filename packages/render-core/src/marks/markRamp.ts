@@ -1,9 +1,9 @@
+import { SCALE_TYPE_LOG } from '../scoreScale.ts'
 import {
   RAMP_LINEAR,
   RAMP_LOG,
   RAMP_NONE,
 } from '../shaders/markColor.generated.ts'
-import { SCALE_TYPE_LOG } from '../shaders/scoreScale.generated.ts'
 import { normalizeScore } from '../shaders/scoreScale.js.generated.ts'
 
 import type { MarkRamp } from './types.ts'

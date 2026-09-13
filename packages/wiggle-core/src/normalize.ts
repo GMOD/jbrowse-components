@@ -1,18 +1,9 @@
-import {
-  SCALE_TYPE_LOG as GENERATED_SCALE_TYPE_LOG,
-  SCALE_TYPE_SYMLOG as GENERATED_SCALE_TYPE_SYMLOG,
-} from './wiggleRenderModes.generated.ts'
-
-import type { ScaleTypeCode } from '@jbrowse/render-core/scoreScale'
-
-export { makeScoreNormalizer } from '@jbrowse/render-core/scoreScale'
-
-export const SCALE_TYPE_LINEAR: ScaleTypeCode = 0
-// The values the `scaleType` uniform is compared against, so they are
-// wiggle.slang's own — generated in by `pnpm gen:shaders` (adr-051). LINEAR is
-// simply "neither of these".
-export const SCALE_TYPE_LOG: ScaleTypeCode = GENERATED_SCALE_TYPE_LOG
-export const SCALE_TYPE_SYMLOG: ScaleTypeCode = GENERATED_SCALE_TYPE_SYMLOG
+export {
+  SCALE_TYPE_LINEAR,
+  SCALE_TYPE_LOG,
+  SCALE_TYPE_SYMLOG,
+  makeScoreNormalizer,
+} from '@jbrowse/render-core/scoreScale'
 
 /**
  * #api

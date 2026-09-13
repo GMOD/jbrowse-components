@@ -1,10 +1,17 @@
 import {
-  SCALE_TYPE_LOG,
-  SCALE_TYPE_SYMLOG,
+  SCALE_TYPE_LOG as GENERATED_SCALE_TYPE_LOG,
+  SCALE_TYPE_SYMLOG as GENERATED_SCALE_TYPE_SYMLOG,
 } from './shaders/scoreScale.generated.ts'
 
 /** `scoreScale.slang`'s scale-type vocabulary, where 0 is linear. */
-export type ScaleTypeCode = 0 | typeof SCALE_TYPE_LOG | typeof SCALE_TYPE_SYMLOG
+export type ScaleTypeCode =
+  | 0
+  | typeof GENERATED_SCALE_TYPE_LOG
+  | typeof GENERATED_SCALE_TYPE_SYMLOG
+
+export const SCALE_TYPE_LINEAR: ScaleTypeCode = 0
+export const SCALE_TYPE_LOG: ScaleTypeCode = GENERATED_SCALE_TYPE_LOG
+export const SCALE_TYPE_SYMLOG: ScaleTypeCode = GENERATED_SCALE_TYPE_SYMLOG
 
 /** The code the `scaleType` uniform compares for a `'log'`/`'symlog'` name. */
 export function scaleTypeCode(scaleType: string | undefined): ScaleTypeCode {

@@ -18,13 +18,10 @@
 // module both entry points import, so there is a single declaration of each
 // rather than one per shader — the evaluator resolves through imports, so a
 // constant declared here still reaches both. `SCALE_TYPE_LOG` / `SCALE_TYPE_
-// SYMLOG` are that same contract for `scaleType` but are declared by the shared
-// `scoreScale` module, which is what branches on them; the evaluator resolves
-// them through the import, so the `export-consts` list below still emits all of
-// it as one file. Generated into @jbrowse/wiggle-core (see consts-out) because
-// that is where `WiggleRenderingType` is declared, and the plugin reads them
-// back from there.
-//! export-consts: RENDERING_TYPE_XYPLOT, RENDERING_TYPE_DENSITY, RENDERING_TYPE_LINE, RENDERING_TYPE_SCATTER, RENDERING_TYPE_LINE_CENTER, SCALE_TYPE_LOG, SCALE_TYPE_SYMLOG, NO_PREV_START, MIN_FILL_WIDTH_PX
+// SYMLOG` are the shared `scoreScale` module's, generated into render-core.
+// Generated into @jbrowse/wiggle-core (see consts-out) because that is where
+// `WiggleRenderingType` is declared, and the plugin reads them back from there.
+//! export-consts: RENDERING_TYPE_XYPLOT, RENDERING_TYPE_DENSITY, RENDERING_TYPE_LINE, RENDERING_TYPE_SCATTER, RENDERING_TYPE_LINE_CENTER, NO_PREV_START, MIN_FILL_WIDTH_PX
 //! consts-out: packages/wiggle-core/src/wiggleRenderModes.generated.ts
 //! js-export: densityGradientT
 //! js-skip: scoreToY — a plot-box wrapper over scoreScale.slang's normalizeScore, which is where the shared decision is and where it is exported from. The Canvas2D side composes the same normalizer with its own box (wiggle-core yScaleTicks.ts), so a twin of this signature would have no caller
