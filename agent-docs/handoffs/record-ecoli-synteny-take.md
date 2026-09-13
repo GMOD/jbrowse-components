@@ -1,6 +1,6 @@
 ---
 name: record-ecoli-synteny-take
-description: The E. coli synteny take is written, verified from the CLI on two machines and still never shot — a third Linux attempt reached turn four before the recorder's 600-second cap and a gene track stuck loading in the synteny row stopped it — four turns that align two strains with minimap2 on camera and land on the LEE island. Everything it needs is in the tree and it runs on either platform's TUI harness. Read before filming any agent-client clip, and before reaching for the Claude-app harness, which was tried and judged not showcase material.
+description: The E. coli synteny take is written, verified from the CLI on two machines and still never shot — a third Linux attempt reached turn four before the recorder's 600-second cap and a collapsed synteny row's gene track stuck at loading stopped it, both since fixed — four turns that align two strains with minimap2 on camera and land on the LEE island. Everything it needs is in the tree and it runs on either platform's TUI harness. Read before filming any agent-client clip, and before reaching for the Claude-app harness, which was tried and judged not showcase material.
 ---
 
 # Record the E. coli synteny take
@@ -116,10 +116,17 @@ under the Sakai row, and its ribbons were gone.
   `recordDemoTui.mjs` handed `recorder.py` a fixed 600-second cap, so raising
   the turn cap to 40 minutes still left a four-turn take a ten-minute camera.
   The cap now derives from the turn cap.
-- **The stalled display is not UCSC being slow.** The Sakai bigBed returned 6
-  features for that window in 522 ms on 2026-09-13, and the agent had already
-  read them. The autosave holding the stalled state is
-  `~/jbrowse-ecoli-take/userdata/autosaved/1789013548075-0.json`.
+- **The stall was an app bug, now fixed.** Before turn four the agent had called
+  `compactAllViews()`, which collapses each row to its ruler and so never
+  mounts a track canvas. `displayPhase` forgave the missing first paint only
+  for an unmounted body, and a collapsed view still counted as mounted, so the
+  display held the app's ready marker at `loading` forever.
+  `rendersDisplays` on `BaseViewModel`, false for a `scalebarOnly`
+  LinearGenomeView, closes it. UCSC was not involved: the Sakai bigBed answered
+  in 522 ms on 2026-09-13.
+- **With the fix, turn four still shows no gene track** until the agent calls
+  `expandAllViews()`, and even expanded the Sakai row's track sits below the
+  fold of the synteny panel, so a screenshot needs the panel taller.
 - The session ran on Sonnet 5 (`start-session.sh` passes `--model sonnet`) and
   reached 156k of its 200k context by turn four, which leaves one more
   diagnose-and-retry loop before it compacts on camera.
@@ -137,7 +144,8 @@ agent will spend the turn diagnosing the network on camera.
 - **Turn four's phrasing.** The plan doc's own Open section weighs "name them"
   against "take me to the most interesting one"; the take module currently asks
   the second, because it puts the LEE island on camera rather than ending on a
-  list. Worth deciding from the first take rather than in advance.
+  list. The third attempt picked the Stx1 prophage rather than LEE, so the
+  second phrasing does not reliably reach LEE.
 - **The clip's name and frame.** `mcp/agent_ecoli_take1` follows the four
   already registered; `width`/`height` in `externalClips` come from the encode,
   not from a guess.
