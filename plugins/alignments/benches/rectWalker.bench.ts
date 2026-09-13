@@ -31,6 +31,8 @@
 //   splitTwinsOut  rect and cell: splitTwins over bench-local out-parameter
 //                copies of the pair twins (`rectSpanPx`, `snapVariantCellX`),
 //                sizing a float2 emitter that writes into its caller's array
+//   pileupShared deletion and mismatch: production `pileupShape`'s painter,
+//                warmed with the same pileup marks as hand
 //
 // pileupShape's ten painters are closures of one function literal, so hand and
 // control for deletion and mismatch are one factory each, warmed with every
@@ -99,6 +101,10 @@
 // one. So split placement over the lifted twins holds at or under hand on all
 // three shapes, and a float2 emitter writing into the caller buys 3-5% on rect
 // alone.
+//
+// THE PILEUP PAINTER BEFORE ONE PLACE. One process at 1M, AC, load 3.1-4.3,
+// both controls 1.00x: `pileupShared` is 1.00x of hand on deletion (99.8 ns)
+// and on mismatch (85.7 ns).
 
 import { execSync } from 'node:child_process'
 import { performance } from 'node:perf_hooks'
@@ -167,7 +173,7 @@ import {
   pileupRowY,
   sizeAlpha,
 } from '../src/LinearAlignmentsDisplay/renderers/rendererTypes.ts'
-import { DELETION_MARK } from '../src/features/gap/mark.ts'
+import { DELETION_MARK, packGaps } from '../src/features/gap/mark.ts'
 import {
   buildBaseCssMap,
   buildBaseFadeCssMap,
@@ -177,15 +183,18 @@ import { qualityCssColors } from '../src/features/perBaseQuality/colors.ts'
 import {
   Band,
   Fade,
+  Hit,
   Paint,
   Point,
   markSelects,
+  pileupShape,
 } from '../src/features/pileupShape.ts'
 import { frequencyFadeGate } from '../src/shaders/slang/alignmentsUniforms.js.generated.ts'
 import {
   GAP_DELETION,
   GAP_SKIP,
 } from '../src/shaders/slang/gap.consts.generated.ts'
+import * as gapShader from '../src/shaders/slang/gap.generated.ts'
 import { qualityFade } from '../src/shaders/slang/mismatch.js.generated.ts'
 import {
   overlapAlpha,
@@ -2587,6 +2596,16 @@ const MODIFICATION_SPEC: PileupPaintSpec = {
   paint: () => ({ rule: Paint.packedAbgr, opaqueCss: [], fadedCss: [] }),
 }
 
+function sharedPileupPainter(spec: PileupPaintSpec) {
+  return pileupShape({
+    ...spec,
+    id: 'bench',
+    mod: gapShader,
+    pack: packGaps,
+    hit: Hit.always,
+  }).paintBlock
+}
+
 function pileupChannels(
   fields: Pick<PileupChannels, 'positions' | 'stride' | 'rows'> &
     Partial<PileupChannels>,
@@ -2817,6 +2836,7 @@ type ArmName =
   | 'placedSplit'
   | 'splitTwins'
   | 'splitTwinsOut'
+  | 'pileupShared'
 
 const ARM_NAMES: readonly ArmName[] = [
   'hand',
@@ -2828,6 +2848,7 @@ const ARM_NAMES: readonly ArmName[] = [
   'placedSplit',
   'splitTwins',
   'splitTwinsOut',
+  'pileupShared',
 ]
 
 interface Placement {
@@ -3222,6 +3243,15 @@ function buildShapes(
           deletionPlanOf,
           deletionWalk,
         ),
+        {
+          name: 'pileupShared',
+          paint: paintWith(
+            sharedPileupPainter(DELETION_SPEC),
+            deletion,
+            state,
+            state,
+          ),
+        },
       ],
       instances: [deletionWalk.from, deletionWalk.to],
       placements: walkPlacements(
@@ -3264,6 +3294,15 @@ function buildShapes(
           mismatchPlanOf,
           mismatchWalk,
         ),
+        {
+          name: 'pileupShared',
+          paint: paintWith(
+            sharedPileupPainter(MISMATCH_SPEC),
+            mismatches.channels,
+            state,
+            state,
+          ),
+        },
       ],
       instances: [mismatchWalk.from, mismatchWalk.to],
       placements: walkPlacements(
@@ -3495,6 +3534,7 @@ function buildShapes(
       return [
         paintWith(pileupHand(spec).paintBlock, channels, state, state),
         paintWith(pileupControl(spec).paintBlock, channels, state, state),
+        paintWith(sharedPileupPainter(spec), channels, state, state),
         walkWith(
           walkers.shared,
           block => pileupPlan(spec, channels, block, state),
