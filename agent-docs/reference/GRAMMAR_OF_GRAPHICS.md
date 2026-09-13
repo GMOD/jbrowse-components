@@ -171,7 +171,7 @@ The seams, named honestly:
 - **Two channel vocabularies remain.** The encoder and the three shared
   shapes say `x`, `x2`, `y`, `row`, `color`, `glyph`. Variants' cell
   (`plugins/variants/src/LinearMultiSampleVariantDisplay/components/cellMark.ts`)
-  says `startEnd` and `rowIndex`; canvas's rect
+  says `startEnd` and `row`; canvas's rect
   (`plugins/canvas/src/LinearBasicDisplay/marks/featureGlyphShapes.ts`) says
   `startEnd`, `y`, `height`. ADR-106 §Consequences books converging them as a
   lens change per display, still open. The alignments pileup
