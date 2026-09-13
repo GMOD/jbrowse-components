@@ -327,8 +327,9 @@ const typePrompt = text => typePromptInto(SESSION, text)
 // one. recordDemoMac.mjs has passed this since it filmed a take that aligned
 // two genomes; this file kept the default and the E. coli take reached 5
 // minutes of turn one on a night UCSC was answering in 6 seconds a request.
+const TURN_CAP_MS = 2_400_000
 async function waitTurnDone(before) {
-  if (!(await waitTurnDoneIn(SESSION, before, 2_400_000))) {
+  if (!(await waitTurnDoneIn(SESSION, before, TURN_CAP_MS))) {
     console.error('  (turn did not settle before timeout; continuing)')
   }
 }
@@ -564,13 +565,16 @@ try {
 
   const stopFlag = path.join(outDir, 'stop.flag')
   fs.rmSync(stopFlag, { force: true })
+  // The harness ends the recording through stopFlag; the cap only outlives a
+  // harness that died. A fixed 600s cut the E. coli take mid-turn-four.
+  const recorderCapSec = String((STEPS.length * TURN_CAP_MS) / 1000 + 600)
   recorder = spawn(
     'python3',
     [
       path.join(repoRoot, 'scripts/agent-demos/recorder.py'),
       path.join(outDir, 'demo'),
       stopFlag,
-      '600',
+      recorderCapSec,
     ],
     {
       stdio: ['ignore', 'inherit', 'inherit'],
