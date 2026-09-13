@@ -403,7 +403,7 @@ export interface Mark<TRegion, TState extends MarkFrame> {
  * its shape puts ink.
  *
  * `enabled` is the setting that turns the mark off for a whole frame — the
- * pileup's "show mismatches" — and it is one gate for the three consumers: a
+ * pileup's "show mismatches" — and it is one gate for all four consumers: a
  * mark that does not draw does not answer a hover either. It reads the state
  * alone so `planMarks` can resolve it once per frame; a gate that needs the
  * block is the shape's `paintsBlock`.
