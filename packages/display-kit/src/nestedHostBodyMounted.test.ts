@@ -1,5 +1,6 @@
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import GlobalFetchMixin from './GlobalFetchMixin.ts'
 
@@ -75,6 +76,18 @@ test('scrolling the outer view back puts the wait back', () => {
   stack.setBodyMounted(false)
   stack.setBodyMounted(true)
   expect(display.displayPhase).toBe('loading')
+})
+
+test('an observed phase hears the outer view scroll off and back', () => {
+  const { stack, display } = nestedDisplay()
+  const seen: string[] = []
+  const dispose = autorun(() => {
+    seen.push(display.displayPhase)
+  })
+  stack.setBodyMounted(false)
+  stack.setBodyMounted(true)
+  dispose()
+  expect(seen).toEqual(['loading', 'ready', 'loading'])
 })
 
 test('an outer view that renders no displays of its own leaves its rows waiting', () => {

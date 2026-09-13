@@ -1,5 +1,6 @@
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { waitFor } from '@testing-library/react'
+import { autorun } from 'mobx'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -71,13 +72,15 @@ async function setup({ settle = true } = {}) {
 test('a collapsed view excuses the paint of a display it does not render', async () => {
   const { view, display } = await setup()
   expect(display.canvasDrawn).toBe(false)
-  expect(display.displayPhase).toBe('loading')
+  const seen: string[] = []
+  const dispose = autorun(() => {
+    seen.push(display.displayPhase)
+  })
 
   view.setScalebarOnly(true)
-  expect(display.displayPhase).toBe('ready')
-
   view.setScalebarOnly(false)
-  expect(display.displayPhase).toBe('loading')
+  dispose()
+  expect(seen).toEqual(['loading', 'ready', 'loading'])
 })
 
 test('collapsing a painted view stays ready, and expanding waits for the repaint', async () => {
