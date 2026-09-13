@@ -35,7 +35,7 @@ export interface ReadyOptions extends SessionExpectations {
 }
 
 export interface ReadyReport {
-  /** Displays still reporting unpainted at the end of the wait. */
+  /** Displays still reporting unpainted, or canceled, at the end of the wait. */
   pending: string[]
   /**
    * The same displays with the phase each one publishes, which is what
@@ -62,8 +62,9 @@ export interface ReadyReport {
  *
  * Then one negative gate that is only meaningful after them, and answers the
  * question the marker does not: the marker is about WORK, and a display whose
- * fetch failed is not working — it reads `ready` over an error banner.
- * `data-display-drawn` is the stricter gate.
+ * fetch failed is not working — it reads `ready` over an error banner, and over
+ * a user's cancel. `data-display-drawn` is the stricter gate, and the census
+ * after it names a canceled display whatever it drew.
  */
 export async function waitForJBrowseReady(
   page: Page,

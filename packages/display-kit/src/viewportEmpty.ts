@@ -18,7 +18,7 @@
  * loading scrim, and hangs the whole view's SVG export on `awaitSvgReady`'s
  * unbounded `when`. Both LGV foundations declare it over this one expression and
  * feed it to every answer a display gives about being finished: the loading term
- * (`computeLoadingTerm`), the export gate (`foundationSvgReady`'s freshness
+ * (`computeActivityPhase`), the export gate (`foundationSvgReady`'s freshness
  * thunk, not its eager terminals — this is a view read), `paintInert`, which is
  * what the on-screen capture gate waits on, and the retry contract check, whose
  * dead-Retry report would otherwise fire on every display in the view at once

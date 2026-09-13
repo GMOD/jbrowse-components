@@ -30,7 +30,7 @@ test('loading again when the viewport leaves loaded data', () => {
   expect(display.displayPhase).toBe('loading')
 })
 
-test('a user cancel keeps the overlay up even though isLoading is false', () => {
+test('a user cancel is canceled even though isLoading is false', () => {
   const { display, view } = createDisplay()
   display.setLoadedRegion(0, view.displayedRegions[0], undefined)
   display.markCanvasDrawn()
@@ -39,7 +39,7 @@ test('a user cancel keeps the overlay up even though isLoading is false', () => 
   display.cancelFetchByUser()
   expect(display.isLoading).toBe(false)
   expect(display.fetchCanceled).toBe(true)
-  expect(display.displayPhase).toBe('loading')
+  expect(display.displayPhase).toBe('canceled')
 })
 
 test('a display whose fetch failed before first paint reports painted', () => {

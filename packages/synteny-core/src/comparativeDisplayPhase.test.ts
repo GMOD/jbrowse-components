@@ -23,7 +23,8 @@ const painted: ComparativeSurface = {
 const done = {
   error: undefined,
   fetchInert: false,
-  isLoadingOrCanceled: false,
+  isLoading: false,
+  fetchCanceled: false,
   dataCurrent: true,
 }
 
@@ -35,18 +36,42 @@ describe('comparativeDisplayPhase', () => {
   it('is loading while a fetch is in flight', () => {
     expect(
       comparativeDisplayPhase(
-        { ...done, isLoadingOrCanceled: true, dataCurrent: false },
+        { ...done, isLoading: true, dataCurrent: false },
         painted,
       ),
     ).toBe('loading')
   })
 
-  // a cancel keeps the overlay, and with it the Retry button, the way the LGV
-  // families do through the same `computeLoadingTerm` input
-  it('is loading over a load the user canceled', () => {
+  // finished rather than pending, so the app marker stops waiting on it, and
+  // durable here until Retry whatever the view does
+  it('is canceled over a load the user canceled', () => {
     expect(
-      comparativeDisplayPhase({ ...done, isLoadingOrCanceled: true }, painted),
-    ).toBe('loading')
+      comparativeDisplayPhase({ ...done, fetchCanceled: true }, painted),
+    ).toBe('canceled')
+    expect(
+      comparativeDisplayPhase(
+        { ...done, fetchCanceled: true, dataCurrent: false },
+        { ...painted, painted: false, pendingAutoDiagonalize: true },
+      ),
+    ).toBe('canceled')
+  })
+
+  it('ranks an error above a cancel', () => {
+    expect(
+      comparativeDisplayPhase(
+        { ...done, fetchCanceled: true, error: new Error('nope') },
+        painted,
+      ),
+    ).toBe('error')
+  })
+
+  it('is ready over a cancel on an inert display', () => {
+    expect(
+      comparativeDisplayPhase(
+        { ...done, fetchCanceled: true, fetchInert: true },
+        painted,
+      ),
+    ).toBe('ready')
   })
 
   // the state the loading flag alone cannot see: the debounce gap after a
@@ -101,7 +126,7 @@ describe('comparativeDisplayPhase', () => {
     it('is still loading while its fetch is in flight', () => {
       expect(
         comparativeDisplayPhase(
-          { ...done, isLoadingOrCanceled: true, dataCurrent: false },
+          { ...done, isLoading: true, dataCurrent: false },
           unmounted,
         ),
       ).toBe('loading')
@@ -206,13 +231,26 @@ describe('comparativeSurfacePhase', () => {
   })
 
   it('takes the loudest phase its displays report', () => {
-    const busy = { ...done, isLoadingOrCanceled: true, dataCurrent: false }
+    const busy = { ...done, isLoading: true, dataCurrent: false }
     const failed = { ...done, error: new Error('nope'), dataCurrent: false }
     expect(comparativeSurfacePhase(painted, [done, busy])).toBe('loading')
     expect(comparativeSurfacePhase(painted, [done, failed])).toBe('error')
     // an error outranks a fetch still running, since it is the thing a reader
     // most needs to see
     expect(comparativeSurfacePhase(painted, [busy, failed])).toBe('error')
+  })
+
+  // The user's stop ranks with the terminals: above a sibling still fetching,
+  // below an error. The canvas's `settled` holds shut over it either way, so no
+  // capture commits the canceled surface.
+  it('ranks a canceled display between an error and a fetch', () => {
+    const busy = { ...done, isLoading: true, dataCurrent: false }
+    const canceled = { ...done, fetchCanceled: true }
+    const failed = { ...done, error: new Error('nope'), dataCurrent: false }
+    expect(comparativeSurfacePhase(painted, [done, canceled])).toBe('canceled')
+    expect(comparativeSurfacePhase(painted, [busy, canceled])).toBe('canceled')
+    expect(comparativeSurfacePhase(painted, [canceled, failed])).toBe('error')
+    expect(comparativeSurfaceSettled(painted, [done, canceled])).toBe(false)
   })
 
   // A backend that failed to initialize will never paint, so the loading term
@@ -225,7 +263,7 @@ describe('comparativeSurfacePhase', () => {
     expect(comparativeDisplayPhase(done, lost)).toBe('error')
     expect(comparativeSurfacePhase(lost, [done])).toBe('error')
     // outranks a fetch that is still running, and does not read as loading
-    const busy = { ...done, isLoadingOrCanceled: true, dataCurrent: false }
+    const busy = { ...done, isLoading: true, dataCurrent: false }
     expect(comparativeSurfacePhase(lost, [busy])).toBe('error')
     // ...and an empty surface answers it too, where there is no display to ask
     expect(comparativeSurfacePhase(lost, [])).toBe('error')

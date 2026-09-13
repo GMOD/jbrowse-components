@@ -80,7 +80,7 @@ test('the mixed batch resolves to the subtree-replacing phase', () => {
         regionTooLarge: display.regionTooLarge,
         error: undefined,
       },
-      () => false,
+      () => 'ready',
     ),
   ).toBe('tooLarge')
 })
@@ -102,7 +102,7 @@ test('a batch whose regions each fit draws, even when the sum is over', () => {
         regionTooLarge: display.regionTooLarge,
         error: undefined,
       },
-      () => false,
+      () => 'ready',
     ),
   ).toBe('ready')
 })

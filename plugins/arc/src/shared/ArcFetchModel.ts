@@ -193,8 +193,6 @@ export function ArcFetchModel(exportEdge: () => Promise<ArcExportEdge>) {
          * inside `BaseDisplayComponent` so the component can't disagree with the
          * model, and so arc publishes `data-display-phase` for tests like every
          * other display.
-         *
-         * `isLoadingOrCanceled`, never a bare `isLoading` — see that getter.
          */
         get displayPhase(): DisplayStatusPhase {
           // no spatial-staleness axis: stale arcs stay on screen under the

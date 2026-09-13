@@ -16,8 +16,10 @@
 import { isStopped } from '@jbrowse/core/util'
 import { adapterConfigKey } from '@jbrowse/core/util/adapterConfigKey'
 import { types } from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
 
 import { ComparativeFetchMixin } from './ComparativeFetchMixin.ts'
+import { comparativeDisplayPhase } from './comparativeReadiness.ts'
 import { installComparativeFetchAutorun } from './installComparativeFetchAutorun.ts'
 
 import type { ComparativeFetchContext } from './installComparativeFetchAutorun.ts'
@@ -25,6 +27,14 @@ import type { StopToken } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const DELAY = 10
+
+const PAINTED = {
+  painted: true,
+  initPending: false,
+  pendingAutoDiagonalize: false,
+  renderError: undefined,
+  hostMounted: true,
+}
 
 function deferred<T>() {
   let resolve!: (value: T) => void
@@ -563,6 +573,37 @@ describe('the user cancel', () => {
     gates[1]!.resolve('after retry')
     await settle()
     expect(committed.map(c => c.result)).toEqual(['after retry'])
+  })
+
+  // The phase a readiness reader sees over the same sequence: `canceled` until
+  // Retry however the view moves, then through `loading` to `ready`.
+  it('reads canceled until Retry, then loading, then ready', async () => {
+    const gates = [deferred<string>(), deferred<string>()]
+    let n = 0
+    const { display } = await setup({ run: () => gates[n++]!.promise })
+    const seen: string[] = []
+    const dispose = autorun(() => {
+      const phase = comparativeDisplayPhase(display, PAINTED)
+      if (seen.at(-1) !== phase) {
+        seen.push(phase)
+      }
+    })
+    await settle()
+    expect(display.isLoading).toBe(true)
+
+    display.cancelFetchByUser()
+    display.setViewKey('k2')
+    await settle()
+    await settle()
+    expect(comparativeDisplayPhase(display, PAINTED)).toBe('canceled')
+
+    display.reload()
+    await settle()
+    expect(comparativeDisplayPhase(display, PAINTED)).toBe('loading')
+    gates[1]!.resolve('after retry')
+    await settle()
+    expect(seen).toEqual(['loading', 'canceled', 'loading', 'ready'])
+    dispose()
   })
 
   // The skip is a foundation gate, not the display's own decline, so it

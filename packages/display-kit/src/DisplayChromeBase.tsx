@@ -63,7 +63,7 @@ export interface CanvasHandle {
 // DisplayChromeBase owns the backend hook (`useRenderingBackend`) and decides
 // which terminal-state UI shows, but the *states themselves* all live on the
 // model and collapse to one getter, `model.displayPhase`
-// ('renderError' | 'tooLarge' | 'error' | 'loading' | 'ready'). The precedence
+// ('renderError' | 'tooLarge' | 'error' | 'canceled' | 'loading' | 'ready'). The precedence
 // among them is single-sourced in `computeDisplayPhase` (see displayPhase.ts);
 // this component branches on it. So a display can't show a canvas while skipping
 // a terminal state, can't bury the hook somewhere the chrome can't see (the seam
@@ -83,7 +83,7 @@ export interface CanvasHandle {
 // binds the MUI set and is what every in-tree display imports. See
 // chromeOverlays.ts for why that split exists.
 //
-// `displayPhase`'s loading term is evaluated lazily (a thunk in
+// `displayPhase`'s activity term is evaluated lazily (a thunk in
 // `computeDisplayPhase`) so that when a terminal flag is set this observer tracks
 // ONLY that flag — not the containing view's `visibleRegions` / `loadedRegions` —
 // avoiding needless re-renders while a banner is up. (This component carries

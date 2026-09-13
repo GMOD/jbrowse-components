@@ -92,8 +92,10 @@ export interface DisplayChromeOverlays {
    */
   ErrorBar: ComponentType<{ model: DisplayErrorBarModel; visible: boolean }>
   /**
-   * The loading scrim. `visible` is `displayPhase === 'loading'`; `immediate`
-   * asks it to skip its anti-flash delay because nothing is painted yet.
+   * The loading scrim. `visible` is `displayPhase` `loading` or `canceled`,
+   * the second drawn from `model.fetchCanceled` with Retry in place of Cancel;
+   * `immediate` asks it to skip its anti-flash delay because nothing is painted
+   * yet.
    *
    * Mounted unconditionally, so it must handle `visible === false` itself — and
    * that is load-bearing rather than a style choice: the anti-flash delay is

@@ -292,6 +292,38 @@ describe('waitReady', () => {
     })
   })
 
+  // A canceled load reads finished, so `waitReady` settles over it; this is
+  // what tells the agent the track is stopped rather than drawn.
+  it('reports a canceled display as not ready', () => {
+    const canceled = {
+      views: [
+        {
+          id: 'v1',
+          type: 'LinearGenomeView',
+          ownViews: [],
+          ownTracks: [
+            {
+              type: 'AlignmentsTrack',
+              configuration: { trackId: 'reads' },
+              activeDisplay: {
+                type: 'LinearAlignmentsDisplay',
+                displayPhase: 'canceled',
+              },
+            },
+          ],
+        },
+      ],
+      snackbarMessages: [],
+      assemblyNames: ['volvox'],
+    } as unknown as AbstractSessionModel
+    const jb = createJbApi({
+      rootModel: { session: canceled },
+    } as unknown as PluginManager)
+    expect(jb.sessionSummary().views[0]).toMatchObject({
+      tracks: [{ trackId: 'reads', phase: 'canceled' }],
+    })
+  })
+
   // A drawer widget takes a column off every view and a modal covers the app,
   // so both make a screenshot look right and be wrong — the same class as
   // `offscreen`, and previously reported nowhere: every filmed take told the

@@ -152,7 +152,8 @@ export async function waitForSession(
 }
 
 /**
- * Displays that were still reporting unpainted at the moment of the call.
+ * Displays that were still reporting unpainted, or canceled, at the moment of
+ * the call.
  *
  * Distinct from `unsettled`, which says a wait ran out of time. This says what
  * the page looked like when the shutter fired.
@@ -184,6 +185,9 @@ export interface PendingDisplay {
  *
  *   `loading`   still fetching. A slow page or a fetch that never returns.
  *   `error`     finished, badly. Nothing is coming; the picture is a banner.
+ *   `canceled`  stopped by the user, and it stays stopped until Retry. It is
+ *               in the census painted or not, since the picture is the Retry
+ *               overlay whatever was drawn before.
  *   `ready`     it says it is done and reports no paint. That is the display's
  *               bug, not the wait's, and it is the one a longer timeout will
  *               never fix.
@@ -196,7 +200,9 @@ export interface PendingDisplay {
  */
 export function pendingDisplayStatesInPage(): PendingDisplay[] {
   return [
-    ...document.querySelectorAll<HTMLElement>('[data-display-drawn="false"]'),
+    ...document.querySelectorAll<HTMLElement>(
+      '[data-display-drawn="false"], [data-display-phase="canceled"]',
+    ),
   ].map(el => ({
     name: el.dataset.testid ?? (el.id || 'unnamed display'),
     id: el.dataset.displayId,

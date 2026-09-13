@@ -256,6 +256,25 @@ test('data-display-phase reports loading even once canvasDrawn has flipped', asy
   expect(el.dataset.displayPhase).toBe('ready')
 })
 
+// A cancel is finished for every readiness reader, but its overlay is the one
+// carrying Retry, so the chrome keeps the scrim up through the transition.
+test('a canceled phase keeps the scrim, now offering Retry', async () => {
+  const model = TestChromeModel.create({})
+  model.setLoadingCondition(true)
+  model.setCanvasDrawn(true)
+  const { findByTestId } = renderChrome(model, 'chrome')
+
+  const el = await findByTestId('chrome')
+  await findByTestId('loading-overlay', {}, { timeout: 5000 })
+
+  act(() => {
+    model.setFetchCanceled(true)
+  })
+
+  expect(el.dataset.displayPhase).toBe('canceled')
+  await findByTestId('loading-overlay-retry')
+})
+
 // The reader outside the display. `data-display-drawn` is what
 // `PENDING_DISPLAYS` (@jbrowse/browser-test-utils) selects on, and a display
 // that deliberately paints no canvas — sequence past base resolution, LD with

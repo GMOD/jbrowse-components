@@ -27,18 +27,16 @@ describe('arc displayPhase', () => {
 
   // The regression this file was added for. `cancelFetchByUser` drops the stop
   // token synchronously, so `isLoading` goes false the instant the user clicks
-  // Cancel — and the overlay that unmounts on it is the one carrying Retry.
-  // Nothing else restarts an arc fetch (`prepare` reads `dataCurrent`, which
-  // a cancel doesn't move), so a `ready` phase here means a stopped, empty
-  // display offering the user no way back. Every other family already spelled
-  // `fetchCanceled` into its loading term; arc read a bare `isLoading`.
-  it('stays loading after a user cancel, so the retry affordance survives', () => {
+  // Cancel. Nothing else restarts an arc fetch (`prepare` reads `dataCurrent`,
+  // which a cancel doesn't move), so a `ready` phase here unmounts the overlay
+  // carrying Retry and leaves a stopped, empty display with no way back.
+  it('is canceled after a user cancel, so the retry affordance survives', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.cancelFetchByUser()
 
     expect(display.isLoading).toBe(false)
     expect(display.fetchCanceled).toBe(true)
-    expect(display.displayPhase).toBe('loading')
+    expect(display.displayPhase).toBe('canceled')
   })
 
   it('leaves the canceled state once a fetch starts again', () => {
@@ -47,6 +45,7 @@ describe('arc displayPhase', () => {
     display.reload()
 
     expect(display.fetchCanceled).toBe(false)
+    expect(display.displayPhase).not.toBe('canceled')
   })
 })
 

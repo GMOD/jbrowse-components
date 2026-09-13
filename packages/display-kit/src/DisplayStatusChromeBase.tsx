@@ -199,7 +199,8 @@ export default function DisplayStatusChromeBase({
       data-display-drawn={drawn}
       // FINISHED, which paint alone cannot answer: `drawn` flips on an empty
       // canvas mid-fetch. `phase` is the model's own mutually-exclusive state,
-      // and `loading` covers the whole fetch, not just the paint. Published so a
+      // and `loading` covers the whole fetch, not just the paint; every other
+      // published value (`ready`, `error`, `canceled`) is finished. Published so a
       // screenshot/e2e run can wait on the real signal instead of inferring it
       // from paint flags and overlay text. NOTE the two subtree-replacing
       // phases (`tooLarge` above, `renderError` in DisplayChromeBase) publish no
@@ -235,7 +236,7 @@ export default function DisplayStatusChromeBase({
         <ErrorBar model={model} visible={phase === 'error'} />
         <Loading
           model={model}
-          visible={phase === 'loading'}
+          visible={phase === 'loading' || phase === 'canceled'}
           // initial load (nothing painted yet) shows the indicator immediately;
           // a refetch over already-drawn content keeps the anti-flash delay
           immediate={!drawn}

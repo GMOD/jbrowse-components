@@ -97,11 +97,9 @@ test('loading draws the scrim over a still-mounted canvas', async () => {
 // deliberately omits them -- a display with no cancelable fetch must get no
 // dead Cancel button. This extends the fixture locally to drive the other half,
 // rather than adding the actions globally and changing what the MUI suite sees.
-const CancelableModel = TestChromeModel.volatile(
-  (): { fetchCanceled: boolean } => ({ fetchCanceled: false }),
-).actions(self => ({
+const CancelableModel = TestChromeModel.actions(self => ({
   cancelFetchByUser() {
-    self.fetchCanceled = true
+    self.setFetchCanceled(true)
   },
 }))
 
@@ -129,6 +127,7 @@ test('a cancelable fetch offers cancel, and a canceled one offers retry', async 
   // the scrim stays up but flips to the canceled affordance
   await findByTestId('loading-overlay-retry')
   expect(queryByTestId('loading-overlay-cancel')).toBeNull()
+  expect(model.displayPhase).toBe('canceled')
 })
 
 test('a status while ready shows the corner chip, not the scrim', async () => {

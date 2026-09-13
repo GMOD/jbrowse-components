@@ -62,7 +62,7 @@ describe('overridable getter hooks', () => {
   })
 })
 
-// `fetchInert` is the same mechanism carrying the `displayPhase` loading
+// `fetchInert` is the same mechanism carrying the `displayPhase` activity
 // term, and it exists because the alternative — overriding `displayPhase`
 // itself — means restating every term the base ORs together. Sequence held such
 // a copy; the day the base grows a fourth term, the copy is wrong and nothing
@@ -80,7 +80,7 @@ describe('fetchInert drives displayPhase without a getter override', () => {
       get displayPhase() {
         return computeDisplayPhase(
           { renderError: undefined, regionTooLarge: false, error: undefined },
-          () => !self.fetchInert && self.fetching,
+          () => (!self.fetchInert && self.fetching ? 'loading' : 'ready'),
         )
       },
     }))

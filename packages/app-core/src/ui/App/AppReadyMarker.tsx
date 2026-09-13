@@ -91,14 +91,16 @@ function viewLoading(view: AbstractViewModel) {
  * marker that is never drawn cannot be mistaken for UI or shift a layout. It is
  * still found by `querySelector`, which is what reads it.
  *
- * **What it is silent about**: a display in a TERMINAL state. `error` is a
- * finished state, so this reads `ready` over a display whose fetch failed —
- * correctly, since nothing is still working. A capture wants more than that: it
- * wants a picture, and an error banner is not one. `waitForDisplaysDone` after
- * this is what draws that line, keying on the `data-display-drawn` the two
- * comparative canvases publish from their stricter `settled` gate (see
- * `comparativeReadiness` in `@jbrowse/synteny-core`, which holds both answers
- * and says why an error separates them). Both harnesses do it in that order.
+ * **What it is silent about**: a display in a TERMINAL state. `error` and
+ * `canceled` are finished states, so this reads `ready` over a display whose
+ * fetch failed or that the user stopped — correctly, since nothing is still
+ * working, and a user's cancel is durable until Retry. A capture wants more than
+ * that: it wants a picture, and neither banner is one. The capture census after
+ * this is what draws that line: `waitForDisplaysDone` keys on the
+ * `data-display-drawn` the two comparative canvases publish from their stricter
+ * `settled` gate (see `comparativeReadiness` in `@jbrowse/synteny-core`, which
+ * holds both answers and says why an error separates them), and the census
+ * names every `data-display-phase="canceled"`.
  */
 const AppReadyMarker = observer(function AppReadyMarker({
   session,

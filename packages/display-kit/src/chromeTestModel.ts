@@ -21,7 +21,7 @@ export function stubFactory() {
 
 // Minimal real MST model satisfying `ChromeModel & RenderLifecycleModel`.
 // `displayPhase` is computed through the production `computeDisplayPhase` with a
-// lazy loading thunk, so the model mirrors the real precedence/laziness contract
+// lazy activity thunk, so the model mirrors the real precedence/laziness contract
 // rather than hard-coding a phase string.
 export const TestChromeModel = types
   .model('TestChromeModel', {
@@ -52,10 +52,12 @@ export const TestChromeModel = types
       error: unknown
       renderError: unknown
       loadingCondition: boolean
+      fetchCanceled: boolean
     } => ({
       error: undefined,
       renderError: undefined,
       loadingCondition: false,
+      fetchCanceled: false,
     }),
   )
   .views(self => ({
@@ -66,7 +68,12 @@ export const TestChromeModel = types
     // exactly the state it exists to cover: a fetch that failed before first
     // paint, whose canvas stays mounted so the raw flag can never flip.
     get painted(): boolean {
-      return self.canvasDrawn || !self.rendersCanvas || !!self.error
+      return (
+        self.canvasDrawn ||
+        !self.rendersCanvas ||
+        !!self.error ||
+        self.fetchCanceled
+      )
     },
     get displayPhase(): DisplayPhase {
       return computeDisplayPhase(
@@ -75,7 +82,12 @@ export const TestChromeModel = types
           regionTooLarge: self.regionTooLarge,
           error: self.error,
         },
-        () => self.loadingCondition,
+        () =>
+          self.fetchCanceled
+            ? 'canceled'
+            : self.loadingCondition
+              ? 'loading'
+              : 'ready',
       )
     },
   }))
@@ -103,6 +115,9 @@ export const TestChromeModel = types
     },
     setLoadingCondition(value: boolean) {
       self.loadingCondition = value
+    },
+    setFetchCanceled(value: boolean) {
+      self.fetchCanceled = value
     },
     setStatus(message?: string, progress?: number) {
       self.statusMessage = message

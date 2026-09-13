@@ -622,7 +622,7 @@ export default function MultiRegionDisplayMixin() {
          * #getter
          * The display's mutually-exclusive visual state, mapped in
          * `foundationDisplayPhase` — every foundation calls it and supplies only
-         * its staleness argument, so a term added to `computeLoadingTerm`
+         * its staleness argument, so a term added to `computeActivityPhase`
          * reaches all three without being wired three times.
          *
          * This family's argument is `phaseViewportCurrent`: spatial coverage

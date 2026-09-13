@@ -120,11 +120,14 @@ test('every display finished is ready', () => {
 
 // A terminal phase is finished, not pending — a display showing "too large to
 // render" is never going to draw, and waiting for it would hang.
-test('a display in a terminal phase is ready', () => {
-  expect(
-    phaseOf([{ tracks: [{ displays: [{ displayPhase: 'tooLarge' }] }] }]),
-  ).toBe('ready')
-})
+test.each(['tooLarge', 'error', 'renderError', 'canceled'])(
+  'a display in the terminal phase %s is ready',
+  displayPhase => {
+    expect(phaseOf([{ tracks: [{ displays: [{ displayPhase }] }] }])).toBe(
+      'ready',
+    )
+  },
+)
 
 // One loading display among finished ones still holds the whole app loading:
 // the marker is the conjunction, which is what makes it one selector instead of

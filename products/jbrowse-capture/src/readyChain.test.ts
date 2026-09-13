@@ -148,6 +148,21 @@ test('an errored display is named unsettled instead of burning the timeout', asy
   ).rejects.toThrow(/display\(s\) never painted: pileup is error/)
 }, 15000)
 
+// The marker reads `ready` over a cancel, which is finished work; the capture
+// still refuses to commit a picture of the Retry overlay.
+test('a canceled display fails the chain at once rather than timing out', async () => {
+  app(
+    'ready',
+    `<div data-testid="pileup" data-display-drawn="true"
+          data-display-phase="canceled"></div>`,
+  )
+  const start = Date.now()
+  await expect(
+    waitForJBrowseReady(fakePage(), { timeout: 30000 }),
+  ).rejects.toThrow(/pileup is canceled/)
+  expect(Date.now() - start).toBeLessThan(10000)
+}, 15000)
+
 // `--settle` is what the CLI's own "had not finished drawing" warning tells you
 // to raise, and the census that decides whether the run fails used to be taken
 // BEFORE it: a display that painted during the settle was absent from `pending`

@@ -46,9 +46,9 @@ export function coarseTierPending(
  * is drawing it and nothing else, so the base's fetch terms are not its loading
  * question: not the detail fetch, which `fetchSuspended` has stopped where the
  * gate was not already stopping it. The tier's own read is, so the phase is
- * `loading` until it lands and `ready` after. A standing cancel passes through:
- * its Retry chrome is the way back, and the export gate fails on it after the
- * wait.
+ * `loading` until it lands and `ready` after. A standing cancel goes to the
+ * foundation, which answers `canceled`: its Retry chrome is the way back, and
+ * the export gate fails on it after the wait.
  *
  * The failure terminals are re-ranked rather than read off `base`, which is the
  * one thing that cannot work here: `computeDisplayStatusPhase` ranks
@@ -74,7 +74,8 @@ export function coarseTierDisplayPhase(
           regionTooLarge: self.gateMeasuresCoarse && self.regionTooLarge,
           error: self.error,
         },
-        () => !self.isMinimized && coarseTierPending(self),
+        () =>
+          !self.isMinimized && coarseTierPending(self) ? 'loading' : 'ready',
       )
     : foundationDisplayPhase(
         self,

@@ -11,6 +11,7 @@ import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
 import { types } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
+import { autorun } from 'mobx'
 
 import { stateModelFactory as linearGenomeViewStateModelFactory } from '../LinearGenomeView/index.ts'
 
@@ -222,6 +223,30 @@ describe('the swap', () => {
     )
     expect(display.displayPhase).toBe('ready')
     expect(display.svgReady).toBe(true)
+  })
+
+  it('hands a standing cancel to the foundation, which reads canceled', () => {
+    const { display, view } = setup()
+    view.zoomTo(100)
+    expect(display.coarseTierActive).toBe(true)
+    const seen: string[] = []
+    const dispose = autorun(() => {
+      seen.push(display.displayPhase)
+    })
+
+    display.cancelFetchByUser()
+    expect(display.displayPhase).toBe('canceled')
+    expect(display.svgReady).toBe(true)
+
+    display.reload()
+    expect(display.displayPhase).toBe('loading')
+    display.setCoarseTier(
+      [{ displayedRegionIndex: 0, payload: { tag: 't' } }],
+      { regions: [], key: 'k' },
+    )
+    expect(display.displayPhase).toBe('ready')
+    expect(seen).toEqual(['loading', 'canceled', 'loading', 'ready'])
+    dispose()
   })
 
   it('clears the read on chromosome navigation', () => {

@@ -20,7 +20,13 @@ import type { LinearPairedArcDisplayModel } from '../LinearPairedArcDisplay/mode
 // plugin's functions, so every suite here passed a literal `thickness: 2` and
 // the default `jexl:logThickness(feature,'score')` — NaN on a feature with no
 // score, which culls every arc off screen — was never once evaluated.
-export function createTestEnvironment(displayConfig?: Record<string, unknown>) {
+export function createTestEnvironment(
+  displayConfig?: Record<string, unknown>,
+  rpcCall: (sessionId: string, method: string, args: unknown) => unknown = (
+    _sessionId,
+    method,
+  ) => (method === 'ArcGetFeatures' ? { features: [], bytes: 100 } : []),
+) {
   const env = createDisplayTestEnvironment<LinearArcDisplayModel>({
     trackType: 'FeatureTrack',
     displayName: 'LinearArcDisplay',
@@ -31,8 +37,7 @@ export function createTestEnvironment(displayConfig?: Record<string, unknown>) {
     assemblyEnd: 10_000_000,
     // arc is byte-gated, and the measurement rides in the fetch: `ArcGetFeatures`
     // answers the features plus what the index quoted for them
-    rpcCall: (_sessionId, method) =>
-      method === 'ArcGetFeatures' ? { features: [], bytes: 100 } : [],
+    rpcCall,
   })
   addArcJexlFunctions(env.pluginManager)
   return env

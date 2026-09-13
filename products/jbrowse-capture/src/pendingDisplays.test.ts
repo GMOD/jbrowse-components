@@ -40,6 +40,17 @@ test('a shared canvas reports the phase beside its paint flag', () => {
   ])
 })
 
+// A cancel lasts until Retry, so the capture fails on it rather than committing
+// the overlay — including over a display that had painted before the cancel.
+test('a canceled display is in the census even once painted', () => {
+  document.body.innerHTML = `
+    <div data-testid="pileup" data-display-id="reads-x"
+         data-display-drawn="true" data-display-phase="canceled"></div>`
+  expect(pendingDisplayStatesInPage()).toEqual([
+    { name: 'pileup', id: 'reads-x', phase: 'canceled' },
+  ])
+})
+
 // A build older than the attribute. Absent is not `ready` — saying so would
 // invent an answer the page never gave.
 test('a display publishing no phase is reported as unpublished', () => {

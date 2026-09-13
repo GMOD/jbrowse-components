@@ -174,7 +174,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       get displayPhase(): DisplayStatusPhase {
         return computeDisplayStatusPhase(
           { regionTooLarge: false, error: self.error },
-          () => !this.fetchInert && !this.ready,
+          () => (!this.fetchInert && !this.ready ? 'loading' : 'ready'),
         )
       },
 

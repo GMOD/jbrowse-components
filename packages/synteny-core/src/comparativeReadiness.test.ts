@@ -5,7 +5,8 @@ import { displaysSettled } from './comparativeReadiness.ts'
 // display is never done, and a display that will never fetch does not hold the
 // whole view un-done on account of data that is not coming.
 const busy = {
-  isLoadingOrCanceled: false,
+  isLoading: false,
+  fetchCanceled: false,
   dataCurrent: true,
   fetchInert: false,
 }
@@ -23,19 +24,16 @@ describe('displaysSettled', () => {
 
   it('is false while a fetch is in flight', () => {
     expect(
-      displaysSettled([
-        busy,
-        { ...busy, isLoadingOrCanceled: true, dataCurrent: false },
-      ]),
+      displaysSettled([busy, { ...busy, isLoading: true, dataCurrent: false }]),
     ).toBe(false)
   })
 
   it('is false over a load the user canceled', () => {
     // durable until Retry, and a capture presses nothing — the same reason an
     // error holds this gate shut below
-    expect(
-      displaysSettled([busy, { ...busy, isLoadingOrCanceled: true }]),
-    ).toBe(false)
+    expect(displaysSettled([busy, { ...busy, fetchCanceled: true }])).toBe(
+      false,
+    )
   })
 
   it('is false in the pre-refetch debounce gap', () => {
@@ -53,7 +51,8 @@ describe('displaysSettled', () => {
       displaysSettled([
         busy,
         {
-          isLoadingOrCanceled: false,
+          isLoading: false,
+          fetchCanceled: false,
           dataCurrent: false,
           fetchInert: true,
         },

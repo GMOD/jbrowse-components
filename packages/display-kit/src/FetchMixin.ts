@@ -248,17 +248,10 @@ export default function FetchMixin() {
     .views(self => ({
       /**
        * #getter
-       * `isLoading` widened to cover a user-canceled load. **This, not
-       * `isLoading`, is what a `displayPhase` loading term wants.**
-       * `cancelFetchByUser` clears the stop token synchronously, so `isLoading`
-       * goes false the instant the user clicks Cancel — and the loading overlay
-       * that unmounts on it is carrying the Retry button, which is the only way
-       * back: the state is deliberately durable, so no autorun restarts the
-       * fetch on its own. A bare `isLoading` therefore reads as `ready` over a
-       * display that is stopped, empty and offering nothing.
-       *
-       * Arc read `isLoading` directly and had exactly that hole. It is a getter
-       * here so no family has to remember the second term.
+       * `isLoading` widened to cover a user-canceled load: what a hover gate
+       * wants, since neither state has a frame on screen that a hit describes.
+       * Not a phase input — `computeActivityPhase` reads the two apart, because
+       * a cancel is finished (`canceled`) where a fetch is not (`loading`).
        */
       get isLoadingOrCanceled() {
         return self.isLoading || self.fetchCanceled
@@ -275,8 +268,8 @@ export default function FetchMixin() {
        * that grows such a state has one thing to say rather than three, and the
        * reader it would have forgotten is always the one outside itself:
        *
-       * - the loading scrim (`computeLoadingTerm`), which otherwise parks over
-       *   the placeholder, permanently once a cancel has been clicked;
+       * - the phase (`computeActivityPhase`), which otherwise parks a scrim
+       *   over the placeholder, or a canceled overlay once Cancel is clicked;
        * - the SVG export (`computeSvgReady`'s `extraTerminal`), whose
        *   `awaitSvgReady` is an unbounded `when`, so one such display hangs the
        *   whole view's export;
@@ -338,7 +331,7 @@ export default function FetchMixin() {
 
       /**
        * #getter
-       * Overridable hook (default false), read by `computeLoadingTerm`: a load
+       * Overridable hook (default false), read by `computeActivityPhase`: a load
        * this display depends on beyond its primary fetch has not landed for the
        * first time, so the frame the primary fetch calls current is still
        * missing something. Multi-way synteny says it until its lane genes and

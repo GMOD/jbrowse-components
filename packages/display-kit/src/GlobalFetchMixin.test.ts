@@ -101,17 +101,23 @@ test('displayPhase leaves loading once the first frame paints', () => {
   expect(model.displayPhase).toBe('ready')
 })
 
-// The global half of the wiring into the shared `computeLoadingTerm`: a cancel
-// must keep the overlay (and its Retry) up even though `cancelFetchByUser`
-// clears the stop token synchronously, so `isLoading` already reads false.
-test('displayPhase stays loading after a user cancel', () => {
+// The global half of the wiring into the shared `computeActivityPhase`: a
+// cancel reads `canceled` whether or not anything has painted, and Retry puts
+// the pre-paint wait back.
+test('displayPhase is canceled after a user cancel, and Retry clears it', () => {
   const model = testModel()
-  model.markCanvasDrawn()
-  expect(model.displayPhase).toBe('ready')
-
   model.cancelFetchByUser()
   expect(model.isLoading).toBe(false)
-  expect(model.displayPhase).toBe('loading')
+  expect(model.displayPhase).toBe('canceled')
+
+  model.markCanvasDrawn()
+  expect(model.displayPhase).toBe('canceled')
+
+  model.setError(new Error('boom'))
+  expect(model.displayPhase).toBe('error')
+  model.reload()
+  expect(model.fetchCanceled).toBe(false)
+  expect(model.displayPhase).toBe('ready')
 })
 
 test('displayPhase is not loading pre-paint when rendersCanvas is false', () => {

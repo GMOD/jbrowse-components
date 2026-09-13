@@ -1,6 +1,6 @@
 import {
+  computeActivityPhase,
   computeDisplayStatusPhase,
-  computeLoadingTerm,
 } from '@jbrowse/render-core/displayPhase'
 
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
@@ -95,12 +95,10 @@ export interface ComparativeDisplayFetchState {
    * coming — minimized, or a level whose two rows aren't both showing regions.
    */
   fetchInert: boolean
-  /**
-   * A fetch is in flight, or the user canceled one — never a bare `isLoading`,
-   * for the reason `computeLoadingTerm` gives: the cancel drops the stop token
-   * synchronously, and the overlay carrying Retry unmounts on `ready`.
-   */
-  isLoadingOrCanceled: boolean
+  /** a fetch is in flight */
+  isLoading: boolean
+  /** the user canceled the fetch; durable in this family until Retry */
+  fetchCanceled: boolean
   /** the drawn data was fetched for the view's current inputs */
   dataCurrent: boolean
 }
@@ -109,15 +107,15 @@ export interface ComparativeDisplayFetchState {
  * The display's own mutually-exclusive state, ranked the way every other
  * display's is.
  *
- * `computeDisplayStatusPhase` and `computeLoadingTerm` rather than a hand-written
- * conjunction, and each term goes where its documented meaning puts it:
- * `fetchInert` and `isLoadingOrCanceled` are the same fields
- * `computeLoadingTerm` reads on an LGV display (a display drawing nothing by
- * design gets no scrim and no wait; a canceled load keeps its overlay), and
+ * `computeDisplayStatusPhase` and `computeActivityPhase` rather than a
+ * hand-written conjunction, and each term goes where its documented meaning puts
+ * it: `fetchInert`, `isLoading` and `fetchCanceled` are the same fields
+ * `computeActivityPhase` reads on an LGV display (a display drawing nothing by
+ * design gets no scrim and no wait; a canceled load answers `canceled`), and
  * the surface supplies first paint plus the two "what is on screen is not the
  * answer" flags through the `viewportCurrent` thunk. Neither view has a
  * `regionTooLarge` state — synteny never gates on region size and dotplot gates
- * on LOD — so the terminal ranking reduces to error over loading over ready.
+ * on LOD — so the ranking reduces to error > canceled > loading > ready.
  *
  * `DisplayStatusPhase`, not `DisplayPhase`: neither display owns a rendering
  * backend of its own (the surface does), so neither can claim `renderError` in
@@ -138,7 +136,7 @@ export function comparativeDisplayPhase(
   return computeDisplayStatusPhase(
     { regionTooLarge: false, error: display.error },
     () =>
-      computeLoadingTerm(
+      computeActivityPhase(
         {
           // synteny folds minimized into fetchInert; a minimized dotplot track
           // still fetches and draws
@@ -148,7 +146,8 @@ export function comparativeDisplayPhase(
           // surface whose extent is the two views' whole span, not a block set
           // that can empty out from under them
           viewportEmpty: false,
-          isLoadingOrCanceled: display.isLoadingOrCanceled,
+          isLoading: display.isLoading,
+          fetchCanceled: display.fetchCanceled,
           awaitingDependentData: false,
           rendersCanvas: true,
           canvasDrawn: surface.painted,
@@ -169,6 +168,12 @@ export function comparativeDisplayPhase(
  * over all of them — the same order `computeDisplayStatusPhase` uses, since an
  * error on any ribbon is the thing a reader most needs to see and a fetch still
  * running is the thing a wait most needs to see.
+ *
+ * `canceled` ranks between the two, as it does on a single display. It is a
+ * finished state the user chose, so it outranks a sibling still fetching for the
+ * reason `error` does: the attribute names the state a reader has to act on.
+ * That costs no wait its answer, because a canceled display holds `settled` —
+ * and with it the canvas's `data-display-drawn` — false until Retry.
  *
  * That attribute is what makes the DOM-level doneness waits work here at all.
  * `[data-display-phase="loading"]` is what `waitForDisplayPhases` and the busy
@@ -194,9 +199,11 @@ export function comparativeSurfacePhase(
   const phases = new Set(displays.map(d => comparativeDisplayPhase(d, surface)))
   return phases.has('error')
     ? 'error'
-    : phases.has('loading')
-      ? 'loading'
-      : 'ready'
+    : phases.has('canceled')
+      ? 'canceled'
+      : phases.has('loading')
+        ? 'loading'
+        : 'ready'
 }
 
 // The display half of both views' `settled` gate, written once so the two
@@ -224,11 +231,11 @@ export function comparativeSurfacePhase(
 export function displaysSettled(
   displays: Pick<
     ComparativeDisplayFetchState,
-    'isLoadingOrCanceled' | 'dataCurrent' | 'fetchInert'
+    'isLoading' | 'fetchCanceled' | 'dataCurrent' | 'fetchInert'
   >[],
 ) {
   return displays.every(
-    d => d.fetchInert || (!d.isLoadingOrCanceled && d.dataCurrent),
+    d => d.fetchInert || (!d.isLoading && !d.fetchCanceled && d.dataCurrent),
   )
 }
 

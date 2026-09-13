@@ -2073,7 +2073,7 @@ export default function stateModelFactory(
          * in `loading` forever — the render callback took the paint-from-
          * `rpcDataMap` branch, `renderBlocks` returned `painted: false` over an
          * empty map every frame, and `canvasDrawn` never flipped, so
-         * `computeLoadingTerm`'s `rendersCanvas && !canvasDrawn` stayed true
+         * `computeActivityPhase`'s `rendersCanvas && !canvasDrawn` stayed true
          * under a track that was fully loaded and visibly drawn.
          */
         get basesRenderingActive() {

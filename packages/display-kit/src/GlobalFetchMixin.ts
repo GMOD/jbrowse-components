@@ -165,7 +165,7 @@ export default function GlobalFetchMixin() {
        * #getter
        * The display's mutually-exclusive visual state, mapped in
        * `foundationDisplayPhase` — every foundation calls it and supplies only
-       * its staleness argument, so a term added to `computeLoadingTerm` reaches
+       * its staleness argument, so a term added to `computeActivityPhase` reaches
        * all of them without being wired twice.
        *
        * This family's argument is the constant `true`, deliberately: a global
@@ -174,7 +174,7 @@ export default function GlobalFetchMixin() {
        * transform), so a pan or zoom shows no scrim beyond the `isLoading`
        * window. The pre-first-paint scrim it *does* want — the gap between mount
        * and `isLoading` going true, which on HiC is the `CoreGetInfo` round trip
-       * its first fetch waits on — is `computeLoadingTerm`'s shared
+       * its first fetch waits on — is `computeActivityPhase`'s shared
        * `rendersCanvas && !canvasDrawn` term, not anything this family spells
        * out.
        *

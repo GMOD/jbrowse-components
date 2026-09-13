@@ -1,5 +1,6 @@
 import { AppReadyMarker } from '@jbrowse/app-core'
 import { render, waitFor } from '@testing-library/react'
+import { autorun } from 'mobx'
 
 import configSnapshot from '../../test_data/grape_peach_synteny/config.json' with { type: 'json' }
 import {
@@ -248,4 +249,90 @@ test('a comparative import form contributes no loading display', async () => {
   expect(dotplot.dotplotDisplays).toHaveLength(0)
   expect(dotplot.displayPhase).toBe('ready')
   expect(synteny.trackContainers).toHaveLength(0)
+}, 60000)
+
+// A user cancel is finished work: the marker reads ready over it at once, while
+// the ribbon and the band it draws on say `canceled` — and keep saying it
+// through a view change, which in this family is the fetch input rather than a
+// reason to lapse. Only Retry brings the load back.
+test('a canceled synteny ribbon is finished for the marker until Retry', async () => {
+  const { rootModel } = await getPluginManager(configSnapshot)
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+  const view = (await session.launchView('LinearSyntenyView', {
+    views: [
+      { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
+      { loc: 'chr1:316,306..316,364', assembly: 'grape' },
+    ],
+    tracks: [['subset']],
+  })) as {
+    setWidth: (n: number) => void
+    views: { offsetPx: number; scrollTo: (px: number) => void }[]
+    levels: {
+      markCanvasDrawn: () => void
+      displayPhase: string
+      linearSyntenyDisplays: {
+        displayPhase: string
+        fetchCanceled: boolean
+        currentFetchKey: string
+        cancelFetchByUser: () => void
+        reload: () => void
+      }[]
+    }[]
+  }
+  view.setWidth(800)
+
+  const marker = render(<AppReadyMarker session={session} />).getByTestId(
+    'app-ready-marker',
+  )
+  await waitFor(
+    () => {
+      expect(view.levels[0]?.linearSyntenyDisplays.length).toBe(1)
+    },
+    { timeout: 30000 },
+  )
+  const level = view.levels[0]!
+  const display = level.linearSyntenyDisplays[0]!
+  level.markCanvasDrawn()
+  await waitFor(
+    () => {
+      expect(display.displayPhase).toBe('ready')
+      expect(marker.dataset.appPhase).toBe('ready')
+    },
+    { timeout: 30000 },
+  )
+
+  const seen: string[] = []
+  const dispose = autorun(() => {
+    const phase = display.displayPhase
+    if (seen.at(-1) !== phase) {
+      seen.push(phase)
+    }
+  })
+
+  display.cancelFetchByUser()
+  expect(display.displayPhase).toBe('canceled')
+  expect(level.displayPhase).toBe('canceled')
+  expect(marker.dataset.appPhase).toBe('ready')
+
+  const key = display.currentFetchKey
+  view.views[0]!.scrollTo(view.views[0]!.offsetPx + 4000)
+  expect(display.currentFetchKey).not.toBe(key)
+  await new Promise(resolve => setTimeout(resolve, 1500))
+  expect(display.fetchCanceled).toBe(true)
+  expect(display.displayPhase).toBe('canceled')
+  expect(marker.dataset.appPhase).toBe('ready')
+
+  display.reload()
+  await waitFor(
+    () => {
+      expect(display.displayPhase).toBe('ready')
+    },
+    { timeout: 30000 },
+  )
+  expect(seen).toEqual(['ready', 'canceled', 'loading', 'ready'])
+  await waitFor(() => {
+    expect(marker.dataset.appPhase).toBe('ready')
+  })
+  dispose()
 }, 60000)
