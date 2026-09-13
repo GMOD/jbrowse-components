@@ -548,54 +548,45 @@ describe.each([
 })
 
 describe.each([false, true])(
-  'a fade at zero paints nothing, and ink and hitNearest still answer (reversed %s)',
+  'a fade at zero paints nothing and answers nothing (reversed %s)',
   reversed => {
-    test.failing(
-      'a Phred 0 mismatch under "fade low quality mismatches", which the hover chain asks',
-      () => {
-        expect(
-          sweep(
-            mismatchCase([
-              [1002, 0, 255, 0],
-              [1005, 1, 255, 60],
-            ]),
-            blockOf(reversed, 10),
-            renderState({ mismatchAlpha: true }),
-          ),
-        ).toEqual([])
-      },
-    )
+    test('a Phred 0 mismatch under "fade low quality mismatches"', () => {
+      expect(
+        sweep(
+          mismatchCase([
+            [1002, 0, 255, 0],
+            [1005, 1, 255, 60],
+          ]),
+          blockOf(reversed, 10),
+          renderState({ mismatchAlpha: true }),
+        ),
+      ).toEqual([])
+    })
 
-    test.failing(
-      'an overlap under 1.5px, which nothing in the hover chain asks',
-      () => {
-        expect(
-          sweep(
-            overlapCase([
-              [1400, 1401, 0],
-              [1100, 1200, 1],
-            ]),
-            blockOf(reversed, 800),
-            renderState({}),
-          ),
-        ).toEqual([])
-      },
-    )
+    test('an overlap under 1.5px', () => {
+      expect(
+        sweep(
+          overlapCase([
+            [1400, 1401, 0],
+            [1100, 1200, 1],
+          ]),
+          blockOf(reversed, 800),
+          renderState({}),
+        ),
+      ).toEqual([])
+    })
 
-    test.failing(
-      "a deletion under a 255th of a pixel, which the gap step's length floor drops",
-      () => {
-        expect(
-          sweep(
-            gapCase(GAP_DELETION, [
-              [16000, 16001, 0, GAP_DELETION, 255],
-              [20000, 30000, 1, GAP_DELETION, 255],
-            ]),
-            blockOf(reversed, 60000),
-            renderState({}),
-          ),
-        ).toEqual([])
-      },
-    )
+    test('a deletion under a 255th of a pixel', () => {
+      expect(
+        sweep(
+          gapCase(GAP_DELETION, [
+            [16000, 16001, 0, GAP_DELETION, 255],
+            [20000, 30000, 1, GAP_DELETION, 255],
+          ]),
+          blockOf(reversed, 60000),
+          renderState({}),
+        ),
+      ).toEqual([])
+    })
   },
 )

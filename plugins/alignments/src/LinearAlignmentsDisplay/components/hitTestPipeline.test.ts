@@ -408,6 +408,34 @@ describe('detailed hit tests still fire when bpPerPx <= threshold', () => {
   })
 })
 
+describe('a mismatch its quality fade leaves unpainted hands the hover to its read', () => {
+  const resolved = {
+    ...makeResolved({
+      mismatchPositions: new Uint32Array([100]),
+      mismatchYs: new Uint16Array([0]),
+      mismatchBases: new Uint8Array([65]),
+      mismatchQuals: new Uint8Array([0]),
+      readPositions: new Uint32Array([0, 200]),
+      readYs: new Uint16Array([0]),
+      readKeys: ['read1'],
+    }),
+    bpRange: [0, 200] as [number, number],
+  }
+
+  it('answers as a mismatch with the fade off', () => {
+    const hit = performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS)
+    expect(hit.type === 'cigar' && hit.hit.type).toBe('mismatch')
+  })
+
+  it('answers as the read with the fade on', () => {
+    const hit = performHitTest(100, 60, resolved, opts({ mismatchAlpha: true }))
+    expect(hit.type === 'feature' && hit.hit).toStrictEqual({
+      id: 'read1',
+      index: 0,
+    })
+  })
+})
+
 describe('contextMenuTargetForHit', () => {
   const resolved = makeResolved()
   // 200px across 20000bp, so canvas x=1 is the column at bp 100

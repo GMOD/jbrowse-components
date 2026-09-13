@@ -1,14 +1,7 @@
 // The pileup's mark shapes: one factory over render-core's `MarkShape`, taking
-// a shader, its packer and the rule CODES one row-instanced pass draws and
-// hit-tests by. The codes are data rather than callbacks because ten marks over
-// one walker made every per-instance call megamorphic — a gap layer's paint fell
-// from 94 ms to 45 at 100K instances when they became integers — so a new rule
-// is a code and a case here, never a function on the mark.
-//
-// Not a transpiled draw stage. adr-051 stands: the `.slang` stays hand-written
-// and the scalar decisions the two backends share come across through
-// `//! js-export` (`intronAlpha`, `sizeAlpha`, `frequencyFadeGate`,
-// `qualityFade`, `overlapFade`), which the rules here READ.
+// a shader, its packer and the rule codes one row-instanced pass draws and
+// hit-tests by. A new rule is a code and a case here, never a function on the
+// mark; plugins/alignments/src/CLAUDE.md says what the codes were measured at.
 import {
   fillSpanRect,
   insertionSizeAlpha,
@@ -323,6 +316,51 @@ function pointWidthPx(
     : CLIP_BAR_WIDTH_PX
 }
 
+function fadeAlpha(
+  fade: FadeRule,
+  c: PileupChannels,
+  i: number,
+  state: RenderState,
+  widthPx: number,
+  pxPerBp: number,
+) {
+  switch (fade) {
+    case Fade.opaque: {
+      return 1
+    }
+    case Fade.intron: {
+      return intronAlpha(state.featureHeight)
+    }
+    case Fade.spanFrequencySize: {
+      return (
+        frequencyFade(state, widthPx * widthPx, c.freqs![i]!) *
+        sizeAlpha(widthPx)
+      )
+    }
+    case Fade.cellFrequencyQuality: {
+      return (
+        frequencyFade(state, widthPx, c.freqs![i]!) *
+        qualityFade(c.quals![i]!, state.mismatchAlpha)
+      )
+    }
+    case Fade.overlap: {
+      return state.chainMode ? overlapFade(widthPx) : overlapAlpha(widthPx)
+    }
+    case Fade.insertion: {
+      const length = c.lengths![i]!
+      return (
+        (length >= LONG_INSERTION_MIN_LENGTH
+          ? 1
+          : frequencyFade(state, pxPerBp * pxPerBp, c.freqs![i]!)) *
+        insertionSizeAlpha(length, pxPerBp)
+      )
+    }
+    case Fade.pointFrequency: {
+      return frequencyFade(state, pxPerBp, c.freqs![i]!)
+    }
+  }
+}
+
 // Wider than the ink on purpose — a 1px bar is not a clickable target — which is
 // why the drawn rect is the floor of the draw-against-hit gate, not its bound.
 function pointToleranceBp(
@@ -357,10 +395,6 @@ export function pileupShape(
     spec
   const paintTables = spec.paint
   const centerline = band === Band.centerline
-  // The box one instance paints under its pivot, or undefined for one this
-  // mark does not own or a row the viewport has scrolled past. The painter and
-  // the hit test both read it, so neither can place a mark where the other
-  // does not.
   const inkRect = (
     c: PileupChannels,
     block: RenderBlock,
@@ -378,15 +412,21 @@ export function pileupShape(
     const featureHeight = state.featureHeight
     const bpLength = block.end - block.start
     const fullBlockWidth = block.screenEndPx - block.screenStartPx
+    const pxPerBp = fullBlockWidth / bpLength
+    const startBp = positions[i * stride]!
+    const widthPx =
+      point === undefined
+        ? ((stride === 2 ? positions[i * stride + 1]! : startBp + 1) -
+            startBp) *
+          pxPerBp
+        : pointWidthPx(point, c, i, pxPerBp, featureHeight)
+    if (!(fadeAlpha(fade, c, i, state, widthPx, pxPerBp) > 0)) {
+      return undefined
+    }
     const top = rowY + (centerline ? featureHeight / 2 - 0.5 : 0)
     const height = centerline ? 1 : featureHeight
-    const startBp = positions[i * stride]!
     if (point !== undefined) {
-      const pxPerBp = fullBlockWidth / bpLength
-      const w = Math.max(
-        pointWidthPx(point, c, i, pxPerBp, featureHeight),
-        decorate?.widthPx(c, i, pxPerBp) ?? 0,
-      )
+      const w = Math.max(widthPx, decorate?.widthPx(c, i, pxPerBp) ?? 0)
       const x = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       return { left: x - w / 2, top, width: w, height }
     }
