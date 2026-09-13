@@ -504,68 +504,74 @@ function checkMarks(snap: Record<string, unknown>) {
   return snap
 }
 
-const markSchema = ConfigurationSchema('Mark', {
-  /**
-   * #slot marks.shape
-   * `bar` stands between `origin` and `y`; `point` is a glyph at `y`; `span`
-   * is a band across the whole plot from `x` to `x2`.
-   */
-  shape: {
-    type: 'stringEnum',
-    model: types.enumeration('MarkShape', [...MARK_SHAPES]),
-    defaultValue: 'bar',
-    description: 'bar, point or span',
+const markSchema = ConfigurationSchema(
+  'Mark',
+  {
+    /**
+     * #slot marks.shape
+     * `bar` stands between `origin` and `y`; `point` is a glyph at `y`; `span`
+     * is a band across the whole plot from `x` to `x2`.
+     */
+    shape: {
+      type: 'stringEnum',
+      model: types.enumeration('MarkShape', [...MARK_SHAPES]),
+      defaultValue: 'bar',
+      description: 'bar, point or span',
+    },
+    /**
+     * #slot marks.encoding
+     * Which feature fields feed the mark's channels. Every channel has a
+     * default, so `{}` draws a bar from `start` to `end` with no value.
+     */
+    encoding: markEncodingSchema,
+    /**
+     * #slot marks.transform
+     * Steps over the region's features before this mark encodes them, in
+     * order, after the display's `jexlFilters`. A `bin` then an `aggregate`
+     * grouped by `start` and `end` is a density: `count` per bin, plotted as
+     * `y`.
+     */
+    transform: types.array(transformStepSchema),
+    /**
+     * #slot marks.source
+     * Where this mark draws from once the byte gate refuses the features.
+     * `features` is off — the mark draws nothing past the budget. `density`
+     * draws the adapter's `densityAdapter` sidecar in the banner's place, one
+     * bar per sidecar bin over this mark's own y axis, and needs no transform:
+     * the sidecar has already binned. With no density mark the banner stands.
+     */
+    source: {
+      type: 'stringEnum',
+      model: types.enumeration('MarkSource', [...MARK_SOURCES]),
+      defaultValue: 'features',
+      description: 'features, or density past the fetch budget',
+    },
+    /**
+     * #slot marks.minBpPerPx
+     * The mark draws only when the view is at least this zoomed out, in bp per
+     * px. 0 sets no bound. With `maxBpPerPx` on another mark, one config shows
+     * a density zoomed out and the features zoomed in.
+     */
+    minBpPerPx: {
+      type: 'number',
+      defaultValue: 0,
+      description: 'draw only at or above this bp/px',
+    },
+    /**
+     * #slot marks.maxBpPerPx
+     * The mark draws only when the view is zoomed in past this, in bp per px.
+     * 0 sets no bound.
+     */
+    maxBpPerPx: {
+      type: 'number',
+      defaultValue: 0,
+      description: 'draw only below this bp/px',
+    },
   },
-  /**
-   * #slot marks.encoding
-   * Which feature fields feed the mark's channels. Every channel has a
-   * default, so `{}` draws a bar from `start` to `end` with no value.
-   */
-  encoding: markEncodingSchema,
-  /**
-   * #slot marks.transform
-   * Steps over the region's features before this mark encodes them, in
-   * order, after the display's `jexlFilters`. A `bin` then an `aggregate`
-   * grouped by `start` and `end` is a density: `count` per bin, plotted as
-   * `y`.
-   */
-  transform: types.array(transformStepSchema),
-  /**
-   * #slot marks.source
-   * Where this mark draws from once the byte gate refuses the features.
-   * `features` is off — the mark draws nothing past the budget. `density`
-   * draws the adapter's `densityAdapter` sidecar in the banner's place, one
-   * bar per sidecar bin over this mark's own y axis, and needs no transform:
-   * the sidecar has already binned. With no density mark the banner stands.
-   */
-  source: {
-    type: 'stringEnum',
-    model: types.enumeration('MarkSource', [...MARK_SOURCES]),
-    defaultValue: 'features',
-    description: 'features, or density past the fetch budget',
+  {
+    requires: [{ when: { shape: ['bar', 'point'] }, slots: ['encoding.y'] }],
   },
-  /**
-   * #slot marks.minBpPerPx
-   * The mark draws only when the view is at least this zoomed out, in bp per
-   * px. 0 sets no bound. With `maxBpPerPx` on another mark, one config shows
-   * a density zoomed out and the features zoomed in.
-   */
-  minBpPerPx: {
-    type: 'number',
-    defaultValue: 0,
-    description: 'draw only at or above this bp/px',
-  },
-  /**
-   * #slot marks.maxBpPerPx
-   * The mark draws only when the view is zoomed in past this, in bp per px.
-   * 0 sets no bound.
-   */
-  maxBpPerPx: {
-    type: 'number',
-    defaultValue: 0,
-    description: 'draw only below this bp/px',
-  },
-})
+)
 
 /**
  * #config LinearMarkDisplay

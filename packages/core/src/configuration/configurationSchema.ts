@@ -57,6 +57,17 @@ export interface ConfigurationSchemaDefinition {
   [n: string]: ConfigSlotDefinition | string | number | IAnyType
 }
 
+/**
+ * A combination a schema refuses, declared rather than only thrown: when every
+ * named slot holds one of the listed values, each dotted slot path in `slots`
+ * has to name a value. The generated JSON Schema turns it into `if`/`then`, so
+ * the CLI validator and an editor refuse what the config reader refuses.
+ */
+export interface ConfigurationSchemaRequirement {
+  when: Record<string, string[]>
+  slots: string[]
+}
+
 export interface ConfigurationSchemaOptions<
   BASE_SCHEMA extends AnyConfigurationSchemaType | undefined,
   EXPLICIT_IDENTIFIER extends string | undefined,
@@ -72,6 +83,7 @@ export interface ConfigurationSchemaOptions<
   preProcessSnapshot?: (
     snapshot: Record<string, unknown>,
   ) => Record<string, unknown>
+  requires?: ConfigurationSchemaRequirement[]
 }
 
 type SchemaHook = (self: unknown) => any

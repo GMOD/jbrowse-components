@@ -7480,6 +7480,56 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
     "Mark": {
       "title": "Mark",
       "type": "object",
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "shape": {
+                "enum": [
+                  "bar",
+                  "point"
+                ]
+              }
+            }
+          },
+          "then": {
+            "type": "object",
+            "required": [
+              "encoding"
+            ],
+            "properties": {
+              "encoding": {
+                "type": "object",
+                "required": [
+                  "y"
+                ],
+                "properties": {
+                  "y": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "field"
+                        ],
+                        "properties": {
+                          "field": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      ],
       "properties": {
         "shape": {
           "description": "bar, point or span.",

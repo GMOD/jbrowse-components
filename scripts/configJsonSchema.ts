@@ -37,6 +37,7 @@ export interface SchemaMetadata {
     explicitIdentifier?: string
     implicitIdentifier?: string | boolean
     preProcessSnapshot?: (snap: unknown) => unknown
+    requires?: { when: Record<string, string[]>; slots: string[] }[]
   }
 }
 
@@ -482,6 +483,83 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     }
   }
 
+  // What a schema declares it cannot mean (`requires`), as `if`/`then`. The
+  // config reader throws the message; this is the same refusal in the form the
+  // CLI validator and an editor enforce. A `when` value that is the slot's own
+  // default fires for an absent slot too, as `shape ?? 'bar'` does.
+  function whenSchema(meta: SchemaMetadata, when: Record<string, string[]>) {
+    const properties: Record<string, JsonSchema> = {}
+    const required: string[] = []
+    for (const [slot, values] of Object.entries(when)) {
+      properties[slot] = { enum: values }
+      const entry = meta.definition[slot]
+      if (
+        !isSlotDefinition(entry) ||
+        !values.includes(entry.defaultValue as string)
+      ) {
+        required.push(slot)
+      }
+    }
+    return { properties, ...(required.length ? { required } : {}) }
+  }
+
+  // A slot names a value when it holds a non-empty string, or the object its
+  // string shorthand lifts into with that target slot non-empty.
+  function namesAValue(sub: SchemaMetadata | undefined): JsonSchema {
+    const target =
+      sub && liftedForms(sub).string
+        ? stringTarget(sub, sub.definition)
+        : undefined
+    return target
+      ? {
+          anyOf: [
+            { type: 'string', minLength: 1 },
+            {
+              type: 'object',
+              required: [target],
+              properties: { [target]: { type: 'string', minLength: 1 } },
+            },
+          ],
+        }
+      : { type: 'string', minLength: 1 }
+  }
+
+  function pathRequirement(meta: SchemaMetadata, path: string[]): JsonSchema {
+    const [head, ...rest] = path as [string, ...string[]]
+    const entry = meta.definition[head]
+    const sub = deps.isType(entry)
+      ? deps.metadataOf(entry as MstType)
+      : undefined
+    const value = rest.length
+      ? sub
+        ? pathRequirement(sub, rest)
+        : {}
+      : namesAValue(sub)
+    return {
+      type: 'object',
+      required: [head],
+      properties: { [head]: value },
+    }
+  }
+
+  function requirements(meta: SchemaMetadata): JsonSchema {
+    const rules = meta.options.requires ?? []
+    if (rules.length === 0) {
+      return {}
+    }
+    return {
+      allOf: rules.map(rule => {
+        const needed = rule.slots.map(slot =>
+          pathRequirement(meta, slot.split('.')),
+        )
+        return {
+          if: whenSchema(meta, rule.when),
+          then: needed.length === 1 ? needed[0]! : { allOf: needed },
+        }
+      }),
+    }
+  }
+
   // An unregistered ConfigurationSchema, i.e. a sub-schema slot. Every track
   // schema builds its own `textSearching` and `formatDetails`, so identical
   // ones share one definition, named after the sub-schema.
@@ -500,7 +578,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
         ? { uri: shorthandSchema('uri'), baseUri: shorthandSchema('baseUri') }
         : {}),
     }
-    const object = closed(properties)
+    const object = closed(properties, [], requirements(meta))
     const schema = forms.string
       ? {
           anyOf: [
@@ -554,7 +632,7 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
   // The slot a bare string lands on, read off the lift itself.
   function stringTarget(
     meta: SchemaMetadata,
-    properties: Record<string, JsonSchema>,
+    properties: Record<string, unknown>,
   ) {
     const out = meta.options.preProcessSnapshot?.('probe') as
       | Record<string, unknown>

@@ -58,6 +58,22 @@ function baseConfig() {
 
 const whereOf = (config: unknown) => schemaProblems(config).map(p => p.where)
 
+// A LinearMarkDisplay of these marks, beside the base config's own track.
+function problemsOfMarks(marks: unknown[]) {
+  const config = baseConfig()
+  config.tracks.push({
+    type: 'FeatureTrack',
+    trackId: 'scores',
+    assemblyNames: ['hg38'],
+    adapter: { type: 'BedTabixAdapter', uri: 'scores.bed.gz' },
+    displays: [{ type: 'LinearMarkDisplay', marks }],
+  })
+  return schemaProblems(config).map(p => ({
+    where: p.where,
+    message: p.message,
+  }))
+}
+
 function walk(dir: string, name: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap(entry =>
     entry.isDirectory()
@@ -224,7 +240,7 @@ describe('the schema', () => {
           type: 'LinearMarkDisplay',
           marks: [
             { shape: 'bar', encoding: { y: 'score' } },
-            { shape: 'point', encoding: { colour: 'red' } },
+            { shape: 'point', encoding: { y: 'score', colour: 'red' } },
           ],
         },
       ],
@@ -232,6 +248,47 @@ describe('the schema', () => {
     expect(whereOf(config)).toEqual([
       'tracks[1].displays[0].marks[1].encoding.colour',
     ])
+  })
+
+  it('refuses a bar or point whose encoding names no y', () => {
+    expect(
+      problemsOfMarks([{ shape: 'bar', encoding: { x: 'start' } }]),
+    ).toEqual([
+      {
+        where: 'tracks[1].displays[0].marks[0].encoding',
+        message: 'missing "y"',
+      },
+    ])
+    expect(problemsOfMarks([{ shape: 'point' }])).toEqual([
+      {
+        where: 'tracks[1].displays[0].marks[0]',
+        message: 'missing "encoding"',
+      },
+    ])
+    expect(problemsOfMarks([{ encoding: {} }])).toEqual([
+      {
+        where: 'tracks[1].displays[0].marks[0].encoding',
+        message: 'missing "y"',
+      },
+    ])
+    expect(
+      problemsOfMarks([{ shape: 'bar', encoding: { y: { field: '' } } }]),
+    ).not.toEqual([])
+  })
+
+  it('takes a y-less span, and every form of a y that names a field', () => {
+    expect(
+      problemsOfMarks([{ shape: 'span', encoding: { row: 'name' } }]),
+    ).toEqual([])
+    expect(problemsOfMarks([{ shape: 'span' }])).toEqual([])
+    expect(
+      problemsOfMarks([{ shape: 'bar', encoding: { y: 'score' } }]),
+    ).toEqual([])
+    expect(
+      problemsOfMarks([
+        { shape: 'point', encoding: { y: { field: 'score', scale: 'log' } } },
+      ]),
+    ).toEqual([])
   })
 
   it('checks displayDefaults against the track displays, not the track', () => {
