@@ -12,6 +12,7 @@ import type { ShowLabelsMode } from '@jbrowse/plugin-canvas'
 const jexl = createJexlInstance()
 const region = {
   displayedRegionIndex: 0,
+  assemblyName: 'volvox',
   refName: 'ctgA',
   start: 0,
   end: 10_000,

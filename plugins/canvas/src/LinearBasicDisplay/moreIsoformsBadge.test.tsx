@@ -404,7 +404,7 @@ function renderLabelLayer(
     renderedShowSubfeatureLabels: true,
     renderedShowDescriptions: false,
     canvasWidthPx: 1000,
-    labelFontSize: 11,
+    renderedLabelFontSize: 11,
     height: 100,
     contentHeight: 100,
     labelScrollBucket: 0,

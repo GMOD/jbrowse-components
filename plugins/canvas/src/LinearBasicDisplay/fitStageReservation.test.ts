@@ -5,6 +5,7 @@ import {
   makeFlatbushItem,
   packStackedGenes,
 } from '../RenderFeatureDataRPC/testUtils.ts'
+import { displayModeMetrics } from './layoutInputs.ts'
 import { maxBottom } from './layoutQueries.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -251,6 +252,12 @@ describe('the rung that packed a layout says what it reserved', () => {
           expect(display.renderedShowDescriptions).toBe(stage.showDescriptions)
           expect(display.renderedShowSubfeatureLabels).toBe(
             stage.scale >= 1 && !stage.dropBelowLabelRows,
+          )
+          // The hit box and the highlight boxes price the ungated subfeature
+          // label off this, so it has to be the size the pack reserved at —
+          // zero on the rung that spends the below-label rows at no height.
+          expect(display.renderedLabelFontSize).toBe(
+            displayModeMetrics(packed!).labelFontPx,
           )
         }
       })

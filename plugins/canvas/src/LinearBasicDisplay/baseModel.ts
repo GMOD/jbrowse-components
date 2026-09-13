@@ -78,6 +78,7 @@ import {
 } from './fitLadderViews.ts'
 import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
 import { heightViews } from './heightViews.ts'
+import { layoutRegionKey } from './layoutInputs.ts'
 import { featureIdsTouchingBlocks } from './layoutQueries.ts'
 import { modeCanShowDescription, modeCanShowName } from './showLabelsMode.ts'
 import {
@@ -141,7 +142,7 @@ function loadedFeatureData(
 ): LoadedFeatureData {
   return {
     ...data,
-    regionKey: `${region.assemblyName}:${region.refName}`,
+    regionKey: layoutRegionKey(region),
     refName: region.refName,
     reversed: !!region.reversed,
   }
@@ -502,11 +503,6 @@ export default function baseStateModelFactory(
           }
           return set
         },
-
-        /**
-         * #getter
-         * Singular, lowercase noun for what this track holds.
-         */
       }))
       .views(featureSetViews)
       .views(featureHighlightViews)
@@ -665,6 +661,18 @@ export default function baseStateModelFactory(
         },
         /**
          * #getter
+         * The size the kept rung priced its labels at, and so the size they
+         * draw at.
+         */
+        // Zero at the `bare` rung, which spends the below-label rows at no
+        // height and so reserves no label width; a hit box or highlight
+        // measuring at the mode's size overhangs its neighbour by an ungated
+        // subfeature label nothing drew.
+        get renderedLabelFontSize() {
+          return self.fitStage.dropBelowLabelRows ? 0 : self.labelFontSize
+        },
+        /**
+         * #getter
          * What the ladder took from the labels the settings reserved, and how
          * far it squeezed — the one derivation both user-facing notes read.
          */
@@ -812,7 +820,7 @@ export default function baseStateModelFactory(
           const labels = {
             showLabels: self.renderedShowLabels,
             showDescriptions: self.renderedShowDescriptions,
-            fontSize: self.labelFontSize,
+            fontSize: self.renderedLabelFontSize,
           }
           const result = new Map<number, FlatbushRegionIndexes>()
           for (const [idx, data] of self.laidOutDataMap) {

@@ -155,9 +155,12 @@ displays — and the band cannot drift from the display it stands in for.
   `showVariantLane` stays a render-tier setting a toggle must not refetch. The
   pass is per record (thousands), not per cell (millions), and plugin-canvas
   packs main-thread anyway.
-- **The color crosses over as `itemRgb`.** With `config.color` unset, `boxColor`
-  lets a feature's own BED color speak — which is how a lane mark stays the
-  color of the alt cells in the column under it.
+- **The color crosses over as a per-feature jexl.** `buildLaneRenderData` stamps
+  each rebuilt feature with the `laneColor` attribute the display already
+  resolved for the alt cells, and the lane's `color` slot is a jexl reading it —
+  which is how a lane mark stays the color of the column under it. Not the BED
+  `itemRgb` path `boxColor` falls through to: that takes an `r,g,b` triple and
+  drops the alpha a jexl-authored cell color can carry.
 - **`variantTopBands` no longer splits the band.** Mark strip, label strip and
   "do the labels fit" were ours and are now the fit ladder's; that file answers
   only how many pixels the band gets, plus which label kinds the slot asked for

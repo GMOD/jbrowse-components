@@ -100,44 +100,77 @@ const { glyphs: lane } = buildLaneCells({
   colors: { colorOf: () => 'goldenrod', stroke: '#222', divider: '#ccc' },
 })
 
-function spans(positions: ArrayLike<number>, origin: number) {
-  const out: [number, number][] = []
-  for (let i = 0; i < positions.length; i += 2) {
-    out.push([positions[i]! - origin, positions[i + 1]! - origin])
-  }
-  return out.sort((a, b) => a[0] - b[0] || a[1] - b[1])
-}
+const round = (n: number) => Number(n.toFixed(3))
 
-// each side against its OWN row top, since the two lay their rows out
-// differently — what has to agree is the offset within the row
-function offsets(ys: Float32Array, top: number) {
-  return [...ys].map(y => Number((y - top).toFixed(3))).sort((a, b) => a - b)
+/**
+ * One row per primitive, each carrying its span WITH its y offset and height —
+ * three sorted lists compared separately let a box keep the wrong one of the
+ * two heights, which is the only mistake the UTR fraction can make. Each side
+ * measures y against its OWN row top, since the two lay their rows out
+ * differently; what has to agree is the offset within the row.
+ */
+function boxes(
+  positions: ArrayLike<number>,
+  ys: Float32Array,
+  heights: Float32Array,
+  origin: number,
+  top: number,
+) {
+  const out: [number, number, number, number][] = []
+  for (let i = 0; i < ys.length; i++) {
+    out.push([
+      positions[i * 2]! - origin,
+      positions[i * 2 + 1]! - origin,
+      round(ys[i]! - top),
+      round(heights[i]!),
+    ])
+  }
+  return out.sort((a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2])
 }
 
 const trackTop = Math.min(...track.rectYs)
 
 test('a lane emits the boxes the feature track emits, at its UTR height and centring', () => {
-  expect(spans(lane.rectPositions, PX_ORIGIN)).toEqual(
-    spans(track.rectPositions, 0),
+  expect(
+    boxes(lane.rectPositions, lane.rectYs, lane.rectHeights, PX_ORIGIN, 0),
+  ).toEqual(
+    boxes(track.rectPositions, track.rectYs, track.rectHeights, 0, trackTop),
   )
-  expect([...lane.rectHeights].sort()).toEqual([...track.rectHeights].sort())
-  expect(offsets(lane.rectYs, 0)).toEqual(offsets(track.rectYs, trackTop))
 })
 
 test('a lane connects the introns the feature track connects, on the box centre', () => {
   // the lane's own baseline divider spans the whole canvas and has no
   // counterpart on the feature track, so it is not one of the gene's lines
-  const laneIntrons = spans(lane.linePositions, PX_ORIGIN).filter(
-    ([start, end]) => start >= GENE_START && end <= GENE_END,
+  const laneIntrons = boxes(
+    lane.linePositions,
+    lane.lineYs,
+    lane.lineHeights,
+    PX_ORIGIN,
+    0,
+  ).filter(([start, end]) => start >= GENE_START && end <= GENE_END)
+  expect(laneIntrons).toEqual(
+    boxes(track.linePositions, track.lineYs, track.lineHeights, 0, trackTop),
   )
-  expect(laneIntrons).toEqual(spans(track.linePositions, 0))
   // `rectYs` is a box top and `lineYs` its centre — half a height apart
-  expect(offsets(lane.lineYs, 0)).toContain(HEIGHT / 2)
-  expect(offsets(track.lineYs, trackTop)).toContain(HEIGHT / 2)
+  expect(laneIntrons.map(l => l[2])).toContain(HEIGHT / 2)
 })
 
 test('a lane points the strand arrow where the feature track points it', () => {
-  expect([...lane.arrowXs].map(x => x - PX_ORIGIN)).toEqual([...track.arrowXs])
-  expect(offsets(lane.arrowYs, 0)).toEqual(offsets(track.arrowYs, trackTop))
-  expect([...lane.arrowDirections]).toEqual([...track.arrowDirections])
+  const arrows = (
+    d: {
+      arrowXs: ArrayLike<number>
+      arrowYs: Float32Array
+      arrowDirections: ArrayLike<number>
+    },
+    origin: number,
+    top: number,
+  ): [number, number, number][] =>
+    [...d.arrowYs]
+      .map((y, i): [number, number, number] => [
+        d.arrowXs[i]! - origin,
+        round(y - top),
+        d.arrowDirections[i]!,
+      ])
+      .sort((a, b) => a[0] - b[0])
+  expect(arrows(lane, PX_ORIGIN, 0)).toEqual(arrows(track, 0, trackTop))
 })

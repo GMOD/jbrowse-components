@@ -154,6 +154,3 @@ export function labelOverhangRoomPx(
   }
   return { rightRoom, leftRoom }
 }
-
-// Read-only so the per-factor pass cannot write here; a mutation would leak
-// one probe's label decisions into the next.

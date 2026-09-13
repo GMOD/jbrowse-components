@@ -17,6 +17,16 @@ export type LabelDecimation = 'all' | 'fitWidth'
 // of a silent mis-stack.
 export type LayoutRegionData = FeatureDataResult & { regionKey: string }
 
+// The assembly is part of the key: two displayed regions can spell one refName
+// on different assemblies, and grouped together their absolute bp coordinates
+// stack against each other.
+export function layoutRegionKey(region: {
+  assemblyName: string
+  refName: string
+}) {
+  return `${region.assemblyName}:${region.refName}`
+}
+
 export interface LayoutInputs {
   bpPerPx: number
   showLabels: boolean

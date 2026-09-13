@@ -112,7 +112,7 @@ function makeModel(overrides: Partial<LegendModel> = {}): LegendModel {
     renderedShowLabels: true,
     renderedShowSubfeatureLabels: true,
     renderedShowDescriptions: true,
-    labelFontSize: LABEL_FONT_SIZE,
+    renderedLabelFontSize: LABEL_FONT_SIZE,
     showLegend: true,
     legendSpec: { sections: [] },
     ...overrides,
@@ -281,7 +281,7 @@ describe('renderSvg', () => {
       makeModel({
         laidOutDataMap: new Map([[0, data]]),
         highlightedFeatureIdSet: new Set(['f0']),
-        labelFontSize: LABEL_FONT_SIZE * 0.7,
+        renderedLabelFontSize: LABEL_FONT_SIZE * 0.7,
       }),
     )
     const html = renderResult(result)

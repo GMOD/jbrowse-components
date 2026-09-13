@@ -20,22 +20,16 @@ export {
   rectShader,
 }
 
-export const RECT_PASS = 'rect'
-export const LINE_PASS = 'line'
-export const ARROW_PASS = 'arrow'
-export const CHEVRON_PASS = 'chevron'
-export const CONTINUATION_PASS = 'continuation'
-
 export const RectPass: PipelineDescriptor = slangPass({
-  id: RECT_PASS,
+  id: 'rect',
   mod: rectShader,
 })
 export const LinePass: PipelineDescriptor = slangPass({
-  id: LINE_PASS,
+  id: 'line',
   mod: lineShader,
 })
 export const ArrowPass: PipelineDescriptor = slangPass({
-  id: ARROW_PASS,
+  id: 'arrow',
   mod: arrowShader,
 })
 
@@ -46,7 +40,7 @@ export function makeChevronPass(
   maxChevronsPerLine: number,
 ): PipelineDescriptor {
   return slangPass({
-    id: CHEVRON_PASS,
+    id: 'chevron',
     mod: chevronShader,
     verticesPerInstance: maxChevronsPerLine * chevronShader.CHEVRON_VERTS,
   })
@@ -55,7 +49,7 @@ export function makeChevronPass(
 // Continuation reads rect's vertex buffer, so a marker drawing on at most two
 // blocks of a frame needs no second per-region pack and upload.
 export const ContinuationPass: PipelineDescriptor = slangPass({
-  id: CONTINUATION_PASS,
+  id: 'continuation',
   mod: continuationShader,
 })
 

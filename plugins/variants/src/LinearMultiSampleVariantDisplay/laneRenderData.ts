@@ -1,6 +1,6 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
-import { buildFeatureRenderData } from '@jbrowse/plugin-canvas'
+import { buildFeatureRenderData, layoutRegionKey } from '@jbrowse/plugin-canvas'
 
 import type { VariantFeatureInfo } from '../shared/types.ts'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
@@ -21,6 +21,7 @@ export interface LaneSourceData {
 /** The region bounds the lane lays a block out in. */
 export interface LaneRegion {
   displayedRegionIndex: number
+  assemblyName: string
   refName: string
   start: number
   end: number
@@ -93,6 +94,6 @@ export function buildLaneRenderData({
     }),
     // What `computeLaidOutData` groups regions by, so two blocks of one
     // chromosome pack against each other rather than each from row 0.
-    regionKey: region.refName,
+    regionKey: layoutRegionKey(region),
   }
 }

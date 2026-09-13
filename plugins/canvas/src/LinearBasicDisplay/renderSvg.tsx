@@ -43,7 +43,7 @@ export interface RenderSvgModel extends SvgExportable {
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
   renderedShowSubfeatureLabels: boolean
-  labelFontSize: number
+  renderedLabelFontSize: number
 }
 
 export async function renderSvg(
@@ -75,7 +75,7 @@ function CanvasFeaturesSvgBody({
   // Shared by the geometry pass and the highlight pass, so the boxes are
   // scissored against the same canvas as the glyphs.
   const renderState = { scrollY, canvasWidth, canvasHeight: height }
-  const fontSize = model.labelFontSize
+  const fontSize = model.renderedLabelFontSize
   const labelContext = {
     showLabels: model.renderedShowLabels,
     showDescriptions: model.renderedShowDescriptions,

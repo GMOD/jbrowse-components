@@ -605,6 +605,7 @@ export function stateModelFactory(
                     data,
                     region: {
                       displayedRegionIndex,
+                      assemblyName: region.assemblyName,
                       refName: region.refName,
                       start: region.start,
                       end: region.end,

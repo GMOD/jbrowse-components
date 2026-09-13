@@ -58,7 +58,7 @@ interface FloatingLabelsModel {
   renderedShowDescriptions: boolean
   renderedShowSubfeatureLabels: boolean
   canvasWidthPx: number
-  labelFontSize: number
+  renderedLabelFontSize: number
   height: number
   contentHeight: number
   labelScrollBucket: number
@@ -78,7 +78,7 @@ interface HighlightBoxesModel {
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
   canvasWidthPx: number
-  labelFontSize: number
+  renderedLabelFontSize: number
   selectedFeatureId: string | undefined
   hoverBoxFeature: FlatbushItem | undefined
   hoverBoxSubfeature: SubfeatureInfo | undefined
@@ -133,13 +133,13 @@ function MoreIsoformsBadge({
   resolved,
   featureId,
   displayedRegionIndex,
-  labelFontSize,
+  renderedLabelFontSize,
   className,
 }: {
   resolved: MoreResolvedLabel
   featureId: string
   displayedRegionIndex: number
-  labelFontSize: number
+  renderedLabelFontSize: number
   className: string
 }) {
   const { label, labelX, labelY, color } = resolved
@@ -153,8 +153,8 @@ function MoreIsoformsBadge({
       className={className}
       style={{
         color,
-        fontSize: labelFontSize * MORE_ISOFORMS_FONT_SCALE,
-        transform: `translate(${labelX}px, ${moreBadgeTop(labelY, labelFontSize)}px)`,
+        fontSize: renderedLabelFontSize * MORE_ISOFORMS_FONT_SCALE,
+        transform: `translate(${labelX}px, ${moreBadgeTop(labelY, renderedLabelFontSize)}px)`,
       }}
     >
       {label.text}
@@ -168,14 +168,14 @@ function FloatingLabel({
   resolved,
   featureId,
   displayedRegionIndex,
-  labelFontSize,
+  renderedLabelFontSize,
   clickable,
   labelClasses,
 }: {
   resolved: PlainResolvedLabel
   featureId: string
   displayedRegionIndex: number
-  labelFontSize: number
+  renderedLabelFontSize: number
   clickable: boolean
   labelClasses: LabelClasses
 }) {
@@ -192,7 +192,7 @@ function FloatingLabel({
       }
       style={{
         color,
-        fontSize: labelFontSize,
+        fontSize: renderedLabelFontSize,
         transform: `translate(${labelX}px, ${labelY}px)`,
       }}
     >
@@ -317,7 +317,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
   const {
     renderedShowLabels,
     renderedShowDescriptions,
-    labelFontSize,
+    renderedLabelFontSize,
     height,
     labelScrollBucket,
     featureItemMap,
@@ -352,7 +352,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
     showLabels: renderedShowLabels,
     showDescriptions: renderedShowDescriptions,
     showSubfeatureLabels: model.renderedShowSubfeatureLabels,
-    fontSize: labelFontSize,
+    fontSize: renderedLabelFontSize,
     colors: labelColors(palette),
   }
   const cullBand = labelCullBand(labelScrollBucket, height)
@@ -396,7 +396,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
               resolved={resolved}
               featureId={featureId}
               displayedRegionIndex={displayedRegionIndex}
-              labelFontSize={labelFontSize}
+              renderedLabelFontSize={renderedLabelFontSize}
               className={moreBadgeClass}
             />
           ) : (
@@ -405,7 +405,7 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
               resolved={resolved}
               featureId={featureId}
               displayedRegionIndex={displayedRegionIndex}
-              labelFontSize={labelFontSize}
+              renderedLabelFontSize={renderedLabelFontSize}
               clickable={clickable}
               labelClasses={labelClasses}
             />
@@ -538,7 +538,7 @@ export const HighlightLayer = observer(function HighlightLayer({
     soloApplied,
     renderedShowLabels,
     renderedShowDescriptions,
-    labelFontSize,
+    renderedLabelFontSize,
     featureItemMap,
     morphOffsetFor,
   } = model
@@ -618,7 +618,7 @@ export const HighlightLayer = observer(function HighlightLayer({
       featureWidthPx,
       renderedShowLabels,
       renderedShowDescriptions,
-      labelFontSize,
+      renderedLabelFontSize,
     )
   }
 
