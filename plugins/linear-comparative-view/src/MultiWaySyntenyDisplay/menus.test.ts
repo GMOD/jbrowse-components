@@ -48,8 +48,7 @@ test('moving one lane pins every lane, in the order now shown', () => {
       written.push(order)
     },
     resetRowOrder: () => {},
-    hiddenLanes: [],
-    setHiddenLanes: () => {},
+    hideLane: () => {},
   })
   const lanes = subMenuOf(items[0])
   expect(labelsOf(lanes)).toEqual([
@@ -57,7 +56,6 @@ test('moving one lane pins every lane, in the order now shown', () => {
     'cacao',
     'grape',
     '—',
-    'Show all lanes',
     'Reset lane order',
   ])
 
@@ -73,14 +71,13 @@ test('the ends of the stack cannot move past themselves, and reset is dead with 
     rowOrder: [],
     setRowOrder: () => {},
     resetRowOrder: () => {},
-    hiddenLanes: [],
-    setHiddenLanes: () => {},
+    hideLane: () => {},
   })
   const lanes = subMenuOf(items[0])
   const disabled = (item: MenuItem | undefined) =>
     item && 'disabled' in item ? item.disabled : undefined
-  expect(subMenuOf(lanes[0]).map(disabled)).toEqual([true, false])
-  expect(subMenuOf(lanes[1]).map(disabled)).toEqual([false, true])
+  expect(subMenuOf(lanes[0]).map(disabled)).toEqual([true, false, false])
+  expect(subMenuOf(lanes[1]).map(disabled)).toEqual([false, true, false])
   expect(disabled(lanes[3])).toBe(true)
 })
 
@@ -91,56 +88,12 @@ test('one lane has no order to edit', () => {
       rowOrder: [],
       setRowOrder: () => {},
       resetRowOrder: () => {},
-      hiddenLanes: [],
-      setHiddenLanes: () => {},
+      hideLane: () => {},
     }),
   ).toEqual([])
 })
 
-test('a lane hides from its own row and comes back from a row of its own', () => {
-  const written: string[][] = []
-  const model = {
-    rowAssemblies: ['peach', 'cacao'],
-    rowOrder: [],
-    setRowOrder: () => {},
-    resetRowOrder: () => {},
-    hiddenLanes: ['grape'],
-    setHiddenLanes: (names: string[]) => {
-      written.push(names)
-    },
-  }
-  const lanes = subMenuOf(laneOrderMenuItem(model)[0])
-  expect(labelsOf(lanes)).toEqual([
-    'peach',
-    'cacao',
-    'Show grape',
-    '—',
-    'Show all lanes',
-    'Reset lane order',
-  ])
-  expect(labelsOf(subMenuOf(lanes[0]))).toEqual([
-    'Move up',
-    'Move down',
-    'Hide lane',
-  ])
-  ;(subMenuOf(lanes[0])[2] as { onClick: () => void }).onClick()
-  ;(lanes[2] as { onClick: () => void }).onClick()
-  expect(written).toEqual([['grape', 'peach'], []])
-})
-
-test('one lane still has a menu while another is hidden', () => {
-  const items = laneOrderMenuItem({
-    rowAssemblies: ['peach'],
-    rowOrder: [],
-    setRowOrder: () => {},
-    resetRowOrder: () => {},
-    hiddenLanes: ['cacao'],
-    setHiddenLanes: () => {},
-  })
-  expect(labelsOf(subMenuOf(items[0]))).toContain('Show cacao')
-})
-
-function headerModel(held = true, pinned?: string) {
+function headerModel(held = true, pinned?: string, canReanchor = true) {
   const calls: string[] = []
   const model = {
     rowAssemblies: ['peach', 'cacao'],
@@ -151,12 +104,12 @@ function headerModel(held = true, pinned?: string) {
     resetRowOrder: () => {
       calls.push('reset')
     },
-    hiddenLanes: [],
-    setHiddenLanes: (names: string[]) => {
-      calls.push(`hide ${names.join(',')}`)
+    hideLane: (name: string) => {
+      calls.push(`hide ${name}`)
     },
     anchorLocString: 'chr1:1-1,000',
     holdsAssembly: () => held,
+    canReanchor,
     openInNewView: (name: string, loc: string) => {
       calls.push(`open ${name} ${loc}`)
     },
@@ -199,6 +152,15 @@ test('a lane the stack does not hold has no direction to move in', () => {
     true,
     false,
   ])
+})
+
+test('the last lane drawn cannot be hidden', () => {
+  const { model } = headerModel()
+  expect(
+    disabledOf(
+      laneRowMenuItems({ ...model, rowAssemblies: ['peach'] }, 'peach'),
+    ),
+  ).toEqual([true, true, true])
 })
 
 const peach = {
@@ -282,6 +244,22 @@ test('a mate lane header opens its assembly elsewhere or re-anchors the track on
   ])
 })
 
+// A star aligns every lane to its one anchor, so a mate made the anchor
+// places next to nothing: the row is left out rather than offered dead
+test('a source aligned to one anchor offers no re-anchor', () => {
+  expect(
+    labelsOf(
+      laneHeaderMenuItems(headerModel(true, undefined, false).model, peach),
+    ),
+  ).toEqual([
+    'Move up',
+    'Move down',
+    'Hide lane',
+    '—',
+    'Open peach at the matching region',
+  ])
+})
+
 test('the two hops are dead without a frame, and without the genome in the session', () => {
   const hops = (items: MenuItem[]) => disabledOf(items).slice(4)
   expect(hops(laneHeaderMenuItems(headerModel().model, peach))).toEqual([
@@ -312,16 +290,23 @@ test('the anchor lane header only opens the view region elsewhere', () => {
   expect(calls).toEqual(['open grape chr1:1-1,000'])
 })
 
-test('the picker is offered once there are lanes to choose among, and a selection offers its undo', () => {
+test('the picker is offered once there are lanes to choose among, and a choice offers its undo', () => {
   const calls: string[] = []
-  const model = (universe: number, selection?: string[]) => ({
+  const model = (
+    universe: number,
+    chosen?: string[],
+    configuredLanes: string[] = [],
+  ) => ({
     laneUniverse: Array.from({ length: universe }, (_, i) => ({
       name: `lane${i}`,
       placed: true,
     })),
-    laneSelection: selection,
+    laneSelection:
+      chosen ?? (configuredLanes.length ? configuredLanes : undefined),
+    selectedLanes: chosen,
+    configuredLanes,
     setSelectedLanes: (names: string[] | undefined) => {
-      calls.push(`select ${names === undefined ? 'every' : names.join(',')}`)
+      calls.push(`select ${names === undefined ? 'reset' : names.join(',')}`)
     },
     openLaneSelection: () => {
       calls.push('open')
@@ -331,8 +316,17 @@ test('the picker is offered once there are lanes to choose among, and a selectio
   const two = laneSelectionMenuItems(model(2))
   expect(labelsOf(two)).toEqual(['Choose lanes...'])
   click(two[0])
-  const chosen = laneSelectionMenuItems(model(1, ['lane0']))
-  expect(labelsOf(chosen)).toEqual(['Choose lanes...', 'Every lane (1 chosen)'])
+  const chosen = laneSelectionMenuItems(model(3, ['lane0']))
+  expect(labelsOf(chosen)).toEqual(['Choose lanes...', 'Every lane (3)'])
   click(chosen[1])
-  expect(calls).toEqual(['open', 'select every'])
+  expect(calls).toEqual(['open', 'select reset'])
+
+  // the config's own lanes are no choice to undo, and undoing a choice over
+  // them goes back to them, which the row has to say
+  expect(
+    labelsOf(laneSelectionMenuItems(model(9, undefined, ['lane1']))),
+  ).toEqual(['Choose lanes...'])
+  expect(
+    labelsOf(laneSelectionMenuItems(model(9, ['lane2'], ['lane1']))),
+  ).toEqual(['Choose lanes...', "The track's lanes (1)"])
 })

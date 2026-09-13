@@ -16,13 +16,13 @@ export interface LaneOrderModel {
   rowOrder: readonly string[]
   setRowOrder: (order: string[]) => void
   resetRowOrder: () => void
-  hiddenLanes: readonly string[]
-  setHiddenLanes: (names: string[]) => void
+  hideLane: (assemblyName: string) => void
 }
 
 export interface LaneHeaderModel extends LaneOrderModel {
   anchorLocString: string
   holdsAssembly: (assemblyName: string) => boolean
+  canReanchor: boolean
   openInNewView: (assemblyName: string, loc: string) => void
   reanchor: (assemblyName: string, loc: string) => void
   pinnedContigOf: (assemblyName: string) => string | undefined
@@ -51,6 +51,8 @@ export interface LaneChoice {
 export interface LaneSelectionModel {
   laneUniverse: LaneChoice[]
   laneSelection: readonly string[] | undefined
+  selectedLanes: readonly string[] | undefined
+  configuredLanes: readonly string[]
   setSelectedLanes: (names: string[] | undefined) => void
   openLaneSelection: () => void
 }
@@ -75,12 +77,10 @@ export interface LaneSettingsModel {
 /**
  * The lanes a reorder names, plus the pinned lanes it could not see.
  *
- * A move writes back the whole order it is looking at, which is
- * `rowAssemblies` — the lanes present in the fetched window and not hidden. So
- * a lane the reader hid, or panned away from, was dropped out of `rowOrder`
- * entirely by the next move on any other lane, and came back densest-first at
- * the bottom rather than where they left it. Each one is spliced back at the
- * index it held, so the order the reader authored survives a lane being away.
+ * A move writes back `rowAssemblies`, the lanes the window places and the
+ * selection keeps, so a lane hidden or panned away from would drop out of
+ * `rowOrder` on the next move and come back densest-first at the bottom. Each
+ * one is spliced back at the index it held.
  */
 export function mergeRowOrder(previous: string[], next: string[]) {
   const named = new Set(next)
@@ -99,7 +99,6 @@ export function laneRowMenuItems(
   name: string,
 ): MenuItem[] {
   const lanes = model.rowAssemblies
-  const hidden = model.hiddenLanes
   const i = lanes.indexOf(name)
   // `keepMenuOpen`, because moving a lane two places is two clicks and the
   // default dismisses an action row: reordering by menu was a fresh trip
@@ -124,9 +123,10 @@ export function laneRowMenuItems(
     },
     {
       label: 'Hide lane',
+      disabled: lanes.length < 2,
       keepMenuOpen: true,
       onClick: () => {
-        model.setHiddenLanes([...hidden, name])
+        model.hideLane(name)
       },
     },
   ]
@@ -136,11 +136,10 @@ export function laneRowMenuItems(
  * The menu a lane's header raises. A mate lane gets the track menu's own row
  * plus the two hops off it: its assembly in a view of its own at the frame the
  * lane is drawing (the same jump a synteny track and a MAF row offer a mate),
- * and the whole track re-anchored on it, which the hosting view
- * does by navigating there — the anchor lane reads off the view's first
- * assembly, so the old anchor drops into a mate lane on its own. Either hop is
- * dead while the lane places nothing, and re-anchoring also while the session
- * does not hold the genome.
+ * and the whole track re-anchored on it, which the hosting view does by
+ * navigating there. Either hop is dead while the lane places nothing or the
+ * session does not hold the genome, and a source aligned to one anchor offers
+ * no re-anchor at all.
  *
  * Then the lane's other contigs, one row each: the frame shows the contig
  * explaining most of the anchor window, and a genome holding two homoeologous
@@ -176,13 +175,17 @@ export function laneHeaderMenuItems(
         model.openInNewView(name, loc!)
       },
     },
-    {
-      label: `Re-anchor on ${name}`,
-      disabled: loc === undefined || !held,
-      onClick: () => {
-        model.reanchor(name, loc!)
-      },
-    },
+    ...(model.canReanchor
+      ? [
+          {
+            label: `Re-anchor on ${name}`,
+            disabled: loc === undefined || !held,
+            onClick: () => {
+              model.reanchor(name, loc!)
+            },
+          },
+        ]
+      : []),
     ...laneContigMenuItems(model, lane),
   ]
 }
@@ -219,8 +222,7 @@ function laneContigMenuItems(
 }
 
 /**
- * Reorder or hide the mate lanes, or nothing while there is one lane and
- * nothing hidden.
+ * Reorder or hide the mate lanes, or nothing while there is one lane.
  *
  * Worth a row per lane because a ribbon joins ADJACENT lanes only: moving a
  * near-empty lane out from mid-stack reconnects the chains it was cutting
@@ -235,8 +237,7 @@ function laneContigMenuItems(
  */
 export function laneOrderMenuItem(model: LaneOrderModel): MenuItem[] {
   const lanes = model.rowAssemblies
-  const hidden = model.hiddenLanes
-  if (lanes.length < 2 && hidden.length === 0) {
+  if (lanes.length < 2) {
     return []
   }
   return [
@@ -247,24 +248,7 @@ export function laneOrderMenuItem(model: LaneOrderModel): MenuItem[] {
           label: name,
           subMenu: laneRowMenuItems(model, name),
         })),
-        ...hidden.map(name => ({
-          label: `Show ${name}`,
-          keepMenuOpen: true,
-          onClick: () => {
-            model.setHiddenLanes(hidden.filter(h => h !== name))
-          },
-        })),
         { type: 'divider' },
-        // A reader who hid four lanes had four trips through this menu to get
-        // them back, and no reset covered them: `Reset lane order` clears the
-        // order and leaves every hidden lane hidden
-        {
-          label: 'Show all lanes',
-          disabled: hidden.length === 0,
-          onClick: () => {
-            model.setHiddenLanes([])
-          },
-        },
         {
           label: 'Reset lane order',
           disabled: model.rowOrder.length === 0,
@@ -278,13 +262,26 @@ export function laneOrderMenuItem(model: LaneOrderModel): MenuItem[] {
 }
 
 /**
+ * What the picker's Reset and the track menu's undo go back to: the config's
+ * `lanes` where it names some, else every lane
+ */
+export function laneResetLabel(
+  model: Pick<LaneSelectionModel, 'configuredLanes' | 'laneUniverse'>,
+) {
+  const configured = model.configuredLanes.length
+  return configured
+    ? `The track's lanes (${configured})`
+    : `Every lane (${model.laneUniverse.length})`
+}
+
+/**
  * The picker's entry and its undo. Offered only when there is a choice to
- * make: two or more lanes to choose among, or a selection already narrowing
- * the stack that the reader may want back out of.
+ * make: two or more lanes to choose among, or a choice already made that the
+ * reader may want back out of.
  */
 export function laneSelectionMenuItems(model: LaneSelectionModel): MenuItem[] {
-  const selection = model.laneSelection
-  if (model.laneUniverse.length < 2 && selection === undefined) {
+  const chosen = model.selectedLanes
+  if (model.laneUniverse.length < 2 && chosen === undefined) {
     return []
   }
   return [
@@ -296,11 +293,11 @@ export function laneSelectionMenuItems(model: LaneSelectionModel): MenuItem[] {
         model.openLaneSelection()
       },
     },
-    ...(selection === undefined
+    ...(chosen === undefined
       ? []
       : [
           {
-            label: `Every lane (${selection.length} chosen)`,
+            label: laneResetLabel(model),
             onClick: () => {
               model.setSelectedLanes(undefined)
             },

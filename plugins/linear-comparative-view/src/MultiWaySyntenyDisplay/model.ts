@@ -290,18 +290,10 @@ export function stateModelFactory(
         rowOrder: types.array(types.string),
         /**
          * #property
-         * mate lanes taken out of the stack, so a genome that places nothing
-         * in the region of interest stops holding a slot between two that do
-         */
-        hiddenLanes: types.array(types.string),
-        /**
-         * #property
-         * the lanes the reader chose from the picker, by assembly name, and
-         * the only lanes the stack then draws; undefined is every lane the
-         * source places, or the config's `lanes` where that names some. Held
-         * here rather than in the adapter's config because it is a choice
-         * about this session's picture, made in front of it, and one a
-         * shared session should carry
+         * the lanes the stack draws, by assembly name, as the picker and Hide
+         * lane wrote them; undefined is the config's `lanes`, or every lane
+         * where that names none. Session state rather than adapter config: a
+         * choice made in front of this picture, which a shared session carries
          */
         selectedLanes: types.maybe(types.array(types.string)),
       }),
@@ -505,18 +497,12 @@ export function stateModelFactory(
         /**
          * #action
          */
-        setHiddenLanes(names: string[]) {
-          self.hiddenLanes.replace(names)
-        },
-        /**
-         * #action
-         */
         setDeclaredLanes(lanes: DeclaredLane[]) {
           self.declaredLanes = lanes
         },
         /**
          * #action
-         * undefined puts the choice back to every lane the source places
+         * undefined puts the choice back to the config's `lanes`, or every lane
          */
         setSelectedLanes(names: string[] | undefined) {
           self.selectedLanes = names === undefined ? undefined : cast(names)
@@ -784,11 +770,30 @@ export function stateModelFactory(
       },
       /**
        * #getter
+       */
+      get configuredLanes(): string[] {
+        return readConfObject(self.configuration, 'lanes')
+      },
+      /**
+       * #method
+       * the one spelling two names for the same assembly share
+       */
+      laneKey(assemblyName: string) {
+        return (
+          getSession(self).assemblyManager.getCanonicalAssemblyName(
+            assemblyName,
+          ) ?? assemblyName
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * the lanes in force: the reader's choice, else the config's `lanes`
-       * where it names any, else undefined for every lane the source places
+       * where it names any, else undefined for every lane
        */
       get laneSelection(): readonly string[] | undefined {
-        const configured: string[] = readConfObject(self.configuration, 'lanes')
+        const configured = self.configuredLanes
         return (
           self.selectedLanes ?? (configured.length ? configured : undefined)
         )
@@ -859,38 +864,43 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * every lane the picker can offer: the header's declared lanes, in the
-       * order the source gave them, then any lane the fetched window places
-       * that the header did not name. The anchor is never a lane. Exact names
-       * throughout, since the header and the features are one adapter's
-       * spelling of the same lanes
+       * every lane the picker can offer: the header's declared lanes in the
+       * source's order, then the genomes the track config names, then any
+       * lane the fetched window places that neither named. The anchor is
+       * never a lane. The config's names are what let Hide lane write a
+       * selection without shutting out a genome this window happens not to
+       * place
        */
       get laneUniverse(): LaneChoice[] {
-        const { assemblyManager } = getSession(self)
-        const anchor = self.anchorAssemblyName
-        const placed = new Set(
-          rowAssembliesOf(self.groups, [], (a, b) =>
-            isSameAssemblyName(a, b, assemblyManager),
-          ).filter(name => !isSameAssemblyName(name, anchor, assemblyManager)),
-        )
-        const out: LaneChoice[] = []
-        const named = new Set<string>()
+        const anchor = self.laneKey(self.anchorAssemblyName)
+        const placed = new Set<string>()
+        for (const group of self.groups) {
+          for (const name of group.mates.keys()) {
+            placed.add(self.laneKey(name))
+          }
+        }
+        const out = new Map<string, LaneChoice>()
+        const offer = (lane: DeclaredLane) => {
+          const key = self.laneKey(lane.name)
+          if (key !== anchor && !out.has(key)) {
+            out.set(key, { ...lane, placed: placed.has(key) })
+          }
+        }
         for (const lane of self.declaredLanes ?? []) {
-          if (
-            !named.has(lane.name) &&
-            !isSameAssemblyName(lane.name, anchor, assemblyManager)
-          ) {
-            named.add(lane.name)
-            out.push({ ...lane, placed: placed.has(lane.name) })
+          offer(lane)
+        }
+        for (const name of readConfObject(
+          self.parentTrack.configuration,
+          'assemblyNames',
+        ) as string[]) {
+          offer({ name })
+        }
+        for (const group of self.groups) {
+          for (const name of group.mates.keys()) {
+            offer({ name })
           }
         }
-        for (const name of placed) {
-          if (!named.has(name)) {
-            named.add(name)
-            out.push({ name, placed: true })
-          }
-        }
-        return out
+        return [...out.values()]
       },
       /**
        * #getter
@@ -902,19 +912,30 @@ export function stateModelFactory(
        */
       get rowAssemblies() {
         const { assemblyManager } = getSession(self)
-        const sameName = (a: string, b: string) =>
-          isSameAssemblyName(a, b, assemblyManager)
+        const anchor = self.laneKey(self.anchorAssemblyName)
         const selection = self.laneSelection
-        return rowAssembliesOf(
-          self.groups,
-          [...self.rowOrder],
-          sameName,
-        ).filter(
-          assemblyName =>
-            !sameName(assemblyName, self.anchorAssemblyName) &&
-            !self.hiddenLanes.some(hidden => sameName(hidden, assemblyName)) &&
-            (selection === undefined ||
-              selection.some(chosen => sameName(chosen, assemblyName))),
+        const chosen = selection && new Set(selection.map(self.laneKey))
+        return rowAssembliesOf(self.groups, [...self.rowOrder], (a, b) =>
+          isSameAssemblyName(a, b, assemblyManager),
+        ).filter(assemblyName => {
+          const key = self.laneKey(assemblyName)
+          return key !== anchor && (chosen === undefined || chosen.has(key))
+        })
+      },
+      /**
+       * #getter
+       * whether a mate lane can become the anchor. A star source names its
+       * one anchor in its header, and a source declaring its lanes without
+       * the view's anchor among them answers from that anchor alone; either
+       * re-anchored on a mate draws next to nothing
+       */
+      get canReanchor() {
+        const anchor = self.laneKey(self.anchorAssemblyName)
+        const declared = self.declaredLanes ?? []
+        return (
+          self.starAnchor === undefined &&
+          (declared.length === 0 ||
+            declared.some(lane => self.laneKey(lane.name) === anchor))
         )
       },
       /**
@@ -935,6 +956,28 @@ export function stateModelFactory(
           LaneSelectionDialog,
           { model: self, handleClose },
         ])
+      },
+      /**
+       * #action
+       * the selection in force, or every lane, less this one
+       */
+      hideLane(assemblyName: string) {
+        const key = self.laneKey(assemblyName)
+        const lanes =
+          self.laneSelection ?? self.laneUniverse.map(lane => lane.name)
+        self.setSelectedLanes(lanes.filter(name => self.laneKey(name) !== key))
+      },
+      /**
+       * #action
+       * this lane added to a selection in force; every lane is already drawn
+       * without one
+       */
+      showLane(assemblyName: string) {
+        const key = self.laneKey(assemblyName)
+        const selection = self.laneSelection
+        if (selection && !selection.some(name => self.laneKey(name) === key)) {
+          self.setSelectedLanes([...selection, assemblyName])
+        }
       },
     }))
     .views(self => ({
@@ -1929,11 +1972,13 @@ export function stateModelFactory(
       /**
        * #action
        * the hosting view onto `assemblyName` at `loc`; the anchor lane reads
-       * off the view's first assembly, so the stack re-anchors on its own
+       * off the view's first assembly, so the stack re-anchors on its own,
+       * and the outgoing anchor joins a selection in force so it stays drawn
        */
       reanchor(assemblyName: string, loc: string) {
         const session = getSession(self)
         const view = self.lgv
+        const outgoing = self.anchorAssemblyName
         // the same undo the stacked view's moves offer: the navigation
         // replaces the view's regions with another genome's, and what it
         // discarded may be a region list built over several navigations
@@ -1942,6 +1987,7 @@ export function stateModelFactory(
           .navToLocString(loc, assemblyName)
           .then(landed => {
             if (landed) {
+              self.showLane(outgoing)
               session.notify(`Re-anchored on ${assemblyName}`, 'info', {
                 name: 'Undo',
                 onClick: () => {

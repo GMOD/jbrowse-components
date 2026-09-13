@@ -134,7 +134,7 @@ test('a hidden lane drops the hover', async () => {
   expect(display.hoverTarget).toBeDefined()
 
   const viewport = viewportOf(display)
-  display.setHiddenLanes([MATES[1]!])
+  display.hideLane(MATES[1]!)
   expect(viewportOf(display)).toEqual(viewport)
   expect(display.hoverTarget).toBeUndefined()
 })

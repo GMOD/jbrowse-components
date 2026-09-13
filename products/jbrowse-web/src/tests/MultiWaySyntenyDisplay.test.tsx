@@ -289,7 +289,9 @@ test('MultiWaySyntenyDisplay reorders its lanes from the track menu', async () =
     'grape',
     'cacao',
   ])
-  click(rowNamed(laneOrder(), 'Show peach'))
+  expect([...display.selectedLanes!]).toEqual(['cacao'])
+  click(rowNamed(display.trackMenuItems(), 'Every lane (2)'))
+  expect(display.selectedLanes).toBeUndefined()
   expect(display.rowAssemblies).toEqual(['peach', 'cacao'])
 }, 40000)
 
@@ -463,7 +465,7 @@ test('MultiWaySyntenyDisplay raises a lane menu from its label', async () => {
     expect(queryByText('Hide lane')).toBeNull()
   })
   act(() => {
-    display.setHiddenLanes([])
+    display.setSelectedLanes(undefined)
   })
   expect(display.rowAssemblies).toEqual(['peach', 'cacao'])
   expect(queryByText('Hide lane')).toBeNull()

@@ -15,22 +15,20 @@ const universe: LaneChoice[] = [
   { name: 'extra', placed: true },
 ]
 
-function renderDialog(selection?: string[], hidden: string[] = []) {
+function renderDialog(selection?: string[], configuredLanes: string[] = []) {
   const calls: (string[] | undefined)[] = []
-  const hides: string[][] = []
   const closes: number[] = []
   render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <LaneSelectionDialog
         model={{
           laneUniverse: universe,
-          laneSelection: selection,
+          laneSelection:
+            selection ?? (configuredLanes.length ? configuredLanes : undefined),
+          selectedLanes: selection,
+          configuredLanes,
           setSelectedLanes: names => {
             calls.push(names)
-          },
-          hiddenLanes: hidden,
-          setHiddenLanes: names => {
-            hides.push(names)
           },
         }}
         handleClose={() => {
@@ -39,7 +37,7 @@ function renderDialog(selection?: string[], hidden: string[] = []) {
       />
     </ThemeProvider>,
   )
-  return { calls, hides, closes }
+  return { calls, closes }
 }
 
 test('lanes run under their group, and a lane without one heads no run', () => {
@@ -65,23 +63,27 @@ test('opens on every lane when nothing is chosen, and writes back the ticked set
   expect(closes).toHaveLength(1)
 })
 
-test('ticking every lane writes no selection, and Every lane drops one', () => {
+test('ticking every lane writes no selection, and Reset drops one', () => {
   const { calls } = renderDialog(['HG2#1'])
   expect(screen.getByLabelText('HG2#1')).toBeChecked()
   expect(screen.getByLabelText('extra')).not.toBeChecked()
   fireEvent.click(screen.getByText('Tick shown'))
   fireEvent.click(screen.getByText('Draw these lanes'))
   expect(calls).toEqual([undefined])
-  fireEvent.click(screen.getByText('Every lane'))
+  fireEvent.click(screen.getByText('Every lane (4)'))
   expect(calls).toEqual([undefined, undefined])
 })
 
-test('a hidden lane opens unticked, and ticking it unhides it', () => {
-  const { hides } = renderDialog(undefined, ['extra'])
-  expect(screen.getByLabelText('extra')).not.toBeChecked()
-  fireEvent.click(screen.getByLabelText('extra'))
+// No selection over a config naming its own lanes means those lanes, so an
+// all-ticked submit that wrote none drew the config's eight out of 464
+test('over a config naming lanes, every lane ticked is written out, and Reset goes back to the config', () => {
+  const { calls } = renderDialog(undefined, ['HG2#1'])
+  expect(screen.getByText('1 of 4 lanes chosen', { exact: false })).toBeTruthy()
+  fireEvent.click(screen.getByText('Tick shown'))
   fireEvent.click(screen.getByText('Draw these lanes'))
-  expect(hides).toEqual([[]])
+  expect(calls).toEqual([['HG1.1', 'HG1#2', 'HG2#1', 'extra']])
+  fireEvent.click(screen.getByText("The track's lanes (1)"))
+  expect(calls.at(-1)).toBeUndefined()
 })
 
 test('a chosen lane this window does not place survives a submit', () => {

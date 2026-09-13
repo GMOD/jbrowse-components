@@ -4,15 +4,14 @@ import { LabeledCheckbox, SubmitDialog } from '@jbrowse/core/ui'
 import { Button, TextField, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { laneResetLabel } from '../menus.ts'
+
 import type { LaneChoice, LaneSelectionModel } from '../menus.ts'
 
-export interface LaneSelectionDialogModel extends Omit<
+export type LaneSelectionDialogModel = Omit<
   LaneSelectionModel,
   'openLaneSelection'
-> {
-  hiddenLanes: readonly string[]
-  setHiddenLanes: (names: string[]) => void
-}
+>
 
 function matchesFilter(lane: LaneChoice, filter: string) {
   const needle = filter.trim().toLowerCase()
@@ -52,9 +51,10 @@ function laneCaption(lane: LaneChoice) {
 
 /**
  * Which lanes to draw, out of every lane the source offers. Opens on the lanes
- * the stack draws; Submit unhides what is ticked and writes the ticked set
- * back, and ticking every lane writes no selection at all, so lanes the source
- * places later are not shut out. Reset drops the selection.
+ * the stack draws and writes the ticked set back. Every lane ticked writes no
+ * selection, so a lane the source places later is not shut out, except over a
+ * config naming its own lanes, where no selection means those. Reset drops
+ * the selection.
  */
 const LaneSelectionDialog = observer(function LaneSelectionDialog({
   model,
@@ -63,17 +63,13 @@ const LaneSelectionDialog = observer(function LaneSelectionDialog({
   model: LaneSelectionDialogModel
   handleClose: () => void
 }) {
-  const { laneUniverse, laneSelection, hiddenLanes } = model
+  const { laneUniverse, laneSelection, configuredLanes } = model
   const [drawn] = useState(
     () =>
       new Set(
         laneUniverse
           .map(lane => lane.name)
-          .filter(
-            name =>
-              (laneSelection?.includes(name) ?? true) &&
-              !hiddenLanes.includes(name),
-          ),
+          .filter(name => laneSelection?.includes(name) ?? true),
       ),
   )
   const [chosen, setChosen] = useState(drawn)
@@ -107,9 +103,10 @@ const LaneSelectionDialog = observer(function LaneSelectionDialog({
           const offWindow = (laneSelection ?? []).filter(
             name => !laneUniverse.some(lane => lane.name === name),
           )
-          model.setHiddenLanes(hiddenLanes.filter(name => !chosen.has(name)))
           model.setSelectedLanes(
-            chosen.size === laneUniverse.length && offWindow.length === 0
+            chosen.size === laneUniverse.length &&
+              offWindow.length === 0 &&
+              configuredLanes.length === 0
               ? undefined
               : [
                   ...laneUniverse
@@ -128,7 +125,7 @@ const LaneSelectionDialog = observer(function LaneSelectionDialog({
         model.setSelectedLanes(undefined)
         handleClose()
       }}
-      resetText="Every lane"
+      resetText={laneResetLabel(model)}
     >
       <Typography variant="body2" gutterBottom>
         {chosen.size} of {laneUniverse.length} lanes chosen

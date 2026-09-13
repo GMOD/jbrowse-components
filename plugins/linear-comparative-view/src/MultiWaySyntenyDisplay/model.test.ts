@@ -367,6 +367,32 @@ test('re-anchoring offers an undo that puts the view back where it was', async (
   expect(windowOf()).toEqual(before)
 })
 
+// rowAssemblies narrows to the selection and the anchor is never a lane, so
+// the genome a re-anchor moves out of the anchor lane fell outside a selection
+// that had no reason to name it, and vanished from the stack
+test('re-anchoring under a lane selection keeps the outgoing anchor drawn', async () => {
+  const { display, session } = createDisplayWithSession()
+  display.setSelectedLanes(['volvox_random'])
+  display.reanchor('volvox_random', 'ctgA:1-100')
+  for (let i = 0; i < 50 && !session.notifications.length; i++) {
+    await new Promise(resolve => setTimeout(resolve, 10))
+  }
+  expect(session.notifications.at(-1)?.message).toBe(
+    'Re-anchored on volvox_random',
+  )
+  expect(display.selectedLanes).toEqual(['volvox_random', 'volvox'])
+})
+
+test('with every lane drawn, re-anchoring writes no selection', async () => {
+  const { display, session } = createDisplayWithSession()
+  display.reanchor('volvox_random', 'ctgA:1-100')
+  for (let i = 0; i < 50 && !session.notifications.length; i++) {
+    await new Promise(resolve => setTimeout(resolve, 10))
+  }
+  expect(session.notifications).toHaveLength(1)
+  expect(display.selectedLanes).toBeUndefined()
+})
+
 // The clicked ribbon keeps an outline the way the pairwise view's does: the
 // click records the hover's target, the passes compare it per instance, and
 // only an empty-canvas click or a refetch lets it go.
@@ -1037,6 +1063,7 @@ test('an adapter declaring its lanes has its header read once, and the universe 
   expect(display.laneUniverse).toEqual([
     { name: 'HG1#1', label: 'HG1#1', group: 'HG1', placed: false },
     { name: 'HG1#2', label: undefined, group: 'HG1', placed: false },
+    { name: 'volvox_random', placed: false },
   ])
   expect(display.rowAssemblies).toEqual([])
 
@@ -1048,12 +1075,13 @@ test('an adapter declaring its lanes has its header read once, and the universe 
   expect(display.laneUniverse.map(l => [l.name, l.placed])).toEqual([
     ['HG1#1', false],
     ['HG1#2', true],
+    ['volvox_random', false],
     ['sample#1#undeclared', true],
   ])
   expect(display.rowAssemblies).toEqual(['HG1#2', 'sample#1#undeclared'])
 })
 
-test('an adapter that neither tiers nor declares lanes is never asked for a header', async () => {
+test('an adapter that neither tiers nor declares lanes is never asked for a header, and offers the genomes its track names', async () => {
   const calls: string[] = []
   const { display } = createDisplayWithSession({
     rpc: async name => {
@@ -1064,7 +1092,45 @@ test('an adapter that neither tiers nor declares lanes is never asked for a head
   await when(() => display.features !== undefined, { timeout: 5000 })
   expect(calls).not.toContain('CoreGetInfo')
   expect(display.declaredLanes).toBeUndefined()
-  expect(display.laneUniverse).toEqual([])
+  expect(display.laneUniverse).toEqual([
+    { name: 'volvox_random', placed: false },
+  ])
+})
+
+// Hide lane writes a selection, so a lane the window does not place yet has to
+// be in what it writes, or a pan onto it would find it shut out
+test('hiding a lane keeps every other lane the track names, placed here or not', () => {
+  const display = createDisplay()
+  display.setFeatures([
+    mateRecord('r1', 'sample#1#a'),
+    mateRecord('r2', 'sample#1#b'),
+  ])
+  display.hideLane('sample#1#a')
+  expect(display.selectedLanes).toEqual(['volvox_random', 'sample#1#b'])
+  expect(display.rowAssemblies).toEqual(['sample#1#b'])
+  display.setFeatures([
+    mateRecord('r1', 'sample#1#a'),
+    mateRecord('r3', 'volvox_random'),
+  ])
+  expect(display.rowAssemblies).toEqual(['volvox_random'])
+  display.showLane('sample#1#a')
+  expect(display.rowAssemblies).toEqual(['sample#1#a', 'volvox_random'])
+})
+
+// A star's mate lanes are aligned to its anchor only, and a graph source
+// declaring its haplotypes without the reference answers from the reference
+// alone: re-anchored on a mate, either draws next to nothing
+test('a mate lane can become the anchor only on a source that aligns lanes to each other', () => {
+  const plain = createDisplay()
+  expect(plain.canReanchor).toBe(true)
+  plain.setStarAnchor('volvox')
+  expect(plain.canReanchor).toBe(false)
+
+  const graph = createDisplay()
+  graph.setDeclaredLanes([{ name: 'HG1#1' }, { name: 'HG1#2' }])
+  expect(graph.canReanchor).toBe(false)
+  graph.setDeclaredLanes([{ name: 'HG1#1' }, { name: 'volvox' }])
+  expect(graph.canReanchor).toBe(true)
 })
 
 // The selection is the reader's picture, so it is display state: it narrows
@@ -1097,11 +1163,12 @@ test('a lane selection narrows the stack, survives a refetch, and is what the co
     'sample#1#a',
     'volvox_random',
   ])
-  // pins and hides still apply inside the selection
+  // pins apply inside the selection, and a hide narrows it
   display.setRowOrder(['sample#1#a'])
   expect(display.rowAssemblies).toEqual(['sample#1#a', 'volvox_random'])
-  display.setHiddenLanes(['volvox_random'])
+  display.hideLane('volvox_random')
   expect(display.rowAssemblies).toEqual(['sample#1#a'])
+  expect(display.selectedLanes).toEqual(['sample#1#a'])
 
   display.setSelectedLanes(undefined)
   expect(display.laneSelection).toEqual(['sample#1#b', 'not#placed'])
@@ -1161,7 +1228,9 @@ test('the track menu offers the picker once there is a choice, and the way back 
   ])
   expect(labels()).toContain('Choose lanes...')
   display.setSelectedLanes(['sample#1#a'])
-  expect(labels()).toContain('Every lane (1 chosen)')
+  expect(labels()).toContain('Every lane (2)')
+  setConf(display, 'lanes', ['volvox_random'])
+  expect(labels()).toContain("The track's lanes (1)")
 })
 
 test('declaredLanesOf reads a header that names lanes and nothing else', () => {
