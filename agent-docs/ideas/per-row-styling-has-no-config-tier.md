@@ -135,6 +135,5 @@ not have. That is the part to design before writing code.
   adapter snapshot handed over by a hub or the add-track workflow, and the only
   one available where the row set is discovered rather than declared.
 - **Do not try to give `subadapters` a real schema.** Its interior is the whole
-  adapter union, and the same opacity already defeats the relative-URI walker —
-  [config-and-sessions.md](config-and-sessions.md) has that analysis and its
-  conclusion that frozen interiors stay opaque under any fix.
+  adapter union, and the same opacity already defeats the relative-URI walker
+  (#3562): frozen interiors stay opaque under any fix.

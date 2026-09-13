@@ -6,10 +6,7 @@ kind: measurement
 
 # Interaction perf: which components re-render per frame
 
-Measurements, not a proposal — the one open action they point at (pooling the
-ruler's tick `<div>`s) is
-[ideas/give-the-coordinate-ruler-a-genuinely-fixed-tick-pool.md](../ideas/give-the-coordinate-ruler-a-genuinely-fixed-tick-pool.md),
-moved off `TODO.md` on 2026-08-26.
+Measurements, not a proposal.
 
 ### Where this leaves the perf story (all measured)
 

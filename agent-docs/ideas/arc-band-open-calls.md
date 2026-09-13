@@ -1,11 +1,11 @@
 ---
 name: arc-band-open-calls
-description: Seven parked calls on the read-connection arc band and the read cloud, cut from TODO.md on 2026-08-26 for missing the v5.0.0 bar. Four are marks and geometry, three are colour, a menu and an asymmetry nothing pins. Read alongside reference/ARC_BAND.md, which is the settled half and holds the two numbers this list once said nobody had read.
+description: Six parked calls on the read-connection arc band and the read cloud, cut from TODO.md on 2026-08-26 for missing the v5.0.0 bar. Four are marks and geometry, two are colour and a menu. Read alongside reference/ARC_BAND.md, which is the settled half and holds the two numbers this list once said nobody had read.
 ---
 
 # The arc band's open calls
 
-Seven items cut from `TODO.md` on 2026-08-26, when the backlog was reduced to
+Six items cut from `TODO.md` on 2026-08-26, when the backlog was reduced to
 what v5.0.0 turns on. [reference/ARC_BAND.md](../reference/ARC_BAND.md) is the
 settled description of this band, and everything below is what it deliberately
 does not answer. All are visual calls, which is why they are filed rather than
@@ -238,7 +238,7 @@ and lean on paint order.
 Whichever way it goes it is **cloud-mode only** — arc mode's ticks are drawn
 against a genomic-radius axis and nobody has reported them as confusing.
 
-## Colour, menus and one asymmetry
+## Colour and menus
 
 ### What colour is an arc with no pair orientation
 
@@ -292,15 +292,3 @@ either arcs get a real block or that invariant needs a considered second shape.
 Don't relax it casually.
 
 Decide the item set first — it is a product call, not an implementation one.
-
-### Chain mode flags an unmapped mate but not an interchromosomal one
-
-One line, and it is not established that the asymmetry is even wrong.
-
-`readColorCategory` gives `unmappedMate` its own bucket under the plain `normal`
-scheme when chain mode is on (`isOrientationScheme || (colorScheme ===
-ColorScheme.normal && isChain)`), and the `interchrom` test one line below is
-gated on `isOrientationScheme` alone. Both produce the same thing on screen — a
-chain drawn with a partner that never arrives — so the asymmetry is either a
-deliberate call nobody wrote down or an omission. `colorUtils.test.ts` covers
-only the orientation-scheme half of each, so nothing pins it either way.

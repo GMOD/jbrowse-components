@@ -12,9 +12,7 @@ Once the data is hosted the figure itself is ordinary: a spec in
 `website/scripts/specs/`, `pnpm figures:push --filter`, commit `figures.lock`.
 
 Pangenome graph figures have their own ranked queue in
-[pangenome-figures-unshot.md](pangenome-figures-unshot.md), and the C-GIAB
-tutorial's remaining sections are in
-[cgiab-tutorial-followups.md](cgiab-tutorial-followups.md).
+[pangenome-figures-unshot.md](pangenome-figures-unshot.md).
 
 ## The junction-BED tutorial section has no figure
 

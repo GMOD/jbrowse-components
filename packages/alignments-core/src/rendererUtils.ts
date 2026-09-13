@@ -89,7 +89,7 @@ type Ctx = MarkContext2D
  * comes back as a `[number, number]`, and these loops run per covered bp. It
  * buys the rule by construction instead of by transcription, which is the trade
  * adr-051 exists to make — but it is the trade, and it is unmeasured on a quiet
- * machine (ideas/canvas2d-painter-generation §Owed).
+ * machine.
  */
 export function fillSpanRect(
   ctx: Ctx,

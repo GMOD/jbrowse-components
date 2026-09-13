@@ -57,10 +57,8 @@ import type { ModWithPositions } from '@jbrowse/modifications-utils'
  *
  * **Groups on DIFFERENT canonical bases are still N walks over the same ops**,
  * and no parse-time merge can fold them: a Fiber-seq read's `C+m` and `A+a` have
- * genuinely different positions. Merging those ascending streams to walk once is
- * `agent-docs/ideas/walk-the-cigar-once-for-a-reads-whole-mm-tag-not-once-per-group.md`;
- * don't
- * mistake it for something this grouping already does. Expect ~1.1x from it —
+ * genuinely different positions. Merging those ascending streams to walk once
+ * was declined at ~1.1x, and a loss below three distinct groups —
  * `cigarOpDensity.bench.ts` and the same-base merge's split both say the walk
  * phase is bound by per-call work rather than by traversal.
  */

@@ -406,8 +406,7 @@ built on it.
 
 **The demo slice bounds what the reads can reach**: chr3:139,936,789-139,986,329
 and chr13:114,317,474-114,353,942, which is one of the two junctions. Widening
-it means re-slicing the 118 GB NCBI BAM and re-uploading, i.e. the data-prep
-work `agent-docs/ideas/cgiab-tutorial-followups.md` files.
+it means re-slicing the 118 GB NCBI BAM and re-uploading.
 
 **Why this dataset earns its place beside COLO829**: the window ends at the
 chr13 q-terminus, so under the real junction sit half a dozen routes built from

@@ -339,7 +339,9 @@ function overrideCategory(
   }
 
   // Mate on another chromosome: orientation/insert size are meaningless, so one
-  // distinct bucket instead of an LR/RL/etc hue.
+  // distinct bucket instead of an LR/RL/etc hue. Not in chain mode's normal
+  // scheme, unlike the unmapped mate: there the brown says "no mate anywhere",
+  // and a mate on another chromosome is placed, like one past the fetch.
   return data.readInterchrom[i] === 1 && isOrientationScheme
     ? 'interchrom'
     : undefined

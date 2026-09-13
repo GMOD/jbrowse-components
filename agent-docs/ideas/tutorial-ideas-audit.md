@@ -390,8 +390,7 @@ audience below, which the tally scores at 35.
 **The missing audience: the genome portal operator.** Organizing hundreds or
 thousands of tracks, categories and metadata for the faceted selector, hubs and
 connections. genomes.jbrowse.org and `~/src/jb2hubs` are existence proofs that
-we do this, [large-track-catalogs.md](large-track-catalogs.md) covers the
-engineering, and the docs teach none of it. Adjacent to the serving
+we do this, and the docs teach none of it. Adjacent to the serving
 your lab's data tutorial, one tier up in scale.
 
 ### The genomes.jbrowse.org pages (2026-08-08 audit)

@@ -1,6 +1,6 @@
 ---
 name: build-and-dependencies
-description: The MUI v10 cleanup, lazy display behavior via `extendInstance`, host-chosen plugin sets for embedded products, and why an embedded component cannot switch itself to the RPC worker.
+description: The MUI v10 cleanup, host-chosen plugin sets for embedded products, and why an embedded component cannot switch itself to the RPC worker.
 ---
 
 # Build & dependencies
@@ -26,68 +26,6 @@ packed tarball), and programmatic consumers all use — which also closes the
 `import { renderRegion }`-under-raw-Node exposure gap and makes CI exercise the real shipped
 hook instead of its own copy. Don't bundle `@jbrowse/img` for this — it freezes the
 semver flow-through for one narrow consumer path.
-
-### Lazy display behavior via `extendInstance` (superseded 2026-09-02)
-
-Superseded: every view and display state model is now registered as a lazy
-loader (`agent-docs/reference/EAGER_BUNDLE.md`), which takes the whole model
-subgraph out of the eager bundle rather than only its interaction slice. The
-late-bound `types.union({ members })` in the MST fork is what removed the
-"the union must contain every type" objection below.
-
-Defer the dependency-heavy, interaction-only slice of display models out of the
-eager bundle. Today each plugin statically imports its model factory, and
-`createPluggableElements()` builds every display's full MST type at boot, because
-`track.displays[]` is `types.union(...allDisplays)` and must contain every type a
-saved session could reference. Only `ReactComponent` is `lazy()`-split.
-
-The primitive is the fork's `extendInstance(instance, fn)` (branch
-`feat/extend-instance-lazy-chain`, unlanded): attach `{actions, views, state}` to
-a **live** instance. Persisted props must stay on the base — the union hydrates
-props only, so a `.props()` in a deferred segment would be dropped from the
-snapshot.
-
-The split that makes it safe is by *when the member is read*, not by size:
-
-- **Render-critical, must be present at hydrate:** layout getters, `rpcProps()`,
-  height, `renderProps`. Stay on the base.
-- **Interaction-triggered:** `trackMenuItems`, `contextMenuItems`, dialog
-  launchers, export sub-flows. Read only at interaction boundaries
-  (`TrackLabelMenu.tsx`, `BaseTrackModel`'s `displays.flatMap(d =>
-  d.trackMenuItems())`), never in the render loop, so an `await` there is fine.
-  `trackMenuItems` is a plain view *function* (installed `configurable:true`, and
-  observers re-invoke functions each reaction), so there is no stranded computed
-  atom — the fork's "sharp edge over lazy members" caveat is about getters.
-
-Mechanism: a volatile function slot (`menuImpl`) plus an idempotent
-`ensureBehaviorLoaded()` that `import()`s the menu module and `extendInstance`s
-it in; the base view delegates to `self.menuImpl?.(self)`. Either await it at the
-menu-open handler, or don't and let MobX fill the open menu a frame later.
-
-The payoff is **transitive deps** (MUI icons, editors, tree-sidebar, non-lazy
-dialog helpers), not model code — own-code was measured at single-digit KB
-gzipped per model. Several displays already have standalone menu modules
-(`hic/LinearHicDisplay/trackMenuItems.ts`,
-`canvas/LinearMultiRowFeatureDisplay/trackMenuItems.ts`,
-`maf/LinearMafDisplay/trackMenuItems.ts`,
-`variants/shared/multiSampleVariantMenuItems.ts`), so pilot on
-`LinearHicDisplay` and **measure before continuing**: diff the main chunk gzipped
-and confirm a new async chunk carries the icons out. If the deps don't leave the
-eager chunk (shared with other eager code), stop — ROI collapses. Hot-path
-displays (`LinearBasicDisplay`, `LinearAlignmentsDisplay`) can't defer their
-models but can defer this surface, after a mechanical extraction of the
-`superTrackMenuItems` wrap blocks.
-
-Risks: one value re-export from an `index.ts` re-pins the deferred module (add a
-check-script; type-only re-exports are erased); a render-critical getter reading
-a deferred slot gets `undefined`; `contextMenuItems` needs the same treatment or
-it re-pins the code.
-
-Orthogonal to deferring whole secondary *view* stacks (dotplot/synteny/circular/
-hic/breakpoint/sv-inspector) behind a thin registered base — that variant buys
-synchronous saved-session hydration of a code-split view but needs every
-persisted prop hoisted to the thin base plus a render-path loading gate. Revisit
-only after the interaction-surface approach is proven.
 
 ### Host-chosen plugin sets for embedded products (proposal, not implemented)
 

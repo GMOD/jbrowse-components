@@ -12,9 +12,8 @@ the JSON the figure corpus is built from a good format, and would a
 grammar-of-graphics form — the shape Gosling and GenomeSpy publish — be a
 better one, either for readers or as a way to hold the codebase's complexity
 down. This doc answers both from a census of the corpus rather than from taste.
-[ideas/session-spec-grammar](../ideas/session-spec-grammar.md) is the parked
-proposal it assesses; ADR-089 through ADR-091 are the in-tree experiment with
-marks that the codebase half of the question already ran.
+ADR-089 through ADR-091 are the in-tree experiment with marks that the codebase
+half of the question already ran.
 
 ## What the format is
 
