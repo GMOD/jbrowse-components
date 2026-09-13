@@ -130,9 +130,10 @@ interface ArmMark<TRegion, TState extends MarkFrame> extends Omit<
 interface ArmSpec<TRegion, TState extends MarkFrame, TChannels, TParams> {
   shape: MarkShape<TChannels, TParams>
   channels: (region: TRegion) => TChannels
-  params: (state: TState, region: TRegion) => TParams
+  params: (state: TState, region: TRegion, block: RenderBlock) => TParams
   bufferOf?: Mark<TRegion, TState>
   band?: (state: TState) => MarkBand
+  enabled?: (state: TState) => boolean
 }
 
 // --- arm "baseline": `drawRegion` as it stood before `StagedUniforms`. The
@@ -154,7 +155,7 @@ function defineBaseline<TRegion, TState extends MarkFrame, TChannels, TParams>(
       if (scissor && scissor.height === 0) {
         return
       }
-      const p = params(state, region)
+      const p = params(state, region, block)
       if (shape.paintsBlock && !shape.paintsBlock(block, state, p)) {
         return
       }
@@ -185,22 +186,33 @@ function defineCurrent<TRegion, TState extends MarkFrame, TChannels, TParams>(
 function defineDedupe<TRegion, TState extends MarkFrame, TChannels, TParams>(
   spec: ArmSpec<TRegion, TState, TChannels, TParams>,
 ): ArmMark<TRegion, TState> {
-  const { shape, channels, params, band } = spec
+  const { shape, channels, params, band, enabled } = spec
   const bufferOf = spec.bufferOf?.pass.id
   return {
     pass: { ...shape.pass, pack: region => shape.pass.pack(channels(region)) },
     bufferOf,
     paintBlock() {},
     drawRegion(hal, scratch, block, clip, region, state, regionKey, reuse) {
-      const strip = band?.(state)
-      const scissor = strip
-        ? devicePxBand(strip.top, strip.height, clip.scaleY, clip.pxH)
-        : undefined
-      if (scissor && scissor.height === 0) {
+      if (enabled && !enabled(state)) {
         return
       }
-      const p = params(state, region)
+      const strip = band?.(state)
+      if (
+        strip &&
+        !(strip.height > 0 && Number.isFinite(strip.top + strip.height))
+      ) {
+        return
+      }
+      if (channels(region) === undefined) {
+        return
+      }
+      const p = params(state, region, block)
       if (shape.paintsBlock && !shape.paintsBlock(block, state, p)) {
+        return
+      }
+      const scissor =
+        strip && devicePxBand(strip.top, strip.height, clip.scaleY, clip.pxH)
+      if (scissor?.height === 0) {
         return
       }
       if (scissor) {

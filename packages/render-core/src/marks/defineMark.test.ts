@@ -164,6 +164,138 @@ describe('a mark with a band', () => {
   })
 })
 
+describe('one gate for all four consumers', () => {
+  interface Gated {
+    span?: SpanChannels
+  }
+  interface GateState extends State {
+    on: boolean
+  }
+  const gated = defineMark({
+    shape: { ...spanMark, paintsBlock: b => !b.reversed },
+    channels: (d: Gated) => d.span,
+    params: (s: GateState) => ({ ...s.span, scrollTop: -s.band.top }),
+    band: (s: GateState) => s.band,
+    enabled: (s: GateState) => s.on,
+  })
+  const open = { ...state(20), on: true }
+
+  function consumers(region: Gated, b: typeof block, s: GateState) {
+    const hal = new MockHal([gated.pass])
+    const backend = new GpuMarkBackend(hal, [gated])
+    backend.upload(0, region)
+    backend.renderBlocks([b], new Map([[0, region]]), s)
+    const { ctx, rects } = recordingCtx()
+    gated.paintBlock(ctx, region, b, s)
+    return {
+      draws: hal.draws().length,
+      paints: rects.length,
+      hit: gated.hitNearest!(region, b, s, 15, 35, [0], Infinity) !== undefined,
+      ink: gated.ink!(region, b, s, 0) !== undefined,
+    }
+  }
+
+  test.each([
+    ['switched off', REGION, block, { ...open, on: false }],
+    [
+      'a NaN band height',
+      REGION,
+      block,
+      { ...open, band: { top: 30, height: NaN } },
+    ],
+    [
+      'a NaN band top',
+      REGION,
+      block,
+      { ...open, band: { top: NaN, height: 20 } },
+    ],
+    [
+      'a zero-height band',
+      REGION,
+      block,
+      { ...open, band: { top: 30, height: 0 } },
+    ],
+    ['nothing in the region', {}, block, open],
+    ['a block the shape declines', REGION, { ...block, reversed: true }, open],
+  ])('%s draws, paints, hits and inks nothing', (_, region, b, s) => {
+    expect(consumers(region, b, s)).toEqual({
+      draws: 0,
+      paints: 0,
+      hit: false,
+      ink: false,
+    })
+  })
+
+  test('an open gate draws, paints, hits and inks', () => {
+    expect(consumers(REGION, block, open)).toEqual({
+      draws: 1,
+      paints: 1,
+      hit: true,
+      ink: true,
+    })
+  })
+
+  test('every consumer reads the lenses in one order and stops at the first closed gate', () => {
+    const read: string[] = []
+    const logged = (on: boolean, height: number) =>
+      defineMark({
+        shape: spanMark,
+        channels: (d: Region) => {
+          read.push('channels')
+          return d.span
+        },
+        params: (s: State) => {
+          read.push('params')
+          return s.span
+        },
+        band: () => {
+          read.push('band')
+          return { top: 30, height }
+        },
+        enabled: () => {
+          read.push('enabled')
+          return on
+        },
+      })
+    function readsOf(mark: ReturnType<typeof logged>) {
+      const hal = new MockHal([mark.pass])
+      const backend = new GpuMarkBackend(hal, [mark])
+      backend.upload(0, REGION)
+      const s = state(20)
+      const during = (run: () => void) => {
+        read.length = 0
+        run()
+        return [...read]
+      }
+      return {
+        draw: during(() => {
+          backend.renderBlocks([block], new Map([[0, REGION]]), s)
+        }),
+        paint: during(() => {
+          mark.paintBlock(recordingCtx().ctx, REGION, block, s)
+        }),
+        hit: during(() => {
+          mark.hitNearest!(REGION, block, s, 15, 35, [0], Infinity)
+        }),
+        ink: during(() => {
+          mark.ink!(REGION, block, s, 0)
+        }),
+      }
+    }
+    const everywhere = (reads: string[]) => ({
+      draw: reads,
+      paint: reads,
+      hit: reads,
+      ink: reads,
+    })
+    expect(readsOf(logged(false, 20))).toEqual(everywhere(['enabled']))
+    expect(readsOf(logged(true, 0))).toEqual(everywhere(['enabled', 'band']))
+    expect(readsOf(logged(true, 20))).toEqual(
+      everywhere(['enabled', 'band', 'channels', 'params']),
+    )
+  })
+})
+
 // The gate is the draw's, so it has to reach the hover too: a shape that
 // declines a block puts no ink on it, and a cursor there is over whatever the
 // mark UNDER it drew.

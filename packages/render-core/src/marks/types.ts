@@ -296,11 +296,9 @@ export interface Mark<TRegion, TState extends MarkFrame> {
   /**
    * The frame-level gate: whether the mark draws at all under `state`, read
    * off the display-wide state and nothing else. `planMarks` asks it once per
-   * frame; `drawRegion`, `paintBlock` and `hitNearest` ask it per block, so a
-   * list drawn through `drawMarks` gates like one drawn through a plan — and
-   * so does the hit test, which is what stops a switched-off layer answering a
-   * hover over blank pixels. A question about the block is `paintsBlock`, on
-   * the shape.
+   * frame; `drawRegion`, `paintBlock`, `hitNearest` and `ink` ask it per block,
+   * before any lens, so a switched-off layer neither draws nor answers a hover.
+   * A question about the block is `paintsBlock`, on the shape.
    */
   readonly enabled?: (state: TState) => boolean
   /**
@@ -398,10 +396,11 @@ export interface Mark<TRegion, TState extends MarkFrame> {
  *
  * `band` is the strip of the canvas the mark is clipped to, for a display that
  * stacks bands on one canvas (MAF's coverage strip over its rows viewport).
- * The GPU scissors to it and Canvas2D clips to it, a zero-height band draws
- * nothing, and the shape still places Y against the whole canvas — the band is
- * a clip, never an offset, which is what lets one `scrollTop` serve both
- * backends. A mark without one paints wherever its shape puts ink.
+ * The GPU scissors to it and Canvas2D clips to it, a band with no positive
+ * finite height or no finite top draws nothing, and the shape still places Y
+ * against the whole canvas — the band is a clip, never an offset, which is what
+ * lets one `scrollTop` serve both backends. A mark without one paints wherever
+ * its shape puts ink.
  *
  * `enabled` is the setting that turns the mark off for a whole frame — the
  * pileup's "show mismatches" — and it is one gate for the three consumers: a
@@ -440,6 +439,36 @@ export function defineMark<
   const bufferOf = lender?.id
   const planned =
     band || shape.paintsBlock ? undefined : { id: shape.pass.id, bufferOf }
+
+  // What the last `resolve` that opened picked, read straight after it by the
+  // one consumer that called it.
+  let openParams: TParams
+  let openStrip: MarkBand | undefined
+
+  // The gates every consumer takes, in one order: the setting before any lens,
+  // the band before `channels`, and `channels` before `params`, which a union
+  // payload's lens may only read off its own kind of region.
+  function resolve(region: TRegion, block: RenderBlock, state: TState) {
+    if (enabled && !enabled(state)) {
+      return undefined
+    }
+    const strip = band?.(state)
+    if (strip && !bandIsOpen(strip)) {
+      return undefined
+    }
+    const c = channels(region)
+    if (c === undefined) {
+      return undefined
+    }
+    const p = params(state, region, block)
+    if (shape.paintsBlock && !shape.paintsBlock(block, state, p)) {
+      return undefined
+    }
+    openParams = p
+    openStrip = strip
+    return c
+  }
+
   return {
     pass: {
       ...shape.pass,
@@ -452,120 +481,105 @@ export function defineMark<
     texture,
     enabled,
     planned,
+    // `resolve`'s gates spelled out, because on the per-block GPU walk its
+    // picks leaving through closure state measured 0.80-0.86x of these locals
+    // (markUniformDedupe.bench.ts, 2026-09-13): V8 can no longer elide a
+    // lens's allocation for a mark whose uniform write is shared.
     drawRegion(hal, scratch, block, clip, region, state, regionKey, staged) {
       if (enabled && !enabled(state)) {
         return
       }
       const strip = band?.(state)
-      const scissor = strip
-        ? devicePxBand(strip.top, strip.height, clip.scaleY, clip.pxH)
-        : undefined
-      if (scissor?.height !== 0 && channels(region) !== undefined) {
-        const p = params(state, region, block)
-        if (!shape.paintsBlock || shape.paintsBlock(block, state, p)) {
-          if (scissor) {
-            hal.setScissor(clip.pxX, scissor.top, clip.pxW, scissor.height)
-          }
-          if (
-            staged?.writer !== shape.writeUniforms ||
-            staged.params !== params
-          ) {
-            shape.writeUniforms(scratch, clip, block, state, p)
-            hal.writeUniforms(scratch)
-            if (staged) {
-              staged.writer = shape.writeUniforms
-              staged.params = params
-            }
-          }
-          hal.drawPass(shape.pass.id, regionKey, bufferOf)
-          if (scissor) {
-            hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
-          }
+      if (strip && !bandIsOpen(strip)) {
+        return
+      }
+      if (channels(region) === undefined) {
+        return
+      }
+      const p = params(state, region, block)
+      if (shape.paintsBlock && !shape.paintsBlock(block, state, p)) {
+        return
+      }
+      // A band scrolled off the backing store, or thinner than a device
+      // pixel, has nothing to scissor to: skip the write and the draw.
+      const scissor =
+        strip && devicePxBand(strip.top, strip.height, clip.scaleY, clip.pxH)
+      if (scissor?.height === 0) {
+        return
+      }
+      if (scissor) {
+        hal.setScissor(clip.pxX, scissor.top, clip.pxW, scissor.height)
+      }
+      if (staged?.writer !== shape.writeUniforms || staged.params !== params) {
+        shape.writeUniforms(scratch, clip, block, state, p)
+        hal.writeUniforms(scratch)
+        if (staged) {
+          staged.writer = shape.writeUniforms
+          staged.params = params
         }
+      }
+      hal.drawPass(shape.pass.id, regionKey, bufferOf)
+      if (scissor) {
+        hal.setScissor(clip.pxX, 0, clip.pxW, clip.pxH)
       }
     },
     paintBlock(ctx, region, block, state) {
-      if (enabled && !enabled(state)) {
+      const c = resolve(region, block, state)
+      if (c === undefined) {
         return
       }
-      const strip = band?.(state)
-      const c = channels(region)
-      if ((!strip || strip.height > 0) && c !== undefined) {
-        const p = params(state, region, block)
-        if (!shape.paintsBlock || shape.paintsBlock(block, state, p)) {
-          const paint = () => {
-            shape.paintBlock(ctx, c, block, state, p)
-          }
-          if (strip) {
-            withClip(ctx, 0, strip.top, state.canvasWidth, strip.height, paint)
-          } else {
-            paint()
-          }
-        }
+      const p = openParams
+      const strip = openStrip
+      if (strip) {
+        withClip(ctx, 0, strip.top, state.canvasWidth, strip.height, () => {
+          shape.paintBlock(ctx, c, block, state, p)
+        })
+      } else {
+        shape.paintBlock(ctx, c, block, state, p)
       }
     },
     hitNearest: hitNearest
       ? (region, block, state, xPx, yPx, candidates, maxDistSq) => {
-          const strip = band?.(state)
-          const c = channels(region)
-          let hit: MarkHit | undefined
-          // The three gates `paintBlock` takes, in its order — the band on its
-          // HEIGHT, as there, so a band both backends decline answers nothing
-          // either. The cursor being inside the strip is a fourth, and the ink
-          // being inside it the fifth: a band is a CLIP, so ink outside one was
-          // never drawn and cannot be the nearest thing to anything.
-          //
-          // The fifth gate REJECTS rather than re-runs, and that is the one
-          // conservative edge here: the shape picks its winner without knowing
-          // about the band, so a clipped-away nearest masks a farther candidate
-          // whose ink IS inside the strip, and the mark answers nothing instead
-          // of that one. Safe in the direction that matters — it never claims a
-          // hover over pixels neither backend drew — and closing it would mean
-          // pushing the band down into every shape's own ink test, where the
-          // band is deliberately not.
-          if (
-            (!enabled || enabled(state)) &&
-            (!strip || strip.height > 0) &&
-            c !== undefined &&
-            !bandExcludes(strip, yPx)
-          ) {
-            const p = params(state, region, block)
-            if (!shape.paintsBlock || shape.paintsBlock(block, state, p)) {
-              hit = hitNearest(
-                c,
-                block,
-                state,
-                p,
-                xPx,
-                yPx,
-                candidates,
-                maxDistSq,
-              )
-            }
+          const c = resolve(region, block, state)
+          if (c === undefined || bandExcludes(openStrip, yPx)) {
+            return undefined
           }
+          const strip = openStrip
+          const hit = hitNearest(
+            c,
+            block,
+            state,
+            openParams,
+            xPx,
+            yPx,
+            candidates,
+            maxDistSq,
+          )
+          // Ink the band clipped away was never drawn. Rejecting it rather
+          // than asking the shape again can mask a farther candidate inside
+          // the strip, which errs toward answering nothing.
           return hit && !bandExcludes(strip, hit.y) ? hit : undefined
         }
       : undefined,
     ink: shapeInk
       ? (region, block, state, i) => {
-          const strip = band?.(state)
-          const c = channels(region)
-          if (
-            (enabled && !enabled(state)) ||
-            (strip && strip.height <= 0) ||
-            c === undefined
-          ) {
+          const c = resolve(region, block, state)
+          if (c === undefined) {
             return undefined
           }
-          const p = params(state, region, block)
-          if (shape.paintsBlock && !shape.paintsBlock(block, state, p)) {
-            return undefined
-          }
-          const r = shapeInk(c, block, state, p, i)
+          const strip = openStrip
+          const r = shapeInk(c, block, state, openParams, i)
           return r && strip ? clipToBand(r, strip) : r
         }
       : undefined,
   }
+}
+
+// Canvas2D ignores a clip rect with a non-finite edge and clips to nothing,
+// and the GPU's scissor would take NaN, so both backends draw such a band as
+// the empty strip it paints as.
+function bandIsOpen(strip: MarkBand) {
+  return strip.height > 0 && Number.isFinite(strip.top + strip.height)
 }
 
 function clipToBand(r: InkRect, strip: MarkBand): InkRect | undefined {
