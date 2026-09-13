@@ -44,31 +44,7 @@ export default class WigglePlugin extends Plugin {
   }
 }
 
-// Only what this plugin implements. The score-scaling helpers and the wiggle
-// data/render types belong to `@jbrowse/wiggle-core` and are imported from
-// there — mirroring them here gave the same value two import paths and no
-// consumer ever took this one.
-export {
-  MULTI_WIGGLE_RENDERING_GROUPS,
-  MULTI_WIGGLE_RENDERING_TYPES,
-  SINGLE_WIGGLE_SOURCE_NAME,
-  WIGGLE_FUDGE_FACTOR,
-  WIGGLE_MIN_PX,
-  WIGGLE_NEG_COLOR_DEFAULT,
-  WIGGLE_POS_COLOR_DEFAULT,
-  WIGGLE_RENDERINGS,
-  WIGGLE_RENDERING_TYPES,
-  featuresToRaw,
-  formatScore,
-  getFilename,
-  processFeaturesFromArrays,
-} from './util.ts'
-export type {
-  RawFeatureArrays,
-  Source,
-  WiggleHoveredFeature,
-  WiggleTooltipRow,
-} from './util.ts'
+export type { RawFeatureArrays, WiggleHoveredFeature } from './util.ts'
 
 // The state model factory is deliberately NOT re-exported here: a value edge
 // from this barrel would keep the display model subgraph eager, which is the
@@ -80,15 +56,10 @@ export {
   configSchema as linearWiggleDisplayConfigSchema,
 } from './LinearWiggleDisplay/index.ts'
 
-export { WiggleCommonMixin } from './shared/WiggleCommonMixin.ts'
 // The bedGraph writer QuantitativeTrack and MultiQuantitativeTrack register as
 // their save-file format. Exported because gccontent's track offers the same
 // download of the same four columns, and had its own copy.
-export {
-  bedGraphFormatOptions,
-  stringifyBedGraph,
-} from './saveTrackFormats/bedGraph.ts'
-export { DENSITY_COLOR_RAMPS } from './shared/densityColorRamp.ts'
+export { bedGraphFormatOptions } from './saveTrackFormats/bedGraph.ts'
 export type { DensityRampName } from './shared/densityColorRamp.ts'
 // The one slot every score-summarizing display declares with a different
 // default, so gccontent states its default without restating the enumeration.
@@ -97,19 +68,6 @@ export { wiggleCommonExtraSlots } from './shared/WiggleCommonMixin.ts'
 export { wiggleMouseHandlers } from './shared/wiggleMouseHandlers.ts'
 // Score-plot pieces that moved to `@jbrowse/wiggle-core`, re-exported under the
 // names this plugin published them as.
-export {
-  DEFAULT_SCORE_FIELD,
-  WiggleScoreConfigMixin,
-  makePointSizeSubMenu,
-  remapRetiredAutoscale,
-  scoreAxisConfigSchemaFields,
-  scoreFieldConfigSchemaFields,
-  wiggleScoreConfigExtraSlots,
-} from '@jbrowse/wiggle-core'
-export { ScorePlotSvgFrame as WiggleFamilySvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
-export type {
-  ScorePlotSvgLayout as WiggleFamilySvgLayout,
-  ScorePlotSvgModel as WiggleFamilySvgModel,
-} from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
-export type { WiggleDisplayModel } from './LinearWiggleDisplay/components/wiggleDisplayTypes.ts'
+export { WiggleScoreConfigMixin } from '@jbrowse/wiggle-core'
+export type { ScorePlotSvgModel as WiggleFamilySvgModel } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 export type { MultiWiggleDisplayModel } from './MultiLinearWiggleDisplay/components/multiWiggleDisplayTypes.ts'

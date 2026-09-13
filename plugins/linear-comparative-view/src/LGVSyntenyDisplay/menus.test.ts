@@ -2,8 +2,8 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 
 import { getSyntenyGroupByMenuItem, getSyntenyShowMenuItems } from './menus.ts'
 
+import type { ParameterlessGroupByType } from '../../../alignments/src/shared/types.ts'
 import type { CheckboxMenuItem, RadioMenuItem } from '@jbrowse/core/ui'
-import type { ParameterlessGroupByType } from '@jbrowse/plugin-alignments'
 
 function makeModel(
   type?: ParameterlessGroupByType,

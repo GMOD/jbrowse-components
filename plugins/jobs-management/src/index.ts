@@ -11,8 +11,7 @@ import { getOrCreateJobsListWidget } from './getOrCreateJobsListWidget.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 export { getOrCreateJobsListWidget } from './getOrCreateJobsListWidget.ts'
-export type { JobInput, JobsListModel } from './JobsListWidget/model.ts'
-export type { JobState } from './JobsListWidget/jobModel.ts'
+export type { JobsListModel } from './JobsListWidget/model.ts'
 
 export default class JobsManagementPlugin extends Plugin {
   name = 'JobsManagementPlugin'

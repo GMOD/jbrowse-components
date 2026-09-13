@@ -44,9 +44,7 @@ export type { LinearSyntenyViewHelperModel } from './LinearSyntenyViewHelper/sta
 // derived from the state model rather than hand-copied.
 export type {
   CigarMode,
-  FadeThinMode,
   LinearSyntenyViewInit,
-  LinearSyntenyViewSpec,
 } from './LinearSyntenyView/types.ts'
 
 export default class LinearComparativeViewPlugin extends Plugin {

@@ -13,18 +13,10 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 // reaches this module by lazy import, so nothing here changes what the app
 // bundles.
 export { renderToSvg } from './BreakpointSplitView/svgcomponents/SVGBreakpointSplitView.tsx'
+export type { BreakpointViewModel } from './BreakpointSplitView/model.ts'
 export type {
-  BreakpointViewModel,
-  BreakpointViewStateModel,
-} from './BreakpointSplitView/model.ts'
-export { breakpointSplitLaunchKeys } from './BreakpointSplitView/launchKeys.ts'
-export type {
-  BreakpointSplitViewCommands,
   BreakpointSplitViewInitView,
-  LayoutMatch,
   LayoutRecord,
-  OverlayLevel,
-  OverlayMatch,
 } from './BreakpointSplitView/types.ts'
 
 export default class BreakpointSplitViewPlugin extends Plugin {

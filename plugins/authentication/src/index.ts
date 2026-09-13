@@ -91,27 +91,3 @@ export default class AuthenticationPlugin extends Plugin {
     }
   }
 }
-
-export {
-  configSchema as OAuthConfigSchema,
-  modelFactory as OAuthInternetAccountModelFactory,
-} from './OAuthModel/index.ts'
-export {
-  configSchema as ExternalTokenConfigSchema,
-  modelFactory as ExternalTokenInternetAccountModelFactory,
-} from './ExternalTokenModel/index.ts'
-
-export {
-  configSchema as HTTPBasicConfigSchema,
-  modelFactory as HTTPBasicInternetAccountModelFactory,
-} from './HTTPBasicModel/index.ts'
-
-export {
-  configSchema as DropboxOAuthConfigSchema,
-  modelFactory as DropboxOAuthInternetAccountModelFactory,
-} from './DropboxOAuthModel/index.ts'
-
-export {
-  configSchema as GoogleDriveOAuthConfigSchema,
-  modelFactory as GoogleDriveOAuthInternetAccountModelFactory,
-} from './GoogleDriveOAuthModel/index.ts'

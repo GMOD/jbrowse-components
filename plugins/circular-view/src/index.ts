@@ -41,12 +41,7 @@ export {
   type ChordSyntenyDisplaySelf,
   type ExportSvgOptions,
 } from './CircularView/model.ts'
-export {
-  Slice,
-  type SliceRegion,
-  type SliceElidedRegion,
-  type SliceNonElidedRegion,
-} from './CircularView/slices.ts'
+export { Slice, type SliceRegion } from './CircularView/slices.ts'
 export {
   type Ring,
   type RingDisplay,
@@ -54,7 +49,6 @@ export {
   type RingPassModel,
 } from './rings/ringHost.ts'
 export { type RingCell } from './rings/ringMarks.ts'
-export { circularLaunchKeys } from './CircularView/launchKeys.ts'
 export { renderToSvg } from './CircularView/svgcomponents/SVGCircularView.tsx'
 export type { CircularViewCommands } from './CircularView/types.ts'
 

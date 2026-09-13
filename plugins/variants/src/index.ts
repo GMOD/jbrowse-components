@@ -137,7 +137,6 @@ export {
   PREDEFINED_SV_TYPES,
   getSvTypeColor,
   getVariantSvType,
-  getVariantSvTypeColor,
   svTypeDisplayLabel,
   svTypeFromToken,
 } from './shared/variantSvType.ts'

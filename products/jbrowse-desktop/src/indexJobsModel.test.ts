@@ -3,14 +3,12 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import jobsModelFactory from './indexJobsModel.ts'
 
+import type { JobState } from '../../../plugins/jobs-management/src/JobsListWidget/jobModel.ts'
+import type { JobInput } from '../../../plugins/jobs-management/src/JobsListWidget/model.ts'
 import type { TextJobsEntry } from './indexJobsModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type {
-  JobInput,
-  JobState,
-  JobsListModel,
-} from '@jbrowse/plugin-jobs-management'
+import type { JobsListModel } from '@jbrowse/plugin-jobs-management'
 import type { Track } from '@jbrowse/text-indexing-core'
 
 interface RpcArgs {

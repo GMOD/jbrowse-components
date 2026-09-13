@@ -4,11 +4,9 @@ import {
   isSlotDefinitionEntry,
 } from '@jbrowse/core/configuration'
 import { legendMixinSlots } from '@jbrowse/display-kit/LegendMixin'
-import {
-  wiggleCommonExtraSlots,
-  wiggleScoreConfigExtraSlots,
-} from '@jbrowse/plugin-wiggle'
+import { wiggleCommonExtraSlots } from '@jbrowse/plugin-wiggle'
 
+import { wiggleScoreConfigExtraSlots } from '../../../../packages/wiggle-core/src/WiggleScoreConfigMixin.ts'
 import corePlugins from '../corePlugins.ts'
 
 // `LegendMixin`, `WiggleCommonMixin` and `WiggleScoreConfigMixin` each reach a

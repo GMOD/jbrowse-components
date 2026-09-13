@@ -43,14 +43,6 @@ export {
   STRAND_COLOR_JEXL,
   attributeColorJexl,
 } from './RenderFeatureDataRPC/featureColors.ts'
-// Feature-label text and geometry, for a display outside this plugin that
-// letters marks the same way.
-export {
-  LABEL_BASELINE_RATIO,
-  LABEL_FONT_SIZE,
-  LABEL_PADDING_PX,
-} from './RenderFeatureDataRPC/constants.ts'
-export { createFeatureFloatingLabels } from './RenderFeatureDataRPC/floatingLabels.ts'
 // The label-content vocabulary, for a display outside this plugin offering the
 // same choices.
 export {
@@ -58,11 +50,6 @@ export {
   modeCanShowDescription,
   modeCanShowName,
 } from './LinearBasicDisplay/showLabelsMode.ts'
-export { computeLabelPosition } from './LinearBasicDisplay/components/labelPositioning.ts'
-export type {
-  FeatureBoundsPx,
-  LabelMetrics,
-} from './LinearBasicDisplay/components/labelPositioning.ts'
 export type {
   LinearBasicDisplayModel,
   LinearCanvasBaseDisplayModel,
@@ -73,7 +60,6 @@ export type {
 export type { GeneGlyphNotice } from './LinearBasicDisplay/baseModel.ts'
 export type { RegionDensityStats } from './shared/regionDensity.ts'
 export type { CanvasFeatureRenderingBackend } from './LinearBasicDisplay/components/canvasFeatureRenderingBackendTypes.ts'
-export type { LinearBasicDisplayComponentProps } from './LinearBasicDisplay/components/FeatureComponent.tsx'
 export type {
   FeatureItemEntry,
   FlatbushRegionIndexes,
@@ -107,7 +93,6 @@ export type {
 export type {
   FeatureDataResult,
   FlatbushItem,
-  LabelItem,
   RegionRenderData,
   SubfeatureInfo,
 } from './RenderFeatureDataRPC/rpcTypes.ts'
@@ -116,8 +101,6 @@ export type { RegionGateMeasurement } from './shared/CanvasFeatureGateMixin.ts'
 // The feature glyph set as marks, for a display outside this plugin drawing
 // gene glyphs under its own axis.
 export { featureGlyphMarks } from './LinearBasicDisplay/marks/featureGlyphMarks.ts'
-export { rectShader as featureGlyphShader } from './LinearBasicDisplay/passes/index.ts'
-export type { FeatureGlyphParams } from './LinearBasicDisplay/marks/featureGlyphShapes.ts'
 export { MAX_VISIBLE_CHEVRONS_PER_LINE } from './LinearBasicDisplay/components/sharedRendererConstants.ts'
 // The gene glyph's shape rules, for a display outside this plugin drawing these
 // glyphs through the passes above.
@@ -165,7 +148,6 @@ export {
   HEIGHT_MULTIPLIERS,
   labelFontSize,
 } from './RenderFeatureDataRPC/glyphs/glyphUtils.ts'
-export type { FeatureBandPaint } from './LinearBasicDisplay/components/paintFeatureBand.ts'
 export type {
   HitFeatureResult,
   VisibleRegion,

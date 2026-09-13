@@ -16,10 +16,7 @@ import type { AbstractViewContainer } from '@jbrowse/core/util'
 export type { DotplotImportFormSyntenyOption } from './DotplotView/components/ImportForm/TrackSelector.tsx'
 export { default as DotplotHighlightBands } from './DotplotView/components/DotplotHighlightBands.tsx'
 export { renderToSvg } from './DotplotView/svgcomponents/SVGDotplotView.tsx'
-export type {
-  DotplotViewModel,
-  DotplotViewStateModel,
-} from './DotplotView/model.ts'
+export type { DotplotViewModel } from './DotplotView/model.ts'
 // The view's `init` snapshot contract, so a programmatic caller (jbrowse-img, an
 // embedded host) builds it against the same type the init autorun reads.
 export type { DotplotViewInit } from './DotplotView/types.ts'

@@ -57,7 +57,6 @@ export {
   getFeatureHeightMenuItem,
   getFiltersMenuItems,
   getHitMenuItems,
-  getMaxHeightMenuItem,
   getSortByMenuItem,
   groupByRadioMenuItem,
   hiddenGroupsItems,
@@ -69,12 +68,9 @@ export type {
 } from './LinearAlignmentsDisplay/menus/index.ts'
 export { queueReadVsRefDialog } from './ReadVsRefDialog/index.ts'
 export type { ReadVsRefLaunchArgs } from './ReadVsRefDialog/index.ts'
-export {
-  isRegisteredColorScheme,
-  pickColorOptions,
-} from './shared/colorSchemes.ts'
+export { pickColorOptions } from './shared/colorSchemes.ts'
 export { pickGroupByOptions } from './shared/groupFeatures.ts'
-export type { GroupByType, ParameterlessGroupByType } from './shared/types.ts'
+export type { GroupByType } from './shared/types.ts'
 
 // Types that appear in the inferred shape of the exported display model. They
 // have to be reachable from this entry or tsc names them by source path in
@@ -100,11 +96,8 @@ export type {
   ReferencePiece,
   SegmentLettering,
 } from './features/derivativePaths/letterSegments.ts'
-export type { IndicatorHitResult } from './features/indicator/types.ts'
 export type { LinkedPair } from './features/linkedReads/compute.ts'
 export type { BezierArcScope } from './features/linkedReads/computeOverlay.ts'
-export type { ModificationHitResult } from './features/modification/hitTest.ts'
-export type { SashimiArc } from './features/sashimi/computeOverlay.ts'
 export type { MergedJunction } from './features/sashimi/junctions.ts'
 export type { ReadColorCategory } from './LinearAlignmentsDisplay/colorUtils.ts'
 export type { ArcHighlight } from './LinearAlignmentsDisplay/components/arcHitTest.ts'
@@ -141,13 +134,11 @@ export type {
 export type { ColorPalette } from './shaders/colors.ts'
 export type {
   GroupedAlignmentsResult,
-  LaidOutPileupData,
   PileupDataResult,
   RowCap,
   RowCapSource,
   WorkerPileupData,
 } from './RenderAlignmentDataRPC/types.ts'
-export type { CigarHitResult, ResolvedBlock } from './shared/hitTestTypes.ts'
 export type { HoverCoverageBand } from './LinearAlignmentsDisplay/model.ts'
 export type { LayoutOrder } from './LinearAlignmentsDisplay/menus/sortGroup.ts'
 export type { CoverageRegionFields } from './features/coverage/types.ts'
@@ -159,9 +150,4 @@ export type {
   GroupBy,
   SortedBy,
 } from './shared/types.ts'
-export { READ_CATEGORIES } from './shared/readCategoryFilters.ts'
-export type {
-  ReadCategoryChoice,
-  ReadCategoryKey,
-  ReadCategorySpec,
-} from './shared/readCategoryFilters.ts'
+export type { ReadCategoryKey } from './shared/readCategoryFilters.ts'
