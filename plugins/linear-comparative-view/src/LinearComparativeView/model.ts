@@ -298,19 +298,20 @@ function stateModelFactory(pluginManager: PluginManager) {
           }))
           .sort((a, b) => a.distance - b.distance)
           .flatMap(({ level, stayingIndex, movingIndex, toMate }) => {
-            const stayingView = self.views[stayingIndex]
-            const movingView = self.views[movingIndex]
-            return stayingView?.initialized && movingView?.initialized
+            // the bands' own gate: a row appendRow just added is initialized
+            // before it has regions, and a follow placing from it walks none
+            const rows = level.connectedRows
+            return rows
               ? [
                   {
                     level,
-                    stayingView,
-                    movingView,
+                    stayingView: self.views[stayingIndex]!,
+                    movingView: self.views[movingIndex]!,
                     toMate,
                     movingIndex,
                     // the level's LOWER row is the one on the alignments' mate
                     // axis whichever direction the level runs in
-                    mateAssembly: level.rowPair?.v1.assemblyNames[0],
+                    mateAssembly: rows.v1.assemblyNames[0],
                   },
                 ]
               : []
