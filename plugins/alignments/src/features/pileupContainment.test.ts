@@ -144,6 +144,9 @@ function sweep<R>(c: Case<R>, block: RenderBlock, state: RenderState) {
         ),
         count: region.count,
       }),
+      // Half-pixel steps took this file 9.7-10.8 s against 3.3-3.5, and whole
+      // pixels still fail on each of the three fade-at-zero defects below.
+      step: 1,
     },
   )
 }
