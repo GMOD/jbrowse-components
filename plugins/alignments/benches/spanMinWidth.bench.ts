@@ -9,15 +9,16 @@
 // fixture — are in `agent-docs/reference/BENCHMARKING.md`.
 //
 // THE QUESTION. `fillSpanRect` widens a sub-pixel mark to 1 CSS px about its
-// midpoint, and it used to spell that rule itself. It now calls
-// `expandToMinWidthPx`, generated from `hpmath.slang` (adr-051), which returns a
-// `float2` — and the emitter's tuple convention makes that a `[number, number]`.
-// So the one helper every coverage painter runs per covered bp now allocates,
-// against a bar that file's own comment used to state.
+// midpoint, and it used to spell that rule itself. It now destructures
+// `spanRectPx`, which indexes the `float2` that `expandToMinWidthPx`, generated
+// from `hpmath.slang` (adr-051), returns — and the emitter's tuple convention
+// makes that a `[number, number]`. So the one helper every coverage painter
+// runs per covered bp now allocates, against a bar that file's own comment used
+// to state.
 //
 // ARMS, each its own function literal with its own driver written out longhand,
 // because a shared driver goes polymorphic and prices every arm for it:
-//   generated  `fillSpanRect` as it ships — the twin, destructured
+//   generated  `fillSpanRect` as it ships — `spanRectPx` over the twin
 //   inline     the retired spelling, `w < 1 ? (px + px2) / 2 - 0.5 : px`
 //   control    a second, separately-declared copy of `inline`. A row whose
 //              control is far from 1.00 measured nothing.
@@ -27,23 +28,19 @@
 // frame is SMALLER than what this reports. Read the number as an upper bound on
 // the cost, not an estimate of it.
 //
-// WHAT IT SAYS, so far. One process per fixture, --rounds=60, control in
-// brackets — and only ONE row has a control near 1.00, so only one row says
-// anything:
+// WHAT IT SAYS. Three processes per fixture, --rounds=60, AC power, load
+// 0.5-0.9 on 16 cores:
 //
-//   pileup-spans    generated 4.30x  [0.97]   5.5 -> 23.7 ns/mark
-//   band-subpixel   generated 2.36x  [1.89]   unresolved
-//   band-wide       generated 1.65x  [1.19]   unresolved
+//                   inline ns   generated ns   generated    control
+//   pileup-spans    3.5-3.6     12.1-12.9      3.42-3.59x   0.99-1.02x
+//   band-subpixel   2.4-2.5     9.2-9.7        3.76-3.91x   1.01-1.02x
+//   band-wide       4.8-4.9     8.6-8.7        1.78-1.80x   1.01x
 //
-// Taken at load average 53 on 16 cores, which is where the two 3000-mark
-// fixtures stop resolving; re-run them on a quiet box before quoting either.
-//
-// The row that does resolve is the one worth reading anyway, and it says the
-// RATIO is large and the ABSOLUTE is not: +18 ns per mark is ~22 microseconds
-// on a 1200-mark frame, about 0.13% of a 16 ms budget, with a counter standing
-// in for a rasterizing fillRect. So the generated rule costs several times the
-// ternary it replaced and still costs nothing that a frame can feel — which is
-// the shape where quoting the ratio alone would mislead.
+// The RATIO is large and the ABSOLUTE is not: band-subpixel's +7 ns per mark
+// is ~21 microseconds on a 3000-mark frame, about 0.13% of a 16 ms budget, with
+// a counter standing in for a rasterizing fillRect. So the generated rule costs
+// several times the ternary it replaced and still costs nothing that a frame
+// can feel — which is the shape where quoting the ratio alone would mislead.
 //
 // FIXTURE SIZE IS THE TRAP HERE. This is an allocation-per-record shape, and
 // BENCHMARKING.md §"A window LARGE enough that the arms' own garbage decides the
