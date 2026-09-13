@@ -373,6 +373,64 @@ describe('ellipse', () => {
     ctx.stroke()
     expect(pathOf(ctx)).toBe('M40,0A40,10 0 1 1 -40,0A40,10 0 1 1 40,0')
   })
+  // Canvas wraps a sweep that runs backwards in its direction into [0, 2π), so
+  // clockwise from 0.5π back to 0 is three quarters of a turn, not one.
+  test('a clockwise sweep past its end angle takes the long way round', () => {
+    const ctx = new SvgCanvas()
+    ctx.beginPath()
+    ctx.arc(0, 0, 10, 0.5 * Math.PI, 0)
+    ctx.stroke()
+    expect(pathOf(ctx)).toBe('M0,10A10,10 0 1 1 10,0')
+  })
+
+  test('a counterclockwise quarter is a small arc swept the other way', () => {
+    const ctx = new SvgCanvas()
+    ctx.beginPath()
+    ctx.arc(0, 0, 10, 0.5 * Math.PI, 0, true)
+    ctx.stroke()
+    expect(pathOf(ctx)).toBe('M0,10A10,10 0 0 0 10,0')
+  })
+
+  // A mirrored CTM (a reversed region) turns a clockwise arc counterclockwise
+  // on the page, and places its endpoints mirrored.
+  test('a mirrored transform flips the sweep and the endpoints', () => {
+    const ctx = new SvgCanvas()
+    ctx.translate(100, 0)
+    ctx.scale(-1, 1)
+    ctx.beginPath()
+    ctx.arc(0, 0, 10, Math.PI, 2 * Math.PI)
+    ctx.stroke()
+    expect(pathOf(ctx)).toBe('M110,0A10,10 0 0 0 90,0')
+  })
+})
+
+describe('lengths under a scale', () => {
+  // Coordinates go through the CTM, so a stroke width, a dash and a font size
+  // SVG draws at their own size have to be scaled with them.
+  test('stroke width, dashes and font size follow a uniform scale', () => {
+    const ctx = new SvgCanvas()
+    ctx.scale(2, 2)
+    ctx.lineWidth = 3
+    ctx.setLineDash([4, 2])
+    ctx.beginPath()
+    ctx.moveTo(0, 0)
+    ctx.lineTo(10, 0)
+    ctx.stroke()
+    ctx.font = '10px serif'
+    ctx.fillText('A', 0, 0)
+    const svg = ctx.getSerializedSvg()
+    expect(svg).toContain('stroke-width="6"')
+    expect(svg).toContain('stroke-dasharray="8,4"')
+    expect(svg).toContain('font-size="20"')
+  })
+
+  test('a quoted family is escaped into its attribute', () => {
+    const ctx = new SvgCanvas()
+    ctx.font = '12px "Roboto", sans-serif'
+    ctx.fillText('A', 0, 0)
+    const svg = ctx.getSerializedSvg()
+    expect(svg).toContain('font-family="&quot;Roboto&quot;, sans-serif"')
+  })
 })
 
 // measureText switches to the fixed monospace advance on seeing a monospace

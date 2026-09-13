@@ -58,7 +58,7 @@ function parseFont(font: string) {
 // SVG-compatible attributes. The default sans-serif family is left off so
 // feature labels match the raw-JSX <text> elements (ruler, scalebar, etc.),
 // which set no family either; an explicitly-set family is still emitted.
-function fontAttrs(font: string) {
+function fontAttrs(font: string, scale: number) {
   const { prefix, size, family } = parseFont(font)
   const tokens = prefix.split(/\s+/).filter(Boolean)
   const weight = tokens.find(
@@ -66,8 +66,10 @@ function fontAttrs(font: string) {
   )
   const style = tokens.find(t => fontStyleTokens.has(t))
   return [
-    ` font-size="${size}"`,
-    family === '' || family === 'sans-serif' ? '' : ` font-family="${family}"`,
+    ` font-size="${Number(size) * scale}"`,
+    family === '' || family === 'sans-serif'
+      ? ''
+      : ` font-family="${escapeXml(family)}"`,
     weight ? ` font-weight="${weight}"` : '',
     style ? ` font-style="${style}"` : '',
   ].join('')
@@ -161,6 +163,14 @@ export class SvgCanvas {
     return this.b === 0 && this.c === 0
   }
 
+  // How much the CTM scales a length, for what SVG draws at a size of its own
+  // rather than through transformed coordinates: stroke widths, dashes and
+  // font sizes. Exact for a uniform scale; the geometric mean otherwise, where
+  // a Canvas2D pen would draw an ellipse no stroke-width can state.
+  private get lengthScale() {
+    return Math.sqrt(Math.abs(this.a * this.d - this.b * this.c))
+  }
+
   private transformPoint(x: number, y: number): [number, number] {
     return [this.a * x + this.c * y + this.e, this.b * x + this.d * y + this.f]
   }
@@ -240,7 +250,8 @@ export class SvgCanvas {
   }
 
   private strokeAttrs() {
-    let attrs = ` ${this.paintAttr('stroke', this.strokeStyle)} stroke-width="${this.lineWidth}"`
+    const scale = this.lengthScale
+    let attrs = ` ${this.paintAttr('stroke', this.strokeStyle)} stroke-width="${this.lineWidth * scale}"`
     if (this.lineCap !== 'butt') {
       attrs += ` stroke-linecap="${this.lineCap}"`
     }
@@ -248,7 +259,7 @@ export class SvgCanvas {
       attrs += ` stroke-linejoin="${this.lineJoin}"`
     }
     if (this.lineDash.length > 0) {
-      attrs += ` stroke-dasharray="${this.lineDash.join(',')}"`
+      attrs += ` stroke-dasharray="${this.lineDash.map(d => d * scale).join(',')}"`
     }
     return attrs
   }
@@ -468,37 +479,44 @@ export class SvgCanvas {
     endAngle: number,
     counterclockwise = false,
   ) {
-    const [cx, cy] = this.transformPoint(x, y)
     const [rx, ry] = this.transformSize(radiusX, radiusY)
-    const sweep = counterclockwise ? 0 : 1
-    const diff = endAngle - startAngle
-    const deg = (rotation * 180) / Math.PI
+    // A mirrored CTM turns a clockwise sweep counterclockwise on the page, and
+    // its rotation the other way.
+    const mirrored = this.a * this.d < 0
+    const sweep = counterclockwise === mirrored ? 1 : 0
+    const deg = ((mirrored ? -rotation : rotation) * 180) / Math.PI
     // Canvas measures the angle on the UNROTATED ellipse and then spins the
     // whole thing, so the endpoint is the parametric point rotated — not the
-    // point at (angle + rotation).
+    // point at (angle + rotation) — and then placed by the CTM.
     const at = (angle: number) => {
-      const px = rx * Math.cos(angle)
-      const py = ry * Math.sin(angle)
-      return [
-        cx + px * Math.cos(rotation) - py * Math.sin(rotation),
-        cy + px * Math.sin(rotation) + py * Math.cos(rotation),
-      ] as const
+      const px = radiusX * Math.cos(angle)
+      const py = radiusY * Math.sin(angle)
+      return this.transformPoint(
+        x + px * Math.cos(rotation) - py * Math.sin(rotation),
+        y + px * Math.sin(rotation) + py * Math.cos(rotation),
+      )
     }
+    // The angle actually swept, as Canvas2D resolves it: in the stated
+    // direction, a whole turn once it reaches 2π, and otherwise wrapped into
+    // [0, 2π) — so a clockwise sweep from 0.5π back to 0 goes the long way.
+    const TAU = 2 * Math.PI
+    const signed = counterclockwise
+      ? startAngle - endAngle
+      : endAngle - startAngle
+    const swept = signed >= TAU ? TAU : ((signed % TAU) + TAU) % TAU
 
-    if (Math.abs(diff) >= 2 * Math.PI) {
+    const [sx, sy] = at(startAngle)
+    if (swept === TAU) {
       // A closed ellipse has coincident endpoints, which an SVG arc command
-      // degenerates on — so go round in two halves.
-      const [mx, my] = at(startAngle)
-      const [halfX, halfY] = at(startAngle + Math.PI)
-      this.pathData += `M${mx},${my}A${rx},${ry} ${deg} 1 ${sweep} ${halfX},${halfY}A${rx},${ry} ${deg} 1 ${sweep} ${mx},${my}`
+      // degenerates on — so go round in two halves, as a subpath of its own.
+      const half = counterclockwise ? -Math.PI : Math.PI
+      const [hx, hy] = at(startAngle + half)
+      this.pathData += `M${sx},${sy}A${rx},${ry} ${deg} 1 ${sweep} ${hx},${hy}A${rx},${ry} ${deg} 1 ${sweep} ${sx},${sy}`
       return
     }
-
-    const [sx, sy2] = at(startAngle)
     const [ex, ey] = at(endAngle)
-    const largeArc = Math.abs(diff) > Math.PI ? 1 : 0
-
-    this.pathData += !this.pathData ? `M${sx},${sy2}` : `L${sx},${sy2}`
+    const largeArc = swept > Math.PI ? 1 : 0
+    this.pathData += !this.pathData ? `M${sx},${sy}` : `L${sx},${sy}`
     this.pathData += `A${rx},${ry} ${deg} ${largeArc} ${sweep} ${ex},${ey}`
   }
 
@@ -571,7 +589,7 @@ export class SvgCanvas {
     const [tx, ty] = this.transformPoint(x, y)
     const escaped = escapeXml(text)
     this.emit(
-      `<text x="${tx}" y="${ty}" ${this.paintAttr('fill', this.fillStyle)}${fontAttrs(this.font)} text-anchor="${this.textAnchor()}" dominant-baseline="${this.dominantBaseline()}">${escaped}</text>`,
+      `<text x="${tx}" y="${ty}" ${this.paintAttr('fill', this.fillStyle)}${fontAttrs(this.font, this.lengthScale)} text-anchor="${this.textAnchor()}" dominant-baseline="${this.dominantBaseline()}">${escaped}</text>`,
     )
   }
 
@@ -579,7 +597,7 @@ export class SvgCanvas {
     const [tx, ty] = this.transformPoint(x, y)
     const escaped = escapeXml(text)
     this.emit(
-      `<text x="${tx}" y="${ty}" fill="none"${this.strokeAttrs()}${fontAttrs(this.font)} text-anchor="${this.textAnchor()}" dominant-baseline="${this.dominantBaseline()}">${escaped}</text>`,
+      `<text x="${tx}" y="${ty}" fill="none"${this.strokeAttrs()}${fontAttrs(this.font, this.lengthScale)} text-anchor="${this.textAnchor()}" dominant-baseline="${this.dominantBaseline()}">${escaped}</text>`,
     )
   }
 
