@@ -427,14 +427,14 @@ export function walkRects(
         let s1 = 0
         let s2 = 0
         if (a === b) {
-          s1 = Math.floor(x1 - 1.0 + 0.5)
-          s2 = Math.floor(x1 + 1.0 + 0.5)
+          s1 = Math.floor(x1 - 1 + 0.5)
+          s2 = Math.floor(x1 + 1 + 0.5)
         } else {
           const x2 = reversed
             ? pxEnd - ((b - bpStart) / bpSpan) * pxSpan
             : pxStart + ((b - bpStart) / bpSpan) * pxSpan
           s1 = Math.floor(x1 + 0.5)
-          s2 = extendToMinWidthPx(s1, Math.floor(x2 + 0.5), 2.0)
+          s2 = extendToMinWidthPx(s1, Math.floor(x2 + 0.5), 2)
         }
         width = Math.abs(s2 - s1)
         left = s2 < s1 ? s1 - width : s1
