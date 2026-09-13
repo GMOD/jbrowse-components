@@ -12,7 +12,7 @@ import { extractFeatureTagValue } from '../shared/extractFeatureTagValue.ts'
 import { getStrand } from '../shared/util.ts'
 
 import type { LinkedReadsMode } from './constants.ts'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 export interface AlignedSegment {
@@ -57,11 +57,30 @@ interface LinkedReadsDisplay {
   setLinkedReads: (mode: LinkedReadsMode) => void
 }
 
+function windowsInReadOrder(regions: Region[]) {
+  return gatherOverlaps(regions, 0)
+    .map(window => ({
+      window,
+      firstVisit: regions.findIndex(
+        r =>
+          r.refName === window.refName &&
+          r.start >= window.start &&
+          r.end <= window.end,
+      ),
+    }))
+    .sort((a, b) => a.firstVisit - b.firstVisit)
+    .map(({ window }) => window)
+}
+
 /**
  * Replace the view's displayed regions with one window per segment of a split
  * read, in read order, so the whole molecule is on screen side by side. Each
- * window is padded by its segment's own length and windows that touch on one
- * refName merge, the same framing `viewMateRegionInCurrentView` gives a mate.
+ * window is padded by its segment's own length. Windows that touch on one
+ * refName merge, the same framing `viewMateRegionInCurrentView` gives a mate,
+ * even when the read visits another locus between them: the linked-reads pass
+ * connects a read in only one of the regions that fetched it, so a second
+ * window over the same reads would draw them again with no connector. A merged
+ * window sits where its earliest segment does.
  *
  * The view is switched into chain layout when it isn't already, since the point
  * of putting the segments side by side is the connector between them, and Undo
@@ -107,11 +126,8 @@ export function viewSplitAlignmentRegionsInCurrentView({
   if (!wasLinked) {
     display.setLinkedReads('normal')
   }
-  // Counted after the merge, which is what the view ends up showing: two
-  // segments landing close together on one contig are one window there, and
-  // announcing the pre-merge number named a region a reader could not find.
-  const merged = gatherOverlaps(regions, 0)
-  const shown = `Showing ${merged.length} aligned ${pluralize(merged.length, 'segment')} of this read`
+  const windows = windowsInReadOrder(regions)
+  const shown = `Showing ${windows.length} aligned ${pluralize(windows.length, 'segment')} of this read`
   const leftOut = [
     pastEnd.length
       ? `${pastEnd.length} ${pluralize(pastEnd.length, 'segment')} past the end of ${[...new Set(pastEnd.map(l => l.refName))].join(', ')}`
@@ -122,7 +138,7 @@ export function viewSplitAlignmentRegionsInCurrentView({
   ].filter(notEmpty)
   showRegionsWithUndo({
     view,
-    regions: merged,
+    regions: windows,
     message: leftOut.length
       ? `${shown} — left out ${leftOut.join(' and ')}`
       : shown,

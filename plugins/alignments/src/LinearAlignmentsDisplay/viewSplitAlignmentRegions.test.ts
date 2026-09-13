@@ -10,13 +10,26 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 const CONTIGS = [
   { refName: 'chr22', start: 0, end: 50_000 },
   { refName: 'chr9', start: 0, end: 50_000 },
+  { refName: 'chr3', start: 0, end: 50_000 },
+  { refName: 'chr10', start: 0, end: 50_000 },
+  { refName: 'chr12', start: 0, end: 50_000 },
 ]
 
 // The BAM's spelling of chr9. An SA record's refName arrives in the file's
 // namespace, so anything the UI says about it has to name the canonical contig.
 const ALIASES = new Map([['9', 'chr9']])
 
-function makeView() {
+const HG38 = { contigs: CONTIGS, aliases: ALIASES }
+
+const ENSEMBL = {
+  contigs: [
+    { refName: '1', start: 0, end: 50_000 },
+    { refName: '9', start: 0, end: 50_000 },
+  ],
+  aliases: new Map<string, string>(),
+}
+
+function makeView({ contigs, aliases } = HG38) {
   const displayed: Region[][] = []
   const notifications: string[] = []
   const undos: (() => void)[] = []
@@ -49,10 +62,10 @@ function makeView() {
         get: () => ({
           name: 'hg38',
           getCanonicalRefName2: (refName: string) =>
-            ALIASES.get(refName) ?? refName,
-          regions: CONTIGS,
+            aliases.get(refName) ?? refName,
+          regions: contigs,
           getRegionForRefName: (r: string) =>
-            CONTIGS.find(c => c.refName === r),
+            contigs.find(c => c.refName === r),
         }),
       },
     },
@@ -100,8 +113,12 @@ const fusion = makeFeature({
   tags: { SA: 'chr9,20001,+,500S300M,60,0;' },
 })
 
-function run(feature: Feature, linkedReads: LinkedReadsMode = 'off') {
-  const { view, displayed, notifications, undos } = makeView()
+function run(
+  feature: Feature,
+  linkedReads: LinkedReadsMode = 'off',
+  assembly = HG38,
+) {
+  const { view, displayed, notifications, undos } = makeView(assembly)
   const { display, modes } = makeDisplay(linkedReads)
   viewSplitAlignmentRegionsInCurrentView({
     view: view as unknown as LinearGenomeViewModel,
@@ -162,6 +179,59 @@ test('shows one region per segment, each padded by its own length', () => {
     expect.objectContaining({ refName: 'chr22', start: 9_500, end: 11_000 }),
     expect.objectContaining({ refName: 'chr9', start: 19_700, end: 20_600 }),
   ])
+})
+
+test('a read that returns upstream on its first contig keeps read order', () => {
+  const hops = makeFeature({
+    refName: 'chr3',
+    start: 40_000,
+    end: 40_500,
+    strand: 1,
+    CIGAR: '500M900S',
+    tags: {
+      SA: 'chr10,20001,+,500S300M600S,60,0;chr12,30001,+,800S300M300S,60,0;chr3,10001,+,1100S300M,60,0;',
+    },
+  })
+  const { regions, notifications } = run(hops)
+  expect(regions!.map(r => `${r.refName}:${r.start}`)).toEqual([
+    'chr3:39500',
+    'chr10:19700',
+    'chr12:29700',
+    'chr3:9700',
+  ])
+  expect(notifications).toEqual(['Showing 4 aligned segments of this read'])
+})
+
+test('a nearby return to a contig merges into the first visit’s window', () => {
+  const insertion = makeFeature({
+    refName: 'chr3',
+    start: 10_000,
+    end: 10_500,
+    strand: 1,
+    CIGAR: '500M600S',
+    tags: {
+      SA: 'chr10,20001,+,500S300M300S,60,0;chr3,10801,+,800S300M,60,0;',
+    },
+  })
+  const { regions, notifications } = run(insertion)
+  expect(regions).toEqual([
+    expect.objectContaining({ refName: 'chr3', start: 9_500, end: 11_400 }),
+    expect.objectContaining({ refName: 'chr10', start: 19_700, end: 20_600 }),
+  ])
+  expect(notifications).toEqual(['Showing 2 aligned segments of this read'])
+})
+
+test('integer-like refNames keep read order', () => {
+  const ensembl = makeFeature({
+    refName: '9',
+    start: 10_000,
+    end: 10_500,
+    strand: 1,
+    CIGAR: '500M300S',
+    tags: { SA: '1,20001,+,500S300M,60,0;' },
+  })
+  const { regions } = run(ensembl, 'off', ENSEMBL)
+  expect(regions!.map(r => r.refName)).toEqual(['9', '1'])
 })
 
 test('enters chain layout and Undo leaves it again', () => {

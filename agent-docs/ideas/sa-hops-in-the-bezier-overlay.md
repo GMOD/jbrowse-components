@@ -165,14 +165,13 @@ not plumbing:
   but that helper REPLACES the view's regions with one window per segment. A
   dashed arc wants the hidden windows INSERTED between the two it joins, in
   read order, so it is the same undo-able call with a different region list.
-- **`viewSplitAlignmentRegionsInCurrentView` loses read order**, which a region
-  list built from a dashed arc needs. It hands its windows to `gatherOverlaps`,
-  which buckets by refName and sorts each bucket by start, so chr3 → chr10 →
-  chr12 → chr3 comes out chr3, chr3, chr10, chr12, and integer-like refNames
-  order numerically, so even two contigs can swap. Its docstring promises read
-  order; the one order test uses two non-numeric contigs. Two visits to one
-  contig inside the padding also merge, which `buildSplitViewFromPath` exists
-  to avoid.
+- **An inserted window that overlaps another on its refName has to merge into
+  it**, as `viewSplitAlignmentRegionsInCurrentView` does in read order, even
+  across a visit elsewhere. Overlapping windows fetch the same records,
+  `dedupeByReadId` keeps one copy per record id, and both ends of the junction
+  land in the region that copy came from, so the other window draws the reads
+  again with no connector. `buildSplitViewFromPath` can keep a panel per visit
+  because each panel there is a separate view.
 - **The gesture is the open half.** `PileupBezierOverlay` has no context menu,
   and a plain click already selects the nearer endpoint. Either a right-click
   item on the arc target (the display's `openContextMenu` builds its items from
