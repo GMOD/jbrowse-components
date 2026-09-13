@@ -547,14 +547,16 @@ async function getPendingWork(driver: WebDriver): Promise<PendingWork> {
       return width > 0 && height > 0
     }
     const count = sel => document.querySelectorAll(sel).length
-    const overlays = Array.from(
-      document.querySelectorAll('[data-testid="loading-overlay"]'),
-    ).filter(isVisible).length
+    const visible = sel =>
+      Array.from(document.querySelectorAll(sel)).filter(isVisible).length
+    const overlays = visible('[data-testid="loading-overlay"]')
+    const canceled = visible('[data-testid="loading-overlay-canceled"]')
     const blocking = []
     const settling = []
     const views = count('[data-view-phase="loading"]')
     if (views) { blocking.push(views + ' view(s) loading') }
     if (overlays) { blocking.push(overlays + ' loading overlay(s)') }
+    if (canceled) { blocking.push(canceled + ' canceled display(s), which last until Retry') }
     const displays = count('[data-display-phase="loading"]')
     if (displays) { settling.push(displays + ' display(s) loading') }
     const unpainted = count(pendingDisplays)
