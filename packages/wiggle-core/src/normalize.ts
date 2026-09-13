@@ -19,8 +19,8 @@ export const SCALE_TYPE_SYMLOG: WiggleScaleType = GENERATED_SCALE_TYPE_SYMLOG
 
 /**
  * #api
- * Maps the `'log'`/`'symlog'`/`'linear'` string to the numeric
- * `WiggleScaleType`.
+ * Maps the `'log'`/`'symlog'`/`'linear'` string to the numeric code the
+ * shaders' `scaleType` uniform compares, render-core's `scaleTypeCode`.
  */
 export function scaleTypeFromString(scaleType: string): WiggleScaleType {
   return scaleTypeCode(scaleType)
