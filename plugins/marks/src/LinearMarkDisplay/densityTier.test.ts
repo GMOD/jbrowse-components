@@ -7,6 +7,7 @@ import LinearGenomeViewPlugin, {
   linearGenomeViewStateModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
 import WigglePlugin from '@jbrowse/plugin-wiggle'
+import { autorun } from 'mobx'
 
 import { configSchemaFactory } from './configSchema.ts'
 import { stateModelFactory } from './model.ts'
@@ -97,6 +98,26 @@ test('a density mark draws the sidecar in the refused fetch place', () => {
   expect([...layers[1]!.flatbush!.search(900, -1, 1100, 100)].sort()).toEqual([
     0, 1,
   ])
+})
+
+test('a zoom that keeps the density mark rebuilds no payload', () => {
+  const { createDisplay } = createTestEnvironment(DENSITY_MARKS, SIDECAR)
+  const { display, view } = createDisplay()
+  refuse(display, view)
+  display.setCoarseTier([{ displayedRegionIndex: 0, payload: bins() }], {
+    regions: [],
+    key: '',
+  })
+  const payloads = new Set<unknown>()
+  const dispose = autorun(() => {
+    payloads.add(display.rpcDataMap.get(0))
+  })
+  view.zoomTo(2500)
+  view.zoomTo(3000)
+  dispose()
+  expect(view.bpPerPx).toBe(3000)
+  expect(payloads.size).toBe(1)
+  expect(payloads.has(undefined)).toBe(false)
 })
 
 test('the banner stands where no mark declares the sidecar', () => {

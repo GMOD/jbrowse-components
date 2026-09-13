@@ -414,14 +414,6 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * Whether each mark draws at the view's zoom: what the shared domain,
-       * the legend, the row count and the skipped chip fold.
-       */
-      get markVisible(): boolean[] {
-        return this.markView.visible
-      },
-      /**
-       * #getter
        * The mark reading its own axis, or -1.
        */
       get independentMarkIndex(): number {
@@ -570,8 +562,8 @@ export function stateModelFactory(
        * The shapes drawing at the view's zoom.
        */
       get visibleShapes(): MarkShapeName[] {
-        const { markVisible } = self
-        return self.markShapes.filter((_, i) => markVisible[i])
+        const { visible } = self.markView
+        return self.markShapes.filter((_, i) => visible[i])
       },
       /**
        * #getter
@@ -598,9 +590,10 @@ export function stateModelFactory(
        * zoom, less the one reading its own axis.
        */
       get sharedMarkIndices(): number[] {
-        const { markVisible, independentMarkIndex } = self
+        const { visible } = self.markView
+        const { independentMarkIndex } = self
         return self.markShapes.flatMap((_, i) =>
-          markVisible[i] && i !== independentMarkIndex ? [i] : [],
+          visible[i] && i !== independentMarkIndex ? [i] : [],
         )
       },
       /**
@@ -737,10 +730,10 @@ export function stateModelFactory(
        * carries, plus one
        */
       get rowCount(): number {
-        const { markVisible } = self
+        const { visible } = self.markView
         let highest = 0
         for (const data of self.rpcDataMap.values()) {
-          highest = Math.max(highest, highestRow(data.layers, markVisible))
+          highest = Math.max(highest, highestRow(data.layers, visible))
         }
         return highest + 1
       },
@@ -830,7 +823,7 @@ export function stateModelFactory(
         if (!self.coarseTierStandsIn) {
           return undefined
         }
-        const off = self.markVisible.filter(
+        const off = self.markView.visible.filter(
           (visible, i) => visible && i !== self.densityMarkIndex,
         ).length
         const rest =
@@ -845,7 +838,8 @@ export function stateModelFactory(
        * `y` field read as missing or not a number — for the corner notice.
        */
       get skippedFeatures(): SkippedFeatures {
-        const { encodings, markVisible } = self
+        const { encodings } = self
+        const { visible } = self.markView
         return skippedFeatures(
           [...self.rpcDataMap.values()].map(d =>
             d.layers
@@ -854,7 +848,7 @@ export function stateModelFactory(
                 skipped: layer.skipped,
                 field: encodingY(encodings[i]),
               }))
-              .filter((_, i) => markVisible[i]),
+              .filter((_, i) => visible[i]),
           ),
         )
       },
@@ -864,9 +858,9 @@ export function stateModelFactory(
        * drawing at the view's zoom
        */
       get legendSections() {
-        const { markVisible } = self
+        const { visible } = self.markView
         return buildMarkLegend(self.rpcDataMap.values()).filter(
-          s => markVisible[s.markIndex],
+          s => visible[s.markIndex],
         )
       },
       /**

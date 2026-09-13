@@ -166,7 +166,7 @@ declared form of GenomeSpy's `multiscale` layer and of `defineMark`'s
 `enabled`. A mark outside its range is off for the draw, the hover and the
 highlight through `enabled`, and the display folds only the drawing marks
 into the shared y domain, the legend, the span row count and the skipped
-chip (`markVisible`), so the feature layer's axis is not blown out to the
+chip (`markView`), so the feature layer's axis is not blown out to the
 count's range. The worker still encodes every layer per region: the bin
 layer costs 300 instances at a million features, and the feature layer's
 encode is the cost it was, so nothing is skipped by zoom before the RPC.

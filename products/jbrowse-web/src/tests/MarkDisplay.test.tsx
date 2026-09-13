@@ -251,7 +251,7 @@ test('a binned count and the raw features share one fetch, and each draws in its
   const el = await findDisplayPainted('mark-display', { timeout })
   expect(el.dataset.displayDrawn).toBe('true')
   const display = view.tracks[0]!.displays[0] as {
-    markVisible: boolean[]
+    markView: { visible: boolean[] }
     domain?: [number, number]
     rpcDataMap: ReadonlyMap<
       number,
@@ -266,7 +266,7 @@ test('a binned count and the raw features share one fetch, and each draws in its
     >
     selectFeature: (hit: Record<string, unknown>) => void
   }
-  expect(display.markVisible).toEqual([true, false])
+  expect(display.markView.visible).toEqual([true, false])
   await waitFor(() => {
     expect(display.domain).toEqual([0, 1000])
   })
@@ -278,7 +278,7 @@ test('a binned count and the raw features share one fetch, and each draws in its
   expect(Math.min(...density)).toBeGreaterThanOrEqual(1)
 
   view.zoomTo(40)
-  expect(display.markVisible).toEqual([false, true])
+  expect(display.markView.visible).toEqual([false, true])
   await waitFor(() => {
     expect(display.domain![1]).toBe(Math.max(...density))
   })
