@@ -22,8 +22,8 @@ published reference of its own.
 - [part 1](/docs/tutorials/pangenome_hprc), whose session this page adds to:
   hg38 with its genes, and the rGFA segments track loaded on it
 - [the GraphGenomeView plugin](/docs/tutorials/pangenome_hprc#the-graphgenomeview-plugin),
-  for the tracks that use `GbzBaseSyntenyAdapter` and `RgfaTabixAdapter`; every
-  other track here is a URL you can paste
+  for the track that uses `GbzBaseSyntenyAdapter` and part 1's segments track;
+  every other track here is a URL you can paste
 - `bcftools`, to genotype the panel out of the callset
 
 ## Where the data comes from
