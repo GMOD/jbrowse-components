@@ -9,7 +9,6 @@ import { appendGlyph, glyphBox } from './glyphPaint.ts'
 import { inkAtPoint, inkOnRect, nearestInk } from './markHit.ts'
 import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
 import { valueWindow } from './nearestMarkHit.ts'
-import { blockPx } from './spanMark.ts'
 
 import type { ColorChannel } from './markRamp.ts'
 import type { MarkRamp, MarkShape, MarkValueScaleType } from './types.ts'
@@ -85,9 +84,6 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     const domainMin = domain[0]
     const domainMax = domain[1]
     const st = scaleTypeCode(params.scaleType)
-    // The per-block closure, not the six-argument `bpToScreenPx`: that spelling
-    // re-derives the region span and the block width at every call, and this
-    // loop makes two calls per instance. Measured at 1.67x on 100K points.
     const bpToPx = makeBpMapper(block)
 
     // Batched by colour: a run of one colour is one fillStyle write and one
@@ -128,8 +124,9 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
   ink(channels, block, frame, params, i) {
     const { x, x2, y, glyph } = channels
     const { diameterPx, domain, insetPx = 0 } = params
-    const xStart = blockPx(block, x[i]!)
-    const xEnd = blockPx(block, x2[i]!)
+    const bpToPx = makeBpMapper(block)
+    const xStart = bpToPx(x[i]!)
+    const xEnd = bpToPx(x2[i]!)
     const r = diameterPx / 2
     const cy = pointYPx(
       y[i]!,

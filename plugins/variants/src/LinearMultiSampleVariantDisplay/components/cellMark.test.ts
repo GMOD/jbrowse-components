@@ -1,5 +1,4 @@
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
-import { blockPx } from '@jbrowse/render-core/marks'
 import { makeAbgrFill } from '@jbrowse/render-core/marks/colorFill'
 import { recordingContext } from '@jbrowse/render-core/marks/drawAgainstHit'
 
@@ -46,9 +45,10 @@ const retired: Required<
     if (top + height < 0 || top > canvasHeight) {
       return undefined
     }
+    const toX = makeBpMapper(block)
     const { x, width } = snapVariantCellX(
-      blockPx(block, startEnd[i * 2]!),
-      blockPx(block, startEnd[i * 2 + 1]!),
+      toX(startEnd[i * 2]!),
+      toX(startEnd[i * 2 + 1]!),
       canvasWidth,
     )
     return { left: x, top, width, height }

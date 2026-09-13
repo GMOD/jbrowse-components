@@ -1,10 +1,5 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
-import {
-  bpProjection,
-  bpToScreenPx,
-  projectBp,
-  spanLeft,
-} from '../canvas2dUtils.ts'
+import { bpProjection, projectBp, spanLeft } from '../canvas2dUtils.ts'
 import {
   drawnRowHeightPx,
   rowBandOffsetPx,
@@ -48,17 +43,6 @@ export interface SpanParams {
   seamPx: number
   /** Rows-area scroll offset in CSS px; 0 for a canvas sized to its content. */
   scrollTop: number
-}
-
-export function blockPx(block: RenderBlock, bp: number) {
-  return bpToScreenPx(
-    bp,
-    block.start,
-    block.end,
-    block.screenStartPx,
-    block.screenEndPx,
-    block.reversed,
-  )
 }
 
 interface SpanFrame extends BpProjection {

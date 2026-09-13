@@ -8,7 +8,7 @@ import * as shader from '../shaders/spanMark.iface.generated.ts'
 import { abgrToCssRgba, makeAbgrFill } from './colorFill.ts'
 import { recordingContext as mockCtx } from './drawAgainstHit.ts'
 import { shapeHitNearest } from './markHit.ts'
-import { blockPx, spanMark } from './spanMark.ts'
+import { spanMark } from './spanMark.ts'
 
 import type { SpanChannels, SpanParams } from './spanMark.ts'
 import type { MarkShape } from './types.ts'
@@ -223,8 +223,9 @@ const retiredSpan: Required<
   ink(channels, block, _frame, params, i) {
     const { x, x2, row } = channels
     const { rowHeight, rowProportion, minWidthPx, scrollTop } = params
-    const xa = blockPx(block, x[i]!)
-    const xb = blockPx(block, x2[i]!)
+    const toX = makeBpMapper(block)
+    const xa = toX(x[i]!)
+    const xb = toX(x2[i]!)
     const width = Math.max(minWidthPx, Math.abs(xb - xa))
     return {
       left: spanLeft(xa, xb, width),

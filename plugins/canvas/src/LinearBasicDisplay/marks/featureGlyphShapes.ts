@@ -15,7 +15,6 @@ import {
   spanLeft,
   strokeRectInside,
 } from '@jbrowse/render-core/canvas2dUtils'
-import { blockPx } from '@jbrowse/render-core/marks'
 import { makeAbgrFill } from '@jbrowse/render-core/marks/colorFill'
 import {
   snapBoxCenterYPx,
@@ -382,8 +381,9 @@ export const lineShape: MarkShape<LineChannels, FeatureGlyphParams> = {
     ) {
       return undefined
     }
-    const x1 = blockPx(block, startEnd[i * 2]!)
-    const x2 = blockPx(block, startEnd[i * 2 + 1]!)
+    const toX = makeBpMapper(block)
+    const x1 = toX(startEnd[i * 2]!)
+    const x2 = toX(startEnd[i * 2 + 1]!)
     const y = snapBoxCenterYPx(ys[i]!, height[i]!, params.scrollY)
     const width = Math.abs(x2 - x1)
     const chevrons = direction[i] !== 0 && showChevrons(width)
@@ -484,8 +484,9 @@ export const arrowShape: MarkShape<ArrowChannels, FeatureGlyphParams> = {
     const xBp = xs[i]!
     const rawDir = direction[i]!
     const otherEndBp = rawDir === 1 ? xBp - widthBp[i]! : xBp + widthBp[i]!
-    const cx = blockPx(block, xBp)
-    if (!arrowDraws(Math.abs(blockPx(block, otherEndBp) - cx))) {
+    const toX = makeBpMapper(block)
+    const cx = toX(xBp)
+    if (!arrowDraws(Math.abs(toX(otherEndBp) - cx))) {
       return undefined
     }
     const dir = block.reversed ? -rawDir : rawDir

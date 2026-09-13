@@ -10,7 +10,7 @@ import {
   spanLeft,
   strokeRectInside,
 } from '@jbrowse/render-core/canvas2dUtils'
-import { blockPx, defineMark } from '@jbrowse/render-core/marks'
+import { defineMark } from '@jbrowse/render-core/marks'
 import {
   recordingContext,
   sweepMarkAgainstHit,
@@ -200,7 +200,7 @@ const retiredRect: Required<
     const [left, width] = paintedRectSpan(
       startEnd[i * 2]!,
       startEnd[i * 2 + 1]!,
-      bp => blockPx(block, bp),
+      makeBpMapper(block),
     )
     return {
       left,

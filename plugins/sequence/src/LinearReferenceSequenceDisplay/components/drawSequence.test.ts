@@ -8,7 +8,7 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 // The reference-sequence display paints one rect per base, so it is a "cell"
-// mark and needs the reversed-block pivot: `bpToScreenPx(bp)` is the base's LEFT
+// mark and needs the reversed-block pivot: `makeBpMapper(bp)` is the base's LEFT
 // edge forward but its RIGHT edge reversed, so filling rightward from the raw
 // mapper would cover the neighbor. `bpRangeToScreen` resolves both edges and
 // orders them (min/abs), but nothing tested it — the snapshots are forward-only,

@@ -7,7 +7,6 @@ import { slangPass } from '../slangPass.ts'
 import { makeAbgrFill } from './colorFill.ts'
 import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
 import { valueWindow } from './nearestMarkHit.ts'
-import { blockPx } from './spanMark.ts'
 
 import type { ColorChannel } from './markRamp.ts'
 import type { MarkRamp, MarkShape, MarkValueScaleType } from './types.ts'
@@ -118,7 +117,7 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
   ink(channels, block, frame, params, i) {
     const { x, x2, y } = channels
     return barRect(
-      bp => blockPx(block, bp),
+      makeBpMapper(block),
       x[i]!,
       x2[i]!,
       y[i]!,
