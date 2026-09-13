@@ -4,13 +4,18 @@ import {
   GLYPH_TRIANGLE,
 } from '../shaders/pointMark.consts.generated.ts'
 import { barMark } from './barMark.ts'
-import { sweepDrawAgainstHit } from './drawAgainstHit.ts'
+import {
+  sweepDrawAgainstContainment,
+  sweepDrawAgainstHit,
+} from './drawAgainstHit.ts'
+import { inkHitNearest } from './markHit.ts'
 import { pointMark } from './pointMark.ts'
 import { spanMark } from './spanMark.ts'
 
 import type { BarChannels, BarParams } from './barMark.ts'
 import type { PointChannels, PointParams } from './pointMark.ts'
 import type { SpanChannels, SpanParams } from './spanMark.ts'
+import type { MarkShape } from './types.ts'
 
 const RED = 0xff0000ff
 const BLUE = 0xffff0000
@@ -66,6 +71,78 @@ describe('span: every drawn rect answers its own hit, in both orientations', () 
         ),
       ).toEqual([])
     }
+  })
+})
+
+describe('containment: a rule in place of the painted box', () => {
+  const sliceSpan = (c: SpanChannels, i: number): SpanChannels => ({
+    x: c.x.subarray(i, i + 1),
+    x2: c.x2.subarray(i, i + 1),
+    row: c.row.subarray(i, i + 1),
+    color: c.color.subarray(i, i + 1),
+    count: 1,
+  })
+  const onInk =
+    (reversed: boolean, except = -1) =>
+    (i: number, x: number, y: number) => {
+      const r = spanMark.ink!(
+        spans,
+        { ...block, reversed },
+        frame,
+        spanParams,
+        i,
+      )!
+      return (
+        i !== except &&
+        x >= r.left &&
+        x <= r.left + r.width &&
+        y >= r.top &&
+        y <= r.top + r.height
+      )
+    }
+  const sweep = (
+    reversed: boolean,
+    contains: (i: number, x: number, y: number) => boolean,
+    shape: MarkShape<SpanChannels, SpanParams> = spanMark,
+  ) =>
+    sweepDrawAgainstContainment(
+      shape,
+      spans,
+      { ...block, reversed },
+      frame,
+      spanParams,
+      { contains, sliceOne: sliceSpan, maxDistSq: Number.MIN_VALUE },
+    )
+
+  test.each([false, true])('the box as the rule agrees, reversed %s', r => {
+    expect(sweep(r, onInk(r))).toEqual([])
+  })
+
+  test('a hit the rule does not contain is reported', () => {
+    expect(sweep(false, onInk(false, 3))[0]).toBe(
+      '(45, 16) should answer nothing, answered 3',
+    )
+  })
+
+  test('a rule the hit test does not answer is reported', () => {
+    const boxHit = inkHitNearest<SpanChannels, SpanParams>(spanMark.ink!)
+    const blindToFour: MarkShape<SpanChannels, SpanParams> = {
+      ...spanMark,
+      hitNearest: (c, b, f, p, x, y, candidates, maxDistSq) =>
+        boxHit(
+          c,
+          b,
+          f,
+          p,
+          x,
+          y,
+          [...candidates].filter(i => i !== 4),
+          maxDistSq,
+        ),
+    }
+    expect(sweep(false, onInk(false), blindToFour)[0]).toBe(
+      '(55, 8) should answer 4, answered nothing',
+    )
   })
 })
 
