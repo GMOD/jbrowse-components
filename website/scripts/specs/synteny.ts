@@ -3922,6 +3922,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
         },
       ],
     }),
+    viewportHeight: 672,
     readySelector: displayPainted('synteny_canvas'),
     // autoDiagonalize holds the synteny canvas (and thus synteny_canvas_done)
     // off-screen until the diagonalize RPC lands and the reorder is applied, so
