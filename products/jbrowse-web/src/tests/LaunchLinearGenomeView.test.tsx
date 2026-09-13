@@ -1,16 +1,10 @@
 import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
 import { render, waitFor } from '@testing-library/react'
-import { Image, createCanvas } from 'canvas'
 
 import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
 
 jest.mock('../makeWorkerInstance', () => () => {})
-
-// @ts-expect-error
-global.nodeImage = Image
-// @ts-expect-error
-global.nodeCreateCanvas = createCanvas
 
 const delay = { timeout: 10000 }
 

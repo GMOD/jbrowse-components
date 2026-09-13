@@ -63,9 +63,9 @@ export interface SvgReadyTerminals {
  * data is current for what is on screen, or the fetch reached a terminal state.
  *
  * Single-sourced for the same reason as `computeDisplayPhase`: every display
- * family expresses freshness differently — spatial coverage (per-region),
- * viewport-snapshot compare (global), signature compare (arc / dotplot /
- * synteny) — but the *policy* wrapping it is identical, and each of the five
+ * family expresses freshness differently — spatial coverage (per-region), a
+ * signature compare (global, dotplot, synteny) — but the *policy* wrapping it
+ * is identical, and each of the five
  * hand-written copies this replaced was one place to forget a terminal and hang
  * the export, or to forget freshness and capture a stale viewport (both have
  * shipped; see agent-docs/reference/SVG_EXPORT.md).
@@ -89,10 +89,11 @@ export function computeSvgReady(
  * Off-screen renderers (SVG export, headless jbrowse-img) must wait until the
  * display reaches a terminal state before reading its data. That whole policy
  * lives in `svgReady`; this is the one shared way to await it, so renderers
- * never re-inline `data != null || error || …`. No time bound: `svgReady` is a
- * terminal state (data loaded, or error / too-large), so it resolves once the
- * fetch it observes settles. If a throwing `svgReady` getter rejects the wait,
- * that error propagates faithfully rather than being masked.
+ * never re-inline `data != null || error || …`. `svgReady` is a terminal state
+ * (data loaded, or error / too-large / canceled), so it resolves once the fetch
+ * it observes settles; the half-hour `timeoutMs` is only a backstop for a gate
+ * that cannot converge. If a throwing `svgReady` getter rejects the wait, that
+ * error propagates faithfully rather than being masked.
  *
  * It then fails the export if the terminal it settled on was the error
  * (`throwOnExportErrors`, below, for why that is fatal), making this the exact

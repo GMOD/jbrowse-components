@@ -38,7 +38,6 @@ interface RenderSvgModel extends RenderSvgBaseModel {
   // The lane's labels are placed per region, so the export needs the same region
   // list the on-screen pass letters against.
   visibleRegions: VisibleRegion[]
-  showInsertionGlyphs: boolean
 }
 
 export async function renderSvg(

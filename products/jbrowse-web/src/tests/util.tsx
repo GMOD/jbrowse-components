@@ -7,7 +7,7 @@ import { clearAdapterCache } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { saveAs } from '@jbrowse/core/util'
 import { clearCache } from '@jbrowse/core/util/io/RemoteFileWithRangeCache'
 import { fireEvent, render, waitFor } from '@testing-library/react'
-import { Image, createCanvas } from 'canvas'
+import { createCanvas } from 'canvas'
 import { LocalFile } from 'generic-filehandle2'
 import { toMatchImageSnapshot } from 'jest-image-snapshot'
 
@@ -27,11 +27,6 @@ import type { RenderResult } from '@testing-library/react'
 type LGV = LinearGenomeViewModel
 
 jest.mock('../makeWorkerInstance', () => () => {})
-
-// @ts-expect-error
-global.nodeImage = Image
-// @ts-expect-error
-global.nodeCreateCanvas = createCanvas
 
 // web's root model names WebWorkerRpcDriver as its host default, and web
 // workers don't run under jest (makeWorkerInstance is mocked to a no-op) — so

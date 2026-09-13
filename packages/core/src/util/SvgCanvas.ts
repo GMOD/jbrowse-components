@@ -587,10 +587,6 @@ export class SvgCanvas {
     // no-op: raster images can't be meaningfully serialized to SVG paths
   }
 
-  putImageData(..._args: unknown[]) {
-    // no-op
-  }
-
   clip(..._args: unknown[]) {
     // Use the current path as a clipPath, then open a `<g clip-path>`
     // group that subsequent draws will land inside. The group is closed by

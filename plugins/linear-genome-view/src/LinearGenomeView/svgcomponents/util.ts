@@ -221,7 +221,6 @@ export function getHeaderLayout({
 // Ruler tick geometry, shared by the tick marks and their number labels.
 export const RULER_MAJOR_TICK = 5
 export const RULER_MINOR_TICK = 3
-export const RULER_TICK_FONT_SIZE = 11
 // clearance between the tick-number baseline and the marks below it
 const RULER_TICK_LABEL_GAP = 2
 

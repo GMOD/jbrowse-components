@@ -1,7 +1,6 @@
 import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { act, render, waitFor } from '@testing-library/react'
-import { Image, createCanvas } from 'canvas'
 
 import { Loader } from '../components/Loader.tsx'
 import {
@@ -14,11 +13,6 @@ import type { WebRootModel } from '../rootModel/rootModel.ts'
 import type * as ApolloShapedFixture from './apolloShapedPlugin.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
-
-// @ts-expect-error
-global.nodeImage = Image
-// @ts-expect-error
-global.nodeCreateCanvas = createCanvas
 
 // The plugin has to be registered where a real one is — inside the PluginManager
 // this app builds — or the test proves nothing about the host. corePlugins is

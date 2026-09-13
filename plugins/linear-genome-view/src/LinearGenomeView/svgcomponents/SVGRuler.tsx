@@ -5,6 +5,7 @@ import { useTheme } from '@mui/material'
 
 import {
   REF_NAME_LABEL_FONT_SIZE,
+  TICK_LABEL_FONT_SIZE,
   getScalebarRefNameLabels,
   labelFitsInBlock,
   refNameLabelFitsInView,
@@ -14,7 +15,6 @@ import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 import {
   RULER_MAJOR_TICK,
   RULER_MINOR_TICK,
-  RULER_TICK_FONT_SIZE,
   getRulerLayout,
   gridlineTickXs,
   refNameLabelBaselineY,
@@ -73,7 +73,7 @@ function Ruler({
             x={dx + x}
             y={numbersBaselineY}
             textAnchor="middle"
-            fontSize={RULER_TICK_FONT_SIZE}
+            fontSize={TICK_LABEL_FONT_SIZE}
             fill={color}
           >
             {label}

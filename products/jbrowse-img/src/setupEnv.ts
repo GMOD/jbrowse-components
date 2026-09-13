@@ -1,6 +1,5 @@
 import { TextDecoder, TextEncoder } from 'node:util'
 
-import { Image, createCanvas } from 'canvas'
 import { JSDOM } from 'jsdom'
 import { enableStaticRendering } from 'mobx-react'
 
@@ -11,10 +10,6 @@ export function setupEnv() {
   // nodes. This is the standard mobx SSR switch.
   enableStaticRendering(true)
 
-  // @ts-expect-error
-  global.nodeImage = Image
-  // @ts-expect-error
-  global.nodeCreateCanvas = createCanvas
   global.TextEncoder = TextEncoder
   global.TextDecoder = TextDecoder
 

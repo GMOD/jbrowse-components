@@ -1,16 +1,10 @@
 import { render } from '@testing-library/react'
-import { Image, createCanvas } from 'canvas'
 
 import { utilizeFetchMockForTest } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
 import { findDisplayPainted } from './util.tsx'
 
 jest.mock('../makeWorkerInstance', () => () => {})
-
-// @ts-expect-error
-global.nodeImage = Image
-// @ts-expect-error
-global.nodeCreateCanvas = createCanvas
 
 const delay = { timeout: 20000 }
 

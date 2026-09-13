@@ -3,7 +3,6 @@ import '../components/enableReactRenderLogging.ts'
 import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
 import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { act, render, waitFor } from '@testing-library/react'
-import { Image, createCanvas } from 'canvas'
 
 // deliberately NOT ./loaderUtil.tsx: this test is about the real disposeLoader
 import { Loader } from '../components/Loader.tsx'
@@ -13,11 +12,6 @@ import { handleRequest, volvoxGetFile } from './generateReadBuffer.ts'
 import type { WebRootModel } from '../rootModel/rootModel.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
-
-// @ts-expect-error
-global.nodeImage = Image
-// @ts-expect-error
-global.nodeCreateCanvas = createCanvas
 
 jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
   if (`${url}`.includes('plugin-store')) {

@@ -1,7 +1,6 @@
 import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { act, render, waitFor } from '@testing-library/react'
-import { Image, createCanvas } from 'canvas'
 
 import { handleRequest, volvoxGetFile } from './generateReadBuffer.ts'
 import { App } from './loaderUtil.tsx'
@@ -9,11 +8,6 @@ import { App } from './loaderUtil.tsx'
 import type { WebRootModel } from '../rootModel/rootModel.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
-
-// @ts-expect-error
-global.nodeImage = Image
-// @ts-expect-error
-global.nodeCreateCanvas = createCanvas
 
 jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
   if (`${url}`.includes('plugin-store')) {

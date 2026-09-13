@@ -125,9 +125,8 @@ export function SVGMessageBox({
 // terminal state itself — a "region too large" message — and only paints the
 // children when the display has renderable data. The body is an ordinary child
 // component, so it never runs in a terminal state and no `renderSvg` re-detects
-// one from empty/absent data. The readiness wait stays an explicit
-// `await awaitSvgReady(model)` in each `renderSvg` (the one genuinely async
-// step), so this component is sync.
+// one from empty/absent data. The readiness wait happens before it, in
+// `renderDisplaySvg` (the one genuinely async step), so this component is sync.
 //
 // One terminal, not two, and the asymmetry is the point: over-budget is a state
 // the user navigated to on purpose, and a figure saying so is the honest export
