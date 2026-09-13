@@ -2,6 +2,7 @@ import { useId, useRef, useState } from 'react'
 
 import { ScrollChrome } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
+import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import { usePanelVirtualScroll } from '@jbrowse/core/util/usePanelVirtualScroll'
 import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
 import { PointerLayer } from '@jbrowse/display-ui'
@@ -109,6 +110,8 @@ const MultiWaySyntenyReactComponent = observer(
             pressed !== undefined &&
             Math.abs(event.clientX - pressed) < CLICK_DRAG_THRESHOLD_PX
           ) {
+            const { clientX, clientY } = event
+            model.setPointer({ ...eventPoint(event), clientX, clientY })
             model.selectHovered()
           }
         }}

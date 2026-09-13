@@ -1,6 +1,6 @@
 ---
 name: canvas-interaction-state-mixin
-description: Hover, clicked and selection state as one mixin for the canvas-rendered displays, instead of channels each display hand-wires — the multiway display shipped with the clicked channel pinned to 0 and the selection channel ungated because its author wired the two it remembered (both since fixed; it is now the fullest of the three implementations, and the pairwise display is the one still without a selection gate). What the mixin owns (the ids, the ownFeatureIds selection gate, the render-state fields, the keys-not-indices lifecycle), the three existing implementations it would be extracted from, and why the pick side stays per-display.
+description: Hover, clicked and selection state as one mixin for the canvas-rendered displays, instead of channels each display hand-wires — the multiway display shipped with the clicked channel pinned to 0 and the selection channel ungated because its author wired the two it remembered (both since fixed; it is now the fullest of the three implementations, and the pairwise display is the one still without a selection gate). What the mixin owns (the ids, the render-state fields, the keys-not-indices lifecycle), the three existing implementations it would be extracted from, and why the pick side stays per-display.
 ---
 
 # A canvas interaction-state mixin
@@ -25,16 +25,20 @@ The model-side interaction channels every canvas display repeats:
   none does.
 - The resolved `hoveredFeatureId` / `clickedFeatureId` getters the render
   state reads.
-- `ownFeatureIds` + the gated `selectedFeatureId` — the session selection
-  resolved to undefined unless it names a feature this display draws, so a
-  foreign selection invalidates nothing downstream.
-- The `selectHovered` shape: record the clicked target, open the widget,
-  empty-canvas click clears.
+- The `selectHovered` shape: hit-test at the click's own point, record the
+  clicked target, open the widget, empty-canvas click clears. The hover is
+  coalesced to a frame, so a click that reads it instead selects nothing when
+  no frame ran since the pointer arrived — a touch tap, or a scripted click.
+
+The session selection is no longer a channel here: `MultiWaySyntenyDisplay`
+draws it as the chrome's `selectionInk`, like the pileup, Manhattan,
+multi-sample variant and multi-row displays, so it reaches no cell and needs no
+gate.
 
 ## The implementations to extract from
 
 `LinearSyntenyDisplay` (hover/click indices, `setRpcData`'s clear),
-`MultiWaySyntenyDisplay` (all three channels, the group-key click, the gate),
+`MultiWaySyntenyDisplay` (hover and click, the group-key click),
 and `DotplotDisplay` (hover only today; its click currently resolves the
 alignment under the pointer and does nothing —
 [let-a-dotplot-click-open-the-alignment-it-is-on](let-a-dotplot-click-open-the-alignment-it-is-on.md)
