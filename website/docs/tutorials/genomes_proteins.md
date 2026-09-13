@@ -179,10 +179,11 @@ shared core is the control: NACHT, the winged helix, HD2, FIIND and CARD run
 across every row.
 
 The calls ride along on NCBI's own protein records. For a protein NCBI has no
-calls for, `react-msaview-cli interpro` writes a domain file from InterPro's
-precomputed matches, **File → Annotations → Open InterProScan results...** reads
-it in, and **File → Annotations → How to get a domain file...** opens the
-walkthrough.
+calls for, `react-msaview-cli interproscan` scans the alignment's sequences into
+a domain file, **File → Annotations → Open InterProScan results...** reads it
+in, and **File → Annotations → How to get a domain file...** opens the
+[walkthrough](https://gmod.org/JBrowseMSA/tutorials/protein_family), which also
+covers `interpro`, the instant path when the rows are UniProt accessions.
 
 ### Checking the overlay against the residues
 
