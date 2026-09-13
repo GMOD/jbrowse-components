@@ -26,8 +26,8 @@ export interface NearestMarkHit<TRegion> extends MarkHit {
  * the best.
  *
  * `candidates` names the instances a mark is asked about in a block: what a
- * spatial index finds in the window, or every instance, back to front.
- * `undefined` leaves the mark out of that block.
+ * spatial index finds in the radius's reach, or every instance, back to
+ * front. `undefined` leaves the mark out of that block.
  */
 export function nearestMarkHit<TRegion, TState extends MarkFrame>(
   marks: readonly Mark<TRegion, TState>[],
@@ -44,7 +44,7 @@ export function nearestMarkHit<TRegion, TState extends MarkFrame>(
     candidates: (
       region: TRegion,
       mark: number,
-      window: HitWindow,
+      reach: HitWindow,
     ) => Iterable<number> | undefined
   },
 ): NearestMarkHit<TRegion> | undefined {
