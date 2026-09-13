@@ -150,6 +150,15 @@ export interface LaneGenesFetchSpec extends LaneFetchSpec {
   regions: LaneRegion[]
 }
 
+/**
+ * whether a spec list frames a mate lane. Not `length > 1`: the anchor has a
+ * spec only where it has a gene track, so a window framing one mate on an
+ * anchor without one is a single spec that is a mate's
+ */
+export function specsCoverMate(specs: LaneFetchSpec[], anchor: string) {
+  return specs.some(spec => spec.lane !== anchor)
+}
+
 export interface LaneLinksFetchSpec extends LaneFetchSpec {
   upperAssembly: string
   lowerAssembly: string
@@ -1950,7 +1959,7 @@ export function stateModelFactory(
         return (
           (self.laneGenes === undefined && genes.length > 0) ||
           (self.laneGenesCoverMatesFor !== self.anchorAssemblyName &&
-            genes.length > 1) ||
+            specsCoverMate(genes, self.anchorAssemblyName)) ||
           (self.laneLinks === undefined && self.laneLinksFetchSpecs.length > 0)
         )
       },

@@ -6,7 +6,7 @@ import { autorun, when } from 'mobx'
 
 import { LaneGene } from './geneGlyph.ts'
 import { MIN_LANE_PITCH } from './laneStack.ts'
-import { declaredLanesOf, staleLaneSpecs } from './model.ts'
+import { declaredLanesOf, specsCoverMate, staleLaneSpecs } from './model.ts'
 import { createDisplay, createDisplayWithSession } from './testEnv.ts'
 
 const namedGene = (
@@ -70,6 +70,16 @@ test('the lane fetch is part of loading only until it first lands', () => {
 // off that one shot the primate amylase figure as placement boxes with every
 // mate lane still downloading. The commit that counts is the first covering a
 // mate lane, which the fetch states off its own spec list.
+test('a spec list covers a mate lane when one of its specs is a mate lane', () => {
+  const spec = (lane: string) => ({ lane, key: lane })
+  // an anchor without a gene track has no spec of its own, so a window
+  // framing one mate is a single spec that is a mate's
+  expect(specsCoverMate([spec('peach')], 'grape')).toBe(true)
+  expect(specsCoverMate([spec('grape')], 'grape')).toBe(false)
+  expect(specsCoverMate([spec('grape'), spec('peach')], 'grape')).toBe(true)
+  expect(specsCoverMate([], 'grape')).toBe(false)
+})
+
 test('the first landing that counts is the one covering a mate lane', () => {
   const display = createDisplay()
   display.setLaneGenes(new Map(), undefined)

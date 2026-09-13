@@ -12,7 +12,12 @@ import { autorun, untracked } from 'mobx'
 import { laneGeneFeatures } from './geneGlyph.ts'
 import { decideLaneFrames, sameDecisions } from './laneDecision.ts'
 import { mergeContiguousRegions } from './layoutMultiWay.ts'
-import { declaredLanesOf, staleLaneSpecs, starAnchorOf } from './model.ts'
+import {
+  declaredLanesOf,
+  specsCoverMate,
+  staleLaneSpecs,
+  starAnchorOf,
+} from './model.ts'
 
 import type { FetchRegion } from './layoutMultiWay.ts'
 import type {
@@ -328,7 +333,9 @@ export function doAfterAttach(self: MultiWaySyntenyDisplayModel) {
       // a mate lane only once the ortholog fetch has framed one
       self.setLaneGenes(
         genes,
-        specs.length > 1 ? self.anchorAssemblyName : undefined,
+        specsCoverMate(specs, self.anchorAssemblyName)
+          ? self.anchorAssemblyName
+          : undefined,
       )
     },
   })
