@@ -47,9 +47,13 @@ async function inkRows(page: any) {
     for (let y = 0; y < h; y++) {
       let n = 0
       for (let x = 0; x < w; x++) {
-        if (data[(y * w + x) * 4 + 3]! > 0) n++
+        if (data[(y * w + x) * 4 + 3]! > 0) {
+          n++
+        }
       }
-      if (n > 0) rows.push(y)
+      if (n > 0) {
+        rows.push(y)
+      }
     }
     return {
       cssHeight: canvas.style.height,
