@@ -30,6 +30,19 @@ Default to `@jbrowse/img`. Use `@jbrowse/capture` when the answer needs the real
 application: a canvas-rendered display, a view type the static exporter does not
 cover, a menu or dialog, or reading state back out of a running session.
 
+`@jbrowse/capture` spends agent turns as well as wall clock: a Chromium launch,
+then a page lifecycle whose readiness signals are negative-only and can be
+satisfied before the app has even started (see below) — a missed gate reruns the
+whole capture. `@jbrowse/img` renders in a single Node process and awaits its
+own promises: a real fetch error throws, and a resolved render means the data
+landed, so the race below is specific to `capture`.
+
+Reading the result costs the same image tokens for either tool, and a wrong
+refName or empty region resolves cleanly either way — a valid, contentless
+image, the same config-validates-but-shows-nothing class from the top of this
+doc. `@jbrowse/img` saves machinery and timing; reading what actually rendered
+is a manual step both tools share equally.
+
 ```bash
 npx @jbrowse/img --hub hg38 --track hg38-ncbiRefSeqCurated --loc BRCA1 --out out.png
 npx @jbrowse/capture --hub hg38 --track hg38-ncbiRefSeqCurated --loc BRCA1 -o out.png
