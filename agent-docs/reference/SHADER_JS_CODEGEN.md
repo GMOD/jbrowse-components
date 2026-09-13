@@ -119,7 +119,7 @@ demand for pixel-identical backends, and it is not one. Three tiers:
 | **Where a mark lands, to the pixel** | best effort | a half-pixel snap, an AA ramp, a min-width tick one column over |
 
 **Only the first two are what this exists for.** The third is explicitly
-per-backend — `WIGGLE_FUDGE_FACTOR`, the variant matrix's `f2` overdraw and
+per-backend — `CANVAS_SEAM_PX`, the variant matrix's `f2` overdraw and
 synteny's sub-pixel centerline stroke are AA compensation ARCHITECTURE.md tells
 you *not* to port into a `.slang`, and the Canvas2D rasterizer will never match
 a fragment shader's coverage anyway.

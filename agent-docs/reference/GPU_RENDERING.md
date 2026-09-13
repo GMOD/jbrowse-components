@@ -559,7 +559,7 @@ touching either path, preserve whichever of these the display uses:
 **Intentional divergences — do NOT "fix" these into parity.** The two backends
 legitimately differ where GPU rasterization is watertight but Canvas2D
 antialiases each primitive independently. Canvas2D adds a sub-pixel *overdraw* to
-close seams the GPU never produces (`WIGGLE_FUDGE_FACTOR` 0.8px, the
+close seams the GPU never produces (`CANVAS_SEAM_PX` 0.8px, the
 variant-matrix `f2`), and swaps a thin fill for a 1px centerline stroke (synteny
 sub-pixel ribbons); the shader instead scales coverage alpha. These are
 per-backend AA compensation, not drift — a shader has no equivalent to a Canvas2D

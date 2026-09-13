@@ -1,5 +1,4 @@
 import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
-import { CANVAS_SEAM_PX } from '@jbrowse/render-core/canvas2dUtils'
 import { MIN_FILL_WIDTH_PX } from '@jbrowse/wiggle-core'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -304,20 +303,6 @@ export function featuresToRaw(
     count,
   }
 }
-
-// Widen each Canvas2D bar slightly past its true pixel span so adjacent
-// histogram bars overlap by a fraction of a pixel instead of leaving thin
-// anti-aliased gaps between them. A fillRect at fractional coordinates
-// antialiases its own edges; adjacent GPU quads sharing an exact edge on a
-// multisampled target do not, so the shader deliberately omits this and the two
-// backends' bar *widths* differ by sub-pixel amounts by design.
-//
-// Only the width, though: which edge the bar is anchored on is shared, and both
-// backends anchor the bin's start (`spanLeft` here, `extendToMinWidthX` in the
-// shader). Anchoring the leftmost edge instead would shift every sub-floor bin
-// on a reversed block by up to the floor below — an actual mismatch, not this
-// deliberate sub-pixel one.
-export const WIGGLE_FUDGE_FACTOR = CANVAS_SEAM_PX
 
 // The floor itself is NOT a second decision: it is wiggle.slang's own
 // `MIN_FILL_WIDTH_PX`, generated in (adr-051), under the name this module has

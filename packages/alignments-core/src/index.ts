@@ -73,7 +73,6 @@ export {
 // Exported because the hit test places its rectangle with it too — see adr-051.
 export { interbaseEdgePx } from './interbaseEdge.generated.ts'
 export {
-  COVERAGE_BAR_SEAM_FUDGE_PX,
   drawCoverageBins,
   drawIndicators,
   drawInterbaseSegments,

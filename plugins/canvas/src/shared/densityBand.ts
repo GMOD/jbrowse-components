@@ -1,10 +1,10 @@
 import {
-  COVERAGE_BAR_SEAM_FUDGE_PX,
   densityBinSize,
   drawCoverageBins,
   packDensityRegion,
 } from '@jbrowse/alignments-core'
 import {
+  CANVAS_SEAM_PX,
   forEachClippedBlock,
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
@@ -85,7 +85,7 @@ export function drawDensityBand(
           makeBpMapper(block),
           canvasWidth,
           region.binSize,
-          COVERAGE_BAR_SEAM_FUDGE_PX,
+          CANVAS_SEAM_PX,
         )
       },
     )

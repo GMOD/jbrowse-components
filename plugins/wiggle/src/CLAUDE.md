@@ -96,9 +96,9 @@ and shears the capsule. `wiggleMarks.test.ts` pins it.
 
 - **Floor**: `MIN_FILL_WIDTH_PX`, `export-consts`ed from `wiggleCommon.slang`
   (adr-051), re-exported as `WIGGLE_MIN_PX`. One number, both backends.
-- **`WIGGLE_FUDGE_FACTOR` (0.8px) is Canvas2D-only.** `fillRect` at fractional
-  coords leaves hairline gaps; adjacent GPU quads on a multisampled target
-  don't. The shader must not grow a matching fudge.
+- **`CANVAS_SEAM_PX` (0.8px) is Canvas2D-only.** `fillRect` at fractional coords
+  leaves hairline gaps; adjacent GPU quads on a multisampled target don't. The
+  shader must not grow a matching fudge.
 - **Anchor is shared**: both grow a floored bar away from the bin's _start_ —
   the reversed-block family in `packages/render-core/CLAUDE.md` owns the rule.
 

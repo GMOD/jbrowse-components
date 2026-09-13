@@ -355,7 +355,7 @@ describe('the wiggle painters', () => {
   // bpRange [0,1000]→screen [0,800] reversed: bp 0→800px, bp 500→400px, so the
   // true cell is [400,800]. The bar is anchored on the bin's *start* (x1=800,
   // matching extendToMinWidthX in wiggle.slang) and widened away from it, so the
-  // WIGGLE_FUDGE_FACTOR overhang lands at 399.2 — past the bp-500 edge, which is
+  // CANVAS_SEAM_PX overhang lands at 399.2 — past the bp-500 edge, which is
   // the seam with the next bin genomically. Forward it overhangs the other way,
   // for the same reason: a bar always bleeds into its genomic successor.
   test.each([

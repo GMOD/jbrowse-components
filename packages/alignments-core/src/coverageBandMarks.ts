@@ -1,4 +1,8 @@
-import { bpAtPxExact, makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
+import {
+  CANVAS_SEAM_PX,
+  bpAtPxExact,
+  makeBpMapper,
+} from '@jbrowse/render-core/canvas2dUtils'
 import {
   COVERAGE_BAR_PASS,
   COVERAGE_INDICATOR_PASS,
@@ -29,7 +33,6 @@ import {
   INDICATOR_TRIANGLE_HW,
 } from './labelConstants.ts'
 import {
-  COVERAGE_BAR_SEAM_FUDGE_PX,
   drawCoverageBins,
   drawIndicators,
   drawInterbaseSegments,
@@ -262,7 +265,7 @@ export const coverageBarShape = layerShape(
       bpToX,
       viewWidth,
       p.coverageBinSize,
-      COVERAGE_BAR_SEAM_FUDGE_PX,
+      CANVAS_SEAM_PX,
     )
   },
 )
