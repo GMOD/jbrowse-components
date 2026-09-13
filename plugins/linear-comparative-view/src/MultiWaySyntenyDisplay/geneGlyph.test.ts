@@ -339,6 +339,72 @@ test('geneGlyphShape draws explicit UTR rows where a transcript names no exons',
   })
 })
 
+// One rule per transcript, the feature track's: a transcript naming its UTRs
+// implies none, one naming exons implies its overhang, and a region coding in
+// either reads full. Read gene-wide, the explicit UTRs of the first transcript
+// used to switch implication off for the second.
+test('geneGlyphShape lets each transcript decide its own UTRs', () => {
+  const gene = new SimpleFeature({
+    uniqueId: 'gene7',
+    refName: 'chr1',
+    start: 100,
+    end: 400,
+    subfeatures: [
+      {
+        uniqueId: 'rna1',
+        refName: 'chr1',
+        start: 100,
+        end: 300,
+        subfeatures: [
+          {
+            uniqueId: 'u1',
+            refName: 'chr1',
+            start: 100,
+            end: 150,
+            type: 'five_prime_UTR',
+          },
+          {
+            uniqueId: 'c1',
+            refName: 'chr1',
+            start: 150,
+            end: 300,
+            type: 'CDS',
+          },
+        ],
+      },
+      {
+        uniqueId: 'rna2',
+        refName: 'chr1',
+        start: 200,
+        end: 400,
+        subfeatures: [
+          {
+            uniqueId: 'x1',
+            refName: 'chr1',
+            start: 200,
+            end: 400,
+            type: 'exon',
+          },
+          {
+            uniqueId: 'c2',
+            refName: 'chr1',
+            start: 200,
+            end: 350,
+            type: 'CDS',
+          },
+        ],
+      },
+    ],
+  })
+  expect(geneGlyphShape(gene)).toEqual({
+    full: [[150, 350]],
+    thin: [
+      [100, 150],
+      [350, 400],
+    ],
+  })
+})
+
 test('laneGeneFeatures drops the whole-sequence region row, keeps genes', () => {
   const region = new SimpleFeature({
     uniqueId: 'r',

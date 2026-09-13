@@ -15,6 +15,7 @@ import { IntervalTree, dedupe, doesIntersect2 } from '@jbrowse/core/util'
 import {
   featureType,
   getSubfeatures,
+  impliedUTRs,
   isCDS,
   isExon,
   isUTR,
@@ -151,72 +152,50 @@ export interface GeneGlyphShape {
   thin: [number, number][]
 }
 
+function spanOf(f: Feature): GlyphSpan {
+  return [f.get('start'), f.get('end')]
+}
+
 /**
  * A gene's drawable shape, merged across its transcripts: the CDS full height
  * and the untranslated remainder thin.
  *
  * Merging across transcripts is this display's own operation — the feature
- * track always draws one row per transcript and has nothing to reuse here (its
- * container glyph emits no primitives of its own). What IS taken from it is
- * every leaf rule: `isCDS`/`isExon` match case-insensitively, because a
- * lowercase `cds` is ordinary in real files and matching one case-sensitively
- * derives UTRs from only some exons; `isUTR` reads the three spellings a GFF3
- * uses, so a transcript that names its UTRs rather than its exons draws them
- * instead of coming out as bare CDS; and `mergeSpans` joins abutting pieces,
- * which the CDS and UTR halves of one exon always are.
+ * track always draws one row per transcript and has nothing to reuse here. What
+ * IS the feature track's is every per-transcript rule: which rows are CDS, exon
+ * and UTR (`isCDS`/`isExon`/`isUTR`, case-insensitive), and which untranslated
+ * stretches a transcript naming no UTRs implies (`impliedUTRs`). A region
+ * coding in any transcript reads full.
  */
 export function geneGlyphShape(feature: Feature): GeneGlyphShape {
-  const exons: GlyphSpan[] = []
   const cds: GlyphSpan[] = []
-  const utrs: GlyphSpan[] = []
-  const walk = (f: Feature) => {
-    for (const sub of getSubfeatures(f)) {
-      const span: GlyphSpan = [sub.get('start'), sub.get('end')]
-      if (isCDS(sub)) {
-        cds.push(span)
-      } else if (isUTR(sub)) {
-        utrs.push(span)
-      } else if (isExon(sub)) {
-        exons.push(span)
-      }
-      walk(sub)
+  const utr: GlyphSpan[] = []
+  const nonCoding: GlyphSpan[] = []
+  const visit = (f: Feature) => {
+    const subs = getSubfeatures(f)
+    const ownCds = subs.filter(isCDS).map(spanOf)
+    if (ownCds.length) {
+      cds.push(...ownCds)
+      utr.push(...subs.filter(isUTR).map(spanOf))
+      utr.push(...impliedUTRs(f, subs).map(u => [u.start, u.end] as GlyphSpan))
+    } else {
+      const exons = subs.filter(isExon)
+      nonCoding.push(...(exons.length ? exons : subs.filter(isUTR)).map(spanOf))
+    }
+    for (const sub of subs) {
+      visit(sub)
     }
   }
-  walk(feature)
-  const mergedCds = mergeSpans(cds)
-  if (!mergedCds.length) {
-    const merged = mergeSpans(exons.length ? exons : utrs)
-    return {
-      full: merged.length
-        ? merged
-        : [[feature.get('start'), feature.get('end')]],
-      thin: [],
-    }
+  visit(feature)
+  const full = mergeSpans(cds)
+  if (!full.length) {
+    const merged = mergeSpans(nonCoding)
+    return { full: merged.length ? merged : [spanOf(feature)], thin: [] }
   }
-  if (utrs.length) {
-    return { full: mergedCds, thin: mergeSpans(utrs) }
+  return {
+    full,
+    thin: subtractIntervals(mergeSpans([...utr, ...nonCoding]), full),
   }
-  if (exons.length) {
-    return {
-      full: mergedCds,
-      thin: subtractIntervals(mergeSpans(exons), mergedCds),
-    }
-  }
-  // A CDS-only annotation, where the feature's own bounds are the only evidence
-  // of coding overhang — `makeUTRs`' rule for the same case, and only at the
-  // ends: the gaps BETWEEN the CDS pieces are introns, not untranslated exon
-  const start = feature.get('start')
-  const end = feature.get('end')
-  const codeStart = mergedCds[0]![0]
-  const codeEnd = mergedCds.at(-1)![1]
-  const thin: [number, number][] = []
-  if (start < codeStart) {
-    thin.push([start, codeStart])
-  }
-  if (end > codeEnd) {
-    thin.push([codeEnd, end])
-  }
-  return { full: mergedCds, thin }
 }
 
 export interface GeneGlyphGeometry {
