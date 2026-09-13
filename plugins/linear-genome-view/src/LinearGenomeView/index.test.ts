@@ -2654,6 +2654,22 @@ describe('getTrackOrderSubMenu gates items by track count and view level', () =>
     // regression: this used to render an empty "Track order" parent entry
     expect(labels(makeView(1, true))).toEqual([])
   })
+
+  // A stacked row cleared by its own import form blanks the bands beside it,
+  // and its ⋮ button and the parent's row menus both read `menuItems`
+  test('only a top-level view offers its import form', () => {
+    const viewMenuLabels = (view: LGV) => {
+      view.setWidth(800)
+      view.setDisplayedRegions([
+        { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 50001 },
+      ])
+      return view.menuItems().map(m => ('label' in m ? m.label : undefined))
+    }
+    expect(viewMenuLabels(makeView(1))).toContain('Return to import form')
+    expect(viewMenuLabels(makeView(1, true))).not.toContain(
+      'Return to import form',
+    )
+  })
 })
 
 describe('declarative launch: highlight, nav, unknown keys', () => {

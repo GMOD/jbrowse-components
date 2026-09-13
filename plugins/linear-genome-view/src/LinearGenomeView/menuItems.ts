@@ -62,16 +62,9 @@ export function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
   }
 }
 
-const RETURN_TO_IMPORT_FORM_ID = 'returnToImportForm'
-
-export function stackRowMenuItems(view: { menuItems: () => MenuItem[] }) {
-  return view
-    .menuItems()
-    .filter(item => !('id' in item && item.id === RETURN_TO_IMPORT_FORM_ID))
-}
-
 /**
- * Build the main view menu items
+ * Build the main view menu items. A row stacked in another view has no import
+ * form of its own, so only a top-level view offers the way back to one.
  */
 export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
   if (!self.hasDisplayedRegions) {
@@ -86,20 +79,23 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
         self.setScalebarOnly(!self.scalebarOnly)
       },
     },
-    {
-      id: RETURN_TO_IMPORT_FORM_ID,
-      label: 'Return to import form',
-      onClick: () => {
-        session.queueDialog(handleClose => [
-          ReturnToImportFormDialog,
+    ...(self.isTopLevelView
+      ? [
           {
-            model: self,
-            handleClose,
+            label: 'Return to import form',
+            onClick: () => {
+              session.queueDialog(handleClose => [
+                ReturnToImportFormDialog,
+                {
+                  model: self,
+                  handleClose,
+                },
+              ])
+            },
+            icon: FolderOpenIcon,
           },
-        ])
-      },
-      icon: FolderOpenIcon,
-    },
+        ]
+      : []),
     ...(isSessionWithAddSessionTrack(session)
       ? [
           {

@@ -1,5 +1,4 @@
 import { makeRadioSubMenu, radioItems } from '@jbrowse/core/ui/menuItems'
-import { stackRowMenuItems } from '@jbrowse/plugin-linear-genome-view'
 import AnchorIcon from '@mui/icons-material/Anchor'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
@@ -252,7 +251,7 @@ export function rowMenuItems(model: RowMenusModel): MenuItem[] {
             { type: 'divider' },
           ] satisfies MenuItem[])
         : []),
-      ...stackRowMenuItems(model.views[idx]!),
+      ...model.views[idx]!.menuItems(),
     ],
   }))
 }
