@@ -1,8 +1,9 @@
+import { backToFront } from '@jbrowse/render-core/marks'
+
 import {
   GAP_DELETION,
   GAP_SKIP,
 } from '../../shaders/slang/gap.consts.generated.ts'
-import { backToFront } from '../pileupShape.ts'
 import { DELETION_MARK, SKIP_MARK, gapHit } from './mark.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'

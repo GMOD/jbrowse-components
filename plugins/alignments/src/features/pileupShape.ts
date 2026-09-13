@@ -666,36 +666,3 @@ export function pileupShape(
     },
   }
 }
-
-/** `[end - 1 .. start]`, the back-to-front candidate walk a pileup mark's row scan takes. */
-export function backToFront(start: number, end: number): Iterable<number> {
-  return new ReverseRange(start, end)
-}
-
-// A class over a generator: `for..of` over this steps in a few ns where a
-// generator yields in tens, and a hover over a 100K-mismatch region walks all
-// of them.
-class ReverseRange implements Iterable<number>, Iterator<number> {
-  private i: number
-  private readonly result = { value: 0, done: false }
-  constructor(
-    private readonly start: number,
-    end: number,
-  ) {
-    this.i = end
-  }
-  [Symbol.iterator]() {
-    return this
-  }
-  next(): IteratorResult<number> {
-    const r = this.result
-    if (this.i > this.start) {
-      this.i--
-      r.value = this.i
-      r.done = false
-    } else {
-      r.done = true
-    }
-    return r
-  }
-}

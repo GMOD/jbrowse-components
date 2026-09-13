@@ -1,5 +1,6 @@
+import { backToFront } from '@jbrowse/render-core/marks'
+
 import { makeTestRenderState } from '../../LinearAlignmentsDisplay/testUtils.ts'
-import { backToFront } from '../pileupShape.ts'
 import { SOFTCLIP_BASES_MARK } from './mark.ts'
 
 import type { SoftclipBasesUploadData } from './types.ts'

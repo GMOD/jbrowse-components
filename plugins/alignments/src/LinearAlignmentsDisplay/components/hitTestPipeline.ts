@@ -1,5 +1,6 @@
 import { coverageBinAt, hitCoverageBand } from '@jbrowse/alignments-core'
 import { bpAtPx, bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
+import { backToFront } from '@jbrowse/render-core/marks'
 
 import { CLIP_MARK, clipHit, clipsOfKind } from '../../features/clip/mark.ts'
 import { DELETION_MARK, SKIP_MARK, gapHit } from '../../features/gap/mark.ts'
@@ -10,7 +11,6 @@ import {
 } from '../../features/insertion/mark.ts'
 import { MISMATCH_MARK, mismatchHit } from '../../features/mismatch/mark.ts'
 import { hitTestModification } from '../../features/modification/hitTest.ts'
-import { backToFront } from '../../features/pileupShape.ts'
 import { hitTestFeature } from '../../features/read/hitTest.ts'
 import { SOFTCLIP_BASES_MARK } from '../../features/softclipBases/mark.ts'
 import { isWithinReadBand } from '../../shared/hitTestTypes.ts'

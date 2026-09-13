@@ -1,4 +1,4 @@
-import { defineMark } from '@jbrowse/render-core/marks'
+import { backToFront, defineMark } from '@jbrowse/render-core/marks'
 
 import {
   rgb255,
@@ -13,7 +13,6 @@ import {
   Hit,
   Paint,
   Point,
-  backToFront,
   countMarks,
   markSelects,
   pileupShape,

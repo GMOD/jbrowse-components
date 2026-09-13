@@ -1,4 +1,5 @@
-import { backToFront } from '../pileupShape.ts'
+import { backToFront } from '@jbrowse/render-core/marks'
+
 import { MISMATCH_MARK } from './mark.ts'
 
 import type { RenderState } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'

@@ -1,14 +1,10 @@
 // Does one shared, rule-coded rect walker paint at hand speed?
 //
-//   node --experimental-transform-types --no-use-osr plugins/alignments/benches/rectWalker.bench.ts --size=100k
-//   node --experimental-transform-types --no-use-osr plugins/alignments/benches/rectWalker.bench.ts --size=1m
+//   node --no-use-osr plugins/alignments/benches/rectWalker.bench.ts --size=100k
+//   node --no-use-osr plugins/alignments/benches/rectWalker.bench.ts --size=1m
 //
 // Flags: --size=100k|1m (one per process), --rounds=<n> (default 25),
 // --outline (the canvas rect arm strokes outlines)
-//
-// `--experimental-transform-types` because pileupShape.ts, which the identity
-// reference and the pileup constants come from, has a parameter property that
-// strip-only TypeScript rejects.
 //
 // ARMS, per shape — span (render-core spanMark), deletion and mismatch
 // (pileupShape), rect (canvas rectShape), cell (variants cellMark):
