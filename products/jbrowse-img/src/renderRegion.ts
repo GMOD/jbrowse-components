@@ -155,22 +155,24 @@ interface ModeContext {
 
 type ModeRenderer = (ctx: ModeContext) => Promise<string>
 
-// The renderToSvg options every mode shares. `rasterizeLayers` is single-sourced
-// here so the `--noRasterize` inversion isn't repeated per renderer; linear and
-// synteny spread this and add their trackLabels/showGridlines on top.
-function baseSvgOpts(opts: Opts) {
-  return {
-    rasterizeLayers: !opts.noRasterize,
-    themeName: opts.themeName,
-    fontFamily: opts.fontFamily ?? DEFAULT_FONT_FAMILY,
-  }
-}
-
 // Rasterized layers draw into a real node-canvas rather than whatever jsdom
 // hands back from document.createElement, so PNG-embedded layers (alignments,
 // wiggle, synteny ribbons) come out drawn instead of blank.
 const nodeCanvas = (w: number, h: number) =>
   createCanvas(w, h) as unknown as HTMLCanvasElement
+
+// The renderToSvg options every mode shares. `rasterizeLayers` is single-sourced
+// here so the `--noRasterize` inversion isn't repeated per renderer, and the
+// canvas factory so no mode rasterizes through jsdom's; linear and synteny
+// spread this and add their trackLabels/showGridlines on top.
+function baseSvgOpts(opts: Opts) {
+  return {
+    rasterizeLayers: !opts.noRasterize,
+    themeName: opts.themeName,
+    fontFamily: opts.fontFamily ?? DEFAULT_FONT_FAMILY,
+    createCanvas: nodeCanvas,
+  }
+}
 
 // Errors reported through the session that must be fatal in the headless tool
 // rather than producing a blank render. Two sources:
@@ -444,7 +446,6 @@ const renderLinear: ModeRenderer = async ctx => {
 
   return renderLinearToSvg(view, {
     ...baseSvgOpts(opts),
-    createCanvas: nodeCanvas,
     showGridlines,
     trackLabels,
   })
@@ -469,7 +470,6 @@ const renderSynteny: ModeRenderer = async ctx => {
   )
   return renderSyntenyToSvg(view, {
     ...baseSvgOpts(ctx.opts),
-    createCanvas: nodeCanvas,
     trackLabels: ctx.opts.trackLabels,
     showGridlines: ctx.opts.showGridlines,
   })
@@ -556,7 +556,6 @@ const renderBreakpoint: ModeRenderer = async ctx => {
   // that reached only the session.
   return renderBreakpointToSvg(view, {
     ...baseSvgOpts(opts),
-    createCanvas: nodeCanvas,
     trackLabels: opts.trackLabels,
     showGridlines: opts.showGridlines,
   })
