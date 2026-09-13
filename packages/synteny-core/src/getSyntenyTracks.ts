@@ -91,9 +91,8 @@ export function getSyntenyTracks(
  *   value matching no option, which MUI renders as an empty field;
  * - **`assemblyManager.has`**, because a track config is free to name an
  *   assembly the session has no configuration for — a hub whose assemblies were
- *   never loaded, a config one was removed from — and such a row is not merely
- *   blank but a broken view: its init fails with "Assembly X not found", which
- *   sets the view's error, and `showImportForm` reads that error. See
+ *   never loaded, a config one was removed from — and such a row can never
+ *   open: its init fails with "Assembly X not found". See
  *   SessionAssemblies for why the screen is `has` rather than
  *   `getCanonicalAssemblyName(...) !== undefined`.
  *

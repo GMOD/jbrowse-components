@@ -437,10 +437,10 @@ export function linearSyntenyViewHelperModelFactory(
        * #getter
        * Render-lifecycle precondition, overriding `RenderLifecycleMixin`'s
        * default-true hook: the render callback sizes the canvas off
-       * `parentView.width`, which throws by design before the view is measured.
+       * `parentView.width`, which is undefined before the view is measured.
        */
       get canRender() {
-        return self.parentView.initialized
+        return self.parentView.measured
       },
       /**
        * #getter
@@ -451,17 +451,16 @@ export function linearSyntenyViewHelperModelFactory(
        * a track still fetching and the wrong one for a band with nothing to
        * draw on it.
        *
-       * `initialized` is the other half, as it is in `DotplotView.paintInert`:
-       * a stack that has not been measured has no tracks either and is *not*
-       * finished. This family carries a second guard one layer up —
-       * `ComparativeSurface.initPending`, for the level that exists from the
-       * moment its rows do while init adds its tracks several awaits later —
-       * but that one is about the init blob, not about measurement, so it does
-       * not stand in for this.
+       * `measured` is the other half: a stack that has not been laid out has no
+       * tracks either and is *not* finished. This family carries a second guard
+       * one layer up — `ComparativeSurface.initPending`, for the level that
+       * exists from the moment its rows do while init adds its tracks several
+       * awaits later — but that one is about the init blob, not about layout,
+       * so it does not stand in for this.
        */
       get paintInert() {
         return (
-          self.parentView.initialized && self.linearSyntenyDisplays.length === 0
+          self.parentView.measured && self.linearSyntenyDisplays.length === 0
         )
       },
     }))

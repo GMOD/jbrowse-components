@@ -206,8 +206,8 @@ export function doAfterAttach(
   installAssemblySwapCheck(self, {
     name: 'SyntenyAssemblySwapCheck',
     axisAssemblies: () => {
-      const pair = self.parentHelper.rowPair
-      return self.view.initialized && pair
+      const pair = self.connectedViews
+      return pair
         ? [pair.v0.assemblyNames[0], pair.v1.assemblyNames[0]]
         : undefined
     },

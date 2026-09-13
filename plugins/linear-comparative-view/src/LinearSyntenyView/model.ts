@@ -479,7 +479,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       get showLoading() {
         return (
           self.awaitingAutoDiagonalize ||
-          (!self.initialized && self.hasSomethingToShow && !self.error)
+          (!self.stackDrawable && self.hasSomethingToShow && !self.stackError)
         )
       },
       /**
@@ -532,10 +532,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * so a reload can retry it, but in this session there is nothing to show
        * and no second attempt coming, so the form (with the error banner) is the
        * only way forward — matching LGV/dotplot/circular, which also fall back
-       * to the form on error rather than spinning.
+       * to the form on error rather than spinning. One failed row does not:
+       * see `stackError`.
        */
       get showImportForm() {
-        return !self.hasSomethingToShow || !!self.error
+        return !self.hasSomethingToShow || !!self.stackError
       },
       /**
        * #getter
@@ -551,7 +552,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       get status(): ViewStatus {
         return computeViewStatus({
-          error: self.error,
+          error: self.stackError,
           hasSomethingToShow: self.hasSomethingToShow,
           loading: () =>
             this.showLoading

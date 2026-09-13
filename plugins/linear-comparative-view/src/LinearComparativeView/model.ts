@@ -200,28 +200,58 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
+       * the view has been laid out, so `width` is a number
+       */
+      get measured() {
+        /* oxlint-disable typescript/no-unnecessary-condition -- width is nominally number but undefined before first layout */
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        return self.width !== undefined
+        /* oxlint-enable typescript/no-unnecessary-condition */
+      },
+      /**
+       * #getter
+       * measured, and every row initialized
        */
       get initialized() {
-        /* oxlint-disable typescript/no-unnecessary-condition -- width is nominally number but undefined before first layout */
         return (
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          self.width !== undefined &&
+          this.measured &&
           self.views.length > 0 &&
           self.views.every(view => view.initialized)
         )
-        /* oxlint-enable typescript/no-unnecessary-condition */
       },
 
       /**
        * #getter
+       * Resolved like LGV's and dotplot's: it folds in the rows, whose
+       * assemblies are what `initialized` waits on, so an export or a launcher
+       * waiting on a stack with a failed row is told why rather than hanging.
        */
       get error(): unknown {
-        // resolved, like LGV's and dotplot's: it folds in the sub-views, whose
-        // assemblies are what `initialized` waits on. Without them a failed
-        // assembly left this empty while `initialized` stayed false forever, so
-        // `showLoading` spun instead of falling back to the import form with the
-        // banner, and an SVG export waited on it with nothing to report
         return self.volatileError ?? self.views.find(v => v.error)?.error
+      },
+
+      /**
+       * #getter
+       * The failure that leaves the stack nothing to show: the view's own, or
+       * every row's. One row's failure is that row's to report, in its own
+       * place in the stack, beside the rows that loaded.
+       */
+      get stackError(): unknown {
+        return (
+          self.volatileError ??
+          (self.views.length > 0 && self.views.every(v => v.error)
+            ? self.views[0]!.error
+            : undefined)
+        )
+      },
+
+      /**
+       * #getter
+       * Measured with a row up: enough to draw the stack, where a row still
+       * loading or failed shows that in its own place.
+       */
+      get stackDrawable() {
+        return this.measured && self.views.some(v => v.initialized)
       },
 
       /**

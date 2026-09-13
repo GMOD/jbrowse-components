@@ -93,10 +93,7 @@ test('a self-alignment dataset adds the same assembly again', () => {
     .toEqual(['hg38_self -> hg38'])
 })
 
-// Not a broken row but a broken view: the row's init fails with "Assembly X
-// not found", which sets the whole synteny view's error, and showImportForm
-// reads that error — so an offered option replaced the working stack with the
-// import form.
+// A row that can never open: its init fails with "Assembly X not found".
 test('a dataset whose other endpoint has no assembly is not an option', () => {
   expect(
     offered(

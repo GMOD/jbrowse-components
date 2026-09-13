@@ -112,11 +112,9 @@ test('a session with a connecting dataset offers it instead', async () => {
   expect(screen.queryByText(/No synteny dataset in this session/)).toBeNull()
 })
 
-// `ghost` is named by the dataset and configured by nothing. Adding that row
-// fails its init with "Assembly ghost not found", which sets the view's error,
-// and showImportForm reads the view's error — so the option the dialog offered
-// swapped the user's working stack for the import form. An option that cannot
-// be opened is not an option.
+// `ghost` is named by the dataset and configured by nothing, so a row added on
+// it fails its init with "Assembly ghost not found". An option that cannot be
+// opened is not an option.
 test('a dataset naming an unloaded assembly is not offered', async () => {
   await openDialog([['volvox2', 'ghost']])
 

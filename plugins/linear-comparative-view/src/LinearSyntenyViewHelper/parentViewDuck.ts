@@ -36,9 +36,8 @@ import type {
 // So a member belongs HERE rather than in an import.
 export interface ParentViewDuck extends IStateTreeNode, FollowHost {
   width: number
-  // measured + every row initialized; the level's `canRender` precondition,
-  // because reading `width` before first layout throws
-  initialized: boolean
+  // the level's `canRender` precondition: `width` is undefined before layout
+  measured: boolean
   views: LinearGenomeViewModel[]
   levels: readonly IStateTreeNode[]
   scrollZoom: boolean
