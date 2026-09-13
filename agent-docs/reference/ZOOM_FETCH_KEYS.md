@@ -72,7 +72,7 @@ uncovered block — drop `isCacheValid`'s observables only where the block reach
   change refetches all visible regions together. See
   [ADR-008](../architecture-decision-records/adr-008-wiggle-strict-bpperpx-equality.md).
   It sits on `WiggleCommonMixin`, the wiggle-shaped-*fetch* mixin, rather than
-  on the `WiggleScoreConfigMixin` that mixin composes: the rule is about what a
+  on the `ScoreFieldConfigMixin` that mixin extends: the rule is about what a
   fetch returns, and `LinearManhattanDisplay` composes the score config alone
   while fetching untransformed SNPs.
 - **Canvas** (`LinearBasicDisplay`): the amino-acid overlay is the only

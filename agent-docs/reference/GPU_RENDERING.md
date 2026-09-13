@@ -737,7 +737,7 @@ so it takes no dependency on the wiggle plugin's MST factories or RPC methods:
 - `scale.ts` / `autoscale.ts` — `getNiceDomain`, `getScale`, autoscale helpers
 - `scoreMenuItems.ts` — `makeScoreSubMenu(self, opts)` + `ScoreScaleModel`: the shared Score submenu
 - `pointMarker.ts` / `resolveRenderState.ts` / `transferables.ts` / `YScaleBar` — the shared scatter glyph (wiggle + Manhattan), render-state resolution, worker transfer-list collection, and the Y-axis overlay
-- `WiggleScoreConfigMixin` — the score-plot config: the axis (`ScoreScaleMixin`, which the alignments coverage band composes alone), the plotted `scoreField`, the cross-hatch toggle and the point size
+- `WiggleScoreConfigMixin` / `ScoreFieldConfigMixin` — the score-plot config: the axis (`ScoreScaleMixin`, which the alignments coverage band composes alone), the cross-hatch toggle and the point size; the second adds `scoreField` for a display plotting one configured field, which the mark display does not
 - `ScorePlotSvgFrame` — the SVG-export body of a display drawing on the score axis
 
 `@jbrowse/plugin-wiggle` — the wiggle displays' own model pieces:
@@ -750,13 +750,13 @@ so it takes no dependency on the wiggle plugin's MST factories or RPC methods:
   registers a state model loader and a value edge from the eager barrel would
   undo that. A display composing it is itself lazily registered, so it reaches
   the subpath from inside its own loader.
-- `WiggleCommonMixin()` — `WiggleScoreConfigMixin` plus wiggle's palette,
+- `WiggleCommonMixin()` — `ScoreFieldConfigMixin` plus wiggle's palette,
   rendering type, summary mode, resolution and the strict-`bpPerPx`
   `zoomFetchKey`.
 
 GWAS's Manhattan does **not** compose `linearWiggleDisplayModelFactory`. It builds
 its own model — `BaseDisplay` + `TrackHeightMixin()` + `MultiRegionDisplayMixin()`
-+ `WiggleScoreConfigMixin()` — and declares its own config schema over
++ `ScoreFieldConfigMixin()` — and declares its own config schema over
 `scoreAxisConfigSchemaFields`, all from `@jbrowse/wiggle-core`. It ships its own
 `GetManhattanData` RPC (per-feature points, not pre-binned density), implements
 its own `ManhattanRenderingBackend` with its own pass, and is zoom-independent:
@@ -2016,7 +2016,7 @@ does the shared-shape version); keep them in step with any change here.
   `linearWiggleDisplayModelFactory` from
   `@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel` — the subpath, not the
   barrel (see `plugins/gccontent`, and the export note above). To borrow only the score machinery, compose
-  `WiggleScoreConfigMixin` + `makeScoreSubMenu` (see `plugins/gwas` Manhattan).
+  `ScoreFieldConfigMixin` + `makeScoreSubMenu` (see `plugins/gwas` Manhattan).
   Implement `WiggleRenderingBackend` (typed from `@jbrowse/wiggle-core`). A
   zoom-independent display needs no cache override: the strict-`bpPerPx`
   `zoomFetchKey` rides on `WiggleCommonMixin`, so composing the score config

@@ -4,38 +4,28 @@ import type { WiggleCommonHost } from './WiggleCommonMixin.ts'
 import type { HostChecksSlotNames } from '@jbrowse/core/configuration'
 import type { WiggleScoreConfigHost } from '@jbrowse/wiggle-core'
 
-// The two wiggle mixins both cast to reach their composing display's
-// `configuration`, and what they cast to decides whether the slot names below
-// are checked at all. A host widened to `AnyConfigurationModel` switches the
-// check off with no symptom, so each mixin names its own field table.
+// A host widened to `AnyConfigurationModel` switches the slot-name check off
+// with no symptom, so the mixin names its own field table.
 const wiggleCommonPin: HostChecksSlotNames<WiggleCommonHost> = true
-const wiggleScoreConfigPin: HostChecksSlotNames<WiggleScoreConfigHost> = true
 
-test('both hosts check the slot names their mixin reads', () => {
+test('the common host checks the slot names its mixin reads', () => {
   const common = {} as WiggleCommonHost
-  const score = {} as WiggleScoreConfigHost
   const reads = () => [
     // @ts-expect-error
     getConf(common, 'posColour'),
-    // @ts-expect-error
-    getConf(score, 'displayCrossHatche'),
   ]
   const writes = () => {
     // @ts-expect-error
     setConf(common, 'posColour', 'red')
-    // @ts-expect-error
-    setConf(score, 'displayCrossHatche', true)
   }
-  expect([wiggleCommonPin, wiggleScoreConfigPin, reads, writes]).toHaveLength(4)
+  expect([wiggleCommonPin, reads, writes]).toHaveLength(3)
 })
 
-// A checked name is not the same as a name every composer declares, and
-// `HostChecksSlotNames` above only asks the first. `LinearManhattanDisplay`
-// composes WiggleScoreConfigMixin against a schema holding the score axis and
-// its own slots, so a wiggle-only slot reached through that host answers
-// `undefined` at runtime with no diagnostic anywhere — which is how
-// `symlogConstant` shipped one mixin too high once already. The narrower host is
-// what makes it a compile error instead, and this is what says so.
+// `HostChecksSlotNames` asks whether names are checked, not whether every
+// composer declares them. `WiggleScoreConfigMixin`'s composers include displays
+// declaring none of wiggle's slots, so reaching one through its host is a
+// compile error rather than a silent `undefined` — which is how
+// `symlogConstant` once shipped one mixin too high.
 test('the score-config host cannot reach a slot only wiggle declares', () => {
   const common = {} as WiggleCommonHost
   const score = {} as WiggleScoreConfigHost

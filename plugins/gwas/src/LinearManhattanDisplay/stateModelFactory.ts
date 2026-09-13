@@ -26,7 +26,7 @@ import { inkOfInstances } from '@jbrowse/render-core/marks'
 import { namedAutorun } from '@jbrowse/render-core/namedReactions'
 import {
   SCALE_TYPE_LINEAR,
-  WiggleScoreConfigMixin,
+  ScoreFieldConfigMixin,
   axisPlotBox,
   makeCrossHatchItem,
   makePointSizeSubMenu,
@@ -178,7 +178,7 @@ export function stateModelFactory(
         BaseDisplay,
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
-        WiggleScoreConfigMixin(),
+        ScoreFieldConfigMixin(),
         LegendMixin(),
         ContextMenuMixin<ManhattanContextMenuInfo>(),
         StoredHoverMixin<ManhattanHit>(),

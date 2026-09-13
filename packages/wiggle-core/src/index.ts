@@ -89,6 +89,7 @@ export {
   wiggleScoreConfigExtraSlots,
 } from './WiggleScoreConfigMixin.ts'
 export type { WiggleScoreConfigHost } from './WiggleScoreConfigMixin.ts'
+export { ScoreFieldConfigMixin } from './ScoreFieldConfigMixin.ts'
 export {
   DEFAULT_SCORE_FIELD,
   scoreFieldConfigSchemaFields,

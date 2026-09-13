@@ -26,7 +26,8 @@ describe('LinearManhattanDisplay config surface', () => {
     // the sentinel resolves to "autoscale this end"
     expect(display.minScoreBound).toBeUndefined()
     expect(display.maxScoreBound).toBeUndefined()
-    // WiggleScoreConfigMixin's remaining members
+    // ScoreFieldConfigMixin's remaining members
+    expect(display.scoreField).toBe('score')
     expect(display.scatterPointSize).toBeGreaterThan(0)
     expect(display.showCrossHatches).toBe(false)
     expect(display.isDensityMode).toBe(false)

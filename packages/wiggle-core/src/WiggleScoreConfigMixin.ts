@@ -4,7 +4,6 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { ScoreScaleMixin } from './ScoreScaleMixin.ts'
 
 import type { scoreAxisConfigSchemaFields } from './scoreAxisConfigSchemaFields.ts'
-import type { scoreFieldConfigSchemaFields } from './scoreFieldConfigSchemaFields.ts'
 import type { ConfigModelForFields } from '@jbrowse/core/configuration'
 
 /**
@@ -18,16 +17,14 @@ export const wiggleScoreConfigExtraSlots = {
 } as const
 
 /**
- * Exactly the slots this mixin reads. `LinearManhattanDisplay` composes it and
+ * Exactly the slots this mixin reads. `LinearMarkDisplay` composes it and
  * declares none of wiggle's slots, and `getConf` on an undeclared slot answers
  * `undefined` silently, so a wider host would be a wrong value no layer
  * reports.
  */
 export interface WiggleScoreConfigHost {
   configuration: ConfigModelForFields<
-    typeof scoreAxisConfigSchemaFields &
-      typeof scoreFieldConfigSchemaFields &
-      typeof wiggleScoreConfigExtraSlots
+    typeof scoreAxisConfigSchemaFields & typeof wiggleScoreConfigExtraSlots
   >
 }
 
@@ -38,8 +35,9 @@ const confNode = (self: object) => self as WiggleScoreConfigHost
  * #category display
  *
  * The score-plot config every display with a score axis shares: the axis
- * (`ScoreScaleMixin`), the plotted feature field, the cross-hatch toggle and
- * the scatter point size.
+ * (`ScoreScaleMixin`), the cross-hatch toggle and the scatter point size.
+ * `LinearMarkDisplay` composes it as is; a display plotting one configured
+ * feature field composes `ScoreFieldConfigMixin`, which adds `scoreField`.
  *
  * Config only: the strict-`bpPerPx` fetch rule and wiggle's palette,
  * rendering-type, summary-mode and resolution config are `WiggleCommonMixin`'s.
@@ -53,15 +51,6 @@ export function WiggleScoreConfigMixin() {
        */
       get scatterPointSize(): number {
         return getConf(confNode(self), 'scatterPointSize')
-      },
-      /**
-       * #getter
-       * The feature field the worker plots on the score axis, `score` by
-       * default. A fetch input: every composing display carries it in its
-       * `rpcProps()`, since the field is read where the features are.
-       */
-      get scoreField(): string {
-        return getConf(confNode(self), 'scoreField')
       },
       /**
        * #getter

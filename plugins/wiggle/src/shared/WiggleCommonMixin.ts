@@ -2,7 +2,7 @@ import { getConf, setConf } from '@jbrowse/core/configuration'
 import { getEnv, openFeatureWidget } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
-  WiggleScoreConfigMixin,
+  ScoreFieldConfigMixin,
   autoscaleDomainFromStats,
   computeScoreStats,
   visibleStatsDomain,
@@ -62,7 +62,7 @@ export const RESOLUTION_STEP = 2
  * #stateModel WiggleCommonMixin
  * #category display
  *
- * Extends `WiggleScoreConfigMixin` with the narrowed rpcDataMap, the autoscale
+ * Extends `ScoreFieldConfigMixin` with the narrowed rpcDataMap, the autoscale
  * domain and the wiggle-specific config: the pos/neg palette, rendering type,
  * summary mode, resolution and the line/gap settings. Extended on this chain
  * with `.props()`/`.views()` rather than a mixin composed in, so no
@@ -71,7 +71,7 @@ export const RESOLUTION_STEP = 2
  * Used by LinearWiggleDisplay and MultiLinearWiggleDisplay.
  */
 export function WiggleCommonMixin() {
-  return WiggleScoreConfigMixin()
+  return ScoreFieldConfigMixin()
     .props({
       /**
        * #property
@@ -98,7 +98,7 @@ export function WiggleCommonMixin() {
        * bpPerPx, so data fetched at another zoom is the wrong summary, however
        * well the viewport still sits inside it.
        *
-       * Here rather than on `WiggleScoreConfigMixin`: the rule is about what a
+       * Here rather than on `ScoreFieldConfigMixin`: the rule is about what a
        * fetch returns, and `LinearManhattanDisplay` composes that mixin while
        * fetching untransformed SNPs.
        */
