@@ -440,11 +440,6 @@ export function defineMark<
   const planned =
     band || shape.paintsBlock ? undefined : { id: shape.pass.id, bufferOf }
 
-  // What the last `resolve` that opened picked, read straight after it by the
-  // one consumer that called it.
-  let openParams: TParams
-  let openStrip: MarkBand | undefined
-
   // The gates every consumer takes, in one order: the setting before any lens,
   // the band before `channels`, and `channels` before `params`, which a union
   // payload's lens may only read off its own kind of region.
@@ -464,9 +459,7 @@ export function defineMark<
     if (shape.paintsBlock && !shape.paintsBlock(block, state, p)) {
       return undefined
     }
-    openParams = p
-    openStrip = strip
-    return c
+    return { channels: c, params: p, strip }
   }
 
   return {
@@ -481,10 +474,9 @@ export function defineMark<
     texture,
     enabled,
     planned,
-    // `resolve`'s gates spelled out, because on the per-block GPU walk its
-    // picks leaving through closure state measured 0.80-0.86x of these locals
-    // (markUniformDedupe.bench.ts, 2026-09-13): V8 can no longer elide a
-    // lens's allocation for a mark whose uniform write is shared.
+    // `resolve`'s gates inline: its picks leaving as a record or through
+    // closure state measured 0.80-0.86x of these locals on
+    // markUniformDedupe.bench.ts.
     drawRegion(hal, scratch, block, clip, region, state, regionKey, staged) {
       if (enabled && !enabled(state)) {
         return
@@ -524,32 +516,30 @@ export function defineMark<
       }
     },
     paintBlock(ctx, region, block, state) {
-      const c = resolve(region, block, state)
-      if (c === undefined) {
+      const open = resolve(region, block, state)
+      if (!open) {
         return
       }
-      const p = openParams
-      const strip = openStrip
+      const { strip } = open
       if (strip) {
         withClip(ctx, 0, strip.top, state.canvasWidth, strip.height, () => {
-          shape.paintBlock(ctx, c, block, state, p)
+          shape.paintBlock(ctx, open.channels, block, state, open.params)
         })
       } else {
-        shape.paintBlock(ctx, c, block, state, p)
+        shape.paintBlock(ctx, open.channels, block, state, open.params)
       }
     },
     hitNearest: hitNearest
       ? (region, block, state, xPx, yPx, candidates, maxDistSq) => {
-          const c = resolve(region, block, state)
-          if (c === undefined || bandExcludes(openStrip, yPx)) {
+          const open = resolve(region, block, state)
+          if (!open || bandExcludes(open.strip, yPx)) {
             return undefined
           }
-          const strip = openStrip
           const hit = hitNearest(
-            c,
+            open.channels,
             block,
             state,
-            openParams,
+            open.params,
             xPx,
             yPx,
             candidates,
@@ -558,18 +548,17 @@ export function defineMark<
           // Ink the band clipped away was never drawn. Rejecting it rather
           // than asking the shape again can mask a farther candidate inside
           // the strip, which errs toward answering nothing.
-          return hit && !bandExcludes(strip, hit.y) ? hit : undefined
+          return hit && !bandExcludes(open.strip, hit.y) ? hit : undefined
         }
       : undefined,
     ink: shapeInk
       ? (region, block, state, i) => {
-          const c = resolve(region, block, state)
-          if (c === undefined) {
+          const open = resolve(region, block, state)
+          if (!open) {
             return undefined
           }
-          const strip = openStrip
-          const r = shapeInk(c, block, state, openParams, i)
-          return r && strip ? clipToBand(r, strip) : r
+          const r = shapeInk(open.channels, block, state, open.params, i)
+          return r && open.strip ? clipToBand(r, open.strip) : r
         }
       : undefined,
   }
