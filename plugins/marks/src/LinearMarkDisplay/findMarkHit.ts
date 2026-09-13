@@ -1,4 +1,8 @@
 import { bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
+import {
+  denormalizeScore,
+  scaleTypeCode,
+} from '@jbrowse/render-core/scoreScale'
 
 import { markValueScale } from './markList.ts'
 
@@ -29,25 +33,6 @@ export interface MarkHitInfo {
 
 const HIT_RADIUS_PX = 8
 
-// Inverse of the shape's `valueToYPxScaled`, unclamped: canvas y (px from the
-// top) to a value, for the score window a cursor position asks the index
-// about. The log arm inverts `scoreScale`'s, floor and all.
-export function yPxToValue(
-  yPx: number,
-  domain: [number, number],
-  canvasHeight: number,
-  scaleType: 'linear' | 'log' = 'linear',
-) {
-  const [min, max] = domain
-  const t = 1 - yPx / canvasHeight
-  if (scaleType === 'log') {
-    const floorV = min > 0 ? min : 1
-    const logMin = Math.log2(floorV)
-    return 2 ** (logMin + t * (Math.log2(Math.max(max, floorV)) - logMin))
-  }
-  return min + t * (max - min || 1)
-}
-
 // The value window mark `markIndex` is asked about at cursor score `s`, read
 // through that mark's own y scale: a point's
 // ink is at its value, a bar's reaches from the origin to it, a span's is
@@ -63,20 +48,22 @@ function valueWindow(
   if (shape === 'span') {
     return [-Infinity, Infinity]
   }
-  const { domain: domainY, scaleType: scaleTypeY } = markValueScale(
-    state,
-    markIndex,
-  )
+  const { domain, scaleType } = markValueScale(state, markIndex)
+  const valueAt = (y: number) =>
+    denormalizeScore(
+      1 - y / canvasHeight,
+      domain[0],
+      domain[1],
+      scaleTypeCode(scaleType),
+    )
   const lo =
     mouseY >= canvasHeight - HIT_RADIUS_PX
       ? -Infinity
-      : yPxToValue(mouseY + HIT_RADIUS_PX, domainY, canvasHeight, scaleTypeY)
+      : valueAt(mouseY + HIT_RADIUS_PX)
   const hi =
-    mouseY <= HIT_RADIUS_PX
-      ? Infinity
-      : yPxToValue(mouseY - HIT_RADIUS_PX, domainY, canvasHeight, scaleTypeY)
+    mouseY <= HIT_RADIUS_PX ? Infinity : valueAt(mouseY - HIT_RADIUS_PX)
   if (shape === 'bar') {
-    const s = yPxToValue(mouseY, domainY, canvasHeight, scaleTypeY)
+    const s = valueAt(mouseY)
     return s >= origin ? [lo, Infinity] : [-Infinity, hi]
   }
   return [lo, hi]

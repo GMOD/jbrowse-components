@@ -1,7 +1,7 @@
 import { bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
+import { denormalizeScore } from '@jbrowse/render-core/scoreScale'
 
 import { MANHATTAN_MARKS } from './manhattanMarks.ts'
-import { yToScore } from './manhattanRenderingBackendTypes.ts'
 
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
@@ -73,18 +73,14 @@ export function findManhattanHit(
       continue
     }
 
-    // ±HIT_RADIUS_PX in screen y → a score window via yToScore (which decreases
-    // with y, so the lower pixel edge is the min score). Edge-clamped points
-    // stay catchable by widening to ±Inf when the mouse is within hit-radius of
-    // the canvas edge.
+    const scoreAt = (y: number) =>
+      denormalizeScore(1 - y / canvasHeight, domainY[0], domainY[1], 0)
     const candScoreMin =
       mouseY >= canvasHeight - HIT_RADIUS_PX
         ? -Infinity
-        : yToScore(mouseY + HIT_RADIUS_PX, domainY, canvasHeight)
+        : scoreAt(mouseY + HIT_RADIUS_PX)
     const candScoreMax =
-      mouseY <= HIT_RADIUS_PX
-        ? Infinity
-        : yToScore(mouseY - HIT_RADIUS_PX, domainY, canvasHeight)
+      mouseY <= HIT_RADIUS_PX ? Infinity : scoreAt(mouseY - HIT_RADIUS_PX)
 
     const hit = MARK.hitNearest?.(
       data,

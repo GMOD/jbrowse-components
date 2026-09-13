@@ -71,3 +71,35 @@ export function makeScoreNormalizer(
   const invRange = 1 / range
   return (score: number) => Math.max(0, Math.min(1, (score - min) * invRange))
 }
+
+function symlogInverse(y: number, c: number) {
+  return Math.sign(y) * c * Math.expm1(Math.abs(y))
+}
+
+function atFraction(t: number, tMin: number, tMax: number) {
+  return tMax > tMin ? tMin + t * (tMax - tMin) : tMin
+}
+
+/**
+ * The score at fraction `t` of the domain, unclamped: `normalizeScore`'s
+ * inverse, through the same log floor and symlog constant. A domain with no
+ * range answers its min, floored for log, for every `t`, which is where the
+ * forward step sits.
+ */
+export function denormalizeScore(
+  t: number,
+  min: number,
+  max: number,
+  scaleType: ScaleTypeCode,
+  symlogConstant = 1,
+) {
+  if (scaleType === SCALE_TYPE_SYMLOG) {
+    const c = symlogConstant
+    return symlogInverse(atFraction(t, symlog(min, c), symlog(max, c)), c)
+  }
+  if (scaleType === SCALE_TYPE_LOG) {
+    const floor = min > 0 ? min : 1
+    return 2 ** atFraction(t, Math.log2(floor), Math.log2(Math.max(max, floor)))
+  }
+  return atFraction(t, min, max)
+}

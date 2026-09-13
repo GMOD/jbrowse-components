@@ -333,6 +333,25 @@ describe('findMarkHit', () => {
     )
     expect(hit).toMatchObject({ markIndex: 1, start: 800, y: 8, color: BLUE })
   })
+
+  test('a point on a log scale is asked about through the log window', () => {
+    // 32 on a log [1, 1024] is half way, y=200; a linear window there reads
+    // about 500 and would leave it out of the index query
+    const logRegions = new Map<number, MarkRegionData>([
+      [0, { layers: [layer([500], [0], [RED]), layer([800], [32], [BLUE])] }],
+    ])
+    const hit = findMarkHit(
+      641,
+      205,
+      [block],
+      logRegions,
+      marks,
+      ['bar', 'point'],
+      { ...state, domainY: [1, 1024], scaleTypeY: 'log' },
+      refNames,
+    )
+    expect(hit).toMatchObject({ markIndex: 1, start: 800, y: 32 })
+  })
 })
 
 test('the legend unions categorical tables across regions and keeps the first colour', () => {
