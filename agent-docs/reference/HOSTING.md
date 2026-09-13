@@ -113,12 +113,17 @@ no download; `tabix -H <url>` shows the `#pif` header. Audited 2026-09-13:
 
 | file | coarse tier | `#pif` header |
 | --- | --- | --- |
-| `ucsc/hg38/liftOver/hg38To*.over.pif.gz`, the eight vertebrate chains and `hg38ToHs1` | yes | version 2 (2026-09-11) |
+| `ucsc/*/liftOver/*.pif.gz` (2,358) and `hubs/genark/…/liftOver/*.pif.gz`, built by jb2hubs | yes | version 2 |
+| `genomes/hs1_vs_mm39/hs1ToMm39.over.chain.pif.gz` | yes | version 2 |
+| `demos/cgiab/HG008T_v3.2.pif.gz` | yes | version 2 |
+| `demos/scratch/hs1_chrY_self.pif.gz` | no, by design | version 2 |
 | `demos/hprc_multiway/hprc_multiway_gfa.pif.gz` | yes | version 1 |
-| `genomes/hs1_vs_mm39/hs1ToMm39.over.chain.pif.gz` | yes | none |
-| `demos/cgiab/HG008T_v3.2.pif.gz` | yes | none |
 | `demos/ecoli_pangenome/ecoli_{pggb,cactus}_ava.pif.gz`, `ecoli_pggb_untangle.pif.gz` | no | none |
 | `demos/hpylori/26695_vs_chc155.pif.gz` | no | none |
+
+jb2hubs rebuilds its liftOver PIFs whenever its pinned `@jbrowse/cli` changes,
+so those need no hand rebuild; `lib/chainpif.sh` there holds the stamps. The
+hosted `hprc_multiway_gfa` has the coarse CIGAR and lacks only `pi:i:`.
 
 - **A file with no `#pif` header predates the coarse CIGAR.** Since
   2026-09-02 `make-pif` writes a `cr:Z:` tag on a coarse row (ADR-104) so the
@@ -139,6 +144,14 @@ no download; `tabix -H <url>` shows the `#pif` header. Audited 2026-09-13:
   PAF keeps them.
 - **PIF inverts losslessly back to PAF**: `t`-prefixed rows keep the original
   CIGAR, since `processLine` builds `tRow` before mutating `rest[cigarIdx]`.
+  That is how to rebuild a hosted PIF whose PAF is gone: the awk in
+  [pif-coarse-fold-bytes](../measurements/pif-coarse-fold-bytes.json)'s repro
+  swaps a `t` row back, and `make-pif` over the result gives `t` rows identical
+  to the old file's apart from `pi:i:`. HG008T and `hs1_chrY_self` were rebuilt
+  that way.
+- **A PAF with no CIGAR builds with `--no-coarse`.** Its coarse tier repeats the
+  fine one row for row and doubles the file, and `make-pif` warns so;
+  `hs1_chrY_self` halved to 11 MB.
 
 **Hosted and referenced by nothing:**
 `demos/ecoli_pangenome/ecoli_minigraph.tier{500,2000,10000}.*` — 12 objects,

@@ -24,7 +24,7 @@
 // entries, which is what got the old checker its one derived-prose check.
 //
 // Run: `pnpm autogen` (or `--check` in CI).
-import { readFileSync, readdirSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 import {
@@ -158,7 +158,7 @@ function readEntry(file: string): Entry {
   }
 }
 
-const entries = readdirSync(todoDir)
+const entries = (existsSync(todoDir) ? readdirSync(todoDir) : [])
   .filter(f => f.endsWith('.md'))
   .map(readEntry)
   .sort((a, b) => a.order - b.order || a.file.localeCompare(b.file))
