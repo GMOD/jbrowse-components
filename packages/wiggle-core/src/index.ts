@@ -96,6 +96,7 @@ export {
 } from './scoreFieldConfigSchemaFields.ts'
 export { remapRetiredAutoscale } from './remapRetiredAutoscale.ts'
 
+export { ScorePlotChrome } from './ScorePlotChrome.tsx'
 export { ScorePlotSvgFrame } from './ScorePlotSvgFrame.tsx'
 export type {
   ScorePlotSvgLayout,

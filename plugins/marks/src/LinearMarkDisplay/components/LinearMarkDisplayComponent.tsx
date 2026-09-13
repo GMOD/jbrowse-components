@@ -1,17 +1,6 @@
-import { useCallback, useMemo } from 'react'
-
-import { eventPoint } from '@jbrowse/core/util/eventPoint'
-import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
-import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
-import {
-  DisplayContextMenu,
-  openContextMenuFromEvent,
-} from '@jbrowse/display-kit/DisplayContextMenu'
 import SkippedFeaturesIndicator from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import TrackControl from '@jbrowse/display-kit/TrackControl'
-import { PointerLayer } from '@jbrowse/display-ui'
-import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
-import { axisPlotBox, wiggleMouseHandlers } from '@jbrowse/wiggle-core'
+import { ScorePlotChrome } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import { findMarkHit } from '../findMarkHit.ts'
@@ -19,7 +8,6 @@ import MarkTooltip from './MarkTooltip.tsx'
 
 import type { MarkTooltipModel } from './MarkTooltip.tsx'
 import type { MarkDisplayModel } from './markDisplayTypes.ts'
-import type { MouseTracker } from '@jbrowse/core/ui'
 
 const LinearMarkDisplayComponent = observer(
   function LinearMarkDisplayComponent({
@@ -27,109 +15,42 @@ const LinearMarkDisplayComponent = observer(
   }: {
     model: MarkDisplayModel & MarkTooltipModel
   }) {
-    const { height, canvasWidthPx: width, markList } = model
-    // Keyed on the mark list, which moves only when the declared shapes do:
-    // a pass list is fixed at backend construction, so a new shape list is a
-    // new backend, and anything else is the stable factory the hook wants.
-    const factory = useMemo(
-      () => (canvas: HTMLCanvasElement) => createMarkBackend(canvas, markList),
-      [markList],
-    )
-    const plotTop = axisPlotBox(height).yTop
-    const computeHit = useCallback(
-      (offsetX: number, offsetY: number) =>
-        findMarkHit(
-          offsetX,
-          offsetY - plotTop,
-          model.renderBlocks,
-          model.rpcDataMap,
-          model.markList,
-          model.markShapes,
-          model.renderState,
-          model.regionRefNames,
-        ),
-      [model, plotTop],
-    )
-    const { onPointerPosition, onClick } = wiggleMouseHandlers(
-      model,
-      computeHit,
-    )
     return (
-      <DisplayChrome
+      <ScorePlotChrome
         model={model}
-        factory={factory}
+        marks={model.markList}
         testid="mark-display"
-        style={{ width, height, whiteSpace: 'nowrap', textAlign: 'left' }}
-        onPointerPosition={onPointerPosition}
-        onClick={onClick}
-        onContextMenu={event => {
-          const { x, y } = eventPoint(event)
-          const hit = computeHit(x, y)
-          openContextMenuFromEvent(
-            model,
-            event,
-            hit
-              ? { clientX: event.clientX, clientY: event.clientY, hit }
-              : undefined,
+        findHit={(x, y) =>
+          findMarkHit(
+            x,
+            y,
+            model.renderBlocks,
+            model.rpcDataMap,
+            model.markList,
+            model.markShapes,
+            model.renderState,
+            model.regionRefNames,
           )
-        }}
-      >
-        {({ canvasRef, mouseTracker }) => (
-          <MarkBody
-            model={model}
-            canvasRef={canvasRef}
-            width={width}
-            height={height}
-            mouseTracker={mouseTracker}
-          />
+        }
+        contextMenu={model}
+        tooltip={mouseState => (
+          <MarkTooltip model={model} mouseState={mouseState} />
         )}
-      </DisplayChrome>
+        indicators={() => (
+          <>
+            {model.densityStandInNotice ? (
+              <TrackControl
+                icon="filter"
+                label="density"
+                tooltip={model.densityStandInNotice}
+              />
+            ) : null}
+            <SkippedFeaturesIndicator {...model.skippedFeatures} />
+          </>
+        )}
+      />
     )
   },
 )
-
-const MarkBody = observer(function MarkBody({
-  model,
-  canvasRef,
-  width,
-  height,
-  mouseTracker,
-}: {
-  model: MarkDisplayModel & MarkTooltipModel
-  canvasRef: (node: HTMLCanvasElement | null) => void
-  width: number
-  height: number
-  mouseTracker: MouseTracker
-}) {
-  const plotBox = axisPlotBox(height)
-  return (
-    <>
-      <canvas
-        ref={canvasRef}
-        style={{
-          width,
-          height: plotBox.plotHeight,
-          position: 'absolute',
-          left: 0,
-          top: plotBox.yTop,
-        }}
-      />
-      <PointerLayer mouseTracker={mouseTracker}>
-        {mouseState => <MarkTooltip model={model} mouseState={mouseState} />}
-      </PointerLayer>
-      <BottomRightIndicators>
-        {model.densityStandInNotice ? (
-          <TrackControl
-            icon="filter"
-            label="density"
-            tooltip={model.densityStandInNotice}
-          />
-        ) : null}
-        <SkippedFeaturesIndicator {...model.skippedFeatures} />
-      </BottomRightIndicators>
-      <DisplayContextMenu model={model} />
-    </>
-  )
-})
 
 export default LinearMarkDisplayComponent

@@ -738,16 +738,38 @@ function moduleFrom(importer: string, specifier: string) {
 }
 
 /**
+ * The module declaring a JSX tag imported from a workspace package, off the
+ * package entry or its `exports` subpath. Undefined where the name does not
+ * trace to a declaration: following the whole barrel instead would find any
+ * chrome the package happens to export.
+ */
+function packageTagModule(tag: string, spec: string) {
+  const [, pkg, ...rest] = spec.split('/')
+  if (!pkg) {
+    return undefined
+  }
+  const dir = pkg.startsWith('plugin-')
+    ? join(repoRoot, 'plugins', pkg.slice('plugin-'.length))
+    : join(repoRoot, 'packages', pkg)
+  const entry =
+    rest.length > 0
+      ? exportedSubpath(dir, rest.join('/'))
+      : join(dir, 'src', 'index.ts')
+  return entry && isFile(entry) ? declaringModule(entry, tag) : undefined
+}
+
+/**
  * Which chrome a component module renders, following the render tree. Returns
  * undefined for a component that renders neither — a real answer, and the row
  * that says an LGV display is off the chrome.
  *
  * A registered component does not always render the chrome itself: arc's
- * registers `<BaseDisplayComponent>`, a sibling module, and *that* renders
- * `<DisplayStatusChrome>`. So the walk follows any JSX element whose tag is a
- * relatively-imported binding — the render tree, not the import graph, which
- * would wander into every unrelated module a component happens to import.
- * Barrels and lazy boundaries are followed too, since either can sit between a
+ * registers `<BaseDisplayComponent>`, a sibling module, and the score plots
+ * render wiggle-core's `<ScorePlotChrome>`; each of those renders the chrome.
+ * So the walk follows any JSX element whose tag is imported, relatively or from
+ * a workspace package — the render tree, not the import graph, which would
+ * wander into every unrelated module a component happens to import. Barrels and
+ * lazy boundaries are followed too, since either can sit between a
  * registration and the component.
  */
 function chromeOf(
@@ -781,21 +803,28 @@ function chromeOf(
   const next: string[] = []
   for (const tag of rendered) {
     const spec = imports.get(tag)
-    if (spec?.startsWith('.')) {
-      next.push(spec)
+    const target = spec?.startsWith('.')
+      ? moduleFrom(module, spec)
+      : spec?.startsWith('@jbrowse/')
+        ? packageTagModule(tag, spec)
+        : undefined
+    if (target) {
+      next.push(target)
     }
   }
   for (const s of src.statements) {
     if (ts.isExportDeclaration(s) && !s.isTypeOnly) {
       const spec = literal(s.moduleSpecifier)
       if (spec?.startsWith('.')) {
-        next.push(spec)
+        next.push(moduleFrom(module, spec))
       }
     }
   }
-  next.push(...lazyMap(src).values())
-  for (const spec of next) {
-    const chrome = chromeOf(moduleFrom(module, spec), seen)
+  for (const spec of lazyMap(src).values()) {
+    next.push(moduleFrom(module, spec))
+  }
+  for (const target of next) {
+    const chrome = chromeOf(target, seen)
     if (chrome) {
       return chrome
     }

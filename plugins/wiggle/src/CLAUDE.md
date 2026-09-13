@@ -45,9 +45,10 @@ Single-wiggle insets by `YSCALEBAR_LABEL_OFFSET` so end labels aren't clipped
 and draws one row; multi-wiggle stacks `numRows` rows edge-to-edge over the full
 height. `{ yTop, plotHeight, numRows, tickHeight }` states that once, and every
 half that has to move with it reads it: `computeYTicks`' height and offset, the
-render state, the on-screen `<canvas>` box, and `ScorePlotSvgFrame`'s clip
-translate — a prop there, defaulting to the single-plot box, which is what the
-Manhattan display (no such getter) still draws in.
+render state, the on-screen `<canvas>` box and the export's clip translate.
+Wiggle-core's `ScorePlotChrome` (single-wiggle's canvas) and `ScorePlotSvgFrame`
+take it as a prop defaulting to the single-plot box, which is what the Manhattan
+and mark displays (no such getter) draw in.
 
 **Everything written over it is `wiggleDisplayViews`**: `ticks`,
 `scoreColorScale`, `renderState` and the shared halves of the two props methods,

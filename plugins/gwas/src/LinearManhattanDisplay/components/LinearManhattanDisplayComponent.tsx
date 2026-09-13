@@ -1,16 +1,5 @@
-import { useCallback } from 'react'
-
-import { eventPoint } from '@jbrowse/core/util/eventPoint'
-import BottomRightIndicators from '@jbrowse/display-kit/BottomRightIndicators'
-import DisplayChrome from '@jbrowse/display-kit/DisplayChrome'
-import {
-  DisplayContextMenu,
-  openContextMenuFromEvent,
-} from '@jbrowse/display-kit/DisplayContextMenu'
 import SkippedFeaturesIndicator from '@jbrowse/display-kit/SkippedFeaturesIndicator'
-import { PointerLayer } from '@jbrowse/display-ui'
-import { createMarkBackend } from '@jbrowse/render-core/marks/backend'
-import { axisPlotBox, wiggleMouseHandlers } from '@jbrowse/wiggle-core'
+import { ScorePlotChrome } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
 import { findManhattanHit } from '../findManhattanHit.ts'
@@ -19,11 +8,6 @@ import LdIndexWarning from './LdIndexWarning.tsx'
 import TooltipComponent from './TooltipComponent.tsx'
 
 import type { ManhattanDisplayModel } from './manhattanDisplayTypes.ts'
-import type { MouseTracker } from '@jbrowse/core/ui'
-
-function createManhattanBackend(canvas: HTMLCanvasElement) {
-  return createMarkBackend(canvas, MANHATTAN_MARKS)
-}
 
 const LinearManhattanDisplayComponent = observer(
   function LinearManhattanDisplayComponent({
@@ -31,118 +15,35 @@ const LinearManhattanDisplayComponent = observer(
   }: {
     model: ManhattanDisplayModel
   }) {
-    const { height, canvasWidthPx: width } = model
-
-    // renderState is always defined; an empty rpcDataMap/flatbush set simply
-    // yields no hit, so no separate loading guard is needed. The offsetY passed
-    // by the shared handler is measured from the DisplayChrome top, so subtract
-    // the canvas' own top — off the same `axisPlotBox` that positions it — to
-    // land in its coordinate space.
-    const plotTop = axisPlotBox(height).yTop
-    const computeHit = useCallback(
-      (offsetX: number, offsetY: number) =>
-        findManhattanHit(
-          offsetX,
-          offsetY - plotTop,
-          model.renderBlocks,
-          model.rpcDataMap,
-          model.flatbushes,
-          model.renderState,
-          model.regionRefNames,
-        ),
-      [model, plotTop],
-    )
-
-    const { onPointerPosition, onClick } = wiggleMouseHandlers(
-      model,
-      computeHit,
-    )
-
-    function handleContextMenu(event: React.MouseEvent<HTMLDivElement>) {
-      // `eventPoint` measures against `currentTarget` — the chrome container,
-      // which is the box the tracker measures against too, so the right-click
-      // and the hover resolve the same hit
-      const { x, y } = eventPoint(event)
-      const hit = computeHit(x, y)
-      openContextMenuFromEvent(
-        model,
-        event,
-        hit
-          ? { clientX: event.clientX, clientY: event.clientY, hit }
-          : undefined,
-      )
-    }
-
     return (
-      <DisplayChrome
+      <ScorePlotChrome
         model={model}
-        factory={createManhattanBackend}
+        marks={MANHATTAN_MARKS}
         testid="manhattan-display"
-        // inherited from `DisplayContainer` until it was deleted; kept verbatim
-        style={{ width, height, whiteSpace: 'nowrap', textAlign: 'left' }}
-        onPointerPosition={onPointerPosition}
-        onClick={onClick}
-        onContextMenu={event => {
-          handleContextMenu(event)
-        }}
-      >
-        {({ canvasRef, mouseTracker }) => (
-          <ManhattanBody
-            model={model}
-            canvasRef={canvasRef}
-            width={width}
-            height={height}
-            mouseTracker={mouseTracker}
-          />
+        findHit={(x, y) =>
+          findManhattanHit(
+            x,
+            y,
+            model.renderBlocks,
+            model.rpcDataMap,
+            model.flatbushes,
+            model.renderState,
+            model.regionRefNames,
+          )
+        }
+        contextMenu={model}
+        tooltip={mouseState => (
+          <TooltipComponent model={model} mouseState={mouseState} />
         )}
-      </DisplayChrome>
+        overlay={({ yTop }) =>
+          model.indexSnpMissing ? <LdIndexWarning offsetTop={yTop} /> : null
+        }
+        indicators={() => (
+          <SkippedFeaturesIndicator {...model.skippedFeatures} />
+        )}
+      />
     )
   },
 )
-
-const ManhattanBody = observer(function ManhattanBody({
-  model,
-  canvasRef,
-  width,
-  height,
-  mouseTracker,
-}: {
-  model: ManhattanDisplayModel
-  canvasRef: (node: HTMLCanvasElement | null) => void
-  width: number
-  height: number
-  mouseTracker: MouseTracker
-}) {
-  const plotBox = axisPlotBox(height)
-
-  return (
-    <>
-      <canvas
-        ref={canvasRef}
-        style={{
-          width,
-          // the box the chrome's axis places its ticks in, so a tick lands on
-          // its data
-          height: plotBox.plotHeight,
-          position: 'absolute',
-          left: 0,
-          top: plotBox.yTop,
-        }}
-      />
-      {model.indexSnpMissing ? (
-        <LdIndexWarning offsetTop={plotBox.yTop} />
-      ) : null}
-      <PointerLayer mouseTracker={mouseTracker}>
-        {mouseState => (
-          <TooltipComponent model={model} mouseState={mouseState} />
-        )}
-      </PointerLayer>
-      <BottomRightIndicators>
-        <SkippedFeaturesIndicator {...model.skippedFeatures} />
-      </BottomRightIndicators>
-      <DisplayContextMenu model={model} />
-    </>
-  )
-})
 
 export default LinearManhattanDisplayComponent

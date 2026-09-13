@@ -158,25 +158,23 @@ test('census: mixed tracks, base-ish zoom', async () => {
 
   // Two of this file's three expectations; the mid-contig arm below carries the
   // third, and the rest of the census is a readout.
-  // A wiggle body has nothing per-frame to say during a zoom: the plot is
+  // A score-plot body has nothing per-frame to say during a zoom: the plot is
   // painted onto a canvas by the render autorun, and every observable the body
-  // itself reads — plot geometry, ticks, domain, score rules — is settled or
-  // debounced. It re-rendered once per frame anyway, because it derived its
-  // legend's right edge from `visibleRegions`, an array the view rebuilds every
-  // frame; the view now publishes `contentRightEdgePx` as a scalar. Restoring
-  // the array read takes these back over one per frame, which is the sabotage
-  // this number is chosen to catch. The counting window opens after first
-  // paint, so the mount is not in it; the headroom is for the refetch rounds a
-  // gesture legitimately triggers, which are the nondeterministic part.
+  // reads is settled or debounced. A body reading `visibleRegions`, an array
+  // the view rebuilds every frame, re-renders once per frame, which is the
+  // sabotage this number is chosen to catch. The counting window opens after
+  // first paint, so the mount is not in it; the headroom is for the refetch
+  // rounds a gesture legitimately triggers, which are the nondeterministic
+  // part.
   //
-  // The two bounds are not the same distance under what they catch. Restoring
-  // the array read puts `WiggleBody` at 50 against a bound of 20, and
-  // `MultiWiggleBody` at 19 — so `FRAMES` would have passed the sabotage on the
-  // multi-wiggle side by one render. Both bodies sit at 0 when the scalar
-  // holds, so the multi bound is the tighter of the two by measurement rather
-  // than by symmetry.
+  // The two bounds are not the same distance under what they catch. The array
+  // read puts `ScorePlotBody` (the wiggle and GC tracks' body) at 38 against a
+  // bound of 20, and `MultiWiggleBody` at 19 — so `FRAMES` would have passed the
+  // sabotage on the multi-wiggle side by one render. Both bodies sit at 0
+  // without it, so the multi bound is the tighter of the two by measurement
+  // rather than by symmetry.
   const perGesture = (name: string) => counts.get(name) ?? 0
-  expect(perGesture('WiggleBody')).toBeLessThan(FRAMES)
+  expect(perGesture('ScorePlotBody')).toBeLessThan(FRAMES)
   expect(perGesture('MultiWiggleBody')).toBeLessThan(FRAMES / 4)
 }, 90000)
 
