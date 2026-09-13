@@ -34,7 +34,8 @@ const CASES: {
 
 const FRACTIONS = [0, 0.001, 0.1, 0.25, 0.5, 0.75, 0.999, 1]
 
-describe.each(CASES)('$name', ({ scaleType, domain: [min, max], c }) => {
+describe.each(CASES)('$name', ({ scaleType, domain, c }) => {
+  const [min, max] = domain
   test('the generated forward twin reads each fraction back', () => {
     for (const t of FRACTIONS) {
       const score = denormalizeScore(t, min, max, scaleType, c)
