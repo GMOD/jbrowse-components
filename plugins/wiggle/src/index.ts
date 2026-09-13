@@ -103,13 +103,13 @@ export {
   remapRetiredAutoscale,
   scoreAxisConfigSchemaFields,
   scoreFieldConfigSchemaFields,
-  wiggleMouseHandlers,
   wiggleScoreConfigExtraSlots,
-  ScorePlotSvgFrame as WiggleFamilySvgFrame,
 } from '@jbrowse/wiggle-core'
+export { ScorePlotSvgFrame as WiggleFamilySvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 export type {
   ScorePlotSvgLayout as WiggleFamilySvgLayout,
   ScorePlotSvgModel as WiggleFamilySvgModel,
-} from '@jbrowse/wiggle-core'
+} from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
+export { wiggleMouseHandlers } from '@jbrowse/wiggle-core/wiggleMouseHandlers'
 export type { WiggleDisplayModel } from './LinearWiggleDisplay/components/wiggleDisplayTypes.ts'
 export type { MultiWiggleDisplayModel } from './MultiLinearWiggleDisplay/components/multiWiggleDisplayTypes.ts'

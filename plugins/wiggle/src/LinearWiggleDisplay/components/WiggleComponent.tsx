@@ -1,5 +1,5 @@
 import { Crosshairs } from '@jbrowse/core/ui'
-import { ScorePlotChrome } from '@jbrowse/wiggle-core'
+import { ScorePlotChrome } from '@jbrowse/wiggle-core/ScorePlotChrome'
 import { observer } from 'mobx-react'
 
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'

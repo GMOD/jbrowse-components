@@ -1,5 +1,5 @@
 import SkippedFeaturesIndicator from '@jbrowse/display-kit/SkippedFeaturesIndicator'
-import { ScorePlotChrome } from '@jbrowse/wiggle-core'
+import { ScorePlotChrome } from '@jbrowse/wiggle-core/ScorePlotChrome'
 import { observer } from 'mobx-react'
 
 import { findManhattanHit } from '../findManhattanHit.ts'

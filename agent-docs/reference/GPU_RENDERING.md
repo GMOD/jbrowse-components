@@ -738,7 +738,7 @@ so it takes no dependency on the wiggle plugin's MST factories or RPC methods:
 - `scoreMenuItems.ts` — `makeScoreSubMenu(self, opts)` + `ScoreScaleModel`: the shared Score submenu
 - `pointMarker.ts` / `resolveRenderState.ts` / `transferables.ts` / `YScaleBar` — the shared scatter glyph (wiggle + Manhattan), render-state resolution, worker transfer-list collection, and the Y-axis overlay
 - `WiggleScoreConfigMixin` / `ScoreFieldConfigMixin` — the score-plot config: the axis (`ScoreScaleMixin`, which the alignments coverage band composes alone), the cross-hatch toggle and the point size; the second adds `scoreField` for a display plotting one configured field, which the mark display does not
-- `ScorePlotChrome` / `ScorePlotSvgFrame` — the on-screen chrome and the SVG-export body of a display drawing a mark list on the score axis
+- `@jbrowse/wiggle-core/ScorePlotChrome` / `@jbrowse/wiggle-core/ScorePlotSvgFrame` — the on-screen chrome and the SVG-export body of a display drawing a mark list on the score axis. Subpaths, not the barrel: a config schema imports the barrel at plugin install, and `index.eager.test.ts` fails if the barrel reaches the chrome or the SVG export again
 
 `@jbrowse/plugin-wiggle` — the wiggle displays' own model pieces:
 
@@ -2016,7 +2016,8 @@ does the shared-shape version); keep them in step with any change here.
   `linearWiggleDisplayModelFactory` from
   `@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel` — the subpath, not the
   barrel (see `plugins/gccontent`, and the export note above). To borrow only the score machinery, compose
-  `ScoreFieldConfigMixin` + `makeScoreSubMenu` and render `ScorePlotChrome` (see `plugins/gwas` Manhattan).
+  `ScoreFieldConfigMixin` + `makeScoreSubMenu` and render `ScorePlotChrome` from
+  its subpath (see `plugins/gwas` Manhattan).
   Implement `WiggleRenderingBackend` (typed from `@jbrowse/wiggle-core`). A
   zoom-independent display needs no cache override: the strict-`bpPerPx`
   `zoomFetchKey` rides on `WiggleCommonMixin`, so composing the score config

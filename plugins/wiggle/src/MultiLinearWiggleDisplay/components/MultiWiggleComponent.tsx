@@ -10,7 +10,7 @@ import {
   TreeSidebar,
   treeSidebarOffset,
 } from '@jbrowse/tree-sidebar'
-import { wiggleMouseHandlers } from '@jbrowse/wiggle-core'
+import { wiggleMouseHandlers } from '@jbrowse/wiggle-core/wiggleMouseHandlers'
 import { observer } from 'mobx-react'
 
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'

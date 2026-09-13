@@ -1,14 +1,14 @@
 /* eslint-disable react-refresh/only-export-components */
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
-import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core'
+import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
 import { MANHATTAN_MARKS } from './manhattanMarks.ts'
 
 import type { ManhattanDisplayModel } from './components/manhattanDisplayTypes.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
-import type { ScorePlotSvgModel } from '@jbrowse/wiggle-core'
+import type { ScorePlotSvgModel } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 import type React from 'react'
 
 // The component's hand-rolled model slice, which `_ModelSatisfiesComponentContract`

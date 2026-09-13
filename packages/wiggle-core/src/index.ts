@@ -96,14 +96,6 @@ export {
 } from './scoreFieldConfigSchemaFields.ts'
 export { remapRetiredAutoscale } from './remapRetiredAutoscale.ts'
 
-export { ScorePlotChrome } from './ScorePlotChrome.tsx'
-export { ScorePlotSvgFrame } from './ScorePlotSvgFrame.tsx'
-export type {
-  ScorePlotSvgLayout,
-  ScorePlotSvgModel,
-} from './ScorePlotSvgFrame.tsx'
-export { wiggleMouseHandlers } from './wiggleMouseHandlers.ts'
-
 export {
   MIN_FILL_WIDTH_PX,
   NO_PREV_START,

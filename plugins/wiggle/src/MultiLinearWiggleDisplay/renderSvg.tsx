@@ -6,7 +6,7 @@ import {
   SvgTreePath,
   treeSidebarOffset,
 } from '@jbrowse/tree-sidebar'
-import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core'
+import { ScorePlotSvgFrame } from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import { WIGGLE_MARKS } from '../shared/wiggleMarks.ts'
