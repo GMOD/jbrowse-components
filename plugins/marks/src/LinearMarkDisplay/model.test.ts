@@ -1,10 +1,12 @@
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/display-ui'
 import LinearGenomeViewPlugin, {
   linearGenomeViewStateModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
 import WigglePlugin from '@jbrowse/plugin-wiggle'
+import { pointInsetPx } from '@jbrowse/render-core/marks'
 import { waitFor } from '@testing-library/react'
 
 import { configSchemaFactory } from './configSchema.ts'
@@ -901,4 +903,30 @@ test('a fixed bin width ignores the zoom, and its fetch key with it', () => {
   expect(display.rpcProps().layers[0]!.transform![0]).toMatchObject({
     step: 5000,
   })
+})
+
+test('a point-only axis is inset by the glyph room the shape draws in', () => {
+  const { createDisplay } = createTestEnvironment([
+    { shape: 'point', encoding: { y: 'score' } },
+  ])
+  const { display } = createDisplay()
+  display.setRpcData(0, result([{ y: [3, 8] }]), REGION)
+  const inset = pointInsetPx(display.scatterPointSize)
+  expect(inset).toBeGreaterThan(0)
+  expect(display.valueScales[0]!.offset).toBe(YSCALEBAR_LABEL_OFFSET + inset)
+  const [axis] = display.axes
+  expect(axis!.ticks.yTop).toBe(YSCALEBAR_LABEL_OFFSET + inset)
+  expect(axis!.ticks.yBottom).toBe(
+    display.height - YSCALEBAR_LABEL_OFFSET - inset,
+  )
+})
+
+test('a bar sharing the axis keeps it on the plot box, where a bar top is drawn', () => {
+  const { createDisplay } = createTestEnvironment([
+    { shape: 'bar', encoding: { y: 'score' } },
+    { shape: 'point', encoding: { y: 'other' } },
+  ])
+  const { display } = createDisplay()
+  display.setRpcData(0, result([{ y: [3, 8] }, { y: [12, 20] }]), REGION)
+  expect(display.valueScales[0]!.offset).toBe(YSCALEBAR_LABEL_OFFSET)
 })

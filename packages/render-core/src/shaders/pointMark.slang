@@ -7,7 +7,7 @@
 // All four are a 6-vertex quad; the fragment shader carves the shape.
 //! targets: wgsl, glsl
 //! export-consts: DIAMOND_GLYPH_SCALE, GLYPH_DISC, GLYPH_TRIANGLE, GLYPH_DIAMOND
-//! js-export: valueToYPx, valueToYPxScaled, pointDrawsBar
+//! js-export: valueToYPx, valueToYPxScaled, pointDrawsBar, pointYPx
 // `valueToYPx` is `valueScale`'s; it is lifted here, once, for every consumer
 // of the scale — the bar shape's painter and hit test import this twin too.
 
@@ -43,6 +43,9 @@ struct Uniforms {
   float  zero;
   float  viewportWidth;
   float  radiusPx;
+  // Ends of the value range, inset by `glyphPaint`'s `pointInsetPx` where the
+  // display wants its edge glyphs whole; 0 centres a point on the plot's edge.
+  float  insetPx;
   // Read by the glyph pad alone; every other length in this block is CSS px.
   float  devicePixelRatio;
 };
@@ -92,6 +95,13 @@ static const float INV_SQRT5 = 0.4472136;
 // colour swap. LocusZoom's lead-SNP convention, generalized.
 static const float DIAMOND_GLYPH_SCALE = 1.6;
 
+// The shape's own placement: the vertex branch, the Canvas2D painter, the ink
+// box and the hit test all read a value's y through this.
+float pointYPx(float value, float domainMin, float domainMax, float h, int scaleType, float insetPx) {
+  float inset = min(insetPx, h * 0.5);
+  return inset + valueToYPxScaled(value, domainMin, domainMax, h - 2.0 * inset, scaleType);
+}
+
 // The glyph channel's values. The numbering is a contract between whatever
 // packs the channel, the Canvas2D painter and the branches below, so it is
 // authored once here and `//! export-consts`ed.
@@ -110,7 +120,7 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
 
   float startClipX = bpToClipX(inst.x, u);
   float endClipX = bpToClipX(inst.x2, u);
-  float yPx = valueToYPxScaled(inst.y, u.domainMin, u.domainMax, u.canvasHeight, u.valueScaleType);
+  float yPx = pointYPx(inst.y, u.domainMin, u.domainMax, u.canvasHeight, u.valueScaleType, u.insetPx);
   float centerClipY = yPxToClipY(yPx, u.canvasHeight);
 
   // Genomic span in CSS px (clip width spans -1..1 across viewportWidth).

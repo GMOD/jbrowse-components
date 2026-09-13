@@ -39,13 +39,14 @@ import { coarseTierModeOf } from '@jbrowse/display-kit/densityTier'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/display-ui'
 import { cast, types } from '@jbrowse/mobx-state-tree'
 import {
   WiggleScoreConfigMixin,
   makePointSizeSubMenu,
 } from '@jbrowse/plugin-wiggle'
 import { installUpload } from '@jbrowse/render-core/installUpload'
-import { inkOfInstances } from '@jbrowse/render-core/marks'
+import { inkOfInstances, pointInsetPx } from '@jbrowse/render-core/marks'
 import {
   axisPlotBox,
   makeCrossHatchItem,
@@ -693,11 +694,18 @@ export function stateModelFactory(
         const second = self.independentValueScale
         const sharedField =
           self.conf.marks[self.valueMarkIndex]?.encoding.y.field
+        const inset = (indices: readonly number[]) =>
+          YSCALEBAR_LABEL_OFFSET +
+          (indices.length > 0 &&
+          indices.every(i => self.markShapes[i] === 'point')
+            ? pointInsetPx(self.scatterPointSize)
+            : 0)
         return [
           {
             domain: self.domain,
             scaleType: self.scaleType,
             height,
+            offset: inset(self.sharedMarkIndices),
             minimalTicks,
             // Captioned only where a second axis is drawn: with one axis
             // there is nothing to tell it apart from.
@@ -709,6 +717,7 @@ export function stateModelFactory(
                   domain: second.domain,
                   scaleType: second.scaleType,
                   height,
+                  offset: inset([self.independentMarkIndex]),
                   minimalTicks,
                   side: 'right' as const,
                   caption: second.field,

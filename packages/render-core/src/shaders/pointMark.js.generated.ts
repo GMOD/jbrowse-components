@@ -61,6 +61,11 @@ export function valueToYPxScaled(value: number, domainMin: number, domainMax: nu
   return valueToYPx(value, domainMin, domainMax, h)
 }
 
+export function pointYPx(value: number, domainMin: number, domainMax: number, h: number, scaleType: number, insetPx: number): number {
+  let _t0 = _min(insetPx, (h * 0.5))
+  return (_t0 + valueToYPxScaled(value, domainMin, domainMax, (h - (2.0 * _t0)), scaleType))
+}
+
 export function pointDrawsBar(spanPx: number, radiusPx: number): boolean {
   return (spanPx > (radiusPx * 2.0))
 }

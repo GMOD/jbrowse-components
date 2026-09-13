@@ -2,6 +2,7 @@ import { CANVAS_SEAM_PX } from '@jbrowse/render-core/canvas2dUtils'
 import {
   barMark,
   defineMark,
+  pointInsetPx,
   pointMark,
   spanMark,
 } from '@jbrowse/render-core/marks'
@@ -186,6 +187,7 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
             ...markValueScale(s, i),
             ramp: s.colorRamps[i],
             diameterPx: s.pointDiameterPx,
+            insetPx: pointInsetPx(s.pointDiameterPx),
           }),
           texture: (s: MarkRenderState) => s.colorRamps[i]?.lut,
           enabled,

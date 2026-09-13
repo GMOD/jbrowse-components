@@ -62,6 +62,21 @@ export function appendGlyph(
 }
 
 /**
+ * Room a glyph needs at each end of a plot whose display wants its topmost and
+ * bottommost points drawn whole: a bar's datum is its top edge and never
+ * overshoots, a glyph's is its centre, so one at domain max loses its top half
+ * off the canvas. The diamond's scale, since that is the largest thing the
+ * shape draws and `glyphBox` measures it the same way.
+ *
+ * A display passes this as the point shape's `insetPx` and gives its axis the
+ * same number as an offset, so domain max goes on labelling the row the
+ * topmost glyph centres on.
+ */
+export function pointInsetPx(diameter: number) {
+  return (diameter / 2) * DIAMOND_GLYPH_SCALE
+}
+
+/**
  * The box `appendGlyph` paints inside, by the same split and snap: the
  * diamond is scaled by `DIAMOND_GLYPH_SCALE` and the small square snaps to
  * the pixel grid, so neither is the diameter about the centre.

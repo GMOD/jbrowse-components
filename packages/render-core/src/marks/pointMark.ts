@@ -1,10 +1,7 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
 import { getDpr, makeBpMapper } from '../canvas2dUtils.ts'
 import * as shader from '../shaders/pointMark.generated.ts'
-import {
-  pointDrawsBar,
-  valueToYPxScaled,
-} from '../shaders/pointMark.js.generated.ts'
+import { pointDrawsBar, pointYPx } from '../shaders/pointMark.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { appendGlyph, glyphBox } from './glyphPaint.ts'
@@ -45,6 +42,12 @@ export interface PointParams {
   ramp?: MarkRamp
   /** Glyph diameter in CSS px. */
   diameterPx: number
+  /**
+   * How far inside the plot the value range ends, so a point at a domain
+   * endpoint draws whole — `glyphPaint`'s `pointInsetPx`, and the same number
+   * the display's axis takes as its offset. Absent centres it on the edge.
+   */
+  insetPx?: number
 }
 
 export const pointMark: MarkShape<PointChannels, PointParams> = {
@@ -68,6 +71,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       // stretched ellipses on hi-DPI.
       viewportWidth: clip.scissorW,
       radiusPx: params.diameterPx / 2,
+      insetPx: params.insetPx ?? 0,
       devicePixelRatio: getDpr(),
     })
   },
@@ -78,7 +82,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       return
     }
     const color = paintColors(channels, count, params.ramp)
-    const { diameterPx, domain } = params
+    const { diameterPx, domain, insetPx = 0 } = params
     const r = diameterPx / 2
     const canvasHeight = frame.canvasHeight
     const domainMin = domain[0]
@@ -104,12 +108,13 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       }
       const xStart = bpToPx(x[i]!)
       const xEnd = bpToPx(x2[i]!)
-      const yPx = valueToYPxScaled(
+      const yPx = pointYPx(
         y[i]!,
         domainMin,
         domainMax,
         canvasHeight,
         st,
+        insetPx,
       )
       const widthPx = Math.abs(xEnd - xStart)
       if (pointDrawsBar(widthPx, r)) {
@@ -125,19 +130,20 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
   // the box `appendGlyph` paints inside.
   ink(channels, block, frame, params, i) {
     const { x, x2, y, glyph } = channels
-    const { diameterPx, domain } = params
+    const { diameterPx, domain, insetPx = 0 } = params
     const xStart = blockPx(block, x[i]!)
     const xEnd = blockPx(block, x2[i]!)
-    const cy = valueToYPxScaled(
+    const r = diameterPx / 2
+    const cy = pointYPx(
       y[i]!,
       domain[0],
       domain[1],
       frame.canvasHeight,
       valueScaleTypeCode(params.scaleType),
+      insetPx,
     )
     const lo = Math.min(xStart, xEnd)
     const hi = Math.max(xStart, xEnd)
-    const r = diameterPx / 2
     return pointDrawsBar(hi - lo, r)
       ? { left: lo, top: cy - r, width: hi - lo, height: diameterPx }
       : glyphBox(glyph[i]!, xStart, cy, diameterPx)
@@ -150,7 +156,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
   hitNearest(channels, block, frame, params, xPx, yPx, candidates, maxDistSq) {
     const { x, x2, y } = channels
     const bpToPx = makeBpMapper(block)
-    const { diameterPx, domain } = params
+    const { diameterPx, domain, insetPx = 0 } = params
     const domainMin = domain[0]
     const domainMax = domain[1]
     const canvasHeight = frame.canvasHeight
@@ -158,7 +164,14 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     return nearestInk(candidates, maxDistSq, i => {
       const xStart = bpToPx(x[i]!)
       const xEnd = bpToPx(x2[i]!)
-      const cy = valueToYPxScaled(y[i]!, domainMin, domainMax, canvasHeight, st)
+      const cy = pointYPx(
+        y[i]!,
+        domainMin,
+        domainMax,
+        canvasHeight,
+        st,
+        insetPx,
+      )
       const lo = Math.min(xStart, xEnd)
       const hi = Math.max(xStart, xEnd)
       return pointDrawsBar(hi - lo, diameterPx / 2)
