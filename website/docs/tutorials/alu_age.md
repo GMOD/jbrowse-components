@@ -8,7 +8,6 @@ description:
   chromosome
 guide_category: Tutorials
 tutorial_category: Configuration & embedding
-data: hosted
 ---
 
 We look at how old each Alu copy on human chromosome 1 is and where the young

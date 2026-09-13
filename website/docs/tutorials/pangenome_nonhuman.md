@@ -6,7 +6,6 @@ description:
   HPRC graph opens, and see what changes when the species does
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
-data: download
 ---
 
 The machinery on the [HPRC pangenome page](/docs/tutorials/pangenome_hprc/) is

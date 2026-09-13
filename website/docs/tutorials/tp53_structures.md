@@ -7,7 +7,6 @@ description:
   codon
 guide_category: Tutorials
 tutorial_category: Transcriptomics & proteins
-data: hosted
 ---
 
 The p53 protein has a predicted structure covering every residue and crystal

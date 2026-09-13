@@ -6,7 +6,6 @@ description:
   their RefSeq annotations on the gene symbol
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
-data: pipeline
 ---
 
 We look at one human locus across seven other primates at once. NCBI gives an

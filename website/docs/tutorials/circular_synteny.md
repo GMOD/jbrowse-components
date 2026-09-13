@@ -7,7 +7,6 @@ description:
   and a ring value against the files they came from
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
-data: hosted
 ---
 
 We lay the human and mouse chromosomes around one circle and draw every block of

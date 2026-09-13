@@ -6,7 +6,6 @@ description:
   joining their RefSeq annotations on the gene symbol, with no alignment step
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
-data: pipeline
 ---
 
 We look at one K-12 operon across forty-three other E. coli and Shigella genomes

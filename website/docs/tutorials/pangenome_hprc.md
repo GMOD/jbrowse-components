@@ -6,7 +6,6 @@ description:
   locus out of it, and follow one allele back to the haplotype that carries it
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
-data: download
 ---
 
 A pangenome graph records what a set of genomes share and where they diverge, so

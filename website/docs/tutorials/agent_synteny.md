@@ -7,7 +7,6 @@ description:
   directions
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
-data: pipeline
 ---
 
 Four sentences typed at an AI agent are enough to align two fruit fly species

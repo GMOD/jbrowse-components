@@ -7,7 +7,6 @@ description:
   three animals and come apart in a single-celled outgroup
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
-data: pipeline
 ---
 
 Certain sets of genes have ridden the same chromosome together since before

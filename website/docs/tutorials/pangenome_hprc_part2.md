@@ -6,7 +6,6 @@ description:
   and which of the 464 haplotypes carry it
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
-data: hosted
 ---
 
 [Part 1](/docs/tutorials/pangenome_hprc) ends holding one allele and the single

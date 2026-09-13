@@ -6,7 +6,6 @@ description:
   already publishes, one indexed alignment per genome composed into one track
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
-data: hosted
 ---
 
 We look at one human locus across eight other mammals at once, from alignments

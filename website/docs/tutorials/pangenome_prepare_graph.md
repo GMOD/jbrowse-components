@@ -5,7 +5,6 @@ description:
   opens by locus, and the database that holds every haplotype's walk
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
-data: pipeline
 ---
 
 You have a pangenome graph of your own and want to look at it a locus at a time.

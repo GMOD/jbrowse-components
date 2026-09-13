@@ -7,7 +7,6 @@ description:
   lane carrying its own CAT gene models
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
-data: pipeline
 ---
 
 At the complement factor H cluster on chr1, four of eight assembled human

@@ -7,7 +7,6 @@ description:
   should draw as, then scan a chromosome for the signature one deletion showed
 guide_category: Tutorials
 tutorial_category: Configuration & embedding
-data: hosted
 ---
 
 We find a deletion in a genome from the reads alone. A paired-end read pair that
