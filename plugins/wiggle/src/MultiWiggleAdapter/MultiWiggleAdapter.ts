@@ -145,11 +145,13 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     let subConfs = this.getConf('subadapters')
     if (!subConfs?.length) {
       const entries = this.getConf('bigWigs') as string[]
+      const baseUri = this.getConf('baseUri') || undefined
       subConfs = entries.map(entry => ({
         type: 'BigWigAdapter',
         source: getFilename(entry),
         bigWigLocation: {
           uri: entry,
+          baseUri,
         },
       }))
     }

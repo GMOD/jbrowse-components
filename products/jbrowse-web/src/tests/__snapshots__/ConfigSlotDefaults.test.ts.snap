@@ -237,6 +237,7 @@ exports[`every registered schema slot default 1`] = `
     "coarseBpPerPxThreshold": "number = 10000",
   },
   "adapter: MultiWiggleAdapter": {
+    "baseUri": "string = """,
     "bigWigs": "frozen = []",
     "subadapters": "frozen = []",
   },

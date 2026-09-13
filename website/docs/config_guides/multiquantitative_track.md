@@ -5,8 +5,8 @@ guide_category: Track types
 ---
 
 A `MultiQuantitativeTrack` overlays many BigWig/bedGraph signals in one display.
-Use the `bigWigs` array for quick absolute-URL setups, or `subadapters` when you
-need relative URLs or per-subtrack `color`, `group`, and `source`.
+Use the `bigWigs` array for a plain list of URLs, or `subadapters` when you need
+per-subtrack `color`, `group`, and `source`.
 
 ```json addtrack
 {
@@ -26,19 +26,6 @@ need relative URLs or per-subtrack `color`, `group`, and `source`.
   }
 }
 ```
-
-<!-- GOTCHA MultiWiggleAdapter START -->
-
-:::caution Gotcha
-
-The `bigWigs` shorthand only accepts **absolute** URLs; a relative path there
-will not resolve against the config's location. Use the `subadapters` form for
-relative URLs, which is also what you need for per-subtrack `color`, `group`,
-and `source`.
-
-:::
-
-<!-- GOTCHA MultiWiggleAdapter END -->
 
 ## The subadapters form
 

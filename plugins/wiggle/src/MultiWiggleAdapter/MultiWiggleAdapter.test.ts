@@ -1,4 +1,10 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import {
+  addRelativeUris,
+  stripBaseUris,
+} from '@jbrowse/core/util/addRelativeUris'
+import { resolveUriLocation } from '@jbrowse/core/util/io'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { of } from 'rxjs'
 
 import MultiWiggleAdapter from './MultiWiggleAdapter.ts'
@@ -135,6 +141,25 @@ describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
     )
     const adapters = await adapter.getAdapters()
     expect(adapters[0]!.source).toBe('sample')
+  })
+
+  it('resolves relative bigWigs against the config location (#3562)', async () => {
+    const snap = { type: 'MultiWiggleAdapter', bigWigs: ['data/sample.bw'] }
+    const ingested = structuredClone(snap)
+    addRelativeUris(
+      ingested,
+      new URL('https://example.com/jbrowse/config.json'),
+    )
+    const conf = configSchema.create(ingested)
+    const mockGetSubAdapter = jest.fn().mockImplementation(async () => ({
+      dataAdapter: stubDataAdapter,
+    }))
+    await new MultiWiggleAdapter(conf, mockGetSubAdapter).getAdapters()
+    const [{ bigWigLocation }] = mockGetSubAdapter.mock.calls[0]!
+    expect(resolveUriLocation(bigWigLocation).uri).toBe(
+      'https://example.com/jbrowse/data/sample.bw',
+    )
+    expect(stripBaseUris(structuredClone(getSnapshot(conf)))).toEqual(snap)
   })
 })
 

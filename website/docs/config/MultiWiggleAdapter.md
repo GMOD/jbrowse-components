@@ -62,12 +62,6 @@ and `color` sets the subtrack's line/fill on load:
 
 _See the **Config slots** section below for all available configuration fields._
 
-:::caution Gotcha
-
-The `bigWigs` shorthand only accepts **absolute** URLs; a relative path there will not resolve against the config's location. Use the `subadapters` form for relative URLs, which is also what you need for per-subtrack `color`, `group`, and `source`.
-
-:::
-
 combines multiple BigWig files into a single multi-row quantitative track
 
 ## Related links
@@ -84,3 +78,4 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "MultiWiggleA
 | --- | --- |
 | <span id="slot-subadapters">**subadapters**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | array of subadapter JSON objects |
 | <span id="slot-bigwigs">**bigWigs**</span><br>[`frozen`](/docs/config_guides/slot_types#frozen) = <code>[]</code> | array of BigWig URLs/paths, alternative to the subadapters slot |
+| <span id="slot-baseuri">**baseUri**</span><br>[`string`](/docs/config_guides/slot_types#string) = <code>''</code> | what relative bigWigs URLs resolve against, stamped from the location the config was loaded from<br>_advanced_ |

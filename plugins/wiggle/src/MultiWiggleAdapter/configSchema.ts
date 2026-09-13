@@ -4,11 +4,6 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
  * #config MultiWiggleAdapter
  * #trackType MultiQuantitativeTrack
  * #fileFormat quantitative | Multiple BigWigs
- * #gotcha The `bigWigs` shorthand only accepts **absolute** URLs; a relative
- * path there will not resolve against the config's location. Use the
- * `subadapters` form for relative URLs, which is also what you need for
- * per-subtrack `color`, `group`, and `source`.
- *
  * combines multiple BigWig files into a single multi-row quantitative track
  *
  * #example
@@ -71,6 +66,16 @@ const MultiWiggleAdapter = ConfigurationSchema(
       description:
         'array of BigWig URLs/paths, alternative to the subadapters slot',
       defaultValue: [],
+    },
+    /**
+     * #slot
+     */
+    baseUri: {
+      type: 'string',
+      defaultValue: '',
+      advanced: true,
+      description:
+        'what relative bigWigs URLs resolve against, stamped from the location the config was loaded from',
     },
   },
   { explicitlyTyped: true },

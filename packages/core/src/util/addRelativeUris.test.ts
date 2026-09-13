@@ -20,6 +20,15 @@ test('addRelativeUris recurses into nested objects and arrays', () => {
   ).toEqual(['https://example.com/', 'https://example.com/'])
 })
 
+test('addRelativeUris stamps baseUri beside a bigWigs array of strings', () => {
+  const adapter: Record<string, unknown> = { bigWigs: ['a.bw', 'b.bw'] }
+  addRelativeUris({ adapter }, new URL('https://example.com/config/'))
+  expect(adapter).toEqual({
+    bigWigs: ['a.bw', 'b.bw'],
+    baseUri: 'https://example.com/config/',
+  })
+})
+
 // preserve-existing is the behavior that differed from the (now-deleted)
 // data-management copy, which overwrote unconditionally
 test('addRelativeUris preserves an existing baseUri', () => {

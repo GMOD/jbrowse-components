@@ -1,6 +1,7 @@
 /**
- * Stamp `baseUri` next to every `uri` in a config so relative URIs resolve
- * against the location the config itself was loaded from. jbrowse-web runs this
+ * Stamp `baseUri` next to every `uri` in a config, and beside a MultiWiggle
+ * `bigWigs` array of bare URI strings, so relative URIs resolve against the
+ * location the config itself was loaded from. jbrowse-web runs this
  * when it fetches a config.json from a URL; anything that injects a fetched
  * config as an object (a hub, a track hub connection, a headless render) has to
  * run it too, or the config's relative data URIs resolve against the page.
@@ -14,11 +15,12 @@ export function addRelativeUris(
 ) {
   if (typeof config === 'object' && config !== null) {
     for (const key of Object.keys(config)) {
-      if (typeof config[key] === 'object' && config[key] !== null) {
-        addRelativeUris(config[key] as Record<string, unknown>, base)
-      } else if (key === 'uri') {
-        // fill only when absent, so a node carrying its own baseUri wins
-        config.baseUri = config.baseUri ?? base.href
+      const value = config[key]
+      if (typeof value === 'object' && value !== null) {
+        addRelativeUris(value as Record<string, unknown>, base)
+      }
+      if (key === 'uri' || (key === 'bigWigs' && Array.isArray(value))) {
+        config.baseUri ??= base.href
       }
     }
   }

@@ -2157,6 +2157,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         },
         "bigWigs": {
           "description": "array of BigWig URLs/paths, alternative to the subadapters slot. Any JSON value: the slot is \`frozen\`, so its shape is not checked here."
+        },
+        "baseUri": {
+          "description": "what relative bigWigs URLs resolve against, stamped from the location the config was loaded from.",
+          "$ref": "#/$defs/StringOrJexl",
+          "default": ""
         }
       }
     },

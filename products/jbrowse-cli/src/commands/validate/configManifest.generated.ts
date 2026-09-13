@@ -985,6 +985,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "bigWigs",
           "type": "(JexlString | frozen)"
+        },
+        {
+          "name": "baseUri",
+          "type": "(JexlString | string)"
         }
       ],
       "shorthandKeys": []
