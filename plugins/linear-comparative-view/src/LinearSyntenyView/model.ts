@@ -463,7 +463,9 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       get showLoading() {
         return (
           self.awaitingAutoDiagonalize ||
-          (!self.stackDrawable && self.hasSomethingToShow && !self.stackError)
+          (self.hasSomethingToShow &&
+            !self.stackError &&
+            !self.views.some(v => v.initialized))
         )
       },
       /**

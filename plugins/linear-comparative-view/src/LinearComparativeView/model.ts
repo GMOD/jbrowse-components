@@ -233,25 +233,14 @@ function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * The failure that leaves the stack nothing to show: the view's own, or
-       * every row's. One row's failure is that row's to report, in its own
-       * place in the stack, beside the rows that loaded.
+       * every row's. One failed row reports itself in its place in the stack.
        */
       get stackError(): unknown {
+        const rowErrors = self.views.map(v => v.error)
         return (
           self.volatileError ??
-          (self.views.length > 0 && self.views.every(v => v.error)
-            ? self.views[0]!.error
-            : undefined)
+          (rowErrors.every(Boolean) ? rowErrors[0] : undefined)
         )
-      },
-
-      /**
-       * #getter
-       * Measured with a row up: enough to draw the stack, where a row still
-       * loading or failed shows that in its own place.
-       */
-      get stackDrawable() {
-        return this.measured && self.views.some(v => v.initialized)
       },
 
       /**

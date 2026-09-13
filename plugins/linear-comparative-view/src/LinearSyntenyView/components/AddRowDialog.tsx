@@ -106,22 +106,21 @@ const AddRowDialog = observer(function AddRowDialog({
 
   async function add(assembly: string, syntenyTrackId: string) {
     const region = zoomedInWindow(views.at(-1)!)
-    let loc: string | undefined
-    if (region) {
-      setLocating(true)
-      try {
-        loc = await matchingRowLoc({
+    setLocating(true)
+    try {
+      const loc =
+        region &&
+        (await matchingRowLoc({
           session,
           trackId: syntenyTrackId,
           region,
           assembly,
-        })
-      } finally {
-        setLocating(false)
-      }
+        }))
+      void model.appendRow({ assembly, loc, syntenyTrackId })
+      handleClose()
+    } finally {
+      setLocating(false)
     }
-    void model.appendRow({ assembly, loc, syntenyTrackId })
-    handleClose()
   }
 
   async function submit() {
