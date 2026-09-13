@@ -33,16 +33,26 @@ const channels: PointChannels = {
   count: 6,
 }
 
-const boxes = (insetPx: number) =>
-  Array.from({ length: channels.count }, (_, i) =>
-    pointMark.ink!(
-      channels,
-      block,
-      { canvasWidth: 1000, canvasHeight: CANVAS_HEIGHT },
-      { domain: DOMAIN, diameterPx: DIAMETER, insetPx },
-      i,
-    ),
+const inkAt = (
+  insetPx: number,
+  i: number,
+  channelsOver: PointChannels = channels,
+) => {
+  const box = pointMark.ink!(
+    channelsOver,
+    block,
+    { canvasWidth: 1000, canvasHeight: CANVAS_HEIGHT },
+    { domain: DOMAIN, diameterPx: DIAMETER, insetPx },
+    i,
   )
+  if (!box) {
+    throw new Error('the point shape drew no ink')
+  }
+  return box
+}
+
+const boxes = (insetPx: number) =>
+  Array.from({ length: channels.count }, (_, i) => inkAt(insetPx, i))
 
 test('an inset range keeps every glyph at a domain endpoint inside the plot', () => {
   for (const box of boxes(pointInsetPx(DIAMETER))) {
@@ -61,13 +71,8 @@ test('without the inset a glyph at a domain endpoint hangs off the plot', () => 
 test('the inset compresses the range without reordering it', () => {
   const inset = pointInsetPx(DIAMETER)
   const centre = (value: number) =>
-    pointMark.ink!(
-      { ...channels, y: Float32Array.from([value]), count: 1 },
-      block,
-      { canvasWidth: 1000, canvasHeight: CANVAS_HEIGHT },
-      { domain: DOMAIN, diameterPx: DIAMETER, insetPx: inset },
-      0,
-    ).top +
+    inkAt(inset, 0, { ...channels, y: Float32Array.from([value]), count: 1 })
+      .top +
     DIAMETER / 2
 
   expect(centre(1000)).toBeCloseTo(inset)
