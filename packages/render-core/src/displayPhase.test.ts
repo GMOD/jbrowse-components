@@ -68,6 +68,7 @@ describe('computeDisplayPhase lazy loading evaluation', () => {
 // here, so each test below flips exactly one input and asserts it alone raises
 // the scrim.
 const DRAWN = {
+  isMinimized: false,
   fetchInert: false,
   viewportEmpty: false,
   isLoadingOrCanceled: false,
@@ -170,6 +171,7 @@ describe('computeLoadingTerm', () => {
     expect(
       computeLoadingTerm(
         {
+          isMinimized: false,
           fetchInert: true,
           viewportEmpty: false,
           isLoadingOrCanceled: true,
@@ -182,6 +184,24 @@ describe('computeLoadingTerm', () => {
     ).toBe(false)
   })
 
+  test('isMinimized outranks every other term', () => {
+    expect(
+      computeLoadingTerm(
+        {
+          isMinimized: true,
+          fetchInert: false,
+          viewportEmpty: false,
+          isLoadingOrCanceled: true,
+          awaitingDependentData: true,
+          rendersCanvas: true,
+          canvasDrawn: false,
+        },
+        () => false,
+        () => true,
+      ),
+    ).toBe(false)
+  })
+
   // A viewport holding no content block — `showAllRegions` on a region set
   // whose every member elides. No fetch is issued there, so `canvasDrawn` never
   // flips and the pre-paint term alone would scrim the display for as long as
@@ -190,6 +210,7 @@ describe('computeLoadingTerm', () => {
     expect(
       computeLoadingTerm(
         {
+          isMinimized: false,
           fetchInert: false,
           viewportEmpty: true,
           isLoadingOrCanceled: true,
@@ -207,6 +228,7 @@ describe('computeLoadingTerm', () => {
   // subscribing to visibleRegions/loadedRegions churn is the hazard
   // computeDisplayPhase's own `loading` thunk exists to avoid.
   test.each([
+    ['minimized', { ...DRAWN, isMinimized: true }],
     ['suppressed', { ...DRAWN, fetchInert: true }],
     ['off content', { ...DRAWN, viewportEmpty: true }],
     ['already loading', { ...DRAWN, isLoadingOrCanceled: true }],
@@ -255,6 +277,7 @@ describe('computeLoadingTerm matches the expressions it replaced', () => {
     expect(
       computeLoadingTerm(
         {
+          isMinimized: false,
           fetchInert: c.fetchInert,
           viewportEmpty: false,
           isLoadingOrCanceled: c.isLoading || c.fetchCanceled,
@@ -275,6 +298,7 @@ describe('computeLoadingTerm matches the expressions it replaced', () => {
     expect(
       computeLoadingTerm(
         {
+          isMinimized: false,
           fetchInert: false,
           viewportEmpty: false,
           isLoadingOrCanceled,

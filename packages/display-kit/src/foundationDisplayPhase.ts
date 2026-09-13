@@ -21,7 +21,7 @@ import type {
  * them.
  */
 export interface DisplayPhaseFoundation
-  extends DisplayPhaseInputs, DisplayLoadingInputs {}
+  extends DisplayPhaseInputs, Omit<DisplayLoadingInputs, 'isMinimized'> {}
 
 /** The same, for a foundation with no rendering backend (arc's SVG). */
 export interface DisplayStatusPhaseFoundation
@@ -34,6 +34,14 @@ export interface DisplayStatusPhaseFoundation
       | 'isLoadingOrCanceled'
       | 'awaitingDependentData'
     > {}
+
+/**
+ * A foundation mixin's `self` as the display it is composed onto: `isMinimized`
+ * is `BaseDisplay`'s, which no foundation composes itself.
+ */
+function composedDisplay<T extends object>(self: T) {
+  return self as T & Pick<DisplayLoadingInputs, 'isMinimized'>
+}
 
 /**
  * `displayPhase` for a display foundation: the shared precedence
@@ -66,7 +74,7 @@ export function foundationDisplayPhase(
   hostMounted?: () => boolean,
 ): DisplayPhase {
   return computeDisplayPhase(self, () =>
-    computeLoadingTerm(self, viewportCurrent, hostMounted),
+    computeLoadingTerm(composedDisplay(self), viewportCurrent, hostMounted),
   )
 }
 
@@ -88,6 +96,7 @@ export function foundationDisplayStatusPhase(
   return computeDisplayStatusPhase(self, () =>
     computeLoadingTerm(
       {
+        isMinimized: composedDisplay(self).isMinimized,
         fetchInert: self.fetchInert,
         viewportEmpty: self.viewportEmpty,
         isLoadingOrCanceled: self.isLoadingOrCanceled,

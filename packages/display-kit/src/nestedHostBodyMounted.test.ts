@@ -12,11 +12,20 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // `true` while the whole subtree is out of the DOM, and the row's displays wait
 // for a first paint that nothing will ever make.
 function nestedDisplay({ outerRendersDisplays = true } = {}) {
-  const Display = types.compose(
-    'TestNestedDisplay',
-    GlobalFetchMixin(),
-    types.model({ type: types.literal('TestNestedDisplay') }),
-  )
+  const Display = types
+    .compose(
+      'TestNestedDisplay',
+      GlobalFetchMixin(),
+      types.model({ type: types.literal('TestNestedDisplay') }),
+    )
+    .volatile(() => ({
+      isMinimized: false,
+    }))
+    .actions(self => ({
+      setMinimized(flag: boolean) {
+        self.isMinimized = flag
+      },
+    }))
   const Row = types
     .compose(
       'TestRow',
@@ -86,6 +95,18 @@ test('an observed phase hears the outer view scroll off and back', () => {
   })
   stack.setBodyMounted(false)
   stack.setBodyMounted(true)
+  dispose()
+  expect(seen).toEqual(['loading', 'ready', 'loading'])
+})
+
+test('a minimized display in a mounted row waits for nothing', () => {
+  const { display } = nestedDisplay()
+  const seen: string[] = []
+  const dispose = autorun(() => {
+    seen.push(display.displayPhase)
+  })
+  display.setMinimized(true)
+  display.setMinimized(false)
   dispose()
   expect(seen).toEqual(['loading', 'ready', 'loading'])
 })

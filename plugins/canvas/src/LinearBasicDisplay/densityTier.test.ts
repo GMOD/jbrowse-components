@@ -21,13 +21,13 @@ function refusableDisplay(densityAdapter?: Record<string, unknown>) {
     adapterFetchSizeLimit: 50_000_000,
     densityAdapter,
   })
-  const { display, view } = env.createDisplay()
+  const { display, view, track } = env.createDisplay()
   view.setDisplayedRegions([
     { assemblyName: 'volvox', start: 0, end: 50_000, refName: 'ctgA' },
   ])
   view.zoomTo(62.5)
   view.setCoarseDynamicBlocks(view.dynamicBlocks, view.bpPerPx)
-  return { display, view }
+  return { display, view, track }
 }
 
 function refuseOnBytes(display: RefusableDisplay) {
@@ -236,6 +236,19 @@ describe('the band stands alone, and fetches nothing', () => {
     })
     expect(display.displayPhase).toBe('ready')
     expect(display.svgReady).toBe(true)
+  })
+
+  it('does not wait on a band a minimized track never reads', () => {
+    const { display, track } = refusableDisplay(DENSITY_ADAPTER)
+    setConf(display, 'densityTier', 'density')
+    expect(display.coarseTierStandsIn).toBe(true)
+    expect(display.displayPhase).toBe('loading')
+
+    track.setMinimized(true)
+    expect(display.displayPhase).toBe('ready')
+
+    track.setMinimized(false)
+    expect(display.displayPhase).toBe('loading')
   })
 })
 

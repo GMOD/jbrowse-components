@@ -63,11 +63,17 @@ export function computeDisplayPhase(
 }
 
 /**
- * The five terms the `loading` condition is built from, minus the one that is a
- * thunk. All cheap flags on the display itself, so they are read eagerly the
+ * The terms the `loading` condition is built from, minus the thunks. All cheap flags on the display itself, so they are read eagerly the
  * same way `computeDisplayPhase` reads its terminals.
  */
 export interface DisplayLoadingInputs {
+  /**
+   * The containing track is minimized. Every fetch gate skips a minimized
+   * track and its canvas is unmounted, so nothing the terms below wait on can
+   * arrive. Suppresses them all, like `fetchInert`, which a subclass overrides
+   * outright and so cannot carry it.
+   */
+  isMinimized: boolean
   /**
    * The display is deliberately showing a static message instead of data
    * (sequence past base resolution, LD with the triangle off), so no scrim at
@@ -166,6 +172,7 @@ export interface DisplayLoadingInputs {
  */
 export function computeLoadingTerm(
   {
+    isMinimized,
     fetchInert,
     viewportEmpty,
     isLoadingOrCanceled,
@@ -177,6 +184,7 @@ export function computeLoadingTerm(
   hostMounted: () => boolean = () => true,
 ): boolean {
   return (
+    !isMinimized &&
     !fetchInert &&
     !viewportEmpty &&
     (isLoadingOrCanceled ||

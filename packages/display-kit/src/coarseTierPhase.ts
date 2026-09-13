@@ -17,6 +17,7 @@ import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 export interface CoarseTierPhaseHost
   extends DisplayPhaseFoundation, SvgReadyFoundation {
   host: { effectiveBodyMounted: boolean }
+  isMinimized: boolean
   coarseTierRead: CoarseTierRead | undefined
   coarseTierLoading: boolean
   coarseTierStandsIn: boolean
@@ -73,7 +74,7 @@ export function coarseTierDisplayPhase(
           regionTooLarge: self.gateMeasuresCoarse && self.regionTooLarge,
           error: self.error,
         },
-        () => coarseTierPending(self),
+        () => !self.isMinimized && coarseTierPending(self),
       )
     : foundationDisplayPhase(
         self,
