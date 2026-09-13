@@ -461,3 +461,49 @@ test('removing the view clears the figure instead of throwing', async () => {
     expect(container.querySelector('svg')).toBeNull()
   })
 })
+
+// `view.width` throws until the view is measured, and `ready` is also true for
+// a view nothing has told where to look, so gating the redraw key on it threw
+// inside the host's render on the first frame of a figure mounted beside a
+// not-yet-laid-out view.
+test('an unmeasured view with no regions draws nothing instead of throwing', async () => {
+  const { Session, LinearGenomeModel, stubManager } = initialize()
+  const view = Session.create(
+    { configuration: {}, tracks: [] },
+    { pluginManager: stubManager },
+  ).setView(
+    LinearGenomeModel.create({
+      id: `svgFigureView${viewCount++}`,
+      type: 'LinearGenomeView',
+    }),
+  )
+  const { container } = render(<Host view={view} />)
+  await act(async () => {
+    await Promise.resolve()
+  })
+  expect(container.querySelector('svg')).toBeNull()
+})
+
+// Pinning reorders the drawn stack without changing any track's id, minimized
+// flag or height, so a key built from those alone kept the old order.
+test('pinning a track redraws the figure in the new order', async () => {
+  const view = makeView([
+    { trackId: 'first', name: 'first', type: 'SvgTrack' },
+    { trackId: 'second', name: 'second', type: 'SvgTrack' },
+  ])
+  const { svg } = await renderFigure(view)
+  const secondDrawnFirst = () => {
+    const text = svg().textContent
+    return text.indexOf('second') < text.indexOf('first')
+  }
+  expect(secondDrawnFirst()).toBe(false)
+
+  await act(async () => {
+    view.tracks[1]!.setPinned(true)
+    await Promise.resolve()
+  })
+
+  await waitFor(() => {
+    expect(secondDrawnFirst()).toBe(true)
+  })
+})

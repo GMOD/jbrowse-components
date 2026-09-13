@@ -6,15 +6,13 @@ import {
   useSyncExternalStore,
 } from 'react'
 
+import { SvgThemeProviders } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
+import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { svgTrackName } from '@jbrowse/core/svg/trackNames'
-import { StyleThemeProvider } from '@jbrowse/core/ui/PaletteContext'
-import { resolveStyleTheme } from '@jbrowse/core/ui/styleTheme'
-import { createJBrowseTheme } from '@jbrowse/core/ui/theme'
 import { getSession } from '@jbrowse/core/util'
 import { useFetch } from '@jbrowse/core/util/useFetch'
-import { isAlive } from '@jbrowse/mobx-state-tree'
-import { ThemeProvider } from '@mui/material'
+import { getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
 import { reaction } from 'mobx'
 
 import SVGRowHeader from './SVGRowHeader.tsx'
@@ -53,7 +51,7 @@ import type React from 'react'
 //   re-derive the ruler, the scalebar and the region seams from the model on any
 //   React render they get. Re-render the figure between snapshots and the ruler
 //   slides while the features stay put — two clocks, reading as a rendering bug.
-//   An export cannot hit it, because `wrapSvgExport` renders the whole document
+//   An export cannot hit it, because `serializeSvg` renders the whole document
 //   in one synchronous pass. The `memo` below is what holds it, and it holds
 //   only against a render arriving from above — `figureContract.ts` is what
 //   watches the other direction, and says which rule was broken.
@@ -220,17 +218,16 @@ async function renderFigure(
  * render. Where it matters, this line is the only thing holding the two halves
  * together.
  *
- * Both providers, as `wrapSvgExport` mounts for the file path, and for the same
- * reason: the chrome takes its colors from the Material UI theme and a
- * `makeStyles` component would take its own from the style theme, so a figure
- * mounted in a host that installs neither would otherwise draw itself in
- * JBrowse's *default light* theme whatever the session is set to.
+ * The export's theme providers, as the file path mounts them: a host that
+ * installs neither would otherwise get JBrowse's default light theme whatever
+ * the session is set to.
  *
  * No background rect, unlike a file — that has nothing behind it, and a figure
- * in a page has the page. No `resetSvgClipIds` either, and that is the opposite
- * decision from the file path on purpose: the counter is document-global, so
- * resetting it here would renumber ids that a figure already on the page is
- * pointing at. Letting it run is what makes several live figures unique.
+ * in a page has the page. No `withFreshSvgClipIds` either, and that is the
+ * opposite decision from the file path on purpose: the counter is
+ * document-global, so restarting it here would reuse ids that a figure already
+ * on the page is pointing at. Letting it run is what makes several live figures
+ * unique.
  */
 const FrozenSvgFigure = memo(function FrozenSvgFigure({
   view,
@@ -245,51 +242,49 @@ const FrozenSvgFigure = memo(function FrozenSvgFigure({
   const ref = useRef<SVGSVGElement>(null)
   useFrozenFigureContract(ref, snapshot)
   return (
-    <ThemeProvider theme={createJBrowseTheme(theme)}>
-      <StyleThemeProvider theme={resolveStyleTheme({ configTheme: theme })}>
-        <svg
-          ref={ref}
-          width={width}
-          height={height}
-          viewBox={`0 0 ${width} ${height}`}
-          // It is a vector, so a narrower container scales it rather than
-          // clipping it; the height attribute stays, so a box reserved for it
-          // does not change size when that happens. Deliberately not a prop:
-          // anything passed per-render would have to reach past the memo above,
-          // which is the one thing holding the figure's two halves together. A
-          // host that wants other sizing wraps this in a box of its own.
-          style={{ display: 'block', maxWidth: '100%' }}
-        >
-          <g transform={`translate(${margin} ${snapshot.bandHeight})`}>
-            <SVGView
-              view={view}
-              displayResults={snapshot.displayResults}
-              header={
-                <SVGRowHeader
-                  view={view}
-                  fontSize={snapshot.fontSize}
-                  rulerHeight={snapshot.rulerHeight}
-                  showScalebar={snapshot.showScalebar}
-                />
-              }
-              fontSize={snapshot.fontSize}
-              textHeight={snapshot.textHeight}
-              trackLabels={snapshot.trackLabels}
-              trackLabelOffset={snapshot.trackLabelOffset}
-              // the row header is exactly the ruler, so the bodies start at its
-              // height
-              contentTop={snapshot.rulerHeight}
-              tracksHeight={snapshot.tracksHeight}
-              showGridlines={snapshot.showGridlines}
-              // the left gutter the per-track clip may bleed into, so content
-              // drawn left of zero — a wiggle's y-axis — survives
-              leftBuffer={snapshot.margin}
-              legendWidth={snapshot.legendWidth}
-            />
-          </g>
-        </svg>
-      </StyleThemeProvider>
-    </ThemeProvider>
+    <SvgThemeProviders theme={theme}>
+      <svg
+        ref={ref}
+        width={width}
+        height={height}
+        viewBox={`0 0 ${width} ${height}`}
+        // It is a vector, so a narrower container scales it rather than
+        // clipping it; the height attribute stays, so a box reserved for it
+        // does not change size when that happens. Deliberately not a prop:
+        // anything passed per-render would have to reach past the memo above,
+        // which is the one thing holding the figure's two halves together. A
+        // host that wants other sizing wraps this in a box of its own.
+        style={{ display: 'block', maxWidth: '100%' }}
+      >
+        <g transform={`translate(${margin} ${snapshot.bandHeight})`}>
+          <SVGView
+            view={view}
+            displayResults={snapshot.displayResults}
+            header={
+              <SVGRowHeader
+                view={view}
+                fontSize={snapshot.fontSize}
+                rulerHeight={snapshot.rulerHeight}
+                showScalebar={snapshot.showScalebar}
+              />
+            }
+            fontSize={snapshot.fontSize}
+            textHeight={snapshot.textHeight}
+            trackLabels={snapshot.trackLabels}
+            trackLabelOffset={snapshot.trackLabelOffset}
+            // the row header is exactly the ruler, so the bodies start at its
+            // height
+            contentTop={snapshot.rulerHeight}
+            tracksHeight={snapshot.tracksHeight}
+            showGridlines={snapshot.showGridlines}
+            // the left gutter the per-track clip may bleed into, so content
+            // drawn left of zero — a wiggle's y-axis — survives
+            leftBuffer={snapshot.margin}
+            legendWidth={snapshot.legendWidth}
+          />
+        </g>
+      </svg>
+    </SvgThemeProviders>
   )
 })
 
@@ -329,10 +324,10 @@ function figureKey(view: LinearGenomeViewModel, themeName: string | undefined) {
   // throw a TypeError inside the reaction, where MobX swallows it. No key means
   // no figure, which is what a host that closed the view wanted anyway.
   //
-  // `view.width` throws by design before the view has been measured, and
-  // `ready` is the gate that says it has been — and that there are regions to
-  // draw, which is the second async step `initialized` does not cover
-  if (!isAlive(view) || !view.ready) {
+  // `view.width` throws by design before the view has been measured. `status`
+  // is ready only once it has been AND there are regions to draw — `ready` is
+  // also true for a view nothing has told where to look, measured or not
+  if (!isAlive(view) || view.status.type !== 'ready') {
     return ''
   }
   const session = getSession(view)
@@ -340,11 +335,9 @@ function figureKey(view: LinearGenomeViewModel, themeName: string | undefined) {
     view.coarseVisibleLocStrings,
     view.coarseBpPerPx,
     view.width,
-    view.tracks.map(track => [
-      track.configuration.trackId,
-      track.minimized,
-      track.displays[0]?.height,
-    ]),
+    // the snapshot carries pinned, minimized and the display settings a body
+    // bakes in; the effective height is a getter, so it is read beside it
+    view.tracks.map(track => [getSnapshot(track), track.displays[0]?.height]),
     session.getActiveThemeOptions?.(themeName),
     session.highlightsVisible ? view.highlight : false,
     view.labelsVisible,
@@ -410,40 +403,34 @@ export function useViewSvgFigure(
 ): ViewSvgFigureResult {
   const key = useFigureKey(view, themeName)
   useOneFigurePerView(view)
+  const opts = {
+    fontSize,
+    rulerHeight,
+    trackLabels,
+    showGridlines,
+    showScalebar,
+    rasterizeLayers,
+    margin,
+    themeName,
+  }
   const {
     data: snapshot,
     error,
     isLoading,
   } = useFetch(
     // Every option is in the key by value, so an inline options object costs
-    // nothing and a changed option redraws. A null key is `useFetch`'s own "not
-    // yet", which is what an unready view reports.
+    // nothing and a changed option redraws. The view's id too: two views can
+    // share every other term. A null key is `useFetch`'s own "not yet", which
+    // is what an unready view reports.
     key
       ? ([
           'lgv-svg-figure',
+          svgNodeId(view),
           key,
-          JSON.stringify([
-            fontSize,
-            rulerHeight,
-            trackLabels,
-            showGridlines,
-            showScalebar,
-            rasterizeLayers,
-            margin,
-          ]),
+          JSON.stringify(opts),
         ] as const)
       : null,
-    () =>
-      renderFigure(view, {
-        fontSize,
-        rulerHeight,
-        trackLabels,
-        showGridlines,
-        showScalebar,
-        rasterizeLayers,
-        margin,
-        themeName,
-      }),
+    () => renderFigure(view, opts),
   )
   // Written in an effect and read during render, which is the order that makes
   // it work: a key change clears `data` on the render where the ref still holds
