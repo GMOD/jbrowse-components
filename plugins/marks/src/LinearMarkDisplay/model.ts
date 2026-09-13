@@ -694,7 +694,9 @@ export function stateModelFactory(
         const second = self.independentValueScale
         const sharedField =
           self.conf.marks[self.valueMarkIndex]?.encoding.y.field
-        const inset = (indices: readonly number[]) =>
+        // A point stands at its centre and needs glyph room at both ends; a
+        // bar's top edge is its datum and wants the plot box itself.
+        const axisOffset = (indices: readonly number[]) =>
           YSCALEBAR_LABEL_OFFSET +
           (indices.length > 0 &&
           indices.every(i => self.markShapes[i] === 'point')
@@ -705,7 +707,7 @@ export function stateModelFactory(
             domain: self.domain,
             scaleType: self.scaleType,
             height,
-            offset: inset(self.sharedMarkIndices),
+            offset: axisOffset(self.sharedMarkIndices),
             minimalTicks,
             // Captioned only where a second axis is drawn: with one axis
             // there is nothing to tell it apart from.
@@ -717,7 +719,7 @@ export function stateModelFactory(
                   domain: second.domain,
                   scaleType: second.scaleType,
                   height,
-                  offset: inset([self.independentMarkIndex]),
+                  offset: axisOffset([self.independentMarkIndex]),
                   minimalTicks,
                   side: 'right' as const,
                   caption: second.field,
