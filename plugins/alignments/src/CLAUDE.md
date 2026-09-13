@@ -20,16 +20,18 @@ one alone. `arcs/` is a band of its own with the six-file set, drawn through
 
 **`pileupShape` is the one shape every row-instanced pass is an instance of.**
 `features/pileupShape.ts` states the projection, the reversed-block edge
-ordering, the row band, the sub-pixel widening and the row scan once; a pass's
-`mark.ts` hands it a shader, a packer and rule CODES — `Fade`, `Hit`, `Band`,
-`Point`, `Paint` — plus a `channels` lens over its arrays and an `enabled` gate.
-Ten passes are instances: `gap` (twice), `mismatch`, `perBaseQuality`,
-`perBaseLetter`, `softclipBases`, `insertion`, `clip`, `overlap`,
-`modification`. `read`, `connectingLines` and `linkedReads` are plugin-local
-`MarkShape`s over their own painters: a read's instance is a segment and its
-colour a per-read function of the scheme, and the two lines carry two rows per
-instance. `modification`'s hit test stays a Flatbush query because the INDEX is
-the part a row scan cannot supply.
+ordering, the row band, the sub-pixel widening and the fade once, in `walk`: the
+painter walks the block and `ink` and `hitNearest` walk one instance (`place`),
+so the box a mark paints and the box it answers a hover with are one derivation.
+A pass's `mark.ts` hands it a shader, a packer and rule CODES — `Fade`, `Hit`,
+`Band`, `Point`, `Paint` — plus a `channels` lens over its arrays and an
+`enabled` gate. Ten passes are instances: `gap` (twice), `mismatch`,
+`perBaseQuality`, `perBaseLetter`, `softclipBases`, `insertion`, `clip`,
+`overlap`, `modification`. `read`, `connectingLines` and `linkedReads` are
+plugin-local `MarkShape`s over their own painters: a read's instance is a
+segment and its colour a per-read function of the scheme, and the two lines
+carry two rows per instance. `modification`'s hit test stays a Flatbush query
+because the INDEX is the part a row scan cannot supply.
 
 **A mark is DATA: channels plus rule codes, and no member takes an index.** The
 arrays come back from one `channels(data)` per region, in one field order for

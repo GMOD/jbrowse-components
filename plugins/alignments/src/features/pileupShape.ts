@@ -596,17 +596,15 @@ export function pileupShape(
 
     /**
      * Containment, not proximity: an instance answers when the cursor is on
-     * its row and inside the bp it covers — the painter's own pivot read back,
-     * so the two cannot disagree about which bases a mark occupies — or, for a
-     * point, within the tolerance it declares. Every other candidate answers
-     * nothing, so a caller passes `Infinity` and the shape's rule is the bound.
+     * its row and inside the bp it covers, or for a point within the tolerance
+     * it declares, so a caller passes `Infinity` and the shape's rule is the
+     * bound.
      *
-     * The distance is still the honest one, to the ink `paintBlock` fills: an
-     * intron centerline is hittable across its whole row on purpose (a 1px
-     * target is not one) and reports how far the line is. Walked in candidate
-     * order and settled on the first containing span or cell — nothing can be
-     * nearer than 0 — so a back-to-front caller gets the topmost, which is the
-     * one `hitTestFeature` names alongside it; a point keeps the nearest bar.
+     * The distance is to the ink `walk` places: an intron centerline is
+     * hittable across its whole row, since a 1px target is not one, and reports
+     * how far the line is. A span or cell settles on the first containing
+     * candidate, so a back-to-front caller gets the topmost, the one
+     * `hitTestFeature` names alongside it; a point keeps the nearest bar.
      */
     hitNearest(c, block, _frame, state, xPx, yPx, candidates, maxDistSq) {
       const { positions, stride, rows, kinds, kind, start, end } = c
