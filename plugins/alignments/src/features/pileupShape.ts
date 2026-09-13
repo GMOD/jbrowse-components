@@ -2,11 +2,7 @@
 // a shader, its packer and the rule codes one row-instanced pass draws and
 // hit-tests by. A new rule is a code and a case here, never a function on the
 // mark; plugins/alignments/src/CLAUDE.md says what the codes were measured at.
-import {
-  fillSpanRect,
-  insertionSizeAlpha,
-  spanRectPx,
-} from '@jbrowse/alignments-core'
+import { insertionSizeAlpha, spanRectPx } from '@jbrowse/alignments-core'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { bpAtPx, bpAtPxExact } from '@jbrowse/render-core/canvas2dUtils'
 import { inkOnRect } from '@jbrowse/render-core/marks/hit'
@@ -316,49 +312,188 @@ function pointWidthPx(
     : CLIP_BAR_WIDTH_PX
 }
 
-function fadeAlpha(
-  fade: FadeRule,
+interface PileupFrame {
+  block: RenderBlock
+  state: RenderState
+  bpLength: number
+  fullBlockWidth: number
+  pxPerBp: number
+  fade: FadeRule
+  point: PointRule | undefined
+  cell: ReturnType<typeof makePileupCellMapper> | undefined
+  decorate: PileupShapeSpec['decorate']
+  bandOffset: number
+  bandHeight: number
+  constantAlpha: number
+  tables: PaintTables
+}
+
+const UNPAINTED: PaintTables = {
+  rule: Paint.palette,
+  opaqueCss: [],
+  fadedCss: [],
+}
+
+const PLACED = new Float64Array(5)
+
+/**
+ * Instances `from..to` in paint order, and the one statement of where each one
+ * goes and how faded it is. With a `ctx` it paints every instance that has ink;
+ * without one it stops at the first and writes `[left, top, width, height]` to
+ * `out`, with a point's centre at `out[4]`. An instance has no ink when it is a
+ * byte of a shared array the mark does not own, a row off the canvas, or a fade
+ * at zero.
+ *
+ * A loop rather than a placement call per instance, and one `frequencyFade`
+ * call site rather than one per rule, because both have to fit TurboFan's
+ * inlining budget: the per-instance call measured 1.20-1.32x of this walk
+ * (`plugins/alignments/benches/rectWalker.bench.ts`).
+ */
+function walk(
+  ctx: MarkContext2D | undefined,
   c: PileupChannels,
-  i: number,
-  state: RenderState,
-  widthPx: number,
-  pxPerBp: number,
+  f: PileupFrame,
+  from: number,
+  to: number,
+  out: Float64Array,
 ) {
-  switch (fade) {
-    case Fade.opaque: {
-      return 1
-    }
-    case Fade.intron: {
-      return intronAlpha(state.featureHeight)
-    }
-    case Fade.spanFrequencySize: {
-      return (
-        frequencyFade(state, widthPx * widthPx, c.freqs![i]!) *
-        sizeAlpha(widthPx)
-      )
-    }
-    case Fade.cellFrequencyQuality: {
-      return (
-        frequencyFade(state, widthPx, c.freqs![i]!) *
-        qualityFade(c.quals![i]!, state.mismatchAlpha)
-      )
-    }
-    case Fade.overlap: {
-      return state.chainMode ? overlapFade(widthPx) : overlapAlpha(widthPx)
-    }
-    case Fade.insertion: {
-      const length = c.lengths![i]!
-      return (
-        (length >= LONG_INSERTION_MIN_LENGTH
-          ? 1
-          : frequencyFade(state, pxPerBp * pxPerBp, c.freqs![i]!)) *
-        insertionSizeAlpha(length, pxPerBp)
-      )
-    }
-    case Fade.pointFrequency: {
-      return frequencyFade(state, pxPerBp, c.freqs![i]!)
-    }
+  const { positions, stride, rows, kinds, kind, freqs, quals, lengths } = c
+  const { keys } = c
+  const { state, block, bpLength, fullBlockWidth, pxPerBp } = f
+  const { fade, point, cell, decorate, bandOffset, bandHeight } = f
+  const { constantAlpha } = f
+  const { rule, opaqueCss, fadedCss } = f.tables
+  const { featureHeight, mismatchAlpha, chainMode } = state
+  const constantCss =
+    ctx !== undefined &&
+    keys === undefined &&
+    (fade === Fade.opaque || fade === Fade.intron)
+      ? constantAlpha >= 1
+        ? opaqueCss[0]!
+        : `${fadedCss[0]!}${constantAlpha})`
+      : undefined
+  if (ctx !== undefined && constantCss !== undefined) {
+    ctx.fillStyle = constantCss
   }
+  let lastKey = -1
+  let lastCss = ''
+  for (let i = from; i < to; i++) {
+    if (!markSelects(kinds, kind, i)) {
+      continue
+    }
+    const rowY = pileupRowY(rows[i]!, state)
+    if (pileupRowOffCanvas(rowY, state)) {
+      continue
+    }
+    const offset = i * stride
+    const startBp = positions[offset]!
+    const widthPx =
+      point === undefined
+        ? ((stride === 2 ? positions[offset + 1]! : startBp + 1) - startBp) *
+          pxPerBp
+        : pointWidthPx(point, c, i, pxPerBp, featureHeight)
+    let alpha = constantAlpha
+    let frequencyFades = false
+    let frequencyBase = 0
+    switch (fade) {
+      case Fade.spanFrequencySize: {
+        frequencyFades = true
+        frequencyBase = widthPx * widthPx
+        alpha = sizeAlpha(widthPx)
+        break
+      }
+      case Fade.cellFrequencyQuality: {
+        frequencyFades = true
+        frequencyBase = widthPx
+        alpha = qualityFade(quals![i]!, mismatchAlpha)
+        break
+      }
+      case Fade.overlap: {
+        alpha = chainMode ? overlapFade(widthPx) : overlapAlpha(widthPx)
+        break
+      }
+      case Fade.insertion: {
+        const length = lengths![i]!
+        frequencyFades = length < LONG_INSERTION_MIN_LENGTH
+        frequencyBase = pxPerBp * pxPerBp
+        alpha = insertionSizeAlpha(length, pxPerBp)
+        break
+      }
+      case Fade.pointFrequency: {
+        frequencyFades = true
+        frequencyBase = pxPerBp
+        alpha = 1
+        break
+      }
+      case Fade.opaque:
+      case Fade.intron: {
+        break
+      }
+    }
+    if (frequencyFades) {
+      alpha *= frequencyFade(state, frequencyBase, freqs![i]!)
+    }
+    if (!(alpha > 0)) {
+      continue
+    }
+    const top = rowY + bandOffset
+    let left: number
+    let width: number
+    let x = 0
+    if (cell !== undefined) {
+      left = cell.cellX(startBp)
+      width = cell.w
+    } else {
+      x = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
+      if (point !== undefined) {
+        left = x - widthPx / 2
+        width = widthPx
+      } else {
+        const x2 = bpToScreenX(
+          positions[offset + 1]!,
+          block,
+          bpLength,
+          fullBlockWidth,
+        )
+        const rect = spanRectPx(x < x2 ? x : x2, x < x2 ? x2 : x)
+        left = rect[0]
+        width = rect[1]
+      }
+    }
+    if (ctx === undefined) {
+      out[0] = left
+      out[1] = top
+      out[2] = width
+      out[3] = bandHeight
+      out[4] = x
+      return true
+    }
+    if (constantCss === undefined) {
+      const key = keys === undefined ? 0 : keys[i]!
+      if (rule === Paint.packedAbgr) {
+        if (key !== lastKey) {
+          lastKey = key
+          lastCss = abgrToCssRgba(key)
+        }
+        ctx.fillStyle = lastCss
+      } else {
+        ctx.fillStyle =
+          alpha >= 1 ? opaqueCss[key]! : `${fadedCss[key]!}${alpha})`
+      }
+    }
+    ctx.fillRect(left, top, width, bandHeight)
+    decorate?.draw(ctx, x, top, bandHeight, c, i, pxPerBp)
+  }
+  return false
+}
+
+function place(
+  c: PileupChannels,
+  f: PileupFrame,
+  i: number,
+  out: Float64Array,
+) {
+  return walk(undefined, c, f, i, i + 1, out)
 }
 
 // Wider than the ink on purpose — a 1px bar is not a clickable target — which is
@@ -378,10 +513,11 @@ function pointToleranceBp(
 }
 
 /**
- * One row-instanced pileup shape over render-core's `MarkShape`. The
- * projection, the reversed-block edge ordering, the row band, the sub-pixel
- * widening and the row scan are stated here once for every pass that draws on
- * a pileup row; the codes say which rules apply.
+ * One row-instanced pileup shape over render-core's `MarkShape`. `walk` states
+ * the projection, the reversed-block edge ordering, the row band, the sub-pixel
+ * widening and the fade once for every pass that draws on a pileup row: the
+ * painter walks the block with it, and `ink` and `hitNearest` place one
+ * instance through it. The codes say which rules apply.
  *
  * `writeUniforms` is the whole pileup struct — palette and frame — which is
  * what a `drawMarks` caller would need. The renderer never asks for it: it
@@ -393,204 +529,69 @@ export function pileupShape(
 ): MarkShape<PileupChannels, RenderState> {
   const { id, mod, pack, pivot, fade, hit, band, contiguous, point, decorate } =
     spec
-  const paintTables = spec.paint
   const centerline = band === Band.centerline
-  const inkRect = (
-    c: PileupChannels,
+  const frameOf = (
     block: RenderBlock,
     state: RenderState,
-    i: number,
-  ): InkRect | undefined => {
-    const { positions, stride, rows, kinds, kind, start, end } = c
-    if (i < start || i >= end || !markSelects(kinds, kind, i)) {
-      return undefined
-    }
-    const rowY = pileupRowY(rows[i]!, state)
-    if (pileupRowOffCanvas(rowY, state)) {
-      return undefined
-    }
-    const featureHeight = state.featureHeight
+    tables = UNPAINTED,
+  ): PileupFrame => {
     const bpLength = block.end - block.start
     const fullBlockWidth = block.screenEndPx - block.screenStartPx
-    const pxPerBp = fullBlockWidth / bpLength
-    const startBp = positions[i * stride]!
-    const widthPx =
-      point === undefined
-        ? ((stride === 2 ? positions[i * stride + 1]! : startBp + 1) -
-            startBp) *
-          pxPerBp
-        : pointWidthPx(point, c, i, pxPerBp, featureHeight)
-    if (!(fadeAlpha(fade, c, i, state, widthPx, pxPerBp) > 0)) {
-      return undefined
-    }
-    const top = rowY + (centerline ? featureHeight / 2 - 0.5 : 0)
-    const height = centerline ? 1 : featureHeight
-    if (point !== undefined) {
-      const w = Math.max(widthPx, decorate?.widthPx(c, i, pxPerBp) ?? 0)
-      const x = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-      return { left: x - w / 2, top, width: w, height }
-    }
-    if (pivot === 'cell') {
-      const cell = makePileupCellMapper(
-        block,
-        bpLength,
-        fullBlockWidth,
-        contiguous,
-      )
-      return { left: cell.cellX(startBp), top, width: cell.w, height }
-    }
-    const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-    const x2 = bpToScreenX(
-      positions[i * stride + 1]!,
+    const { featureHeight } = state
+    return {
       block,
+      state,
       bpLength,
       fullBlockWidth,
-    )
-    const [left, width] = spanRectPx(Math.min(x1, x2), Math.max(x1, x2))
-    return { left, top, width, height }
+      pxPerBp: fullBlockWidth / bpLength,
+      fade,
+      point,
+      cell:
+        pivot === 'cell'
+          ? makePileupCellMapper(block, bpLength, fullBlockWidth, contiguous)
+          : undefined,
+      decorate,
+      bandOffset: centerline ? featureHeight / 2 - 0.5 : 0,
+      bandHeight: centerline ? 1 : featureHeight,
+      constantAlpha: fade === Fade.intron ? intronAlpha(featureHeight) : 1,
+      tables,
+    }
+  }
+  const inkOf = (
+    c: PileupChannels,
+    f: PileupFrame,
+    i: number,
+  ): InkRect | undefined => {
+    if (!place(c, f, i, PLACED)) {
+      return undefined
+    }
+    const top = PLACED[1]!
+    const height = PLACED[3]!
+    if (decorate === undefined) {
+      return { left: PLACED[0]!, top, width: PLACED[2]!, height }
+    }
+    const width = Math.max(PLACED[2]!, decorate.widthPx(c, i, f.pxPerBp))
+    return { left: PLACED[4]! - width / 2, top, width, height }
   }
   return {
     id,
     pass: { ...slangPass({ id, mod }), pack },
     writeUniforms: writePileupUniforms,
     ink(c, block, _frame, state, i) {
-      return inkRect(c, block, state, i)
+      return i < c.start || i >= c.end
+        ? undefined
+        : inkOf(c, frameOf(block, state), i)
     },
 
     paintBlock(ctx, c, block, _frame, state) {
-      const { positions, stride, rows, kinds, kind, freqs, quals, lengths } = c
-      const { keys, end } = c
-      const { rule: paintRule, opaqueCss, fadedCss } = paintTables(state)
-      const bpLength = block.end - block.start
-      const fullBlockWidth = block.screenEndPx - block.screenStartPx
-      const featureHeight = state.featureHeight
-      const mismatchAlpha = state.mismatchAlpha
-      const chainMode = state.chainMode
-      // The two rules with no per-instance input, resolved once for the walk.
-      const constantAlpha =
-        fade === Fade.intron ? intronAlpha(featureHeight) : 1
-      const pxPerBp = fullBlockWidth / bpLength
-      const bandOffset = centerline ? featureHeight / 2 - 0.5 : 0
-      const bandHeight = centerline ? 1 : featureHeight
-      // A layer whose fade has no per-instance input and whose palette has no
-      // key draws one colour for the whole walk, so the string is built once and
-      // the assignment leaves the loop: an intron centerline and a deletion bar
-      // are the two, and formatting per gap was this pass's only per-item string
-      // work.
-      const constantCss =
-        keys === undefined && (fade === Fade.opaque || fade === Fade.intron)
-          ? constantAlpha >= 1
-            ? opaqueCss[0]!
-            : `${fadedCss[0]!}${constantAlpha})`
-          : undefined
-      if (constantCss !== undefined) {
-        ctx.fillStyle = constantCss
-      }
-      // The densest array the display produces draws from a handful of colours
-      // in per-read runs, so `abgrToCssRgba` runs once per run rather than per
-      // mark. The comparison is on the u32, not the string.
-      let lastKey = -1
-      let lastCss = ''
-      // One mapper per draw call rather than per instance — `makeCellLeftMapper`
-      // owns the reversed-block pivot every one of the five cell painters had
-      // wrong at once.
-      const cell =
-        pivot === 'cell'
-          ? makePileupCellMapper(block, bpLength, fullBlockWidth, contiguous)
-          : undefined
-      for (let i = c.start; i < end; i++) {
-        if (markSelects(kinds, kind, i)) {
-          const rowY = pileupRowY(rows[i]!, state)
-          if (!pileupRowOffCanvas(rowY, state)) {
-            const offset = i * stride
-            const startBp = positions[offset]!
-            // What the mark occupies on screen: its TRUE genomic span for a span
-            // or a cell — gap.slang spells this same product, and a drawn width
-            // that has been clamped or seam-fudged is deliberately not it — and
-            // for a point, which has no span, the width its own rule draws.
-            const widthPx =
-              point === undefined
-                ? ((stride === 2 ? positions[offset + 1]! : startBp + 1) -
-                    startBp) *
-                  pxPerBp
-                : pointWidthPx(point, c, i, pxPerBp, featureHeight)
-            let alpha = constantAlpha
-            switch (fade) {
-              case Fade.opaque:
-              case Fade.intron: {
-                break
-              }
-              case Fade.spanFrequencySize: {
-                alpha =
-                  frequencyFade(state, widthPx * widthPx, freqs![i]!) *
-                  sizeAlpha(widthPx)
-                break
-              }
-              case Fade.cellFrequencyQuality: {
-                alpha =
-                  frequencyFade(state, widthPx, freqs![i]!) *
-                  qualityFade(quals![i]!, mismatchAlpha)
-                break
-              }
-              case Fade.overlap: {
-                alpha = chainMode ? overlapFade(widthPx) : overlapAlpha(widthPx)
-                break
-              }
-              case Fade.insertion: {
-                const length = lengths![i]!
-                alpha =
-                  (length >= LONG_INSERTION_MIN_LENGTH
-                    ? 1
-                    : frequencyFade(state, pxPerBp * pxPerBp, freqs![i]!)) *
-                  insertionSizeAlpha(length, pxPerBp)
-                break
-              }
-              case Fade.pointFrequency: {
-                alpha = frequencyFade(state, pxPerBp, freqs![i]!)
-                break
-              }
-            }
-            if (alpha > 0) {
-              if (constantCss === undefined) {
-                const key = keys === undefined ? 0 : keys[i]!
-                if (paintRule === Paint.packedAbgr) {
-                  if (key !== lastKey) {
-                    lastKey = key
-                    lastCss = abgrToCssRgba(key)
-                  }
-                  ctx.fillStyle = lastCss
-                } else {
-                  ctx.fillStyle =
-                    alpha >= 1 ? opaqueCss[key]! : `${fadedCss[key]!}${alpha})`
-                }
-              }
-              const top = rowY + bandOffset
-              if (point !== undefined) {
-                // Centred on the bp edge, which is where the mark IS: there are
-                // no two edges to order, so a reversed block needs nothing here.
-                const x = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-                ctx.fillRect(x - widthPx / 2, top, widthPx, bandHeight)
-                decorate?.draw(ctx, x, top, bandHeight, c, i, pxPerBp)
-              } else if (cell !== undefined) {
-                ctx.fillRect(cell.cellX(startBp), top, cell.w, bandHeight)
-              } else {
-                const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
-                const x2 = bpToScreenX(
-                  positions[offset + 1]!,
-                  block,
-                  bpLength,
-                  fullBlockWidth,
-                )
-                // A reversed (flipped) region maps startBp to the larger screen
-                // x, so the edges are ordered here rather than by each consumer.
-                const lo = x1 < x2 ? x1 : x2
-                const hi = x1 < x2 ? x2 : x1
-                fillSpanRect(ctx, lo, hi, top, bandHeight)
-              }
-            }
-          }
-        }
-      }
+      walk(
+        ctx,
+        c,
+        frameOf(block, state, spec.paint(state)),
+        c.start,
+        c.end,
+        PLACED,
+      )
     },
 
     /**
@@ -610,11 +611,6 @@ export function pileupShape(
     hitNearest(c, block, _frame, state, xPx, yPx, candidates, maxDistSq) {
       const { positions, stride, rows, kinds, kind, start, end } = c
       const featureHeight = state.featureHeight
-      const bpLength = block.end - block.start
-      const fullBlockWidth = block.screenEndPx - block.screenStartPx
-      const bpPerPx = bpLength / fullBlockWidth
-      const genomicPos = bpAtPxExact(xPx, block)
-      const basePos = bpAtPx(xPx, block)
       // The row under the cursor, and only its BODY: above the pileup top the
       // floor divide goes negative, and the inter-row gap resolves to the row
       // above, which is not what a hover there means.
@@ -624,6 +620,10 @@ export function pileupShape(
       if (adjustedY < 0 || adjustedY - row * rowPitch > featureHeight) {
         return undefined
       }
+      const f = frameOf(block, state)
+      const bpPerPx = f.bpLength / f.fullBlockWidth
+      const genomicPos = bpAtPxExact(xPx, block)
+      const basePos = bpAtPx(xPx, block)
       const filterByFrequency = state.filterMismatchesByFrequency
       const cellBased = pivot === 'cell'
       let best: MarkHit | undefined
@@ -649,7 +649,7 @@ export function pileupShape(
         if (!contains || !hitPasses(hit, c, i, bpPerPx, filterByFrequency)) {
           continue
         }
-        const r = inkRect(c, block, state, i)
+        const r = inkOf(c, f, i)
         if (!r) {
           continue
         }

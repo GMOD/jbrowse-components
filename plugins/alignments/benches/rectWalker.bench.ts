@@ -98,9 +98,30 @@
 // three shapes, and a float2 emitter writing into the caller buys 3-5% on rect
 // alone.
 //
-// THE PILEUP PAINTER BEFORE ONE PLACE. One process at 1M, AC, load 3.1-4.3,
-// both controls 1.00x: `pileupShared` is 1.00x of hand on deletion (99.8 ns)
-// and on mismatch (85.7 ns).
+// ONE PLACEMENT FOR THE PILEUP. `pileupShared` times production `pileupShape`,
+// whose `walk` states each instance's box and fade once: the painter walks the
+// block, and `ink` and `hitNearest` walk one instance. Three processes at 1M,
+// AC, load 0.7-2.1, the controls 0.99-1.01x: deletion 0.82-0.85x, mismatch
+// 0.98-1.02x. The painter it replaced, which restated the geometry and the fade
+// beside `inkRect`, measured 1.00x on both.
+//
+// A per-instance placement call does not fit TurboFan's budget. One process each
+// at 1M, AC, load 2.0-2.7, controls 0.93-1.01x:
+//
+//                                          deletion   mismatch
+//   `place(c, frame, i, out)` per instance    1.20x      1.32x
+//   `placeRow`, `placeFade`, `placeX`          1.22x      1.12x
+//
+// `place` is 811 bytes of bytecode, over the 460 any callee may be. Split,
+// `placeRow` (101 + 75) and `placeX` (223) inline and `placeFade` (436 + 391)
+// never does: a callee's bytecode counts against the 920-byte cumulative budget,
+// and the same statements in the loop body cost none of it. The walk that does
+// fit has no slack. `spanRectPx`, destructured at 245 bytes, runs out of line
+// with boxed arguments; indexed at 103 bytes it inlines and deletion reaches
+// 0.89x, but `qualityFade`'s `_smoothstep` then falls out of the budget and
+// mismatch reads 1.09x. One `frequencyFade` call site for the four rules that
+// fade by frequency, instead of one per rule, returns the 84-byte chain and gives
+// both shapes the numbers above.
 
 import { execSync } from 'node:child_process'
 import { performance } from 'node:perf_hooks'

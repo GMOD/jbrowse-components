@@ -103,10 +103,17 @@ export function fillSpanRect(
   ctx.fillRect(left, top, width, height)
 }
 
-/** The `[left, width]` `fillSpanRect` fills, for a mark's ink. */
+/**
+ * The `[left, width]` `fillSpanRect` fills, for a mark's ink. Indexed rather
+ * than destructured: 103 bytes of bytecode against 245 is what lets the pileup
+ * walk inline it (`plugins/alignments/benches/rectWalker.bench.ts`).
+ */
 export function spanRectPx(px: number, px2: number, widthCompensation = 0) {
-  const [left, right] = expandToMinWidthPx(px, px2, 1)
-  return [left, Math.max(px2 - px + widthCompensation, right - left)] as const
+  const edges = expandToMinWidthPx(px, px2, 1)
+  return [
+    edges[0],
+    Math.max(px2 - px + widthCompensation, edges[1] - edges[0]),
+  ] as const
 }
 
 // colorType: 1=insertion 2=softclip 3=hardclip, with anything else taking the
