@@ -4,29 +4,15 @@ title: WiggleScoreConfigMixin
 sidebar_label: Mixin -> WiggleScoreConfigMixin
 ---
 
-Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the `wiggle` plugin. [View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/shared/WiggleScoreConfigMixin.ts).
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — see [pluggable elements](/docs/developer_guide/) for concepts. Built into JBrowse core. [View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/WiggleScoreConfigMixin.ts).
 
-The score-PLOT config every wiggle-family display shares: the score axis
+The score-plot config every display with a score axis shares: the axis
 (`ScoreScaleMixin`), the cross-hatch toggle and the scatter point size.
-Config only. The strict-`bpPerPx` fetch rule (adr-008) belongs to
-`WiggleCommonMixin`, as its `zoomFetchKey`, because it describes what a
-fetch returns rather than how a plot is drawn — `LinearManhattanDisplay`
-composes this mixin for the score axis and fetches untransformed SNPs.
+`LinearMarkDisplay` composes it as is; a display plotting one configured
+feature field composes `ScoreFieldConfigMixin`, which adds `scoreField`.
 
-Deliberately NOT the wiggle-specific palette, rendering-type, summary-mode
-and resolution config either — those moved to `WiggleCommonMixin`, which
-composes this, when it became clear that `LinearManhattanDisplay` (the other
-composer) reads none of them and was inheriting a config schema that
-advertised twelve slots doing nothing on a Manhattan plot. Relocation rather
-than a new mixin layer: `types.compose` depth is a real ceiling in these
-chains (ADR-041).
-
-A display that owns its own rpcDataMap type composes this; a wiggle-shaped
-one composes `WiggleCommonMixin`.
-
-The score *axis* itself (scaleType / autoscale / min-max and their setters) is
-`ScoreScaleMixin`, composed in below and shared with the alignments coverage
-band, which wants that axis and none of the color/resolution config here.
+Config only: the strict-`bpPerPx` fetch rule and wiggle's palette,
+rendering-type, summary-mode and resolution config are `WiggleCommonMixin`'s.
 
 Members a composed model contributes are listed here too, so these tables are the whole surface.
 
@@ -36,10 +22,9 @@ Members a composed model contributes are listed here too, so these tables are th
 | Member | Description | Defined by |
 | --- | --- | --- |
 | <span id="getter-scatterpointsize">**scatterPointSize**</span><br><code>number</code> |  | WiggleScoreConfigMixin |
-| <span id="getter-scorefield">**scoreField**</span><br><code>string</code> | The feature field the worker plots on the score axis, `score` by default. A fetch input: every composing display carries it in its `rpcProps()`, since the field is read where the features are. | WiggleScoreConfigMixin |
-| <span id="getter-displaycrosshatches">**displayCrossHatches**</span><br><code>boolean</code> | The configured cross-hatch setting. A config slot rather than a display prop — like `scatterPointSize` beside it — because a prop cannot be set from a config at all: MST drops a snapshot key the schema never declares, so `demos/cgiab` had asked for hatches on its CNV track and never got them. Read `showCrossHatches` below for what actually draws; this is the raw setting the menu toggles. | WiggleScoreConfigMixin |
-| <span id="getter-isdensitymode">**isDensityMode**</span><br><code>boolean</code> | Whether score maps to color instead of height. Each display overrides this from its own rendering-type table (`density` / `multirowdensity`); the base is false so this mixin's resolved getters below can key on it, the same override idiom `autoscaleSourceNames` uses in WiggleCommonMixin. | WiggleScoreConfigMixin |
-| <span id="getter-showcrosshatches">**showCrossHatches**</span><br><code>boolean</code> | Whether the score-axis cross hatches draw. Density spends color, not height, on the score, so there is no axis for them to rule — and the track menu drops the toggle there, which would strand hatches enabled in another plot type with no way to turn them off. Every consumer (on-screen overlay, multi-row overlay lines, SVG export) reads this, never the raw `displayCrossHatches` setting. | WiggleScoreConfigMixin |
+| <span id="getter-displaycrosshatches">**displayCrossHatches**</span><br><code>boolean</code> | The configured cross-hatch setting, which the menu toggles. A slot rather than a display prop because MST drops a snapshot key the schema never declares, so a prop cannot be set from a config. Read `showCrossHatches` for what draws. | WiggleScoreConfigMixin |
+| <span id="getter-isdensitymode">**isDensityMode**</span><br><code>boolean</code> | Whether score maps to color instead of height. A display overrides this from its own rendering-type table; the base is false. | WiggleScoreConfigMixin |
+| <span id="getter-showcrosshatches">**showCrossHatches**</span><br><code>boolean</code> | Whether the score-axis cross hatches draw. Density spends color, not height, on the score, so it has no axis to rule — and its track menu drops the toggle, which would strand hatches enabled in another plot type. Every consumer reads this, never `displayCrossHatches`. | WiggleScoreConfigMixin |
 | <span id="getter-declaredvaluescale">**declaredValueScale**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>{ scaleType?: string &#124; undefined; domain?: [number &#124; undefined,…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>{ scaleType?: string &#124; undefined; domain?: [number &#124; undefined, number &#124; undefined] &#124; undefined; } &#124; undefined</code></pre></dialog></span> | <span data-pagefind-ignore>Overridable hook: a value scale the display declares somewhere other than these slots — the mark display's `encoding.y`. Where it answers, it is the owner and the slots below stand in only for the ends it leaves open, so a scale is read from one place whichever place that is. Default none, which is every display whose axis IS these slots.</span> | [ScoreScaleMixin](../scorescalemixin#getter-declaredvaluescale) |
 | <span id="getter-scaletype">**scaleType**</span><br><code>string</code> |  | [ScoreScaleMixin](../scorescalemixin#getter-scaletype) |
 | <span id="getter-autoscaletype">**autoscaleType**</span><br><code>string</code> |  | [ScoreScaleMixin](../scorescalemixin#getter-autoscaletype) |
