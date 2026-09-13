@@ -367,11 +367,14 @@ export default function sharedModelFactory(
        * and the SVG export's paint layer — they have to be the same number or
        * the drawn matrix is stretched against the box it sits in, and they were
        * previously derived independently on either side of that boundary.
-       * `totalWidthPxWithoutBorders` is the rounded content width, so this is
-       * the drawn width even when the genome doesn't fill the viewport.
+       *
+       * `totalWidthPx` here and `totalWidthPxWithoutBorders` for the triangle's
+       * base, as the Hi-C display splits them: scrolled left of the genome
+       * start the triangle is drawn from the left gap onward, so a box only as
+       * wide as its base cut the gap's width off its right corner.
        */
       get canvasWidth() {
-        return self.view.totalWidthPxWithoutBorders
+        return self.view.totalWidthPx
       },
       /**
        * #getter
@@ -379,19 +382,21 @@ export default function sharedModelFactory(
        * width), or the display's own height when squashed to fit.
        */
       get canvasHeight() {
-        return self.squashToHeight ? this.ldCanvasHeight : this.canvasWidth / 2
+        return self.squashToHeight
+          ? this.ldCanvasHeight
+          : self.view.totalWidthPxWithoutBorders / 2
       },
       /**
        * #getter
        * Per-frame yScalar squash factor. When squashToHeight is on, squashes
-       * the natural (canvasWidth/2) triangle into ldCanvasHeight. Lives on
+       * the natural (base/2) triangle into ldCanvasHeight. Lives on
        * the main thread so resize doesn't trigger a worker re-fetch.
        */
       get yScalar() {
         return computeTriangleYScalar({
           squashToHeight: self.squashToHeight,
           displayHeight: this.ldCanvasHeight,
-          triangleWidth: this.canvasWidth,
+          triangleWidth: self.view.totalWidthPxWithoutBorders,
         })
       },
 

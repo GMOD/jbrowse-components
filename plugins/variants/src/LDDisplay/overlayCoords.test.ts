@@ -117,6 +117,18 @@ test('locusViewportX is the frame the connector lines land in', () => {
   expect(display.locusViewportX('ctgA', 0)).toBe(100)
 })
 
+// Scrolled left of the genome start the triangle is drawn from the left gap
+// onward. A box only as wide as the triangle's base cut the gap's width off
+// its right corner, on screen and in the export alike.
+test('the box reaches the triangle’s right corner when scrolled left of the start', () => {
+  const { display, width } = loadedDisplay({ scrollTo: -100 })
+  const { viewOffsetX } = display.viewTransform
+
+  expect(viewOffsetX).toBe(100)
+  expect(display.canvasWidth).toBeGreaterThanOrEqual(viewOffsetX + width)
+  expect(display.canvasHeight).toBe(width / 2)
+})
+
 // The hit test walks `boundaries` for both layouts — uniform mode's are just
 // `i * uniformW`. This is the genomic case, whose columns are unevenly spaced,
 // so it can only be answered by the boundary walk and not by a division.

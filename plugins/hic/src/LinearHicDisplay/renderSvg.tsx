@@ -14,7 +14,7 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 
 export async function renderSvg(
   self: LinearHicDisplayModel,
-  opts: ExportSvgDisplayOptions,
+  opts?: ExportSvgDisplayOptions,
 ) {
   return renderDisplaySvg(self, opts, HicSvgBody)
 }
