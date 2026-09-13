@@ -218,6 +218,13 @@ describe('MultiLinearWiggleDisplay renderSvg', () => {
     expect(html).toContain('fill="rgb(0,104,209)"')
   })
 
+  // the circular view's rings sample the canvas, which carries no labels
+  it('leaves the row labels out of a plot-only export', async () => {
+    const html = render(await renderSvg(makeModel(), { plotOnly: true }))
+    expect(html).not.toContain('>a</text>')
+    expect(html).toContain('fill="rgb(0,104,209)"')
+  })
+
   it('draws a per-row axis and the row labels', async () => {
     const html = render(await renderSvg(makeModel()))
     // one scalebar per row, and both row names

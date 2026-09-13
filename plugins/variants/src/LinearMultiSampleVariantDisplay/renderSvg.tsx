@@ -50,6 +50,7 @@ export async function renderSvg(
 function VariantSvgBody({
   model,
   view,
+  overlays,
   canvasWidth,
   opts,
 }: LgvSvgBodyProps<RenderSvgModel>) {
@@ -81,6 +82,7 @@ function VariantSvgBody({
       model={model}
       width={canvasWidth}
       contentBlocks={view.dynamicBlocks.contentBlocks}
+      overlays={overlays}
       // Its own paint layer in the band above the rows, untranslated — the
       // same split the screen takes (a separate canvas outside the offset
       // container), so the lane cannot pick up the rows' scroll.
@@ -133,7 +135,7 @@ function VariantSvgBody({
           )
           // Same layer, after the cells, so the export stacks them the way the
           // on-screen overlay composites over the canvas.
-          if (insertionGlyphRegions) {
+          if (overlays && insertionGlyphRegions) {
             drawVariantInsertionGlyphs(
               ctx,
               insertionGlyphRegions,

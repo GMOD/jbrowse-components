@@ -38,6 +38,7 @@ function renderOverlay(model: ReturnType<typeof createDisplay>) {
         model={model}
         width={800}
         contentBlocks={model.view.dynamicBlocks.contentBlocks}
+        overlays
       >
         <g />
       </SvgVariantOverlay>

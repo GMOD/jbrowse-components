@@ -23,6 +23,7 @@ const SvgVariantOverlay = ({
   model,
   width,
   contentBlocks,
+  overlays,
   variantLane,
   lineZone,
   children,
@@ -30,6 +31,9 @@ const SvgVariantOverlay = ({
   model: RenderSvgBaseModel
   width: number
   contentBlocks: readonly ClusterProvenanceRegion[]
+  // false for a reader that samples only the display's canvas: the lane, the
+  // connector zone, the separators and the sidebar are all drawn over it
+  overlays: boolean
   // The variant lane's own painted band, from the display that draws one.
   // Untranslated: it sits at the top of the display, above `lineZone`.
   variantLane?: React.ReactNode
@@ -50,11 +54,11 @@ const SvgVariantOverlay = ({
   } = model
   return (
     <>
-      {variantLane}
-      {lineZone}
+      {overlays ? variantLane : null}
+      {overlays ? lineZone : null}
       <g transform={`translate(0 ${rowsTopOffset})`}>
         {children}
-        {showRowSeparators ? (
+        {overlays && showRowSeparators ? (
           <RowSeparatorLines
             numRows={sources.length}
             rowHeight={rowHeight}
@@ -64,18 +68,20 @@ const SvgVariantOverlay = ({
             viewportHeight={availableHeight}
           />
         ) : null}
-        <SvgTreeSidebar
-          showTree={showTree}
-          hierarchy={hierarchy}
-          sources={sources}
-          rowHeight={rowHeight}
-          treeAreaWidth={treeAreaWidth}
-          showLabels={showRowLabels}
-          scrollTop={scrollTop}
-          availableHeight={availableHeight}
-          clusterProvenance={model.clusterProvenance}
-          contentBlocks={contentBlocks}
-        />
+        {overlays ? (
+          <SvgTreeSidebar
+            showTree={showTree}
+            hierarchy={hierarchy}
+            sources={sources}
+            rowHeight={rowHeight}
+            treeAreaWidth={treeAreaWidth}
+            showLabels={showRowLabels}
+            scrollTop={scrollTop}
+            availableHeight={availableHeight}
+            clusterProvenance={model.clusterProvenance}
+            contentBlocks={contentBlocks}
+          />
+        ) : null}
       </g>
     </>
   )

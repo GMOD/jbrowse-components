@@ -52,9 +52,10 @@ export interface ExportSvgDisplayOptions extends ExportSvgOptions {
    */
   legendWidth?: number
   /**
-   * The plot alone, without the axis and legend guides: for an export that
-   * resamples the strip somewhere a guide has no place, such as the circular
-   * view's rings.
+   * The display's own canvas alone: no axis, legend, or anything the screen
+   * draws over that canvas (labels, trees, arcs, chips). For an export that
+   * resamples the strip the way the circular view's rings sample the on-screen
+   * canvas, so the figure warps what the screen warps.
    */
   plotOnly?: boolean
 }

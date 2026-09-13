@@ -78,7 +78,7 @@ export async function renderSvg(
 }
 
 function MultiWiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
-  const { model, view, canvasWidth } = props
+  const { model, view, canvasWidth, overlays } = props
   // No data-size gate: renderState is always defined (a [0,1] stub until
   // autoscale resolves), so an empty region paints an empty plot; the per-row
   // axes are the shell's, off `valueScales`, and draw only where a real domain
@@ -92,22 +92,26 @@ function MultiWiggleSvgBody(props: LgvSvgBodyProps<RenderSvgModel>) {
       regions={encodeWiggleRegions(model)}
       renderState={model.renderState}
     >
-      <MultiWiggleRowSeparators model={model} width={canvasWidth} />
-      <MultiWiggleRowLabels
-        model={model}
-        labelOffset={treeSidebarOffset(model)}
-        exportContentLeft={Math.max(-view.offsetPx, 0)}
-      />
-      <SvgTreeSidebar
-        showTree={model.showTree}
-        showLabels={false}
-        hierarchy={model.hierarchy}
-        sources={[]}
-        rowHeight={model.effectiveRowHeight}
-        treeAreaWidth={model.treeAreaWidth}
-        clusterProvenance={model.clusterProvenance}
-        contentBlocks={view.dynamicBlocks.contentBlocks}
-      />
+      {overlays ? (
+        <>
+          <MultiWiggleRowSeparators model={model} width={canvasWidth} />
+          <MultiWiggleRowLabels
+            model={model}
+            labelOffset={treeSidebarOffset(model)}
+            exportContentLeft={Math.max(-view.offsetPx, 0)}
+          />
+          <SvgTreeSidebar
+            showTree={model.showTree}
+            showLabels={false}
+            hierarchy={model.hierarchy}
+            sources={[]}
+            rowHeight={model.effectiveRowHeight}
+            treeAreaWidth={model.treeAreaWidth}
+            clusterProvenance={model.clusterProvenance}
+            contentBlocks={view.dynamicBlocks.contentBlocks}
+          />
+        </>
+      ) : null}
     </ScorePlotSvgFrame>
   )
 }

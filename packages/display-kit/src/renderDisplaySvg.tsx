@@ -80,6 +80,12 @@ export interface LgvSvgBodyProps<M> {
    * re-derived per display.
    */
   renderBlocks: RenderBlock[]
+  /**
+   * Whether to draw what the screen draws over the display's canvas — labels,
+   * trees, arcs, chips, the overlay canvases. False under `plotOnly`, whose
+   * reader samples the canvas alone.
+   */
+  overlays: boolean
   opts: ExportSvgDisplayOptions | undefined
 }
 
@@ -235,6 +241,7 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
   await awaitSvgReady(model)
   const view = containingHost(model)
   const height = model.height
+  const overlays = !opts?.plotOnly
   return (
     <SvgChrome
       regionTooLarge={model.regionTooLarge && !model.drawsWhenTooLarge}
@@ -252,13 +259,14 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
           height={height}
           canvasWidth={view.width}
           renderBlocks={buildRenderBlocks(view.visibleRegions)}
+          overlays={overlays}
           opts={opts}
         />
       </SvgClipRect>
-      {isAxisHost(model) && !opts?.plotOnly ? (
+      {isAxisHost(model) && overlays ? (
         <SvgYAxis model={model} view={view} width={view.width} />
       ) : null}
-      {isLegendHost(model) && !opts?.plotOnly ? (
+      {isLegendHost(model) && overlays ? (
         <SvgLegend
           model={model}
           width={view.width}

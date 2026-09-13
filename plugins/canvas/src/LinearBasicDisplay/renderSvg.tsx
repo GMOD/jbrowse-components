@@ -59,6 +59,7 @@ function CanvasFeaturesSvgBody({
   height,
   canvasWidth,
   renderBlocks,
+  overlays,
   opts,
 }: LgvSvgBodyProps<RenderSvgModel>) {
   // The JBrowse palette, not MUI's `useTheme`: `highlight` is a JBrowse entry
@@ -128,38 +129,40 @@ function CanvasFeaturesSvgBody({
         layer already gives that, and because `opts` is deliberately withheld:
         all three stay vector even when `rasterizeLayers` is on, so exported
         text and box edges remain crisp. */}
-      <PaintLayer
-        width={canvasWidth}
-        height={height}
-        paint={ctx => {
-          drawHighlightBoxes(
-            ctx,
-            model.laidOutDataMap,
-            renderBlocks,
-            model.highlightedFeatureIdSet,
-            renderState,
-            highlightBoxColors(palette.highlight.main),
-            labelContext,
-          )
-          // Labels and peptides are laid out in absolute track px, so the
-          // layer shifts up by scrollY.
-          ctx.translate(0, -scrollY)
-          forEachDisplayLabel(
-            visibleRegions,
-            model.laidOutDataMap,
-            labelContext,
-            (_, labels) => {
-              paintLabels(ctx, labels, fontSize)
-            },
-            cullBand,
-          )
-          // Peptides need no cross-region dedup, unlike labels: codons
-          // straddling a boundary overstrike identically.
-          if (renderPeptidesFlag) {
-            drawPeptidesForRegions(ctx, model.laidOutDataMap, visibleRegions)
-          }
-        }}
-      />
+      {overlays ? (
+        <PaintLayer
+          width={canvasWidth}
+          height={height}
+          paint={ctx => {
+            drawHighlightBoxes(
+              ctx,
+              model.laidOutDataMap,
+              renderBlocks,
+              model.highlightedFeatureIdSet,
+              renderState,
+              highlightBoxColors(palette.highlight.main),
+              labelContext,
+            )
+            // Labels and peptides are laid out in absolute track px, so the
+            // layer shifts up by scrollY.
+            ctx.translate(0, -scrollY)
+            forEachDisplayLabel(
+              visibleRegions,
+              model.laidOutDataMap,
+              labelContext,
+              (_, labels) => {
+                paintLabels(ctx, labels, fontSize)
+              },
+              cullBand,
+            )
+            // Peptides need no cross-region dedup, unlike labels: codons
+            // straddling a boundary overstrike identically.
+            if (renderPeptidesFlag) {
+              drawPeptidesForRegions(ctx, model.laidOutDataMap, visibleRegions)
+            }
+          }}
+        />
+      ) : null}
     </>
   )
 }

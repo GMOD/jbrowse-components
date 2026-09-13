@@ -53,6 +53,7 @@ function MafSvgBody({
   view,
   canvasWidth: width,
   renderBlocks,
+  overlays,
   opts,
 }: LgvSvgBodyProps<LinearMafDisplayModel>) {
   const state = model.renderState
@@ -192,6 +193,10 @@ function MafSvgBody({
                   svgState,
                 )
               }
+              // the overlay canvases the screen stacks over the rows canvas
+              if (!overlays) {
+                return
+              }
               drawMafEmptyLines(ctx, model.visibleEmptyLines, svgState.palette)
               drawMafSummaryBars(
                 ctx,
@@ -233,23 +238,27 @@ function MafSvgBody({
             }}
           />
         </SvgClipRect>
-        <SvgTreeSidebar
-          showTree={showTree}
-          hierarchy={hierarchy}
-          sources={sources}
-          rowHeight={effectiveRowHeight}
-          treeAreaWidth={treeAreaWidth}
-          showLabels={showRowLabels}
-          scrollTop={scrollTop}
-          availableHeight={rowsHeight}
-          clusterProvenance={model.clusterProvenance}
-          contentBlocks={view.dynamicBlocks.contentBlocks}
-        />
+        {overlays ? (
+          <SvgTreeSidebar
+            showTree={showTree}
+            hierarchy={hierarchy}
+            sources={sources}
+            rowHeight={effectiveRowHeight}
+            treeAreaWidth={treeAreaWidth}
+            showLabels={showRowLabels}
+            scrollTop={scrollTop}
+            availableHeight={rowsHeight}
+            clusterProvenance={model.clusterProvenance}
+            contentBlocks={view.dynamicBlocks.contentBlocks}
+          />
+        ) : null}
       </g>
       {/* The same titles the display shows on screen (`MafBandLabels`), and for
         the same reason: with both bands drawn they are told apart only by
         their Y-axis units, and an exported figure can't be hovered. */}
-      <SvgBandLabels labels={model.bandLabels} theme={theme} />
+      {overlays ? (
+        <SvgBandLabels labels={model.bandLabels} theme={theme} />
+      ) : null}
     </>
   )
 }

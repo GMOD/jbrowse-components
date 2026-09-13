@@ -40,6 +40,7 @@ export async function renderSvg(
 function VariantMatrixSvgBody({
   model,
   view,
+  overlays,
   canvasWidth,
   opts,
 }: LgvSvgBodyProps<MatrixRenderSvgModel>) {
@@ -67,6 +68,7 @@ function VariantMatrixSvgBody({
       model={model}
       width={canvasWidth}
       contentBlocks={view.dynamicBlocks.contentBlocks}
+      overlays={overlays}
       lineZone={
         <LinesConnectingMatrixToGenomicPosition
           model={model}

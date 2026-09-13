@@ -49,6 +49,7 @@ function AlignmentsSvgBody({
   height,
   canvasWidth,
   renderBlocks,
+  overlays,
   opts,
 }: LgvSvgBodyProps<LinearAlignmentsDisplayModel>) {
   const theme = createJBrowseTheme(opts?.theme)
@@ -107,13 +108,19 @@ function AlignmentsSvgBody({
             renderBlocks,
             state,
           )
-          drawAlignmentLabels(ctx, labels, contrastMap, palette)
+          if (overlays) {
+            drawAlignmentLabels(ctx, labels, contrastMap, palette)
+          }
         }}
       />
-      <SashimiArcsSvg model={model} width={canvasWidth} palette={palette} />
-      <CrossRegionArcsSvg model={model} width={canvasWidth} />
-      <PileupBezierArcsSvg model={model} view={model.view} />
-      {model.showsGroupLabels ? (
+      {overlays ? (
+        <>
+          <SashimiArcsSvg model={model} width={canvasWidth} palette={palette} />
+          <CrossRegionArcsSvg model={model} width={canvasWidth} />
+          <PileupBezierArcsSvg model={model} view={model.view} />
+        </>
+      ) : null}
+      {overlays && model.showsGroupLabels ? (
         <GroupLabelBoxes
           sections={screenSections}
           left={contentLeft}

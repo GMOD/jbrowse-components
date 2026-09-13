@@ -104,6 +104,12 @@ The shell also clips the body to `view.width × height` under
 opens with no `SvgClipRect` of its own. A clip inside a body is for a box
 narrower than the display's, like MAF's rows under its bands.
 
+`overlays` is false under `plotOnly`, which the circular view's ring export
+passes: the on-screen ring samples the display's canvas alone, so a body drops
+whatever the screen draws over that canvas — labels, trees, sashimi and bezier
+arcs, group chips, the overlay canvases — and the ring warps what the screen
+warps.
+
 The body is passed as a **component**, not a callback returning JSX, and that is
 load-bearing rather than stylistic: `SvgChrome` renders its terminal box
 *instead of* its children, so a body expressed as a component never runs in a

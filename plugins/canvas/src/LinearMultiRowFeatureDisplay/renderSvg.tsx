@@ -66,6 +66,7 @@ function MultiRowSvgBody({
   height,
   canvasWidth,
   renderBlocks,
+  overlays,
   opts,
 }: LgvSvgBodyProps<RenderSvgModel>) {
   const state = {
@@ -102,17 +103,19 @@ function MultiRowSvgBody({
           )
           // Same layer, after the blocks, so the export stacks them the way
           // the on-screen overlay composites over the canvas.
-          drawMultiRowIndelGlyphs(
-            ctx,
-            self.drawnRegionData,
-            renderBlocks,
-            state,
-            exportPalette.insertion,
-          )
+          if (overlays) {
+            drawMultiRowIndelGlyphs(
+              ctx,
+              self.drawnRegionData,
+              renderBlocks,
+              state,
+              exportPalette.insertion,
+            )
+          }
         }}
       />
       {/* Before the sidebar, so the tree panel paints over the lines */}
-      {self.showRowSeparators ? (
+      {overlays && self.showRowSeparators ? (
         <RowSeparatorLines
           numRows={self.sources.length}
           rowHeight={self.effectiveRowHeight}
@@ -120,17 +123,19 @@ function MultiRowSvgBody({
           opacity={SEPARATOR_OPACITY}
         />
       ) : null}
-      <SvgTreeSidebar
-        showTree={self.showTree}
-        showLabels={self.showRowLabels}
-        hierarchy={self.hierarchy}
-        sources={self.labelSources}
-        rowHeight={self.effectiveRowHeight}
-        treeAreaWidth={self.treeAreaWidth}
-        availableHeight={height}
-        clusterProvenance={self.clusterProvenance}
-        contentBlocks={view.dynamicBlocks.contentBlocks}
-      />
+      {overlays ? (
+        <SvgTreeSidebar
+          showTree={self.showTree}
+          showLabels={self.showRowLabels}
+          hierarchy={self.hierarchy}
+          sources={self.labelSources}
+          rowHeight={self.effectiveRowHeight}
+          treeAreaWidth={self.treeAreaWidth}
+          availableHeight={height}
+          clusterProvenance={self.clusterProvenance}
+          contentBlocks={view.dynamicBlocks.contentBlocks}
+        />
+      ) : null}
     </>
   )
 }

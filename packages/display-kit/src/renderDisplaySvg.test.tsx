@@ -59,12 +59,13 @@ function makeDisplay(snap: { regionTooLarge?: boolean; hasError?: boolean }) {
 async function renderShell(
   model: TestDisplayModel,
   seen: LgvSvgBodyProps<TestDisplayModel>[],
+  opts?: { plotOnly?: boolean },
 ) {
   function Body(props: LgvSvgBodyProps<TestDisplayModel>) {
     seen.push(props)
     return <g data-testid="body" />
   }
-  const node = await renderDisplaySvg(model, undefined, Body)
+  const node = await renderDisplaySvg(model, opts, Body)
   return render(<svg>{node}</svg>)
 }
 
@@ -77,6 +78,16 @@ test('hands the body view.width, never the outline-adjusted trackWidthPx', async
   expect(seen[0]!.canvasWidth).toBe(808)
   expect(seen[0]!.canvasWidth).not.toBe(seen[0]!.view.trackWidthPx)
   expect(seen[0]!.height).toBe(100)
+})
+
+// A ring samples the display's canvas alone, so everything the screen draws
+// over that canvas stays out of a plot-only export — the body's overlays too,
+// not only the shell's axis and legend.
+test('tells the body to leave its overlays out of a plot-only export', async () => {
+  const seen: LgvSvgBodyProps<TestDisplayModel>[] = []
+  await renderShell(makeDisplay({}), seen)
+  await renderShell(makeDisplay({}), seen, { plotOnly: true })
+  expect(seen.map(p => p.overlays)).toEqual([true, false])
 })
 
 test('does not run the body under the region-too-large terminal', async () => {

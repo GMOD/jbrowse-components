@@ -22,6 +22,7 @@ function LdSvgBody({
   model: self,
   height,
   canvasWidth,
+  overlays,
   opts,
 }: LgvSvgBodyProps<SharedLDModel>) {
   const { ldRegions, renderState, effectiveLineZoneHeight } = self
@@ -46,7 +47,7 @@ function LdSvgBody({
           }}
         />
       </g>
-      <LDColumnZone model={self} exportSVG opts={opts} />
+      {overlays ? <LDColumnZone model={self} exportSVG opts={opts} /> : null}
     </>
   )
 }
