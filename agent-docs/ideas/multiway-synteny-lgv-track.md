@@ -340,7 +340,13 @@ a connection reads its annotation (`allSessionTracks`, the hop's own source),
 and a star source — the HPRC vs-GRCh38 PAF, `MultiPairwiseSyntenyAdapter` —
 gets its adjacent-pair links composed through the anchor (`composeLaneLinks`,
 read by `pairLinks`) where the file states none: without a fetch when the
-header names its anchor, after an empty pair fetch otherwise.
+header names its anchor, after an empty pair fetch otherwise. Only
+`MultiPairwiseSyntenyAdapter`'s header names one; a multi-genome PIF's header is
+its `#pif` line, so the HPRC demo's star (`hprc_multiway_gfa.pif.gz`, GRCh38 its
+only target) asks every adjacent haplotype pair on each lane-window move and
+holds first load (`awaitingDependentData`) until those empty answers land. The
+adapter could name the anchor when its seqid index holds one target sample;
+time the tutorial's first load before building it.
 
 One thing on that fetch is still open. **The bytes.** The eight hosted hg38
 liftOver PIFs carry a coarse tier since their 2026-09-11 rebuild, worth 49× on a
