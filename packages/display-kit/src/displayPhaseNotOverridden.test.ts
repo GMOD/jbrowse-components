@@ -1,8 +1,8 @@
 // No display outside the foundations overrides `displayPhase` or `svgReady`
 // over the LGV mapping.
 //
-// `computeDisplayPhase` single-sources the precedence and `computeLoadingTerm`
-// the loading expression, and `foundationDisplayPhase` is the one place the
+// `computeDisplayPhase` single-sources the precedence and `computeActivityPhase`
+// the activity expression, and `foundationDisplayPhase` is the one place the
 // foundations' field names are mapped onto both. A plugin getter that
 // post-processes has restated the foundation's arguments to append one term —
 // which is the shape DISPLAYCHROME.md forbids, because the copy silently misses

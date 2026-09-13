@@ -97,6 +97,22 @@ test('a pan lapses the cancel and the display loads', async () => {
   dispose()
 })
 
+// The capture census keys on `data-display-drawn`, which is `painted`. A cancel
+// before first paint has to answer painted, or every capture wait burns its
+// timeout on a display nothing will ever draw instead of naming the cancel.
+test('a cancel before first paint reports painted, so the census names it', async () => {
+  const { display, control, dispose } = setup()
+  control.fetchDelayMs = 2000
+  await jest.advanceTimersByTimeAsync(700)
+  expect(display.isLoading).toBe(true)
+  expect(display.painted).toBe(false)
+  display.cancelFetchByUser()
+  control.fetchDelayMs = 0
+  expect(display.displayPhase).toBe('canceled')
+  expect(display.painted).toBe(true)
+  dispose()
+})
+
 test('a minimized canceled track reads ready, and canceled again when restored', async () => {
   const { display, track, dispose } = await canceledMidFetch()
   track.setMinimized(true)
