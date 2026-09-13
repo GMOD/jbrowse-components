@@ -76,8 +76,8 @@ With no GPU backend arc can't wrap `DisplayChrome`, so it renders the component
 no background-progress chip.
 
 `displayPhase` stays on the **model** and is `DisplayStatusPhase` (the union
-minus `renderError`, since arc has no backend to fail). Its loading term reads
-`isLoadingOrCanceled`, never `isLoading` — `shared/displayPhase.test.ts`.
+minus `renderError`, since arc has no backend to fail). A standing cancel reads
+`canceled`, never `ready` — `shared/displayPhase.test.ts`.
 
 It is computed by `foundationDisplayStatusPhase`, the same mapping the two GPU
 foundations use, so arc supplies only its staleness argument (`() => true`).

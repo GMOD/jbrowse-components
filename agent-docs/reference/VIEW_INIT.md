@@ -414,7 +414,7 @@ panels. There the raw flag reads `true` for a subtree that is not in the DOM,
 and every display inside it waits for a first paint nothing will make.
 
 So readiness asks `effectiveBodyMounted` (`BaseViewModel`), which folds in the
-answer of every view this one is nested inside. `computeLoadingTerm` takes it as
+answer of every view this one is nested inside. `computeActivityPhase` takes it as
 the `hostMounted` thunk, so a display never spells the walk itself.
 
 A body in the DOM can still render none of its displays: a linear genome view

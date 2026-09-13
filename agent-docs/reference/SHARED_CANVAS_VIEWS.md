@@ -205,7 +205,7 @@ each display invents.
 `canvasDrawn` therefore means "a block drew" on both, which is
 [ADR-009](../architecture-decision-records/adr-009-canvas-drawn-reliability.md)'s
 own meaning (written for the per-region family, whose loading scrim reads it
-through `computeLoadingTerm`'s `rendersCanvas && !canvasDrawn` term). Nothing is
+through `computeActivityPhase`'s `rendersCanvas && !canvasDrawn` term). Nothing is
 lost: both `settled` getters carry data-readiness separately through
 `displaysSettled`, and neither view drives a scrim off `canvasDrawn`. Dotplot
 keyed by track index and gated its render on having geometry until both were

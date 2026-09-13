@@ -36,7 +36,7 @@ above them.
 
 |                                             |                                                                                         |
 | ------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `DisplayChromeOverlays`                     | the five `displayPhase` states, as a component set, with the model shape each is handed |
+| `DisplayChromeOverlays`                     | the `displayPhase` states, as a five-component set, with the model shape each is handed |
 | `DisplayChromeOverlayProvider`              | redirects those states for JBrowse's own displays                                       |
 | `TrackControlComponent`                     | one shape for every ambient bottom-right control, icons named rather than passed        |
 | `TrackControlProvider`                      | redirects those                                                                         |
@@ -208,9 +208,9 @@ question only exists for an MST node.
 
 ### plainChromeOverlays
 
-The five `displayPhase` states drawn with no UI toolkit: no theme provider to
-mount, no emotion in the host page, and nothing that reads as a stray Material
-widget inside someone else's design system.
+The `displayPhase` states drawn with no UI toolkit: no theme provider to mount,
+no emotion in the host page, and nothing that reads as a stray Material widget
+inside someone else's design system.
 
 `DisplayUIProvider` installs this by default, so mount that rather than naming
 this — reach for it directly only to wrap a state or to build a context value by

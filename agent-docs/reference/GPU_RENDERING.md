@@ -129,23 +129,26 @@ MultiRegionDisplayMixin  (composes RenderLifecycleMixin)
   .views
     canRender: boolean            view.initialized (see above); GlobalFetchMixin overrides it through the same foundationCanRender
     viewportWithinLoadedData      every visible block ⊆ a loaded region
-    displayPhase                  'renderError' | 'tooLarge' | 'error' | 'loading' | 'ready'
-                                  computeDisplayPhase(self, () => computeLoadingTerm({...}, () =>
+    displayPhase                  'renderError' | 'tooLarge' | 'error' | 'canceled' | 'loading' | 'ready'
+                                  computeDisplayPhase(self, () => computeActivityPhase({...}, () =>
                                     self.viewportWithinLoadedData))
                                   (this family supplies the staleness axis and constants out rendersCanvas;
                                    customize via the fetchInert hook, never by overriding this getter)
 ```
 
-Loading-scrim visibility is derived once by `DisplayChrome` as `displayPhase ===
-'loading'` and passed to `DisplayLoadingOverlay` as a `visible` prop — not
-re-encoded per model.
+Loading-scrim visibility is derived once by `DisplayChrome` as `displayPhase`
+`loading` or `canceled` and passed to `DisplayLoadingOverlay` as a `visible` prop
+— not re-encoded per model.
 
-**The `loading` term itself is one expression, `computeLoadingTerm`**
-(`@jbrowse/render-core/displayPhase`), evaluated by both foundations:
+**The activity phase is one expression, `computeActivityPhase`**
+(`@jbrowse/render-core/displayPhase`), evaluated by every foundation:
 
 ```
-!fetchInert &&
-  (isLoadingOrCanceled || (rendersCanvas && !canvasDrawn) || !viewportCurrent())
+isMinimized || fetchInert || viewportEmpty ? 'ready'
+  : fetchCanceled ? 'canceled'
+  : isLoading || awaitingDependentData || (rendersCanvas && !canvasDrawn) ||
+      !viewportCurrent() ? 'loading'
+  : 'ready'
 ```
 
 Each family constants out the axis it doesn't have — per-region passes
@@ -154,8 +157,8 @@ global passes `viewportCurrent = () => true` and `fetchInert: false` — so
 the only per-family difference is the staleness axis described below. It was two
 hand-written expressions that had drifted three ways, equivalent only by
 accident; adding a term now reaches every display. `viewportCurrent` stays a
-**thunk** because it is the only input reading the containing view; the other
-four are flags on the display. Parity against both replaced expressions is
+**thunk** because it is the only input reading the containing view; the rest
+are flags on the display. Parity against both replaced expressions is
 pinned in `displayPhase.test.ts`, and the wiring on a real display in
 `plugins/canvas/src/LinearBasicDisplay/displayPhaseWiring.test.ts`.
 
@@ -163,14 +166,14 @@ Every canvas-drawing display renders through the shared `DisplayChrome`, which
 calls `useRenderingBackend(factory, model)` internally, so a display can't bury
 the backend hook where the chrome can't see it. The chrome owns every terminal
 state via the single `displayPhase` getter: `renderError` and `tooLarge`
-early-`return` their own component, `error` and `loading` are overlays over the
+early-`return` their own component, `error`, `canceled` and `loading` are overlays over the
 still-mounted canvas. It takes a render-prop child
 `({ canvasRef, canvas }) => ReactNode`, so it is agnostic to how many canvases a
 display draws, and a required `testid` base it publishes unchanged
 ([DISPLAYCHROME.md](DISPLAYCHROME.md) §"One element per display").
 
 The `loading` phase folds in both fetch- and paint-readiness. The
-`isLoadingOrCanceled` and `rendersCanvas && !canvasDrawn` terms cover track-open
+`isLoading` and `rendersCanvas && !canvasDrawn` terms cover track-open
 through the fetch cycle (hiding once the first frame paints);
 `viewportWithinLoadedData` re-shows the overlay when the viewport extends past
 loaded data — e.g. the pre-refetch debounce after a zoom-out, where the first two

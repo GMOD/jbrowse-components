@@ -124,7 +124,7 @@ previous has passed:
 | `[data-view-phase="loading"]`     | no view still resolving its assembly (until then it has mounted no displays and every row below is silent)     |
 | `[data-view-component-pending]`   | no view still waiting on its lazy React component                                                              |
 | `[data-testid="loading-overlay"]` | no track still fetching                                                                                        |
-| `[data-display-phase="loading"]`  | no display still in its own fetch                                                                              |
+| `[data-display-phase="loading"]`  | no display still in its own fetch (`canceled` is finished; the capture census fails on it rather than waiting) |
 | `[data-display-drawn="false"]`    | every display has painted — flips on FIRST paint, so it proves nothing until the fetch rows above have cleared |
 
 These attributes are absent on older deployments, which publish only the loading

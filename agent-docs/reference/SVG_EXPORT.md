@@ -276,7 +276,7 @@ block list. That is a resting state, so it has to be terminal, and
 `hasVisibleContent`) is the term that makes it one — in `foundationSvgReady`'s
 freshness thunk rather than as a fourth `SvgReadyTerminals` field, because it is
 a view read and the non-LGV callers have no view to answer it from. The same
-term feeds `computeLoadingTerm` and `paintInert`, so the three answers a display
+term feeds `computeActivityPhase` and `paintInert`, so the three answers a display
 gives about being finished cannot disagree. Before it, one track parked off
 content hung the whole view's export and sat under a scrim that never lifted.
 
@@ -508,7 +508,7 @@ testid the capturer waits on so it never snapshots a mid-render frame.
 It is `canvasDrawn && !initPending && !pendingAutoDiagonalize &&
 displaysSettled(displays)`, where `displaysSettled` (in `synteny-core`'s
 `comparativeReadiness.ts`, so the two views can't drift) is
-`every(fetchInert || (!isLoadingOrCanceled && dataCurrent))` — the same
+`every(fetchInert || (!isLoading && !fetchCanceled && dataCurrent))` — the same
 `dataCurrent` freshness axis as `svgReady`, for the same reason.
 Without it, the debounce gap bites capture harder than export: dotplot's
 init-time *autoDiagonalize* reorders the query axis, and for ~1s afterward no

@@ -10,8 +10,8 @@ The single wrapper every GPU/Canvas2D-backed LGV display renders. It owns
 `useRenderingBackend` and all terminal-state UI, so a display cannot paint a
 canvas while skipping a terminal state, and it branches on one getter —
 `model.displayPhase`, whose precedence (`renderError > tooLarge > error >
-loading > ready`) is single-sourced in `computeDisplayPhase`. Never re-encode
-that as `&& !error && !regionTooLarge`.
+canceled > loading > ready`) is single-sourced in `computeDisplayPhase`. Never
+re-encode that as `&& !error && !regionTooLarge`.
 
 Related: banner content for `tooLarge` is in
 [REGION_TOO_LARGE.md](REGION_TOO_LARGE.md); the two comparative views that sit
@@ -51,9 +51,18 @@ The lifecycle state (`canvasDrawn`, `renderError`, `currentRenderingBackend`,
 (`packages/render-core/src/RenderLifecycleMixin.ts`), which every GPU display
 composes. Plugins never re-declare it.
 
-The five phases split two ways. `renderError`/`tooLarge` **replace the subtree**
-(canvas unmounts, `backend.dispose()`); `error`/`loading` are overlays over a
-live canvas.
+The six phases split two ways. `renderError`/`tooLarge` **replace the subtree**
+(canvas unmounts, `backend.dispose()`); `error`/`canceled`/`loading` are overlays
+over a live canvas, `canceled` drawn by the loading overlay in its canceled
+state.
+
+They also split on readiness, and only `loading` means work is outstanding.
+Every other phase is finished for `AppReadyMarker`, `jb.waitReady` and the
+capture waits. `canceled` is its own phase rather than a `loading` that keeps
+the overlay mounted, because that `loading` held every readiness reader on a
+track the user had stopped, until Retry. The overlay publishes
+`loading-overlay-canceled` in that state rather than `loading-overlay`, which the
+same readers take for work in flight.
 
 **The three overlay states portal as a group**, in `DisplayStatusChromeBase`,
 into the TrackContainer's overlay layer — otherwise the LGV's inter-region masks
@@ -65,7 +74,7 @@ both the MUI set and `plainChromeOverlays` pass through. That layer is
 `pointer-events: none`, so an interactive overlay sets `pointer-events: auto` on
 its own box — part of the overlay-set contract in `chromeOverlays.ts`.
 
-**The loading term is single-sourced in `computeLoadingTerm`, and so is the
+**The activity phase is single-sourced in `computeActivityPhase`, and so is the
 mapping onto it**, in `foundationDisplayPhase` — the twin of `foundationSvgReady`.
 Both foundations call it and supply exactly one argument, their staleness
 predicate: per-region its spatial one, global `() => true`. Arc goes
@@ -416,21 +425,17 @@ to (the loaded signature, the full per-region reset). Two shapes have failed it:
   an autorun tracking `reloadCounter`, which is what makes the button real.
   Pinned by `LinearHicDisplay/infoFetchFailure.test.ts`.
 - **A phase that unmounts the affordance.** The loading overlay carries Retry
-  after a user cancel, so a loading term written as bare `isLoading` destroys it:
-  `cancelFetchByUser` drops the stop token synchronously, the phase falls to
-  `ready`, and the display sits stopped and empty with nothing to click, the
-  canceled state being deliberately durable. Read **`isLoadingOrCanceled`**
-  (FetchMixin), which exists so no family has to remember the second term. Both
-  families had a version of this hole; the cancel term lives inside
-  `computeLoadingTerm` now rather than in either family's getter. Pinned by
-  `plugins/arc/src/shared/displayPhase.test.ts` and
-  `plugins/canvas/src/LinearBasicDisplay/displayPhaseWiring.test.ts`. The
-  comparative family reaches the same place by a different route and is worth
-  knowing about before "fixing" it: its `loading` is `!ready && !error`, with no
-  `fetching` term (deliberately — that would blink the overlay off during the
-  pre-refetch debounce gap), so the scrim carrying Retry survives a cancel
-  because no data arrived. Add a `fetching` term there and the affordance goes
-  with it.
+  after a user cancel. `cancelFetchByUser` drops the stop token synchronously,
+  so a phase reading bare `isLoading` falls to `ready`, the overlay unmounts,
+  and the display sits stopped and empty with nothing to click. Both families
+  had a version of this hole. `computeActivityPhase` reads `fetchCanceled` and
+  answers `canceled`, which the chrome draws with the loading overlay; pinned by
+  `plugins/arc/src/shared/displayPhase.test.ts`,
+  `plugins/canvas/src/LinearBasicDisplay/displayPhaseWiring.test.ts` and
+  `displayKitTests/canceledPhase.test.ts`. The comparative family draws its
+  overlay off `ComparativeFetchMixin.loading` (`!fetchLanded`) rather than the
+  phase, so its Retry survives a first-load cancel because no data arrived; a
+  refetch has only the corner chip, which offers no Cancel.
 
 The check when adding a display: raise each error it can produce, press retry,
 and confirm the display can leave that state. Cancel is one of them.
@@ -660,7 +665,7 @@ Every LGV display emits **one** chrome element, and it carries four attributes:
 | `data-testid` | the display type's base name, never mutated | which KIND of display |
 | `data-display-id` | the display's `configuration.displayId` | WHICH display |
 | `data-display-drawn` | `true` / `false` | has it painted (FIRST paint) |
-| `data-display-phase` | `ready` / `loading` / `error` | is it FINISHED |
+| `data-display-phase` | `ready` / `loading` / `error` / `canceled` | is it FINISHED (all but `loading`) |
 
 All four are stable in meaning and orthogonal — one question each. `data-testid`
 used to gain a `-done` suffix on first paint, which made it the only mutating
@@ -779,7 +784,7 @@ Two follow-through details, neither visible in a diff:
   chrome is `position: relative` exactly as the container was, so the geometry is
   unchanged.
 
-**`data-display-phase` is published for three of the five phases.** The two
+**`data-display-phase` is published for four of the six phases.** The two
 subtree-replacing ones (`tooLarge`, `renderError`) render their banner *instead
 of* the container that carries the attribute, so a `[data-display-phase]` census
 (`browser-tests/suites/fetch-cancellation.ts`) counts such a display as absent,
@@ -835,7 +840,7 @@ own look — a plain default would degrade those invisibly.
 
 | what                                  | provider                        | plain set              | rendered by             |
 | ------------------------------------- | ------------------------------- | ---------------------- | ----------------------- |
-| the five `displayPhase` states        | `DisplayChromeOverlayProvider`  | `plainChromeOverlays`  | `DisplayChromeBase`     |
+| the `displayPhase` states             | `DisplayChromeOverlayProvider`  | `plainChromeOverlays`  | `DisplayChromeBase`     |
 | the bottom-right ambient controls     | `TrackControlProvider`          | `plainTrackControl`    | each display's own body |
 
 They stay separate because `DisplayChromeBase` takes its overlay set as a *prop*
@@ -1133,7 +1138,7 @@ restated in the `DisplayChrome.tsx` comment block.
   `DisplayChrome.test.tsx`, "the loading scrim spans one continuous load", and it
   has to be pinned *there*: `rerender`ing `LoadingOverlay` directly remounts it,
   which resets the state under test and makes the assertion vacuous.
-- **Laziness (load-bearing):** `displayPhase`'s loading term is a thunk,
+- **Laziness (load-bearing):** `displayPhase`'s activity term is a thunk,
   evaluated only after the terminal flags are ruled out, so a banner state
   doesn't subscribe to the view's churning `visibleRegions`/`loadedRegions`.
 - **Early `return` vs ternary (style):** once a correctness constraint, because

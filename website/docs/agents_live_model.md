@@ -101,7 +101,8 @@ Reading:
   drawing (default 30000). Its result carries `notifications` (the session's
   error toasts), `notReady` (views that failed to initialize or are still
   `initializing`, and tracks whose display settled without drawing, with the
-  `phase`: `tooLarge`, `error`, `renderError`, `loading`, each with its reason),
+  `phase`: `tooLarge`, `error`, `renderError`, `loading`, or `canceled` for a
+  load the user stopped, which `track.activeDisplay.reload()` retries),
   `offscreen` (views taller than the window) and the `drawer` and `dialog`
   above. None of those raises a toast and all of them look plausible in a
   screenshot; this report is what tells.

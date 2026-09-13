@@ -196,9 +196,10 @@ supplies only the staleness argument: spatial coverage and `dataSuperseded`,
 which is what puts a scrim over data a settled fetch-input change is already
 drawing wrong. It is NOT `dataCurrent` — the export gate takes that one, and its
 `isCacheValid` term would raise the scrim 250 ms into every zoom, which is why
-folding content staleness into `displayPhase` was declined. `computeLoadingTerm`
-reads every other term off the model. Routing it through a display-local getter
-means re-remembering the cancel term — one edit from the dead-Retry bug.
+folding content staleness into `displayPhase` was declined.
+`computeActivityPhase` reads every other term off the model. Routing it through
+a display-local getter means re-remembering the cancel term — one edit from the
+dead-Retry bug.
 
 ## `dataSuperseded` covers what `fetchInputs` cannot state
 

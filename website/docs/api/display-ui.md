@@ -151,7 +151,7 @@ question only exists for an MST node.
 
 ## plainChromeOverlays
 
-The five `displayPhase` states drawn with no UI toolkit: no theme provider to
+The `displayPhase` states drawn with no UI toolkit: no theme provider to
 mount, no emotion in the host page, and nothing that reads as a stray Material
 widget inside someone else's design system.
 
