@@ -1,6 +1,6 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { SimpleFeature, getSession } from '@jbrowse/core/util'
-import { resetSvgClipIds } from '@jbrowse/core/util/SvgCanvas'
+import { withFreshSvgClipIds } from '@jbrowse/core/util/SvgCanvas'
 import { when } from 'mobx'
 import { renderToString } from 'react-dom/server'
 
@@ -37,8 +37,8 @@ test('the SVG export carries no hover and no selection; the chrome ink does', as
   // — the clip ids the mark path's per-block clips mint are document-global, so
   // without this the second export differs from the first by numbering alone
   const exported = async () => {
-    resetSvgClipIds()
-    return renderToString(<svg>{await display.renderSvg()}</svg>)
+    const node = await display.renderSvg()
+    return withFreshSvgClipIds(() => renderToString(<svg>{node}</svg>))
   }
   const quiet = await exported()
   expect(display.hoverInk).toEqual([])

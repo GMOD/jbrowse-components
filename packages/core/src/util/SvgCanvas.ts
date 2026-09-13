@@ -1,4 +1,5 @@
 import { measureText as measureTextWidth } from './measureText.ts'
+import { splitPaintAlpha } from './svgColorProps.ts'
 
 interface SavedState {
   fillStyle: string
@@ -77,26 +78,34 @@ function fontAttrs(font: string) {
 // mint `svgcanvas-clip-0`, whereupon `url(#svgcanvas-clip-0)` resolves to the
 // first and every later layer is clipped to some other layer's rect.
 //
-// Document-global, not process-global: `resetSvgClipIds` below.
+// Document-global, not process-global: `withFreshSvgClipIds` below.
 let clipIdCounter = 0
 
 /**
- * Restart clip-id numbering for a new export document.
+ * Run `render` as one document's clip-id numbering run, starting at 0, then put
+ * the counter back.
  *
- * Without it the counter runs for the lifetime of the process, so an export is
- * numbered from wherever the previous one stopped and the same view exported
- * twice differs in every clip id. That is the churn `svgNodeId` was written to
- * get rid of, arriving by a second route: diffing two saved SVGs shows changes
- * that aren't real, and `jest -t` on any export test but the first fails its
- * checked-in snapshot with a diff that is nothing but renumbering.
+ * Starting at 0 is what makes the same view export to the same bytes: a counter
+ * left running numbers each export from wherever the previous one stopped, so
+ * diffing two saved SVGs shows changes that aren't real and `jest -t` on any
+ * export test but the first fails its snapshot on renumbering alone.
  *
- * Called by `wrapSvgExport`, and safe there and only there: the
- * `renderToStaticMarkup` it wraps is synchronous, so every `PaintLayer` in the
- * document draws before any other export can begin. Anything that resets on a
- * boundary an `await` can cross would let two exports share a numbering run.
+ * Putting it back is what keeps a file export from renumbering the page: live
+ * figures (`useViewSvgFigure`) mint from the same counter into one DOM, where
+ * ids must not repeat, so a reset that stuck would let the next figure reuse an
+ * id another figure still points at.
+ *
+ * `render` must be synchronous — an `await` inside it would let two documents
+ * share a numbering run.
  */
-export function resetSvgClipIds() {
+export function withFreshSvgClipIds<T>(render: () => T) {
+  const saved = clipIdCounter
   clipIdCounter = 0
+  try {
+    return render()
+  } finally {
+    clipIdCounter = saved
+  }
 }
 
 export class SvgCanvas {
@@ -215,24 +224,19 @@ export class SvgCanvas {
         : 'start'
   }
 
-  // Split rgba(r,g,b,a) into separate color + opacity SVG attributes for
-  // compatibility with SVG 1.1 consumers like Inkscape that don't honor the
-  // alpha component of CSS3 rgba() fill/stroke values. Whitespace-tolerant so
-  // spaced forms (MUI alpha(), colord toRgbString → "rgba(255, 177, 29, 0.12)")
-  // are separated too, not just the compact "rgba(255,177,29,0.12)".
   private paintAttr(
     name: string,
     style: string | CanvasGradient | CanvasPattern,
   ) {
     const s = `${style}`
-    const m =
-      /^rgba\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*([\d.]+)\s*\)$/.exec(s)
-    if (m) {
-      const a = Number.parseFloat(m[4]!)
-      const base = `${name}="rgb(${m[1]},${m[2]},${m[3]})"`
-      return a < 1 ? `${base} ${name}-opacity="${a}"` : base
+    const split = splitPaintAlpha(s)
+    if (!split) {
+      return `${name}="${s}"`
     }
-    return `${name}="${s}"`
+    const base = `${name}="${split.color}"`
+    return split.opacity < 1
+      ? `${base} ${name}-opacity="${split.opacity}"`
+      : base
   }
 
   private strokeAttrs() {
