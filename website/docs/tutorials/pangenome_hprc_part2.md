@@ -22,8 +22,6 @@ it. Every track here is a URL, read a window at a time.
 - [the GraphGenomeView plugin](/docs/tutorials/pangenome_hprc#the-graphgenomeview-plugin),
   for the tracks that use `MinigraphBubbleAdapter` and `RgfaTabixAdapter`; both
   callsets are a URL you can paste and need no plugin
-- htslib (`bgzip`, `tabix`), to query the hosted indexes from the command line
-  as the sections below do
 
 ## Where the data comes from
 
@@ -65,10 +63,8 @@ the graph varies and by how much, in one file:
 
 The `MinigraphBubbleAdapter` labels each bubble with its shortest and longest
 allele, and one bubble in the HLA class II window spans tens of kilobases
-depending on the haplotype. The path count needs care: it counts routes
-combinatorially rather than haplotypes observed, and saturates at `2147483647`
-(the track labels those bubbles uncountable). HPRC publishes no bubble file, so
-this one is ours too, built with `gfatools bubble`.
+depending on the haplotype.[^path-count] HPRC publishes no bubble file, so this
+one is ours too, built with `gfatools bubble`.
 
 ## A whole chromosome as a graph
 
@@ -98,12 +94,6 @@ choosing a file:
 }
 ```
 
-The view refuses a cut over 5 Mb, a proxy for node count that holds at segment
-granularity and breaks on a tier, so a `GraphGenomeView` pointed at one carries
-**`maxRegionBp`** raised to the span it is drawing, which the figure below links
-a session for. The real ceiling is unchanged: `maxGraphNodes` counts what
-actually came back.
-
 The same bubble file also plots as a curve of where the graph varies and by how
 much. `MinigraphBubbleAdapter` already reports each bubble's segment count as
 its `score`, so the only change is the track type:
@@ -130,7 +120,7 @@ node **Open in hg38** puts the linear view on the bubble's span, and a drag
 across that span offers **Graph genome view (this selection)** as a submenu
 naming both tracks. The fine cut arrives as a second pane under the tier's. On a
 whole chromosome a bubble is narrower than a pixel, so find it in the tier lane
-or the variability curve first and cut the tier around it.
+or the variability curve first and cut the tier around it.[^max-region-bp]
 
 <Video src="/media/pangenome/hprc_tier_to_fine.mp4" caption="The bubble tier over the MHC taken down to segment resolution: the class II node hovered and opened in the linear view, the fine segments lane drawing once the view lands on its span, and a drag across that span cut from the fine index into a second graph pane." />
 
@@ -157,9 +147,9 @@ from the two indexes
 The `AlignmentsTrack` over a BED is what draws the sizes. Each row carries a
 `CIGAR` against the reference span it replaces (`2062M63348I`), and the
 alignments display draws whatever has one, so the alleles pack into rows and
-each insertion draws at its real magnitude. The rows are that packing, and one
-event over this window, the 84,684 bp deletion between _CFHR3_ and _CFHR1_, is
-[drawn on the same coordinates by the graph](/docs/tutorials/pangenome_hprc#insertions-deletions-and-their-sizes).
+each insertion draws at its real magnitude. At the CFH cluster on chr1 one of
+those rows is the 84,684 bp deletion between _CFHR3_ and _CFHR1_, which part 1
+[draws on the same coordinates as a graph edge](/docs/tutorials/pangenome_hprc#insertions-deletions-and-their-sizes).
 
 The whole graph holds a few hundred thousand alleles, so a wide window is dense.
 The
@@ -167,26 +157,6 @@ The
 walks through the columns, how the walk derives them, and the two filters that
 make a lane this size readable: `jexl:abs(feature.delta)>10000` for size and
 `jexl:feature.nested==0` before reading lengths in bulk.
-
-## Inversions
-
-Insertions are nodes and deletions are edges; an inversion is the same reference
-sequence, walked backwards. `gfatools bubble` sets a column when a bubble's
-paths disagree about orientation, and the adapter exposes it as an `inversion`
-boolean, so **Edit filters** on the bubble track cuts the lane to them:
-
-```
-jexl:feature.inversion
-```
-
-[`build_hprc_inversion_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_inversion_synteny.sh)
-takes the 1q21.1 bubble down to two haplotype rows, one carrying the inversion
-and one not, out of HPRC's published all-vs-GRCh38 PAF. Each row carries its own
-CAT gene annotation, and the pair boxed on each is the same two genes, _PPIAL4F_
-and _PPIAL4E_: on the carrier _PPIAL4F_ comes first, on the non-carrier
-_PPIAL4E_ does, and the hg38 row between them agrees with the non-carrier.
-
-<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles, and the rGFA segments. The boxed pair on each row is PPIAL4F and PPIAL4E." src="/img/pangenome/hprc_inversion.png" />
 
 ## The variant callset
 
@@ -238,6 +208,15 @@ Both halves are load-bearing:
   this file writes a nested child as its own record beside its parent, with `PS`
   naming that parent.
 
+With the filter on, few enough alleles remain to draw each at its own genomic
+position, lined up with the genes above. **Clustering → Cluster rows by
+genotype... → Run clustering** in the track menu reorders the rows by genotype
+similarity and draws a dendrogram beside them. That matrix is what
+[Comparing the graph with the callset](#comparing-the-graph-with-the-callset)
+puts beside the graph the same alleles came out of.
+
+<Video src="/media/pangenome/hprc_cluster_callset.mp4" caption="The 464-haplotype lane clustered from the track menu: Clustering, Cluster rows by genotype, Run clustering, and the rows arriving in their new order with a dendrogram beside them." />
+
 Frequency is in the file. `AC`, `AF`, `AN` and `NS` are on every record, so
 `jexl:feature.INFO.AF[0]>0.05` selects the common alleles without clustering
 anything.
@@ -246,15 +225,6 @@ The display widens each insertion cell to a marker sized by the inserted bp, in
 that haplotype's own genotype color
 ([`showInsertionGlyphs`](/docs/config/linearmultisamplevariantdisplay/#slot-showinsertionglyphs)).
 Only haplotypes carrying the allele widen.
-
-That leaves few enough alleles to draw each at its own genomic position, lined
-up with the genes above. **Clustering → Cluster rows by genotype... → Run
-clustering** in the track menu reorders the rows by genotype similarity and
-draws a dendrogram beside them. That matrix is what
-[Comparing the graph with the callset](#comparing-the-graph-with-the-callset)
-puts beside the graph the same alleles came out of.
-
-<Video src="/media/pangenome/hprc_cluster_callset.mp4" caption="The 464-haplotype lane clustered from the track menu: Clustering, Cluster rows by genotype, Run clustering, and the rows arriving in their new order with a dendrogram beside them." />
 
 ## Carriage at the graph's own granularity
 
@@ -289,10 +259,8 @@ out there too.
 through the graph, the same statement the `AT` in a pggb VCF makes, which the
 wave file drops (`bcftools annotate -x INFO/AT` is in its own header). The
 [same `LV==0` filter](#the-variant-callset) cuts this lane to top-level sites,
-the tier the [bubble track](#the-bubble-track) holds.
-
-`ID` and `AT` name **base-level integer nodes** (`>161001867>161004536`), where
-`sv.gfa` uses `sNNNNN` segment ids, so match a record to a bubble by interval.
+the tier the [bubble track](#the-bubble-track) holds, and a record matches a
+bubble by interval.[^integer-nodes]
 
 With this lane loaded the two readings sit over one coordinate and say
 different, compatible things: the [allele inventory](#the-allele-inventory)
@@ -314,6 +282,26 @@ reference-position ramp gives the graph's backbone at that position the same hue
 as the segments above it.
 
 <Figure caption="One window, both products. The band is one deletion site from the callset, the stretch of HLA-DRB5 that many haplotypes replace with their own shorter sequence, and the matrix below it, every haplotype clustered by genotype, colors the ones carrying it. The force graph has no coordinate axis, so an arrow runs from the band to the allele, which is the same deletion as the graph draws it." src="/img/pangenome/hprc_graph_vs_callset.png" />
+
+## Inversions
+
+Insertions are nodes and deletions are edges; an inversion is the same reference
+sequence, walked backwards. `gfatools bubble` sets a column when a bubble's
+paths disagree about orientation, and the adapter exposes it as an `inversion`
+boolean, so **Edit filters** on the bubble track cuts the lane to them:
+
+```
+jexl:feature.inversion
+```
+
+[`build_hprc_inversion_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_inversion_synteny.sh)
+takes the 1q21.1 bubble down to two haplotype rows, one carrying the inversion
+and one not, out of HPRC's published all-vs-GRCh38 PAF. Each row carries its own
+CAT gene annotation, and the pair boxed on each is the same two genes, _PPIAL4F_
+and _PPIAL4E_: on the carrier _PPIAL4F_ comes first, on the non-carrier
+_PPIAL4E_ does, and the hg38 row between them agrees with the non-carrier.
+
+<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles, and the rGFA segments. The boxed pair on each row is PPIAL4F and PPIAL4E." src="/img/pangenome/hprc_inversion.png" />
 
 ## Reproduce it end to end
 
@@ -371,3 +359,21 @@ split it finds before slicing out one haplotype of each kind.
   [The rGFA format](https://github.com/lh3/gfatools/blob/master/doc/rGFA.md) and
   [gfatools](https://github.com/lh3/gfatools), whose `bubble` subcommand calls
   the bubbles this page reads.
+
+[^path-count]:
+    Each bubble's description also carries a path count, the routes through it
+    rather than the haplotypes observed. gfatools saturates the count at
+    `2147483647`, and the track describes those bubbles as having more paths
+    than gfatools counts.
+
+[^max-region-bp]:
+    The view refuses a cut over 5 Mb, a proxy for node count that holds at
+    segment granularity and breaks on a tier, so a `GraphGenomeView` pointed at
+    one carries **`maxRegionBp`** raised to the span it is drawing, which the
+    [whole-chromosome figure](#a-whole-chromosome-as-a-graph) links a session
+    for. The real ceiling is unchanged: `maxGraphNodes` counts what actually
+    came back.
+
+[^integer-nodes]:
+    `ID` and `AT` name base-level integer nodes (`>161001867>161004536`), where
+    `sv.gfa` uses `sNNNNN` segment ids.
