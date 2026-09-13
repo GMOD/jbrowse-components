@@ -82,6 +82,16 @@ const BaseViewModel = types
   .views(self => ({
     /**
      * #getter
+     * Overridable hook (default true): whether this view's mounted body
+     * renders its displays. A linear genome view collapsed to its ruler mounts
+     * the scalebar and none of its tracks, so a display in it can no more paint
+     * than one in a view scrolled off screen.
+     */
+    get rendersDisplays(): boolean {
+      return true
+    },
+    /**
+     * #getter
      * Whether this view's body is in the DOM, counting the views it is nested
      * inside — which is the question a display's phase actually asks.
      *
@@ -100,6 +110,7 @@ const BaseViewModel = types
     get effectiveBodyMounted(): boolean {
       return (
         self.bodyMounted &&
+        this.rendersDisplays &&
         containingViewOf(self)?.effectiveBodyMounted !== false
       )
     },

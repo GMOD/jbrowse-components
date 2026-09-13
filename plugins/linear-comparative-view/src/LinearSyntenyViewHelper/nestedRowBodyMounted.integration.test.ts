@@ -50,3 +50,21 @@ test('a row of an unmounted stack reports its body unmounted', async () => {
   view.setBodyMounted(true)
   expect(row.effectiveBodyMounted).toBe(true)
 })
+
+test('a row collapsed to its ruler reports its body unmounted', async () => {
+  const session = createTestSession()
+  session.addAssemblyConf(assembly('volvox'))
+  session.addAssemblyConf(assembly('volvox2'))
+  const view = (await session.launchView('LinearSyntenyView', {
+    views: [{ assembly: 'volvox' }, { assembly: 'volvox2' }],
+  })) as LinearSyntenyViewModel
+  view.setWidth(800)
+  await when(() => view.views.length === 2)
+  const row = view.views[1]!
+
+  view.compactAllViews()
+  expect(row.effectiveBodyMounted).toBe(false)
+
+  view.expandAllViews()
+  expect(row.effectiveBodyMounted).toBe(true)
+})

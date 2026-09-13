@@ -711,6 +711,8 @@ export interface AbstractViewModel {
    * phase asks.
    */
   effectiveBodyMounted: boolean
+  /** See `BaseViewModel.rendersDisplays`. */
+  rendersDisplays: boolean
   setWidth(width: number): void
   setBodyMounted(flag: boolean): void
   setMinimized(flag: boolean): void
