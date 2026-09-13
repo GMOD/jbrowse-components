@@ -1,10 +1,12 @@
+import { spanMark } from '../marks/spanMark.ts'
 import {
   getDeviceLayouts,
   getOrBuildPipeline,
+  pipelineRecipe,
   resetDeviceGpuCacheForTests,
 } from './deviceGpuCache.ts'
 
-import type { DeviceLayouts } from './deviceGpuCache.ts'
+import type { PipelineRecipe } from './deviceGpuCache.ts'
 import type { PipelineDescriptor, SampleCount } from './types.ts'
 
 // Enough of a GPUDevice to count layout construction. The real thing needs a
@@ -24,31 +26,44 @@ function fakeDevice() {
   return { device: device as unknown as GPUDevice, calls }
 }
 
-const pass = (id: string) => ({ id }) as PipelineDescriptor
+const SPAN: PipelineDescriptor = spanMark.pass
+
+function counting() {
+  const built: PipelineRecipe[] = []
+  const build = async (_layouts: unknown, recipe: PipelineRecipe) => {
+    built.push(recipe)
+    return { recipe } as unknown as GPURenderPipeline
+  }
+  return { built, build }
+}
 
 describe('deviceGpuCache', () => {
   // A WebGPU-only global, so jsdom has none and the layout builder reads it at
   // call time. Nothing in the app reaches that code without a real device.
   const shaderStage = { VERTEX: 1, FRAGMENT: 2 }
+  let device: GPUDevice
   beforeAll(() => {
     Object.assign(globalThis, { GPUShaderStage: shaderStage })
   })
   afterAll(() => {
     Reflect.deleteProperty(globalThis, 'GPUShaderStage')
   })
+  beforeEach(() => {
+    device = fakeDevice().device
+  })
+  afterEach(() => {
+    resetDeviceGpuCacheForTests(device)
+  })
 
   it('builds one set of layouts per device, not per HAL', () => {
-    const { device, calls } = fakeDevice()
+    const own = fakeDevice()
     try {
-      const first = getDeviceLayouts(device)
-      const second = getDeviceLayouts(device)
-
-      expect(second).toBe(first)
+      expect(getDeviceLayouts(own.device)).toBe(getDeviceLayouts(own.device))
       // uniform-only + textured, and their two pipeline layouts
-      expect(calls.bindGroupLayouts).toBe(2)
-      expect(calls.pipelineLayouts).toBe(2)
+      expect(own.calls.bindGroupLayouts).toBe(2)
+      expect(own.calls.pipelineLayouts).toBe(2)
     } finally {
-      resetDeviceGpuCacheForTests(device)
+      resetDeviceGpuCacheForTests(own.device)
     }
   })
 
@@ -65,37 +80,9 @@ describe('deviceGpuCache', () => {
     }
   })
 
-  it('builds a descriptor once however many displays ask for it', async () => {
-    const { device } = fakeDevice()
-    const read = pass('read')
-    let builds = 0
-    const build = async () => {
-      builds++
-      return {} as GPURenderPipeline
-    }
-    try {
-      // three displays of the same track type, handed the same module-level
-      // descriptor object
-      const [one, two, three] = await Promise.all([
-        getOrBuildPipeline(device, read, 4, build),
-        getOrBuildPipeline(device, read, 4, build),
-        getOrBuildPipeline(device, read, 4, build),
-      ])
-
-      expect(builds).toBe(1)
-      expect(two).toBe(one)
-      expect(three).toBe(one)
-    } finally {
-      resetDeviceGpuCacheForTests(device)
-    }
-  })
-
-  it('dedupes concurrent asks, which is the case that actually happens', async () => {
-    // Many tracks mount in one tick, so every WebGPUHal.create runs before any
-    // of them finishes compiling. A memo that only recorded resolved pipelines
-    // would miss on all of them.
-    const { device } = fakeDevice()
-    const read = pass('read')
+  // Every display of a type hands over the same module-level descriptors, and
+  // many mount in one tick, so every ask lands before the first compile ends.
+  it('dedupes concurrent asks for one recipe', async () => {
     let builds = 0
     let release: (p: GPURenderPipeline) => void = () => {}
     const pending = new Promise<GPURenderPipeline>(resolve => {
@@ -105,85 +92,93 @@ describe('deviceGpuCache', () => {
       builds++
       return pending
     }
-    try {
-      const asks = [
-        getOrBuildPipeline(device, read, 4, build),
-        getOrBuildPipeline(device, read, 4, build),
-      ]
-      expect(builds).toBe(1)
-
-      release({} as GPURenderPipeline)
-      const [one, two] = await Promise.all(asks)
-      expect(two).toBe(one)
-    } finally {
-      resetDeviceGpuCacheForTests(device)
-    }
+    const asks = [1, 2, 3].map(() =>
+      getOrBuildPipeline(device, pipelineRecipe(SPAN, 4), build),
+    )
+    expect(builds).toBe(1)
+    release({} as GPURenderPipeline)
+    const [one, two, three] = await Promise.all(asks)
+    expect(two).toBe(one)
+    expect(three).toBe(one)
   })
 
-  it('keeps two descriptors apart even when they share a shader module', () => {
-    // MAF and multi-row both draw `rowRect.slang`, and each calls slangPass()
-    // for it — so they hold distinct descriptor objects and must not collide.
-    const { device } = fakeDevice()
-    const mafRow = pass('rowRect')
-    const multiRowRow = pass('rowRect')
-    let builds = 0
-    const build = async () => {
-      builds++
-      return {} as GPURenderPipeline
-    }
-    try {
-      void getOrBuildPipeline(device, mafRow, 4, build)
-      void getOrBuildPipeline(device, multiRowRow, 4, build)
-      expect(builds).toBe(2)
-    } finally {
-      resetDeviceGpuCacheForTests(device)
-    }
+  // The marks display clones a shape per mark, the ring view declares eight
+  // rings and alignments draws gap and skip off one shader: each a new id over
+  // content already compiled.
+  it('shares one pipeline between descriptors that differ only in id', async () => {
+    const { built, build } = counting()
+    const ids = ['span', 'span#0', 'span#1']
+    const pipelines = await Promise.all(
+      ids.map(id =>
+        getOrBuildPipeline(device, pipelineRecipe({ ...SPAN, id }, 4), build),
+      ),
+    )
+    expect(built).toHaveLength(1)
+    expect(new Set(pipelines).size).toBe(1)
   })
 
-  it('keeps one descriptor apart at two sample counts, and tells the builder which', async () => {
-    // Multisample state is baked into the pipeline and is not on the
-    // descriptor, so a display at 1 handed the 4 pipeline would have every draw
-    // in every frame rejected and paint a blank canvas — no exception, no
-    // console line of its own.
-    const { device } = fakeDevice()
-    const read = pass('read')
-    const asked: SampleCount[] = []
-    const build = async (_layouts: DeviceLayouts, sampleCount: SampleCount) => {
-      asked.push(sampleCount)
-      return { sampleCount } as unknown as GPURenderPipeline
+  it('builds apart every recipe that differs in what the pipeline compiles', async () => {
+    const { built, build } = counting()
+    const [attr, ...attrs] = SPAN.vertexAttributes
+    const variants: PipelineDescriptor[] = [
+      SPAN,
+      { ...SPAN, wgslSource: `${SPAN.wgslSource}\n` },
+      { ...SPAN, instanceStride: SPAN.instanceStride + 4 },
+      { ...SPAN, vertexAttributes: [{ ...attr!, offsetBytes: 4 }, ...attrs] },
+      { ...SPAN, vertexAttributes: [{ ...attr!, components: 3 }, ...attrs] },
+      { ...SPAN, blend: false },
+      { ...SPAN, blendState: { op: 'max' } },
+      { ...SPAN, topology: 'line-list' },
+      {
+        ...SPAN,
+        textures: [
+          {
+            textureBinding: 2,
+            samplerBinding: 3,
+            glTextureUnit: 0,
+            glUniformName: 'u_colorRamp',
+            filter: 'linear',
+          },
+        ],
+      },
+    ]
+    const counts: SampleCount[] = [4, 1]
+    for (const sampleCount of counts) {
+      for (const desc of variants) {
+        await getOrBuildPipeline(
+          device,
+          pipelineRecipe(desc, sampleCount),
+          build,
+        )
+      }
     }
-    try {
-      const four = await getOrBuildPipeline(device, read, 4, build)
-      const one = await getOrBuildPipeline(device, read, 1, build)
+    expect(built).toHaveLength(variants.length * counts.length)
+    // and a second pass over the same content builds nothing
+    for (const desc of variants) {
+      await getOrBuildPipeline(device, pipelineRecipe(desc, 4), build)
+    }
+    expect(built).toHaveLength(variants.length * counts.length)
+  })
 
-      expect(asked).toEqual([4, 1])
-      expect(one).not.toBe(four)
-      expect(await getOrBuildPipeline(device, read, 4, build)).toBe(four)
-      expect(await getOrBuildPipeline(device, read, 1, build)).toBe(one)
-      expect(asked).toEqual([4, 1])
-    } finally {
-      resetDeviceGpuCacheForTests(device)
-    }
+  it('hands the builder the sample count it keyed on', async () => {
+    const { built, build } = counting()
+    await getOrBuildPipeline(device, pipelineRecipe(SPAN, 1), build)
+    await getOrBuildPipeline(device, pipelineRecipe(SPAN, 4), build)
+    expect(built.map(r => r.sampleCount)).toEqual([1, 4])
   })
 
   it('caches a compile failure rather than re-running it per display', async () => {
-    const { device } = fakeDevice()
-    const broken = pass('broken')
     let builds = 0
     const build = () => {
       builds++
       return Promise.reject(new Error('WGSL compile error'))
     }
-    try {
+    const broken = { ...SPAN, wgslSource: 'not wgsl' }
+    for (const id of ['broken', 'alsoBroken']) {
       await expect(
-        getOrBuildPipeline(device, broken, 4, build),
+        getOrBuildPipeline(device, pipelineRecipe({ ...broken, id }, 4), build),
       ).rejects.toThrow('WGSL compile error')
-      await expect(
-        getOrBuildPipeline(device, broken, 4, build),
-      ).rejects.toThrow('WGSL compile error')
-      expect(builds).toBe(1)
-    } finally {
-      resetDeviceGpuCacheForTests(device)
     }
+    expect(builds).toBe(1)
   })
 })

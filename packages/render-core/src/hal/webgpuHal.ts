@@ -10,17 +10,18 @@ import {
 import { createGpuSurfaceLostError } from '../gpuContextLostError.ts'
 import { getGpuDevice } from '../gpuDevice.ts'
 import {
-  STANDARD_BLEND_STATE,
   createUniformOnlyBindGroup,
   createVertexBuffer,
-  toGpuVertexFormat,
 } from '../webgpuUtils.ts'
-import { getDeviceLayouts, getOrBuildPipeline } from './deviceGpuCache.ts'
+import {
+  getDeviceLayouts,
+  getOrBuildPipeline,
+  pipelineRecipe,
+} from './deviceGpuCache.ts'
 import { GpuHalBase } from './gpuHalBase.ts'
 
-import type { DeviceLayouts } from './deviceGpuCache.ts'
+import type { DeviceLayouts, PipelineRecipe } from './deviceGpuCache.ts'
 import type {
-  BlendState,
   GpuHal,
   PipelineDescriptor,
   SampleCount,
@@ -63,22 +64,6 @@ const MAX_UNIFORM_SLOTS = 2048
 // difference between 50 and 1900.
 const UNIFORM_SLOT_WARN_AT = MAX_UNIFORM_SLOTS / 2
 
-function gpuBlendState(bs: BlendState): GPUBlendState {
-  // Max ignores its factors, but WebGPU still validates them and rejects
-  // anything but 'one' on both channels ("Destination blend factor ... is
-  // defined and not BlendFactor::One when blend operation is
-  // BlendOperation::Max"). Same blend as webgl2Hal's bare glBlendEquation(MAX).
-  const max = { srcFactor: 'one', dstFactor: 'one', operation: 'max' } as const
-  // Otherwise RGB uses the caller-supplied factors and alpha always accumulates
-  // through ONE / ONE_MINUS_SRC_ALPHA (matches webgl2Hal.applyBlendState).
-  return bs.op === 'max'
-    ? { color: max, alpha: max }
-    : {
-        color: { srcFactor: bs.srcFactor, dstFactor: bs.dstFactor },
-        alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
-      }
-}
-
 // One entry per (region, pass). `dataBuffer` is the vertex buffer bound via
 // setVertexBuffer(0, ...). Bind groups are NOT stored here — they belong to the
 // pass being drawn, not to the buffer being drawn from (see `getBindGroup`).
@@ -87,51 +72,29 @@ interface RegionPassBuffer {
   count: number
 }
 
-// Every pass reads per-instance data from a vertex buffer (no storage binding
-// at 0) because Slang-generated shaders cross-compile to GLSL ES, which has no
-// SSBOs. The two @group(0) layouts a pass is built against — uniform-only, and
-// uniform + texture + sampler — belong to the device, not to this HAL, and live
-// in `deviceGpuCache.ts` with the pipelines.
-
+// Every pass reads per-instance data from a vertex buffer, because Slang's
+// GLSL ES target has no SSBOs.
 async function buildPipeline(
   device: GPUDevice,
-  desc: PipelineDescriptor,
+  recipe: PipelineRecipe,
   layouts: DeviceLayouts,
-  sampleCount: SampleCount,
+  passId: string,
 ) {
-  const module = device.createShaderModule({ code: desc.wgslSource })
+  const module = device.createShaderModule({ code: recipe.wgslSource })
   const info = await module.getCompilationInfo()
   const errors = info.messages.filter(m => m.type === 'error')
   if (errors.length > 0) {
     const details = errors
       .map(m => `line ${m.lineNum}: ${m.message}`)
       .join('; ')
-    throw new ShaderCompileError(desc.id, details)
+    throw new ShaderCompileError(passId, details)
   }
-  const blend = desc.blend
-    ? desc.blendState
-      ? gpuBlendState(desc.blendState)
-      : STANDARD_BLEND_STATE
-    : undefined
-
-  // Every pass feeds @location(N) inputs from a bound vertex buffer.
-  const vertexBuffers: GPUVertexBufferLayout[] = [
-    {
-      arrayStride: desc.instanceStride,
-      stepMode: 'instance',
-      attributes: desc.vertexAttributes.map((attr, i) => ({
-        shaderLocation: i,
-        offset: attr.offsetBytes,
-        format: toGpuVertexFormat(attr),
-      })),
-    },
-  ]
-
+  const { blend } = recipe
   return device.createRenderPipelineAsync({
-    layout: desc.textures?.length
+    layout: recipe.textured
       ? layouts.texturedPipelineLayout
       : layouts.uniformOnlyPipelineLayout,
-    vertex: { module, entryPoint: 'vs_main', buffers: vertexBuffers },
+    vertex: { module, entryPoint: 'vs_main', buffers: [recipe.vertexBuffer] },
     fragment: {
       module,
       entryPoint: 'fs_main',
@@ -142,16 +105,15 @@ async function buildPipeline(
         },
       ],
     },
-    primitive: { topology: desc.topology ?? 'triangle-list' },
-    multisample: sampleCount === 1 ? undefined : { count: sampleCount },
+    primitive: { topology: recipe.topology },
+    multisample:
+      recipe.sampleCount === 1 ? undefined : { count: recipe.sampleCount },
   })
 }
 
-// Resolve every declared pass to its pipeline, taking the device-wide cache's
-// answer wherever another display of this type already built one. Still every
-// pass up front rather than on first draw — the WebGL2 side compiles lazily
-// (`getPass`) and this side does not; see ARCHITECTURAL_LIMITS.md §"Every
-// WebGPU display resolves its whole pass list before it can paint".
+// Every declared pass up front, unlike WebGL2's first-draw link; see
+// ARCHITECTURAL_LIMITS.md §"Every WebGPU display resolves its whole pass list
+// before it can paint".
 async function resolvePipelines(
   device: GPUDevice,
   descriptors: PipelineDescriptor[],
@@ -159,8 +121,10 @@ async function resolvePipelines(
 ) {
   const built = await Promise.all(
     descriptors.map(desc =>
-      getOrBuildPipeline(device, desc, sampleCount, (layouts, count) =>
-        buildPipeline(device, desc, layouts, count),
+      getOrBuildPipeline(
+        device,
+        pipelineRecipe(desc, sampleCount),
+        (layouts, recipe) => buildPipeline(device, recipe, layouts, desc.id),
       ),
     ),
   )

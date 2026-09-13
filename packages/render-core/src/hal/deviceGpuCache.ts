@@ -1,35 +1,18 @@
 /// <reference types="@webgpu/types" />
 
-import type { PipelineDescriptor, SampleCount } from './types.ts'
+import { STANDARD_BLEND_STATE, toGpuVertexFormat } from '../webgpuUtils.ts'
+
+import type { BlendState, PipelineDescriptor, SampleCount } from './types.ts'
 
 /**
  * The GPU objects that belong to the **device** rather than to one `WebGPUHal`,
  * memoized so the second display of a track type builds none of them.
  *
- * WebGL2 has no equivalent and wants none: a program is owned by the context
- * that linked it, and each display owns a context, so nothing there is
- * shareable. WebGPU inverts that — `gpuDevice.ts` hands every display one
- * device, and a `GPURenderPipeline` is a device object — and until this module
- * the HAL kept building per-display copies anyway. Ten alignments tracks
- * compiled 230 pipelines for 23 distinct programs.
- *
- * **The key is the descriptor object, and that is what makes it correct.** A
- * plugin's pass list is a module-level const (`ALIGNMENTS_PASSES`) and
- * `slangPass` reads `wgslSource` off a generated module const, so every display
- * of a type hands the HAL the *same* `PipelineDescriptor` objects by reference.
- * Identity therefore means "same shader, same layout, same blend, same
- * topology" without comparing any of them, and two passes that merely share a
- * `.slang` shape module (MAF and multi-row both draw `rowRect`) get separate
- * entries because `slangPass` built them separate objects. The **sample count**
- * is the one pipeline input the descriptor cannot express, so it is the inner
- * key; see the `pipelines` field.
- *
- * The descriptor's `uniformByteSize` never reaches the pipeline, so it cannot
- * make two HALs disagree here:
- * `createUniformOnlyBindGroupLayout` declares no `minBindingSize`, so the
- * layout — and thus the pipeline built against it — is the same whatever a
- * display's `uniformByteSize` is. The size reaches the GPU through the bind
- * group's `size` and the dynamic offset, both of which stay per-HAL.
+ * WebGL2 has no equivalent: a program belongs to the context that linked it,
+ * so `WebGL2Hal` keeps the same content-keyed map per context instead. WebGPU
+ * hands every display one device (`gpuDevice.ts`), and a `GPURenderPipeline` is
+ * a device object. Ten alignments tracks once compiled 230 pipelines for 23
+ * distinct programs.
  *
  * Per copy of this module rather than on the `globalThis` cell, for the reason
  * `createHal.ts` gives for `warnedSoftwareRasterizer`: a second bundled copy
@@ -39,12 +22,7 @@ import type { PipelineDescriptor, SampleCount } from './types.ts'
  */
 const perDevice = new WeakMap<GPUDevice, DeviceGpuCache>()
 
-/**
- * The two pipeline layouts every pass is built against. Both are created
- * eagerly now — the textured pair used to be lazy so that a display drawing no
- * textured pass paid nothing, which was worth two objects per *display* and is
- * not worth the null-bundling for two objects per *device*.
- */
+/** The two pipeline layouts every pass is built against, built eagerly. */
 export interface DeviceLayouts {
   uniformOnlyBindGroupLayout: GPUBindGroupLayout
   uniformOnlyPipelineLayout: GPUPipelineLayout
@@ -52,31 +30,82 @@ export interface DeviceLayouts {
   texturedPipelineLayout: GPUPipelineLayout
 }
 
+/**
+ * What a pipeline is compiled from, and the cache's key: `WebGPUHal` builds
+ * from this and nothing else, so a field the build reads cannot be missing from
+ * the key. Two descriptors that differ only in `id` — one shader drawn as
+ * several passes — share a pipeline.
+ *
+ * `uniformByteSize` is not in it: the layouts' uniform entry declares no
+ * `minBindingSize`, so the size reaches the GPU only through each HAL's bind
+ * group and dynamic offset. Nor is the canvas format, one value per page.
+ */
+export interface PipelineRecipe {
+  wgslSource: string
+  textured: boolean
+  vertexBuffer: GPUVertexBufferLayout
+  blend: GPUBlendState | undefined
+  topology: GPUPrimitiveTopology
+  /**
+   * A property of the display, not the pass, and baked into the pipeline:
+   * a pipeline built at 4 handed to a target at 1 has every draw rejected and
+   * paints a blank canvas without an exception.
+   */
+  sampleCount: SampleCount
+}
+
+function gpuBlendState(bs: BlendState): GPUBlendState {
+  // WebGPU rejects any factor but 'one' under max, though max ignores them —
+  // the same blend as webgl2Hal's bare glBlendEquation(MAX). Otherwise RGB
+  // takes the declared factors and alpha accumulates through ONE /
+  // ONE_MINUS_SRC_ALPHA, as webgl2Hal's applyBlendState does.
+  const max = { srcFactor: 'one', dstFactor: 'one', operation: 'max' } as const
+  return bs.op === 'max'
+    ? { color: max, alpha: max }
+    : {
+        color: { srcFactor: bs.srcFactor, dstFactor: bs.dstFactor },
+        alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha' },
+      }
+}
+
+export function pipelineRecipe(
+  desc: PipelineDescriptor,
+  sampleCount: SampleCount,
+): PipelineRecipe {
+  return {
+    wgslSource: desc.wgslSource,
+    textured: !!desc.textures?.length,
+    vertexBuffer: {
+      arrayStride: desc.instanceStride,
+      stepMode: 'instance',
+      attributes: desc.vertexAttributes.map((attr, i) => ({
+        shaderLocation: i,
+        offset: attr.offsetBytes,
+        format: toGpuVertexFormat(attr),
+      })),
+    },
+    blend: desc.blend
+      ? desc.blendState
+        ? gpuBlendState(desc.blendState)
+        : STANDARD_BLEND_STATE
+      : undefined,
+    topology: desc.topology ?? 'triangle-list',
+    sampleCount,
+  }
+}
+
 interface DeviceGpuCache {
   layouts: DeviceLayouts
   /**
-   * Holds the in-flight **promise**, not the resolved pipeline, so the common
-   * case is deduplicated at all: many tracks mount in one tick and every
-   * `WebGPUHal.create` runs concurrently, so a cache that only recorded
-   * finished compiles would have every one of them miss.
+   * WGSL source, then the rest of the recipe as JSON. The source is its own
+   * level so the key holds the module const's string rather than a copy of it.
    *
-   * A rejection is cached too, and deliberately — a WGSL compile error is
-   * deterministic, so the second display should fail with the first's message
-   * rather than re-running a compile that cannot succeed. It has already been
-   * awaited by whoever built it, so a stored rejection is not an unhandled one.
-   *
-   * **The inner key is the sample count**, which is the one thing a pipeline
-   * bakes in that the descriptor does not carry: multisample state belongs to
-   * the pipeline, and the count is a property of the *display* rather than of
-   * the pass. Handing a display at 1x a pipeline built at 4x is not an error
-   * the API reports at draw time — the render pass rejects every draw and the
-   * canvas comes out blank — so the count has to be part of the key, not an
-   * assumption about it.
+   * Holds the in-flight **promise**: many tracks mount in one tick and every
+   * `WebGPUHal.create` runs concurrently, so a memo of finished compiles would
+   * miss on all of them. A rejection is cached too — a WGSL compile error is
+   * deterministic, and whoever built it has already awaited it.
    */
-  pipelines: WeakMap<
-    PipelineDescriptor,
-    Map<SampleCount, Promise<GPURenderPipeline>>
-  >
+  pipelines: Map<string, Map<string, Promise<GPURenderPipeline>>>
 }
 
 function createLayouts(device: GPUDevice): DeviceLayouts {
@@ -118,7 +147,7 @@ function createLayouts(device: GPUDevice): DeviceLayouts {
 function cacheFor(device: GPUDevice): DeviceGpuCache {
   let entry = perDevice.get(device)
   if (!entry) {
-    entry = { layouts: createLayouts(device), pipelines: new WeakMap() }
+    entry = { layouts: createLayouts(device), pipelines: new Map() }
     perDevice.set(device, entry)
   }
   return entry
@@ -127,50 +156,43 @@ function cacheFor(device: GPUDevice): DeviceGpuCache {
 /**
  * The bind group and pipeline layouts for `device`, built once per device.
  *
- * A device that is lost drops out of the map with itself — `gpuDevice.ts`
- * releases its reference in the `.lost` handler and the next acquisition is a
- * new object, so the layouts and pipelines built against the dead one are
- * unreachable and there is no cache to invalidate by hand.
+ * A lost device drops out of the map with itself — `gpuDevice.ts` releases its
+ * reference in the `.lost` handler and the next acquisition is a new object —
+ * so there is no cache to invalidate by hand.
  */
 export function getDeviceLayouts(device: GPUDevice) {
   return cacheFor(device).layouts
 }
 
 /**
- * The pipeline for `desc` at `sampleCount` on `device`, building it through
- * `build` on the first ask and handing every later one the same promise.
- *
- * `build` receives the sample count rather than closing over one, so the key
- * and the pipeline stored under it cannot disagree.
+ * The pipeline `recipe` compiles to on `device`, building it through `build`
+ * on the first ask and handing every later one the same promise.
  */
 export function getOrBuildPipeline(
   device: GPUDevice,
-  desc: PipelineDescriptor,
-  sampleCount: SampleCount,
+  recipe: PipelineRecipe,
   build: (
     layouts: DeviceLayouts,
-    sampleCount: SampleCount,
+    recipe: PipelineRecipe,
   ) => Promise<GPURenderPipeline>,
 ) {
   const { layouts, pipelines } = cacheFor(device)
-  let bySampleCount = pipelines.get(desc)
-  if (!bySampleCount) {
-    bySampleCount = new Map()
-    pipelines.set(desc, bySampleCount)
+  const { wgslSource, ...rest } = recipe
+  let bySource = pipelines.get(wgslSource)
+  if (!bySource) {
+    bySource = new Map()
+    pipelines.set(wgslSource, bySource)
   }
-  let pipeline = bySampleCount.get(sampleCount)
+  const key = JSON.stringify(rest)
+  let pipeline = bySource.get(key)
   if (!pipeline) {
-    pipeline = build(layouts, sampleCount)
-    bySampleCount.set(sampleCount, pipeline)
+    pipeline = build(layouts, recipe)
+    bySource.set(key, pipeline)
   }
   return pipeline
 }
 
-/**
- * Drop every device's entry. Tests only — nothing in the app invalidates this
- * cache, because losing the device is what invalidates it (see
- * {@link getDeviceLayouts}).
- */
+/** Drop a device's entry. Tests only: losing the device is what invalidates it. */
 export function resetDeviceGpuCacheForTests(device: GPUDevice) {
   perDevice.delete(device)
 }

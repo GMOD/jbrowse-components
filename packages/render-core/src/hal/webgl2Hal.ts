@@ -121,19 +121,16 @@ function glBlendFactor(
   }
 }
 
-interface TextureState {
-  texture: WebGLTexture | null
-  unit: number
-  // uniformLoc is not stored — the sampler unit is set once when the pass is
-  // compiled and never changes, so per-draw uniform1i is skipped.
+// The sampler's unit is part of the program: `uniform1i` sets it once at link.
+interface LinkedProgram {
+  program: WebGLProgram
+  vao: WebGLVertexArrayObject
+  attrLocs: number[]
 }
 
 interface PassState {
-  program: WebGLProgram
-  vao: WebGLVertexArrayObject
   descriptor: PipelineDescriptor
-  textureState: TextureState | null
-  attrLocs: number[]
+  linked: LinkedProgram
 }
 
 interface RegionPassBuffer {
@@ -183,9 +180,14 @@ const MAX_VERTEX_BUFFER_BYTES = 256 * 1024 * 1024
 export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
   private gl: WebGL2RenderingContext
   private canvas: HTMLCanvasElement
-  // Compiled passes, filled on demand by `getPass`. A pass whose program failed
-  // to build caches `null` so the failure is reported once, not every frame.
-  private passes: Map<string, PassState | null>
+  // Filled on first draw by `getPass`; `null` is a pass whose program failed to
+  // link, so the failure is reported once rather than every frame.
+  private passes = new Map<string, PassState | null>()
+  // This context's programs by what `link` reads: the vertex source, then the
+  // fragment source, attribute names and sampler as JSON. Passes differing only
+  // in id share one; a failed link keeps its error.
+  private programs = new Map<string, Map<string, LinkedProgram | Error>>()
+  private passTextures = new Map<string, WebGLTexture>()
   private ubo: WebGLBuffer
   // Asked once: `getParameter` is a synchronous driver query and `limits()` is
   // now read on every upload, not only on a texture one.
@@ -267,22 +269,17 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     gl.bindBuffer(gl.UNIFORM_BUFFER, this.ubo)
     gl.bufferData(gl.UNIFORM_BUFFER, this.uniformByteSize, gl.DYNAMIC_DRAW)
 
-    this.passes = new Map()
-
-    // Programs are built on first use (see `getPass`), not here: a renderer
-    // declares every pass it could ever draw — alignments alone declares 21,
-    // most of them behind a colorBy/arc/per-base setting — and linking one
-    // costs tens of ms of driver time on the main thread. A profile of a
-    // three-track LGV linked 29 programs and drew with 14.
-    //
-    // The first descriptor still links eagerly as a canary, so a GL stack that
-    // can't compile our shaders at all throws from the constructor and
-    // `createGpuHal` falls back to Canvas2D — the ladder only runs at
-    // construction. Per-pass compile failures after that are caught in
-    // `getPass` and surfaced through the error handler.
+    // Programs link on first draw (`getPass`): linking costs tens of ms of
+    // main-thread driver time, and a three-track LGV declared 29 passes and
+    // drew with 14. The first descriptor links here as a canary, so a GL stack
+    // that cannot compile our shaders at all throws from the constructor while
+    // `createGpuHal`'s ladder can still fall back to Canvas2D.
     const canary = descriptors[0]
     if (canary) {
-      this.compilePass(canary)
+      this.passes.set(canary.id, {
+        descriptor: canary,
+        linked: this.link(canary),
+      })
     }
 
     gl.enable(gl.BLEND)
@@ -319,26 +316,46 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     }
   }
 
-  private compilePass(desc: PipelineDescriptor): PassState {
+  // The program `desc` draws with, linking it on the first ask for its content.
+  // Throws on a failed link, and again for every later ask of that content.
+  private link(desc: PipelineDescriptor): LinkedProgram {
     const gl = this.gl
-    const program = createProgram(gl, desc.glslVertex, desc.glslFragment)
+    const tb = desc.textures?.[0]
+    const names = desc.vertexAttributes.map(attr => attr.name)
+    const sampler = tb && [tb.glUniformName, tb.glTextureUnit]
+    const key = JSON.stringify([desc.glslFragment, names, sampler])
+    let byVertex = this.programs.get(desc.glslVertex)
+    if (!byVertex) {
+      byVertex = new Map()
+      this.programs.set(desc.glslVertex, byVertex)
+    }
+    const known = byVertex.get(key)
+    if (known instanceof Error) {
+      throw known
+    }
+    if (known) {
+      return known
+    }
+    let program: WebGLProgram
+    try {
+      program = createProgram(gl, desc.glslVertex, desc.glslFragment)
+    } catch (e) {
+      byVertex.set(key, e instanceof Error ? e : new Error(String(e)))
+      throw e
+    }
     bindUniformBlock(gl, program, 'Uniforms', 0)
     this.checkGlError(`link pass "${desc.id}"`)
 
-    const attrLocs = desc.vertexAttributes.map(attr =>
-      gl.getAttribLocation(program, attr.name),
-    )
+    const attrLocs = names.map(name => gl.getAttribLocation(program, name))
     if (this.debug) {
-      const pairs = desc.vertexAttributes.map(
-        (a, i) => `${a.name}@${attrLocs[i]}`,
-      )
+      const pairs = names.map((name, i) => `${name}@${attrLocs[i]}`)
       console.warn(
         `[WebGL2Hal] pass "${desc.id}" stride=${desc.instanceStride} attrs: ${pairs.join(', ')}`,
       )
-      const missing = desc.vertexAttributes.filter((_, i) => attrLocs[i]! < 0)
+      const missing = names.filter((_, i) => attrLocs[i]! < 0)
       if (missing.length > 0) {
         console.warn(
-          `[WebGL2Hal] pass "${desc.id}" missing attribute locations: ${missing.map(a => a.name).join(', ')}`,
+          `[WebGL2Hal] pass "${desc.id}" missing attribute locations: ${missing.join(', ')}`,
         )
       }
     }
@@ -352,31 +369,20 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     }
     gl.bindVertexArray(null)
 
-    let textureState: TextureState | null = null
-    const tb = desc.textures?.[0]
     if (tb) {
-      // Bind the sampler uniform to the texture unit once — it never changes.
       gl.useProgram(program)
       gl.uniform1i(
         gl.getUniformLocation(program, tb.glUniformName),
         tb.glTextureUnit,
       )
-      textureState = { texture: null, unit: tb.glTextureUnit }
     }
 
-    const state: PassState = {
-      program,
-      vao,
-      descriptor: desc,
-      textureState,
-      attrLocs,
-    }
-    this.passes.set(desc.id, state)
-    return state
+    const linked = { program, vao, attrLocs }
+    byVertex.set(key, linked)
+    return linked
   }
 
-  // Compiled pass for `passId`, building it the first time it's asked for.
-  // Returns undefined for an unknown id or a pass whose program failed to link.
+  // Undefined for an unknown id or a pass whose program failed to link.
   private getPass(passId: string) {
     const existing = this.passes.get(passId)
     if (existing !== undefined) {
@@ -387,7 +393,9 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
       return undefined
     }
     try {
-      return this.compilePass(desc)
+      const pass = { descriptor: desc, linked: this.link(desc) }
+      this.passes.set(passId, pass)
+      return pass
     } catch (e) {
       this.passes.set(passId, null)
       this.oom.report(
@@ -409,12 +417,9 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     height: number,
   ) {
     const gl = this.gl
-    const ts = this.getPass(passId)?.textureState
-    if (!ts) {
-      return
-    }
-    if (ts.texture) {
-      gl.deleteTexture(ts.texture)
+    const existing = this.passTextures.get(passId)
+    if (existing) {
+      gl.deleteTexture(existing)
     }
     const tex = gl.createTexture()
     gl.bindTexture(gl.TEXTURE_2D, tex)
@@ -440,7 +445,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-    ts.texture = tex
+    this.passTextures.set(passId, tex)
   }
 
   writeUniforms(data: ArrayBuffer) {
@@ -491,10 +496,10 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     }
 
     this.applyBlendState(pass.descriptor)
-    gl.useProgram(pass.program)
-    gl.bindVertexArray(pass.vao)
+    gl.useProgram(pass.linked.program)
+    gl.bindVertexArray(pass.linked.vao)
     this.bindAttributes(pass, regionBuf.vbo)
-    this.bindTextures(pass)
+    this.bindTexture(passId, pass.descriptor)
     const topo = pass.descriptor.topology ?? 'triangle-list'
     const glMode =
       topo === 'triangle-strip'
@@ -553,18 +558,22 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
 
     this.regions.deleteAll()
     if (!this.contextWasLost && !gl.isContextLost()) {
-      for (const pass of this.passes.values()) {
-        if (pass) {
-          gl.deleteVertexArray(pass.vao)
-          gl.deleteProgram(pass.program)
-          if (pass.textureState?.texture) {
-            gl.deleteTexture(pass.textureState.texture)
+      for (const byVertex of this.programs.values()) {
+        for (const linked of byVertex.values()) {
+          if (!(linked instanceof Error)) {
+            gl.deleteVertexArray(linked.vao)
+            gl.deleteProgram(linked.program)
           }
         }
+      }
+      for (const texture of this.passTextures.values()) {
+        gl.deleteTexture(texture)
       }
       gl.deleteBuffer(this.ubo)
     }
     this.passes.clear()
+    this.programs.clear()
+    this.passTextures.clear()
 
     // Firefox appears to treat WEBGL_lose_context.loseContext() as a
     // driver-wide reset: calling it on one disposed HAL synchronously
@@ -600,13 +609,13 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     }
   }
 
-  private bindTextures(pass: PassState) {
+  private bindTexture(passId: string, desc: PipelineDescriptor) {
     const gl = this.gl
-    const ts = pass.textureState
-    if (ts?.texture) {
-      gl.activeTexture(gl.TEXTURE0 + ts.unit)
-      gl.bindTexture(gl.TEXTURE_2D, ts.texture)
-      // sampler uniform set once at construction — no uniform1i here
+    const tb = desc.textures?.[0]
+    const texture = tb && this.passTextures.get(passId)
+    if (tb && texture) {
+      gl.activeTexture(gl.TEXTURE0 + tb.glTextureUnit)
+      gl.bindTexture(gl.TEXTURE_2D, texture)
     }
   }
 
@@ -616,7 +625,7 @@ export class WebGL2Hal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
 
     for (let i = 0; i < desc.vertexAttributes.length; i++) {
-      const loc = pass.attrLocs[i]!
+      const loc = pass.linked.attrLocs[i]!
       if (loc < 0) {
         continue
       }
