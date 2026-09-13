@@ -9,7 +9,7 @@ import { when } from 'mobx'
 import { packSyntenyFeatureData } from '../../LinearSyntenyDisplay/testUtils.ts'
 import SyntenySettingsMenu from './SyntenySettingsMenu.tsx'
 
-import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
+import type { LinearSyntenyViewModel } from '../model.ts'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 

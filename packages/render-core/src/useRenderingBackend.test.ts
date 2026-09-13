@@ -514,7 +514,7 @@ describe('useRenderingBackend', () => {
 
   test('a new model on the same component gets a fresh canvas element', async () => {
     // A container that renders its children by position hands this hook a new
-    // model whenever its list is rebuilt — `LinearComparativeView.setViews`
+    // model whenever its list is rebuilt — `LinearSyntenyView.setViews`
     // empties and re-reconciles `levels`, so every synteny band's model is
     // replaced under a canvas that survives. Re-initializing on that element is
     // a `dispose()` racing a `create()` on one WebGPU context, and whichever

@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 
 import { syntenySettingsMenuItems } from './syntenySettingsMenuItems.ts'
 
-import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
+import type { LinearSyntenyViewModel } from '../model.ts'
 
 /**
  * The button that opens the ribbon settings. What the rows are, and why they

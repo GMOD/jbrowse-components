@@ -24,8 +24,8 @@ import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// A stack of genome panels, one above the next: LinearSyntenyView,
-// LinearComparativeView and BreakpointSplitView are each one. Duck-typed rather
+// A stack of genome panels, one above the next: LinearSyntenyView and
+// BreakpointSplitView are each one. Duck-typed rather
 // than imported, because what reaches this file is a display inside one of the
 // panels and a panel has no idea which kind of stack it is in. A view model,
 // not merely a node with a `views` array: `containingPanelStack` tests
@@ -34,12 +34,11 @@ export interface PanelStack
   extends AbstractViewModel, Partial<Omit<FollowAnchorHost, 'views'>> {
   views: LinearGenomeViewModel[]
   // The synteny bands between adjacent panels, each with its own tracks —
-  // present on a LinearSyntenyView and a LinearComparativeView, absent on a
-  // BreakpointSplitView, whose panels are joined by nothing a launch reads.
+  // present on a LinearSyntenyView, absent on a BreakpointSplitView, whose
+  // panels are joined by nothing a launch reads.
   levels?: { tracks: { configuration: AnyConfigurationModel }[] }[]
-  // The follow state is OPTIONAL because only two of the three stacks have
-  // it: a LinearSyntenyView and a LinearComparativeView can be following,
-  // BreakpointSplitView has no such mode.
+  // The follow state is OPTIONAL because only one of the two stacks has it: a
+  // LinearSyntenyView can be following, BreakpointSplitView has no such mode.
 }
 
 /**

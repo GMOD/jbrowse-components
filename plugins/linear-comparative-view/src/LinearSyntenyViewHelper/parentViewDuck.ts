@@ -18,9 +18,8 @@ import type {
 // place the whole cycle is cut. The loop is view -> `levels` -> level ->
 // `linearSyntenyDisplays` -> display -> `view`, and the display's `view` getter
 // is the last edge. Naming `LinearSyntenyViewModel` there closes it, which is
-// what forced `LinearComparativeView` to declare `levels` an `IAnyModelType` and
-// made every read off a level `any` out to the SVG export and to embedding
-// hosts. Erased here instead, the erasure costs only what a display reads off
+// what forced the view to declare `levels` an `IAnyModelType` and made every
+// read off a level `any` out to the SVG export and to embedding hosts. Erased here instead, the erasure costs only what a display reads off
 // its view -- this list -- rather than everything reachable through a level.
 //
 // ADR-055's interface form does NOT substitute for it on this cycle, which is

@@ -9,10 +9,9 @@ import { Chip, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 import { Fragment } from 'react/jsx-runtime'
 
-import { asSyntenyModel } from '../../LinearSyntenyView/asSyntenyModel.ts'
 import LevelSyntenyCanvas from '../../LinearSyntenyViewHelper/LevelSyntenyCanvas.tsx'
 
-import type { LinearComparativeViewModel } from '../model.ts'
+import type { LinearSyntenyViewModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const useStyles = makeStyles()({
@@ -54,7 +53,7 @@ const AnchorBadge = observer(function AnchorBadge({
   model,
   row,
 }: {
-  model: LinearComparativeViewModel
+  model: LinearSyntenyViewModel
   row: number
 }) {
   const { classes } = useStyles()
@@ -71,20 +70,19 @@ const AnchorBadge = observer(function AnchorBadge({
   ) : null
 })
 
-const LinearComparativeRenderArea = observer(
-  function LinearComparativeRenderArea({
-    model,
-  }: {
-    model: LinearComparativeViewModel
-  }) {
-    const { classes } = useStyles()
-    const { views } = model
+const LinearSyntenyRenderArea = observer(function LinearSyntenyRenderArea({
+  model,
+}: {
+  model: LinearSyntenyViewModel
+}) {
+  const { classes } = useStyles()
+  const { views } = model
 
-    return (
-      <div className={classes.container}>
-        {views.map((view, i) => (
-          <Fragment key={view.id}>
-            {/* Keyed by the LEVEL, not by its position under this view, so a
+  return (
+    <div className={classes.container}>
+      {views.map((view, i) => (
+        <Fragment key={view.id}>
+          {/* Keyed by the LEVEL, not by its position under this view, so a
               replaced level cannot inherit the previous one's mounted subtree —
               its canvas (a re-init on a reused element, which is what a WebGPU
               swap chain cannot survive) or its in-flight pointer state (a drag
@@ -100,29 +98,28 @@ const LinearComparativeRenderArea = observer(
               level either — it spells the key `undefined`, which is React for
               unkeyed, and the band still throws on `level.height` a moment
               later. */}
-            {i > 0 ? (
-              <LevelSection
-                key={model.levels[i - 1]!.id}
-                model={model}
-                levelIdx={i - 1}
-              />
-            ) : null}
-            <div className={classes.wrapper}>
-              <View view={view} />
-              <AnchorBadge model={model} row={i} />
-            </div>
-          </Fragment>
-        ))}
-      </div>
-    )
-  },
-)
+          {i > 0 ? (
+            <LevelSection
+              key={model.levels[i - 1]!.id}
+              model={model}
+              levelIdx={i - 1}
+            />
+          ) : null}
+          <div className={classes.wrapper}>
+            <View view={view} />
+            <AnchorBadge model={model} row={i} />
+          </div>
+        </Fragment>
+      ))}
+    </div>
+  )
+})
 
 const LevelSection = observer(function LevelSection({
   model,
   levelIdx,
 }: {
-  model: LinearComparativeViewModel
+  model: LinearSyntenyViewModel
   levelIdx: number
 }) {
   const { classes } = useStyles()
@@ -131,10 +128,6 @@ const LevelSection = observer(function LevelSection({
   // time a frame commits.
   const [alone, setAlone] = useState(false)
   const level = model.levels[levelIdx]!
-  const syntenyModel = asSyntenyModel(model)
-  // One legend for the whole view, hosted in the topmost synteny band (the
-  // "helper" area) where the color-coded ribbons it describes are actually drawn
-  const legendModel = levelIdx === 0 ? syntenyModel : undefined
 
   return (
     <>
@@ -149,7 +142,10 @@ const LevelSection = observer(function LevelSection({
           <LevelSyntenyCanvas model={level} />
           <Overlays model={model} level={levelIdx} />
         </div>
-        {legendModel ? <ChromeLegend model={legendModel} /> : null}
+        {/* One legend for the whole view, hosted in the topmost synteny band
+          (the "helper" area) where the color-coded ribbons it describes are
+          actually drawn */}
+        {levelIdx === 0 ? <ChromeLegend model={model} /> : null}
       </div>
       {/* Sizes every band, not this one gap — see `resizeAllLevelHeights` — and
         Alt sizes this one alone, which is the only way back to a stack whose
@@ -188,7 +184,7 @@ const Overlays = observer(function Overlays({
   model,
   level,
 }: {
-  model: LinearComparativeViewModel
+  model: LinearSyntenyViewModel
   level: number
 }) {
   const { classes } = useStyles()
@@ -220,4 +216,4 @@ const Overlays = observer(function Overlays({
   )
 })
 
-export default LinearComparativeRenderArea
+export default LinearSyntenyRenderArea

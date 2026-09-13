@@ -5304,7 +5304,7 @@ export const syntenyVideoFixtures = {
   // own rule rather than a convenience. `launchableTracks` reads the LAUNCHING
   // VIEW's open tracks, and a LinearSyntenyView keeps its synteny track on the
   // level between two genome rows rather than on either row
-  // (LinearComparativeView's `levels`), so a rubberband on a row of the stacked
+  // (its `levels`), so a rubberband on a row of the stacked
   // demo session raises Zoom to region / Get sequence / Copy range and no Launch
   // submenu at all. This view has the track open, so it has the offer -- and it
   // is the reading the same section's second paragraph describes.

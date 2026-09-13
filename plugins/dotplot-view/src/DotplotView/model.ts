@@ -1360,7 +1360,7 @@ export default function stateModelFactory(pm: PluginManager) {
           // The banner over the form describes the submit that failed, and this
           // is the one route to the form that isn't a submit — so it was the one
           // that left an error standing over a form with nothing wrong with it,
-          // until the next Launch cleared it. `LinearComparativeView.clearView`
+          // until the next Launch cleared it. `LinearSyntenyView.clearView`
           // already does this.
           self.volatileError = undefined
           self.cancelAutoDiagonalize()

@@ -7,7 +7,7 @@ import { observer } from 'mobx-react'
 import { rowLabels } from '../rowLabel.ts'
 
 import type { FollowReport } from '../../SyntenyFollow/followHost.ts'
-import type { LinearComparativeViewModel } from '../model.ts'
+import type { LinearSyntenyViewModel } from '../model.ts'
 
 // No height, and `fontSize="small"` on the icons below: this is the same MUI
 // ToggleButton as ScrollZoomToggle beside it, which reaches the 31px height of
@@ -113,7 +113,7 @@ const FollowSyntenyToggle = observer(function FollowSyntenyToggle({
   model,
   iconOnly,
 }: {
-  model: LinearComparativeViewModel
+  model: LinearSyntenyViewModel
   iconOnly?: boolean
 }) {
   const { classes } = useStyles()

@@ -6,7 +6,7 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
  * A container's zoom-out ceiling for the rows it stacks. Unanswered is its own
  * state rather than a zero: a row that has not been laid out yet cannot supply
  * a fit, and reading that as "no shared ceiling" is a different claim. See
- * `LinearComparativeView/sharedFit.ts`.
+ * `LinearSyntenyView/sharedFit.ts`.
  */
 export type SharedFit =
   | { answered: false }

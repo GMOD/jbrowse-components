@@ -51,7 +51,7 @@ import type { ComparativeSurface } from '@jbrowse/synteny-core'
  * Holds one level of a linear synteny comparison: its track list and height,
  * composed with the shared rendering-lifecycle state.
  *
- * Nested in LinearComparativeView.levels, never in session.views: it is a track
+ * Nested in LinearSyntenyView.levels, never in session.views: it is a track
  * container, not a view, and satisfies core's `TrackContainer` so the
  * track-selector and add-track widgets can write into it via the parent view's
  * `trackContainerFor`. The `LinearSyntenyViewHelper` name and `type` literal are
@@ -106,7 +106,7 @@ export function linearSyntenyViewHelperModelFactory(
       /**
        * #action
        */
-      // annotated, not inferred: see LinearComparativeView.showTrack, which
+      // annotated, not inferred: see LinearSyntenyView.showTrack, which
       // delegates here
       showTrack(
         trackId: string,

@@ -7,7 +7,7 @@ import {
   ROW_NAVIGATIONS_HELD,
 } from '../SyntenyFollow/installSyntenyFollow.ts'
 
-import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
+import type { LinearSyntenyViewModel } from './model.ts'
 
 type WebSession = ReturnType<typeof createTestSession>
 

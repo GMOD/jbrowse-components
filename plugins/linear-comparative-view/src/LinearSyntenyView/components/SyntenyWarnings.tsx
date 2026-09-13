@@ -6,7 +6,7 @@ import ReportProblemIcon from '@mui/icons-material/ReportProblemOutlined'
 import { IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { LinearComparativeViewModel } from '../model.ts'
+import type { LinearSyntenyViewModel } from '../model.ts'
 
 const SyntenyWarningsDialog = lazy(() => import('./SyntenyWarningsDialog.tsx'))
 
@@ -20,7 +20,7 @@ const useStyles = makeStyles()({
 const SyntenyWarnings = observer(function SyntenyWarnings({
   model,
 }: {
-  model: LinearComparativeViewModel
+  model: LinearSyntenyViewModel
 }) {
   const { classes } = useStyles()
   const { syntenyWarnings: warnings } = model

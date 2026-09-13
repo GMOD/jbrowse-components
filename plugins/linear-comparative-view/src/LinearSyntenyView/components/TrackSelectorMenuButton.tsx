@@ -4,7 +4,7 @@ import { observer } from 'mobx-react'
 
 import { rowLabels } from '../rowLabel.ts'
 
-import type { LinearComparativeViewModel } from '../model.ts'
+import type { LinearSyntenyViewModel } from '../model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface TrackSelectorModel {
@@ -55,7 +55,7 @@ export function getTrackSelectorMenuItems(
 const TrackSelectorMenuButton = observer(function TrackSelectorMenuButton({
   model,
 }: {
-  model: LinearComparativeViewModel
+  model: LinearSyntenyViewModel
 }) {
   return (
     <CascadingMenuButton

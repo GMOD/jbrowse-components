@@ -32,7 +32,7 @@ import { observer } from 'mobx-react'
 import { matchingRowLoc, zoomedInWindow } from '../util/matchingRowLoc.ts'
 import { getAddRowOptions } from '../util/syntenyTracks.ts'
 
-import type { LinearComparativeViewModel } from '../../LinearComparativeView/model.ts'
+import type { LinearSyntenyViewModel } from '../model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
@@ -63,7 +63,7 @@ const AddRowDialog = observer(function AddRowDialog({
   model,
   handleClose,
 }: {
-  model: LinearComparativeViewModel
+  model: LinearSyntenyViewModel
   handleClose: () => void
 }) {
   const session = getSession(model)

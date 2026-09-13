@@ -211,7 +211,7 @@ test('a comparative view gives its temporary assembly back when removed', async 
 // hands the config to `showTrack` rather than to any session list, so the config
 // lives on the track that draws it. A list outside the view would need somebody
 // to come back and sweep it, and each list that tried grew its own cleanup: the
-// dotplot's `clearView` cleared one by hand, `LinearComparativeView.clearView`
+// dotplot's `clearView` cleared one by hand, `LinearSyntenyView.clearView`
 // forgot to, and a per-launch segments track sat in `sessionTracks` after its
 // assembly was gone.
 test('a view-local track config goes out with the view', async () => {

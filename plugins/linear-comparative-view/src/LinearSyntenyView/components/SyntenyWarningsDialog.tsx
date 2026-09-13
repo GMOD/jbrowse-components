@@ -1,7 +1,7 @@
 import { TrackWarningsDialog } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
-import type { LinearComparativeViewModel } from '../model.ts'
+import type { LinearSyntenyViewModel } from '../model.ts'
 
 // The synteny view's binding of the shared render-warnings report. Takes the
 // model (rather than the rows) because the affordance that opens it queues a
@@ -11,7 +11,7 @@ const SyntenyWarningsDialog = observer(function SyntenyWarningsDialog({
   model,
   handleClose,
 }: {
-  model: LinearComparativeViewModel
+  model: LinearSyntenyViewModel
   handleClose: () => void
 }) {
   return (

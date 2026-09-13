@@ -4,7 +4,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { observer } from 'mobx-react'
 
-import type { LinearComparativeViewModel } from '../model.ts'
+import type { LinearSyntenyViewModel } from '../model.ts'
 import type { SearchBoxPrefs } from '@jbrowse/plugin-linear-genome-view'
 
 /**
@@ -19,7 +19,7 @@ const ViewOptionsMenuButton = observer(function ViewOptionsMenuButton({
   model,
   prefs,
 }: {
-  model: LinearComparativeViewModel
+  model: LinearSyntenyViewModel
   prefs: SearchBoxPrefs
 }) {
   return (

@@ -482,7 +482,7 @@ test('takeOutViewsMissingFrom clears the focus of a view it drops', () => {
 // walks parents, so from `beforeDestroy` on the scheduled task it throws
 // `no session model found!` — out of MST's own teardown.
 //
-// Both comparative views need that reach. `LinearComparativeView` and
+// Both comparative views need that reach. `LinearSyntenyView` and
 // `DotplotView` give back the read-vs-ref assemblies they synthesized, which
 // nothing else owns and nothing else would remove
 // (`buildDotplotReadVsRefSpec.ts` names the contract; `releaseTemporaryAssemblies`

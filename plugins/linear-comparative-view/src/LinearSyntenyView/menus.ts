@@ -4,7 +4,7 @@ import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
 import RemoveIcon from '@mui/icons-material/Remove'
 
-import { rowLabels } from '../LinearComparativeView/rowLabel.ts'
+import { rowLabels } from './rowLabel.ts'
 
 import type { FollowHost } from '../SyntenyFollow/followHost.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -24,7 +24,7 @@ interface RemoveRowModel {
   removeLastRow: () => void
 }
 
-// Only terminal removal is supported (see LinearComparativeView.removeLastRow),
+// Only terminal removal is supported (see LinearSyntenyView.removeLastRow),
 // and a 2-row view has nothing to remove without collapsing to a single genome.
 export function removeRowMenuItems(model: RemoveRowModel): MenuItem[] {
   return model.views.length > 2

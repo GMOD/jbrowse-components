@@ -8,13 +8,10 @@ import {
 } from '@jbrowse/synteny-core'
 import WarningIcon from '@mui/icons-material/WarningAmber'
 
-import { CIGAR_MODE_OPTIONS } from '../../LinearSyntenyView/cigarModes.ts'
-import {
-  DEFAULT_ALPHA,
-  DEFAULT_MIN_ALIGNMENT_LENGTH,
-} from '../../LinearSyntenyView/consts.ts'
+import { CIGAR_MODE_OPTIONS } from '../cigarModes.ts'
+import { DEFAULT_ALPHA, DEFAULT_MIN_ALIGNMENT_LENGTH } from '../consts.ts'
 
-import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
+import type { LinearSyntenyViewModel } from '../model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 /**
