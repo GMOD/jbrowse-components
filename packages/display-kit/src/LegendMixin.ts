@@ -79,10 +79,11 @@ export default function LegendMixin() {
       },
       /**
        * #getter
-       * Overridable hook (default 0): px the key is pushed down from its own
-       * inset, on screen and in the export alike. A display that already draws
-       * something of its own in that corner — Hi-C's resolution box — answers
-       * that thing's height; the chrome adds its own axis captions on top.
+       * Overridable hook (default 0): px the on-screen key is pushed down from
+       * its own inset. A display that already draws a control of its own in
+       * that corner — Hi-C's resolution box — answers that control's height;
+       * the chrome adds its own axis captions on top. The export draws no
+       * controls, so it does not read this.
        */
       get legendTop(): number {
         return 0

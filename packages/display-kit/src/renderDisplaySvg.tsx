@@ -90,10 +90,12 @@ const GUTTER_INSET = 10
 /**
  * The exported key of a display composing `LegendMixin`, drawn by the shell
  * off the same `legendSpec` the chrome draws on screen. Over the plot's
- * top-right corner, as every display placed its own; beside the plot when the
- * display reserved the export gutter (`svgLegendWidth`) and the container
- * granted it. No `onDismiss`: an exported legend cannot be clicked. Exported
- * so a display's test can render its key without a fetch.
+ * top-right corner, below any axis captions there, as every display placed its
+ * own; beside the plot, from its top, when the display reserved the export
+ * gutter (`svgLegendWidth`) and the container granted it. `legendTop` is not
+ * read: the controls it clears on screen are not exported. No `onDismiss`: an
+ * exported legend cannot be clicked. Exported so a display's test can render
+ * its key without a fetch.
  */
 export function SvgLegend({
   model,
@@ -108,9 +110,7 @@ export function SvgLegend({
 }) {
   const gutter =
     svgLegendAreaReserved(opts) && (model.svgLegendWidth?.() ?? 0) > 0
-  const top =
-    (model.legendTop ?? 0) +
-    (isAxisHost(model) ? axisCaptionsReservedPx(model) : 0)
+  const top = !gutter && isAxisHost(model) ? axisCaptionsReservedPx(model) : 0
   if (!model.showLegend) {
     return null
   }

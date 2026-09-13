@@ -1,8 +1,9 @@
 import { types } from '@jbrowse/mobx-state-tree'
 import { render } from '@testing-library/react'
 
-import { renderDisplaySvg } from './renderDisplaySvg.tsx'
+import { SvgLegend, renderDisplaySvg } from './renderDisplaySvg.tsx'
 
+import type { LegendHost } from './legendHost.ts'
 import type { LgvSvgBodyProps } from './renderDisplaySvg.tsx'
 import type { YAxis } from '@jbrowse/display-ui'
 
@@ -268,5 +269,33 @@ describe('the y axis', () => {
       axisLabel.compareDocumentPosition(legend) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy()
+  })
+})
+
+// `legendTop` clears a control a display draws in the key's corner on screen
+// (Hi-C's resolution box). The export draws no controls, so honouring it left
+// an exported key floating that far below its corner, beside the plot or over
+// it.
+describe('SvgLegend', () => {
+  const host = {
+    showLegend: true,
+    legendSpec: { items: [{ id: 'a', label: 'a', color: 'red' }] },
+    setShowLegend() {},
+    dismissLegendSection() {},
+    legendTop: 28,
+    svgLegendWidth: () => 100,
+  } as unknown as LegendHost
+
+  test.each([
+    ['in the reserved gutter', { legendWidth: 100 }],
+    ['floating over the plot', {}],
+  ])('ignores an on-screen legendTop %s', (_, opts) => {
+    const { container } = render(
+      <svg>
+        <SvgLegend model={host} width={800} height={200} opts={opts} />
+      </svg>,
+    )
+    expect(container.querySelector('[data-testid="color-legend"]')).toBeTruthy()
+    expect(container.querySelector('g[transform="translate(0 28)"]')).toBeNull()
   })
 })
