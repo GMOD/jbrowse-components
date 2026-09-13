@@ -732,7 +732,7 @@ so it takes no dependency on the wiggle plugin's MST factories or RPC methods:
 
 - `renderingBackendTypes.ts` — `WiggleRenderingBackend`, `WiggleGPURenderState`, `SourceRenderData`
 - `dataTypes.ts` — `WiggleDataResult`, `WiggleSourceData`, `WiggleFeatureArrays`
-- `normalize.ts` — `SCALE_TYPE_LOG`/`LINEAR`, `scaleTypeFromString`, `makeScoreNormalizer`
+- `normalize.ts` — `SCALE_TYPE_LOG`/`LINEAR`, `scaleTypeFromString`, and `makeScoreNormalizer`, re-exported from `@jbrowse/render-core/scoreScale`
 - `displayModel.ts` — `WiggleGpuDisplayModel<TRenderingBackend>`: model↔component contract
 - `scale.ts` / `autoscale.ts` — `getNiceDomain`, `getScale`, autoscale helpers
 - `scoreMenuItems.ts` — `makeScoreSubMenu(self, opts)` + `ScoreScaleModel`: the shared Score submenu

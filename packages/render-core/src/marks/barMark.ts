@@ -1,15 +1,11 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
 import { getDpr, makeBpMapper, spanLeft } from '../canvas2dUtils.ts'
+import { scaleTypeCode } from '../scoreScale.ts'
 import * as shader from '../shaders/barMark.generated.ts'
 import { valueToYPxScaled } from '../shaders/pointMark.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { makeAbgrFill } from './colorFill.ts'
-import {
-  colorBits,
-  paintColors,
-  rampUniforms,
-  valueScaleTypeCode,
-} from './markRamp.ts'
+import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
 import { blockPx } from './spanMark.ts'
 
 import type { ColorChannel } from './markRamp.ts'
@@ -58,7 +54,7 @@ function barRect(
   const xb = bpToPx(x2)
   const width = Math.max(params.minWidthPx, Math.abs(xb - xa))
   const [domainMin, domainMax] = params.domain
-  const st = valueScaleTypeCode(params.scaleType)
+  const st = scaleTypeCode(params.scaleType)
   const valueY = valueToYPxScaled(y, domainMin, domainMax, canvasHeight, st)
   const originY = valueToYPxScaled(
     params.origin,
@@ -87,7 +83,7 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
       canvasHeight: frame.canvasHeight,
       domainMin: params.domain[0],
       domainMax: params.domain[1],
-      valueScaleType: valueScaleTypeCode(params.scaleType),
+      valueScaleType: scaleTypeCode(params.scaleType),
       ...rampUniforms(params.ramp),
       origin: params.origin,
       zero: 0,

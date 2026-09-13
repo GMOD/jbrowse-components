@@ -6,7 +6,7 @@ import {
 import { SCALE_TYPE_LOG } from '../shaders/scoreScale.generated.ts'
 import { normalizeScore } from '../shaders/scoreScale.js.generated.ts'
 
-import type { MarkRamp, MarkValueScaleType } from './types.ts'
+import type { MarkRamp } from './types.ts'
 
 /**
  * A colour channel as a shape reads it: `color`, the packed ABGR the worker
@@ -30,11 +30,6 @@ interface RampBake {
 }
 
 const NO_COLORS = new Uint32Array(0)
-
-/** `scoreScale`'s scale-type code for a declared value scale. */
-export function valueScaleTypeCode(scale: MarkValueScaleType | undefined) {
-  return scale === 'log' ? SCALE_TYPE_LOG : 0
-}
 
 /** `markColor.slang`'s three uniforms for a frame's ramp, or for none. */
 export function rampUniforms(ramp: MarkRamp | undefined) {

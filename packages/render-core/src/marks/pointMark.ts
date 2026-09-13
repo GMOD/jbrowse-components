@@ -1,17 +1,13 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
 import { getDpr, makeBpMapper } from '../canvas2dUtils.ts'
+import { scaleTypeCode } from '../scoreScale.ts'
 import * as shader from '../shaders/pointMark.generated.ts'
 import { pointDrawsBar, pointYPx } from '../shaders/pointMark.js.generated.ts'
 import { slangPass } from '../slangPass.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { appendGlyph, glyphBox } from './glyphPaint.ts'
 import { inkAtPoint, inkOnRect, nearestInk } from './markHit.ts'
-import {
-  colorBits,
-  paintColors,
-  rampUniforms,
-  valueScaleTypeCode,
-} from './markRamp.ts'
+import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
 import { blockPx } from './spanMark.ts'
 
 import type { ColorChannel } from './markRamp.ts'
@@ -63,7 +59,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       canvasHeight: frame.canvasHeight,
       domainMin: params.domain[0],
       domainMax: params.domain[1],
-      valueScaleType: valueScaleTypeCode(params.scaleType),
+      valueScaleType: scaleTypeCode(params.scaleType),
       ...rampUniforms(params.ramp),
       zero: 0,
       // viewportWidth and radiusPx stay in CSS units to match canvasHeight:
@@ -87,7 +83,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     const canvasHeight = frame.canvasHeight
     const domainMin = domain[0]
     const domainMax = domain[1]
-    const st = valueScaleTypeCode(params.scaleType)
+    const st = scaleTypeCode(params.scaleType)
     // The per-block closure, not the six-argument `bpToScreenPx`: that spelling
     // re-derives the region span and the block width at every call, and this
     // loop makes two calls per instance. Measured at 1.67x on 100K points.
@@ -139,7 +135,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       domain[0],
       domain[1],
       frame.canvasHeight,
-      valueScaleTypeCode(params.scaleType),
+      scaleTypeCode(params.scaleType),
       insetPx,
     )
     const lo = Math.min(xStart, xEnd)
@@ -160,7 +156,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     const domainMin = domain[0]
     const domainMax = domain[1]
     const canvasHeight = frame.canvasHeight
-    const st = valueScaleTypeCode(params.scaleType)
+    const st = scaleTypeCode(params.scaleType)
     return nearestInk(candidates, maxDistSq, i => {
       const xStart = bpToPx(x[i]!)
       const xEnd = bpToPx(x2[i]!)

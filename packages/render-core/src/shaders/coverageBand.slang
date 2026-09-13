@@ -192,16 +192,10 @@ public float covBaselinePx(CoverageBandUniforms u) {
   return u.covTop + covBottomOffsetPx(u.covHeight, u.covYOffset);
 }
 
-// Normalize a raw coverage depth to [0,1] over the domain [min, max], on the
-// current scale type — `scoreScale.slang`'s normalizer under the coverage
-// band's name for it.
-//
-// The name is what the alignments coverage reads it by: it is the scalar twin
-// of makeScoreNormalizer in packages/wiggle-core/src/normalize.ts, which is
-// what the Canvas2D coverage draws and the y-axis ticks go through, and
-// `coverageNormalizeParity.test.ts` pins all of those against each other. The
-// three branches themselves are no longer here — this band and the wiggle
-// renderer had a copy each and they had drifted (see scoreScale.slang).
+// `scoreScale.slang`'s normalizer under the name the alignments coverage reads
+// it by: the scalar twin `coverageNormalizeParity.test.ts` pins against
+// `makeScoreNormalizer` (render-core `scoreScale.ts`), which the Canvas2D
+// coverage draws and the y-axis ticks go through.
 public float normalizeDepthScalar(float rawDepth, float domainMin, float domainMax, int scaleType, float symlogConstant) {
   return normalizeScore(rawDepth, domainMin, domainMax, scaleType, symlogConstant);
 }

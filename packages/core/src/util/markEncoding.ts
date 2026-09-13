@@ -1,3 +1,7 @@
+import {
+  makeScoreNormalizer,
+  scaleTypeCode,
+} from '@jbrowse/render-core/scoreScale'
 import { GLYPH_DISC } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
 import { categoricalPalette, categoricalValueColor } from '../ui/colors.ts'
@@ -170,28 +174,6 @@ function lutColorAt(lut: Uint8Array, t: number) {
   const i = Math.min(entries - 1, Math.max(0, Math.round(t * (entries - 1))))
   const o = i * 4
   return packAbgr(lut[o]!, lut[o + 1]!, lut[o + 2]!, lut[o + 3]!)
-}
-
-// The `[0, 1]` fraction a value sits at in the domain: the scale half of the
-// y-channel split (ADR-097), spelled once here for colour. The log arm floors
-// at the domain's own minimum so a domain below 1 still spreads.
-function normalizer(scale: 'linear' | 'log', domain: [number, number]) {
-  const [min, max] = domain
-  if (scale === 'log') {
-    const floorV = min > 0 ? min : 1
-    const logMin = Math.log2(floorV)
-    const logRange = Math.log2(Math.max(max, floorV)) - logMin
-    return (v: number) =>
-      logRange <= 0
-        ? 0
-        : Math.min(
-            1,
-            Math.max(0, (Math.log2(Math.max(v, floorV)) - logMin) / logRange),
-          )
-  }
-  const range = max - min
-  return (v: number) =>
-    range <= 0 ? 0 : Math.min(1, Math.max(0, (v - min) / range))
 }
 
 function categoryOrder(
@@ -416,7 +398,11 @@ export function encodeFeatures<L extends LaneName>(
     const domain = scaled.domain ?? extent
     const lut = buildColorRampLut(rampStops(scaled.ramp))
     if (color) {
-      const norm = normalizer(scaled.scale, domain)
+      const norm = makeScoreNormalizer(
+        domain[0],
+        domain[1],
+        scaleTypeCode(scaled.scale),
+      )
       for (let i = 0; i < count; i++) {
         const v = rampValues[i]!
         color[i] = Number.isFinite(v)

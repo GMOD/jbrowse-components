@@ -10,7 +10,7 @@
 // by a 1e-6 floor and saturated. This module is one answer to both.
 //
 // The degenerate domain answers 0, which is what the JS twin
-// (`makeScoreNormalizer`, packages/wiggle-core/src/normalize.ts) has always
+// (`makeScoreNormalizer`, render-core's scoreScale.ts) has always
 // answered. Returning 0 avoids the NaN the 1e-6 floor was there for just as
 // well, so the divergence bought nothing and cost a documented exception.
 //
@@ -18,7 +18,7 @@
 // third constant would be a value nothing compares against.
 //! export-consts: SCALE_TYPE_LOG, SCALE_TYPE_SYMLOG
 //! js-export: normalizeScore
-//! js-skip: symlogTransform — the JS twin (wiggle-core normalize.ts) spells it Math.log1p, which is accurate near zero where the shader's log(1.0 + x) is not; a generated twin would be a faithful copy of the worse of the two. What both backends must agree on is normalizeScore, which is exported and swept by normalizeScoreParity.test.ts
+//! js-skip: symlogTransform — the JS twin (render-core scoreScale.ts) spells it Math.log1p, which is accurate near zero where the shader's log(1.0 + x) is not; a generated twin would be a faithful copy of the worse of the two. What both backends must agree on is normalizeScore, which is exported and swept by normalizeScoreParity.test.ts
 module scoreScale;
 
 // The values the `scaleType` uniform is compared against. Emitted into
