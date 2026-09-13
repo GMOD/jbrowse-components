@@ -2026,8 +2026,10 @@ does the shared-shape version); keep them in step with any change here.
   `linearWiggleDisplayModelFactory` from
   `@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel` — the subpath, not the
   barrel (see `plugins/gccontent`, and the export note above). To borrow only the score machinery, compose
-  `ScoreFieldConfigMixin` + `makeScoreSubMenu` and render `ScorePlotChrome` from
-  its subpath (see `plugins/gwas` Manhattan).
+  `WiggleScoreConfigMixin` + `makeScoreSubMenu` and render `ScorePlotChrome`
+  from its subpath. A display plotting one configured field composes
+  `ScoreFieldConfigMixin`, which adds `scoreField` (`plugins/gwas` Manhattan);
+  one naming a field per mark keeps the base (`plugins/marks`).
   Implement `WiggleRenderingBackend` (typed from `@jbrowse/wiggle-core`). A
   zoom-independent display needs no cache override: the strict-`bpPerPx`
   `zoomFetchKey` rides on `WiggleCommonMixin`, so composing the score config
