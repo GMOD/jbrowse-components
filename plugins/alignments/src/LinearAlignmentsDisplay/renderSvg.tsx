@@ -11,7 +11,6 @@ import CrossRegionArcsSvg from './components/CrossRegionArcsSvg.tsx'
 import PileupBezierArcsSvg from './components/PileupBezierArcsSvg.tsx'
 import SashimiArcsSvg from './components/SashimiArcsSvg.tsx'
 import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
-import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { bandScreenTop, sectionKey } from './components/sectionScreen.ts'
 import {
@@ -20,7 +19,6 @@ import {
   groupSectionLabel,
 } from './groupLabelStyle.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
-import { buildSectionRenders } from './sectionLayout.ts'
 import GroupLabelBox from './svgcomponents/GroupLabelBox.tsx'
 
 import type { ScrollModel } from './components/sectionScreen.ts'
@@ -57,8 +55,6 @@ function AlignmentsSvgBody({
   // Export colors follow the export theme, not the live session theme, so the
   // pileup matches the labels and contrast that already use it.
   const palette = resolvePalette({ configTheme: opts?.theme })
-  const baseState = model.renderState
-  const displayHeight = height
   const { renderSections } = model
   // anchors the left-edge scale bars / group labels to the content; non-zero
   // only when scrolled before the genome start
@@ -81,29 +77,14 @@ function AlignmentsSvgBody({
     ...s,
     coverageTop: bandScreenTop(s.coverageTop, scroll),
   }))
+  // The on-screen render state and labels, which already carry the scroll and
+  // the display's height; only the width and the export theme's colors differ.
   const state = {
-    ...baseState,
+    ...model.renderState,
     canvasWidth,
-    canvasHeight: displayHeight,
     colors: buildColorPaletteFromPalette(palette),
-    sections: buildSectionRenders(model.sections, {
-      scrollTop: scroll.scrollTop,
-      canvasHeight: displayHeight,
-    }),
   }
-
-  // The same compute as the on-screen getter, now including scrollTop, so read
-  // labels ride the reads they name instead of staying pinned to the layout top.
-  const labels = computeVisibleLabels({
-    view,
-    sections: renderSections,
-    height: displayHeight,
-    featureHeight: model.featureHeight,
-    featureSpacing: model.featureSpacing,
-    showMismatches: model.showMismatches,
-    mismatchAlpha: model.mismatchAlpha,
-    scrollTop: scroll.scrollTop,
-  })
+  const labels = model.visibleLabels
   const contrastMap = getMismatchContrastMap(model.showModifications, palette)
 
   // Sashimi and linked-read bezier arcs stay vector SVG by design (low arc
@@ -113,7 +94,7 @@ function AlignmentsSvgBody({
     <>
       <PaintLayer
         width={canvasWidth}
-        height={displayHeight}
+        height={height}
         opts={opts}
         paint={ctx => {
           drawAlignmentsToCtx(
