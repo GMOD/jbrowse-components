@@ -24,6 +24,9 @@ interface SnapshotTestCommon {
   // set false for a display that legitimately renders empty (skips the
   // shader-drew-something gate)
   assertContent?: boolean
+  // an element the capture needs that the display's paint does not gate — a
+  // chrome overlay like the facet chips, which mount beside the canvas
+  readySelector?: string
   // gates the test behind --include-remote (data fetched from S3/UCSC)
   requiresRemote?: boolean
   // wait + data-loaded timeout; raise for whole-genome remote renders
@@ -39,6 +42,7 @@ async function snapshotViewBody(
     config,
     waitSelector,
     snapshotSelector,
+    readySelector,
     snapshot,
     threshold = 0.05,
     assertContent = true,
@@ -47,6 +51,7 @@ async function snapshotViewBody(
     config?: string
     waitSelector: string
     snapshotSelector: string
+    readySelector?: string
     snapshot: string
     threshold?: number
     assertContent?: boolean
@@ -59,6 +64,9 @@ async function snapshotViewBody(
   // saying out loud — see waitForDisplayPaint
   await waitForDisplayPaint(page, waitSelector, timeout)
   await waitForDataLoaded(page, timeout)
+  if (readySelector) {
+    await page.waitForSelector(readySelector, { timeout })
+  }
   await dualSnapshot(page, `${snapshot}-canvas`, snapshotSelector, threshold, {
     assertContent,
   })
@@ -92,6 +100,7 @@ export function lgvSnapshotTest({
   config,
   displayTestId,
   snapshotSelector,
+  readySelector,
   threshold,
   assertContent,
   requiresRemote,
@@ -111,6 +120,7 @@ export function lgvSnapshotTest({
           config,
           waitSelector: snapshotSelector ?? canvasSelector,
           snapshotSelector: snapshotSelector ?? canvasSelector,
+          readySelector,
           snapshot,
           threshold,
           assertContent,
@@ -142,6 +152,7 @@ export function viewSnapshotTest({
   config,
   waitTestId,
   snapshotSelector,
+  readySelector,
   threshold,
   assertContent,
   requiresRemote,
@@ -159,6 +170,7 @@ export function viewSnapshotTest({
           config,
           waitSelector,
           snapshotSelector: snapshotSelector ?? waitSelector,
+          readySelector,
           snapshot,
           threshold,
           assertContent,

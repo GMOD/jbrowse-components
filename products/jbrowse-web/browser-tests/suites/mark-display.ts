@@ -83,6 +83,17 @@ const suite: TestSuite = {
       config,
       snapshotSelector: withChrome,
     }),
+    // The chips are the chrome's overlay, so the display's paint does not gate
+    // them — the capture waits on a chip.
+    lgvSnapshotTest({
+      name: 'a declared facet bands the pileup by mismatch count, each band under its chip',
+      snapshot: 'mark-facet',
+      loc: 'ctgA:1-5000',
+      tracks: ['marks_facet'],
+      config,
+      snapshotSelector: withChrome,
+      readySelector: `${withChrome} [data-testid="group-label-chip"]`,
+    }),
   ],
 }
 

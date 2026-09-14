@@ -365,6 +365,55 @@
           ]
         }
       ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "volvox-sorted.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox-sorted.bam.bai",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "trackId": "marks_facet",
+      "name": "Mark facet",
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "marks_facet-LinearMarkDisplay",
+          "marks": [
+            {
+              "shape": "span",
+              "facet": "nm",
+              "transform": [
+                {
+                  "type": "formula",
+                  "expr": "jexl:getTag(feature,'NM')",
+                  "as": "nm"
+                },
+                {
+                  "type": "stack",
+                  "groupby": ["nm"]
+                }
+              ],
+              "encoding": {
+                "row": "row",
+                "color": {
+                  "field": "nm",
+                  "scale": "categorical"
+                }
+              }
+            }
+          ]
+        }
+      ]
     }
   ]
 }
