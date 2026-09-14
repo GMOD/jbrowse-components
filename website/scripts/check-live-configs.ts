@@ -46,6 +46,10 @@ const network = process.argv.includes('--network')
 // six were hand-written and hand-uploaded until 2026-09-11, so a correction had
 // no diff and a drift had no reader.
 const HOSTED_MIRRORS: Record<string, string> = {
+  'demos/alphagenome/config.json':
+    'https://jbrowse.org/demos/alphagenome/config.json',
+  'demos/alphagenome_test.bed':
+    'https://jbrowse.org/demos/alphagenome_test.bed',
   'demos/hprc/config.json': 'https://jbrowse.org/demos/hprc/config.json',
   'demos/hprc/README.txt': 'https://jbrowse.org/demos/hprc/README.txt',
   'demos/hprc_multiway/README.txt':

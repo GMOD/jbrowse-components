@@ -161,7 +161,7 @@ const TRUSTED_PLUGIN_URLS = [
   'https://jbrowse.org/demos/graphgenomeviewer/jbrowse-plugin-graphgenomeviewer.esm.js',
   // demos/alphagenome/config.json, pinned to a content-addressed build — see
   // that demo's README for why the pin is there and what bumping it means here
-  'https://jbrowse.org/demos/alphagenome-plugin/afbe3c6b0310/jbrowse-plugin-alphagenome.umd.js',
+  'https://jbrowse.org/demos/alphagenome-plugin/1e7b10385f41/jbrowse-plugin-alphagenome.umd.js',
 ]
 
 // Pre-approve the cross-origin plugin warning, which otherwise covers the whole
