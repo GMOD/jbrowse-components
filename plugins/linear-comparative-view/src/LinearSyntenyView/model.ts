@@ -981,11 +981,14 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         // The follow anchor addresses a row, so it is clamped here rather than
         // in its setter: every path that changes the views array comes through
         // this one (afterAttach, setViews, addView, removeLastRow), and a
-        // snapshot can arrive with an anchor its views cannot support.
-        self.followAnchorIndex = Math.min(
-          Math.max(self.followAnchorIndex, 0),
-          Math.max(self.views.length - 1, 0),
-        )
+        // snapshot can arrive with an anchor its views cannot support. A spec
+        // attaches with no views yet, so an empty stack leaves the anchor alone.
+        if (self.views.length > 0) {
+          self.followAnchorIndex = Math.min(
+            Math.max(self.followAnchorIndex, 0),
+            self.views.length - 1,
+          )
+        }
       },
     }))
     .actions(self => ({

@@ -184,19 +184,22 @@ test('every navigation-shaped action of a row is classified', async () => {
 // A spec that opens following places its rows through the same navigations a
 // search box would, one root action per row, and the anchor it named ended on
 // whichever row navigated last.
-test('a spec that opens following keeps the anchor it named', async () => {
-  const view = await launchStack({
-    views: [
-      { assembly: 'volvox0', loc: 'ctgA:1-8000' },
-      { assembly: 'volvox1' },
-      { assembly: 'volvox2', displayedRegionNames: ['ctgA'] },
-    ],
-    followSynteny: true,
-    followAnchorIndex: 0,
-  })
-  expect(view.followSynteny).toBe(true)
-  expect(view.followAnchorIndex).toBe(0)
-})
+test.each([0, 2])(
+  'a spec that opens following keeps the anchor it named (%p)',
+  async followAnchorIndex => {
+    const view = await launchStack({
+      views: [
+        { assembly: 'volvox0', loc: 'ctgA:1-8000' },
+        { assembly: 'volvox1' },
+        { assembly: 'volvox2', displayedRegionNames: ['ctgA'] },
+      ],
+      followSynteny: true,
+      followAnchorIndex,
+    })
+    expect(view.followSynteny).toBe(true)
+    expect(view.followAnchorIndex).toBe(followAnchorIndex)
+  },
+)
 
 // An appended row's own init navigates it as a root action — `navToLocString`
 // with a `loc`, `showAllRegionsInAssembly` without — and the follow read that
