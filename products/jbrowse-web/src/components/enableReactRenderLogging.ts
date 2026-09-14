@@ -46,3 +46,7 @@ if (typeof globalThis.performance.mark !== 'function') {
   // @ts-expect-error stubbing the jsdom gap
   globalThis.performance.mark = () => {}
 }
+
+if (typeof globalThis.performance.clearMeasures !== 'function') {
+  globalThis.performance.clearMeasures = () => {}
+}
