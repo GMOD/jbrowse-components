@@ -344,7 +344,7 @@ same way, so a segment can be found in either. A hop is one step, so the right
 half stops with a loose end of its own. It expands only over off-reference
 segments, so it does not drag in the backbone either side of the window.
 
-<Figure caption="The paa island cut from the same segments track twice, each under the linear view it was made from. Left, at Graph context None, the two boxed nodes end in mid-air. Right, at 1 hop, the red arrow marks the interior the extra queries found, closing them into a bubble." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
+<Figure caption="The paa island cut from the same segments track twice, each under the linear view it was made from. Left, at Graph context None, the two boxed nodes end in mid-air. Right, at 1 hop, the red ring marks the interior the extra queries found, closing them into a bubble." src="/img/pangenome/graph_context.png" links="None=pangenome/graph_context_none,1 hop=pangenome/graph_context_hop1" />
 
 A **2 hops** setting handles a graph whose alleles have alleles of their own. On
 this window 1 hop already closes the cut; HPRC's amylase window keeps growing

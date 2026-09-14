@@ -791,27 +791,18 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
   const EXIT_COLOR = '#e8710a'
   const INTERIOR_COLOR = '#e3242b'
   const LABEL_COLOR = '#37474f'
-  // The label sits in the graph pane's own top-right, which is empty in both
-  // layouts, anchored on the canvas the graph draws into. NOT on the node-count
-  // readout beside it, which was the first thing tried: that element is text, so
-  // its width and therefore its centre move with the numbers it happens to be
-  // showing. `17 nodes, 21 edges` against `20 nodes, 25 edges` shifted the pill
-  // and swung the arrow tail off the pane, which is a callout decalibrated by the
-  // thing it is captioning. The canvas is sized by the viewport instead, and its
-  // 13px height difference between the halves is the only thing dy inherits.
-  //
-  // It names the setting and nothing else — one short label per panel, with what
-  // the two halves mean in the page's <Figure caption>. maxWidth keeps the pill
-  // inside its own half of the composite if a setting name ever grows past the
-  // ~260px left of the canvas centre plus dx.
-  const canvasAnchor = { selector: '[data-testid="graph-genome-canvas"]' }
+  // The setting's name in the pane's top-left corner, anchored on the canvas
+  // rather than on the node-count readout, whose width moves with its numbers.
   const label = (text: string): Annotation => ({
     type: 'text',
     text,
-    anchor: canvasAnchor,
-    dx: 110,
-    dy: -278,
-    maxWidth: 205,
+    anchor: {
+      selector: '[data-testid="graph-genome-canvas"]',
+      alignX: 'left',
+      alignY: 'top',
+    },
+    dx: 12,
+    dy: 26,
     fontSize: 18,
     color: LABEL_COLOR,
   })
@@ -884,6 +875,11 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
           // sure you can't iterate it more times for better layout?"), and it is
           // what takes the crossings out of a drawing this size for milliseconds.
           layoutQuality: 4,
+          // No halos and no gene pins (review: "are you happy with this"): both
+          // halves carried bubble labels that differ between the cuts and read
+          // as the finding, where the finding is the boxed stubs closing.
+          showBubbles: false,
+          showGenes: false,
         },
       ],
     }),
@@ -918,24 +914,16 @@ function graphContextPartSpecs(): ScreenshotSpec[] {
         pad: 22,
       })),
       label(text),
-      // the arrow only exists in the half that has an interior to point at.
-      // A third box would be the honest shape, but the interior draws BETWEEN
-      // the two boxed nodes, so a box at pad 22 overlaps both of theirs.
+      // the interior only the 1 hop cut reaches, ringed where it draws between
+      // the two boxed nodes
       ...(subgraphContext > 0
         ? [
             {
-              type: 'arrow',
+              type: 'circle',
               anchor: { view: 1, graphNode: DETOUR_INTERIOR },
-              // out of the pill's lower left corner, which is where the label
-              // above puts it — the one-line pill's baseline plus its descent
-              // and padding
-              fromAnchor: { ...canvasAnchor, dx: 150, dy: -262 },
+              radius: 26,
               strokeWidth: 3,
               color: INTERIOR_COLOR,
-              // down the interior's own arc, away from the entry node's box: at
-              // the node's centre the head sits under that box's lower corner
-              // and can be read as pointing at it
-              dy: 12,
             } satisfies Annotation,
           ]
         : []),
