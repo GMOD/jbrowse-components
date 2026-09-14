@@ -480,16 +480,10 @@ mouseoverExtraInformation: undefined as string[] | undefined,
 sequenceHoverPosition: undefined as SequenceHoverPosition | undefined,
 /**
  * #volatile
- * Group keys whose section packs onto one row. A key means nothing
- * outside the grouping that issued it, since `''` is both the
- * ungrouped section and every dimension's catch-all, so the set is
- * dropped when `groupKeySpace` moves.
- */
-collapsedGroups: observable.set<string>(),
-/**
- * #volatile
- * Group keys the user hid from the stack, keyed and dropped exactly
- * like `collapsedGroups`.
+ * Group keys the user hid from the stack. A key means nothing outside
+ * the grouping that issued it, since `''` is both the ungrouped
+ * section and every dimension's catch-all, so the set is dropped when
+ * `groupKeySpace` moves.
  */
 hiddenGroups: observable.set<string>(),
 ```
