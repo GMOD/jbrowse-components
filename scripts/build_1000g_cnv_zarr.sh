@@ -44,7 +44,7 @@ esac
 # over the other would also strand chunks, since only the windowed store has a
 # bin1000 level and the bucket has no versioning.
 #
-# Only whole-genome rounds. The windowed store is 1.4 MB, so halving it buys
+# Only whole-genome rounds. The windowed store is 2.4 MB, so halving it buys
 # nothing, and leaving its values alone keeps its bin1000/bin10000 chunks
 # byte-identical to what is already published: a republish then only *adds* the
 # new summary arrays instead of overwriting position-named chunks in a bucket
@@ -59,12 +59,14 @@ if [ "$WHOLE_GENOME" = 1 ]; then
   DECIMALS=(--decimals 2)
 else
   # The windows the figures visit: CCL3L1/CCL4L1 and UGT2B17 for the CNV
-  # tutorial, and RHD for the SV-multisamples one, where the panel's copy
-  # number is read beside the same cohort's ensemble SV calls.
+  # tutorial, RHD for the SV-multisamples one, and the chr3 nested deletion for
+  # the paper's cohort figure. Append new windows last: a region's bin offset
+  # follows the ones before it, so appending leaves published chunks unchanged.
   REGIONS=(
     --region chr17:35000000-37500000
     --region chr4:68000000-69000000
     --region chr1:25150000-25450000
+    --region chr3:162500000-163200000
   )
   LEVELS=1000,10000
   STORE_NAME=qm2_cn_1kb.zarr
@@ -90,7 +92,7 @@ done
   npm install --silent --no-save --prefix "$HERE" @gmod/bbi generic-filehandle2
 
 # The store this repository *reads* is the hosted one at $STORE_URL, not a tree
-# in the checkout — 1.7 MB of undeltifiable chunks that every clone pays for.
+# in the checkout — 2.4 MB of undeltifiable chunks that every clone pays for.
 # So the build always writes beside the caller, in a checkout or not, and
 # publishing is the explicit `aws s3 sync` below rather than a `git add`.
 OUT=${OUT:-1000g_cnv_build/$STORE_NAME}
