@@ -90,7 +90,7 @@ function kiv2LinearView() {
     loc: LPA_WINDOW,
     tracks: [
       hg38GeneLane(70),
-      hprcBubblesLane(70),
+      hprcBubblesLane(95),
       hprcSegmentsLane(LPA_REGION),
     ],
   }
@@ -123,7 +123,7 @@ const kiv2HalosSpec: ScreenshotSpec = {
   readyTimeout: 120000,
   settleMs: 5000,
   viewportWidth: 1400,
-  viewportHeight: 1020,
+  viewportHeight: 1045,
   hideTooltip: true,
 }
 
@@ -146,7 +146,7 @@ const kiv2PoppedSpec: ScreenshotSpec = {
   readyTimeout: 120000,
   settleMs: 5000,
   viewportWidth: 1400,
-  viewportHeight: 1100,
+  viewportHeight: 1125,
   hideTooltip: true,
   annotations: [{ type: 'box', anchor: { selector: BACK_BUTTON } }],
 }

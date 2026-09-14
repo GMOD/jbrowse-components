@@ -2203,10 +2203,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 4000,
     viewportWidth: 1000,
-    // GraphGenomeView takes no `height` through the launch snapshot; the pane
-    // sizes itself to its drawing, and a force drawing is about as tall as it is
-    // wide where the anchored one this used to capture was a few flat rows.
-    viewportHeight: 1000,
+    viewportHeight: 590,
     hideTooltip: true,
   },
   // The paa island as a bubble — the graph answer to the all-vs-all synteny
