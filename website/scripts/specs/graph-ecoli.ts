@@ -2340,6 +2340,11 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           // scaling; what stops this going lower is the per-node bp labels,
           // which do NOT scale and start colliding as the nodes close up.
           paneHeight: 340,
+          // No halo labels (review: "calling things a deletion in the graph is
+          // somewhat confusing because its always 'relative to what'"): the
+          // island is the ringed node and the synteny rows above, so the label
+          // named it a second time, from K12's side only.
+          showBubbles: false,
         },
       ],
     }),
@@ -2386,71 +2391,17 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         // box, which for a node bent into an arc is the empty space inside it
         radius: 40,
       },
-      // WHAT THE BLANK HALF OF THE LOWER BAND IS (review: "there is a weird
-      // area of where no synteny ribbons are drawn between k12 and sakai, are
-      // they just completely distinct genes in this region? what is the story?").
-      //
-      // It is a SUBSTITUTION rather than an absence, which is the part a blank
-      // band cannot say. Sakai's alignment to K12 ends at K12 1,419,704 and
-      // resumes at 1,474,096, so 54,392 bp of K12 has no Sakai block; if Sakai
-      // simply LACKED that sequence its two blocks would meet and its window
-      // would be 54 kb shorter than K12's over the same flanks. It is 15 kb
-      // LONGER (the two offsets differ by 14,812 bp), i.e. Sakai carries ~69 kb
-      // of its own where K12 carries ~54 kb of its own.
-      //
-      // WHAT IS IN THE TWO SPANS, off the hosted GFFs rather than off the
-      // picture (`tabix .../K12.gff.gz chr:1419704-1474096` and
-      // `.../Sakai.gff.gz chr:1920861-1990065`, the second being the first
-      // carried through Sakai's two offsets):
-      //
-      //     K12    48 genes: paaA-paaZ + paaX/paaY, feaB/feaR/tynA, the Rac
-      //            prophage (racR, rzoR, stfR, tfaR, pinR, ydaS-ydaY, ynaA/E/K)
-      //            and four IS elements
-      //     Sakai  77 genes: 58 ECs_ locus tags plus nleG2-2, nleG5-1, nleG6-1
-      //            (O157 non-LEE effectors), pfo, recE/recT/racC, argO4, ileZ4
-      //
-      // SEVEN SYMBOLS ARE SHARED (hslJ, ldhA, uspF, ydbH, ydbJ, ydbL, ynbE), so
-      // "completely distinct genes" -- the reviewer's guess, and what an earlier
-      // draft of this comment asserted -- is not right and the callout must not
-      // say it. The honest reading is an island per strain with the shared
-      // backbone genes interrupted on both sides, which is why no chain spans it.
-      //
-      // AND THE PILL THAT USED TO SAY ALL OF THAT IS GONE. It read "No ribbon:
-      // each strain carries its own island here. K-12 the paa operon, Sakai
-      // nleG effector genes", sitting in the blank band, and it was the figure
-      // (review: "we are relying on textbox to tell the whole story, ideally
-      // the data viz tells the story").
-      //
-      // Every clause of it is drawn now. "No ribbon" is the blank band, which
-      // was always visible and only needed something either side of it to be
-      // about; "each strain carries its own island here" is the two shaded
-      // blocks, one per row, which is the half that was missing and without
-      // which the frame read as a deletion; and the two names are those blocks'
-      // own labels, written by the app at the coordinates they belong to
-      // instead of in a box 40 kb to the left of one of them.
-      //
-      // What the picture cannot say -- which genes, that seven symbols are
-      // shared across the two spans, that Sakai's island is the longer -- is on
-      // the page under the figure, where it can be attributed. The rule this
-      // follows is website/CLAUDE.md's: a callout naming the most obvious thing
-      // in the frame is deleted rather than reworded.
-      // What the grey half of the drawing is (review: "unclear why this isnt
-      // more of a rainbow palette also"). The ramp IS on -- it is the same
-      // reference-position ramp the lane above uses, which is what makes the
-      // island green in both panes -- but a ramp over K12 coordinates can only
-      // color segments that HAVE one, and about half the nodes in a bubble by
-      // definition do not: they are the routes the other strains take past it,
-      // carrying their own donor's SN/SO instead. So the grey is the answer to
-      // the same question the figure is asking, not a palette that failed to
-      // apply, and it says so on the drawing now. s1613 is one of those nodes
-      // (SR:i:1 in ecoli_paa_subgraph.gfa), anchored by name like the rings.
+      // s1613 is one of the off-reference nodes (SR:i:1 in
+      // ecoli_paa_subgraph.gfa): the routes past the island carry their own
+      // donor's coordinates, so the K12 ramp leaves them grey.
       {
         type: 'text',
-        text: 'grey = no K12 coordinate: the routes past the island',
-        fontSize: 17,
-        textAlign: 'end',
-        anchor: { view: 1, graphNode: 's1613', alignX: 'left' },
-        dx: -14,
+        text: 'grey: the routes past the island',
+        fontSize: 18,
+        leader: true,
+        anchor: { view: 1, graphNode: 's1613' },
+        dx: -100,
+        dy: -40,
       },
     ],
   },
