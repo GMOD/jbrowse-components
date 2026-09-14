@@ -42,7 +42,7 @@ import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/display-ui'
-import { cast, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import { inkOfInstances, pointInsetPx } from '@jbrowse/render-core/marks'
 import {
@@ -56,6 +56,8 @@ import {
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import ShowChartIcon from '@mui/icons-material/ShowChart'
+import { autorun } from 'mobx'
 
 import { binStepWidth } from './autoBin.ts'
 import { densityRegionData } from './densityLayer.ts'
@@ -64,9 +66,16 @@ import {
   remapFacetRows,
   visibleFacetLayout,
 } from './facet.ts'
+import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
 import { sameMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend, colorSection, markColorScales } from './legend.ts'
 import { SHAPE_LANES, buildMarkList, markDrawsAt } from './markList.ts'
+import {
+  EMPTY_PLOT_SPEC,
+  defaultPlotMarks,
+  plotMarks,
+  specOfMarks,
+} from './plotFields.ts'
 
 import type { MarkDisplayContextMenuInfo } from './components/markDisplayTypes.ts'
 import type {
@@ -84,6 +93,7 @@ import type {
   MarkRenderState,
   StoredLayer,
 } from './markList.ts'
+import type { PlotFields, PlotSpec } from './plotFields.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type {
@@ -114,6 +124,7 @@ export type MarkRenderingBackend = PerRegionRenderingBackend<
 >
 
 const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
+const PlotFieldDialog = lazy(() => import('./components/PlotFieldDialog.tsx'))
 
 // The worker's layers as the display stores them: the Flatbush wrapped once
 // at the commit.
@@ -383,6 +394,14 @@ export function stateModelFactory(
        */
       get prefersOffset() {
         return true
+      },
+      /**
+       * #getter
+       * The spec the dialog opens on: the declared marks read back where they
+       * are a plot the dialog could have written, else an empty one.
+       */
+      get plotSpec(): PlotSpec {
+        return specOfMarks(self.conf.marks) ?? EMPTY_PLOT_SPEC
       },
       /**
        * #getter
@@ -942,10 +961,20 @@ export function stateModelFactory(
       },
     }))
     .volatile(self => ({
+      // The fields a scan of the features found, and whether the default rule
+      // has already had its turn. Volatile: a field list describes the data,
+      // not the session, and a reload scans again.
+      plotFields: undefined as PlotFields | undefined,
+      plotFieldsError: undefined as unknown,
+      plotDefaultChecked: false,
+      plotFieldsPromise: undefined as Promise<PlotFields> | undefined,
       // The click-driven details fetch, lent the display's status window so
       // it reports through the same chip as the viewport fetch and a second
       // click supersedes the first.
       detailsRotation: createStopTokenRotation(self, {
+        statusWindow: self.statusWindow,
+      }),
+      plotScanRotation: createStopTokenRotation(self, {
         statusWindow: self.statusWindow,
       }),
     }))
@@ -1045,6 +1074,22 @@ export function stateModelFactory(
       setJexlFilters(filters?: string[]) {
         self.jexlFiltersSetting = cast(filters)
       },
+      /**
+       * #action
+       */
+      setPlotFields(fields?: PlotFields, error?: unknown) {
+        self.plotFields = fields
+        self.plotFieldsError = error
+      },
+      /**
+       * #action
+       */
+      setPlotDefaultChecked() {
+        self.plotDefaultChecked = true
+      },
+      setPlotFieldsPromise(promise?: Promise<PlotFields>) {
+        self.plotFieldsPromise = promise
+      },
     }))
     .actions(self => ({
       /**
@@ -1061,6 +1106,47 @@ export function stateModelFactory(
       },
       /**
        * #action
+       * Scan the features for the fields a plot can read, once per display.
+       */
+      ensurePlotFields() {
+        const pending = self.plotFieldsPromise ?? scanOnce()
+        self.setPlotFieldsPromise(pending)
+        return pending
+
+        async function scanOnce() {
+          const scan = self.plotScanRotation.begin()
+          try {
+            const fields = await fetchPlotFields({
+              self,
+              regions: plotScanRegions(self.host),
+              opts: {
+                stopToken: scan.stopToken,
+                statusCallback: scan.statusCallback,
+              },
+            })
+            self.setPlotFields(fields)
+            return fields
+          } catch (error) {
+            self.setPlotFields(undefined, error)
+            throw error
+          } finally {
+            scan.end()
+          }
+        }
+      },
+      /**
+       * #action
+       * What the dialog writes: the plot's mark, and the binned count beside
+       * it where the user asked for one.
+       */
+      setPlotMarks(spec: PlotSpec) {
+        self.conf.setSubschemaArray(
+          'marks',
+          plotMarks(spec, self.plotFields ?? { numeric: [], categorical: [] }),
+        )
+      },
+      /**
+       * #action
        * Writes the owning mark's declared scale type, the same declaration
        * the axis and the shapes read.
        */
@@ -1073,12 +1159,33 @@ export function stateModelFactory(
         }
       },
     }))
+    .actions(self => ({
+      /**
+       * #action
+       * Open the dialog, prefilled from a single-mark config where the display
+       * already carries one, with the field scan running behind it.
+       */
+      openPlotFieldDialog() {
+        void self.ensurePlotFields().catch(() => {})
+        getDialogHost(self).queueDialog(handleClose => [
+          PlotFieldDialog,
+          { model: self, handleClose },
+        ])
+      },
+    }))
     .views(self => ({
       /**
        * #method
        */
       trackMenuItems(): MenuItem[] {
         return [
+          {
+            label: 'Plot field...',
+            icon: ShowChartIcon,
+            onClick: () => {
+              self.openPlotFieldDialog()
+            },
+          },
           // The shared radio offers symlog, which the declared enum does not
           // admit; the scale type is config-only until it does.
           makeScoreSubMenu(self, { scaleType: false, autoscale: false }),
@@ -1150,6 +1257,35 @@ export function stateModelFactory(
       },
     }))
     .actions(self => ({
+      afterAttach() {
+        // Nothing declared draws nothing, and the Display types menu offers
+        // this display on every feature, alignments and variant track. So the
+        // first time it is shown with an empty `marks`, the features decide:
+        // bars of a numeric `score`, or the dialog where they carry none.
+        addDisposer(
+          self,
+          autorun(async () => {
+            if (
+              self.plotDefaultChecked ||
+              !self.host.initialized ||
+              self.conf.marks.length > 0
+            ) {
+              return
+            }
+            self.setPlotDefaultChecked()
+            const fields = await self.ensurePlotFields().catch(() => undefined)
+            if (!fields || self.conf.marks.length > 0) {
+              return
+            }
+            const marks = defaultPlotMarks(fields)
+            if (marks) {
+              self.conf.setSubschemaArray('marks', marks)
+            } else {
+              self.openPlotFieldDialog()
+            }
+          }),
+        )
+      },
       /**
        * #action
        */

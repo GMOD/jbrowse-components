@@ -391,6 +391,15 @@ the banner still appears, unchanged.
 
 ## What the track menu offers
 
+**Plot field...** writes the `marks` above without leaving the app: pick a
+numeric field the loaded features carry, a bar or a point, optionally a colour
+field — a palette for a text column, a ramp for a number — and a "count per bin
+zoomed out" box that adds the second `bin`/`aggregate` mark with `step: "auto"`
+and the `minBpPerPx`/`maxBpPerPx` handoff at 100. It reopens on what a
+single-mark config already declares, so editing is the same dialog. A display
+shown with no `marks` at all plots `score` as bars where the features carry a
+numeric one, and opens this dialog where they do not.
+
 The score submenu (min/max score), point size, cross hatches, the legend toggle,
 and **Filter by...** for the same `jexlFilters` every feature display takes. A
 filter runs in the worker before the encoding, so a filtered feature is neither

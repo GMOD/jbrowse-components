@@ -262,6 +262,10 @@ function makeConfigurationSchemaModel<
   // excluded here — collected as the loop classifies each entry rather than
   // re-scanning modelDefinition afterward.
   const subSchemaKeys = new Set<string>()
+  // Keys of array-of-sub-schema slots, which `setSubschemaArray` replaces
+  // whole: a menu that authors a list of sub-schemas — the mark display's
+  // `marks` — has no slot to write and no single node to swap.
+  const arraySubSchemaKeys = new Set<string>()
   // The actual slots, which is a strictly smaller set than `modelDefinition`:
   // that also holds the sub-schema properties and the identifier, neither of
   // which setSlot may write. Same collect-as-you-classify as subSchemaKeys.
@@ -274,6 +278,7 @@ function makeConfigurationSchemaModel<
       // snapshot.
       if (isArrayType(slotDefinition)) {
         modelDefinition[slotName] = types.stripDefault(slotDefinition, [])
+        arraySubSchemaKeys.add(slotName)
       } else if (isMapType(slotDefinition)) {
         modelDefinition[slotName] = types.stripDefault(slotDefinition, {})
       } else {
@@ -316,6 +321,14 @@ function makeConfigurationSchemaModel<
           : modelDefinition[slotName].create(data)
         self[slotName] = newSchema
         return newSchema
+      },
+      setSubschemaArray(slotName: string, data: unknown[]) {
+        if (!arraySubSchemaKeys.has(slotName)) {
+          throw new Error(
+            `${slotName} is not an array of subschemas, cannot replace`,
+          )
+        }
+        self[slotName] = data
       },
       // generic slot setter the config editor's slot facade routes through. A
       // slot is a bare value-union property, so this is a plain assignment.

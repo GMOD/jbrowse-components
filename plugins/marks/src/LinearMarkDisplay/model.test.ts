@@ -15,6 +15,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import MarkFacetChips from './components/MarkFacetChips.tsx'
 import { configSchemaFactory } from './configSchema.ts'
 import { stateModelFactory } from './model.ts'
+import { BINNED_BP_PER_PX, defaultPlotMarks } from './plotFields.ts'
 
 import type { LinearMarkDisplayModel } from './model.ts'
 import type { EncodedFeaturesResult } from '@jbrowse/core/util/markEncoding'
@@ -1062,4 +1063,42 @@ test('the chip row names each section at the top of the rows it labels', () => {
   expect(
     screen.getAllByTestId('group-label-chip').map(e => e.style.top),
   ).toEqual(['1px', '21px'])
+})
+
+test('nothing declared draws nothing, and the default rule is a bar of score', () => {
+  const { createDisplay } = createTestEnvironment([])
+  const { display } = createDisplay()
+  expect(display.markShapes).toEqual([])
+  expect(display.rpcProps().layers).toEqual([])
+  display.conf.setSubschemaArray(
+    'marks',
+    defaultPlotMarks({ numeric: ['score'], categorical: ['name'] })!,
+  )
+  expect(display.markShapes).toEqual(['bar'])
+  expect(display.rpcProps().layers[0]!.encoding.y).toBe('score')
+})
+
+test('the dialog submit writes the plot and its binned count into config', () => {
+  const { createDisplay } = createTestEnvironment([])
+  const { display } = createDisplay()
+  display.setPlotFields({ numeric: ['score'], categorical: ['repClass'] })
+  display.setPlotMarks({
+    field: 'score',
+    shape: 'point',
+    colorField: 'repClass',
+    binned: true,
+  })
+  expect(display.markShapes).toEqual(['point', 'bar'])
+  expect(display.conf.marks[0]!.encoding.color.scale).toBe('categorical')
+  expect(display.conf.marks[0]!.maxBpPerPx).toBe(BINNED_BP_PER_PX)
+  expect(display.conf.marks[1]!.minBpPerPx).toBe(BINNED_BP_PER_PX)
+  expect(
+    display.conf.marks[1]!.transform.map((s: { type: string }) => s.type),
+  ).toEqual(['bin', 'aggregate'])
+  expect(display.plotSpec).toEqual({
+    field: 'score',
+    shape: 'point',
+    colorField: 'repClass',
+    binned: true,
+  })
 })

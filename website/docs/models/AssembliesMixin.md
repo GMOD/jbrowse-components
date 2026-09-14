@@ -22,7 +22,7 @@ Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
 <!-- prettier-ignore -->
 | Member | Description |
 | --- | --- |
-| <span id="getter-assemblies">**assemblies**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>(ModelInstanceTypeProps&lt;…&gt; &amp; { setSubschema(slotName: string, d…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>(ModelInstanceTypeProps&lt;…&gt; &amp; { setSubschema(slotName: string, data: Record&lt;string, unknown&gt;): any; setSlot(slotName: string, value: unknown): void; } &amp; IStateTreeNode&lt;...&gt;)[]</code></pre></dialog></span> | sessionAssemblies plus jbrowse config assemblies. Does not include temporaryAssemblies; this is the list shown in the AssemblySelector dropdown. |
+| <span id="getter-assemblies">**assemblies**</span><br><code>(ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; IStateTreeNode&lt;…&gt;)[]</code> | sessionAssemblies plus jbrowse config assemblies. Does not include temporaryAssemblies; this is the list shown in the AssemblySelector dropdown. |
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> | names of the assemblies returned by the `assemblies` getter |
 
 ## Methods
