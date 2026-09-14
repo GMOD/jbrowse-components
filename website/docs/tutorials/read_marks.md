@@ -1,23 +1,21 @@
 ---
-title: A deletion from a BAM's own fields (NA12878, insert size)
-sidebar_label: Marks (reads as data)
+title: A grammar of graphics over a BAM (NA12878 insert size)
+sidebar_label: Marks over a BAM (insert size)
 description:
-  Plot the fields of an alignment file directly, with no variant caller in
-  between, by declaring what each read's depth, insert size and mapping quality
-  should draw as, then scan a chromosome for the signature one deletion showed
+  Declare a read's depth, insert size and mapping quality as the channels of a
+  plot, with no variant caller in between, and scan a chromosome for a deletion
 guide_category: Tutorials
 tutorial_category: Configuration & embedding
 ---
 
-We find a deletion in a genome from the reads alone. A paired-end read pair that
-straddles a missing stretch of chromosome maps with its two ends further apart
-than the library was made, so its insert size gives the deletion away before any
-variant caller runs; and where one chromosome copy lacks the stretch, half the
-reads are gone with it. We plot those two numbers, the depth and the insert
-size, as marks declared over the alignment file, first across one deletion and
-then along a whole chromosome. The track is a `LinearMarkDisplay`: a read's
-fields become channels of a plot with a JSON entry, the way a BED column does in
-the [Alu tutorial](/docs/tutorials/alu_age).
+`LinearMarkDisplay` is a grammar of graphics over a track: each entry in `marks`
+names a shape, a `transform` list and an `encoding` from feature fields to
+channels, the way a BED column feeds a plot in the
+[Alu tutorial](/docs/tutorials/alu_age). Here the file is a BAM, and the fields
+are the ones the aligner wrote. A pair straddling a deletion maps with a long
+insert, and a heterozygous deletion halves the depth, so plotting those two
+fields finds the deletion without a caller. The mark display is experimental,
+and its config shape may change.
 
 ## Prerequisites
 
@@ -32,41 +30,28 @@ the [Alu tutorial](/docs/tutorials/alu_age).
 
 ## Where the data comes from
 
-NA12878's reads are from the 1000 Genomes Project's high-coverage release
+1000 Genomes high-coverage release
 ([Byrska-Bishop et al. 2022](https://doi.org/10.1016/j.cell.2022.08.004)),
-aligned to GRCh38, and the deletions checked against at the end are the same
-release's structural-variant callset.
+GRCh38:
 
-- the reads, 30x Illumina paired-end as a CRAM with its index beside it:
+- NA12878's 30x CRAM, index beside it:
   https://s3.amazonaws.com/1000genomes/1000G_2504_high_coverage/data/ERR3239334/NA12878.final.cram
-- the pairs whose insert exceeds 1 kb on chromosome 20, cut out of that file by
-  the command below and rehosted with its `.tbi`:
+- its chromosome 20 pairs with an insert over 1 kb, cut out below and rehosted:
   https://jbrowse.org/demos/read_marks/NA12878.chr20.discordant_pairs.bed.gz
-- the structural-variant callset over all 3,202 samples:
+- the release's structural-variant callset:
   https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/working/20210124.SV_Illumina_Integration/1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF.vcf.gz
-- the reference the CRAM decodes against, and the RefSeq gene lane, as one
-  hosted configuration with both tracks below already in it:
+- a hosted config with the reference, RefSeq genes and both tracks below:
   https://jbrowse.org/demos/read_marks/config.json
 
-## What a read carries
+## The window
 
-Every record in a BAM or CRAM is a read with its position, and beside the
-position a handful of numbers the aligner wrote: its mapping quality, and for a
-paired read the distance from its start to its mate's end, the template length,
-signed by which mate is leftmost. An alignments track draws each read as a bar
-and can colour it by those numbers, but it cannot plot one of them on an axis.
-The mark display does that, over the same file, by naming the field.
-
-The window is 30 kb of an intron of _EFCAB8_ on chromosome 20, where the callset
-says NA12878 carries one copy of a 3.9 kb deletion.
+30 kb of an _EFCAB8_ intron on chromosome 20, where the callset says NA12878
+carries one copy of a 3.9 kb deletion.
 
 ## Depth as a coverage step
 
-The track is the CRAM as an `AlignmentsTrack`, opened with a `LinearMarkDisplay`
-whose one mark is a `bar`. Its `transform` runs a `coverage` step, which
-replaces the reads with runs of constant depth, and its `encoding` plots that
-depth. Nothing names a field of the read yet; the step wrote the one being
-plotted.
+A `bar` mark over a `coverage` transform, which replaces the reads with runs of
+constant depth.
 
 ```json addtrack
 {
@@ -103,22 +88,14 @@ Open it at `chr20:32,925,000-32,955,000`.
 
 <Figure src="/img/read_marks/depth.png" caption="Thirty kilobases of an EFCAB8 intron in NA12878, the read depth as bars. Between 32,937,500 and 32,941,500 the depth runs at about half of what it is on either side." />
 
-A CRAM needs the reference to decode, and the track takes it from the assembly
-it is added to, so the config carries none.
+The CRAM decodes against the assembly the track is added to.
 
 ## Insert size as a point per pair
 
-The second mark reads a field. Each pair appears twice in the file, once per
-mate, with the template length positive on the leftmost mate and negative on the
-other, so a `filter` step keeps the positive ones and the pair is counted once.
-A `point` then plots `template_length` on the y-axis, coloured by mapping
-quality through a ramp pinned to the 0 to 60 the aligner writes, so a grey point
-is a read the aligner was unsure of.
-
-The two numbers are on different scales, depth in the tens and insert size in
-the thousands, so the coverage mark moves to an axis of its own with
-`"resolve": "independent"` and takes the right-hand side of the plot. Both marks
-draw from one fetch of the reads.
+A `point` per pair with `template_length` on y, coloured by mapping quality on a
+ramp pinned to 0 to 60. A `filter` keeps the leftmost mate, where the template
+length is positive, so each pair counts once. Depth moves to its own axis with
+`"resolve": "independent"`.
 
 ```json
 "marks": [
@@ -153,24 +130,15 @@ draw from one fetch of the reads.
 
 <Figure src="/img/read_marks/insert_size.png" caption="The same window with each pair's insert size as a point on the left axis and the depth on its own axis on the right. The pairs sit in a band under 1,000 bases, and over the left edge of the dip a second group appears between 4,300 and 4,700 bases, in the full blue of a mapping quality of 60." />
 
-The upper group is the deletion measured a second way: each of those pairs was
-made at the library's insert and straddles the missing 3.9 kb, so it maps that
-much further apart, and it sits at the left edge of the dip because a pair is
-drawn at its leftmost read. The `score` a read answers is its mapping quality;
-the field is named that way on every track type the display attaches to, and a
-quality the aligner left unset is skipped rather than plotted at zero.
-
-Hovering a point reads out its position, its template length and its mapping
-quality; clicking one opens the read.
+Each pair in the upper group straddles the missing 3.9 kb. `score` is the
+mapping quality on every track type. Hover a point for its values; click it to
+open the read.
 
 ## Which reads carry the long inserts
 
-The reads themselves stack when the `span` shape reads a row a `stack` step
-wrote, which is the pileup an alignments track draws, said as two steps. A
-`formula` step first writes the unsigned insert into a field of its own, so both
-mates of a pair take the same colour, and a ramp over that field pinned at 5 kb
-paints a spanning pair red and every other pair in the pale blue of the depth
-bars.
+A `span` over a `stack` transform is a pileup. A `formula` step writes the
+unsigned insert so both mates share a colour, and a ramp pinned at 5 kb paints a
+spanning pair red.
 
 ```json
 "marks": [
@@ -197,18 +165,13 @@ Zoom to the left edge of the dip, `chr20:32,936,200-32,939,200`.
 
 <Figure src="/img/read_marks/pileup.png" caption="The left breakpoint at 3 kb, the reads stacked and coloured by their pair's insert. The red reads end together at 32,937,680, where their mates lie 4 kb to the right; the pale reads run across it, and thin out on the far side." />
 
-Pinning the `domain` keeps the key stable: an unpinned ramp spans the values on
-screen, and a window with no spanning pair would paint its longest ordinary
-insert red.
+Pin the `domain`: an unpinned ramp spans the values on screen, so a window with
+no spanning pair would paint its longest ordinary insert red.
 
 ## Scanning the chromosome for the same signature
 
-A window of 30 kb is a few thousand reads; chromosome 20 is millions, and a
-track that has to fetch them all stops at its byte budget. The signature is
-carried by the few pairs whose insert is long, so those are cut out of the file
-once, one row per pair, into a BED whose header line names its columns. The
-`required_fields` option asks the CRAM decoder for the position, flags, quality
-and template length and no sequence, which is most of the decode:
+Fetching every read of a chromosome overruns the byte budget, so cut the long
+pairs out once, one row per pair, into a BED with a header naming its columns.
 
 <!-- from: scripts/build_read_marks.sh -->
 
@@ -226,18 +189,14 @@ samtools view -q 20 -F 0x904 --input-fmt-option required_fields=0x1DF NA12878.fi
 tabix -p bed NA12878.chr20.discordant_pairs.bed.gz
 ```
 
-Chromosome 20 gives 11,327 rows, small enough to fetch whole at any zoom. The
-track over them is a `FeatureTrack` with two marks:
+11,327 rows, small enough to fetch whole at any zoom. A `FeatureTrack` with two
+marks:
 
-- **a `point` per pair**, its `tlen` on the y-axis, coloured by the mapping
-  quality the header put in `score`. A `filter` keeps the inserts under 20 kb,
-  since the centromere's pairs run to tens of megabases and would set the axis;
-  `x2` is set to `start` so a pair is a point at its leftmost read rather than a
-  bar across its whole span.
-- **a `bar` per bin** counting the deletion-sized pairs, 2 to 10 kb, the bin
-  width following the zoom, on a right-hand axis whose `domain` is pinned at 60.
-  The centromere holds thousands of such pairs and would otherwise be the axis;
-  pinned, its bins saturate and a deletion's ten to fifty stand up on their own.
+- **a `point` per pair**, `tlen` on y, coloured by `score`. `x2: start` draws
+  the pair at its leftmost read; a `filter` under 20 kb keeps the centromere's
+  megabase inserts off the axis.
+- **a `bar` per bin** counting pairs of 2 to 10 kb, on a right-hand axis pinned
+  at 60 so the centromere saturates and a deletion's ten to fifty stand up.
 
 ```json addtrack
 {
@@ -308,13 +267,12 @@ track over them is a `FeatureTrack` with two marks:
 
 <Figure src="/img/read_marks/chromosome.png" caption="Chromosome 20 end to end. Every pair with an insert under 20 kb is a point at its insert size, and the red bars on the right axis count the pairs between 2 and 10 kb per bin. The centromere, from 26 to 32 Mb, saturates both; outside it the bars stand up in a handful of places, each under a short stack of dark points." />
 
-The tallest bar outside the centromere, at 34.2 Mb, is a deletion NA12878
-carries on both chromosomes; the one at 32.9 Mb is the intron above, on one.
+The bar at 34.2 Mb is a homozygous deletion; the one at 32.9 Mb is the intron
+above.
 
 ## Checking the bars against the callset
 
-The same release's callset lists what its callers found in NA12878 on the
-chromosome. Every deletion over 2 kb on a non-reference genotype:
+Every deletion over 2 kb the callset gives NA12878 on the chromosome:
 
 <!-- from: scripts/build_read_marks.sh -->
 
@@ -326,8 +284,7 @@ bcftools view -s NA12878 1KGP_3202.gatksv_svtools_novelins.freeze_V3.wAF.vcf.gz 
     -f '%CHROM\t%POS\t%END\t%INFO/SVLEN\t[%GT]\t%INFO/AF\t%INFO/EVIDENCE\n'
 ```
 
-Against it, the count the bar mark makes: the pairs between 2 and 10 kb in the
-100 kb window around each call.
+Pairs of 2 to 10 kb in the 100 kb window around each call:
 
 | position, chr20 |    size | genotype | pairs 2 to 10 kb in the window |
 | --------------- | ------: | -------- | -----------------------------: |
@@ -340,15 +297,9 @@ Against it, the count the bar mark makes: the pairs between 2 and 10 kb in the
 | 54.03 Mb        | 10.9 kb | 0/1      |                   not in range |
 | 55.86 Mb        |  6.0 kb | 0/1      |                             16 |
 
-Every deletion the callset holds between 2 and 10 kb is a bar, and the two
-homozygous ones are the tallest, both chromosomes contributing pairs. Five other
-windows outside the centromere hold ten or more such pairs, at the start of the
-chromosome and at 1.4, 2.8, 32.7 and 48.5 Mb, and the callset has no deletion of
-this size at any of them.
-
-The first figure's claim was a dip and a group of long inserts over one window,
-so read the same window out of the file: the depth inside the call against the
-flank, and the pairs whose insert exceeds 2 kb.
+Every callset deletion in range is a bar, the two homozygous ones tallest. Five
+other windows hold ten or more such pairs with no call: the chromosome start and
+1.4, 2.8, 32.7 and 48.5 Mb. Read the first window out of the file directly:
 
 ```bash
 samtools coverage -r chr20:32937680-32941583 NA12878.final.cram | cut -f 1-3,7
@@ -363,8 +314,7 @@ samtools view -q 20 NA12878.final.cram chr20:32935000-32944000 |
 | chr20:32,937,680-32,941,583 |      15.6x |
 | chr20:32,930,000-32,937,000 |      34.1x |
 
-Across the 9 kb around the call, 1,688 reads sit at the library's insert and 41
-carry one over 2 kb.
+Around the call, 1,688 pairs sit at the library insert and 41 exceed 2 kb.
 
 ## Reproduce it end to end
 
@@ -377,14 +327,9 @@ bash build_read_marks.sh                     # builds ./read_marks_build/jbrowse
 npx --yes serve read_marks_build/jbrowse2    # then open the printed URL
 ```
 
-With no arguments it reads NA12878's CRAM over HTTP, cuts chromosome 20's long
-pairs out of it, writes a JBrowse with the two tracks above and prints the
-callset's deletions for the chromosome. Given your own BAM or CRAM and the FASTA
-it was aligned to, `bash build_read_marks.sh reads.cram genome.fa`, it builds
-the same two tracks over your file, and `CHROM` in the environment picks the
-chromosome to scan. The reads track needs only what every aligner writes: a
-mapping quality and, for paired reads, a template length. The tools it needs are
-the ones under [Prerequisites](#prerequisites).
+With no arguments it builds the two tracks above over NA12878. Given your own
+reads, `bash build_read_marks.sh reads.cram genome.fa` builds them over your
+file, and `CHROM` picks the chromosome to scan.
 
 ## See also
 
