@@ -544,6 +544,22 @@ describe('a name that several views could answer', () => {
     expect(() => jb.trackModel('genes', 'nope')).toThrow(/No view with id/)
   })
 
+  it('summarizes a view whose views getter lists axes that are not views', () => {
+    const jb = jbOver([
+      {
+        id: 'dp',
+        type: 'DotplotView',
+        initialized: true,
+        views: [{ displayedRegions: [] }, { displayedRegions: [] }],
+        ownViews: [],
+        ownTracks: [track('synteny')],
+      },
+    ])
+    expect(jb.sessionSummary().views).toEqual([
+      expect.objectContaining({ id: 'dp', tracks: [expect.anything()] }),
+    ])
+  })
+
   it('answers plainly when one view shows it', () => {
     const jb = jbOver([
       lgv('v1', 'ctgA:1-100', ['genes']),

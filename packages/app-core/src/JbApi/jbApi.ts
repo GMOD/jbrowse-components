@@ -103,9 +103,6 @@ interface ViewSelf {
   // the launch blob the view is still applying, if any — see viewState
   pendingLaunch?: unknown
   error?: unknown
-  // read only by viewSummary, whose output mirrors the nesting for the reader;
-  // ENUMERATION goes through the census helpers (openViews/openTracks) below
-  views?: AbstractViewModel[]
   visibleRegions?: {
     refName: string
     start: number
@@ -278,8 +275,8 @@ function viewSummary(view: AbstractViewModel): Record<string, unknown> {
           })),
         }
       : {}),
-    ...(Array.isArray(v.views) && v.views.length
-      ? { views: v.views.map(sub => viewSummary(sub)) }
+    ...(view.ownViews.length
+      ? { views: view.ownViews.map(sub => viewSummary(sub)) }
       : {}),
   }
 }
