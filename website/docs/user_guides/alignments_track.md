@@ -257,7 +257,7 @@ secondaries, or keep only properly-paired reads), by read name, or by tag value
 radios keep only spliced reads (a reference skip, `N`, in the CIGAR) or only
 unspliced ones. The coverage histogram follows the filter.
 
-<Figure caption="The Filter by dialog. The two flag columns are an include/exclude bitmask; by default unmapped, QC-fail, and duplicate reads are excluded." src="/img/alignments/filter_dialog.png" />
+<Figure caption="The Filter options dialog with HP typed as the tag. A value of * keeps every read carrying the tag; the SAM flag masks sit behind their own section, which by default excludes unmapped, QC-fail and duplicate reads." src="/img/alignments/filter_dialog.png" />
 
 Right-click a read for the **Filter** submenu: _Filter for this read_, _Filter
 for this haplotype (HP:n)_ and _Filter for this read group (RG:x)_ read their

@@ -5570,14 +5570,18 @@ function launchMenuStills(): ScreenshotSpec[] {
             fracY: 0.98,
           },
         },
-        // no hover on the launch entry: it is a submenu, and opening it lays
-        // the per-strain rows over the menu this frame is of
         { type: 'waitForText', text: 'Linear synteny view, K12 vs...' },
+        // the jump submenu open, so the frame shows the three submenus and the
+        // strains one of them holds
+        { type: 'hover', text: 'Open aligned genome at the matching region' },
+        { type: 'waitForText', text: 'CFT073 chr:' },
         { type: 'delay', ms: 500 },
       ],
       annotations: [
-        { type: 'box', anchor: { text: 'Open CFT073 at the matching region' } },
-        { type: 'box', anchor: { text: 'Linear synteny view, K12 vs...' } },
+        {
+          type: 'box',
+          anchor: { text: 'Open aligned genome at the matching region' },
+        },
       ],
     },
   ]

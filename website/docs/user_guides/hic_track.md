@@ -162,7 +162,7 @@ derived from the matrix in the same track:
   further, and the file carries a color per class in its `itemRgb` column, so
   the track paints itself with no color configuration.
 
-<Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the TCF4 band falls in opposite compartments in the two lines while the frame edges agree. No contact matrix here, since the eigenvector is that computation over one, published." links="Open this view=hic/compartment_switch" />
+<Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the band at EBF1, a B-cell identity gene, is A in the B-cell line and B in the leukemia line while the frame edges agree. No contact matrix here, since the eigenvector is that computation over one, published." links="Open this view=hic/compartment_switch" />
 
 Two things about that figure are worth copying whenever you compare compartments
 between samples, since getting either wrong invents a difference.
@@ -183,10 +183,9 @@ both files above, positive is the gene-rich side.
 The subcompartment classes need the same caution in a different place. The
 cluster numbers a caller emits are arbitrary labels rather than the published
 A1/A2/B1/B2/B3 naming, so a class number means nothing on its own and two files
-only compare because the same pipeline assigned the same colors. That is also
-why the figure requires _both_ signals to change before calling a region
-switched: a class number can move without the eigenvector moving at all, which
-is a relabelling.
+only compare because the same pipeline assigned the same colors. A class number
+can move between two files without the eigenvector moving at all, which is a
+relabelling rather than a switch.
 
 ## See also
 

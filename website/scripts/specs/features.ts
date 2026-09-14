@@ -554,8 +554,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
       { type: 'delay', ms: 2000 },
     ],
     // ring the formatDetails-generated hyperlink in the feature-details panel,
-    // with the explanatory text above it. The previous arrow landed its head on
-    // the link itself, covering the link text — the ring alone identifies it.
+    // with the explanatory text left of the drawer
     annotations: [
       {
         type: 'circle',
@@ -563,12 +562,13 @@ export const featuresSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        x: 700,
-        y: 150,
         text: 'The callback turns the name into a clickable link',
-        // white-on-dark pill to match the other annotated figures
-        background: 'rgba(0,0,0,0.78)',
-        textColor: '#fff',
+        leader: true,
+        anchor: {
+          selector: 'a[href^="https://google.com/?q="]',
+          alignX: 'left',
+        },
+        dx: -140,
       },
     ],
   },

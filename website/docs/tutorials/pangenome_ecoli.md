@@ -506,10 +506,10 @@ The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
 per-row identity, and codon view.
 
 Drag across the rows and the menu that opens on release lists each strain the
-selection covers:
+selection covers under two submenus:
 
-- **Open Sakai at the matching region**: that strain, aligned
-  <!-- menu-path-ok -->
+- **Open aligned genome at the matching region** opens that strain's own genome
+  at the aligned stretch
 - **Linear synteny view, K12 vs...** opens the two as a
   [linear synteny view](/docs/user_guides/linear_synteny_view)
 

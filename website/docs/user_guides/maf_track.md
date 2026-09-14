@@ -145,10 +145,10 @@ reference's and labels the change synonymous or nonsynonymous.
 ## Getting the alignment out as FASTA
 
 Drag a selection across the track and the menu that opens on release offers
-**View subsequences (all rows)**, or **(selected rows)** to take only the rows
-the drag covered. Either opens the aligned columns for that window, one sequence
-per species, with **Download as FASTA** and **Copy to clipboard** in its menu.
-That is the slice a downstream alignment viewer or tree builder wants.
+**View subsequences → All rows**, or **Selected rows** to take only the rows the
+drag covered. Either opens the aligned columns for that window, one sequence per
+species, with **Download as FASTA** and **Copy to clipboard** in its menu. That
+is the slice a downstream alignment viewer or tree builder wants.
 
 Without a drag, the track menu's **Launch → View subsequences (visible region)**
 takes the whole window and every row.
@@ -162,9 +162,9 @@ A drag crossing a region boundary clips to the region it began in.
 ## Jumping to a species' own genome
 
 The rows of a MAF carry each species' own coordinates, so a row can be opened in
-its own genome. That same menu lists **one entry per species** the selection
-covers, naming that species' locus in its own coordinates; clicking one opens a
-view there.
+its own genome. That same menu's **Open aligned genome at the matching region**
+submenu lists one entry per species the selection covers, naming that species'
+locus in its own coordinates; clicking one opens a view there.
 
 Only rows with aligned bases in the selection are listed, and only those whose
 sample names a genome the session can open: a sample configured with an
@@ -173,8 +173,7 @@ id is itself an assembly the session already holds, as the strains of a
 [pangenome alignment](/docs/tutorials/pangenome_ecoli#whole-genome-alignment-maf-projection)
 are. If the session does not already hold a configured assembly, JBrowse fetches
 just that one at click time, which is what lets a 26-way or 470-way alignment
-stay navigable without every species' genome being present in the config. Past
-six species the entries move into a submenu.
+stay navigable without every species' genome being present in the config.
 
 The track menu's **Launch** submenu lists the same entries over the visible
 window, so reaching a species' genome needs no selection.
@@ -191,7 +190,7 @@ deletion in the block is where the alignment put it, and no synteny file is
 involved. The reference row carries the tracks this view had open, the MAF
 included; the species row carries its own gene track where the session has one.
 
-<Figure caption="The menu a drag across the rows raises on the E. coli pggb alignment: one entry per strain the drag covers, and the same strains again under the synteny launch." src="/img/maf_row_menu.png" />
+<Figure caption="The menu a drag across the rows raises on the E. coli pggb alignment: three submenus, the open one listing each strain the drag covers at its own locus." src="/img/maf_row_menu.png" />
 
 ## Row layout and the species tree
 

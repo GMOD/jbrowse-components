@@ -69,9 +69,11 @@ ENCODE publishes both as annotation files derived from the matrix:
 
 The loop is what holds the domain together, so the block in the matrix, the
 Arrowhead arc and the HiCCUPS arc all end on the domain's two corners. _MYC_ is
-at the left one. The ATAC lane comes from outside the contact map: GM12878 is a
-B-lymphoblastoid line, and all twelve lineages are more accessible inside the
-domain than outside it.
+at the left one. A loop anchored at both corners of a domain is what
+[Rao et al. 2014](https://doi.org/10.1016/j.cell.2014.11.021) called a loop
+domain, and found across the genome. The ATAC lane comes from outside the
+contact map: GM12878 is a B-lymphoblastoid line, and all twelve lineages are
+more accessible inside the domain than outside it.
 
 The window was chosen by taking every Arrowhead domain whose two corners carry a
 HiCCUPS loop and ranking by that loop's contact count; the
@@ -196,10 +198,12 @@ regions that contact their own kind: the gene-rich, active A compartment and the
 inactive B compartment. ENCODE publishes that call for every experiment as a
 [compartment eigenvector and a set of subcompartment classes](/docs/user_guides/hic_track#compartments-and-subcompartments).
 
-<Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the TCF4 band falls in opposite compartments in the two lines while the frame edges agree." links="Open this view=hic/compartment_switch" />
+<Figure src="/img/hic/compartment_switch.png" caption="GM12878 and K562 eigenvector tracks over the same window: the band at EBF1 is in opposite compartments in the two lines while the frame edges agree." links="Open this view=hic/compartment_switch" />
 
-The band over _TCF4_ is in the B compartment in GM12878 and the A compartment in
-K562, and the sequence either side of it agrees. Two settings in the figure:
+_EBF1_ is a transcription factor B cells depend on for their identity. The band
+over it is in the A compartment in GM12878, a B-lymphoblastoid line, and the B
+compartment in K562, an erythroleukemia, while the sequence either side of it
+agrees. Two settings in the figure:
 
 - The eigenvector tracks are pinned to one shared scale
 - An eigenvector names the A compartment only up to a sign, so which sign is

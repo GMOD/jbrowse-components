@@ -476,11 +476,15 @@ export const hicSpecs: ScreenshotSpec[] = [
           fracY: 0.36,
         },
       },
+      // WHY IT MATTERS (review: "why is this interesting, how would anyone
+      // know this is an important result"): a loop at both corners of a domain
+      // is the arrangement Rao et al. 2014 reported across the genome as a loop
+      // domain, and this is one of them with MYC at its anchor.
       {
         type: 'text',
-        text: 'this loop was called from the matrix below it',
+        text: "A loop at both of a domain's corners: the loop domain Rao et al. 2014 found genome-wide",
         fontSize: 19,
-        maxWidth: 330,
+        maxWidth: 400,
         anchor: {
           track: 'hic_gm12878_loops',
           locus: 'chr8:128,035,000',
@@ -490,56 +494,39 @@ export const hicSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // Compartments: the OTHER pair of annotation files ENCODE derives from the same
-  // matrix, and the one place a raw contact map genuinely cannot show you the
-  // answer. A/B compartmentalisation is a modulation on top of a steep
-  // distance-decay, so it only becomes a checkerboard once the matrix is turned
-  // into observed/expected and then correlated — which JBrowse does not do. Both
-  // ends of the ramp were tried on this exact view: linear+percentile leaves the
-  // plaid near-white, and `useLogScale` on a file this deep returns solid red.
-  // Balanced (SCALE) + linear was the best available and was kept in frame for a
-  // while as the evidence for why the eigenvector track exists; that lane is now
-  // gone, see the note on the tracks below.
+  // Compartments: the eigenvector ENCODE derives from each matrix, drawn for two
+  // cell lines over one window. A raw contact map cannot show A/B compartments
+  // here — they only become a checkerboard in an observed/expected matrix,
+  // which JBrowse does not compute — so the published eigenvector is the lane.
   //
-  // THE SIGN IS ANCHORED, NOT ASSUMED. An eigenvector identifies the A
-  // compartment only up to a sign, and juicer emits whichever the
-  // eigendecomposition produced, so "positive = A" is an assumption until
-  // checked. Measured on these two files over chr8/14/18/19, mean eigenvector in
-  // bins with >=3 gene TSSs vs bins with none: GM12878 +0.0039 vs -0.0021, K562
-  // +0.0067 vs -0.0009. Positive is the gene-rich side in both, on every
-  // chromosome tested, so positive is A.
+  // THE SIGN IS ANCHORED, NOT ASSUMED. An eigenvector identifies A only up to a
+  // sign, per chromosome. On chr5 both files are positive over the gene-dense
+  // 5q31 and 5q35 bands and negative over the 5p14 gene desert, so positive is
+  // A in both.
   //
-  // The two files are also mutually oriented, which a cross-cell-line comparison
-  // needs and nothing guarantees: 87-93% of 100kb bins agree in sign, and each
-  // file is ~50/50 positive/negative. Arbitrary relative orientation would sit at
-  // 50% agreement, so the ~10% that disagree are real differences.
-  //
-  // The locus is the largest run where BOTH signals disagree between the lines --
-  // slice cluster id AND eigenvector sign -- which is TCF4. Requiring both is
-  // what makes it a compartment switch rather than a relabelling: a cluster
-  // renumbering moves ids without moving the eigenvector, and a whole-chromosome
-  // orientation difference would flip the sign everywhere while the ids agreed.
-  // The window is 4 Mb, down from 10 (reviewer: "there is too much going on in
-  // this image ... the subcompartments are just sort of 'noisy'"). The flanks
-  // are still the control that makes the discordant block mean something —
-  // both edges of this frame have the two eigenvectors on the same side — and
-  // at 100 kb a subcompartment strip that alternated every few pixels across
-  // 10 Mb is now blocks a reader can match to the lane above it. The two
-  // callouts name the compartment on each lane, since "positive" and
-  // "negative" is a decoding step and A and B is the answer.
+  // EBF1 (review of the TCF4 window this replaced: "why is this interesting,
+  // how would anyone know this is an important result"). TCF4 was the largest
+  // discordant run a scan found, with no biology a reader could check it
+  // against. EBF1 is the B-cell identity transcription factor: GM12878 is a
+  // B-lymphoblastoid line and K562 an erythroleukemia, so the locus being A in
+  // one and B in the other is the expected answer rather than a scan's output.
+  // Over this window GM12878 stays A throughout, K562 drops to B across EBF1's
+  // 3' end and the stretch downstream of it, and both flanks are A in both
+  // lines. Further left, from 157 Mb, K562 turns B again, which is why the frame
+  // starts where it does.
   {
     mode: 'url',
     name: 'hic/compartment_switch',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      loc: 'chr18:54,000,000-58,000,000',
+      loc: 'chr5:157,150,000-159,950,000',
       trackLabels: 'offset',
       highlight: [
         {
-          refName: 'chr18',
-          start: 55_400_000,
-          end: 56_500_000,
-          label: 'TCF4',
+          refName: 'chr5',
+          start: 158_100_000,
+          end: 159_000_000,
+          label: 'EBF1, a B-cell identity gene',
           color: 'rgba(30,110,190,0.14)',
         },
       ],
@@ -550,98 +537,47 @@ export const hicSpecs: ScreenshotSpec[] = [
           showLabels: 'name',
           height: 62,
         },
-        // Both eigenvector tracks are pinned to the SAME scale. Left to
-        // autoscale they each fill their own lane and the two panels stop being
-        // comparable, which is the whole point of stacking them.
+        // one pinned scale for both, or each autoscales to its own extremes and
+        // the lanes stop being comparable
         {
           trackId: 'hic_gm12878_compartments',
           height: 84,
-          minScore: -0.03,
-          maxScore: 0.03,
+          minScore: -0.012,
+          maxScore: 0.012,
         },
-        // THE TWO SUBCOMPARTMENT STRIPS ARE GONE (reviewer: "i dont like the
-        // silly colors of the subcompartment tracks ... this is just crazy
-        // colors"). They were the only categorical encoding in the frame --
-        // A1/A2/B1/B2/B3 as yellow, red, grey, green -- and the five classes
-        // were a second, coarser copy of the sign the two eigenvector lanes
-        // already draw as red against blue. Five colours whose key is off the
-        // figure, next to two lanes that carry the same call continuously, is
-        // what "the text annotations dont help me understand" is about: the
-        // reader had to decide which of the two encodings to believe. Now the
-        // figure has one, and the two lanes bracket the band symmetrically.
         {
           trackId: 'hic_k562_compartments',
           height: 84,
-          minScore: -0.03,
-          maxScore: 0.03,
+          minScore: -0.012,
+          maxScore: 0.012,
         },
-        // THE MATRIX LANE IS GONE (reviewer: "there is too much going on in
-        // this image and the 'squash' looks weird"). It was 300 squashed px
-        // arguing for the thing the guide's own paragraph says a raw matrix
-        // cannot show: compartments are a modulation on top of distance decay
-        // and only become a checkerboard in an observed/expected matrix, which
-        // JBrowse does not compute. So the lane was a faint plaid a reader was
-        // asked to take on trust, under four lanes that state the answer
-        // outright. The matrix is still one figure up, where its subject is
-        // something it does show.
-        //
-        // NO ACCESSIBILITY LANE EITHER, and this one was measured rather than
-        // argued (review: "are there any other 'interesting' tracks that
-        // complement or enhance result?"). DNase is the obvious corroboration --
-        // an A compartment should be the accessible one -- and both lines have
-        // it on the same CORS-enabled ENCODE S3 the eigenvectors come from, from
-        // one pipeline run: GM12878 ENCFF594DFV (ENCSR581CCT), K562 ENCFF655HFU
-        // (ENCSR227NUB). Mean signal inside the band against the rest of this
-        // 4 Mb frame: GM12878 0.1046 vs 0.1261 (0.83x), K562 0.1496 vs 0.1442
-        // (1.04x). The DIRECTION is right in both -- the closed line is
-        // depleted, the open line slightly enriched -- but the switch between
-        // them is 1.25x, and 1.25x drawn as two more wiggle lanes at 4 Mb is two
-        // lanes that look the same. That is the exact complaint
-        // hic/loops_and_domains collected for drawing a difference this size
-        // ("the naive and memory tracks look almost exactly the same. i cant see
-        // difference"). The eigenvector is a 100 kb aggregate and DNase is peaky
-        // per site, so the contrast is real in the arithmetic and invisible in
-        // the picture.
       ],
     }),
-    // One callout per cell line, on the lane it describes, naming the
-    // compartment rather than leaving "positive" and "negative" to be decoded
-    // (the sign convention is checked in the spec comment above and stated in
-    // the guide). Anchored to the highlighted band, so they move with it.
-    //
-    // WHAT THE TWO LINES ARE is now in the pills, in a parenthesis each
-    // (review: "why are we even comparing gm12878 and k562, ostensibly normal
-    // vs cancer? elaborate on this context in red annotation box very
-    // briefly"). It goes here rather than in a third box because the answer is
-    // per-lane -- naming the lane and saying what the cell is are the same
-    // sentence -- and folding it in let both pills get SHORTER, not longer.
+    // One callout per cell line, inside the band on the half of its lane the
+    // curve leaves empty: below the zero line where GM12878 is A, above it
+    // where K562 is B.
     annotations: [
       {
         type: 'text',
-        text: 'GM12878 (normal lymphoblastoid): B, closed',
-        maxWidth: 380,
+        text: 'GM12878, B-cell line: A, open',
+        fontSize: 16,
         anchor: {
           track: 'hic_gm12878_compartments',
-          locus: 'chr18:55,950,000',
-          fracY: 0,
-          dy: 26,
+          locus: 'chr5:158,160,000',
+          fracY: 0.85,
         },
-        fontSize: 18,
       },
       {
         type: 'text',
-        text: 'K562 (leukemia): A, open',
-        maxWidth: 380,
+        text: 'K562, erythroleukemia: B, closed',
+        fontSize: 16,
         anchor: {
           track: 'hic_k562_compartments',
-          locus: 'chr18:55,950,000',
-          fracY: 0,
-          dy: 26,
+          locus: 'chr5:158,160,000',
+          fracY: 0.4,
         },
-        fontSize: 18,
       },
     ],
-    // -60 for the two strips that went
     viewportHeight: 573,
     readySelector: displayPainted('wiggle-display'),
     readyTimeout: 240000,

@@ -2369,15 +2369,13 @@ export const uiSpecs: ScreenshotSpec[] = [
     // proportional.
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
-      // 500 kb rather than the cluster's own 180 kb. Inside the cluster every
-      // row is fine structure and the picture has no background to read it
-      // against, which is what made 127 rows of it look like noise. Out here
-      // the two boxes are saturated rectangles standing in ~300 kb of the
-      // pseudogene desert either side (RPL7AP38, HMGB3P20, NHP2P2, TPM3P4 to
-      // the left; RPL35P4 past EVX1 to the right), which is quiescent and pale
-      // in every row — so the domain has an edge. Wider than this and the
-      // clustering starts separating the rows on the flanks instead.
-      loc: 'chr7:26,950,000-27,450,000',
+      // The cluster and about 40 kb either side. A 500 kb window with the
+      // pseudogene desert on both flanks gave the domain an edge, and came back
+      // from review as noisy: the flanks' scattered calls took half the width
+      // and squeezed each HOXA column to a few pixels. At this width the
+      // columns are wide enough that the anterior and posterior halves read as
+      // separate blocks of rows, and EVX1 past the posterior box is the edge.
+      loc: 'chr7:27,070,000-27,310,000',
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
@@ -2493,16 +2491,16 @@ export const uiSpecs: ScreenshotSpec[] = [
       // tissues and opened in the ones that use it -- and it is the reason the
       // figure exists rather than a pattern that happens to look good.
       //
-      // In the LEFT FLANK, which is uniform quiescent in every row, so the
-      // pills cover no state call. Anchored by fracY rather than by pixel, so
-      // they follow the clustering's own split if a rebuild moves it.
+      // Over the dendrogram and the left flank, clear of both boxes. Anchored
+      // by fracY rather than by pixel, so they follow the clustering's own
+      // split if a rebuild moves it.
       {
         type: 'text',
         text: 'these epigenomes open HOXA',
         fontSize: 17,
         anchor: {
           track: 'roadmap_chromhmm_multirow_hg19',
-          locus: 'chr7:26,995,000',
+          locus: 'chr7:27,072,000',
           alignX: 'left',
           fracY: 0.22,
         },
@@ -2513,7 +2511,7 @@ export const uiSpecs: ScreenshotSpec[] = [
         fontSize: 17,
         anchor: {
           track: 'roadmap_chromhmm_multirow_hg19',
-          locus: 'chr7:26,995,000',
+          locus: 'chr7:27,072,000',
           alignX: 'left',
           fracY: 0.72,
         },

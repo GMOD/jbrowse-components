@@ -249,15 +249,14 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     // overview; crop off the empty viewport below the three tracks
     crop: { x: 0, y: 0, width: 1500, height: 640 },
     // Name the two-arm skew profile: the leading replichore (origin→terminus)
-    // runs mostly positive (blue), the lagging one mostly negative (red), the
-    // sign flipping at the two replication landmarks.
+    // runs mostly positive (blue), the lagging one mostly negative (red). Each
+    // arm label is anchored on a locus inside the arm it names (the leading arm
+    // runs oriC→0→terminus), above or below the zero line as its curve is.
     //
-    // Each label names a REGION of the skew track, so each is anchored on one:
-    // the locus is a point in the arm the label describes (167 kb is inside the
-    // leading arm, which runs oriC→0→terminus; 1.03 Mb is inside the lagging
-    // one, between terminus and oriC), and the fraction puts it in the half of
-    // the track that arm's curve occupies — above the zero line, which sits a
-    // third of the way down the -0.2..0.1 axis, and well below it.
+    // A third callout names the origin itself (review: "might add third text
+    // annotation saying replication origin"), since the feature track calls it
+    // oriC (dnaA). Its pill sits above the zero line in the lagging arm, where
+    // the curve is all below it.
     annotations: [
       {
         type: 'text',
@@ -278,6 +277,17 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           fracY: 0.89,
         },
         maxWidth: 260,
+      },
+      {
+        type: 'text',
+        text: 'Replication origin',
+        leader: true,
+        anchor: {
+          track: 'gc_skew_hpylori',
+          locus: 'NC_018939.1:1,608,000',
+          fracY: 0.3,
+        },
+        dx: -60,
       },
     ],
   },
@@ -478,9 +488,8 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       { type: 'click', text: 'Open track...' },
       { type: 'waitForText', text: 'Enter track data' },
     ],
-    // two-stage: top frame opens the workflow-selector dropdown with a callout
-    // (on a dark pill so it reads over the form) and an arrow to it; bottom frame
-    // selects "Add multi-wiggle track" and boxes the paste textbox
+    // two-stage: top frame opens the workflow-selector dropdown and points at
+    // the multi-wiggle entry; bottom frame selects it and boxes the paste box
     stages: [
       {
         actions: [
@@ -488,28 +497,16 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           { type: 'waitForText', text: 'Add multi-wiggle track' },
           { type: 'delay', ms: 800 },
         ],
-        // Each stage's pill sits over the empty LGV to the left of the drawer,
-        // with a raw tail leaving it and an anchored head on the control it
-        // names. The pill and the tail stay raw together: they are placed
-        // against this frame, not against the widget, and splitting them would
-        // pull the arrow off the pill the first time the drawer's layout moved.
         annotations: [
+          { type: 'box', anchor: { text: 'Add multi-wiggle track' } },
           {
             type: 'text',
-            x: 470,
-            y: 310,
-            text: 'This dropdown reaches other add-track workflows, e.g. multi-wiggle',
-            background: 'rgba(0,0,0,0.8)',
-            textColor: '#fff',
-            fontSize: 22,
+            text: 'The workflow dropdown reaches the multi-wiggle form',
+            maxWidth: 320,
+            leader: true,
+            anchor: { text: 'Add multi-wiggle track', alignX: 'left' },
+            dx: -60,
           },
-          {
-            type: 'arrow',
-            from: { x: 880, y: 262 },
-            anchor: { selector: '[aria-expanded="true"]' },
-          },
-          // box the specific target option in the open dropdown
-          { type: 'box', anchor: { text: 'Add multi-wiggle track' } },
         ],
       },
       {
@@ -518,29 +515,20 @@ export const bigwigSpecs: ScreenshotSpec[] = [
           { type: 'waitForText', text: 'Add' },
           { type: 'delay', ms: 1200 },
         ],
-        // box the paste textbox + a label just to its left with a short arrow
-        // into the box (the label used to float far from the box; the
-        // form hugs the right edge so the label can't sit above it without
-        // clipping)
         annotations: [
           {
             type: 'box',
             anchor: { selector: 'textarea[placeholder^="Paste a list"]' },
           },
           {
-            type: 'arrow',
-            from: { x: 690, y: 250 },
-            anchor: { selector: 'textarea[placeholder^="Paste a list"]' },
-            dx: -8,
-          },
-          {
             type: 'text',
-            x: 300,
-            y: 245,
             text: 'Paste wiggle file URLs here',
-            background: 'rgba(0,0,0,0.8)',
-            textColor: '#fff',
-            fontSize: 26,
+            leader: true,
+            anchor: {
+              selector: 'textarea[placeholder^="Paste a list"]',
+              alignX: 'left',
+            },
+            dx: -60,
           },
         ],
       },
