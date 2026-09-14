@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@gmod/hclust": "5.3.0",
-    "@gmod/newick": "^1.0.2",
+    "@gmod/newick": "^1.0.3",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/display-kit": "workspace:^",
     "@jbrowse/display-ui": "workspace:^",
