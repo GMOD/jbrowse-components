@@ -29,8 +29,7 @@ That last one applies to `CLAUDE.md` files too and is the rule they break most.
 `TODO.md` vs `ideas/` is commitment, not size — and while a release is in view
 the commitment being asked about is that release's. Read a parked proposal
 before re-proposing it, and expect `ideas/` to hold real bugs as well as
-proposals: 34 entries moved there on 2026-08-26 for missing the v5.0.0 bar, each
-saying so at its top. `mechanisms/` vs `reference/` is which one is the subject: a
+proposals that missed the v5.0.0 bar, each saying so at its top. `mechanisms/` vs `reference/` is which one is the subject: a
 doc that cannot name its idea without naming the plugin is a subsystem writeup,
 and a mechanism doc points at that writeup for the depth rather than restating
 it.
@@ -40,9 +39,6 @@ faster than anything else** — its state snapshots drift, and the reference doc
 points at overtakes it. Close a thread by filing its remainder into the homes
 above and deleting the file, in the same pass; a *worked proposal* left inside a
 handoff is the commonest way that fails, and it belongs in `ideas/`, one per file.
-Eight existed on 2026-08-19 and seven closed once their remainder was filed;
-several had already drifted — a stale count, a seam marked untouched that a
-reference doc had since measured, a subject rewritten out from under the file.
 
 **A perf measurement has a public reader as well as this one.**
 `website/docs/developer_guides/optimizations.md` digests what is in `reference/`
@@ -90,12 +86,11 @@ every `<number><unit>` a public measurement page writes has to appear in an
 agent-doc **that page links**, or in the JSDoc of an **exported symbol it
 names**. So a figure quoted from here needs the link to here, and an unlinked
 one fails. Scoping to what the page cites is what makes that worth running —
-searching all of source instead admitted 73 of the 101 integer percentages
-(2026-08-17), which is most typos.
+searching all of source instead admitted 73 of the 101 integer percentages,
+which is most typos.
 
 **Both ends of a range are checked**, so re-measuring `70-90%` means updating
-both. That was silently false until 2026-08-17; `quotedFigures.test.ts` pins it
-now.
+both; `quotedFigures.test.ts` pins it.
 
 Same discipline for the v5 manuscript's strategy table, which states the same
 set at a higher altitude and has no generator reaching it: three copies of a
@@ -175,47 +170,28 @@ about the alternative. A real limitation stays, as does an outage we hit.
 
 ## Definition of done
 
-Typecheck the touched packages, **`pnpm test-related`**, a browser test if UI
-behavior changed, `pnpm lint --fix`. Snapshots only after a visually verified
-change. **Then commit.** Don't push or open a PR unless asked.
+**`pnpm verify`**, **`pnpm test-related`**, a browser test if UI behavior
+changed. Snapshots only after a visually verified change. **Then commit.** Don't
+push or open a PR unless asked.
 
-`test-related` walks the module GRAPH (`jest --findRelatedTests`) over the files
-this branch changed, so a suite that imports the app — and so, transitively, the
-changed file — is included where `pnpm test <path>` would miss it.
+`verify` runs format, typos, oxlint and eslint over the files changed against
+main, plus the whole-program typecheck — seconds, where the same gates over the
+tree are ~2 minutes (`--all`). `test-related` runs the suites that executed a
+changed file on their last run, jbrowse-web included, so a suite that exercises
+the change from outside is in the run where `pnpm test <path>` would miss it.
+How it selects, and what it costs against the static graph:
+`reference/TEST_INFRASTRUCTURE.md` §"Which suites a change runs".
 
-**It leaves `products/jbrowse-web` out unless the change is in it** (2026-08-30),
-and the honest reason is cost rather than irrelevance. Those suites cannot
-discriminate: every one of them imports `corePlugins`, so a change in wiggle, one
-in variants and one in linear-comparative-view each return the SAME 164 — a
-constant, not a selection — and they are 77% of the clock, 224s of a 269-suite
-run against 52s for the other 131. Locally that is most of the wait on every
-iteration and it never narrows.
-
-**So know what you have stopped running.** Three suites went red on main in one
-week from changes whose own tests moved with them, and all three live there: a
-config-slot removal staled `ConfigSlotDefaults.test.ts`, a menu group becoming a
-submenu broke `AlignmentsFilters.test.tsx`, a new scalebar caption staled
-`ReversedRegionLabels.test.tsx`. **CI's full run is the net for that class now.**
-Before landing anything that moves a config slot, a menu, a label or a snapshot
-shape, run `pnpm test-related --with-web` — or `pnpm test products/jbrowse-web`,
-which is the same directory and needs no graph.
-
-**Five CI jobs are gated by none of that**: `pnpm check-format`, `pnpm
-check-docs`, `typos`, `pnpm build:esm` and `pnpm lint:eslint`. A validator that
-cannot import is not one that passed — `check-docs` reports ERR_MODULE_NOT_FOUND
-as a failure with no detail, so read the body, not the tally.
-
-The last two were added on 2026-08-22, when both went red on main in the same
-afternoon and neither was noticed by the agent that broke it:
+**Three CI jobs are gated by none of that**: `pnpm check-docs`, `pnpm build:esm`
+and type-aware lint of files the change did not touch. `pnpm verify --full` runs
+the first two. A validator that cannot import is not one that passed —
+`check-docs` reports ERR_MODULE_NOT_FOUND as a failure with no detail, so read
+the body, not the tally.
 
 - **`pnpm typecheck` does not see declaration emit.** A named type reaching a
   `.d.ts` through a volatile or an inferred return is TS4058 — "cannot be named"
-  — and only `build:esm` raises it. `d3cd139c52` left main unbuildable that way
-  for hours; `2d14c17b37` and `a438d86fcd` are two agents fixing it
-  independently. Run `build:esm` after anything that adds a type to an exported
-  surface.
-- **`pnpm lint` is oxlint, and `lint:eslint` is a different rule set.** Six
-  load-bearing `import type {}` statements passed oxlint and failed
-  `unicorn/require-module-specifiers` (`8e56c5c01a`, fixed in `4107506779`).
-  Neither linter covers `products/jbrowse-desktop/test/` at all, so a change
-  there is typechecked or nothing.
+  — and only `build:esm` raises it. Run `build:esm` after anything that adds a
+  type to an exported surface.
+- **oxlint and eslint are different rule sets**, and verify runs both.
+  Neither covers `products/jbrowse-desktop/test/`, so a change there is
+  typechecked or nothing.

@@ -1,0 +1,27 @@
+{
+  "id": "test-selection-strategies",
+  "measured": "2026-09-13",
+  "published": false,
+  "source": {
+    "kind": "hand",
+    "repro": "The last 400 non-merge commits on main as of 116cc66d41; the 263 that touched a .ts/.tsx/.js/.jsx file still present at that commit, test files excluded. One recorded full run (2136 suites, JEST_MAX_WORKERS=4, nice 15, on battery at load ~10-25) supplied each suite's footprint and its wall time (endTime - startTime from --json). Per commit, each strategy's selected suites are summed by that wall time. 'static' is @jest/core SearchSource.findRelatedTests over the commit's files in one process; 'static, no web' drops products/jbrowse-web unless the commit touched it, which is what test-related did before footprints. 'footprint' selects suites whose footprint holds a changed file; 'footprint + compile filter' first drops files whose @babel/preset-typescript output (comments: false, compact) is identical at C^ and C.",
+    "notes": "Graph and footprints are at 116cc66d41 while the commits are historical, so a file's importers are today's rather than the commit's. Suite-seconds are contended 4-worker times, ~1.3x a quiet box. Over all 263 commits the footprint picked exactly one suite the static graph did not. The distribution is bimodal: ~40% of commits touch a module every app-level suite executes at import (render-core marks, a plugin index, a config schema) and still select most of them. Function-level selection off V8 precise coverage was measured and declined: it added ~27% to every run and moved the mean from 441 to 415, because most changed lines in those modules are top-level."
+  },
+  "columns": [
+    { "key": "strategy", "label": "selection", "format": "text", "align": "left" },
+    { "key": "median", "label": "median suite-seconds", "format": "s", "precision": 0, "align": "right" },
+    { "key": "mean", "label": "mean suite-seconds", "format": "s", "precision": 0, "align": "right" },
+    { "key": "under30", "label": "commits at ≤30s", "format": "int", "align": "right" },
+    { "key": "over300", "label": "commits over 300s", "format": "int", "align": "right" },
+    { "key": "missesWeb", "label": "skips web suites it reaches", "format": "text", "align": "left" }
+  ],
+  "rows": [
+    { "values": { "strategy": "static", "median": 772, "mean": 616, "under30": 74, "over300": 183, "missesWeb": "no" } },
+    { "values": { "strategy": "static, no web", "median": 195, "mean": 222, "under30": 74, "over300": 73, "missesWeb": "yes" } },
+    { "values": { "strategy": "footprint", "median": 142, "mean": 441, "under30": 113, "over300": 121, "missesWeb": "no" } },
+    {
+      "values": { "strategy": "footprint + compile filter", "median": 38, "mean": 376, "under30": 131, "over300": 105, "missesWeb": "no" },
+      "emphasize": ["median"]
+    }
+  ]
+}
