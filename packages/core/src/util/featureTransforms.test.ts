@@ -1,4 +1,5 @@
-import { runTransforms } from './featureTransforms.ts'
+import { facetRows, runTransforms } from './featureTransforms.ts'
+import { MAX_GROUPS, OVERFLOW_GROUP_KEY } from './groupKeys.ts'
 import createJexlInstance from './jexl.ts'
 import { placeRect } from './layouts/placeRect.ts'
 import SimpleFeature from './simpleFeature.ts'
@@ -291,4 +292,78 @@ test('stack with placeRect padding assigns the rows placeRect does', () => {
   )
   expect(out.map(f => f.get('row'))).toEqual(expected)
   expect(Math.max(...expected)).toBeGreaterThan(3)
+})
+
+function stacked(features: readonly Feature[], field: string) {
+  return runTransforms(features, [{ type: 'stack', groupby: [field] }])
+}
+
+test('a facet offsets each group by the groups above it and names the sections', () => {
+  const { features, sections } = facetRows(
+    stacked(
+      [
+        feature(0, 20, { sample: 'b' }),
+        feature(5, 25, { sample: 'b' }),
+        feature(0, 20, { sample: 'a' }),
+      ],
+      'sample',
+    ),
+    { field: 'sample' },
+  )
+  expect(sections).toEqual([
+    { key: 'a', label: 'sample: a', firstRow: 0, rowCount: 1 },
+    { key: 'b', label: 'sample: b', firstRow: 1, rowCount: 2 },
+  ])
+  expect(rows(features, 'sample', 'start', 'row')).toEqual([
+    ['b', 0, 1],
+    ['b', 5, 2],
+    ['a', 0, 0],
+  ])
+})
+
+test('a facet orders digit keys by magnitude and files a missing value under its own section', () => {
+  const { sections } = facetRows(
+    stacked(
+      [
+        feature(0, 10, { bin: 10 }),
+        feature(0, 10, { bin: 2 }),
+        feature(0, 10, {}),
+      ],
+      'bin',
+    ),
+    { field: 'bin' },
+  )
+  expect(sections.map(s => [s.key, s.label, s.firstRow])).toEqual([
+    ['2', 'bin: 2', 0],
+    ['10', 'bin: 10', 1],
+    ['', 'bin: none', 2],
+  ])
+})
+
+test('a facet merges the tail past the cap into one section', () => {
+  const many = Array.from({ length: MAX_GROUPS + 5 }, (_, i) =>
+    feature(0, 10, { sample: `s${String(i).padStart(3, '0')}` }),
+  )
+  const { features, sections } = facetRows(stacked(many, 'sample'), {
+    field: 'sample',
+  })
+  expect(sections).toHaveLength(MAX_GROUPS)
+  const last = sections.at(-1)!
+  expect(last.key).toBe(OVERFLOW_GROUP_KEY)
+  expect(last.label).toBe('6 merged values')
+  expect(last.rowCount).toBe(1)
+  expect(new Set(features.map(f => f.get('row'))).size).toBe(MAX_GROUPS)
+})
+
+test('a facet over an unstacked list leaves one section spanning every row', () => {
+  const { sections } = facetRows(
+    runTransforms(
+      [feature(0, 20, { sample: 'a' }), feature(5, 25, { sample: 'a' })],
+      [{ type: 'stack' }],
+    ),
+    { field: 'sample' },
+  )
+  expect(sections).toEqual([
+    { key: 'a', label: 'sample: a', firstRow: 0, rowCount: 2 },
+  ])
 })

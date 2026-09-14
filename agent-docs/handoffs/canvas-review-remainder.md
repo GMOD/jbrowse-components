@@ -1,6 +1,6 @@
 ---
 name: canvas-review-remainder
-description: What the 2026-09-14 review of plugins/canvas (cross-read against alignments' group-by) left unbuilt after seven fixes landed — the "Show chevrons" toggle still refetching where "Show outline" no longer does, a declared facet for the mark display over the display-kit group-by pieces, an attribute group-by dialog that scans nothing, the nine-part compose ceiling both big displays now nest under, and three span-proportional bin builders. Read before re-reviewing the canvas plugin or proposing a group-by feature.
+description: What the 2026-09-14 review of plugins/canvas (cross-read against alignments' group-by) left unbuilt after seven fixes landed — the "Show chevrons" toggle still refetching where "Show outline" no longer does, an attribute group-by dialog that scans nothing, the nine-part compose ceiling both big displays now nest under, and three span-proportional bin builders. Read before re-reviewing the canvas plugin or proposing a group-by feature.
 ---
 
 # Canvas review: what is left
@@ -13,11 +13,8 @@ lands or is filed elsewhere.**
 Permanent homes this file points at rather than repeats:
 
 - The group-by machinery every in-track grouping shares —
-  `packages/display-kit/src/groupKeys.ts`, `groupByMenu.ts`,
+  `packages/core/src/util/groupKeys.ts`, and display-kit's `groupByMenu.ts`,
   `GroupLabelChips.tsx`, `HiddenGroupsMixin.ts`.
-- Where the grammar stands on faceting —
-  [reference/GRAMMAR_OF_GRAPHICS.md](../reference/GRAMMAR_OF_GRAPHICS.md)
-  § "Gaps against the grammar", the facet bullet.
 - Why canvas keeps its own packer and the mark display its encoder —
   [ADR-114](../architecture-decision-records/adr-114-canvas-keeps-its-hand-written-packer.md).
 
@@ -37,24 +34,7 @@ render state. Around 40 lines; a test beside the outline one in
 `RenderFeatureDataRPC/colorClasses.test.ts` § "the theme is not an RPC cache
 key" pins that `rpcProps()` does not move.
 
-## 2. A declared facet on the mark display
-
-The grammar reference now names the facet stage as held by the format-typed
-displays. The mark display has the layout half only: `stack`'s `groupby`
-(`packages/core/src/util/featureTransforms.ts`) packs each value set on its
-own rows numbered from 0, so the sections overlap and nothing draws a chip. A
-`facet` would need: the worker to offset each group's rows by the groups above
-it and return a per-group section table (key, label, first row, row count),
-ordered by `compareGroupKeys` and capped by `capGroupKeys`; the display to
-compose `HiddenGroupsMixin` with a `groupKeySpace` getter over the facet
-field; and a `GroupLabelChips` overlay reading the section table against
-`rowHeight`. The alignments `GroupLabelsOverlay.tsx` and canvas
-`GroupLabelsLayer.tsx` are the two existing adapters to copy the shape from.
-Roughly 200 to 300 lines, and it makes the mark display the third consumer of
-the display-kit pieces. This is the item to take if the grammar direction is
-being pushed.
-
-## 3. The attribute group-by dialog scans nothing
+## 2. The attribute group-by dialog scans nothing
 
 `LinearBasicDisplay/components/GroupByAttributeDialog.tsx` is a text field.
 The alignments tag dialog (`GroupByDialog.tsx`) scans the loaded reads, shows
@@ -67,10 +47,11 @@ the loaded features carry) from its worker
 gives the canvas dialog the alignments shape. Around 80 lines, half of it
 worker payload.
 
-## 4. The nine-part compose ceiling
+## 3. The nine-part compose ceiling
 
-`types.compose` in the MST fork is typed for nine model parts. Both
-`LinearCanvasBaseDisplay` and `LinearAlignmentsDisplay` now nest
+`types.compose` in the MST fork is typed for nine model parts.
+`LinearCanvasBaseDisplay`, `LinearAlignmentsDisplay` and `LinearMarkDisplay`
+now nest
 `BaseDisplay`, `TrackHeightMixin()`, `HeightModeMixin()` and
 `MultiRegionDisplayMixin()` in an inner compose to stay under it, as
 `LinearMultiRowFeatureDisplay` already did with a similar set. Two ways out:
@@ -82,7 +63,7 @@ already calls the foundation. The tenth part fails as ~150 "property X does
 not exist" errors across every consumer, not as a ceiling; the memory
 `compose-tenth-part-erases-every-prop` says so.
 
-## 5. Three span-proportional bin builders
+## 4. Three span-proportional bin builders
 
 `MultiRowClusterFeaturesRPC/buildMultiRowMatrix.ts` (bins by midpoint, cell
 budget), `plugins/maf/src/LinearMafClusterIdentityRpc/buildIdentityMatrix.ts`

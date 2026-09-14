@@ -212,6 +212,24 @@ whole plot; with one —
 into as many bands as the highest row on screen needs, and each span sits on the
 band its field names.
 
+## Facets
+
+A mark's `facet` gives each value of a categorical field its own band of rows,
+named by a chip a reader can hide the section from. The rows come from a `stack`
+grouped by the same field, and the facet stacks the groups themselves:
+
+```json
+{
+  "shape": "span",
+  "facet": "sample",
+  "transform": [{ "type": "stack", "groupby": ["sample"] }],
+  "encoding": { "row": "row" }
+}
+```
+
+Sections order digits by magnitude and everything else by code point, and the
+tail past forty merges into one.
+
 ## Transforms
 
 A mark's `transform` is a list of steps over the region's features, run in the

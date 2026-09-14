@@ -86,7 +86,7 @@ in full and of the format-typed displays only where it says so.
 | scale | domain → range, separate from the encoding | every channel on the encoding — `{ field, scale, domain, palette \| range \| ramp }` for colour and glyph, `{ field, scale, domain }` for y — read by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`) and resolved either in the worker (categorical) or on the main thread against a domain uniform (y, and a quantitative ramp), with `ScoreScaleMixin` resolving the declaration rather than owning it | whole, declared in one place |
 | mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`) | whole, for the shapes the library has |
 | guide | axis and legend derived from a scale; a highlight derived from a selection | `colorScales` → legend (`packages/display-kit/src/legendHost.ts`), `valueScale` → axis, hatches and rules (`packages/display-kit/src/axisHost.ts`), `hoverInk` / `selectionInk` → the highlight (`packages/display-kit/src/highlightHost.ts`), each instance's box read off its shape's `ink`; `DisplayChrome` places all three and `renderDisplaySvg` the first two | whole, for the displays that declare |
-| layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; marks share one y domain unless one declares `encoding.y.resolve: 'independent'`, which folds its own domain and takes a second axis on the right (`markValueScale`, `plugins/marks/src/LinearMarkDisplay/markList.ts`); a mark's `minBpPerPx`/`maxBpPerPx` is the zoom range it draws in, and the shared domain, legend and row count fold only the marks drawing | y resolves shared or independent; colour does not; semantic zoom per layer |
+| layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; marks share one y domain unless one declares `encoding.y.resolve: 'independent'`, which folds its own domain and takes a second axis on the right (`markValueScale`, `plugins/marks/src/LinearMarkDisplay/markList.ts`); a mark's `minBpPerPx`/`maxBpPerPx` is the zoom range it draws in, and the shared domain, legend and row count fold only the marks drawing | y resolves shared or independent; colour does not; semantic zoom per layer; a mark's `facet` stacks one section of rows per value of a field, with a chip |
 | coordinates | a transform of the plane | genomic x along a strip, and the circular view's ring pass over it: the view is a `RegionHost` whose axis is the circumference, a display renders its strip as into a linear track, and one pass per ring resamples the strip's canvas in polar coordinates (`plugins/circular-view/src/rings/`, [ADR-119](../architecture-decision-records/adr-119-the-circular-view-is-a-coordinate-stage-over-the-linear-displays.md)) | polar, as a resampling of the finished picture rather than a twin per shape — measured at 4.3 ms a ring against 5.4–6.8 ms for the twin, exact at every bin width; the dotplot stays a display |
 
 The encoding — field to channel, evaluated once — is the grammar's central
@@ -209,6 +209,30 @@ The seams, named honestly:
   never been seen, so the domain still grows as the user pans, and a pinned
   `domain` is what fixes a legend for a figure.
 
+## The facet stage
+
+A row facet — partition the features on a categorical field, stack one section
+per value, name each with a chip — is answered three times over one set of
+shared pieces. The feature display's "Group by..."
+(`plugins/canvas/src/LinearBasicDisplay/groupBy.ts`) and the alignments
+display's (`plugins/alignments/src/shared/groupFeatures.ts`) are two; the mark
+display's declared `facet: { field }` is the third, and the only one the
+grammar spells. There the worker offsets each group's rows by the groups above
+it and answers a section table (`facetRows`,
+`packages/core/src/util/featureTransforms.ts`), the display folds the regions'
+tables into one layout and re-offsets every region onto it
+(`plugins/marks/src/LinearMarkDisplay/facet.ts`), and the chip row reads that
+layout — the stack transform with an offset over it, not a fourth partition.
+
+The shared pieces are the key order and the `MAX_GROUPS` cap
+(`packages/core/src/util/groupKeys.ts`, in core so a worker can reach them),
+the radio submenu (`groupByMenu.ts`), the chips and dividers
+(`GroupLabelChips.tsx`), and the hidden sections with their key-space reset
+(`HiddenGroupsMixin.ts`). The multi-row display's `partitionField` is the same
+partition with one fixed row per value and no chip. What the mark display does
+not take is the alignments display's per-section collapse, which is that
+display's lane budget rather than a facet's.
+
 ## Gaps against the grammar
 
 - **`window` and `sample` are absent**, and wiggle's binning is the adapter's
@@ -226,23 +250,6 @@ The seams, named honestly:
   colour has no equivalent, so two marks with two ramps still union nothing
   and each key is its own. A second independent mark is refused, the chrome
   having one place to put the axis.
-- **The facet stage is held by the format-typed displays and not by the
-  grammar.** A row facet — partition the features on a categorical field,
-  stack one section per value, name each with a chip — is what the feature
-  display's "Group by..." (`plugins/canvas/src/LinearBasicDisplay/groupBy.ts`)
-  and the alignments display's (`plugins/alignments/src/shared/groupFeatures.ts`)
-  are, and the two hold it through one set of display-kit pieces: the key
-  order and the `MAX_GROUPS` cap (`groupKeys.ts`), the radio submenu
-  (`groupByMenu.ts`), the chips and dividers (`GroupLabelChips.tsx`), and the
-  collapsed and hidden sections with their key-space reset
-  (`GroupChipStateMixin.ts`). The multi-row display's `partitionField` is the
-  same partition with one fixed row per value and no chip. The mark display
-  has the layout half only: `stack`'s `groupby` packs each value set on its
-  own rows numbered from 0, so the sections overlap rather than stack, and
-  nothing draws a chip. A declared `facet` on `marks` would offset each
-  group's rows by the groups above it and read the chip row off the same
-  display-kit pieces — the guide already exists, and the step is the stack
-  transform with an offset, not a fourth partition.
 - **No conditional encoding.** Hover and selection are a guide over the
   painting, not a `condition` on a channel: a display names the lit
   instances and the chrome boxes their ink
