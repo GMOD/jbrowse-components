@@ -9,7 +9,9 @@ It renders the third-party
 [jbrowse-plugin-alphagenome](https://github.com/cmdcolin/alphagenome_browser)
 (three adapters, a view-menu dialog and a variant right-click item), which is
 not bundled in JBrowse Web. Data-free: hg38 comes from UCSC, the genes from
-`jbrowse.org/genomes`, and the variant track is a 2 KB BED beside the demo.
+`jbrowse.org/genomes`, and the variant track is a 2 KB BED beside the demo,
+checked in as `demos/alphagenome_test.bed` and deployed from there. Its starts
+are 0-based, one less than the 1-based positions AlphaGenome takes.
 
 `loc` **is a measured number, not a framing choice.** The two recorded
 predictions the tutorial reads are keyed by the window they cover, and the panel

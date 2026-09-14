@@ -27,7 +27,9 @@ import type {
 //     what would break it.
 //   * every output type, via the `everything` preset. The panel defaults to
 //     three.
-//   * both biosamples. The panel defaults to K562 alone, so GM12878 is typed in.
+//   * the biosamples. The panel defaults to K562 alone, so the interval
+//     recording types GM12878 in beside it, and the variant recording swaps K562
+//     for CD34+ progenitors, the cell type the worked example scores.
 //
 // CACHED is therefore asserted, not hoped for, and it is the action right after
 // Predict. An uncached click has already dispatched a real AlphaGenome call
@@ -46,14 +48,15 @@ import type {
 // builds that way for every menu row.
 const CONFIG = 'https://jbrowse.org/demos/alphagenome/config.json'
 
-// GM12878. K562 is the panel's own default, so only this one is ever typed.
 const GM12878 = 'EFO:0002784'
+const CD34_PROGENITOR = 'CL:0001059'
+const CD34_SLUG = 'common-myeloid-progenitor-cd34-positive'
 
 // The Jurkat MuTE insertion: the variant the AlphaGenome team's worked example
 // scores (alphagenomedocs.com/colabs/example_analysis_workflow.html), and the
 // one the recorded variant prediction covers. Typed rather than right-clicked,
 // and that is not a shortcut — see `variant_difference` below.
-const JURKAT_INSERTION = 'chr1:47239297 C>CCGTTTCCTAACC'
+const JURKAT_INSERTION = 'chr1:47239296 C>CCGTTTCCTAACC'
 
 // A variant with only one neighbour, for the figure that is ABOUT the
 // right-click. `new 3' enhancer 1` starts two bases before `new 3' enhancer 2`,
@@ -66,7 +69,7 @@ const JURKAT_INSERTION = 'chr1:47239297 C>CCGTTTCCTAACC'
 // the same string whatever is under the cursor. What the assertion still pins
 // is that the click hit a variant at all — the row is contributed by the
 // plugin and a miss opens the display's own menu without it.
-const ENHANCER_1_LOCUS = 'chr1:47,212,073'
+const ENHANCER_1_LOCUS = 'chr1:47,212,072'
 const TOP_ROW = 0.1
 const MIN_SCORE_SLIDER = '[data-testid="min-score-slider"]'
 const PREDICT_VARIANT_EFFECT =
@@ -89,13 +92,15 @@ const BIOSAMPLE_READY =
 const soleBiosample = (curie: string) =>
   `[role="listbox"] li:only-of-type[data-testid="alphagenome-biosample-${curie}"]`
 
-// Open the panel with all eleven output types and both cell lines chosen — the
-// query the recordings answer.
+const BIOSAMPLE_CHIP = (index: number) =>
+  `[data-testid="alphagenome-biosamples"] [data-item-index="${index}"]`
+
+// Open the panel with all eleven output types chosen.
 //
 // No Escape anywhere in here. It is the obvious way to dismiss the biosample
 // dropdown and it closes the whole dialog instead, which then fails several
 // actions later on a missing button rather than here.
-const buildQuery: ScreenshotAction[] = [
+const openPanel: ScreenshotAction[] = [
   { type: 'click', selector: '[data-testid="view_menu_icon"]' },
   {
     type: 'click',
@@ -103,10 +108,34 @@ const buildQuery: ScreenshotAction[] = [
   },
   { type: 'waitForSelector', selector: BIOSAMPLE_READY, timeout: 120000 },
   { type: 'click', selector: '[data-testid="alphagenome-preset-everything"]' },
-  { type: 'type', selector: BIOSAMPLE_READY, value: 'GM12878' },
-  { type: 'waitForSelector', selector: soleBiosample(GM12878) },
+]
+
+const addBiosample = (query: string, curie: string): ScreenshotAction[] => [
+  { type: 'type', selector: BIOSAMPLE_READY, value: query },
+  { type: 'waitForSelector', selector: soleBiosample(curie) },
   { type: 'press', key: 'ArrowDown' },
   { type: 'press', key: 'Enter' },
+]
+
+// K562 and GM12878, the query the interval recording answers.
+const buildQuery: ScreenshotAction[] = [
+  ...openPanel,
+  ...addBiosample('GM12878', GM12878),
+]
+
+// CD34+ progenitors alone, the query the variant recording answers. The second
+// chip being absent is what proves K562 went, and it is asserted before Predict
+// because a request still carrying K562 is a real AlphaGenome call.
+const buildCd34Query: ScreenshotAction[] = [
+  ...openPanel,
+  {
+    type: 'click',
+    selector: `${BIOSAMPLE_CHIP(0)} .MuiChip-deleteIcon`,
+  },
+  { type: 'waitForSelector', selector: BIOSAMPLE_CHIP(0), hidden: true },
+  ...addBiosample('CD34', CD34_PROGENITOR),
+  { type: 'waitForSelector', selector: BIOSAMPLE_CHIP(0) },
+  { type: 'waitForSelector', selector: BIOSAMPLE_CHIP(1), hidden: true },
 ]
 
 const predictCached: ScreenshotAction[] = [
@@ -211,10 +240,7 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
       row('rna_seq', 'gm12878-polya-plus-rna-seq'),
       ...addAndSettle('multi-wiggle-display'),
     ],
-    // The app is content-sized here rather than filling the frame, so this is
-    // slack above the tallest state and not a crop — raising it only adds page
-    // background, which the run reports.
-    viewportHeight: 700,
+    viewportHeight: 640,
   },
 
   // Accessibility is ONE scale, and this is the case the shared axis was built
@@ -340,7 +366,7 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
       },
       { type: 'waitForAppSettled' },
     ],
-    viewportHeight: 820,
+    viewportHeight: 670,
   },
 
   // The gesture nobody finds by accident, and the figure is what makes it
@@ -384,36 +410,24 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
     viewportHeight: 620,
   },
 
-  // What a variant prediction gives you: the reference and alternate curves side
-  // by side, and their difference on its own row.
+  // The worked example's reading of the Jurkat insertion in CD34+ progenitors:
+  // H3K27ac and DNase gained at the insertion, and TAL1 transcription raised.
+  // Each assay gets its reference and alternate pair, then a difference row,
+  // which stays flat right of the insertion because the plugin maps the
+  // alternate prediction back onto reference coordinates. The DNase difference
+  // autoscales to its full range: the default 99th-percentile clip flattens the
+  // single-base gains at the insertion and leaves one small loss beside them
+  // as the tallest mark on the row.
   //
-  // The pair is there to be looked at first — at this scale the two curves sit
-  // almost exactly on top of each other, which is the reason the difference gets
-  // a row of its own. On that row, positive is where the insertion raises
-  // predicted expression, and it is flat almost everywhere: one insertion
-  // changes one thing, and what it changes is TAL1. A difference track lit up
-  // across the whole megabase would be a prediction responding to the request
-  // rather than to the variant, with no way to tell which part was the insertion.
-  //
-  // The variant is TYPED rather than right-clicked, and this is the one place
-  // that choice is worth defending. Only the Jurkat insertion has a recording,
-  // and it is not reachable by right-click here: ~30 of the demo BED's variants
-  // sit within six bases of each other, JBrowse packs them by start coordinate,
-  // and Jurkat lands in the fifth row — below the track's visible band, so every
-  // point in it belongs to Patient_2, PATRAB, PASFKA or Patient_7. Picking it
-  // would take a measured fracY that is right only until the track's height or
-  // the BED's contents move. The typed box reaches exactly one variant by name,
-  // and the tutorial documents it for the same reason it exists: the right-click
-  // is the gesture nobody finds, not the only way in.
-  //
-  // Queued before Predict, so this run's request is the VARIANT recording rather
-  // than the interval one — a different fixture, reached the same way and
-  // asserted the same way.
+  // The variant is TYPED rather than right-clicked. ~30 of the demo BED's
+  // variants sit within six bases of each other and Jurkat packs below the
+  // track's visible band, so a right-click would need a measured fracY; the
+  // typed box reaches exactly one variant by name.
   {
     ...common,
     name: 'alphagenome/variant_difference',
     actions: [
-      ...buildQuery,
+      ...buildCd34Query,
       {
         type: 'click',
         selector: '[data-testid="alphagenome-variant-type-one-in"]',
@@ -426,9 +440,49 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
       { type: 'click', selector: '[data-testid="alphagenome-variant-use"]' },
       ...predictCached,
       ...pick('rna_seq', 'polyA plus'),
-      row('rna_seq', 'k562-polya-plus-rna-seq'),
+      row('rna_seq', `${CD34_SLUG}-polya-plus-rna-seq`),
+      ...pick('dnase', 'DNase'),
+      row('dnase', `${CD34_SLUG}-dnase-seq`),
+      ...pick('chip_histone', 'H3K27ac'),
+      row('chip_histone', `${CD34_SLUG}-h3k27ac-histone-chip-seq`),
       ...addAndSettle('multi-wiggle-display'),
+      {
+        type: 'type',
+        selector: 'input[placeholder="Search for location"]',
+        value: 'chr1:47,212,000..47,244,000',
+        clear: true,
+      },
+      { type: 'press', key: 'Enter' },
+      { type: 'waitForAppSettled' },
+      {
+        type: 'click',
+        selector:
+          '[data-testid="track_menu_icon"][data-trackid="demo-tal1-variant-cd34-delta-dnase.0"]',
+      },
+      { type: 'click', selector: '[data-testid="cascading-submenu-score"]' },
+      {
+        type: 'click',
+        selector: '[data-testid="cascading-submenu-autoscale_type"]',
+      },
+      { type: 'click', selector: '[data-testid="cascading-menuitem-local"]' },
+      { type: 'click', selector: '.MuiMenu-root .MuiBackdrop-root' },
+      { type: 'waitForSelector', selector: '.MuiMenu-root', hidden: true },
+      { type: 'waitForAppSettled' },
     ],
-    viewportHeight: 860,
+    viewportHeight: 1220,
+    annotations: [
+      {
+        type: 'text',
+        text: 'Jurkat insertion',
+        fontSize: 18,
+        leader: true,
+        anchor: {
+          track: 'tal1_variants',
+          locus: 'chr1:47,239,296',
+          fracY: 0.85,
+        },
+        dx: -60,
+      },
+    ],
   },
 ]

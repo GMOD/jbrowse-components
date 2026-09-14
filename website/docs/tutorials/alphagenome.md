@@ -39,8 +39,8 @@ the AlphaGenome team's
   types, K562 and GM12878, as the manifest a browser reads it through:
   https://0t0e9nn6bj.execute-api.us-east-2.amazonaws.com/Prod/api/predict/demo-tal1-interval
 - the variant prediction, the same window scored twice for the Jurkat MuTE
-  insertion:
-  https://0t0e9nn6bj.execute-api.us-east-2.amazonaws.com/Prod/api/predict/demo-tal1-variant
+  insertion, in CD34+ common myeloid progenitors:
+  https://0t0e9nn6bj.execute-api.us-east-2.amazonaws.com/Prod/api/predict/demo-tal1-variant-cd34
 - the oncogenic _TAL1_ variants as a variant track, the insertion among them:
   https://jbrowse.org/demos/alphagenome_test.bed
 - hg38's NCBI RefSeq annotation:
@@ -63,7 +63,7 @@ answers is the variant's predicted effect.
 The window is a megabase centered on _TAL1_ on chr1, a transcription factor
 whose misexpression drives T-cell acute lymphoblastic leukemia. It is on in
 K562, an erythroleukemia line, and off in GM12878, a lymphoblastoid line, the
-control in every figure below.
+control in the locus figures below.
 
 ## The AlphaGenome plugin
 
@@ -124,7 +124,8 @@ go into a request:
   and the presets pick the usual groups
 - **which cell types and tissues.** The box searches the catalog of predictable
   tracks by biosample, and marks a biosample that has none of the output types
-  asked for. K562 and GM12878 are the two this page uses
+  asked for. This page uses K562 and GM12878 for the locus, and CD34+
+  progenitors for the variant
 - **how wide a window.** 16 kb, 100 kb, 500 kb or 1 Mb, centered on the view.
   The panel prints the interval it will ask about
 - **a variant, or none.** Left empty, the locus is predicted as it is
@@ -217,9 +218,12 @@ sequence and once with the insertion in place.
 <Figure caption="Right-clicking a variant in the oncogenic TAL1 variants track. The last row of the menu is the plugin's, and it opens the query panel with the variant under the cursor already loaded." src="/img/alphagenome/predict_variant_menu.png" />
 
 The recorded prediction this page reads is for the **Jurkat** insertion,
-`chr1:47239297 C>CCGTTTCCTAACC`, easiest to reach by typing it into the panel's
-variant box. Right-clicking any other row is a real API call rather than a
-stored answer.
+`chr1:47239296 C>CCGTTTCCTAACC`, scored in CD34+ common myeloid progenitors: the
+cell type the worked example uses, and the closest match AlphaGenome has to the
+CD34+ hematopoietic cells Mansour et al. studied. To reach it, remove K562 from
+the biosample box, add "common myeloid progenitor, CD34-positive", and type the
+insertion into the variant box. Any other variant or biosample is a real API
+call rather than a stored answer.
 
 Before running one yourself:
 
@@ -232,18 +236,25 @@ Before running one yourself:
 ## Reading the difference
 
 Adding a track from a variant prediction gives two tracks: the reference and
-alternate curves together, and their difference on its own row. At this scale
-the two curves sit almost on top of each other, which is why the difference gets
-its own row and a much smaller axis.
+alternate curves together, and their difference on its own row, where positive
+is a gain from the insertion and negative a loss. Add the CD34+ DNase, polyA
+plus RNA-seq and H3K27ac tracks, and zoom to _TAL1_ and the insertion.
 
-On the difference track, positive is where the insertion raises predicted
-expression and negative where it lowers it. The row is flat across most of the
-window and moves only over _TAL1_ and _STIL_.
+The three difference rows read as the enhancer the insertion creates.
+Accessibility rises sharply at the insertion itself, H3K27ac, the mark of an
+active enhancer, rises across the locus, and predicted transcription rises over
+the _TAL1_ exons. The DNase difference row is set to the **Local** autoscale in
+its track menu: the default clips the outermost percent of each sign, which on a
+row this sparse flattens the gain at the insertion.
 
-The flatness everywhere else is the check: a difference track lit up across the
-whole megabase would be responding to the request rather than the variant.
+AlphaGenome returns the alternate prediction laid out along the alternate
+sequence, 12 bases longer than the reference here, so the plugin maps it back
+onto reference coordinates before subtracting, the way AlphaGenome's own variant
+scorers do. Subtracting the raw arrays would compare every base right of the
+insertion with the base 12 positions away, and fill the difference row with
+signal out to the window edge.
 
-<Figure caption="A variant prediction adds two tracks: the reference and alternate curves together, and their difference below. The difference is flat except over TAL1 and STIL, and its axis spans a fraction of the one above it." src="/img/alphagenome/variant_difference.png" />
+<Figure caption="The Jurkat insertion scored in CD34+ progenitors: reference and alternate predictions for DNase, polyA plus RNA-seq and H3K27ac, then each difference. Accessibility rises at the insertion, while H3K27ac and TAL1 transcription rise with it." src="/img/alphagenome/variant_difference.png" />
 
 ## What a prediction is, as configuration
 
