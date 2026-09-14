@@ -478,14 +478,6 @@ mouseoverExtraInformation: undefined as string[] | undefined,
  * from this display, read by the LGV crosshair overlay
  */
 sequenceHoverPosition: undefined as SequenceHoverPosition | undefined,
-/**
- * #volatile
- * Group keys the user hid from the stack. A key means nothing outside
- * the grouping that issued it, since `''` is both the ungrouped
- * section and every dimension's catch-all, so the set is dropped when
- * `groupKeySpace` moves.
- */
-hiddenGroups: observable.set<string>(),
 ```
 
 `undefined as T | undefined` is the idiom for a volatile whose type MST cannot
