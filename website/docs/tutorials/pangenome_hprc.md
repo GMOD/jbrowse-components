@@ -243,7 +243,7 @@ Each locus below is a window small enough to draw:
 | C4           | `chr6:31,980,000-32,050,000`   |
 | LPA KIV-2    | `chr6:160,525,000-160,655,000` |
 
-<Figure caption="The KIV-2 repeat inside LPA as a force-directed graph, under the RefSeq genes, the bubbles lane and the rGFA segments. The bubble the lane reports across the repeat is the haloed knot of loops below it, labelled as a repeat array, with one dashed arc bypassing the reference and LPA pinned under the backbone." src="/img/pangenome/hprc_lpa_kiv2.png" />
+<Figure caption="The KIV-2 repeat inside LPA as a force-directed graph, under the RefSeq genes, the UniProt domains, the bubbles lane and the rGFA segments. The UniProt kringle domains tile the bubble the lane reports across the repeat, which is the haloed knot of loops below it, labelled as a repeat array, with one dashed arc bypassing the reference and LPA pinned under the backbone." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
 ### Bubbles and genes on the drawing
 

@@ -398,6 +398,17 @@ const HS1_RMSK_TRACK = {
   },
 }
 
+// ClinVar and ClinGen were the first candidates and mark nothing here: ClinVar
+// is ~300 SNVs across all of LPA. Swiss-Prot's domain annotation names each
+// kringle, one per KIV-2 copy the reference carries; TrEMBL repeats the same
+// intervals unnamed.
+const HG38_UNIPROT_DOMAINS_TRACK = {
+  trackId: 'hg38_uniprot_domains_ucsc',
+  name: 'UniProt domains (Swiss-Prot)',
+  assemblyNames: ['hg38'],
+  uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipDomain.bb',
+}
+
 // A repeat lane read for WHAT THE SEQUENCE IS MADE OF, never for how much of it
 // there is (review: "the repeatmasker track is not very interesting
 // unfortunately and looks sort of glitchy even, just being collapsed layout.
@@ -2043,6 +2054,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'pangenome/hprc_lpa_kiv2',
     url: sessionSpec(HPRC_CONFIG, {
+      sessionTracks: [HG38_UNIPROT_DOMAINS_TRACK],
       views: [
         {
           type: 'LinearGenomeView',
@@ -2050,6 +2062,12 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
           loc: LPA_WINDOW,
           tracks: [
             hg38GeneLane(70),
+            {
+              trackId: HG38_UNIPROT_DOMAINS_TRACK.trackId,
+              type: 'LinearBasicDisplay',
+              jexlFilters: ["feature.status=='Manually reviewed (Swiss-Prot)'"],
+              height: 75,
+            },
             {
               trackId: 'hprc_minigraph_bubbles',
               type: 'LinearBasicDisplay',
@@ -2075,20 +2093,9 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     readyTimeout: 180000,
     settleMs: 6000,
     viewportWidth: 1000,
-    // the linear stack plus the graph pane, which the force drawing fills rather
-    // than leaving flat (990 for the eleven sample rows this replaces); measured
-    // against the run's own below-the-fold report, which caught 75px cut at 1090.
-    //
-    // STAYS 1170, and "reduce height of graph view" was tried three ways before
-    // being written down. The graph pane is a fixed 625 css px at this pinned
-    // bundle: the page measures 1,165 css px tall at viewportWidth 1000 and at
-    // 1400 alike, a `height` on the view entry changes nothing, and a 1010
-    // frame reports exactly 155 px cut in both cases -- the same number, which
-    // is what says the pane is not responding rather than fitting. A shorter
-    // frame crops the drawing; it does not scale it. Nor does a wider one
-    // spread it: the force layout is fixed in graph units and auto-fits at
-    // 50%, so 1400 px of frame only adds empty canvas to the right.
-    viewportHeight: 1330,
+    // Sized off the run's blank-below-content report. The graph pane is a fixed
+    // height, so a shorter frame crops the drawing rather than scaling it.
+    viewportHeight: 1170,
     hideTooltip: true,
     // Why this locus and not another deeply traversed bubble: KIV-2 copy number
     // is the reason anyone measures LPA, and nothing in a chain of loops says
@@ -2128,16 +2135,9 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         dx: 20,
         dy: -110,
       },
-      // WHERE it is, which the pill above never said (review: "the term
-      // 'KIV-2' is not visible in the screenshot, may be useful if there was a
-      // repeat track or specific location-of-kiv-2 track"). No new track is
-      // needed: the array already IS the widest bar in the bubbles lane, the
-      // one labelled 29 segments and up to 129 paths, and that bubble's own
-      // record is `chr6:160,616,002-160,646,753` in release 2.1 (2.0 had it as
-      // 33 segments and 584 paths over 160,606,991-160,639,012) — the
-      // coordinates this whole figure was picked on. Boxing it names the bar
-      // and locates the repeat in one mark, and a repeat track would restate
-      // what the graph already says.
+      // WHERE it is: the widest bar in the bubbles lane, whose record is
+      // `chr6:160,616,002-160,646,753` in release 2.1. The UniProt lane above
+      // confirms it independently, tiling that span with kringle domains.
       {
         type: 'box',
         anchor: {
