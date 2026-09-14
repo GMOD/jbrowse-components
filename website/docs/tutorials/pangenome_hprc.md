@@ -81,7 +81,7 @@ is an **allele**, a stretch of sequence some haplotype carries in place of the
 reference's. A deletion is an **edge**, a dashed arc from one backbone segment
 to another that skips what lies between.
 
-<Figure caption="The C4 locus cut as a force-directed graph, under the hg38 genes and the rGFA segments for the same window. The labels name a backbone segment, an allele, and a bubble whose two routes are the reference path and the dashed arc that skips it." src="/img/pangenome/hprc_graph_anatomy.png" />
+<Figure caption="The C4 locus cut as a force-directed graph, under the hg38 genes and the rGFA segments for the same window. The labels name a backbone segment, an allele, and a bubble whose two routes are the reference path and the dashed arc that skips it, which is one whole copy of the tandem C4-CYP21-TNX module." src="/img/pangenome/hprc_graph_anatomy.png" />
 
 With those named, the route is five steps:
 
@@ -207,10 +207,8 @@ Each launch makes a pane that holds the window it was cut from while the linear
 view moves on. Around a hundred kilobases is what the layout draws legibly at
 segment resolution, and the view refuses a cut past 5 Mb;
 [the bubble tier](/docs/tutorials/pangenome_hprc_part2#a-whole-chromosome-as-a-graph)
-draws a wider span. The third lane in the figure below is part 2's
-[bubble track](/docs/tutorials/pangenome_hprc_part2#the-bubble-track).
-
-<Figure caption="The C4 locus as a force-directed graph, under three lanes of the same window. The bubbles track reports a single bubble spanning the locus, and the graph below is what it contains." src="/img/pangenome/hprc_c4_subgraph.png" />
+draws a wider span. The C4 figure [above](#the-route-end-to-end) is one such
+cut.
 
 A force layout has no x axis to share with the linear view, so color carries the
 correspondence. **Reference position**, which the graph opens on, ramps hue over
@@ -284,10 +282,9 @@ loaded as an ordinary `FeatureTrack` on that haplotype's assembly.
 
 Only the window is cut, so an allele whose interior falls outside it draws as a
 short arm off the backbone. When a cut comes back as a single tangle, widen it
-until the backbone chain is in frame: the figure below is cut from
-`chr1:103,500,000-103,850,000`.
-
-<Figure caption="The amylase locus on chr1 as a force-directed graph, under the RefSeq genes and the rGFA segments for the same window. Every crossing is inside the amylase bubble at the end of the backbone chain." src="/img/pangenome/hprc_amylase_graph.png" />
+until the backbone chain is in frame, so the tangle sits between flanks that
+read as a plain chain. The amylase locus is one: cut
+`chr1:103,500,000-103,850,000` rather than the bubble alone.
 
 The graph's own bubble index says what that window holds, and tabix reads it
 over HTTP. The bubble spanning _AMY1A_ and _AMY1B_ is the first row:

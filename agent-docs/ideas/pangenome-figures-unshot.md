@@ -68,7 +68,7 @@ the release-2 files, and why CHM13 is the only donor worth loading.
   the haplotypes carrying it. Cheapest of the data adds, and it contributes
   information no projection of the graph can.
 - **Linearized multiway synteny of several haplotypes** (impg `all-vs-1` PAFs) —
-  the open verdict on `hprc_c4_subgraph`. The alignments exist per haplotype
+  what a C4 figure would need to show copy number per haplotype. The alignments exist per haplotype
   against GRCh38 and `make-pif` indexes them; gene annotation per haplotype is the
   unresolved half (release 1 has CAT GENCODE38, release 2 needs checking or a
   liftoff), so scope it at r1 samples that are also in r2 if the annotation search

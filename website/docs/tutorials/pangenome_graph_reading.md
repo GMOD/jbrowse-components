@@ -93,19 +93,15 @@ haplotypes, keeping each haplotype's walk. Open that file with **Add → Graph
 genome view**, or through the live link on the figure, and pick the
 force-directed layout again.
 
-<Figure caption="The eight-haplotype cut of the bubble, force-directed. Node width follows how many of the nine walks carry a node, so the reference is fat and each haplotype's private run of copies is a thin loop; the array's halo reads its route lengths off the walks, and each loop carries a chip naming the haplotypes that take it and how long it is." src="/img/pangenome/graph_kiv2_walks.png" />
-
-Every route the walks take through the array is labelled at the far point of its
-loop with the haplotypes that take it and its length, so the copy count of all
-eight reads off one drawing. Where several haplotypes' private copies are drawn
-on one loop the chips stack.
-
-Two things changed because the file carries walks. A node's thickness is the
+Two things change because the file carries walks. A node's thickness is the
 number of haplotypes through it, Bandage's depth drawn as width, so the backbone
 every haplotype shares is the thick line and the copies one haplotype alone
 carries are the thin loops. And the array's halo no longer counts routes through
 a DAG: its label is the shortest and longest walk between the bubble's two ends,
-which are real haplotype lengths.
+which are real haplotype lengths. Each route over a kilobase also carries a chip
+at the far point of its loop naming the haplotypes that take it; with nine walks
+through one array those chips stack over the loops, so the figure below has
+**Mark bubbles** off.
 
 ## Lift one haplotype out
 
@@ -114,7 +110,7 @@ and its route keeps its ink while every other node and link fades; a readout
 beside the legend gives the walk's length through the window and how it compares
 to the reference walk.
 
-<Figure caption="HG00133 lifted out, then GRCh38. HG00133's private copies are the one loop drawn at full strength and its readout states its excess over the reference; lifting GRCh38 itself leaves every private loop a ghost and reads the reference length." src="/img/pangenome/graph_kiv2_walk_lifted.png" />
+<Figure caption="The eight-haplotype cut under the same window's genes, bubble and rGFA segments, with HG00133 picked in the Walk dropdown. Its private copies are the loop drawn at full ink, the other haplotypes' loops fade, and the readout states its excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
 
 Lifting GRCh38 is the check. The reference takes no loop, so nothing but the
 backbone stays lit, and its readout compares the walk to itself. Lifting each of

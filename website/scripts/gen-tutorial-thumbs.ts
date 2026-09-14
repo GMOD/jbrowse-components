@@ -456,10 +456,9 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     xband: [0.45, 1],
   },
   pangenome_hprc: {
-    // The classic Bandage force-directed picture of the C4 subgraph, past the
-    // view chrome and the LGV/bubbles lanes above it.
-    src: 'pangenome/hprc_c4_subgraph.png',
-    band: [0.49, 1],
+    // The CFHR3/CFHR1 deletion arc under the reference row, the graph pane only.
+    src: 'pangenome/hprc_cfhr_deletion.png',
+    band: [0.71, 0.97],
   },
   pangenome_graph_reading: {
     // The KIV-2 window force-directed with its bubbles haloed: the knot of

@@ -3023,7 +3023,6 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           colorScheme: 'stable-rank',
           // No layoutQuality here, which is a per-figure call rather than a
           // rule. It IS a spec prop — `layoutQuality: 4` is how
-          // hprc_amylase_graph untangles its backbone and how
           // pggb_haplotype_paths gets a clean lens out of the IS5 bubble, and
           // the same setting is a radio in the view's own Settings dialog — so
           // any figure that draws better with more iterations can just say so.

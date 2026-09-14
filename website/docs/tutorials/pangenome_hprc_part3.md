@@ -262,19 +262,13 @@ lanes...** picks others. The cut carries one W line per haplotype walk, named
 through the companion, and **Sample rows** in the **Layout** dropdown gives each
 haplotype a row.
 
-<Figure caption="The KIV-2 array cut from the GBZ for the eight haplotypes, in Sample rows over the same window as the rGFA segments lane. Each row is a haplotype of the eight; an allele is drawn in the row of the first of them to walk it, so a row holds what that haplotype is the first to carry, and the hover on any node lists every haplotype that walks it." src="/img/pangenome/hprc_kiv2_gbz_walks.png" />
-
 The same cut force-directed is where the walks say most. A node draws thicker
 the more of the nine walks carry it, so the reference is fat and each
-haplotype's private run of kringle copies is a thin loop, and every route
-through the array carries a chip at the far point of its loop naming the
-haplotypes that take it and how long it is. The **Walk** dropdown lifts one
-haplotype out: its route keeps its ink, the rest fades, and a readout gives its
-length against the reference walk.
+haplotype's private run of kringle copies is a thin loop. The **Walk** dropdown
+lifts one haplotype out: its route keeps its ink, the rest fades, and a readout
+gives its length against the reference walk.
 
-<Figure caption="The eight-haplotype cut force-directed. Node width follows how many walks carry a node, and each loop's chip names the haplotypes taking it and its length, so the array reads as one copy count per haplotype." src="/img/pangenome/graph_kiv2_walks.png" />
-
-<Figure caption="HG00133 lifted out, then GRCh38. The lifted walk keeps its ink and its own chip; every other route fades, and the readout states the walk's length against the reference." src="/img/pangenome/graph_kiv2_walk_lifted.png" />
+<Figure caption="The KIV-2 array cut from the GBZ for eight haplotypes, force-directed under the same window's genes, bubble and rGFA segments, with HG00133's walk lifted. Its private copies are the loop drawn at full ink, the other haplotypes' loops fade, and the readout states its excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
 
 [Part 4](/docs/tutorials/pangenome_graph_reading) walks through that drawing
 from the rGFA window to the lifted haplotype.

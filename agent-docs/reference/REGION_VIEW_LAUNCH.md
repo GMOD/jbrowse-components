@@ -341,7 +341,7 @@ picture, so review them by eye after a regen. Three things they taught:
   alongside a `data-feature-id` the display's delegated handler resolves, so a
   right-click spec needs no hand-measured pixels.
 - **A graph canvas is too sparse for the content-stable diff gate.** It is mostly
-  white with thin strokes, so switching `pangenome/hprc_c4_subgraph` from the
+  white with thin strokes, so switching the HPRC C4 figure from the
   anchored layout to the force layout moved 2.7% of pixels and was *kept* rather
   than written. Force-layout figures carry `diffThreshold: 0.1` for FMMM jitter,
   which cannot be told apart from a real change of that size — regenerate those

@@ -1,9 +1,8 @@
 // The graph drawn as a graph, for the two "reading the shape" tutorials: HPRC
 // KIV-2 in pangenome_graph_reading and the mouse Dock2 bubble in
-// pangenome_graph_nested. Every figure here is the force-directed layout with
-// the plugin's bubble halos on it, because that is what the pages are about:
-// the graph view showing what a line cannot, with each bubble named where it
-// sits in the drawing.
+// pangenome_graph_nested. Every figure here is the force-directed layout,
+// because that is what the pages are about: the graph view showing what a line
+// cannot.
 //
 // Kept apart from graph-hprc.ts and graph-nonhuman.ts for the reason those two
 // are apart: this module's subject is one plugin device across two species,
@@ -45,8 +44,7 @@ const LPA_REGION = {
   end: 160655000,
 }
 // The KIV-2 bubble's own interval, which the eight-haplotype GBZ cut was made
-// on (pangenome/hprc_kiv2_gbz_walks, part 3), and the domain both the linear
-// lane and the graph paint their ramp over.
+// on, and the domain both the linear lane and the graph paint their ramp over.
 const KIV2_BUBBLE_WINDOW = 'chr6:160,616,002-160,646,753'
 const KIV2_BUBBLE_REGION = {
   refName: 'chr6',
@@ -165,6 +163,10 @@ function kiv2WalksGraphView() {
     // the private array copies are 11 kb to 105 kb of sequence each; at
     // proportional length they set the frame and the flank is a dot
     bubbleSpread: 'compress',
+    // No halos or route chips (review: "so much text annotations in the
+    // graphgenomeviewer itself makes it hard to see"): nine chips stacked on
+    // the loops covered the drawing they named.
+    showBubbles: false,
     paneHeight: 400,
   }
 }
@@ -175,17 +177,21 @@ function kiv2WalksLinearView() {
     assembly: 'hg38',
     loc: KIV2_BUBBLE_WINDOW,
     tracks: [
-      hg38GeneLane(60),
-      hprcBubblesLane(60),
-      hprcSegmentsLane(KIV2_BUBBLE_REGION),
+      hg38GeneLane(40),
+      hprcBubblesLane(50),
+      { ...hprcSegmentsLane(KIV2_BUBBLE_REGION), height: 70 },
     ],
   }
 }
 
-// The eight-haplotype cut of the bubble, with walks: node width is how many of
-// the nine haplotypes carry the node, so the reference is fat and each
-// haplotype's private array copies are the thin loops. The array comes out as
-// one bubble whose route lengths are the haplotypes' own.
+// The menu item is picked by its value rather than its text, which the
+// readout beside the legend repeats.
+const HG00133_ITEM = 'li[data-value^="HG00133"]'
+
+// The eight-haplotype cut of the bubble with one walk lifted: node width is how
+// many of the nine walks carry a node, HG00133's route keeps its ink while the
+// other haplotypes' private loops fade, and the readout states its excess over
+// GRCh38, under the linear view of the same window.
 const kiv2WalksSpec: ScreenshotSpec = {
   mode: 'url',
   name: 'pangenome/graph_kiv2_walks',
@@ -198,46 +204,25 @@ const kiv2WalksSpec: ScreenshotSpec = {
   viewportWidth: 1400,
   viewportHeight: 1000,
   hideTooltip: true,
-}
-
-// One walk lifted out, twice: HG00133, whose private copies are then the one
-// full loop and whose readout states its excess over GRCh38, and GRCh38 itself,
-// whose readout states the reference length and whose lift leaves every
-// private loop a ghost. Side by side, so the control is in the same frame.
-// The menu item is picked by its value rather than its text: the route chips
-// on the drawing carry the same haplotype names, so a text match is ambiguous.
-function liftWalk(sample: string) {
-  const item = `li[data-value^="${sample}"]`
-  return [
-    { type: 'click' as const, selector: WALK_SELECT },
-    { type: 'waitForSelector' as const, selector: item },
-    { type: 'click' as const, selector: item },
-    { type: 'waitForSelector' as const, selector: WALK_READOUT },
-    { type: 'delay' as const, ms: 3000 },
-  ]
-}
-
-const kiv2LiftedSpec: ScreenshotSpec = {
-  mode: 'url',
-  name: 'pangenome/graph_kiv2_walk_lifted',
-  url: sessionSpec(HPRC_CONFIG, {
-    views: [kiv2WalksGraphView()],
-  }),
-  readySelector: TOOLBAR_READY,
-  readyTimeout: 240000,
-  settleMs: 8000,
-  viewportWidth: 760,
-  viewportHeight: 560,
-  hideTooltip: true,
-  stageColumns: 2,
-  stages: [
+  actions: [
+    { type: 'click', selector: WALK_SELECT },
+    { type: 'waitForSelector', selector: HG00133_ITEM },
+    { type: 'click', selector: HG00133_ITEM },
+    { type: 'waitForSelector', selector: WALK_READOUT },
+    { type: 'delay', ms: 3000 },
+  ],
+  annotations: [
+    { type: 'box', anchor: { selector: WALK_SELECT } },
+    { type: 'box', anchor: { selector: WALK_READOUT } },
+    // a kringle-copy node 60% of the way along HG00133's walk
     {
-      actions: liftWalk('HG00133'),
-      annotations: [{ type: 'box', anchor: { selector: WALK_READOUT } }],
-    },
-    {
-      actions: liftWalk('GRCh38'),
-      annotations: [{ type: 'box', anchor: { selector: WALK_READOUT } }],
+      type: 'text',
+      text: 'HG00133 walks this loop',
+      fontSize: 18,
+      leader: true,
+      anchor: { view: 1, graphNode: '165812967' },
+      dx: 120,
+      dy: 0,
     },
   ],
 }
@@ -324,40 +309,6 @@ const dock2HalosSpec: ScreenshotSpec = {
   hideTooltip: true,
 }
 
-// The superbubble opened twice. Each pop cuts the bubble's segments out of the
-// graph on screen, lays them out afresh and derives the bubbles inside from the
-// layering, so the second frame's halos are ones no index row ever described,
-// and the third is one of those opened in turn.
-function popFirst() {
-  return [
-    { type: 'delay' as const, ms: 1500 },
-    { type: 'click' as const, selector: FIRST_HALO_LABEL },
-    { type: 'waitForAppSettled' as const },
-    { type: 'delay' as const, ms: 6000 },
-  ]
-}
-
-const dock2PopsSpec: ScreenshotSpec = {
-  mode: 'url',
-  name: 'pangenome/graph_mouse_dock2_pops',
-  url: sessionSpec(NONHUMAN_CONFIG, {
-    views: [mouseGraphView(DOCK2_REGION, 560)],
-  }),
-  readySelector: TOOLBAR_READY,
-  readyTimeout: 300000,
-  settleMs: 15000,
-  viewportWidth: 1400,
-  viewportHeight: 700,
-  hideTooltip: true,
-  stages: [
-    { actions: popFirst() },
-    {
-      actions: popFirst(),
-      annotations: [{ type: 'box', anchor: { selector: BACK_BUTTON } }],
-    },
-  ],
-}
-
 // The control: Nnt's window haloed. Its one large allele is an insertion the
 // other strains carry and the reference lacks, and it halos as one insertion
 // with nothing inside it to open.
@@ -382,8 +333,6 @@ export const graphReadingSpecs: ScreenshotSpec[] = [
   kiv2HalosSpec,
   kiv2PoppedSpec,
   kiv2WalksSpec,
-  kiv2LiftedSpec,
   dock2HalosSpec,
-  dock2PopsSpec,
   nntHalosSpec,
 ]

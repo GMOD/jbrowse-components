@@ -68,8 +68,8 @@ their own, and then derives bubbles from the popped graph itself: a backbone
 node that no edge jumps over is a boundary, and whatever lies between two
 boundaries is a bubble. Those get halos and labels of their own, and one of them
 opens in turn.
-
-<Figure caption="The superbubble popped, then one of the bubbles derived inside it popped in turn. The first frame's halos come from the popped graph's own layering; the second frame is one bubble again, named by its Back button." src="/img/pangenome/graph_mouse_dock2_pops.png" />
+[Part 4 of the HPRC tutorial](/docs/tutorials/pangenome_graph_reading#open-the-array)
+shows one such level opened under its linear view.
 
 Each level keeps the one above it behind a button, so the descent unwinds the
 way it was made. The labels at each level are typed the way the index types a

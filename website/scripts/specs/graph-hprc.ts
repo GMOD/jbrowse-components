@@ -242,19 +242,7 @@ const CHM13_ALLELE = { refName: 'chr17', start: 83899717, end: 84041427 }
 // so the lane was measuring the box it was drawn in.)
 const CHM13_ALLELE_WINDOW = 'chr17:83,880,000-84,060,000'
 
-// The amylase locus, framed on the inversion-flagged bubble the scan over
-// hprc-v2.1-mc-grch38.bubbles.bed.gz turns up at chr1:103,620,901-103,732,636,
-// with a little room either side so its flanks are on screen. 34 backbone
-// segments and 113 links here, pulling 101 distinct nodes.
-const AMY_WINDOW = 'chr1:103,500,000-103,850,000'
-const AMY_REGION = {
-  refName: 'chr1',
-  assemblyName: 'hg38',
-  start: 103500000,
-  end: 103850000,
-}
-
-// C4, for the launch figure, from the tutorial's own table of loci worth a look.
+// C4, from the tutorial's own table of loci worth a look.
 // `tabix hprc-v2.1-mc-grch38.links.bed.gz 'GRCh38#0#chr6:31980000-32050000'`
 // gives 13 rank-0 backbone segments and 21 links out to non-reference segments
 // with ranks up to 165, which is C4A/C4B copy number and the HERV insertion as
@@ -295,20 +283,6 @@ const LPA_REGION = {
   start: 160525000,
   end: 160655000,
 }
-// The KIV-2 bubble itself, release 2.1's record in the bubbles index, and the
-// window pangenome/hprc_kiv2_gbz_walks is cut on.
-const KIV2_BUBBLE_WINDOW = 'chr6:160,616,002-160,646,753'
-const KIV2_BUBBLE_REGION = {
-  refName: 'chr6',
-  assemblyName: 'hg38',
-  start: 160616002,
-  end: 160646753,
-}
-// The eight-haplotype GBZ cut of that window; how it is made is in the spec
-// comment below and in the tutorial.
-const KIV2_GBZ_WALKS_GFA =
-  'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa'
-
 // MHC class II, the densest window in the tutorial's locus table, and the one
 // where the graph and the callset are worth putting in one frame.
 const MHC_CLASSII_REGION = {
@@ -567,8 +541,8 @@ function mhcLayoutPartSpecs(): ScreenshotSpec[] {
           // each of their two label lines is cut off horizontally, which no
           // height fixes. Nothing in this figure's caption reads the lane
           // either - it is about the axis the graph shares with the tracks -
-          // and pangenome/hprc_c4_subgraph and hprc_lpa_kiv2 both carry the
-          // bubbles lane on windows where its labels fit.
+          // and hprc_lpa_kiv2 carries the bubbles lane on a window where its
+          // labels fit.
           tracks: [hg38GeneLane(70), hprcSegmentsLane(MHC_REGION)],
         },
         {
@@ -1314,107 +1288,10 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     // stacked, the second reads as the next step rather than as the alternative.
     direction: 'horizontal',
   },
-  // The human pangenome at C4, the second locus this graph is worth opening at
-  // (see C4_WINDOW) and the one where the picture is a copy-number story rather
-  // than an allelic-diversity one.
-  //
-  // Declarative rather than menu-driven, which is now a free choice rather than
-  // a forced one. Writing this figure as a launch is what found the bug: the
-  // menu passes the *assembly's* canonical refName, which for this hg38
-  // (`hg38.prefix.fa.gz`, and every GRCh38 FASTA on jbrowse.org) is the bare `6`,
-  // while the graph's stable names are `GRCh38#0#chr6`, and the plugin's
-  // `GetSubgraph` RPC did no refName renaming, so the launch resolved nothing and
-  // opened a view reading "0 nodes, 0 edges" with no error. Fixed in the plugin
-  // by extending `RpcMethodTypeWithRenameRegion`, and the hosted bundle now
-  // carries that fix (its `GetSubgraph` extends the renaming base class), so this
-  // could be switched to the driven form; it stays declarative because a launch
-  // flow buys this particular figure nothing that
-  // pangenome/rgfa_segment_neighbourhood does not already document. E. coli was
-  // unaffected either way, its assembly refName
-  // `chr` matching the graph's `K12#1#chr`, which is why the driven figures above
-  // are on E. coli.
-  {
-    mode: 'url',
-    name: 'pangenome/hprc_c4_subgraph',
-    url: sessionSpec(HPRC_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: C4_WINDOW,
-          tracks: [
-            // the C4A/C4B duplication is why the lane is collapsed here: at
-            // the default glyph mode it stacks deep enough that the last row
-            // is clipped by the one below it
-            hg38GeneLane(70),
-            {
-              trackId: 'hprc_minigraph_bubbles',
-              type: 'LinearBasicDisplay',
-              // pinned, not grown: a bubble's label is two lines and the lane
-              // packs few enough rows to fit them, so growing it only adds
-              // whitespace under the last one. One row now that the lane is
-              // filtered, so 90 was 30px of that whitespace.
-              height: 60,
-              // The bubble this figure is about, and not the 136 bp four-segment
-              // one that also falls in the window. That one sits 6 kb from the
-              // right edge, which is not enough room for its two label lines, so
-              // it printed a sentence cut off mid-word — and the caption never
-              // referred to it. `segmentCount` is a field on the bubble feature
-              // (MinigraphBubbleAdapter), so this filters on the same number the
-              // label leads with.
-              jexlFiltersSetting: ["jexl:get(feature,'segmentCount') >= 5"],
-            },
-            hprcSegmentsLane(C4_REGION),
-          ],
-        },
-        {
-          type: 'GraphGenomeView',
-          loadedTrackId: SEGMENTS_TRACK,
-          loadedRegion: C4_REGION,
-          // The Bandage picture, not the rank ladder: a force layout has no x
-          // axis to share with the linear view, so color is the only thing that
-          // can carry the correspondence, and the reference-position ramp is the
-          // one coloring both panels can compute (referencePositionColor).
-          layoutMode: 'force',
-          colorScheme: 'reference-position',
-          // Bandage's own floor ('auto'), not a raised one. Raising it was
-          // tried here and reviewed down: at 'open' (2.5x) and 'wide' (10x) the
-          // 30 nodes' alt arms get long enough to stop closing into lenses, so
-          // the drawing reads as splayed spaghetti rather than as bubbles on a
-          // backbone -- "the bubble shapes have changed ... i dont like this".
-          // The raised floor stays on hprc_cfhr_deletion and
-          // hprc_amylase_graph, which have the node counts it was measured for.
-        },
-      ],
-    }),
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 120000,
-    allowUnsettled: true,
-    settleMs: 8000,
-    viewportWidth: 1000,
-    // 1215 before the gene lane went compact, 1155 before the layout was
-    // seeded, 1166 before the segments lane grew to its third row: the pane is
-    // sized to the drawing, so a different arrangement of the same 30 nodes is
-    // a different pane height
-    viewportHeight: 1176,
-    hideTooltip: true,
-  },
-  // The same cut, named. pangenome_hprc opens on a clip, and a reader who has
-  // never seen a graph drawn cannot follow a route through parts they have no
-  // word for -- "bubble" was used twenty times on that page before it was
-  // defined. This is the still that goes above the clip, so backbone and allele
-  // are named on a picture before the clip moves through them.
-  //
-  // It is a SEPARATE figure rather than annotations on hprc_c4_subgraph above,
-  // which is the same session: that one is part 1's card source, and a card is
-  // a showcase surface that must carry no callout paint.
-  //
-  // Both anchors come from `node scripts/probe-graph-nodes.ts
-  // pangenome/hprc_c4_subgraph` rather than off the PNG -- s329764+ is 14.3 kb
-  // of GRCh38 mid-chain, and s352179+ is NA18948's 21 kb allele, the largest
-  // off-reference node in the cut and the one furthest clear of the backbone.
-  // Labels hang LEFT of both, into the open half of the pane; `leader` measures
-  // its own tail, so neither pill has to be placed against a measured width.
+  // The C4 cut with its parts named, above the page's end-to-end clip. Both
+  // anchors come from `node scripts/probe-graph-nodes.ts
+  // pangenome/hprc_graph_anatomy`: s352179+ is NA18948's 21 kb allele, the
+  // largest off-reference node in the cut.
   {
     mode: 'url',
     name: 'pangenome/hprc_graph_anatomy',
@@ -1865,91 +1742,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  // The amylase locus on chr1, which is the figure for "this scales to a whole
-  // chromosome". chr1 is 248 Mb and the graph holds 464 haplotypes of it; the
-  // view fetches this 350 kb window out of two tabix indexes and draws 126
-  // nodes, so nothing about the chromosome's size reaches the drawing. It is
-  // also the locus where the graph's own bubble index disagrees with the
-  // tutorial's prose: `hprc-v2.1-mc-grch38.bubbles.bed.gz` reports the bubble at
-  // chr1:103,620,901-103,732,636 as 108 segments, alleles from 17,531 to 300,264
-  // bp, **and inversion-flagged** — 246 of the graph's 130,510 bubbles carry
-  // that flag and this is one of the largest.
-  //
-  // Force-directed with the bubbles opened, which is the whole point of the
-  // pairing: AMY1 copy number is what THESE TWO PROJECTIONS cannot state
-  // (gfatools bubble and the rGFA tags record the distinct sequence a bubble can
-  // hold, not how many times a haplotype repeats it), so what is worth drawing
-  // here is the *shape* of the alternatives rather than an x axis. The bubbles
-  // lane above carries the length range that stands in for copy number. The
-  // release itself is not silent on it -- the .gbz carries a walk per haplotype,
-  // which IS a copy count -- but that is a vg job, and the wave VCF is no
-  // shortcut either since release 2 strips INFO/AT from it.
-  //
-  // 350 kb, not the 145 kb of the bubble itself (review: "frankly pretty chaotic
-  // ... zooming out and showing more graph context could help particularly if
-  // this is just a localized complex region"). It is, and the wider cut is what
-  // shows it: the flanks are one chain of backbone segments running the width of
-  // the pane, and every crossing in the drawing is inside the AMY bubble at the
-  // end of it. On the 145 kb cut that chain was off-frame, so the tangle filled
-  // the pane and had nothing to be localized against.
-  //
-  // Measured rather than picked: 550 kb (145 nodes) draws the same shape at
-  // 20% zoom-to-fit against 27%, so the knot is smaller for one more backbone
-  // segment either side; `bubbleSpread: 'open'` on top of either window floors
-  // every node's drawn length and inflates the whole drawing, which puts
-  // zoom-to-fit at 11% and closes the bubbles it was meant to open. Both
-  // rendered.
-  {
-    mode: 'url',
-    name: 'pangenome/hprc_amylase_graph',
-    url: sessionSpec(HPRC_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: AMY_WINDOW,
-          tracks: [
-            hg38GeneLane(70),
-            // No bubbles lane. Three bubbles land in this window and each label
-            // is two lines ending in a combinatorial path count (269,401 through
-            // the amylase bubble alone), so the right-hand two are cut off
-            // *horizontally* and the lane raises a scrollbar — the same reason
-            // hprc_mhc_anchored dropped it, and no height fixes it. A
-            // `labels.description` jexl on the display does not override the
-            // adapter's own second line, tried. The numbers are in the caption,
-            // where they are selectable text.
-            hprcSegmentsLane(AMY_REGION),
-          ],
-        },
-        {
-          type: 'GraphGenomeView',
-          loadedTrackId: SEGMENTS_TRACK,
-          loadedRegion: AMY_REGION,
-          layoutMode: 'force',
-          // FMMM's iteration budget at its top setting (120 + 60 against the
-          // model default's 15 + 10), which is what untangles the backbone into
-          // the single chain the figure now turns on. Milliseconds at this size,
-          // stated by the header's own layout timing.
-          layoutQuality: 4,
-          colorScheme: 'reference-position',
-        },
-      ],
-    }),
-    readySelector: TOOLBAR_READY,
-    readyTimeout: 120000,
-    allowUnsettled: true,
-    settleMs: 8000,
-    // The zoom-to-fit repaint, which the toolbar gate does not cover and which
-    // this cut is big enough to lose: the labels are DOM and move with the new
-    // transform immediately, the canvas repaints a frame later, so a capture in
-    // between is a pane of labels with the strokes still drawn at the old scale
-    // in one corner. Reproduced in 3 of the 4 renders here before this wait,
-    // and in none of the 3 after it.
-    actions: [{ type: 'delay', ms: 4000 }],
-    viewportWidth: 1000,
-    viewportHeight: 1210,
-    hideTooltip: true,
-  },
   // A donor node opened on the assembly that contributed it, which needs a
   // contributor the session can load: see CHM13_WINDOW for why CHM13 is the only
   // one in this graph, and for how the node was found.
@@ -2371,83 +2163,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         },
       },
     ],
-  },
-  // The same array read off the GBZ rather than the rGFA, for the tutorial's
-  // eight haplotypes. An rGFA segment names the one assembly that contributed
-  // it and nothing else; a GBZ cut carries every haplotype's W line, so each
-  // row here is a haplotype of the eight and the graph knows which of them walk
-  // every node (`samples` on the node, in the hover).
-  //
-  // WHAT THE ROWS SHOW, precisely: the sample-rows layout places each
-  // off-reference node once, in the row of the first of the eight walks that
-  // visits it (pathAnchoring.ts, first visit wins), so a row holds the alleles
-  // that haplotype is the first to walk, and an allele two haplotypes share is
-  // drawn in the earlier row only. That is attribution by first visit among the
-  // eight, one step short of carriage; a layout that places a node in every
-  // carrying row is the plugin change that would make this a carriage figure,
-  // and the caption must not claim carriage until it exists.
-  //
-  // A static cut, not a live read. The graph view can cut this window from the
-  // hosted GBZ track, but the cut is every one of the 464 haplotypes (21,721
-  // base-level nodes, 12 s against the hosted pair) and the layout would draw
-  // 232 rows. `gbz-base-query --keep` narrows the cut to the tutorial's eight
-  // haplotypes and the nodes their walks visit (15,808 nodes, 1.6 MB, 8 s), and
-  // the view loads that file through `gfaLocation` the way the E. coli figures
-  // load theirs. The command is in the tutorial beside the figure, so the file
-  // reproduces from the hosted graph and companion; see
-  // agent-docs/HAPLOTYPE_WALKS_VISION.md in the plugin for why a live read
-  // cannot yet price a chosen set.
-  //
-  // The window is the bubble's own (chr6:160,616,002-160,646,753), not the
-  // 130 kb LPA_REGION of the force figure: the wider cut is 19,920 nodes,
-  // inside the view's 20,000 budget by 80, and the extra 100 kb is flanking
-  // sequence every haplotype walks identically.
-  {
-    mode: 'url',
-    name: 'pangenome/hprc_kiv2_gbz_walks',
-    url: sessionSpec(HPRC_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: KIV2_BUBBLE_WINDOW,
-          tracks: [
-            hg38GeneLane(70),
-            {
-              trackId: 'hprc_minigraph_bubbles',
-              type: 'LinearBasicDisplay',
-              height: 80,
-            },
-            hprcSegmentsLane(KIV2_BUBBLE_REGION),
-          ],
-        },
-        {
-          type: 'GraphGenomeView',
-          displayName: 'KIV-2 from the GBZ, eight haplotypes',
-          gfaLocation: { uri: KIV2_GBZ_WALKS_GFA },
-          layoutMode: 'samplerows',
-          // the W line the cut writes first, and the sample its coordinates
-          // are on; the file's own `RS:Z:GRCh38` header says the same
-          referencePath: 'GRCh38',
-          colorScheme: 'reference-position',
-          // the linear lane and the graph paint one ramp over the window
-          colorDomain: KIV2_BUBBLE_REGION,
-        },
-      ],
-    }),
-    // row labels, not the toolbar: the layout runs after the file loads
-    readySelector:
-      'body:has([data-testid="graph-row-label"]) [data-testid="graph-layout-select"]',
-    readyTimeout: 180000,
-    settleMs: 8000,
-    viewportWidth: 1000,
-    // the linear stack plus the graph pane sized to its nine rows; the first
-    // render at 1330 reported 381 px of blank below the last row
-    viewportHeight: 950,
-    hideTooltip: true,
-    // No pill: the row labels are the reading, and every placement tried (top
-    // left, bottom left, mid-left) covered some row's alleles, since the nine
-    // rows fill the pane edge to edge. What the rows mean is the caption's job.
   },
   // The two products at one locus, which is the argument the HPRC tutorial
   // closes on ("the matrix for base-level variation across haplotypes, the
