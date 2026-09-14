@@ -1,4 +1,3 @@
-import { readConfObject } from '@jbrowse/core/configuration'
 import { createStopToken } from '@jbrowse/core/util/stopToken'
 import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import { allSessionTracks } from '@jbrowse/synteny-core'
@@ -48,9 +47,7 @@ export async function matchingRowLoc({
   assembly: string
   stopToken?: StopToken
 }) {
-  const track = allSessionTracks(session).find(
-    t => readConfObject(t, 'trackId') === trackId,
-  )
+  const track = allSessionTracks(session).find(t => t.trackId === trackId)
   if (!track) {
     return undefined
   }

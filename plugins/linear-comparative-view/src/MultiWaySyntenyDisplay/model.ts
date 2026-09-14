@@ -18,6 +18,7 @@ import { MAX_LEGEND_ENTRIES } from '@jbrowse/core/util/legendCandidates'
 import {
   allSessionTracks,
   annotationTrackIds,
+  getTrackAssemblyNames,
   isSameAssemblyName,
   openAssemblyInLinearView,
 } from '@jbrowse/core/util/tracks'
@@ -792,12 +793,9 @@ export function stateModelFactory(
       get configuredLanes(): string[] {
         const anchor = self.laneKey(self.anchorAssemblyName)
         return self.adapterDeclaresLanes
-          ? (
-              readConfObject(
-                self.parentTrack.configuration,
-                'assemblyNames',
-              ) as string[]
-            ).filter(name => self.laneKey(name) !== anchor)
+          ? getTrackAssemblyNames(self.parentTrack).filter(
+              name => self.laneKey(name) !== anchor,
+            )
           : []
       },
     }))
@@ -915,10 +913,7 @@ export function stateModelFactory(
         for (const lane of self.declaredLanes ?? []) {
           offer(lane)
         }
-        for (const name of readConfObject(
-          self.parentTrack.configuration,
-          'assemblyNames',
-        ) as string[]) {
+        for (const name of getTrackAssemblyNames(self.parentTrack)) {
           offer({ name })
         }
         for (const group of self.groups) {
@@ -2001,10 +1996,7 @@ export function stateModelFactory(
                 region,
                 anchorCanon: refName =>
                   self.anchorAssembly?.getCanonicalRefName2(refName) ?? refName,
-                trackAssemblyNames: readConfObject(
-                  self.parentTrack.configuration,
-                  'assemblyNames',
-                ) as string[],
+                trackAssemblyNames: getTrackAssemblyNames(self.parentTrack),
               }),
             starAnchor: self.starAnchor,
           })) {
