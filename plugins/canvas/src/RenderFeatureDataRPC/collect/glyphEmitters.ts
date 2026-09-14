@@ -684,6 +684,20 @@ function emitGlyph(
   GLYPH_EMITTERS[layout.glyphType](layout, place, ctx, collector)
 }
 
+// A multi-valued attribute joins, so two features carrying the same list land
+// in one section; a missing one is the '' catch-all.
+function groupKeyOf(feature: Feature, attribute: string | undefined) {
+  if (attribute === undefined) {
+    return undefined
+  }
+  const value: unknown = feature.get(attribute)
+  return value === undefined || value === null
+    ? ''
+    : Array.isArray(value)
+      ? value.map(String).join(',')
+      : String(value)
+}
+
 export function processFeatureRecord(
   layout: FeatureLayout,
   ctx: RenderContext,
@@ -733,6 +747,7 @@ export function processFeatureRecord(
     tooltip: featureTooltip(feature, ctx),
     name,
     strand: strand !== 0 ? strand : undefined,
+    groupKey: groupKeyOf(feature, ctx.config.groupByAttribute),
     // A standalone transcript registers no SubfeatureInfo, so its exon bounds
     // ride here instead.
     transcript: transcriptCoords(layout),

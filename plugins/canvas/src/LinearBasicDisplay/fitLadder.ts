@@ -108,26 +108,43 @@ export interface FitRung {
   maxIsoforms?: () => number | undefined
 }
 
-// `contentHeight` is the kept rung's unscaled `maxBottom`, so the fitted
-// height is `contentHeight * scale`.
+// `contentHeight` is the kept rung's unscaled `maxBottom`, of which
+// `fixedHeight` is the part the scale leaves alone (the group chip rows), so
+// the fitted height is `fittedHeight`.
 export interface FitStage extends LabelReservation {
   level: FitLevel
   layout: Map<number, FeatureDataResult>
   scale: number
   contentHeight: number
+  fixedHeight: number
   maxIsoforms: number | undefined
 }
 
-// An empty stack answers 1: the division would hand back Infinity and so
-// `maxScale`, a stack of nothing grown.
+export function fittedHeight(
+  stage: Pick<FitStage, 'contentHeight' | 'fixedHeight' | 'scale'>,
+) {
+  return (
+    (stage.contentHeight - stage.fixedHeight) * stage.scale + stage.fixedHeight
+  )
+}
+
+// The scale over the scalable part alone: a chip row is 16 px whatever the
+// squeeze, so it is taken off both sides before the division. An empty stack
+// answers 1: the division would hand back Infinity and so `maxScale`, a stack
+// of nothing grown.
 export function fitScaleToFill(
   contentHeight: number,
   trackHeight: number,
   minScale: number,
   maxScale: number,
+  fixedHeight = 0,
 ) {
-  return contentHeight > 0
-    ? Math.max(minScale, Math.min(maxScale, trackHeight / contentHeight))
+  const scalable = contentHeight - fixedHeight
+  return scalable > 0
+    ? Math.max(
+        minScale,
+        Math.min(maxScale, Math.max(0, trackHeight - fixedHeight) / scalable),
+      )
     : 1
 }
 
@@ -182,6 +199,8 @@ export function resolveFitLadder(
   // off screen neither strips labels nor squeezes the boxes the user is
   // looking at.
   measureIds?: ReadonlySet<string>,
+  // The px of a stack the scale must leave alone: the group chip rows.
+  fixedHeightOf: (layout: Map<number, FeatureDataResult>) => number = () => 0,
 ): FitStage {
   const heightOf = rungHeightMeasurer(measureIds)
   for (const [i, rung] of rungs.entries()) {
@@ -189,13 +208,21 @@ export function resolveFitLadder(
     const contentHeight = heightOf(layout)
     const isLastRung = i === rungs.length - 1
     if (contentHeight <= trackHeight || isLastRung) {
+      const fixedHeight = fixedHeightOf(layout)
       return {
         level: rung.level,
         ...rung.reserved,
         layout,
         contentHeight,
+        fixedHeight,
         maxIsoforms: rung.maxIsoforms?.(),
-        scale: fitScaleToFill(contentHeight, trackHeight, minScale, maxScale),
+        scale: fitScaleToFill(
+          contentHeight,
+          trackHeight,
+          minScale,
+          maxScale,
+          fixedHeight,
+        ),
       }
     }
   }

@@ -1,3 +1,4 @@
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -93,4 +94,33 @@ export function groupByRadioMenuItem<T extends string, X extends string = T>({
       ...extras.map(e => radio(e, e.onClick, false)),
     ] satisfies MenuItem[],
   }
+}
+
+export interface HiddenGroupsModel {
+  hiddenGroups: { size: number }
+  showAllGroups: () => void
+}
+
+/**
+ * The way back from a chip's "Hide this group". Spread into a display's
+ * "Show..." menu, and absent while nothing is hidden: a row reading "Show
+ * hidden groups (0)" is a row about a feature most tracks never use. A menu row
+ * and not a chip, because a hidden section draws no chip, and one section
+ * hidden out of two leaves nothing on screen that names the missing one.
+ */
+export function hiddenGroupsItems(model: HiddenGroupsModel) {
+  const { size } = model.hiddenGroups
+  return (
+    size > 0
+      ? [
+          {
+            label: `Show ${size} hidden group${size > 1 ? 's' : ''}`,
+            icon: VisibilityIcon,
+            onClick: () => {
+              model.showAllGroups()
+            },
+          },
+        ]
+      : []
+  ) satisfies MenuItem[]
 }

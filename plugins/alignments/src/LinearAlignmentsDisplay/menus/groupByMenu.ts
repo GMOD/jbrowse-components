@@ -1,6 +1,5 @@
 import { toggleItem } from '@jbrowse/core/ui/menuItems'
 import { groupByRadioMenuItem as sharedGroupByRadioMenuItem } from '@jbrowse/display-kit/groupByMenu'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { isChainGroupableType } from '../../shared/groupFeatures.ts'
 
@@ -65,32 +64,5 @@ export function collapseGroupRowsItems(model: CollapseGroupRowsModel) {
   ) satisfies MenuItem[]
 }
 
-export interface HiddenGroupsModel {
-  hiddenGroups: { size: number }
-  showAllGroups: () => void
-}
-
-// The way back from the label chip's "Hide this group". Spread into the same
-// "Show..." menu as `collapseGroupRowsItems`, and absent while nothing is
-// hidden — a row that reads "Show hidden groups (0)" is a row about a feature
-// most tracks never use.
-//
-// A menu row and not a chip, because a hidden lane draws no chip: the stack it
-// left is the only thing still on screen, and one lane hidden out of two leaves
-// nothing that names the missing one.
-export function hiddenGroupsItems(model: HiddenGroupsModel) {
-  const { size } = model.hiddenGroups
-  return (
-    size > 0
-      ? [
-          {
-            label: `Show ${size} hidden group${size > 1 ? 's' : ''}`,
-            icon: VisibilityIcon,
-            onClick: () => {
-              model.showAllGroups()
-            },
-          },
-        ]
-      : []
-  ) satisfies MenuItem[]
-}
+export { hiddenGroupsItems } from '@jbrowse/display-kit/groupByMenu'
+export type { HiddenGroupsModel } from '@jbrowse/display-kit/groupByMenu'

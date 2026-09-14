@@ -13,8 +13,8 @@ const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 }
 
 function strandedRegionData() {
   const features = [
-    { featureId: 'fwd', strand: 1 },
-    { featureId: 'rev', strand: -1 },
+    { featureId: 'fwd', strand: 1, groupKey: 'protein_coding' },
+    { featureId: 'rev', strand: -1, groupKey: 'lncRNA' },
   ]
   return makeFeatureData({
     flatbushItems: features.map(f =>
@@ -63,6 +63,7 @@ test('grouping by strand stacks two labelled sections and the menu ticks it', ()
   expect(groupByRadios(display.trackMenuItems())).toEqual([
     ['None', false],
     ['Strand', true],
+    ['Attribute...', false],
   ])
 
   display.setGroupBy(undefined)
@@ -70,7 +71,51 @@ test('grouping by strand stacks two labelled sections and the menu ticks it', ()
   expect(groupByRadios(display.trackMenuItems())).toEqual([
     ['None', true],
     ['Strand', false],
+    ['Attribute...', false],
   ])
+})
+
+test('an attribute grouping names its sections by value and the menu row by attribute', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  display.setRpcData(0, strandedRegionData(), ctgA)
+  display.setGroupBy({ type: 'attribute', attribute: 'biotype' })
+  expect(display.groupSections.map(s => s.label)).toEqual([
+    'biotype: lncRNA',
+    'biotype: protein_coding',
+  ])
+  expect(groupByRadios(display.trackMenuItems()).at(-1)).toEqual([
+    'Attribute (biotype)...',
+    true,
+  ])
+  expect(display.rpcProps().displayConfig.groupByAttribute).toBe('biotype')
+})
+
+test('hiding and collapsing a section are per key and drop with the grouping', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  display.setRpcData(0, strandedRegionData(), ctgA)
+  display.setGroupBy({ type: 'strand' })
+
+  display.hideGroup('+')
+  expect(display.groupSections.map(s => s.key)).toEqual(['-'])
+  expect(display.truncatedFeatureCount).toBe(0)
+  const show = display
+    .trackMenuItems()
+    .find(i => 'label' in i && i.label === 'Show...')!
+  expect(
+    resolveSubMenu(show as Parameters<typeof resolveSubMenu>[0]).map(i =>
+      'label' in i ? i.label : undefined,
+    ),
+  ).toContain('Show 1 hidden group')
+
+  display.toggleGroupCollapsed('-')
+  expect(display.collapsedGroupKeys.has('-')).toBe(true)
+
+  display.setGroupBy({ type: 'attribute', attribute: 'biotype' })
+  expect(display.hiddenGroups.size).toBe(0)
+  expect(display.collapsedGroupKeys.size).toBe(0)
+  expect(display.groupSections).toHaveLength(2)
 })
 
 test('an unrecognized grouping in the slot reads as ungrouped', () => {

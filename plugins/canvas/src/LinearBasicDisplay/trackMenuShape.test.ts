@@ -39,7 +39,6 @@ describe('canvas track menu shape', () => {
       subMenuOf(items, 'Gene glyph'),
       subMenuOf(items, 'Show...'),
       subMenuOf(items, 'Set feature height'),
-      subMenuOf(items, 'Group by...'),
     ]) {
       for (const item of group) {
         if (item.type === 'radio' || item.type === 'checkbox') {
@@ -50,6 +49,23 @@ describe('canvas track menu shape', () => {
         }
       }
     }
+  })
+
+  it('keeps the menu open for the group-by radios that write a setting, not the dialog opener', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    const groupBy = subMenuOf(display.trackMenuItems(), 'Group by...')
+
+    expect(
+      groupBy.map(i => [
+        labelOf(i),
+        'onClick' in i ? staysOpenOnClick(i) : undefined,
+      ]),
+    ).toEqual([
+      ['None', true],
+      ['Strand', true],
+      ['Attribute...', false],
+    ])
   })
 
   it('keeps the menu open for the color radio that writes a setting, not the dialog openers', () => {

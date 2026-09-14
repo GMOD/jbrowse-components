@@ -2,7 +2,10 @@ import { filterMenuItems, undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import { radioItems, toggleItem, withHint } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
-import { groupByRadioMenuItem } from '@jbrowse/display-kit/groupByMenu'
+import {
+  groupByRadioMenuItem,
+  hiddenGroupsItems,
+} from '@jbrowse/display-kit/groupByMenu'
 import { heightModeMenuItems } from '@jbrowse/display-kit/heightModeMenu'
 import HeightIcon from '@mui/icons-material/Height'
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -13,10 +16,11 @@ import { FEATURE_GROUP_BY_OPTIONS } from './groupBy.ts'
 import { SHOW_LABELS_OPTIONS } from './showLabelsMode.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
-import type { FeatureGroupBy } from './groupBy.ts'
+import type { FeatureGroupBy, FeatureGroupByType } from './groupBy.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
+import type { HiddenGroupsModel } from '@jbrowse/display-kit/groupByMenu'
 import type { HeightModeMenuModel } from '@jbrowse/display-kit/heightModeMenu'
 
 // Every menu level sorts by `priority` and the sort is stable, so this pins
@@ -44,7 +48,7 @@ export function inlineRadioGroup<T extends string>(
 }
 
 // Structural for the same reason as `FeatureMenuSelf`;
-interface ShowSubmenuSelf {
+interface ShowSubmenuSelf extends HiddenGroupsModel {
   showOutline: boolean
   showLabelsMode: ShowLabelsMode
   displayMode: DisplayMode
@@ -71,6 +75,7 @@ interface FeatureHeightSelf extends HeightModeMenuModel {
 interface GroupByMenuSelf {
   groupBy: FeatureGroupBy | undefined
   setGroupBy: (groupBy?: FeatureGroupBy) => void
+  openGroupByAttributeDialog: () => void
 }
 
 interface TrackMenuSelf extends GroupByMenuSelf {
@@ -83,10 +88,12 @@ interface TrackMenuSelf extends GroupByMenuSelf {
 }
 
 // The shared radio submenu over this display's own dimensions, so a feature
-// track and a read track pick a grouping the same way.
+// track and a read track pick a grouping the same way. The attribute row is
+// named like the color menu's once an attribute is picked.
 export function groupByMenuItems(self: GroupByMenuSelf): MenuItem[] {
+  const attribute = self.groupBy?.attribute
   return [
-    groupByRadioMenuItem({
+    groupByRadioMenuItem<'strand', FeatureGroupByType>({
       current: self.groupBy?.type,
       options: FEATURE_GROUP_BY_OPTIONS,
       onSelect: type => {
@@ -95,6 +102,15 @@ export function groupByMenuItems(self: GroupByMenuSelf): MenuItem[] {
       onNone: () => {
         self.setGroupBy(undefined)
       },
+      extra: [
+        {
+          type: 'attribute',
+          label: attribute ? `Attribute (${attribute})...` : 'Attribute...',
+          onClick: () => {
+            self.openGroupByAttributeDialog()
+          },
+        },
+      ],
     }),
   ]
 }
@@ -107,6 +123,7 @@ export function showSubmenuCheckboxItems(self: ShowSubmenuSelf): MenuItem[] {
   return [
     toggleItem('Show outline', self.showOutline, self.setShowOutline),
     ...(self.hasLegendKey ? [legendCheckboxItem(self)] : []),
+    ...hiddenGroupsItems(self),
   ]
 }
 

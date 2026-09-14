@@ -1,3 +1,5 @@
+import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
+
 import { HEIGHT_MULTIPLIERS } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import {
   MIN_FIT_BOX_PX,
@@ -6,6 +8,7 @@ import {
   solveLabelRoomFactor,
   squeezeFloorScale,
 } from './fitLadder.ts'
+import { featureGroupSections } from './groupBy.ts'
 import { maxIsoformCount } from './isoformTrim.ts'
 import {
   createContentHeightProbe,
@@ -17,6 +20,7 @@ import { minDrawnBoxHeight } from './layoutQueries.ts'
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { FitRung, FitStage, LabelReservation } from './fitLadder.ts'
+import type { FeatureGroupBy } from './groupBy.ts'
 import type { IncrementalLayout } from './layout.ts'
 import type {
   IsoformCountFreeInputs,
@@ -52,11 +56,14 @@ export interface FitLadderHost {
     | 'displayMode'
     | 'pinnedFeatureIds'
     | 'groupBy'
+    | 'hiddenGroupKeys'
+    | 'collapsedGroupKeys'
   > &
     Required<Pick<LayoutInputs, 'expandedGeneIds'>>
   showLabels: boolean
   effectiveShowDescriptions: boolean
   displayMode: DisplayMode
+  groupBy: FeatureGroupBy | undefined
   fitMeasureFeatureIds: ReadonlySet<string> | undefined
   fitHeightToDisplay: boolean
   autoHeight: boolean
@@ -456,6 +463,15 @@ export function fitLadderViews(self: FitLadderHost) {
         fit ? this.fitMinScale : 1,
         fit ? this.fitMaxScale : 1,
         self.fitMeasureFeatureIds,
+        // The chip rows keep their 16 px under the squeeze, so the scale is
+        // solved over the rows alone.
+        layout => {
+          const { groupBy } = self
+          return groupBy
+            ? featureGroupSections(layout, groupBy, GROUP_LABEL_HEIGHT).length *
+                GROUP_LABEL_HEIGHT
+            : 0
+        },
       )
     },
   }

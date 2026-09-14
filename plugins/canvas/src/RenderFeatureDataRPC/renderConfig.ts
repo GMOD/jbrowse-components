@@ -50,6 +50,9 @@ export interface DisplayConfig {
   // round-trip. Track height is not sent either — the fit ladder trims isoforms
   // where it can see the packing.
   geneGlyphMode: 'auto' | 'all' | 'longestCoding'
+  // The attribute an `attribute` grouping keys on, stamped per feature as
+  // `groupKey`; the strand dimension needs no stamp and so never refetches.
+  groupByAttribute?: string
   subfeatureLabels: SubfeatureLabels
   transcriptTypes: string[]
   canonicalTranscriptField: string
@@ -84,7 +87,10 @@ export interface DisplayConfig {
 // What the worker gets for `geneGlyphMode` is the zoom-resolved mode, added at
 // the RPC call site, so crossing its `auto` threshold moves the display's
 // `zoomFetchKey` rather than invalidating settings.
-export type SettingsDisplayConfig = Omit<DisplayConfig, 'geneGlyphMode'>
+export type SettingsDisplayConfig = Omit<
+  DisplayConfig,
+  'geneGlyphMode' | 'groupByAttribute'
+>
 
 // A `Record<keyof SettingsDisplayConfig, true>` is exhaustive in both
 // directions, so this list cannot drift from the interface.

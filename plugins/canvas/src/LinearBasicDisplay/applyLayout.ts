@@ -1,10 +1,13 @@
+import { featureGroupSections, sectionIdsOf } from './groupBy.ts'
 import { bodyHeightPx } from './layoutInputs.ts'
 import { isPlacedRow } from './rowPlacement.ts'
 
 import type {
   FeatureDataResult,
   FeatureLabelData,
+  FlatbushItem,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { FeatureGroupBy } from './groupBy.ts'
 
 function scaleFloat32(arr: Float32Array, multiplier: number) {
   for (let i = 0; i < arr.length; i++) {
@@ -73,10 +76,72 @@ export function applyHeightScale(
   }
 }
 
+// The chip rows are the one part of a stack the fit scale leaves alone: a
+// chip is 16 px whatever the squeeze, so every feature moves back down by the
+// px the chips above it lost to the scale.
+export interface FixedChips {
+  groupBy: FeatureGroupBy
+  chipPx: number
+}
+
+function chipShiftOf(
+  map: ReadonlyMap<number, FeatureDataResult>,
+  scale: number,
+  { groupBy, chipPx }: FixedChips,
+) {
+  const ordinal = new Map(
+    featureGroupSections(map, groupBy, chipPx).map((s, i) => [s.key, i]),
+  )
+  const sectionOf = sectionIdsOf(map, groupBy)
+  const lost = chipPx * (1 - scale)
+  return (item: FlatbushItem) => {
+    const i = isPlacedRow(item.topPx)
+      ? ordinal.get(sectionOf(item).key)
+      : undefined
+    return i === undefined ? 0 : (i + 1) * lost
+  }
+}
+
+// Every y a region carries, moved by a per-feature amount: the same set of
+// fields `applyHeightScale` scales.
+function shiftFeatureYs(
+  data: FeatureDataResult,
+  shiftOf: (featureId: string) => number,
+) {
+  const byIndex = new Float32Array(data.flatbushItems.length)
+  for (const [i, item] of data.flatbushItems.entries()) {
+    byIndex[i] = shiftOf(item.featureId)
+    item.topPx += byIndex[i]
+    item.bottomPx += byIndex[i]
+  }
+  for (const kind of ['rect', 'line', 'arrow'] as const) {
+    const ys = data[`${kind}Ys`]
+    const featureIndices = data[`${kind}FeatureIndices`]
+    for (let i = 0; i < ys.length; i++) {
+      ys[i] = ys[i]! + byIndex[featureIndices[i]!]!
+    }
+  }
+  for (const info of data.subfeatureInfos) {
+    const d = shiftOf(info.parentFeatureId)
+    info.topPx += d
+    info.bottomPx += d
+  }
+  for (const labelData of data.floatingLabelsData.values()) {
+    labelData.topY += shiftOf(labelData.parentFeatureId ?? labelData.featureId)
+  }
+  if (data.aminoAcidOverlay) {
+    for (const aa of data.aminoAcidOverlay) {
+      aa.topPx += byIndex[aa.flatbushIdx]!
+    }
+  }
+}
+
 export function scaleLaidOutData(
   map: ReadonlyMap<number, FeatureDataResult>,
   scale: number,
+  fixedChips?: FixedChips,
 ): Map<number, FeatureDataResult> {
+  const chipShift = fixedChips && chipShiftOf(map, scale, fixedChips)
   const out = new Map<number, FeatureDataResult>()
   for (const [n, data] of map) {
     if (data.flatbushItems.length === 0) {
@@ -91,6 +156,12 @@ export function scaleLaidOutData(
       for (const item of cloned.flatbushItems) {
         item.topPx *= scale
         item.bottomPx *= scale
+      }
+      if (chipShift) {
+        const shiftById = new Map(
+          data.flatbushItems.map(item => [item.featureId, chipShift(item)]),
+        )
+        shiftFeatureYs(cloned, id => shiftById.get(id) ?? 0)
       }
       out.set(n, cloned)
     }
@@ -126,6 +197,9 @@ export function applyLayoutToRegion(
   layoutHeights: Map<string, number>,
   droppedLabelIds: ReadonlySet<string>,
   densityFadeIds: ReadonlySet<string>,
+  // The features of a collapsed section, which packed onto one row and keep
+  // no label at all.
+  labelFreeIds: ReadonlySet<string> = new Set(),
 ) {
   const featureOffsets = new Float32Array(data.flatbushItems.length)
   for (let i = 0; i < data.flatbushItems.length; i++) {
@@ -164,7 +238,11 @@ export function applyLayoutToRegion(
   for (const [key, labelData] of data.floatingLabelsData) {
     const layoutKey = labelData.parentFeatureId ?? labelData.featureId
     const offset = layoutMap.get(layoutKey)
-    if (offset === undefined || !isPlacedRow(offset)) {
+    if (
+      offset === undefined ||
+      !isPlacedRow(offset) ||
+      labelFreeIds.has(layoutKey)
+    ) {
       data.floatingLabelsData.delete(key)
       continue
     }

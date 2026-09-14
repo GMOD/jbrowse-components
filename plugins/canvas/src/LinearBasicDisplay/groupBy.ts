@@ -1,4 +1,9 @@
-import { compareGroupKeys } from '@jbrowse/display-kit/groupKeys'
+import {
+  OVERFLOW_GROUP_KEY,
+  capGroupKeys,
+  compareGroupKeys,
+  overflowLabel,
+} from '@jbrowse/display-kit/groupKeys'
 
 import { isPlacedRow } from './rowPlacement.ts'
 
@@ -8,18 +13,25 @@ import type {
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { GroupId } from '@jbrowse/display-kit/groupKeys'
 
-export type FeatureGroupByType = 'strand'
+export type FeatureGroupByType = 'strand' | 'attribute'
 
-export interface FeatureGroupBy {
-  type: FeatureGroupByType
-}
+// `attribute` is the one dimension that takes a parameter, so it is the one
+// with a dialog behind it and the one the worker stamps a key for.
+export type FeatureGroupBy =
+  | { type: 'strand'; attribute?: undefined }
+  | { type: 'attribute'; attribute: string }
+
+type FeatureGroupByOf<K extends FeatureGroupByType> = Extract<
+  FeatureGroupBy,
+  { type: K }
+>
 
 interface FeatureGroupByDimension<K extends FeatureGroupByType> {
   type: K
   label: string
   // Read off the hit item rather than the feature: the worker already stamps
-  // what a section needs, so a partition costs no refetch.
-  key: (item: FlatbushItem) => GroupId
+  // what a section needs, so a partition costs no refetch beyond the stamp.
+  key: (item: FlatbushItem, groupBy: FeatureGroupByOf<K>) => GroupId
 }
 
 const FORWARD_GROUP: GroupId = { key: '+', label: 'Forward strand' }
@@ -42,32 +54,60 @@ export const FEATURE_GROUP_BY_DIMENSIONS: {
           ? REVERSE_GROUP
           : UNSTRANDED_GROUP,
   },
+  attribute: {
+    type: 'attribute',
+    label: 'Attribute',
+    key: (item, { attribute }) =>
+      item.groupKey
+        ? { key: item.groupKey, label: `${attribute}: ${item.groupKey}` }
+        : { key: '', label: `${attribute}: none` },
+  },
 }
 
-export const FEATURE_GROUP_BY_OPTIONS = Object.values(
-  FEATURE_GROUP_BY_DIMENSIONS,
-).map(({ type, label }) => ({ type, label }))
+// The radio the menu picks whole; `attribute` reaches its dialog through the
+// menu's `extra` row instead.
+export const FEATURE_GROUP_BY_OPTIONS = [
+  { type: 'strand' as const, label: FEATURE_GROUP_BY_DIMENSIONS.strand.label },
+]
 
 export function featureGroupId(
   item: FlatbushItem,
   groupBy: FeatureGroupBy,
 ): GroupId {
-  return FEATURE_GROUP_BY_DIMENSIONS[groupBy.type].key(item)
+  return groupBy.type === 'attribute'
+    ? FEATURE_GROUP_BY_DIMENSIONS.attribute.key(item, groupBy)
+    : FEATURE_GROUP_BY_DIMENSIONS.strand.key(item, groupBy)
 }
 
 // The slot is `frozen`, so an unrecognized type from a hand-written config
-// lands here rather than indexing the registry to `undefined` in the packer.
+// lands here rather than indexing the registry to `undefined` in the packer,
+// and an attribute grouping with no attribute name reads as ungrouped.
 export function normalizeFeatureGroupBy(
   value: unknown,
 ): FeatureGroupBy | undefined {
-  const type =
-    typeof value === 'object' && value !== null
-      ? Reflect.get(value, 'type')
+  const obj = typeof value === 'object' && value !== null ? value : undefined
+  const type = obj === undefined ? undefined : Reflect.get(obj, 'type')
+  if (type === 'strand') {
+    return { type }
+  }
+  if (type === 'attribute') {
+    const attribute = Reflect.get(obj!, 'attribute')
+    return typeof attribute === 'string' && attribute.trim()
+      ? { type, attribute: attribute.trim() }
       : undefined
-  return typeof type === 'string' &&
-    Object.hasOwn(FEATURE_GROUP_BY_DIMENSIONS, type)
-    ? { type: type as FeatureGroupByType }
-    : undefined
+  }
+  return undefined
+}
+
+// Identity of the key space a grouping hands out keys in: a key means nothing
+// on its own, since `''` is both the ungrouped section and every dimension's
+// catch-all, so per-key state is dropped when this moves.
+export function groupKeySpaceOf(groupBy: FeatureGroupBy | undefined) {
+  return groupBy === undefined
+    ? ''
+    : groupBy.type === 'attribute'
+      ? `attribute\0${groupBy.attribute}`
+      : groupBy.type
 }
 
 export interface FeatureGroupSection extends GroupId {
@@ -75,16 +115,43 @@ export interface FeatureGroupSection extends GroupId {
   height: number
 }
 
+// Every item's section, capped the same way the layout capped them: the key
+// set is read off ALL items, placed or not, so a hidden section still counts
+// toward the cap it counted toward in the pack.
+export function sectionIdsOf(
+  map: ReadonlyMap<number, FeatureDataResult>,
+  groupBy: FeatureGroupBy,
+) {
+  const ids = new Map<string, GroupId>()
+  for (const data of map.values()) {
+    for (const item of data.flatbushItems) {
+      const id = featureGroupId(item, groupBy)
+      if (!ids.has(id.key)) {
+        ids.set(id.key, id)
+      }
+    }
+  }
+  const { sectionOf, mergedCount } = capGroupKeys(ids.keys())
+  const merged: GroupId = {
+    key: OVERFLOW_GROUP_KEY,
+    label: overflowLabel(mergedCount),
+  }
+  return (item: FlatbushItem): GroupId => {
+    const id = featureGroupId(item, groupBy)
+    return sectionOf(id.key) === id.key ? id : merged
+  }
+}
+
 // Derived from the laid-out items rather than carried beside them: every y in
-// the layout already holds the section offset the packer stacked it at, fit
-// scale included, so the chip row reads the same rows the glyphs paint.
-// `chipPx` is the reservation above each section's first row, at the scale
-// the layout was drawn at.
+// the layout already holds the section offset the packer stacked it at, so
+// the chip row reads the same rows the glyphs paint. `chipPx` is the
+// reservation above each section's first row.
 export function featureGroupSections(
   map: ReadonlyMap<number, FeatureDataResult>,
   groupBy: FeatureGroupBy,
   chipPx: number,
 ): FeatureGroupSection[] {
+  const sectionOf = sectionIdsOf(map, groupBy)
   const bounds = new Map<
     string,
     { label: string; top: number; bottom: number }
@@ -94,7 +161,7 @@ export function featureGroupSections(
       if (!isPlacedRow(item.topPx)) {
         continue
       }
-      const { key, label } = featureGroupId(item, groupBy)
+      const { key, label } = sectionOf(item)
       const b = bounds.get(key)
       if (b) {
         b.top = Math.min(b.top, item.topPx)

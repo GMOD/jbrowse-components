@@ -34,12 +34,12 @@ import {
 } from '@jbrowse/display-kit/displayAutoruns'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
-import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { toJS } from 'mobx'
+import { observable, reaction, toJS } from 'mobx'
 
 import { themedColorTable } from '../RenderFeatureDataRPC/colorClasses.ts'
 import { labelFontSize } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
@@ -78,7 +78,12 @@ import {
   fitLadderVolatiles,
 } from './fitLadderViews.ts'
 import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
-import { featureGroupSections, normalizeFeatureGroupBy } from './groupBy.ts'
+import {
+  featureGroupSections,
+  groupKeySpaceOf,
+  normalizeFeatureGroupBy,
+  sectionIdsOf,
+} from './groupBy.ts'
 import { heightViews } from './heightViews.ts'
 import { layoutRegionKey } from './layoutInputs.ts'
 import { featureIdsTouchingBlocks } from './layoutQueries.ts'
@@ -171,6 +176,9 @@ export { defaultColorItem } from './trackMenus.ts'
 
 const ColorByAttributeDialog = lazy(
   () => import('./components/ColorByAttributeDialog.tsx'),
+)
+const GroupByAttributeDialog = lazy(
+  () => import('./components/GroupByAttributeDialog.tsx'),
 )
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
@@ -271,6 +279,20 @@ export default function baseStateModelFactory(
          * from this display, read by the LGV crosshair overlay
          */
         sequenceHoverPosition: undefined as SequenceHoverPosition | undefined,
+        /**
+         * #volatile
+         * Group keys whose section packs onto one row. A key means nothing
+         * outside the grouping that issued it, since `''` is both the
+         * ungrouped section and every dimension's catch-all, so the set is
+         * dropped when `groupKeySpace` moves.
+         */
+        collapsedGroups: observable.set<string>(),
+        /**
+         * #volatile
+         * Group keys the user hid from the stack, keyed and dropped exactly
+         * like `collapsedGroups`.
+         */
+        hiddenGroups: observable.set<string>(),
         // #endregion
       }))
       .volatile(fitLadderVolatiles)
@@ -399,6 +421,32 @@ export default function baseStateModelFactory(
          */
         get groupBy(): FeatureGroupBy | undefined {
           return normalizeFeatureGroupBy(getConf(self, 'groupBy'))
+        },
+
+        /**
+         * #getter
+         * Identity of the key space the grouping hands out keys in; the
+         * per-key state above is dropped when it moves.
+         */
+        get groupKeySpace() {
+          return groupKeySpaceOf(this.groupBy)
+        },
+
+        /**
+         * #getter
+         * A fresh Set per change rather than the observable set itself, so
+         * the layout memo, which compares its inputs by identity, sees a
+         * collapse.
+         */
+        get collapsedGroupKeys(): ReadonlySet<string> {
+          return new Set(self.collapsedGroups)
+        },
+
+        /**
+         * #getter
+         */
+        get hiddenGroupKeys(): ReadonlySet<string> {
+          return new Set(self.hiddenGroups)
         },
 
         /**
@@ -541,6 +589,9 @@ export default function baseStateModelFactory(
               ...workerConfig,
               subfeatureLabels: self.effectiveSubfeatureLabels,
               jexlFilters: self.activeFilters(),
+              // Only the attribute dimension needs a stamp per feature, so
+              // only it is a cache key; strand grouping never refetches.
+              groupByAttribute: self.groupBy?.attribute,
             },
             colorByCDS: self.colorByCDS,
             showAminoAcids: self.showAminoAcids,
@@ -584,6 +635,8 @@ export default function baseStateModelFactory(
             pinnedFeatureIds: self.layoutPinnedFeatureIdSet,
             expandedGeneIds: self.expandedGeneIdSet,
             groupBy: self.groupBy,
+            hiddenGroupKeys: self.hiddenGroupKeys,
+            collapsedGroupKeys: self.collapsedGroupKeys,
           }
         },
         /**
@@ -639,11 +692,16 @@ export default function baseStateModelFactory(
          */
         get laidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
           const { layout, scale } = self.fitStage
+          const { groupBy } = self
           return self.coarseTierStandsIn
             ? EMPTY_LAID_OUT_DATA
             : scale === 1
               ? layout
-              : scaleLaidOutData(layout, scale)
+              : scaleLaidOutData(
+                  layout,
+                  scale,
+                  groupBy && { groupBy, chipPx: GROUP_LABEL_HEIGHT },
+                )
         },
         /**
          * #getter
@@ -657,9 +715,30 @@ export default function baseStateModelFactory(
             ? featureGroupSections(
                 this.laidOutDataMap,
                 groupBy,
-                GROUP_LABEL_HEIGHT * this.fitScale,
+                GROUP_LABEL_HEIGHT,
               )
             : []
+        },
+        /**
+         * #getter
+         * The features of the sections the user hid, which sit unplaced by
+         * choice and so count as nothing the track failed to show.
+         */
+        get hiddenGroupFeatureIds(): ReadonlySet<string> | undefined {
+          const { groupBy, hiddenGroupKeys } = self
+          if (!groupBy || hiddenGroupKeys.size === 0) {
+            return undefined
+          }
+          const sectionOf = sectionIdsOf(this.laidOutDataMap, groupBy)
+          const ids = new Set<string>()
+          for (const data of this.laidOutDataMap.values()) {
+            for (const item of data.flatbushItems) {
+              if (hiddenGroupKeys.has(sectionOf(item).key)) {
+                ids.add(item.featureId)
+              }
+            }
+          }
+          return ids
         },
         /**
          * #getter
@@ -1059,6 +1138,45 @@ export default function baseStateModelFactory(
 
         /**
          * #action
+         * Pack a section onto one row, or give it its rows back.
+         */
+        toggleGroupCollapsed(key: string) {
+          if (self.collapsedGroups.has(key)) {
+            self.collapsedGroups.delete(key)
+          } else {
+            self.collapsedGroups.add(key)
+          }
+        },
+
+        /**
+         * #action
+         * Drop a section from the stack. Reversed by `showAllGroups`, which
+         * the "Show..." menu offers while anything is hidden, since a hidden
+         * section draws no chip of its own to come back from.
+         */
+        hideGroup(key: string) {
+          self.hiddenGroups.add(key)
+        },
+
+        /**
+         * #action
+         */
+        showAllGroups() {
+          self.hiddenGroups.clear()
+        },
+
+        /**
+         * #action
+         * Forget every collapse and hidden section: a key names a section
+         * only within the grouping that issued it.
+         */
+        dropGroupState() {
+          self.collapsedGroups.clear()
+          self.hiddenGroups.clear()
+        },
+
+        /**
+         * #action
          */
         openSetColorDialog(showUtrColor = true) {
           getDialogHost(self).queueDialog(handleClose => [
@@ -1324,6 +1442,20 @@ export default function baseStateModelFactory(
             self.clearHover()
           },
 
+          /**
+           * #action
+           */
+          openGroupByAttributeDialog() {
+            getDialogHost(self).queueDialog(handleClose => [
+              GroupByAttributeDialog,
+              {
+                model: self,
+                handleClose,
+                initialAttribute: self.groupBy?.attribute,
+              },
+            ])
+          },
+
           afterAttach() {
             // Reset scroll on a region-list change only; a same-region zoom
             // or pan keeps the user's scroll position.
@@ -1351,6 +1483,20 @@ export default function baseStateModelFactory(
             )
 
             installYMorphAutorun(self)
+
+            // A reaction rather than a line in `setGroupBy`: the settings
+            // editor and a reset write the slot without it, and a stale key
+            // would carry its meaning to a section that never earned it.
+            addDisposer(
+              self,
+              reaction(
+                () => self.groupKeySpace,
+                () => {
+                  self.dropGroupState()
+                },
+                { name: 'CanvasGroupKeySpaceReset' },
+              ),
+            )
           },
         }
       })

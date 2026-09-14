@@ -66,7 +66,19 @@ Track-menu toggles:
 - Show only genes - hides non-gene features
 - Group by... - _Strand_ packs the forward-strand features into one labelled
   section above the reverse-strand ones, unstranded features last, so convergent
-  and divergent neighbours read apart
+  and divergent neighbours read apart. _Attribute..._ asks for a feature
+  attribute, `biotype` or `source` say, and packs one section per value, with
+  the features carrying none last
+
+## Grouping features into sections
+
+Each section carries a chip naming it. Clicking the chip packs that section onto
+a single row and clicking again gives it its rows back; right-clicking offers to
+hide the section, and **Show... → Show hidden groups** puts every hidden one
+back. Changing the grouping clears both. The `groupBy` config slot pre-groups a
+track, so a shared link opens grouped.
+
+<Figure caption="NCBI RefSeq genes on hg38 grouped by strand, one representative transcript per gene. The forward-strand section stacks above the reverse-strand one, each under its chip, with the divider between them marking where one strand's rows end." src="/img/gene_track_group_by_strand.png" />
 
 ## Color by CDS
 

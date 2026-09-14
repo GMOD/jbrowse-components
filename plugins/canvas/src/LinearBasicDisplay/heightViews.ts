@@ -1,4 +1,4 @@
-import { snapFittedContentHeight } from './fitLadder.ts'
+import { fittedHeight, snapFittedContentHeight } from './fitLadder.ts'
 import { countTruncatedFeatures, maxBottom } from './layoutQueries.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -15,6 +15,7 @@ export interface HeightHost {
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>
   onScreenFeatureIds: ReadonlySet<string> | undefined
   fitMeasureFeatureIds: ReadonlySet<string> | undefined
+  hiddenGroupFeatureIds: ReadonlySet<string> | undefined
   morphFromTops: Map<string, number> | undefined
   morphFromMaxY: number
   scrollableHeight: number
@@ -33,11 +34,11 @@ export function heightViews(self: HeightHost) {
       if (!self.fitHeightToDisplay) {
         return maxBottom(self.fitStage.layout)
       }
-      const { contentHeight: keptRungHeight, scale } = self.fitStage
+      const { fitStage } = self
       return snapFittedContentHeight(
-        keptRungHeight * scale,
+        fittedHeight(fitStage),
         self.fitTargetHeight,
-        scale !== 1,
+        fitStage.scale !== 1,
       )
     },
 
@@ -80,6 +81,7 @@ export function heightViews(self: HeightHost) {
       return countTruncatedFeatures(
         self.laidOutDataMap,
         self.fitMeasureFeatureIds,
+        self.hiddenGroupFeatureIds,
       )
     },
 

@@ -327,6 +327,38 @@ export const featuresSpecs: ScreenshotSpec[] = [
 
   // Collapse introns + RNA-seq sashimi: PTEN (hg38) with the MANE transcript
   // and a direct-RNA nanopore track. Right-clicking the gene and choosing
+  // Group by strand: the forward-strand genes pack into one section above the
+  // reverse-strand ones, each under a chip naming it. A gene-dense window, so
+  // both sections hold several genes and the divider between them reads.
+  {
+    mode: 'url',
+    name: 'gene_track_group_by_strand',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr17:7,540,000-7,640,000',
+      trackLabels: 'offset',
+      tracks: [
+        {
+          trackId: 'ncbi_refseq_109_hg38_latest',
+          type: 'LinearBasicDisplay',
+          geneGlyphMode: 'longestCoding',
+          // names only: a description row under every gene doubled the
+          // forward section's height and pushed the reverse one off the frame
+          showLabels: 'name',
+          groupBy: { type: 'strand' },
+          height: 310,
+        },
+      ],
+    }),
+    readyText: 'NCBI RefSeq',
+    readyTimeout: 90000,
+    settleMs: 4000,
+    viewportHeight: 520,
+    hideTooltip: true,
+    // The chips are the feature: wait for the second one, which appears only
+    // once the layout has stacked both sections.
+    actions: [{ type: 'waitForText', text: 'Reverse strand' }],
+  },
   // "Collapse introns" reshapes the view to the exons placed side by side; the
   // sashimi arcs from the RNA-seq splice junctions then connect adjacent exons.
   {

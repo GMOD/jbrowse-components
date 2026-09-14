@@ -55,17 +55,20 @@ export function minDrawnBoxHeight(
 }
 
 // Counted over `measureIds` like `maxBottom`, so the "N not shown" sentence
-// never counts features a pan would reveal.
+// never counts features a pan would reveal, and never the features of a
+// section the user hid, which sit unplaced by their own choice.
 export function countTruncatedFeatures(
   map: ReadonlyMap<number, FeatureDataResult>,
   measureIds?: ReadonlySet<string>,
+  excludeIds?: ReadonlySet<string>,
 ) {
   let n = 0
   for (const data of map.values()) {
     for (const item of data.flatbushItems) {
       if (
         !isPlacedRow(item.topPx) &&
-        (!measureIds || measureIds.has(item.featureId))
+        (!measureIds || measureIds.has(item.featureId)) &&
+        !excludeIds?.has(item.featureId)
       ) {
         n++
       }

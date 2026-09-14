@@ -7,10 +7,22 @@ import GroupLabelsLayer from './GroupLabelsLayer.tsx'
 
 import type { GroupLabelsModel } from './GroupLabelsLayer.tsx'
 
-function renderLayer(model: GroupLabelsModel) {
+function renderLayer(
+  model: Pick<
+    GroupLabelsModel,
+    'showsGroupLabels' | 'groupSections' | 'scrollTop' | 'height'
+  >,
+) {
   return render(
     <ThemeProvider theme={createJBrowseTheme()}>
-      <GroupLabelsLayer model={model} />
+      <GroupLabelsLayer
+        model={{
+          ...model,
+          collapsedGroupKeys: new Set(),
+          toggleGroupCollapsed: jest.fn(),
+          hideGroup: jest.fn(),
+        }}
+      />
     </ThemeProvider>,
   )
 }

@@ -5,6 +5,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 import {
+  MAX_GROUPS,
   OVERFLOW_GROUP_KEY,
   compareGroupKeys,
   overflowLabel,
@@ -29,6 +30,7 @@ import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
 export {
+  MAX_GROUPS,
   OVERFLOW_GROUP_KEY,
   compareGroupKeys,
   overflowLabel,
@@ -178,17 +180,13 @@ function mapqKey(feature: Feature): GroupKey {
           : MAPQ_ZERO_GROUP
 }
 
-// Hard ceiling on the sections one fetch may produce; the rest merge into one
-// pinned-last overflow section. Every group runs the whole spine, and its
-// coverage pipeline allocates per-bp depth arrays sized to the region before
-// uploading a per-bp GPU buffer that alone approaches the device limit at
-// chromosome scale — so a UMI-style `RX`/`MI` tag would pay that region-width
-// cost thousands of times over and exhaust worker memory or the GPU.
-//
-// A backstop: every dimension but `tag` and `mateAssembly` is a closed set of at
-// most five keys, and GroupByDialog refuses `tag` up front with the distinct
-// values in hand.
-export const MAX_GROUPS = 40
+// Every group runs the whole spine, and its coverage pipeline allocates
+// region-width depth arrays before uploading a per-bp GPU buffer that alone
+// approaches the device limit at chromosome scale, so `MAX_GROUPS` is what
+// keeps a UMI-style `RX`/`MI` tag from paying that thousands of times over.
+// Every dimension but `tag` and `mateAssembly` is a closed set of at most five
+// keys, and GroupByDialog refuses `tag` up front with the distinct values in
+// hand.
 
 // Merge the tail past MAX_GROUPS into one overflow section rather than dropping
 // its reads. Runs on the already-ordered list, so which groups survive follows
