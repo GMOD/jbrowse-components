@@ -166,16 +166,6 @@ RFLP-mapped by Devos et al. and revisited by Dvorak et al.; a group number is
 shared across subgenomes, so the 5D and 7D bundles are the D-genome counterparts
 of the 5A and 7B those names refer to.
 
-### Bread wheat 4A against Triticum urartu
-
-Triticum urartu, the A-genome donor, is the same two-row view with one assembly
-swapped.
-
-<Figure caption="Triticum urartu's seven chromosomes over bread wheat 4A, the same track and locus as the figure above. Where tauschii's three blocks came off three chromosomes, urartu's come off two." src="/img/orthofinder_synteny/wheat_4a_urartu.png" />
-
-Urartu's chromosome 4 covers the first two blocks and its chromosome 7 the
-distal one.
-
 ## Drosophila: chromosome arms that outlast gene order {#drosophila}
 
 The `drosophila` set is _D. melanogaster_, its near relatives _D. simulans_ and
