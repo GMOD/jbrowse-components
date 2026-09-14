@@ -13,6 +13,7 @@ colorDomain
 connectedView
 connectedViewId
 displayMode
+followAnchorIndex
 followSynteny
 growMaxHeight
 height

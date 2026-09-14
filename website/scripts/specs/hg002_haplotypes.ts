@@ -765,99 +765,33 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // THE WARNING FORM, which the linear synteny view guide asserts in a sentence
-  // and nothing in the corpus shows. It goes on that guide rather than on the
-  // tutorial: the tutorial's subject is one pair of haplotypes, and this is a
-  // property of the mode.
-  //
-  // TWO FRAMES, because the claim is a CHANGE of form. One frame of a warning
-  // icon says nothing -- a reader who has never seen the other icon cannot tell
-  // a warning from the control's normal look, which is the whole failure the
-  // wording exists to prevent.
-  //
-  // BOTH FRAMES OPEN ALREADY FOLLOWING, through the view's own props, rather
-  // than clicking the toggle and then navigating. The state being photographed
-  // is a steady one either way, and a clicked route would have to wait out a
-  // resolve per frame to be sure the shot is of the answer rather than of the
-  // question.
+  // The warning form of the follow toggle, which the linear synteny view guide
+  // describes. One frame, because the icon alone reads as the control's normal
+  // look; the hovered tooltip is what says the other row is holding.
   {
     ...CAPTURE,
     name: 'synteny_follow_unaligned',
     url: haplotypeSession(
       DRIFT_WINDOW_MAT,
-      DRIFT_WINDOW_PAT_BEFORE,
+      UNALIGNED_ANCHOR_PAT,
       [CHAIN_BLOCKS],
       [CHAIN_BLOCKS],
-      { followSynteny: true },
+      { followSynteny: true, followAnchorIndex: 1 },
     ),
-    // the follow figure's height, which is the same session with the same one
-    // lane per panel
     viewportHeight: 445,
-    stageColumns: 2,
-    hideTooltip: true,
-    stages: [
+    actions: [
+      { type: 'waitForAppSettled', timeout: 120000 },
       {
-        // The maternal row anchors, so the paternal row is placed from it and
-        // the ribbon closes -- the same move the figure above films, arrived at
-        // by loading rather than by clicking.
-        actions: [{ type: 'waitForAppSettled', timeout: 120000 }],
-        annotations: [
-          {
-            type: 'text',
-            anchor: {
-              selector: '[data-testid="app-bar"]',
-              alignX: 'left',
-              alignY: 'top',
-              dx: 24,
-              dy: 30,
-            },
-            maxWidth: 640,
-            fontSize: 22,
-            text: '(1) Following: the row below is placed from the anchor row above it',
-          },
-          {
-            type: 'circle',
-            anchor: { selector: '[data-testid="follow-synteny-toggle"]' },
-            strokeWidth: 4,
-          },
-        ],
+        type: 'hover',
+        selector: '[data-testid="follow-synteny-toggle"]',
       },
+      { type: 'waitForText', text: 'nothing aligns here' },
+    ],
+    annotations: [
       {
-        // THE ANCHOR IS THE OTHER ROW HERE, sitting in the gap between two
-        // chains. Both rows keep the windows the session names, because the
-        // anchor's window resolves to nothing to place the other one from.
-        url: haplotypeSession(
-          DRIFT_WINDOW_MAT,
-          UNALIGNED_ANCHOR_PAT,
-          [CHAIN_BLOCKS],
-          [CHAIN_BLOCKS],
-          { followSynteny: true, followAnchorIndex: 1 },
-        ),
-        readySelector: displayPainted('synteny_canvas'),
-        actions: [{ type: 'waitForAppSettled', timeout: 120000 }],
-        annotations: [
-          {
-            type: 'text',
-            anchor: {
-              selector: '[data-testid="app-bar"]',
-              alignX: 'left',
-              alignY: 'top',
-              dx: 24,
-              dy: 30,
-            },
-            maxWidth: 640,
-            fontSize: 22,
-            // WHAT THE PICTURE CANNOT SAY. Two rows with nothing between them
-            // is what a follow that had broken would look like too; the
-            // difference is that this one is holding on purpose.
-            text: '(2) Nothing aligns to the anchor row here, so the other row holds and the button says so',
-          },
-          {
-            type: 'circle',
-            anchor: { selector: '[data-testid="follow-synteny-toggle"]' },
-            strokeWidth: 4,
-          },
-        ],
+        type: 'box',
+        anchor: { selector: '[data-testid="follow-synteny-toggle"]' },
+        strokeWidth: 3,
       },
     ],
   },
