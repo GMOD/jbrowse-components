@@ -1,6 +1,6 @@
 ---
 title: Pangenome (HPRC) part 3, every haplotype in its own coordinates
-sidebar_label: Pangenome (HPRC, part 3)
+sidebar_label: Pangenome (HPRC 3, haplotypes in their own coordinates)
 description:
   The multiple alignment HPRC release 2's graph and callset both come from, then
   the same haplotypes off GRCh38's axis and on their own contigs
@@ -19,7 +19,9 @@ published reference of its own.
 ## Prerequisites
 
 - [part 1](/docs/tutorials/pangenome_hprc), whose session this page adds to:
-  hg38 with its genes, and the rGFA segments track loaded on it
+  hg38 with its genes and the rGFA segments track loaded on it, plus
+  [part 2's callset](/docs/tutorials/pangenome_hprc_part2#the-variant-callset)
+  for the first figure
 - [the GraphGenomeView plugin](/docs/tutorials/pangenome_hprc#the-graphgenomeview-plugin),
   for the track that uses `GbzBaseSyntenyAdapter` and part 1's segments track;
   every other track here is a URL you can paste
@@ -56,6 +58,22 @@ UCSC and the companion index we host.
 - the T2T-CHM13v2.0 reference (hs1), loaded as its own donor assembly:
   https://hgdownload.soe.ucsc.edu/goldenPath/hs1/bigZips/hs1.2bit
 - hs1's RefSeq genes, rehosted: https://jbrowse.org/ucsc/hs1/hs1.gff.gz
+- hs1's RepeatMasker annotation, from UCSC:
+  https://hgdownload.soe.ucsc.edu/gbdb/hs1/t2tRepeatMasker/chm13v2.0_rmsk.bb
+- UCSC's hg38-to-hs1 liftOver, rehosted as an indexed PAF:
+  https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz
+
+## The route
+
+Three ways to see a haplotype's own sequence, in the order they leave GRCh38's
+axis:
+
+1. [Add the multiple alignment](#the-alignment-underneath-both) and put it under
+   the graph and the callset at one locus.
+2. [Read eight haplotypes' walks out of the graph](#walks-from-the-graph) as one
+   lane each, in their own contig coordinates.
+3. [Load T2T-CHM13 as an assembly](#the-one-donor-worth-loading) and open a node
+   on it, then launch a synteny view between the two.
 
 ## The alignment the graph and callset came from {#the-alignment-underneath-both}
 
@@ -83,23 +101,27 @@ alignment is published as a 53 GB MAF under `v2.1/`, which `BgzipMafAdapter`
 reads with the same shorthand, and the v2.0 TAF is the build
 [the graph](/docs/tutorials/pangenome_hprc#add-the-graph-track) and
 [the callset](/docs/tutorials/pangenome_hprc_part2#the-variant-callset) come
-from. The figure below puts all three products on one axis.
+from.
+
+Type `chr6:31,980,000-32,050,000`, the C4 window from part 1's table, and show
+four lanes: the genes, the segments, the callset with part 2's structural
+filter, and this alignment. Every alignment row is a human haplotype, so a row
+that drops out belongs to a person who does not carry that segment. Read down a
+column for who carries what, across for where each segment starts and stops. C4
+is the locus [HPRCv2](https://github.com/pangenome/HPRCv2) itself opens with.
+
+Two clustering runs order the rows. On the callset, part 2's **Clustering →
+Cluster rows by genotype...**. On the alignment, **Clustering → Cluster rows by
+identity...** in its track menu, which computes over the window in view, since
+HPRC's file ships no guide tree; **Reset row order** puts back whatever the file
+supplied. Then cut the window from the segments track with **Launch → Graph
+genome view (this region)** for the graph pane under all four.
 
 <Figure caption="The C4 locus on one axis: the NCBI RefSeq genes, the graph's rGFA segments, the callset's haplotypes clustered by genotype (grey reference, blue alt allele, red other alt, tan no call, purple insertion), a subtree of those haplotypes as alignment rows clustered by identity, grey where a haplotype aligns to GRCh38 and white where it has no aligned sequence, and the same window as a force-directed subgraph in reference-position colors with its bubbles haloed. The band marks the pseudogene pair between C4A and C4B, where the haplotypes that carry nothing there gather into a block." src="/img/maf_hprc_pangenome.png" />
 
-The locus is C4, the example [HPRCv2](https://github.com/pangenome/HPRCv2)
-itself opens with. Every alignment row is a human haplotype, so a row that drops
-out belongs to a person who does not carry that segment. Read down a column for
-who carries what, across for where each segment starts and stops.
-
-Clustering the alignment is a run, since HPRC's file ships no guide tree to
-order its rows by. **Cluster rows by identity...** under the track menu's
-**Clustering** submenu computes it over the window in view, and **Reset row
-order** puts back whatever the file supplied. The figure keeps thirty-two
-haplotype rows so each has the height for its name beside it; the track as
-configured above draws every haplotype.
-
-The [MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
+The figure keeps thirty-two haplotype rows so each has the height for its name
+beside it; the track as configured above draws every haplotype. The
+[MAF track guide](/docs/user_guides/maf_track) covers the conservation band,
 per-row identity and codon view, all derived from the alignment with no extra
 files.
 
@@ -117,10 +139,9 @@ rGFA tracks and a node id in this database are the same graph's.
 
 ### Picking the panel out of the callset
 
-Eight haplotypes carry the stack at the CFH cluster.
-`build_hprc_cfhr_synteny.sh` genotypes the CFHR3/CFHR1 deletion over all 464
-haplotypes and keeps the homozygous samples whose own CAT annotation agrees with
-the genotype:
+Eight haplotypes make the panel at the CFH cluster. `build_hprc_cfhr_synteny.sh`
+genotypes the CFHR3/CFHR1 deletion over all 464 haplotypes and keeps the
+homozygous samples whose own CAT annotation agrees with the genotype:
 
 <!-- from: scripts/build_hprc_cfhr_synteny.sh -->
 
@@ -136,6 +157,13 @@ HG00128 and HG00133 do not. The script also slices each one's CAT annotation to
 the window, and those are the gene models the lanes draw.
 
 ### The lanes from the database
+
+Each haplotype in the panel is an assembly in the session, and the track names
+them all. The eight assemblies are the ones
+[the panel script](#picking-the-panel-out-of-the-callset) writes, each a
+chromosome-lengths file the way
+[Synteny from a pangenome graph](/docs/tutorials/hprc_multiway_synteny#the-assemblies-and-their-gene-models)
+loads them.
 
 ```json addtrack
 {
@@ -189,7 +217,9 @@ The track opens on the assemblies its `assemblyNames` lists beside hg38, and
 the track menu lists every haplotype the graph names, grouped by sample. Ticking
 every one draws the whole cohort, and the dialog's reset goes back to the eight.
 
-The session below opens the CFH cluster at chr1:196,640,000-196,900,000:
+Type `chr1:196,640,000-196,900,000` and show the track. The session below is
+that state, and its live link opens it on the hosted config with the eight
+assemblies already in:
 
 ```json session config=https://jbrowse.org/demos/hprc/config.json
 {
@@ -255,18 +285,19 @@ read off the graph.
 
 ### The graph view from the GBZ, for a chosen set {#gbz-graph-cut}
 
-The same track feeds the graph view. **Launch → Graph genome view (this
-region)** in the linear view's own menu cuts the window from the database for
-the lanes on screen, which are the track's configured lanes until **Choose
+The same track feeds the graph view. Type `chr6:160,616,002-160,646,753`, the
+KIV-2 array inside _LPA_, and take **Launch → Graph genome view (this region)**
+from the linear view's own menu. That cuts the window from the database for the
+lanes on screen, which are the track's configured lanes until **Choose
 lanes...** picks others. The cut carries one W line per haplotype walk, named
 through the companion, and **Sample rows** in the **Layout** dropdown gives each
 haplotype a row.
 
-The same cut, force-directed, is where the walks show most. A node draws thicker
-the more of the nine walks carry it, so the reference is fat and each
-haplotype's private run of kringle copies is a thin loop. The **Walk** dropdown
-lifts one haplotype out: its route keeps its ink, the rest fades, and a readout
-gives its length against the reference walk.
+Pick **Force-directed layout** in the same dropdown, which is where the walks
+show most. A node draws thicker the more of the nine walks carry it, so the
+reference is fat and each haplotype's private run of kringle copies is a thin
+loop. Now open the **Walk** dropdown and pick `HG00133`: its route keeps its
+ink, the rest fades, and a readout gives its length against the reference walk.
 
 <Figure caption="The KIV-2 array cut from the GBZ for eight haplotypes, force-directed under the same window's genes, bubble and rGFA segments, with HG00133's walk lifted. Nodes on the walk keep their reference-position color, red to magenta across the window, and every node the walk does not visit fades to grey. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout at the top right states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
 
@@ -297,15 +328,33 @@ the other donor with a reference of its own.
 }
 ```
 
+A view launched on hs1 shows whatever the session annotates hs1 with, and the
+lane the figure below reads is UCSC's RepeatMasker:
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "hs1_rmsk_ucsc",
+  "name": "RepeatMasker (T2T-CHM13v2.0)",
+  "assemblyNames": ["hs1"],
+  "adapter": {
+    "type": "BigBedAdapter",
+    "uri": "https://hgdownload.soe.ucsc.edu/gbdb/hs1/t2tRepeatMasker/chm13v2.0_rmsk.bb"
+  }
+}
+```
+
 The segments track draws on hs1, and a CHM13 node opens there, once `hs1` joins
 its `assemblyNames` and `"hs1": "CHM13"` its `assemblyNameToPanSN`, the two
 edits
 [part 1 makes for NA20809.2](/docs/tutorials/pangenome_hprc#loading-a-haplotype-as-an-assembly).
 
-With both assemblies loaded a CHM13 node opens on either one, and on hs1 its
-coordinates are the donor's own. The node in the figure below is 142 kb of chr17
-that GRCh38 does not carry, near the end of the chromosome, and RepeatMasker
-tiles it with long L1 elements.
+Type `chr17:83,010,000-83,040,000`, near the end of chromosome 17, and cut it
+from the segments track. Inside the one bubble the lane draws there, the graph
+holds a charcoal node of 142 kb that GRCh38 does not carry. Right-click it and
+take **Open in hs1**. The view that opens is hs1's own chr17, where the node
+draws as one long dark bar in the segments lane and RepeatMasker tiles it with
+long L1 elements.
 
 <Figure caption="A donor node on both coordinate systems: the GRCh38 window, with the bubble it sits in and the rGFA segments in reference-position colors; the graph cut from it, where the boxed charcoal node is the sequence hg38 has no coordinate for, haloed as a bubble and labelled a repeat array; then that node on hs1's own chr17, drawn as one dark bar under RepeatMasker, which is tiled by long L1 elements in red." src="/img/pangenome/hprc_chm13_allele.png" />
 
@@ -329,9 +378,10 @@ liftOver is one, rehosted as an indexed PAF:
 }
 ```
 
-Taken at the window above, it opens hg38 over hs1, each panel already at the
-interval the graph gives for it. Without such a track the entry stays, greyed
-out, and its tooltip names what is missing.
+With that track in the session, open the graph pane's **Launch** menu and pick
+**Linear synteny view (2 assemblies)**. It opens hg38 over hs1, each panel
+already at the interval the graph gives for it. Without such a track the entry
+stays, greyed out, and its tooltip names what is missing.
 
 <Figure caption="The graph's own Launch menu at the CHM13 window, with hg38 and hs1 loaded and the liftOver between them in the session. Above, the hg38 window and the cut in reference-position colors, the CHM13 node ringed. Below, the synteny view the Linear synteny view entry opened: hg38 over hs1, each panel framed on the locus the graph gives for it, with the liftOver alignment drawn as pink ribbons between them and the node as one dark bar on hs1." src="/img/pangenome/hprc_synteny_launch.png" />
 

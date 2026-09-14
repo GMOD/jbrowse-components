@@ -1,6 +1,6 @@
 ---
 title: Pangenome (HPRC) part 4, the graph as the picture
-sidebar_label: Pangenome (HPRC, part 4)
+sidebar_label: Pangenome (HPRC 4, the graph as the picture)
 description:
   Draw the LPA kringle repeat as a force-directed graph with every bubble named
   on it, open the array, and lift one haplotype's walk out to read how many
@@ -30,6 +30,10 @@ limit rather than a settled design. We welcome your [feedback](/contact).
 
 ## Prerequisites
 
+- the session from [part 1](/docs/tutorials/pangenome_hprc): hg38 with its genes
+  and the rGFA segments track, plus
+  [part 2's bubble track](/docs/tutorials/pangenome_hprc_part2#the-bubble-track)
+  for the lane the first figure reads
 - [the GraphGenomeView plugin](/docs/tutorials/pangenome_hprc#the-graphgenomeview-plugin),
   loaded the way part 1 loads it
 - htslib (`tabix`), to query the hosted bubble index from the command line as
@@ -51,11 +55,14 @@ rGFA projections part 1 uses and the eight-haplotype cut part 3 makes.
 
 ## The window as a graph
 
-Open the LPA window from part 1 and pick **Force-directed layout** from the
-Layout dropdown. The drawing is seeded along the reference, so GRCh38 runs left
-to right under the linear view in the same colours, and every bubble the index
-holds is drawn as a halo along its own nodes with a label saying what kind of
-variation it is.
+Type `chr6:160,525,000-160,655,000` into the location box, the window that holds
+_LPA_ and the kringle array inside it, with the genes, the bubble lane and the
+segments lane showing. Cut it from the segments track with **Launch → Graph
+genome view (this region)**, then pick **Force-directed layout** from the
+**Layout** dropdown. The drawing is seeded along the reference, so GRCh38 runs
+left to right under the linear view in the same colours, and every bubble the
+index holds is drawn as a halo along its own nodes with a label saying what kind
+of variation it is.
 
 <Figure caption="The LPA window with the RefSeq genes, the HPRC bubbles and the rGFA segments above the force-directed graph. The kringle array is the knot of loops in the middle and its halo names it as a repeat array; the small halos on the backbone are the deletions and the insertion the index lists beside it, and LPA is pinned under the backbone with its exons drawn along it." src="/img/pangenome/graph_kiv2_halos.png" />
 
@@ -73,11 +80,12 @@ found in either picture from the other.
 
 ## Open the array
 
-Click the array's label. The view cuts the bubble's segments out of the graph on
-screen and lays them out on their own, with a button back to the window. No
-index row describes the inside of a bubble, so the popped graph derives its own
-bubbles from the way its nodes layer along the reference, and a bubble inside a
-bubble gets a label of its own to click in turn.
+Click the array's label, the purple one on the knot of loops. The view cuts the
+bubble's segments out of the graph on screen and lays them out on their own,
+with a button back to the window. No index row describes the inside of a bubble,
+so the popped graph derives its own bubbles from the way its nodes layer along
+the reference, and a bubble inside a bubble gets a label of its own to click in
+turn.
 
 <Figure caption="The array's segments popped out of the window and drawn on their own. Each loop is a run of kringle copies a haplotype walks and the reference misses, and the popped graph's own label states how many routes it holds." src="/img/pangenome/graph_kiv2_popped.png" />
 
@@ -89,9 +97,13 @@ loop.
 ## The same bubble with its walks
 
 Part 3 cut this bubble from the base-level graph for GRCh38 and eight
-haplotypes, keeping each haplotype's walk. Open that file with **Add → Graph
-genome view**, or through the live link on the figure, and pick the
-force-directed layout again.
+haplotypes, keeping each haplotype's walk, and we host the cut as a GFA. Take
+**Add → Graph genome view** from the app's top menu, give it the file's URL, and
+pick **Force-directed layout** again:
+
+```
+https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa
+```
 
 Two things change because the file carries walks. A node's thickness is the
 number of haplotypes through it, Bandage's depth drawn as width, so the backbone
@@ -100,21 +112,21 @@ carries are the thin loops. And the array's halo no longer counts routes through
 a DAG: its label is the shortest and longest walk between the bubble's two ends,
 which are real haplotype lengths. Each route over a kilobase also carries a chip
 at the far point of its loop naming the haplotypes that take it; with nine walks
-through one array those chips stack over the loops, so the figure below has
-**Mark bubbles** off.
+through one array those chips stack over the loops, so turn **View menu →
+Settings → Mark bubbles** off before the next step, as the figure has it.
 
 ## Lift one haplotype out
 
-The **Walk** dropdown in the toolbar names each haplotype in the file. Pick one
-and its route keeps its ink while every other node and link fades; a readout
-beside the legend gives the walk's length through the window and how it compares
-to the reference walk.
+The **Walk** dropdown in the toolbar names each haplotype in the file. Pick
+`HG00133`. Its route keeps its ink while every other node and link fades, and a
+readout beside the legend gives the walk's length through the window and how it
+compares to the reference walk.
 
 <Figure caption="The eight-haplotype cut under the same window's genes, bubble and rGFA segments, with HG00133 picked in the Walk dropdown. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
 
-Lifting GRCh38 is the check. The reference takes no loop, so nothing but the
-backbone stays lit, and its readout compares the walk to itself. Lifting each of
-the other seven in turn reads each haplotype's copy count as an excess over the
+Now pick `GRCh38`. The reference takes no loop, so nothing but the backbone
+stays lit, and its readout compares the walk to itself. Pick each of the other
+seven in turn to read each haplotype's copy count as an excess over the
 reference, one at a time, off the same drawing.
 
 ## Check it against the index
