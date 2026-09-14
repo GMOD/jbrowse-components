@@ -136,7 +136,7 @@ synteny level). Sizing it from the displays instead looks equivalent — every
 display in a level reports the level's height — right up to the legal case of a
 band with *no* display: an assembly pair with no synteny dataset between it (the
 import form launches those deliberately), or the last track on a level hidden.
-`LinearComparativeRenderArea` reserved 0px there while its canvas still painted
+`LinearSyntenyRenderArea` reserved 0px there while its canvas still painted
 the level's height, overlapping the genome row below. The SVG export never had
 the bug because `SVGLinearSyntenyView` lays its rows out from `level.height`
 directly — the on-screen path is the one that has to be told.

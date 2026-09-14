@@ -148,7 +148,7 @@ before the lanes re-lay out, while its placements stay filtered at the frame
 edge (`groupRunsOnRow`). This machinery is
 measured (the stability table under
 [../ideas/multiway-synteny-lgv-track.md](../ideas/multiway-synteny-lgv-track.md)
-§"Every per-settle choice holds until the evidence clearly moves") and is the
+§"Lane stability, measured") and is the
 best-engineered part of the display; nothing here recommends touching it.
 
 **Lane genes.** `laneGeneAdapters` walks every session track (connections
