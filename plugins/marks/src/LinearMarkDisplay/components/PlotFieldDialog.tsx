@@ -52,8 +52,7 @@ const PlotFieldDialog = observer(function PlotFieldDialog({
       }}
     >
       <Typography color="text.secondary">
-        Draws one mark per feature at the value of the field you pick, over a
-        score axis this track had no way to ask for in the menu before.
+        Draws one mark per feature at the value of the field you pick.
       </Typography>
       {plotFieldsError ? <ErrorBanner error={plotFieldsError} /> : null}
       {!plotFields && !plotFieldsError ? (
