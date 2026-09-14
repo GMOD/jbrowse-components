@@ -8,12 +8,14 @@ export interface GroupLabelsModel {
   groupSections: FeatureGroupSection[]
   scrollTop: number
   height: number
+  hiddenGroups: { size: number }
   hideGroup: (key: string) => void
+  showAllGroups: () => void
 }
 
 // The whole stack scrolls as one, so a section's screen top is its content
-// top less the scroll. The last section left offers no hide, since an empty
-// track has no chip to come back from.
+// top less the scroll. Hiding the last section left would leave no chip to
+// carry the restore button.
 const GroupLabelsLayer = observer(function GroupLabelsLayer({
   model,
 }: {
@@ -27,6 +29,10 @@ const GroupLabelsLayer = observer(function GroupLabelsLayer({
   return (
     <GroupLabelChips
       canvasHeight={height}
+      hiddenCount={model.hiddenGroups.size}
+      onShowHidden={() => {
+        model.showAllGroups()
+      }}
       sections={groupSections.map(section => ({
         ...section,
         top: section.top - scrollTop,

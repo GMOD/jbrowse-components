@@ -54,6 +54,7 @@ function renderOverlay(overrides: Partial<LinearAlignmentsDisplayModel> = {}) {
     })),
     toggleGroupCollapsed: jest.fn(),
     toggleGroupExpanded: jest.fn(),
+    hiddenGroups: new Set(),
     ...overrides,
   } as unknown as LinearAlignmentsDisplayModel
   render(

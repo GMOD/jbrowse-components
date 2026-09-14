@@ -2,6 +2,7 @@ import { Fragment } from 'react'
 
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 
 import { useGroupLabelStyles } from './groupLabelChipStyles.ts'
@@ -41,21 +42,30 @@ export interface GroupChipSection {
  * The section chips and the dividers between sections, in screen space, for
  * every display that stacks groups in one track. A chip pins to the canvas top
  * while its section scrolls past (`groupChipTop`, which the SVG twin shares),
- * and a divider marks each section's top edge after the first.
+ * and a divider marks each section's top edge after the first. The topmost
+ * chip on screen carries the way back from any hidden sections.
  */
 export function GroupLabelChips({
   sections,
   canvasHeight,
+  hiddenCount = 0,
+  onShowHidden,
 }: {
   sections: readonly GroupChipSection[]
   canvasHeight: number
+  hiddenCount?: number
+  onShowHidden?: () => void
 }) {
   const { classes } = useGroupLabelStyles()
+  const chipTops = sections.map(s =>
+    groupChipTop(s.top, s.height, canvasHeight),
+  )
+  const topmost = chipTops.findIndex(t => t !== undefined)
   return (
     <>
       {sections.map((section, i) => {
-        const { top, height, toggle, action, onHide } = section
-        const chipTop = groupChipTop(top, height, canvasHeight)
+        const { top, toggle, action, onHide } = section
+        const chipTop = chipTops[i]
         if (chipTop === undefined) {
           return null
         }
@@ -112,6 +122,17 @@ export function GroupLabelChips({
                   title={`Hide "${label}"`}
                 >
                   <VisibilityOffIcon className={classes.icon} />
+                </button>
+              ) : null}
+              {i === topmost && hiddenCount > 0 && onShowHidden ? (
+                <button
+                  type="button"
+                  className={classes.button}
+                  onClick={onShowHidden}
+                  title={`Show ${hiddenCount} hidden group${hiddenCount > 1 ? 's' : ''}`}
+                >
+                  <VisibilityIcon className={classes.icon} />
+                  {hiddenCount} hidden
                 </button>
               ) : null}
             </div>

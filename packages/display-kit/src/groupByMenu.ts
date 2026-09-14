@@ -102,11 +102,10 @@ export interface HiddenGroupsModel {
 }
 
 /**
- * The way back from a chip's "Hide this group". Spread into a display's
- * "Show..." menu, and absent while nothing is hidden: a row reading "Show
- * hidden groups (0)" is a row about a feature most tracks never use. A menu row
- * and not a chip, because a hidden section draws no chip, and one section
- * hidden out of two leaves nothing on screen that names the missing one.
+ * The menu's way back from a chip's hide button, beside the topmost chip's
+ * "N hidden" button. Spread into a display's "Show..." menu, and absent while
+ * nothing is hidden: a row reading "Show hidden groups (0)" is a row about a
+ * feature most tracks never use.
  */
 export function hiddenGroupsItems(model: HiddenGroupsModel) {
   const { size } = model.hiddenGroups

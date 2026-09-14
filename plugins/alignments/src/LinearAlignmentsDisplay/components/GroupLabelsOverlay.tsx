@@ -66,13 +66,15 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
     canSizeGroupHeights,
     renderSections,
   } = model
-  // Hiding the last drawn lane leaves a stack with no chip in it, so the only
-  // way back would be the "Show..." menu row — offered, but a worse place to
-  // land than simply not offering the action that empties the track.
+  // Hiding the last drawn lane leaves no chip to carry the restore button.
   const canHideLane = renderSections.length > 1
   return (
     <GroupLabelChips
       canvasHeight={scroll.canvasHeight}
+      hiddenCount={model.hiddenGroups.size}
+      onShowHidden={() => {
+        model.showAllGroups()
+      }}
       sections={renderSections.map(section => {
         // Off the section, not looked back up by its key: a `renderSections`
         // entry IS its lane, chip state included.
