@@ -2924,6 +2924,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | displayMode)"
         },
         {
+          "name": "groupBy",
+          "type": "(JexlString | frozen)"
+        },
+        {
           "name": "geneGlyphMode",
           "type": "(JexlString | geneGlyphMode)"
         },
@@ -3921,6 +3925,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "displayMode",
           "type": "(JexlString | displayMode)"
+        },
+        {
+          "name": "groupBy",
+          "type": "(JexlString | frozen)"
         },
         {
           "name": "geneGlyphMode",

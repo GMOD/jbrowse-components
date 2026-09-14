@@ -1,5 +1,4 @@
 /**
- * #api display-kit
  * The ordering every in-track group-by shares, whatever partitioned the
  * features: named groups first, then the `''` catch-all a dimension files its
  * unanswerable features under, then the overflow bucket a capped partition
@@ -17,7 +16,6 @@ function groupKeyRank(key: string) {
 const ALL_DIGITS = /^\d+$/
 
 /**
- * #api display-kit
  * Two all-digit keys compare by magnitude, so numeric tag values order 1, 2,
  * 10. Everything else is code-point rather than localeCompare, which stays
  * deterministic and puts '+' before '-'. A display merging groups across
@@ -40,7 +38,6 @@ export function compareGroupKeys(a: string, b: string) {
 }
 
 /**
- * #api display-kit
  * The overflow bucket's chip. Says MERGED because that lane is the one entry
  * in a stack that is not a value, and this label is the only place a reader
  * is told the cap fired at all.
@@ -50,7 +47,6 @@ export function overflowLabel(count: number) {
 }
 
 /**
- * #api display-kit
  * A group's stable identity: its sort key and the label its chip shows.
  */
 export interface GroupId {

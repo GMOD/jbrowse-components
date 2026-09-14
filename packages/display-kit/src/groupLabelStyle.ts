@@ -1,5 +1,4 @@
 /**
- * #api display-kit
  * The section-label chip is drawn twice, as an interactive HTML overlay on
  * screen and as a static SVG twin on export, so both read these constants and
  * the same label fallback.
@@ -20,7 +19,6 @@ export const GROUP_LABEL_ICON_SIZE = 14
 export const GROUP_LABEL_INSET_X = 4
 
 /**
- * #api display-kit
  * Vertical space one chip occupies, and so the least a labelled section can
  * be: a chip is anchored at its section's top, and sections shorter than this
  * stack their chips on top of each other.
@@ -28,7 +26,6 @@ export const GROUP_LABEL_INSET_X = 4
 export const GROUP_LABEL_HEIGHT = 16
 
 /**
- * #api display-kit
  * The name shown on a section's chip. A real grouped section always carries a
  * non-empty label, so this only falls back for the degenerate empty case.
  */
@@ -37,7 +34,6 @@ export function groupSectionLabel(label: string) {
 }
 
 /**
- * #api display-kit
  * Where a section's chip draws, in screen px, or `undefined` when the section
  * is off screen. The chip is pinned to the top of the canvas while its section
  * scrolls past and released on the section's own bottom edge; pin first,

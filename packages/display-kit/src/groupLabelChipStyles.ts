@@ -12,7 +12,6 @@ import {
 } from './groupLabelStyle.ts'
 
 /**
- * #api display-kit
  * The on-screen section chip row: a divider above each section after the
  * first, a `controls` row holding the chips, and the chip itself as a `button`
  * or a plain `label`.

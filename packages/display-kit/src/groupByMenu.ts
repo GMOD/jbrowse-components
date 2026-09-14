@@ -3,7 +3,6 @@ import WorkspacesIcon from '@mui/icons-material/Workspaces'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 /**
- * #api display-kit
  * A directly selectable dimension: picking it calls `onSelect(type)`. No help
  * text, and typed without the field so that stays a compile error rather than
  * a convention: the menu reserves a help column across every row as soon as
@@ -15,7 +14,6 @@ export interface GroupByRadioOption<T extends string> {
 }
 
 /**
- * #api display-kit
  * A dimension that activates through its own flow rather than a direct select,
  * such as a tag whose radio opens a dialog for the tag name.
  */
@@ -35,7 +33,6 @@ function checkedType<T extends string>(
 }
 
 /**
- * #api display-kit
  * The "Group by..." radio submenu every in-track grouping shares. Grouping is
  * one dimension at a time, so it is a single radio group, "None" plus one per
  * offered dimension, mirroring a sort menu where the current choice is visible

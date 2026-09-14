@@ -3556,6 +3556,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ],
           "default": "normal"
         },
+        "groupBy": {
+          "description": "In-track stacked grouping, e.g. \`{ type: \\"strand\\" }\` to pack each strand into its own labelled section (null = ungrouped). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "default": null
+        },
         "geneGlyphMode": {
           "description": "Gene glyph display mode: \\"auto\\" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, \\"all\\" draws every transcript and scrolls the surplus instead of trimming, \\"longestCoding\\" shows one transcript per gene — the one canonicalTranscriptTags names, else the longest coding.",
           "anyOf": [
@@ -5100,6 +5104,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
             }
           ],
           "default": "normal"
+        },
+        "groupBy": {
+          "description": "In-track stacked grouping, e.g. \`{ type: \\"strand\\" }\` to pack each strand into its own labelled section (null = ungrouped). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "default": null
         },
         "geneGlyphMode": {
           "description": "Gene glyph display mode: \\"auto\\" collapses each gene to one transcript when zoomed out and trims the rest to what the track height holds, \\"all\\" draws every transcript and scrolls the surplus instead of trimming, \\"longestCoding\\" shows one transcript per gene — the one canonicalTranscriptTags names, else the longest coding.",
