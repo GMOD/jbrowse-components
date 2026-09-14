@@ -36,10 +36,11 @@ describes a current limit of the view. We welcome your [feedback](/contact).
   from the command line, and `gfatools` for the command that built them; both
   are for [Reproduce it end to end](#reproduce-it-end-to-end) and the
   [other windows](#other-windows-to-cut), and the route itself runs none
-- nothing at all to look before building: the
+- nothing at all, to follow the first five steps: the
   [HPRC page on genomes.jbrowse.org](/docs/tutorials/genomes_pangenome) draws
-  any window of this graph from a hosted form, on the release's earlier 2.0
-  build
+  any window of this graph from a hosted form, from the same files and the same
+  build as the track below, so a session it opens has the graph track in it and
+  the plugin loaded
 
 The steps below build no graph file.
 [Preparing your own graph](/docs/tutorials/pangenome_prepare_graph) builds one
@@ -127,8 +128,13 @@ layouts, colors and menus on a smaller graph than this one.
 
 The route starts in a session holding hg38, its RefSeq genes and nothing of the
 pangenome. If your JBrowse already has hg38 with a gene track, open it there and
-skip to the [next step](#add-the-graph-track). Otherwise these two configs are
-the assembly and the gene track every figure on this page draws:
+skip to the [next step](#add-the-graph-track). With nothing installed, type
+`chr6:32,500,000-32,560,000` into the
+[hosted page's](/docs/tutorials/genomes_pangenome#drawing-a-window) **Draw the
+graph** box instead: the session it opens already holds the track the next step
+adds and the cut the step after makes, so pick up at
+[reading the cut](#reading-what-you-cut). Otherwise these two configs are the
+assembly and the gene track every figure on this page draws:
 
 ```json addassembly
 {

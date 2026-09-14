@@ -39,12 +39,12 @@ https://jbrowse.org/pangenome/hprc-grch38/config.json, whose tracks are tabix
 projections of the release 2 `sv.gfa` and the release's own variant callset:
 
 - the SV-resolution graph the projections are cut from:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/hprc-v2.0-mc-grch38.sv.gfa.gz
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.sv.gfa.gz
 - the segment and link indexes, the bubble file, the allele inventory and the
   bubble tier, with how each was built recorded beside them:
   https://jbrowse.org/demos/hprc/README.txt
 - the 464-haplotype callset, read straight off S3:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/hprc-v2.0-mc-grch38.wave.vcf.gz
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.wave.vcf.gz
 
 ## Two ways in
 
