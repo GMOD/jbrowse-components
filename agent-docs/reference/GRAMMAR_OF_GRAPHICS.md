@@ -225,8 +225,24 @@ The seams, named honestly:
   ([ADR-115](../architecture-decision-records/adr-115-one-mark-may-read-its-own-axis.md));
   colour has no equivalent, so two marks with two ramps still union nothing
   and each key is its own. A second independent mark is refused, the chrome
-  having one place to put the axis, and faceting beyond stacking on `row` is
-  still absent.
+  having one place to put the axis.
+- **The facet stage is held by the format-typed displays and not by the
+  grammar.** A row facet — partition the features on a categorical field,
+  stack one section per value, name each with a chip — is what the feature
+  display's "Group by..." (`plugins/canvas/src/LinearBasicDisplay/groupBy.ts`)
+  and the alignments display's (`plugins/alignments/src/shared/groupFeatures.ts`)
+  are, and the two hold it through one set of display-kit pieces: the key
+  order and the `MAX_GROUPS` cap (`groupKeys.ts`), the radio submenu
+  (`groupByMenu.ts`), the chips and dividers (`GroupLabelChips.tsx`), and the
+  collapsed and hidden sections with their key-space reset
+  (`GroupChipStateMixin.ts`). The multi-row display's `partitionField` is the
+  same partition with one fixed row per value and no chip. The mark display
+  has the layout half only: `stack`'s `groupby` packs each value set on its
+  own rows numbered from 0, so the sections overlap rather than stack, and
+  nothing draws a chip. A declared `facet` on `marks` would offset each
+  group's rows by the groups above it and read the chip row off the same
+  display-kit pieces — the guide already exists, and the step is the stack
+  transform with an offset, not a fourth partition.
 - **No conditional encoding.** Hover and selection are a guide over the
   painting, not a `condition` on a channel: a display names the lit
   instances and the chrome boxes their ink
