@@ -1,6 +1,6 @@
 ---
 name: land-the-agent-client-demo-videos
-description: three Claude Code shell takes are published and embedded on /docs/agents, so v5.0.0 ships with MCP shown running; what is parked is the visual verdict on those clips, the Chrome side-panel reshoot with its 90s turn threshold, and the Claude Desktop take that was never started — the harness and its operating notes are scripts/agent-demos/
+description: two Claude Code shell takes are published and embedded on /docs/agents, so v5.0.0 ships with MCP shown running; what is parked is the visual verdict on those clips, the Chrome side-panel reshoot with its 90s turn threshold, and the Claude Desktop take that was never started — the harness and its operating notes are scripts/agent-demos/
 ---
 
 # Land the agent client demo videos
@@ -8,28 +8,25 @@ description: three Claude Code shell takes are published and embedded on /docs/a
 Moved out of [TODO.md](../TODO.md) on 2026-09-02. The clips are live on the
 agents overview, which is the part the release turned on; the verdict on them,
 the side-panel reshoot and the Desktop take are polish the release does not
-wait for. The three app-side gaps the protein take exposed are being fixed
-separately and are tracked in `scripts/agent-demos/takes/protein.md`.
+wait for.
 
 MCP ships in v5.0.0 and three clients were wanted showing it running:
 Claude Code, Claude Desktop, the Chrome extension.
 
-## Claude Code over desktop MCP — four takes published, awaiting a verdict
+## Claude Code over desktop MCP — three takes published, awaiting a verdict
 
-The GEO ATAC take is published as `agent_geo_ratio_take1`. Beside it are three
+The GEO ATAC take is published as `agent_geo_ratio_take1`. Beside it are two
 shell-capable takes, each a real `claude -p` session with Bash beside the MCP
-tools: fold the transcript (HBB, ESMFold), two assemblies
+tools: two assemblies
 with no alignment (D. simulans against D. mauritiana), and the derivative allele
 (COLO829). Plans, verified numbers and rehearsal notes are
 `scripts/agent-demos/takes/*.md`; transcripts are beside them.
 
 The clips are in the media store (`website/media.lock`, `mcp/agent_*_take1`),
 registered in `externalClips`, and embedded at the top of
-`website/docs/agents.md`. What is left is the visual verdict, and three
-app-side gaps the protein take exposed, recorded at the bottom of
-`takes/protein.md`: ProteinView absent from the bundled `docs`, the live
-`applyLayoutSpec` taking `viewIds` where the spec `layout` takes indexes, and
-the connected genome view not being a layout index.
+`website/docs/agents.md`. What is left is the visual verdict. The ESMFold
+take was dropped on 2026-09-14: protein3d's AlphaFoldDB examples already show a
+structure beside a gene.
 
 ## The Chrome side panel take — ready to re-shoot
 

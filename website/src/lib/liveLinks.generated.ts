@@ -837,10 +837,6 @@ export const videoFrames: Record<
     "width": 1920,
     "height": 1028
   },
-  "mcp/agent_protein_take1": {
-    "width": 1920,
-    "height": 1222
-  },
   "mcp/agent_synteny_take1": {
     "width": 1920,
     "height": 1222

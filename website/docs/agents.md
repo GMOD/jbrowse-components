@@ -21,11 +21,9 @@ binned, smoothed over a window several bins wide.
 
 <Video src="/media/mcp/agent_geo_ratio_take1.mp4" caption="Asked to open hg38 at CDKN1A, add four GEO ATAC-seq bigWigs comparing nutlin against a vehicle control, derive a log2 nutlin-over-vehicle track, and test whether the gain is a normalization artifact. The agent put CDKN1A beside GAPDH and a gene desert: only CDKN1A holds a one-sided signal." />
 
-Three more with a shell beside the app, filmed against only the JBrowse window.
+Two more with a shell beside the app, filmed against only the JBrowse window.
 The captions are what the agent said and sent; only the questions were written
 in advance.
-
-<Video src="/media/mcp/agent_protein_take1.mp4" caption="Asked to open hg38 at HBB, fold the transcript's own translation with ESMFold, fold the sickle variant beside it, and say whether the fold changed. The agent translated the CDS in a shell, folded both, served the files and connected each structure to the gene." />
 
 <Video src="/media/mcp/agent_synteny_take1.mp4" caption="Asked to open two fly genomes side by side with no published alignment between them, add a whole-genome dotplot, and find the largest inversion. The agent ran minimap2 in the background, merged the two hosted configs, and read the answer off the alignment before navigating to it." />
 

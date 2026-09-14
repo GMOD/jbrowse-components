@@ -296,7 +296,7 @@ allows Bash and the file tools beside the MCP ones, for the takes whose point is
 work the app cannot do (an aligner, a fold, a consensus); `SYSTEM`, a function
 of the working directory, is appended to the system prompt, so the working
 directory and the pre-staged files are handed over off camera and the question
-on screen stays as short as a person would type it. The three shell takes are in
+on screen stays as short as a person would type it. The shell takes are in
 `takes/`, each with a `.md` beside it saying what was verified, what a good take
 does turn by turn, and what is still open. Pre-stage into `<outdir>/cwd` before
 running; the harness creates that directory and leaves what is in it.
