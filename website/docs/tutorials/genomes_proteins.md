@@ -107,7 +107,7 @@ hydrophobicity. The gear beside the dialog's **Launch** button opens **Launch
 settings**, whose side-by-side option puts the protein view beside the genome
 view.
 
-<Figure caption="A connected session on human TP53 (UniProt P04637), NCBI RefSeq and ClinVar beside the AlphaFold structure. A motif clicked on the protein's feature track selects its residues on the structure and bands the codons they came from across both genome tracks." src="/img/protein/connected.png" />
+<Figure caption="A connected session on human TP53 (UniProt P04637), NCBI RefSeq above the AlphaFold structure. A motif clicked on the protein's feature track selects its residues on the structure and bands the codons they came from on the gene." src="/img/protein/connected.png" />
 
 ### Other views the Launch menu builds
 

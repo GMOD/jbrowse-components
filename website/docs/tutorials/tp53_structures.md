@@ -12,9 +12,8 @@ tutorial_category: Transcriptomics & proteins
 The p53 protein has a predicted structure covering every residue and crystal
 structures covering the parts that fold. We open three of them in one view
 beside the _TP53_ gene, superposed and each mapped to the same transcript, then
-click a cancer hotspot on the crystal and read it back to its codon and its
-ClinVar entries. The protein3d plugin does the mapping; Mol\* draws the
-structures.
+click a cancer hotspot on the crystal and read it back to its codon. The
+protein3d plugin does the mapping; Mol\* draws the structures.
 
 ## Prerequisites
 
@@ -24,10 +23,10 @@ structures.
 
 ## Where the data comes from
 
-The hg38 config the links open carries NCBI RefSeq and ClinVar; everything about
-the protein arrives per structure from the services beside it.
+The hg38 config the links open carries NCBI RefSeq; everything about the protein
+arrives per structure from the services beside it.
 
-- hg38 with NCBI RefSeq and ClinVar:
+- hg38 with NCBI RefSeq:
   https://jbrowse.org/code/jb2/main/test_data/protein3d_config.json
 - the AlphaFold model of p53, UniProt P04637:
   https://alphafold.ebi.ac.uk/files/AF-P04637-F1-model_v6.cif
@@ -50,14 +49,13 @@ kinds beside a gene means answering the same question for each, which residue of
 the structure is which codon of the transcript, and the plugin answers it by
 aligning each structure's own sequence to the transcript's translation.
 
-[Open the three structures of TP53](https://jbrowse.org/code/jb2/main/?config=test_data/protein3d_config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22ProteinView%22%2C%22structures%22%3A%5B%7B%22uniprotId%22%3A%22P04637%22%7D%2C%7B%22pdbId%22%3A%221TUP%22%7D%2C%7B%22pdbId%22%3A%221YCR%22%7D%5D%2C%22transcriptId%22%3A%22NM_000546.6%22%2C%22zoomToBaseLevel%22%3Afalse%2C%22connectedView%22%3A%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C671%2C000-7%2C684%2C500%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%2C%22clinvar_ncbi_hg38%22%5D%7D%7D%5D%7D).
+[Open the three structures of TP53](https://jbrowse.org/code/jb2/main/?config=test_data/protein3d_config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22ProteinView%22%2C%22structures%22%3A%5B%7B%22uniprotId%22%3A%22P04637%22%7D%2C%7B%22pdbId%22%3A%221TUP%22%7D%2C%7B%22pdbId%22%3A%221YCR%22%7D%5D%2C%22transcriptId%22%3A%22NM_000546.6%22%2C%22zoomToBaseLevel%22%3Afalse%2C%22connectedView%22%3A%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C671%2C000-7%2C684%2C500%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%5D%7D%7D%5D%7D).
 The link is a session spec naming the gene's locus, its RefSeq transcript
 `NM_000546.6`, and three structures by id: a UniProt accession for the AlphaFold
 model and two PDB ids. The plugin resolves each id to a file, translates the
 transcript's CDS against hg38, aligns every structure to that translation, and
-superposes the structures with TM-align.
-
-<Figure src="/img/protein/tp53_three_structures.png" caption="TP53 on hg38 with NCBI RefSeq and ClinVar beside a protein view holding the AlphaFold model, 1TUP and 1YCR. Each structure has its own alignment panel over the shared Mol* canvas, where the two crystal fragments sit on the model's core and the model's tails run on past them." />
+superposes the structures with TM-align. The figures in the next two sections
+show that session.
 
 Each alignment panel puts the transcript's translation on the GENOME row and the
 structure's own sequence on the STRUCT row, with a residue ruler under them in
@@ -90,18 +88,17 @@ residue lights on the genome.
 
 ## Click a hotspot
 
-[Open the same session with R248 selected](https://jbrowse.org/code/jb2/main/?config=test_data/protein3d_config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22ProteinView%22%2C%22structures%22%3A%5B%7B%22uniprotId%22%3A%22P04637%22%7D%2C%7B%22pdbId%22%3A%221TUP%22%2C%22initialResidues%22%3A%7B%22start%22%3A248%2C%22end%22%3A248%7D%7D%2C%7B%22pdbId%22%3A%221YCR%22%7D%5D%2C%22transcriptId%22%3A%22NM_000546.6%22%2C%22zoomToBaseLevel%22%3Afalse%2C%22connectedView%22%3A%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C671%2C000-7%2C684%2C500%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%2C%22clinvar_ncbi_hg38%22%5D%7D%7D%5D%7D),
+[Open the same session with R248 selected](https://jbrowse.org/code/jb2/main/?config=test_data/protein3d_config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22ProteinView%22%2C%22structures%22%3A%5B%7B%22uniprotId%22%3A%22P04637%22%7D%2C%7B%22pdbId%22%3A%221TUP%22%2C%22initialResidues%22%3A%7B%22start%22%3A248%2C%22end%22%3A248%7D%7D%2C%7B%22pdbId%22%3A%221YCR%22%7D%5D%2C%22transcriptId%22%3A%22NM_000546.6%22%2C%22zoomToBaseLevel%22%3Afalse%2C%22connectedView%22%3A%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A7%2C671%2C000-7%2C684%2C500%22%2C%22tracks%22%3A%5B%22hg38-ncbiRefSeq%22%5D%7D%7D%5D%7D),
 or click residue 248 on the 1TUP panel's STRUCT row yourself: the ruler under
 the row and the transcript row above agree on the number, because 1TUP's authors
 numbered their construct the way UniProt numbers the whole protein.
 
-<Figure src="/img/protein/tp53_hotspot.png" caption="R248 selected on 1TUP: magenta on the crystal's DNA-contact loop, a band over its codon on NCBI RefSeq, and the ClinVar rows that fall inside the band. The AlphaFold model carries the same residue, so the hover reaches both structures." />
+<Figure src="/img/protein/tp53_hotspot.png" caption="NCBI RefSeq at TP53's R248 codon above a protein view holding the AlphaFold model, 1TUP and 1YCR, with R248 selected on 1TUP. The selection marks its column in 1TUP's alignment and bands the codon on the gene. 1TUP's rows stop where the crystallised core does, and 1YCR's peptide matches a short stretch near the transcript's start." />
 
 The selection is magenta on the crystal, where the residue sits in the loop that
-reaches into the DNA's minor groove, and a band on the genome tracks over the
-codon. The ClinVar rows inside the band are the substitutions at that codon.
-Hover one of them and the residue lights on both structures at once, since both
-map it; hover the intron beside the exon and nothing lights anywhere.
+reaches into the DNA's minor groove, and a band on the gene track over the
+codon. Hover the codon and the residue lights on both structures at once, since
+both map it; hover the intron beside the exon and nothing lights anywhere.
 
 ## The complex maps the right chain
 
@@ -114,7 +111,7 @@ The 1YCR panel's **Mapped chain** picker shows both. The plugin picked the
 peptide, whose alignment is a short exact match near the start of the transcript
 row; MDM2 is listed above it.
 
-<Figure src="/img/protein/tp53_mapped_chain.png" caption="1YCR's Mapped chain picker open. The p53 peptide, Chain B, is the mapped one; Chain A is MDM2." />
+<Figure src="/img/protein/tp53_mapped_chain.png" caption="The same session with 1YCR's Mapped chain picker open. Chain B, the p53 peptide, is the mapped one; Chain A above it is MDM2." />
 
 Switch the picker to Chain A. The alignment is recomputed against MDM2, and the
 GENOME row becomes a scatter of gapped fragments, since nothing in the
@@ -126,10 +123,11 @@ picker is the way back.
 ## Checking the hotspot against the sequence
 
 Back on the genome view, zoom into the band the R248 selection drew, down to
-base level. The codon under the band is `CGG`; the ClinVar rows over it are the
-R248Q and R248W entries, one changing the middle base and one the first. The
-transcript is on the minus strand, so the codon reads right to left on the
-reference track.
+base level, and turn on the reference sequence. The transcript is on the minus
+strand, so the codon under the band reads `CCG` left to right on the reference
+track, which is `CGG`, arginine, on the transcript. R248W and R248Q, the two
+commonest substitutions at the codon in tumours, change its first base and its
+middle one.
 
 ## See also
 

@@ -68,6 +68,9 @@ const APPLE3_MRNA = {
 
 const PROTEIN_LAUNCH_GENE_TRACK = 'hg38-ncbiRefSeqCurated'
 
+const NES_MOTIF =
+  '[data-testid="protein-feature-Motif"][data-feature-start="339"]'
+
 // TP53's own band, near the top of it: `longestCoding` draws one gene row, so a
 // centered right-click lands on empty canvas and opens the view's own menu with
 // no feature items on it.
@@ -648,112 +651,94 @@ export const featuresSpecs: ScreenshotSpec[] = [
     settleMs: 12000,
   },
 
-  // Connected genome + protein demo (TP53 / UniProt P04637). A single ProteinView
-  // spec entry creates and connects its own LinearGenomeView via the plugin's
-  // `connectedView` launch param, so the genome (NCBI RefSeq + ClinVar) and the
-  // AlphaFold structure load linked. This uses the short-form declarative launch:
-  // from just `uniprotId` + `transcriptId` the plugin derives the AlphaFold
-  // structure URL, resolves the transcript feature from the hg38-ncbiRefSeq track
-  // at `loc`, and translates its CDS to the protein sequence it aligns to the
-  // structure. PROTEIN3D_CONFIG loads protein3d against the local build, whose
-  // session has the `init` split API the side-by-side launch needs.
+  // Connected genome + protein demo (TP53 / UniProt P04637). One ProteinView
+  // spec entry creates its own LinearGenomeView through `connectedView`, and the
+  // plugin derives the AlphaFold structure, the transcript feature and its
+  // translation from `uniprotId` + `transcriptId`. PROTEIN3D_CONFIG loads
+  // protein3d from the plugin store's `latest/` path, so a release can change
+  // this figure with no commit here.
   //
-  // That config loads the plugin from the version-agnostic `latest/` path, like
-  // every other plugin-store URL in this tree, so a release can change this
-  // figure with no commit here — the weekly sweep is what surfaces it. A version
-  // pin is the worse trade: one held at 0.8.0 through four releases, so every
-  // capture drove a launcher from before protein3d returned its extendee from
-  // `LaunchView-ProteinView` and warned on every launch.
+  // Stacked rather than side by side: the genome half holds one gene track, and
+  // beside a structure it was a column of empty track area (review: "improve
+  // y-screen real estate"). ClinVar is gone for the same review, as noise next to
+  // the one thing the figure shows, a motif clicked on the protein lighting its
+  // codons and its residues.
   {
     mode: 'url',
     name: 'protein/connected',
-    // the two panes and nothing under them, from the run's own
-    // `CONTENT CLIPPED BELOW THE FOLD` at the track heights below
-    viewportHeight: 990,
+    viewportHeight: 1005,
     url: sessionSpec(PROTEIN3D_CONFIG, {
       views: [
         {
           type: 'ProteinView',
           uniprotId: 'P04637',
           transcriptId: 'NM_000546.6',
-          height: 540,
-          // place the protein view to the right of its connected genome view
-          // (left genome | right protein) via the workspaces split layout
-          sideBySide: true,
-          // keep the connected genome at the gene-wide view when a domain is
-          // clicked so the domain shows as a highlighted sub-region
+          height: 340,
+          sideBySide: false,
           zoomToBaseLevel: false,
-          // Passed through as the new LinearGenomeView's `init`, so a track
-          // entry here is an ordinary LGV one and takes a height. Which is what
-          // fills the left column: side by side, the genome view is as tall as
-          // the structure beside it, and at their default heights these two
-          // tracks used a third of that and left the rest page background. The
-          // ClinVar display is the one with more to show — it scrolls inside
-          // its own band at any height, and at this one the rows a reader is
-          // being invited to hover reach the bottom of the frame.
           connectedView: {
             assembly: 'hg38',
-            loc: 'chr17:7,671,000-7,684,500',
+            loc: 'chr17:7,668,000-7,688,000',
             tracks: [
-              { trackId: 'hg38-ncbiRefSeq', height: 150 },
-              { trackId: 'clinvar_ncbi_hg38', height: 560 },
+              {
+                trackId: 'hg38-ncbiRefSeq',
+                geneGlyphMode: 'longestCoding',
+                height: 70,
+              },
             ],
           },
         },
       ],
     }),
-    // Waits for both the structure load and the genome↔structure pairwise
-    // alignment to settle (this view has a connected transcript, so the test-id
-    // only flips once the alignment is computed). settleMs is the molstar raster
-    // paint beat at deviceScaleFactor 2, which can lag the model state a frame.
     readySelector: '[data-testid="protein-view-ready"]',
     readyTimeout: 90000,
     settleMs: 6000,
-    // On macOS, headless Chrome's swiftshader rasterizes the molstar 3D canvas as
-    // a featureless blob (no cartoon detail, no magenta motif highlight), so
-    // uncomment firefox: true when regenerating there. Headless Chrome on Linux
-    // renders it cleanly (the committed connected.png is such a capture), so the
-    // flag stays off by default.
-    // firefox: true,
-
-    // Click the TP53 nuclear export signal (UniProt "Motif" 339-350) on the
-    // protein feature track to drive the genome↔structure cross-highlight: the
-    // motif residues select in the 3D structure (molstar) and a highlight band
-    // is drawn over the connected LGV (NCBI RefSeq + ClinVar) at the mapped
-    // genome region. The Motif track is used here rather than the Region track:
-    // Region features (e.g. the 325-356 tetramerization region used previously)
-    // are long and overlap each other, whereas the five UniProt motifs are
-    // short and non-overlapping, so the clicked feature and its highlight read
-    // cleanly. Feature bars expose data-testid (protein3d ≥ v0.4.14), but
-    // "Motif" is shared by all five motifs, so data-feature-start disambiguates
-    // this one (12 residues, well within the alignment track's 649px
-    // horizontally-scrollable viewport). `scroll` centers the target in its
-    // scrollable ancestor before the click, since the motif starts past residue
-    // ~115, off the default-scrolled viewport.
+    // The TP53 nuclear export signal (UniProt Motif 339-350): short, and alone
+    // on its row, so the clicked bar and its band read cleanly. `scroll` centres
+    // it in the alignment panel's scroller first.
     actions: [
-      {
-        type: 'waitForSelector',
-        selector:
-          '[data-testid="protein-feature-Motif"][data-feature-start="339"]',
-      },
-      {
-        type: 'scroll',
-        selector:
-          '[data-testid="protein-feature-Motif"][data-feature-start="339"]',
-      },
-      {
-        type: 'click',
-        selector:
-          '[data-testid="protein-feature-Motif"][data-feature-start="339"]',
-      },
+      { type: 'waitForSelector', selector: NES_MOTIF },
+      { type: 'scroll', selector: NES_MOTIF },
+      { type: 'click', selector: NES_MOTIF },
       { type: 'delay', ms: 6000 },
     ],
-    // The click leaves the cursor on the motif, so protein3d's own tooltip sat
-    // over the feature rows beside it — including the bar that was clicked,
-    // which is the one thing in that panel the figure needs visible. Hidden at
-    // the shot rather than cleared with PARK_CURSOR, which would also drop
-    // whatever molstar is drawing off the hover.
     hideTooltip: true,
+    annotations: [
+      {
+        type: 'text',
+        text: 'Clicked: the nuclear export signal',
+        fontSize: 18,
+        leader: true,
+        anchor: { selector: NES_MOTIF },
+        dx: -260,
+        dy: -125,
+      },
+      {
+        type: 'text',
+        text: 'Its codons on the gene',
+        fontSize: 18,
+        leader: true,
+        anchor: {
+          track: 'hg38-ncbiRefSeq',
+          locus: 'chr17:7,670,650',
+          fracY: 0.3,
+        },
+        dx: 80,
+        dy: 10,
+      },
+      {
+        type: 'text',
+        text: 'Magenta: its residues on the structure',
+        fontSize: 18,
+        anchor: {
+          selector: '[data-testid="protein-view-molstar"]',
+          alignX: 'left',
+          alignY: 'top',
+          dx: 200,
+          dy: 30,
+        },
+      },
+    ],
   },
 
   // The other view the protein dialog builds, and the one the page describes in

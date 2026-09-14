@@ -285,24 +285,18 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     position: 'left',
   },
   genomes_proteins: {
-    // The structure itself, in the right-hand panel. Framing the whole panel
-    // lands on its sequence-alignment table and a hover tooltip; the folded
-    // ribbon is the one card in the set that isn't a genome browser.
-    //
-    // The page covers the alignment half too, and the alignment's own figure
-    // (genomes_msa/launch_sequence) is the weaker card of the two: cropped to
-    // 5:3 it is a strip of domain blocks over empty canvas, where this one is
-    // the only card in the set a reader can identify at thumbnail size.
+    // The structure itself, in the Mol* canvas under the alignment panel: the
+    // folded ribbon is the one card in the set that isn't a genome browser.
     src: 'protein/connected.png',
-    band: [0.48, 1],
-    xband: [0.56, 0.9],
+    band: [0.71, 1],
+    xband: [0.36, 0.64],
   },
   tp53_structures: {
-    // The canvas with the two crystal fragments on the model, the one frame on
-    // the page that says "three structures" without reading a panel.
-    src: 'protein/tp53_three_structures.png',
-    band: [0.48, 1],
-    xband: [0.56, 0.9],
+    // The canvas with the two crystal fragments on the model, the part of the
+    // frame that says "three structures" without reading a panel.
+    src: 'protein/tp53_hotspot.png',
+    band: [0.77, 1],
+    xband: [0.38, 0.64],
   },
   synteny_visualization: {
     // gene-level ribbons, not the near-empty dotplot the hand-made thumb used
