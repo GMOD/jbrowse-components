@@ -26,6 +26,14 @@ export const GROUP_LABEL_INSET_X = 4
 export const GROUP_LABEL_HEIGHT = 16
 
 /**
+ * The list key for a section; the ungrouped section's key is '', so its
+ * stable spelling lives here once.
+ */
+export function sectionKey(groupKey: string) {
+  return groupKey === '' ? 'ungrouped' : groupKey
+}
+
+/**
  * The name shown on a section's chip. A real grouped section always carries a
  * non-empty label, so this only falls back for the degenerate empty case.
  */

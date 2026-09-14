@@ -1,15 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
-import { Fragment } from 'react'
-
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
-import GroupLabelBox from '@jbrowse/display-kit/GroupLabelBox'
-import {
-  GROUP_LABEL_INSET_X,
-  groupChipTop,
-  groupSectionLabel,
-} from '@jbrowse/display-kit/groupLabelStyle'
+import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
@@ -182,31 +175,16 @@ function CanvasFeaturesSvgBody({
       {/* Last, so a section's name sits over the rows it labels, the twin of
         the on-screen GroupLabelsLayer. */}
       {overlays && model.showsGroupLabels ? (
-        <>
-          {model.groupSections.map((section, i) => {
-            const top = section.top - scrollY
-            const chipTop = groupChipTop(top, section.height, height)
-            return chipTop === undefined ? null : (
-              <Fragment key={section.key || 'ungrouped'}>
-                {i > 0 ? (
-                  <line
-                    x1={0}
-                    x2={canvasWidth}
-                    y1={top}
-                    y2={top}
-                    stroke={theme.palette.divider}
-                  />
-                ) : null}
-                <GroupLabelBox
-                  x={contentLeft + GROUP_LABEL_INSET_X}
-                  y={chipTop + 1}
-                  text={groupSectionLabel(section.label)}
-                  theme={theme}
-                />
-              </Fragment>
-            )
-          })}
-        </>
+        <GroupLabelBoxes
+          sections={model.groupSections.map(section => ({
+            ...section,
+            top: section.top - scrollY,
+          }))}
+          left={contentLeft}
+          width={canvasWidth}
+          canvasHeight={height}
+          theme={theme}
+        />
       ) : null}
     </>
   )

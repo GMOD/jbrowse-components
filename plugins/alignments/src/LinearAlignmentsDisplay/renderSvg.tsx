@@ -1,15 +1,8 @@
 /* eslint-disable react-refresh/only-export-components */
-import { Fragment } from 'react'
-
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
-import GroupLabelBox from '@jbrowse/display-kit/GroupLabelBox'
-import {
-  GROUP_LABEL_INSET_X,
-  groupChipTop,
-  groupSectionLabel,
-} from '@jbrowse/display-kit/groupLabelStyle'
+import { GroupLabelBoxes } from '@jbrowse/display-kit/GroupLabelBox'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 
 import { getMismatchContrastMap } from '../shared/util.ts'
@@ -18,17 +11,13 @@ import PileupBezierArcsSvg from './components/PileupBezierArcsSvg.tsx'
 import SashimiArcsSvg from './components/SashimiArcsSvg.tsx'
 import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
-import { bandScreenTop, sectionKey } from './components/sectionScreen.ts'
+import { bandScreenTop } from './components/sectionScreen.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
 
-import type { ScrollModel } from './components/sectionScreen.ts'
 import type { LinearAlignmentsDisplayModel } from './model.ts'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
-import type { Theme } from '@mui/material'
 import type React from 'react'
-
-type RenderSection = LinearAlignmentsDisplayModel['renderSections'][number]
 
 export async function renderSvg(
   model: LinearAlignmentsDisplayModel,
@@ -122,69 +111,18 @@ function AlignmentsSvgBody({
       ) : null}
       {overlays && model.showsGroupLabels ? (
         <GroupLabelBoxes
-          sections={screenSections}
+          sections={screenSections.map(s => ({
+            key: s.groupKey,
+            label: s.label,
+            top: s.coverageTop,
+            height: s.height,
+          }))}
           left={contentLeft}
           width={canvasWidth}
+          canvasHeight={scroll.canvasHeight}
           theme={theme}
-          scroll={scroll}
         />
       ) : null}
-    </>
-  )
-}
-
-// Group name boxes + the rules between sections, one per section. Rendered last
-// (highest z-order) so a group's label always sits on top of the
-// pileup/coverage/arcs it labels.
-//
-// The divider is the on-screen overlay's `classes.divider`: without it an
-// exported stack of lanes ran together, since the chip is the only other thing
-// marking where one group ends — the same drift `groupLabelStyle.ts` exists to
-// prevent for the chip itself.
-function GroupLabelBoxes({
-  sections,
-  left,
-  width,
-  theme,
-  scroll,
-}: {
-  sections: RenderSection[]
-  left: number
-  width: number
-  theme: Theme
-  scroll: ScrollModel
-}) {
-  return (
-    <>
-      {sections.map((section, i) => {
-        const chipTop = groupChipTop(
-          section.coverageTop,
-          section.height,
-          scroll.canvasHeight,
-        )
-        return (
-          <Fragment key={sectionKey(section.groupKey)}>
-            {i > 0 ? (
-              <line
-                x1={0}
-                x2={width}
-                y1={section.coverageTop}
-                y2={section.coverageTop}
-                stroke={theme.palette.divider}
-                strokeWidth={1}
-              />
-            ) : null}
-            {chipTop === undefined ? null : (
-              <GroupLabelBox
-                x={left + GROUP_LABEL_INSET_X}
-                y={chipTop + 1}
-                text={groupSectionLabel(section.label)}
-                theme={theme}
-              />
-            )}
-          </Fragment>
-        )
-      })}
     </>
   )
 }

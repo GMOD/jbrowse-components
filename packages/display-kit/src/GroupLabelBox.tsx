@@ -1,3 +1,5 @@
+import { Fragment } from 'react'
+
 import { measureText } from '@jbrowse/core/util'
 
 import {
@@ -5,16 +7,20 @@ import {
   GROUP_LABEL_FONT_SIZE,
   GROUP_LABEL_HEIGHT,
   GROUP_LABEL_ICON_SIZE,
+  GROUP_LABEL_INSET_X,
   GROUP_LABEL_PADDING_X,
   GROUP_LABEL_RADIUS,
+  groupChipTop,
+  groupSectionLabel,
+  sectionKey,
 } from './groupLabelStyle.ts'
 
+import type { GroupChipSection } from './GroupLabelChips.tsx'
 import type { Theme } from '@mui/material'
 
-// Static equivalent of the on-screen GroupLabelsOverlay chip (no
-// collapse/expand affordances — those are interactive-only). A background box
-// behind the text, not bare text, so the label stays legible over a busy
-// pileup/coverage background.
+// Static equivalent of the on-screen chip (no collapse/expand affordances —
+// those are interactive-only). A background box behind the text, not bare
+// text, so the label stays legible over a busy background.
 export default function GroupLabelBox({
   x,
   y,
@@ -53,5 +59,59 @@ export default function GroupLabelBox({
         {text}
       </text>
     </g>
+  )
+}
+
+/**
+ * The export's twin of `GroupLabelChips`: a name box per section and a rule
+ * at each section's top after the first, placed by the same `groupChipTop`.
+ * Rendered last, so a group's name sits over what it labels. Without the rule
+ * an exported stack ran together, the chip being the only other mark of where
+ * one group ends.
+ */
+export function GroupLabelBoxes({
+  sections,
+  left,
+  width,
+  canvasHeight,
+  theme,
+}: {
+  sections: readonly Pick<
+    GroupChipSection,
+    'key' | 'label' | 'top' | 'height'
+  >[]
+  left: number
+  width: number
+  canvasHeight: number
+  theme: Theme
+}) {
+  return (
+    <>
+      {sections.map((section, i) => {
+        const chipTop = groupChipTop(section.top, section.height, canvasHeight)
+        return (
+          <Fragment key={sectionKey(section.key)}>
+            {i > 0 ? (
+              <line
+                x1={0}
+                x2={width}
+                y1={section.top}
+                y2={section.top}
+                stroke={theme.palette.divider}
+                strokeWidth={1}
+              />
+            ) : null}
+            {chipTop === undefined ? null : (
+              <GroupLabelBox
+                x={left + GROUP_LABEL_INSET_X}
+                y={chipTop + 1}
+                text={groupSectionLabel(section.label)}
+                theme={theme}
+              />
+            )}
+          </Fragment>
+        )
+      })}
+    </>
   )
 }

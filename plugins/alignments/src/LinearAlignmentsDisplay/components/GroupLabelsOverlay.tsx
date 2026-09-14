@@ -1,24 +1,14 @@
-import { Fragment, useState } from 'react'
-
-import { ContextMenu } from '@jbrowse/core/ui'
-import { useGroupLabelStyles } from '@jbrowse/display-kit/groupLabelChipStyles'
-import {
-  groupChipTop,
-  groupSectionLabel,
-} from '@jbrowse/display-kit/groupLabelStyle'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { GroupLabelChips } from '@jbrowse/display-kit/GroupLabelChips'
+import { groupSectionLabel } from '@jbrowse/display-kit/groupLabelStyle'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import { observer } from 'mobx-react'
 
 import { laneExpandable } from '../lanes.ts'
-import { bandScreenTop, sectionKey } from './sectionScreen.ts'
+import { bandScreenTop } from './sectionScreen.ts'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
-import type { ContextMenuAnchor } from '@jbrowse/core/ui'
-import type React from 'react'
 
 // The second chip: what the group's height button does, says and looks like.
 // One place decides all three, because they have to describe the same action —
@@ -57,26 +47,15 @@ function groupHeightAffordance({
   }
 }
 
-// Inline section dividers + labels between stacked groups (in-track group-by).
-// Only rendered when grouping is active; ungrouped displays show nothing. The
-// labels sit at each section's coverage-band top, so they scroll with the stack
-// like the coverage they head (a lone section's coverage is sticky instead, which
-// `bandScreenTop` handles off `scrollModel.isGrouped`).
+// This display's lanes as chip sections: each chip sits at its section's
+// coverage-band top, so it scrolls with the stack like the coverage it heads
+// (a lone section's coverage is sticky instead, which `bandScreenTop` handles
+// off `scrollModel.isGrouped`).
 const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
   model,
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const { classes } = useGroupLabelStyles()
-  // The chip's right-click target, held as one value: the click point and which
-  // lane it landed on can't disagree, and `undefined` is the closed state. Local
-  // rather than on the model — nothing outside this overlay asks where a menu
-  // is, and the pileup's own context menu is a separate surface.
-  const [laneMenu, setLaneMenu] = useState<{
-    anchor: ContextMenuAnchor
-    groupKey: string
-    label: string
-  }>()
   if (!model.showsGroupLabels) {
     return null
   }
@@ -93,128 +72,63 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
   // way back would be the "Show..." menu row — offered, but a worse place to
   // land than simply not offering the action that empties the track.
   const canHideLane = renderSections.length > 1
-  const openLaneMenu = (
-    event: React.MouseEvent,
-    groupKey: string,
-    label: string,
-  ) => {
-    if (canHideLane) {
-      event.preventDefault()
-      setLaneMenu({
-        anchor: { clientX: event.clientX, clientY: event.clientY },
-        groupKey,
-        label,
-      })
-    }
-  }
   return (
-    <>
-      {renderSections.map((section, i) => {
-        const top = bandScreenTop(section.coverageTop, scroll)
-        // Cull and sticky-pin per `groupChipTop`, which the export shares.
-        const chipTop = groupChipTop(top, section.height, scroll.canvasHeight)
-        if (chipTop === undefined) {
-          return null
-        }
-        const label = groupSectionLabel(section.label)
+    <GroupLabelChips
+      canvasHeight={scroll.canvasHeight}
+      sections={renderSections.map(section => {
         // Off the section, not looked back up by its key: a `renderSections`
         // entry IS its lane, chip state included.
-        const { collapsed } = section
+        const { groupKey, label, collapsed } = section
         const hasOverride = section.heightOverridePx !== undefined
-        const heightButton =
-          canSizeGroupHeights &&
-          !collapsed &&
-          (hasOverride || laneExpandable(section))
-            ? groupHeightAffordance({
-                collapseGroupRows,
-                hasOverride,
-                featureNoun: model.featureNoun,
-              })
-            : undefined
-        return (
-          <Fragment key={sectionKey(section.groupKey)}>
-            {i > 0 ? <div className={classes.divider} style={{ top }} /> : null}
-            <div
-              className={classes.controls}
-              style={{ top: chipTop + 1 }}
-              data-testid="group-label-chip"
-            >
-              {showPileup ? (
-                <button
-                  type="button"
-                  className={classes.button}
-                  onClick={() => {
-                    model.toggleGroupCollapsed(section.groupKey)
-                  }}
-                  onContextMenu={event => {
-                    openLaneMenu(event, section.groupKey, label)
-                  }}
-                  title={
-                    collapsed
-                      ? 'Show this group’s pileup'
-                      : 'Collapse this group to coverage only'
-                  }
-                >
-                  {collapsed ? (
-                    <ChevronRightIcon className={classes.icon} />
-                  ) : (
-                    <ExpandMoreIcon className={classes.icon} />
-                  )}
-                  <span data-testid="group-label-text">{label}</span>
-                </button>
-              ) : (
-                <span
-                  className={classes.label}
-                  style={{ pointerEvents: canHideLane ? 'auto' : 'none' }}
-                  data-testid="group-label-text"
-                  onContextMenu={event => {
-                    openLaneMenu(event, section.groupKey, label)
-                  }}
-                >
-                  {label}
-                </span>
-              )}
-              {/* Restore a manually-sized group to the fit budget; otherwise a
-                  "show all" affordance only when reads were actually clipped by
-                  a cap this button can raise, so its presence signals reachable
-                  hidden reads. */}
-              {heightButton ? (
-                <button
-                  type="button"
-                  className={classes.button}
-                  onClick={() => {
-                    model.toggleGroupExpanded(section.groupKey)
-                  }}
-                  title={heightButton.title}
-                >
-                  <heightButton.Icon className={classes.icon} />
-                  {heightButton.text}
-                </button>
-              ) : null}
-            </div>
-          </Fragment>
-        )
-      })}
-      <ContextMenu
-        anchor={laneMenu?.anchor}
-        menuItems={
-          laneMenu
+        return {
+          key: groupKey,
+          label,
+          top: bandScreenTop(section.coverageTop, scroll),
+          height: section.height,
+          toggle: showPileup
+            ? {
+                collapsed,
+                title: collapsed
+                  ? 'Show this group’s pileup'
+                  : 'Collapse this group to coverage only',
+                onClick: () => {
+                  model.toggleGroupCollapsed(groupKey)
+                },
+              }
+            : undefined,
+          // Restore a manually-sized group to the fit budget; otherwise a
+          // "show all" affordance only when reads were actually clipped by a
+          // cap this button can raise, so its presence signals reachable
+          // hidden reads.
+          action:
+            canSizeGroupHeights &&
+            !collapsed &&
+            (hasOverride || laneExpandable(section))
+              ? {
+                  ...groupHeightAffordance({
+                    collapseGroupRows,
+                    hasOverride,
+                    featureNoun: model.featureNoun,
+                  }),
+                  onClick: () => {
+                    model.toggleGroupExpanded(groupKey)
+                  },
+                }
+              : undefined,
+          menuItems: canHideLane
             ? [
                 {
-                  label: `Hide "${laneMenu.label}"`,
+                  label: `Hide "${groupSectionLabel(label)}"`,
                   icon: VisibilityOffIcon,
                   onClick: () => {
-                    model.hideGroup(laneMenu.groupKey)
+                    model.hideGroup(groupKey)
                   },
                 },
               ]
-            : []
+            : undefined,
         }
-        onClose={() => {
-          setLaneMenu(undefined)
-        }}
-      />
-    </>
+      })}
+    />
   )
 })
 

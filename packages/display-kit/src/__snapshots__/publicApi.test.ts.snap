@@ -20,6 +20,7 @@ exports[`display-kit public surface pins the subpath exports 1`] = `
   "./FetchMixin",
   "./GlobalFetchMixin",
   "./GroupLabelBox",
+  "./GroupLabelChips",
   "./HeightModeMixin",
   "./KeyedFetchMixin",
   "./LegendMixin",
