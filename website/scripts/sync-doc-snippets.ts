@@ -161,7 +161,10 @@ const stale: string[] = []
 // page — the thing a reader pastes into MCP, not code we ship — so there is no
 // source to point an include at. Lower this the moment a tested `jb` example
 // fixture exists, which would buy back the whole page at once.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '41')
+//
+// 41 -> 42 on 2026-09-14: the two-genome session spec recipe (6774300bb4), the
+// same kind of run_javascript body.
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '42')
 let unIncluded = 0
 const byPage: [string, number][] = []
 
