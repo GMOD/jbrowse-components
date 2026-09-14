@@ -110,7 +110,7 @@ and its route keeps its ink while every other node and link fades; a readout
 beside the legend gives the walk's length through the window and how it compares
 to the reference walk.
 
-<Figure caption="The eight-haplotype cut under the same window's genes, bubble and rGFA segments, with HG00133 picked in the Walk dropdown. Its private copies are the loop drawn at full ink, the other haplotypes' loops fade, and the readout states its excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
+<Figure caption="The eight-haplotype cut under the same window's genes, bubble and rGFA segments, with HG00133 picked in the Walk dropdown. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
 
 Lifting GRCh38 is the check. The reference takes no loop, so nothing but the
 backbone stays lit, and its readout compares the walk to itself. Lifting each of

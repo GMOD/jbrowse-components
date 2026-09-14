@@ -268,7 +268,7 @@ haplotype's private run of kringle copies is a thin loop. The **Walk** dropdown
 lifts one haplotype out: its route keeps its ink, the rest fades, and a readout
 gives its length against the reference walk.
 
-<Figure caption="The KIV-2 array cut from the GBZ for eight haplotypes, force-directed under the same window's genes, bubble and rGFA segments, with HG00133's walk lifted. Its private copies are the loop drawn at full ink, the other haplotypes' loops fade, and the readout states its excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
+<Figure caption="The KIV-2 array cut from the GBZ for eight haplotypes, force-directed under the same window's genes, bubble and rGFA segments, with HG00133's walk lifted. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
 
 [Part 4](/docs/tutorials/pangenome_graph_reading) walks through that drawing
 from the rGFA window to the lifted haplotype.
