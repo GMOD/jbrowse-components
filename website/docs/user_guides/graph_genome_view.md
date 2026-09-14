@@ -151,7 +151,7 @@ The `uri` is the shared prefix, from which the adapter resolves `.segs.bed.gz`,
 `.links.bed.gz` and both `.tbi` files. These stable names are PanSN
 (`K12#1#chr`), and their sample prefix is already the assembly name, so the
 track needs no `assemblyNameToPanSN` mapping. The
-[HPRC tutorial](/docs/tutorials/pangenome_hprc#load-the-graph) needs one,
+[HPRC tutorial](/docs/tutorials/pangenome_hprc#add-the-graph-track) needs one,
 because that graph calls the reference `GRCh38` while the assembly is `hg38`.
 
 Then **Track menu → Launch → Graph genome view (this region)** cuts a subgraph
@@ -253,8 +253,8 @@ Both reference-anchored modes need a backbone, from rGFA tags or from a
 reference path. A graph with neither greys them out. Force-directed is then the
 only layout available, and it draws the classic Bandage picture with alternate
 alleles as bubbles. The
-[MHC figure](/docs/tutorials/pangenome_hprc#open-a-locus-as-a-graph) shows it
-beside a linear view.
+[MHC figure](/docs/tutorials/pangenome_hprc#cut-the-window-out-as-a-graph) shows
+it beside a linear view.
 
 **Rank** is minigraph's `SR` tag, and it counts build order. Rank 0 is the first
 assembly on the command line, rank 1 is sequence first added with the second,

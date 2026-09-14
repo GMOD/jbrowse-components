@@ -85,7 +85,7 @@ graph reaches back the same way: hovering a node bands its interval across the
 lanes above, right-clicking one offers **Highlight in hg38** and **Open in
 hg38**, and the view's own **Launch** menu reopens the whole window as a linear
 view. The HPRC tutorial walks
-[a node back to its coordinates](/docs/tutorials/pangenome_hprc#from-a-node-back-to-a-coordinate).
+[a node back to its coordinates](/docs/tutorials/pangenome_hprc#from-the-allele-back-to-grch38).
 
 ## Wider than 150 kb
 

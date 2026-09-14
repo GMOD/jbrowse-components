@@ -81,7 +81,7 @@ addressable, so a locus is a ranged read rather than a download:
 The `uri` shorthand resolves the sibling `.tai`, which downloads once. The same
 alignment is published as a 53 GB MAF under `v2.1/`, which `BgzipMafAdapter`
 reads with the same shorthand, and the v2.0 TAF is the build
-[the graph](/docs/tutorials/pangenome_hprc#load-the-graph) and
+[the graph](/docs/tutorials/pangenome_hprc#add-the-graph-track) and
 [the callset](/docs/tutorials/pangenome_hprc_part2#the-variant-callset) come
 from. The figure below puts all three products on one axis.
 
