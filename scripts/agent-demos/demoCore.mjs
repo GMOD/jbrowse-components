@@ -128,20 +128,10 @@ export function capture(session) {
   }
 }
 
-// A send-keys per character costs a process spawn, which on a busy machine is
-// ~300ms rather than the perCharMs below — a 340-character prompt then takes
-// most of two minutes, and typing is the one thing the encoder cannot collapse
-// because every frame differs. Small chunks keep the typed-out look and cut the
-// spawns by CHUNK.
-const CHUNK = 4
-
 export async function typePrompt(session, text, perCharMs = 28) {
-  // `--` or a chunk starting with `-` is a flag: "K-12 MG1655" chunks to
-  // `-12 ` at CHUNK 4 and tmux exits on `unknown flag -1`, taking the take
-  // with it four seconds into turn one
-  for (let i = 0; i < text.length; i += CHUNK) {
-    tmux('send-keys', '-t', session, '-l', '--', text.slice(i, i + CHUNK))
-    await delay(perCharMs * CHUNK)
+  for (const char of text) {
+    tmux('send-keys', '-t', session, '-l', '--', char)
+    await delay(perCharMs)
   }
   await delay(400)
   tmux('send-keys', '-t', session, 'Enter')

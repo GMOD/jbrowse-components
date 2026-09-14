@@ -458,13 +458,12 @@ export function placeWindow(frame) {
        end tell`)
 }
 
-export async function typePrompt(win, text, perChunkMs = 90) {
+export async function typePrompt(win, text, perCharMs = 28) {
   await click(...at(win, COMPOSER(win)))
   await delay(600)
-  const chunk = 4
-  for (let i = 0; i < text.length; i += chunk) {
-    execFileSync(helper('inputtool'), ['type', text.slice(i, i + chunk)])
-    await delay(perChunkMs)
+  for (const char of text) {
+    execFileSync(helper('inputtool'), ['type', char])
+    await delay(perCharMs)
   }
   await delay(500)
   key(RETURN)
