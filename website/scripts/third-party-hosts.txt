@@ -16,3 +16,4 @@ ftp-trace.ncbi.nlm.nih.gov
 hgdownload.soe.ucsc.edu
 s3-us-west-2.amazonaws.com
 s3.amazonaws.com
+zenodo.org
