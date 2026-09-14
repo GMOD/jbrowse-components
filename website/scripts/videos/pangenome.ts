@@ -584,10 +584,10 @@ export const pangenomeVideos: VideoSpec[] = [
   // else, and the first thing it does is put HPRC's graph into the session
   // through the form a reader would use.
   //
-  // It opens pangenome_hprc rather than sitting in the section it illustrates,
-  // and it is the only clip on that page: the sections it walks through are
-  // "Load the graph", "Open a locus as a graph", "The Layout dropdown" and
-  // "From a node back to a coordinate", which is most of the page's working
+  // It sits under "Cut the window out as a graph" on pangenome_hprc and is one
+  // of two clips on that page: the sections it walks through are "Add the graph
+  // track", "Cut the window out as a graph", "Lay it out on GRCh38 coordinates"
+  // and "From the allele back to GRCh38", which is most of the page's working
   // route. A second clip of the Layout dropdown alone stood in that third
   // section until this one existed, and it was the same subgraph making the
   // same move a screen further down.
