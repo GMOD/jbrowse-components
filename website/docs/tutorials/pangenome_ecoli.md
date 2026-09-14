@@ -1057,10 +1057,11 @@ The figure keeps the same interval in K12 coordinates above the graph. The gene
 lane names the element (_insH21_, the IS5 transposase), and the broken line in
 the drawing is the deletion edge.
 
-<Figure caption="The IS5 bubble cut as a file, so its P lines survive: the interval in K12 coordinates above, the bubble with the strain paths drawn below. Four strokes run along the broken deletion edge, and the missing one is K12; the bubble's halo names it and its chip names the one strain whose route carries the element." src="/img/pangenome/pggb_haplotype_paths.png" />
+<Figure caption="The IS5 bubble cut as a file, so its P lines survive: the interval in K12 coordinates above, the bubble with the strain paths drawn below. Four strokes run along the deletion edge, and the missing one is K12, whose stroke alone runs along the element's node." src="/img/pangenome/pggb_haplotype_paths.png" />
 
 The paths do more than colour. With them in the file the view derives the bubble
-itself and labels each route through it for the strains that take it, and the
+itself and labels each route through it for the strains that take it (off in the
+figure, under **Mark bubbles**, where the labels stacked over the loop), and the
 **Walk** dropdown lifts one strain's path out of the drawing with a readout of
 its length against the reference path. The
 [HPRC part 4](/docs/tutorials/pangenome_graph_reading) page does the same with

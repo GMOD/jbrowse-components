@@ -2098,6 +2098,10 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
           colorScheme: 'grey',
           referencePath: 'K12',
           drawPaths: true,
+          // No halos or route chips: the IS5 bubble carried a halo label, a
+          // route chip, a node label and an arc label for one 1.2 kb event,
+          // stacked over the loop the strokes colour.
+          showBubbles: false,
         },
       ],
     }),
@@ -2114,6 +2118,17 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     // css px, from the run's own report
     viewportHeight: 980,
     hideTooltip: true,
+    annotations: [
+      {
+        type: 'text',
+        text: 'insH21, K12 only',
+        fontSize: 18,
+        leader: true,
+        anchor: { view: 1, graphNode: '5' },
+        dx: 30,
+        dy: 62,
+      },
+    ],
   },
   // pangenome/pggb_collapsed_repeat was here and is RETIRED (review:
   // "unfortunately not interesting screenshot"). It drew the rRNA cut
