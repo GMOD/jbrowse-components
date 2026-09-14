@@ -1,14 +1,15 @@
 ---
 title: Mark display
 description:
-  Drawing bars, points and spans from the fields of a feature, alignments or
-  variant track with LinearMarkDisplay, whose picture is an encoding declared in
-  config
+  A grammar of graphics over a feature, alignments or variant track, where
+  LinearMarkDisplay draws the bars, points and spans its config declares
 guide_category: Track types
 ---
 
-`LinearMarkDisplay` goes on a `FeatureTrack`, an `AlignmentsTrack` or a
-`VariantTrack` and draws whatever its `marks` list declares — a `bar`, `point`
+`LinearMarkDisplay` is a grammar of graphics over a track, in the sense of
+Vega-Lite or ggplot: a picture is declared as marks, encodings and transforms
+rather than drawn by code. It goes on a `FeatureTrack`, an `AlignmentsTrack` or
+a `VariantTrack` and draws whatever its `marks` list declares — a `bar`, `point`
 or `span` per entry, each with an `encoding` naming which feature fields feed
 it, a `transform` list that can bin, count, stack or measure coverage before it,
 and a zoom range it draws in. A BED score column becomes a bar chart with one
