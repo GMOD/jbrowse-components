@@ -335,10 +335,10 @@ duplication-type, and parallel an inversion.
 Zoomed to the kilobase holding the junctions, the two inserts are the same width
 as the arms either side. Against hg38 every split read stops at a junction, and
 the truth set has a validated call at each place they stop. Realigned against
-the derivative, the same reads cross all four junctions without clipping. They
-are the reads the consensus was polished from, so that shows they agree with
-each other; the truth set, called from other platforms, is the independent
-check.
+the derivative, most of the same reads cross all four junctions in one
+alignment. They are the reads the consensus was polished from, so that shows
+they agree with each other; the truth set, called from other platforms, is the
+independent check.
 
 Each hg38 window runs past the segment the allele takes, so the bare reference
 either side of the reads is what this allele leaves behind. That lane draws

@@ -69,12 +69,14 @@ Supporting evidence, all measured rather than eyeballed:
 - 29 tumour reads span all three loci; the longest is 57,134 bp
 - 0 of 115 reads at the same locus in the matched normal carry multi-hop
   alignments, which is what makes it somatic
-- realigned to the derivative, every one of the 29 has an alignment crossing
-  all four junctions. That is agreement with a consensus these reads polished,
-  not independent evidence. 19 of them also split at contig 32,275, where the
-  fold-back's inverted copy of chr3 begins: a read whose return arm runs past the
-  contig's end aligns that arm onto the forward copy, so those bases count twice
-  left of 32,275 and depth reads ~43x there against ~19x right of it
+- realigned to the derivative, 25 of the 29 have one alignment crossing all
+  four junctions. That is agreement with a consensus these reads polished, not
+  independent evidence. 18 of them split at contig 32,275, where the fold-back's
+  inverted copy of chr3 begins: a read whose return arm runs past the contig's
+  end aligns that arm onto the forward copy, so those bases count twice left of
+  32,275 and depth reads ~43x there against ~19x right of it. Three of the 18
+  also split at 33,126, the return junction, so "none clips at a junction" does
+  not hold at the whole-allele scale
 
 **K562** `BCR--ABL1` is called by DepMap's STAR-Fusion (short-read RNA-seq) at
 `chr22:23,290,413 -> chr9:130,854,064`, and an ENCODE Iso-Seq read splits at

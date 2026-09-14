@@ -949,13 +949,12 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   // bp of zoom comes out of chr3.
   //
   // No realigned-read lane on the allele. derive realigns only the reads that
-  // span every locus, and 19 of those 29 split at derivative 32,275, where the
+  // span every locus, and 18 of those 29 split at derivative 32,275, where the
   // fold-back's inverted copy of chr3 begins: a read whose return arm runs past
   // the contig's end aligns that arm onto the forward copy instead, so the
   // same bases count twice left of 32,275. The lane's coverage step was once
   // read as the intact homolog's reads stopping, which no read in that BAM can
-  // be. derivative_inserts carries the realigned reads at base scale, where
-  // they cross all four junctions.
+  // be. derivative_inserts carries the realigned reads at base scale.
   {
     mode: 'url',
     name: 'cancer_sv/derivative_synteny',
@@ -1066,7 +1065,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
   // The same reconstruction at the scale of the stitching. Above, the tumour's
   // split reads against hg38 stop at each junction, and the validated calls
   // sit where they stop; below, the spanning reads realigned to derive's
-  // contig cross all four junctions. That realignment checks that the reads
+  // contig mostly cross all four junctions. That realignment checks that the reads
   // agree with the consensus they were polished into, so the independent
   // evidence is the truth-set lane, not the lane under the allele.
   {
