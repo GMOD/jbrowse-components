@@ -733,10 +733,7 @@ export const HPRC_SEGMENTS_TRACK_JSON = `{
     "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38",
     "assemblyNameToPanSN": { "hg38": "GRCh38" }
   },
-  "displayDefaults": {
-    "color": "jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'",
-    "showLabels": "none"
-  }
+  "displayDefaults": { "showLabels": "none" }
 }`
 
 // The locus the tour navigates to before it launches a graph, and the window

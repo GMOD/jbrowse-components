@@ -372,8 +372,11 @@ its schemes are described here:
 - **Depth** is how many paths walk each segment, which is core-versus-accessory
   at the segment level.
 
-To paint a segments track in the same colors as the graph, put the matching
-expression on the track. Reference position, over the 50 kb window from
+A graph cut from a segments track paints that track in the same ramp as it
+opens, over the window it was cut from, and moves the ramp with it when the cut
+changes. So a lane and the graph under it share a hue with nothing set. A hosted
+config that wants the lane painted before any graph is cut puts the matching
+expression on the track itself. Reference position, over the 50 kb window from
 4,050,000 that the figures above are cut from:
 
 ```json addtrack

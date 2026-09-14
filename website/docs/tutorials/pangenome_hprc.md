@@ -144,14 +144,11 @@ files:
     "uri": "https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38",
     "assemblyNameToPanSN": { "hg38": "GRCh38" }
   },
-  "displayDefaults": {
-    "color": "jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'",
-    "showLabels": "none"
-  }
+  "displayDefaults": { "showLabels": "none" }
 }
 ```
 
-Change these three fields to load a different graph:
+Change these two fields to load a different graph:
 
 - **`uri` names a prefix.** The adapter appends `.segs.bed.gz` and
   `.links.bed.gz` and reads the `.tbi` beside each, so one string points at the
@@ -159,15 +156,17 @@ Change these three fields to load a different graph:
 - **`assemblyNameToPanSN` maps your assembly name to the name the graph uses.**
   The session calls the reference `hg38`, and the graph calls it
   `GRCh38#0#chr6`. JBrowse cannot infer the sample part of that name.
-- **`color`** paints each segment in the graph view's **Stable rank** colors, so
-  a segment has the same color in both panels. `showLabels` is off because a
-  segment's name is its GFA id.
+
+`showLabels` is off because a segment's name is its GFA id. Nothing sets a
+color: cutting a graph from the lane paints the lane in the graph's own colors,
+red at the start of the cut window to magenta at its end, so a block above and
+its node below share a hue.
 
 The clip below starts by adding the track. It then runs the route's first four
 steps on the MHC class II window. That window holds too many nodes to label the
 way the C4 figure [above](#the-route-end-to-end) is labelled.
 
-<Video src="/media/pangenome/hprc_end_to_end.mp4" caption="HPRC release 2's graph added to an hg38 session and then read: the track added through Open track... → Add pangenome graph track, the MHC class II window cut as a subgraph, that subgraph laid out on GRCh38 coordinates, and one allele's interval marked in the linear view above it." />
+<Video src="/media/pangenome/hprc_end_to_end.mp4" caption="HPRC release 2's graph added to an hg38 session and then read: the track added through Open track... → Add pangenome graph track, the MHC class II window cut as a subgraph and the lane above taking the graph's colors, that subgraph laid out on GRCh38 coordinates, and one allele's interval marked in the linear view above it." />
 
 The track draws each segment at the position its tags give, so the GRCh38
 backbone tiles the reference. We built both files. One command over any rGFA
@@ -229,7 +228,7 @@ The [guide](/docs/user_guides/graph_genome_view#three-layouts) sets out what the
 five modes put on each axis. Here is the same MHC class II window drawn in two
 of them:
 
-<Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it, both colored by reference position, red to magenta across the window, with alleles charcoal. Left, force-directed, with the node's right-click menu open on Highlight in hg38. Right, anchored: every x is a GRCh38 coordinate, the reference row is rank 0 at the top, each lower row is one stable rank, and each allele hangs below the point it attaches at; the ringed dashed arc is a deletion, drawn as a jump along the reference row." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
+<Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it, both colored by reference position, red to magenta across the window, with alleles charcoal. Left, force-directed, with the node's right-click menu open on Highlight in hg38. Right, anchored: every x is a GRCh38 coordinate, the reference row is at the top, each lower row is one rank (the order minigraph added the assembly that first contributed that sequence), and each allele hangs below the point it attaches at; the ringed dashed arc is a deletion, drawn as a jump along the reference row." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
 
 Both halves ring the allele that [the route](#the-route-end-to-end) follows, and
 the right-click menu on the left is open on that allele. The anchored half
@@ -274,7 +273,7 @@ a tube. Missing sequence is an edge, drawn dashed and near-black, outside the
 color ramp. Read a deletion on the [anchored layout](#the-layout-dropdown).
 There x is GRCh38 bp, so the arc spans exactly the sequence it removes.
 
-<Figure caption="The complement factor H cluster on chr1: two HPRC haplotypes aligned to GRCh38, above the same window as an anchored graph. In the synteny view the pink ribbons are the alignment between each haplotype and hg38, and the ribbon narrows where a haplotype has nothing to align, which for HG01109 is the stretch holding CFHR3 and CFHR1. In the graph, the reference row is at the top in reference-position colors, each lower row one stable rank with its alleles as charcoal nodes haloed as bubbles, and the dashed arc under the reference row spans the gap that removes both genes." src="/img/pangenome/hprc_cfhr_deletion.png" />
+<Figure caption="The complement factor H cluster on chr1: two HPRC haplotypes aligned to GRCh38, above the same window as an anchored graph. In the synteny view the pink ribbons are the alignment between each haplotype and hg38, and the ribbon narrows where a haplotype has nothing to align, which for HG01109 is the stretch holding CFHR3 and CFHR1. In the graph, the reference row is at the top in reference-position colors, each lower row one rank (the order minigraph added the assembly that first contributed that sequence) with its alleles as charcoal nodes haloed as bubbles, and the dashed arc under the reference row spans the gap that removes both genes." src="/img/pangenome/hprc_cfhr_deletion.png" />
 
 Hovering an edge gives the interval and the bp it removes. An edge carries no
 sequence, so it names no donor haplotype and opens only on GRCh38. The haplotype
