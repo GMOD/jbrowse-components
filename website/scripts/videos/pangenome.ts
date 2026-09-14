@@ -174,26 +174,49 @@ const {
 
 // What the HPRC tour drives, named here because a menu label and a testid read
 // as noise inline and each has a reason to be the one it is.
-const SEGMENTS_TRACK = 'hprc_minigraph_segments'
-const PASTE_WORKFLOW = 'Add track from pasted JSON'
-const PASTE_BOX = 'textarea[placeholder^="Paste track config"]'
+const GRAPH_WORKFLOW = 'Add pangenome graph track'
+const URL_INPUT = '[data-testid="urlInput"]'
+const SAMPLE_INPUT = '[data-testid="graph-sample-input"]'
+const TRACK_NAME_INPUT = '[data-testid="graph-track-name-input"]'
 const HIGHLIGHT_ITEM = 'Highlight in hg38'
 
+// The form mints the trackId from the name (`makeTrackId`: the slug plus a
+// timestamp), so a tour finds the track it added by the slug alone.
+function formTrackSlug(json: string) {
+  const { name } = JSON.parse(json) as { name: string }
+  return name.trim().toLowerCase().replaceAll(' ', '_')
+}
+
+const formTrackMenu = (json: string) =>
+  `[data-testid="track_menu_icon"][data-trackid^="${formTrackSlug(json)}-"]`
+
+const formDisplayReady = (json: string) =>
+  `[data-display-id^="${formTrackSlug(json)}-"][data-display-id$="-LinearBasicDisplay"][data-display-phase="ready"]`
+
 // GETTING A GRAPH INTO A SESSION, which is the opening of all three graph tours
-// and one route rather than three: **File → Open track... → Add track from
-// pasted JSON**, the config, **Submit**. Written once so the three pages cannot
+// and one route rather than three: **File → Open track... → Add pangenome graph
+// track**, the form, **Submit**. Written once so the three pages cannot
 // document three different ways in, which is the failure a reader hits hardest
 // -- following a route on one page and finding the labels renamed on the next.
+//
+// Every field is read off the page's own fence (check-paste-configs holds the
+// two texts together), so what the tour types is what the page prints.
 //
 // It ends AT Submit rather than after it: `finishAddTrack` dismisses the widget
 // itself, so the drawer closing is the app's answer, and what to wait on for the
 // track landing is the caller's own display id.
-function pasteTrackSteps(json: string): VideoStep[] {
+function addGraphTrackSteps(json: string): VideoStep[] {
+  const conf = JSON.parse(json) as {
+    name: string
+    assemblyNames: string[]
+    adapter: { uri: string; assemblyNameToPanSN?: Record<string, string> }
+  }
+  const sample = conf.adapter.assemblyNameToPanSN?.[conf.assemblyNames[0]!]
   return [
     {
       type: 'click',
       text: 'File',
-      say: 'Add the graph track by pasting its config',
+      say: 'Add the graph track from Open track...',
       hold: 700,
     },
     { type: 'waitForText', text: 'Open track...' },
@@ -207,22 +230,30 @@ function pasteTrackSteps(json: string): VideoStep[] {
       text: 'Add a track from file or URL',
       hold: 700,
     },
-    { type: 'waitForText', text: PASTE_WORKFLOW },
-    { type: 'click', text: PASTE_WORKFLOW },
-    { type: 'waitForSelector', selector: PASTE_BOX },
-    // OFF CAMERA, because what a reader does here is paste. `type` sends the
-    // config a keystroke at a time through a controlled MUI field, which is both
-    // slower than a paste and a different action from the one being documented;
-    // cutting it leaves the box empty, then full, which is what pasting looks
-    // like. The caption from the step above stands through it.
-    { type: 'type', selector: PASTE_BOX, value: json, cut: true },
-    // the filled box, held long enough to be read as the page's own block
-    { type: 'delay', ms: 2600 },
+    { type: 'waitForText', text: GRAPH_WORKFLOW },
+    { type: 'click', text: GRAPH_WORKFLOW },
+    { type: 'waitForSelector', selector: URL_INPUT },
+    {
+      type: 'type',
+      selector: URL_INPUT,
+      value: `${conf.adapter.uri}.segs.bed.gz`,
+    },
+    ...(sample
+      ? [{ type: 'type', selector: SAMPLE_INPUT, value: sample } as VideoStep]
+      : []),
+    {
+      type: 'type',
+      selector: TRACK_NAME_INPUT,
+      value: conf.name,
+      clear: true,
+    },
+    // the filled form, held long enough to be read against the page's own block
+    { type: 'delay', ms: 2000 },
     { type: 'click', text: 'Submit' },
   ]
 }
 
-// NARROWING BY TYPING, which every paste tour does next and none of them could
+// NARROWING BY TYPING, which every form tour does next and none of them could
 // skip. The drawer took ~400 px off the linear view while it was open and an LGV
 // keeps its bp-per-pixel across a resize, so the window standing once the widget
 // dismisses is wider than the one the session opened at -- and a launch reads
@@ -244,11 +275,11 @@ function navigateSteps(window: string): VideoStep[] {
 // THE LAUNCH, off the segments lane's own menu: the cascade whose existence is
 // the point of indexing the graph this way, since the item appears for any track
 // whose adapter can cut a subgraph and needs no graph track in the view.
-function launchGraphSteps(trackId: string): VideoStep[] {
+function launchGraphSteps(menu: string): VideoStep[] {
   return [
     {
       type: 'click',
-      selector: trackMenu(trackId),
+      selector: menu,
       say: 'Cut the window on screen out as a subgraph',
       hold: 700,
     },
@@ -262,7 +293,11 @@ function launchGraphSteps(trackId: string): VideoStep[] {
   ]
 }
 const GENES_READY = displayReady('hg38_ncbiRefSeq_ucsc-LinearBasicDisplay')
-const SEGMENTS_READY = displayReady(`${SEGMENTS_TRACK}-LinearBasicDisplay`)
+const HPRC_FORM_READY = formDisplayReady(HPRC_SEGMENTS_TRACK_JSON)
+const PGGB_FORM_READY = formDisplayReady(PGGB_SEGMENTS_TRACK_JSON)
+const CACTUS_FORM_READY = formDisplayReady(
+  cactusVideoFixtures.segmentsTrackJson,
+)
 // The two E. coli pages open on K12's genes and nothing else, and each waits on
 // its own pasted lane afterwards. A pasted config with no `displayId` gets
 // `<trackId>-<displayType>` (packages/core/src/util/tracks.ts), which is the one
@@ -270,9 +305,6 @@ const SEGMENTS_READY = displayReady(`${SEGMENTS_TRACK}-LinearBasicDisplay`)
 const K12_GENES_READY = displayReady('K12_genes-LinearBasicDisplay')
 const PGGB_SEGMENTS_READY = displayReady(
   `${segmentsTrackId}-LinearBasicDisplay`,
-)
-const CACTUS_SEGMENTS_READY = displayReady(
-  `${cactusVideoFixtures.segmentsTrackId}-LinearBasicDisplay`,
 )
 // Sample rows have arrived: the labels, not just the toolbar, since the layout
 // runs after the graph loads and the toolbar is up before there is a row to
@@ -310,7 +342,7 @@ export const pangenomeVideos: VideoSpec[] = [
   {
     name: 'pangenome/pggb_subgraph_launch',
     description:
-      "A pggb graph from a K12 session that has none of it: paste the page's track config, narrow to the IS5 element, and cut the window on screen as a subgraph",
+      "A pggb graph from a K12 session that has none of it: add the page's track through the graph form, narrow to the IS5 element, and cut the window on screen as a subgraph",
     url: pggbTourStart,
     // Sized to the state the tour ENDS in, which is the linear view plus the
     // graph pane the launch adds: the run reports 276px of app at the first
@@ -331,10 +363,10 @@ export const pangenomeVideos: VideoSpec[] = [
     readyTimeout: 120000,
     settleMs: 3000,
     steps: [
-      ...pasteTrackSteps(PGGB_SEGMENTS_TRACK_JSON),
+      ...addGraphTrackSteps(PGGB_SEGMENTS_TRACK_JSON),
       {
         type: 'waitForSelector',
-        selector: PGGB_SEGMENTS_READY,
+        selector: PGGB_FORM_READY,
         timeout: 180000,
         cut: true,
       },
@@ -345,11 +377,11 @@ export const pangenomeVideos: VideoSpec[] = [
       ...navigateSteps(locusWindow),
       {
         type: 'waitForSelector',
-        selector: PGGB_SEGMENTS_READY,
+        selector: PGGB_FORM_READY,
         timeout: 120000,
       },
       { type: 'delay', ms: 1800 },
-      ...launchGraphSteps(segmentsTrackId),
+      ...launchGraphSteps(formTrackMenu(PGGB_SEGMENTS_TRACK_JSON)),
       {
         type: 'waitForSelector',
         selector: TOOLBAR_READY,
@@ -374,7 +406,7 @@ export const pangenomeVideos: VideoSpec[] = [
   {
     name: 'pangenome_cactus/subgraph_launch',
     description:
-      "The Minigraph-Cactus graph into an empty K12 session and back out as a subgraph: paste the page's track config, narrow to the IS1 element past flhD, and launch the graph view",
+      "The Minigraph-Cactus graph into an empty K12 session and back out as a subgraph: add the page's track through the graph form, narrow to the IS1 element past flhD, and launch the graph view",
     url: cactusTourStart,
     // Same trade as the pggb tour above, and the same numbers: the run reports
     // 276px of app at the first frame and 1103px at the last, because the two
@@ -385,10 +417,10 @@ export const pangenomeVideos: VideoSpec[] = [
     readyTimeout: 120000,
     settleMs: 3000,
     steps: [
-      ...pasteTrackSteps(cactusVideoFixtures.segmentsTrackJson),
+      ...addGraphTrackSteps(cactusVideoFixtures.segmentsTrackJson),
       {
         type: 'waitForSelector',
-        selector: CACTUS_SEGMENTS_READY,
+        selector: CACTUS_FORM_READY,
         timeout: 180000,
         cut: true,
       },
@@ -396,11 +428,11 @@ export const pangenomeVideos: VideoSpec[] = [
       ...navigateSteps(cactusVideoFixtures.locusWindow),
       {
         type: 'waitForSelector',
-        selector: CACTUS_SEGMENTS_READY,
+        selector: CACTUS_FORM_READY,
         timeout: 120000,
       },
       { type: 'delay', ms: 1800 },
-      ...launchGraphSteps(cactusVideoFixtures.segmentsTrackId),
+      ...launchGraphSteps(formTrackMenu(cactusVideoFixtures.segmentsTrackJson)),
       {
         type: 'waitForSelector',
         selector: TOOLBAR_READY,
@@ -562,7 +594,7 @@ export const pangenomeVideos: VideoSpec[] = [
   {
     name: 'pangenome/hprc_end_to_end',
     description:
-      "HPRC release 2's graph from a pasted track config to an allele read off the drawing: paste, navigate, cut a subgraph, anchor it, and take one node back to its GRCh38 interval",
+      "HPRC release 2's graph from the add-track form to an allele read off the drawing: add, navigate, cut a subgraph, anchor it, and take one node back to its GRCh38 interval",
     url: hprcTourSession(),
     // Sized to the FORCE drawing, which is the tour's tallest state and neither
     // of its ends. The run reports 276px of app at the first frame (one gene
@@ -580,12 +612,12 @@ export const pangenomeVideos: VideoSpec[] = [
     readyTimeout: 120000,
     settleMs: 4000,
     steps: [
-      ...pasteTrackSteps(HPRC_SEGMENTS_TRACK_JSON),
+      ...addGraphTrackSteps(HPRC_SEGMENTS_TRACK_JSON),
       // Submit dismisses the widget itself (finishAddTrack), so the drawer
       // closing is the app's answer rather than a step.
       {
         type: 'waitForSelector',
-        selector: SEGMENTS_READY,
+        selector: HPRC_FORM_READY,
         timeout: 180000,
         cut: true,
       },
@@ -593,11 +625,11 @@ export const pangenomeVideos: VideoSpec[] = [
       ...navigateSteps(TOUR_MHC_LOCUS),
       {
         type: 'waitForSelector',
-        selector: SEGMENTS_READY,
+        selector: HPRC_FORM_READY,
         timeout: 180000,
       },
       { type: 'delay', ms: 1800 },
-      ...launchGraphSteps(SEGMENTS_TRACK),
+      ...launchGraphSteps(formTrackMenu(HPRC_SEGMENTS_TRACK_JSON)),
       {
         type: 'waitForSelector',
         selector: TOOLBAR_READY,

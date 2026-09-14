@@ -145,7 +145,8 @@ view; the adapter resolves `<uri>.segs.bed.gz`, `<uri>.links.bed.gz`, and both
     "assemblyNameToPanSN": { "hg38": "GRCh38" }
   },
   "displayDefaults": {
-    "color": "jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'"
+    "color": "jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'",
+    "showLabels": "none"
   }
 }
 ```
@@ -161,13 +162,14 @@ your own:
   `GRCh38#0#chr6`, and the sample half of that name is the part JBrowse cannot
   work out for itself.
 - **`color`** paints each segment in the graph view's own **Stable rank**
-  colors, so a segment is the same color in both panels.
+  colors, so a segment is the same color in both panels. A segment's name is its
+  GFA id, so `showLabels` is off.
 
 The clip below starts here, with the track going in, and runs the route's first
 four steps on the MHC class II window, which holds too many nodes to label the
 way the C4 figure [above](#the-route-end-to-end) is.
 
-<Video src="/media/pangenome/hprc_end_to_end.mp4" caption="HPRC release 2's graph added to an hg38 session and then read: the track config pasted into Open track..., the MHC class II window cut as a subgraph, that subgraph laid out on GRCh38 coordinates, and one allele's interval marked in the linear view above it." />
+<Video src="/media/pangenome/hprc_end_to_end.mp4" caption="HPRC release 2's graph added to an hg38 session and then read: the track added through Open track... → Add pangenome graph track, the MHC class II window cut as a subgraph, that subgraph laid out on GRCh38 coordinates, and one allele's interval marked in the linear view above it." />
 
 Each segment is drawn at the position its tags give, so the GRCh38 backbone
 tiles the reference. Both files are ours, and the first is one command over any

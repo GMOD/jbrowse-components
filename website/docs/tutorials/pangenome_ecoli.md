@@ -770,10 +770,10 @@ opens the strains as a stack.
 <Video src="/media/synteny/ecoli_roundtrip.mp4" caption="One selection, three views: the Launch menu offering the graph beside the synteny stack, the stack anchored on K12 with the segments lane on its top row, that lane's track menu cutting the graph below, and a drag on the Sakai row re-anchoring the stack on Sakai in place." />
 
 The clip below takes that from the beginning: a K12 session carrying the plugin
-and its gene track, the block above pasted in through **Open track...**, and the
-graph cut from the window that leaves.
+and its gene track, the block above added through **Open track... → Add
+pangenome graph track**, and the graph cut from the window that leaves.
 
-<Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="A K12 session with no graph in it, to a subgraph: the config above pasted into Open track... → Add track from pasted JSON, the window narrowed onto the IS5 element, and the segments lane's own menu cutting the graph below. The nodes that arrive are the blocks the lane above draws." />
+<Video src="/media/pangenome/pggb_subgraph_launch.mp4" caption="A K12 session with no graph in it, to a subgraph: the track above added through Open track... → Add pangenome graph track, the window narrowed onto the IS5 element, and the segments lane's own menu cutting the graph below. The nodes that arrive are the blocks the lane above draws." />
 
 A node's drawn length is proportional to its sequence by default, so one long
 arm can swallow the rest of the drawing. **Bubble spread → Compress lengths**

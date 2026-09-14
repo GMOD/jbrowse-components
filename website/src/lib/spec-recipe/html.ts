@@ -178,7 +178,7 @@ export function videoRecipeDialogHtml(
         .join('')}</ol>`,
       ...(video.paste
         ? [
-            note('The track config the video pastes, as the page above prints it:'),
+            note('The track the video adds through the form, as the page above prints it:'),
             copyableBlock(video.paste, 'spec-json'),
           ]
         : []),

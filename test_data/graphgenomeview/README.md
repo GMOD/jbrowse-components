@@ -18,11 +18,10 @@ Six configs live here, data-free but for one gene slice:
 - `hprc_tour.json` — the same hg38 and the same plugin with **none** of those
   tracks, which is the state a reader of `pangenome_hprc` is in before the page
   adds its first one. `pangenome/hprc_end_to_end` films the track being added
-  from here through **Open track... → Add track from pasted JSON**, so the
-  fixture must not already carry `hprc_minigraph_segments`: a pasted config
-  whose `trackId` is taken is rejected rather than merged
-  (`doPasteConfigSubmit`). It is also the tour's live link, so a reader who
-  watched the route opens the session it started in and can walk it.
+  from here through **Open track... → Add pangenome graph track**, the plugin's
+  own form, so the fixture carries no segments lane for the one the form adds to
+  stand beside. It is also the tour's live link, so a reader who watched the
+  route opens the session it started in and can walk it.
 - `ecoli_pangenome.json` — all five E. coli strains as assemblies, their gene
   tracks, the all-vs-all synteny track, and the rGFA segments track. This is the
   only fixture where a contributing assembly of the graph is also a loaded

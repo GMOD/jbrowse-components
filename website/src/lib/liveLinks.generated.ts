@@ -908,12 +908,12 @@ export const videoCaptioned: string[] = [
 // beside the clip.
 export const videoSteps: Record<string, string[]> = {
   "pangenome/pggb_subgraph_launch": [
-    "Add the graph track by pasting its config",
+    "Add the graph track from Open track...",
     "chr:1,299,300-1,300,900",
     "Cut the window on screen out as a subgraph"
   ],
   "pangenome_cactus/subgraph_launch": [
-    "Add the graph track by pasting its config",
+    "Add the graph track from Open track...",
     "chr:1,978,100-1,979,700",
     "Cut the window on screen out as a subgraph"
   ],
@@ -925,7 +925,7 @@ export const videoSteps: Record<string, string[]> = {
     "Re-lay the same rows out with the force engine"
   ],
   "pangenome/hprc_end_to_end": [
-    "Add the graph track by pasting its config",
+    "Add the graph track from Open track...",
     "chr6:32,500,000-32,560,000",
     "Cut the window on screen out as a subgraph",
     "Lay the alleles out on GRCh38 coordinates",
@@ -1170,9 +1170,9 @@ export const videoSteps: Record<string, string[]> = {
   ]
 }
 
-// The track config a tour pastes into the app, for the same dialog.
+// The track config a tour adds to the app, for the same dialog.
 export const videoPastes: Record<string, string> = {
-  "pangenome/hprc_end_to_end": "{\n  \"type\": \"FeatureTrack\",\n  \"trackId\": \"hprc_minigraph_segments\",\n  \"name\": \"HPRC release 2 graph (rGFA segments)\",\n  \"assemblyNames\": [\"hg38\"],\n  \"adapter\": {\n    \"type\": \"RgfaTabixAdapter\",\n    \"uri\": \"https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38\",\n    \"assemblyNameToPanSN\": { \"hg38\": \"GRCh38\" }\n  },\n  \"displayDefaults\": {\n    \"color\": \"jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'\"\n  }\n}",
+  "pangenome/hprc_end_to_end": "{\n  \"type\": \"FeatureTrack\",\n  \"trackId\": \"hprc_minigraph_segments\",\n  \"name\": \"HPRC release 2 graph (rGFA segments)\",\n  \"assemblyNames\": [\"hg38\"],\n  \"adapter\": {\n    \"type\": \"RgfaTabixAdapter\",\n    \"uri\": \"https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38\",\n    \"assemblyNameToPanSN\": { \"hg38\": \"GRCh38\" }\n  },\n  \"displayDefaults\": {\n    \"color\": \"jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'\",\n    \"showLabels\": \"none\"\n  }\n}",
   "pangenome/pggb_subgraph_launch": "{\n  \"type\": \"FeatureTrack\",\n  \"trackId\": \"ecoli_pggb_segments\",\n  \"name\": \"pggb graph segments (whole graph, by locus)\",\n  \"assemblyNames\": [\"K12\"],\n  \"adapter\": {\n    \"type\": \"RgfaTabixAdapter\",\n    \"uri\": \"https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb\"\n  },\n  \"displayDefaults\": { \"showLabels\": \"none\" }\n}",
-  "pangenome_cactus/subgraph_launch": "{\n  \"type\": \"FeatureTrack\",\n  \"trackId\": \"ecoli_cactus_segments\",\n  \"name\": \"MC graph: segments (whole graph, by locus)\",\n  \"assemblyNames\": [\"K12\"],\n  \"adapter\": {\n    \"type\": \"RgfaTabixAdapter\",\n    \"uri\": \"https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus\"\n  },\n  \"displayDefaults\": { \"showLabels\": false }\n}"
+  "pangenome_cactus/subgraph_launch": "{\n  \"type\": \"FeatureTrack\",\n  \"trackId\": \"ecoli_cactus_segments\",\n  \"name\": \"MC graph: segments (whole graph, by locus)\",\n  \"assemblyNames\": [\"K12\"],\n  \"adapter\": {\n    \"type\": \"RgfaTabixAdapter\",\n    \"uri\": \"https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus\"\n  },\n  \"displayDefaults\": { \"showLabels\": \"none\" }\n}"
 }

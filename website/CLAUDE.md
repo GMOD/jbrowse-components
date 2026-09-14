@@ -133,17 +133,15 @@ the tour was filmed in.
   `from: {x, y}` is correct only at the width it was measured at, which is
   exactly what a re-frame invalidates.
 - **`cut` on a step takes the camera off for its wait.** Put it on the wait, not
-  on the click that starts it, or the click is off camera too. It is also how a
-  paste is filmed: `type` sends a config a keystroke at a time, and cutting it
-  leaves the box empty, then full.
-- **A tour that films a track being ADDED needs a config without that track.**
-  `doPasteConfigSubmit` rejects a `trackId` the session already holds rather
-  than merging it, so a tour filmed against the figures' config cannot add the
-  track the figures use. Its live link is then the better one of the two kinds:
-  a figure's opens the state it shows, a tour's opens the state it starts in.
-- **What it pastes has to be the page's own fence, and `check-paste-configs` is
-  the gate.** A film is the half nobody re-reads, so a reworded slot drifts one
-  way silently.
+  on the click that starts it, or the click is off camera too.
+- **A tour that films a track being ADDED starts from a config without that
+  track**, so the lane it adds is the only one of its kind on screen. Its live
+  link is then the better one of the two kinds: a figure's opens the state it
+  shows, a tour's opens the state it starts in.
+- **What the form is filled from has to be the page's own fence, and
+  `check-paste-configs` is the gate.** The graph tours read every field they
+  type off the fence's JSON; a film is the half nobody re-reads, so a reworded
+  slot drifts one way silently.
 - **`opensTab` follows a launcher into a new tab**, and the camera moves with
   it. For a route that leaves the app: another site hands the reader a session
   through a `target="_blank"` link, so the result is a second page rather than a

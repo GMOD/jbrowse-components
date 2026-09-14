@@ -108,16 +108,16 @@ refilm and none of which the run reports.
   usually the half the caption is about (an empty mate panel, the bottom row of
   a stack). `video-report` allows 120px of slack before it says anything, so a
   frame with the chip's strip under the app reports clean.
-- **A tour that PASTES its track films the defaults, not the figures' display.**
-  A session spec pins a lane's height, its colour jexl and its labels; a pasted
-  fence carries only what a reader would copy, so the lane arrives at the
-  display's default height — which grew `pggb_subgraph_launch`'s frame by 50px
-  the first time it was filmed this way — and in the default colour. Any claim
-  the caption made about the lane and the graph pane sharing a ramp stops being
-  true with it. The repair is in the FENCE or nowhere: `displayDefaults` reaches
-  a slot a reader would sensibly set (`showLabels` off over a segment index
-  whose names are GFA ids), and a ramp over the tour's own window is not one of
-  those.
+- **A tour that ADDS its track films the defaults, not the figures' display.** A
+  session spec pins a lane's height, its colour jexl and its labels; a track
+  added through the form carries only what the form writes, so the lane arrives
+  at the display's default height — which grew `pggb_subgraph_launch`'s frame by
+  50px the first time it was filmed this way — and in the default colour. Any
+  claim the caption made about the lane and the graph pane sharing a ramp stops
+  being true with it. The repair is in the FENCE or nowhere: `displayDefaults`
+  reaches a slot a reader would sensibly set (`showLabels` off over a segment
+  index whose names are GFA ids), and a ramp over the tour's own window is not
+  one of those.
 - **A display over its density gate still reports `ready`.** It is refusing to
   fetch, not failing to paint, so a tour that navigates from a gated window into
   a drawable one and waits on `displayReady(...)` carries on with the banner

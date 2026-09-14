@@ -74,9 +74,9 @@ const videoSteps = Object.fromEntries(
     .filter(([, steps]) => steps.length > 0),
 )
 
-// The config a tour pastes into the app, verbatim, so the dialog hands over
-// the same characters the page's fence prints and check-paste-configs holds
-// the two together.
+// The config a tour adds to the app, verbatim, so the dialog hands over the
+// same characters the page's fence prints and check-paste-configs holds the
+// two together.
 const videoPastes = Object.fromEntries(
   pastedTrackConfigs.map(entry => [entry.video, entry.json] as const),
 )
@@ -126,7 +126,7 @@ export const videoCaptioned: string[] = ${JSON.stringify(videoCaptioned, null, 2
 // beside the clip.
 export const videoSteps: Record<string, string[]> = ${JSON.stringify(videoSteps, null, 2)}
 
-// The track config a tour pastes into the app, for the same dialog.
+// The track config a tour adds to the app, for the same dialog.
 export const videoPastes: Record<string, string> = ${JSON.stringify(videoPastes, null, 2)}
 `
 

@@ -593,7 +593,7 @@ export const CACTUS_SEGMENTS_TRACK_JSON = `{
     "type": "RgfaTabixAdapter",
     "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus"
   },
-  "displayDefaults": { "showLabels": false }
+  "displayDefaults": { "showLabels": "none" }
 }`
 
 // The window the tour opens on, before it narrows to IS1_WINDOW. A Minigraph-

@@ -1,4 +1,4 @@
-// A config a video tour types into the app's paste box has to be a config the
+// A config a video tour fills the add-track form from has to be a config the
 // page it sits on prints.
 //
 // `pangenome/hprc_end_to_end` films **Open track... → Add track from pasted
@@ -73,7 +73,7 @@ for (const { video, doc, json } of pastedTrackConfigs) {
   if (!fences.includes(want)) {
     const near = closest(want, fences)
     problems.push(
-      `${doc} prints no fence matching the config ${video} types into the paste box\n` +
+      `${doc} prints no fence matching the config ${video} fills the form from\n` +
         `    ${near ? firstDifference(want.split('\n'), near.split('\n')) : 'the page has no json fence at all'}\n` +
         '    Make the two one text, then re-film the tour (`pnpm video --filter <name>`).',
     )
@@ -82,5 +82,5 @@ for (const { video, doc, json } of pastedTrackConfigs) {
 
 reportProblems(
   problems.map(p => `  ${p}\n`),
-  `${pastedTrackConfigs.length} pasted tour config(s) match a fence on their own page`,
+  `${pastedTrackConfigs.length} tour track config(s) match a fence on their own page`,
 )

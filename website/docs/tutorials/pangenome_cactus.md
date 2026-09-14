@@ -460,14 +460,14 @@ and a local build swaps in the `ecoli_cactus` prefix written above.
     "type": "RgfaTabixAdapter",
     "uri": "https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus"
   },
-  "displayDefaults": { "showLabels": false }
+  "displayDefaults": { "showLabels": "none" }
 }
 ```
 
 The segments draw as an ordinary track on K12, and **Track menu → Launch → Graph
 genome view (this region)** cuts a subgraph at whatever is on screen.
 
-<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session and then cut: the config above pasted into Open track... → Add track from pasted JSON, the window narrowed onto the IS1 element past flhD, and Launch → Graph genome view (this region) on the segments lane's own menu." />
+<Video src="/media/pangenome_cactus/subgraph_launch.mp4" caption="The Minigraph-Cactus graph put into an empty K12 session and then cut: the track above added through Open track... → Add pangenome graph track, the window narrowed onto the IS1 element past flhD, and Launch → Graph genome view (this region) on the segments lane's own menu." />
 
 A kilobase or two is the width to open one at. Past the flagellar operon, K12
 carries an IS1 element the other four skip. A second copy of the segments track,
