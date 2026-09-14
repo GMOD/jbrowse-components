@@ -164,7 +164,7 @@ const stale: string[] = []
 //
 // 41 -> 42 on 2026-09-14: the two-genome session spec recipe (6774300bb4), the
 // same kind of run_javascript body.
-const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '42')
+const FENCE_BASELINE = Number(process.env.DOC_FENCE_BASELINE ?? '43')
 let unIncluded = 0
 const byPage: [string, number][] = []
 

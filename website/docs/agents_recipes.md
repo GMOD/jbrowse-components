@@ -287,6 +287,64 @@ return {
 - Plan for a few thousand features and no more; above that, write a real file
   and load it with `jb.addTrack`.
 
+## Plot a field of a track you already have
+
+A `LinearMarkDisplay` is a grammar of graphics over any feature, alignments or
+variant track: each mark names a shape, the fields feeding its channels and the
+transforms run before it. Reuse the open track's adapter under a new session
+track whose display declares the plot, and the axis, legend and hover follow.
+Each pair's insert size as a point over the coverage as bars:
+
+```js
+const source = jb.trackModel('volvox_alignments').configuration
+const trackId = `insert-size-${Date.now()}`
+session.addSessionTrackConf({
+  type: 'AlignmentsTrack',
+  trackId,
+  name: 'insert size over coverage',
+  assemblyNames: jb.readConfObject(source, 'assemblyNames'),
+  adapter: jb.mst.getSnapshot(source.adapter),
+  displays: [
+    {
+      type: 'LinearMarkDisplay',
+      displayId: `${trackId}-LinearMarkDisplay`,
+      marks: [
+        {
+          shape: 'bar',
+          transform: [{ type: 'coverage' }],
+          encoding: {
+            y: { field: 'coverage', resolve: 'independent' },
+            color: '#c8d8ee',
+          },
+        },
+        {
+          shape: 'point',
+          transform: [
+            { type: 'filter', expr: 'jexl:feature.template_length > 0' },
+          ],
+          encoding: {
+            y: 'template_length',
+            color: {
+              field: 'score',
+              scale: 'linear',
+              domain: [0, 60],
+              ramp: ['#bdbdbd', '#1f4e9a'],
+            },
+          },
+        },
+      ],
+    },
+  ],
+})
+await jb.view().launchTrack(trackId)
+return { trackId, ...(await jb.waitReady(30000)) }
+```
+
+A BED column plots the same way over a `FeatureTrack`, with `y` naming the
+column, and `bin` plus `aggregate` steps count features per bin zoomed out. The
+[mark display guide](/docs/config_guides/mark_display) lists every shape,
+channel and step.
+
 ## Restyle, and read back what landed
 
 Settings keys come from the display's own schema. A key it does not declare is
