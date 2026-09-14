@@ -58,7 +58,7 @@ which JBrowse can then query by locus. With that pair in hand: **Add track**
 with `RgfaTabixAdapter` pointing at the shared prefix → **Track menu → Launch →
 Graph genome view (this region)**.
 [Route 1](#route-1-a-graph-track-browsable-by-locus) builds the pair; skip to
-[Three layouts](#three-layouts) if you just need to know what the buttons do.
+[Five layouts](#three-layouts) if you just need to know what the buttons do.
 
 `RgfaTabixAdapter` is the only adapter that cuts a subgraph: the same pair
 behind a `BedTabixAdapter` draws as a feature track whose menu offers no graph.
@@ -227,16 +227,23 @@ Desktop only starts a session by opening a genome, so you have to pick one
 before there is an **Add** menu at all. It can be any genome: a GFA opened this
 way is laid out from its own P/W lines.
 
-## Three layouts
+## Five layouts {#three-layouts}
 
-The **Layout** dropdown draws the same subgraph three ways, differing in what
-the axes mean:
+The **Layout** dropdown draws the same subgraph five ways, differing in what the
+axes mean:
 
-| Layout                    | x              | y                       |
-| ------------------------- | -------------- | ----------------------- |
-| Anchored                  | reference bp   | one row per stable rank |
-| Sample rows               | reference bp   | one row per assembly    |
-| **Force-directed layout** | nothing (FMMM) | nothing                 |
+| Layout                    | x               | y                       |
+| ------------------------- | --------------- | ----------------------- |
+| Anchored                  | reference bp    | one row per stable rank |
+| Sample rows               | reference bp    | one row per assembly    |
+| Ordered                   | reference order | a lane per allele       |
+| Variant map               | reference bp    | one glyph per bubble    |
+| **Force-directed layout** | nothing (FMMM)  | nothing                 |
+
+**Ordered** keeps x monotone in reference order rather than bp, so a SNP allele
+gets the same room as the kilobase segment beside it and a bubble reads as a
+lens. **Variant map** draws only the reference line and one typed glyph per
+bubble on it; clicking a glyph opens the bubble as a graph.
 
 Force-directed is the default: an anchored drawing flattens both routes through
 a locus onto the reference axis, so an allele reads as a stub hanging under a
@@ -271,6 +278,35 @@ is stated outright, so a row is carriage and the node popup lists the rest.
 Both anchored layouts draw an allele across **the reference it replaces**: an
 insertion consumes no reference, so it draws as a mark where it attaches, with
 its size in the tooltip.
+
+## Bubbles, genes and walks on the drawing
+
+Every node layout draws the graph's bubbles onto it. A bubble is a halo along
+its own nodes with a label naming what it is, from the bubble index beside an
+rGFA where there is one, and from the drawing's own layering where there is not,
+which covers a GBZ cut, a plain GFA and the inside of a bubble once opened.
+Click a label to open that bubble on its own, with a button back; a bubble
+opened this way derives its own bubbles, so a superbubble opens level by level.
+**View menu → Settings → Mark bubbles** turns the halos off.
+
+<Figure caption="The LPA window force-directed with its bubbles haloed and named, LPA pinned under the backbone with its exons along the reference nodes, and the halo labels each a click from opening their bubble." src="/img/pangenome/graph_kiv2_halos.png" />
+
+The session's gene track is drawn onto the backbone: exons as dark stretches
+along the reference nodes that carry them, each gene's name pinned under the
+backbone at its midpoint. An allele has no reference coordinates and shows no
+exon. **View menu → Settings → Genes on the backbone** turns it off, and **Gene
+track** picks which track when the assembly has more than one.
+
+A graph with walks, a GBZ cut or a GFA with P or W lines, says more. **View menu
+→ Settings → Node width** draws a node thicker the more walks carry it, on the
+square root of its depth against the mean, Bandage's own rule; **Uniform** turns
+it off. Every route through a bubble carries a chip at the far point of its loop
+naming the walks that take it and how long it is, for bubbles with a route over
+a kilobase. And the **Walk** dropdown in the toolbar lifts one walk out of the
+drawing: its nodes keep their colour and its links draw dark, everything else
+fades, and a readout beside the legend gives the walk's length against the
+reference walk. [Part 4](/docs/tutorials/pangenome_graph_reading) of the HPRC
+tutorial reads a repeat array this way.
 
 ## Bubble spread and graph context {#two-settings-that-decide-what-is-drawn}
 
@@ -591,6 +627,8 @@ lacked the sequence. Use the per-strain route when you have the assemblies.
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/pangenome_hprc_part2)
 - [](/docs/tutorials/pangenome_hprc_part3)
+- [](/docs/tutorials/pangenome_graph_reading)
+- [](/docs/tutorials/pangenome_graph_nested)
 - [](/docs/tutorials/pangenome_cactus)
 - [Configuring plugins](/docs/config_guides/plugins)
 - [PANGENOME_GRAPHS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/PANGENOME_GRAPHS.md)

@@ -2112,7 +2112,7 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     // the force pane runs to its 600px cap here and the five-row legend fits
     // inside it, plus the gene lane and the five MAF rows above; 1130 cut 15
     // css px, from the run's own report
-    viewportHeight: 1145,
+    viewportHeight: 980,
     hideTooltip: true,
   },
   // pangenome/pggb_collapsed_repeat was here and is RETIRED (review:

@@ -177,7 +177,7 @@ const dock2Spec: ScreenshotSpec = {
   // fold. A force layout of this cut needs the room -- the whole point of the
   // panel is its topology, and a topology with its bottom third missing is not
   // one. SLACK_WARN_PX reports the other direction if this ever over-shoots.
-  viewportHeight: 1320,
+  viewportHeight: 1260,
   hideTooltip: true,
 }
 

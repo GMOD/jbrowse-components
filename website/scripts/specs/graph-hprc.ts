@@ -2379,14 +2379,15 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         // On the canvas rather than on a node: through release 2.0 this hung
         // off the first GRCh38 node, dropped into the empty part of the force
         // drawing, and 2.1's layout put that node where the drop landed off
-        // the capture. The top-left corner is empty in either layout.
+        // the capture. The bottom-left corner is empty: the plugin's bubble
+        // labels and gene pins now take the top of the pane.
         anchor: {
           selector: '[data-testid="graph-genome-canvas"]',
           alignX: 'left',
-          alignY: 'top',
+          alignY: 'bottom',
         },
         dx: 20,
-        dy: 40,
+        dy: -110,
       },
       // WHERE it is, which the pill above never said (review: "the term
       // 'KIV-2' is not visible in the screenshot, may be useful if there was a

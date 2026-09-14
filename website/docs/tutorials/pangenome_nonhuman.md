@@ -133,12 +133,16 @@ receptor and Speer families, the immunoglobulin heavy chain locus and BoLA, with
 nobody curating a list. The densest window it returns for mouse is a single
 bubble sitting inside one intron of `Dock2`:
 
-<Figure caption="The densest bubble in the mouse graph that still fits in one cut, found by ranking the coarse tier and named off the reference annotation. The gene lane holds nothing but intron, the bubbles lane is a single row, and the allele inventory below it draws each alternative path through that bubble at its real size." src="/img/pangenome/mouse_dock2.png" />
+<Figure caption="The densest bubble in the mouse graph that still fits in one cut, found by ranking the coarse tier and named off the reference annotation. The gene lane holds nothing but intron, the bubbles lane is a single row, the allele inventory draws each alternative path at its real size, and the graph carries one label naming the whole cut as a superbubble, with Dock2 pinned under the backbone." src="/img/pangenome/mouse_dock2.png" />
 
 It is also the counterexample to the note above. Every other panel on this page
 is a chain and is drawn anchored; this cut is loops hanging off a backbone,
 which is the shape the force-directed layout exists for, and it was found by
-ranking a file rather than by knowing anything about mouse.
+ranking a file rather than by knowing anything about mouse. Clicking the
+superbubble's label opens it, and the graph derives the bubbles inside it from
+its own layering, so the descent continues level by level:
+[a bubble inside a bubble](/docs/tutorials/pangenome_graph_nested) follows it
+down.
 
 Ranking the graph rather than the literature is what makes the method repeatable
 for a panel nobody has written about yet. The ranking lives in

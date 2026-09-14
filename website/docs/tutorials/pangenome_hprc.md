@@ -226,7 +226,7 @@ covers what each does on a graph small enough to watch it happen.
 ### The Layout dropdown
 
 The [guide](/docs/user_guides/graph_genome_view#three-layouts) sets out what the
-three modes put on each axis. Here is the same MHC class II window drawn in two
+five modes put on each axis. Here is the same MHC class II window drawn in two
 of them:
 
 <Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed. Right, anchored: every x is a GRCh38 coordinate, so each allele hangs below where it attaches." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
@@ -245,7 +245,26 @@ Each locus below is a window small enough to draw:
 | C4           | `chr6:31,980,000-32,050,000`   |
 | LPA KIV-2    | `chr6:160,525,000-160,655,000` |
 
-<Figure caption="The KIV-2 repeat inside LPA as a force-directed graph, under the RefSeq genes, the bubbles lane and the rGFA segments. The bubble the lane reports across the repeat is the chain of loops below it, with one dashed arc bypassing the reference between two of them." src="/img/pangenome/hprc_lpa_kiv2.png" />
+<Figure caption="The KIV-2 repeat inside LPA as a force-directed graph, under the RefSeq genes, the bubbles lane and the rGFA segments. The bubble the lane reports across the repeat is the haloed knot of loops below it, labelled as a repeat array, with one dashed arc bypassing the reference and LPA pinned under the backbone." src="/img/pangenome/hprc_lpa_kiv2.png" />
+
+### Bubbles and genes on the drawing
+
+Every bubble the index holds is drawn onto the graph as a halo along its own
+nodes, with a label naming what it is: a SNP, an insertion of so much, a
+deletion, a repeat array with its route count and range, a superbubble. Click a
+label to open that bubble on its own, laid out the same way, with a button back
+to the window. A graph with no index, a GBZ cut or a plain GFA, derives its
+bubbles from the drawing's own layering, and so does a bubble once opened, so a
+superbubble opens level by level. **View menu → Settings → Mark bubbles** turns
+the halos off.
+
+The session's gene track is drawn onto the backbone too: each gene's exons as
+dark stretches along the reference nodes that carry them, and its name pinned
+under the backbone at its midpoint. An allele has no reference coordinates and
+shows no exon. **View menu → Settings → Genes on the backbone** turns it off,
+and **Gene track** picks which track when the assembly has several.
+[Part 4](/docs/tutorials/pangenome_graph_reading) reads the array this way and
+then adds the haplotypes' walks to it.
 
 ### Insertions, deletions and their sizes
 
@@ -435,6 +454,7 @@ scripts behind the rest of the release's files.
 
 - [](/docs/tutorials/pangenome_hprc_part2)
 - [](/docs/tutorials/pangenome_hprc_part3)
+- [](/docs/tutorials/pangenome_graph_reading)
 - [](/docs/tutorials/pangenome_prepare_graph)
 - [](/docs/tutorials/genomes_pangenome)
 - [](/docs/tutorials/pangenome_cactus)
