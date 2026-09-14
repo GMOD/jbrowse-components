@@ -264,6 +264,10 @@ const VALIDATORS: Validator[] = [
     argv: web('check-writing-tropes.ts', '--check'),
   },
   {
+    name: 'no new tutorial figure without an instruction before it',
+    argv: web('check-figure-actions.ts', '--check'),
+  },
+  {
     // Same ratchet shape, guarding what a scheduled figure sweep will fetch:
     // `--check` fails when a spec newly points at a server we do not run.
     name: 'no new third-party hosts in figure specs',

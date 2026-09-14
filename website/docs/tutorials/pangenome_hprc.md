@@ -265,9 +265,10 @@ haplotype carries in place of the reference sequence. A deletion is an **edge**,
 a dashed arc from one backbone segment to another that skips the segments
 between them.
 
-The figure labels all four on a smaller cut, the C4 locus half a megabase
-towards the centromere, which holds few enough nodes to label. Your MHC class II
-cut has the same parts and many more of them.
+Hover any node in your cut: the tooltip gives its length and its rank, and rank
+0 is the backbone. The figure labels all four shapes on a smaller cut, the C4
+locus half a megabase towards the centromere, which holds few enough nodes to
+label. Your MHC class II cut has the same parts and many more of them.
 
 <Figure caption="The C4 locus cut as a force-directed graph, under the hg38 genes and the rGFA segments for the same window. Both panels color by reference position, red at the window's start to magenta at its end (the key is top right), so a block in the lane and its node below share a hue; a charcoal node has no GRCh38 coordinate, which is what an allele is. The labels name a backbone segment, an allele, and a bubble whose two routes are the reference path and the dashed arc that skips it, which is one whole copy of the tandem C4-CYP21-TNX module. Gene names hang under the backbone at the exons they cover." src="/img/pangenome/hprc_graph_anatomy.png" />
 

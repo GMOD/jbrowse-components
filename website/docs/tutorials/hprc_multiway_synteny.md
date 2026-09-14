@@ -192,9 +192,10 @@ the cluster places less of it; `rowOrder` pins an order that has to hold.
 
 ## The whole chromosome
 
-The same track serves a whole chromosome. Over all of chr12 the coarse tier
-answers the fetch in one pass, and each lane is that haplotype's assembled
-chromosome. The track menu's **Level of detail** entry picks the tier by hand.
+The same track serves a whole chromosome. Type `chr12` into the location box.
+Over the whole chromosome the coarse tier answers the fetch in one pass, and
+each lane is that haplotype's assembled chromosome. The track menu's **Level of
+detail** entry picks the tier by hand.
 
 <Figure caption="All of hg38 chr12 over the eight haplotype lanes, served from the coarse tier of the graph-derived index. Every haplotype assembled chr12 as one contig, so each lane runs end to end, and the graph aligns nothing across the centromere in any of them." src="/img/multiway_synteny/hprc_chr12_whole.png" />
 

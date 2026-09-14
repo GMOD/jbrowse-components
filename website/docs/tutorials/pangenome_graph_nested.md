@@ -45,11 +45,13 @@ serve it as rGFA projections.
 
 ## One bubble, one label
 
-Open the _Dock2_ window as a graph and pick **Force-directed layout**. The index
-lists this window as a single bubble, so the whole cut is that bubble. One label
-names it in the index's terms: a superbubble, with its segment count and the
-span of its routes. A bubble that fills the whole drawing gets the label and no
-halo, because a halo around everything would mark nothing.
+Type `chr11:34,516,044-34,560,497`, the _Dock2_ intron, cut it from the segments
+track with **Launch → Graph genome view (this region)** and pick
+**Force-directed layout** from the **Layout** dropdown. The index lists this
+window as a single bubble, so the whole cut is that bubble. One label names it
+in the index's terms: a superbubble, with its segment count and the span of its
+routes. A bubble that fills the whole drawing gets the label and no halo,
+because a halo around everything would mark nothing.
 
 <Figure caption="The Dock2 intron window with the RefSeq genes, the bubbles lane and the rGFA segments above the force-directed graph. The bubbles lane is one row, and the graph's one label names the whole cut as a superbubble." src="/img/pangenome/graph_mouse_dock2_halos.png" />
 
@@ -80,8 +82,9 @@ those values for any anchored graph.
 ## The control
 
 _Nnt_ is the window Pangenomes beyond human opens first. It holds one large
-allele that the other strains carry and the reference lacks. Drawn the same way,
-Nnt should halo as a plain insertion with nothing to descend into.
+allele that the other strains carry and the reference lacks. Type
+`chr13:119,440,000-119,600,000` and cut it the same way. Nnt should halo as a
+plain insertion with nothing to descend into.
 
 <Figure caption="The Nnt window force-directed. The large loop halos as one insertion beside the smaller sites along the backbone, Nnt's exons run along the reference nodes with its name pinned under them, and no halo is a superbubble." src="/img/pangenome/graph_mouse_nnt_halos.png" />
 

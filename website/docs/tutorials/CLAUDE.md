@@ -8,6 +8,12 @@ before it produced, and the test is whether the sections could be reordered
 without the page breaking. If they could, it is a user guide wearing a
 tutorial's clothes.
 
+**A figure follows an instruction.** Before a `<Figure>` or `<Video>`, in the
+same section, the reader has been told the window to type, the menu path to
+take, the config to paste or the command to run. `check-figure-actions` ratchets
+the tags that arrive without one; `pnpm check-figure-actions --list` prints
+them.
+
 One dataset is the usual way to get that, and the safe default. A second is fine
 where the first **raised the question it answers**, so the reader arrives at it
 rather than being taken there. What the rule excludes is the page that visits

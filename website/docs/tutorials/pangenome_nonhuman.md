@@ -96,8 +96,9 @@ genotypes.
 ## A whole chromosome, off the coarse tier
 
 The level-of-detail tier has one node per bubble, which makes a whole chromosome
-drawable, and it works on the cattle graph too. Over a full cattle chromosome
-the _fine_ segments track refuses with "Too many features", and the tier draws.
+drawable, and it works on the cattle graph too. Type `chr23` on ARS-UCD1.2 with
+the tier and the bubble curve showing. Over a full cattle chromosome the _fine_
+segments track refuses with "Too many features", and the tier draws.
 
 <Figure caption="A whole ARS-UCD1.2 chromosome with the RefSeq genes, the segments-per-bubble curve and the bubble tier on one axis. BoLA is the densest stretch of the curve." src="/img/pangenome/bovine_whole_chromosome.png" />
 
@@ -126,7 +127,8 @@ the reference annotation names the loci.
 On these two datasets the ranking recovers the beta-defensin cluster, the
 vomeronasal receptor and Speer families, the immunoglobulin heavy chain locus
 and BoLA, without a curated list. The densest window it returns for mouse is a
-single bubble inside one intron of `Dock2`:
+single bubble inside one intron of `Dock2`, at `chr11:34,516,044-34,560,497` on
+GRCm39:
 
 <Figure caption="The densest bubble in the mouse graph that still fits in one cut, found by ranking the coarse tier and named off the reference annotation. The gene lane holds nothing but intron, the bubbles lane is a single row, the allele inventory draws each alternative path at its real size, and the graph carries one label naming the whole cut as a superbubble, with Dock2 pinned under the backbone." src="/img/pangenome/mouse_dock2.png" />
 
