@@ -240,19 +240,18 @@ alternate curves together, and their difference on its own row, where positive
 is a gain from the insertion and negative a loss. Add the CD34+ DNase, polyA
 plus RNA-seq and H3K27ac tracks, and zoom to _TAL1_ and the insertion.
 
-The three difference rows read as the enhancer the insertion creates.
-Accessibility rises sharply at the insertion itself, H3K27ac, the mark of an
-active enhancer, rises across the locus, and predicted transcription rises over
-the _TAL1_ exons. The DNase difference row is set to the **Local** autoscale in
-its track menu: the default clips the outermost percent of each sign, which on a
-row this sparse flattens the gain at the insertion.
+On the three difference rows, accessibility rises sharply at the insertion
+itself, H3K27ac, the mark of an active enhancer, rises across the locus, and
+predicted transcription rises over the _TAL1_ exons. The DNase difference row is
+set to **Score → Autoscale type → Local** in its track menu: the default clips
+the outermost percent of each sign, which on a row this sparse flattens the gain
+at the insertion.
 
 AlphaGenome returns the alternate prediction laid out along the alternate
-sequence, 12 bases longer than the reference here, so the plugin maps it back
-onto reference coordinates before subtracting, the way AlphaGenome's own variant
-scorers do. Subtracting the raw arrays would compare every base right of the
-insertion with the base 12 positions away, and fill the difference row with
-signal out to the window edge.
+sequence, 12 bases longer than the reference here. The plugin maps it back onto
+reference coordinates before subtracting, the way AlphaGenome's own variant
+scorers do, collapsing the inserted bases onto the base they follow, so every
+difference compares one reference base with itself.
 
 <Figure caption="The Jurkat insertion scored in CD34+ progenitors: reference and alternate predictions for DNase, polyA plus RNA-seq and H3K27ac, then each difference. Accessibility rises at the insertion, while H3K27ac and TAL1 transcription rise with it." src="/img/alphagenome/variant_difference.png" />
 
