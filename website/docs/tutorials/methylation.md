@@ -141,6 +141,10 @@ and its source in the same view, on one x scale.
 The aggregate and the reads below it split the same way, molecule by molecule,
 with the same haplotype on the same side.
 
+The same split can be declared rather than clicked: a
+[mark display](/docs/config_guides/mark_display#facets) whose mark carries
+`facet: "HP"` opens with one band of rows per haplotype, named by a chip.
+
 See the
 [alignments track guide](/docs/user_guides/alignments_track#grouping-reads) for
 the Group-by dialog and the [phased-trio tutorial](/docs/tutorials/analyze_trio)

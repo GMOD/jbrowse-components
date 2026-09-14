@@ -230,6 +230,8 @@ grouped by the same field, and the facet stacks the groups themselves:
 Sections order digits by magnitude and everything else by code point, and the
 tail past forty merges into one.
 
+<Figure src="/img/mark_display/facet.png" caption="HG002 ONT reads faceted by their HP tag: each haplotype's reads packed into a band of its own under the chip that names it, and the untagged reads in a third."/>
+
 ## Transforms
 
 A mark's `transform` is a list of steps over the region's features, run in the
@@ -399,6 +401,8 @@ and the `minBpPerPx`/`maxBpPerPx` handoff at 100. It reopens on what a
 single-mark config already declares, so editing is the same dialog. A display
 shown with no `marks` at all plots `score` as bars where the features carry a
 numeric one, and opens this dialog where they do not.
+
+<Figure src="/img/mark_display/plot_field.png" caption="The Plot field dialog over an Alu track, reopened on the mark that track declares: the numeric fields the loaded features carry, the shape, the colour field and the count-per-bin box."/>
 
 The score submenu (min/max score), point size, cross hatches, the legend toggle,
 and **Filter by...** for the same `jexlFilters` every feature display takes. A

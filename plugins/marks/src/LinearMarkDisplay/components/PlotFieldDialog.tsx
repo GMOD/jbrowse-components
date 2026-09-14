@@ -72,7 +72,7 @@ const PlotFieldDialog = observer(function PlotFieldDialog({
         onChange={event => {
           update({ field: event.target.value })
         }}
-        slotProps={{ select: { native: true } }}
+        slotProps={{ select: { native: true }, inputLabel: { shrink: true } }}
       >
         <option value={NONE} disabled />
         {fieldChoices.map(f => (
@@ -89,7 +89,7 @@ const PlotFieldDialog = observer(function PlotFieldDialog({
         onChange={event => {
           update({ shape: event.target.value as PlotShape })
         }}
-        slotProps={{ select: { native: true } }}
+        slotProps={{ select: { native: true }, inputLabel: { shrink: true } }}
       >
         {MARK_SHAPE_CHOICES.map(s => (
           <option key={s} value={s}>
@@ -106,7 +106,7 @@ const PlotFieldDialog = observer(function PlotFieldDialog({
         onChange={event => {
           update({ colorField: event.target.value })
         }}
-        slotProps={{ select: { native: true } }}
+        slotProps={{ select: { native: true }, inputLabel: { shrink: true } }}
       >
         <option value={NONE}>None</option>
         {colorChoices.map(f => (

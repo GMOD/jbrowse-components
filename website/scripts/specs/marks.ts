@@ -1,6 +1,11 @@
 import { displayPainted } from '@jbrowse/browser-test-utils'
 
-import { VOLVOX, sessionSpec } from '../screenshot-spec-helpers.ts'
+import {
+  DEMO_CONFIG,
+  VOLVOX,
+  sessionSpec,
+  trackMenuIcon,
+} from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -114,6 +119,57 @@ const READS_TWO_AXES_TRACK = {
   ],
 }
 
+// The Alu track with ONE declared mark, which is what the Plot field dialog
+// reopens prefilled from: the value field and the shape it finds are the
+// milliDiv bar below rather than an empty form.
+const ALU_PLOT_FIELD_TRACK = {
+  ...ALU_MARKS_TRACK,
+  trackId: 'alu_plot_field',
+  displays: [
+    {
+      type: 'LinearMarkDisplay',
+      displayId: 'alu_plot_field-LinearMarkDisplay',
+      marks: [{ shape: 'bar', encoding: { y: 'milliDiv' } }],
+    },
+  ],
+}
+
+// The haplotagged HG002 ONT reads the methylation tutorial loads
+// (docs/tutorials/methylation.md), declared as a faceted pileup: a formula
+// step lifts the HP tag into a field, the stack packs each haplotype's rows on
+// their own, and the facet offsets the sections so each gets a band under its
+// chip. Reads carrying no tag land in the "HP: none" section.
+const SNRPN_FACET_TRACK = {
+  type: 'AlignmentsTrack',
+  trackId: 'snrpn_facet',
+  name: 'HG002 ONT reads faceted by HP',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BamAdapter',
+    uri: 'https://jbrowse.org/demos/methylation/HG002_SNRPN_5mC_haplotagged.bam',
+  },
+  displays: [
+    {
+      type: 'LinearMarkDisplay',
+      displayId: 'snrpn_facet-LinearMarkDisplay',
+      marks: [
+        {
+          shape: 'span',
+          facet: 'HP',
+          transform: [
+            { type: 'formula', expr: "jexl:getTag(feature,'HP')", as: 'HP' },
+            { type: 'stack', groupby: ['HP'] },
+          ],
+          encoding: {
+            row: 'row',
+            color: { field: 'HP', scale: 'categorical' },
+          },
+        },
+      ],
+    },
+  ],
+}
+
 function aluMarksUrl(loc: string) {
   return sessionSpec(CONFIG, {
     sessionTracks: [ALU_MARKS_TRACK],
@@ -200,6 +256,80 @@ export const marksSpecs: ScreenshotSpec[] = [
         url: aluMarksUrl('chr1:151,000,000-151,030,000'),
         readySelector: displayPainted('mark-display'),
       },
+    ],
+  },
+
+  // The same HP split the methylation tutorial reaches through Group by...,
+  // declared instead: each haplotype's reads stacked in a band of their own
+  // under the chip that names it, and the untagged reads in a third.
+  {
+    mode: 'url',
+    name: 'mark_display/facet',
+    url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [SNRPN_FACET_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr15:24,900,000-25,000,000',
+          tracks: [
+            {
+              trackId: 'snrpn_facet',
+              type: 'LinearMarkDisplay',
+              height: 400,
+              forceLoad: true,
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: displayPainted('mark-display'),
+    readyTimeout: 150000,
+    settleMs: 12000,
+    viewportHeight: 610,
+  },
+
+  // The Plot field dialog over the Alu track, reopened on the one mark that
+  // track declares: the numeric fields the scan found, the shape, the colour
+  // field and the count-per-bin box.
+  {
+    mode: 'url',
+    name: 'mark_display/plot_field',
+    url: sessionSpec(CONFIG, {
+      sessionTracks: [ALU_PLOT_FIELD_TRACK],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr1:151,000,000-151,030,000',
+          tracks: [
+            {
+              trackId: 'alu_plot_field',
+              type: 'LinearMarkDisplay',
+              height: 160,
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: displayPainted('mark-display'),
+    readyTimeout: 90000,
+    settleMs: 6000,
+    viewportHeight: 520,
+    hideSelectors: ['.MuiTooltip-popper'],
+    hideTooltip: true,
+    actions: [
+      trackMenuIcon('alu_plot_field'),
+      { type: 'waitForText', text: 'Plot field...' },
+      { type: 'click', text: 'Plot field...' },
+      { type: 'waitForText', text: 'Plot a field' },
+      {
+        type: 'waitForText',
+        text: 'Scanning features for fields',
+        hidden: true,
+      },
+      { type: 'waitForText', text: 'Count per bin zoomed out' },
+      { type: 'delay', ms: 500 },
     ],
   },
 ]
