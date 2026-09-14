@@ -511,7 +511,7 @@ try {
   const startScript = path.join(cwd, 'start-session.sh')
   fs.writeFileSync(
     startScript,
-    `#!/bin/sh\nexec claude --model sonnet --verbose \\\n  --mcp-config ${JSON.stringify(mcpConfig)} --strict-mcp-config \\\n  --allowedTools '${MCP_TOOLS}${SHELL ? ',Bash,Read,Write,Edit,Glob,Grep' : ''}' \\\n  --append-system-prompt ${JSON.stringify(system)}\n`,
+    `#!/bin/sh\nexec claude --model sonnet \\\n  --mcp-config ${JSON.stringify(mcpConfig)} --strict-mcp-config \\\n  --allowedTools '${MCP_TOOLS}${SHELL ? ',Bash,Read,Write,Edit,Glob,Grep' : ''}' \\\n  --append-system-prompt ${JSON.stringify(system)}\n`,
   )
   fs.chmodSync(startScript, 0o755)
   tmux('send-keys', '-t', SESSION, './start-session.sh', 'Enter')

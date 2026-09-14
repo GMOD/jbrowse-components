@@ -188,10 +188,10 @@ What is established, each of it paid for:
 ## Linux: `recordDemoTui.mjs`
 
 `node scripts/agent-demos/recordDemoTui.mjs <outdir> [takes/<name>.mjs]` writes
-`<outdir>/demo-captioned.mp4`. It shows the REAL Claude Code TUI (Sonnet,
-`--verbose`) driven by `tmux send-keys` — not the formatted `claude -p` stream
-`recordDemoLinux.mjs` films, which reads as a fake — beside the built-in hg38,
-with the narration burned in as ASS captions.
+`<outdir>/demo-captioned.mp4`. It shows the REAL Claude Code TUI (Sonnet) driven
+by `tmux send-keys` — not the formatted `claude -p` stream `recordDemoLinux.mjs`
+films, which reads as a fake — beside the built-in hg38, with the narration
+burned in as ASS captions.
 
 **It takes the same take modules `recordDemoMac.mjs` does**: `STEPS`, and
 optionally `SYSTEM(cwd)` and `SHELL`. Without one, the BRCA1 steps at the top of
