@@ -35,8 +35,8 @@ YDOTOOL_SOCKET=/run/user/1001/.ydotool_socket \
   person at the desk sends the keystroke elsewhere. The take then stops with
   "the terminal did not tile — it is still 80 columns wide". Two attempts on
   2026-09-14 died this way while the machine was in use.
-- Stop a take with `kill -INT $(pgrep -f "node scripts/agent-demos/recordDemo[T]ui")`.
-  A bare `pkill -f recordDemoTui.mjs` matches the shell running it and kills
+- Stop a take with `kill -INT $(pgrep -xf "node scripts/agent-demos/recordDemoTui.mjs")`.
+  `-x` matches the whole command line; a bare `pkill -f recordDemoTui.mjs` also matches the shell running it and kills
   that shell first.
 
 ## Order and what to watch

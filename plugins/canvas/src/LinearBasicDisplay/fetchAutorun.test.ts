@@ -1490,7 +1490,6 @@ test('the worker payload is exactly the slots DisplayConfig declares', () => {
     'jexlFilters',
     'labels',
     'mouseover',
-    'outlineColor',
     'subParts',
     'subfeatureLabels',
     'transcriptTypes',
