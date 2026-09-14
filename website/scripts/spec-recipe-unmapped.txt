@@ -8,6 +8,7 @@
 allowedGappyness
 arcHeight
 autoscale
+colWidth
 color
 colorDomain
 connectedView
@@ -22,6 +23,7 @@ legend
 orthologParams
 paneHeight
 readConnections
+rowHeight
 rowOrder
 sampleColorMap
 showBranchLength
@@ -33,5 +35,6 @@ sideBySide
 structures
 thickness
 transcriptId
+treeAreaWidth
 uniprotId
 zoomToBaseLevel

@@ -201,7 +201,7 @@ nothing called over them; a generic death-domain call in place of the
 pyrin-specific one; and gap right across the frame, where the row begins further
 right. The third kind is the absent sequence.
 
-<Figure src="/img/genomes_msa/pyrin_residues.png" caption="NLRP1 orthologs at the residue zoom the view opens on, with the gappiest columns hidden. Under the pyrin columns some rows carry residues with no call over them and others are gap." />
+<Figure src="/img/genomes_msa/pyrin_residues.png" caption="NLRP1 orthologs zoomed out to the smallest cells that still draw residues, with the gappiest columns hidden. Under the pyrin columns, rows carrying the call sit beside rows with a generic death-domain call, rows with residues and nothing called, and rows that are gap." />
 
 ### The same domains in genome coordinates
 

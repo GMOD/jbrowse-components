@@ -228,7 +228,13 @@ export const msaSpecs: ScreenshotSpec[] = [
         actions: OPEN_LAUNCH_DIALOG,
         annotations: [
           { type: 'box', anchor: { text: 'Orthologs (fast)' } },
-          { type: 'box', anchor: { text: 'Rows to align' } },
+          {
+            type: 'box',
+            anchor: {
+              selector:
+                '[role="dialog"] .MuiTextField-root:has(input[type="number"])',
+            },
+          },
         ],
         // Declared, not inherited. A stage without its own height keeps
         // whatever the previous one resized to, so leaving this off gave the
@@ -264,23 +270,12 @@ export const msaSpecs: ScreenshotSpec[] = [
           },
           { type: 'click', text: 'Fit horizontally' },
           { type: 'delay', ms: 1000 },
+          ...COLLAPSE_DOMAIN_KEY,
         ],
-        // the MSA view opens at a fixed height, so this is the LGV above it
-        // plus that view plus nothing: the run's own
-        // `blank below the last content` said 122 css px at 1000.
-        //
-        // Left at 878 after trying 1010 for the domain KEY, whose last entry
-        // reads as cut off. Raising the frame only added page background (128
-        // css px of blank below, key looking the same), and the reason is that
-        // the key is not clipped at all: it is a scrollable list sized off the
-        // VIEW (60% of the MSA panel), and a scrollable list with a half-visible
-        // last row is indistinguishable from truncation in a still image.
-        // Measured on this alignment: 18 entries, Paper 330px ending at y=813,
-        // nearest clipping ancestor ending at 855, no row past that edge,
-        // clientHeight 296 against scrollHeight 313. So there is nothing here
-        // for a frame height or a plugin fix to do, and the caption names the
-        // two blocks the figure is about instead.
-        viewportHeight: 878,
+        // the split views and the MSA panel's fixed height, and nothing under
+        // them. The domain key's last row can look cut off; it is a scrollable
+        // list sized off the view, not a clip.
+        viewportHeight: 700,
       },
     ],
     hideTooltip: true,
@@ -347,19 +342,15 @@ export const msaSpecs: ScreenshotSpec[] = [
           //
           // `hideGaps` defaults true, so this one number is the whole setting.
           allowedGappyness: 80,
-          // Sized so the alignment ends on a WHOLE row. An MSA panel scrolls,
-          // so its own height decides where the frame cuts, and neither
-          // `blank below the last content` nor `CONTENT CLIPPED BELOW THE FOLD`
-          // can see it -- both measure the page, and this display overflows
-          // inside a fixed height the page is happy with.
-          //
-          // Measured on this alignment rather than derived: chrome (toolbar,
-          // conservation rows, header) is 94px, so the alignment area is
-          // height - 94, and at the default 550 that was 456 = 28 rows plus an
-          // 8px sliver that reads as a truncated row. 94 + 50*16 shows fifty of
-          // the hundred whole, and viewportHeight follows it exactly, so there
-          // is no blank under the frame either.
-          height: 894,
+          // Zoomed out from the 12 x 16 px cells the view opens at (review:
+          // "might benefit from zooming out the msa more"), to the smallest
+          // cells that still draw letters, which need colWidth over half the
+          // row height. The narrower tree gives the columns its width.
+          colWidth: 8,
+          rowHeight: 12,
+          treeAreaWidth: 260,
+          // chrome is 94 px, so 94 + 70 rows of 12 ends the panel on a whole row
+          height: 934,
         },
       ],
     }),
@@ -372,9 +363,8 @@ export const msaSpecs: ScreenshotSpec[] = [
       ...COLLAPSE_DOMAIN_KEY,
     ],
     hideTooltip: true,
-    // the LGV above plus the MsaView's own 894 and nothing else: 878 was this
-    // frame at the view's default height, and the view grew by 344.
-    viewportHeight: 1222,
+    // the LGV above plus the MsaView's own 934 and nothing else
+    viewportHeight: 1262,
     readyTimeout: 120000,
   },
   {
