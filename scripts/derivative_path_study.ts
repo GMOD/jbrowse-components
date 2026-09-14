@@ -8,15 +8,14 @@
  * junction a somatic caller reports, plus two control sets, and reports what
  * fraction it recovers and where it ranks them.
  *
- * WHAT THIS DOES AND DOES NOT MEASURE. The comparator (nanomonsv's calls) was
+ * WHAT THIS DOES AND DOES NOT MEASURE. The colo829 comparator (nanomonsv's calls) was
  * derived from the same molecules the picker reads, so agreement here is
  * CONCORDANCE between two methods on one dataset, not validation against an
  * independent truth. The two are still doing different work -- nanomonsv
  * clusters, assembles a local contig and subtracts a matched normal, while this
  * reads SA tags off single reads and subtracts nothing -- so disagreement is
- * informative in both directions. The independent checks live elsewhere: the
- * HG008-T fixture is scored against a benchmark callset AND a T2T tumour
- * assembly built without reads.
+ * informative in both directions. colo829truth and cgiab are the independent
+ * comparisons.
  *
  * Two stages, because the fetch is the slow part and the scoring is what you
  * iterate on:
@@ -51,6 +50,8 @@ interface Source {
 }
 interface Dataset {
   vcf: string
+  /** a comparator whose ALT brackets bcftools cannot be trusted with */
+  junctions?: (vcf: string) => CalledJunction[]
   comparator: string
   /** whether the comparator saw these same reads */
   independent: boolean
@@ -68,6 +69,28 @@ const DATASETS: Record<string, Dataset> = {
     vcf: join(DATA, 'demo/COLO829.somatic-sv.vcf.gz'),
     comparator: 'nanomonsv somatic calls (PASS)',
     independent: false,
+    tumour: {
+      url: 'https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram',
+      index: join(DATA, 'COLO829_tumor.ht.cram.crai'),
+      isCram: true,
+    },
+    normal: {
+      url: 'https://ont-open-data.s3.amazonaws.com/colo829_2024.03/basecalls/colo829bl/sup/PAU59807.d052sup4305mCG_5hmCGvHg38.bam',
+      index: join(DATA, 'PAU59807.d052sup4305mCG_5hmCGvHg38.bam.bai'),
+    },
+  },
+  // The same reads scored against an INDEPENDENT truth: Valle-Inclán et al.
+  // 2022's 68 somatic SVs, merged from Illumina, PacBio, ONT, 10X and Bionano
+  // calls made before this ONT run existed and validated by capture, PCR or
+  // optical maps. Its header has a malformed INFO line and it writes DEL, DUP
+  // and INV as bracketed reciprocal pairs with no MATEID, so it is parsed here
+  // rather than through bcftools.
+  colo829truth: {
+    vcf: 'https://zenodo.org/api/records/4716169/files/truthset_somaticSVs_COLO829_hg38lifted.vcf/content',
+    junctions: truthSetJunctions,
+    comparator:
+      'COLO829 multi-platform somatic SV truth set (Valle-Inclán 2022, hg38 liftover)',
+    independent: true,
     tumour: {
       url: 'https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram',
       index: join(DATA, 'COLO829_tumor.ht.cram.crai'),
@@ -211,6 +234,41 @@ function bcftoolsJunctions(vcf: string): CalledJunction[] {
         span: Math.abs(bPos - aPos),
       })
     }
+  }
+  return junctions
+}
+
+function truthSetJunctions(vcf: string): CalledJunction[] {
+  const junctions: CalledJunction[] = []
+  const seen = new Set<string>()
+  for (const line of readFileSync(vcf, 'utf8').split('\n')) {
+    if (!line || line.startsWith('#')) {
+      continue
+    }
+    const [chrom, pos, id, , alt, , filter, info] = line.split('\t')
+    const svType = /SVTYPE=([A-Z]+)/.exec(info ?? '')?.[1] ?? ''
+    const m = /[[\]]([^[\]:]+):(\d+)[[\]]/.exec(alt ?? '')
+    if (filter !== 'PASS' || svType === 'INS' || !m || !chrom || !pos || !id) {
+      continue
+    }
+    const aRef = `chr${chrom}`
+    const bRef = `chr${m[1]}`
+    const aPos = +pos - 1
+    const bPos = +m[2]! - 1
+    const key = [`${aRef}:${aPos}`, `${bRef}:${bPos}`].sort().join('|')
+    if (seen.has(key)) {
+      continue
+    }
+    seen.add(key)
+    junctions.push({
+      id,
+      svType,
+      aRef,
+      aPos,
+      bRef,
+      bPos,
+      ...(aRef === bRef ? { span: Math.abs(bPos - aPos) } : {}),
+    })
   }
   return junctions
 }
@@ -393,12 +451,15 @@ function fetch(dataset: string) {
   progressFile = join(dir, 'progress.log')
 
   let vcf = ds.vcf
-  if (vcf.startsWith('http')) {
+  if (ds.junctions) {
+    vcf = join(dir, 'comparator.vcf')
+    execFileSync('curl', ['-sL', '-o', vcf, ds.vcf])
+  } else if (vcf.startsWith('http')) {
     vcf = join(dir, 'comparator.vcf.gz')
     execFileSync('curl', ['-sL', '-o', vcf, ds.vcf])
     execFileSync('tabix', ['-f', '-p', 'vcf', vcf])
   }
-  const junctions = bcftoolsJunctions(vcf)
+  const junctions = (ds.junctions ?? bcftoolsJunctions)(vcf)
   const called = junctions.map(locusOf)
   const random = randomLoci(ds.tumour, 60)
   say(

@@ -349,16 +349,14 @@ def main():
         check('every spanning read realigns to the reconstruction', spanning, 12)
         check('none of them clips at a junction', clipped, 0)
 
-        # Every simulated read is a whole molecule of the allele, so there is no
-        # intact homolog here: the depth is flat across both junctions and no
-        # read stops at either. The real-data shape (a step to about half, reads
-        # ending at it) is recorded in reference/SV_MULTIHOP.md.
+        # Every simulated read is a whole molecule of the allele: the depth is
+        # flat across both junctions and no read stops at either.
         steps = [l.split('\t') for l in
                  open(f'{out}.junction_depth.tsv').read().strip().split('\n')[1:]]
         check('one depth step per junction', len(steps), 2)
         check('no read stops at a junction of an allele every read spans',
               [(s[4], s[5]) for s in steps], [('0', '0')] * 2)
-        check_true('the depth does not step where no homolog leaves',
+        check_true('the depth does not step at a junction every read spans',
                    all(0.8 <= float(s[3]) <= 1.25 for s in steps),
                    ' '.join(s[3] for s in steps))
 

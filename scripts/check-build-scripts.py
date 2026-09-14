@@ -1543,10 +1543,8 @@ check("the projected gene track belongs to the derivative",
        if t["trackId"] == sv_multihop.track_ids("der1", "hg38")["genes"]],
       [["der1"]])
 
-# The allele-fraction step: depth on either side of each junction, and the
-# reads that stop there. Rows are PAF rows in contig order, so the junction is
-# the query end of the left one; a read whose alignment ends there is one off
-# the intact homolog, and a step to half is what one allele of two looks like.
+# Depth on either side of each junction, and the reads that stop there. Rows
+# are PAF rows in contig order, so the junction is the query end of the left one.
 step_rows = [["q", "0", "0", "1000"], ["q", "0", "1000", "1500"]]
 step_depth = [40] * 1000 + [20] * 500
 check("junction_steps averages depth either side of the segment boundary",

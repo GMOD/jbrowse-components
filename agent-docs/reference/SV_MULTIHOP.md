@@ -52,18 +52,29 @@ derivative 33,126-39,549  -  chr3   25,352,683-25,359,111
 ```
 
 Two chr3 arms in opposite orientations (a foldback) with 199 bp of chr10 and
-183 bp of chr12 spliced in at the turn. That structure has now been derived three
-times independently — from the caller's breakend brackets, from a de novo
-consensus realigned back, and from a LINX-style breakend walk in a separate
-codebase ([below](#the-breakend-walk-cross-check)) — and all three agree.
+183 bp of chr12 spliced in at the turn. That structure has been derived three
+ways — from the caller's breakend brackets, from a de novo consensus realigned
+back, and from a LINX-style breakend walk in a separate codebase
+([below](#the-breakend-walk-cross-check)) — and all three agree, but all three
+read the same 2024 ONT molecules. **The independent confirmation is the
+Valle-Inclán 2022 truth set** (Zenodo 4716169, hg38 liftover): its
+`truthset_8`, `truthset_43` and `truthset_7` are exactly this chain's three
+junctions, in these orientations, called from Illumina (two of them from
+Illumina alone) and validated by capture. The chr9 fold-back's picker rows are
+`truthset_34` (the two-segment row) and `truthset_35` then `_36` on one molecule
+(the three-segment row).
 
 Supporting evidence, all measured rather than eyeballed:
 
 - 29 tumour reads span all three loci; the longest is 57,134 bp
 - 0 of 115 reads at the same locus in the matched normal carry multi-hop
   alignments, which is what makes it somatic
-- 0 of the 29 primary alignments clip at any of the four junctions once
-  realigned to the derivative; depth holds flat at 28 across all of them
+- realigned to the derivative, every one of the 29 has an alignment crossing
+  all four junctions. That is agreement with a consensus these reads polished,
+  not independent evidence. 19 of them also split at contig 32,275, where the
+  fold-back's inverted copy of chr3 begins: a read whose return arm runs past the
+  contig's end aligns that arm onto the forward copy, so those bases count twice
+  left of 32,275 and depth reads ~43x there against ~19x right of it
 
 **K562** `BCR--ABL1` is called by DepMap's STAR-Fusion (short-read RNA-seq) at
 `chr22:23,290,413 -> chr9:130,854,064`, and an ENCODE Iso-Seq read splits at
@@ -649,6 +660,29 @@ in its window. **Seven HG008-T junctions are missed with reads present and no
 in-read deletion either**, and those seven are the only genuinely unexplained
 failures in the whole study; nobody has looked at them yet.
 
+**Against an independent truth set the numbers are lower, and that is the
+comparison to quote.** `derivative_path_study.ts fetch|score colo829truth`
+scores the same ONT reads against the Valle-Inclán 2022 truth set (65 junctions
+after insertions):
+
+| Event size | Truth set junctions | Recovered | Rank 1 |
+| --- | --- | --- | --- |
+| < 1 kb | 12 | 2 | 2 |
+| 1 - 10 kb | 10 | 4 | 4 |
+| 10 - 100 kb | 14 | 12 | 10 |
+| > 100 kb | 16 | 14 | 14 |
+| interchromosomal | 13 | 9 | 9 |
+| all | 65 | 41 | 39 |
+
+Every recovered junction is rank 1 or 2, worst breakend 10 bp, and the matched
+normal recovers none. Of the eight misses above 10 kb or interchromosomal,
+seven were supported by Illumina alone in the truth set (`truthset_1`, `_13`,
+`_19`, `_20`, `_33`, `_41`, `_44`), which may be absent from or unreachable in
+this ONT stock; `truthset_40` (chr10–chr18, seen by all four technologies) is
+missed with reads present. 13 of the 24 misses have reads and no in-read
+deletion. Routes still appear at 27% of random loci (0.28 per window), so a row
+without a matching call is a question, not an allele.
+
 **Rank is not the weak link.** Where the junction is recovered it is rank 1 in
 48 of 51 (COLO829) and 96 of 106 (HG008-T), and rank 1 or 2 in **every single
 case in both**. Breakpoint agreement, taking the worse of a junction's two ends:
@@ -719,11 +753,12 @@ The check it was reaching for exists and is done properly outside the browser:
 and that alignment is on the page as `reads_vs_der3`, with real mismatches and
 real clipping against real bases.
 
-One measurement from that work is about the DATA rather than the lane, and is
-worth keeping: three reads in the tutorial's window go chr3 → chr10 → chr3,
-skipping the 183 bp chr12 templated insert the reconstruction claims. That
-dissent is invisible in any picture built only from the reads that carry the
-path, which is why it is recorded here instead.
+One measurement from that work is about the DATA rather than the lane: reads in
+the tutorial's window go chr3 → chr10 → chr3, skipping the 183 bp chr12
+templated insert. The two that clear the picker's floor (`046a4d7e`,
+`b42e2b8a`) place their chr10 piece at MAPQ 34 and 10 and carry no chr12 SA
+entry at all, and their chr10 → chr3 junction is in no callset. They are an
+alignment miss on noisy reads, not a second allele.
 
 ## How to exercise `derive`
 
@@ -761,17 +796,17 @@ asks the second to place the same three segments at MAPQ 60. Nobody has diffed
 the two against the real der(3) yet, which is the measurement to take before
 changing the default.
 
-**`derive` measures the allele fraction it used to leave to the figure spec.**
-After the realignment it runs `samtools depth` over
-`reads_vs_derivative.bam` and writes `<out>.junction_depth.tsv`: per junction,
-mean depth over `--depth-window` (500) bp either side, the ratio, and the reads
-whose primary alignment ends or starts within 100 bp of it (`junction_steps`,
-pinned in `check-build-scripts.py`). On the real der(3) the shape to expect is
-the one `website/scripts/specs/cancer_sv.ts` computed by hand: ~43x to ~19x
-where the derivative leaves shared chr3 sequence, with 13 of 29 primaries
-ending there. The synthetic foldback has no intact homolog, so the pipeline
-check pins the flat case instead: ratio within 0.8–1.25, no read ending at
-either junction.
+**`derive` writes `<out>.junction_depth.tsv`, and it is not an allele
+fraction.** After the realignment it runs `samtools depth` over
+`reads_vs_derivative.bam`: per junction, mean depth over `--depth-window` (500)
+bp either side, the ratio, and the reads whose primary alignment ends or starts
+within 100 bp of it (`junction_steps`, pinned in `check-build-scripts.py`). The
+BAM holds only the reads spanning every locus, so no read off an intact homolog
+is in it. The ~43x-to-~19x step on the real der(3), once read as the intact
+chr3 leaving and shaded as "only the rearranged copy reaches here" in
+`derivative_synteny`, is the fold-back split described above. The synthetic
+foldback's reads are whole molecules, so the pipeline check pins the flat case:
+ratio within 0.8–1.25, no read ending at either junction.
 
 **The synthetic foldback is now a check, not a recipe.**
 `scripts/check_sv_multihop_pipeline.py` builds the allele below, runs `derive`
@@ -815,12 +850,6 @@ proves the wiring.
   against jbrowse-web on the synthetic foldback above.
 
 ## Two figures that are not a baseline
-
-`derivative_synteny` and `derivative_inserts` were captured against a
-`products/jbrowse-web` build that contained other agents' uncommitted **synteny
-and dotplot** source changes, and are committed as-is. Do not treat them as a
-baseline until they are re-rendered; the precondition is a worktree where those
-packages are clean, which is what has kept it from being done.
 
 `derivative_autogenerated` and `foldback_reconstruction` were listed here too,
 on the grounds that the view they capture had gained a reads panel and that
@@ -923,11 +952,11 @@ so ask them of anything new here:
 A "no" to any of them means the thing belongs in `scripts/`, or in somebody
 else's program, and not in the browser.
 
-The one capability here that no caller has, and the reason the feature earns its
-place: it shows the **dissent**. The der(3) window returns the 28-read
-four-segment allele *and* the 2-read route that skips the chr12 insert, each with
-its own count. cuteSV and LINX are obliged to emit one answer. Preserving the
-disagreement is the product; resolving it is not.
+The one capability here that no caller has: it shows every route the reads
+describe, each with its own count, where cuteSV and LINX emit one answer. That
+cuts both ways. The chr9 fold-back's two nine-read rows are two validated
+alleles; the der(3) window's 2-read row that skips the chr12 insert is an
+alignment miss (above), and nothing in the dialog tells the two cases apart.
 
 ## Traps in this worktree
 

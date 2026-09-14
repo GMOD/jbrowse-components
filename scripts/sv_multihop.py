@@ -399,11 +399,12 @@ def junction_steps(rows, depth, spans, window, edge=JUNCTION_EDGE):
     mean depth over `window` bp on either side of it, and the reads whose
     alignment ends or starts within `edge` bp of it.
 
-    A tumour that still carries the intact homolog puts reads off it onto every
-    segment the derivative shares with the reference, and those reads stop where
-    the derivative leaves that sequence. So the depth steps down at such a
-    junction, to about half when the two copies are at equal dose, and the count
-    of reads ending there is that step read out per molecule."""
+    The reads are the spanning reads only, so this is not an allele fraction:
+    no read off an intact homolog is in the realignment. A step or a pile of
+    reads ending at a junction says the spanning reads disagree with the
+    consensus there. A fold-back needs care: its inverted copy lets a read
+    whose return arm runs past the contig's end align that arm onto the forward
+    copy, which splits the read and counts the same bases twice."""
     steps = []
     for left, right in zip(rows, rows[1:]):
         pos = int(left[3])
@@ -897,16 +898,15 @@ def derive(args, tmp):
                 fh.write(line + '\n')
         print(f'wrote {genes_gff} ({len(projected)} features from {len(lines)} reference rows)')
 
-    # The reads, realigned to the reconstruction: end-to-end coverage with no
-    # clipping is the evidence that the reconstruction is right.
+    # The reads, realigned to the reconstruction. They polished it, so no
+    # clipping says they agree with it, not that it is right; a callset from
+    # other reads or platforms is the independent check.
     proof = f'{args.out}.reads_vs_derivative.bam'
     align_and_sort(derivative, reads_fa, proof, args.preset, args.threads, tmp)
     print(f'wrote {proof}')
 
-    # The allele fraction, read off that realignment rather than reasoned about:
-    # where the derivative shares sequence with the reference, reads off the
-    # intact homolog align too and stop at the junction, so the depth steps
-    # there. Reported per junction, with the reads that end at it.
+    # Depth either side of each junction, and the spanning reads that stop at
+    # it: where they disagree with the consensus. See junction_steps.
     depth_tsv = os.path.join(tmp, 'depth.tsv')
     run_out(['samtools', 'depth', '-a', proof], depth_tsv)
     depth = [0] * len(trimmed)
@@ -924,8 +924,7 @@ def derive(args, tmp):
             fh.write(f"{st['junction']}\t{st['left']:.1f}\t{st['right']:.1f}\t"
                      f"{ratio:.2f}\t{st['ending']}\t{st['starting']}\n")
     print(f'wrote {junctions_tsv} (mean depth over {args.depth_window} bp either '
-          f'side of each junction; a step to about half is the intact homolog '
-          f'leaving)')
+          f'side of each junction, over the spanning reads only)')
     for st in steps:
         ratio = st['right'] / st['left'] if st['left'] else 0.0
         print(f"    {st['junction']:>7}: {st['left']:.1f}x -> {st['right']:.1f}x "

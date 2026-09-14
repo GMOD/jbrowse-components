@@ -243,7 +243,9 @@ since the shorter route's reads may have crossed the allele from the other end â
 with `partOf`, the `pathId` of the most-supported route that contains it, and
 the picker prints "part of a longer route in this list" beside the row. A route
 that diverges at any junction, such as COLO829's three-segment path that skips
-the chr12 insert, shares no run and stays the dissent it is.
+the chr12 insert, shares no run and keeps a row of its own. That one is two noisy
+reads in which the aligner never placed the insert, and nothing here can tell
+it from a second allele.
 
 ## Depth lives elsewhere
 

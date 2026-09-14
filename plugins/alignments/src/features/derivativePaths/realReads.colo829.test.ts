@@ -65,11 +65,10 @@ describe('COLO829 der(3), tumour', () => {
     ])
     expect(candidates[0]!.readCount).toBe(28)
 
-    // The second row is not noise and not a duplicate of the first: it is the
-    // three-segment path chr3 -> chr10 -> chr3 that SKIPS the 183 bp chr12
-    // templated insert the top row claims. Two reads take it. That disagreement
-    // is the one thing a picture built only from the supporting reads cannot
-    // show, so it must survive to the picker rather than be absorbed.
+    // The second row is the three-segment path chr3 -> chr10 -> chr3 that
+    // skips the 183 bp chr12 insert: two reads whose chr10 piece aligned at
+    // MAPQ 10 and 34 and whose chr12 piece never aligned. An alignment miss,
+    // but the grouping cannot know that, so it keeps its own row.
     expect(candidates).toHaveLength(2)
     expect(candidates[1]!.readCount).toBe(2)
     expect(candidates[1]!.refNames).not.toContain('chr12')
