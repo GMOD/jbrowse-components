@@ -153,7 +153,7 @@ export type AssertCompactnessMatchesUpstream = AssertTrue<
 // nothing at runtime and still fails the build the moment upstream edits the
 // string. Same trade as ALIGNMENTS_COMPACTNESS above.
 const STRAND_COLOR_JEXL_LOCAL =
-  "jexl:feature.strand==1?'tomato':feature.strand==-1?'cornflowerblue':'goldenrod'" satisfies typeof STRAND_COLOR_JEXL
+  "jexl:feature.strand==1?'#d62728':feature.strand==-1?'#1f77b4':'goldenrod'" satisfies typeof STRAND_COLOR_JEXL
 
 // The other expression those displays read back rather than treat as opaque:
 // `colorByAttribute` pulls the attribute name out of it with a regex. Pinned the

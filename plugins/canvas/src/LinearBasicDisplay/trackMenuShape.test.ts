@@ -52,23 +52,6 @@ describe('canvas track menu shape', () => {
     }
   })
 
-  it('keeps the menu open for the group-by radios that write a setting, not the dialog opener', () => {
-    const { createDisplay } = createTestEnvironment()
-    const { display } = createDisplay()
-    const groupBy = subMenuOf(display.trackMenuItems(), 'Group by...')
-
-    expect(
-      groupBy.map(i => [
-        labelOf(i),
-        'onClick' in i ? staysOpenOnClick(i) : undefined,
-      ]),
-    ).toEqual([
-      ['None', true],
-      ['Strand', true],
-      ['Attribute...', false],
-    ])
-  })
-
   it('keeps the menu open for the color radio that writes a setting, not the dialog openers', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
@@ -277,7 +260,7 @@ describe('color swatches under a per-feature jexl slot', () => {
 describe('the built-in strand color expression', () => {
   it('is the documented short form, not get(feature,...)', () => {
     expect(STRAND_COLOR_JEXL).toBe(
-      "jexl:feature.strand==1?'tomato':feature.strand==-1?'cornflowerblue':'goldenrod'",
+      "jexl:feature.strand==1?'#d62728':feature.strand==-1?'#1f77b4':'goldenrod'",
     )
   })
 

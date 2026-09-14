@@ -2,21 +2,17 @@ import { filterMenuItems, undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import { radioItems, toggleItem, withHint } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
-import {
-  groupByRadioMenuItem,
-  hiddenGroupsItems,
-} from '@jbrowse/display-kit/groupByMenu'
+import { hiddenGroupsItems } from '@jbrowse/display-kit/groupByMenu'
 import { heightModeMenuItems } from '@jbrowse/display-kit/heightModeMenu'
 import HeightIcon from '@mui/icons-material/Height'
 import PaletteIcon from '@mui/icons-material/Palette'
+import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import { DISPLAY_MODE_OPTIONS } from '../RenderFeatureDataRPC/displayModes.ts'
 import { STRAND_COLOR_JEXL } from '../RenderFeatureDataRPC/featureColors.ts'
-import { FEATURE_GROUP_BY_OPTIONS } from './groupBy.ts'
 import { SHOW_LABELS_OPTIONS } from './showLabelsMode.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
-import type { FeatureGroupBy, FeatureGroupByType } from './groupBy.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
@@ -73,9 +69,7 @@ interface FeatureHeightSelf extends HeightModeMenuModel {
 }
 
 interface GroupByMenuSelf {
-  groupBy: FeatureGroupBy | undefined
-  setGroupBy: (groupBy?: FeatureGroupBy) => void
-  openGroupByAttributeDialog: () => void
+  openGroupByDialog: () => void
 }
 
 interface TrackMenuSelf extends GroupByMenuSelf {
@@ -87,31 +81,15 @@ interface TrackMenuSelf extends GroupByMenuSelf {
   openFilterDialog: () => void
 }
 
-// The shared radio submenu over this display's own dimensions, so a feature
-// track and a read track pick a grouping the same way. The attribute row is
-// named like the color menu's once an attribute is picked.
 export function groupByMenuItems(self: GroupByMenuSelf): MenuItem[] {
-  const attribute = self.groupBy?.attribute
   return [
-    groupByRadioMenuItem<'strand', FeatureGroupByType>({
-      current: self.groupBy?.type,
-      options: FEATURE_GROUP_BY_OPTIONS,
-      onSelect: type => {
-        self.setGroupBy({ type })
+    {
+      label: 'Group by...',
+      icon: WorkspacesIcon,
+      onClick: () => {
+        self.openGroupByDialog()
       },
-      onNone: () => {
-        self.setGroupBy(undefined)
-      },
-      extra: [
-        {
-          type: 'attribute',
-          label: attribute ? `Attribute (${attribute})...` : 'Attribute...',
-          onClick: () => {
-            self.openGroupByAttributeDialog()
-          },
-        },
-      ],
-    }),
+    },
   ]
 }
 

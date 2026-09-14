@@ -5,6 +5,10 @@ import {
   overflowLabel,
 } from '@jbrowse/display-kit/groupKeys'
 
+import {
+  STRAND_COLOR_JEXL,
+  attributeColorJexl,
+} from '../RenderFeatureDataRPC/featureColors.ts'
 import { isPlacedRow } from './rowPlacement.ts'
 
 import type {
@@ -32,6 +36,8 @@ interface FeatureGroupByDimension<K extends FeatureGroupByType> {
   // Read off the hit item rather than the feature: the worker already stamps
   // what a section needs, so a partition costs no refetch beyond the stamp.
   key: (item: FlatbushItem, groupBy: FeatureGroupByOf<K>) => GroupId
+  // The `color` slot value that paints each section in its own color.
+  colorJexl: (groupBy: FeatureGroupByOf<K>) => string
 }
 
 const FORWARD_GROUP: GroupId = { key: '+', label: 'Forward strand' }
@@ -53,6 +59,7 @@ export const FEATURE_GROUP_BY_DIMENSIONS: {
         : item.strand === -1
           ? REVERSE_GROUP
           : UNSTRANDED_GROUP,
+    colorJexl: () => STRAND_COLOR_JEXL,
   },
   attribute: {
     type: 'attribute',
@@ -61,14 +68,17 @@ export const FEATURE_GROUP_BY_DIMENSIONS: {
       item.groupKey
         ? { key: item.groupKey, label: `${attribute}: ${item.groupKey}` }
         : { key: '', label: `${attribute}: none` },
+    colorJexl: ({ attribute }) => attributeColorJexl(attribute),
   },
 }
 
-// The radio the menu picks whole; `attribute` reaches its dialog through the
-// menu's `extra` row instead.
-export const FEATURE_GROUP_BY_OPTIONS = [
-  { type: 'strand' as const, label: FEATURE_GROUP_BY_DIMENSIONS.strand.label },
-]
+export function groupColorJexl(groupBy: FeatureGroupBy | undefined) {
+  return groupBy === undefined
+    ? undefined
+    : groupBy.type === 'attribute'
+      ? FEATURE_GROUP_BY_DIMENSIONS.attribute.colorJexl(groupBy)
+      : FEATURE_GROUP_BY_DIMENSIONS.strand.colorJexl(groupBy)
+}
 
 export function featureGroupId(
   item: FlatbushItem,

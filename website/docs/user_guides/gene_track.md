@@ -64,9 +64,9 @@ Track-menu toggles:
 - Show subfeature labels - each transcript's name on its row
 - Show chevrons - strand chevrons along the intron lines (on by default)
 - Show only genes - hides non-gene features
-- Group by... - _Strand_ packs the forward-strand features into one labelled
-  section above the reverse-strand ones, unstranded features last, so convergent
-  and divergent neighbours read apart. _Attribute..._ asks for a feature
+- Group by... - opens a dialog. _Strand_ packs the forward-strand features into
+  one labelled section above the reverse-strand ones, unstranded features last,
+  so convergent and divergent neighbours read apart. _Attribute_ takes a feature
   attribute, `biotype` or `source` say, and packs one section per value, with
   the features carrying none last
 
@@ -77,6 +77,11 @@ The **Show N hidden** chip at the top of the track, or **Show... → Show N hidd
 groups**,<!-- menu-path-ok --> puts every hidden section back, and changing the
 grouping clears them. The `groupBy` config slot pre-groups a track, so a shared
 link opens grouped.
+
+The dialog's **Also color by strand** (or **by this attribute**) paints each
+section in its own color: red and blue by strand, or one color per value. It
+starts ticked unless the track already has a color of its own, and unticking it
+returns the default color.
 
 <Figure caption="NCBI RefSeq genes on hg38 grouped by strand, one representative transcript per gene. The forward-strand section stacks above the reverse-strand one, each under its chip, with the divider between them marking where one strand's rows end." src="/img/gene_track_group_by_strand.png" />
 

@@ -2,12 +2,14 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 
 import {
+  STRAND_COLOR_JEXL,
+  attributeColorJexl,
+} from '../RenderFeatureDataRPC/featureColors.ts'
+import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { createTestEnvironment } from './testEnv.ts'
-
-import type { MenuItem } from '@jbrowse/core/ui'
 
 const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 }
 
@@ -37,15 +39,7 @@ function strandedRegionData() {
   })
 }
 
-function groupByRadios(items: MenuItem[]) {
-  const item = items.find(i => 'label' in i && i.label === 'Group by...')!
-  return resolveSubMenu(item as Parameters<typeof resolveSubMenu>[0]).map(i => [
-    'label' in i ? i.label : undefined,
-    'checked' in i && i.checked,
-  ])
-}
-
-test('grouping by strand stacks two labelled sections and the menu ticks it', () => {
+test('grouping by strand stacks two labelled sections', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(0, strandedRegionData(), ctgA)
@@ -60,22 +54,12 @@ test('grouping by strand stacks two labelled sections and the menu ticks it', ()
   ])
   expect(display.groupSections[1]!.top).toBeGreaterThan(GROUP_LABEL_HEIGHT)
   expect(display.showsGroupLabels).toBe(true)
-  expect(groupByRadios(display.trackMenuItems())).toEqual([
-    ['None', false],
-    ['Strand', true],
-    ['Attribute...', false],
-  ])
 
   display.setGroupBy(undefined)
   expect(display.groupSections).toEqual([])
-  expect(groupByRadios(display.trackMenuItems())).toEqual([
-    ['None', true],
-    ['Strand', false],
-    ['Attribute...', false],
-  ])
 })
 
-test('an attribute grouping names its sections by value and the menu row by attribute', () => {
+test('an attribute grouping names its sections by value', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(0, strandedRegionData(), ctgA)
@@ -83,10 +67,6 @@ test('an attribute grouping names its sections by value and the menu row by attr
   expect(display.groupSections.map(s => s.label)).toEqual([
     'biotype: lncRNA',
     'biotype: protein_coding',
-  ])
-  expect(groupByRadios(display.trackMenuItems()).at(-1)).toEqual([
-    'Attribute (biotype)...',
-    true,
   ])
   expect(display.rpcProps().displayConfig.groupByAttribute).toBe('biotype')
 })
@@ -121,6 +101,32 @@ test('a grouped track offsets its track label before any data lands', () => {
   display.setGroupBy({ type: 'strand' })
   expect(display.groupSections).toEqual([])
   expect(display.prefersOffset).toBe(true)
+})
+
+test('grouping with its color writes the grouping color, and unticking takes it back', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  display.applyGroupBy({ type: 'strand' }, true)
+  expect(display.conf.color).toBe(STRAND_COLOR_JEXL)
+
+  display.applyGroupBy({ type: 'attribute', attribute: 'biotype' }, true)
+  expect(display.conf.color).toBe(attributeColorJexl('biotype'))
+
+  display.applyGroupBy({ type: 'attribute', attribute: 'biotype' }, false)
+  expect(display.colorByMode).toBe('default')
+
+  display.applyGroupBy({ type: 'strand' }, true)
+  display.applyGroupBy(undefined, false)
+  expect(display.colorByMode).toBe('default')
+})
+
+test('a color picked by hand survives regrouping without the color', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  display.setFeatureColor('purple')
+  display.applyGroupBy({ type: 'strand' }, false)
+  display.applyGroupBy(undefined, false)
+  expect(display.featureColor).toBe('purple')
 })
 
 test('an unrecognized grouping in the slot reads as ungrouped', () => {

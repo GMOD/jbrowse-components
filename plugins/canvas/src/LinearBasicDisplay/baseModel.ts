@@ -84,6 +84,7 @@ import {
 import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
 import {
   featureGroupSections,
+  groupColorJexl,
   normalizeFeatureGroupBy,
   sectionIdsOf,
 } from './groupBy.ts'
@@ -182,9 +183,7 @@ export { defaultColorItem } from './trackMenus.ts'
 const ColorByAttributeDialog = lazy(
   () => import('./components/ColorByAttributeDialog.tsx'),
 )
-const GroupByAttributeDialog = lazy(
-  () => import('./components/GroupByAttributeDialog.tsx'),
-)
+const GroupByDialog = lazy(() => import('./components/GroupByDialog.tsx'))
 const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
 const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
 
@@ -1364,6 +1363,30 @@ export default function baseStateModelFactory(
           },
         }
       })
+      .actions(self => ({
+        /**
+         * #action
+         * What the Group by dialog applies: the grouping, and the color that
+         * goes with it. Unticked, only a color that was a grouping's own goes
+         * back to the default; a color picked by hand is left alone.
+         */
+        applyGroupBy(
+          groupBy: FeatureGroupBy | undefined,
+          colorByGroup: boolean,
+        ) {
+          const { color } = self.conf
+          const nextJexl = groupColorJexl(groupBy)
+          const wasGroupColor =
+            color !== undefined &&
+            (color === groupColorJexl(self.groupBy) || color === nextJexl)
+          self.setGroupBy(groupBy)
+          if (colorByGroup && nextJexl) {
+            self.setFeatureColor(nextJexl)
+          } else if (wasGroupColor) {
+            self.setFeatureColor(undefined)
+          }
+        },
+      }))
       .actions(self => {
         return {
           /**
@@ -1378,14 +1401,10 @@ export default function baseStateModelFactory(
           /**
            * #action
            */
-          openGroupByAttributeDialog() {
+          openGroupByDialog() {
             getDialogHost(self).queueDialog(handleClose => [
-              GroupByAttributeDialog,
-              {
-                model: self,
-                handleClose,
-                initialAttribute: self.groupBy?.attribute,
-              },
+              GroupByDialog,
+              { model: self, handleClose, color: self.conf.color },
             ])
           },
 
