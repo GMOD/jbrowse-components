@@ -3,6 +3,7 @@
   "assemblies": [
     {
       "name": "RES",
+      "displayName": "Rhopilema (jellyfish)",
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "RES-ReferenceSequenceTrack",
@@ -16,6 +17,7 @@
     },
     {
       "name": "EMU",
+      "displayName": "Ephydatia (sponge)",
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "EMU-ReferenceSequenceTrack",
@@ -29,6 +31,7 @@
     },
     {
       "name": "HCA",
+      "displayName": "Hormiphora (comb jelly)",
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "HCA-ReferenceSequenceTrack",
@@ -42,6 +45,7 @@
     },
     {
       "name": "COW",
+      "displayName": "Capsaspora",
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "COW-ReferenceSequenceTrack",
@@ -55,6 +59,7 @@
     },
     {
       "name": "BIN",
+      "displayName": "Bolinopsis (comb jelly)",
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "BIN-ReferenceSequenceTrack",
@@ -68,6 +73,7 @@
     },
     {
       "name": "BFL",
+      "displayName": "Branchiostoma (amphioxus)",
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "BFL-ReferenceSequenceTrack",
@@ -81,6 +87,7 @@
     },
     {
       "name": "CLAa",
+      "displayName": "Cladorhizid (sponge)",
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "CLAa-ReferenceSequenceTrack",

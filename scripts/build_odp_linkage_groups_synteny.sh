@@ -157,8 +157,20 @@ else
 fi
 APP=jbrowse2
 [ -f "$APP/index.html" ] || jb create "$APP"
+display_name() {
+  case $1 in
+    RES) echo 'Rhopilema (jellyfish)' ;;
+    EMU) echo 'Ephydatia (sponge)' ;;
+    HCA) echo 'Hormiphora (comb jelly)' ;;
+    COW) echo 'Capsaspora' ;;
+    BIN) echo 'Bolinopsis (comb jelly)' ;;
+    BFL) echo 'Branchiostoma (amphioxus)' ;;
+    CLAa) echo 'Cladorhizid (sponge)' ;;
+  esac
+}
 for code in "${CODES[@]}"; do
-  jb add-assembly "$code.fa" --name "$code" --load copy --force --out "$APP"
+  jb add-assembly "$code.fa" --name "$code" --displayName "$(display_name "$code")" \
+    --load copy --force --out "$APP"
 done
 
 while read -r a b; do
