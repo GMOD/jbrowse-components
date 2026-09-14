@@ -29,8 +29,8 @@ const submit = () => {
 
 // The value box is optional in the UI but not in the filter: `filterTagValue`
 // compares the read's value against whatever is stored, so a literal '' matched
-// nothing and wiped the track. '*' is the "has this tag" spelling the box's own
-// placeholder offers.
+// nothing and wiped the track. '*' is the "has this tag" spelling the box's
+// helper text offers.
 test('a tag with no value filters for reads carrying it, not for an empty value', () => {
   const { setFilterBy } = renderDialog()
   fireEvent.change(screen.getByLabelText('Tag name'), {

@@ -33,7 +33,8 @@ const useStyles = makeStyles()(theme => ({
   tagRow: {
     display: 'flex',
     gap: theme.spacing(1),
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    marginTop: theme.spacing(1),
   },
   // `auto` for the label column and `justifyContent: start`, NOT `1fr`: a
   // fraction hands it every spare pixel of the dialog, which put ~450px of
@@ -200,12 +201,16 @@ function TagFilterSection(props: {
 
   return (
     <Paper className={classes.paper} variant="outlined">
-      <Typography>Filter by tag name and value</Typography>
+      <Typography>Filter by tag</Typography>
+      <Typography variant="body2" color="text.secondary">
+        Keeps only reads that carry the tag with this value.
+      </Typography>
       <div className={classes.tagRow}>
         <TagTextField
           variant="outlined"
           size="small"
           defaultValue={tag}
+          helperText="e.g. HP, RG, NM"
           onValueChange={value => {
             setTag(value ?? '')
           }}
@@ -215,7 +220,8 @@ function TagFilterSection(props: {
           variant="outlined"
           size="small"
           value={tagValue}
-          placeholder="Enter value or * for any"
+          placeholder="*"
+          helperText="* matches any value"
           onChange={event => {
             setTagValue(event.target.value)
           }}
@@ -301,13 +307,8 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
 
   const handleSubmit = () => {
     const tagFilters = [
-      // A named tag with the value box left alone means "reads that carry this
-      // tag", which is what `*` spells (see filterTagValue) — and what the
-      // box's own placeholder offers. Storing the literal '' instead compared
-      // every read's value against the empty string, so naming a tag and
-      // tabbing straight to Submit emptied the track with nothing to say why.
-      // A '' a config or session stored deliberately still means "the tag's
-      // value is empty"; only what this dialog writes changes.
+      // An empty value box means `*`, the "carries this tag" spelling
+      // (filterTagValue); a literal '' would match no read and empty the track.
       ...(tag !== '' ? [{ tag, value: tagValue === '' ? '*' : tagValue }] : []),
       ...otherTagFilters,
     ]
