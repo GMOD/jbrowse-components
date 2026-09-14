@@ -173,9 +173,10 @@ export interface GeneGlyphNotice {
 }
 
 export type { Region } from '@jbrowse/core/util'
-// The fit-ladder views return this, and a subclass in another package needs a
-// path to it to emit its own declarations.
+// Views return these, and a subclass in another package needs a path to them to
+// emit its own declarations.
 export type { LabelReservation } from './fitLadder.ts'
+export type { FeatureGroupBy, FeatureGroupSection } from './groupBy.ts'
 // Off this subpath rather than the barrel, so a subclass composing its own
 // "Color by..." presets holds no value edge into the eager entry.
 export { defaultColorItem } from './trackMenus.ts'

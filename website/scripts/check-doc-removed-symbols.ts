@@ -115,6 +115,12 @@ const ABSENT_ON_PURPOSE = new Map([
     "DISPLAYCHROME names canvas's own retired pointer-position useState",
   ],
   ['DiagonalizeRpcBase', 'a base class that left the plugin ABI'],
+  [
+    'GetSubgraph',
+    'PANGENOME_GRAPHS and REGION_VIEW_LAUNCH name the RPC, which left with plugins/graph for jbrowse-plugin-graphgenomeviewer',
+  ],
+  ['maxRegionBp', 'PANGENOME_GRAPHS, a graph plugin model prop, the same move'],
+  ['maxGraphNodes', 'PANGENOME_GRAPHS, the same move'],
   ['filterPaf', 'DEMO_DATASETS names a step in SVbyEye'],
   [
     'ERR_INSUFFICIENT_RESOURCES',
