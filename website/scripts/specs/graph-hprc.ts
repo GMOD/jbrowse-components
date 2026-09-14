@@ -400,13 +400,15 @@ const HS1_RMSK_TRACK = {
 
 // ClinVar and ClinGen were the first candidates and mark nothing here: ClinVar
 // is ~300 SNVs across all of LPA. Swiss-Prot's domain annotation names each
-// kringle, one per KIV-2 copy the reference carries; TrEMBL repeats the same
-// intervals unnamed.
+// kringle, one per KIV-2 copy the reference carries.
+//
+// A cut of UCSC's unipDomain.bb, because hgdownload stalled past the app's 30 s
+// limit during capture: its Swiss-Prot rows over LPA (column 17), BED12.
 const HG38_UNIPROT_DOMAINS_TRACK = {
-  trackId: 'hg38_uniprot_domains_ucsc',
+  trackId: 'hg38_uniprot_domains_lpa',
   name: 'UniProt domains (Swiss-Prot)',
   assemblyNames: ['hg38'],
-  uri: 'https://hgdownload.soe.ucsc.edu/gbdb/hg38/uniprot/unipDomain.bb',
+  uri: 'https://jbrowse.org/demos/hprc/lpa_uniprot_domains.bed.gz',
 }
 
 // A repeat lane read for WHAT THE SEQUENCE IS MADE OF, never for how much of it
@@ -2065,7 +2067,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             {
               trackId: HG38_UNIPROT_DOMAINS_TRACK.trackId,
               type: 'LinearBasicDisplay',
-              jexlFilters: ["feature.status=='Manually reviewed (Swiss-Prot)'"],
               height: 75,
             },
             {
