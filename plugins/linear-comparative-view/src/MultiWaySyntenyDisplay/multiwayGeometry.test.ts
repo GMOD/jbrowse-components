@@ -5,6 +5,7 @@ import {
   cssColorToABGR,
   withAbgrAlpha,
 } from '@jbrowse/core/util/colorBits'
+import { STRAND_ARROW_LENGTH_PX } from '@jbrowse/plugin-canvas'
 
 import { KIND_BASE, KIND_MARKER } from '../LinearSyntenyRPC/syntenyColors.ts'
 import { composeLaneLinks } from './composeLaneLinks.ts'
@@ -652,7 +653,7 @@ describe('a lane cell', () => {
     expect(cell.rectHeights[0]).toBeLessThan(cell.rectHeights[2]!)
     expect(cell.rectHeights[2]).toBe(s.glyphHeight)
     expect([...cell.arrowDirections]).toEqual([-1])
-    expect(cell.arrowXs[0]).toBe(PX_ORIGIN + 80)
+    expect(cell.arrowXs[0]).toBe(PX_ORIGIN + 80 + STRAND_ARROW_LENGTH_PX)
     // no placement box: the gene covers the group's span
     expect(cell.hits.map(h => h.label)).toEqual(['GENE1'])
     expect(glyphHitAt(cell.hits, 100, lane.glyphTop + 1)?.feature).toBe(gene)

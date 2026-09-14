@@ -108,6 +108,7 @@ export {
   UTR_HEIGHT_FRACTION,
   centerShrink,
 } from './RenderFeatureDataRPC/collect/emitPrimitives.ts'
+export { STEM_LENGTH_PX as STRAND_ARROW_LENGTH_PX } from './LinearBasicDisplay/passes/shaders/arrow.consts.generated.ts'
 export {
   featureType,
   getSubfeatures,

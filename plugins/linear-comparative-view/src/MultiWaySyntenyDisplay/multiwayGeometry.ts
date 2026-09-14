@@ -1,6 +1,10 @@
 import { toLocale } from '@jbrowse/core/util'
 import { cssColorToABGR, withAbgrAlpha } from '@jbrowse/core/util/colorBits'
-import { UTR_HEIGHT_FRACTION, centerShrink } from '@jbrowse/plugin-canvas'
+import {
+  STRAND_ARROW_LENGTH_PX,
+  UTR_HEIGHT_FRACTION,
+  centerShrink,
+} from '@jbrowse/plugin-canvas'
 import {
   ATTRIBUTE_PREFIX,
   categoricalColor,
@@ -627,10 +631,14 @@ export function buildLaneCells({
     }
     // no width gate here: the passes cull an arrow narrower than
     // ARROW_MIN_FEATURE_WIDTH_PX themselves, in px, and these cells are packed
-    // at one px per bp so that gate reads the drawn width directly
+    // at one px per bp so that gate reads the drawn width directly. Inside the
+    // box, because a lane packs its genes in one row and an arrow past the end
+    // lands on the neighbour
     if (pxDir !== 0) {
       glyphs.arrow(
-        pxDir === 1 ? right : left,
+        pxDir === 1
+          ? right - STRAND_ARROW_LENGTH_PX
+          : left + STRAND_ARROW_LENGTH_PX,
         right - left,
         centerY,
         glyphHeight,
