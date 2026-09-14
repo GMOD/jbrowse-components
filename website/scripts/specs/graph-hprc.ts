@@ -1312,51 +1312,52 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    // Bare names, not glosses. The first pass said "allele: what one haplotype
-    // carries instead" and the pill ran off the left edge of the pane -- and a
-    // diagram's labels are names anyway, with the prose above the figure
-    // carrying what each one means. Neither deletion gets a callout: the
-    // renderer already writes "32.7 kb deletion" across the arc itself.
+    // Bare names, not glosses: the prose above the figure carries what each one
+    // means, and a gloss ran the pill off the pane. Neither deletion gets a
+    // callout: the renderer writes "32.7 kb deletion" across the arc itself.
+    // Each pill sits toward the pane's edge, and each leader arrives at its node
+    // near a right angle, so no leader reads as a piece of the graph and no
+    // arrow ends at another label. Positions come from `node
+    // scripts/probe-graph-nodes.ts pangenome/hprc_graph_anatomy`.
     annotations: [
+      // s329770+ is the 14.3 kb CYP21A2 backbone node on the blue end of the
+      // ramp, with open pane to its right. The 52 kb node is painted red by the
+      // ramp and a red leader into it read as one arrow.
       {
         type: 'text',
         text: 'backbone',
         leader: true,
         fontSize: 20,
-        // s329772+ (10.8 kb) rather than s329764+ (14.3 kb), which is where
-        // this first pointed. The ramp paints the window's start red, so the
-        // 52 kb backbone node running to the lower left IS red -- and a leader
-        // into the middle of the drawing lay collinear with it, so the callout
-        // and a piece of the graph read as one arrow. This node is up on the
-        // blue-to-magenta end, where nothing in the data is annotation-red.
-        anchor: { view: 1, graphNode: 's329772+' },
-        dx: -70,
-        dy: -130,
+        anchor: { view: 1, graphNode: 's329770+' },
+        dx: 110,
+        dy: 50,
       },
+      // s352179+ is NA18948's 21 kb allele, the largest off-reference node in
+      // the cut. It runs to the lower left, so the pill hangs off it to the left
+      // and the leader comes in across the node.
       {
         type: 'text',
         text: 'allele',
         leader: true,
         fontSize: 20,
         anchor: { view: 1, graphNode: 's352179+' },
-        dx: -160,
-        dy: -60,
+        dx: -120,
+        dy: -40,
       },
-      // The third name, and the one the pages lean on hardest. s329764+ is one
-      // wall of the clearest lens in the cut: the reference path, and the
-      // dashed 32.7 kb deletion arc bypassing it between the same two nodes.
-      // The label points into the lens and the caption says what the two routes
-      // are, since an anchor names a node and a bubble is a pair of routes.
-      // Below-left, where the leader crosses the red 52 kb node at a right
-      // angle instead of running alongside it.
+      // s329764+ is one wall of the clearest lens in the cut: the reference
+      // path, and the dashed 32.7 kb deletion arc bypassing it between the same
+      // two nodes. An anchor names a node and a bubble is a pair of routes, so
+      // the caption says what the two routes are. Below-left is the one side
+      // where the leader crosses nothing; the offset keeps the pill clear of the
+      // allele arrowhead above it.
       {
         type: 'text',
         text: 'bubble',
         leader: true,
         fontSize: 20,
         anchor: { view: 1, graphNode: 's329764+' },
-        dx: -150,
-        dy: 95,
+        dx: -130,
+        dy: 145,
       },
     ],
     readySelector: TOOLBAR_READY,
@@ -1364,9 +1365,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     allowUnsettled: true,
     settleMs: 8000,
     viewportWidth: 1000,
-    // 1176 in the first run left 86 css px of blank under the pane, which the
-    // run's own below-the-fold report named.
-    viewportHeight: 1090,
+    viewportHeight: 1040,
     hideTooltip: true,
   },
   // CFHR3/CFHR1: the deletion figure, and the locus this spec file used to say
