@@ -43,7 +43,7 @@ export function paintFeatureBand(
     CANVAS_FEATURE_MARKS,
     resolveMapColors(dataMap, palette),
     blocks,
-    { scrollY: 0, canvasWidth, canvasHeight: bandHeight },
+    { scrollY: 0, canvasWidth, canvasHeight: bandHeight, outlineColor: 0 },
   )
   forEachDisplayLabel(
     regions,

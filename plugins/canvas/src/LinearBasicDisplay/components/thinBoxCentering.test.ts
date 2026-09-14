@@ -85,6 +85,7 @@ function drawTranscript(heightPx: number, topY: number) {
     scrollY: 0,
     canvasWidth: 800,
     canvasHeight: 50,
+    outlineColor: 0,
   })
   if (!box || lineY === undefined) {
     throw new Error('expected a box and a line')

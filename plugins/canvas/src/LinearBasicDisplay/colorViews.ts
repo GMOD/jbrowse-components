@@ -21,7 +21,16 @@ export function colorViews(self: ColorHost) {
      * #getter
      */
     get showOutline() {
-      return !!getConf(self, 'outlineColor')
+      return !!this.outlineColorSlot
+    },
+
+    /**
+     * #getter
+     * The `outlineColor` slot as written: `''`, `THEME_DERIVED_COLOR`, or a
+     * literal, which `resolveOutlineColor` packs against a palette.
+     */
+    get outlineColorSlot(): string {
+      return getConf(self, 'outlineColor')
     },
 
     /**

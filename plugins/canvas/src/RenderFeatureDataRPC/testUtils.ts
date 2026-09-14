@@ -43,7 +43,6 @@ export function mockDisplayConfig(
     color: undefined,
     connectorColor: undefined,
     utrColor: undefined,
-    outlineColor: '',
     labels: {
       name: '',
       description: '',
@@ -246,8 +245,6 @@ export function makeFeatureData(
     flatbushItems: [],
     subfeatureInfos: [],
     floatingLabelsData: new Map(),
-    outlineColor: 0,
-    outlineColorClass: LITERAL,
     featureCount: 0,
     ...overrides,
   }

@@ -1,8 +1,11 @@
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
+
 import {
-  LITERAL,
+  OUTLINE,
   resolveColorLane,
   themedColorTable,
 } from '../../RenderFeatureDataRPC/colorClasses.ts'
+import { THEME_DERIVED_COLOR } from '../../RenderFeatureDataRPC/renderConfig.ts'
 
 import type { FeatureDataResult } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
@@ -32,16 +35,25 @@ export function resolveRegionColors(
     data.arrowColorClasses,
     colorTable,
   )
-  const outlineColor =
-    data.outlineColorClass === LITERAL
-      ? data.outlineColor
-      : colorTable[data.outlineColorClass]!
   return rectColors === data.rectColors &&
     lineColors === data.lineColors &&
-    arrowColors === data.arrowColors &&
-    outlineColor === data.outlineColor
+    arrowColors === data.arrowColors
     ? data
-    : { ...data, rectColors, lineColors, arrowColors, outlineColor }
+    : { ...data, rectColors, lineColors, arrowColors }
+}
+
+/**
+ * The packed outline color the `outlineColor` slot asks for: 0 for none, the
+ * palette's faint outline for the menu toggle's `THEME_DERIVED_COLOR` (a fixed
+ * black vanishes on a dark track), else the literal. Display-wide, so it rides
+ * in the render state rather than in each region's payload.
+ */
+export function resolveOutlineColor(slot: string, palette: JBrowsePalette) {
+  return slot === THEME_DERIVED_COLOR
+    ? themedColorTable(palette)[OUTLINE]!
+    : slot
+      ? cssColorToABGR(slot)
+      : 0
 }
 
 export function resolveMapColors(

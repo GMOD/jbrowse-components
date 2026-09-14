@@ -76,6 +76,7 @@ function countArrowheads(region: RegionRenderData, reversed: boolean) {
     scrollY: 0,
     canvasWidth: 100,
     canvasHeight: 50,
+    outlineColor: 0,
   })
   return heads
 }

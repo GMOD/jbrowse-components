@@ -145,11 +145,6 @@ export interface FeatureDataResult {
 
   // Index-estimated compressed bytes, undefined for adapters with no estimate.
   bytes?: number
-
-  outlineColor: number
-  // LITERAL when `outlineColor` is the color; OUTLINE when the slot asked for
-  // the theme-derived one, which only the main thread can name.
-  outlineColorClass: number
 }
 
 /**
@@ -169,18 +164,20 @@ export type PackedPrimitives = Pick<FeatureDataResult, PrimitiveArrayKey>
  * What a renderer backend draws one region from. The four excluded families are
  * main-thread inputs; the class lanes in particular must not be reachable here,
  * or a renderer could draw from the unresolved zero the worker shipped.
+ * `outlineColor` is the one field no worker packs: the feature display's is
+ * display-wide and rides in its render state, and a display building glyph
+ * data of its own (multi-way synteny) stamps the cell's.
  */
 export type RegionRenderData = Pick<
   FeatureDataResult,
-  | Exclude<
-      PrimitiveArrayKey,
-      | `${string}FeatureIndices`
-      | `${string}LabelRows`
-      | `${string}ColorClasses`
-      | `${string}ChildOrdinals`
-    >
-  | 'outlineColor'
->
+  Exclude<
+    PrimitiveArrayKey,
+    | `${string}FeatureIndices`
+    | `${string}LabelRows`
+    | `${string}ColorClasses`
+    | `${string}ChildOrdinals`
+  >
+> & { outlineColor?: number }
 
 export type { RegionTooLargeResult } from '@jbrowse/core/rpc/byteBudget'
 

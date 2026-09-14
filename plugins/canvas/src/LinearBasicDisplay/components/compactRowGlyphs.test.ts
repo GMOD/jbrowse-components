@@ -110,6 +110,7 @@ function drawTranscriptRow(rowTop: number, bodyHeight: number) {
     scrollY: 0,
     canvasWidth: 800,
     canvasHeight: 60,
+    outlineColor: 0,
   })
   const [cds, utr] = boxes
   if (!cds || !utr || stemY === undefined || !head) {

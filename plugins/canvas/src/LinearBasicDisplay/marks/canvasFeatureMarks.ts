@@ -9,7 +9,7 @@ export const CANVAS_FEATURE_MARKS = featureGlyphMarks<
   RenderState
 >({
   glyphs: d => d,
-  params: (s, d) => ({ scrollY: s.scrollY, outlineColor: d.outlineColor }),
+  params: s => ({ scrollY: s.scrollY, outlineColor: s.outlineColor }),
   maxChevronsPerLine: MAX_VISIBLE_CHEVRONS_PER_LINE,
   continuation: true,
 })

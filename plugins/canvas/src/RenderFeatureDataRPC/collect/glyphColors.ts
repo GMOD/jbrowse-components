@@ -4,10 +4,10 @@ import {
   featureBedColor,
 } from '@jbrowse/core/util/colorBits'
 
-import { LITERAL, OUTLINE, STROKE, cdsFrameClass } from '../colorClasses.ts'
+import { LITERAL, STROKE, cdsFrameClass } from '../colorClasses.ts'
 import { FEATURE_DEFAULT_COLOR, UTR_DEFAULT_COLOR } from '../featureColors.ts'
 import { getFeatureName } from '../labelUtils.ts'
-import { THEME_DERIVED_COLOR, readConfigValueSafe } from '../renderConfig.ts'
+import { readConfigValueSafe } from '../renderConfig.ts'
 import { isCDS, isUTR } from '../util.ts'
 
 import type { RenderContext } from './renderContext.ts'
@@ -205,15 +205,4 @@ export function featureTooltip(feature: Feature, ctx: RenderContext) {
       getFeatureName(feature) ?? '',
     ),
   )
-}
-
-// The menu toggle stores THEME_DERIVED_COLOR rather than a literal, because a
-// fixed black outline vanishes on a dark track.
-export function resolveOutlineColor(outlineColor: string) {
-  return outlineColor === THEME_DERIVED_COLOR
-    ? { outlineColor: 0, outlineColorClass: OUTLINE }
-    : {
-        outlineColor: outlineColor ? colorToUint32(outlineColor) : 0,
-        outlineColorClass: LITERAL,
-      }
 }

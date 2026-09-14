@@ -47,6 +47,7 @@ function regionData(numRects: number, over: Partial<RegionRenderData> = {}) {
 const STATE: RenderState = {
   canvasWidth: 800,
   canvasHeight: 100,
+  outlineColor: 0,
   scrollY: 0,
 }
 

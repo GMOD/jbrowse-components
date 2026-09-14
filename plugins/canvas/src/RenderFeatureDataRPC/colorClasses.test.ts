@@ -3,13 +3,12 @@ import { SimpleFeature } from '@jbrowse/core/util'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
-import { resolveRegionColors } from '../LinearBasicDisplay/components/resolveRegionColors.ts'
-import { createTestEnvironment } from '../LinearBasicDisplay/testEnv.ts'
 import {
-  boxColor,
   resolveOutlineColor,
-  strokeColor,
-} from './collect/glyphColors.ts'
+  resolveRegionColors,
+} from '../LinearBasicDisplay/components/resolveRegionColors.ts'
+import { createTestEnvironment } from '../LinearBasicDisplay/testEnv.ts'
+import { boxColor, strokeColor } from './collect/glyphColors.ts'
 import {
   LITERAL,
   OUTLINE,
@@ -84,19 +83,13 @@ describe('the worker emits a class where it cannot resolve a color', () => {
     expect(stroke.colorClass).toBe(STROKE)
   })
 
-  it('classes the outline only for the theme-derived sentinel', () => {
-    expect(resolveOutlineColor(THEME_DERIVED_COLOR)).toEqual({
-      outlineColor: 0,
-      outlineColorClass: OUTLINE,
-    })
-    expect(resolveOutlineColor('')).toEqual({
-      outlineColor: 0,
-      outlineColorClass: LITERAL,
-    })
-    expect(resolveOutlineColor('red')).toEqual({
-      outlineColor: cssColorToABGR('red'),
-      outlineColorClass: LITERAL,
-    })
+  it('resolves the outline against the palette only for the theme-derived sentinel', () => {
+    const palette = resolvePalette()
+    expect(resolveOutlineColor(THEME_DERIVED_COLOR, palette)).toBe(
+      themedColorTable(palette)[OUTLINE],
+    )
+    expect(resolveOutlineColor('', palette)).toBe(0)
+    expect(resolveOutlineColor('red', palette)).toBe(cssColorToABGR('red'))
   })
 
   // The codon stripe is two tints of the box it sits on, so a frame-colored box
@@ -131,11 +124,9 @@ describe('the main thread resolves the classes', () => {
     const data = makeFeatureData({
       rectColors: new Uint32Array([0, 0xff_00_00_ff]),
       rectColorClasses: new Uint8Array([STROKE, LITERAL]),
-      outlineColorClass: OUTLINE,
     })
     const resolved = resolveRegionColors(data, table)
     expect([...resolved.rectColors]).toEqual([table[STROKE], 0xff_00_00_ff])
-    expect(resolved.outlineColor).toBe(table[OUTLINE])
   })
 })
 
@@ -145,5 +136,15 @@ describe('the theme is not an RPC cache key', () => {
   it('sends no theme in the worker payload', () => {
     const { display } = createTestEnvironment().createDisplay()
     expect(display.rpcProps()).not.toHaveProperty('theme')
+  })
+
+  it('nor is the outline, which the render state resolves against the palette', () => {
+    const { display } = createTestEnvironment().createDisplay()
+    const before = display.rpcProps()
+    display.setShowOutline(true)
+    expect(display.rpcProps()).toEqual(before)
+    expect(display.renderState.outlineColor).not.toBe(0)
+    display.setShowOutline(false)
+    expect(display.renderState.outlineColor).toBe(0)
   })
 })

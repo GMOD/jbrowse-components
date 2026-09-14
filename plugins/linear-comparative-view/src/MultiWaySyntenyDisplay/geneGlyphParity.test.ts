@@ -78,7 +78,6 @@ const config: DisplayConfig = {
   color: undefined,
   connectorColor: undefined,
   utrColor: undefined,
-  outlineColor: '',
   labels: { name: '', description: '' },
 }
 

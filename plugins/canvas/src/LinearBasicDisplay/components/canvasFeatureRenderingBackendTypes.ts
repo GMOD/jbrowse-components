@@ -7,6 +7,7 @@ export interface RenderState {
   scrollY: number
   canvasWidth: number
   canvasHeight: number
+  outlineColor: number
 }
 
 export type CanvasFeatureRenderingBackend = PerRegionRenderingBackend<

@@ -1,4 +1,3 @@
-import { resolveOutlineColor } from './collect/glyphColors.ts'
 import { processFeatureRecord } from './collect/glyphEmitters.ts'
 import { createCollector } from './collect/renderContext.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
@@ -17,10 +16,8 @@ export function collectRenderData(
     regionEnd: number
   },
 ) {
-  const { layouts, regionStart, regionEnd, config } = args
+  const { layouts, regionStart, regionEnd } = args
   const collector = createCollector()
-
-  const outline = resolveOutlineColor(config.outlineColor)
 
   for (const layout of layouts) {
     processFeatureRecord(layout, args, collector)
@@ -43,7 +40,6 @@ export function collectRenderData(
 
   return {
     ...packed,
-    ...outline,
     labelKinds,
     floatingLabelsData: collector.floatingLabelsData,
     flatbushItems: collector.flatbushItems,

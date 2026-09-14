@@ -18,7 +18,10 @@ import {
 } from './components/labelPositioning.ts'
 import { paintLabels } from './components/paintLabels.ts'
 import { drawPeptidesForRegions } from './components/peptidePositioning.ts'
-import { resolveMapColors } from './components/resolveRegionColors.ts'
+import {
+  resolveMapColors,
+  resolveOutlineColor,
+} from './components/resolveRegionColors.ts'
 import { CANVAS_FEATURE_MARKS } from './marks/canvasFeatureMarks.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -40,6 +43,7 @@ export interface RenderSvgModel extends SvgExportable {
   densityBandLayer: DensityBandLayer
   densityPeakReadout: string
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>
+  outlineColorSlot: string
   highlightedFeatureIdSet: ReadonlySet<string>
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
@@ -82,7 +86,12 @@ function CanvasFeaturesSvgBody({
   const scrollY = model.scrollTop
   // Shared by the geometry pass and the highlight pass, so the boxes are
   // scissored against the same canvas as the glyphs.
-  const renderState = { scrollY, canvasWidth, canvasHeight: height }
+  const renderState = {
+    scrollY,
+    canvasWidth,
+    canvasHeight: height,
+    outlineColor: resolveOutlineColor(model.outlineColorSlot, palette),
+  }
   const fontSize = model.renderedLabelFontSize
   const labelContext = {
     showLabels: model.renderedShowLabels,

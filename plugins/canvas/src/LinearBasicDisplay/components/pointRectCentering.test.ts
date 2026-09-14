@@ -78,6 +78,7 @@ function drawnRect(startBp: number, endBp: number, reversed = false) {
     scrollY: 0,
     canvasWidth: 800,
     canvasHeight: 50,
+    outlineColor: 0,
   })
   if (!box) {
     throw new Error('no rect drawn')

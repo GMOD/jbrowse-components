@@ -40,6 +40,8 @@ export function readConfigValueSafe<T>(
 // Sentinel config color meaning "derive from the theme". Only outlineColor needs
 // one: that slot has three states (no outline / theme-derived / explicit color)
 // and just one spare non-color value (`''` = off), so the third rides in-band.
+// The main thread resolves it against the palette at render time, so the slot
+// is not a worker input and toggling it refetches nothing.
 export const THEME_DERIVED_COLOR = '#f0f'
 
 // Fully enumerated — no index signature, so a typo on any property is a type
@@ -77,7 +79,6 @@ export interface DisplayConfig {
   color: string | undefined
   connectorColor: string | undefined
   utrColor: string | undefined
-  outlineColor: string
   labels: {
     name: string
     description: string
@@ -110,7 +111,6 @@ const WORKER_READS: Record<keyof SettingsDisplayConfig, true> = {
   color: true,
   connectorColor: true,
   utrColor: true,
-  outlineColor: true,
   labels: true,
 }
 

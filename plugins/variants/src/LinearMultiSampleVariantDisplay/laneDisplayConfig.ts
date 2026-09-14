@@ -36,9 +36,6 @@ export function laneDisplayConfig({
     color: `jexl:get(feature,'laneColor')`,
     connectorColor: undefined,
     utrColor: undefined,
-    // The unset spelling, which `resolveOutlineColor` reads as "no outline".
-    // Boxes in a band this short are mostly outline if they carry one.
-    outlineColor: '',
     featureHeight,
     // The label content the `variantLaneLabels` slot asked for, expressed the
     // way plugin-canvas expresses it: withholding the jexl IS how a kind is

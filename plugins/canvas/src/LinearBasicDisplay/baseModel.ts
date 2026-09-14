@@ -65,7 +65,10 @@ import {
   buildSubfeatureFlatbushIndex,
 } from './components/hitTesting.ts'
 import { labelScrollBucket } from './components/labelPositioning.ts'
-import { resolveRegionColors } from './components/resolveRegionColors.ts'
+import {
+  resolveOutlineColor,
+  resolveRegionColors,
+} from './components/resolveRegionColors.ts'
 import { featureContextMenuItems } from './featureContextMenu.ts'
 import { FeatureHighlightModel } from './featureHighlight.ts'
 import {
@@ -384,6 +387,10 @@ export default function baseStateModelFactory(
             scrollY: self.scrollTop,
             canvasWidth: self.canvasWidthPx,
             canvasHeight: self.height,
+            outlineColor: resolveOutlineColor(
+              self.outlineColorSlot,
+              getPaletteHost(self).palette,
+            ),
           }
         },
 
@@ -1068,8 +1075,6 @@ export default function baseStateModelFactory(
            * #action
            */
           setShowOutline(value: boolean) {
-            // The worker resolves THEME_DERIVED_COLOR to an outline that
-            // stays visible on dark tracks.
             setConf(self, 'outlineColor', value ? THEME_DERIVED_COLOR : '')
           },
 

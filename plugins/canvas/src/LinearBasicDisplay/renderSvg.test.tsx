@@ -100,6 +100,7 @@ function makeModel(overrides: Partial<LegendModel> = {}): LegendModel {
     id: 'test',
     height: 100,
     scrollTop: 0,
+    outlineColorSlot: '',
     error: undefined,
     regionTooLarge: false,
     drawsWhenTooLarge: false,

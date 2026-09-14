@@ -57,7 +57,7 @@ export const MULTIWAY_MARKS = [
     glyphs: cell => (cell.kind === 'glyphs' ? cell.data : undefined),
     params: (state, cell) => ({
       scrollY: state.scrollTopPx,
-      outlineColor: cell.kind === 'glyphs' ? cell.data.outlineColor : 0,
+      outlineColor: cell.kind === 'glyphs' ? (cell.data.outlineColor ?? 0) : 0,
     }),
     maxChevronsPerLine: MAX_VISIBLE_CHEVRONS_PER_LINE,
     continuation: false,
