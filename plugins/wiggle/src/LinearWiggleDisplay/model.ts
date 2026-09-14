@@ -126,8 +126,8 @@ export default function stateModelFactory(
 
       /**
        * #getter
-       * Overrides WiggleScoreConfigMixin's `false` base, which is what its
-       * `showCrossHatches` / `effectiveSummaryScoreMode` getters key on.
+       * Overrides WiggleScoreConfigMixin's `false` base. That mixin's
+       * `showCrossHatches` / `effectiveSummaryScoreMode` getters key on this.
        */
       get isDensityMode() {
         return self.renderingType === 'density'
@@ -164,8 +164,8 @@ export default function stateModelFactory(
        * #getter
        * The single plot, inset by the scalebar label gutter at top and bottom
        * so it never overlaps the axis labels drawn in those bands. `ticks`, the
-       * render height, the on-screen canvas and the SVG clip all read it, which
-       * is what keeps a tick on the data it labels.
+       * render height, the on-screen canvas and the SVG clip all read it, so a
+       * tick stays on the data it labels.
        */
       get plotGeometry() {
         const { yTop, plotHeight } = axisPlotBox(self.height)

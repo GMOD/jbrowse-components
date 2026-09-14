@@ -74,20 +74,18 @@ export const BREAKEND_COLOCATION_BP = 1000
  * Through `svMateLocus`, so a record's other end is read the same way here as
  * everywhere else in this package — off a BND bracket, off a symbolic allele's
  * CHR2/END, or off the explicit `mate` field a paired adapter writes. Reading
- * only the ALT was what made the whole chain walk a no-op on bedpe and
- * STAR-Fusion: `BedpeAdapter` and `StarFusionAdapter` file each row under BOTH
+ * only the ALT made the whole chain walk a no-op on bedpe and STAR-Fusion: `BedpeAdapter` and `StarFusionAdapter` file each row under BOTH
  * of its contigs and hand back a feature anchored at whichever end was queried,
  * with `mate` naming the other — the very both-ends answer the walk needs — and
  * this dropped every one of them for having no parseable ALT.
  *
- * The assembly is what makes this the single place a `Junction` can come from.
+ * The assembly argument makes this the single place a `Junction` can come from.
  * Neither refName reaching here is canonical: the mate's is whatever text the
  * ALT spells (`G[A:34200[` → `A`), and the record's own is the *adapter's*,
  * since a fetch renames the query region into the file's names on the way out
  * and nothing renames the features on the way back. So both sides need the same
  * resolution `getBreakendCoveringRegions` has always applied, and doing it here
- * is what keeps two producers of the same chain from disagreeing about which
- * names they speak.
+ * keeps two producers of the same chain using the same names.
  */
 export function junctionFromFeature(
   feature: Feature,
@@ -137,7 +135,7 @@ function sameLocus(
  * first end unconditionally, so on a hop taken through the junction's mate end
  * that first end IS the current stop, and a guard meant to refuse the way back
  * asked instead whether a candidate looped onto the stop it left. It therefore
- * worked in one traversal direction and silently did nothing in the other, and
+ * worked in one traversal direction and refused nothing in the other, and
  * the direction is decided by which spelling of a reciprocal pair the callset
  * happened to file first.
  */
@@ -268,8 +266,8 @@ export function nextJunctionFrom({
  * ends.
  *
  * `findJunctionsNear` is the caller's read of the same callset the starting
- * record came from — the walk does no fetching of its own, which is what keeps
- * `nextJunctionFrom` a pure decision the tests can hold.
+ * record came from. The walk does no fetching, so `nextJunctionFrom` stays a
+ * pure decision the tests can hold.
  *
  * OUTWARD MEANS BOTH WAYS, and it did not. The walk only ever extended past the
  * record's MATE end, so which of a chain's records a reader clicked decided how

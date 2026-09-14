@@ -64,14 +64,14 @@ export function BaseSessionModel<
        * #property
        * views, tracks, displays and widgets `pruneUnbuildableNodes` took out of
        * the tree because this build has no plugin for their type, each with the
-       * anchor that puts it back. Opaque here on purpose — nothing in the
-       * session reads it, and the shape belongs to that module.
+       * anchor that puts it back. Nothing in the session reads its contents,
+       * and `pruneUnbuildableNodes` defines their structure.
        *
-       * It is a **declared property** rather than data riding along in the
-       * snapshot because MST silently drops an undeclared key: without this
-       * line the held nodes survive the prune and then vanish the moment
-       * `setSession` builds the tree, and every unit test of the prune still
-       * passes. `heldNodesSurviveTheSession.test.ts` is the canary.
+       * It is a **declared property** because MST drops undeclared snapshot
+       * keys without error. Without this declaration the held nodes survive
+       * the prune and are then discarded when `setSession` builds the tree,
+       * while every unit test of the prune still passes.
+       * `heldNodesSurviveTheSession.test.ts` tests that they survive.
        */
       heldForMissingPlugins: types.stripDefault(
         types.frozen<HeldNode[] | undefined>(),
@@ -306,7 +306,7 @@ export function BaseSessionModel<
       /**
        * #action
        * turn highlight bands back on, so a newly made highlight or bookmark is
-       * never silently swallowed by an earlier "highlights off"
+       * visible even after an earlier "highlights off"
        */
       revealHighlights() {
         self.highlightsVisible = true

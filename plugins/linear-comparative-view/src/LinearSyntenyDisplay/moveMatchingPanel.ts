@@ -101,8 +101,8 @@ export async function navToResolvedSpan(
  * Move every panel in `panels` to `span`, and SETTLE UP for the anchor that was
  * taken to do it.
  *
- * Three things the two move items each got wrong on their own, which is why
- * this is one function rather than two spellings.
+ * The two move items each got the three rules below wrong on their own, so they
+ * share this function.
  *
  * NOTHING MOVED, NOTHING KEPT. The anchor is taken before the navigation,
  * because the follow propagates away from the anchor and a panel moved while
@@ -116,12 +116,11 @@ export async function navToResolvedSpan(
  * self-alignment moves BOTH neighbours, and the anchor is earned if either of
  * them landed.
  *
- * AN UNDO ONLY WHEN THERE IS SOMETHING TO PUT BACK, which is what keeps this
- * from being a snackbar on every move. `navToResolvedSpan` stays inside a
+ * AN UNDO ONLY WHEN THERE IS SOMETHING TO PUT BACK, so a move shows no snackbar
+ * unless it discarded something. `navToResolvedSpan` stays inside a
  * panel's own regions wherever it can, and that leaves nothing discarded — but
  * its fallback replaces `displayedRegions` with the one contig it landed on,
- * which is the permanent self-inflicted narrowing the navTo-first order exists
- * to avoid and cannot always avoid. A taken anchor counts too: the follow
+ * a permanent narrowing that the navTo-first order avoids where it can. A taken anchor counts too: the follow
  * re-places every other panel, so the click moved rows it never named.
  */
 export async function movePanelsToSpan({

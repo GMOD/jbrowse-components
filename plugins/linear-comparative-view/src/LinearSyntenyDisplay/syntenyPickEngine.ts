@@ -318,8 +318,8 @@ export interface PickContext {
   /**
    * The Flatbush index per geometry, keyed by the coordinate array a refetch
    * replaces atomically — the same `geomToken` reasoning `createInstanceCache`
-   * keys on, which is what keeps an index across a recolor (the boxes do not
-   * depend on `colors`) and drops it with the geometry it described. Weak, so a
+   * keys on, so an index survives a recolor (the boxes do not depend on
+   * `colors`) and is dropped with the geometry it described. Weak, so a
    * departed track takes its index with it and nothing has to evict.
    */
   pickIndices: WeakMap<Float32Array, PickIndex>

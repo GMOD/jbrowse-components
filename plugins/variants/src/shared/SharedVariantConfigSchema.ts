@@ -101,8 +101,8 @@ export default function sharedVariantConfigFactory() {
        * Whether to draw the floating legend over the display. It is clipped to
        * the display's own bounds, so while it is on it sets a floor under the
        * lane height: turn it off to size a short lane to its rows rather than
-       * to its key, which is what a one-record SV call genotyped across a
-       * handful of carriers wants.
+       * to its key, as for a one-record SV call genotyped across a handful of
+       * carriers.
        */
       showLegend: {
         type: 'boolean',

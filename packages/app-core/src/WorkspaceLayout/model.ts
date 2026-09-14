@@ -676,14 +676,14 @@ export function WorkspaceLayoutMixin() {
         },
         /**
          * #action
-         * Arrange the session's views into panels: `applyLayoutSpec` plus the
-         * two things it does not do on its own, each of which fails silently
-         * without it — turning workspaces mode on for this session (a layout
-         * renders nowhere else) and ordering `session.views` to the spec's
-         * top-to-bottom statement, which is where a tab reads its order from.
-         * Leaves take view ids or indexes into `session.views`; a layout that
-         * seats no view throws rather than leaving a blank tab. What a session
-         * spec's `layout` and an agent's live re-layout both call.
+         * Arrange the session's views into panels. Calls `applyLayoutSpec`,
+         * turns workspaces mode on for this session (a layout renders nowhere
+         * else), and orders `session.views` to the spec's top-to-bottom
+         * order, which tabs read their order from. Without the last two steps
+         * the layout applies but does not display, or the tabs appear in the
+         * wrong order. Leaves take view ids or indexes into `session.views`; a
+         * layout that seats no view throws rather than leaving a blank tab. A
+         * session spec's `layout` and an agent's live re-layout both call it.
          */
         layoutViews(spec: LayoutSpecNode) {
           const host = layoutHost(self)

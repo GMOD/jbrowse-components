@@ -21,8 +21,8 @@ export interface FeatureSpan {
   /** True when the insertion marker is wider than the reference span under it. */
   drawsMarker: boolean
   /**
-   * Center of the *reference* span — where a marker is centered. Straight from
-   * `variantCellSpanPx`, which is what centers the marker's own `left` on it.
+   * Center of the *reference* span, where a marker is centered. Taken from
+   * `variantCellSpanPx`, which centers the marker's `left` on it.
    */
   center: number
 }

@@ -57,8 +57,7 @@ export interface SyntenyRibbonParams {
 /**
  * The band's ground as a straight RGBA clear.
  *
- * OPAQUE AND KNOWN, NOT TRANSPARENT, and it is load-bearing for what the band
- * looks like rather than for what it costs. Every other backend in the tree
+ * OPAQUE AND KNOWN, because the band's colors depend on it. Every other backend in the tree
  * clears to (0,0,0,0); this one does not, because the two fill branches only
  * agree over a ground they both know. `resolveInstanceFill` in
  * `drawSyntenyTrack.ts` is the arithmetic: a BASE ribbon comes out `rgb*darken`
@@ -73,9 +72,9 @@ export interface SyntenyRibbonParams {
  * syntenyTypes.slang is the GPU spelling of the same thing, and
  * `blendOverGround` a third for the legend chips.
  *
- * NOT A PERFORMANCE CHOICE, which is worth saying because it looks like one: a
- * clear costs the same whatever the value, and both HALs configure the context
- * with alpha on, so no opaque-layer compositor path is being bought either.
+ * The opaque ground gains no performance: a clear costs the same whatever the
+ * value, and both HALs configure the context
+ * with alpha on, so no opaque-layer compositor path applies either.
  *
  * SO INK DRAWN ONTO THE BAND IS DERIVED FROM THE SAME VALUE, never read off the
  * theme independently: `getContrastText(groundColor)` is the one source, and
@@ -87,8 +86,8 @@ export interface SyntenyRibbonParams {
  * What is STILL a light-ground assumption is the ribbon palettes themselves —
  * `defaultCigarColors` and the categorical ramps are fixed colours picked for a
  * white band, and at the 0.2 default alpha they are near invisible on a dark
- * one. Threading the ground is what makes a dark band expressible; tuning those
- * is the separate follow-up, in the `colorPairLRDark` mould.
+ * one. Passing the ground through lets a band be dark; tuning the palettes is a
+ * separate follow-up, in the `colorPairLRDark` mould.
  */
 export function syntenyGroundClear(groundColor: string): ClearColor {
   const [r, g, b] = cssColorToRgb(groundColor)
@@ -98,8 +97,8 @@ export function syntenyGroundClear(groundColor: string): ClearColor {
 /**
  * The synteny passes' uniform block for one track. All four shaders declare one
  * `Uniforms` struct out of syntenyTypes.slang — `syntenyPassGeometry.test.ts`
- * pins it — which is what lets `writeSyntenyUniforms` below be every shape's
- * writer. It does NOT buy a staged write; that function says why.
+ * pins it — so `writeSyntenyUniforms` below writes for every shape. It gives no
+ * staged write; that function explains why.
  */
 function writeRibbonUniforms(
   scratch: ArrayBuffer,
@@ -145,15 +144,14 @@ function writeRibbonUniforms(
 }
 
 /**
- * Every synteny shape's `writeUniforms` — one function where the four shapes
- * each closed over an identical wrapper, which is the whole of what this buys.
+ * Every synteny shape's `writeUniforms`, one function in place of the identical
+ * wrapper each of the four shapes closed over.
  *
- * NOT a `StagedUniforms` saving, though it looks like one: a block is one cell,
+ * It saves no `StagedUniforms` write: a block is one cell,
  * a cell is ribbons or an outline, and `paintsBlock` picks one of each pair on
  * `drawCurves`, so exactly one synteny mark ever draws a block and there is no
  * second write to skip. The four shaders do declare one `Uniforms` struct
- * (`syntenyPassGeometry.test.ts` pins it), which is what makes one writer
- * correct.
+ * (`syntenyPassGeometry.test.ts` pins it), so one writer is correct.
  *
  * A cell with no ribbon params writes nothing: `paintsBlock` has declined the
  * block, so the scratch is never drawn from.
@@ -277,9 +275,9 @@ const edgeCurveShape = ribbonEdgeShape(
  * that shape, and both draw through these four.
  *
  * `fillStraight` owns the region's buffer and `fillCurve` borrows it
- * (`bufferOf`), which is what makes a `drawCurves` toggle a uniform and a
- * different pass rather than a second upload; the outline pair is the same
- * split over its own small buffer.
+ * (`bufferOf`), so a `drawCurves` toggle changes a uniform and the pass and
+ * uploads nothing; the outline pair splits a separate small buffer the same
+ * way.
  */
 export function syntenyRibbonMarks<TRegion, TState extends MarkFrame>(lenses: {
   ribbons: (region: TRegion) => SyntenyInstanceData | undefined

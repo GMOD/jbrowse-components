@@ -1,8 +1,8 @@
 import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 
 /**
- * What a display foundation must expose for the export gate. Named the same on
- * both foundations, which is what lets one mapping serve them.
+ * What a display foundation must expose for the export gate. Both foundations
+ * use the same names, so one mapping serves them.
  */
 export interface SvgReadyFoundation {
   error: unknown

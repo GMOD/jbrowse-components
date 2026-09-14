@@ -21,8 +21,8 @@ export interface MarkPlan<TRegion, TState extends MarkFrame> {
 /**
  * Resolve which marks draw this frame. Throws for an enabled mark the plan
  * form cannot carry — one with a `band` or a `paintsBlock` — since a plan
- * neither scissors nor asks the block anything, and dropping the gate silently
- * would draw on the GPU what Canvas2D declines.
+ * neither scissors nor asks the block anything, and without the throw the GPU
+ * would draw what Canvas2D declines.
  */
 export function planMarks<TRegion, TState extends MarkFrame>(
   marks: readonly Mark<TRegion, TState>[],

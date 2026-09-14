@@ -105,15 +105,14 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
          * view's SVG export threads into each display's `renderSvg`, which
          * rebuilds the theme via `createJBrowseTheme` outside React context.
          *
-         * The `default` entry is spliced with the config `theme` slot, because
-         * the preset is only half of what that entry means — the picker calls it
-         * "Default (from config)" and `resolvePalette` merges the two for every
-         * other consumer. Returning the bare preset made `view.exportSvg()`
-         * silently drop a host's configured palette: a config setting
-         * `primary.main` drew `#123456` on screen and exported the stock
-         * `#0D233F`, with the export dialog reporting the theme it had not used.
-         * Every other named theme is a fixed preset that ignores config, which is
-         * the distinction this ternary keeps.
+         * The `default` entry is merged with the config `theme` slot, because
+         * the picker labels it "Default (from config)" and `resolvePalette`
+         * merges the preset with the slot for every other consumer. The bare
+         * preset would make `view.exportSvg()` drop a host's configured
+         * palette: a config setting `primary.main` would draw `#123456` on
+         * screen and export the stock `#0D233F`, while the export dialog named
+         * the default theme. Every other named theme is a fixed preset that
+         * ignores config.
          */
         getActiveThemeOptions(name?: string) {
           const all = this.allThemes()

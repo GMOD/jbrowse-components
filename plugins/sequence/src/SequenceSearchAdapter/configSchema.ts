@@ -8,11 +8,12 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *
  * Note: don't set `sequenceAdapter` — JBrowse supplies it from the assembly the
  * track is displayed against. Setting it by hand pins the scan to one sequence
- * source and silently desyncs the track if the assembly's sequence changes.
+ * source, and the track keeps scanning that source after the assembly's
+ * sequence changes.
  *
  * #example
- * `search` is a regular expression matched against the assembly's own sequence,
- * so a track needs no file of its own. This one finds canonical polyadenylation
+ * `search` is a regular expression matched against the assembly's sequence, so
+ * the track needs no data file. This one finds canonical polyadenylation
  * signals on both strands:
  * ```js
  * {

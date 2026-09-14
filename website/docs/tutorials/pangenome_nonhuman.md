@@ -8,16 +8,17 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
-The machinery on the [HPRC pangenome page](/docs/tutorials/pangenome_hprc/) is
-not human-specific. Two more graphs are hosted the same way, on references
-JBrowse already serves: a mouse strain graph over GRCm39 and the bovine
-super-pangenome over ARS-UCD1.2. Opening them needs no new adapters and no new
-track types. What differs between the three is **what each graph records.**
+The tracks and adapters on the
+[HPRC pangenome page](/docs/tutorials/pangenome_hprc/) work for other species
+too. We host two more graphs the same way, on references JBrowse already serves:
+a mouse strain graph over GRCm39 and the bovine super-pangenome over ARS-UCD1.2.
+Opening them needs no new adapters and no new track types. The three graphs
+differ in **what each one records.**
 
 ## The three graphs, and what separates them
 
 All three are SV-resolution minigraph rGFA, so the tracks, the adapters and the
-coarse tier are identical, and each is served as the same five files:
+coarse tier are identical. We serve each graph as the same five files:
 
 | file                      | what it holds                                    |
 | ------------------------- | ------------------------------------------------ |
@@ -27,15 +28,15 @@ coarse tier are identical, and each is served as the same five files:
 | `<prefix>.alleles.bed.gz` | one row per allele, with a CIGAR for its size    |
 | `<prefix>.tier10000.*`    | one node per bubble, so a chromosome is drawable |
 
-What separates them is **carriage**: whether the graph records _which_ samples
-carry a given allele:
+The graphs differ in **carriage**, which is whether a graph records _which_
+samples carry a given allele.
 
-- **HPRC** does. Minigraph-Cactus records per-haplotype walks, so carriage is a
-  query against the graph and a callset beside it.
-- **Cattle** does, indirectly. The published graphs are plain GFA with one path
-  per assembly, so `vg deconstruct` turns those paths into a VCF.
-- **Mouse** does not. `minigraph` writes no path lines at all, so the
-  information is not in the file to recover.
+- **HPRC** records carriage. Minigraph-Cactus records a walk per haplotype, so
+  you can query carriage against the graph and against a callset beside it.
+- **Cattle** records carriage indirectly. The published graphs are plain GFA
+  with one path per assembly, and `vg deconstruct` turns those paths into a VCF.
+- **Mouse** does not record carriage. `minigraph` writes no path lines, so the
+  file holds no carriage to recover.
 
 Only a graph that records haplotypes identifies who carries an allele.
 
@@ -43,8 +44,8 @@ Only a graph that records haplotypes identifies who carries an allele.
 
 The mouse graph is GRCm39 plus eighteen inbred and wild-derived strain
 assemblies from the Mouse Genomes Project, as rehosted in UCSC GenArk. Each
-chromosome is one `minigraph` call over the reference followed by the strains;
-the reference goes first, which gives it rank 0:
+chromosome comes from one `minigraph` call over the reference followed by the
+strains. The reference goes first, which gives it rank 0.
 
 <!-- from: scripts/build_mouse_pangenome.sh -->
 
@@ -53,32 +54,31 @@ minigraph -cxggs -t "$THREADS" $(tr '\n' ' ' < "chrom/$c/order.txt")
 ```
 
 Start at `Nnt`. C57BL/6J carries a well-known multi-exon deletion there that
-abolishes the protein and is why B6J mice are glucose intolerant, and **GRCm39
-is C57BL/6J**, so the backbone of this graph is the strain with the deletion.
-The deletion shows up with the opposite sign from every description of it: as
-sequence the _other_ strains carry and the reference lacks.
+abolishes the protein and makes B6J mice glucose intolerant. **GRCm39 is
+C57BL/6J**, so the backbone of this graph is the strain with the deletion. The
+graph therefore shows the deletion as sequence that the _other_ strains carry
+and the reference lacks, the opposite sign from every description of it.
 
 <Figure caption="The Nnt locus on GRCm39: RefSeq genes, the bubbles lane, the allele inventory drawn at each allele's real size, and the rGFA segments, over the same window as an anchored graph. The one large allele sits inside Nnt, and it is an insertion because the reference is the strain that lacks the sequence." src="/img/pangenome/mouse_nnt.png" />
 
-The allele lane makes that readable. An insertion consumes almost no reference,
-so on a plain feature track a large one and a small one draw at the same minimum
-width; reading the file as alignments lets each allele be drawn at its real size
-from its CIGAR.
+An insertion consumes almost no reference, so a plain feature track draws a
+large insertion and a small one at the same minimum width. The allele lane reads
+the file as alignments and draws each allele at its real size from its CIGAR.
 
 ## Cattle: where the graph and the callset show different things
 
-The bovine super-pangenome is twelve assemblies on ARS-UCD1.2, and the panel is
-unusually wide for a livestock pangenome: taurine and indicine breeds plus yak,
-bison and gaur.
+The bovine super-pangenome is twelve assemblies on ARS-UCD1.2. The panel is
+unusually wide for a livestock pangenome, with taurine and indicine breeds plus
+yak, bison and gaur.
 
-The BoLA class II region is where its two routes diverge. The **graph** shows
-that a lot of sequence is present in some assemblies and absent from the
-reference, but it can only attribute it by convention: these graphs record no
-construction rank, so `firstSeenIn` in the allele file means "first in a fixed
-list", not "carries it".
+In the BoLA class II region the graph and the callset show different things. The
+**graph** shows a lot of sequence present in some assemblies and absent from the
+reference. It attributes that sequence only by convention. These graphs record
+no construction rank, so `firstSeenIn` in the allele file names the first
+assembly in a fixed list, and that assembly need not carry the sequence.
 
-The **callset** can. One `vg deconstruct` call per chromosome over the same
-graph gives a genotype per assembly:
+The **callset** attributes each allele. One `vg deconstruct` call per chromosome
+over the same graph gives a genotype per assembly:
 
 <!-- from: scripts/build_bovine_pangenome.sh -->
 
@@ -89,62 +89,60 @@ vg deconstruct -p "chr$k" -a -t "$THREADS" "$TMPDIR/$k.vg" > "vcf/chr$k.vcf.tmp"
 
 <Figure caption="The BoLA class II region on ARS-UCD1.2: RefSeq genes, the bubbles lane, the deconstructed callset with one row per assembly, and the allele inventory. The callset resolves alleles the graph lanes can only show as bulk presence and absence." src="/img/pangenome/bovine_bola.png" />
 
-Read the genotype rows across: most assemblies carry a different allele here,
-which is cattle MHC behaving much like human MHC. None of it is visible in the
-graph lanes around it.
+Read the genotype rows across. Most assemblies carry a different allele here,
+much as human MHC does. The graph lanes around the callset show none of these
+genotypes.
 
 ## A whole chromosome, off the coarse tier
 
-The level-of-detail tier is one node per bubble instead of one per segment,
-making a whole chromosome drawable, and it is not a human-only trick. Over a
-full cattle chromosome the _fine_ segments track refuses with "Too many
-features"; the tier draws.
+The level-of-detail tier has one node per bubble, which makes a whole chromosome
+drawable, and it works on the cattle graph too. Over a full cattle chromosome
+the _fine_ segments track refuses with "Too many features", and the tier draws.
 
 <Figure caption="A whole ARS-UCD1.2 chromosome with the RefSeq genes, the segments-per-bubble curve and the bubble tier on one axis. BoLA is the densest stretch of the curve." src="/img/pangenome/bovine_whole_chromosome.png" />
 
-A graph view pointed at a tier raises `maxRegionBp` explicitly, because the view
-refuses a cut wider than 5 Mb, which is a proxy for node count and a good one
-only at segment granularity.
+A graph view pointed at a tier raises `maxRegionBp` explicitly. The view refuses
+a cut wider than 5 Mb. That width limit stands in for node count, and it tracks
+node count well only at segment granularity.
 
 :::note
 
-These panels are a dozen or two assemblies rather than ninety haplotypes, so
-their cuts are chains with a few loops and the anchored layout often reads
+These panels hold a dozen or two assemblies, against ninety haplotypes for HPRC.
+Their cuts are chains with a few loops, and the anchored layout often reads
 better. Check the node and edge counts in the graph pane's header before
-reaching for the force layout; use it where the bubbles lane reports a window
-that is genuinely tangled.
+switching to the force layout. Use the force layout where the bubbles lane
+reports a tangled window.
 
 :::
 
 ## Finding the loci
 
-`Nnt` and BoLA are both loci someone had already written about, and that does
-not generalise: a panel nobody has published on has no literature to read, which
-is most panels. The graph answers the question directly. The coarse tier records
-how many segments each bubble holds, so ranking it reports where the graph
-varies most, and intersecting the result with the reference annotation names
-what it found.
+`Nnt` and BoLA are both loci someone had already written about. Most panels have
+no published literature to read, so the loci have to come from the graph. The
+coarse tier records how many segments each bubble holds. Ranking the tier by
+that count reports where the graph varies most, and intersecting the result with
+the reference annotation names the loci.
 
-On these two datasets that recovers the beta-defensin cluster, the vomeronasal
-receptor and Speer families, the immunoglobulin heavy chain locus and BoLA, with
-nobody curating a list. The densest window it returns for mouse is a single
-bubble sitting inside one intron of `Dock2`:
+On these two datasets the ranking recovers the beta-defensin cluster, the
+vomeronasal receptor and Speer families, the immunoglobulin heavy chain locus
+and BoLA, without a curated list. The densest window it returns for mouse is a
+single bubble inside one intron of `Dock2`:
 
 <Figure caption="The densest bubble in the mouse graph that still fits in one cut, found by ranking the coarse tier and named off the reference annotation. The gene lane holds nothing but intron, the bubbles lane is a single row, the allele inventory draws each alternative path at its real size, and the graph carries one label naming the whole cut as a superbubble, with Dock2 pinned under the backbone." src="/img/pangenome/mouse_dock2.png" />
 
-This mouse cut is also the counterexample to the note above. Every other panel
-on this page is a chain and is drawn anchored; this cut is loops hanging off a
-backbone, the shape force-directed layout is for, and it was found by ranking a
-file rather than by knowing anything about mouse. Clicking the superbubble's
-label opens it, and the graph derives the bubbles inside it from its own
-layering, so the descent continues level by level:
-[a bubble inside a bubble](/docs/tutorials/pangenome_graph_nested) follows it
-down.
+The _Dock2_ cut is the exception to the note above. Every other panel on this
+page is a chain and is drawn anchored. The _Dock2_ cut is loops hanging off a
+backbone, the structure force-directed layout suits, and the ranking found it
+with no prior knowledge of mouse. Clicking the superbubble's label opens it. The
+view derives the bubbles inside from the popped graph's layering, so you can
+keep descending level by level, as
+[a bubble inside a bubble](/docs/tutorials/pangenome_graph_nested) shows.
 
-Ranking the graph rather than the literature makes the method repeatable for a
-panel nobody has written about yet. The ranking lives in
+Because the ranking reads the graph, the method repeats on a panel nobody has
+written about yet.
 [`generatePangenomeLoci.ts`](https://github.com/GMOD/jb2hubs/blob/main/website/generatePangenomeLoci.ts)
-in the genomes.jbrowse.org repo, which publishes the derived catalogues at
+in the genomes.jbrowse.org repo computes the ranking. That repo publishes the
+derived catalogues at
 [genomes.jbrowse.org/pangenomes](https://genomes.jbrowse.org/pangenomes) so a
 locus can be opened without building anything.
 
@@ -159,18 +157,18 @@ Both graphs are reproducible from committed scripts:
 - [`build_bovine_pangenome.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_bovine_pangenome.sh)
   downloads the published archive, recovers rGFA tags from its path lines with
   [`gfa_paths_to_rgfa.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/gfa_paths_to_rgfa.py),
-  projects the same five files, and deconstructs the callset. About half an hour
-  after the download.
+  projects the same five files, and deconstructs the callset. It takes about
+  half an hour after the download.
 
-Both write a `README.txt` beside the data recording the source, what was
-modified, the tool versions and the audits that ran. The audits are the part
-worth copying: each build refuses unless the reference path reproduces the
-reference's own chromosome lengths, and refuses on a duplicate segment id after
-renumbering. Either failure would otherwise produce a graph with wrong
-coordinates and no error, and every check downstream would pass on it.
+Both scripts write a `README.txt` beside the data. The README records the
+source, the modifications, the tool versions and the audits that ran. Copy the
+audits into your own build. Each build stops unless the reference path
+reproduces the reference chromosome lengths, and stops on a duplicate segment id
+after renumbering. Without these audits, either failure produces a graph with
+wrong coordinates, and every downstream check passes on it.
 
-If your own graph has path lines, use
+If your graph has path lines, use
 [`build_pggb_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_pggb_tabix.sh)
-rather than `build_rgfa_tabix.sh`: it walks the paths, so it can write the
-carriage tag that rGFA has nowhere to put, and the graph view will show which
+in place of `build_rgfa_tabix.sh`. The PGGB script walks the paths and writes a
+carriage tag, which rGFA has no field for. The graph view then shows which
 samples cross each node.

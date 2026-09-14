@@ -44,8 +44,8 @@ export const FADE_AUTO_MIN_FEATURES = 10
 
 /**
  * Mean on-screen width (px) of a display's alignment blocks, each counted at no
- * more than `FADE_WIDE_BLOCK_PX` — see there for why the cap is what makes this
- * answer the question the fade asks. Absolute genomic bounds in, px out.
+ * more than `FADE_WIDE_BLOCK_PX`, whose docs explain why the fade needs the
+ * cap. Absolute genomic bounds in, px out.
  */
 export function cappedMeanWidthPx(
   starts: Uint32Array,

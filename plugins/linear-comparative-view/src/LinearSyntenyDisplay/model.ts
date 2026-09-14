@@ -515,8 +515,8 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * the hover/click state carry). Without instanceData the two spaces
        * coincide. Deliberately not `instanceFeatureIdx[index] ?? index`: an
        * out-of-range instance index reads `undefined` there, and falling back to
-       * the raw index would silently return a different feature rather than
-       * nothing.
+       * the raw index would return a different feature where this returns
+       * undefined.
        */
       getFeature(index: number) {
         const { featureData, instanceData } = self
@@ -542,10 +542,10 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        * the gpuProps half of the rpcProps/gpuProps split. colorBy changes
        * flow through here without touching the RPC.
        *
-       * `drawLocationMarkers` rides the same lane, which is what keeps it out of
-       * `currentFetchKey`: the worker always emits the ticks, and a zero alpha
-       * here is what "off" means. So the toggle costs one color-lane patch
-       * (`SYNTENY_INSTANCE_CACHE`) rather than a refetch of the whole track.
+       * `drawLocationMarkers` goes through the same color lane, so it stays out
+       * of `currentFetchKey`. The worker always emits the ticks, and a zero
+       * alpha here turns them off, so the toggle costs one color-lane patch
+       * (`SYNTENY_INSTANCE_CACHE`) and no refetch of the track.
        */
       get computedColors() {
         const { instanceData, featureData } = self
@@ -635,9 +635,8 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
        *
        * A level touching NEITHER anchor side (the C-D level of an A-B-C-D
        * stack anchored on B) falls through to 'query': it cannot color by an
-       * assembly it does not draw, so the cross-level continuity the mode
-       * promises stops at that level, silently — the legend still reads
-       * "reference". Inherent to the mode; surfacing it is parked with the
+       * assembly it does not draw, so the cross-level color continuity stops at
+       * that level while the legend still reads "reference". Inherent to the mode; surfacing it is parked with the
        * other legend work.
        */
       get effectiveColorBy(): SyntenyColorBy {
@@ -894,10 +893,10 @@ function stateModelFactory(configSchema: LinearSyntenyDisplayConfigSchema) {
       /**
        * #getter
        * The clicked ribbon's outline cell, or nothing while no ribbon is
-       * selected. Its identity moves on a selection, a refetch and a recolor —
-       * which is exactly when the packed bytes it copies out stop describing it
-       * — and on nothing a pan or a hover does, which is what `clickedFeatureId`
-       * being its own computed buys.
+       * selected. Its identity changes on a selection, a refetch and a recolor,
+       * which is when the packed bytes it copies out stop describing it. A pan
+       * or a hover leaves it unchanged, because `clickedFeatureId` is a
+       * separate computed.
        */
       get outlineCell(): SyntenyCell | undefined {
         const data = self.renderInstanceData

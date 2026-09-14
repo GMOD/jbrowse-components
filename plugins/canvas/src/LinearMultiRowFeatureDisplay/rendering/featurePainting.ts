@@ -66,8 +66,8 @@ function drawnRowAt(
 /**
  * The features that actually paint, in paint order, each with its display row
  * and ABGR color. Every painter goes through this, because a painter that
- * re-derives the skip rules fails silently — it paints a category the legend
- * says is off, or an out-of-range lane.
+ * re-derives the skip rules can paint a category the legend has turned off, or
+ * an out-of-range lane, and raises no error.
  */
 export function forEachDrawnFeature(
   data: Pick<

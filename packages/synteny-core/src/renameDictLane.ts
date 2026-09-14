@@ -11,7 +11,7 @@ import { makeStringDict } from './stringDict.ts'
  * `assembly.refNames`) is canonical. `agent-docs/reference/REFNAME_NAMESPACES.md`
  * is the rule; `getCanonicalRefNameFn` is the resolver, one per axis.
  *
- * RE-INTERNS, and that is the whole reason this is not a `.map()` in place. The
+ * RE-INTERNS, which a `.map()` in place cannot do. The
  * dictionary's entries are distinct while they are adapter-space, because the
  * worker interned them there; the rename can collapse two of them onto one
  * canonical name, and it takes only one aliased spelling to do it — a file
@@ -19,8 +19,8 @@ import { makeStringDict } from './stringDict.ts'
  * canonicalizing `1`, arrives as two entries and leaves as one. Duplicates break
  * every reader that resolves a name to an id ONCE and then compares integers —
  * `pickFollowFeature` and `followWindowMapping` both do, via `dict.indexOf` —
- * since `indexOf` finds the first duplicate and every feature carrying the
- * second silently stops matching.
+ * since `indexOf` finds the first duplicate, and no feature carrying the second
+ * matches.
  *
  * `ids` comes back untouched in the ordinary case: the interner hands out ids in
  * first-seen order, so they are unchanged unless a collapse actually happened,

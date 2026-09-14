@@ -2,8 +2,8 @@ import type { FeatPos } from '../LinearSyntenyDisplay/model.ts'
 import type { FollowWindow } from './followAnchorWindow.ts'
 
 /**
- * Whether one alignment covers the whole anchor window, which is what decides
- * between the exact walk and the window mapping. The axis is the query one when
+ * Whether one alignment covers the whole anchor window, which decides between
+ * the exact walk and the window mapping. The axis is the query one when
  * the mate row is moving, and the mate one when it is not.
  *
  * THE REFNAME IS PART OF IT, and only the frame pass needs that: the exact pass

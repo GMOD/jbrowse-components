@@ -45,9 +45,9 @@ export abstract class ComparativeAdapterBase<
    * clips its children's records once, after its own re-keying, rather than
    * once per child and once for itself.
    *
-   * Emission is in REGION order, not arrival order, which is what the base
-   * class's `merge` gives and what `MultiGenomeIndexedPAFAdapter` sorts its own
-   * concurrent reads to avoid. The lane sort downstream
+   * Emission is in REGION order, not arrival order. The base class's `merge`
+   * emits in arrival order, and `MultiGenomeIndexedPAFAdapter` sorts its
+   * concurrent reads to avoid it. The lane sort downstream
    * (`rowAssembliesOf`) weighs lanes with integers and tie-breaks on first
    * appearance in this list, and the weights tie exactly — at the HPRC CFH
    * window four haplotypes tie at 300,000 anchor bp and four at 215,316 — so

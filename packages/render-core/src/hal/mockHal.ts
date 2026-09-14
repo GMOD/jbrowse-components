@@ -29,7 +29,7 @@ export interface MockRect {
 /**
  * One draw, with the state that was in force when it was issued — the clip, and
  * which `writeUniforms` it reads. `null` scissor/viewport means unclipped, the
- * full canvas, which is what both HALs owe after a `clearScissor` /
+ * full canvas, the state both HALs must restore after a `clearScissor` /
  * `clearViewport`.
  *
  * `uniformWrite` indexes {@link MockHal.getUniformWritesF32}, or is `-1` when
@@ -44,8 +44,8 @@ export interface MockRect {
  * does an immediate `bufferSubData` into one UBO. They agree only while a
  * renderer writes then draws, which is the convention every renderer in tree
  * follows and nothing enforces: batching the writes and then issuing the draws
- * is right on WebGL2 and Canvas2D and silently wrong on WebGPU. This field is
- * what lets a backend test pin its renderer's pairing.
+ * is right on WebGL2 and Canvas2D and wrong on WebGPU, where the draws read the
+ * last write. `uniformWrite` lets a backend test pin its renderer's pairing.
  */
 export interface MockDraw {
   passId: string
@@ -80,8 +80,8 @@ export class MockHal extends GpuHalBase<MockBuffer> implements GpuHal {
    * rect without re-issuing a full-canvas one, so every draw after it went on
    * being clipped to the previous block while WebGL2 drew them unclipped — right
    * on Canvas2D, right on WebGL2, wrong on WebGPU alone. Nothing in tree clears
-   * mid-frame today, which is exactly why nothing caught it. Recording the
-   * effective clip per draw is what makes that assertable at all.
+   * mid-frame today, so no test caught it. Recording the effective clip per draw
+   * makes that assertable.
    */
   private scissor: MockRect | null = null
   private viewport: MockRect | null = null

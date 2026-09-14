@@ -11,13 +11,12 @@ function round(px: number) {
  * The faint field of connector lines, from each column center at
  * `lineZoneHeight` up to its genomic position at y=0.
  *
- * **One `stroke()` per line, and that is the whole point.** A rasterizer
- * composites a stroked path ONCE, so every line put into a single path (or a
- * single SVG `<path>` with 13,000 subpaths, which is what this used to be)
- * unions rather than accumulates: a pixel two hundred lines deep comes out the
- * same grey as a pixel one line deep, and the field draws as flat polygons with
- * hard edges where the union boundary falls. Stroking each line separately is
- * what makes density visible, and is why `connectorLineAlpha` has anything to
+ * **One `stroke()` per line.** A rasterizer composites a stroked path ONCE, so
+ * every line put into a single path (or a single SVG `<path>` with 13,000
+ * subpaths) unions rather than accumulates: a pixel two hundred lines deep comes
+ * out the same grey as a pixel one line deep, and the field draws as flat
+ * polygons with hard edges where the union boundary falls. Stroking each line
+ * separately makes density visible, and gives `connectorLineAlpha` something to
  * hold constant.
  *
  * `rgbaColor` folds the per-line alpha in, because `SvgCanvas` deliberately has

@@ -24,9 +24,9 @@ import type { Region } from '@jbrowse/core/util/types'
  * One contiguous run of contacts belonging to a single region pair, as a
  * half-open `[start, end)` slice of the concatenated contact arrays.
  *
- * Region membership is a property of the *query*, not of a contact: every
- * contact a pair produces shares it. Carrying it as runs rather than two
- * more per-contact columns is what lets the consumer hoist all the
+ * Region membership is a property of the *query*: every contact a pair
+ * produces shares it. Carrying it as runs rather than two more per-contact
+ * columns lets the consumer hoist all the
  * pair-invariant layout terms out of its inner loop — see
  * `executeRenderHicData`.
  *

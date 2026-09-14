@@ -346,7 +346,7 @@ const midpoint = (p: Footprint) => (p.start + p.end) / 2
 
 /**
  * The junction-facing edge of one footprint, decided by that footprint's OWN
- * strand — which is what stops the two halves of one record disagreeing.
+ * strand, so the two halves of one record agree.
  * `BedpeAdapter` files a row under both of its contigs and answers with the half
  * the query anchored on, so a rule that reads one end's strand for one edge and
  * the other end's for the other opens two different pairs of panels for the same
@@ -354,7 +354,7 @@ const midpoint = (p: Footprint) => (p.start + p.end) / 2
  * end and 9000+5000 from the right.
  *
  * A stated strand names the edge: `+` is the block's end and `-` its start,
- * which is what a BEDPE `+ -` row means by "deletion" and `+ +` by "inversion".
+ * matching what a BEDPE `+ -` row means by "deletion" and `+ +` by "inversion".
  * A 6-8 column BEDPE states neither — `parseStrand` answers 0 — and a record
  * with no orientation has its two blocks simply face each other, which is
  * symmetric in the pair and so order-independent too.
@@ -606,7 +606,8 @@ export function splitRegionAtPosition<
  *
  * Spelling it out inline is the same string until it isn't — the dialog appends
  * its own shape suffix to whatever it is handed, so a launcher that respells the
- * prefix quietly gets a second view rather than a broken one.
+ * prefix gets a second view instead of reusing the first, and nothing reports
+ * it.
  */
 export function breakpointSplitViewId(ownerId: string, assemblyName: string) {
   return `${ownerId}_${assemblyName}_breakpointsplitview`

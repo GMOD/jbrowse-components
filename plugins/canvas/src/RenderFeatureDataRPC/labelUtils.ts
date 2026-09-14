@@ -118,8 +118,8 @@ export function sharedChildLabelRows(
 }
 
 /**
- * The text a subfeature's own label draws, which is what decides whether it
- * needs a row. Both the reservation and the emit go through this, so a track
+ * The text a subfeature's label draws. A subfeature needs a label row only
+ * when this text is visible. Both the reservation and the emit go through this, so a track
  * labelling its children by `product` reserves the row it then paints into.
  */
 export function subfeatureLabelText(

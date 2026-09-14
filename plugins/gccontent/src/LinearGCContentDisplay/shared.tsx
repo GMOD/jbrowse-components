@@ -26,11 +26,11 @@ const formatBp = (n: number) => `${toLocale(n)} bp`
  * Both display types build theirs here. The canonical `GCContentTrack` names a
  * `GCContentAdapter` (see `LinearGCContentTrackDisplay`), the
  * `ReferenceSequenceTrack` display always has a bare sequence adapter, and a
- * `GCContentTrack` can name a bare one too: that was the only shape that worked
+ * `GCContentTrack` can name a bare one too: that was the only config that worked
  * before the display stopped wrapping unconditionally, and it shipped in our
- * own volvox configs long enough to be out in the wild. Left unwrapped, the
+ * volvox configs long enough to be out in the wild. Left unwrapped, the
  * sequence adapter's featureless output reaches the wiggle as an empty domain
- * and the track draws an axis with no data, silently and with no error.
+ * and the track draws an axis with no data and no error message.
  */
 export function gcAdapterConfig(
   self: { windowSize: number; windowDelta: number; gcMode: string },
@@ -83,9 +83,9 @@ export default function SharedModelF(
        * Overrides the wiggle base's strict-zoom arguments with none: the
        * adapter computes GC from `windowSize`/`windowDelta`/`gcMode` alone and
        * the worker does no per-zoom binning, so data fetched at one zoom is
-       * right at every other — and this display sends no `bpPerPx` either,
-       * which is what makes the empty object the honest answer rather than a
-       * key that happens to be constant.
+       * right at every other. This display sends no `bpPerPx` either, so no zoom
+       * value reaches the fetch, and the empty object says so instead of
+       * carrying a key whose value never changes.
        */
       zoomFetchArgs() {
         return {}

@@ -12,8 +12,7 @@ interface ComparativeViewSelf extends IStateTreeNode {
  * session — the read-vs-ref pair a dotplot or a synteny view synthesizes, which
  * nothing else owns and nothing else would remove.
  *
- * **This reaches outside the view's own tree, which is what makes WHEN it runs
- * a real question.** `session.removeView` detaches a view rather than
+ * **This reaches outside the view's tree, so WHEN it runs matters.** `session.removeView` detaches a view rather than
  * destroying it in place (ADR-069), so on the task that finally destroys it the
  * view is a root and `getSession` has no session to walk to — it throws
  * `no session model found!` out of `beforeDestroy`, from inside MST's teardown.

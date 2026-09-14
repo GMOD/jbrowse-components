@@ -3,8 +3,8 @@
  * rotate-45°-and-squash map both triangle displays (HiC's contact matrix, LD's
  * matrix) draw and hit-test through. It was the same math twice, once per
  * plugin, with LD's copy documenting that a dropped `yScalar` term had already
- * survived its coarse round-trip test once — the exact silent divergence one
- * implementation ends.
+ * passed its coarse round-trip test once. One implementation leaves no second
+ * copy to diverge from the first.
  *
  * The forward map is `hic.slang`'s `vs_main`, which the Canvas2D paths
  * implement as coordinates pre-multiplied by the uniform `viewScale` (which
@@ -13,11 +13,11 @@
  * past ~200 bp/px, so the export rounds the whole triangle to zero) under a
  * `ctx.translate/scale(1, yScalar)/rotate` stack the SVG export inherits
  * through `SvgCanvas`'s CTM: rotate the bin into the triangle **first**, then
- * apply the fit-to-height squash. That order is load-bearing — a squashed
+ * apply the fit-to-height squash. The order matters — a squashed
  * triangle's bins are parallelograms, not rectangles, because the y-only scale
  * lands after the rotation.
  *
- * The inverse is what turns a mouse position into a contact cell. A dropped
+ * The inverse turns a mouse position into a contact cell. A dropped
  * `yScalar` or a flipped sign here reports the wrong bin in every tooltip, on
  * displays where "the wrong bin" is a plausible-looking locus rather than a
  * visible break — and a cell-granular round trip is too coarse to catch it
@@ -38,8 +38,8 @@ export interface TriangleTransform {
   /**
    * Canvas-px y where the triangle's base sits — LD reserves its connector
    * zone above the matrix, HiC states 0. Required rather than defaulted, so
-   * the term a consumer has no use for is a stated 0 and not an omission the
-   * inverse silently disagrees with.
+   * the term a consumer has no use for is a stated 0. An omitted term would
+   * make the inverse map a pointer to the wrong cell.
    */
   yOffsetPx: number
 }
@@ -82,8 +82,8 @@ export function triangleScreenToData(
  * The live half of the map from a triangle payload's pre-rotation data space
  * (origin-relative bp / √2) to canvas px: pure view arithmetic, so pan and zoom
  * move it every frame with no refetch, and the payload's own axis origin folds
- * back in here in double precision, which is what keeps float32 instance
- * positions small. Stale data under a refetch draws at its own genomic position
+ * back in here in double precision, so float32 instance positions stay small.
+ * Stale data under a refetch draws at its genomic position
  * under the live map. HiC and LD both read it into their render state, hit
  * test and SVG export, so the three cannot disagree.
  *

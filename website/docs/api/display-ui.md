@@ -31,10 +31,9 @@ controls winning on z-index and the status text disappearing under them.
 It has never been reachable: the two displays that render the control row
 (alignments, canvas) are not among the four that report a `ready`-phase
 status (clustering, on multi-wiggle / multi-row features / maf / the
-multi-sample variant pair). That is the *reason* to make it structural rather
-than to leave it — nothing on either side is aware of the constraint, so the
-first display to want both would find the bug, and it presents as a status
-message that silently never appears.
+multi-sample variant pair). The layout is structural anyway, because neither
+side checks for the constraint, so the first display to want both would hit
+the bug as a status message that never appears.
 
 `BottomRightIndicators` already described itself as "the single anchor point
 for every bottom-right overlay ... so they lay out as one row instead of each
@@ -232,9 +231,9 @@ toolkit, so the package's no-Material-UI guarantee holds.
 Takes a single element child and clones it rather than wrapping it: the
 controls that want a tooltip are absolutely positioned inside a legend or sit
 in a flex row, where an extra `<span>` moves them. The child keeps its own
-handlers — these compose on top of them. This is the same trigger pattern
-MUI's own `Tooltip` uses, which is what the rest of JBrowse's chrome is built
-on; the toolkit is what differs here, not the shape.
+handlers — these compose on top of them. MUI's `Tooltip`, which the rest of
+JBrowse's chrome is built on, uses the same trigger pattern; only the toolkit
+differs.
 
 ```tsx
 <Tooltip title="Hide legend">
@@ -310,8 +309,8 @@ the chrome under them with nothing to say so.
 this component: JBrowse's own track container passes 100, which is positioned
 above `PaddingBlocks` and below `TrackLabel` at 200, and means nothing to a
 host whose masks sit at 2. A default would be a number that is right in one
-layout and silently wrong in every other, and the failure — chrome painted
-under a mask — is invisible until someone looks at the right zoom.
+layout and wrong in every other, and the failure — chrome painted under a
+mask — goes unseen until someone looks at the right zoom.
 
 The node takes no pointer events, so it does not eat the canvas's. Chrome that
 wants them takes them back on its own positioned box; it also carries

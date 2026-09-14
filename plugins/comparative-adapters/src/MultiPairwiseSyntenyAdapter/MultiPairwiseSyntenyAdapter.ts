@@ -53,9 +53,9 @@ export class NoCommonAssemblyError extends Error {
 
 /**
  * The one assembly every child names. Reading it off the children rather than
- * a slot means the config never states it twice, and the failure mode of a
- * child with a typo in its pair is an error naming every child's pair rather
- * than a lane that is quietly missing.
+ * a slot means the config never states it twice, and a child with a typo in
+ * its pair raises an error naming every child's pair rather than leaving a lane
+ * undrawn.
  */
 export function commonAssembly(childNames: string[][]) {
   const [first = [], ...rest] = childNames

@@ -56,8 +56,8 @@ export default function TrackHeightMixin() {
        *
        * The flag itself is the track's (`BaseTrackModel`), so the view brackets
        * a drag without needing the active display to have opted into this
-       * mixin. Reading it here is what makes `self.resizing` available to a
-       * display that did.
+       * mixin. This getter reads it so that a display that did opt in has
+       * `self.resizing`.
        */
       get resizing() {
         return getContainingTrack(self).resizing

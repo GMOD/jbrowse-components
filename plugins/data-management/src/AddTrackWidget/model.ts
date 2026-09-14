@@ -133,8 +133,8 @@ export default function f(pluginManager: PluginManager) {
       /**
        * #property
        * Which of the view's track containers the new track opens in, by id.
-       * Absent — the usual case — means the view itself. See the same property
-       * on HierarchicalTrackSelectorWidget, which is what sets this.
+       * Absent, the usual case, means the view itself. The same property on
+       * HierarchicalTrackSelectorWidget sets this one.
        */
       trackContainerId: types.maybe(types.string),
     })
@@ -380,9 +380,9 @@ export default function f(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * The name the track is added under, which is what an all-whitespace
-       * entry has to be judged on — `!!trackName` accepts `'   '` and mints a
-       * track whose name renders as nothing in the selector.
+       * The trimmed name the track is added under. Check this one for an
+       * all-whitespace entry: `!!trackName` accepts `'   '` and creates a track
+       * whose name is blank in the selector.
        */
       get submittableTrackName() {
         return this.trackName.trim()

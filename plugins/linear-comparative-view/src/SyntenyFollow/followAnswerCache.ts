@@ -20,7 +20,7 @@ function stepKey(step: FollowStep) {
  *
  * A settle wakes the exact pass three times with the same question, since
  * applying an answer flushes the moved row's coarse blocks and refetches it.
- * Holding the PROMISE rather than the span is what lets those wakes ride one
+ * The cache holds the PROMISE, not the span, so those wakes share one
  * `SyntenyResolveMatchingRegion`; each still runs its own `alreadyShowing`
  * against its own window. The integration suite asserts that count.
  *

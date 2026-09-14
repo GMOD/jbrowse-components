@@ -14,16 +14,16 @@ import type {
  * start" mode. A pairwise track fills two rows; an all-vs-all track (more than
  * two assemblyNames) stacks every assembly it lists as a row, with the single
  * track backing every adjacent band. A self-alignment track names the same
- * assembly twice; that repeat is meaningful (it is what makes the pair
- * launchable) so it is kept rather than deduplicated.
+ * assembly twice; the repeat makes the pair launchable, so it is kept rather
+ * than deduplicated.
  *
  * **Canonical**, like every other name the import forms put in a row. A track
  * config is free to name an alias, and these rows are handed straight to an
  * AssemblySelector, whose options are the session's own `assemblyNames` and
  * which blanks a value that is not one of them — so a Quick start on an
- * alias-named track handed Manual a row that rendered empty. They are also what
- * `doSubmit` opens the views on, so canonicalizing here is what makes the two
- * modes launch the same thing for the same track.
+ * alias-named track handed Manual a row that rendered empty. `doSubmit` also
+ * opens the views on these rows, so canonicalizing here makes the two modes
+ * launch the same thing for the same track.
  */
 export function syntenyTrackRows(
   track: AnyConfigurationModel,
@@ -55,8 +55,8 @@ export function syntenyTrackRows(
  * Swap is applied to the axes rather than to the rows, and `rows` must be the
  * track's own order. Reversing the row list instead only agrees with this for a
  * pairwise track: reversing an all-vs-all track's `[a, b, c]` yields `[c, b, a]`,
- * whose first two are a *different pair*, so Swap silently re-picked which pair
- * the dotplot showed instead of transposing the one it was showing.
+ * whose first two are a *different pair*, so Swap re-picked which pair the
+ * dotplot showed instead of transposing the one it was showing.
  */
 export function dotplotAxesFromRows(rows: string[], swapped = false) {
   const [first, second] = rows

@@ -36,8 +36,8 @@ import { TrackOverlayContext } from './TrackOverlayContext.ts'
  * this component: JBrowse's own track container passes 100, which is positioned
  * above `PaddingBlocks` and below `TrackLabel` at 200, and means nothing to a
  * host whose masks sit at 2. A default would be a number that is right in one
- * layout and silently wrong in every other, and the failure — chrome painted
- * under a mask — is invisible until someone looks at the right zoom.
+ * layout and wrong in every other, and the failure — chrome painted under a
+ * mask — goes unseen until someone looks at the right zoom.
  *
  * The node takes no pointer events, so it does not eat the canvas's. Chrome that
  * wants them takes them back on its own positioned box; it also carries

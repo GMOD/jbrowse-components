@@ -27,7 +27,7 @@ export interface ArcCandidate<T> {
 /**
  * The ranking, which every arc family uses.
  *
- * ONE rule, and the clamp is what makes it one: every candidate the cursor is
+ * ONE rule, made possible by the clamp: every candidate the cursor is
  * literally ON ties at distance 0, so "nearest wins, later-painted breaks the
  * tie" says both halves of what used to be two buckets.
  *
@@ -38,8 +38,8 @@ export interface ArcCandidate<T> {
  * nearest and throws away the target the per-mark tolerance had just widened —
  * which is exactly what the clamp throws away instead.
  *
- * Reading the paint order off the feed rather than re-deriving it is the point:
- * the alignments band used to rank on support, which was equivalent only while
+ * The paint order is read off the feed, not re-derived, because the alignments
+ * band used to rank on support, which was equivalent only while
  * support WAS the sort key. `resolveArcs` now sorts the arcs by category first,
  * so a lone discordant arc paints over a heavily-supported concordant one and a
  * support-ranked hover would have named the grey arc underneath.

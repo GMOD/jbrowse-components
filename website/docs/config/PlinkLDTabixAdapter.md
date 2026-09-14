@@ -57,11 +57,11 @@ awk 'NR == 1 {$1 = "#"$1} {$1 = $1}1' OFS='\t' study.ld |
 ```
 
 Comment the header with `#` rather than counting it with `tabix -S 1`. Both
-keep it out of the data, but only the commented form is what `tabix -H`
-prints and what readers ask for first, so a `-S 1` header is easy to miss —
-and missing it means missing the D' column, which is what makes D'
-available instead of only r². (Not `-c C`: that makes `C` the meta character,
-so every `chr1`-style data row would read as a comment.) A file already
+keep it out of the data, but `tabix -H` prints only the commented form, and
+readers ask for that first, so a `-S 1` header is easy to miss. A reader that
+misses the header misses the D' column, so only r² is available.
+(Not `-c C`: that makes `C` the meta character, so every `chr1`-style data
+row would read as a comment.) A file already
 indexed with `-S 1` still loads.
 
 Expected columns, either spelling: CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2, or

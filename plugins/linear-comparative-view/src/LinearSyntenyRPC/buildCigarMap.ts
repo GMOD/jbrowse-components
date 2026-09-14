@@ -71,10 +71,10 @@ function skewVariation(cigar: ArrayLike<number>) {
  *
  * A point goes down wherever the two axes' offset has moved more than
  * `toleranceBp` since the last one, AND on both sides of any single op that
- * moves it that far. The second half is what keeps a large indel a STEP rather
- * than a smear across the surrounding matches — a 5kb deletion is exactly what
- * a user navigating a CIGAR is looking at — and it is also what bounds the
- * error, since without it one op could carry a segment arbitrarily far.
+ * moves it that far. The second rule keeps a large indel a STEP rather than a
+ * smear across the surrounding matches — a 5kb deletion is what a user
+ * navigating a CIGAR is looking at — and it bounds the error, since without it
+ * one op could carry a segment arbitrarily far.
  *
  * Between two points the caller interpolates, and the true correspondence is
  * within `2 * toleranceBp` of that line: the skew stays within `toleranceBp` of

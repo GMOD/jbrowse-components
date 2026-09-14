@@ -147,24 +147,20 @@ export function anyMarkerPossibleForBlock(
  * that haplotype has the sequence.
  *
  * Markers take one category color, `insertionColor` — the caller passes the
- * theme's `palette.insertion`, which is what the pileup
+ * theme's `palette.insertion`, the color the pileup
  * (`alignmentComponentUtils`) and the MAF display (`drawMafInsertions`) paint
  * their insertions with, so the three agree and a custom theme moves all three
  * together.
  *
- * They used to take the cell's own genotype color, on the reasoning that the
- * color is what says which allele the haplotype carries and the marker only
- * supplies length. That does not survive the geometry: the bar is
+ * The marker does not use the cell's genotype color, because the bar is
  * `insertionBarWidth` wide where the cell under it is the 2px floor, so at 60
  * bp/px a 7.8kb insertion paints a 34px box across a row of OTHER records'
- * cells. In genotype coloring those neighbours are the same dark blue, so the
- * marker was invisible against them and only its white label survived — a
- * number floating in a solid field, which is exactly what a docs review
- * reported.
+ * cells. In genotype coloring those neighbours are the same dark blue, so a
+ * genotype-colored marker is invisible against them and only its white label
+ * shows, a number floating in a solid field.
  *
- * The dosage that fill used to carry is not lost with it: the record's own cell
- * is still drawn at its reference span underneath, and every mode reports the
- * genotype on hover.
+ * The record's cell is still drawn at its reference span under the marker, so
+ * its dosage color stays visible, and every mode reports the genotype on hover.
  *
  * Shared by the on-screen overlay and the SVG export.
  */

@@ -33,7 +33,7 @@ export default function FeatureMenu({
   feature: SimpleFeatureSerialized
   /** the session track for the loaded file; both launches open it */
   trackId?: string
-  /** the sheet's own read of the callset, which is what offers chain walking */
+  /** the sheet's read of the callset; chain walking is offered only with it */
   findJunctionsNear?: FindJunctionsNear
 }) {
   return (

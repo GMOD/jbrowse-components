@@ -41,8 +41,8 @@ export function inkAtPoint(
  * This is the whole of every shape's `hitNearest` but the geometry: `inkAt`
  * answers where instance `i` put ink and how far that is, and this keeps the
  * closest. Only a STRICTLY nearer candidate replaces the best, so on a tie the
- * first wins — which is what makes a caller that iterates back to front get the
- * mark on top, and it is a rule that used to be spelled out five times over.
+ * first wins, so a caller that iterates back to front gets the mark on top.
+ * Five shapes used to spell that rule out separately.
  *
  * `inkAt` may answer `undefined` for an instance that drew nothing at all, as
  * against one that drew somewhere far away: a bar clipped out of its band has

@@ -15,7 +15,7 @@ import { useState } from 'react'
  *
  * What is typed is ABOUT a particular assembly: `*_MATERNAL` on a different one
  * at best names nothing and unrestricts the row with a warning, at worst matches
- * and quietly shows the wrong thing. So `remap` keeps a value only where the row
+ * and shows the wrong contigs with no warning. So `remap` keeps a value only where the row
  * still names the same assembly, which covers every edit to some *other* row for
  * free, and `reset` is what the Quick start handover uses when the whole set of
  * rows is replaced.

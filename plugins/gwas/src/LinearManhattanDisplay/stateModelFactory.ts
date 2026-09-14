@@ -305,9 +305,9 @@ export function stateModelFactory(
          * #getter
          * LD coloring is actually in effect — the mode is on *and* there's an .ld
          * adapter for it to read. `colorBy` alone can be 'ld' from config with no
-         * adapter configured, in which case the worker silently falls back to
-         * normal coloring, so every LD affordance (legend, missing-index warning)
-         * keys off this rather than off `colorBy`.
+         * adapter configured, in which case the worker falls back to normal
+         * coloring, so every LD affordance (legend, missing-index warning)
+         * keys off this getter.
          */
         get ldColoringActive(): boolean {
           return this.colorBy === 'ld' && this.hasLdData
@@ -379,8 +379,8 @@ export function stateModelFactory(
          * screen did.
          *
          * A one-element read of the same `scoreRuleMarks` the wiggle displays
-         * place their configured rules with: this display's threshold is a rule
-         * at a chosen score, which is what that helper is. Manhattan pins its
+         * place their configured rules with, since this display's threshold is
+         * a rule at a chosen score. Manhattan pins its
          * axis linear (see `domain`), so the normalizer is the linear one.
          *
          * The helper still drops a rule outside the domain, which here only

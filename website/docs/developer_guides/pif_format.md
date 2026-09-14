@@ -316,8 +316,8 @@ pair when a file stores each pair once. That needs a modified index format and
 its own reader. PIF folds only a perspective letter into the key and writes each
 record twice, so stock tabix and every existing reader work unchanged, at the
 cost of a larger file. PIF records are also strand-aware intervals with an
-alignment string rather than point pairs, which is what the CIGAR reorientation
-and the coarse tier exist for.
+alignment string rather than point pairs, so they need the CIGAR reorientation
+and the coarse tier.
 
 ## See also
 

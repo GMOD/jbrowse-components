@@ -24,8 +24,8 @@ autoscale *computation* stay in `WiggleScoreConfigMixin` / `WiggleCommonMixin`
 `minScore`/`maxScore` are the **raw** slot values with their
 `Number.MIN_VALUE`/`Number.MAX_VALUE` "unset" sentinels intact, and nothing
 outside this file should want them: `manualMinScore`/`manualMaxScore` are the
-same answer with the sentinel resolved to `undefined`, which is what the
-dialog round-trips and what the menu captions itself with;
+same values with the sentinel resolved to `undefined`, and the dialog
+round-trips them and the menu captions itself with them;
 `minScoreBound`/`maxScoreBound` are the resolved bounds, where `undefined`
 means "autoscale this end". Every consumer that computes a domain reads the
 `*Bound` pair.

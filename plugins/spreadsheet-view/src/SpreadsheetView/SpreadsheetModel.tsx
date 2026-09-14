@@ -131,8 +131,8 @@ export default function stateModelFactory() {
        * the SV class the quick-filter dropdown is showing (undefined = show
        * all) — a class like `BND`, not a raw token, so it and the SV
        * inspector's legend name the same thing. `svTypeOptions` carries the raw
-       * `INFO.SVTYPE` values behind each class, which is what the grid filters
-       * the column on
+       * `INFO.SVTYPE` values behind each class, and the grid filters the column
+       * on those
        */
       svTypeFilter: types.maybe(types.string),
       /**
@@ -195,8 +195,8 @@ export default function stateModelFactory() {
        * the rearrangement goes, and a filter narrowing what is on screen is not
        * a statement about which junctions exist.
        *
-       * Lazily computed and then memoized, which is what makes walking a chain
-       * off the sheet cheaper than asking an adapter — the alternative queries
+       * Lazily computed and then memoized, so walking a chain off the sheet is
+       * cheaper than asking an adapter — the alternative queries
        * the callset back through RPC one 2 kb window at a time, and here the
        * whole thing is already parsed and sitting in memory.
        */
@@ -429,8 +429,8 @@ export default function stateModelFactory() {
       },
       /**
        * #getter
-       * the SV classes in the whole sheet, which is what the quick-filter
-       * dropdown offers — off every row rather than the visible ones, or
+       * the SV classes in the whole sheet, offered by the quick-filter
+       * dropdown — off every row rather than the visible ones, or
        * narrowing to one class would remove the way back
        */
       get svTypeOptions() {
@@ -438,8 +438,8 @@ export default function stateModelFactory() {
       },
       /**
        * #getter
-       * the SV classes among the rows on screen, which is what the SV
-       * inspector's legend counts. Same tally as `svTypeOptions`, so the two
+       * the SV classes among the rows on screen, counted by the SV inspector's
+       * legend. Same tally as `svTypeOptions`, so the two
        * controls cannot name a class differently
        */
       get visibleSvTypes() {
@@ -479,7 +479,7 @@ export default function stateModelFactory() {
       },
       /**
        * #action
-       * put a row's record on the session selection, which is what lights its
+       * put a row's record on the session selection, which highlights its
        * chord in the SV inspector's circle. Clearing it when the row carries no
        * feature keeps the circle from holding a highlight the sheet cannot
        * explain

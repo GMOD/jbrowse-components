@@ -70,8 +70,8 @@ export default function KeyedFetchMixin() {
        * `currentFetchKey` below appends `rpcPropsCacheKey` and
        * `adapterConfigKey`, so a field added to `rpcProps()` or a track
        * re-pointed in the config editor invalidates held data structurally.
-       * HiC hand-folded one settings term in and would have silently missed
-       * the second; the comparative family folded the adapter in at its
+       * HiC hand-folded one settings term in, and a second term would not
+       * have invalidated anything; the comparative family folded the adapter in at its
        * installer and compared without it at its export gate.
        *
        * Default `undefined`, so a display that forgets the override never
@@ -144,9 +144,9 @@ export default function KeyedFetchMixin() {
          * #action
          * The commit half of a keyed fetch: run the display's own store in the
          * same transaction as the key stamp, so no observer can see fresh data
-         * under a stale key or the reverse. Being the only writer of
-         * `loadedFetchKey` is what makes `dataCurrent` derivable — a display
-         * cannot commit without stamping.
+         * under a stale key or the reverse. As the only writer of
+         * `loadedFetchKey`, this action makes `dataCurrent` derivable, because
+         * a display cannot commit without stamping.
          */
         commitFetchResult(commit: () => void, key: string) {
           commit()
@@ -155,7 +155,7 @@ export default function KeyedFetchMixin() {
         /**
          * #action
          * `FetchMixin.reload` (error, cancel, counter — the shared skeleton's
-         * reload epoch is what makes that bump override the freshness gate, even
+         * reload epoch makes that bump override the freshness gate, even
          * against a fetch that commits mid-reload, so nothing here has to
          * remember to invalidate for the retry's sake) plus this layer's one
          * addition, for the export gate rather than the refetch: dropping the

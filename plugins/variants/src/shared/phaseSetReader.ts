@@ -81,7 +81,7 @@ export function makePhaseSetReader(sampleNames: string[]) {
     /**
      * Fill `value`/`present` for one feature, returning false when the feature
      * can't report FORMAT ranges — a non-VCF adapter — in which case the caller
-     * paints by allele, which is what an absent `samples` field already did.
+     * paints by allele, as it does for a feature with no `samples` field.
      */
     read(feature: Feature) {
       if (!hasProcessFormatFields(feature) || numSamples === 0) {

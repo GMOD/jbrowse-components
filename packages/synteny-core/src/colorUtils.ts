@@ -91,8 +91,8 @@ const syntenyColorByValues = [
  * A color-by mode: one of the named presets, or `attribute:<name>` naming a
  * numeric feature attribute the track happens to carry.
  *
- * The open arm is what keeps this list from gaining a member per measurement
- * anyone wants to see. A preset is a preset because it carries domain knowledge
+ * The open arm keeps this list from gaining a member per measurement anyone
+ * wants to see. A preset is a preset because it carries domain knowledge
  * a column name cannot — identity is a fraction, MAPQ tops out at 60, dN/dS
  * pivots at 1 — not because it is the only way to paint a number.
  */

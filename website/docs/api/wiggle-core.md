@@ -69,9 +69,8 @@ may be before the span between them counts as a hole rather than a segment to
 draw. Returns `Infinity` when there is nothing to decide, so a caller can
 always compare against it unguarded.
 
-The limit is a multiple of the series' own *mean* spacing rather than an
-absolute distance, which is what makes one number work across zoom levels and
-data types: reduced BigWig bins get wider as you zoom out, so any fixed bp
+The limit is a multiple of the series' *mean* spacing rather than an
+absolute distance, so one number works across zoom levels and data types: reduced BigWig bins get wider as you zoom out, so any fixed bp
 threshold would be either useless at one end or destructive at the other. It
 also lets the same rule serve a bp axis (wiggle's linecenter) and a px one —
 the caller picks the space, this only cares that the units are consistent.
@@ -209,9 +208,9 @@ at `(value - min) / (max - min)` puts the line somewhere the data it is meant
 to be read against is not.
 
 `box` is likewise the caller's own — hand it the same `{yTop, yBottom}` the
-display's ticks were built with (a `YScaleTicks` satisfies it). Recomputing a
-box here would silently disagree with any band that lays its axis out
-differently, and the alignments coverage band does.
+display's ticks were built with (a `YScaleTicks` satisfies it). A box
+recomputed here would place rules off the ticks of any band that lays its
+axis out differently, and the alignments coverage band does.
 
 ```js
 // type signature
@@ -239,11 +238,11 @@ initialized — which every caller distinguishes from a domain.
 
 Widens an autoscaled range so every configured rule stays on the axis.
 
-Without this a rule silently disappears in exactly the window that makes it
-worth having. Autoscale follows the visible data, so over a homozygous
-deletion a coverage domain collapses to about `[0, 1]` and a rule at the
-diploid depth falls outside it — and "2 copies would be up there" is the most
-informative thing that view can say. The reader has no menu to check either:
+Without this a rule is dropped from the plot in the views where it is most
+useful. Autoscale follows the visible data, so over a homozygous deletion a
+coverage domain collapses to about `[0, 1]` and a rule at the diploid depth
+falls outside it, though the rule's position above the data is the most
+informative mark in that view. The reader has no menu to check either:
 `scoreRules` is set by whoever wrote the config, so a rule that vanishes
 leaves nothing behind to notice.
 

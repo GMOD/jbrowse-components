@@ -83,8 +83,8 @@ const Dotplot1DView = Base1DView.extend(self => {
        * Deliberately NOT special-cased for content narrower than the view.
        * Pinning both bounds to the centered offset there gives zoomTo — which
        * clamps its anchor-preserving offset into [minOffset, maxOffset] — a
-       * degenerate range, so the cursor anchor is silently discarded and the
-       * plot snaps back to centered. That was the max-zoom-out "edge jump": the
+       * degenerate range, so zoomTo discards the cursor anchor and the plot
+       * snaps back to centered. That was the max-zoom-out "edge jump": the
        * first zoom step displaced the locus under the cursor by the
        * centered-vs-anchored gap, which grows with distance from center (~41px
        * near the edge, ~0 at the center). `center()` still centers explicitly,

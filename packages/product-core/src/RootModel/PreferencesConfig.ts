@@ -38,9 +38,8 @@ export function PreferencesConfigSchemaFactory() {
     /**
      * #slot configuration.preferences.numberGrouping
      * when true (the default), numbers are displayed with thousand separators
-     * — `chr1:1,234,567`. Turn it off to render them bare, which is what you
-     * want if you copy coordinates out of JBrowse into tools that won't accept
-     * the commas. Applies to every displayed number, and takes effect on
+     * (`chr1:1,234,567`). Turn it off to display them without separators, for
+     * copying coordinates into tools that won't accept the commas. Applies to every displayed number, and takes effect on
      * reload.
      */
     numberGrouping: {

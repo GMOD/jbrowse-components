@@ -164,8 +164,7 @@ async function fetchEachLane<Spec extends LaneFetchSpec, Result>(
  * its own spec was built at.
  *
  * There are two of them and they differ only in what a lane asks for and where
- * the answer lands. Everything else here is a rule with a reason, and each was
- * worth stating once rather than twice:
+ * the answer lands. They share the rules below, each stated once here:
  *
  * - **The delay** is the same for both because both are derived from lane
  *   frames that move on every pan, and a frame settles well inside 500ms.
@@ -179,7 +178,7 @@ async function fetchEachLane<Spec extends LaneFetchSpec, Result>(
  *   rather than 44, and the other lanes' genes keep their identity. The
  *   compare is the skeleton's, not `prepare`'s, so a reload overrides it — the
  *   dead Retry this display shipped once — and a run the override lets through
- *   with nothing stale re-reads every lane, which is what a Retry asks for.
+ *   with nothing stale re-reads every lane, as a Retry expects.
  * - **No `contract`**: both are second fetches on a display whose global
  *   foundation already installed the two display-contract checks.
  * - **`setError` is a noop.** A lane's extra records are an enhancement over

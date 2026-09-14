@@ -27,8 +27,8 @@ const IDENTITY: Ctm = [1, 0, 0, 1, 0, 0]
  * in CANVAS coordinates — `fillRect` and path `rect` alike, so a shape that
  * batches by colour records the same list as one that fills per instance. A
  * path traced with `moveTo`/`lineTo`/`bezierCurveTo` and filled records its
- * bounding box, which is what a shape whose hit test answers a polygon's box
- * (the variant inversion triangle) is held to; a curve contributes its control
+ * bounding box, the extent a shape whose hit test answers a polygon's box
+ * (the variant inversion triangle) is checked against; a curve contributes its control
  * points, whose hull contains it.
  *
  * A **stroked** path records one rect per `moveTo`/`lineTo` edge, each the

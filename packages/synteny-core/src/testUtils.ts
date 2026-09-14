@@ -15,8 +15,8 @@ export const track = (trackId: string, type: string, assemblyNames: string[]) =>
 
 /**
  * 'aliasOfA' is another name for assembly 'a'; 'ghost' is named by a track and
- * configured by nothing, which is what the real manager answers undefined and
- * false for; every other name is its own.
+ * configured by nothing, so the real manager answers undefined and false for it;
+ * every other name is its own.
  */
 export const assemblyManager = {
   getCanonicalAssemblyName: (name: string) =>

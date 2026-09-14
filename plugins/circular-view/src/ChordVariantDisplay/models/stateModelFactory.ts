@@ -130,8 +130,8 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
        * both halves of a chord render: the features, and the refName map that
        * translates the assembly's names to the adapter's. `blocksForRefs` falls
        * back to untranslated names while the map is in flight, so a render that
-       * only waited on features could draw a figure with every chord silently
-       * dropped (whenever the adapter names differ, e.g. `1` vs `chr1`).
+       * only waited on features could draw a figure with no chords (whenever
+       * the adapter names differ, e.g. `1` vs `chr1`).
        */
       get ready() {
         return self.features !== undefined && self.refNameMap !== undefined

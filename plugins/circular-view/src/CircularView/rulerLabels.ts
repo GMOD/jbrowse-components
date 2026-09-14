@@ -132,8 +132,8 @@ export interface AssemblyArc {
 }
 
 /**
- * One arc per run of consecutive slices from the same assembly, which is what
- * names the genomes on a circle holding more than one. None for a single
+ * One arc per run of consecutive slices from the same assembly, labelling the
+ * genomes on a circle holding more than one. None for a single
  * assembly, where the view's own title already says it.
  */
 export function assemblyArcs(staticSlices: Slice[]) {

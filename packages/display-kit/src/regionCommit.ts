@@ -10,14 +10,13 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  * A region a fetch stored, and which fetch stored it.
  *
  * One value rather than a `Region` map beside a key map: every operation
- * touched both — one `set`, one `delete`, one `clear` — so keeping them apart
- * bought nothing and cost three places to keep in step, with no reader-side
- * check to catch a slip. It is the same two-records-of-one-fact shape that made
- * a refused region read as covered, one level down, and the fix is the same:
- * store the fact once.
+ * touched both — one `set`, one `delete`, one `clear` — so two maps meant three
+ * places to keep in step, with no reader-side check to catch a slip. Two
+ * records of one fact also made a refused region read as covered, one level
+ * down, and the fix is the same: store the fact once.
  *
- * Extending `Region` rather than wrapping one is what makes that free: the
- * twenty-odd readers that want the span keep reading it directly, and only
+ * `LoadedRegion` extends `Region` instead of wrapping one, so the twenty-odd
+ * readers that want the span keep reading it directly, and only
  * `isCacheValid` looks at the key.
  */
 export interface LoadedRegion extends Region {
@@ -35,12 +34,12 @@ export interface LoadedRegion extends Region {
   /**
    * The payload that fetch stored for this region.
    *
-   * The display's own `rpcDataMap` was this field held in a second map, and
-   * the two were written by two actions one tick apart — which is what
-   * `regionHasData` existed to check from the reader's side and what the
-   * canvas base model's layout grouping worked around by re-deriving the
-   * region identity it needed out of the payload. One record instead of two,
-   * for the reason this interface fused the span and the stamp one level up.
+   * The display's `rpcDataMap` held this field in a second map, written by a
+   * separate action one tick after the span. `regionHasData` checked for that
+   * gap from the reader's side, and the canvas base model's layout grouping
+   * worked around it by re-deriving the region identity it needed out of the
+   * payload. The payload joins the record for the reason this interface fused
+   * the span and the stamp one level up.
    *
    * Optional only for the raw `setLoadedRegion` write a test stages a claim
    * with; `commitRegion` requires it.

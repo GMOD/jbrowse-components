@@ -308,7 +308,7 @@ export interface ClipContext2D {
  * Clip to one rect, paint, unclip — the `save`/`clip`/`restore` triple with the
  * `restore` in a `finally`.
  *
- * The `finally` is the whole point, and the cost of missing it is not local: an
+ * The `finally` is required, and missing it breaks more than the one frame: an
  * on-screen ctx outlives the frame and `prepareCanvas`'s setTransform/clearRect
  * do **not** reset clip state, so one painter throwing once leaves every later
  * frame drawing through a stale clip. A transient error becomes permanent
@@ -319,7 +319,7 @@ export interface ClipContext2D {
  * own. Reach for this one for the clips *nested inside* a block — a display
  * whose bands each own a horizontal strip of the canvas (alignments clips its
  * coverage, pileup and arc bands separately within one block clip), where the
- * nesting is what makes a hand-rolled pairing easy to get wrong: an early
+ * nesting makes a hand-rolled pairing easy to get wrong: an early
  * `return` inside the band body unbalances the block's `save` too.
  */
 export function withClip(
@@ -602,7 +602,7 @@ export function makeCellLeftMapper(bounds: BpRegionBounds) {
  *
  * Prefer this to `makeCellLeftMapper` + a caller-computed width for anything
  * wider than one base. The pivot in `makeCellLeftMapper` is exactly one base,
- * which is right for a 1bp cell and silently wrong for an N-bp span — it
+ * which is right for a 1bp cell and wrong for an N-bp span — it
  * anchors the rect one base from the correct edge and then grows it the wrong
  * way. `fillBpSpan(bp, bp + 1)` is *identical* to the cell-mapper spelling, so
  * a per-base painter can use this too and never think about orientation again.
@@ -670,7 +670,7 @@ export function fillBpSpan(
  * `14468.9936` — and rounding the *offset* and then adding such an anchor
  * returns the anchor's fraction untouched. The result is then not a base at
  * all, and every caller that indexes one by equality (a mismatch column, a
- * coverage bin, the sort-at-this-column anchor) misses silently: the pileup
+ * coverage bin, the sort-at-this-column anchor) finds no match: the pileup
  * offered no SNP submenu over a mismatch it was drawing. Rounding
  * `whole + fraction + offset` in one step instead fixes that and hands back the
  * genome-scale addend the paragraph above exists to keep out, so the whole base

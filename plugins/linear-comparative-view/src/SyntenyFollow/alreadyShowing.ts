@@ -14,7 +14,7 @@ const ALREADY_THERE_FRACTION = 0.02
  * they come apart when the user nudges a followed row by hand.
  *
  * `minWidthBp` is `minBpPerPx * width` — THE NARROWEST WINDOW THE MOVING VIEW
- * CAN SHOW, and it is what makes this terminate. A view asked for a span below
+ * CAN SHOW, and without it the follow never settles. A view asked for a span below
  * its zoom floor centres and widens it instead, so the row reports back a
  * window the span merely sits inside; on the numbers alone that is never
  * "already there", and every wake renavigated to the same place — which flushes

@@ -258,7 +258,7 @@ Run the clustering two ways:
   [`runClustering`](/docs/models/multisamplevariantbasemodel/#property-runclustering)
   and
   [`clusterRegion`](/docs/models/multisamplevariantbasemodel/#property-clusterregion)
-  model properties, which is what the figure below does
+  model properties, as the figure below does
 
 <Figure src="/img/ld/lct_haploblock.png" caption="An LD triangle over the haplotypes it summarises: 1000 Genomes chromosomes at LCT/MCM6, one row each, clustered by genotype. The pale slab is one cluster of near-identical chromosomes, uniform across the block that fills the triangle above."/>
 

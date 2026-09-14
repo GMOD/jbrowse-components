@@ -46,7 +46,7 @@ export interface GateViewport {
   spanBp: number
   /**
    * The measurement's identity: the stretch of genome on screen and the
-   * settings it is asked under, which is what `gateMeasurementStale` compares.
+   * settings it is asked under. `gateMeasurementStale` compares this key.
    * `RegionTooLargeMixin.gateViewport` builds it and says why the settings are
    * in there.
    */
@@ -65,7 +65,7 @@ export interface GateFetchState {
  * `RegionTooLargeMixin`'s byte-gate commit pair, as every fetch runner needs
  * it: the gate as it stood when a fetch was issued, and where the bytes its
  * result reports go. A display that passes no `byteLimit` measures nothing and
- * commits nothing, which is what lets a runner call them unconditionally.
+ * commits nothing, so a runner can call them unconditionally.
  */
 export interface GateCommitHost {
   gateFetchState: () => GateFetchState
@@ -196,12 +196,13 @@ export function bytesTooLargeReason(bytes: number) {
  *
  * **A budget nobody declared falls back closed.** `configFetchSizeLimit` comes
  * from `getConf`, which answers `undefined` for a slot the composing display's
- * schema never declared — silently, as it always does. An undefined budget
- * propagates to `measureRegionBytes`, which returns `{}` and measures nothing,
- * so the gate is off with nothing to see. A wrongly-tight banner is visible,
- * diagnosable and has an escape on the banner itself; a wrongly-open gate is a
- * silent multi-GB download. It does not throw, because a schema-authoring slip
- * should not crash a display and the `undefined` surfaces far from the author.
+ * schema never declared, as it always does. An undefined budget propagates to
+ * `measureRegionBytes`, which returns `{}` and measures nothing, so the gate is
+ * off and no banner appears. A wrongly-tight banner is visible, diagnosable and
+ * has an escape on the banner itself; a wrongly-open gate starts a multi-GB
+ * download with no banner. `resolveByteLimit` does not throw, because a
+ * schema-authoring slip should not crash a display and the `undefined` shows
+ * up far from the author.
  */
 export function resolveByteLimit({
   adapterFetchSizeLimit,

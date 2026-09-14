@@ -68,11 +68,10 @@ export function getDisplayOrder(snps: LDSnp[], regions: Region[]) {
  * A pair adjacent on screen need not have been adjacent in the source order —
  * a reversal preserves separation, but two blocks laid end to end do not — so a
  * screen-order pair can name a source pair the band never computed. Those cells
- * carry `LD_NOT_COMPUTED` and both renderers leave them unpainted, which is what
- * an out-of-band cell already looks like. They are not 0: the cell is inside the
- * drawn band, so 0 there is an opaque diamond at the bottom of the ramp saying
- * the two variants are in linkage equilibrium — a claim about a pair nothing
- * measured. Two blocks laid end to end at k = 5 fabricate exactly the k(k+1)/2
+ * carry `LD_NOT_COMPUTED` and both renderers leave them unpainted, the same as
+ * an out-of-band cell. A 0 would be wrong: the cell is inside the drawn band, so
+ * 0 there draws an opaque diamond at the bottom of the ramp, marking the two
+ * variants as in linkage equilibrium although nothing measured the pair. Two blocks laid end to end at k = 5 fabricate exactly the k(k+1)/2
  * cells straddling the seam, which is 15 of the 185 drawn at n = 40.
  */
 export function applyDisplayOrder(

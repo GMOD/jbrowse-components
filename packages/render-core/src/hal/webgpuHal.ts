@@ -214,7 +214,7 @@ export class WebGPUHal extends GpuHalBase<RegionPassBuffer> implements GpuHal {
    * selection spanning two sections re-uploads `OVERLAY_REGION` once per
    * section, inside the block loop.
    *
-   * Deferring is what makes mid-frame replacement legal instead of merely
+   * Deferring the destroy makes mid-frame replacement legal instead of merely
    * warned about; synteny's `ensureUploaded` has always deleted a pass mid-frame
    * that the open pass never referenced, and that case was never the bug.
    */

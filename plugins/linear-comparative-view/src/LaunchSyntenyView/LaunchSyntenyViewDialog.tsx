@@ -41,10 +41,9 @@ const useStyles = makeStyles()(theme => ({
 
 /**
  * Where the two panels will open, unpadded, resolved the way the launch
- * resolves them — the region dialog prints the same line per panel, and here
- * it is what makes the clip checkbox's effect visible: a liftOver chain
- * clipped to the window is a few tens of kb, and unclipped it is the
- * chromosome. The flip checkbox is spelled out as `(-)` on the mate rather
+ * resolves them. The region dialog prints the same line per panel, and here the
+ * line shows the clip checkbox's effect: a liftOver chain clipped to the window
+ * is a few tens of kb, and unclipped it is the chromosome. The flip checkbox is spelled out as `(-)` on the mate rather
  * than folded into the locstring, since it decides orientation, not position.
  */
 function LaunchPreview({

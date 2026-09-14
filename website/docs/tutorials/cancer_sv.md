@@ -174,13 +174,13 @@ sequence for the base-level checks.
 
 ## Reconstructing the derivative allele in the browser
 
-A split read is an ordered, oriented list of reference intervals, which is what
-a derivative allele is. With the tumor reads open at a breakpoint, the
-alignments track menu's **Reconstruct derivative allele...** groups the reads in
-view by the path their split alignments describe and offers each path with the
-number of reads behind it. Each row draws its segments to scale: a rearrangement
-is usually a long arm carrying short inserts, and a read the aligner chopped
-into pieces is a row of equal blocks.
+A split read is an ordered, oriented list of reference intervals, and so is a
+derivative allele. With the tumor reads open at a breakpoint, the alignments
+track menu's **Reconstruct derivative allele...** groups the reads in view by
+the path their split alignments describe and offers each path with the number of
+reads behind it. Each row draws its segments to scale: a rearrangement is
+usually a long arm carrying short inserts, and a read the aligner chopped into
+pieces is a row of equal blocks.
 
 Each row leads with the route as a lettered string, the reference cut into
 pieces at every breakpoint and a prime on a piece crossed against it. **Save

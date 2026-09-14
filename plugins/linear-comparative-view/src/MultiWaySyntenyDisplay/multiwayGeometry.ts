@@ -558,7 +558,7 @@ export interface LaneCells {
  *
  * TWO cells, because `outlineColor` is a per-cell uniform the rect pass applies
  * to every rect it holds: the boxes take the lane's stroke as their border,
- * which is what makes a box read as a box rather than a washed-out gene, and a
+ * so a box is distinguishable from a washed-out gene, and a
  * gene takes none, the feature track's own default.
  */
 export function buildLaneCells({

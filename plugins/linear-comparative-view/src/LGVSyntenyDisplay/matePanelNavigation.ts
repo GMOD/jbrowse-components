@@ -46,8 +46,8 @@ export interface PanelStack
  *
  * The three properties are one fact, so they are tested as one: with them
  * declared independently optional, a stack carrying `followSynteny` but no
- * setter would take an optional call and write nothing, which is the follow
- * quietly not being taken rather than an error. Whether the follow is ON is
+ * setter would take an optional call and write nothing, so the follow anchor
+ * would stay where it was and the caller would never learn. Whether the follow is ON is
  * `takeFollowAnchor`'s decision and stays there — this only answers whether
  * there is anything to ask.
  */
@@ -100,13 +100,13 @@ export function containingPanelStack(
  * mate's assembly. A synteny band is drawn between adjacent panels only, so
  * those are the panels this alignment says anything about — the far panel of a
  * three-row stack is related to the anchor through some other level's
- * alignments, and moving it from this one would be a guess. Filtering on the
- * assembly is what keeps a stack of three different genomes from sending a
- * neighbour to a refName it does not have.
+ * alignments, and moving it from this one would be a guess. The assembly filter
+ * stops a stack of three different genomes from sending a neighbour to a
+ * refName it does not have.
  *
  * A self-alignment (both panels on one assembly, a genome against its own
- * haplotype or paralogy) passes that filter in both directions, which is the
- * case this exists for.
+ * haplotype or paralogy) passes that filter in both directions, and moving both
+ * neighbours is the case this function handles.
  *
  * The assembly test is alias-aware, and has to be: a panel holds the name the
  * session opened it on while a mate holds the one the adapter resolved out of
@@ -144,7 +144,7 @@ export function matePanelIndexes({
  * alignment puts opposite `region`, which is the anchor panel's visible window
  * rather than the whole alignment.
  *
- * That distinction is the whole point. A published liftOver-style chain is one
+ * A published liftOver-style chain is one
  * feature tens of Mb long, so its midpoint — what "Center on feature" moves to
  * — is nowhere near what is on screen, and its full extent is nothing a panel
  * can usefully show. `resolvedMateSpan` walks the CIGAR to place just the
@@ -165,12 +165,12 @@ export function matePanelIndexes({
  * caller inherits it; the menu gates on the same thing so the item is absent
  * rather than inert.
  *
- * A SPAN AND NOT A LOCSTRING, which is what lets the caller reach
- * `navToResolvedSpan`. Stringifying here forced `navToLocString`, and that
- * REPLACES the moved panel's `displayedRegions` with the one contig it landed on
- * — so a panel showing a whole genome was narrowed by its own first move, and
- * the synteny fetch keeps a block only when both ends are in view, which is the
- * ribbons it was moved to line up.
+ * A SPAN AND NOT A LOCSTRING, so the caller can use `navToResolvedSpan`. A
+ * locstring forces `navToLocString`, which REPLACES the moved panel's
+ * `displayedRegions` with the one contig it landed on, so a panel showing a
+ * whole genome is narrowed by its first move. The synteny fetch keeps a block
+ * only when both ends are in view, so that narrowing drops the ribbons the move
+ * was meant to line up.
  */
 export function matePanelSpan(
   feature: Feature,

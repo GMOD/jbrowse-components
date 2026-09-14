@@ -39,9 +39,9 @@ const confNode = (self: object) => self as LegendConfHost
  * #category display
  * #crossCuttingMixin The legend, whole. A display declares the color scales it paints with (`colorScales`, a getter hook) and the mixin derives the key from them (`legendSpec`, through `legendSpecOf`), keeps the `showLegend` slot's getter and setter, dismisses sections one at a time (`dismissLegendSection`, undone by re-showing the legend), answers whether there is a key to offer (`hasLegendKey`) and whether the export parks it beside the plot (`svgLegendWidth`). `DisplayChrome` draws the on-screen key and `renderDisplaySvg` the exported one, so a display places neither
  *
- * A key derived from the scales the painter resolves colors through cannot
- * list a color nothing painted, which is what a legend hand-built from a second
- * copy of the rules used to do. The config slot stays per display: the
+ * A key derived from the scales the painter resolves colors through lists only
+ * colors that were painted. A legend hand-built from a second copy of the rules
+ * can list a color nothing painted. The config slot stays per display: the
  * composing schemas default it differently (a Hi-C color scale is off by
  * default, a variant genotype key on) and describe different legends, so
  * this mixin supplies the accessors over the slot and never the slot.
@@ -115,10 +115,10 @@ export default function LegendMixin() {
       },
       /**
        * #getter
-       * Whether the display has a key at all, which is what the "Show legend"
-       * row is offered on. Overridable for a display whose key is only waiting
-       * for data: a scale that fills in once a region lands must not take the
-       * way back to the toggle with it.
+       * Whether the display has a key at all. The "Show legend" row is offered
+       * only when it does. Overridable for a display whose key is only waiting
+       * for data: a scale that stays empty until a region lands must not remove
+       * the toggle in the meantime.
        */
       get hasLegendKey(): boolean {
         return self.colorScales.some(scale => !colorScaleIsEmpty(scale))

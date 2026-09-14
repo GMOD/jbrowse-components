@@ -10,8 +10,8 @@ export interface MapUploadTarget<K, T, B> {
  * re-uploads), and re-uploads everything when the backend identity changes —
  * a context-loss recovery hands a fresh backend with empty GPU buffers.
  *
- * Returns whether anything reached the backend, which is what lets the upload
- * autorun skip the redraw it would otherwise force after every run.
+ * Returns whether anything reached the backend, so the upload autorun can skip
+ * the redraw it would otherwise force after every run.
  *
  * For the skip to fire, the map must keep **stable references** for unchanged
  * entries across recomputes. With an always-fresh map every entry re-uploads,

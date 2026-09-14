@@ -146,7 +146,7 @@ export interface CoverageBandUniformValues {
   covHeight: number
   covYOffset: number
   covTop: number
-  /** The region's own peak depth, which is what the buffers' `relDepth` is a fraction of. */
+  /** The region's peak depth; the buffers' `relDepth` is a fraction of it. */
   regionMaxDepth: number
   /** The display's autoscaled depth domain. `undefined` max = not resolved yet. */
   domainMin: number
@@ -165,8 +165,8 @@ export interface CoverageBandUniformValues {
  * Fill the coverage band's uniform buffer. Total-write (the generated packer),
  * so a field left out is a compile error rather than last frame's value.
  *
- * `hpZero` is derived here rather than at each call site because getting it
- * wrong is a silently wrong band, not a broken one: it MUST be 0, since the HP
+ * `hpZero` is derived here rather than at each call site because a wrong value
+ * draws a plausible but wrong band and raises no error: it MUST be 0, since the HP
  * math materializes +inf as `1/hpZero` to stop the compiler folding the hi/lo
  * split it exists to preserve.
  */

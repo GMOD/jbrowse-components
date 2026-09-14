@@ -25,9 +25,9 @@ function bedGraphRow(feature: Feature) {
 /**
  * A multi-wiggle track's subtracks are read concurrently, so its features
  * arrive interleaved, each stamped with the `source` it came from. Four columns
- * carry none of that: every subtrack collapsed into one pile of overlapping
- * intervals that no reader could take apart again. bedGraph's own answer is a
- * `track` line per block, which is what a source groups into here.
+ * have no field for the source, so every subtrack would collapse into one set
+ * of overlapping intervals that no reader could separate again. bedGraph allows
+ * a `track` line per block, and this writer puts each source in its own block.
  *
  * A single-file track stamps no source (BigWig's `source` slot defaults to
  * empty) and still writes the bare four columns.

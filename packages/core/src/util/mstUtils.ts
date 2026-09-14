@@ -130,33 +130,30 @@ export function getRenderingServices(
 /**
  * #api core/util
  * Resolve user-authored refName text against the assembly of the view
- * containing `node` — the one normalization layer, which resolves aliases and
- * casing together. Falls back to the input when the assembly is absent or its
- * aliases have not loaded.
+ * containing `node`, resolving aliases and casing together. Falls back to the
+ * input when the assembly is absent or its aliases have not loaded.
  *
- * Keyed off the VIEW's assembly rather than the track's, because the view is
- * what the comparison is against: displayed regions, loaded regions and blocks
- * all carry the refNames the view laid out.
+ * Uses the view's assembly, not the track's, because displayed regions, loaded
+ * regions and blocks all carry the refNames the view laid out.
  *
- * Reach for this wherever a refName a *person* wrote is about to be compared
- * against regions, features or blocks, which carry the assembly's canonical
- * name. A refName a display copied off a region is canonical already and needs
- * nothing; one that arrived in a session spec, a config slot or a URL is
- * whatever the author read out of the location box.
+ * Call it wherever a refName a *person* wrote is about to be compared against
+ * regions, features or blocks, which carry the assembly's canonical name. A
+ * refName a display copied off a region is already canonical. One from a
+ * session spec, a config slot or a URL is whatever the author typed.
  *
- * Skipping it fails silently and, worse, assembly-dependently: `chr12` matches
- * on an assembly canonicalized `chr12` and matches nothing on one canonicalized
- * `12`, so the same spec key works on one config and quietly does nothing on
- * the next, with no error for anyone to act on.
+ * Without it, matching depends on the assembly: `chr12` matches on an assembly
+ * canonicalized `chr12` and matches nothing on one canonicalized `12`. The
+ * same spec key works on one config and does nothing on the next, with no
+ * error.
  *
- * Resolves through `getCanonicalRefName2`, whose fallback is what keeps a spec
- * read before the alias file has loaded from throwing — and the getters that
- * read user specs do run from the first render.
+ * Resolves through `getCanonicalRefName2`, which falls back to the input
+ * instead of throwing when a spec is read before the alias file has loaded.
+ * The getters that read user specs run from the first render.
  *
- * Takes a refName, not a spec that might hold one: the resolver reads
- * `refName.toLowerCase()`, so anything else throws once the aliases are there,
- * and a caller reading an untyped `frozen` slot has to establish that it names
- * a refName at all before this is the right question to ask of it.
+ * Takes a refName, not a spec that might hold one. The resolver calls
+ * `refName.toLowerCase()`, so any other value throws once the aliases have
+ * loaded, and a caller reading an untyped `frozen` slot must first check that
+ * the value is a refName.
  */
 export function canonicalizeViewRefName(
   node: IAnyStateTreeNode,

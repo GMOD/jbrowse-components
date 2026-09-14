@@ -12,8 +12,8 @@ import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 export type SyntenyGetCigarMapArgs = AlignmentLookupArgs
 
 /**
- * A CIGAR map plus the block extents it is measured against, which is what lets
- * the caller reject a map built for a different block: the offsets mean nothing
+ * A CIGAR map plus the block extents it is measured against, so the caller can
+ * reject a map built for a different block: the offsets mean nothing
  * without the coordinates they count from, and the two travel separately (the
  * caller has the coordinates from the bulk fetch).
  */

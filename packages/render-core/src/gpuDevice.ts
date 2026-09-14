@@ -8,7 +8,8 @@ interface GpuDeviceCell {
   devicePromise: Promise<GPUDevice | null> | null
   /**
    * Proof that this machine's WebGPU works, set the first time a device is
-   * acquired. It is what makes a failed acquisition readable, because the two
+   * acquired. The flag tells the two causes of a failed acquisition apart,
+   * because the two
    * causes are indistinguishable at the call site and want opposite handling:
    *
    *  - Before it, failure means "no WebGPU here" — the ordinary path on most
@@ -19,9 +20,9 @@ interface GpuDeviceCell {
    *    `requestAdapter` still declines. So this is not a rare race — it is the
    *    expected timing of the one path that re-acquires.
    *
-   * Caching the second kind is what `createGpuHal` then reads as "no WebGPU on
-   * this machine" (its own words), silently pinning the whole page to WebGL2
-   * until a reload. So past this flag a failure is retried and never cached.
+   * `createGpuHal` reads a cached failure of the second kind as "no WebGPU on
+   * this machine" (its own words) and pins the whole page to WebGL2 until a
+   * reload. So past this flag a failure is retried and never cached.
    */
   hadDevice: boolean
   deviceLostListeners: Set<() => void>
@@ -250,10 +251,10 @@ async function createDevice(): Promise<GPUDevice | null> {
  * The renderers `?renderer=` can pin the page to. `canvas` is a spelling of
  * `canvas2d` kept because it is in the wild.
  *
- * A pin means *only* that rung — `createGpuHal` does not fall past it. That is
- * the whole point of the flag: it exists to compare backends, and a comparison
- * whose subject silently substitutes itself is worse than no comparison. The
- * failure is visible instead, as a `renderError` carrying the pin that could
+ * A pin means *only* that rung — `createGpuHal` does not fall past it. The flag
+ * is for comparing backends, and a comparison that renders with a different
+ * backend than the one pinned is worse than no comparison. The failure shows
+ * instead, as a `renderError` carrying the pin that could
  * not be honored, with the banner's "disable GPU" as the way out.
  */
 export const GPU_OVERRIDES = ['webgpu', 'webgl', 'canvas2d', 'canvas'] as const
@@ -273,8 +274,8 @@ function isGpuOverride(value: string): value is GpuOverride {
  * `--renderer` flag), so validating here is validating once at the only place
  * an unchecked value enters. An unrecognized one clears the pin and says so:
  * before this, `?renderer=WebGL` or a typo was indistinguishable from passing
- * nothing at all, which is the one outcome a person debugging a renderer must
- * not silently get.
+ * nothing at all, and a person debugging a renderer got the default ladder
+ * with no sign the pin was ignored.
  */
 export function setGpuOverride(value: string | null) {
   if (value !== null && !isGpuOverride(value)) {

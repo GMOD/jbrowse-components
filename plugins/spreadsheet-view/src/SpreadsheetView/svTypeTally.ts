@@ -14,8 +14,8 @@ export interface SvTypeTally {
   /** how a reader sees it named — "Deletion", "Breakend" */
   label: string
   /**
-   * the raw `INFO.SVTYPE` values in this class, which is what a filter on that
-   * column has to match. More than one because the classes fold: `TRA` is how
+   * the raw `INFO.SVTYPE` values in this class, which a filter on that column
+   * has to match. More than one because the classes fold: `TRA` is how
    * several callers spell a translocation and it belongs with `BND`
    */
   tokens: string[]

@@ -82,13 +82,14 @@ the rest at 1.83x. Amdahl's law puts the end-to-end figure at 1.49x against
 therefore means attacking
 [the scan](https://github.com/GMOD/tabix-js/blob/main/docs/optimizations.md#scanning-lines).
 
-**The pool degrades silently, so verify it engages.** jbrowse-web runs adapters
-under `WebWorkerRpcDriver`, so the pool is a worker spawning workers. Where
-nested workers are unavailable — Safari below 16.4 — the pool resolves to
-`undefined`, every read inflates in process, and nothing fails: no error, no
-failing test, just the speedup gone. Count worker targets with puppeteer while
-loading one bgzip-backed track: four `blob:` workers means engaged, zero means
-it fell back, and a bigwig track is the control that spawns none.
+**The pool falls back without reporting it, so verify it engages.** jbrowse-web
+runs adapters under `WebWorkerRpcDriver`, so the pool is a worker spawning
+workers. Where nested workers are unavailable — Safari below 16.4 — the pool
+resolves to `undefined`, every read inflates in process, and nothing fails: no
+error, no failing test, just the speedup gone. Count worker targets with
+puppeteer while loading one bgzip-backed track: four `blob:` workers means
+engaged, zero means it fell back, and a bigwig track is the control that spawns
+none.
 [BGZF_WORKER_POOL.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/BGZF_WORKER_POOL.md)
 has the harness and the three benchmark traps, two of which produce numbers that
 look real.
@@ -342,8 +343,8 @@ measured here, and the two of its neighbours that are not publishable.
 
 Every position array crossing the worker boundary holds absolute genomic
 positions as `uint32`. Absolute, because region boundaries move on zoom-out and
-anything keyed to `regionStart` is silently invalidated when the anchor shifts;
-`uint32`, because that is exact to 4.29 Gbp at four bytes per vertex.
+anything keyed to `regionStart` becomes wrong when the anchor shifts; `uint32`,
+because that is exact to 4.29 Gbp at four bytes per vertex.
 
 A shader does its arithmetic in float32, which cannot hold a coordinate that
 large exactly, so the conversion is where the precision would go. The shader
@@ -582,8 +583,7 @@ where the next attempt starts.
   ([INTERACTION_PERF.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/INTERACTION_PERF.md),
   and the suppression direction is closed in the declined ideas).
 - **One track's parse is single-threaded.** Worker assignment is sticky per
-  adapter, which is what makes the inflate pool worth having and is also a
-  ceiling.
+  adapter. That makes the inflate pool worth having and is also a ceiling.
 - **A hover over an all-vs-all comparison** costs what the picking table says,
   and the index cannot fix it
   ([SYNTENY_PICKING.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SYNTENY_PICKING.md)).

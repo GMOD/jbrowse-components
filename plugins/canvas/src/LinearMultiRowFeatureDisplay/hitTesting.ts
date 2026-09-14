@@ -185,8 +185,8 @@ export function featureAtPixel(
 }
 
 /**
- * What a right-click resolves to, and undefined wherever no menu should open,
- * which is what the component decides whether to `preventDefault` on.
+ * What a right-click resolves to, and undefined wherever no menu should open.
+ * The component decides from this whether to call `preventDefault`.
  */
 export function contextTargetAtPixel(
   self: MultiRowHitTestSlice,

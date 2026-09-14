@@ -654,21 +654,17 @@ export default function assemblyFactory(
        *
        * The load reports progress (the adapter's index download, or for an
        * in-memory adapter the whole file) through the `statusCallback` of
-       * whichever caller started it. The others await it silently, and that is
-       * deliberate rather than a gap worth plumbing around: the callers sharing
-       * an entry are almost always the N displayed regions of ONE display, so
-       * their callbacks all write into that display's aggregated status bar and
-       * the first one is already reporting on behalf of the rest. The costs of
-       * getting this "right" — a listener set per key, registration, and
-       * deregistration on settle — buy visibility only for a second display on
-       * the same file, and for a first caller torn down mid-load, which is a
-       * no-op rather than a hazard because the callbacks are `isAlive`-guarded
-       * at the display end.
+       * whichever caller started it. The other callers get no progress
+       * updates. The callers sharing an entry are almost always the N
+       * displayed regions of one display, so their callbacks all write into
+       * that display's aggregated status bar, where the first caller already
+       * reports for the rest. A listener set per key, with registration and
+       * deregistration on settle, would add progress only for a second display
+       * on the same file and for a first caller torn down mid-load. The latter
+       * is a no-op because the display guards its callbacks with `isAlive`.
        *
-       * If that ever stops being enough, the fix is not a subscription list
-       * bolted on here: it is for the assembly to hold the in-flight status as
-       * observable state that consumers read, which is what this model is
-       * already made of.
+       * If per-caller progress is ever needed, the assembly should hold the
+       * in-flight status as observable state that consumers read.
        */
       getRefNameMapForAdapter(
         adapterConf: AdapterConf,

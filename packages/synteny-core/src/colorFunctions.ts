@@ -146,9 +146,8 @@ function lutFor(toRgb: (norm: number) => Rgb) {
 
 /**
  * The whole continuous family in one function. A mode supplies its attribute,
- * its colormap and its domain, so a measurement nobody anticipated needs no arm
- * of its own — which is what stops the switch below growing once per number
- * somebody wants to see.
+ * its colormap and its domain, so a new measurement needs no arm in the switch
+ * below.
  */
 export function makeContinuousColorFunction(
   mode: ContinuousMode,

@@ -152,9 +152,9 @@ list as **external**, so every import above that appears in the table earlier on
 this page resolves to the host's copy at runtime: the `@jbrowse/core` subpaths,
 `@jbrowse/mobx-state-tree`, `mobx`. The other two,
 `@jbrowse/plugin-linear-genome-view` and `@jbrowse/render-core`, are not on the
-list, so they are bundled into the plugin, which is what happens to any
-dependency that isn't — `d3-scale`, say. The build configs read
-`ReExports/list.ts` directly, so you do not maintain this set yourself.
+list, so they are bundled into the plugin, like any dependency that isn't —
+`d3-scale`, say. The build configs read `ReExports/list.ts` directly, so you do
+not maintain this set yourself.
 
 ### What your tsconfig needs
 

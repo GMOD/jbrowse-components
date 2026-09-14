@@ -162,13 +162,13 @@ export function collectSampleNames(filteredVariants: FilteredVariant[]) {
  * for every adapter with one header, which is every adapter but
  * SplitVcfTabixAdapter, and for split files that all share a sample list.
  *
- * It is not the case for the very thing the union exists to handle: two files
- * whose headers order their samples differently, or where one omits a sample
- * another has (a chrY file called on the male subset, say). Then union position
- * and header position part company after the first difference, and indexing the
- * union by `sampleIdx` silently files each genotype — and each sample's ploidy —
- * against a neighbouring sample. `undefined` for the agreeing case keeps the hot
- * callback's read count unchanged there.
+ * The union exists for split files whose headers disagree: two files that order
+ * their samples differently, or where one omits a sample another has (a chrY
+ * file called on the male subset, say). There union position and header position
+ * diverge after the first difference, and indexing the union by `sampleIdx`
+ * files each genotype, and each sample's ploidy, against a neighbouring sample,
+ * which then draws the wrong sample's calls. `undefined` for the agreeing case
+ * keeps the hot callback's read count unchanged there.
  */
 export function buildHeaderRemap(
   names: string[] | undefined,

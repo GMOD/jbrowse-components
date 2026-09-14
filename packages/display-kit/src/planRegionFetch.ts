@@ -54,9 +54,9 @@ export interface RegionFetchSources {
   /**
    * what a fetch would actually pull: `visibleRegions` widened by a half-screen
    * each side. The plan judges the visible block and fetches the buffered one,
-   * which is the whole reason both lists are here. Returning the visible block
-   * instead compiles, draws correctly, and silently deletes the prefetch buffer
-   * that keeps a pan from blanking.
+   * so it needs both lists. Returning the visible block here instead compiles
+   * and draws correctly, but drops the prefetch buffer that keeps a pan from
+   * blanking.
    */
   bufferedVisibleRegions: IndexedRegion[]
   /** the region already loaded at this index, if any */

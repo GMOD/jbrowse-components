@@ -103,33 +103,29 @@ backends upload and the Canvas2D twins index — entry `i` is the color at
 ### canonicalizeViewRefName
 
 Resolve user-authored refName text against the assembly of the view containing
-`node` — the one normalization layer, which resolves aliases and casing
-together. Falls back to the input when the assembly is absent or its aliases
-have not loaded.
+`node`, resolving aliases and casing together. Falls back to the input when the
+assembly is absent or its aliases have not loaded.
 
-Keyed off the VIEW's assembly rather than the track's, because the view is what
-the comparison is against: displayed regions, loaded regions and blocks all
-carry the refNames the view laid out.
+Uses the view's assembly, not the track's, because displayed regions, loaded
+regions and blocks all carry the refNames the view laid out.
 
-Reach for this wherever a refName a _person_ wrote is about to be compared
-against regions, features or blocks, which carry the assembly's canonical name.
-A refName a display copied off a region is canonical already and needs nothing;
-one that arrived in a session spec, a config slot or a URL is whatever the
-author read out of the location box.
+Call it wherever a refName a _person_ wrote is about to be compared against
+regions, features or blocks, which carry the assembly's canonical name. A
+refName a display copied off a region is already canonical. One from a session
+spec, a config slot or a URL is whatever the author typed.
 
-Skipping it fails silently and, worse, assembly-dependently: `chr12` matches on
-an assembly canonicalized `chr12` and matches nothing on one canonicalized `12`,
-so the same spec key works on one config and quietly does nothing on the next,
-with no error for anyone to act on.
+Without it, matching depends on the assembly: `chr12` matches on an assembly
+canonicalized `chr12` and matches nothing on one canonicalized `12`. The same
+spec key works on one config and does nothing on the next, with no error.
 
-Resolves through `getCanonicalRefName2`, whose fallback is what keeps a spec
-read before the alias file has loaded from throwing — and the getters that read
-user specs do run from the first render.
+Resolves through `getCanonicalRefName2`, which falls back to the input instead
+of throwing when a spec is read before the alias file has loaded. The getters
+that read user specs run from the first render.
 
-Takes a refName, not a spec that might hold one: the resolver reads
-`refName.toLowerCase()`, so anything else throws once the aliases are there, and
-a caller reading an untyped `frozen` slot has to establish that it names a
-refName at all before this is the right question to ask of it.
+Takes a refName, not a spec that might hold one. The resolver calls
+`refName.toLowerCase()`, so any other value throws once the aliases have loaded,
+and a caller reading an untyped `frozen` slot must first check that the value is
+a refName.
 
 ```js
 // type signature
@@ -189,9 +185,9 @@ lands before React re-renders.
 
 How a mark's `color` channel resolves. A CSS colour or a `jexl:` expression
 returning one paints per feature with no scale; the two object forms bind a
-field to a scale, which is what a legend can describe. A continuous scale reads
-the field through `domain` (the region's own extremes when absent) into `ramp`,
-and there a listed `domain` is what pins the answer across a whole view.
+field to a scale, which a legend can describe. A continuous scale maps the field
+through `domain` (the region's minimum and maximum when absent) into `ramp`;
+list a `domain` to keep colors consistent across a whole view.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
 
@@ -510,28 +506,25 @@ field took.
 
 Hydrate a plain track config into a live config node, dispatching on its `type`
 to find the schema. `session.tracks` holds `types.frozen` plain objects until
-something references a track (ADR-031), so a caller handed one of those has a
-config that reads nothing but what was literally authored: a slot at its schema
-default is absent, `preProcessSnapshot` has not run, and nothing that walks a
-live node applies to it.
+something references a track (ADR-031). One of those holds only what was
+literally authored: a slot at its schema default is absent, `preProcessSnapshot`
+has not run, and nothing that walks a live node applies to it.
 
-For the callers that need the resolved answer rather than the authored one and
-cannot know which of the two they were handed. The About dialog's "Copy config"
-is the case this exists for: it is reached from two menus, and one of them
+Use it where a caller needs the resolved config and may be handed either form.
+The About dialog's "Copy config" is reached from two menus, and one of them
 passes a `session.tracks` entry.
 
-Returns **undefined** rather than throwing when the config names a track type no
-plugin registered, or when it is invalid enough that `create` rejects it — an
-un-hydrated config has never been validated, so a dialog that opens over it must
-not be the thing that discovers this. Callers fall back to treating it as the
-plain object it is.
+Returns **undefined** when the config names a track type no plugin registered,
+or when `create` rejects it as invalid. An un-hydrated config has never been
+validated, so the dialog opening over it should not throw. Callers fall back to
+using the plain object.
 
 Shares `TrackConfigurationReference`'s per-PluginManager cache, so hydrating the
-same entry twice returns the same node — and in admin/embedded sessions a track
-opened later resolves to that same node. A non-admin's open track does not: it
-resolves to the session's private working copy (ADR-032) and this is the
-pristine mirror beside it. The two agree in content, which is what the caller
-needs; `CopyConfigEntryPoints.test.ts` pins both halves.
+same entry twice returns the same node, and in admin/embedded sessions a track
+opened later resolves to that same node. A non-admin's open track resolves to
+the session's private working copy (ADR-032), and this function returns the
+pristine mirror beside it. The two have the same content;
+`CopyConfigEntryPoints.test.ts` tests both cases.
 
 ```js
 // type signature
@@ -807,12 +800,11 @@ the declared slot value type doesn't include it.
 ### stackBands
 
 Fold an ordered set of bands into tops and a bottom. The order is the argument,
-so a display states its band order exactly once; reserve, paint and pick all
-read the same fold, which is what keeps "the reserver and the painter read one
-function" true by construction rather than by prose.
+so a display states its band order exactly once. Reserve, paint and pick all
+call this function, so the reserved and painted positions cannot disagree.
 
-Only the fold is shared. What varies per display stays there: per-lane iteration
-runs this once per lane, sticky-vs-scrolling is a property of how the result is
+Only the fold is shared; the rest stays in each display. Per-lane iteration runs
+this once per lane, sticky-vs-scrolling is a property of how the result is
 projected to the screen, and a band drawn outside its reservation (an overlay)
 carries its own draw rect beside the stack.
 

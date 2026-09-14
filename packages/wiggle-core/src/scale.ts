@@ -44,7 +44,7 @@ export interface ScaleOpts {
   symlogConstant?: number
   /**
    * Round the domain to nice endpoints before building the scale. Defaults to
-   * true, which is what a caller handing over raw data wants. Pass false when
+   * true, for a caller handing over raw data. Pass false when
    * the domain is already the one something else is drawing with — nicing it
    * again moves the axis off that drawing, and can invent an endpoint outside
    * it (a raw `[1, 1000]` nices to `[1, 1024]`, so the axis labels a tick at a

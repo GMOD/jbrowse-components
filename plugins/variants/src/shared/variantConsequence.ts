@@ -112,14 +112,14 @@ export function getVariantConsequence(feature: Feature) {
  * `&`-expanded — deduped, in file order. Same field-1 caveat as
  * {@link getVariantConsequence}.
  *
- * This is what a "is it missense anywhere" filter has to ask, and neither
- * spelling that suggests itself answers it. `consequence(feature)` reports the
- * *most severe* annotation alone, so a variant that is missense on one
- * transcript and stop_gained on another reads back `stop_gained`; and
+ * An "is it missense anywhere" filter needs the full list, and neither obvious
+ * spelling gives it. `consequence(feature)` reports the *most severe*
+ * annotation alone, so a variant that is missense on one transcript and
+ * stop_gained on another reads back `stop_gained`; and
  * `includes(feature.INFO.CSQ, 'missense_variant')` reaches
  * `Array.prototype.includes`, which compares whole pipe-delimited entries and
- * so is false for every real record. Both fail by quietly hiding features,
- * which is the failure a filter cannot show you.
+ * so is false for every real record. Both make the filter drop matching
+ * features, and a filtered track shows nothing of what it dropped.
  */
 export function getVariantConsequences(feature: Feature) {
   const terms: string[] = []

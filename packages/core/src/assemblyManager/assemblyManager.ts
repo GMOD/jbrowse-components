@@ -426,18 +426,15 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
        * {@link waitForAssembly}, but a name that cannot be resolved is an error
        * rather than an `undefined` for the caller to interpret.
        *
-       * For callers whose result is silently *wrong* without the assembly, not
-       * merely absent: a refName map is the obvious one, since an empty map
-       * means an adapter gets queried with un-renamed refNames, finds nothing,
-       * and the track draws blank with nothing to say why. Failing here instead
-       * puts the name in front of the user, who is the only one who can add the
+       * Use it where a missing assembly produces a wrong result with no error.
+       * A refName map is one case: an empty map means an adapter gets queried
+       * with un-renamed refNames, finds nothing, and the track draws blank.
+       * Throwing here shows the assembly name to the user, who can add the
        * assembly or fix the track.
        *
-       * Worth using only because the wait is causal now. It used to give up
-       * after a fixed ten seconds, where "not resolved" could equally mean "not
-       * resolved yet" and throwing would have been a race; today it returns
-       * only once every handler and connection that could supply the name has
-       * finished, so there is a real answer to report.
+       * `waitForAssembly` returns only once every handler and connection that
+       * could supply the name has finished, so an unresolved name here is
+       * final and throwing does not race a late load.
        */
       async requireAssembly(assemblyName: string) {
         const assembly = await this.waitForAssembly(assemblyName)

@@ -163,12 +163,10 @@ a later `session.addView(...)` is unsized, and the getter throws
 `width undefined, make sure to check for model.initialized` the moment anything
 reads it — which most block and coordinate logic does. Either declare the view
 in the snapshot, as the component test below does, or call `view.setWidth(800)`
-straight after adding it, which is what the integration tests across the repo
-do.
+straight after adding it, as the integration tests across the repo do.
 
-`FromConfigSequenceAdapter` is what keeps a session test off the network: the
-assembly's sequence is inline, so nothing is fetched and the assembly is ready
-immediately.
+`FromConfigSequenceAdapter` keeps a session test off the network: the assembly's
+sequence is inline, so nothing is fetched and the assembly is ready immediately.
 
 ## Component tests
 

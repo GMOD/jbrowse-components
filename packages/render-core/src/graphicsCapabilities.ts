@@ -7,8 +7,8 @@ import {
 export interface GraphicsCapabilities {
   webgpu: boolean
   /**
-   * `undefined` when the WebGL2 probe was skipped, which is what
-   * `getGraphicsCapabilities` does whenever WebGPU answered first — see there.
+   * `undefined` when the WebGL2 probe was skipped. `getGraphicsCapabilities`
+   * skips it whenever WebGPU answered first — see there.
    */
   webgl2?: boolean
   gpuVendor?: string
@@ -36,8 +36,8 @@ export interface GraphicsCapabilities {
  * The rungs of the rendering ladder, as the names a person reads — the About
  * widget's "Graphics:" line, the stack-trace dialog, the analytics field.
  *
- * Deliberately *not* the {@link GpuOverride} vocabulary, which is what a user
- * types into `?renderer=` and therefore carries lowercase spellings and the
+ * Deliberately *not* the {@link GpuOverride} vocabulary, the values a user
+ * types into `?renderer=`, which therefore carry lowercase spellings and the
  * `webgl`/`canvas` aliases. One is an input to parse, the other an answer to
  * display, and collapsing them would mean either showing "canvas2d" in the UI
  * or accepting "Canvas2D" in a URL.
@@ -97,7 +97,7 @@ async function probeWebgpu() {
  * that call is effectively driver-wide (ADR-005 removed it from
  * `WebGL2Hal.dispose()` for the same reason), so probing while tracks were on
  * screen knocked out their live sibling contexts — and both browsers log the
- * loss to the console, which is what a user sees. The canvas is unreachable the
+ * loss to the console, where a user sees it. The canvas is unreachable the
  * moment this returns and the browser reclaims the context on GC, the same
  * release the HAL relies on. A page that then reaches the 16-context ceiling
  * evicts this one first (it is the oldest, and nothing draws to it or
@@ -175,9 +175,8 @@ export function getGraphicsCapabilities(): Promise<GraphicsCapabilities> {
  * The Canvas2D pin is checked ahead of the record because the banner's
  * "disable GPU" sets it before the displays rebuild on the new rung. The other
  * pins win outright in the prediction, because **a pin never falls through to
- * the next rung** — `createGpuHal` throws instead, on the reasoning that a
- * pinned renderer which silently substitutes another makes any comparison
- * against it wrong. So the pinned rung *is* the answer, and a pin that cannot
+ * the next rung** — `createGpuHal` throws instead, because a pinned renderer
+ * that falls back to another rung makes any comparison against it wrong. So the pinned rung *is* the answer, and a pin that cannot
  * be honored surfaces as a `renderError` rather than as a different string
  * here. The one case the prediction cannot resolve from capabilities alone
  * (`?renderer=webgl` on a WebGPU machine, where the WebGL2 probe was skipped)

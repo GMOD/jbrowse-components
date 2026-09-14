@@ -9,11 +9,12 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *
  * Note: don't set `sequenceAdapter` — JBrowse supplies it from the assembly the
  * track is displayed against. Setting it by hand pins the scan to one sequence
- * source and silently desyncs the track if the assembly's sequence changes.
+ * source, and the track keeps scanning that source after the assembly's
+ * sequence changes.
  *
  * #example
  * The defaults are SpCas9 — `NGG` PAM, 20 nt guide, 3' PAM — and the adapter
- * scans the assembly's own sequence, which is why there is no file location.
+ * scans the assembly's sequence, so the config has no file location.
  * A PAM occurs every few bases, so an unfiltered scan is denser than a display
  * can draw; the GC window and `excludePolyT` (guides carrying `TTTT`, a
  * terminator for the pol III promoters guides are expressed from) keep the

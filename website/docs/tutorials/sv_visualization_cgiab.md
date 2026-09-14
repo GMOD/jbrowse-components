@@ -557,7 +557,7 @@ the fetch on the raw per-site values at the zoom levels these figures use:
 
 Raw het sites are cheap here, because the track carries one value per germline
 heterozygous site rather than one per base. Whole-genome view still falls back
-to the summary, which is what Wakhan's segments above are for.
+to the summary, and Wakhan's segments above cover that zoom level.
 
 **Resolution → Finer** in the track menu is the same control interactively.
 Reach for it whenever a scatter track paints as a filled band.
@@ -823,13 +823,13 @@ multi-bigwig track, which is fast at any zoom:
 
 The two rows in the figures here come from
 [goleft indexcov](https://github.com/brentp/goleft/tree/master/indexcov), which
-divides each sample by its own median. That normalization is what lets the rows
-share an axis at all: the tumor and the normal were sequenced to different
-depths, so raw coverage separates them before any copy number does, where
-normalized rows put the normal flat at 1 and read every level the tumor holds as
-a ratio against it. The pipeline above does not build those two files. They are
-published beside the demo, as `HG008-N_indexcov.bw` and `HG008-T_indexcov.bw`
-under https://jbrowse.org/demos/cgiab/, and load as a multi-wiggle track by URL.
+divides each sample by its own median. That normalization lets the rows share an
+axis: the tumor and the normal were sequenced to different depths, so raw
+coverage separates them before any copy number does, where normalized rows put
+the normal flat at 1 and read every level the tumor holds as a ratio against it.
+The pipeline above does not build those two files. They are published beside the
+demo, as `HG008-N_indexcov.bw` and `HG008-T_indexcov.bw` under
+https://jbrowse.org/demos/cgiab/, and load as a multi-wiggle track by URL.
 
 Zoom to a region and open the benchmark CNV BED to check the coverage changes
 against the called intervals. Coverage says a level changed; the BAF track in
@@ -988,7 +988,7 @@ Two modes sit under that item:
   modified and leaves the rest blank, so an unmethylated stretch and a stretch
   with no CpGs in it look alike.
 - **One color per type, plus low-probability & unmodified in blue** paints every
-  CpG in context, which is what the figure below is set to.
+  CpG in context. The figure below uses this setting.
 
 <Figure caption="Tumor PacBio HiFi reads at the CDKN2B-AS1 end of the CDKN2A locus, over the NCBI RefSeq gene lane, colored by base modification with unmodified cytosines filled in. Neighboring CpG-dense blocks come out in opposite states, one of them at the CDKN2B-AS1 transcription start." src="/img/sv_cgiab/methylation_cdkn2b.png" />
 

@@ -15,19 +15,19 @@ interface LegendSource {
  * The color key for a multi-wiggle track: one row per (group, color) pair in
  * first-appearance order, with every color resolved.
  *
- * **The collapse is what makes a key possible at all on a cohort track.**
+ * **Collapsing rows by color makes a key possible on a cohort track.**
  * Almost always it is one row per group, since a group normally shares a color.
  * A group whose sources DISAGREE about their color splits into one row per
- * color within it rather than falling apart — a store may carry a coloring finer
+ * color within it, not one row per source — a store may carry a coloring finer
  * than its grouping (the per-cell PBMC store groups 4,390 cells into six
  * lineages and colors them by nine cell types, so 'T cell' is two blues). Two
- * swatches labelled 'T cell' is a key and says something true; 2,436 rows for
- * that one group is not. An ungrouped source keeps a row of its own, since
+ * swatches labelled 'T cell' form an accurate key; 2,436 rows for that one
+ * group do not. An ungrouped source keeps a row of its own, since
  * nothing else identifies it.
  *
- * **Which channel the color comes from is the mode's business, not this
- * function's**, so it takes the `RowColorMode` sourcesLogic.ts derives rather
- * than deciding against a boolean of its own. `color` is a row's identity
+ * **The mode decides which channel the color comes from**, so this function
+ * takes the `RowColorMode` sourcesLogic.ts derives rather than deciding against
+ * a boolean of its own. `color` is a row's identity
  * everywhere except density, where it is the score ramp and identity sits in
  * `labelColor` — see the color-model table there. Reading `color` in density
  * gave a grouped-but-uncolored cohort N rows that were all `fallbackColor`,

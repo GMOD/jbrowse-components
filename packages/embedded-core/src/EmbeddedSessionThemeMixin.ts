@@ -83,20 +83,19 @@ export function EmbeddedSessionThemeMixin(pluginManager: PluginManager) {
     .actions(self => ({
       /**
        * #action
-       * Point the session at light or dark. One write, not two: the `theme`
-       * slot is what `themeOptions` ships to the renderer, so the labels baked
-       * in the worker follow it, and `palette` is derived from the same slot,
-       * so what React draws follows it too. An embedder who sets only a
-       * React-side palette leaves the baked labels behind.
+       * Switch the session to light or dark. `themeOptions` sends the `theme`
+       * slot to the renderer, so labels drawn in the worker follow it, and
+       * `palette` is derived from the same slot, so React-drawn elements
+       * follow it too. An embedder who sets only a React-side palette leaves
+       * the worker-drawn labels in the old mode.
        *
-       * Merges rather than replaces, at both levels. `theme` is a frozen slot,
-       * so a bare `setConf(session, 'theme', { palette: { mode } })` — the
-       * obvious form, and what the build-your-own examples each wrote — drops
-       * every other key in it. That silently discards whatever the host passed
-       * as `createViewState`'s `configuration.theme` (a brand `primary`, say)
-       * the first time their dark-mode toggle fires. `resolvePalette` spreads
+       * Merges into the existing theme at both levels. `theme` is a frozen
+       * slot, so `setConf(session, 'theme', { palette: { mode } })` replaces
+       * every other key in it, discarding whatever the host passed as
+       * `createViewState`'s `configuration.theme` (a brand `primary`, say) the
+       * first time their dark-mode toggle fires. `resolvePalette` spreads
        * `configTheme.palette` over the preset shallowly, so `mode` and
-       * `primary` are siblings and both levels have to survive.
+       * `primary` are siblings and both levels have to be kept.
        */
       setThemeMode(mode: 'light' | 'dark') {
         const theme: { palette?: PaletteInput } = getConf(self, 'theme') ?? {}

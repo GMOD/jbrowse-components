@@ -355,9 +355,9 @@ export interface TrackSelector {
 
 Prefer `trackType` when what you mean is "my kind of track". A plain-string
 `trackId` also matches the user's copies of that track (the "Copy track" menu
-item appends a timestamp to the id), so scoping by id does not silently stop
-applying the first time someone copies the track. Pass a `RegExp` if you want to
-control the matching yourself.
+item appends a timestamp to the id), so scoping by id keeps applying after the
+first time someone copies the track. Pass a `RegExp` if you want to control the
+matching yourself.
 
 `matchesTrackSelector` reads either the widget model these points carry or the
 track config the About points carry, so one call scopes a contribution to any of
@@ -451,9 +451,9 @@ wrong, and gets it wrong invisibly: the symptom is a producer that stops waiting
 early, which reads as a race rather than as the wrong registration method.
 
 `Core-handleUnrecognizedAssembly` works that way — a handler supplies the
-assembly out of band, and its promise is what lets `waitForAssembly` stop
-waiting on an event rather than on a clock. The producer there fires the point
-with the **sync** runner and awaits the folded value itself; only
+assembly out of band, and its promise lets `waitForAssembly` stop waiting on an
+event rather than on a clock. The producer there fires the point with the
+**sync** runner and awaits the folded value itself; only
 `evaluateAsyncExtensionPoint` awaits each callback in turn.
 
 ## Extension point listing
@@ -563,7 +563,7 @@ extendViewType(pluginManager, 'LinearGenomeView', stateModel =>
 `stateModel` arrives typed, so `self` is typed through the rest of the chain
 with no `as`. The name is checked too: register your view or display in the
 registry beside its state model type, and a typo or a rename becomes a compile
-error instead of an extension that silently stops applying.
+error instead of an extension that stops applying without one.
 
 Both take an array of names as well as one, which is how a contribution reaches
 a family of displays — a family here is a shared mixin set rather than a chain,
@@ -661,9 +661,9 @@ track" workflow. Register it with `addTrackTypeGuesser`, the companion to
 `addAdapterGuesser` above.
 
 A plugin adding a format registers both together, one guessing the adapter and
-one naming the track type to draw it with. The `file` argument is what lets one
-adapter serve two track types — a `.bedmethyl.gz` and a plain `.bed.gz` are both
-read by `BedTabixAdapter`:
+one naming the track type to draw it with. The `file` argument lets one adapter
+serve two track types — a `.bedmethyl.gz` and a plain `.bed.gz` are both read by
+`BedTabixAdapter`:
 
 <!-- include: packages/core/src/util/formatGuessers.ts#installFormatGuessers -->
 
@@ -1192,7 +1192,7 @@ One point per launchable view type, named `LaunchView-` plus the view type.
 `session`, and the launcher forwards that object to `addView`, where the view's
 own `preProcessSnapshot` sorts the launch keys from the properties. A view type
 with no registered point cannot be launched from a spec, and `loadSessionSpec`
-reports that by name rather than failing silently.
+reports that by name.
 
 Register one to make your own view type launchable — see
 [](/docs/developer_guides/creating_view). A second callback on a built-in one

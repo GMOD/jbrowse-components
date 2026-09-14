@@ -51,16 +51,16 @@ function measure(blocks: ContentBlock[]) {
  * that refName's blocks so a contig split by a padding block still yields the
  * whole visible stretch.
  *
- * A SLIVER BESIDE A FULL PANEL IS NOT ONE OF THEM, which is what keeps a
- * boundary straddle out of the multi-contig rung. The COUNT of these decides
+ * A SLIVER BESIDE A FULL PANEL IS NOT ONE OF THEM, so a boundary straddle stays
+ * out of the multi-contig rung. The COUNT of these decides
  * that rung, and its answer is an interval spanning everything the windows map
  * to — so on the sub-pixel floor alone, a 2px tail of the contig being scrolled
  * off counted the same as the 798px one filling the panel, and where the two
  * assemblies order their contigs differently that tail's mate sits a genome
  * away: the moving row zoomed out to span both, mid-drag, over a sliver the
  * reader had stopped looking at. Above the relative floor the panel really is
- * showing several contigs and the union is the honest answer; below it the
- * widest contig alone is, exactly as it was before the rung existed.
+ * showing several contigs and the union is the answer; below it the widest
+ * contig alone is.
  */
 export function followAnchorWindows(blocks: ContentBlock[]): FollowWindow[] {
   const sorted = measure(blocks)
@@ -121,8 +121,8 @@ export function followPlacedWindows(spans: FollowWindow[]): FollowWindow[] {
 
 /**
  * The one window a single-contig follow reads off the anchor panel: the widest
- * by SCREEN px, which is what the eye picks as "where the view is" and stays
- * true across contigs differing in size by orders of magnitude.
+ * by SCREEN px. The eye picks that one as "where the view is", and the rule
+ * holds across contigs differing in size by orders of magnitude.
  *
  * The right operand for everything that maps a window through ONE alignment. A
  * pass placing a row from a whole-genome overview wants `followAnchorWindows`

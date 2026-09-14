@@ -45,9 +45,9 @@ export function spanBounds(
 /**
  * Put `view` on every span at once — the interval of its own layout that runs
  * from the leftmost of them to the rightmost — synchronously and without
- * touching its displayed regions. This is what lets an anchor row showing a
- * whole genome place its neighbour on a whole genome rather than on whichever
- * single contig won a vote.
+ * touching its displayed regions, so an anchor row showing a whole genome
+ * places its neighbour on a whole genome rather than on whichever single contig
+ * won a vote.
  *
  * Base1DUtils' `moveTo`, NOT the view action of the same name, which wraps it
  * and then flushes the view's coarse blocks — sixty times a second that would

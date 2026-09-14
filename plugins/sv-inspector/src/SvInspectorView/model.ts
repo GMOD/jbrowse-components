@@ -189,8 +189,8 @@ function SvInspectorViewF(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * Named to match the other views, which is what `ViewContainer` reads to
-       * publish `data-view-phase`. Folds in both halves because neither
+       * Named to match the other views, since `ViewContainer` reads this name
+       * to publish `data-view-phase`. Folds in both halves because neither
        * publishes its own: the child views are rendered directly by this
        * component rather than through a ViewContainer, so a spreadsheet still
        * parsing or a circle still waiting on its assembly was invisible to

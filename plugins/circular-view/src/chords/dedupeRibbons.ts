@@ -8,8 +8,8 @@ import type { Feature } from '@jbrowse/core/util'
  * every row from both ends and a two-assembly circle asks for the regions of
  * both, so each alignment arrives twice and paints its ribbon on top of itself.
  *
- * The key is the UNORDERED pair of loci, which is what a ribbon is and the one
- * thing separating this from the adapter's `createSideDedupe`: that keys on the
+ * The key is the UNORDERED pair of loci, since a ribbon joins two loci with no
+ * direction. The adapter's `createSideDedupe` differs only in that: that keys on the
  * ORIENTED alignment, so a tandem duplication's two ends each keep their own
  * half in a linear view. On the circle those two halves are one arc.
  *

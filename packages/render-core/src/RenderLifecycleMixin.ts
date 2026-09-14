@@ -210,8 +210,8 @@ export function RenderLifecycleMixin() {
        * #getter
        * **The first-paint answer every consumer outside the display should
        * read**, `canvasDrawn` being only the raw flag: a display that is
-       * deliberately not painting a canvas has finished, and saying otherwise
-       * is a lie that never resolves.
+       * deliberately not painting a canvas has finished, and reporting it
+       * unfinished leaves every waiter on it waiting forever.
        *
        * The two `rendersCanvas: false` states each had three of their four
        * consumers wired by hand — the loading scrim (`rendersCanvas` /
@@ -219,10 +219,11 @@ export function RenderLifecycleMixin() {
        * while the fourth, `data-display-drawn`, went on publishing `"false"`
        * forever off the raw flag. That attribute is what `PENDING_DISPLAYS`
        * (`@jbrowse/browser-test-utils`) selects on, so a zoomed-out reference
-       * sequence track made every `waitForDisplaysDone` on the page burn its
-       * full timeout — silently, since that wait swallows its own. Same shape
-       * as `fetchInert` on the comparative side: the reader you forget is the
-       * one outside the display, so the display has to publish one name for it.
+       * sequence track made every `waitForDisplaysDone` on the page run to its
+       * full timeout, and that wait swallows its own timeout without reporting
+       * it. `fetchInert` on the comparative side has the same problem: the
+       * forgotten reader is the one outside the display, so the display has to
+       * publish one name for it.
        *
        * `paintInert` is the third term and the same argument once more, for the
        * state where a display *would* paint a canvas and never gets to — a fetch

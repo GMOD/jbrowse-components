@@ -288,16 +288,15 @@ interface ArrangeableModel {
  * result as the layout. The single implementation behind `setColorBy` and
  * `setGroupBy`.
  *
- * With an arrangement already on screen it re-arranges **that**, not adapter
- * order: re-deriving from `sourcesVolatile` made "Color by… → Population"
- * silently discard a clustering run or a hand-made order, and in phased mode
- * halve the row count, since `layout` there holds haplotype rows where
- * `sourcesVolatile` holds samples.
+ * With an arrangement already on screen it re-arranges that arrangement.
+ * Re-deriving from `sourcesVolatile` would make "Color by… → Population"
+ * discard a clustering run or a hand-made order, and in phased mode halve the
+ * row count, since `layout` there holds haplotype rows where `sourcesVolatile`
+ * holds samples.
  *
  * Persists through the mixin's `setLayout`, never a direct `self.layout =`, so
- * a loaded dendrogram is dropped exactly when the rows really do move — a
- * recolor over an unchanged order now keeps its tree, and a regroup correctly
- * loses it.
+ * a loaded dendrogram is dropped exactly when the rows move: a recolor over an
+ * unchanged order keeps its tree, and a regroup loses it.
  */
 function applyArrangement(
   self: ArrangeableModel,
@@ -564,9 +563,9 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
-         * Whether any called genotype is phased or haploid, which is what gates
-         * the "Phased" rendering mode. Wider than the payload's `hasPhased` on
-         * purpose: the painter's rule is `isPhasedOrHaploid` (no `/`), because
+         * Whether any called genotype is phased or haploid, which gates the
+         * "Phased" rendering mode. Wider than the payload's `hasPhased`, since
+         * the painter's rule is `isPhasedOrHaploid` (no `/`), because
          * a pangenome callset is haploid per assembly path and `vg deconstruct`
          * writes bare `0`/`1`/`23` — a file with no `|` anywhere that phased
          * mode renders correctly. Gating the menu on `hasPhased` left that
@@ -1263,8 +1262,8 @@ export default function MultiSampleVariantBaseModelF(
          * #getter
          * Worker row -> screen row, the client half of taking row order out of
          * the RPC (see `sampleFilter`). The cells arrive numbered against the
-         * worker's own `rowNames` list; this is what turns that into the row the
-         * user is looking at, and rebuilding it is all a reorder costs.
+         * worker's `rowNames` list, and `rowRemap` maps each to the row the
+         * user is looking at. Rebuilding it is all a reorder costs.
          *
          * A worker row the display isn't drawing maps to `HIDDEN_ROW` rather than
          * being dropped: at that index every painter's own Y-cull puts the cell
@@ -1407,10 +1406,11 @@ export default function MultiSampleVariantBaseModelF(
          * too.
          *
          * A hover naming no row falls through to the record's fields alone, and
-         * that is the variant lane's whole tooltip: its marks are records, so
-         * `buildVariantLaneHit` leaves `name` empty precisely so there is no
-         * source to find here. A *cell* hover always finds one — both hit tests
-         * take the name off `sources`, which is what `sourceMap` is built from.
+         * the variant lane's tooltip is always that case: its marks are
+         * records, so `buildVariantLaneHit` leaves `name` empty and there is no
+         * source to find here. A *cell* hover always finds one, because both
+         * hit tests take the name off `sources`, and `sourceMap` is built from
+         * `sources`.
          *
          * `showTooltips` is gated here rather than in the component, so the one
          * getter feeding the tooltip is the one place that answers "is there a
@@ -1430,16 +1430,16 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #action
          * Order the rows by their genotype at one variant, breaking ties by how
-         * far each row agrees with its neighbours to either side of it. The
-         * flanking tiebreak is what makes the local haplotype structure legible:
-         * rows sharing the anchor allele sit together, and their shared block
-         * frays outward at the recombination breakpoints that end it.
+         * far each row agrees with its neighbours to either side of it. With
+         * the flanking tiebreak, rows sharing the anchor allele sit together,
+         * and their shared block frays outward at the recombination
+         * breakpoints that end it.
          *
          * Sorts the rows that are already on screen, so the palette color,
-         * label and labelColor ride along and nothing has to be merged back.
-         * Sorting adapter metadata instead discarded all three: **Color by… →
-         * Population** then **Sort rows by genotype here** reordered correctly and
-         * blanked every sidebar swatch, with the menu still showing Population
+         * label and labelColor move with each row and nothing has to be merged
+         * back. Sorting adapter metadata would discard all three: **Color by… →
+         * Population** then **Sort rows by genotype here** would reorder and
+         * blank every sidebar swatch, with the menu still showing Population
          * ticked. Nothing re-seeds the palette afterwards — `setSources`
          * short-circuits on `deepEqual`, and `applyArrangement` is reachable
          * only from `setColorBy` / `setGroupBy` / `clearLayout` /
@@ -1488,8 +1488,8 @@ export default function MultiSampleVariantBaseModelF(
          * covering the column; a column no record covers leaves the rows
          * alone, the rule every "sort rows here" shares (`rowSortColumn.ts`).
          *
-         * **Answers whether it sorted**, which is what keeps `sortRowsBy` set
-         * when it did not: the shared gate only knows a region covers the
+         * **Returns whether it sorted**, so `sortRowsBy` stays set when it did
+         * not. The shared gate only checks that a region covers the
          * column, and this display additionally needs a record there — a
          * session naming a variant-free column would otherwise clear its own
          * trigger and leave the rows unsorted with nothing left to re-fire it
@@ -1684,15 +1684,14 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * The insertion marker's color when this display is drawing insertion
-         * markers, else undefined — which is what keeps the marker out of the
-         * legend it does not appear in.
+         * markers, else undefined, which keeps the marker out of the legend
+         * when it is not drawn.
          *
-         * Declared here, answering undefined, so `colorScales` below can be
+         * Declared here, returning undefined, so `colorScales` below can be
          * written once: the matrix display draws no markers at all, and the
          * regular display overrides this with the theme color when its
-         * `showInsertionGlyphs` slot is on and something visible actually
-         * inserts bases. A gate the base owns and a subclass overrides, rather
-         * than a flag threaded through every caller.
+         * `showInsertionGlyphs` slot is on and something visible inserts
+         * bases.
          */
         get insertionLegendColor(): string | undefined {
           return undefined
@@ -1729,8 +1728,8 @@ export default function MultiSampleVariantBaseModelF(
          * contract is judged on the run that follows, not on the declining one
          * — see `FetchMixin.awaitingPrerequisite`.
          *
-         * Strictly narrower than the declines it explains, which is what makes it
-         * a deferral rather than an opt-out: `FetchVisibleRegions` also declines
+         * Strictly narrower than the declines it explains, so it defers
+         * judgement on this decline only: `FetchVisibleRegions` also declines
          * when every visible block is already covered, and that one is judged as
          * soon as `sourcesBase` is in hand. Not `fetchNeeded`'s own empty-region
          * return — the autorun only calls it with a non-empty `needed`, which

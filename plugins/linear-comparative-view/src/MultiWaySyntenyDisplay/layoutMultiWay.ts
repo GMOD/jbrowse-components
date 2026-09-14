@@ -63,8 +63,7 @@ export interface MultiWayPlacement {
  * `strand` and a grouped feature carries per entry of `mates`. Never the
  * `strand` inside a mate object, which PAF does not set and the MCScan blocks
  * adapter fills with the mate gene's transcription strand. -1 means the two
- * ends of the pair correspond crosswise, which is what makes an inversion's
- * ribbon twist.
+ * ends of the pair correspond crosswise, so an inversion's ribbon twists.
  */
 export interface MatePlacement extends MultiWayPlacement {
   orientation: number
@@ -400,15 +399,13 @@ export function groupRunsOnRow(
 /**
  * The group's px spans on one row, one per run of placements the row shows, as
  * ORDERED pairs: the end corresponding to the anchor's start first. Empty when
- * the row's frame shows nothing of the group, which is what makes a ribbon skip
- * a row rather than draw to nowhere.
+ * the row's frame shows nothing of the group, so the ribbon skips that row.
  *
- * Ordered rather than ascending because that is the whole of drawing an
- * inversion. `ribbonPath` joins first end to first end, so a pair reversed here
+ * Ordered, not ascending, because the order is how an inversion is drawn. `ribbonPath` joins first end to first end, so a pair reversed here
  * draws the crossed parallelogram a reverse-strand block IS, and two lanes both
  * reversed against the anchor draw an untwisted ribbon between themselves —
  * relative orientation composes without anyone multiplying it out. `flipped`
- * rides along for free: `rowFrameX` already mirrors a flipped lane.
+ * needs no extra handling: `rowFrameX` already mirrors a flipped lane.
  *
  * A caller drawing a BOX wants the two ends the other way round; sort there.
  */

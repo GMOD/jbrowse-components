@@ -29,7 +29,7 @@ embedded React components.
 
 A plugin adds functionality to a product **at runtime**. Anyone can write and
 publish one, and a product loads plugins from a URL. A product can also be built
-with its plugins bundled in, which is what the embedded components do.
+with its plugins bundled in, as the embedded components are.
 
 <Figure src="/img/product_architecture.png" caption="A product instantiates the RootModel, and the state tree below it runs from the session through views, tracks and displays. Each React component on the right observes the state node across from it."/>
 
@@ -56,7 +56,7 @@ Working plugin examples:
   colors variants by impact score
 - [jbrowse-plugin-systeminformation](https://github.com/garrettjstevens/jbrowse-plugin-systeminformation)
   reaches node system libraries from JBrowse Desktop. A desktop-only plugin like
-  this one ships as a CJS bundle, which is what Electron loads
+  this one ships as a CJS bundle, the format Electron loads
 
 The [jbrowse-plugin-list](https://github.com/GMOD/jbrowse-plugin-list) is the
 community plugin registry: browse it to find published plugins, or submit your

@@ -47,8 +47,8 @@ export interface LodTierInfoHost extends PrerequisiteFetchHost {
  * trigger and key, the minimized gate, no `contract`) plus this read's own
  * terms — gated on the threshold slot so a PAFAdapter never asks, and narrating
  * nothing, since a header is not a load. A failure is not terminal — the
- * display keeps resolving off the slot, which is what it did before the header
- * existed, and the primary fetch on the same file raises the real error — so it
+ * display keeps resolving off the slot, as it did before the header existed,
+ * and the primary fetch on the same file raises the real error — so it
  * is only logged.
  *
  * `onHeader` hands the display the whole header the tier info was narrowed

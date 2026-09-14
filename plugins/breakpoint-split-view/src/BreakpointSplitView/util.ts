@@ -183,15 +183,14 @@ export function layoutUnknown(track: OverlayTrack) {
 /**
  * One track's features across both rows.
  *
- * `regionsPerView` is passed rather than read off the views here, and that is
- * the point: the caller is an autorun, and this read is what makes a pan
- * refetch. It used to happen on this line, which tracked only by luck of the
+ * `regionsPerView` is passed rather than read off the views here, because the
+ * caller is an autorun, and that read makes a pan refetch. It used to happen on this line, which tracked only by luck of the
  * call ordering — the caller's `tracks.map` runs its async bodies synchronously
  * as far as their first await, so the read landed inside the autorun's tracked
  * window with three frames and two files between it and the `autorun(` that
  * depended on it. Hoisting a single read past an await anywhere along that
- * chain would have stopped every refetch on pan, silently and with nothing
- * failing.
+ * chain would have stopped every refetch on pan, and no test would have
+ * failed.
  */
 export async function getBlockFeatures(
   track: OverlayTrack,

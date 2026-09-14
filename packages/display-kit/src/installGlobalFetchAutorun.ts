@@ -146,8 +146,8 @@ function globalFetchPlan<TArgs, TResult>(
  *   measured": a blocked display still runs its fetch once per settled
  *   viewport, because the RPC's measurement is the only thing that releases the
  *   banner, and `gateSkipsMeasuredViewport` (whose own reads move with the
- *   viewport) is what keeps that to one. Each gate term is an observable that
- *   flips on the transition to wake on, which is what makes a gated decline
+ *   viewport) limits that to one run. Each gate term is an observable that
+ *   flips on the transition the autorun should wake on, so a gated decline is
  *   safe — see reference/FETCH_SKELETON.md §"The global-fetch trigger list must be read
  *   unconditionally". Liveness is not a term here: `installFetch` checks it
  *   above every gate, because `host` is a parent walk and so is nearly every
@@ -159,8 +159,8 @@ function globalFetchPlan<TArgs, TResult>(
  *   committed side reads as absent — the precedence the per-region family
  *   applies through `heldDataAnswers`, here spelled as a key: the banner is
  *   hiding that data and this fetch is the only re-measure. The
- *   skeleton's reload epoch is what makes Retry override this gate with
- *   nothing to clear — `GlobalFetchMixin.reload()` still drops the stamp so
+ *   skeleton's reload epoch lets Retry override this gate with nothing to
+ *   clear — `GlobalFetchMixin.reload()` still drops the stamp so
  *   `dataCurrent` goes false and the overlay shows.
  * - **plan / lifecycle** — {@link globalFetchPlan}'s issue-time capture and
  *   measure-or-commit, over `FetchMixin`'s begin/end bookkeeping and the

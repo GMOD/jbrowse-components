@@ -328,9 +328,9 @@ const SessionLoader = types
      *
      * Gated on the init being non-empty rather than on `isJb1StyleSession`
      * (loc || assembly): applyDefaultSessionViewInit resolves the assembly from
-     * the view itself, so `&extendSession=true&tracks=…` — adding tracks to a
-     * curated defaultSession, with no navigation — is meaningful and used to be
-     * dropped silently for want of a `&loc=`.
+     * the view itself, so `&extendSession=true&tracks=…` (adding tracks to a
+     * curated defaultSession, with no navigation) applies even without a
+     * `&loc=`.
      */
     get defaultSessionViewInit() {
       const init = self.urlViewInit
@@ -864,16 +864,15 @@ const SessionLoader = types
      * transient (a lazy chunk that failed to fetch, a plugin that has since
      * loaded), so this restores exactly what the boot would have restored.
      *
-     * The marker is dropped FIRST, and that is what makes the second attempt a
-     * real one rather than a recursion — fetchLocalSession re-reads it. If this
-     * crashes again the ErrorBoundary writes a fresh marker, so the offer comes
-     * back on the next boot rather than being spent.
+     * The marker is cleared first, because fetchLocalSession re-reads it and
+     * would otherwise show the crash offer again instead of loading. If this
+     * crashes again the ErrorBoundary writes a fresh marker, so the offer
+     * returns on the next boot.
      *
-     * Back through loadSessionByType rather than straight to fetchLocalSession,
-     * so this is the same dispatch an ordinary boot takes and inherits its
-     * catch: "Local session not found" (the snapshot moved while the offer was
-     * up) has to become an error sessionSource, not an unhandled rejection off
-     * a button.
+     * Loads through loadSessionByType, the dispatch an ordinary boot takes,
+     * so it shares that path's catch: "Local session not found" (the snapshot
+     * moved while the offer was up) becomes an error sessionSource instead of
+     * an unhandled rejection from a button click.
      */
     async openCrashedSession() {
       clearCrashedSession()
@@ -885,18 +884,16 @@ const SessionLoader = types
      * The crash offer's other half: boot the way a first visit would, WITHOUT
      * destroying the session that crashed.
      *
-     * Keeping it is the point, so it is made durable rather than assumed
-     * durable — the sessionStorage copy is the fresher of the two autosaves and
-     * the new session's own autosave is about to overwrite it, which is how a
-     * session that crashed inside the first 400ms would be lost by a feature
-     * whose whole purpose is not losing it. After this it is an ordinary row in
-     * the autosave list, reopenable from the session manager.
+     * The crashed session is saved explicitly first. The sessionStorage copy
+     * is the fresher of the two autosaves, and the new session's autosave is
+     * about to overwrite it, so a session that crashed within the first 400ms
+     * would otherwise be lost. Afterwards it is an ordinary row in the
+     * autosave list, reopenable from the session manager.
      *
-     * `session=local-<id>` then has to come out of the URL. The marker is gone
-     * by this point, so nothing else would stop the next reload restoring the
-     * session we just declined — and dropping only that param is what makes
-     * this a rung below `factoryReset`, which drops the config and every other
-     * option with it.
+     * `session=local-<id>` is then removed from the URL. The marker is
+     * already cleared, so without this the next reload would restore the
+     * declined session. Only that param is removed, unlike `factoryReset`,
+     * which drops the config and every other option.
      */
     async startFreshSession() {
       const id = self.crashedSession?.id

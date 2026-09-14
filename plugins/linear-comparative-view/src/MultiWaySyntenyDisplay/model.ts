@@ -759,8 +759,8 @@ export function stateModelFactory(
       /**
        * #getter
        * whether the adapter type says its header declares the lane universe
-       * (`adapterCapabilities: ['headerLanes']`), which is what earns an
-       * untiered adapter a header read
+       * (`adapterCapabilities: ['headerLanes']`); an untiered adapter gets a
+       * header read only when this is true
        */
       get adapterDeclaresLanes(): boolean {
         const type = self.adapterConfig.type

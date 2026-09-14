@@ -54,11 +54,11 @@ export default function RenderCanvas({
   /**
    * Whether this canvas holds finished content — each view's own `settled`, the
    * same flag its `*_canvas_done` testid is built from. Published as
-   * `data-display-drawn`, which is what `PENDING_DISPLAYS`
+   * `data-display-drawn`, the attribute `PENDING_DISPLAYS`
    * (`@jbrowse/browser-test-utils`) selects on, so these views answer "has
    * everything painted?" with the same attribute every LGV display does.
    *
-   * Required, and that is the point: `PENDING_DISPLAYS` used to name
+   * The prop is required because `PENDING_DISPLAYS` used to name
    * `synteny_canvas` explicitly and simply **forgot dotplot**, so an unpainted
    * dotplot counted as finished and a capture could land on it blank. A new
    * drop-to-primitive view would have been forgotten the same way.

@@ -77,8 +77,8 @@ export interface ComparativeSurface {
    * looking at.
    *
    * Gates the paint term only. A surface still fetching while off screen
-   * reports `loading`, which is true and is what stops a readiness gate firing
-   * over work in flight.
+   * reports `loading`, which is true and stops a readiness gate firing over
+   * work in flight.
    */
   hostMounted: boolean
 }
@@ -175,9 +175,9 @@ export function comparativeDisplayPhase(
  * That costs no wait its answer, because a canceled display holds `settled` —
  * and with it the canvas's `data-display-drawn` — false until Retry.
  *
- * That attribute is what makes the DOM-level doneness waits work here at all.
- * `[data-display-phase="loading"]` is what `waitForDisplayPhases` and the busy
- * selector in `@jbrowse/capture` key on, and on a comparative page they were
+ * The DOM-level doneness waits depend on `data-display-phase`:
+ * `waitForDisplayPhases` and the busy selector in `@jbrowse/capture` key on
+ * `[data-display-phase="loading"]`, and on a comparative page they were
  * assertions about a selector no element published — satisfied by a canvas that
  * had not begun.
  *

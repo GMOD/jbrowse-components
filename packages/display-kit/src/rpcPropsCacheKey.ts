@@ -10,9 +10,9 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  * `rpcProps`.
  *
  * A string, because building the payload reads far more observables than it
- * returns and because a fresh object never compares equal. The corollary that
- * bites: a field whose distinct states serialize identically is a silently dead
- * cache axis — a class instance with no `toJSON` flattens to `{}`, and an
+ * returns and because a fresh object never compares equal. As a consequence, a
+ * change between two states of a field that serialize identically never
+ * invalidates the cache — a class instance with no `toJSON` flattens to `{}`, and an
  * `undefined` value drops its key, so it can't be told from a sibling state that
  * also drops. Worked cases and the loop-trap consequence: ARCHITECTURE.md "the
  * cache key is the return value, not the reads".

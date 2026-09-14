@@ -174,8 +174,8 @@ its last in-repo importer does, with nobody deciding to drop it.
 
 ## Names removed from the session and from a plugin's `exports`
 
-The surfaces a plugin reaches without importing anything, which is what makes
-them quieter than the one above. A session member is looked up on an object at
+A plugin reaches these surfaces without importing anything, so breaking them is
+quieter than the one above. A session member is looked up on an object at
 runtime — often behind `'x' in session` — so removing one throws nothing at all
 and the plugin simply stops asking. A plugin `exports` object is reached as
 `pluginManager.getPlugin('X').exports.Y`, where a missing name is `undefined`
@@ -342,7 +342,7 @@ Two things did change:
 
 ## A view reports an unknown key
 
-v4 dropped an undeclared key on a view snapshot silently: no error, no warning,
+v4 dropped an undeclared key on a view snapshot with no error and no warning:
 the view rendered its default. A `defaultSession` written with a setting one
 level out from where it belonged therefore shipped looking correct and behaving
 wrong, and several published demos did.

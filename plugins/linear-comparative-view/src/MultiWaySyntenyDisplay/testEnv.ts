@@ -22,16 +22,16 @@ import type { ConfigurationSchemaDefinition } from '@jbrowse/core/configuration'
 
 /**
  * A real MultiWaySyntenyDisplay on a SyntenyTrack, in a real LGV, beside a
- * GFF3 gene track for the anchor assembly — which is what makes
- * `laneGeneAdapters` find a lane adapter and therefore what gives
- * `laneGenesFetchSpecs` a non-empty spec list. Everything the phase and the
+ * GFF3 gene track for the anchor assembly. The gene track lets
+ * `laneGeneAdapters` find a lane adapter, which gives `laneGenesFetchSpecs` a
+ * non-empty spec list. Everything the phase and the
  * reload gate are about is downstream of that list being non-empty, so a mock
  * would be reimplementing the thing under test.
  *
  * **Read the display synchronously.** `afterAttach` reaches its installers
  * through a dynamic import, so nothing is in flight until the microtask
- * queue runs — which is what lets these drive the committed keys by hand
- * rather than racing a fetch that has no worker behind it.
+ * queue runs, so these helpers drive the committed keys by hand without racing
+ * a fetch that has no worker behind it.
  */
 export function createDisplay() {
   return createDisplayWithSession().display

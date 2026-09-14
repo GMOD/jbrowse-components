@@ -14,7 +14,7 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 | <span id="property-id">**id**</span><br><code>id: ElementId</code> |  |
 | <span id="property-type">**type**</span><br><code>type: types.literal('AddTrackWidget')</code> |  |
 | <span id="property-view">**view**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>view: types.safeReference( pluginManager.pluggableMstType('view…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>view: types.safeReference(&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;pluginManager.pluggableMstType('view', 'stateModel'),&#10;&#160;&#160;&#160;&#160;&#160;&#160;)</code></pre></dialog></span> |  |
-| <span id="property-trackcontainerid">**trackContainerId**</span><br><code>trackContainerId: types.maybe(types.string)</code> | Which of the view's track containers the new track opens in, by id. Absent — the usual case — means the view itself. See the same property on HierarchicalTrackSelectorWidget, which is what sets this. |
+| <span id="property-trackcontainerid">**trackContainerId**</span><br><code>trackContainerId: types.maybe(types.string)</code> | Which of the view's track containers the new track opens in, by id. Absent, the usual case, means the view itself. The same property on HierarchicalTrackSelectorWidget sets this one. |
 
 ## Getters
 
@@ -24,7 +24,7 @@ Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release — 
 | <span id="getter-trackcontainer">**trackContainer**</span><br><code>TrackContainer &#124; undefined</code> | The track list a submitted track opens in. |
 | <span id="getter-trackadapter">**trackAdapter**</span><br><code>AdapterConfig &#124; undefined</code> |  |
 | <span id="getter-trackname">**trackName**</span><br><code>string</code> |  |
-| <span id="getter-submittabletrackname">**submittableTrackName**</span><br><code>string</code> | The name the track is added under, which is what an all-whitespace entry has to be judged on — `!!trackName` accepts `' '` and mints a track whose name renders as nothing in the selector. |
+| <span id="getter-submittabletrackname">**submittableTrackName**</span><br><code>string</code> | The trimmed name the track is added under. Check this one for an all-whitespace entry: `!!trackName` accepts `' '` and creates a track whose name is blank in the selector. |
 | <span id="getter-uris">**uris**</span><br><code>(string &#124; undefined)[]</code> |  |
 | <span id="getter-isftp">**isFtp**</span><br><code>boolean</code> |  |
 | <span id="getter-isrelativeurl">**isRelativeUrl**</span><br><code>boolean</code> |  |

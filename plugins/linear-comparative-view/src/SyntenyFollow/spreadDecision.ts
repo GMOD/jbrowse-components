@@ -149,7 +149,7 @@ export function spreadCoverage(regions: Region[], spans: ResolvedSpan[]) {
  * widest window is placed by that rung today and at 5.1% teleported into a union
  * ten times the size.
  *
- * The window kept is the WIDEST BY PIXEL, which is what the eye reads as where
+ * The window kept is the WIDEST BY PIXEL, since the eye reads that one as where
  * the view is, biased toward the one already kept over the same margin the block
  * pick uses — 100% against 49% is one pan away from a coin toss, and a coin toss
  * re-flipped per settle is the same defect this replaces in a smaller spelling.

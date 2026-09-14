@@ -6,13 +6,13 @@ import type { FollowWindow } from './followAnchorWindow.ts'
 
 /**
  * Everything the anchor's visible contigs map to, across every synteny track on
- * the level — the answer for a row showing more than one contig, which is what
- * a whole-genome overview is.
+ * the level — the answer for a row showing more than one contig, as a
+ * whole-genome overview does.
  *
  * THE UNION, where the single-contig rung holds a vote. One alignment relates
  * one contig pair, so a window spanning contigs has no single matching region;
- * the reader is looking at a swathe of one genome and the honest answer is the
- * swathe of the other it aligns to. `positionViewOnSpans` turns that into one
+ * the reader is looking at a swathe of one genome, and the answer is the swathe
+ * of the other it aligns to. `positionViewOnSpans` turns that into one
  * interval of the moving row's own layout.
  *
  * Across DISPLAYS too, rather than the widest-track vote `planFollowStep` runs.

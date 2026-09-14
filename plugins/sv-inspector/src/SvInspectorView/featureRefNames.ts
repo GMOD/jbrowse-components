@@ -8,8 +8,8 @@ import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
  *
  * Through the same `svMateLocus` the circular view's `getEndpoint` resolves the
  * far end with, so the set of chromosomes this reports and the set the chords
- * are actually drawn on cannot disagree — which is what "show only regions with
- * data" narrows the circle to.
+ * are drawn on cannot disagree. "Show only regions with data" narrows the
+ * circle to this set.
  */
 export function featureRefNames(data: SimpleFeatureSerialized) {
   const feature = new SimpleFeature(data)

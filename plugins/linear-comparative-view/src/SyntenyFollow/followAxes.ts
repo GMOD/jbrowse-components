@@ -19,7 +19,7 @@ import type { FollowWindow } from './followAnchorWindow.ts'
  * the same answer the string compare gave, reached without a special case.
  *
  * `windows` is a LIST because the anchor row can be showing several contigs at
- * once, which is what a whole-genome overview is. One window is that list with
+ * once, as a whole-genome overview does. One window is that list with
  * one entry, and the ids come back in the order they were asked for.
  */
 export function followAxes({

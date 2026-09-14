@@ -95,8 +95,8 @@ export function buildResultRegions(
  * a reversed displayed region is drawn: bp runs leftward inside that region, but
  * the region keeps its place on the axis.
  *
- * The reflection maps the region's span **onto itself**, and that single
- * property is what makes mixed orientations work:
+ * The reflection maps the region's span **onto itself**, so a view mixing
+ * reversed and forward regions draws correctly:
  *
  * - Block layout is untouched. `horizontallyFlip()` already reverses the
  *   `displayedRegions` array, and the worker lays regions out at the view's own

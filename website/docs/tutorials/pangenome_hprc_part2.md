@@ -8,25 +8,26 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
-[Part 1](/docs/tutorials/pangenome_hprc) ends holding one allele and the single
-haplotype the graph credits it to. We read everyone who carries that sequence
-off the rest of HPRC release 2, on the same GRCh38 axis: where the graph varies
-and by how much, what each alternative is, and which of the 464 haplotypes walk
-it. Every track here is a URL, read a window at a time.
+[Part 1](/docs/tutorials/pangenome_hprc) ends with one allele and the single
+haplotype the graph credits it to. Here we use the rest of HPRC release 2 to
+find everyone who carries that sequence, on the same GRCh38 axis. The tracks
+show where the graph varies and by how much, what each alternative is, and which
+of the 464 haplotypes walk it. Every track is a URL that JBrowse reads a window
+at a time.
 
 ## Prerequisites
 
-- [part 1](/docs/tutorials/pangenome_hprc), whose session this page adds to:
-  hg38 with its genes, and the rGFA segments track loaded on it
+- the session from [part 1](/docs/tutorials/pangenome_hprc): hg38 with its
+  genes, and the rGFA segments track loaded on it
 - [the GraphGenomeView plugin](/docs/tutorials/pangenome_hprc#the-graphgenomeview-plugin),
   for the tracks that use `MinigraphBubbleAdapter` and `RgfaTabixAdapter`; both
   callsets are a URL you can paste and need no plugin
 
 ## Where the data comes from
 
-[HPRC release 2](https://doi.org/10.64898/2026.07.21.739710), whose wave callset
-and snarl-level carriage file are read straight off S3, beside the bubble and
-allele projections we host.
+The data is [HPRC release 2](https://doi.org/10.64898/2026.07.21.739710).
+JBrowse reads its wave callset and snarl-level carriage file directly from S3,
+and reads the bubble and allele projections from our host.
 
 - the decomposed variant callset, 464 haplotypes, read straight off S3:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.wave.vcf.gz
@@ -38,13 +39,13 @@ allele projections we host.
 - the CAT gene annotation index, one GFF3 per haplotype, which the inversion
   figure's lanes carry:
   https://raw.githubusercontent.com/human-pangenomics/hprc_intermediate_assembly/main/data_tables/annotation/cat/cat_genes_hprc_r2_v1.3.index.csv
-- our own bubble and allele projections, with the exact build recorded beside
-  them: https://jbrowse.org/demos/hprc/README.txt
+- our bubble and allele projections, with the exact build recorded beside them:
+  https://jbrowse.org/demos/hprc/README.txt
 
 ## The bubble track
 
-A bubble is where haplotypes diverge and rejoin. The bubble track reports where
-the graph varies and by how much, in one file:
+A bubble is a place where haplotypes diverge and rejoin. The bubble track reads
+one file and reports where the graph varies and by how much:
 
 ```json addtrack
 {
@@ -62,22 +63,21 @@ the graph varies and by how much, in one file:
 
 The `MinigraphBubbleAdapter` labels each bubble with its shortest and longest
 allele, and one bubble in the HLA class II window spans tens of kilobases
-depending on the haplotype.[^path-count] HPRC publishes no bubble file, so this
-one is ours too, built with `gfatools bubble`.
+depending on the haplotype.[^path-count] HPRC publishes no bubble file, so we
+built this one too, with `gfatools bubble`.
 
 ## A whole chromosome, one node per bubble {#a-whole-chromosome-as-a-graph}
 
 The segments track [part 1 loads](/docs/tutorials/pangenome_hprc#load-the-graph)
-draws one node per **segment**, and a window past a few hundred kilobases is
-more nodes than anything can lay out.
+draws one node per **segment**. A window past a few hundred kilobases holds more
+nodes than any layout can place.
 
-The bubble file is also a level of detail. Collapsing each bubble to a single
-node, with the invariant reference between bubbles as backbone, turns the same
-graph into something that fits on a screen. We host that tier beside the fine
-index, built from the bubble file in one pass by
+The bubble file also gives a coarser level of detail. We collapse each bubble to
+a single node and keep the invariant reference between bubbles as backbone, and
+the same graph then fits on a screen. We host that tier beside the fine index.
 [`build_bubble_tier.sh`](/docs/tutorials/pangenome_prepare_graph#a-whole-chromosome-the-bubble-tier)
-at a threshold of 10,000. A tier is a prefix, so choosing a level of detail is
-choosing a file:
+builds it from the bubble file in one pass, at a threshold of 10,000. A tier is
+a prefix, so you choose a level of detail by choosing a file:
 
 ```json addtrack
 {
@@ -95,7 +95,7 @@ choosing a file:
 
 The same bubble file also plots as a curve of where the graph varies and by how
 much. `MinigraphBubbleAdapter` already reports each bubble's segment count as
-its `score`, so the only change is the track type:
+its `score`, so only the track type changes:
 
 ```json addtrack
 {
@@ -111,23 +111,23 @@ its `score`, so the only change is the track type:
 }
 ```
 
-<Figure caption="All 249 Mb of GRCh38 chr1 with the cytogenetic bands on the same axis, then the three chr1 loci this page opens, then two lanes off two files: the bubble file as a blue curve of segments per bubble, which is how much the haplotypes disagree at each locus, and the same bubbles as the tier's segments lane, one gold block per bubble. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
+<Figure caption="All 249 Mb of GRCh38 chr1 with the cytogenetic bands on the same axis, then the three chr1 loci this page opens, then two lanes from two files. The bubble file draws as a blue curve of segments per bubble, which measures how much the haplotypes disagree at each locus. The tier's segments lane draws the same bubbles, one gold block per bubble. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
 
-The two granularities are read together, the tier to find an event and the fine
-index to open it, and the move between them is the node's own menu. On a tier
-node **Open in hg38** puts the linear view on the bubble's span, and a drag
-across that span offers **Graph genome view (this selection)** as a submenu
-naming both tracks. The fine cut arrives as a second pane under the tier's. On a
-whole chromosome a bubble is narrower than a pixel, so find it in the tier lane
-or the variability curve first and cut the tier around it.[^max-region-bp]
+Use the two granularities together: the tier to find an event, and the fine
+index to open it. The node's menu moves you from one to the other. On a tier
+node, **Open in hg38** puts the linear view on the bubble's span. A drag across
+that span offers **Graph genome view (this selection)** as a submenu naming both
+tracks, and the fine cut opens as a second pane under the tier's. On a whole
+chromosome a bubble is narrower than a pixel, so find it in the tier lane or the
+variability curve first and cut the tier around it.[^max-region-bp]
 
 <Video src="/media/pangenome/hprc_tier_to_fine.mp4" caption="The bubble tier over the MHC taken down to segment resolution: the class II node hovered and opened in the linear view, the fine segments lane drawing once the view lands on its span, and a drag across that span cut from the fine index into a second graph pane." />
 
 ## The allele inventory
 
 The bubbles report where the graph varies. A third hosted file reports what the
-variation is: one row per allele the graph holds, anchored on GRCh38 and derived
-from the two indexes
+variation is. It has one row per allele in the graph, anchored on GRCh38, and we
+derived it from the two indexes
 [part 1 loads](/docs/tutorials/pangenome_hprc#load-the-graph).
 
 ```json addtrack
@@ -143,24 +143,24 @@ from the two indexes
 }
 ```
 
-An `AlignmentsTrack` over a BED draws the sizes. Each row carries a `CIGAR`
-against the reference span it replaces (`2062M63348I`), and the alignments
-display draws whatever has one, so the alleles pack into rows and each insertion
-draws at its real magnitude. At the CFH cluster on chr1 one of those rows is the
-84,684 bp deletion between _CFHR3_ and _CFHR1_, which part 1
+An `AlignmentsTrack` over a BED draws the allele sizes. Each row carries a
+`CIGAR` against the reference span it replaces (`2062M63348I`). The alignments
+display draws any row that has a CIGAR, so the alleles pack into rows and each
+insertion draws at its real magnitude. At the CFH cluster on chr1, one of those
+rows is the 84,684 bp deletion between _CFHR3_ and _CFHR1_, which part 1
 [draws on the same coordinates as a graph edge](/docs/tutorials/pangenome_hprc#insertions-deletions-and-their-sizes).
 
 The whole graph holds a few hundred thousand alleles, so a wide window is dense.
 The
 [graph genome view guide](/docs/user_guides/graph_genome_view#when-all-you-have-is-the-graph)
-walks through the columns, how the walk derives them, and the two filters that
-make a lane this size readable: `jexl:abs(feature.delta)>10000` for size and
-`jexl:feature.nested==0` before reading lengths in bulk.
+explains the columns and how the walk derives them. It also gives two filters
+that make a lane this size readable: `jexl:abs(feature.delta)>10000` for size,
+and `jexl:feature.nested==0` before reading lengths in bulk.
 
 ## The variant callset
 
 The `wave.vcf.gz` ships its index beside it, so JBrowse reads only the slice you
-are viewing out of the 2.3 GB file. The S3 URL is the whole of the adapter, on a
+are viewing out of the 2.3 GB file. The adapter needs only the S3 URL, on a
 `VariantTrack` with the multi-sample display:
 
 ```json addtrack
@@ -187,9 +187,9 @@ haplotypes, drawing one row per haplotype. Co-inherited blocks are visible only
 in that form.
 
 The VCF is fully decomposed, so `chr6:32,450,000-32,650,000` (the window in the
-figure below) holds over fourteen thousand records, most of them SNPs and the
-rest small indels. The structural tier is already in this file. Add this filter
-from **Edit filters**:
+figure below) holds over fourteen thousand records. Most are SNPs and the rest
+are small indels. This file already contains the structural tier. Add this
+filter from **Edit filters** to select it:
 
 ```
 jexl:feature.INFO.LV[0]==0 && alleleLength(feature)>=50
@@ -197,22 +197,22 @@ jexl:feature.INFO.LV[0]==0 && alleleLength(feature)>=50
 
 The same window then drops to a couple of hundred sites.
 
-Both halves are load-bearing:
+The filter needs both halves:
 
 - `alleleLength` is the longest allele the record describes. A filter on
   `end - start` would keep only deletions, since an insertion consumes no
   reference.
 - `LV` is the record's level in vg's snarl tree, and `LV==0` keeps the top-level
-  sites. Without it the panel paints some events twice at two positions, because
-  this file writes a nested child as its own record beside its parent, with `PS`
-  naming that parent.
+  sites. This file writes a nested child as a separate record beside its parent,
+  with `PS` naming that parent. Without `LV==0` the panel paints some events
+  twice, at two positions.
 
-With the filter on, few enough alleles remain to draw each at its own genomic
+With the filter on, few enough alleles remain to draw each at its genomic
 position, lined up with the genes above. **Clustering → Cluster rows by
 genotype... → Run clustering** in the track menu reorders the rows by genotype
-similarity and draws a dendrogram beside them. That matrix is what
+similarity and draws a dendrogram beside them.
 [Comparing the graph with the callset](#comparing-the-graph-with-the-callset)
-puts beside the graph the same alleles came out of.
+puts that matrix beside the graph that the same alleles came from.
 
 <Video src="/media/pangenome/hprc_cluster_callset.mp4" caption="The 464-haplotype lane clustered from the track menu: Clustering, Cluster rows by genotype, Run clustering, and the rows arriving in their new order with a dendrogram beside them." />
 
@@ -221,17 +221,16 @@ Frequency is in the file. `AC`, `AF`, `AN` and `NS` are on every record, so
 anything.
 
 The display widens each insertion cell to a marker sized by the inserted bp, in
-that haplotype's own genotype color
+that haplotype's genotype color
 ([`showInsertionGlyphs`](/docs/config/linearmultisamplevariantdisplay/#slot-showinsertionglyphs)).
 Only haplotypes carrying the allele widen.
 
 ## Carriage at the graph's own granularity
 
-The callset above is decomposed, so one graph bubble arrives as many records and
-a column is a primitive variant. Release 2 also publishes the undecomposed form,
-one record per **snarl**, as the `pgbi.vcf.gz` beside each build. Read it when
-the question is who carries a given bubble: its rows and the graph's alleles are
-the same objects.
+The callset above is decomposed, so one graph bubble becomes many records, and a
+column is a primitive variant. Release 2 also publishes the undecomposed form,
+one record per **snarl**, as the `pgbi.vcf.gz` beside each build. Read that file
+to find who carries a given bubble, because its rows are the graph's alleles.
 
 ```json addtrack
 {
@@ -249,73 +248,74 @@ the same objects.
 }
 ```
 
-The snarl file ships its own index, so nothing is downloaded but the slice in
-view: the C4 window is a couple of seconds over HTTP. It carries 231 sample
-columns, CHM13 not being among them, so phased mode draws 462 rows and `AN` tops
-out there too.
+The snarl file ships with an index, so JBrowse downloads only the slice in view.
+The C4 window loads in a couple of seconds over HTTP. The file carries 231
+sample columns, without CHM13, so phased mode draws 462 rows and `AN` tops out
+at 462 too.
 
-This file adds `AT`: it records each allele as the **traversal** it takes
-through the graph, the same field a pggb VCF's `AT` carries, which the wave file
-drops (`bcftools annotate -x INFO/AT` is in its own header). The
-[same `LV==0` filter](#the-variant-callset) cuts this lane to top-level sites,
-the tier the [bubble track](#the-bubble-track) holds, and a record matches a
-bubble by interval.[^integer-nodes]
+This file adds the `AT` field, which records each allele as the **traversal** it
+takes through the graph. A pggb VCF carries the same `AT` field. The wave file
+drops it, and its header shows the `bcftools annotate -x INFO/AT` command that
+did so. The [same `LV==0` filter](#the-variant-callset) cuts this lane to
+top-level sites, the tier that the [bubble track](#the-bubble-track) holds. A
+record matches a bubble by interval.[^integer-nodes]
 
-With this lane loaded the two readings sit over one coordinate and show
-different, compatible things: the [allele inventory](#the-allele-inventory)
-gives the haplotype the graph credits an allele to, and a genotype column here
-gives the haplotypes that walk it.
+With this lane loaded, two compatible readings sit over one coordinate. The
+[allele inventory](#the-allele-inventory) gives the haplotype the graph credits
+an allele to. A genotype column here gives the haplotypes that walk the allele.
 
 ## Comparing the graph with the callset
 
-The graph and the callset are the same object at two resolutions. minigraph
-records structural variation (roughly >50 bp) and collapses everything smaller,
-so SNPs are absent from the graph even though every one is in the VCF. Filter
-the callset to that same tier and the two describe the same events from opposite
-ends. The graph records an allele and its length, and collapsing the smaller
-variation made it findable. The callset never lost the samples, so it records
-whose.
+The graph and the callset describe the same variation at two resolutions.
+minigraph records structural variation (roughly >50 bp) and collapses everything
+smaller, so SNPs are absent from the graph even though every one is in the VCF.
+Filter the callset to that same tier, and the two describe the same events from
+opposite ends. The graph records an allele and its length, and collapsing the
+smaller variation makes the allele easy to find. The callset kept the samples,
+so it records who carries each allele.
 
-What lines up is the event: mark an interval in the linear view and it crosses
-the genes, the segments lane and the genotype matrix in one column, and the
-reference-position ramp gives the graph's backbone at that position the same hue
-as the segments above it.
+The events line up across the two. Mark an interval in the linear view, and the
+mark crosses the genes, the segments lane and the genotype matrix in one column.
+The reference-position ramp gives the graph's backbone at that position the same
+hue as the segments above it.
 
 <Figure caption="One window, both products. The tan band is one deletion site from the callset, the stretch of HLA-DRB5 that many haplotypes replace with their own shorter sequence. The matrix below it is every haplotype clustered by genotype, one row each, grey where a haplotype matches the reference, blue where it carries the alt allele, red for another alt allele, tan for no call and purple for an insertion. The force graph beneath has no coordinate axis, so an arrow runs from the band to the allele, which is the same deletion as the graph draws it: nodes colored by reference position, alleles charcoal, each lavender halo one bubble with its kind in the purple label." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
 ## Inversions
 
-Insertions are nodes and deletions are edges; an inversion is the same reference
+Insertions are nodes and deletions are edges. An inversion is the same reference
 sequence, walked backwards. `gfatools bubble` sets a column when a bubble's
-paths disagree about orientation, and the adapter exposes it as an `inversion`
-boolean, so **Edit filters** on the bubble track cuts the lane to them:
+paths disagree about orientation, and the adapter exposes that column as an
+`inversion` boolean. **Edit filters** on the bubble track cuts the lane to
+inversions:
 
 ```
 jexl:feature.inversion
 ```
 
 [`build_hprc_inversion_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_inversion_synteny.sh)
-takes the 1q21.1 bubble down to two haplotype rows, one carrying the inversion
-and one not, out of HPRC's published all-vs-GRCh38 PAF. Each row carries its own
-CAT gene annotation, and the pair boxed on each is the same two genes, _PPIAL4F_
-and _PPIAL4E_: on the carrier _PPIAL4F_ comes first, on the non-carrier
-_PPIAL4E_ does, and the hg38 row between them agrees with the non-carrier.
+reduces the 1q21.1 bubble to two haplotype rows from HPRC's published
+all-vs-GRCh38 PAF, one carrying the inversion and one not. Each row shows the
+CAT gene annotation for that haplotype. The boxed pair on each row is the same
+two genes, _PPIAL4F_ and _PPIAL4E_. On the carrier _PPIAL4F_ comes first, and on
+the non-carrier _PPIAL4E_ does. The hg38 row between them agrees with the
+non-carrier.
 
 <Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. The pink ribbons are each haplotype's alignment to hg38, and a ribbon that crosses itself is an inversion. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles, and the rGFA segments colored by reference position. The boxed pair on each row is PPIAL4F and PPIAL4E, in opposite orders on the two haplotypes." src="/img/pangenome/hprc_inversion.png" />
 
 ## Reproduce it end to end
 
-The bubble file, its [coarse tier](#a-whole-chromosome-as-a-graph) and the
-[allele inventory](#the-allele-inventory) are built by
-[Preparing your own graph](/docs/tutorials/pangenome_prepare_graph), which runs
-the same commands on any rGFA. Point it at `hprc-v2.1-mc-grch38.sv.gfa.gz` and
-it writes what we host. Their provenance (source, size, exact commands, build
-date) is in [README.txt](https://jbrowse.org/demos/hprc/README.txt) beside them.
+[Preparing your own graph](/docs/tutorials/pangenome_prepare_graph) builds the
+bubble file, its [coarse tier](#a-whole-chromosome-as-a-graph) and the
+[allele inventory](#the-allele-inventory), and its commands run on any rGFA.
+Pointed at `hprc-v2.1-mc-grch38.sv.gfa.gz`, it writes the files we host.
+[README.txt](https://jbrowse.org/demos/hprc/README.txt) beside those files
+records their provenance: source, size, exact commands and build date.
 
-Carriage is not rebuilt at all here: it is
-[a published file](#carriage-at-the-graphs-own-granularity), tabix-indexed like
-the callset. Rebuilding it costs a 464-assembly download and a mapping run, and
-this is the one call that run makes per sample:
+We do not rebuild carriage here, because HPRC publishes it as
+[a file](#carriage-at-the-graphs-own-granularity), tabix-indexed like the
+callset. Rebuilding it takes a 464-assembly download and a mapping run. The run
+makes this one call per sample:
 
 <!-- from: scripts/build_minigraph_paths.sh -->
 
@@ -325,12 +325,12 @@ minigraph -cxasm --call -t"$(nproc)" graph.gfa assembly.fa > sample.call.bed
 ```
 
 [`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh)
-wraps that in the per-sample loop and the join, and
+wraps that call in the per-sample loop and the join, and
 [the same page](/docs/tutorials/pangenome_prepare_graph#who-carries-what) walks
-it.
+through the script.
 
-The [inversion figure](#inversions) has a script of its own, which reads release
-2's published all-vs-GRCh38 PAF:
+A separate script builds the [inversion figure](#inversions) from release 2's
+published all-vs-GRCh38 PAF:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_hprc_inversion_synteny.sh
@@ -338,9 +338,9 @@ bash build_hprc_inversion_synteny.sh  # writes ./hprc_inversion_synteny_build/
 ```
 
 [`build_hprc_inversion_synteny.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_hprc_inversion_synteny.sh)
-classifies each haplotype at that bubble, keeping the ones whose alignments
-reverse the block while the sequence either side stays forward, and prints the
-split it finds before slicing out one haplotype of each kind.
+classifies each haplotype at that bubble. It keeps the haplotypes whose
+alignments reverse the block while the sequence on either side stays forward. It
+prints the split it finds, then slices out one haplotype of each kind.
 
 ## See also
 
@@ -361,16 +361,17 @@ split it finds before slicing out one haplotype of each kind.
   the bubbles this page reads.
 
 [^path-count]:
-    Each bubble's description also carries a path count, the routes through it
-    rather than the haplotypes observed. gfatools saturates the count at
-    `2147483647`, and the track describes those bubbles as having more paths
-    than gfatools counts.
+    Each bubble's description also carries a path count, which counts the routes
+    through the bubble and not the haplotypes observed. gfatools saturates the
+    count at `2147483647`, and the track describes those bubbles as having more
+    paths than gfatools counts.
 
 [^max-region-bp]:
-    The view refuses a cut over 5 Mb, a proxy for node count that holds at
-    segment granularity and breaks on a tier, so a `GraphGenomeView` pointed at
-    one carries **`maxRegionBp`** raised to the span it is drawing. The real
-    ceiling is unchanged: `maxGraphNodes` counts what actually came back.
+    The view refuses a cut over 5 Mb. That width limit stands in for node count,
+    which works at segment granularity and fails on a tier. A `GraphGenomeView`
+    pointed at a tier therefore raises **`maxRegionBp`** to the span it draws.
+    The node limit still applies: `maxGraphNodes` counts the nodes that actually
+    came back.
 
 [^integer-nodes]:
     `ID` and `AT` name base-level integer nodes (`>161001867>161004536`), where

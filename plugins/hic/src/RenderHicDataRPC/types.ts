@@ -159,17 +159,16 @@ export interface HicDataResult {
    * property of the query rather than of a contact.
    *
    * Kept as runs the whole way rather than expanded into per-contact region
-   * columns for the hover index, which is what this used to do. Two `Uint16Array`
-   * columns are 4 bytes per contact held for the lifetime of the viewport, and a
-   * matrix is routinely millions of contacts (~18 MB at 4.5M) — against a handful
-   * of objects here, since the pair count is O(regions²).
+   * columns for the hover index. Two `Uint16Array` columns would be 4 bytes per
+   * contact held for the lifetime of the viewport, and a matrix is routinely
+   * millions of contacts (~18 MB at 4.5M), where the runs are a handful of
+   * objects, since the pair count is O(regions²).
    *
-   * They are also what makes the two per-contact bin columns unnecessary. This
-   * used to ship `contactBin1`/`contactBin2` (another 8 bytes per contact,
-   * 36 MB at 4.5M, retained for the lifetime of the viewport) on the reasoning
-   * that a bin index is chromosome-absolute (~10^6 at a fine binsize) and
-   * Float32's ~7 digits cannot round-trip that. True of the bin — but
-   * `instances` never stores it: it stores `(bin + combinedOffset) * binWidth`,
+   * The runs also make per-contact bin columns unnecessary. Shipping
+   * `contactBin1`/`contactBin2` would cost another 8 bytes per contact (36 MB at
+   * 4.5M, retained for the lifetime of the viewport). A bin index is
+   * chromosome-absolute (~10^6 at a fine binsize) and Float32's ~7 digits
+   * cannot round-trip it, but `instances` never stores the bin: it stores `(bin + combinedOffset) * binWidth`,
    * and `combinedOffset ≈ -start/res` cancels the large term *before* the cast,
    * so what survives the float32 is the small within-window coordinate.
    * `contactLookup.ts` inverts it against this run table, and the error is

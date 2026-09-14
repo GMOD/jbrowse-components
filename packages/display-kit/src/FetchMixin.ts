@@ -264,9 +264,9 @@ export default function FetchMixin() {
        * Sequence sets it past base resolution ("Zoom in to see sequence"); LD
        * sets it with the triangle toggled off.
        *
-       * **One hook, three readers**, and that is the whole point — a display
-       * that grows such a state has one thing to say rather than three, and the
-       * reader it would have forgotten is always the one outside itself:
+       * **One hook has three readers.** A display that gains such a state
+       * declares it once, which covers the reader it would otherwise forget,
+       * always the one outside the display:
        *
        * - the phase (`computeActivityPhase`), which otherwise parks a scrim
        *   over the placeholder, or a canceled overlay once Cancel is clicked;
@@ -277,22 +277,21 @@ export default function FetchMixin() {
        *   otherwise report a dead Retry on a display correctly declining to
        *   load anything.
        *
-       * It was three hooks — `loadingSuppressed`, `svgReadyExtraTerminal` on
-       * each of the two foundations, and `fetchInert` on the comparative
-       * family, which had already collapsed them. Both LGV displays that
-       * override it returned one expression for all three, and one of the three
-       * was hard-coded `false` on the global family for a while, which is how
-       * LD came to be able to express only half its own state. One
-       * declaration for all three fetch families since the comparative one
-       * composed this mixin (ADR-105), so the retry check reads one field
-       * everywhere. ADR-082.
+       * `fetchInert` replaces three hooks: `loadingSuppressed`,
+       * `svgReadyExtraTerminal` on each of the two foundations, and
+       * `fetchInert` on the comparative family, which had already collapsed
+       * them. Both LGV displays that override it returned one expression for
+       * all three, and the global family hard-coded one of the three to `false`
+       * for a while, so LD could express only half its state. All three fetch
+       * families declare it here since the comparative one composed this mixin
+       * (ADR-105), so the retry check reads one field everywhere. ADR-082.
        *
        * A hook rather than a `displayPhase` override, because overriding the
-       * getter means restating the whole loading condition — which is how
-       * sequence came to hold a verbatim copy of the other terms, one `git blame`
-       * away from silently missing the next one added.
+       * getter means restating the whole loading condition. Sequence held a
+       * verbatim copy of the other terms that way, and a copy misses any term
+       * added to the condition later.
        *
-       * It lives **here** because this is the one mixin all three display
+       * `fetchInert` lives **here** because this is the one mixin all three display
        * foundations compose. Same argument, one level down, that put
        * `rendersCanvas` on `RenderLifecycleMixin` beside `canvasDrawn`.
        */
@@ -309,16 +308,16 @@ export default function FetchMixin() {
        * waiving it, so a display cannot spend its retry on a decline it called
        * preliminary.
        *
-       * Two displays say it, one per fetch foundation, which is why it lives
-       * beside `fetchInert` rather than on either: HiC's contacts fetch
+       * Two displays set it, one per fetch foundation, so it lives beside
+       * `fetchInert` rather than on either: HiC's contacts fetch
        * declines until `CoreGetInfo` lands, and `MultiSampleVariantBaseModel`'s
        * `fetchNeeded` declines until `sourcesBase` does. Both have a `reload()`
        * that wakes the prerequisite's autorun as well as their own.
        *
        * **It has to be strictly narrower than the gate it explains.** One that
-       * restates the gate's negation makes every decline a deferred one, so no
-       * run is ever judged and the display has silently opted out — an exemption
-       * by another name. HiC is in that shape deliberately, because its gate and
+       * restates the gate's negation makes every decline a deferred one. No run
+       * is then ever judged, which exempts the display from the check. HiC does
+       * this deliberately, because its gate and
        * its prerequisite are one condition; what covers its retry instead is
        * `LinearHicDisplay/infoFetchFailure.test.ts`.
        *
@@ -334,14 +333,14 @@ export default function FetchMixin() {
        * Overridable hook (default false), read by `computeActivityPhase`: a load
        * this display depends on beyond its primary fetch has not landed for the
        * first time, so the frame the primary fetch calls current is still
-       * missing something. Multi-way synteny says it until its lane genes and
+       * missing something. Multi-way synteny sets it until its lane genes and
        * lane links first arrive, so an export or a capture never lands between
        * the ortholog fetch and the gene models that fill the lanes.
        *
        * A hook rather than a `displayPhase` override, for the reason
        * `fetchInert` is one: that display carried the override, restating the
-       * foundation's two arguments verbatim to append one term, which is the
-       * shape that silently misses the next term added.
+       * foundation's two arguments verbatim to append one term, and a copy like
+       * that misses any term added to the foundation later.
        *
        * Not `dataSuperseded`, which holds the export through every later
        * refetch too: a display saying this wants the scrim on the first landing
@@ -354,8 +353,9 @@ export default function FetchMixin() {
       /**
        * #getter
        * The RPC cache key both fetch foundations invalidate on: this display's
-       * `rpcProps()` payload serialized to a string. `serializeRpcProps` owns
-       * the why, including the silently-dead-axis corollary.
+       * `rpcProps()` payload serialized to a string. `serializeRpcProps`
+       * documents why, including why a field whose distinct states serialize
+       * identically never invalidates anything.
        *
        * Here, beside the two hooks above, for the same reason they are: it
        * describes the display, and every foundation composes this mixin. The
@@ -435,17 +435,17 @@ export default function FetchMixin() {
        * that retires the slot when the operation ends.
        *
        * **Every operation on the display opens one**, and the two come back
-       * together because an operation that never retires goes on voting for a
-       * phase that is over. The viewport fetch (`runFetch`), the clustering run
+       * together because an operation that never retires keeps reporting status
+       * for a phase that is over. The viewport fetch (`runFetch`), the clustering run
        * and a lent `createStopTokenRotation` are three of them on one field;
        * before ADR-081 each blanked the field outright and the last one to
-       * finish decided what the other two were still saying.
+       * finish overwrote the status of the other two.
        *
        * `isCurrent` is required and has no "node is alive" default, because
-       * alive is not the interesting question: a *superseded* fetch is on a live
+       * a live node is not enough: a *superseded* fetch is on a live
        * node, and its late status repainting the overlay of the fetch that
        * replaced it is the failure this guards. `runFetch` passes `!isStale()`,
-       * which is what every display gets for free through `ctx.statusCallback`;
+       * and every display gets that through `ctx.statusCallback` unasked;
        * a caller outside a fetch (the clustering autorun) passes its own run's
        * flag. Defaulting to `isAlive` made the loose answer the easy one and
        * five displays took it.

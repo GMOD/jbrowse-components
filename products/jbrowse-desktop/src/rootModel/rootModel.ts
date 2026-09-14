@@ -213,15 +213,15 @@ export default function rootModelFactory({
         },
         /**
          * #action
-         * The Loader has let go of this root: stop everything of ours that
-         * reaches outside the tree — the worker pool and the autosave autorun —
-         * and leave the tree itself alone.
+         * Called when the Loader releases this root. Stops everything the root
+         * runs outside the tree (the worker pool and the autosave autorun) and
+         * leaves the tree itself alone.
          *
-         * Half the teardown. The caller destroys the tree on a later task
-         * (`scheduleDetachedDestroy`), which is what runs the `beforeDestroy`
-         * hooks in it — a plugin-facing contract, so skipping it is not an
-         * option. What this action does is take everything reaching outside the
-         * tree off that deferral, so nothing keeps running in between. ADR-069.
+         * The caller destroys the tree on a later task
+         * (`scheduleDetachedDestroy`), which runs the `beforeDestroy` hooks in
+         * it; plugins rely on those hooks, so the destroy cannot be skipped.
+         * This action stops the outside work immediately, so none of it runs
+         * between detach and destroy. ADR-069.
          */
         detach() {
           // rpcManager is a plain object on a volatile, so MST teardown never

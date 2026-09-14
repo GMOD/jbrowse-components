@@ -186,10 +186,9 @@ export function ArcFetchModel(exportEdge: () => Promise<ArcExportEdge>) {
          * Arc composes the render lifecycle with the rest of the foundation but
          * never calls `attachRenderingBackend` — it paints its own Canvas2D on
          * screen, and JSX `<path>`s only in the SVG export — so `renderError` is
-         * a phase it cannot reach, and the narrower type is what lets
-         * `DisplayStatusChrome` (whose
-         * banners have no backend `retry()` to offer) accept this display with
-         * neither a cast nor a dead branch. On the model rather than derived
+         * a phase it cannot reach. The narrower type lets `DisplayStatusChrome`
+         * (whose banners have no backend `retry()` to offer) accept this
+         * display with neither a cast nor a dead branch. On the model rather than derived
          * inside `BaseDisplayComponent` so the component can't disagree with the
          * model, and so arc publishes `data-display-phase` for tests like every
          * other display.

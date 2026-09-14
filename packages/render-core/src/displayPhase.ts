@@ -134,8 +134,8 @@ export interface DisplayActivityInputs {
  * term only**. `ViewContainer` mounts an off-screen view's body lazily, so its
  * display has no canvas and `!canvasDrawn` could never resolve — which parked
  * `[data-app-phase="ready"]` for the whole app. It is required on every view and
- * host contract rather than defaulted there, so a stand-in cannot silently
- * excuse the first paint. The fetch terms stay live while unmounted: an
+ * host contract rather than defaulted there, so a stand-in has to state it and
+ * cannot excuse the first paint by omission. The fetch terms stay live while unmounted: an
  * off-screen display still fetches, and during cold load `visible` is false
  * until the IntersectionObserver's first callback.
  */

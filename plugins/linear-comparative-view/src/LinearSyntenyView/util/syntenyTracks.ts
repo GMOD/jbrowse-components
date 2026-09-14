@@ -30,8 +30,7 @@ export interface LevelAbove {
  * dataset to draw and the assembly to add.
  *
  * Split in two, because an option that repeats the band above is worse than no
- * option at all — see `alreadyDrawn`, which is what the dialog says instead of
- * offering it.
+ * option. The dialog lists those as `alreadyDrawn` and does not offer them.
  */
 export function getAddRowOptions({
   session,

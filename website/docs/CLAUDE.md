@@ -114,3 +114,6 @@ summary label over it. Say what the page shows and the one thing that makes it
 work, in complete sentences and without "this page" or "this guide". The four
 ways it goes wrong: restating the title, restating the paragraph under it,
 closing on a superlative, and crediting the result to the wrong mechanism.
+
+The anti-ai-writing-tropes checklist (github.com/cmdcolin/claudish) covers the
+rest. `check-writing-tropes` ratchets the clefts and "silently" it can grep.

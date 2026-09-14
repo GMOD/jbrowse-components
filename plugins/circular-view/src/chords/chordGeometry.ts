@@ -4,8 +4,8 @@ import type { Slice } from '../CircularView/slices.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 /**
- * How far from the center a chord's Bezier control point sits, which is what
- * decides how deeply the chord bows inward.
+ * How far from the center a chord's Bezier control point sits, which sets how
+ * deeply the chord bows inward.
  *
  * Scaled by how far apart the chord's two ends are, because a fixed depth is
  * only right for the widest chord. Every intrachromosomal event puts both ends

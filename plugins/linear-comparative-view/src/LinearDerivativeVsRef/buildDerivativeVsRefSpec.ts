@@ -96,8 +96,8 @@ export function derivativePathLabel(candidate: DerivativeCandidate) {
  * Names the ROUTE rather than the row number, because rank is stable but not
  * meaningful: two routes tied on support are ordered by segment count, so at
  * COLO829's chr9 fold-back the two-segment allele the tutorial is about sits
- * under a three-segment one. A spec keyed on position silently captures the
- * wrong allele under the right caption.
+ * under a three-segment one. A spec keyed on position captures the wrong allele
+ * under a caption naming the right one.
  *
  * Every segment in derivative order with `rev` on the flipped ones, rather than
  * the deduplicated `refNames`. On that same fold-back `9 → 9 (inverted)` and

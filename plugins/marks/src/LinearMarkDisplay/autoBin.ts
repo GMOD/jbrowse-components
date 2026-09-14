@@ -14,8 +14,8 @@ const LADDER = [1, 2, 5]
  * The bin width an `auto` step resolves to at this zoom: the target width in bp
  * ({@link AUTO_BIN_TARGET_PX} pixels' worth), snapped up to the next 1/2/5
  * rung — 1, 2, 5, 10, 20, 50, 100 bp and so on, the ladder an axis picks its
- * ticks from. Snapping is what keeps the fetch off the zoom: every bp/px inside
- * a rung resolves to one width, so a zoom step within a rung refetches nothing
+ * ticks from. Snapping stops most zoom steps from refetching: every bp/px
+ * inside a rung resolves to one width, so a zoom step within a rung refetches nothing
  * and one across it refetches at the width the new zoom asks for.
  */
 export function autoBinStep(bpPerPx: number) {

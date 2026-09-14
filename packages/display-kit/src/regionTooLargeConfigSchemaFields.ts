@@ -10,16 +10,16 @@ import type { ConfigModelForFields } from '@jbrowse/core/configuration'
  * thing. This mixin was the exception — it read both slots off
  * `baseLinearDisplayConfigSchema`, which most of its composers extend and five
  * do not (the wiggle family, the two GC-content displays that inherit wiggle's
- * schema, and the reference sequence display). On those five the reads answered
- * `undefined` while typed `number` / `boolean`, silently, exactly as
- * `getConf` on an undeclared slot always does.
+ * schema, and the reference sequence display). On those five the reads returned
+ * `undefined` while typed `number` / `boolean`, as `getConf` on an undeclared
+ * slot always does.
  *
- * Inert today, because all five leave `gateEnabled` false and every read is
- * behind it — the invariant the mixin's own docstrings state. What made it worth
- * closing rather than restating is what happens when that stops being true: a
- * gated display with no `fetchSizeLimit` resolved an `undefined` byte budget,
- * and an undefined budget is a gate that never fires. A safety gate that
- * silently does not gate is the quietest failure this subsystem has.
+ * The gap has no effect today, because all five leave `gateEnabled` false and
+ * every read is behind it, as the mixin's docstrings state. It was closed
+ * anyway because of what happens when that stops being true: a gated display
+ * with no `fetchSizeLimit` resolved an `undefined` byte budget, and a gate
+ * with an undefined budget never fires. The display then downloads any region
+ * however large, and nothing on screen shows the gate is off.
  *
  * Spreading this table is still how a display declares the slot, but it is no
  * longer the only thing standing between a schema slip and an ungated download:

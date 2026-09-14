@@ -48,7 +48,7 @@ import type { SessionAssemblies } from '@jbrowse/core/util/tracks'
  * Which track is picked resolves against the current list on every render for
  * the same reason, so a list that grows after mount can't leave the picker
  * holding an id that isn't in it, showing a blank Select over a Launch that
- * silently opens nothing.
+ * opens nothing.
  */
 export function useQuickStartState(
   // the session, not a track list: the tracks and the manager that screens them
@@ -100,8 +100,8 @@ export function useQuickStartState(
  * a pairwise track has one pair, an all-vs-all track one per adjacent row, and a
  * dotplot one however many assemblies the track names.
  *
- * The clear is what makes it one rule rather than two: this replaces whatever
- * Manual had configured, and a per-form copy is free to forget that.
+ * The clear belongs to the same rule: this replaces whatever Manual had
+ * configured, and a per-form copy could forget to.
  */
 export function applyQuickStartSelections(
   model: ImportFormSyntenyModel,

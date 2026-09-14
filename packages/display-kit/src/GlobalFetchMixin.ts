@@ -179,10 +179,9 @@ export default function GlobalFetchMixin() {
        * out.
        *
        * A display with no rendering backend narrows this to the backend-free
-       * `DisplayStatusPhase` with `foundationDisplayStatusPhase`, which is what
-       * arc does: it cannot reach `renderError`, and the narrower type is what
-       * lets `DisplayStatusChrome` take it with neither a cast nor a dead
-       * branch.
+       * `DisplayStatusPhase` with `foundationDisplayStatusPhase`, as arc does.
+       * Arc cannot reach `renderError`, and the narrower type lets
+       * `DisplayStatusChrome` take it with neither a cast nor a dead branch.
        */
       get displayPhase(): DisplayPhase {
         return foundationDisplayPhase(

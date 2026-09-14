@@ -66,7 +66,7 @@ const RefNameAliasAdapter = ConfigurationSchema(
      * #slot
      * location of the alias table: a UCSC `chromAlias.txt`, or any
      * tab-separated file whose rows each list the alternate names of one
-     * reference sequence (`chr1<TAB>1<TAB>NC_000001.11`). It is what lets a
+     * reference sequence (`chr1<TAB>1<TAB>NC_000001.11`). The table lets a
      * `1`-named file load against a `chr1`-named assembly.
      */
     location: {

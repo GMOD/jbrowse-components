@@ -7,9 +7,8 @@
  *
  * Structural rather than nominal, and named after the layout rather than after
  * either display: the alignments worker's `CoverageUploadData` and the MAF
- * worker's `MafCoverageRegion` both satisfy it, which is what lets the passes
- * in `coverageBand.ts` carry their own packers instead of each plugin
- * restating four field reads.
+ * worker's `MafCoverageRegion` both satisfy it, so the passes in
+ * `coverageBand.ts` carry the packers and no plugin restates four field reads.
  *
  * Its own module, apart from the GPU passes in `coverageBand.ts`: a state
  * model reaching for just this shape has no reason to statically pull in

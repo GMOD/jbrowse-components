@@ -45,8 +45,8 @@ export async function navToMultiLevelBreak({
   /**
    * Tracks every panel opens when the launcher has no source view — the SV
    * inspector's own callset, say. Separate from `tracks` because that one
-   * doubles as "the reader expressed an opinion about tracks", which is what
-   * `openOrReuseSplitView` reads to choose between re-navigating a view and
+   * doubles as "the reader expressed an opinion about tracks", and
+   * `openOrReuseSplitView` reads it to choose between re-navigating a view and
    * rebuilding it; passing these as `tracks` would rebuild on every chord click
    * and the reuse path exists to stop that flashing. So they are opened on a
    * view this call BUILT, and a reused one already has them.
@@ -54,7 +54,7 @@ export async function navToMultiLevelBreak({
   defaultTrackIds?: string[]
   /**
    * The loci to open, one panel each, in the order the chain crosses them. Omit
-   * for the record's own two ends, which is what a single BND describes.
+   * for the record's own two ends, the two a single BND describes.
    *
    * More than two comes from `walkBreakendChain`: a rearrangement whose
    * junctions leave from each other's loci is one shape across three or four

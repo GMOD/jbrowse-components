@@ -22,9 +22,8 @@ import type { Region, RpcStatus } from '@jbrowse/core/util'
  * matters: the token is created and stopped by the same effect, giving it the
  * fetch's lifetime.
  *
- * `rows` is `undefined` while in flight, which is what the caller draws a
- * spinner on — distinct from the anchor row alone, a dataset that reached
- * nothing. `status` is the RPC's own phase, for the caller to say more than
+ * `rows` is `undefined` while in flight, and the caller draws a spinner for it.
+ * A dataset that reached nothing gives the anchor row alone. `status` is the RPC's own phase, for the caller to say more than
  * "waiting".
  *
  * `retry` re-runs it. What fails here is a fetch over the network, and without

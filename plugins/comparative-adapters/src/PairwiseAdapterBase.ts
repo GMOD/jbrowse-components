@@ -7,7 +7,7 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
  * A region reached a pairwise adapter naming an assembly its `assemblyNames`
  * does not. The main thread respells every region into the adapter's namespace
  * before the RPC (`renameRegionsForAdapter`, `regionsInAssemblyNamespace`), so
- * this is a caller that skipped that step, not a track that is quietly empty.
+ * this error means a caller skipped that step; the track itself may have data.
  */
 export class AssemblyNotInAdapterError extends Error {
   override name = 'AssemblyNotInAdapterError'
@@ -51,8 +51,8 @@ export abstract class PairwiseAdapterBase<
    * an odgi untangle of a genome against its own paralogy) names the same
    * assembly on both, and then both face it: the two ends of a duplicated block
    * are each other's mate, so a query has to answer for either one. Picking the
-   * first match answered the query columns alone, and every row anchored on the
-   * target columns silently went undrawn.
+   * first match answered the query columns alone, so no row anchored on the
+   * target columns was drawn.
    */
   protected facingSides(assemblyName: string | undefined) {
     const [queryAssembly, ...targetAssemblies] = this.getAssemblyNames()
@@ -148,7 +148,7 @@ export abstract class PairwiseAdapterBase<
     }
   }
 
-  /** The assembly on the other side, which is what a mate is labelled with. */
+  /** The assembly on the other side, which labels a mate. */
   protected mateAssemblyName(side: 0 | 1) {
     return this.getAssemblyNames()[side === 0 ? 1 : 0]!
   }

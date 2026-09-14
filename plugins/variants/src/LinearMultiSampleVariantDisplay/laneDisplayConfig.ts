@@ -13,10 +13,9 @@ import type { DisplayConfig, ShowLabelsMode } from '@jbrowse/plugin-canvas'
  * strand and no subfeatures, so `findGlyph` lands on `layoutBox` and the whole
  * gene half of this interface is inert.
  *
- * Typed as `DisplayConfig` on purpose, and that is the drift guard: the interface
- * is exhaustive over what the layout reads (`WORKER_READS` in plugin-canvas
- * proves it), so a field added there fails to compile here rather than silently
- * taking a default the lane never considered.
+ * Typed as `DisplayConfig`, an interface exhaustive over what the layout reads
+ * (`WORKER_READS` in plugin-canvas checks it), so a field added there fails to
+ * compile here instead of taking a default the lane never considered.
  */
 export function laneDisplayConfig({
   labels,

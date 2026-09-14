@@ -17,8 +17,7 @@ import type {
  * every `computeDisplayPhase` and `computeActivityPhase` input, under the name
  * the mixins already publish it as — the terminals from `RegionTooLargeMixin` /
  * `FetchMixin` / `RenderLifecycleMixin`, the activity terms from the latter two.
- * Naming them identically on both foundations is what lets one mapping serve
- * them.
+ * Both foundations use the same names, so one mapping serves them.
  */
 export interface DisplayPhaseFoundation
   extends DisplayPhaseInputs, Omit<DisplayActivityInputs, 'isMinimized'> {}

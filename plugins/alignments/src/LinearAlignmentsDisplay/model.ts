@@ -732,10 +732,10 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The grouping the fetch will actually partition by, which is what the
-         * worker resolves too (`executeRenderAlignmentData`): chain mode
-         * degrades a per-read dimension to ungrouped without the slot moving,
-         * so the slot alone never says which sections come back.
+         * The grouping the fetch will partition by, matching what the worker
+         * resolves (`executeRenderAlignmentData`). Chain mode turns a per-read
+         * dimension into ungrouped without changing the slot, so the slot alone
+         * does not determine which sections come back.
          */
         get effectiveGroupBy() {
           return groupByForMode(self.groupBy, self.isChainMode)
@@ -1054,17 +1054,16 @@ export default function stateModelFactory(
          * #getter
          * The per-read values the CPU-baked schemes actually painted in the
          * rendered reads — tag values, or mate refNames under chromosome
-         * painting. The whole swatch list for those schemes, since their color
-         * is a pure function of the value (`bakedValueColor`) and so needs no
-         * discovered-value table to look up. It replaced one: `colorTagMap`
-         * only ever grew, so after panning it held every value the track had
-         * ever seen and keyed swatches for a chromosome the user had navigated
+         * painting. It is the whole swatch list for those schemes, since their
+         * color is a pure function of the value (`bakedValueColor`) and needs
+         * no discovered-value table. Only values in the rendered reads appear,
+         * so the legend drops swatches for a chromosome the user has navigated
          * away from.
          *
-         * `undefined` for schemes with no such values, which is what tells the
-         * legend not to filter — distinct from the empty set, which means the
-         * scheme has values and none are on screen. Same showLegend gate as the
-         * category scan, for the same reason: it is O(reads).
+         * `undefined` for schemes with no such values, and the legend then
+         * does not filter. The empty set means the scheme has values and none
+         * are on screen. Gated on showLegend like the category scan, because
+         * it is O(reads).
          */
         get presentTagValues(): ReadonlySet<string> | undefined {
           const { type } = self.colorBy
@@ -1076,21 +1075,20 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * The modification types actually drawn in the rendered reads. The twin
-         * of `presentTagValues`, against the same failure: `detectedModifications`
-         * takes each region's types as that region's fetch lands and is never
-         * cleared, so keying it whole named every type the track had ever seen —
-         * pan off the one locus carrying 6mA and the box still listed 6mA.
+         * The modification types drawn in the rendered reads, the counterpart
+         * of `presentTagValues`. `detectedModifications` adds each region's
+         * types when that region's fetch lands and is never cleared, so a
+         * legend keyed on it would still list 6mA after panning off the one
+         * locus carrying 6mA.
          *
-         * Off `modificationTypes`, which the worker builds from the MARKS rather
-         * than from the MM/ML parse, so it is what a reader is looking at. The
-         * two sets diverge on bisulfite — no tags to parse, every mark carrying
-         * 'm' — and the legend's bisulfite branch answers before this filter for
-         * that reason.
+         * Read from `modificationTypes`, which the worker builds from the drawn
+         * marks, not from the MM/ML parse, so it matches what is on screen. The
+         * two sets differ for bisulfite (no tags to parse, every mark carrying
+         * 'm'), so the legend's bisulfite branch runs before this filter.
          *
-         * `undefined` outside the modification schemes, which is what tells the
-         * legend not to filter; the empty set means the scheme is on and no
-         * marks are drawn. Same showLegend gate as the other two scans.
+         * `undefined` outside the modification schemes, and the legend then
+         * does not filter; the empty set means the scheme is on and no marks
+         * are drawn. Gated on showLegend like the other two scans.
          */
         get presentModifications(): ReadonlySet<string> | undefined {
           if (!self.showLegend || !isModificationScheme(self.colorBy.type)) {
@@ -1348,13 +1346,12 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * What the below-coverage strips cost the fit-to-viewport row budget
-         * over the whole stack: every lane's own reserved bands, summed the way
-         * `computeStackedSections` reserves them.
+         * The height the below-coverage strips take from the fit-to-viewport
+         * row budget over the whole stack: the bands reserved in every lane,
+         * summed the way `computeStackedSections` reserves them.
          *
-         * Pre-layout by construction — `groupOrder` and the two lane sets are
-         * all fetch-tier — which is what lets the layout spend it without
-         * routing back through itself.
+         * `groupOrder` and the two lane sets are all fetch-tier, so this is
+         * known before layout and the layout can read it without a cycle.
          */
         get totalBandOverhead() {
           return totalBelowCoverageOverhead(
@@ -1482,13 +1479,12 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Whether the unpaired chain-strand framing is live, as a BOOLEAN and in
-         * its own computed. The boolean is the point: nine of the schemes give
-         * one of two answers, so MobX's value comparison stops a scheme switch
-         * from invalidating `laidOutByGroupFramed` unless the answer actually
-         * moved. Reading `framesUnpairedChainStrand` inline there instead would
-         * make the frame solve depend on `colorBy` itself and re-run on every
-         * switch — which is what it used to do.
+         * Whether the unpaired chain-strand framing is on, as a boolean in a
+         * separate computed. Nine of the schemes give one of two answers, so
+         * MobX's value comparison stops a scheme switch from invalidating
+         * `laidOutByGroupFramed` unless the answer changed. Reading
+         * `framesUnpairedChainStrand` inline there would make the frame solve
+         * depend on `colorBy` and re-run on every switch.
          */
         get framesChainStrand() {
           return framesUnpairedChainStrand(
@@ -1517,14 +1513,13 @@ export default function stateModelFactory(
          * consumer reads this one; `laidOutByGroupUncolored` exists only to be
          * its layout half.
          *
-         * The split is what keeps recoloring off the layout path. Nothing in
-         * `readColorContext` can move a read's row, so folding those settings
-         * into the layout computed made a color-scheme flip re-run the placement
-         * pass, every per-feature Y remap and the modification Flatbush to change
-         * two per-read arrays. Now the layout computed stays memoized across a
-         * recolor, and because the overlay spreads its input, `readYs` survives
-         * with it — which is the token the GPU renderer's upload memo reads to
-         * rewrite only the read pass. Tag colors are baked here rather than in
+         * The split keeps recoloring off the layout path. Nothing in
+         * `readColorContext` can move a read's row, so a color-scheme change
+         * should not re-run the placement pass, every per-feature Y remap and
+         * the modification Flatbush just to change two per-read arrays. The
+         * layout computed stays memoized across a recolor, and because the
+         * overlay spreads its input, `readYs` keeps its identity too. The GPU
+         * renderer's upload memo checks `readYs` to rewrite only the read pass. Tag colors are baked here rather than in
          * the worker so tag coloring stays a main-thread tier-2 setting (see
          * readTagColors).
          */
@@ -1832,11 +1827,11 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * Median aligned length of the reads in view, in bp — how much reference
-         * one alignment covers, which is what decides whether a read can carry a
-         * junction at all. The picker's empty state reads it to tell a library
-         * that cannot describe a rearrangement from a window that happens to
-         * hold none.
+         * Median aligned length of the reads in view, in bp. The reference span
+         * of one alignment determines whether a read can carry a junction at
+         * all. The picker's empty state reads it to distinguish a library that
+         * cannot describe a rearrangement from a window that happens to hold
+         * none.
          *
          * Lazy like any computed, so a pileup pays for this scan only while the
          * picker is open.
@@ -1847,8 +1842,9 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * What one chain IS here, which is what the picker counts, floors and
-         * words its rows by. A read pileup chains reads, needs two to call a
+         * What one chain consists of in this display; the picker counts,
+         * thresholds and labels its rows by it. A read pileup chains reads,
+         * needs two to call a
          * route agreed on, and reaches off-screen segments through SA tags.
          * `LGVSyntenyDisplay` overrides it: a locus carries one or two contigs,
          * and a PAF block names nothing the view has not fetched.
@@ -2005,24 +2001,22 @@ export default function stateModelFactory(
          * The stacked lanes, in stacking order: one `AlignmentLane` per drawn
          * group, ungrouped being the one-lane case.
          *
-         * The single place a lane's key is turned into its data. Every per-lane
-         * collection used to be looked up separately by each consumer — the raw
-         * map, the laid-out map, the two arc feeds, the sashimi sides, the
-         * collapse/override volatiles — so a lane's identity was a bare string
-         * indexed into as many keyed collections as there were questions, each
-         * with its own `?? empty` for a key that structurally cannot be missing.
+         * The one place a lane's key is resolved to its data: the raw map, the
+         * laid-out map, the two arc feeds, the sashimi sides and the
+         * collapse/override volatiles. Consumers read the lane instead of
+         * indexing each keyed collection with a bare string and a `?? empty`
+         * fallback for a key that cannot be missing.
          *
-         * A projection, not a store: every field is read from the computed that
-         * owns it, so the fetch/layout/recolor tiers upstream are untouched and
-         * this adds no state to keep in step.
+         * Every field is read from the computed that defines it, so the
+         * fetch/layout/recolor tiers upstream are unchanged and this getter
+         * holds no state.
          *
-         * Empty while the density tier stands in, which is what makes "no
-         * features drawn" total rather than canvas-deep: every overlay — the
-         * sashimi and bezier arcs, the read labels, the group chips — walks
-         * `renderSections`, so a track forced to `density` over data it already
-         * holds would otherwise draw them over the band. `drawnLanes` turns the
-         * empty list into the synthetic no-data lane, which is the same shape a
-         * refused fetch leaves behind.
+         * Empty while the density tier is shown, so no features are drawn
+         * anywhere. Every overlay (the sashimi and bezier arcs, the read labels,
+         * the group chips) walks `renderSections`, so a track forced to
+         * `density` over data it already holds would otherwise draw them over
+         * the band. `drawnLanes` turns the empty list into the synthetic no-data
+         * lane, the same lane a refused fetch produces.
          */
         get lanes(): AlignmentLane[] {
           // Both below-coverage strips are reserved per lane: grouping routinely
@@ -2312,8 +2306,8 @@ export default function stateModelFactory(
          * #getter
          * The coverage band held out of the scroll: ungrouped keeps it sticky
          * above the pileup, grouped scrolls the whole stack so nothing is held
-         * back. Subtracted from both the viewport and the content, which is what
-         * keeps the two ends of the scroll extent measuring the same band.
+         * back. Subtracted from both the viewport and the content, so both ends
+         * of the scroll extent exclude the same band.
          */
         get stickyBandHeight() {
           return this.isGrouped ? 0 : self.coverageDisplayHeight
@@ -2344,17 +2338,17 @@ export default function stateModelFactory(
          * #getter
          * HeightModeMixin's grow hook: the full laid-out content height
          * (coverage + pileup + arcs), before the `growMaxHeight` cap. Independent
-         * of `self.height` — `laidOutByGroup` fits to `growMaxHeight` in grow
-         * mode (not the reactive `height`), and `featureHeight` is the configured
-         * value there rather than the fitted pitch — which is what lets the
-         * mixin's `height` return it without cycling. `grownHeight`, the `height`
+         * of `self.height`: in grow mode `laidOutByGroup` fits to
+         * `growMaxHeight` (not the reactive `height`), and `featureHeight` is the
+         * configured value (not the fitted pitch). The mixin's `height` can
+         * therefore return it without a cycle. `grownHeight`, the `height`
          * override and the grow-aware `resizeHeight` all come from the mixin.
          *
-         * With no layout — reads not landed, or the too-large banner up — the
-         * content height is unknown rather than the bare coverage band, so the
-         * track holds the slot: otherwise a grow track loaded at 250 px,
-         * collapsed to the band, and grew again once the reads landed, and the
-         * banner was squeezed into the band's height.
+         * With no layout (reads not loaded, or the too-large banner shown) the
+         * content height is unknown, and the track keeps its current height.
+         * Using the bare coverage band instead would collapse a grow track
+         * loaded at 250 px to the band and grow it again once the reads loaded,
+         * and would squeeze the banner into the band's height.
          */
         get growTargetHeight() {
           return self.layoutReady
@@ -3113,13 +3107,13 @@ export default function stateModelFactory(
          * The legal range for any of the three drag-resizable bands stacked over
          * the pileup (coverage, read connections, sashimi).
          *
-         * The ceiling is what makes the drag recoverable. `scrollViewportHeight`
-         * floors at 0, so without one a band dragged past the display height
-         * squashes the pileup to nothing *and* carries its own resize handle off
-         * the bottom edge — leaving no way back except growing the track. Each
-         * band is bounded against the display height individually; three of them
-         * dragged large can still crowd the pileup, but every one of them stays
-         * reachable, which is the property the user needs.
+         * The ceiling keeps the drag reversible. `scrollViewportHeight` floors
+         * at 0, so without a ceiling a band dragged past the display height
+         * squashes the pileup to nothing and moves its resize handle off the
+         * bottom edge, and only growing the track brings it back. Each band is
+         * bounded against the display height individually; three bands dragged
+         * large can still crowd the pileup, but every resize handle stays
+         * reachable.
          */
         get resizableBandBounds() {
           return {
@@ -3337,13 +3331,12 @@ export default function stateModelFactory(
            * Commit a sort, the single place the `sortedBy` slot is written. Also
            * drops the layout-order flags: they are peer radios in one group
            * ("Longest reads first" and "Spliced reads first" are flags, a sort
-           * is the slot), so exactly one must hold state. Doing it here rather
-           * than at the menu means a sort that *doesn't* land — no valid center
-           * line, a cancelled tag dialog — leaves the previous ordering intact
-           * instead of silently clearing it and unchecking every radio.
-           * `computeMultiRegionLayout` would tolerate both being set (an
-           * explicit sort wins there anyway); this keeps the menu's checkmarks
-           * honest.
+           * is the slot), so exactly one must hold state. Clearing them here
+           * instead of in the menu means a sort that is not applied (no valid
+           * center line, a cancelled tag dialog) leaves the previous ordering
+           * and its checked radio in place. `computeMultiRegionLayout` would
+           * tolerate both being set (an explicit sort wins there anyway); this
+           * keeps the menu's checkmarks matching the applied order.
            */
           setSortSlot,
 
@@ -3974,18 +3967,17 @@ export default function stateModelFactory(
           /**
            * #action
            * Open the right-click menu over a hit. The block, the clicked column
-           * and whichever mark answered arrive as one `ContextMenuHit`, which is
-           * how a consumer is stopped from reading a block without its hit (the
-           * split-state class of bug that silently no-op'd position sorts). The
-           * read feature is reset now and, when the hit carries one, populated by
-           * an async RPC fetch — so "open the menu for this hit and its read"
-           * stays a single call and a repositioned menu can't inherit the prior
-           * read's items.
+           * and the mark that was hit arrive as one `ContextMenuHit`, so a
+           * consumer cannot read a block without its hit (a split state that
+           * made position sorts do nothing). The read feature is reset now and,
+           * when the hit carries one, populated by an async RPC fetch, so
+           * opening the menu for a hit and its read is a single call and a
+           * repositioned menu can't inherit the prior read's items.
            *
-           * Dropping the hover is part of opening, not a step the caller does
-           * first: the tooltip must go, but the highlight box has to survive as
-           * a pin on the menu's own read, and that is a clear-then-re-box order
-           * no call site should have to know (or get right in a second one).
+           * Opening also clears the hover. The tooltip closes, but the
+           * highlight box stays as a pin on the menu's read, which requires
+           * clearing and then re-drawing the box in that order; this action
+           * does both so call sites don't have to.
            */
           openContextMenu(info: AlignmentsContextMenuInfo) {
             self.clearMouseoverState()

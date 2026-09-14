@@ -71,8 +71,8 @@ const BgzipFastaAdapter = ConfigurationSchema(
     /**
      * #slot
      * location of the bgzip block index (`.gzi`), written beside the `.fai` by
-     * `samtools faidx` on a bgzipped FASTA. It maps uncompressed offsets to
-     * compressed ones, which is what makes a range request possible at all.
+     * `samtools faidx` on a bgzipped FASTA. The index maps uncompressed offsets
+     * to compressed ones, so the adapter can issue a range request.
      */
     gziLocation: {
       type: 'fileLocation',

@@ -1162,16 +1162,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
-       * The zoom-out limit. This view's own fit, except while a container holds
-       * it on a shared scale coarser than that — a small genome next to a large
-       * one, drawn short so the two compare by length.
+       * The zoom-out limit. Equal to the fit for this view's regions, except
+       * while a container holds it on a coarser shared scale, such as a small
+       * genome next to a large one, drawn short so the two compare by length.
        *
-       * Raising the LIMIT is what makes such a scale survive: written past the
-       * limit instead, it is undone by the first thing that clamps — a wheel
-       * tick, a rubberband, a `setDisplayedRegions` — which is how the dotplot's
-       * locked aspect ratio once turned "zoom out" into a zoom in
-       * (`axisMaxBpPerPx`). Here every route to a zoom clamps against the same
-       * ceiling, so full zoom-out LANDS on the shared scale.
+       * The shared scale raises the limit. A bpPerPx written past the limit
+       * would be undone by the first operation that clamps (a wheel tick, a
+       * rubberband, a `setDisplayedRegions`), as with the dotplot's locked
+       * aspect ratio turning "zoom out" into a zoom in (`axisMaxBpPerPx`).
+       * Every zoom clamps against the same ceiling, so full zoom-out stops at
+       * the shared scale.
        */
       get maxBpPerPx() {
         return Math.max(this.fitBpPerPx, this.sharedFitBpPerPx)
@@ -2250,36 +2250,36 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * Every span along the row that is not track data, as plain geometry in
          * the staticBlocks frame — the same frame as gridlineTicks and
          * scalebarLabels, so one `translateX(staticBlocksTranslateX)` places all
-         * three. Three kinds, and a host drawing its own chrome needs all of
-         * them:
+         * three. A host drawing its own chrome needs all three kinds:
          *
          * - `seam`: the 3px bar at a region's right edge. Displayed regions are
-         *   laid out **contiguously** — calculateStaticBlocks emits boundary
-         *   padding only before the first region and after the last — so this
+         *   laid out **contiguously** (calculateStaticBlocks emits boundary
+         *   padding only before the first region and after the last), so this
          *   bar is the only thing separating two of them. Without it a
-         *   two-region view reads as a one-region view scrolled somewhere
-         *   strange. `isRightEndOfDisplayedRegion` is what marks it, and the
-         *   right edge of the blocks currently *loaded* — which is what block
-         *   geometry hands you — is not the same filter.
+         *   two-region view looks like a single region.
+         *   `isRightEndOfDisplayedRegion` marks it; the right edge of the
+         *   currently *loaded* blocks, which block geometry gives you, is a
+         *   different set.
          * - `elided`: a region too narrow to draw at this zoom. Whole-genome on
-         *   a real assembly is mostly these — hg38 has 455 sequences and all
-         *   but the 24 chromosomes land sub-pixel — so a host that skips them
-         *   renders that tail as nothing at all.
+         *   a real assembly is mostly these (hg38 has 455 sequences, and all
+         *   but the 24 chromosomes are under a pixel wide), so a host that
+         *   skips them leaves that part of the row empty.
          * - `boundary`: past the start of the first region or the end of the
-         *   last. Greying it is what makes the last region's seam read as the
-         *   edge of a filled area rather than a rule floating in the track.
+         *   last. Greying it shows the last region's seam as the edge of a
+         *   filled area, where it would otherwise look like a line in the
+         *   middle of the track.
          *
          * Elided blocks get no seam even though they carry the flag: at the
-         * zoom where regions elide, one bar per region is a solid grey wall.
+         * zoom where regions elide, one bar per region would fill the row solid
+         * grey.
          *
-         * PaddingBlocks is the in-tree consumer. The SVG export is deliberately
-         * NOT one: `SVGRegionSeparators` walks dynamicBlocks itself and draws
-         * only the seam, because `elided` and `boundary` are chrome for an
-         * interactive row rather than information a figure carries — striped
-         * grey saying "regions here are too narrow to draw" is noise in a
-         * static image, and at whole-genome zoom it would be most of the row.
-         * The seam is the one that must survive: regions lay out contiguously,
-         * so it is all that separates two of them.
+         * PaddingBlocks is the in-tree consumer. The SVG export does not use
+         * it: `SVGRegionSeparators` walks dynamicBlocks itself and draws only
+         * the seam, because `elided` and `boundary` mark state for an
+         * interactive row. In a static figure the striped grey would cover most
+         * of the row at whole-genome zoom. The export keeps the seam because
+         * regions lay out contiguously and the seam is all that separates two
+         * of them.
          */
         // Annotated with the shape spelled out rather than as `PaddingSpan`,
         // because the API doc's type column is where a host drawing its own
@@ -2357,8 +2357,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * viewport. False both when the view holds no regions at all and when
          * it holds some but is scrolled entirely off them; either way there is
          * no visible span for the scalebar, ruler and refName labels to
-         * describe, which is what the SVG export's header checks before drawing
-         * one. Distinct from `hasDisplayedRegions`, which only asks whether the
+         * describe. The SVG export checks it before drawing its header.
+         * Distinct from `hasDisplayedRegions`, which only asks whether the
          * view has been given regions, not whether any are on screen.
          */
         get hasVisibleContent() {
@@ -2465,23 +2465,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #getter
-         * **What a debounced consumer clips to**: the coarse blocks once the
-         * view has settled at least once, the live ones before that.
+         * **The blocks a debounced consumer clips to**: the coarse blocks once
+         * the view has settled at least once, the live ones before that.
          *
-         * The coarse blocks exist so a per-bp scan does not recompute on every
-         * animation frame during a pan or zoom — wiggle's autoscale domain, the
-         * alignments coverage scale and MAF's coverage band are the three — and
-         * while they are stale
-         * the answer is merely a frame or two old, which is what the debounce
-         * means. **Empty is different in kind.** A scan over no blocks yields no
-         * entries, and no entries is not a stale domain, it is the fallback one:
-         * `[0,1]`, which draws a line plot blank and a density plot saturated.
-         * That window is the 500ms between a view initializing and the coarse
-         * autorun's first run, and data can now land inside it — the per-region
-         * fetch used to be trailing-edge at 600ms, so it never did.
+         * The coarse blocks stop a per-bp scan from recomputing on every
+         * animation frame during a pan or zoom. Wiggle's autoscale domain, the
+         * alignments coverage scale and MAF's coverage band use them. While the
+         * coarse blocks are stale the result is a frame or two old, as the
+         * debounce intends. **Empty coarse blocks are a different case.** A scan
+         * over no blocks yields no entries, and the consumer falls back to the
+         * domain `[0,1]`, which draws a line plot blank and a density plot
+         * saturated. The coarse blocks are empty for the 500ms between a view
+         * initializing and the coarse autorun's first run, and data can load
+         * within that window.
          *
-         * One recompute at that transition, against N per frame, which is the
-         * trade the guard was making anyway.
+         * Falling back to the live blocks costs one extra recompute at that
+         * transition, compared with N per frame without the debounce.
          */
         get settledDynamicBlocks(): ContentBlock[] {
           return self.coarseDynamicBlocks.length
@@ -3170,21 +3169,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #action
-       * Travel to a window rather than appear in it: the Van Wijk arc from
-       * where the view is to where it is going, played over its own duration.
+       * Animate to a window along the Van Wijk arc from the current window to
+       * the target, over a duration derived from the arc.
        *
-       * WHAT LANDS IS WHAT `setWindow` WOULD HAVE LANDED — only the path in
-       * between is new. That is what lets a caller offer an Undo, a snackbar or
-       * a follow anchor around this exactly as it did around the instant move.
+       * The final state is the one `setWindow` would produce; only the path in
+       * between differs. A caller can therefore offer an Undo, a snackbar or a
+       * follow anchor around this exactly as around the instant move.
        *
-       * It YIELDS to anything else that moves the view, by reading back what it
-       * wrote and stopping the moment the view holds something else: a wheel
-       * zoom, a drag, a locstring nav, or the Undo on the very snackbar the
-       * flight was launched with. Compared against what was WRITTEN rather than
-       * what was asked for, because the write clamps — an arc that pulls back
-       * past `maxBpPerPx` reads its own clamped result back, and treating that
-       * as interference would end the flight one frame in. `springAnimate`
-       * defends the same value the same way.
+       * The flight stops when anything else moves the view: it reads back what
+       * it wrote and stops as soon as the view holds something else, such as a
+       * wheel zoom, a drag, a locstring nav, or the Undo on the snackbar the
+       * flight was launched with. It compares against the written value, not
+       * the requested one, because the write clamps: an arc that pulls back
+       * past `maxBpPerPx` reads back its clamped result, and treating that as
+       * interference would end the flight after one frame. `springAnimate`
+       * handles the same value the same way.
        */
       function flyTo(centerBp: number, windowWidthBp: number) {
         cancelLastFlight()

@@ -9,7 +9,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  *
  * The warning rows are the display's own `ComparativeWarning`, so a field added
  * there is a compile error at each surface that tabulates them rather than a
- * column silently dropped.
+ * column missing from the table.
  */
 export interface TrackWarning {
   name: string
@@ -26,8 +26,8 @@ export interface TrackWarning {
  * views' real displays.
  *
  * Its config is pinned to `BaseTrackConfig` rather than left at
- * `AnyConfigurationModel`, which is what makes the `name` read below checked
- * instead of `any` (and is why it needs no `as string`). Safe to pin here for the
+ * `AnyConfigurationModel`, so the `name` read below is checked instead of
+ * `any` (and is why it needs no `as string`). Safe to pin here for the
  * reason core/configuration/CLAUDE.md gives for *not* pinning a shared base in
  * general: the caution is against a consumer that reads its own non-shared slots
  * through the base, and `name` is a base track slot. A subclass track schema
@@ -51,8 +51,7 @@ export interface WarningSource extends IStateTreeNode {
  * of a selection drag.
  *
  * Displays that raised nothing are dropped, so the result is empty exactly when
- * there is nothing to report — which is what both views gate their affordance
- * on.
+ * there is nothing to report, and both views gate their affordance on that.
  *
  * Pass the type-filtered display list (`dotplotDisplays`,
  * `allSyntenyDisplays`), never `tracks[i].displays[0]`: those lists are not

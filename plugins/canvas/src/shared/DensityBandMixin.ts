@@ -77,8 +77,8 @@ export default function DensityBandMixin() {
       .views(self => ({
         /**
          * #getter
-         * The band's line of text with no cursor over it, which is what the SVG
-         * export writes.
+         * The band's line of text with no cursor over it. The SVG export writes
+         * this text.
          */
         get densityPeakReadout() {
           return densityBandReadout(self.densityBandLayer, undefined)

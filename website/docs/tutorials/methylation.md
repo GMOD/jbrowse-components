@@ -96,7 +96,7 @@ tabix -p bed output.bedmethyl.gz
 `--preset traditional` collapses 5mC and 5hmC into a single 5mC fraction
 (bisulfite-equivalent). Omit it to keep separate rows per modification type (`m`
 for 5mC, `h` for 5hmC). Passing `--partition-tag HP` writes one file per
-haplotype, which is what this dataset uses.
+haplotype, and this dataset uses it.
 
 Because bedMethyl is a BED file with a numeric score column, it loads through a
 `BedTabixAdapter` in a `MultiQuantitativeTrack` (see the

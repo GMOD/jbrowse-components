@@ -260,6 +260,10 @@ const VALIDATORS: Validator[] = [
     argv: web('check-captions.ts', '--check'),
   },
   {
+    name: 'no new "which is what" clefts or "silently" in hand-written docs',
+    argv: web('check-writing-tropes.ts', '--check'),
+  },
+  {
     // Same ratchet shape, guarding what a scheduled figure sweep will fetch:
     // `--check` fails when a spec newly points at a server we do not run.
     name: 'no new third-party hosts in figure specs',

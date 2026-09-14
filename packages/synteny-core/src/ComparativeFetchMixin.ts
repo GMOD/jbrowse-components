@@ -19,11 +19,10 @@ import { types } from '@jbrowse/mobx-state-tree'
  * `FetchMixin` member the overlay reads — `fetching` for `isLoading`, its own
  * `reloadCounter` / `fetchCanceled` / `reload` / `cancelFetchByUser`, a stop
  * handed back from the installer because the rotation lived there — kept apart
- * on the grounds ADR-054 gives and ADR-105 retires. `error` is what kept the
- * four flags below out of that mixin: it is a `BaseDisplay` volatile the flags
- * read, and declaring a second one to make them type-check is the ADR-041
+ * on the grounds ADR-054 gives and ADR-105 retires. `error` kept the four flags
+ * below out of that mixin: it is a `BaseDisplay` volatile the flags read, and declaring a second one to make them type-check is the ADR-041
  * hazard. `FetchMixin` is the one declaration site that already wins that
- * compose, so composing it is what lets the flags be getters here.
+ * compose, so composing it lets the flags be getters here.
  *
  * `loading` and `refetching` are different questions, and the difference
  * decides whether the user gets a full overlay or a corner chip
@@ -50,12 +49,12 @@ export function ComparativeFetchMixin() {
        * present, even if it mapped zero features. Not a feature-count test —
        * an empty-but-finished fetch has landed, or an empty plot spins its
        * overlay forever. Each display answers off its own payload field, which
-       * survives a `reload()` where `loadedFetchKey` does not: that is what
-       * keeps a retry on the corner chip rather than the full overlay.
+       * survives a `reload()` where `loadedFetchKey` does not, so a retry
+       * shows the corner chip rather than the full overlay.
        *
        * Default false is the strict answer — a display that forgets the
        * override shows its first-load overlay forever (diagnosable) rather
-       * than reporting done over nothing (silently wrong).
+       * than reporting done over an empty plot.
        */
       get fetchLanded(): boolean {
         return false
@@ -133,8 +132,8 @@ export function ComparativeFetchMixin() {
  * lists it: what happened, and what it means for the plot on screen. Named here
  * rather than spelled inline at each of the three places that had it (the
  * display's held list, the swap warning below, the dialog's row type), so a
- * field added to one is a type error at the others rather than a silently
- * dropped column.
+ * field added to one is a type error at the others rather than a column
+ * missing from the dialog.
  */
 export interface ComparativeWarning {
   message: string

@@ -206,8 +206,7 @@ export function syntenyLaneFields(lane: SyntenyLaneSpec) {
  * lane, the lane's own sentinel behind it, the same first-seen dictionary
  * interning the worker uses. The test harness's `packSyntenyFeatureData` is
  * the caller — a new lane in the table fails its typecheck until a reader is
- * supplied, which is what keeps the harness from drifting off production
- * again.
+ * supplied, so the harness stays in step with production.
  */
 export function packSyntenyLanes<Item>(
   items: readonly Item[],

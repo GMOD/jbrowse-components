@@ -87,11 +87,10 @@ JBrowse 2 equivalent leaves a placeholder track naming it. Check the result with
 
 :::caution Gotcha
 
-A connection config is only a pointer: the hub's track list is fetched when the
-connection loads and held in memory, and is **not** written into a saved or
-shared session. Only a track you actually open is stored (under
-`connectionTrackConfigs`, keyed by `trackId`), so a shared session stays small
-even against a very large hub.
+JBrowse fetches the hub's track list when the connection loads and holds it in
+memory, and does **not** write it into a saved or shared session. The session
+stores only the tracks you open (under `connectionTrackConfigs`, keyed by
+`trackId`), so a shared session stays small even for a very large hub.
 
 :::
 

@@ -19,8 +19,8 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
  * #fileFormat synteny | PAF | Loaded entirely into memory; convert to PIF for large alignments
  * #gotcha `assemblyNames` is `[query, target]`, which is the **reverse** of
  * the order minimap2 and nucmer take their inputs (`minimap2 target.fa
- * query.fa`). Getting it backwards silently draws every alignment against
- * the wrong assembly rather than erroring. Set the named `queryAssembly` and
+ * query.fa`). Getting it backwards draws every alignment against the wrong
+ * assembly, and the adapter raises no error. Set the named `queryAssembly` and
  * `targetAssembly` fields instead and the ordering can't be misread.
  *
  * #example

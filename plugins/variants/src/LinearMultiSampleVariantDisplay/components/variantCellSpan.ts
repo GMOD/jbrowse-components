@@ -17,20 +17,18 @@ export const MAX_INSERTION_MARKER_WIDTH_PX = textWidthForNumber(99999)
  * (`shaders/variant.slang`) and `cellMark`. An insertion is the
  * exception: it consumes no reference, so `VariantInsertionGlyphOverlay` widens
  * alt-carrying cells to a marker sized by the inserted bp, centered on the
- * locus. Returning the union here is what keeps the drawn glyph, the hover
- * highlight, and the click target from disagreeing — a 40px insertion marker
- * used to respond only within 5px of its locus.
+ * locus. Returning the union here keeps the drawn glyph, the hover highlight
+ * and the click target the same width, so a 40px insertion marker responds
+ * across its whole 40px.
  *
- * **`insertionsWiden` is `showInsertionGlyphs`, and it has no default on
- * purpose.** That setting is what decides whether an insertion is a marker at
- * all or is drawn at the 2px floor like a SNP, and it is the display's answer,
- * not this function's — so every caller states it. It had a default of "yes"
- * implicitly, by nobody asking, and every caller that is not the marker painter
- * inherited it: with glyphs switched off the cells and the GPU pass drew a 2px
- * SNP while the callers here drew a 40px bar, the hover box covered 40px of
- * nothing, and a click 20px clear of the cell still selected it.
- * The one place `false` is a tautology rather than a setting is
- * `markersForBlock`, because a marker is the widening.
+ * **`insertionsWiden` is `showInsertionGlyphs`, and it has no default.** The
+ * display setting decides whether an insertion is a marker at all or is drawn
+ * at the 2px floor like a SNP, so every caller states it. With a default of
+ * "yes", a caller other than the marker painter would disagree with the
+ * painter whenever glyphs are switched off: the cells and the GPU pass draw a
+ * 2px SNP while that caller measures a 40px bar, the hover box covers 40px of
+ * nothing, and a click 20px clear of the cell still selects it.
+ * `markersForBlock` always passes `true`, because a marker is the widening.
  *
  * `insertedBp` of 0 (every SNP and deletion) short-circuits to the plain span.
  */

@@ -259,12 +259,12 @@ export default function MultiRegionDisplayMixin() {
          * beside every region the call loads. A display that fills this leaves
          * `zoomFetchKey` alone; the foundation prefers this when it exists.
          *
-         * One declaration instead of two is the whole of it. The key and the
-         * argument are the same fact, and writing them apart is what lets them
-         * disagree — a `zoomFetchKey` that reads no observable is memoized for
-         * the display's life while the call goes on sending a live value, and
-         * a key naming a threshold while the call sends the mode behind it
-         * says stale on a crossing the worker never sees.
+         * The key and the argument are the same fact, and declaring them
+         * separately lets them disagree. A `zoomFetchKey` that reads no
+         * observable is memoized for the display's life while the call goes on
+         * sending a live value, and a key naming a threshold while the call
+         * sends the mode behind it marks the data stale on a crossing the
+         * worker never sees.
          *
          * Looked up dynamically rather than declared, so a display keeps its
          * narrow return type through MST's `.views()` chain — the same reason
@@ -505,9 +505,9 @@ export default function MultiRegionDisplayMixin() {
          * what is on screen right now. Four terms — spatial coverage of every
          * visible block, `loadedRegions.size` to rule out the vacuously-true
          * empty viewport, `isCacheValid` per block, and the display's own
-         * `dataSuperseded`. Regions stream in one at a time, so this (not "the
-         * first datum arrived") is what keeps a multi-region/whole-genome export
-         * complete.
+         * `dataSuperseded`. Regions stream in one at a time, so a
+         * multi-region/whole-genome export waits on this getter to be complete;
+         * waiting on the first datum to arrive would export a partial set.
          *
          * **`isCacheValid` belongs here and not in the scrim.** Coverage answers
          * "is the data here", never "is it what a fetch now would bring back", so
@@ -542,17 +542,17 @@ export default function MultiRegionDisplayMixin() {
          * The assembly the data in hand came from, once it can answer about
          * refNames — `undefined` before that.
          *
-         * Off the first LOADED region rather than the view's displayed ones,
-         * which is the distinction that makes it belong here: a display holding
-         * fetched data is asking about the assembly THAT data is on, and the
-         * view's regions can already have moved on.
+         * Read off the first LOADED region rather than the view's displayed
+         * ones, and defined here for that reason: a display holding fetched
+         * data is asking about the assembly THAT data is on, and the view's
+         * regions can already have moved on.
          *
          * The `initialized` gate is why this returns the assembly rather than
          * its name. `getCanonicalRefName2` and `refNameToIndex` answer WRONGLY
          * rather than throwing before the aliases land — identity, and a miss —
          * so a caller that skips the gate gets a plausible answer and no signal.
-         * Handing back `undefined` until it can answer is what makes the caller
-         * write its fallback.
+         * Returning `undefined` until the aliases load forces the caller to write
+         * its fallback.
          */
         get loadedAssembly(): Assembly | undefined {
           const firstRegion = self.loadedRegions.values().next().value
@@ -649,9 +649,9 @@ export default function MultiRegionDisplayMixin() {
         /**
          * #action
          * The raw write behind `ctx.commitRegion`, and **not what a fetch should
-         * call**: a display naming its own span is the bug this family spent a
-         * release on, and going through the context is what makes that
-         * inexpressible — see {@link RegionFetchContext}. Direct callers are
+         * call**. A display naming its span itself is the bug this family spent
+         * a release fixing, and the context gives a fetch no way to express it
+         * — see {@link RegionFetchContext}. Direct callers are
          * tests staging an already-loaded display.
          *
          * The payload is named on every call, `undefined` included: this write
@@ -692,10 +692,10 @@ export default function MultiRegionDisplayMixin() {
          * One rule for every display, where canvas hand-rolled
          * `pruneRpcDataMapToVisible` (prune to the buffer on every fetch) and
          * every other display had no bound at all beyond
-         * `displayedRegions.length` — which is the contig count, so a
-         * fragmented assembly had none worth the name. The cap is what lets a
-         * pan back onto a recently-visited region draw immediately, which the
-         * prune-to-buffer rule gave up.
+         * `displayedRegions.length`. That count is the contig count, so a
+         * fragmented assembly was effectively unbounded. The cap lets a pan back
+         * onto a recently-visited region draw immediately, which the
+         * prune-to-buffer rule did not.
          */
         evictRegionStore(keep: ReadonlySet<number>) {
           let over = self.loadedRegions.size - MAX_STORED_REGIONS
@@ -793,11 +793,11 @@ export default function MultiRegionDisplayMixin() {
            * An override must reach this counter, by chaining to super or by
            * bumping it. Missing it doesn't break the retry, which the
            * `clearAllRpcData` call drives; it turns the retry contract check off
-           * for that display, silently. Both overrides in the tree chain now —
-           * `MultiSampleVariantBaseModel` always did, canvas's `LinearBasicDisplay`
-           * did not, and that took `LinearVariantDisplay` with it — and
-           * `reloadReachesCounter.test.ts` reads every `reload()` in the tree
-           * rather than leaving the next one to this paragraph.
+           * for that display, and the display still looks healthy. Both
+           * overrides in the tree chain: `MultiSampleVariantBaseModel` and canvas's
+           * `LinearBasicDisplay`, which `LinearVariantDisplay` inherits.
+           * `reloadReachesCounter.test.ts` reads every `reload()` in the tree to
+           * catch the next override that misses the counter.
            */
           reload() {
             superReload()

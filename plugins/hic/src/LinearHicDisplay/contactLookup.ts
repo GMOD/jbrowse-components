@@ -184,10 +184,8 @@ function runAt(pairRuns: RegionPairRun[], i: number) {
  * it. Bounds are clamped rather than guarded: a cursor left of or below the
  * grid gives an empty range and scans nothing.
  *
- * A candidate has to pass both its own cell rectangle and the bin comparison,
- * which is what the hash this replaced also required — there the key first and
- * the rectangle as the collision filter, here the other way round, because the
- * hash arrived at one slot and a tile hands over a neighbourhood. The rectangle
+ * A candidate has to pass both its cell rectangle and the bin comparison. The
+ * rectangle runs first because a tile hands over a neighbourhood of candidates. The rectangle
  * is four float compares off values already loaded and rejects all but the one
  * cell that can contain the point, so the run lookup and the bin recovery are
  * paid once rather than per candidate.
@@ -282,8 +280,8 @@ function probe(
  * Bucket a pre-rotation data-x coordinate into a region index. Returns the last
  * region whose `dataXStart` is ≤ `u`, clamping to region 0 for coordinates left
  * of the first region — so a cursor in a gap between two regions (an elided
- * region, or padding) reads as the region on its left, which is what the probe
- * below then fails to match on, yielding no contact.
+ * region, or padding) reads as the region on its left. The probe below then
+ * finds no contact matching that region, and returns none.
  */
 function findRegion(regions: HicResultRegion[], u: number) {
   for (let i = regions.length - 1; i > 0; i--) {

@@ -489,31 +489,29 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          * config.json every visitor is served; everyone else's goes to
          * `sessionTracks`.
          *
-         * **Only the "Add track" workflows.** Those are where an admin adding a
-         * track means to add it for the whole site. A track a feature stands up
-         * on the user's behalf — a search result, a computed consensus, a
-         * reconstruction's segment labels — is not a catalog entry, and one
-         * admin click on this publishes it to every visitor, again on the next
-         * click, with a per-launch trackId that defeats the dedupe.
-         * `addSessionTrackConf` above is the destination for those.
+         * **Call it only from the "Add track" workflows**, where an admin
+         * adding a track means to add it for the whole site. For a track a
+         * feature creates on the user's behalf (a search result, a computed
+         * consensus, a reconstruction's segment labels), one admin click on
+         * this publishes it to every visitor, and each later click publishes
+         * another copy, because the per-launch trackId prevents deduplication.
+         * Use `addSessionTrackConf` above for those.
          *
          * An admin's track still goes to the session when it names an assembly
-         * the config.json does not carry — a session spec's, a MAF sample's own
-         * genome, a comparative view's synthesized pair. The Add-track widget
-         * takes its assembly from the containing view, so an admin adding a
-         * track while looking at one of those arrives here with a name no
-         * visitor can resolve, and publishing it writes an entry the server
-         * hands everyone and nobody can draw. The session is the one
-         * destination where that track works, so the click keeps working and
-         * the dangling entry is never written; a snackbar says which assembly
-         * moved it.
+         * the config.json does not carry: a session spec's assembly, a MAF
+         * sample's genome, or a comparative view's synthesized pair. The
+         * Add-track widget takes its assembly from the containing view, so an
+         * admin adding a track in such a view passes a name no visitor can
+         * resolve. Publishing it would write an entry the server sends to every
+         * visitor and no visitor can draw. Adding it to the session keeps the
+         * track usable and writes no dangling entry; a snackbar names the
+         * assembly that caused the fallback.
          *
-         * **The snackbar names the assembly and not the track**, which is what
-         * lets a batch collapse to one message: `pushSnackbarMessage` dedupes on
-         * the exact text, and `BulkAddTracksWorkflow` publishes in a loop, so
-         * interpolating the track name stacked one identical-but-for-a-name
-         * toast per file over an admin adding thirty. The assembly is the whole
-         * of what an admin has to act on anyway.
+         * **The snackbar names the assembly and not the track**, so a batch
+         * produces one message: `pushSnackbarMessage` dedupes on the exact
+         * text, and `BulkAddTracksWorkflow` publishes in a loop. Including the
+         * track name would show one snackbar per file to an admin adding
+         * thirty. The assembly is all the admin needs to act on.
          */
         publishTrackConf(trackConf: AnyConfiguration) {
           if (!self.adminMode) {

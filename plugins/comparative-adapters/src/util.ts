@@ -253,15 +253,15 @@ export async function resolvePanSNQuery({
  * all-vs-all it is being read as: reference-anchored alignments are the norm
  * (HPRC publishes 465 haplotypes vs GRCh38 alongside the complete all-vs-all),
  * and every pair not involving that reference is absent. Same reason it throws
- * rather than returning empty — the band would otherwise draw nothing and say
- * nothing, which is exactly what a locus with no homology looks like.
+ * rather than returning empty: an empty band looks the same as a locus with no
+ * homology.
  *
- * The remedies are all upstream, which is why none of them is a JBrowse command.
+ * The remedies are all upstream, so none of them is a JBrowse command.
  * Ordering the rows so the shared reference sits between the two assemblies uses
  * the pairs the file does have; a project publishing a complete all-vs-all
  * (HPRC's `hprc25272.aln.paf.gz`) has the missing pairs already; and a cohort
  * larger than three rows is a multiple alignment rather than a stack of pairwise
- * bands, which is what MAF tracks are for.
+ * bands, and MAF tracks display those.
  */
 export function noSuchPairError({
   assemblyName,
@@ -790,8 +790,8 @@ function containedFraction(
  * stated twice. Reciprocal alignments are the same aligner run from either end,
  * so they agree to within a few bases over hundreds of kb — the E. coli wfmash
  * pair that prompted this differs by 4 bp on one side and 513 on the other,
- * over 134 kb. Nothing short of near-containment on both sides qualifies, which
- * is what keeps real paralogy (same pair of contigs, different loci) out of it.
+ * over 134 kb. Only near-containment on both sides qualifies, which keeps real
+ * paralogy (same pair of contigs, different loci) out of it.
  */
 const RECIPROCAL_OVERLAP = 0.9
 
@@ -799,8 +799,8 @@ const RECIPROCAL_OVERLAP = 0.9
  * How far two sides' ref-to-mate offsets may differ at the end they share, in
  * bp, and still be one homology. Capped rather than purely proportional: the
  * agreement is a property of the boundary, not of the block, so a longer
- * alignment does not license a looser one. The fraction is what keeps the cap
- * from swallowing short blocks — two 500 bp alignments nested in each other 800
+ * alignment does not license a looser one. The fraction keeps the cap from
+ * swallowing short blocks — two 500 bp alignments nested in each other 800
  * bp off the diagonal are two alignments.
  */
 const BOUNDARY_SLACK_BP = 1000
@@ -817,8 +817,8 @@ const BOUNDARY_SLACK_FRACTION = 0.02
  * block the two passes drift ~12 kb apart in the middle while agreeing to
  * within 40 bp at the shared end.
  *
- * **ORIENTATION IS PART OF THE TEST, and getting it wrong is invisible except
- * in an inversion.** The offsets above only cancel when the two sequences run
+ * **ORIENTATION IS PART OF THE TEST, and getting it wrong shows only in an
+ * inversion.** The offsets above only cancel when the two sequences run
  * the same way. On a reverse-strand alignment the anchor's low end is the
  * mate's HIGH end, so a fragment that starts 10 kb into its parent ends 10 kb
  * short of the parent's `mateEnd` and has a `mateStart` belonging to the
@@ -831,8 +831,8 @@ const BOUNDARY_SLACK_FRACTION = 0.02
  * three coats — "there are still darker-than-normal lines in the last row of
  * inversion".
  *
- * A side with no `strand` is read as forward, which is what every caller that
- * does not set it already assumed.
+ * A side with no `strand` is read as forward, as every caller that does not set
+ * it already assumed.
  */
 function sharesBoundary(a: AlignedSide, b: AlignedSide) {
   // Two sides that disagree about orientation are not one homology however
@@ -857,7 +857,7 @@ function sharesBoundary(a: AlignedSide, b: AlignedSide) {
   )
 }
 
-/** How much of the anchor a side covers, which is what decides a tie. */
+/** How much of the anchor a side covers, which decides a tie. */
 function refSpan(a: AlignedSide) {
   return a.end - a.start
 }
@@ -968,8 +968,8 @@ function cmpSide(a: AlignedSide, b: AlignedSide) {
  * K12, NCTC86 and Sakai, plus NCTC86/Sakai); the six pairs with no reversed
  * side are byte-identical. On `pangenome/pggb_synteny` the inverted band's
  * double-coated red area went 8.32% -> 2.95% and its triple-coated area 1% ->
- * 0, with the three collinear bands unmoved. What is left is ribbons genuinely
- * crossing each other at the inversion, which is what alpha is for.
+ * 0, with the three collinear bands unmoved. The remaining overlap is ribbons
+ * crossing each other at the inversion, and alpha blending shows those.
  *
  * Returns a mask parallel to `sides`: true where that side restates another in
  * its contig pair.
@@ -1066,8 +1066,7 @@ export function resolveCoarseTier({
  * reach the tooltip and the feature-detail card.
  *
  * A loop rather than the `{...known, ...rest, ...more}` spread both feature
- * builders used to write. A spread in the MIDDLE of an object literal is what
- * costs: V8 cannot give the literal a static hidden class, so every field after
+ * builders used to write. A spread in the MIDDLE of an object literal is slow: V8 cannot give the literal a static hidden class, so every field after
  * the spread is added dynamically, once per feature. Building the whole literal
  * statically and copying the tags on afterwards is worth another 1.4-1.8x on top
  * of the tab-offset parse (`benches/pafLineParse.bench.ts`), which makes it the
@@ -1080,7 +1079,7 @@ export function resolveCoarseTier({
  * itself "0.98".
  *
  * A tag colliding with a field already set is dropped rather than overwriting
- * it, which is what listing those fields after the spread did.
+ * it, as listing those fields after the spread did.
  */
 export function copyPafTags(
   data: SimpleFeatureSerialized,

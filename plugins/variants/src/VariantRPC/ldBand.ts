@@ -1,14 +1,13 @@
 /**
  * The LD matrix is stored banded: a pair (i, j), i > j, is computed and stored
  * only when its separation `i - j` is at most `k`. Pairs further apart are not
- * stored at all, which is what turns the matrix from `n²/2` cells into `n·k`
- * and so makes the cost linear in the SNP count rather than quadratic. It is
- * the same window plink means by `--ld-window`, and a deliberate statement that
- * pairs past `k` are not shown, not an invisible optimization: both LD display
- * modes draw every cell they are given.
+ * stored at all, so the matrix holds `n·k` cells instead of `n²/2` and the cost
+ * is linear in the SNP count. The band is the same window plink means by
+ * `--ld-window`, and pairs past `k` are not shown: both LD display modes draw
+ * every cell they are given.
  *
  * Rows are ragged — row `i` holds `min(i, k)` entries, its `j` running over
- * `[lo(i), i)`. That raggedness is the point: **at `k >= n - 1` the band covers
+ * `[lo(i), i)`. **At `k >= n - 1` the ragged band covers
  * the whole triangle, `lo` collapses to 0 and `rowStart` to `i*(i-1)/2`, so the
  * layout is bit-identical to the unbanded one it generalizes.** The unwindowed
  * path therefore keeps today's exact indices, and there is no second layout for
@@ -47,7 +46,7 @@ export function bandRowStart(i: number, k: number) {
  * here, because this is the one function in the family the kernel also computes:
  * it decides how many cells the dispatch writes, and a host that disagreed would
  * size its buffer differently from the shader filling it. `//! js-export`
- * (adr-051) is what stops the two spellings drifting. The rest of the family is
+ * (adr-051) generates both spellings from the one source. The rest of the family is
  * CPU-only — the shader decodes with `decodeBanded` instead, which returns a
  * uint2 and so is outside the emitter's scalar subset.
  */
@@ -55,9 +54,9 @@ export const bandCellCount = bandedCellCount
 
 /**
  * The window actually used for `n` SNPs. `maxVariantSeparation` is the config
- * slot, 0 meaning unlimited; clamping to `n - 1` is what makes the collapse
- * above exact rather than merely equivalent, so an unbanded run indexes through
- * the same arithmetic as a banded one.
+ * slot, 0 meaning unlimited. Clamping to `n - 1` makes the collapse above
+ * exact, so an unbanded run indexes through the same arithmetic as a banded
+ * one.
  */
 export function resolveBand(n: number, maxVariantSeparation: number) {
   const full = n > 0 ? n - 1 : 0

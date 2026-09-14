@@ -5,11 +5,11 @@ import type { Region } from '@jbrowse/core/util'
  * each region drawn from its last base to its first.
  *
  * Chords between two arcs never cross when one side's coordinate rises with the
- * angle and the other's falls, so this is what a two-genome circle needs on top
- * of the linear reorder `diagonalizeRegions` answers with. ADR-121.
+ * angle and the other's falls, so a two-genome circle needs this on top of the
+ * linear reorder `diagonalizeRegions` answers with. ADR-121.
  *
- * An involution, which is what lets the reorder mirror the circle's regions back
- * into linear order, ask, and mirror the answer forward again.
+ * An involution, so the reorder can mirror the circle's regions back into
+ * linear order, ask, and mirror the answer forward again.
  */
 export function mirrorRegionsForCircle(regions: Region[]): Region[] {
   return regions.map(r => ({ ...r, reversed: !r.reversed })).reverse()

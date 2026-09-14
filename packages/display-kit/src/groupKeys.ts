@@ -57,8 +57,8 @@ export function overflowLabel(count: number) {
  * section. The catch-all `''` is held out of the merge and re-pinned ahead of
  * the overflow bucket, since "lacking the value" is a distinct answer users
  * look for and it sorts into the very tail this merges. Two callers with the
- * same key set get the same answer, which is what lets a layout and a reading
- * of that layout agree on the sections without sharing state.
+ * same key set get the same answer, so a layout and a reading of that layout
+ * agree on the sections without sharing state.
  */
 export function capGroupKeys(keys: Iterable<string>) {
   const ordered = [...new Set(keys)].sort(compareGroupKeys)

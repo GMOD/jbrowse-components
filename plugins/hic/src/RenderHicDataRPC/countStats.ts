@@ -88,16 +88,16 @@ function selectNth(a: Float32Array, n: number, k: number) {
  * to take — and this needs its own copy regardless (selection permutes its
  * input), so the compaction pass below doubles as the gather.
  *
- * Filtering non-finites is not tidiness. NaN is the `.hic` dense-block "no
- * value" marker and a tiny normalization divisor yields Infinity, and both
- * propagate: `Math.max(colorMaxScore, …)` in the shader and in `mapHicCount`
- * turns a single NaN into a NaN color for *every* bin, and the legend silently
- * disappears (`colorScales` reads `NaN > 0`). Scoring off the finite subset
+ * NaN is the `.hic` dense-block "no value" marker and a tiny normalization
+ * divisor yields Infinity, and both propagate: `Math.max(colorMaxScore, …)` in
+ * the shader and in `mapHicCount` turns a single NaN into a NaN color for
+ * *every* bin, and the legend disappears (`colorScales` reads `NaN > 0` as
+ * false). Scoring off the finite subset
  * keeps the damage to the offending bin. Both returned values are 0 when
  * nothing is finite.
  *
  * The compaction is written as an explicit loop rather than
- * `counts.filter(Number.isFinite)`, and that is the larger half of the win:
+ * `counts.filter(Number.isFinite)`, which accounts for most of the speedup:
  * `TypedArray.prototype.filter` with a callback measured ~1.6s on 4.5M values
  * against ~60ms for this loop. It also doubles as the copy selection needs (it
  * permutes its input) and as the max scan, so the whole statistic is one linear

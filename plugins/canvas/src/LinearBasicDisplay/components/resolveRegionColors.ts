@@ -12,8 +12,8 @@ import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 
 /**
  * The worker has no palette, so it ships themed colors as classes with a zero
- * color lane and the main thread fills them in — which is what lets a light/dark
- * toggle re-encode the loaded regions instead of refetching them. An unthemed
+ * color lane and the main thread fills them in, so a light/dark toggle
+ * re-encodes the loaded regions without refetching them. An unthemed
  * region comes back by reference, because the upload diff compares by reference.
  */
 export function resolveRegionColors(

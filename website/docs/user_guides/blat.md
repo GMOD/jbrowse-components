@@ -28,12 +28,12 @@ A query adds the track and shows you the list, leaving the view where it was.
 Which hit matters is yours to decide, and the top-scoring one is not always it.
 
 The track is an alignments track. A PSL hit is a list of aligned blocks in query
-and target coordinates, which is what a CIGAR encodes, so each hit is drawn the
-way a read is: blocks as aligned runs, a target gap as a deletion, a query gap
-as an insertion, and the unaligned ends of the query as soft clips. Because the
-sequence you submitted is known, the hit also carries it, and the pileup marks
-every base that disagrees with the reference, so a hit that is your sequence can
-be told from one that only scores well.
+and target coordinates, the same information a CIGAR encodes, so each hit is
+drawn the way a read is: blocks as aligned runs, a target gap as a deletion, a
+query gap as an insertion, and the unaligned ends of the query as soft clips.
+Because the sequence you submitted is known, the hit also carries it, and the
+pileup marks every base that disagrees with the reference, so a hit that is your
+sequence can be told from one that only scores well.
 
 BLAT returns every placement of a query. The best-scoring one is primary and the
 rest are marked secondary, so competing mappings of one sequence stay off the

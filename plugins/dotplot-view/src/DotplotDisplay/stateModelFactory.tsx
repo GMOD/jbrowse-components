@@ -285,8 +285,7 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * The hovered feature redrawn over the canvas: an SVG path of its segments
        * in plot px, plus its own packed color as CSS.
        *
-       * This is the whole of the hover shading, and it deliberately isn't in
-       * either renderer. Synteny boosts alpha and darkens rgb per fragment from
+       * The hover shading is entirely this getter; neither renderer draws it. Synteny boosts alpha and darkens rgb per fragment from
        * a `hoveredFeatureId` uniform, which costs an instance lane, a uniform, a
        * hand-written Canvas2D twin of the same arithmetic, and a broken color
        * run in `drawDotplotInstances`' batcher. Restroking one feature — a
@@ -303,8 +302,8 @@ export function stateModelFactory(configSchema: DotplotDisplayConfigSchema) {
        * the chromosome modes, and red/blue/black are the strand and default
        * schemes.
        *
-       * Recomputes on pan (through `plotTransform`'s `viewBpH`/`viewBpV`), which
-       * is what keeps the highlight on its feature, and only while something is
+       * Recomputes on pan (through `plotTransform`'s `viewBpH`/`viewBpV`), so
+       * the highlight stays on its feature, and only while something is
        * hovered. `plotTransform` rather than `dotplotRenderState`, which carries
        * `alpha` and `lineWidth` too — an opacity drag would rebuild this path
        * once a frame for a value it does not read.

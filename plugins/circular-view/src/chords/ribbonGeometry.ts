@@ -27,13 +27,13 @@ export interface RibbonSide {
 /**
  * A ribbon side's two angles, IN GENOMIC ORDER: `start` is where the span's
  * first base sits and `end` where its last does, so on a reversed slice `start`
- * is the larger of the two. Keeping the direction is what makes a mirrored
- * genome's ribbons read right — sorted low-to-high, a forward alignment onto a
+ * is the larger of the two. Keeping the direction draws a mirrored genome's
+ * ribbons correctly — sorted low-to-high, a forward alignment onto a
  * reversed slice drew untwisted and an inversion drew as if it were forward.
  *
  * The span is floored at {@link minRibbonEndPx}, grown about where it sits and
  * outward in its own direction. An elided slice resolves both coordinates to its
- * midpoint, so the floor is also what keeps a ribbon into an elision drawn.
+ * midpoint, so the floor also keeps a ribbon into an elision drawn.
  */
 export function ribbonEndRadians(
   { block, start, end }: RibbonSide,

@@ -12,7 +12,7 @@ export const MIN_BINNED_BP_PER_PX = 4
  * alignments worker's per-base-letter / per-base-quality extracts.
  *
  * `binBp <= bpPerPx / 2` keeps a window under half a CSS pixel at every tier.
- * That bound is what lets the surviving marks still tile an unbroken wall: both
+ * With that bound the surviving marks still tile an unbroken wall, because both
  * displays floor a cell to 1 CSS px (`pileupCellX`, `pileupCellWidth`), so
  * samples half a pixel apart overlap rather than stripe.
  *
@@ -28,7 +28,7 @@ export const MIN_BINNED_BP_PER_PX = 4
  * **What sampling costs is the BLEND, and it is not free.** This said the
  * skipped bases had already lost the sub-pixel race so the survivor was
  * arbitrary either way. That holds under last-writer-wins compositing and is
- * FALSE under blending, which is what both alignments backends do: a pixel
+ * FALSE under blending, which both alignments backends use: a pixel
  * covered by N overlapping cells reports roughly their mean, and dropping to
  * N/binBp of them changes that statistic from a mean to a single draw. Measured
  * in `measurements/per-base-bin-appearance.json` — on a narrow colour ramp

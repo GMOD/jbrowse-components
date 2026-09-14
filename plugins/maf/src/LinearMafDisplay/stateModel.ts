@@ -651,26 +651,26 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Which sample row IS the reference — the worker's own answer
-         * (`referenceSampleId`, resolved from the block whose sequence the row
-         * carries), with the view's assembly name as the fallback before any
-         * region has landed.
+         * Which sample row is the reference, as resolved by the worker
+         * (`referenceSampleId`, from the block whose sequence the row carries),
+         * with the view's assembly name as the fallback before any region has
+         * loaded.
          *
-         * The view's assembly name is only coincidentally the MAF's name for
-         * the reference: a MAF-tabix track sets `refAssemblyName` on the
-         * adapter precisely when the two differ, and a bigMaf/TAF file names
-         * its reference by whatever db name it was built with. Reading it here
-         * rather than in each consumer is what keeps the codon conservation
-         * band's excluded row and the per-base band's (computed in the worker)
-         * the same row.
+         * The view's assembly name need not be the MAF's name for the
+         * reference: a MAF-tabix track sets `refAssemblyName` on the
+         * adapter when the two differ, and a bigMaf/TAF file names its
+         * reference by the db name it was built with. Every consumer reads this
+         * getter, so the codon conservation band and the per-base band
+         * (computed in the worker) exclude the same row.
          *
-         * Any loaded region answers — a track has one reference species — so
-         * `refSampleIdVolatile` holds the last one to name it; see there for why
-         * the answer is kept rather than read back out of the region store.
+         * A track has one reference species, so any loaded region gives the
+         * same answer, and `refSampleIdVolatile` holds the most recent one; its
+         * docs explain why the value is kept instead of read back from the
+         * region store.
          *
-         * The view's assembly name is still the answer until a detail region
-         * lands: the summary tier's records carry no reference, so a track
-         * opened zoomed out has only that to go on.
+         * The fallback applies until a detail region loads, because the summary
+         * tier's records carry no reference, so a track opened zoomed out has
+         * only the view's assembly name.
          */
         get referenceSampleId(): string | undefined {
           return self.refSampleIdVolatile ?? self.view.assemblyNames[0]
@@ -1011,11 +1011,11 @@ export default function stateModelFactory(
         /**
          * #getter
          * Per-region CDS frame rows (UCSC `mafFrames`) for the annotation
-         * overlay, off whichever tier's payload carries them. The tier on
-         * screen answers first — its frames were read over the span it is
-         * drawing — and the other tier's stand in where it holds none, which
-         * is what keeps the overlay up across the summary↔detail swap while
-         * the incoming tier's read is in flight.
+         * overlay, from whichever tier's payload carries them. The tier on
+         * screen is checked first, since its frames were read over the span it
+         * is drawing, and the other tier's frames fill in where it has none.
+         * The overlay therefore stays visible across the summary↔detail swap
+         * while the incoming tier's read is in flight.
          */
         get framesDataMap(): ReadonlyMap<number, MafFrameRecord[]> {
           const detail = self.detailPayloads
@@ -1183,13 +1183,13 @@ export default function stateModelFactory(
          * The legal range for the two drag-resizable bands stacked over the rows
          * (coverage, conservation).
          *
-         * The ceiling is what makes the drag recoverable: `rowsHeight` above
-         * floors at 0, so without one a band dragged past the track height
-         * squashes the rows to nothing *and* carries its own resize handle —
-         * drawn at the band's bottom edge — off the display, leaving no way back.
-         * Bounded against `fitTargetHeight`, the same pot `rowsHeight` divides,
-         * and per band rather than across both: two bands dragged large can still
-         * crowd the rows, but each stays reachable.
+         * The ceiling keeps the drag reversible. `rowsHeight` above floors at 0,
+         * so without a ceiling a band dragged past the track height squashes the
+         * rows to nothing and moves its resize handle, drawn at the band's
+         * bottom edge, off the display, where it cannot be dragged back. Each
+         * band is bounded against `fitTargetHeight`, the same total `rowsHeight`
+         * divides, and separately from the other band: two bands dragged large
+         * can still crowd the rows, but each resize handle stays reachable.
          */
         get resizableBandBounds() {
           return {
@@ -1232,9 +1232,9 @@ export default function stateModelFactory(
         /**
          * #getter
          * Height the per-sample rows add up to — the scrolled content behind the
-         * `rowsHeight` viewport. Equal to it in fit-to-height mode (which is what
-         * makes that mode never scroll); larger whenever a fixed `rowHeight`
-         * asks for more rows than the track shows.
+         * `rowsHeight` viewport. Equal to it in fit-to-height mode, so that mode
+         * never scrolls; larger whenever a fixed `rowHeight` asks for more rows
+         * than the track shows.
          */
         get rowsContentHeight() {
           return self.showAlignments ? self.nrow * self.effectiveRowHeight : 0
@@ -1489,9 +1489,10 @@ export default function stateModelFactory(
          * #method
          * Where the rows sit on screen: the resolved row height, plus the scroll
          * offset and viewport that every rows layer places and culls against.
-         * One source for all of them — a layer spelling out its own geometry
-         * could quietly read the raw `rowHeight` sentinel, or forget the scroll
-         * and hang its markers a scroll-distance below the cells they annotate.
+         * Every rows layer reads this one method. A layer computing its geometry
+         * separately could read the raw `rowHeight` sentinel, or omit the scroll
+         * offset and draw its markers a scroll-distance below the cells they
+         * annotate.
          */
         rowGeometry(): MafRowGeometryParams {
           return {
@@ -2085,9 +2086,8 @@ export default function stateModelFactory(
          * #getter
          * Which rendering the sibling Canvas2D rows layer paints, or undefined
          * when it paints nothing (`bases` is the GPU canvas, `codon` is its own
-         * overlay). The on-screen canvas and SVG export both branch on this
-         * rather than re-deriving the same cascade, which is what let the export
-         * grow a four-branch chain against the canvas's two.
+         * overlay). The on-screen canvas and SVG export both branch on this, so
+         * the two cannot diverge in how they resolve the rendering.
          */
         get rowsCanvas2dMode(): 'sourceChrom' | RowIdentityMode | undefined {
           const rendering = self.activeRowRendering
@@ -2101,16 +2101,14 @@ export default function stateModelFactory(
          * #action
          * Pick the row coloring, writing all three slots so exactly one is on.
          *
-         * The exclusivity has to be written, not just displayed: the slots are
-         * independent booleans, `activeRowRendering` resolves a clash by
-         * precedence, and the menu used to offer them as separate checkboxes —
-         * so turning on color-by-chromosome while an identity plot was selected
-         * left a setting that was on, persisted into the session, and painting
-         * nothing. Selecting through here is what makes the tick the truth.
+         * The slots are independent booleans and `activeRowRendering` resolves
+         * a clash by precedence, so a slot left on under a higher-precedence one
+         * persists in the session and paints nothing. Clearing the other two
+         * slots here keeps the menu's checkmark on the rendering that is drawn.
          *
-         * A session saved before this (or hand-written config) can still carry
-         * two of them; nothing migrates, `selectedRowRendering` just reports
-         * the one that wins, and the next pick clears the rest.
+         * An older session or a hand-written config can still set two of them.
+         * No migration runs: `selectedRowRendering` reports the one that takes
+         * precedence, and the next pick clears the rest.
          */
         setRowRendering(rendering: RowRendering) {
           // Through the per-slot actions, not `setConf` again: they are the

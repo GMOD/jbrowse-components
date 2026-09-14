@@ -32,18 +32,17 @@ export interface EmbeddedSessionParent {
  * they compose and the three getters that read the root model. The twin of
  * {@link createEmbeddedRootModel} one level down.
  *
- * A mixin the product composes, deliberately, rather than a factory taking the
- * product's view type and tracks mixin as parameters. That factory is the
- * obvious shape and it does not work: `types.compose`'s overloads are declared
- * over `IModelType<P, O, FC, FS>`, so a model handed in as a naked type
- * parameter has nothing to infer those four from and the composed result
- * degrades — `session.view` becomes `any`, which typechecks at every embedder
- * call site and is caught by nothing. Keeping every argument to `compose`
- * concrete is what keeps the products' views typed.
+ * Each product composes this mixin. A factory taking the product's view type
+ * and tracks mixin as parameters does not typecheck usefully:
+ * `types.compose`'s overloads are declared over `IModelType<P, O, FC, FS>`, so
+ * a model passed as a naked type parameter gives nothing to infer those four
+ * from, and `session.view` becomes `any` at every embedder call site with no
+ * type error. Passing only concrete types to `compose` keeps the products'
+ * views typed.
  *
- * So each product still spells out its own tracks mixin, `view` prop, and the
- * `views`/`addView`/`removeView` members that read `self.view` — those are the
- * ones that need its concrete view type.
+ * Each product therefore declares its tracks mixin, `view` prop, and the
+ * `views`/`addView`/`removeView` members that read `self.view`, because those
+ * members need its concrete view type.
  */
 export function EmbeddedSessionMixin(pluginManager: PluginManager) {
   return types

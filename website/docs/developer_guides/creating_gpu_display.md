@@ -6,22 +6,22 @@ description:
 guide_category: Plugins
 ---
 
-A display declares what it draws as a list of **marks**: a shape bound to the
-display's payload and render state. `createMarkBackend` turns the list into the
-WebGPU, WebGL2 and Canvas2D backends, and the same painter is the SVG export. A
-**shape** is written once — one `.slang`, one uniform write, one Canvas2D
-painter, one hit test, all over one set of channel arrays — and only when no
-shared shape fits. The sections below write one.
+A display declares what it draws as a list of **marks**. A mark binds a shape to
+the display's payload and render state. `createMarkBackend` turns the list into
+the WebGPU, WebGL2 and Canvas2D backends, and the Canvas2D painter also produces
+the SVG export. You write a new **shape** only when no shared shape fits. A
+shape consists of one `.slang`, one uniform write, one Canvas2D painter and one
+hit test, all reading one set of channel arrays. The sections below write one.
 
 :::note
 
-A field of a feature file plotted as a bar, point or span is a `marks` entry on
-[`LinearMarkDisplay`](/docs/config_guides/mark_display), with no plugin: that is
-the first rung, and the shape below reads the same worker channels. Start from
-[](/docs/developer_guides/plotting_features): it builds the same plugin — the
-fetch chain, the model, the mark list, the component — and this page replaces
-only the shape it names. If `spanMark`, `pointMark` or `barMark` draws what you
-have, you never come here.
+To plot a field of a feature file as a bar, point or span, add a `marks` entry
+on [`LinearMarkDisplay`](/docs/config_guides/mark_display), with no plugin. The
+shape below reads the same worker channels. Start from
+[](/docs/developer_guides/plotting_features), which builds the same plugin: the
+fetch chain, the model, the mark list and the component. The steps below replace
+only the shape that guide names. If `spanMark`, `pointMark` or `barMark` draws
+your data, you need none of the steps below.
 
 `@jbrowse/render-core` and `@jbrowse/shader-tools` are on npm. Both are
 `@experimental`, so pin an exact version and expect to rebuild on upgrade.
@@ -32,19 +32,19 @@ have, you never come here.
 
 ## Architecture overview
 
-<Figure caption="The whole idea, before any of the machinery. The worker sends the data to the GPU when the region changes, and it stays there; every frame after that just redraws what the GPU already holds. Panning and zooming never refetch or reparse, unlike a Canvas2D display; everything named in the next figure exists to keep that true." src="/img/gpu_display_tldr.png" />
+<Figure caption="The worker sends the data to the GPU when the region changes, and the data stays on the GPU. Every later frame redraws what the GPU already holds, so, unlike in a Canvas2D display, panning and zooming never refetch or reparse. The machinery in the next figure exists to keep panning and zooming that way." src="/img/gpu_display_tldr.png" />
 
-<Figure caption="The three dashed doors are where a change re-enters: rpcProps() above the worker, gpuProps() at the upload autorun, everything else at the frame, and what remains below a door is the cost of that change. Every upload calls renderNow(), which bumps renderTick and closes the loop; a draw that reports it painted flips canvasDrawn, which readiness testids and DisplayChrome wait on." src="/img/gpu_display_lifecycle.png" />
+<Figure caption="The three dashed lines mark where a change re-enters the pipeline: rpcProps() above the worker, gpuProps() at the upload autorun, and everything else at the frame. The stages below a line are the cost of that change. Every upload calls renderNow(), which bumps renderTick and closes the loop. A draw that reports it painted flips canvasDrawn, which readiness testids and DisplayChrome wait on." src="/img/gpu_display_lifecycle.png" />
 
 The model keeps two autoruns running at all times (owned by
 `RenderLifecycleMixin`, installed by `installUpload`):
 
-- One upload autorun fires when any `rpcDataMap` entry or the backend changes;
-  it diffs the map against what it last sent and calls `backend.upload()` only
-  for regions that moved. That diff keeps a streaming whole-genome fetch at O(N)
-  uploads instead of O(N²).
+- The upload autorun fires when any `rpcDataMap` entry or the backend changes.
+  It diffs the map against what it last sent and calls `backend.upload()` only
+  for regions that changed. The diff keeps a streaming whole-genome fetch at
+  O(N) uploads instead of O(N²).
 - The render autorun fires when `renderTick` bumps (after every upload) or when
-  frame-level state like scroll position changes; it calls
+  frame-level state like scroll position changes. It calls
   `backend.renderBlocks()`.
 
 The backend is a HAL (Hardware Abstraction Layer) that dispatches to WebGPU,
@@ -55,22 +55,22 @@ for the full lifecycle and `packages/render-core/CLAUDE.md` for HAL invariants.
 
 ## Shapes and marks
 
-A **shape** (`MarkShape<TChannels, TParams>`) owns geometry and picking, in four
-members that all read the same channel arrays:
+A **shape** (`MarkShape<TChannels, TParams>`) defines geometry and picking in
+four members, and all four read the same channel arrays:
 
 - `pass` — the `.slang` shader and the packer that fills its instance buffer
 - `writeUniforms` — what reaches the GPU per block
 - `paintBlock` — the Canvas2D painter, which is also the SVG export
-- `ink` — the box each instance paints, which render-core turns into the hit
-  test for hover and click and the chrome into the hover highlight
+- `ink` — the box each instance paints. render-core turns it into the hit test
+  for hover and click, and the chrome turns it into the hover highlight
 
 A **mark** (`defineMark({ shape, channels, params })`) binds a shape to one
-display: `channels` names which of the payload's arrays feed which lane, and
-`params` names which of the render state's values reach the uniforms. Both are
-lenses that pick fields; neither does work.
+display. `channels` names which of the payload's arrays feed which lane, and
+`params` names which of the render state's values reach the uniforms. Both
+functions only select fields and compute nothing.
 
-Two shapes are shared, and a display whose drawing is one of them writes no
-shader, no painter and no hit test:
+Two shapes are shared. A display that draws with one of them writes no shader,
+no painter and no hit test:
 
 - **`spanMark`** — a coloured rectangle from `x` to `x2` on the band of `row`.
   Features laid into rows, MAF's alignment cells, anything that is a box on a
@@ -79,18 +79,18 @@ shader, no painter and no hit test:
   `domain` of `y`, widening to a bar where `x2 - x` is wider than the glyph. A
   scatter plot, Manhattan's points, any datum placed by a value.
 
-`plugins/gwas/src/LinearManhattanDisplay/manhattanMarks.ts` is the whole of
-Manhattan's drawing, over `pointMark`. The score box — start to end wide, grown
-up from the bottom to its value — is neither a row band nor a glyph, so the
-example writes its own. A shape lives in `render-core` once two displays share
-it; until then it stays beside the display that declares it, which is where this
-one goes.
+`plugins/gwas/src/LinearManhattanDisplay/manhattanMarks.ts` holds all of
+Manhattan's drawing, over `pointMark`. The example's score box spans start to
+end and grows up from the bottom to its value. It is neither a row band nor a
+glyph, so the example writes a new shape. A shape moves into `render-core` once
+two displays share it. Until then it stays beside the display that declares it,
+so the score shape goes there.
 
 ## Files to create
 
-The same `example-plugins/score-example/` the plotting guide builds. Every file
-serves both backends; the shape and its shader are the two this page adds detail
-to:
+The files are the same `example-plugins/score-example/` that the plotting guide
+builds. Every file serves both backends. The shape and its shader get more
+detail in the steps below:
 
 <!-- EXAMPLE_PLUGIN_TREE START -->
 
@@ -121,8 +121,9 @@ src/
 
 ## Step 1: Define data types
 
-The worker's payload, one region at a time, is the encoder's channels — the
-arrays a config-declared mark reads too, in absolute genomic uint32:
+The worker sends one payload per region, and the payload is the encoder's
+channels. A config-declared mark reads the same arrays, in absolute genomic
+uint32:
 
 <!-- include: example-plugins/score-example/src/ScoreRPC/rpcTypes.ts#region-data -->
 
@@ -134,12 +135,12 @@ arrays a config-declared mark reads too, in absolute genomic uint32:
 export type ScoreRegionData = Encoded<'y'>
 ```
 
-The render state is recomputed cheaply every frame. The colour is resolved to
-the packed form the shader's uniform takes, once, in the model — a shape takes
+The model recomputes the render state cheaply every frame. The model resolves
+the colour once, to the packed form the shader's uniform takes. A shape takes
 packed colours and the display resolves them, so the uniform write and the
-painter are handed one number. The domain is the model's too: the encoder ships
-each region's score extremes, and the model folds them into the `[min, max]`
-every region's boxes are placed through:
+painter receive the same number. The model also computes the domain. The encoder
+ships each region's score extremes, and the model folds them into the one
+`[min, max]` that places every region's boxes:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/scoreMarks.ts#render-state -->
 
@@ -162,24 +163,28 @@ export interface ScoreRenderState {
 
 Create a `.slang` file. JBrowse uses a Slang-derived shader language that
 compiles to both WGSL (WebGPU) and GLSL (WebGL2). Modules are referenced by bare
-name (`import hpmath;`), not file path; the shared helpers live in
-`packages/render-core/src/shaders/` (`hpmath` for the high-precision
-genomic→pixel transform, `colorPack` for unpacking packed colors, `valueScale`
-for placing a value on a `[min, max]` domain — the scale the library's `point`
-and `bar` shapes read, which the example composes for its own anchor). Beside
-those arithmetic atoms sit the shared _shapes_ — `capsule`, `rowRect`,
-`pointGlyph`, `diagonalGrid` — which carry a mark's geometry and its antialias
-contract together;
-[the shader shape library](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SHADER_SHAPE_LIBRARY.md)
-says what each draws, who imports it, and which parts are deliberately not
-shared. The example declares its uniforms inline; if several passes share a
+name (`import hpmath;`), not file path. The shared helpers are in
+`packages/render-core/src/shaders/`:
+
+- `hpmath` for the high-precision genomic→pixel transform
+- `colorPack` for unpacking packed colors
+- `valueScale` for placing a value on a `[min, max]` domain. The library's
+  `point` and `bar` shapes read this scale, and the example combines it with its
+  box's anchor at the canvas bottom
+
+The same directory holds the shared _shapes_ (`capsule`, `rowRect`,
+`pointGlyph`, `diagonalGrid`). Each carries a mark's geometry together with its
+antialias contract.
+[The shader shape library](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/SHADER_SHAPE_LIBRARY.md)
+lists what each shape draws, who imports it, and which parts are deliberately
+not shared. The example declares its uniforms inline. If several passes share a
 struct, put it in a sibling module (`scoreUniforms.slang`, starting
 `module scoreUniforms;` with a `public struct`).
 
-The geometry decision — how tall a box is, how narrow one may paint — is written
-here **once**. `//! js-export` lifts a function into a TypeScript twin and
-`//! export-consts` lifts a constant, and the painter and the hit test in Step 3
-read those rather than restating the arithmetic:
+The shader defines the geometry **once**: how tall a box is, and how narrow one
+may paint. `//! js-export` lifts a function into a TypeScript twin, and
+`//! export-consts` lifts a constant. The painter and the hit test in Step 3
+import those twins and do not repeat the arithmetic:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/shaders/score.slang -->
 
@@ -279,11 +284,12 @@ use, and writes each `*.generated.ts` next to its source (`hpmath` / `colorPack`
 resolve from your installed `@jbrowse/render-core`). Inside this repo the same
 tool is `pnpm gen:shaders`.
 
-One `.slang` file with entry points produces up to four modules, and **which one
-you import from decides what your users download**. A bundler treats a namespace
-import (`import * as shader from './score.generated.ts'`) as using every export,
-so a module is included or excluded whole — whatever the smallest eager consumer
-of a module wants, the always-loaded chunk pays for all of it.
+One `.slang` file with entry points produces up to four modules, and **the
+module you import from decides what your users download**. A bundler treats a
+namespace import (`import * as shader from './score.generated.ts'`) as using
+every export, so it includes or excludes a module whole. If any eager code
+imports a module, even for one value, the always-loaded chunk carries the whole
+module.
 
 | Module                      | Holds                                                             | Import it from                                                            |
 | --------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
@@ -292,7 +298,7 @@ of a module wants, the always-loaded chunk pays for all of it.
 | `score.consts.generated.ts` | the `//! export-consts` values, and nothing else                  | a state model, a hit test, a Canvas2D twin — anything that wants a number |
 | `score.js.generated.ts`     | the `//! js-export` functions as scalar TypeScript                | the painter and the hit test, which run the shader's own math             |
 
-A display model reading one threshold therefore reaches for the `.consts.`
+A display model that reads one threshold should therefore import the `.consts.`
 module, not the shader module that re-exports it.
 
 The table below says what lands in `score.generated.ts` and what a plugin
@@ -337,26 +343,26 @@ table is the union of all three:
 
 <!-- SHADER_EXPORTS END -->
 
-Only what a given shader needs is emitted: no compute entry point for a
+The generator emits only what a given shader needs: no compute entry point for a
 render-only shader, and an `*_OFFSET_*` map only for the typed-array views its
 fields actually take.
 
-Genomic positions travel as absolute `uint` attributes; convert them with the
-`bpToClipX` wrapper above and nothing else. The `bpHi`/`bpLo` split it hides
-exists because float32 can't represent every base past ~16.7 Mbp, and it stays
-confined to that one line; in TypeScript outside uniform writes, use plain
+Genomic positions travel as absolute `uint` attributes. Convert them only with
+the `bpToClipX` wrapper above. The wrapper hides a `bpHi`/`bpLo` split, which is
+needed because float32 can't represent every base past ~16.7 Mbp, and keeps the
+split in that one line. In TypeScript outside uniform writes, use plain
 `bp - bpStart`.
 
 ## Step 3: The shape
 
-A shape's own vocabulary is its channels, which are parallel typed arrays plus a
-count, and its params, which are everything else the drawing needs. A shape
-names its lanes in the library's vocabulary — `x`, `x2`, `y` or `row`, `color`,
-plus whatever is specific to the shape — while the display's payload can spell
-its arrays however it likes, because `channels` on the mark is the lens between
-the two. The four members come next, after the placement function two of them
-share. There is no constructor: a shape is an object literal, and it is admitted
-by having a consumer rather than by completeness.
+A shape takes two inputs. Its channels are parallel typed arrays plus a count,
+and its params are everything else the drawing needs. A shape names its lanes in
+the library's vocabulary: `x`, `x2`, `y` or `row`, `color`, plus any names
+specific to the shape. The display's payload can name its arrays differently,
+because `channels` on the mark maps one set of names to the other. The file
+below defines the placement function that two members share, then the four
+members. A shape has no constructor. It is an object literal, admitted by having
+a consumer and not by completeness.
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/scoreMark.ts -->
 
@@ -496,38 +502,39 @@ export const scoreMark: MarkShape<ScoreChannels, ScoreParams> = {
 What each member is held to:
 
 - **`pass`** is `slangPass` over the generated module plus a `pack`. The
-  instance count is the buffer's own — a packer that allocates
-  `n * INSTANCE_STRIDE_BYTES` has stated `n`, and an empty pack is how a region
-  with nothing to draw releases its buffer.
+  instance count comes from the buffer size: a packer that allocates
+  `n * INSTANCE_STRIDE_BYTES` has stated `n`. A region with nothing to draw
+  releases its buffer through an empty pack.
 - **`writeUniforms`** uses the generated packer (`shader.writeUniforms`), which
-  makes the set total: the scratch buffer outlives the frame, so a field left
-  out of an offset-poke would redraw with last frame's value. The `bpRangeX`
-  triple comes from `bpRangeXTuple`, never by hand — it carries the reversed
-  pivot, which is the part that goes wrong. Widths are CSS px (`clip.scissorW`,
-  the block column), so a min-width floor is a CSS pixel on every DPR.
-- **`placeScore`** places one instance, and both the painter and the ink go
-  through it, so the box is written once. It reads what the block fixes off a
-  frame: `bpProjection(block)` and `projectBp` mirror bp→px on a reversed block
-  the same way the negated `bpRangeX` does, and `spanLeft` places a widened span
-  growing away from its anchor on both orientations.
-- **`paintBlock`** is the Canvas2D fallback **and the SVG export**: the context
-  it takes (`MarkContext2D`) is satisfied by a real 2D context and by the SVG
-  one.
-- **`ink`** is the rect the painter fills for one instance, or undefined for one
-  it skips. render-core derives `hitNearest` from it: `inkOnRect` says where the
-  box is nearest `(x, y)` and how far, and `nearestInk` keeps the closest — only
-  a strictly nearer candidate replaces the best, so a caller iterating back to
-  front gets the mark on top. The candidate set is the display's, not the
-  shape's: hand in every instance, or what a spatial index answered. A shape
-  whose ink is not a box — a ribbon, an arc — or whose hit rule is not its box
-  (`point`, where a cluster of glyphs resolves to the nearest centre) declares
-  `hitNearest` itself.
+  writes every field. The scratch buffer outlives the frame, so a field left out
+  of a manual offset write would redraw with last frame's value. The `bpRangeX`
+  triple comes from `bpRangeXTuple`, never by hand, because it carries the
+  reversed pivot and a hand-written pivot is where the bugs come from. Widths
+  are CSS px (`clip.scissorW`, the block column), so a min-width floor is one
+  CSS pixel on every DPR.
+- **`placeScore`** places one instance. The painter and the ink both call it, so
+  the box geometry is written once. It reads the per-block values from a frame.
+  `bpProjection(block)` and `projectBp` mirror bp→px on a reversed block the
+  same way the negated `bpRangeX` does. `spanLeft` grows a widened span away
+  from its anchor in both orientations.
+- **`paintBlock`** is the Canvas2D fallback **and the SVG export**. Both a real
+  2D context and the SVG context satisfy the context type it takes
+  (`MarkContext2D`).
+- **`ink`** returns the rect the painter fills for one instance, or undefined
+  for an instance the painter skips. render-core derives `hitNearest` from it.
+  `inkOnRect` reports the point of the box nearest `(x, y)` and the distance,
+  and `nearestInk` keeps the closest. Only a strictly nearer candidate replaces
+  the best, so a caller iterating back to front gets the mark on top. The
+  display chooses the candidate set: every instance, or the instances a spatial
+  index returned. A shape declares `hitNearest` itself when its ink is not a box
+  (a ribbon, an arc), or when its hit rule differs from its box (`point`, where
+  a cluster of glyphs resolves to the nearest centre).
 
-Two optional members, for a shape that needs them:
-`paintsBlock(block, frame, params)` is a draw predicate both backends and the
-hit test skip on — a setting that turns a layer off, a marker that exists only
-at a canvas edge — and `texture` on the mark declares a 256-entry colour ramp
-the pass samples.
+A shape can also define two optional members.
+`paintsBlock(block, frame, params)` is a draw predicate, and both backends and
+the hit test skip a block when it returns false. Use it for a setting that turns
+a layer off, or a marker that exists only at a canvas edge. `texture` on the
+mark declares a 256-entry colour ramp that the pass samples.
 
 ## Step 4: The mark list
 
@@ -548,22 +555,24 @@ export const SCORE_MARKS = [
 ]
 ```
 
-`channels` may answer `undefined` for a region the mark has nothing in, which is
-how one list serves a display whose cells are a union. Three more options on
-`defineMark` exist for the shapes in tree: `bufferOf` for a mark that draws off
-another mark's uploaded buffer, `texture` for the ramp above, and `band` for a
-display that stacks strips on one canvas. A first shape wants none of them.
+`channels` may return `undefined` for a region where the mark has nothing to
+draw, so one list can serve a display whose cells are a union. `defineMark` has
+three more options, used by shapes in the tree: `bufferOf` for a mark that draws
+from another mark's uploaded buffer, `texture` for the ramp above, and `band`
+for a display that stacks strips on one canvas. A first shape needs none of
+them.
 
 ## Step 5: The parity gate
 
-The painter and the ink are two spellings of where the ink is, and they drift.
-`sweepMarkAgainstHit` takes a mark, so the test binds the shape to fixed params
-with `defineMark`. It paints a block into a recording context and holds `ink` to
-what the painter put down — the painting lies inside the box, and every edge of
-the box is within a pixel of it — then walks the block in half-pixel steps and
-holds the hit test to both: a point on a box answers that box, a hit's `x`/`y`
-lies inside the box it names, and no answer is nearer than its painting. Run it
-in both orientations:
+The painter and the ink each describe where an instance paints, and a change to
+one can leave the other out of date. `sweepMarkAgainstHit` takes a mark, so the
+test binds the shape to fixed params with `defineMark`. The sweep paints a block
+into a recording context and checks `ink` against what the painter drew: the
+painting lies inside the box, and every edge of the box is within a pixel of the
+painting. It then walks the block in half-pixel steps and checks the hit test
+against both. A point on a box returns that box, a hit's `x`/`y` lies inside the
+box it names, and no answer is nearer than its painting. Run the sweep in both
+orientations:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/scoreMark.test.ts -->
 
@@ -622,10 +631,11 @@ describe('score: every drawn box answers its own hit', () => {
 })
 ```
 
-`scoreMarks.test.ts` beside it is the mark-level suite: which payload array
-reaches which lane, the uniforms a block writes through `MockHal`, what the
-painter draws for one feature, and what the display's hit test answers. Together
-they replace the pixel comparison a GPU-vs-Canvas2D gate would need.
+`scoreMarks.test.ts` beside it is the mark-level suite. It tests which payload
+array reaches which lane, the uniforms a block writes through `MockHal`, what
+the painter draws for one feature, and what the display's hit test returns. The
+two suites together replace the pixel comparison that a GPU-vs-Canvas2D check
+would otherwise need.
 
 ## Step 6: MST model
 
@@ -634,13 +644,13 @@ fetch autoruns), store the worker output in an `rpcDataMap`, and wire the render
 lifecycle with `installUpload`. This is the **per-region streamed** upload
 pattern from the
 [architecture spec's upload patterns](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#upload-patterns),
-the right shape when each region's data is independent (no cross-region layout
+which fits when each region's data is independent (no cross-region layout
 coupling).
 
-The model is the one
 [Plotting features, Step 3](/docs/developer_guides/plotting_features#step-3-the-mst-model)
-builds in full (`rpcDataMap`, `rpcProps`, `renderState`, `fetchNeeded`). It
-names no shape and no shader; the one action that meets the backend is:
+builds this model in full (`rpcDataMap`, `rpcProps`, `renderState`,
+`fetchNeeded`). The model names no shape and no shader. Its one action that
+touches the backend is:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts#startRenderingBackend -->
 
@@ -663,21 +673,21 @@ startRenderingBackend(backend: ScoreRenderingBackend) {
 },
 ```
 
-One installer wires the
+`installUpload` wires the
 [render lifecycle](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/GPU_RENDERING.md#the-core-contract)
-for you. `installUpload` remembers what it last sent for each key and uploads
-only what changed, so N regions streaming in cost N uploads rather than N². The
-key is whatever your map is keyed by: a `displayedRegionIndex` here, a sibling
-display's `sharedBackendKey` on a canvas several displays share, or a slot name
-(`oneCell('data', payload)`) on a display that holds one payload for the whole
-view. Only displays that lay features into Y-rows _across_ regions
-(`LinearBasicDisplay`, alignments) hand it a whole-map computed instead of the
-raw `rpcDataMap`.
+for you. It remembers what it last sent for each key and uploads only what
+changed, so N regions streaming in cost N uploads rather than N². The key is
+whatever your map is keyed by. Here it is a `displayedRegionIndex`. On a canvas
+several displays share, it is a sibling display's `sharedBackendKey`. On a
+display that holds one payload for the whole view, it is a slot name
+(`oneCell('data', payload)`). Only displays that lay features into Y-rows
+_across_ regions (`LinearBasicDisplay`, alignments) pass a whole-map computed in
+place of the raw `rpcDataMap`.
 
-An encode that needs more than the region's own data — a color scheme, a scale —
-declares it as `inputs`, and a change there re-encodes every loaded region.
-Reading it inside `encode` instead does not work: the helper invalidates on
-`inputs` and on the region's own data, and on nothing else.
+If an encode needs more than the region's data, such as a color scheme or a
+scale, declare that value as `inputs`. A change to `inputs` re-encodes every
+loaded region. Reading the value inside `encode` does not work, because the
+helper invalidates only on `inputs` and on the region's data.
 
 Three settings buckets (see the
 [`rpcProps()` / `gpuProps()` pattern](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#rpcprops--gpuprops-pattern)):
@@ -685,15 +695,15 @@ Three settings buckets (see the
 - **`rpcProps()`** refetches in the worker, so scroll and zoom must stay out of
   it.
 - **`renderState`** is recomputed per frame and refetches nothing.
-- **`gpuProps()`** takes a setting that needs a main-thread buffer _re-encode_
-  but no refetch — a color, a scale.
+- **`gpuProps()`** holds a setting that needs a main-thread buffer _re-encode_
+  but no refetch, such as a color or a scale.
 
 ## Step 7: React component
 
 `DisplayChrome` creates the backend through `useRenderingBackend`, calls
 `model.startRenderingBackend(backend)` once it is live, and hands back the
-`canvasRef` to attach to your `<canvas>`. The factory it takes is the one import
-on the mark path that reaches the HAL:
+`canvasRef` to attach to your `<canvas>`. The factory it takes is the only
+import on the mark path that reaches the HAL:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/components/ScoreDisplayComponent.tsx#factory -->
 
@@ -709,14 +719,14 @@ function createScoreBackend(canvas: HTMLCanvasElement) {
 ```
 
 `@jbrowse/render-core/marks/backend` is a separate subpath from
-`@jbrowse/render-core/marks` for exactly this reason. A display's declaration,
-its painter and its hit test are things a state model can legitimately reach,
-and a state model is eager; the backend costs the GPU stack, so it is imported
-once, from the lazily loaded component, and from nowhere else.
+`@jbrowse/render-core/marks` so that only the component loads the GPU stack. A
+state model may import a display's declaration, painter and hit test, and a
+state model loads eagerly. Importing the backend loads the whole GPU stack, so
+only the lazily loaded component imports it.
 
-The hover asks render-core's `nearestMarkHit` for the nearest instance, handing
-the mark's `hitNearest` — the one its `ink` implies — every instance of every
-block under the cursor, and stores what comes back:
+On hover, the display asks render-core's `nearestMarkHit` for the nearest
+instance. It passes every instance of every block under the cursor to the mark's
+`hitNearest`, which render-core derives from `ink`, and stores the result:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/findScoreHit.ts#hit -->
 
@@ -782,9 +792,9 @@ onPointerPosition={state => {
 }}
 ```
 
-The highlight comes with the hit. A model that answers `hoverInk` — the hovered
-instance walked through the mark list's `ink` with `inkOfInstances` — gets a
-positioned box from `DisplayChrome`, in the palette's hover shade, and places
+The highlight reuses the hit. A model defines `hoverInk` by passing the hovered
+instance through the mark list's `ink` with `inkOfInstances`. `DisplayChrome`
+then draws a positioned box in the palette's hover shade, and the model places
 nothing itself:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts#hoverInk -->
@@ -811,9 +821,9 @@ get hoverInk(): HighlightRect[] {
 
 ## Step 8: SVG export
 
-The export comes with the mark: `paintMarkBlocks` runs each mark's painter
-against the SVG context, and `renderDisplaySvg` owns the readiness gate and the
-terminal states around it. The whole file:
+The mark already provides the export. `paintMarkBlocks` runs each mark's painter
+against the SVG context, and `renderDisplaySvg` handles the readiness gate and
+the terminal states around it. The whole file:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/renderSvg.tsx#render-svg -->
 
@@ -850,7 +860,7 @@ function ScoreSvgBody({
 }
 ```
 
-The model's `renderSvg` action loads it lazily, so the export code rides no
+The model's `renderSvg` action loads it lazily, so the export code is in no
 eager chunk. [](/docs/developer_guides/svg_export) has the pipeline.
 
 ## Step 9: Register the display
@@ -876,34 +886,34 @@ export default function LinearScoreDisplayF(pluginManager: PluginManager) {
 }
 ```
 
-Both the model and the component load late. A state model is eager — anything
-registered at plugin install loads everything it names by value — so handing
-`stateModel` as a thunk keeps the display's mixins, its `installUpload` and
-everything behind them out of every host's startup bundle until a track first
-shows the display or a session names it.
+Both the model and the component load late. Anything registered at plugin
+install loads everything it names by value, so a state model passed directly
+would load eagerly. Passing `stateModel` as a thunk keeps the display's mixins,
+its `installUpload` and their imports out of every host's startup bundle. They
+load when a track first shows the display or a session names it.
 
 ## The WebGL2 context ceiling
 
-One display owns one backend canvas, and `WebGL2Hal` takes its own WebGL2
-context with no pooling. Browsers cap how many a page may hold — 16 on Chrome —
-and past that, eviction and re-acquisition cascade and wedge the main thread
-rather than degrading. **A single ordinary view reaches it**: 17 GPU tracks on
-one linear genome view. So budget contexts as one per open GPU track.
+Each display has one backend canvas, and `WebGL2Hal` creates a WebGL2 context
+per canvas with no pooling. Browsers cap how many contexts a page may hold (16
+on Chrome). Past the cap, context eviction and re-acquisition repeat in a
+cascade and block the main thread. **A single ordinary view reaches the cap**:
+17 GPU tracks on one linear genome view. Budget one context per open GPU track.
 
-Chromosomes are free on this axis — a whole-genome view of one track is still
+Adding chromosomes costs no contexts. A whole-genome view of one track is still
 one canvas, with one GPU buffer per `displayedRegionIndex`.
 
-View-level lazy mount and bounded auto-recovery in `useRenderingBackend` bound
-the problem; tracks inside a mounted view are not virtualized, so the ceiling
-stays reachable.
+View-level lazy mount and bounded auto-recovery in `useRenderingBackend` limit
+the problem. Tracks inside a mounted view are not virtualized, so a view can
+still reach the cap.
 
 WebGPU has no per-canvas cap, because `gpuDevice.ts` shares one device across
-displays. The trade is its mirror image: one `device.lost` takes down every
-display at once. That makes triage easy — **one track broke points at WebGL2,
-every track broke at once points at WebGPU**.
+displays. The trade-off is the opposite failure: one `device.lost` takes down
+every display at once. **If one track broke, suspect WebGL2. If every track
+broke at once, suspect WebGPU**.
 
-What each backend refuses to allocate is
-[](/docs/developer_guides/memory#gpu-memory-is-guarded-per-object-not-per-session).
+[](/docs/developer_guides/memory#gpu-memory-is-guarded-per-object-not-per-session)
+lists what each backend refuses to allocate.
 
 ## Key invariants
 
@@ -919,9 +929,10 @@ What each backend refuses to allocate is
 - A shape holds no state. The model's `rpcDataMap` is the single source of truth
   and is passed into `renderBlocks`; `installUpload` releases each departed key
   through `hal.deleteRegion(key)`.
-- The shape owns geometry and picking, the display owns its data and the lens
-  from data to channels, and the installer owns only the diff. Moving one of
-  those across a boundary is how the painter and the hit test start to drift.
+- The shape defines geometry and picking. The display holds its data and the
+  mapping from data to channels. The installer handles only the diff. Moving any
+  of these responsibilities into another layer lets the painter and the hit test
+  disagree.
 - Render the canvas through `DisplayChrome`, never by calling
   `useRenderingBackend` in your own component, and reach the HAL only through
   `@jbrowse/render-core/marks/backend`, only from the component.

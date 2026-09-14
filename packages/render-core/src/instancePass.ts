@@ -6,7 +6,8 @@ import type { GpuHal, PipelineDescriptor } from './hal'
  * A pass id, the packer that fills its buffer, and the upload that joins them
  * are three statements of one fact, and renderers kept them in three places —
  * so a pass could be registered and drawn while nothing uploaded to it, which
- * paints nothing, silently, on the GPU backend only. Here they are one object:
+ * paints nothing, on the GPU backend only. `InstancePass`
+ * makes them one object:
  *
  * ```ts
  * export const GAP_PASS = {

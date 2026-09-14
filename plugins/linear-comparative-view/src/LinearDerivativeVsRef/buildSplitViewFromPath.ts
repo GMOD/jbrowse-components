@@ -113,9 +113,9 @@ export interface SplitViewFromPathSpec {
  *
  * ONE PANEL PER SEGMENT, not per chromosome. The segments are already in the
  * order the reads cross them, so a path that leaves chr9 and comes back to it
- * inverted gets two chr9 panels rather than one that quietly merges the two
- * visits — which is the case a hand-built import form gets wrong, since a person
- * filling in rows types each chromosome once.
+ * inverted gets two chr9 panels. A hand-built import form merges the two visits
+ * into one chr9 panel, since a person filling in rows types each chromosome
+ * once.
  *
  * The launching view's tracks are carried onto every panel, alignments tracks
  * included, because the reads leaving one panel and arriving in the next are the
@@ -124,8 +124,7 @@ export interface SplitViewFromPathSpec {
  * One panel per segment is also one fetch per segment, and nothing bounds a
  * path's segment count, so **this throws above {@link MAX_SPLIT_PANELS}
  * segments**. Truncating instead would draw a prefix of a path under the whole
- * path's name, which is the failure the strip's own gap squeeze exists to
- * avoid, and returning a snapshot the caller has to measure is a rule to
+ * path's name, the same failure the strip's gap squeeze avoids, and returning a snapshot the caller has to measure is a rule to
  * remember rather than one the code holds. The in-tree picker never reaches the
  * throw — it disables the option and offers synteny, which has no such limit.
  */
@@ -145,8 +144,8 @@ export function buildSplitViewFromPath({
    * alignments track carried onto it, a fetch large enough for the track to
    * refuse it and draw `force load` instead. And a short interior segment — 199
    * bp between two junctions is ordinary — drawn at its own length puts that
-   * panel fifty times closer in than its neighbours, which is what the
-   * connecting curves are drawn between: at mismatched zooms every read leaves
+   * panel fifty times closer in than its neighbours, and the connecting curves
+   * run between neighbouring panels. At mismatched zooms every read leaves
    * one panel in a corner and the fan runs off the frame rather than reading as
    * one route through the reference (reviewer, on exactly that figure).
    */

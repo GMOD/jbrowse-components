@@ -453,28 +453,26 @@ function hydrateInto(
  * #api core/configuration
  * Hydrate a plain track config into a live config node, dispatching on its
  * `type` to find the schema. `session.tracks` holds `types.frozen` plain
- * objects until something references a track (ADR-031), so a caller handed one
- * of those has a config that reads nothing but what was literally authored: a
- * slot at its schema default is absent, `preProcessSnapshot` has not run, and
- * nothing that walks a live node applies to it.
+ * objects until something references a track (ADR-031). One of those holds only
+ * what was literally authored: a slot at its schema default is absent,
+ * `preProcessSnapshot` has not run, and nothing that walks a live node applies
+ * to it.
  *
- * For the callers that need the resolved answer rather than the authored one
- * and cannot know which of the two they were handed. The About dialog's "Copy
- * config" is the case this exists for: it is reached from two menus, and one of
+ * Use it where a caller needs the resolved config and may be handed either
+ * form. The About dialog's "Copy config" is reached from two menus, and one of
  * them passes a `session.tracks` entry.
  *
- * Returns **undefined** rather than throwing when the config names a track type
- * no plugin registered, or when it is invalid enough that `create` rejects it —
- * an un-hydrated config has never been validated, so a dialog that opens over
- * it must not be the thing that discovers this. Callers fall back to treating
- * it as the plain object it is.
+ * Returns **undefined** when the config names a track type no plugin
+ * registered, or when `create` rejects it as invalid. An un-hydrated config has
+ * never been validated, so the dialog opening over it should not throw. Callers
+ * fall back to using the plain object.
  *
  * Shares `TrackConfigurationReference`'s per-PluginManager cache, so hydrating
- * the same entry twice returns the same node — and in admin/embedded sessions a
- * track opened later resolves to that same node. A non-admin's open track does
- * not: it resolves to the session's private working copy (ADR-032) and this is
- * the pristine mirror beside it. The two agree in content, which is what the
- * caller needs; `CopyConfigEntryPoints.test.ts` pins both halves.
+ * the same entry twice returns the same node, and in admin/embedded sessions a
+ * track opened later resolves to that same node. A non-admin's open track
+ * resolves to the session's private working copy (ADR-032), and this function
+ * returns the pristine mirror beside it. The two have the same content;
+ * `CopyConfigEntryPoints.test.ts` tests both cases.
  */
 export function hydrateTrackConfig(
   pluginManager: PluginManager,

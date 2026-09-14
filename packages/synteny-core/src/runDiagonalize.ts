@@ -12,8 +12,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * is loaded and either view can be installed without the other. Each does so as
  * an ordinary `RpcMethodType<'ItsOwnKey'>`, three lines apiece.
  *
- * There was a shared abstract base instead, and being GENERIC over the key is
- * what made it a special case: `RpcWireReturn<MethodName>` is a conditional
+ * There was a shared abstract base instead, and being GENERIC over the key made
+ * it a special case: `RpcWireReturn<MethodName>` is a conditional
  * TypeScript will not resolve while the name is still a parameter, so the base
  * had to pin the wire return as a second type argument and then constrain
  * `MethodName` to the keys whose wire actually was that type to keep the pin
@@ -32,7 +32,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * so for these args its work was a no-op while its `serializeArguments` type
  * demanded a top-level `adapterConfig` per-adapter args have no place to put.
  * The pieces that do matter — location/blob augmentation on the wire and blobMap
- * rehydration in the worker, which is what lets a local-file track diagonalize —
+ * rehydration in the worker, which let a local-file track diagonalize —
  * live in `RpcMethodType` itself. Location handling walks the whole args tree,
  * so each `adapters[].adapterConfig` is still augmented at its nested position.
  */

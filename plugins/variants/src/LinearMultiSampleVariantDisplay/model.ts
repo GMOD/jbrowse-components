@@ -81,11 +81,11 @@ import type {
 const LANE_FEATURE_HEIGHT = 10
 
 /**
- * The lane packs in `compact`, which is what makes it a band rather than a track:
- * bodies at 0.6x and label text shrunk to match, so a 40px band holds two
- * labeled rows where `normal` holds one. It is also what gives the fit ladder
- * room to GROW a sparse window — `fitMaxScale` is `1 / 0.6`, so a handful of
- * records fills the band at up to normal size instead of leaving it empty.
+ * The lane packs in `compact`, with bodies at 0.6x and label text shrunk to
+ * match, so a 40px band holds two labeled rows where `normal` holds one.
+ * `compact` also gives the fit ladder room to GROW a sparse window:
+ * `fitMaxScale` is `1 / 0.6`, so a handful of records fills the band at up to
+ * normal size.
  */
 const LANE_DISPLAY_MODE = 'compact' as const
 
@@ -170,9 +170,9 @@ export function stateModelFactory(
       .actions(self => ({
         /**
          * #action
-         * Switch the variant lane on or off. The rows resize with it —
-         * `availableHeight` subtracts the band — which is the point: the lane
-         * takes its space from the plot rather than growing the track.
+         * Switch the variant lane on or off. The rows resize with it, because
+         * `availableHeight` subtracts the band, so the lane takes its space
+         * from the plot and the track keeps its height.
          */
         setShowVariantLane(arg: boolean) {
           setConf(self, 'showVariantLane', arg)
@@ -493,9 +493,9 @@ export function stateModelFactory(
          * floor at this particular phase, which is strictly narrower than either
          * approximation above.
          *
-         * So the entry still comes and goes with zoom, unlike `hasSecondaryAlt`
-         * / `hasNoCall` — that is honest for a glyph whose visibility is a
-         * function of zoom — but no longer with a half-pixel pan.
+         * The legend entry therefore comes and goes with zoom, unlike
+         * `hasSecondaryAlt` / `hasNoCall`, which is correct for a glyph whose
+         * visibility depends on zoom, but not with a half-pixel pan.
          */
         get insertionLegendColor(): string | undefined {
           if (!self.showInsertionGlyphs) {
@@ -574,8 +574,8 @@ export function stateModelFactory(
          * #getter
          * The lane's marks as plugin-canvas render data, one entry per fetched
          * region — the payload that display's own RPC produces, built here from
-         * records this display already parsed. Empty when the band is off, which
-         * is what stops every getter below it from doing any work.
+         * records this display already parsed. Empty when the band is off, so
+         * every getter below it does no work.
          *
          * See `buildLaneRenderData` for why this is main-thread and costs no
          * second fetch. A MobX computed, so it is rebuilt when the payload or
@@ -808,10 +808,10 @@ export function stateModelFactory(
          * box the pick returns. Its label overhang is part of the hit box there,
          * which is why this reads the RENDERED label flags and not the mode's.
          *
-         * Canvas's `flatbushIndexes` dependencies, on purpose: keyed off
+         * Uses Canvas's `flatbushIndexes` dependencies: keyed off
          * `laneLaidOutDataMap` and the DEBOUNCED `coarseBpPerPx`, never
-         * `visibleRegions` (per-frame fresh) or the live block width — which is
-         * what makes it safe for the `LaneHitIndexes` autorun to hold alive.
+         * `visibleRegions` (per-frame fresh) or the live block width, so the
+         * `LaneHitIndexes` autorun can hold it alive without per-frame rebuilds.
          * Without that subscription its only reader is the hit test, running
          * untracked in pointer handlers, so MobX would discard the value and
          * rebuild a Hilbert-sorted Flatbush with a text measurement per mark on

@@ -22,8 +22,7 @@ export function defaultImportFormRows(assemblyNames: string[]) {
  * being configured, the chromosome text per row and the radio choice per pair.
  * The last three are indexed by row or pair position but are *about* an
  * assembly or a pair of them, so every edit to the rows has to move them along.
- * `applyRows` is the one way the rows change, which is what keeps the four in
- * step; a dotplot's two axes are rows 0 (x) and 1 (y).
+ * `applyRows` is the one way the rows change, so the four stay in step; a dotplot's two axes are rows 0 (x) and 1 (y).
  *
  * Takes the session's assembly names as a value, not the session: this is a
  * hook, so it is compiled, and a getter read inside a call here memoizes on the

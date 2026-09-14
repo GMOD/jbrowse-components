@@ -95,9 +95,9 @@ synteny; the target on the vertical axis and the bottom row.
 
 `assemblyNames` is `[query, target]`, which is the **reverse** of the order
 minimap2 and nucmer take their inputs (`minimap2 target.fa query.fa`). Getting
-it backwards silently draws every alignment against the wrong assembly rather
-than erroring. Set the named `queryAssembly` and `targetAssembly` fields instead
-and the ordering can't be misread.
+it backwards draws every alignment against the wrong assembly, and the adapter
+raises no error. Set the named `queryAssembly` and `targetAssembly` fields
+instead and the ordering can't be misread.
 
 :::
 
@@ -119,9 +119,9 @@ Each adapter's config page lists its slots. Across all of them:
   itself and inherits whichever behaviour its children have
 - **The two compressions are not interchangeable.** A whole-file adapter takes
   plain `gzip`, so `.paf.gz` works with no index. The two indexed adapters need
-  bgzip plus a tabix index, which is what `jbrowse make-pif` writes; a plain
-  `gzip` file has no blocks to seek into and fails outright. `csi: true` selects
-  a `.csi` index over `.tbi`
+  bgzip plus a tabix index, as `jbrowse make-pif` writes; a plain `gzip` file
+  has no blocks to seek into and fails outright. `csi: true` selects a `.csi`
+  index over `.tbi`
 - **The MCScan anchors adapters take one BED per assembly** (`bed1`, `bed2`),
   intermediate outputs of the
   [MCScan workflow](<https://github.com/tanghaibao/jcvi/wiki/MCscan-(Python-version)>).

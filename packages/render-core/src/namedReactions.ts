@@ -34,10 +34,9 @@ export function recordNamedReaction(
  *
  * The two halves belong together: `reactionDependencies` can only see a
  * reaction that was recorded, so an installer that calls `autorun` and
- * `addDisposer` directly silently opts its dependency set out of the tests that
- * are supposed to pin it — and nothing fails, which is the same shape of
- * quiet-hole the mechanism exists to close. Every installer goes through here
- * so there is no second spelling to forget.
+ * `addDisposer` directly leaves its dependency set out of the tests that are
+ * supposed to pin it, and those tests still pass. Every installer goes through
+ * here so there is no second spelling to forget.
  */
 export function namedAutorun(
   self: IAnyStateTreeNode,

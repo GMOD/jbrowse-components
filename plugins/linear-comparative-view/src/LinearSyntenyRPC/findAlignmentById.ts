@@ -30,8 +30,8 @@ export interface AlignmentLookupArgs {
 /**
  * The alignment `featureId` names, or `undefined`.
  *
- * IT ANSWERS WITH THE FEATURE, not with a miss value, which is what lets one
- * helper serve two methods whose misses are not the same thing:
+ * IT ANSWERS WITH THE FEATURE, not with a miss value, so one helper serves two
+ * methods whose misses differ:
  * `SyntenyGetCigarMap` declares `transferables: true`, so every return of its —
  * misses included — has to be wrapped by `rpcResult`, while
  * `SyntenyResolveMatchingRegion` returns a bare `undefined`. Neither fact
@@ -39,7 +39,8 @@ export interface AlignmentLookupArgs {
  *
  * BOTH HANDLES FORWARDED rather than a fresh opts object: locating one
  * alignment by id re-reads the whole region out of the PAF/chain file, so a
- * method that rebuilt them here would be uncancellable and silent.
+ * method that rebuilt them here could not be cancelled and would report no
+ * progress.
  */
 export async function findAlignmentById(
   pluginManager: PluginManager,

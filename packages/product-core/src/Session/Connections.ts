@@ -263,9 +263,10 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
-         * Lazily establish a single connection by id if it isn't already live —
-         * used when its category is expanded in the track selector. Fetches
-         * silently (no view launch / success snackbar); already-open tracks keep
+         * Lazily establish a single connection by id if it isn't already live;
+         * the track selector calls it when the connection's category is
+         * expanded. Fetches without launching a view or showing a success
+         * snackbar; already-open tracks keep
          * rendering from `connectionTrackConfigs` meanwhile. Idempotent.
          */
         hydrateConnection(connectionId: string) {

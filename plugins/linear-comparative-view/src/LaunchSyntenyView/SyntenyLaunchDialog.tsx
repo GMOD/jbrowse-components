@@ -17,17 +17,17 @@ import type { ReactNode } from 'react'
  * products cannot), so a dialog that spelled the pair itself had to repeat that
  * question and then repeat its own `launch(replacing)` beside it.
  *
- * `ready` is what makes the launch launchable, and it is one value rather than a
- * boolean beside the fields it stands for: `undefined` greys out both ways out,
- * and anything else is handed back to `onLaunch` already narrowed. A dialog
+ * `ready` carries the launch's inputs as one value, with no separate boolean
+ * beside them. `undefined` greys out both ways out, and anything else is handed
+ * back to `onLaunch` already narrowed. A dialog
  * spelling the condition twice — once to disable the button and once to guard
  * the handler — is how the two drift.
  *
- * BUILDING THE VIEW IS WHAT CAN FAIL, and it fails after the click. A spec that
- * resolves to fewer than two panels is rejected by `launchSyntenyView`, and an
- * unhandled throw out of an onClick takes the dialog with it and reports
- * nothing. Caught here so the failure is a notification and the dialog stays
- * open on the choices that produced it.
+ * BUILDING THE VIEW CAN FAIL, after the click. `launchSyntenyView` rejects a
+ * spec that resolves to fewer than two panels, and an unhandled throw out of an
+ * onClick takes the dialog with it and reports nothing. The dialog catches the
+ * throw, shows it as a notification and stays open on the choices that produced
+ * it.
  */
 export default function SyntenyLaunchDialog<T>({
   session,

@@ -11,7 +11,7 @@ import type { FollowWindow } from './followAnchorWindow.ts'
  * click-driven move, which refuses (`resolveAlignmentSpan`). A block with
  * nothing to walk — a CIGAR-less PAF, or a coarse tier built before the fold
  * existed — still serves whole-genome zoom, so refusing would make the mode
- * work zoomed in and silently stop working zoomed out. Nothing bounds the skew
+ * work zoomed in and leave rows unmoved zoomed out. Nothing bounds the skew
  * across such a block, so a caller
  * that can say the answer is approximate should.
  */

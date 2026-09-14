@@ -105,11 +105,11 @@ export function TreeSidebarMixin<S extends RowSource = RowSource>() {
        * once the region containing it has loaded and then clears it, so the
        * resulting `layout` persists but a saved session never re-sorts.
        *
-       * Where clustering orders rows by the whole region in view and `layout`
-       * states an order outright, only this one says "rank them here", which
-       * is what lets a figure open a cohort ranked at a candidate locus with
-       * the surrounding context still on screen. What the value at the column
-       * *is* stays per display, in its `sortRows` callback.
+       * Clustering orders rows by the whole region in view, and `layout`
+       * states an order outright. This spec ranks rows at one position, so a
+       * figure can open a cohort ranked at a candidate locus with the
+       * surrounding context still on screen. Each display defines the value
+       * at the column in its `sortRows` callback.
        */
       // #region frozenProp
       // `RowSortSpec`, not a second spelling of it: the autorun that consumes

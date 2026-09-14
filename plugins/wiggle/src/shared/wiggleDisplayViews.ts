@@ -120,7 +120,7 @@ export function wiggleDisplayViews(self: WiggleDisplayViewsHost) {
     /**
      * #method
      * The encoder inputs both displays share — everything but the row list,
-     * which is what each has its own idea of. Spread into each display's own
+     * which each display builds differently. Spread into each display's
      * `gpuProps()`; see `sharedRpcProps` for why it isn't an override.
      */
     sharedGpuProps() {

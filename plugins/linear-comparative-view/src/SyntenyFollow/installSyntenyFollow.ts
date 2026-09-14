@@ -345,8 +345,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
    * interval of its layout the union covers.
    *
    * NOT ASYNC and NOT A NAVIGATION in the ordinary case. `positionViewOnSpans`
-   * leaves the row's displayed regions alone, which is what lets a row showing
-   * a whole genome go on showing one — a locstring cannot name two contigs, and
+   * leaves the row's displayed regions alone, so a row showing a whole genome
+   * goes on showing one — a locstring cannot name two contigs, and
    * `navToLocString` would collapse the row onto whichever one it did name.
    *
    * DROPPING THE PICK IS PART OF THE PLACEMENT. No one block places the row
@@ -393,8 +393,8 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
    * ONCE PER DECISION, not once per settle. The key is whatever placed the row
    * — the block, or the contig the envelope answered on — plus the anchor's own
    * orientation; a row the user flips by hand afterwards disagrees with the
-   * key's answer and is left alone until the decision changes, which is what
-   * spares the row's Flip item an anchor take. A mixed window decides nothing
+   * key's answer and is left alone until the decision changes, so the row's
+   * Flip item needs no anchor take. A mixed window decides nothing
    * (`wantReversed` undefined) and leaves the row as it was.
    *
    * THE ROW'S OWN ORIENTATION, not its leftmost block's. `horizontallyFlip`

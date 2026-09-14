@@ -50,11 +50,11 @@ export interface BandStack<K extends string> {
 /**
  * #api core/util
  * Fold an ordered set of bands into tops and a bottom. The order is the
- * argument, so a display states its band order exactly once; reserve, paint
- * and pick all read the same fold, which is what keeps "the reserver and the
- * painter read one function" true by construction rather than by prose.
+ * argument, so a display states its band order exactly once. Reserve, paint
+ * and pick all call this function, so the reserved and painted positions
+ * cannot disagree.
  *
- * Only the fold is shared. What varies per display stays there: per-lane
+ * Only the fold is shared; the rest stays in each display. Per-lane
  * iteration runs this once per lane, sticky-vs-scrolling is a property of how
  * the result is projected to the screen, and a band drawn outside its
  * reservation (an overlay) carries its own draw rect beside the stack.

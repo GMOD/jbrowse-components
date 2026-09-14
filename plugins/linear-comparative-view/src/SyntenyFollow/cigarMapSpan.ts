@@ -48,7 +48,7 @@ function readAt(from: Uint32Array, into: Uint32Array, x: number) {
  * window drifts by the indels in between and the next settle snaps the row back;
  * this reads the indels themselves and is within `map.toleranceBp` either side
  * of the walk the settle would do. The settle then agrees with where the row
- * already is, which is what makes the snap go away rather than get smaller.
+ * already is, so there is no snap.
  *
  * The same conventions as `resolveAlignmentSpan`, deliberately duplicated rather
  * than shared: that one walks ops and this one reads a map, but a window is

@@ -8,19 +8,19 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
-A bubble index reports where a graph varies and how much, one row per bubble,
-but a large bubble is a region rather than a variant: the densest bubble in the
-mouse strain graph holds hundreds of segments inside one intron of _Dock2_. No
-index row describes the inside of a bubble, so we draw it as a force-directed
-graph and open it to show what the inside is made of.
-[Pangenomes beyond human](/docs/tutorials/pangenome_nonhuman) is where this
-graph comes from and where the bubble was found.
+A bubble index has one row per bubble, and each row reports where the graph
+varies and how much. A large bubble covers a whole region. The densest bubble in
+the mouse strain graph holds hundreds of segments inside one intron of _Dock2_.
+No index row describes the inside of a bubble, so we draw the bubble as a
+force-directed graph and open it to see its contents.
+[Pangenomes beyond human](/docs/tutorials/pangenome_nonhuman) builds this graph
+and finds the bubble.
 
 :::caution Experimental
 
 The graph view is a beta plugin, and this tutorial covers experimental ideas.
-Where a step below says the view works a particular way today, that is a current
-limit rather than a settled design. We welcome your [feedback](/contact).
+Where a step below says the view works a particular way today, the step
+describes a current limit of the view. We welcome your [feedback](/contact).
 
 :::
 
@@ -32,10 +32,10 @@ limit rather than a settled design. We welcome your [feedback](/contact).
 
 ## Where the data comes from
 
-The mouse strain graph of
-[Pangenomes beyond human](/docs/tutorials/pangenome_nonhuman): GRCm39 and
-eighteen strain assemblies through one `minigraph` call per chromosome, served
-as rGFA projections.
+The data is the mouse strain graph from
+[Pangenomes beyond human](/docs/tutorials/pangenome_nonhuman). One `minigraph`
+call per chromosome built it from GRCm39 and eighteen strain assemblies, and we
+serve it as rGFA projections.
 
 - the segment and link index:
   https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.segs.bed.gz and
@@ -46,41 +46,42 @@ as rGFA projections.
 ## One bubble, one label
 
 Open the _Dock2_ window as a graph and pick **Force-directed layout**. The index
-lists this window as a single bubble, so the whole cut is that bubble, and one
-label names it with the index's own terms: a superbubble, with its segment count
-and the span of its routes. A halo around everything would mark nothing, so a
-bubble that is the whole drawing keeps its label and goes without one.
+lists this window as a single bubble, so the whole cut is that bubble. One label
+names it in the index's terms: a superbubble, with its segment count and the
+span of its routes. A bubble that fills the whole drawing gets the label and no
+halo, because a halo around everything would mark nothing.
 
-<Figure caption="The Dock2 intron window with the RefSeq genes, the bubbles lane and the rGFA segments above the force-directed graph. The bubbles lane is one row and the graph carries one label, naming the whole cut as a superbubble." src="/img/pangenome/graph_mouse_dock2_halos.png" />
+<Figure caption="The Dock2 intron window with the RefSeq genes, the bubbles lane and the rGFA segments above the force-directed graph. The bubbles lane is one row, and the graph's one label names the whole cut as a superbubble." src="/img/pangenome/graph_mouse_dock2_halos.png" />
 
-Dock2 itself is pinned under the backbone, with no exon stretch anywhere in the
-cut: the gene track shows the same fact on the graph that the linear view shows
-above it, that this is intron.
+The view pins Dock2 under the backbone, and no exon stretch appears anywhere in
+the cut. The gene track on the graph and the linear view above it both show that
+the cut is intron.
 
-A superbubble is the index's name for a bubble too big to type. The label
-reflects that: it gives a segment count and a route range and no kind, since the
-row's numbers describe the whole region at once.
+A superbubble is the index's name for a bubble too big to type. The label gives
+a segment count and a route range and no kind, since the row's numbers describe
+the whole region at once.
 
 ## Open it, and open what is inside
 
-Click the label. The view cuts the bubble's segments out and lays them out on
-their own, and then derives bubbles from the popped graph itself: a backbone
-node that no edge jumps over is a boundary, and whatever lies between two
-boundaries is a bubble. Those get halos and labels of their own, and one of them
-opens in turn.
+Click the label. The view cuts out the bubble's segments and lays out only
+those. It then derives bubbles from the popped graph. A backbone node that no
+edge jumps over is a boundary, and whatever lies between two boundaries is a
+bubble. Each derived bubble gets a halo and a label, and one of them opens in
+turn.
 [Part 4 of the HPRC tutorial](/docs/tutorials/pangenome_graph_reading#open-the-array)
 shows one such level opened under its linear view.
 
-Each level keeps the one above it behind a button, so the descent unwinds the
-way it was made. The labels at each level are typed the way the index types a
-bubble, from the reference interval a bubble replaces and the shortest and
-longest route through it, which the layering states for any anchored graph.
+Each level has a button that returns to the level above, so you climb back out
+in the order you descended. The view types the labels at each level the way the
+index types a bubble. The type comes from the reference interval a bubble
+replaces and from the shortest and longest route through it. The layering gives
+those values for any anchored graph.
 
 ## The control
 
-_Nnt_ is the window Pangenomes beyond human opens first: one large allele the
-other strains carry and the reference lacks. Drawn the same way it should halo
-as a plain insertion and hold nothing to descend into.
+_Nnt_ is the window Pangenomes beyond human opens first. It holds one large
+allele that the other strains carry and the reference lacks. Drawn the same way,
+Nnt should halo as a plain insertion with nothing to descend into.
 
 <Figure caption="The Nnt window force-directed. The large loop halos as one insertion beside the smaller sites along the backbone, Nnt's exons run along the reference nodes with its name pinned under them, and no halo is a superbubble." src="/img/pangenome/graph_mouse_nnt_halos.png" />
 
@@ -93,9 +94,9 @@ tabix https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed
   'mm39#0#chr11:34516044-34560497'
 ```
 
-The label printed this same segment count and route span. The bubbles inside it
-are in no file: they are read off the popped graph's layering each time it
-opens, and closing the level discards them.
+The label printed this same segment count and route span. No file holds the
+bubbles inside it. The view derives them from the popped graph's layering each
+time the level opens, and discards them when the level closes.
 
 ## See also
 

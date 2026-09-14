@@ -15,8 +15,8 @@ export type LodMode = 'auto' | 'fine' | 'coarse'
  * The tier a fetch asks the adapter for — deliberately a narrower type than
  * {@link LodMode}. 'auto' is a *preference*, and an adapter is never handed one:
  * resolving it needs a zoom, and the zoom lives on the main thread where the
- * refetch key is computed. Keeping the two as separate types is what stops the
- * resolution from drifting back into the adapter (see {@link resolveLodTier}).
+ * refetch key is computed. Keeping the two as separate types stops the
+ * resolution from moving back into the adapter (see {@link resolveLodTier}).
  */
 export type { LodTier }
 
@@ -64,9 +64,9 @@ export function readLodTierInfo(info: unknown): LodTierInfo | undefined {
  * the clamp is the rule the slot description used to ask the operator to keep
  * by hand.
  *
- * Before the info lands (`tierInfo` undefined) the slot is trusted as-is. That
- * is what keeps the fetch key still when the info arrives for a file built with
- * the defaults, which is nearly every file: the answer was already right, so
+ * Before the info lands (`tierInfo` undefined) the slot is trusted as-is, so
+ * the fetch key does not change when the info arrives for a file built with the
+ * defaults, which is nearly every file: the answer was already right, so
  * nothing refetches. Only a file whose header disagrees with the slot moves the
  * key, once.
  */
@@ -204,11 +204,11 @@ export function getCoarseBpPerPxThreshold(track: {
  * Annotated at every site that walks a synteny view's `levels[].tracks` or a
  * dotplot's `tracks`, because those arrays type out as `any`: the level model is
  * deliberately `IAnyModelType` to break a real type cycle, and `any` propagates
- * through the array and switches off checking on everything read from it. That
- * is not theoretical — it let `getConf(t.configuration, ...)` compile where
- * getConf wants the MODEL, and it threw at runtime reading
- * `configuration.configuration.adapter`. Naming the shape is what makes the
- * compiler check those calls again.
+ * through the array and switches off checking on everything read from it. The
+ * `any` let `getConf(t.configuration, ...)` compile where getConf wants the
+ * MODEL, and the call threw at runtime reading
+ * `configuration.configuration.adapter`. With this interface the compiler checks
+ * those calls again.
  */
 export interface ComparativeTrackModel {
   configuration: AnyConfigurationModel & { trackId: string; name: string }

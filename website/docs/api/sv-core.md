@@ -97,7 +97,8 @@ in the same view), or a variant feature widget.
 
 Spelling it out inline is the same string until it isn't — the dialog appends
 its own shape suffix to whatever it is handed, so a launcher that respells the
-prefix quietly gets a second view rather than a broken one.
+prefix gets a second view instead of reusing the first, and nothing reports
+it.
 
 ```js
 // type signature

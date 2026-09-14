@@ -521,13 +521,13 @@ export default function stateModelFactory(pm: PluginManager) {
          * axes in step with this array, so one name leaves the other axis with
          * no regions and `initialized` never comes true — the view sat on its
          * spinner saying "Loading" forever, with the assembly it was supposedly
-         * waiting for already loaded. Extra names are the same statement in the
-         * other direction: nothing reads past the second, so a third assembly is
-         * silently not plotted.
+         * waiting for already loaded. Extra names fail the other way: nothing
+         * reads past the second, so a third assembly is not plotted and nothing
+         * says so.
          *
          * Only reachable from a hand-authored snapshot — `setAssemblyNames`
-         * writes both, and `applyInit` already rejects an init naming one — which
-         * is exactly the case that needs telling. Zero names is not an error: it
+         * writes both, and `applyInit` already rejects an init naming one — and
+         * that snapshot is the case this error reports. Zero names is not an error: it
          * is the import form.
          */
         get axisAssemblyError() {
@@ -852,9 +852,8 @@ export default function stateModelFactory(pm: PluginManager) {
          * The zoom-out limit both axes share under `lockAspectRatio`: one
          * bpPerPx has to fit the LONGER genome, so it is the larger of the two
          * axes' own fits. Read back by each axis as its `maxBpPerPx` (see
-         * `axisMaxBpPerPx`), which is what keeps every route to a zoom — the
-         * buttons, the wheel, box-zoom, `showAllRegions` — clamping against the
-         * same ceiling.
+         * `axisMaxBpPerPx`), so every route to a zoom — the buttons, the wheel,
+         * box-zoom, `showAllRegions` — clamps against the same ceiling.
          */
         get sharedFitBpPerPx() {
           return Math.max(self.hview.fitBpPerPx, self.vview.fitBpPerPx)
@@ -1213,7 +1212,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * Render-lifecycle precondition (overrides `RenderLifecycleMixin`'s
          * default-true hook): before the axes have regions and a measured
          * width there is nothing to paint against. Gating the autorun pair
-         * here is what lets `dotplotRenderState` stay a resolved getter.
+         * here lets `dotplotRenderState` stay a resolved getter.
          */
         get canRender() {
           return self.initialized
@@ -1424,7 +1423,7 @@ export default function stateModelFactory(pm: PluginManager) {
          * happens here — the way `getCoords` already does it — rather than at
          * the call site against a separately measured element height.
          *
-         * Multiplying both axes by one factor is what makes wheel zoom
+         * Multiplying both axes by one factor keeps wheel zoom
          * ratio-preserving, so the aspect lock never has to correct it. One
          * action, for the reason `scrollXY` documents.
          */

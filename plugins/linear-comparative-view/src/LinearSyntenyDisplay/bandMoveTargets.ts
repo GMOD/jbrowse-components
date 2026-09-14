@@ -44,9 +44,10 @@ export interface BandMoveTarget {
  * That is not implied by the band being on screen: a ribbon is drawn out to the
  * overdraw band, which at whole-genome zoom is many contigs wide, so a panel can
  * be scrolled to a different contig with the ribbon still painted. There is then
- * no window to map across, and the move used to return silently — a menu item
- * that did nothing, in the one situation the item exists for, which is panels
- * that have drifted apart. Offered or absent, never inert.
+ * no window to map across, and without this check the move returns without
+ * navigating: a menu item that does nothing for panels that have drifted apart,
+ * the case the item is for. The item is offered where it works and absent
+ * elsewhere.
  */
 export function bandMoveTargets({
   level,

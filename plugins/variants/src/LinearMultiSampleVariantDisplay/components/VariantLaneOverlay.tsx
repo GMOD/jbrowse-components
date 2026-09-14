@@ -104,10 +104,10 @@ export function variantLaneSurface(
  * gesture meant for what is under it. The hover itself comes from the chrome's
  * pointer measurement (see `VariantDisplayComponent`), not from here.
  *
- * Its own component, and the one reading the hover, so a hover change
- * re-renders this and not `VariantLaneOverlay`: the overlay's `draw` closure
- * identity is what makes `OverlayCanvas` repaint, so a hover tick landing there
- * would redraw the whole band.
+ * `VariantLaneInteraction` is a separate component and the one reading the
+ * hover, so a hover change re-renders it and not `VariantLaneOverlay`.
+ * `OverlayCanvas` repaints whenever the overlay's `draw` closure identity
+ * changes, so a hover tick landing there would redraw the whole band.
  */
 const VariantLaneInteraction = observer(function VariantLaneInteraction({
   model,

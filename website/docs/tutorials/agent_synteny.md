@@ -188,9 +188,9 @@ END {
 X    21.04 Mb aligned,  4.44% reverse
 ```
 
-Four arms carry essentially no reverse-strand alignment, which is what two
-genomes assembled in the same orientation look like. Those four are the control
-for the other two: 2R and X sit more than an order of magnitude above them.
+Four arms carry essentially no reverse-strand alignment, as expected of two
+genomes assembled in the same orientation. Those four are the control for the
+other two: 2R and X sit more than an order of magnitude above them.
 
 Grouping the reverse-strand blocks of 5 kb or more, and cutting a group wherever
 half a megabase passes with none, gives three regions:

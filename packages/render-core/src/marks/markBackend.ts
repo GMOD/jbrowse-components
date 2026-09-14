@@ -229,8 +229,8 @@ export class Canvas2DMarkBackend<
  * are the marks' own and each backend walks the same list.
  *
  * One uniform buffer serves every mark because each writes its own layout into
- * the scratch immediately before its own `drawPass`, which is what the HAL's
- * write-then-draw ordering already guarantees for a multi-pass renderer — or
+ * the scratch immediately before its `drawPass`, the ordering the HAL's
+ * write-then-draw contract already guarantees for a multi-pass renderer — or
  * draws off the struct the previous mark of the same block already staged, per
  * `StagedUniforms`.
  */

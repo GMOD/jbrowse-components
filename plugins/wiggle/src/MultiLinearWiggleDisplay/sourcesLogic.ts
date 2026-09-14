@@ -55,11 +55,10 @@ export function sourcesFromRegionData(
  * | `multirow` | the row's pos-side bars | `color`           | group only      |
  * | `density`  | the **score ramp**      | `labelColor`      | group only      |
  *
- * The one load-bearing fact, from which every special case below follows:
- * **in density `color` is not an identity, it is a scale.** Density paints a
- * row white at the bicolor pivot and saturates toward `color`, so a hue put
- * there to say "this row is population PUR" silently replaces the pos/neg
- * scale the track is read by — a diverging copy-number heatmap grouped by
+ * **In density, `color` is a scale rather than an identity**, and every special
+ * case below follows from that. Density paints a row white at the bicolor
+ * pivot and saturates toward `color`, so a hue set there to mark "this row is
+ * population PUR" replaces the pos/neg scale the track is read by — a diverging copy-number heatmap grouped by
  * population came out one hue per population with a shared blue for losses,
  * encoding nothing. So identity is displaced one channel over, to
  * `labelColor`, which the row-label sidebar paints and the ramp ignores.
@@ -117,8 +116,8 @@ interface PaletteColors {
  * The palette entries a track's rows and groups draw from, in first-appearance
  * order over the full (pre-filter) source list.
  *
- * **One cursor hands out every entry**, which is what makes the two maps
- * disjoint by construction rather than by an offset someone has to check. They
+ * **One cursor hands out every entry**, so the two maps are disjoint by
+ * construction, with no offset for anyone to check. They
  * were built as two independent 0-based sequences — groups by group order, rows
  * by source index — and a track that mixes grouped and ungrouped subadapters
  * therefore gave `set1[0]` to both the first group and the first ungrouped row:

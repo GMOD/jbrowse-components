@@ -705,11 +705,11 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * The selected track configs, resolved from `selectedTrackIds` on read
-       * exactly as favorites and recently-used are. That is the one gate for
-       * every delete path (the cart's own "Delete tracks", a single track's
-       * menu) — a track that has gone away no longer resolves, so nothing has
-       * to clean up after it — and it is what keeps an edited track selected,
-       * since the id outlives the config object an edit replaces.
+       * exactly as favorites and recently-used are. Every delete path (the
+       * cart's "Delete tracks", a single track's menu) reads it. A track that
+       * has been removed no longer resolves, so nothing has to clear it from
+       * the selection, and an edited track stays selected, since the id
+       * outlives the config object an edit replaces.
        */
       get selection(): AnyConfigurationModel[] {
         return self.selectedTrackIds

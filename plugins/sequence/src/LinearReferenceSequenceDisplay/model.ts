@@ -224,12 +224,11 @@ export function modelFactory(
        * The static message `SequenceDisplayComponent` renders where the
        * `<canvas>` would go, or undefined when the sequence actually paints.
        *
-       * Two states reach it, and having one term for both is the point. Zoomed
-       * past base resolution there is nothing to draw and nothing is fetched;
-       * with every row toggled off there is likewise nothing to draw, and that
-       * case used to reach only `computedHeight` — `numRows * ROW_HEIGHT_PX` is
-       * 0, so unticking both strand rows collapsed the track to a 0px sliver
-       * with no message and nothing left to grab.
+       * Two states produce a message through this one getter. Zoomed past
+       * base resolution there is nothing to draw and nothing is fetched. With
+       * every row toggled off there is also nothing to draw, and
+       * `numRows * ROW_HEIGHT_PX` is 0, so without the message unticking both
+       * strand rows collapses the track to a 0px sliver with nothing to grab.
        */
       get placeholderMessage(): string | undefined {
         return this.zoomedOut
@@ -241,8 +240,8 @@ export function modelFactory(
       /**
        * #getter
        * Showing the message means no fetch is coming and `canvasRef` is never
-       * called, which is what every consumer of this hook needs to know: the
-       * loading scrim must not cover it, `svgReady` must resolve without data,
+       * called. Every consumer of this hook depends on that: the loading scrim
+       * must not cover it, `svgReady` must resolve without data,
        * and `painted` — so `data-display-drawn`, which `PENDING_DISPLAYS`
        * selects on — must report finished. See FetchMixin.fetchInert.
        */

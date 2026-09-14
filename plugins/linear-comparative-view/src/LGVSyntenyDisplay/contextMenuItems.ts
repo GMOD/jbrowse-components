@@ -199,17 +199,16 @@ function openMateItem(
  * instead of building a new view it moves the panel next to this one to the
  * region the alignment says corresponds.
  *
- * ITS OWN GATE, not the launch's. It used to be nested inside one, which cost
- * it the case it is most useful in: an all-vs-all track's mate can be a PanSN
- * sample the track does not declare in `assemblyNames` (the adapter's own docs
- * say so), and the launch is rightly hidden for those — but if a NEIGHBOURING
- * PANEL IS ALREADY OPEN on that sample, moving it is perfectly well defined and
- * was silently unavailable. What this actually needs is below, and the panel
- * check is the strict one: `matePanelIndexes` only names a neighbour already
+ * A GATE SEPARATE FROM THE LAUNCH'S. Nested inside the launch's gate, the item
+ * would be missing in the case it is most useful in: an all-vs-all track's mate
+ * can be a PanSN sample the track does not declare in `assemblyNames` (the
+ * adapter docs say so), and the launch is rightly hidden for those — but if a
+ * NEIGHBOURING PANEL IS ALREADY OPEN on that sample, moving it is well defined.
+ * The conditions follow, and the panel check is the strict one: `matePanelIndexes` only names a neighbour already
  * showing the mate's assembly.
  *
  * Only where this view IS a panel of a stack — in a standalone linear view
- * there is nothing to move, and launching is the whole answer.
+ * there is nothing to move, and launching is the only option.
  *
  * AND ONLY WITH AN ALIGNMENT STRING TO WALK — a CIGAR, or the coarse tier's
  * fold of one, whose runs keep the walk within the fold's `--coarse` gap.

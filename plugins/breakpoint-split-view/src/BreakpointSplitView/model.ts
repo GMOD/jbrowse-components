@@ -185,8 +185,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * #volatile
        * Which overlay curve the pointer is on, and the reason it lives here
        * rather than in each overlay's React state: a hover the viewport can
-       * invalidate needs one place to be cleared from, which is what
-       * `overlayTransformKey` and the `afterAttach` reaction give it.
+       * invalidate needs one place to be cleared from, and
+       * `overlayTransformKey` and the `afterAttach` reaction clear it here.
        */
       hoveredOverlay: undefined,
     }))
@@ -252,8 +252,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * Spinner instead of content, i.e. sub-views exist but haven't loaded their
-       * assemblies yet. Named to match LGV/dotplot/synteny/circular, which is what
-       * ViewContainer reads to publish `data-view-phase`.
+       * assemblies yet. Named to match LGV/dotplot/synteny/circular, since
+       * ViewContainer reads this name to publish `data-view-phase`.
        */
       get showLoading() {
         return this.hasSomethingToShow && !this.initialized && !this.error
@@ -329,8 +329,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * connectors at all.
        *
        * A row whose assembly has not loaded is `undefined` rather than a hole,
-       * so a level index stays a level index; its features drop, which is what
-       * an unresolvable refName does anyway.
+       * so a level index stays a level index; its features drop, as they do for
+       * any unresolvable refName.
        */
       get assemblies() {
         const { assemblyManager } = getSession(self)

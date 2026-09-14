@@ -41,9 +41,9 @@ function compose<E>(
  * Takes a single element child and clones it rather than wrapping it: the
  * controls that want a tooltip are absolutely positioned inside a legend or sit
  * in a flex row, where an extra `<span>` moves them. The child keeps its own
- * handlers — these compose on top of them. This is the same trigger pattern
- * MUI's own `Tooltip` uses, which is what the rest of JBrowse's chrome is built
- * on; the toolkit is what differs here, not the shape.
+ * handlers — these compose on top of them. MUI's `Tooltip`, which the rest of
+ * JBrowse's chrome is built on, uses the same trigger pattern; only the toolkit
+ * differs.
  *
  * ```tsx
  * <Tooltip title="Hide legend">

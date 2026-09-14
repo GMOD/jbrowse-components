@@ -56,10 +56,10 @@ function makeLabelColorResolver() {
  * deltas the `lengthField` slot packs. A block's width can only express how
  * much reference a feature covers, so these glyphs are where the length goes.
  *
- * `insertionColor` must be `palette.insertion`, which is what the pileup
- * paints, not alignments-core's `INSERTION_COLOR` — that is a different purple
- * for worker code with no theme to read, and hardcoding it leaves these glyphs
- * behind when a custom theme moves the pileup.
+ * `insertionColor` must be `palette.insertion`, the color the pileup paints.
+ * Alignments-core's `INSERTION_COLOR` is a different purple for worker code
+ * with no theme to read, and hardcoding it leaves these glyphs on the old color
+ * when a custom theme changes the pileup's.
  */
 export function drawMultiRowIndelGlyphs(
   ctx: Ctx2D,

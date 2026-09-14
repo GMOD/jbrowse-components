@@ -52,7 +52,7 @@ export function featureAttributes(
  * A feature's numeric channels as tooltip lines, shared by both comparative
  * views because they had drifted: the dotplot listed every channel, while the
  * synteny tooltip hand-wrote one `Identity:` line at a different precision and
- * silently dropped mapping quality, dN/dS, mean identity and every column the
+ * omitted mapping quality, dN/dS, mean identity and every column the
  * track declared.
  */
 export function attributeTooltipLines(values: Record<string, number>) {

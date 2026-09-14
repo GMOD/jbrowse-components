@@ -31,8 +31,8 @@ import type { Feature, Region } from '@jbrowse/core/util'
  * the fetch that made it, not a sort.
  *
  * A feature overlapping no region keeps its arrival order at the end rather than
- * being dropped; the caller asked for these features and losing one silently
- * would be worse than a column out of place.
+ * being dropped. The caller asked for these features, and a missing column
+ * leaves nothing on screen to notice, which is worse than a column out of place.
  */
 export function orderByScreenPosition<T>(
   items: T[],

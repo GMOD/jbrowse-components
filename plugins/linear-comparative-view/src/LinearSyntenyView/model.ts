@@ -525,8 +525,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * per synteny band rather than one of its own, so the track-selector and
        * add-track widgets target a level through here instead of referencing
        * this view directly. By id, not index: reconcileLevels pops levels when
-       * a genome row is removed, and an index would silently retarget a
-       * different pair.
+       * a genome row is removed, and an index would then name a different
+       * pair.
        */
       trackContainerFor(id: string): TrackContainer | undefined {
         return self.levels.find(level => level.id === id)
@@ -1113,7 +1113,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * pair, so a missing level means the caller named a gap that has no views
        * (e.g. an `init.tracks` with more levels than `init.views` has gaps);
        * creating one here would append a level whose views[level+1] is absent,
-       * which renders nothing and silently breaks the views/levels invariant.
+       * which renders nothing and breaks the views/levels invariant.
        */
       showTrack(
         trackId: string,
@@ -1187,8 +1187,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * fills its pane and every other row is drawn shorter in proportion to
        * its size — or hand each row its own fit, so each fills its own pane.
        *
-       * That difference is the point of offering the choice: rows fit
-       * individually to width all end up the same length, which silently
+       * Rows fit individually to width all end up the same length, which
        * stretches a small genome to look like a large one and misaligns every
        * ribbon between them by the ratio. Distinct from squareView, which
        * averages the rows' current scales (the average fits nobody, and each

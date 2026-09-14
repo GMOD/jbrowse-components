@@ -9,11 +9,10 @@ import type { PickCanvasLike } from './syntenyPickEngine.ts'
  * Stand in for the context `makePickCtx` hands the pick engine, so a suite can
  * say whether a candidate's path contains the point without a real canvas.
  *
- * Both backends resolve that context through `OffscreenCanvas`, which is what
- * this replaces — and going through the same door as production is the point:
- * the pick used to run on the Canvas2D backend's own RENDER context, where the
- * device-scale transform silently moved the path out from under the query
- * point. A suite that reaches into the renderer's mock ctx cannot see that,
+ * Both backends resolve that context through `OffscreenCanvas`, and this stub
+ * replaces `OffscreenCanvas`, so a suite takes the same path as production. A
+ * pick run on the Canvas2D backend's RENDER context gets the device-scale
+ * transform, which moves the path away from the query point and misses. A suite that reaches into the renderer's mock ctx cannot see that,
  * because a mock has no transform to apply.
  *
  * Returns the restore function and a call count, so a test can assert the pick

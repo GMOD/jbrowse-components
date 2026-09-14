@@ -10,17 +10,17 @@ export interface SamplesTsvResult {
  * warnings a partial match earns. The caller reports the warnings — they used to
  * go to `console.warn` in the worker, where nobody sees them.
  *
- * A file matching NONE of the VCF's samples throws instead. It is a config
- * error, and the alternative was silence: the filter empties, so `getVcfSources`
- * returns `[]`, so `sourcesBase` is `[]` — which is truthy, so no loading state
- * shows either — so `sampleFilter` is `[]`, which `buildCanonicalRows` correctly
- * reads as "no samples", and the display draws an empty band with no banner.
- * Falling back to `parser.samples` would be the worse failure: a track quietly
- * showing every sample when the config asked for a curated subset.
+ * A file matching NONE of the VCF's samples is a config error and throws.
+ * Without the throw the filter empties and `getVcfSources` returns `[]`. That
+ * makes `sourcesBase` `[]`, which is truthy, so no loading state shows, and
+ * `sampleFilter` `[]`, which `buildCanonicalRows` reads as "no samples". The
+ * display then draws an empty band with no banner. Falling back to
+ * `parser.samples` would be worse: the track would show every sample, with no
+ * warning, when the config asked for a curated subset.
  *
- * The message carries an example of the mismatch because that is the whole
- * diagnosis — what separates `1000GP_HG00096` from `HG00096` is a prefix, and no
- * count of unmatched rows tells you that.
+ * The message carries an example of the mismatch, because a prefix is what
+ * separates `1000GP_HG00096` from `HG00096`, and no count of unmatched rows
+ * shows that.
  */
 export function parseSamplesTsv(
   txt: string,

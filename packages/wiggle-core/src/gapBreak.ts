@@ -5,9 +5,8 @@
  * draw. Returns `Infinity` when there is nothing to decide, so a caller can
  * always compare against it unguarded.
  *
- * The limit is a multiple of the series' own *mean* spacing rather than an
- * absolute distance, which is what makes one number work across zoom levels and
- * data types: reduced BigWig bins get wider as you zoom out, so any fixed bp
+ * The limit is a multiple of the series' *mean* spacing rather than an
+ * absolute distance, so one number works across zoom levels and data types: reduced BigWig bins get wider as you zoom out, so any fixed bp
  * threshold would be either useless at one end or destructive at the other. It
  * also lets the same rule serve a bp axis (wiggle's linecenter) and a px one —
  * the caller picks the space, this only cares that the units are consistent.

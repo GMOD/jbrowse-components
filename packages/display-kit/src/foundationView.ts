@@ -36,9 +36,10 @@ export function containingHost(self: IStateTreeNode): RegionHost {
  * design, and the render autorun's catch would show that as a GPU render-error
  * banner.
  *
- * Gating it once, for all of them, is what lets a display's `renderState` be a
- * plain resolved getter and its render callback gate only on its own data. The
- * render-lifecycle twin of `autorunOnReadyView`.
+ * With the gate applied once for every LGV display, a display's `renderState`
+ * can be a plain resolved getter and its render callback can gate only on its
+ * data. `foundationCanRender` is the render-lifecycle twin of
+ * `autorunOnReadyView`.
  */
 export function foundationCanRender(self: { host: { initialized: boolean } }) {
   return self.host.initialized

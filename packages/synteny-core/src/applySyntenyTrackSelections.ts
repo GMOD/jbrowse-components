@@ -20,7 +20,7 @@ import type {
  * Both import forms submit through here, because resolving and applying are two
  * halves of one answer and splitting them across two files is how they drifted:
  * the dotplot's copy used to `toggleTrack` where the synteny form used
- * `showTrack`, which silently *hid* the track on a re-submit — `addTrackConf`
+ * `showTrack`, which *hid* the track on a re-submit — `addTrackConf`
  * dedupes by trackId, so the second pass reaches a track that is already shown.
  * Showing is idempotent; toggling is only correct on a level known to be empty.
  */

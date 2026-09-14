@@ -191,7 +191,7 @@ const markValueSchema = ConfigurationSchema(
      * #slot marks.encoding.y.field
      * The feature field, or jexl callback over `feature`, plotted on the
      * score axis. A feature whose value is not a finite number is skipped.
-     * Empty for a mark with no value, which is what a span is; a bar or
+     * Empty for a mark with no value, such as a span; a bar or
      * point must name one, and the config is refused where it does not.
      * Writing `y: 'score'` directly on the encoding lands here.
      */

@@ -31,9 +31,9 @@ interface BreakendLaunchSelf extends IStateTreeNode {
  * differ only in how they get hold of the feature: `LinearVariantDisplay` ships
  * slim render arrays and has to re-fetch it (`breakendMenuItems` wraps this with
  * that fetch), while the multi-sample displays' context menu is built from a
- * `contextMenuInfo` whose feature is already a `Feature`. Factoring on *that* line —
- * "here is the record" — is what lets the second one reuse this without
- * growing a `fetchFullFeature` it has no use for.
+ * `contextMenuInfo` whose feature is already a `Feature`. Taking the resolved
+ * record as input lets the multi-sample displays reuse this without a
+ * `fetchFullFeature` they have no use for.
  *
  * Gated on the feature's own type rather than on parsing its ALT: `VcfFeature`
  * already resolves `<...>` / bracket ALTs to SO terms, so a BND record arrives
@@ -61,9 +61,9 @@ export function breakendSplitViewMenuItem(
 /**
  * Open the dialog on a resolved record. Separate from the row above so
  * `breakendMenuItems`' fetch-then-launch path lands in exactly the same call —
- * the `findJunctionsNear` argument in particular, which is what makes the dialog
- * offer the whole chain of junctions rather than this one record's two ends, and
- * which is easy to forget in a second copy.
+ * the `findJunctionsNear` argument in particular, which makes the dialog offer
+ * the whole chain of junctions rather than this one record's two ends, and which
+ * is easy to forget in a second copy.
  */
 export function launchFromFeature(self: BreakendLaunchSelf, feature: Feature) {
   const view = containingLgv(self)

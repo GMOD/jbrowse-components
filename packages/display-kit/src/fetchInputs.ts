@@ -87,15 +87,15 @@ export function snapshotInputs(value: unknown): unknown {
  *
  * Structural, so the value's identity survives a recomputation that lands on
  * the same content — every region a fetch stamps holds the *same* object, and
- * `isCacheValid`'s compare then short-circuits on `===`. That is what makes a
- * deep compare per visible block cheaper than the string compare it replaces:
- * the string had to be built and walked on every settings read.
+ * `isCacheValid`'s compare then short-circuits on `===`. The short-circuit makes
+ * a deep compare per visible block cheaper than the string compare it replaces,
+ * because the string had to be built and walked on every settings read.
  *
  * Structural also settles two hazards the JSON key could not. `JSON.stringify`
  * drops an `undefined`-valued key, so a field could not be told from a sibling
  * state that also drops; and it flattens a class with no own enumerable fields
- * to `{}`. `compareStructural` counts keys and compares own fields, so neither
- * state is silently dead.
+ * to `{}`. `compareStructural` counts keys and compares own fields, so a change
+ * to either state invalidates the cache.
  */
 export function makeFetchInputs(self: FetchInputsHost) {
   const settings = computed(

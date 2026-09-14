@@ -128,8 +128,8 @@ export function dndsNorm(value: number) {
  * A continuous color-by mode: which feature attribute it paints, the colormap,
  * and the domain that maps a raw value into it.
  *
- * The mode is a value rather than a switch arm, which is what stops the mode
- * list growing by one enum member, one menu entry, one legend arm, one LUT, one
+ * The mode is a value rather than a switch arm, so the mode list does not grow
+ * by one enum member, one menu entry, one legend arm, one LUT, one
  * typed array and one RPC transfer entry per measurement someone wants to see.
  * A track carrying a column nobody anticipated is reached as
  * `attribute:<column>`, built from this same shape at read time.

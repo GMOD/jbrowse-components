@@ -608,7 +608,7 @@ index: ConfigurationSchema('BamIndex', {
   /**
    * #slot index.location
    * location of the index. Only needed when it is not named
-   * `<file>.bam.bai` (or `.bam.csi`), which is what the `uri` shorthand
+   * `<file>.bam.bai` (or `.bam.csi`), the names the `uri` shorthand
    * assumes.
    */
   location: {

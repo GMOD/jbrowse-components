@@ -1,7 +1,6 @@
 /**
  * What a display foundation exposes for `RenderLifecycleMixin`'s `paintInert`
- * hook. Named the same on both foundations, which is what lets one expression
- * serve them.
+ * hook. Both foundations use the same names, so one expression serves them.
  */
 export interface PaintInertFoundation {
   /** `FetchMixin`'s: a fetch that failed */

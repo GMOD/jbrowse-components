@@ -90,8 +90,8 @@ export function getGenotypeClassCount(feature: Feature, cls: string) {
  * ALT alleles the record declares (bcftools `N_ALT`), for the biallelic-only
  * filter that is most of what it is used for. Its jexl spelling is a function
  * rather than `feature.ALT.length` because jexl resolves a member access on an
- * array against its *first element*, so that expression silently returns the
- * length of the first allele string.
+ * array against its *first element*, so that expression returns the length of
+ * the first allele string.
  */
 export function getAltAlleleCount(feature: Feature) {
   const alt = feature.get('ALT') as string[] | undefined

@@ -632,7 +632,7 @@ restores natively:
 | [`hideVerticalResizeHandle`](/docs/models/circularview#property-hideverticalresizehandle) | chrome switch, for an embed that drives the view itself |
 | [`minimized`](/docs/models/baseviewmodel#property-minimized) | collapse the view to its header bar, keeping it in the session rather than closing it |
 | [`minimumRadiusPx`](/docs/models/circularview#property-minimumradiuspx) | how far in the circle may be zoomed, as a floor on the radius; it is what caps bpPerPx |
-| [`minVisibleWidth`](/docs/models/circularview#property-minvisiblewidth) | arcs thinner than this many pixels are elided instead of drawn, which is what stops a few thousand unplaced contigs becoming a ring of hairlines |
+| [`minVisibleWidth`](/docs/models/circularview#property-minvisiblewidth) | arcs thinner than this many pixels are elided instead of drawn, so a few thousand unplaced contigs do not become a ring of hairlines |
 | [`offsetRadians`](/docs/models/circularview#property-offsetradians) | similar to offsetPx in linear genome view |
 | [`paddingPx`](/docs/models/circularview#property-paddingpx) | blank margin between the circle and the edge of the figure |
 | [`spacingPx`](/docs/models/circularview#property-spacingpx) | the gap drawn between adjacent chromosome arcs |
@@ -960,7 +960,7 @@ extension or a STAR-Fusion file, which has none of its own.
 ```
 
 The circular half draws the rows the spreadsheet half's filter leaves, so
-`filterText` is what makes a chord subset reachable from a link.
+`filterText` makes a chord subset reachable from a link.
 
 <!-- SPEC_KEYS SvInspectorView START -->
 

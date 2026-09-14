@@ -22,11 +22,10 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * show/hide defaults and band sizes.
  *
  * #example
- * Set through the track's `displayDefaults`, which is what makes a track open
- * in this state rather than requiring every viewer to set it from the menu. A
- * whole-genome alignment with many species is the case worth tuning: a shorter
- * `rowHeight` fits more rows on screen, and the conservation band is what most
- * readers scan first.
+ * Set through the track's `displayDefaults`, so the track opens in this state
+ * for every viewer without each setting it from the menu. Tuning matters most
+ * for a whole-genome alignment with many species: a shorter `rowHeight` fits
+ * more rows on screen, and most readers scan the conservation band first.
  * ```js
  * {
  *   type: 'MafTrack',

@@ -39,8 +39,8 @@ export interface FetchEachRegionModel extends IStateTreeNode, GateCommitHost {
  * The per-region fan-out on its own, without the `fetchRegions` wrapper: issue
  * `call` for every needed region in parallel and return the results paired with
  * their `displayedRegionIndex`, in `needed` order. Callers get one collected
- * array to commit from, which is what a cross-region decision needs (MAF picks
- * the sample set from whichever region actually discovered samples).
+ * array to commit from, which a cross-region decision needs (MAF picks the
+ * sample set from whichever region actually discovered samples).
  *
  * Use this only inside a `call` one of the wrappers below hands you — it does no
  * staleness checking of its own, because the *caller* decides the granularity:

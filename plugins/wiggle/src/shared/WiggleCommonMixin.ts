@@ -111,8 +111,8 @@ export function WiggleCommonMixin() {
        * it with `resolveSymlogConstant` once the domain is known.
        *
        * Here rather than on the score config because only the wiggle schemas
-       * declare the slot, and `getConf` answers `undefined` silently for a
-       * composer that does not.
+       * declare the slot, and `getConf` returns `undefined` for a composer that
+       * does not.
        */
       get symlogConstant(): number {
         return getConf(confNode(self), 'symlogConstant')

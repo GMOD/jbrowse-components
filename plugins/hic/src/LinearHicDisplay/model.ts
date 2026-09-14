@@ -203,7 +203,7 @@ export default function stateModelFactory(configSchema: HicTrackConfigModel) {
        * #getter
        * The normalization to *request*, resolved against what the file offers
        * (`availableNormalizations`). Falls back to the next-best available scheme
-       * when the selection is absent (the parser silently uses NONE otherwise).
+       * when the selection is absent (otherwise the parser uses NONE).
        * A pure getter, so opening a file that lacks the selected scheme never
        * writes a config delta / marks the track edited — only an explicit user
        * pick (setActiveNormalization) does.

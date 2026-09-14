@@ -21,7 +21,7 @@ export interface SyntenyTrackRenderParams {
   clickedFeatureId: number
   /** LGV pan offsets (CSS px). Both backends fold these into the same per-axis
    * `panPx = (base - offsetPx * bpPerPx) / bpPerPx` via `computeTransform`
-   * (float64), which is what lets a corner ride the GPU as a single Float32
+   * (float64), so a corner goes to the GPU as a single Float32
    * with no hi/lo split — see the header of syntenyTypes.slang. */
   offsetPx0: number
   offsetPx1: number
@@ -71,7 +71,7 @@ export interface SyntenyPickResult {
  * the identity map is a no-op clip, and what is left is exactly the
  * map-plus-blocks a per-region frame already takes. Painting is unconditional —
  * an empty map (no synteny track on this row pair, or the one it had was hidden)
- * paints the ground alone, which is what erases the departed track.
+ * paints the ground alone, which erases the hidden track.
  */
 export type SyntenyRenderingBackend = PerRegionRenderingBackend<
   SyntenyCell,

@@ -60,8 +60,8 @@ interface ComparativeIssue<TArgs> {
  * `ClearCancelOnViewportChange`), because their viewport is an observable
  * separate from the fetch inputs. Here the viewport *is* the fetch input, so
  * the same clear would un-cancel on every trigger — and these displays sit on
- * single RPCs that can run for minutes against a remote index, where a cancel
- * any pan quietly undoes is not a cancel and a retry that re-arms itself
+ * single RPCs that can run for minutes against a remote index. There a cancel
+ * that any pan undoes lets the fetch restart, and a retry that re-arms itself
  * hammers the server that just failed. The gate holds until `reload()`, which
  * is the overlay's Retry button and nothing else.
  *

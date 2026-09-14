@@ -22,10 +22,9 @@ import type { DisplayChromeOverlays } from './chromeOverlays.ts'
 
 /**
  * Runtime override for the overlay set. **Defaults to undefined, not to a
- * component set** — that is deliberate. A plain default would silently degrade
- * every display that renders outside a provider (unit tests, SVG export,
- * breakpoint-split-view's overlayUtils), and that degradation is invisible: the
- * display still works, it just stops looking like JBrowse. Undefined means
+ * component set**. A plain default would degrade every display that renders
+ * outside a provider (unit tests, SVG export, breakpoint-split-view's
+ * overlayUtils): the display would still work, but stop looking like JBrowse. Undefined means
  * "nobody asked", so `DisplayChrome` keeps its MUI set and nothing changes.
  *
  * This is the escape hatch for embedders who want JBrowse's *own* displays
@@ -45,7 +44,7 @@ export const DisplayChromeOverlayProvider = DisplayChromeOverlayContext.Provider
 
 /**
  * The set a provider installed, or `undefined` for "nobody asked". The caller
- * supplies the default, which is what keeps this module free of one.
+ * supplies the default, so this module binds none.
  */
 export function useChromeOverlayOverride() {
   return use(DisplayChromeOverlayContext)

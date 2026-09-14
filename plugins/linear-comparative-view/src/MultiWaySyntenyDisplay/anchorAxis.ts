@@ -8,7 +8,7 @@ export interface AxisPlacement {
   /** the view's px for the clipped interval's ends, before the scroll offset, in the interval's own order */
   x1: number
   x2: number
-  /** the clipped interval's centre, which is what a lane decision pins to */
+  /** the clipped interval's centre, which a lane decision pins to */
   centre: AnchorCoord
 }
 

@@ -172,15 +172,14 @@ function stateModelFactory() {
 
       /**
        * #getter
-       * Overridable hook: which widget `openFeatureWidget` opens for one of
-       * this display's features. The default is the generic one, which is what
-       * a display drawing plain features wants and what the canvas base spelled
-       * out by hand.
+       * The widget `openFeatureWidget` opens for one of this display's
+       * features. Displays may override it. The default is the generic feature
+       * widget, for displays drawing plain features.
        *
-       * An override is a display whose features have a vocabulary of their own —
-       * a read, a variant, a synteny block — and the `id` is deliberately part
-       * of it: two displays naming one id share the drawer panel, which is the
-       * behaviour when the two are showing the same kind of thing.
+       * Displays whose features are a specific kind (a read, a variant, a
+       * synteny block) override it, including the `id`: two displays naming
+       * one id share the drawer panel, which suits two displays showing the
+       * same kind of feature.
        */
       get featureWidgetType(): { type: string; id: string } {
         return {
@@ -248,34 +247,30 @@ function stateModelFactory() {
 
       /**
        * #action
-       * Apply a bag of display settings to the LIVE display, and report what
-       * landed. Each key runs through the display config schema's
-       * `preProcessSnapshot` (shorthand expansions, legacy-key migrations —
-       * the same lowering a session spec's inline track keys get in
-       * `showTrackGeneric`), then writes the matching config slot. Keys that
-       * are not slots come back in `unapplied` rather than vanishing: the
-       * settings vocabulary's historical failure mode is the silently dropped
-       * key.
+       * Apply a set of display settings to the live display, and report which
+       * were applied. Each key runs through the display config schema's
+       * `preProcessSnapshot` (shorthand expansions and legacy-key migrations,
+       * as `showTrackGeneric` applies to a session spec's inline track keys),
+       * then writes the matching config slot. Keys that are not slots are
+       * returned in `unapplied`, so a caller can see a key that did nothing.
        *
-       * `allowSetters` additionally routes a non-slot key to a conventionally
-       * named single-argument `set<Key>` action. Opt-in, never the default:
-       * the declarative surfaces (session specs, share links, embeds) feed
-       * this whole bags of untyped JSON, and a blanket fallback would let
-       * them reach internal setters (`setError`, `setScrollTop`, ...) and
+       * `allowSetters` also routes a non-slot key to a single-argument action
+       * named `set<Key>`. It is off by default because session specs, share
+       * links and embeds pass untyped JSON here, and a default fallback would
+       * let them call internal setters (`setError`, `setScrollTop`, ...) and
        * call multi-argument setters with one argument. A caller that wants a
-       * specific action can also simply call it.
+       * specific action can call it directly.
        *
-       * A key whose write THREW is reported separately, in `failed` — it is the
-       * only one of the three that means the caller got something wrong, and
-       * the only one worth a notification. `unapplied` is not: at the
-       * `showTrackGeneric` call site it also collects keys that surface
-       * consumed itself (`type`) and MST display props the display snapshot
-       * already applied (`resolution`), so treating it as "dropped" would
-       * report a correct call as broken.
+       * A key whose write threw is reported in `failed`. Only `failed` means
+       * the caller passed a bad value and warrants a notification. At the
+       * `showTrackGeneric` call site `unapplied` also collects keys that
+       * function consumed itself (`type`) and MST display props the display
+       * snapshot already applied (`resolution`), so reporting `unapplied` keys
+       * as dropped would flag a correct call.
        *
-       * Per-key errors do not abort the rest of the bag — a caller
+       * A per-key error does not abort the remaining keys. A caller
        * mid-`showTrack` has already pushed the track, and one rejected value
-       * must not strand a half-configured track.
+       * should not leave it half-configured.
        */
       applyDisplaySettings(
         settings: Record<string, unknown>,

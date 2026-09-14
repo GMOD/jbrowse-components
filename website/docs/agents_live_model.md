@@ -25,10 +25,11 @@ the last expression. In scope either way:
 
 ## The helper library
 
-A helper exists where the raw model answers wrong **silently** (a refName the
-file spells differently, a display that replaced its subtree without a toast, a
-name several views could answer) and turns that into a throw or a report.
-Everything else is done with the model; the re-exports at the end are frozen.
+A helper exists where the raw model answers wrong **without an error** (a
+refName the file spells differently, a display that replaced its subtree without
+a toast, a name several views could answer) and turns that into a throw or a
+report. Everything else is done with the model; the re-exports at the end are
+frozen.
 
 Orientation and building:
 
@@ -54,8 +55,8 @@ Orientation and building:
   rebind. A spec `layout` indexes the spec's own `views` array. A key on a track
   entry that is neither a config slot nor something the display carries raises
   an error notification naming it — a spec has no return channel of its own, so
-  a misspelled setting reports there rather than loading a track with the
-  setting quietly missing.
+  a misspelled setting reports there instead of loading a track with the setting
+  missing.
 - `session.layoutViews(spec)` arranges the views already open into panels
   without replacing the session: the same tree as a spec `layout` (a leaf
   carries `views`, a container `children` and a `direction`), with a leaf naming
@@ -316,7 +317,7 @@ return {
 
 The probe's adapter lives on the main thread under the `sessionId` you gave it,
 for the life of the page: fine for a header, not for features. `jb.getFeatures`
-does two things raw adapter code gets wrong silently:
+does two things raw adapter code gets wrong without an error:
 
 - It renames canonical refNames to the file's spelling with
   `jb.renameRegionsIfNeeded`; "ctgA" against a file saying "contigA" matches

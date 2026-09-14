@@ -93,7 +93,7 @@ const configSchema = ConfigurationSchema(
     /**
      * #slot craiLocation
      * location of the CRAM index (`.crai`). Only needed when it is not named
-     * `<file>.cram.crai`, which is what the `uri` shorthand assumes.
+     * `<file>.cram.crai`, the name the `uri` shorthand assumes.
      */
     craiLocation: {
       type: 'fileLocation',

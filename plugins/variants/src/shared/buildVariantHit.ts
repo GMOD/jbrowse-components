@@ -91,8 +91,8 @@ export function buildVariantHit({
  * cell: the variant lane's marks, where there is one mark per variant and no row
  * under the cursor to read a genotype off.
  *
- * The three fields that name a sample are `''` rather than absent, which is what
- * makes one hover slot serve both bands: `getTooltipRows` drops an empty value,
+ * The three fields that name a sample are `''` rather than absent, so one hover
+ * slot serves both bands: `getTooltipRows` drops an empty value,
  * so the table is the record's rows alone, and `hoveredTooltipSource` reads the
  * empty `name` as "no sample row whose metadata to merge in".
  *

@@ -46,5 +46,5 @@ These slots go inside the track's `adapter`: `"adapter": { "type": "TrixTextSear
 | Slot | Description |
 | --- | --- |
 | <span id="slot-ixfilepath">**ixFilePath**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: 'out.ix', locationType: 'UriLocation' }</code> | location of the Trix `.ix` index written by `jbrowse text-index`: the sorted term-to-feature table the search box reads. |
-| <span id="slot-ixxfilepath">**ixxFilePath**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: 'out.ixx', locationType: 'UriLocation' }</code> | location of the `.ixx` prefix index, which records where in the `.ix` each prefix begins. It is what makes a lookup a couple of range requests instead of a download of the whole index. |
+| <span id="slot-ixxfilepath">**ixxFilePath**</span><br>[`fileLocation`](/docs/config_guides/slot_types#filelocation) = <code>{ uri: 'out.ixx', locationType: 'UriLocation' }</code> | location of the `.ixx` prefix index, which records where in the `.ix` each prefix begins, so a lookup takes a couple of range requests instead of a download of the whole index. |
 | <span id="slot-assemblynames">**assemblyNames**</span><br>`stringArray` = <code>[]</code> | List of assemblies covered by text search adapter |

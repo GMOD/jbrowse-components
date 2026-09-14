@@ -42,10 +42,9 @@ export interface CategoricalRef {
  * #api
  * How a mark's `color` channel resolves. A CSS colour or a `jexl:` expression
  * returning one paints per feature with no scale; the two object forms bind a
- * field to a scale, which is what a legend can describe. A continuous scale
- * reads the field through `domain` (the region's own extremes when absent)
- * into `ramp`, and there a listed `domain` is what pins the answer across a
- * whole view.
+ * field to a scale, which a legend can describe. A continuous scale maps the
+ * field through `domain` (the region's minimum and maximum when absent) into
+ * `ramp`; list a `domain` to keep colors consistent across a whole view.
  */
 export type ColorEncoding =
   | string

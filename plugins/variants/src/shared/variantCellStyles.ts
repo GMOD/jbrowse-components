@@ -64,7 +64,7 @@ function styleForAllele(
  * string and a row are in hand.
  *
  * `HP` is the haplotype row's index, or undefined in allele-count mode where a
- * row is a whole sample. That split is the whole point: in phased mode `1|0`
+ * row is a whole sample. The test depends on it: in phased mode `1|0`
  * carries the alt on HP0 and not on HP1, so a per-sample test reports a
  * record's inserted bases on a reference haplotype row (the matrix tooltip's
  * bug). An unphased or no-call genotype paints the same non-alt cell on every
@@ -89,8 +89,8 @@ export function cellCarriesAlt(genotype: string, HP: number | undefined) {
  * Resolved per *distinct genotype string* rather than per cell. A site with
  * thousands of samples carries a handful of distinct genotypes ("0|0", "0/1",
  * "./."), so the caller memoizes this in a plain `Map` keyed by the genotype
- * string it already holds — which is what takes the packing, the ABGR lookup
- * and the allele counting out of the per-cell loop. `getAlleleColor` carried a
+ * string it already holds, which moves the packing, the ABGR lookup and the
+ * allele counting out of the per-cell loop. `getAlleleColor` carried a
  * memo of its own for that job, keyed on a template literal; at this
  * granularity there is nothing left for it to save.
  *

@@ -307,8 +307,8 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * Whether anything is painted right now, which is what the configured
-         * `legend` slot is gated on.
+         * Whether anything is painted right now. The configured `legend` slot
+         * is gated on this.
          */
         get hasDrawnFeatures(): boolean {
           return [...self.drawnRegionData.values()].some(
@@ -366,8 +366,8 @@ export default function stateModelFactory(
         },
         /**
          * #getter
-         * The attribute names the loaded features carry, which is what the
-         * "Partition by..." menu offers.
+         * The attribute names on the loaded features, offered by the
+         * "Partition by..." menu.
          */
         get partitionCandidates(): string[] {
           return partitionCandidates(self)
@@ -404,9 +404,9 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * The rows tagged with their `rowGroups` group and left in their own
-       * order, which is what a legend swatch focuses from: a second click on
-       * another group has to reach the rows the first click hid, and the
+       * The rows tagged with their `rowGroups` group and left in their current
+       * order. A legend swatch focuses from these rows, because a second click
+       * on another group has to reach the rows the first click hid, and the
        * filter matches the same `name`s.
        */
       get groupedSources(): MultiRowSource[] {

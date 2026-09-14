@@ -6,9 +6,8 @@ export type ImportFormMode = 'quick' | 'manual'
  * The Quick start / Manual switch shared by the linear synteny and dotplot
  * import forms. Quick start launches straight from a pre-configured synteny
  * track (it names its own assemblies, so nothing else needs picking); Manual is
- * the full assembly-by-assembly form. Making the two an explicit mode is what
- * keeps Quick start's track picker from silently rewriting the fields of a form
- * the user thought they were filling in.
+ * the full assembly-by-assembly form. With an explicit mode, Quick start's track
+ * picker cannot overwrite the fields of a form the user is filling in.
  *
  * Quick start is deliberately not disabled when the session has no synteny
  * track: ToggleButtonGroup clones props onto its direct children, so the

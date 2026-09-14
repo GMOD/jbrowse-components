@@ -9,7 +9,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *
  * Note: don't set `sequenceAdapter` — JBrowse supplies it from the assembly the
  * track is displayed against. Setting it by hand pins the scan to one sequence
- * source and silently desyncs the track if the assembly's sequence changes.
+ * source, and the track keeps scanning that source after the assembly's
+ * sequence changes.
  *
  * #example
  * ```js

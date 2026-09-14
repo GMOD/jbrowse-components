@@ -30,9 +30,9 @@ const LaunchSyntenyViewDialog = lazy(
  * offer this; each used to assemble the same seven dialog props and the same
  * gate by hand.
  *
- * The anchor panel opens on the panel's own assembly, which is what the
- * features were fetched against — more dependable than the feature's own
- * `assemblyName` field, which not every adapter sets. It opens with that
+ * The anchor panel opens on the assembly the panel's features were fetched
+ * against. That assembly is more dependable than the feature's `assemblyName`
+ * field, which not every adapter sets. It opens with that
  * panel's tracks too, this chain track excluded, since it becomes the ribbon
  * band. Whether the launch is offered at all depends on the mate's assembly,
  * which is per-feature: a one-vs-all mate can be a PanSN sample that is no

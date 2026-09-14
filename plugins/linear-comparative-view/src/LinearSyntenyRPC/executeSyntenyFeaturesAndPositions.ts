@@ -227,16 +227,16 @@ export async function executeSyntenyFeaturesAndPositions({
    * - inside the regions the FIRST fetch asked for → that fetch already
    *   returned it, drop. This is the whole of the dedupe between the two, and
    *   it needs no shared key: PIF and all-vs-all give one record's two
-   *   perspectives unrelated ids on purpose, and a join that silently
-   *   mismatches draws one ribbon twice at doubled alpha.
+   *   perspectives unrelated ids on purpose, and a join on mismatched ids
+   *   draws one ribbon twice at doubled alpha.
    * - on a query contig the row above IS displaying, outside that window → a
    *   real ribbon the query-axis fetch could not have seen, so it is flipped
    *   into the query perspective and joins the pile below. NOTHING DRAWS IT AT
    *   THE DEFAULT: its query end is at least a pan buffer off the edge by
    *   construction, and `isRibbonCulled` drops a ribbon when EITHER edge is
    *   outside `overdrawPx`, which defaults to less than that buffer. Raising
-   *   the overdraw past the buffer is what reveals them, and what this fetch
-   *   changes is that there is then something to reveal — see
+   *   the overdraw past the buffer reveals them, and this fetch supplies the
+   *   ribbons to reveal — see
    *   agent-docs/reference/TWO_AXIS_SYNTENY_FETCH.md.
    * - on a contig the row above is not displaying at all → there is no second
    *   endpoint to run a ribbon to, so it is counted and marked on the target

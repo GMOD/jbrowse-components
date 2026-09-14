@@ -24,10 +24,9 @@ import { createContext } from 'react'
  * It has never been reachable: the two displays that render the control row
  * (alignments, canvas) are not among the four that report a `ready`-phase
  * status (clustering, on multi-wiggle / multi-row features / maf / the
- * multi-sample variant pair). That is the *reason* to make it structural rather
- * than to leave it — nothing on either side is aware of the constraint, so the
- * first display to want both would find the bug, and it presents as a status
- * message that silently never appears.
+ * multi-sample variant pair). The layout is structural anyway, because neither
+ * side checks for the constraint, so the first display to want both would hit
+ * the bug as a status message that never appears.
  *
  * `BottomRightIndicators` already described itself as "the single anchor point
  * for every bottom-right overlay ... so they lay out as one row instead of each

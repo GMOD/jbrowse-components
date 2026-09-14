@@ -30,7 +30,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="getter-coarsetierstandsin">**coarseTierStandsIn**</span><br><code>boolean</code> |  | DensityBandMixin |
 | <span id="getter-densitybandlayer">**densityBandLayer**</span><br><code>DensityBandLayer</code> |  | DensityBandMixin |
 | <span id="getter-densityhover">**densityHover**</span><br><code>DensityHover &#124; undefined</code> |  | DensityBandMixin |
-| <span id="getter-densitypeakreadout">**densityPeakReadout**</span><br><code>string</code> | The band's line of text with no cursor over it, which is what the SVG export writes. | DensityBandMixin |
+| <span id="getter-densitypeakreadout">**densityPeakReadout**</span><br><code>string</code> | The band's line of text with no cursor over it. The SVG export writes this text. | DensityBandMixin |
 | <span id="getter-densityreadout">**densityReadout**</span><br><code>string</code> | Blank until the first read lands, so the scrim is not captioned "no density data" for a read still in flight. | DensityBandMixin |
 | <span id="getter-coarseadapterslot">**coarseAdapterSlot**</span><br><code>string</code> |  | [DensityTierMixin](../densitytiermixin#getter-coarseadapterslot) |
 | <span id="getter-densitytiermode">**densityTierMode**</span><br><code>"auto" &#124; "density" &#124; "features"</code> | <span data-pagefind-ignore>The `densityTier` slot's value.</span> | [DensityTierMixin](../densitytiermixin#getter-densitytiermode) |

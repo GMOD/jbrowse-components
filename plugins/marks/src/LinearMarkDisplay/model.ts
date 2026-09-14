@@ -351,7 +351,7 @@ export function stateModelFactory(
        * #getter
        * Opt into the byte gate: `CoreEncodeFeatures` measures the index before
        * it downloads, so an over-budget region is refused before a feature is
-       * read — and the refusal is what the density tier stands in for.
+       * read, and the density tier draws in place of the refused region.
        */
       get gateEnabled() {
         return true
@@ -551,8 +551,8 @@ export function stateModelFactory(
        * #getter
        * The mark list the shapes declare — one `defineMark` per config entry,
        * reading `layers[i]`, off outside its zoom range. Recomputed only when
-       * the entries move, which is what lets the component key its backend
-       * factory on it.
+       * the entries move, so the component can key its backend factory on
+       * it.
        */
       get markList() {
         return buildMarkList(self.markEntries)

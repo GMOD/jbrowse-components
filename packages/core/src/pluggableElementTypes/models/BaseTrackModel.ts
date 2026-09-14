@@ -498,12 +498,12 @@ export function createBaseTrackModel(
       },
       /**
        * #getter
-       * What "Save track data" may pull before it asks. The adapter's own
-       * `fetchSizeLimit` where it declares one, so a save does not quietly
-       * disagree with the size this track's display already refuses to render;
-       * otherwise a default. Deliberately generous — unlike the display's gate
-       * this is a confirmation rather than a refusal, and the user asked for
-       * these bytes by name.
+       * The size in bytes above which "Save track data" asks for confirmation
+       * before fetching. Uses the adapter's `fetchSizeLimit` where it declares
+       * one, so a save asks at the same size at which the track's display
+       * refuses to render; otherwise a default. The default is generous
+       * because exceeding it only prompts for confirmation, and the user
+       * explicitly requested the data.
        */
       get exportByteLimit(): number {
         return adapterByteLimit(

@@ -213,7 +213,7 @@ async function applyInit(
  *   tracks: [{ trackId: 'my-sv-vcf', strokeColor: 'red' }],
  * }
  * ```
- * `assembly` also takes a list, which is what a synteny ribbon plot needs: each
+ * `assembly` also takes a list, for a synteny ribbon plot: each
  * assembly lays its contigs out in turn, so the first genome takes one arc of
  * the circle and the second the next, and a `SyntenyTrack` covering both draws
  * a ribbon per alignment between them. The import form opens one assembly, so
@@ -336,9 +336,8 @@ function stateModelFactory(pluginManager: PluginManager) {
         paddingPx: types.stripDefault(types.number, defaultPaddingPx),
         /**
          * #property
-         * arcs thinner than this many pixels are elided instead of drawn,
-         * which is what stops a few thousand unplaced contigs becoming a ring
-         * of hairlines
+         * arcs thinner than this many pixels are elided instead of drawn, so a
+         * few thousand unplaced contigs do not become a ring of hairlines
          */
         minVisibleWidth: types.stripDefault(
           types.number,
@@ -618,8 +617,8 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * Every ribbon display under this view's tracks, which is what a
-       * chromosome reorder reads its alignments from. Filtered by `type` rather
+       * Every ribbon display under this view's tracks; a chromosome reorder
+       * reads its alignments from these. Filtered by `type` rather
        * than taken as `tracks[i].displays[0]`, for the reason the dotplot's
        * `dotplotDisplays` gives.
        */
@@ -649,8 +648,8 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * The assemblies a pending launch names, which is what the gates below
-       * wait on before `displayedRegions` exist. A blob carrying only tracks
+       * The assemblies a pending launch names, which the gates below wait on
+       * before `displayedRegions` exist. A blob carrying only tracks
        * names none, and waiting on one nobody named never ends.
        */
       get launchAssemblyNames() {

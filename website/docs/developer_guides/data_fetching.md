@@ -8,11 +8,11 @@ guide_category: Core concepts
 Most linear displays compose `MultiRegionDisplayMixin`, which installs the
 autoruns that manage fetch lifecycle, cancellation, and cache invalidation. You
 override `fetchNeeded` (usually via `fetchEachRegion`) and declare `rpcProps` as
-the cache key. This chain is the thing to understand for writing a display, and
-for debugging unexpected refetches in any display.
+the cache key. Understand this chain before writing a display or debugging an
+unexpected refetch in any display.
 
-The exceptions are displays whose data isn't partitioned by region at all; they
-compose `GlobalFetchMixin` and install their own fetch autorun. See
+Displays whose data isn't partitioned by region compose `GlobalFetchMixin`
+instead and install a fetch autorun of their own. See
 [display foundations](/docs/developer_guides/creating_display#display-foundations)
 for which foundation each in-tree display uses.
 
@@ -40,36 +40,35 @@ for which foundation each in-tree display uses.
 - calls `clearDisplaySpecificData()`, the hook a display overrides only where it
   holds something beside the store
 
-Cancelling bumps `fetchGeneration`, which re-fires `FetchVisibleRegions` to
-start fresh fetches.
+Cancelling bumps `fetchGeneration`. That re-fires `FetchVisibleRegions`, which
+starts fresh fetches.
 
-<Figure caption="Three of the four autoruns end in the same cancel, by two routes: clearAllRpcData() takes the loaded data with it, invalidateSettings() leaves it standing under the scrim. The cancel bumps fetchGeneration, itself a trigger of FetchVisibleRegions, so which of the three ran answers an unexplained refetch. Loaded data is absent on purpose: the fetch autorun reads it untracked." src="/img/display_autoruns.png" />
+<Figure caption="Three of the four autoruns end in the same cancel, by two routes. clearAllRpcData() discards the loaded data, and invalidateSettings() keeps it on screen under the scrim. The cancel bumps fetchGeneration, which triggers FetchVisibleRegions, so to explain an unexpected refetch, find which of the three autoruns ran. The diagram leaves out loaded data because the fetch autorun reads it untracked." src="/img/display_autoruns.png" />
 
-It deliberately leaves the too-large gate alone. `regionTooLarge` is derived
-from the cached byte estimate, which a blocked display re-takes once per settled
-viewport, so it releases itself and needs no imperative clear; keeping the
-estimate stops the banner flickering on an ordinary clear.
+`clearAllRpcData()` leaves the too-large gate alone. `regionTooLarge` is derived
+from the cached byte estimate, and a blocked display re-takes that estimate once
+per settled viewport. The gate therefore releases itself and needs no imperative
+clear. Keeping the estimate stops the banner flickering on an ordinary clear.
 
 ## The whole fetch chain
 
-<Figure caption="The too-large gate is self-releasing: nothing clears the banner, and a blocked display re-measures at each settled viewport until the window is small enough to fetch. That is the second of the two returns the dashed edge carries." src="/img/fetch_chain.png" />
+<Figure caption="The too-large gate releases itself. No code clears the banner; a blocked display re-measures at each settled viewport until the window is small enough to fetch. The dashed edge carries that re-measurement as the second of its two returns." src="/img/fetch_chain.png" />
 
-`isBlockCovered` compares the block against the loaded bounds, and those are
-buffered wider than the viewport, so a small pan finds them still covering and
-fetches nothing. `isCacheValid` beside it asks whether the data held for a
-region still answers the current view, and it is not a hook you fill: it
-compares the whole fetch key. A display whose data goes stale for reasons the
-bounds can't see states that as `zoomFetchKey` (the zoom term of what a fetch
-now would produce) or `regionHasData` (did the last one store anything).
+`isBlockCovered` compares the block against the loaded bounds. The loaded bounds
+extend past the viewport, so after a small pan they still cover the block and
+nothing is fetched. `isCacheValid` checks whether the data held for a region is
+still valid for the current view, by comparing the whole fetch key; a display
+does not override it. A display whose data goes stale for reasons the bounds
+can't detect reports that through `zoomFetchKey` (the zoom term of what a fetch
+now would produce) or `regionHasData` (whether the last fetch stored anything).
 
 ## Implementing fetchNeeded
 
-`fetchNeeded` is the hook you override to make RPC calls. Reach for
-`fetchEachRegion`, which runs one RPC per region in parallel over the
-`fetchRegions(needed, work)` primitive and applies both `ctx.isStale()` guards
-for you — forgetting either is a stale-data write, so it is a correctness
-primitive. `LinearScoreDisplay`'s is a whole one, sitting in an
-`.actions(self => ({ ... }))` block:
+`fetchNeeded` is the hook you override to make RPC calls. Use `fetchEachRegion`,
+which runs one RPC per region in parallel over the `fetchRegions(needed, work)`
+primitive. It applies both `ctx.isStale()` guards for you, and omitting either
+guard writes stale data. `LinearScoreDisplay` has a complete `fetchNeeded`, in
+an `.actions(self => ({ ... }))` block:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts#fetchNeeded -->
 
@@ -102,18 +101,18 @@ fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
 },
 ```
 
-`call` reaches the worker through **`ctx.callRpc`**, not `rpcManager.call`: the
-context injects this fetch's stop token and its status callback, so a fetch
-cannot issue an RPC that the cancel and the progress bar do not know about.
-Hand-threading them is silent when you forget — no cancellation for that
-display, or no progress. The envelope keeps the literal method name at the call
-site so the registry's typed args and return survive, and the `ctx` it receives
-is that region's own, so every region's progress aggregates into one bar.
+`call` reaches the worker through **`ctx.callRpc`**, not `rpcManager.call`. The
+context injects this fetch's stop token and its status callback, so every RPC a
+fetch issues is known to the cancel and the progress bar. If you pass them by
+hand and forget one, nothing reports it: the display loses cancellation or
+progress. The envelope keeps the literal method name at the call site, so the
+registry's types for args and return still apply. Each region receives a
+separate `ctx`, so every region's progress aggregates into one bar.
 
-A batch-wide step after every region has landed goes in `onComplete`, which runs
-once and under the same staleness guard — both canvas feature displays commit
-their region-too-large measurements there, which is the one thing that has to be
-atomic across a batch whose payloads are not.
+Put a batch-wide step that runs after every region has landed in `onComplete`.
+It runs once, under the same staleness guard. Both canvas feature displays
+commit their region-too-large measurements there. Those measurements must be
+atomic across the batch, even though the payloads are not.
 
 ### The two batched counterparts
 
@@ -122,20 +121,21 @@ region:
 
 - **`fetchAllRegions`** hands all regions to a single RPC call that returns one
   result per region, `results[i]` paired with `needed[i]`. Use it when the
-  adapter serves the whole set in one pass more efficiently — BigWig coalesces
-  adjacent on-disk blocks across region boundaries, which N independent calls
-  cannot.
+  adapter serves the whole set more efficiently in one pass. BigWig, for
+  example, coalesces adjacent on-disk blocks across region boundaries, which N
+  independent calls cannot do.
 - **`fetchRegionsBatched`** is for a worker answer that covers every region and
-  cannot be split: multi-sample variant's `cellData`, MAF's per-batch sample
-  union. One `call`, one `commit`, and every region marked loaded together. The
-  region list is its argument rather than the plan's `needed`, because a display
-  on it picks its own set — the variant matrix lays columns out across the whole
-  visible width, so a partial refetch has no meaning there.
+  cannot be split, such as multi-sample variant's `cellData` or MAF's per-batch
+  sample union. It makes one `call` and one `commit`, and marks every region
+  loaded together. It takes the region list as an argument in place of the
+  plan's `needed`, because a display using it picks its own set. The variant
+  matrix lays columns out across the whole visible width, so a partial refetch
+  has no meaning there.
 
-MAF's is the worked case for the second. Its per-region call, shared with its
-summary tier, runs a second RPC concurrently under the same stop token and
-refuses the batch on the first refusal; `fetchRegionsBatched` then takes one
-staleness guard around the whole batch rather than per region:
+MAF shows the second helper in use. Its per-region call, shared with its summary
+tier, runs a second RPC concurrently under the same stop token, and refuses the
+batch on the first refusal. `fetchRegionsBatched` then applies one staleness
+guard around the whole batch:
 
 <!-- include: plugins/maf/src/LinearMafDisplay/fetchMafData.ts#rawFetchRegions -->
 
@@ -188,39 +188,41 @@ return refused
 ```
 
 `ctx.isStale()` returns `true` if the user panned/zoomed or settings changed
-while the fetch was in flight. The helper decides where the check goes, and that
-is the only thing that separates them: per region, results commit as they
-arrive; around the batch, as above, a cross-region decision can't be made from a
-half-superseded set. `fetchRegions` itself is the primitive underneath all
-three, and no display calls it directly — one that did would own both guards and
-the `ctx.commitRegion` beside its own store by hand, exactly the bug class the
-helpers exist to prevent.
+while the fetch was in flight. The three helpers differ only in where they place
+that check. With a check per region, results commit as they arrive. With one
+check around the batch, as above, a cross-region decision never sees a
+half-superseded set. `fetchRegions` is the primitive under all three helpers,
+and no display calls it directly. A display that did would have to write both
+guards and the `ctx.commitRegion` call beside its store by hand, and the helpers
+prevent the bugs that come from getting those wrong.
 
 ## rpcProps: the cache key
 
-`SettingsInvalidate` watches the settings tier of `fetchInputs`: the **return
-value** of `rpcProps()` plus the adapter config, held in a structural computed.
-When that value changes, every loaded region's `fetchInputs` stamp is stale, and
-the autorun calls `invalidateSettings()` — the in-flight fetch is superseded, a
-blocking error is cleared, and the display drops any data it cannot honestly
-draw under the new setting (`clearSettingsBakedData`) — so the fetch cycle
-restarts while the held data stays on screen under the loading scrim. This is
-how config changes (color scheme, filter settings, etc.) trigger a full refetch.
+`SettingsInvalidate` watches the settings tier of `fetchInputs`, which is the
+**return value** of `rpcProps()` plus the adapter config, held in a structural
+computed. When that value changes, every loaded region's `fetchInputs` stamp is
+stale, and the autorun calls `invalidateSettings()`. That call supersedes the
+in-flight fetch and clears a blocking error. The display also drops any data it
+cannot correctly draw under the new setting (`clearSettingsBakedData`). The
+fetch cycle then restarts while the held data stays on screen under the loading
+scrim. Config changes (color scheme, filter settings, etc.) trigger a full
+refetch this way.
 
-What is watched is the method's return value: building the payload usually reads
-far more observables than it returns — a whole config snapshot, or a value that
-was itself fetched — and tracking the call would refetch on every one of them.
-Two consequences to design around:
+The autorun watches the method's return value, not the reads inside it. Building
+the payload usually reads far more observables than it returns, such as a whole
+config snapshot or a value that was itself fetched, and tracking the call would
+refetch whenever any of them changed. That has two consequences:
 
 - Only fields that reach the **return** are cache keys. A value merely consulted
   while building the payload invalidates nothing.
-- The compare is structural, so an `undefined` field and a class instance with
-  no own fields are both real states. Global-family displays
+- The comparison is structural, so an `undefined` field and a class instance
+  with no own fields are distinct states. Global-family displays
   (`GlobalFetchMixin`) still serialize the payload to a string
   (`rpcPropsCacheKey`), where those two shapes collapse; prefer primitives and
   plain arrays there.
 
-It goes in a `.views()` block, and holds only the settings the worker reads:
+`rpcProps` goes in a `.views()` block and returns only the settings the worker
+reads:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts#rpcProps -->
 
@@ -241,11 +243,11 @@ in `rpcProps` causes a refetch on every pixel of scroll.
 computed arrays in `rpcProps` creates an infinite fetch loop because storing
 results triggers another settings change.
 
-If you need to extend a parent class's `rpcProps`, capture the super version
-before redefining it (the same
+To extend a parent class's `rpcProps`, capture the super version before
+redefining it, with the same
 [super-capture pattern](/docs/developer_guides/mst_patterns#self-over-this-in-views)
-used for any extended view) so overriding it doesn't drop the parent's
-dependencies with nothing to flag it.
+used for any extended view. Otherwise the override drops the parent's
+dependencies, and nothing reports it.
 
 ## Byte estimation and regionTooLarge
 
@@ -269,53 +271,51 @@ get gateEnabled() {
 ```
 
 ...and one argument at the fetch: pass `byteLimit: self.resolvedByteLimit()` in
-your RPC's args. The worker then reads the adapter's index estimate as the first
-thing it awaits, and when that exceeds the byte limit (the adapter's own
-`fetchSizeLimit`, else the display config's) it returns a `RegionTooLargeResult`
-instead of a payload rather than downloading anything. The fan-out helpers
-commit that measurement, skip the store and `loadedRegions` for the refused
-region, and `DisplayChrome` shows the too-large banner with a "Force load"
-button.
+your RPC's args. The worker's first await then reads the adapter's index
+estimate. When the estimate exceeds the byte limit (the adapter's
+`fetchSizeLimit`, else the display config's), the worker returns a
+`RegionTooLargeResult` in place of a payload and downloads nothing. The fan-out
+helpers commit that measurement and skip the store and `loadedRegions` for the
+refused region. `DisplayChrome` then shows the too-large banner with a "Force
+load" button.
 
-Two things fall out of that:
+This design has two consequences:
 
-- `regionTooLarge` is **derived**, not a flag: it is a pure comparison of the
-  last measurement against the budget. What keeps that measurement describing
-  what you are looking at is that a blocked display keeps running its fetch,
-  once per settled viewport — the fetch stops at the measurement, so it costs an
-  index read and downloads nothing. So the banner releases itself on a fresh
-  measurement, with no imperative clear and no flicker while you pan.
-- "Force load" sets one volatile boolean for the whole track (`forceLoadTrack`),
-  so the user approves a track once, with its size quoted in front of them, and
-  that approval covers every locus. The declarative equivalent is the
-  `forceLoad` config slot.
+- `regionTooLarge` is **derived**, not a flag. It compares the last measurement
+  against the budget. A blocked display keeps running its fetch once per settled
+  viewport, so the measurement stays current for the region in view. The fetch
+  stops at the measurement, so it costs an index read and downloads nothing. The
+  banner then releases itself on a fresh measurement, with no imperative clear
+  and no flicker while you pan.
+- "Force load" sets one volatile boolean for the whole track (`forceLoadTrack`).
+  The user approves a track once, with its size shown, and that approval covers
+  every locus. The declarative equivalent is the `forceLoad` config slot.
 
-The verdict has two axes, and they stop gating for different reasons:
+The gate judges on two axes, and each stops gating for a different reason:
 
-- The **byte** axis drops out when the adapter offers no index estimate, which
-  is how adapters that summarize at screen resolution (BigWig, HiC, sequence)
-  cost nothing to support. It has no span floor — below `AUTO_FORCE_LOAD_BP` it
-  keeps gating against a raised budget rather than switching off, so a
-  gene-scale view of deep data loads while a pileup an order of magnitude
-  heavier still asks.
-- The **density** axis stops below `AUTO_FORCE_LOAD_BP` (20 kb) outright, since
-  its number is extrapolated rather than measured at the span it judges.
+- The **byte** axis drops out when the adapter offers no index estimate.
+  Adapters that summarize at screen resolution (BigWig, HiC, sequence) therefore
+  need no work to support. The byte axis has no span floor. Below
+  `AUTO_FORCE_LOAD_BP` it keeps gating against a raised budget, so a gene-scale
+  view of deep data loads while a pileup an order of magnitude heavier still
+  asks.
+- The **density** axis stops below `AUTO_FORCE_LOAD_BP` (20 kb) outright,
+  because its number is extrapolated from a measurement at a different span.
 
-"Exempt" in this mixin means force-loaded, not un-measurable — `gateExempt` is
+"Exempt" in this mixin means force-loaded. `gateExempt` is
 `configForceLoad || forceLoadTrack` and lifts **both** axes.
 [REGION_TOO_LARGE.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/REGION_TOO_LARGE.md)
 is the full account, including the four bugs the predecessor had from an axis
 name claiming a term it did not have.
 
-No display calls the gate by hand. Both fetch runners do it — the three helpers
+No display calls the gate by hand. Both fetch runners call it: the three helpers
 in `fetchEachRegion.ts` (`fetchEachRegion`, `fetchAllRegions`,
-`fetchRegionsBatched`) for this family and `installGlobalFetchAutorun`'s shared
-phases for the global one — so a display outside the per-region chain opts in
-with the same one getter and nothing else. The commit side is shared too:
-`nextGateState(prev, event)` holds the rules about _order_ (which of two
-measurements wins, what a clear leaves behind, what a force-load approval
-outlives), because those are the ones an exhaustive truth table over states
-cannot see.
+`fetchRegionsBatched`) for this family, and `installGlobalFetchAutorun`'s shared
+phases for the global family. A display outside the per-region chain therefore
+opts in with the same getter and nothing else. The commit side is shared too.
+`nextGateState(prev, event)` holds the rules about _order_: which of two
+measurements wins, what a clear leaves behind, and what a force-load approval
+outlives. An exhaustive truth table over states cannot express those rules.
 
 ## FetchMixin: cancellation and staleness
 
@@ -324,36 +324,36 @@ which owns the stop-token lifecycle. Each `fetchRegions()` mints a fresh
 `stopToken`, signals the previous one to stop so in-flight adapter calls abort,
 and captures `fetchGeneration` as its staleness epoch.
 
-That counter bumps when a **current** fetch ends (success or error — a
-superseded run must not bump for the run that replaced it) and on the internal
-`cancelFetch` reset; the user-facing `cancelFetchByUser` deliberately does not
-bump, so that cancel stays durable. `FetchVisibleRegions` reads it to
-re-evaluate once the fetch is over; staleness itself is the token rotation's
-`isCurrent`, not this counter.
+`fetchGeneration` bumps when a **current** fetch ends, on success or error. A
+superseded run does not bump it on behalf of the run that replaced it. It also
+bumps on the internal `cancelFetch` reset. The user-facing `cancelFetchByUser`
+does not bump it, so a user's cancel stays in effect. `FetchVisibleRegions`
+reads the counter to re-evaluate once the fetch is over. Staleness itself comes
+from the token rotation's `isCurrent`, not from this counter.
 
-`isLoading` is `true` while `activeStopToken` is set, and the fetch autorun
-reads it through `untracked(() => self.isLoading)` so guarding on it doesn't
-make it a trigger.
+`isLoading` is `true` while `activeStopToken` is set. The fetch autorun reads it
+through `untracked(() => self.isLoading)`, so guarding on it doesn't make it a
+trigger.
 
-`FetchMixin` also owns `reloadCounter`, the pure "go again" signal `reload()`
-bumps and every fetch autorun reads unconditionally, above its bail-outs — after
-an error each of the other inputs is unchanged, so nothing else would ever wake
-the fetch. It lives here because it is the one mixin both LGV fetch foundations
-compose; a display that overrides `reload()` should still bump it.
+`FetchMixin` also owns `reloadCounter`, the "go again" signal. `reload()` bumps
+it, and every fetch autorun reads it unconditionally, above its bail-outs. After
+an error the other inputs are unchanged, so without `reloadCounter` nothing
+would wake the fetch. `FetchMixin` holds it because both LGV fetch foundations
+compose `FetchMixin`. A display that overrides `reload()` should still bump it.
 
 ## Prerequisite fetches
 
 Some displays need one more thing before the viewport fetch can ask for
-anything: the `.hic` file's binsize list, the sample list a multi-sample VCF
-draws rows from. That read is **per adapter, not per viewport**, so it cannot
-ride the autoruns above — watching `fetchGeneration` would re-read the header on
-every pan.
+anything, such as the `.hic` file's binsize list or the sample list a
+multi-sample VCF draws rows from. That read is **per adapter, not per
+viewport**, so it cannot use the autoruns above. Watching `fetchGeneration`
+would re-read the header on every pan.
 
+Use
 `installFetch(self, { report, prepare, run, commit, setError, delay, name })`
-(`@jbrowse/core/util/installFetch`) is the shape for it — the same skeleton
-every fetch outside the two display foundations runs on — and the rules it holds
-are there because the displays that had hand-rolled the same fetch were each
-missing a different one:
+(`@jbrowse/core/util/installFetch`) for it. Every fetch outside the two display
+foundations runs on the same skeleton. It enforces the rules below, each of
+which some hand-rolled display fetch had missed:
 
 - **latest-wins.** A reload-overlapped pair of reads must not commit in whatever
   order they resolve.
@@ -364,20 +364,20 @@ missing a different one:
 - **the leading edge.** First paint waits on this fetch, so it must not spend
   its whole debounce window on a cold open.
 
-`prepare` runs synchronously inside the autorun body, so what it reads to build
-the call — the adapter config — is tracked and re-fires the read; `run` owns the
-RPC through the same `ctx.callRpc` envelope and reads nothing tracked; `commit`
-runs only while the run is still current. `setError` is both the clear at the
-start and the publish on failure, so a display whose failure has a second
-consequence says so there. The sample-list scan raises a session notification
-too, because a list that will not load leaves the band empty rather than partial
-and nothing else on screen would say so. Pass no `contract`: the display's own
-foundation already installed the two display-contract checks, and a second
-install is reported as the double-attach it exists to catch.
+`prepare` runs synchronously inside the autorun body. What it reads to build the
+call, the adapter config, is therefore tracked, and a change re-fires the read.
+`run` makes the RPC through the same `ctx.callRpc` envelope and reads nothing
+tracked. `commit` runs only while the run is still current. `setError` clears
+the error at the start and publishes it on failure, so a display whose failure
+has a second consequence handles that there. The sample-list scan also raises a
+session notification, because a list that will not load leaves the band empty,
+and nothing else on screen shows the failure. Pass no `contract`. The display's
+foundation already installed the two display-contract checks, and the check
+reports a second install as a double-attach.
 
-The viewport fetch then declines until the prerequisite lands, and says so with
-`awaitingPrerequisite` — which **defers** the retry verdict to the run after it
-arrives rather than waiving it.
+The viewport fetch declines until the prerequisite lands, and reports that with
+`awaitingPrerequisite`. That flag **defers** the retry verdict to the run after
+the prerequisite arrives; it does not waive the verdict.
 
 ## Composing the mixin
 

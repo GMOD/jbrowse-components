@@ -60,21 +60,20 @@ export function expandSourcesToHaplotypes({
  * expanded in phased mode. Built in the worker rather than taken from the
  * client, so no row *order* crosses the RPC boundary — `cellRowIndices` index
  * into this list, `rowNames` names it, and the client maps those names onto the
- * rows it draws (`rowRemap` → `placeVariantRows`). That is what lets a reorder,
- * a regroup or a clustering run re-upload the cells already in hand instead of
+ * rows it draws (`rowRemap` → `placeVariantRows`). A reorder, a regroup or a
+ * clustering run therefore re-uploads the cells already in hand without
  * re-downloading the VCF; see reference/FETCH_KEYS.md §"Row order is not a fetch input".
  *
- * Lives here, beside `expandSourcesToHaplotypes`, because the one thing it must
- * get right is producing the same `"<sampleName> HP<n>"` strings the client's
- * own expansion does — every phased row places by that name, and a drift would
- * silently strand all of them. Sharing the expansion is how that stays true.
+ * `buildCanonicalRows` sits beside `expandSourcesToHaplotypes` and shares that
+ * expansion, so it produces the same `"<sampleName> HP<n>"` strings the client
+ * does. Every phased row places by that name, and a mismatch would place every
+ * phased row at `HIDDEN_ROW`.
  *
- * The universe is `sampleInfo`: every sample the fetched genotypes mention,
+ * The rows come from `sampleInfo`: every sample the fetched genotypes mention,
  * narrowed by `sampleFilter` when the client draws a subset. Its order is
- * first-seen and therefore arbitrary, which is fine precisely because it is
- * never the order anything is drawn in. A sample the client lists but this
- * window's genotypes never mention gets no row, and so no cells — which is what
- * it would have drawn anyway.
+ * first-seen and therefore arbitrary, which is fine because nothing is drawn in
+ * that order. A sample the client lists but this window's genotypes never
+ * mention gets no row and no cells, and it would have drawn no cells anyway.
  */
 export function buildCanonicalRows({
   sampleInfo,

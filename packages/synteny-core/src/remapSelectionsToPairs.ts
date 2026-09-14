@@ -28,7 +28,7 @@ function selectionPair(selection: ImportFormSyntenyTrack, pair: string[]) {
  * *pair of assemblies*. Any edit to the rows — remove one, reorder them, retype
  * one in a Select — moves positions out from under them, and the two answers
  * stop agreeing. Symptoms differ by type and all of them were live at once: a
- * `preConfigured` pick quietly re-resolved (harmless), an explicit `none` slid
+ * `preConfigured` pick re-resolved (harmless), an explicit `none` slid
  * onto a pair the user never silenced, and a finished `userOpened` upload
  * stranded on assemblies it was not built for, where it reads as an *unfinished*
  * upload and disables Launch for something that cannot be finished.
@@ -38,8 +38,8 @@ function selectionPair(selection: ImportFormSyntenyTrack, pair: string[]) {
  * pair that no longer exists takes what it held with it, which is the only loss
  * and the correct one.
  *
- * Empty slots mean "came from nowhere", which is what makes a new pair auto-pick
- * a pre-configured track, so the result is deliberately sparse rather than
+ * Empty slots mean "came from nowhere", and a new pair with one auto-picks a
+ * pre-configured track, so the result is deliberately sparse rather than
  * padded with `none` — a deliberate no-track, which would suppress the form's
  * warning.
  */

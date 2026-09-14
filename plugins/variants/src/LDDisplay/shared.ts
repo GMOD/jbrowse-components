@@ -325,9 +325,8 @@ export default function sharedModelFactory(
        * Off: `RegionTooLargeMixin`'s gate is a byte axis, and the byte estimate
        * comes from a feature adapter's index. An LD record source serves no
        * features, so there is nothing to measure and the gate can only ever
-       * return "unmeasurable" — which is a verdict of no verdict, dressed as
-       * one. Declining it outright is what keeps the banner and the force-load
-       * control off a display where neither can act.
+       * return "unmeasurable". Turning the gate off keeps the banner and the
+       * force-load control off a display where neither can act.
        */
       get gateEnabled() {
         return false
@@ -554,7 +553,7 @@ export default function sharedModelFactory(
        * The exact inverse of `cellToScreen` (`triangleScreenToData`), split
        * out of `hitTest` so the pair is checkable as an **identity** rather
        * than only through the cell it lands in — `overlayCoords.test.ts`
-       * asserts coordinates, which is what catches a dropped term.
+       * asserts coordinates, so it catches a dropped term.
        */
       screenToCell(mouseX: number, mouseY: number) {
         const { ux, uy } = triangleScreenToData(

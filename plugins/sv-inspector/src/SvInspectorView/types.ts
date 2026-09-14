@@ -4,7 +4,7 @@ import type { SpreadsheetViewCommands } from '@jbrowse/plugin-spreadsheet-view'
  * The launch keys `SvInspectorView` writes code for: the same five the
  * spreadsheet half takes, forwarded verbatim, so this extends that view's
  * commands rather than restating them — a field added there arrives here too,
- * where a lookalike interface would still typecheck while silently dropping it.
+ * where a lookalike interface would still typecheck without it.
  * The two below are redeclared only because they mean more here than they do
  * over there, and the spec table shows the description beside the name.
  *

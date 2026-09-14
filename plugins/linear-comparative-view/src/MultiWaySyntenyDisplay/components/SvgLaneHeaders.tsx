@@ -10,8 +10,8 @@ import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
  * lane is looking on the left, its scale on the right, and nothing else.
  *
  * No measurement, because there is nothing to place after the label — the menu
- * affordance is a control and lives only on screen. The two x positions are
- * fixed, which is what the on-screen half's estimate was standing in for.
+ * affordance is a control and exists only on screen. The two x positions are
+ * fixed; the on-screen headers estimate them.
  */
 export function SvgLaneHeaders({
   rows,

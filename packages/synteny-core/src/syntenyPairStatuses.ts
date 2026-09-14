@@ -13,7 +13,7 @@ import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
  * - `unfinishedUpload`: the user started a "New track" upload that cannot be
  *   applied. No file chosen yet, or its baked assemblies no longer match this
  *   pair. The only state that blocks Launch, because it is unfinished input
- *   rather than an absence, and launching would quietly drop it.
+ *   rather than an absence, and launching would discard it.
  * - `noTrackAvailable`: nothing connects these two rows. Perfectly launchable,
  *   the rows stack with no ribbons between them, but a reorder might fix it, so
  *   it is what offers Auto-arrange.
@@ -63,7 +63,7 @@ export function syntenyPairStatuses({
 /**
  * A pair with nothing to draw is launchable: the rows just stack with no
  * ribbons. Only an upload the user started and hasn't finished blocks, since
- * launching would quietly drop it.
+ * launching would discard it.
  */
 export function blockedByUnfinishedUpload(statuses: PairStatus[]) {
   return statuses.includes('unfinishedUpload')
