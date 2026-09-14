@@ -74,9 +74,9 @@ Track-menu toggles:
 
 Each section carries a chip naming it. Clicking the chip packs that section onto
 a single row and clicking again gives it its rows back; right-clicking offers to
-hide the section, and **Show... → Show hidden groups** puts every hidden one
-back. Changing the grouping clears both. The `groupBy` config slot pre-groups a
-track, so a shared link opens grouped.
+hide the section, and **Show... → Show N hidden groups** puts every hidden one
+back.<!-- menu-path-ok --> Changing the grouping clears both. The `groupBy`
+config slot pre-groups a track, so a shared link opens grouped.
 
 <Figure caption="NCBI RefSeq genes on hg38 grouped by strand, one representative transcript per gene. The forward-strand section stacks above the reverse-strand one, each under its chip, with the divider between them marking where one strand's rows end." src="/img/gene_track_group_by_strand.png" />
 
