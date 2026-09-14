@@ -1,9 +1,8 @@
 import { Fragment } from 'react'
 
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import CloseIcon from '@mui/icons-material/Close'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import VisibilityIcon from '@mui/icons-material/Visibility'
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 
 import { useGroupLabelStyles } from './groupLabelChipStyles.ts'
 import {
@@ -34,7 +33,7 @@ export interface GroupChipSection {
     text?: string
     onClick: () => void
   }
-  // Draws a hide button after the chip; absent, the section cannot be hidden.
+  // Draws a hide × inside the chip; absent, the section cannot be hidden.
   onHide?: () => void
 }
 
@@ -84,29 +83,39 @@ export function GroupLabelChips({
               style={{ top: chipTop + 1 }}
               data-testid="group-label-chip"
             >
-              {toggle ? (
-                <button
-                  type="button"
-                  className={classes.button}
-                  onClick={toggle.onClick}
-                  title={toggle.title}
-                >
-                  {toggle.collapsed ? (
-                    <ChevronRightIcon className={classes.icon} />
-                  ) : (
-                    <ExpandMoreIcon className={classes.icon} />
-                  )}
+              <div className={classes.pill}>
+                {toggle ? (
+                  <button
+                    type="button"
+                    className={classes.toggle}
+                    onClick={toggle.onClick}
+                    title={toggle.title}
+                  >
+                    {toggle.collapsed ? (
+                      <ChevronRightIcon className={classes.icon} />
+                    ) : (
+                      <ExpandMoreIcon className={classes.icon} />
+                    )}
+                    <span data-testid="group-label-text">{label}</span>
+                  </button>
+                ) : (
                   <span data-testid="group-label-text">{label}</span>
-                </button>
-              ) : (
-                <span className={classes.label} data-testid="group-label-text">
-                  {label}
-                </span>
-              )}
+                )}
+                {onHide ? (
+                  <button
+                    type="button"
+                    className={classes.hide}
+                    onClick={onHide}
+                    title={`Hide "${label}"`}
+                  >
+                    <CloseIcon className={classes.hideIcon} />
+                  </button>
+                ) : null}
+              </div>
               {action ? (
                 <button
                   type="button"
-                  className={classes.button}
+                  className={classes.pillButton}
                   onClick={action.onClick}
                   title={action.title}
                 >
@@ -114,25 +123,14 @@ export function GroupLabelChips({
                   {action.text}
                 </button>
               ) : null}
-              {onHide ? (
-                <button
-                  type="button"
-                  className={classes.button}
-                  onClick={onHide}
-                  title={`Hide "${label}"`}
-                >
-                  <VisibilityOffIcon className={classes.icon} />
-                </button>
-              ) : null}
               {i === topmost && hiddenCount > 0 && onShowHidden ? (
                 <button
                   type="button"
-                  className={classes.button}
+                  className={classes.pillButton}
                   onClick={onShowHidden}
                   title={`Show ${hiddenCount} hidden group${hiddenCount > 1 ? 's' : ''}`}
                 >
-                  <VisibilityIcon className={classes.icon} />
-                  {hiddenCount} hidden
+                  Show {hiddenCount} hidden
                 </button>
               ) : null}
             </div>

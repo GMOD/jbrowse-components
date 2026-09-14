@@ -5,13 +5,12 @@
  */
 export const GROUP_LABEL_FONT_SIZE = 11
 export const GROUP_LABEL_FONT_WEIGHT = 500
-export const GROUP_LABEL_BORDER_WIDTH = 1
-export const GROUP_LABEL_PADDING_X = 4
-export const GROUP_LABEL_RADIUS = 3
+export const GROUP_LABEL_PADDING_X = 7
+export const GROUP_LABEL_RADIUS = 8
 
-// Applied to the background COLOUR on both paths, never as an element opacity,
-// which would fade the chip's text and chevron along with the box.
-export const GROUP_LABEL_BG_OPACITY = 0.85
+// The pill is the paper colour under a wash of the text colour at this alpha,
+// on both paths, so it reads the same over light and dark themes.
+export const GROUP_LABEL_TINT = 0.1
 
 export const GROUP_LABEL_ICON_SIZE = 14
 

@@ -2,16 +2,14 @@ import { Fragment } from 'react'
 
 import { measureText } from '@jbrowse/core/util'
 
-import { groupLabelBorderColor } from './groupLabelChipStyles.ts'
 import {
-  GROUP_LABEL_BG_OPACITY,
-  GROUP_LABEL_BORDER_WIDTH,
   GROUP_LABEL_FONT_SIZE,
   GROUP_LABEL_FONT_WEIGHT,
   GROUP_LABEL_HEIGHT,
   GROUP_LABEL_INSET_X,
   GROUP_LABEL_PADDING_X,
   GROUP_LABEL_RADIUS,
+  GROUP_LABEL_TINT,
   groupChipTop,
   groupSectionLabel,
   sectionKey,
@@ -22,8 +20,7 @@ import type { Theme } from '@mui/material'
 
 const MEDIUM_WEIGHT_WIDTH_FACTOR = 1.05
 
-// The on-screen chip without its buttons, which are interactive-only. A box
-// behind the text keeps the label legible over a busy background.
+// The on-screen pill without its buttons, which are interactive-only.
 export default function GroupLabelBox({
   x,
   y,
@@ -49,9 +46,15 @@ export default function GroupLabelBox({
         height={height}
         rx={GROUP_LABEL_RADIUS}
         fill={theme.palette.background.paper}
-        fillOpacity={GROUP_LABEL_BG_OPACITY}
-        stroke={groupLabelBorderColor(theme)}
-        strokeWidth={GROUP_LABEL_BORDER_WIDTH}
+      />
+      <rect
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        rx={GROUP_LABEL_RADIUS}
+        fill={theme.palette.text.primary}
+        fillOpacity={GROUP_LABEL_TINT}
       />
       <text
         x={x + paddingX}
