@@ -1,6 +1,9 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 import createJexlInstance from '@jbrowse/core/util/jexl'
-import { buildFeatureRenderData } from '@jbrowse/plugin-canvas'
+import {
+  STRAND_ARROW_LENGTH_PX,
+  buildFeatureRenderData,
+} from '@jbrowse/plugin-canvas'
 
 import { LaneGene } from './geneGlyph.ts'
 import { buildLaneCells } from './multiwayGeometry.ts'
@@ -155,7 +158,7 @@ test('a lane connects the introns the feature track connects, on the box centre'
   expect(laneIntrons.map(l => l[2])).toContain(HEIGHT / 2)
 })
 
-test('a lane points the strand arrow where the feature track points it', () => {
+test('a lane points the strand arrow the way the feature track does, inside the box', () => {
   const arrows = (
     d: {
       arrowXs: ArrayLike<number>
@@ -172,5 +175,11 @@ test('a lane points the strand arrow where the feature track points it', () => {
         d.arrowDirections[i]!,
       ])
       .sort((a, b) => a[0] - b[0])
-  expect(arrows(lane, PX_ORIGIN, 0)).toEqual(arrows(track, 0, trackTop))
+  expect(arrows(lane, PX_ORIGIN, 0)).toEqual(
+    arrows(track, 0, trackTop).map(([x, y, dir]) => [
+      x - dir * STRAND_ARROW_LENGTH_PX,
+      y,
+      dir,
+    ]),
+  )
 })
