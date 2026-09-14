@@ -632,7 +632,7 @@ export const HighlightLayer = observer(function HighlightLayer({
     if (entry) {
       addOverlay({
         item: entry.item,
-        source: entry.vr,
+        source: entry.source,
         boxStyle,
         key,
         extraWidth: computeExtraWidth(entry),
@@ -653,7 +653,7 @@ export const HighlightLayer = observer(function HighlightLayer({
       const subfeatureHover = !!hoverBoxSubfeature
       addOverlay({
         item: hoverItem,
-        source: entry.vr,
+        source: entry.source,
         boxStyle: boxStyles.hover,
         key: 'hover',
         extraWidth: subfeatureHover ? 0 : computeExtraWidth(entry),

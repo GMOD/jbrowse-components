@@ -414,7 +414,7 @@ function renderLabelLayer(
         {
           kind: 'feature',
           item: BADGE_DATA.flatbushItems[0]!,
-          vr: VR,
+          source: VR,
           data: BADGE_DATA,
         },
       ],

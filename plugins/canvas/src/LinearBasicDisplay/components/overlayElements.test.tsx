@@ -47,7 +47,7 @@ const MODEL = {
   contentHeight: 100,
   labelScrollBucket: 0,
   featureItemMap: new Map<string, FeatureItemEntry>([
-    ['f1', { kind: 'feature', item: ITEM, vr: VR, data: DATA }],
+    ['f1', { kind: 'feature', item: ITEM, source: VR, data: DATA }],
   ]),
   renderDataMap: new Map([[0, DATA]]),
   openContextMenu: () => {},

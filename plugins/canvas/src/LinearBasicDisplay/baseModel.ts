@@ -140,6 +140,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 // a canonical refName is not what `Region.refName` carries.
 type LoadedFeatureData = FeatureDataResult & {
   regionKey: string
+  assemblyName: string
   refName: string
   reversed: boolean
 }
@@ -151,6 +152,7 @@ function loadedFeatureData(
   return {
     ...data,
     regionKey: layoutRegionKey(region),
+    assemblyName: region.assemblyName,
     refName: region.refName,
     reversed: !!region.reversed,
   }
@@ -880,24 +882,27 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // Feature wins over subfeature on id collision, so the feature `set`
-        // is unconditional; a spanning feature resolves to the last region's
+        // Keyed off the loaded payloads rather than `visibleRegions`, which
+        // is a fresh array every pan frame: the two overlays that read this
+        // would otherwise rebuild it per frame of every gesture. Feature wins
+        // over subfeature on id collision, so the feature `set` is
+        // unconditional; a spanning feature resolves to the last region's
         // copy here and the first in `indexById`, which is harmless because
         // the copies are interchangeable.
         get featureItemMap(): Map<string, FeatureItemEntry> {
           const map = new Map<string, FeatureItemEntry>()
-          const visibleRegions = containingLgv(self).visibleRegions
-          for (const vr of visibleRegions) {
-            const data = self.laidOutDataMap.get(vr.displayedRegionIndex)
+          for (const [idx, { assemblyName, refName }] of self.rpcDataMap) {
+            const data = self.laidOutDataMap.get(idx)
             if (!data) {
               continue
             }
+            const source = { assemblyName, refName }
             for (const f of data.flatbushItems) {
-              map.set(f.featureId, { kind: 'feature', item: f, vr, data })
+              map.set(f.featureId, { kind: 'feature', item: f, source, data })
             }
             for (const s of data.subfeatureInfos) {
               if (!map.has(s.featureId)) {
-                map.set(s.featureId, { kind: 'subfeature', item: s, vr })
+                map.set(s.featureId, { kind: 'subfeature', item: s, source })
               }
             }
           }
