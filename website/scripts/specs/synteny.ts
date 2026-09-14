@@ -1655,10 +1655,11 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 860,
   },
 
-  // A window across the human chr2 fusion point. Every non-human lane has
-  // orthologs on two of its chromosomes here, follows the one holding more
-  // of them, names the other in its header where it keeps a fifth of the
-  // window, and draws the genes past the fusion with models but no ribbon.
+  // Human chr2 over the two chimpanzee chromosomes carrying its halves, from
+  // the gene-symbol track in a linear synteny view. A lane follows one contig,
+  // so the lane display cannot draw both halves at the fusion; two rows can.
+  // 'target' colors each ribbon by its chimpanzee chromosome, and
+  // autoDiagonalize flips hsa2a, which the assembly deposits opposite to 2p.
   {
     mode: 'url',
     name: 'multiway_synteny/primate_chr2_fusion',
@@ -1669,68 +1670,38 @@ export const syntenySpecs: ScreenshotSpec[] = [
       {
         views: [
           {
-            type: 'LinearGenomeView',
-            assembly: 'human',
-            loc: 'chr2:112,500,000-115,500,000',
-            tracks: [
+            type: 'LinearSyntenyView',
+            views: [
+              { assembly: 'human', loc: 'chr2', hideNoTracksActive: true },
               {
-                trackId: 'primate_orthologs',
-                type: 'MultiWaySyntenyDisplay',
-                height: 620,
+                assembly: 'chimp',
+                displayedRegionNames: ['chr12_hap1_hsa2a', 'chr13_hap1_hsa2b'],
+                hideNoTracksActive: true,
               },
             ],
+            tracks: [['primate_orthologs']],
+            colorBy: 'target',
+            autoDiagonalize: true,
+            levelHeights: [300],
+            alpha: 1,
           },
         ],
       },
     ),
-    readySelector: displaySettled('multiway-synteny-display'),
-    readyTimeout: 180000,
+    readySelector: displayPainted('synteny_canvas'),
+    readyTimeout: 120000,
     settleMs: 15000,
-    viewportHeight: 820,
-  },
-
-  // The join's limit: the amylase cluster, lettered symbols in human and LOC
-  // placeholders elsewhere, so the copies draw in every lane and chain to
-  // nothing while the flanking genes chain down the stack. The human RefSeq
-  // track rides above the lanes because the copies are the subject and only
-  // their labels name them; the filter drops the RefSeq `match` records, whose
-  // GFF carries no Name and which drew a row of uuids over the gene labels.
-  {
-    mode: 'url',
-    name: 'multiway_synteny/primate_amy_cluster',
-    url: sessionSpec(
-      encodeURIComponent(
-        'https://jbrowse.org/demos/primate_orthologs/config.json',
-      ),
+    viewportHeight: 600,
+    annotations: [
       {
-        views: [
-          {
-            type: 'LinearGenomeView',
-            assembly: 'human',
-            loc: 'chr1:103,500,000-103,790,000',
-            tracks: [
-              {
-                trackId: 'human_genes',
-                type: 'LinearBasicDisplay',
-                jexlFilters: [
-                  "feature.type=='gene'||feature.type=='pseudogene'",
-                ],
-                height: 120,
-              },
-              {
-                trackId: 'primate_orthologs',
-                type: 'MultiWaySyntenyDisplay',
-                height: 620,
-              },
-            ],
-          },
-        ],
+        type: 'text',
+        text: 'fusion site',
+        leader: true,
+        anchor: { view: [0, 0], locus: 'chr2:113,600,000', fracY: 1 },
+        dx: 0,
+        dy: 110,
       },
-    ),
-    readySelector: displaySettled('multiway-synteny-display'),
-    readyTimeout: 180000,
-    settleMs: 15000,
-    viewportHeight: 1000,
+    ],
   },
 
   // The same join at cohort scale: 44 E. coli and Shigella genomes under K-12

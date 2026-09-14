@@ -13,7 +13,7 @@ orthologous gene the same symbol in every species it annotates, so an ortholog
 table is a join on the gene name, built from eight GFF3 files in seconds. Each
 primate then becomes a lane under the human view, in its own coordinates,
 carrying its own gene models. The join reaches exactly as far as the naming
-does, and the page ends on a gene family whose copies carry placeholder names.
+does, and a gene family whose copies carry placeholder names is where it stops.
 
 ## Prerequisites
 
@@ -261,31 +261,27 @@ holding the same genes over more sequence.
 
 <Figure caption="Four megabases of human chr17 over the seven primate lanes, ribbons colored by strand. Blue is a block read backwards from the lane above: one runs down the middle of the frame between same-orientation flanks, and the two bottom lanes cross where a block flips between them." src="/img/multiway_synteny/primate_chr17_inversions.png" />
 
-## A window across a chromosome fusion
+## A chromosome fusion
 
-Human chromosome 2 is two ape chromosomes joined end to end. A window over the
-fusion point has orthologs on both of them, and a lane can follow one contig at
-a time, so each ape lane picks the one holding more of the window's genes. A
-lane whose other chromosome still holds a fair share of the window names it in
-its header, and **Show ⟨contig⟩ in this lane** on the header menu swaps the lane
-onto it. The genes on the other side of the fusion keep their models in every
-lane and have no ribbon.
+Human chromosome 2 is two ape chromosomes joined end to end. The same track in a
+linear synteny view shows it, with human chr2 on one row and the two chimpanzee
+chromosomes that carry its halves on the other. The palette button's **Target**
+paints each ribbon by the chimpanzee chromosome it lands on.
 
-<Figure caption="Three megabases of human chr2 across the 2q13 fusion point over the seven primate lanes. Every non-human lane sits on the chromosome holding most of the window, and the three African ape lanes name the other in their headers; the genes past the fusion have models in every lane and ribbons in none." src="/img/multiway_synteny/primate_chr2_fusion.png" />
+<Figure caption="Human chr2 over chimpanzee hsa2a and hsa2b from the gene-symbol ortholog track, ribbons colored by the chimpanzee chromosome. The orthologs of one chimpanzee chromosome fill human chr2 up to 2q13 and those of the other fill it past there." src="/img/multiway_synteny/primate_chr2_fusion.png" />
 
-## Placeholder names in the amylase cluster
+In the lanes, a window across the fusion point has orthologs on both chimpanzee
+chromosomes, and a lane follows one contig at a time. Each ape lane picks the
+one holding more of the window's genes and names the other in its header, and
+**Show ⟨contig⟩ in this lane** on the header menu swaps the lane onto it.
+
+## Placeholder names
 
 The join is exactly as good as the naming. The salivary amylase cluster on human
 chr1 is a run of near-identical copies whose human names are lettered (_AMY1A_,
 _AMY1B_, _AMY1C_), while the other primates' copies were left as placeholder
-`LOC` ids, so most of them have no row in the table at all. Every lane still
-draws its own copies, from its own annotation, and the ribbons stop where the
-naming does. The human RefSeq track above the lanes names the copies; each
-lettered one is its own symbol, so each takes its own color and the family reads
-as unrelated genes.
-
-<Figure caption="The amylase cluster on human chr1 over the seven primate lanes, with the human RefSeq gene track above them. The gene flanking the cluster chains down the whole stack; inside it the copies are drawn in every lane from that genome's own annotation and joined to almost nothing." src="/img/multiway_synteny/primate_amy_cluster.png" />
-
+`LOC` ids, so most of them have no row in the table. Every lane still draws its
+own copies from its own annotation, and the ribbons stop where the naming does.
 For a locus like this the table wants a real homology call, which is what the
 [OrthoFinder page](/docs/tutorials/orthofinder_synteny) builds, or an alignment.
 
