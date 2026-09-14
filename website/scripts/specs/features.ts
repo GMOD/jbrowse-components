@@ -799,5 +799,33 @@ export const featuresSpecs: ScreenshotSpec[] = [
     // cut mid-row, and it is the track a reader has least idea what to expect
     // of.
     viewportHeight: 1045,
+    // In the DNA binding lane's empty band, over the stretch each one names, so
+    // the three tracks under it read as one statement per region.
+    annotations: [
+      {
+        type: 'text',
+        text: 'DNA-binding core: confident fold, substitutions predicted pathogenic',
+        fontSize: 18,
+        maxWidth: 700,
+        anchor: {
+          view: 1,
+          track: 'P04637-DNA binding',
+          locus: 'P04637:108',
+          fracY: 0.72,
+        },
+      },
+      {
+        type: 'text',
+        text: 'Tails: low confidence, mostly benign',
+        fontSize: 18,
+        maxWidth: 400,
+        anchor: {
+          view: 1,
+          track: 'P04637-DNA binding',
+          locus: 'P04637:4',
+          fracY: 0.72,
+        },
+      },
+    ],
   },
 ]

@@ -1,7 +1,56 @@
 // Per-page setup and diagnosis: what is installed before the app's first script
 // runs, what the run remembers about the network so a timeout can name the fetch
 // it was waiting on, and the rasterization barrier every capture ends with.
-import type { Page } from 'puppeteer'
+import fs from 'node:fs'
+
+import type { CDPSession, Page } from 'puppeteer'
+
+// SCREENSHOT_URL_OVERRIDES='{"https://jbrowse.org/plugins/x/latest/dist/":"/path/to/x/dist/"}'
+// answers every request under a prefix from a local directory, so a figure can
+// be captured against an unpublished plugin build before anyone deploys it.
+//
+// CDP Fetch with URL patterns rather than puppeteer's request interception:
+// that pauses every request, including the RPC worker's, which puppeteer never
+// hands back, so the first worker fetch stalls. A page session's Fetch pauses
+// the worker's requests too, and this handler answers all of them.
+export async function serveUrlOverrides(page: Page) {
+  const raw = process.env.SCREENSHOT_URL_OVERRIDES
+  if (!raw) {
+    return
+  }
+  const overrides = Object.entries(JSON.parse(raw) as Record<string, string>)
+  const intercept = async (session: CDPSession) => {
+    session.on('Fetch.requestPaused', event => {
+      const { url } = event.request
+      const hit = overrides.find(([prefix]) => url.startsWith(prefix))
+      const file = hit ? hit[1] + url.slice(hit[0].length).split('?')[0] : ''
+      if (file && fs.existsSync(file)) {
+        void session.send('Fetch.fulfillRequest', {
+          requestId: event.requestId,
+          responseCode: 200,
+          responseHeaders: [
+            {
+              name: 'Content-Type',
+              value: file.endsWith('.js')
+                ? 'application/javascript'
+                : 'application/octet-stream',
+            },
+            { name: 'Access-Control-Allow-Origin', value: '*' },
+          ],
+          body: fs.readFileSync(file).toString('base64'),
+        })
+      } else {
+        void session.send('Fetch.continueRequest', {
+          requestId: event.requestId,
+        })
+      }
+    })
+    await session.send('Fetch.enable', {
+      patterns: overrides.map(([prefix]) => ({ urlPattern: `${prefix}*` })),
+    })
+  }
+  await intercept(await page.createCDPSession())
+}
 
 // What a spec's page asked the network for, so a timeout can say which fetch
 // it was waiting on.

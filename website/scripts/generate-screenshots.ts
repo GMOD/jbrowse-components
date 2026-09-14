@@ -73,6 +73,7 @@ import {
 import {
   describeNetwork,
   freezeAnimations,
+  serveUrlOverrides,
   trackNetwork,
   trustCapturePlugins,
   waitForRasterize,
@@ -990,6 +991,7 @@ async function main() {
         const page = await browser.newPage()
         await freezeAnimations(page)
         await trustCapturePlugins(page)
+        await serveUrlOverrides(page)
         if (spec.viewportHeight || spec.viewportWidth) {
           await page.setViewport({
             ...defaultViewport,
