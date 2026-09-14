@@ -13,6 +13,12 @@ import {
   GROUP_LABEL_RADIUS,
 } from './groupLabelStyle.ts'
 
+import type { Theme } from '@mui/material'
+
+export function groupLabelBorderColor(theme: Theme) {
+  return alpha(theme.palette.text.primary, 0.25)
+}
+
 /**
  * The on-screen section chip row: a divider above each section after the
  * first, a `controls` row holding the chips, and the chip itself as a `button`
@@ -31,7 +37,7 @@ export const useGroupLabelStyles = makeStyles()(theme => {
     boxSizing: 'border-box' as const,
     color: theme.palette.text.primary,
     background: alpha(theme.palette.background.paper, GROUP_LABEL_BG_OPACITY),
-    border: `${GROUP_LABEL_BORDER_WIDTH}px solid ${theme.palette.text.disabled}`,
+    border: `${GROUP_LABEL_BORDER_WIDTH}px solid ${groupLabelBorderColor(theme)}`,
     borderRadius: GROUP_LABEL_RADIUS,
     whiteSpace: 'nowrap' as const,
     userSelect: 'none' as const,

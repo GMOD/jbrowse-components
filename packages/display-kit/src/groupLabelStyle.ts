@@ -4,7 +4,7 @@
  * the same label fallback.
  */
 export const GROUP_LABEL_FONT_SIZE = 11
-export const GROUP_LABEL_FONT_WEIGHT = 600
+export const GROUP_LABEL_FONT_WEIGHT = 500
 export const GROUP_LABEL_BORDER_WIDTH = 1
 export const GROUP_LABEL_PADDING_X = 4
 export const GROUP_LABEL_RADIUS = 3
