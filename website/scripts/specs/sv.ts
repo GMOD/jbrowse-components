@@ -1620,6 +1620,33 @@ export const svSpecs: ScreenshotSpec[] = [
           fracY: 0.8,
         },
       },
+      // Which row to read and why, since the dialog cannot say: the top route's
+      // ends are where the benchmark and the tumour contig put the junction, and
+      // none of the rows under it land there (realReads.cgiab.test.ts).
+      {
+        type: 'text',
+        text: 'the benchmark junction, also on the tumor assembly contig',
+        fontSize: 17,
+        maxWidth: 330,
+        leader: true,
+        dx: 110,
+        anchor: {
+          selector: '[data-testid="derivative-path-chr13-chr3rev"]',
+          alignX: 'right',
+        },
+      },
+      {
+        type: 'text',
+        text: 'the rest: reads mismapped in chromosome-end repeats',
+        fontSize: 17,
+        maxWidth: 330,
+        leader: true,
+        dx: 110,
+        anchor: {
+          selector: '[data-testid="derivative-path-chr13rev-chr5rev"]',
+          alignX: 'right',
+        },
+      },
     ],
   },
 
@@ -2207,16 +2234,16 @@ export const svSpecs: ScreenshotSpec[] = [
   //   - Wakhan per haplotype: a 50 kb segmentation, so neither event is in it and
   //     the two rows hold the arm's state across the whole window. Its scale is
   //     the arm, which is what the tutorial reaches for it at.
-  // The evidence lanes are the two the page builds: HiFiCNV's binned depth, which
-  // goes to the floor over the deletion and steps up over the CN 2 segment, and
-  // the unfolded BAF, which has no point to draw where no copy remains.
+  // Depth as a filled plot on a fixed axis, since the scatter's single-pixel
+  // points were what the review could not see: it drops to the floor over
+  // CDKN2A and rises over the CN 2 segment. No BAF lane: across a
+  // one-copy arm it is one band at 1 and says nothing the call lanes do not.
   {
     mode: 'url',
     name: 'sv_cgiab/cnv_callset_comparison',
     url: cgiabUrl({
       sessionTracks: [
         HG008_DEPTH_TRACK,
-        HG008_BAF_TRACK,
         {
           type: 'FeatureTrack',
           trackId: 'hg008t_nygc_cnv',
@@ -2328,25 +2355,16 @@ export const svSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg008_depth',
               type: 'LinearWiggleDisplay',
-              defaultRendering: 'scatter',
+              defaultRendering: 'xyplot',
               useBicolor: false,
               summaryScoreMode: 'avg',
-              scatterPointSize: 1,
-              resolution: 10,
-              height: 140,
-            },
-            {
-              trackId: 'hg008_baf',
-              type: 'LinearWiggleDisplay',
-              defaultRendering: 'scatter',
-              scatterPointSize: 1,
               minScore: 0,
-              maxScore: 1,
-              height: 120,
+              maxScore: 140,
+              height: 110,
             },
-            'hg008_cnv_calls',
-            'hg008t_nygc_cnv',
-            'hg008t_dragen_cnv',
+            { trackId: 'hg008_cnv_calls', height: 70 },
+            { trackId: 'hg008t_nygc_cnv', height: 70 },
+            { trackId: 'hg008t_dragen_cnv', height: 70 },
             {
               // Pinned, because auto-fit was dividing whatever was left over
               // and gave the two haplotypes unequal bands — the reader is being
@@ -2366,10 +2384,46 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'chr9',
     readyTimeout: 120000,
     viewportWidth: 1500,
-    // seven lanes: 1000 left the Wakhan rows 191 css px below the fold, by the
-    // run's own report; + the pinned Wakhan height and a margin under it
-    viewportHeight: 1235,
+    viewportHeight: 935,
     settleMs: 25000,
+    annotations: [
+      {
+        type: 'text',
+        text: 'both copies of CDKN2A gone',
+        fontSize: 18,
+        leader: true,
+        dx: 90,
+        dy: -75,
+        anchor: {
+          track: 'hg008_depth',
+          locus: 'chr9:21,962,000',
+          fracY: 0.9,
+        },
+      },
+      {
+        type: 'text',
+        text: 'DRAGEN: no focal call, 50 kb minimum segment',
+        fontSize: 18,
+        maxWidth: 480,
+        leader: true,
+        dx: 90,
+        anchor: {
+          track: 'hg008t_dragen_cnv',
+          locus: 'chr9:21,962,000',
+          fracY: 0.7,
+        },
+      },
+      {
+        type: 'text',
+        text: 'Wakhan: 50 kb bins, the arm alone',
+        fontSize: 18,
+        anchor: {
+          track: 'hg008t_wakhan_hifi_hic',
+          locus: 'chr9:22,450,000',
+          fracY: 0.5,
+        },
+      },
+    ],
   },
 
   // The two-panel somatic-CNV view over chromosome 3: the HiFiCNV depth track
@@ -2431,10 +2485,28 @@ export const svSpecs: ScreenshotSpec[] = [
     readyText: 'chr3',
     readyTimeout: 90000,
     viewportWidth: 1500,
-    // taller so the benchmark CNV-calls track below the two wiggles is fully in
-    // frame and each wiggle has room
     viewportHeight: 875,
     settleMs: 30000,
+    // in the depth lane's empty band on each arm: above the p-arm's points,
+    // below the q-arm's
+    annotations: [
+      {
+        type: 'text',
+        text: 'p-arm: one copy left, heterozygosity lost',
+        fontSize: 18,
+        anchor: { track: 'hg008_depth', locus: 'chr3:45,000,000', fracY: 0.12 },
+      },
+      {
+        type: 'text',
+        text: 'q-arm: two copies, both alleles',
+        fontSize: 18,
+        anchor: {
+          track: 'hg008_depth',
+          locus: 'chr3:145,000,000',
+          fracY: 0.85,
+        },
+      },
+    ],
   },
 
   // sv_cgiab/cdkn2a_cn_ladder was here and is DELETED, with the two-part compose
@@ -2893,90 +2965,6 @@ export const svSpecs: ScreenshotSpec[] = [
         },
       },
     ],
-  },
-
-  // The subclonal-CNV section, whose config block the tutorial carries and
-  // whose track the hosted demo config already loads, with no figure under it.
-  // The claim the section makes is that a bulk callset averages the tumour's
-  // cells together, so the three lanes are that claim's three parts: the bulk
-  // depth HiFiCNV binned off the whole tumour, the benchmark's absolute CN over
-  // the same window, and the per-clone rows underneath.
-  //
-  // The p-arm of chr3, which is where the section's own claim is visible and
-  // which the depth/BAF figure above already reads as one single-copy loss with
-  // LOH. The benchmark calls CN 1 across the whole arm, the bulk depth holds
-  // the level that goes with it, and seven of the eight single-cell-derived
-  // clones sit on CN 1 with it. 2E6 alone runs three copies from the
-  // p-terminus and rejoins the others partway down the arm, so the departure
-  // and its end are both inside one frame.
-  //
-  // Picked by scanning the published BED for a segment whose CN differs from
-  // every other clone's at the same position by 2 or more. Most disagreements
-  // in that file are smaller than that and are a normalization offset rather
-  // than a subclone: CNVkit centres each clone on its own median and this
-  // genome is hypodiploid, so a figure built on one of those would be reading
-  // the centring. 2E6's is the largest of the ones that survive, and it is the
-  // only one that both starts and ends inside a readable window.
-  //
-  // 20 Mb of a 71 Mb arm. Whole-chromosome would put the whole thing in the
-  // left fifth of the frame and lose the rejoin; wider than this and the seven
-  // agreeing rows stop being the point.
-  {
-    mode: 'url',
-    name: 'sv_cgiab/subclonal_cnv',
-    url: cgiabUrl({
-      sessionTracks: [HG008_DEPTH_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'GRCh38_GIABv3',
-          loc: 'chr3:1-20,000,000',
-          trackLabels: 'offset',
-          tracks: [
-            {
-              // the bulk signal the clones are the decomposition of, on the
-              // same fixed axis the other cgiab depth figures use
-              trackId: 'hg008_depth',
-              type: 'LinearWiggleDisplay',
-              defaultRendering: 'scatter',
-              useBicolor: false,
-              summaryScoreMode: 'avg',
-              scatterPointSize: 1,
-              resolution: 10,
-              minScore: 0,
-              maxScore: 160,
-              displayCrossHatches: true,
-              height: 130,
-            },
-            {
-              // one segment covers the whole window, so the default height was
-              // most of a lane of white under a single bar
-              trackId: 'hg008_cnv_calls',
-              type: 'LinearBasicDisplay',
-              height: 45,
-            },
-            {
-              // eight partitions share this height, and the display's own
-              // auto-fit had them at ~11 px with the row labels running into
-              // each other
-              trackId: 'hg008_subclonal_cnv',
-              type: 'LinearMultiRowFeatureDisplay',
-              height: 260,
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'chr3',
-    readyTimeout: 120000,
-    viewportWidth: 1500,
-    // 700 cut the last two clone rows off, 74 css px of them by the run's own
-    // report; the benchmark lane gave 55 of that back. The last 20 is a margin
-    // under the bottom row that no report asks for — the multirow display's
-    // content is inside its own fixed height, so the fold check cannot see the
-    // band running into the frame's border, and at 720 it did.
-    viewportHeight: 745,
-    settleMs: 20000,
   },
 
   // The methylation walkthrough, which until now was the one section of the

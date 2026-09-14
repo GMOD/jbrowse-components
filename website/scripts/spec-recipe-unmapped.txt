@@ -15,7 +15,6 @@ connectedViewId
 displayMode
 followAnchorIndex
 followSynteny
-growMaxHeight
 height
 jexlFiltersSetting
 label

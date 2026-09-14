@@ -323,7 +323,7 @@ GRCh38, so a gap in that lane is a gap in the benchmark. Depth per bin is the
 one signal no group publishes; the end of this section computes it from the
 tumor reads.
 
-<Figure caption="Four published CNV callsets over chr9p21.3, with the HiFiCNV depth and B-allele frequency above them: the V0.5 benchmark, NYGC's annotated BIC-seq2 segments, DRAGEN's somatic CNV VCF, and Wakhan's two haplotype rows. Depth drops out over CDKN2A, where the benchmark and NYGC both carry a focal call and the two coarser segmentations run straight through." src="/img/sv_cgiab/cnv_callset_comparison.png" />
+<Figure caption="Four published CNV callsets over chr9p21.3, with the HiFiCNV depth above them: the V0.5 benchmark, NYGC's annotated BIC-seq2 segments, DRAGEN's somatic CNV VCF, and Wakhan's two haplotype rows. Depth drops out over CDKN2A, where the benchmark and NYGC both carry a focal call and the two coarser segmentations run straight through." src="/img/sv_cgiab/cnv_callset_comparison.png" />
 
 ### DRAGEN: integer copy number from short reads
 
@@ -613,11 +613,6 @@ on that sample's own median, so on a hypodiploid genome the balanced state is
 not the row's CN 2. The benchmark CNV track in the same view is what anchors
 them, its `total_copy_number` being absolute.
 
-The p-arm of chr3 reads clearly for that reason: the benchmark calls one state
-across the whole arm, and the bulk depth holds one level under it.
-
-<Figure caption="The p-arm of chr3 over the HG008-T clones: the HiFiCNV depth, the benchmark CNV call, and one row per clone from the per-clone CNVkit BED. One row departs from the rest at the p-terminus and rejoins them partway down the arm." src="/img/sv_cgiab/subclonal_cnv.png" />
-
 ## Align the tumor assembly to GRCh38
 
 The tumor assembly is haplotype-resolved into T2T scaffolds. Load it as a second
@@ -695,7 +690,7 @@ orientation the black splines above draw. The matched normal is the control and
 a track away: the tumor reads split at this position, the normal reads read
 through it.
 
-<Figure caption="Reconstruct derivative allele over both breakpoint loci of the tumor PacBio HiFi track. The top route, chr13 forward then chr3 inverted, is the junction the benchmark and the tumor assembly both name." src="/img/sv_cgiab/three_ways.png" />
+<Figure caption="Reconstruct derivative allele over both breakpoint loci of the tumor PacBio HiFi track. The top route, chr13 forward then chr3 inverted, is the junction the benchmark and the tumor assembly both name; the rows under it are reads mismapped in chromosome-end repeats." src="/img/sv_cgiab/three_ways.png" />
 
 <Video src="/media/sv/derivative_allele_route.mp4" caption="The same route end to end, on the COLO829 melanoma chain: the track menu, the ranked routes, and Draw as Breakpoint split view replacing the window with one panel per segment of the route the reads take." />
 
