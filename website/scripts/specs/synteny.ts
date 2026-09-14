@@ -4177,54 +4177,64 @@ export const syntenySpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // One dotplot per haplotype. HG008T v3.2 is haplotype-resolved, so a single
-  // plot puts both haplotypes' scaffolds on one axis interleaved — every GRCh38
-  // chromosome then has TWO counterparts and the "diagonal" is doubled, which is
-  // what made the combined figure hard to read. Each spec restricts the y axis to
-  // one haplotype via the per-axis `displayedRegionNames` glob, so each plot is a
-  // plain assembly-vs-reference diagonal.
-  ...(['hap1', 'hap2'] as const).map(hap => ({
-    mode: 'url' as const,
-    name: `sv_cgiab/dotplot_${hap}`,
-    // The old hap1/hap2 synteny tracks shipped a plain PAFAdapter pointed at a
-    // .pif.gz — but PAFAdapter doesn't strip the PIF q/t refName prefixes, so
-    // every feature's refName ("qchr3_chr13_hap1") failed to match the assembly
-    // refName ("chr3_chr13_hap1") and the dotplot rendered empty. The config now
-    // ships HG008T_v3.2_pif as a PairwiseIndexedPAFAdapter; this session track
-    // keeps the same adapter so the figure and the hosted config agree.
+  // Both haplotypes of HG008T v3.2 against GRCh38, one dotplot each, tiled
+  // side by side in one workspace. One plot with both haplotypes on the y axis
+  // gives every GRCh38 chromosome two counterparts and doubles the diagonal,
+  // so each view restricts its y axis to one haplotype with a
+  // `displayedRegionNames` glob. GRCh38 on x keeps its natural order, and
+  // autoDiagonalize reorders and flips the assembly's scaffolds on y.
+  //
+  // The session track is a PairwiseIndexedPAFAdapter, which strips the PIF q/t
+  // refName prefixes a plain PAFAdapter leaves on and so matches the hosted
+  // config's own track.
+  {
+    mode: 'url',
+    name: 'sv_cgiab/dotplot_haplotypes',
     url: cgiabUrl({
       sessionTracks: [CGIAB_ASM_PIF_TRACK],
-      views: [
-        {
-          type: 'DotplotView',
-          // GRCh38 on x (stays in its natural chr1->chrX order) and the
-          // fragmented HG008T v3.2 assembly on y: autoDiagonalize reorders the
-          // vertical axis, so putting the assembly there reorders/flips its
-          // contigs to form a clean diagonal against a readable reference axis.
-          // (Reordering the reference axis instead scrambles the familiar
-          // chromosome order and breaks the single diagonal into a staircase.)
-          views: [
-            { assembly: 'GRCh38_GIABv3' },
-            // the scaffold names all end in _hap1/_hap2, so one glob picks a
-            // haplotype without hand-listing its 16-19 scaffolds
-            { assembly: 'HG008T_v3.2', displayedRegionNames: [`*_${hap}`] },
-          ],
-          tracks: ['HG008T_v3.2_pif'],
-          autoDiagonalize: true,
-        },
-      ],
+      views: (['hap1', 'hap2'] as const).map(hap => ({
+        type: 'DotplotView',
+        displayName: `HG008-T v3.2 ${hap} vs GRCh38`,
+        views: [
+          { assembly: 'GRCh38_GIABv3' },
+          { assembly: 'HG008T_v3.2', displayedRegionNames: [`*_${hap}`] },
+        ],
+        tracks: ['HG008T_v3.2_pif'],
+        autoDiagonalize: true,
+        height: 640,
+      })),
+      layout: {
+        direction: 'horizontal',
+        children: [
+          { views: [0], size: 50 },
+          { views: [1], size: 50 },
+        ],
+      },
     }),
     readySelector: displayPainted('dotplot_webgl_canvas'),
     readyTimeout: 90000,
     viewportWidth: 1800,
-    // gate on the WebGL canvas `settled` test-id (canvas painted + no display
-    // still fetching), then settle long for the heavy whole-genome PIF fetch to
-    // paint its dots. (A `readyText: 'chr1'` gate is unreliable here: the axis
-    // labels wrap their refName in an SVG <title>, and puppeteer's ::-p-text
-    // matches that non-rendered <title> element, which fails the visible: true
-    // wait — plus substrings like the chr1_..._random contig collide.)
+    viewportHeight: 820,
     settleMs: 60000,
-  })),
+    annotations: [
+      {
+        type: 'text',
+        text: 'chr3/chr13 fusion',
+        leader: true,
+        anchor: { view: 0, hLocus: 'chr13', vLocus: 'chr3_chr13_hap1' },
+        dx: 40,
+        dy: 80,
+      },
+      {
+        type: 'text',
+        text: 'chr13 intact',
+        leader: true,
+        anchor: { view: 1, hLocus: 'chr13', vLocus: 'chr13_hap2' },
+        dx: 40,
+        dy: 80,
+      },
+    ],
+  },
 
   // The dotplot import form with HG008T v3.2 on one axis and GRCh38 on the other
   // (tutorial caption). An empty DotplotView (views:[{},{}]) shows the form; both

@@ -951,9 +951,7 @@ HG008-T v3.2 is haplotype-resolved, so its scaffold names end in `_hap1` or
 Restrict the y axis to one haplotype at a time and each plot reads as a plain
 assembly-vs-reference diagonal.
 
-<Figure caption="Haplotype 1 of HG008-T v3.2 (y) against GRCh38 chromosomes (x). Each scaffold is one diagonal segment; scaffolds named for two chromosomes (chr3_chr13_hap1) break into two, which is the translocation." src="/img/sv_cgiab/dotplot_hap1.png" />
-
-<Figure caption="The same plot for haplotype 2. chr13_hap2 carries a single clean diagonal against chr13, the untranslocated counterpart to hap1's fused scaffold." src="/img/sv_cgiab/dotplot_hap2.png" />
+<Figure caption="The two haplotypes of HG008-T v3.2 (y) against GRCh38 chromosomes (x), hap1 left and hap2 right, tiled in one workspace. Each scaffold is one diagonal segment. On hap1 the chr3_chr13_hap1 scaffold carries a piece of chr3 and a piece of chr13, which is the translocation; on hap2 chr13_hap2 is one unbroken diagonal against chr13." src="/img/sv_cgiab/dotplot_haplotypes.png" />
 
 Drag over a region and take **Launch → Linear synteny view** from the selection,
 keeping **HG008T v3.2** as the dialog's synteny dataset, then enter `chr3 chr13`
