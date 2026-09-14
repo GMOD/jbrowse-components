@@ -338,7 +338,12 @@ export function drawAnnotationOverlay(
       document.querySelector(
         anchor.track
           ? `[data-testid="trackRenderingContainer-${CSS.escape(view.id)}-${CSS.escape(anchor.track)}"]`
-          : `[data-testid="view-container-${CSS.escape(view.id)}"] [data-testid="tracksContainer"]`,
+          : ['view-container', 'linear-genome-view']
+              .map(
+                t =>
+                  `[data-testid="${t}-${CSS.escape(view.id)}"] [data-testid="tracksContainer"]`,
+              )
+              .join(', '),
       ) ?? undefined
     if (!el) {
       return undefined
