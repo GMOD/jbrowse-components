@@ -1496,6 +1496,14 @@ test('the worker payload is exactly the slots DisplayConfig declares', () => {
     'transcriptTypes',
     'utrColor',
   ])
+  // Only an attribute grouping asks the worker for a stamp; strand grouping
+  // stays out of the payload and so out of the cache key.
+  display.setGroupBy({ type: 'strand' })
+  expect(display.rpcProps().displayConfig).not.toHaveProperty(
+    'groupByAttribute',
+  )
+  display.setGroupBy({ type: 'attribute', attribute: 'biotype' })
+  expect(display.rpcProps().displayConfig.groupByAttribute).toBe('biotype')
 })
 
 describe('SettingsInvalidate keys on the payload, not the reads', () => {

@@ -590,8 +590,11 @@ export default function baseStateModelFactory(
               subfeatureLabels: self.effectiveSubfeatureLabels,
               jexlFilters: self.activeFilters(),
               // Only the attribute dimension needs a stamp per feature, so
-              // only it is a cache key; strand grouping never refetches.
-              groupByAttribute: self.groupBy?.attribute,
+              // only it joins the cache key, and only while set: strand
+              // grouping never refetches.
+              ...(self.groupBy?.attribute === undefined
+                ? {}
+                : { groupByAttribute: self.groupBy.attribute }),
             },
             colorByCDS: self.colorByCDS,
             showAminoAcids: self.showAminoAcids,
