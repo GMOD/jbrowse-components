@@ -85,7 +85,7 @@ reads with the same shorthand, and the v2.0 TAF is the build
 [the callset](/docs/tutorials/pangenome_hprc_part2#the-variant-callset) come
 from. The figure below puts all three products on one axis.
 
-<Figure caption="The C4 locus on one axis: the NCBI RefSeq genes, the graph's rGFA segments, the callset's haplotypes clustered by genotype, a subtree of those haplotypes as alignment rows clustered by identity, and the same window as a force-directed subgraph. The band marks the pseudogene pair between C4A and C4B, where the haplotypes that carry nothing there gather into a block." src="/img/maf_hprc_pangenome.png" />
+<Figure caption="The C4 locus on one axis: the NCBI RefSeq genes, the graph's rGFA segments, the callset's haplotypes clustered by genotype (grey reference, blue alt allele, red other alt, tan no call, purple insertion), a subtree of those haplotypes as alignment rows clustered by identity, grey where a haplotype aligns to GRCh38 and white where it has no aligned sequence, and the same window as a force-directed subgraph in reference-position colors with its bubbles haloed. The band marks the pseudogene pair between C4A and C4B, where the haplotypes that carry nothing there gather into a block." src="/img/maf_hprc_pangenome.png" />
 
 The locus is C4, the example [HPRCv2](https://github.com/pangenome/HPRCv2)
 itself opens with. Every alignment row is a human haplotype, so a row that drops
@@ -235,7 +235,7 @@ contig. Between the last non-carrier and the first carrier the ribbon over
 _CFHR3_ and _CFHR1_ narrows to a point, because the carriers' walks skip that
 stretch of GRCh38, and the carriers' own annotations have no model there.
 
-<Figure caption="The CFH cluster's eight lanes read from the graph at load time, the non-carriers above the carriers, from two hosted files and no offline step. Each lane is one haplotype's walk aligned to hg38 as a CIGAR, and because the eight assemblies are in the session, each draws that haplotype's own CAT genes at its own coordinates over it." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
+<Figure caption="The CFH cluster's eight lanes read from the graph at load time, the non-carriers above the carriers, from two hosted files and no offline step. Each lane is one haplotype's walk aligned to hg38 as a CIGAR, and because the eight assemblies are in the session, each draws that haplotype's own CAT genes at its own coordinates over it: a lane whose genes stop where hg38's CFHR3 and CFHR1 are is a haplotype that lacks them." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
 
 `GbzBaseSyntenyAdapter` answers a window: it locates the window on GRCh38's own
 path through the graph and emits one record per haplotype walk, in that
@@ -268,7 +268,7 @@ haplotype's private run of kringle copies is a thin loop. The **Walk** dropdown
 lifts one haplotype out: its route keeps its ink, the rest fades, and a readout
 gives its length against the reference walk.
 
-<Figure caption="The KIV-2 array cut from the GBZ for eight haplotypes, force-directed under the same window's genes, bubble and rGFA segments, with HG00133's walk lifted. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
+<Figure caption="The KIV-2 array cut from the GBZ for eight haplotypes, force-directed under the same window's genes, bubble and rGFA segments, with HG00133's walk lifted. Nodes on the walk keep their reference-position color, red to magenta across the window, and every node the walk does not visit fades to grey. The labelled loop is copies HG00133 walks and GRCh38 does not, its links drawn dark, and the readout at the top right states the walk's excess over GRCh38." src="/img/pangenome/graph_kiv2_walks.png" />
 
 [Part 4](/docs/tutorials/pangenome_graph_reading) walks through that drawing
 from the rGFA window to the lifted haplotype.
@@ -307,7 +307,7 @@ coordinates are the donor's own. The node in the figure below is 142 kb of chr17
 that GRCh38 does not carry, near the end of the chromosome, and RepeatMasker
 tiles it with long L1 elements.
 
-<Figure caption="A donor node on both coordinate systems: the GRCh38 window, the graph cut from it, then that node on hs1's own chr17 tiled by long L1 elements in red." src="/img/pangenome/hprc_chm13_allele.png" />
+<Figure caption="A donor node on both coordinate systems: the GRCh38 window, with the bubble it sits in and the rGFA segments in reference-position colors; the graph cut from it, where the boxed charcoal node is the sequence hg38 has no coordinate for, haloed as a bubble and labelled a repeat array; then that node on hs1's own chr17, drawn as one dark bar under RepeatMasker, which is tiled by long L1 elements in red." src="/img/pangenome/hprc_chm13_allele.png" />
 
 With two assemblies loaded the graph's own **Launch** menu offers **Linear
 synteny view** as well, one panel per contributor at the locus each contributes
@@ -333,7 +333,7 @@ Taken at the window above, it opens hg38 over hs1, each panel already at the
 interval the graph states for it. Without such a track the entry stays, greyed
 out, and its tooltip says what is missing.
 
-<Figure caption="The graph's own Launch menu at the CHM13 window, with hg38 and hs1 loaded and the liftOver between them in the session. Above, the hg38 window and the cut, the CHM13 node ringed. Below, the synteny view the Linear synteny view entry opened: hg38 over hs1, each panel framed on the locus the graph states for it, with the liftOver ribbons between." src="/img/pangenome/hprc_synteny_launch.png" />
+<Figure caption="The graph's own Launch menu at the CHM13 window, with hg38 and hs1 loaded and the liftOver between them in the session. Above, the hg38 window and the cut in reference-position colors, the CHM13 node ringed. Below, the synteny view the Linear synteny view entry opened: hg38 over hs1, each panel framed on the locus the graph states for it, with the liftOver alignment drawn as pink ribbons between them and the node as one dark bar on hs1." src="/img/pangenome/hprc_synteny_launch.png" />
 
 ## Reproduce it end to end
 

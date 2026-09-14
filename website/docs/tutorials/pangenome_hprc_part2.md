@@ -111,7 +111,7 @@ its `score`, so the only change is the track type:
 }
 ```
 
-<Figure caption="All 249 Mb of GRCh38 chr1 with the cytogenetic bands on the same axis, then the three chr1 loci this page opens, then two lanes off two files: the bubble file as a curve of segments per bubble, and the same bubbles as the tier's segments lane. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
+<Figure caption="All 249 Mb of GRCh38 chr1 with the cytogenetic bands on the same axis, then the three chr1 loci this page opens, then two lanes off two files: the bubble file as a blue curve of segments per bubble, which is how much the haplotypes disagree at each locus, and the same bubbles as the tier's segments lane, one gold block per bubble. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
 
 The two granularities are read together, the tier to find an event and the fine
 index to open it, and the move between them is the node's own menu. On a tier
@@ -280,7 +280,7 @@ the genes, the segments lane and the genotype matrix in one column, and the
 reference-position ramp gives the graph's backbone at that position the same hue
 as the segments above it.
 
-<Figure caption="One window, both products. The band is one deletion site from the callset, the stretch of HLA-DRB5 that many haplotypes replace with their own shorter sequence, and the matrix below it, every haplotype clustered by genotype, colors the ones carrying it. The force graph has no coordinate axis, so an arrow runs from the band to the allele, which is the same deletion as the graph draws it." src="/img/pangenome/hprc_graph_vs_callset.png" />
+<Figure caption="One window, both products. The tan band is one deletion site from the callset, the stretch of HLA-DRB5 that many haplotypes replace with their own shorter sequence. The matrix below it is every haplotype clustered by genotype, one row each, grey where a haplotype matches the reference, blue where it carries the alt allele, red for another alt allele, tan for no call and purple for an insertion. The force graph beneath has no coordinate axis, so an arrow runs from the band to the allele, which is the same deletion as the graph draws it: nodes colored by reference position, alleles charcoal, each lavender halo one bubble with its kind in the purple label." src="/img/pangenome/hprc_graph_vs_callset.png" />
 
 ## Inversions
 
@@ -300,7 +300,7 @@ CAT gene annotation, and the pair boxed on each is the same two genes, _PPIAL4F_
 and _PPIAL4E_: on the carrier _PPIAL4F_ comes first, on the non-carrier
 _PPIAL4E_ does, and the hg38 row between them agrees with the non-carrier.
 
-<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles, and the rGFA segments. The boxed pair on each row is PPIAL4F and PPIAL4E." src="/img/pangenome/hprc_inversion.png" />
+<Figure caption="The 1q21.1 bubble the graph flags as an inversion, drawn as alignments. The pink ribbons are each haplotype's alignment to hg38, and a ribbon that crosses itself is an inversion. Between the two haplotype rows are the RefSeq genes, the bubble lane cut to inversion-flagged bubbles, and the rGFA segments colored by reference position. The boxed pair on each row is PPIAL4F and PPIAL4E, in opposite orders on the two haplotypes." src="/img/pangenome/hprc_inversion.png" />
 
 ## Reproduce it end to end
 

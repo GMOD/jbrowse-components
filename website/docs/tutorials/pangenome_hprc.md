@@ -81,22 +81,17 @@ is an **allele**, a stretch of sequence some haplotype carries in place of the
 reference's. A deletion is an **edge**, a dashed arc from one backbone segment
 to another that skips what lies between.
 
-<Figure caption="The C4 locus cut as a force-directed graph, under the hg38 genes and the rGFA segments for the same window. The labels name a backbone segment, an allele, and a bubble whose two routes are the reference path and the dashed arc that skips it, which is one whole copy of the tandem C4-CYP21-TNX module." src="/img/pangenome/hprc_graph_anatomy.png" />
+<Figure caption="The C4 locus cut as a force-directed graph, under the hg38 genes and the rGFA segments for the same window. Both panels color by reference position, red at the window's start to magenta at its end (the key is top right), so a block in the lane and its node below share a hue; a charcoal node has no GRCh38 coordinate, which is what an allele is. The labels name a backbone segment, an allele, and a bubble whose two routes are the reference path and the dashed arc that skips it, which is one whole copy of the tandem C4-CYP21-TNX module. Gene names hang under the backbone at the exons they cover." src="/img/pangenome/hprc_graph_anatomy.png" />
 
 With those named, the route is five steps:
 
 - open hg38 with its genes and nothing else
-- paste the track config from [Load the graph](#load-the-graph) into the app
+- [add the graph track](#load-the-graph)
 - [cut the locus as a graph](#open-a-locus-as-a-graph)
 - take the allele
   [back to its GRCh38 coordinates](#from-a-node-back-to-a-coordinate)
 - [load the haplotype that contributed it](#loading-a-haplotype-as-an-assembly)
   and read that haplotype's own annotation at the same place
-
-The clip below runs the first four steps on the MHC class II window, which holds
-too many nodes to label the way the figure above is.
-
-<Video src="/media/pangenome/hprc_end_to_end.mp4" caption="HPRC release 2's graph added to an hg38 session and then read: the track config pasted into Open track..., the MHC class II window cut as a subgraph, that subgraph laid out on GRCh38 coordinates, and one allele's interval marked in the linear view above it." />
 
 ## The GraphGenomeView plugin
 
@@ -168,6 +163,12 @@ your own:
 - **`color`** paints each segment in the graph view's own **Stable rank**
   colors, so a segment is the same color in both panels.
 
+The clip below starts here, with the track going in, and runs the route's first
+four steps on the MHC class II window, which holds too many nodes to label the
+way the C4 figure [above](#the-route-end-to-end) is.
+
+<Video src="/media/pangenome/hprc_end_to_end.mp4" caption="HPRC release 2's graph added to an hg38 session and then read: the track config pasted into Open track..., the MHC class II window cut as a subgraph, that subgraph laid out on GRCh38 coordinates, and one allele's interval marked in the linear view above it." />
+
 Each segment is drawn at the position its tags give, so the GRCh38 backbone
 tiles the reference. Both files are ours, and the first is one command over any
 rGFA: `gfa2bed -m` reads the `SN`/`SO`/`SR` tags, which is what puts each
@@ -227,7 +228,7 @@ The [guide](/docs/user_guides/graph_genome_view#three-layouts) sets out what the
 five modes put on each axis. Here is the same MHC class II window drawn in two
 of them:
 
-<Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it. Left, force-directed. Right, anchored: every x is a GRCh38 coordinate, so each allele hangs below where it attaches." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
+<Figure caption="One MHC class II subgraph drawn both ways, same window and same tracks above it, both colored by reference position, red to magenta across the window, with alleles charcoal. Left, force-directed, with the node's right-click menu open on Highlight in hg38. Right, anchored: every x is a GRCh38 coordinate, the reference row is rank 0 at the top, each lower row is one stable rank, and each allele hangs below the point it attaches at; the ringed dashed arc is a deletion, drawn as a jump along the reference row." src="/img/pangenome/hprc_mhc_anchored.png" links="Force-directed=pangenome/hprc_mhc_layout_force,Anchored=pangenome/hprc_mhc_layout_anchored" />
 
 Both halves ring the allele [the route](#the-route-end-to-end) follows, which
 the right-click menu on the left is open on. The anchored half labels it by its
@@ -243,7 +244,7 @@ Each locus below is a window small enough to draw:
 | C4           | `chr6:31,980,000-32,050,000`   |
 | LPA KIV-2    | `chr6:160,525,000-160,655,000` |
 
-<Figure caption="The KIV-2 repeat inside LPA as a force-directed graph, under the RefSeq genes, the UniProt domains, the bubbles lane and the rGFA segments. The UniProt kringle domains tile the bubble the lane reports across the repeat, which is the haloed knot of loops below it, labelled as a repeat array, with one dashed arc bypassing the reference and LPA pinned under the backbone." src="/img/pangenome/hprc_lpa_kiv2.png" />
+<Figure caption="The KIV-2 repeat inside LPA as a force-directed graph, under the RefSeq genes, the UniProt kringle domains, the bubbles lane and the rGFA segments. Nodes are colored by reference position, red to magenta across the window, and the alleles charcoal. Each lavender halo is one bubble, labelled in purple with what it is: the haloed knot of loops below the lane's widest bubble is labelled a repeat array, each loop one copy of the repeat, and the short red labels are deletions. One dashed arc bypasses the reference, and LPA is pinned under the backbone." src="/img/pangenome/hprc_lpa_kiv2.png" />
 
 ### Bubbles and genes on the drawing
 
@@ -271,7 +272,7 @@ node, drawn as a tube. Missing sequence is an edge, dashed and near-black, off
 the color ramp. Read one on the [anchored layout](#the-layout-dropdown), where x
 is GRCh38 bp, so the arc spans exactly the sequence it removes.
 
-<Figure caption="The complement factor H cluster on chr1: two HPRC haplotypes aligned to GRCh38, above the same window as an anchored graph. The dashed arc under the graph's reference row spans the gap that removes CFHR3 and CFHR1." src="/img/pangenome/hprc_cfhr_deletion.png" />
+<Figure caption="The complement factor H cluster on chr1: two HPRC haplotypes aligned to GRCh38, above the same window as an anchored graph. In the synteny view the pink ribbons are the alignment between each haplotype and hg38, and the ribbon narrows where a haplotype has nothing to align, which for HG01109 is the stretch holding CFHR3 and CFHR1. In the graph, the reference row is at the top in reference-position colors, each lower row one stable rank with its alleles as charcoal nodes haloed as bubbles, and the dashed arc under the reference row spans the gap that removes both genes." src="/img/pangenome/hprc_cfhr_deletion.png" />
 
 Hovering an edge gives the interval and the bp it removes. An edge carries no
 sequence of its own, so it names no donor haplotype and opens nowhere but
@@ -427,7 +428,7 @@ on the allele, with its CAT genes and the segments the graph credits to it.
 
 <Video src="/media/pangenome/hprc_out_to_haplotype.mp4" caption="The MHC class II cut with NA20809 haplotype 2 loaded: the allele hovered for its contributing assembly, its menu opened, the Open in NA20809.2 entry adding a view of that haplotype's own chromosome 6, and that view zoomed out to the CAT genes around it." />
 
-<Figure caption="The same launch as a still. Above, the MHC class II window on hg38 and the cut made from it, with the NA20809.2 allele ringed. Below, the view its Open in entry opened: NA20809 haplotype 2 on its own chromosome 6, and its CAT annotation, which has HLA-DRB9 and HLA-DRB6 either side of the allele and no HLA-DRB5 at all." src="/img/pangenome/hprc_haplotype_launch.png" />
+<Figure caption="The same launch as a still. Above, the MHC class II window on hg38 and the cut made from it, colored by reference position with alleles charcoal, and the NA20809.2 allele ringed. Below, the view its Open in entry opened: NA20809 haplotype 2 on its own chromosome 6, where the rGFA segments lane draws the node's own segments in charcoal because they have no hg38 coordinate, and its CAT annotation, which has HLA-DRB9 and HLA-DRB6 either side of the allele and no HLA-DRB5 at all." src="/img/pangenome/hprc_haplotype_launch.png" />
 
 On GRCh38 the ringed allele attaches across the 12 kb of backbone the
 [layout figure](#the-layout-dropdown) highlights, which is most of _HLA-DRB5_.
