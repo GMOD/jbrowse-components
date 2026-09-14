@@ -132,6 +132,8 @@ export function expectCanvasMatch(
   expect(canvasToBuffer(canvas as HTMLCanvasElement)).toMatchImageSnapshot({
     failureThreshold,
     failureThresholdType: 'percent',
+    // the default spawns a node process per comparison, ~150-400ms each
+    runInProcess: true,
   })
 }
 
