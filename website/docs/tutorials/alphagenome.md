@@ -234,8 +234,7 @@ its own row and a much smaller axis.
 
 On the difference track, positive is where the insertion raises predicted
 expression and negative where it lowers it. The row is flat across most of the
-window and moves only over _TAL1_ and _STIL_. Each carries positive and negative
-within the same gene body, a redistribution of predicted coverage.
+window and moves only over _TAL1_ and _STIL_.
 
 The flatness everywhere else is the check: a difference track lit up across the
 whole megabase would be responding to the request rather than the variant.
