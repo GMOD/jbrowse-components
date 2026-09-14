@@ -47,7 +47,11 @@ export interface FitLadderHost {
   // user opened at the `full` rung.
   layoutInputs: Pick<
     LayoutInputs,
-    'bpPerPx' | 'reversedRegions' | 'displayMode' | 'pinnedFeatureIds'
+    | 'bpPerPx'
+    | 'reversedRegions'
+    | 'displayMode'
+    | 'pinnedFeatureIds'
+    | 'groupBy'
   > &
     Required<Pick<LayoutInputs, 'expandedGeneIds'>>
   showLabels: boolean

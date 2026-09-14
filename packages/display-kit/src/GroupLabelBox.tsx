@@ -7,7 +7,7 @@ import {
   GROUP_LABEL_ICON_SIZE,
   GROUP_LABEL_PADDING_X,
   GROUP_LABEL_RADIUS,
-} from '../groupLabelStyle.ts'
+} from './groupLabelStyle.ts'
 
 import type { Theme } from '@mui/material'
 

@@ -4,6 +4,12 @@ import { Fragment } from 'react'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { resolvePalette } from '@jbrowse/core/ui/palette'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
+import GroupLabelBox from '@jbrowse/display-kit/GroupLabelBox'
+import {
+  GROUP_LABEL_INSET_X,
+  groupChipTop,
+  groupSectionLabel,
+} from '@jbrowse/display-kit/groupLabelStyle'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 
 import { getMismatchContrastMap } from '../shared/util.ts'
@@ -13,13 +19,7 @@ import SashimiArcsSvg from './components/SashimiArcsSvg.tsx'
 import { buildColorPaletteFromPalette } from './components/alignmentComponentUtils.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { bandScreenTop, sectionKey } from './components/sectionScreen.ts'
-import {
-  GROUP_LABEL_INSET_X,
-  groupChipTop,
-  groupSectionLabel,
-} from './groupLabelStyle.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
-import GroupLabelBox from './svgcomponents/GroupLabelBox.tsx'
 
 import type { ScrollModel } from './components/sectionScreen.ts'
 import type { LinearAlignmentsDisplayModel } from './model.ts'
@@ -160,7 +160,7 @@ function GroupLabelBoxes({
         const chipTop = groupChipTop(
           section.coverageTop,
           section.height,
-          scroll,
+          scroll.canvasHeight,
         )
         return (
           <Fragment key={sectionKey(section.groupKey)}>

@@ -115,11 +115,15 @@ function gatherLabelInfo(
   showLabels: boolean,
   showDescriptions: boolean,
   labelFontPx: number,
+  featureIds: ReadonlySet<string> | undefined,
 ) {
   const labelInfoByFeatureId = new Map<string, LabelInfo>()
   for (const [, data] of regions) {
     for (const labelData of data.floatingLabelsData.values()) {
       const targetId = labelData.parentFeatureId ?? labelData.featureId
+      if (featureIds && !featureIds.has(targetId)) {
+        continue
+      }
       const widths = renderedLabelWidths(
         labelData,
         showLabels,
@@ -149,11 +153,15 @@ function gatherFeatureGeometry(
   regions: [number, FeatureDataResult][],
   reversedRegions: ReadonlySet<number>,
   metrics: DisplayModeMetrics,
+  featureIds: ReadonlySet<string> | undefined,
 ) {
   const features = new Map<string, FeatureGeometry>()
   for (const [displayedRegionIndex, data] of regions) {
     const reversed = reversedRegions.has(displayedRegionIndex)
     for (const item of data.flatbushItems) {
+      if (featureIds && !featureIds.has(item.featureId)) {
+        continue
+      }
       const existing = features.get(item.featureId)
       if (existing) {
         if (reversed) {
@@ -185,10 +193,13 @@ function gatherFeatureGeometry(
 
 // Reads the raw region data and applies `heightMultiplier` itself, so the
 // probes skip the clone and probe and commit are identical by construction.
+// `featureIds` narrows the pack to one group's section; the density collapse
+// and the label overhang are then decided among that section's own features.
 export function prepareRefPack(
   regions: [number, FeatureDataResult][],
   inputs: LabelRoomFactorFreeInputs,
   metrics: DisplayModeMetrics,
+  featureIds?: ReadonlySet<string>,
 ): PackPrep {
   const {
     bpPerPx,
@@ -203,8 +214,14 @@ export function prepareRefPack(
     showLabels,
     showDescriptions,
     metrics.labelFontPx,
+    featureIds,
   )
-  const features = gatherFeatureGeometry(regions, reversedRegions, metrics)
+  const features = gatherFeatureGeometry(
+    regions,
+    reversedRegions,
+    metrics,
+    featureIds,
+  )
 
   const labeledFeatureIds = new Set<string>()
   for (const [id, info] of labelInfoByFeatureId) {

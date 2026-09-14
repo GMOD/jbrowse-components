@@ -25,6 +25,7 @@ import { CANVAS_FEATURE_MARKS } from '../marks/canvasFeatureMarks.ts'
 import { MORPH_DURATION_MS, morphClockMs } from '../yMorph.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
 import GeneGlyphControl from './GeneGlyphControl.tsx'
+import GroupLabelsLayer from './GroupLabelsLayer.tsx'
 import SoloSelectionChip from './SoloSelectionChip.tsx'
 import { performMultiRegionHitDetection } from './hitTesting.ts'
 import {
@@ -349,6 +350,9 @@ const FeatureBody = observer(function FeatureBody({
             onLabelMouseLeave={handleMouseLeave}
           />
         </OverlayScrollLayer>
+        {/* Screen-space rather than inside the scrolled layer: a chip pins to
+            the top while its section scrolls under it. */}
+        <GroupLabelsLayer model={model} />
       </div>
 
       <ScrollChrome model={model} controlsId={canvasId} />

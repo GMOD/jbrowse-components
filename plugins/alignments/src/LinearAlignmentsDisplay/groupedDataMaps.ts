@@ -1,12 +1,13 @@
 import {
-  downJunctionKeys,
-  mergeJunctions,
-} from '../features/sashimi/junctions.ts'
-import {
   OVERFLOW_GROUP_KEY,
   compareGroupKeys,
   overflowLabel,
-} from '../shared/groupFeatures.ts'
+} from '@jbrowse/display-kit/groupKeys'
+
+import {
+  downJunctionKeys,
+  mergeJunctions,
+} from '../features/sashimi/junctions.ts'
 import { readIdAt } from '../shared/readIdentity.ts'
 import { getOrCreate } from '../shared/util.ts'
 
@@ -19,6 +20,7 @@ import type {
   RegionJunctions,
 } from '../features/sashimi/junctions.ts'
 import type { SashimiArcsMode } from './constants.ts'
+import type { GroupId } from '@jbrowse/display-kit/groupKeys'
 
 // The "this display hides no lane" answer, shared so every `hiddenGroupKeys`
 // getter returns one identity — a fresh `new Set()` per evaluation reruns
@@ -117,11 +119,7 @@ function sashimiRegionsByGroup(
   return byGroup
 }
 
-// A group's stable identity: its sort key and human-readable label.
-export interface GroupId {
-  key: string
-  label: string
-}
+export type { GroupId } from '@jbrowse/display-kit/groupKeys'
 
 // Whether the fetch produced NAMED sections, and so whether to draw the section
 // labels + dividers. Reads the data rather than the `groupBy` setting: chain mode

@@ -1,6 +1,6 @@
 import { toggleItem } from '@jbrowse/core/ui/menuItems'
+import { groupByRadioMenuItem as sharedGroupByRadioMenuItem } from '@jbrowse/display-kit/groupByMenu'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import { isChainGroupableType } from '../../shared/groupFeatures.ts'
 
@@ -10,111 +10,25 @@ import type {
 } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
-// A directly-selectable dimension: picking it calls `onSelect(type)`.
-//
-// No help text, and typed without the field so that stays a compile error rather
-// than a convention: the menu reserves a help column across every row as soon as
-// one row carries one, and a dimension needing a sentence is better renamed.
-export interface GroupByRadioOption {
-  type: ParameterlessGroupByType
-  label: string
-}
-
-// A dimension that activates through a custom flow rather than a direct select
-// — e.g. `tag`, whose radio opens a dialog for the tag name. Not a
-// `GroupByRadioOption`, because the dimensions needing a flow are exactly the
-// ones `onSelect` cannot write: `tag` takes a parameter.
-export interface GroupByRadioItem {
-  type: GroupByType
-  label: string
-  onClick: () => void
-}
-
-// Which radio to tick. A stored dimension this menu doesn't offer — a per-read
-// grouping saved before chain mode was on, or a `hidden` one like mateAssembly
-// owned by another display's menu — ticks "None" rather than leaving the group
-// blank, so no caller has to filter `current` against what it passed in.
-function checkedType(
-  current: GroupByType | undefined,
-  offered: { type: GroupByType }[],
-) {
-  return offered.some(o => o.type === current) ? current : undefined
-}
-
-// The chain-mode rule, applied HERE rather than by each caller: chain layout can
+// The shared builder, with chain mode as the `offered` rule: chain layout can
 // only honor a dimension a chain resolves to one key under, and the worker
 // degrades any other to ungrouped (`groupByForMode`), so a menu offering one
-// anyway ticks a radio that changes nothing. Alongside `checkedType`, the second
-// rule no call site should have to remember.
-function offered<T extends { type: GroupByType }>(
-  options: T[],
-  isChainMode: boolean,
-) {
-  return isChainMode
-    ? options.filter(o => isChainGroupableType(o.type))
-    : options
-}
-
-// The shared "Group by..." radio submenu for the alignments track menu and
-// LGVSyntenyDisplay. Grouping is one dimension at a time, so it is a single radio
-// group — "None" plus one per offered dimension — mirroring the sort menu, where
-// the current choice is visible at a glance and a common one is a click away with
-// no dialog round-trip. `options` select directly via `onSelect`; `extra` radios
-// carry their own handler, so the two displays can't drift in menu shape.
-//
-// Dimensions only: a group's drawn height is `collapseGroupRowsItems`, which
-// belongs in "Show..." with the other layout toggles.
+// anyway ticks a radio that changes nothing.
 export function groupByRadioMenuItem({
-  current,
-  options,
-  onSelect,
-  onNone,
-  extra = [],
   isChainMode = false,
-}: {
-  current: GroupByType | undefined
-  options: GroupByRadioOption[]
-  onSelect: (type: ParameterlessGroupByType) => void
-  onNone: () => void
-  extra?: GroupByRadioItem[]
+  ...rest
+}: Omit<
+  Parameters<
+    typeof sharedGroupByRadioMenuItem<ParameterlessGroupByType, GroupByType>
+  >[0],
+  'offered'
+> & {
   isChainMode?: boolean
 }) {
-  const dimensions = offered(options, isChainMode)
-  const extras = offered(extra, isChainMode)
-  const checked = checkedType(current, [...dimensions, ...extras])
-  // Direct selects keep the menu open; `extra` radios open a dialog, so they
-  // dismiss it — the rule the sort and color menus' tag rows follow.
-  const radio = (
-    o: { type?: GroupByType; label: string },
-    onClick: () => void,
-    keepMenuOpen?: boolean,
-  ) => ({
-    label: o.label,
-    type: 'radio' as const,
-    checked: checked === o.type,
-    keepMenuOpen,
-    onClick,
+  return sharedGroupByRadioMenuItem<ParameterlessGroupByType, GroupByType>({
+    ...rest,
+    offered: type => !isChainMode || isChainGroupableType(type),
   })
-  return {
-    label: 'Group by...',
-    icon: WorkspacesIcon,
-    type: 'subMenu' as const,
-    subMenu: [
-      radio({ label: 'None' }, onNone, true),
-      ...dimensions.map(o =>
-        radio(
-          o,
-          () => {
-            onSelect(o.type)
-          },
-          true,
-        ),
-      ),
-      // `false`, not omitted: `staysOpenOnClick` defaults a radio to staying
-      // open, which leaves both menus standing over the dialog it just opened.
-      ...extras.map(e => radio(e, e.onClick, false)),
-    ] satisfies MenuItem[],
-  }
 }
 
 export interface CollapseGroupRowsModel {

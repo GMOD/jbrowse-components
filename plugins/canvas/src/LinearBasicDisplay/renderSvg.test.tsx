@@ -113,6 +113,8 @@ function makeModel(overrides: Partial<LegendModel> = {}): LegendModel {
     renderedShowSubfeatureLabels: true,
     renderedShowDescriptions: true,
     renderedLabelFontSize: LABEL_FONT_SIZE,
+    showsGroupLabels: false,
+    groupSections: [],
     showLegend: true,
     legendSpec: { sections: [] },
     ...overrides,

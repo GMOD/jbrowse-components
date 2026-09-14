@@ -1,23 +1,34 @@
+import { compareGroupKeys } from '@jbrowse/display-kit/groupKeys'
+import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
+
 import {
   applyHeightScale,
   applyLayoutToRegion,
   cloneMutableFields,
 } from './applyLayout.ts'
 import { pileupFadeIds } from './densityCollapse.ts'
+import { featureGroupId } from './groupBy.ts'
 import { applyIsoformGapFloor, planIsoformGapFloor } from './isoformGapFloor.ts'
 import { applyIsoformTrim } from './isoformTrim.ts'
 import { displayModeMetrics } from './layoutInputs.ts'
 import { packedRowsHeight } from './layoutQueries.ts'
 import { packPreparedRef, prepareRefPack, trimPreparedRef } from './packRef.ts'
+import { isPlacedRow } from './rowPlacement.ts'
 import { captureFeatureTops } from './yMorph.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { FeatureGroupBy } from './groupBy.ts'
+import type { IsoformGapSpread } from './isoformGapFloor.ts'
+import type { IsoformBadge, IsoformTrim } from './isoformTrim.ts'
 import type {
+  DisplayModeMetrics,
   IsoformCountFreeInputs,
   LabelRoomFactorFreeInputs,
   LayoutInputs,
   LayoutRegionData,
 } from './layoutInputs.ts'
+import type { PackPrep, PackTrims } from './packRef.ts'
+import type { GroupId } from '@jbrowse/display-kit/groupKeys'
 
 // Regions sharing an `assembly:refName` key share one layout, so a spanning
 // feature gets the same Y in every region it appears in.
@@ -29,6 +40,155 @@ export function computeLaidOutData(
   return layoutRefGroups(rpcDataMap, inputs, prevYByFeatureId).out
 }
 
+// The density band flattens every record onto row 0 to share pixels, and a
+// section split there would stack two bands nobody reserved.
+function effectiveGroupBy(
+  inputs: Pick<LayoutInputs, 'groupBy' | 'flattenRows'>,
+): FeatureGroupBy | undefined {
+  return inputs.flattenRows ? undefined : inputs.groupBy
+}
+
+// The row above each section's first row, spent only while the sections draw
+// chips; ungrouped is the one-section case at 0.
+function sectionChipPx(inputs: Pick<LayoutInputs, 'groupBy' | 'flattenRows'>) {
+  return effectiveGroupBy(inputs) ? GROUP_LABEL_HEIGHT : 0
+}
+
+interface SectionPrep {
+  id: GroupId
+  prep: PackPrep
+}
+
+const UNGROUPED: GroupId = { key: '', label: '' }
+
+// One preparation per section of a ref group, in stacking order. Ungrouped is
+// the one-section case, so nothing downstream carries an ungrouped branch.
+function prepareRefSections(
+  regions: [number, LayoutRegionData][],
+  inputs: LabelRoomFactorFreeInputs,
+  metrics: DisplayModeMetrics,
+): SectionPrep[] {
+  const groupBy = effectiveGroupBy(inputs)
+  if (!groupBy) {
+    return [{ id: UNGROUPED, prep: prepareRefPack(regions, inputs, metrics) }]
+  }
+  const members = new Map<string, { id: GroupId; ids: Set<string> }>()
+  for (const [, data] of regions) {
+    for (const item of data.flatbushItems) {
+      const id = featureGroupId(item, groupBy)
+      let member = members.get(id.key)
+      if (!member) {
+        member = { id, ids: new Set() }
+        members.set(id.key, member)
+      }
+      member.ids.add(item.featureId)
+    }
+  }
+  return [...members.values()]
+    .sort((a, b) => compareGroupKeys(a.id.key, b.id.key))
+    .map(({ id, ids }) => ({
+      id,
+      prep: prepareRefPack(regions, inputs, metrics, ids),
+    }))
+}
+
+interface PackedSection extends SectionPrep {
+  trims: PackTrims
+  pack: ReturnType<typeof packPreparedRef>
+}
+
+// Section tops are display-wide: two refs side by side put a strand's section
+// at one y, or the chip row could name neither. Each section is as tall as
+// its tallest ref group, and the chip row sits above its first row.
+function stackSections(refs: readonly PackedSection[][], chipPx: number) {
+  const heights = new Map<string, number>()
+  for (const sections of refs) {
+    for (const { id, pack } of sections) {
+      heights.set(
+        id.key,
+        Math.max(
+          heights.get(id.key) ?? 0,
+          packedRowsHeight(pack.layoutMap, pack.layoutHeights),
+        ),
+      )
+    }
+  }
+  const tops = new Map<string, number>()
+  let y = 0
+  for (const key of [...heights.keys()].sort(compareGroupKeys)) {
+    tops.set(key, y + chipPx)
+    y += chipPx + heights.get(key)!
+  }
+  return tops
+}
+
+// A fresh map, so a second probe cannot see the first one's offsets; the
+// offscreen sentinel is kept exact rather than shifted.
+function offsetLayoutMap(layoutMap: ReadonlyMap<string, number>, top: number) {
+  const out = new Map<string, number>()
+  for (const [id, y] of layoutMap) {
+    out.set(id, isPlacedRow(y) ? y + top : y)
+  }
+  return out
+}
+
+// The sections of one ref group folded back into the single per-ref layout
+// every consumer reads. Feature ids are disjoint across sections, so the maps
+// merge without collision.
+function mergeSections(
+  sections: readonly PackedSection[],
+  tops: ReadonlyMap<string, number>,
+  heightMultiplier: number,
+) {
+  const layoutMap = new Map<string, number>()
+  const layoutHeights = new Map<string, number>()
+  const droppedLabelIds = new Set<string>()
+  const trims = new Map<string, IsoformTrim>()
+  const badges = new Map<string, IsoformBadge>()
+  const gapSpreads = new Map<string, IsoformGapSpread>()
+  const features: PackPrep['features'] = new Map()
+  const collapsedFeatureIds = new Set<string>()
+  for (const { id, prep, pack } of sections) {
+    for (const [fid, y] of offsetLayoutMap(pack.layoutMap, tops.get(id.key)!)) {
+      layoutMap.set(fid, y)
+    }
+    for (const [fid, h] of pack.layoutHeights) {
+      layoutHeights.set(fid, h)
+    }
+    for (const fid of pack.droppedLabelIds) {
+      droppedLabelIds.add(fid)
+    }
+    for (const [fid, trim] of pack.trimPlan.trims) {
+      trims.set(fid, trim)
+    }
+    for (const [fid, badge] of pack.trimPlan.badges) {
+      badges.set(fid, badge)
+    }
+    for (const [fid, spread] of planIsoformGapFloor(
+      prep.stacks,
+      pack.trimPlan.trims,
+      heightMultiplier,
+    )) {
+      gapSpreads.set(fid, spread)
+    }
+    for (const [fid, geom] of prep.features) {
+      features.set(fid, geom)
+    }
+    for (const fid of prep.collapsedFeatureIds) {
+      collapsedFeatureIds.add(fid)
+    }
+  }
+  return {
+    layoutMap,
+    layoutHeights,
+    droppedLabelIds,
+    trimPlan: { trims, badges },
+    gapSpreads,
+    features,
+    collapsedFeatureIds,
+  }
+}
+
 // The pileup fade runs here and not in the pack: the fit solve's probes pack
 // a ref-group ~10 times and read only the rows.
 function layoutRefGroups(
@@ -37,24 +197,38 @@ function layoutRefGroups(
   prevYByFeatureId?: ReadonlyMap<string, number>,
 ) {
   const metrics = displayModeMetrics(inputs)
+  const chipPx = sectionChipPx(inputs)
   const out = new Map<number, FeatureDataResult>()
   const collapsedIds = new Set<string>()
-  for (const [, regions] of groupRawByRef(rpcDataMap)) {
-    const prep = prepareRefPack(regions, inputs, metrics)
-    for (const id of prep.collapsedFeatureIds) {
+  const refs = [...groupRawByRef(rpcDataMap).values()].map(regions => ({
+    regions,
+    sections: prepareRefSections(regions, inputs, metrics).map(section => {
+      const trims = trimPreparedRef(section.prep, inputs, metrics)
+      return {
+        ...section,
+        trims,
+        pack: packPreparedRef(
+          section.prep,
+          trims,
+          inputs,
+          metrics,
+          prevYByFeatureId,
+        ),
+      }
+    }),
+  }))
+  const tops = stackSections(
+    refs.map(r => r.sections),
+    chipPx,
+  )
+  for (const { regions, sections } of refs) {
+    const merged = mergeSections(sections, tops, metrics.heightMultiplier)
+    for (const id of merged.collapsedFeatureIds) {
       collapsedIds.add(id)
     }
-    const trims = trimPreparedRef(prep, inputs, metrics)
-    const { layoutMap, layoutHeights, droppedLabelIds, trimPlan } =
-      packPreparedRef(prep, trims, inputs, metrics, prevYByFeatureId)
-    const gapSpreads = planIsoformGapFloor(
-      prep.stacks,
-      trimPlan.trims,
-      metrics.heightMultiplier,
-    )
     const densityFadeIds = pileupFadeIds(
-      prep.features,
-      layoutMap,
+      merged.features,
+      merged.layoutMap,
       inputs.bpPerPx,
     )
     // Cloned only once the packing is decided: `cloneMutableFields` is ~4/5
@@ -63,16 +237,16 @@ function layoutRefGroups(
       const cloned = cloneMutableFields(raw)
       // Before the height scale, so the trim's px and its whole label rows
       // are each spent in the unit the worker counted them in.
-      applyIsoformTrim(cloned, trimPlan)
+      applyIsoformTrim(cloned, merged.trimPlan)
       applyHeightScale(cloned, metrics.heightMultiplier, metrics.labelFontPx)
       // After the scale, because the pixel it promises is a drawn one; the
       // packer reserved the same spread through `isoformGapSpreadPx`.
-      applyIsoformGapFloor(cloned, gapSpreads)
+      applyIsoformGapFloor(cloned, merged.gapSpreads)
       applyLayoutToRegion(
         cloned,
-        layoutMap,
-        layoutHeights,
-        droppedLabelIds,
+        merged.layoutMap,
+        merged.layoutHeights,
+        merged.droppedLabelIds,
         densityFadeIds,
       )
       out.set(n, cloned)
@@ -99,28 +273,44 @@ function createPackProbe(
   measureIds: ReadonlySet<string> | undefined,
 ) {
   const metrics = displayModeMetrics(inputs)
+  const chipPx = sectionChipPx(inputs)
   const preps = [...groupRawByRef(rpcDataMap).values()].map(regions =>
-    prepareRefPack(regions, inputs, metrics),
+    prepareRefSections(regions, inputs, metrics),
   )
   return (maxIsoformsPerGene: number | undefined) => {
     const trimmedInputs = { ...inputs, maxIsoformsPerGene }
-    const trimmed = preps.map(prep => ({
-      prep,
-      trims: trimPreparedRef(prep, trimmedInputs, metrics),
-    }))
+    const trimmed = preps.map(sections =>
+      sections.map(section => ({
+        ...section,
+        trims: trimPreparedRef(section.prep, trimmedInputs, metrics),
+      })),
+    )
     return (labelRoomFactor: number | undefined) => {
+      const packInputs = { ...trimmedInputs, labelRoomFactor }
+      const refs = trimmed.map(sections =>
+        sections.map(section => ({
+          ...section,
+          pack: packPreparedRef(
+            section.prep,
+            section.trims,
+            packInputs,
+            metrics,
+          ),
+        })),
+      )
+      const tops = stackSections(refs, chipPx)
       let max = 0
-      for (const { prep, trims } of trimmed) {
-        const { layoutMap, layoutHeights } = packPreparedRef(
-          prep,
-          trims,
-          { ...trimmedInputs, labelRoomFactor },
-          metrics,
-        )
-        max = Math.max(
-          max,
-          packedRowsHeight(layoutMap, layoutHeights, measureIds),
-        )
+      for (const sections of refs) {
+        for (const { id, pack } of sections) {
+          max = Math.max(
+            max,
+            packedRowsHeight(
+              offsetLayoutMap(pack.layoutMap, tops.get(id.key)!),
+              pack.layoutHeights,
+              measureIds,
+            ),
+          )
+        }
       }
       return max
     }
@@ -184,6 +374,7 @@ const LAYOUT_CACHE_KEYS_RECORD: Record<
   labelRoomFactor: true,
   maxIsoformsPerGene: true,
   expandedGeneIds: true,
+  groupBy: true,
   collapseDepth: true,
   flattenRows: true,
   dropBelowLabelRows: true,
@@ -232,7 +423,9 @@ function seedRowsFrom(prev: GroupCache) {
 
 // A per-ref-group memo reusing unchanged output by reference, so N
 // chromosomes arriving sequentially cost O(N) GPU uploads rather than O(N²);
-// hold one instance per display.
+// hold one instance per display. Grouped, the memo is over the whole map: a
+// section's top depends on every ref group's height, so one ref group cannot
+// be reused while another repacks.
 export type IncrementalLayout = ReturnType<typeof createIncrementalLayout>
 
 export function createIncrementalLayout({
@@ -253,11 +446,15 @@ export function createIncrementalLayout({
     // Unlike `groupRawByRef`, an empty region still needs a cache entry, or
     // its group re-packs every time it is present.
     const groups = new Map<string, Map<number, LayoutRegionData>>()
+    const cacheKey = effectiveGroupBy(inputs)
+      ? () => 'grouped'
+      : (raw: LayoutRegionData) => raw.regionKey
     for (const [idx, raw] of rpcDataMap) {
-      let group = groups.get(raw.regionKey)
+      const key = cacheKey(raw)
+      let group = groups.get(key)
       if (!group) {
         group = new Map()
-        groups.set(raw.regionKey, group)
+        groups.set(key, group)
       }
       group.set(idx, raw)
     }

@@ -6,6 +6,7 @@ import {
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { FeatureGroupBy } from './groupBy.ts'
 
 // A leaf module: the pack, the probes and the memo all take these, so it can
 // depend on none of them.
@@ -40,6 +41,9 @@ export interface LayoutInputs {
   labelRoomFactor?: number
   maxIsoformsPerGene?: number
   expandedGeneIds?: ReadonlySet<string>
+  // Packs one section per group key, stacked in `compareGroupKeys` order with
+  // a chip row above each. Read off the hit items, so no refetch.
+  groupBy?: FeatureGroupBy
   collapseDepth?: number
   // Row 0 for everything without collapsed mode's label suppression, for a
   // fixed-height density band whose records are meant to share pixels.

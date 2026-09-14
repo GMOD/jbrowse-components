@@ -1,6 +1,15 @@
 /* eslint-disable react-refresh/only-export-components */
+import { Fragment } from 'react'
+
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import { PaintLayer } from '@jbrowse/core/util/paintLayer'
+import GroupLabelBox from '@jbrowse/display-kit/GroupLabelBox'
+import {
+  GROUP_LABEL_INSET_X,
+  groupChipTop,
+  groupSectionLabel,
+} from '@jbrowse/display-kit/groupLabelStyle'
 import { renderDisplaySvg } from '@jbrowse/display-kit/renderDisplaySvg'
 import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
@@ -21,6 +30,7 @@ import { CANVAS_FEATURE_MARKS } from './marks/canvasFeatureMarks.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { DensityBandLayer } from '../shared/densityBand.ts'
+import type { FeatureGroupSection } from './groupBy.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -42,6 +52,8 @@ export interface RenderSvgModel extends SvgExportable {
   renderedShowDescriptions: boolean
   renderedShowSubfeatureLabels: boolean
   renderedLabelFontSize: number
+  showsGroupLabels: boolean
+  groupSections: FeatureGroupSection[]
 }
 
 export async function renderSvg(
@@ -65,7 +77,11 @@ function CanvasFeaturesSvgBody({
   // The JBrowse palette, not MUI's `useTheme`: `highlight` is a JBrowse entry
   // a bare Material theme lacks.
   const palette = usePalette()
+  const theme = createJBrowseTheme(opts?.theme)
   const visibleRegions = view.visibleRegions
+  // Anchors the chips to the content edge; non-zero only when scrolled
+  // before the genome start.
+  const contentLeft = Math.max(-view.offsetPx, 0)
   const renderPeptidesFlag = shouldRenderPeptideText(view.bpPerPx)
 
   // The export honours `scrollTop`, so a scrolled track exports what is on
@@ -162,6 +178,35 @@ function CanvasFeaturesSvgBody({
             }
           }}
         />
+      ) : null}
+      {/* Last, so a section's name sits over the rows it labels, the twin of
+        the on-screen GroupLabelsLayer. */}
+      {overlays && model.showsGroupLabels ? (
+        <>
+          {model.groupSections.map((section, i) => {
+            const top = section.top - scrollY
+            const chipTop = groupChipTop(top, section.height, height)
+            return chipTop === undefined ? null : (
+              <Fragment key={section.key || 'ungrouped'}>
+                {i > 0 ? (
+                  <line
+                    x1={0}
+                    x2={canvasWidth}
+                    y1={top}
+                    y2={top}
+                    stroke={theme.palette.divider}
+                  />
+                ) : null}
+                <GroupLabelBox
+                  x={contentLeft + GROUP_LABEL_INSET_X}
+                  y={chipTop + 1}
+                  text={groupSectionLabel(section.label)}
+                  theme={theme}
+                />
+              </Fragment>
+            )
+          })}
+        </>
       ) : null}
     </>
   )

@@ -4,6 +4,11 @@ import {
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
+import {
+  OVERFLOW_GROUP_KEY,
+  compareGroupKeys,
+  overflowLabel,
+} from '@jbrowse/display-kit/groupKeys'
 
 import { PAIR_DIRECTION_NUM } from './buildBaseFeatureData.ts'
 import { featureChainKey } from './chainGroupingKey.ts'
@@ -22,6 +27,12 @@ import {
 import type { GroupBy, GroupByType, ParameterlessGroupByType } from './types.ts'
 import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
+
+export {
+  OVERFLOW_GROUP_KEY,
+  compareGroupKeys,
+  overflowLabel,
+} from '@jbrowse/display-kit/groupKeys'
 
 export interface FeatureGroup {
   // '' is the "untagged"/"unknown" sentinel, which `groupKeyRank` sorts
@@ -167,10 +178,6 @@ function mapqKey(feature: Feature): GroupKey {
           : MAPQ_ZERO_GROUP
 }
 
-// Numeric tag values and the two dimensions with ordinal keys, compared by
-// magnitude below so '2' precedes '10'.
-const ALL_DIGITS = /^\d+$/
-
 // Hard ceiling on the sections one fetch may produce; the rest merge into one
 // pinned-last overflow section. Every group runs the whole spine, and its
 // coverage pipeline allocates per-bp depth arrays sized to the region before
@@ -182,37 +189,6 @@ const ALL_DIGITS = /^\d+$/
 // most five keys, and GroupByDialog refuses `tag` up front with the distinct
 // values in hand.
 export const MAX_GROUPS = 40
-
-// The overflow bucket's key. '\0' cannot collide with a real tag value / refName,
-// and it is pinned dead last so the merged tail never displaces a named group.
-export const OVERFLOW_GROUP_KEY = '\u0000overflow'
-
-// Named groups, then the "untagged"/"unknown" sentinel, then the overflow bucket:
-// both catch-alls sort after every real value whatever its key.
-function groupKeyRank(key: string) {
-  return key === '' ? 1 : key === OVERFLOW_GROUP_KEY ? 2 : 0
-}
-
-// Two all-digit keys compare by magnitude, so numeric tag values order 1,2,10 —
-// `tag` emits raw values and can't pad an arbitrary tag to fix this. Everything
-// else is code-point (not localeCompare), which stays deterministic and puts '+'
-// before '-'. Exported because the main-thread cross-region merge
-// (`orderedGroups`) has to apply the identical order: the worker's per-region
-// sort alone can't fix a group absent from an early region.
-export function compareGroupKeys(a: string, b: string) {
-  const rankDiff = groupKeyRank(a) - groupKeyRank(b)
-  if (rankDiff !== 0) {
-    return rankDiff
-  }
-  if (ALL_DIGITS.test(a) && ALL_DIGITS.test(b)) {
-    const na = Number(a)
-    const nb = Number(b)
-    if (na !== nb) {
-      return na < nb ? -1 : 1
-    }
-  }
-  return a === b ? 0 : a < b ? -1 : 1
-}
 
 // Merge the tail past MAX_GROUPS into one overflow section rather than dropping
 // its reads. Runs on the already-ordered list, so which groups survive follows
@@ -235,21 +211,6 @@ function capGroups(groups: FeatureGroup[]) {
     mergedKeys,
   }
   return untagged ? [...groups, untagged, merged] : [...groups, merged]
-}
-
-// The overflow lane's chip. Says MERGED because the lane is the one entry in the
-// stack that is not a value: it reads as a group of its own beside 39 real ones,
-// and this is the only place a reader is told the cap fired at all. The
-// dimensions that can reach the cap are `tag` and `mateAssembly`, and only `tag`
-// has a dialog to refuse it up front — an all-vs-all pangenome names its mate
-// assemblies from the FILE (an unlisted sample falls back to its PanSN prefix,
-// `assemblyForPanSNName`), so the count is not knowable from config and there is
-// no point of choice at which to say it.
-//
-// Exported so `orderedGroups` can rebuild it over the cross-region union rather
-// than re-spelling the wording.
-export function overflowLabel(count: number) {
-  return `${count} merged values`
 }
 
 function orderGroups(groups: FeatureGroup[]) {

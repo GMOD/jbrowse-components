@@ -150,6 +150,19 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * In-track stacked grouping: `{ type: "strand" }` packs forward-strand
+       * features into one labelled section above the reverse-strand ones,
+       * with unstranded features last. `null` (the default) is ungrouped.
+       */
+      groupBy: {
+        type: 'frozen',
+        defaultValue: null,
+        description:
+          'In-track stacked grouping, e.g. `{ type: "strand" }` to pack each strand into its own labelled section (null = ungrouped)',
+        advanced: true,
+      },
+      /**
+       * #slot
        */
       geneGlyphMode: {
         type: 'stringEnum',

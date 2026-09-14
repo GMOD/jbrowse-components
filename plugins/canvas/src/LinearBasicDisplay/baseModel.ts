@@ -32,6 +32,7 @@ import {
   autorunOnReadyView,
   onDisplayedRegionsChange,
 } from '@jbrowse/display-kit/displayAutoruns'
+import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
@@ -77,6 +78,7 @@ import {
   fitLadderVolatiles,
 } from './fitLadderViews.ts'
 import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
+import { featureGroupSections, normalizeFeatureGroupBy } from './groupBy.ts'
 import { heightViews } from './heightViews.ts'
 import { layoutRegionKey } from './layoutInputs.ts'
 import { featureIdsTouchingBlocks } from './layoutQueries.ts'
@@ -113,6 +115,7 @@ import type {
 } from './components/hitTesting.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
 import type { GeneGlyphMode } from './geneGlyphMode.ts'
+import type { FeatureGroupBy, FeatureGroupSection } from './groupBy.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -391,6 +394,15 @@ export default function baseStateModelFactory(
 
         /**
          * #getter
+         * The in-track grouping, or undefined when ungrouped. The slot is
+         * `frozen`, so this is the chokepoint an unrecognized type stops at.
+         */
+        get groupBy(): FeatureGroupBy | undefined {
+          return normalizeFeatureGroupBy(getConf(self, 'groupBy'))
+        },
+
+        /**
+         * #getter
          * The subfeature-label mode the worker bakes.
          */
         get effectiveSubfeatureLabels() {
@@ -571,6 +583,7 @@ export default function baseStateModelFactory(
             displayMode: self.displayMode,
             pinnedFeatureIds: self.layoutPinnedFeatureIdSet,
             expandedGeneIds: self.expandedGeneIdSet,
+            groupBy: self.groupBy,
           }
         },
         /**
@@ -631,6 +644,30 @@ export default function baseStateModelFactory(
             : scale === 1
               ? layout
               : scaleLaidOutData(layout, scale)
+        },
+        /**
+         * #getter
+         * The stacked sections in stacking order, each with the chip row
+         * the packer reserved above it, read off the same rows the glyphs
+         * paint; empty while ungrouped.
+         */
+        get groupSections(): FeatureGroupSection[] {
+          const { groupBy } = self
+          return groupBy
+            ? featureGroupSections(
+                this.laidOutDataMap,
+                groupBy,
+                GROUP_LABEL_HEIGHT * this.fitScale,
+              )
+            : []
+        },
+        /**
+         * #getter
+         * Whether the section chips and dividers draw: a grouping is set and
+         * the layout produced a section for it.
+         */
+        get showsGroupLabels() {
+          return this.groupSections.length > 0
         },
         /**
          * #getter
@@ -1009,6 +1046,15 @@ export default function baseStateModelFactory(
          */
         setDisplayMode(value: DisplayMode) {
           setConf(self, 'displayMode', value)
+        },
+
+        /**
+         * #action
+         * The stack starts over from the top when its sections change.
+         */
+        setGroupBy(groupBy?: FeatureGroupBy) {
+          setConf(self, 'groupBy', groupBy ?? null)
+          self.setScrollTop(0)
         },
 
         /**

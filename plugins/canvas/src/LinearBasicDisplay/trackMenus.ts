@@ -2,15 +2,18 @@ import { filterMenuItems, undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import { radioItems, toggleItem, withHint } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
+import { groupByRadioMenuItem } from '@jbrowse/display-kit/groupByMenu'
 import { heightModeMenuItems } from '@jbrowse/display-kit/heightModeMenu'
 import HeightIcon from '@mui/icons-material/Height'
 import PaletteIcon from '@mui/icons-material/Palette'
 
 import { DISPLAY_MODE_OPTIONS } from '../RenderFeatureDataRPC/displayModes.ts'
 import { STRAND_COLOR_JEXL } from '../RenderFeatureDataRPC/featureColors.ts'
+import { FEATURE_GROUP_BY_OPTIONS } from './groupBy.ts'
 import { SHOW_LABELS_OPTIONS } from './showLabelsMode.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
+import type { FeatureGroupBy } from './groupBy.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
@@ -65,13 +68,35 @@ interface FeatureHeightSelf extends HeightModeMenuModel {
   setDisplayMode: (value: DisplayMode) => void
 }
 
-interface TrackMenuSelf {
+interface GroupByMenuSelf {
+  groupBy: FeatureGroupBy | undefined
+  setGroupBy: (groupBy?: FeatureGroupBy) => void
+}
+
+interface TrackMenuSelf extends GroupByMenuSelf {
   featureNarrowings: () => Reversibles
   featureMarks: () => Reversibles
   showSubmenuMenuItems: () => MenuItem[]
   featureHeightMenuItems: () => MenuItem[]
   colorMenuItems: () => MenuItem[]
   openFilterDialog: () => void
+}
+
+// The shared radio submenu over this display's own dimensions, so a feature
+// track and a read track pick a grouping the same way.
+export function groupByMenuItems(self: GroupByMenuSelf): MenuItem[] {
+  return [
+    groupByRadioMenuItem({
+      current: self.groupBy?.type,
+      options: FEATURE_GROUP_BY_OPTIONS,
+      onSelect: type => {
+        self.setGroupBy({ type })
+      },
+      onNone: () => {
+        self.setGroupBy(undefined)
+      },
+    }),
+  ]
 }
 
 function featureSetRecoveryMenuItems(self: TrackMenuSelf): MenuItem[] {
@@ -182,6 +207,7 @@ export function canvasTrackMenuItems(self: TrackMenuSelf): MenuItem[] {
     ...makeShowSubMenu(self.showSubmenuMenuItems()),
     ...self.featureHeightMenuItems(),
     ...self.colorMenuItems(),
+    ...groupByMenuItems(self),
     ...featureSetRecoveryMenuItems(self),
     ...canvasFilterMenuItems(self),
   ]

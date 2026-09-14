@@ -39,6 +39,7 @@ describe('canvas track menu shape', () => {
       subMenuOf(items, 'Gene glyph'),
       subMenuOf(items, 'Show...'),
       subMenuOf(items, 'Set feature height'),
+      subMenuOf(items, 'Group by...'),
     ]) {
       for (const item of group) {
         if (item.type === 'radio' || item.type === 'checkbox') {
@@ -83,6 +84,7 @@ describe('canvas track menu shape', () => {
       'Show...',
       'Set feature height',
       'Color by...',
+      'Group by...',
       'Gene glyph',
       'Clear 1 highlight',
       'Filter by...',

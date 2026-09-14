@@ -1,3 +1,5 @@
+import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
+
 import { LABEL_FONT_SIZE } from '../RenderFeatureDataRPC/constants.ts'
 import { ROW_PADDING } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import {
@@ -6,6 +8,7 @@ import {
   makeFlatbushItem,
 } from '../RenderFeatureDataRPC/testUtils.ts'
 import { scaleLaidOutData } from './applyLayout.ts'
+import { featureGroupSections } from './groupBy.ts'
 import {
   computeLaidOutData,
   createContentHeightProbe,
@@ -1993,5 +1996,96 @@ describe('featureIdsTouchingBlocks', () => {
       featureIdsTouchingBlocks([region('volvox:ctgA', [['a', 0, 10]])], [])
         .size,
     ).toBe(0)
+  })
+})
+
+describe('group by strand', () => {
+  const groupedInputs = {
+    bpPerPx: 1,
+    showLabels: false,
+    showDescriptions: false,
+    reversedRegions: new Set<number>(),
+    displayMode: 'normal' as const,
+    pinnedFeatureIds: new Set<string>(),
+    groupBy: { type: 'strand' as const },
+  }
+
+  test('forward features stack above reverse ones, each section under its chip row', () => {
+    const data = makeFeatureData({
+      features: [
+        { featureId: 'rev', startBp: 100, endBp: 500, height: 20, strand: -1 },
+        { featureId: 'fwd', startBp: 100, endBp: 500, height: 20, strand: 1 },
+        { featureId: 'none', startBp: 100, endBp: 500, height: 20 },
+      ],
+    })
+    const out = computeLaidOutData(new Map([[0, data]]), groupedInputs)
+    const tops = new Map(
+      out.get(0)!.flatbushItems.map(i => [i.featureId, i.topPx]),
+    )
+    expect(tops.get('fwd')).toBe(GROUP_LABEL_HEIGHT)
+    expect(tops.get('rev')!).toBeGreaterThan(tops.get('fwd')!)
+    expect(tops.get('none')!).toBeGreaterThan(tops.get('rev')!)
+    expect(
+      featureGroupSections(out, groupedInputs.groupBy, GROUP_LABEL_HEIGHT).map(
+        s => [s.key, s.top],
+      ),
+    ).toEqual([
+      ['+', 0],
+      ['-', tops.get('rev')! - GROUP_LABEL_HEIGHT],
+      ['', tops.get('none')! - GROUP_LABEL_HEIGHT],
+    ])
+  })
+
+  test('a section sits at one y across chromosomes side by side', () => {
+    const a = makeFeatureData({
+      features: [
+        { featureId: 'a1', startBp: 100, endBp: 500, height: 20, strand: 1 },
+        { featureId: 'a2', startBp: 200, endBp: 600, height: 20, strand: 1 },
+        { featureId: 'a3', startBp: 100, endBp: 500, height: 20, strand: -1 },
+      ],
+    })
+    const b = makeFeatureData({
+      features: [
+        { featureId: 'b1', startBp: 100, endBp: 500, height: 20, strand: -1 },
+      ],
+      regionKey: 'v:ctgB',
+    })
+    const out = computeLaidOutData(
+      new Map([
+        [0, a],
+        [1, b],
+      ]),
+      groupedInputs,
+    )
+    const revA = out.get(0)!.flatbushItems.find(i => i.featureId === 'a3')!
+    const revB = out.get(1)!.flatbushItems[0]!
+    expect(revB.topPx).toBe(revA.topPx)
+    expect(revA.topPx).toBeGreaterThan(GROUP_LABEL_HEIGHT + 20)
+  })
+
+  test('the height probe measures the stacked sections the commit draws', () => {
+    const data = makeFeatureData({
+      features: [
+        { featureId: 'rev', startBp: 100, endBp: 500, height: 20, strand: -1 },
+        { featureId: 'fwd', startBp: 100, endBp: 500, height: 20, strand: 1 },
+      ],
+    })
+    const raw = new Map([[0, data]])
+    expect(packedContentHeight(raw, groupedInputs)).toBe(
+      maxBottom(computeLaidOutData(raw, groupedInputs)),
+    )
+  })
+
+  test('ungrouped reserves no chip row', () => {
+    const data = makeFeatureData({
+      features: [
+        { featureId: 'fwd', startBp: 100, endBp: 500, height: 20, strand: 1 },
+      ],
+    })
+    const out = computeLaidOutData(new Map([[0, data]]), {
+      ...groupedInputs,
+      groupBy: undefined,
+    })
+    expect(out.get(0)!.flatbushItems[0]!.topPx).toBe(0)
   })
 })

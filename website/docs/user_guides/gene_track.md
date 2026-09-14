@@ -64,6 +64,9 @@ Track-menu toggles:
 - Show subfeature labels - each transcript's name on its row
 - Show chevrons - strand chevrons along the intron lines (on by default)
 - Show only genes - hides non-gene features
+- Group by... - _Strand_ packs the forward-strand features into one labelled
+  section above the reverse-strand ones, unstranded features last, so convergent
+  and divergent neighbours read apart
 
 ## Color by CDS
 

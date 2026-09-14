@@ -1,92 +1,24 @@
 import { Fragment, useState } from 'react'
 
 import { ContextMenu } from '@jbrowse/core/ui'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useGroupLabelStyles } from '@jbrowse/display-kit/groupLabelChipStyles'
+import {
+  groupChipTop,
+  groupSectionLabel,
+} from '@jbrowse/display-kit/groupLabelStyle'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
-import { alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import {
-  GROUP_LABEL_BG_OPACITY,
-  GROUP_LABEL_FONT_SIZE,
-  GROUP_LABEL_HEIGHT,
-  GROUP_LABEL_ICON_SIZE,
-  GROUP_LABEL_INSET_X,
-  GROUP_LABEL_PADDING_X,
-  GROUP_LABEL_RADIUS,
-  groupChipTop,
-  groupSectionLabel,
-} from '../groupLabelStyle.ts'
 import { laneExpandable } from '../lanes.ts'
 import { bandScreenTop, sectionKey } from './sectionScreen.ts'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { ContextMenuAnchor } from '@jbrowse/core/ui'
 import type React from 'react'
-
-const useStyles = makeStyles()(theme => {
-  const chip = {
-    display: 'flex',
-    alignItems: 'center',
-    padding: `0 ${GROUP_LABEL_PADDING_X}px`,
-    fontSize: GROUP_LABEL_FONT_SIZE,
-    // The same constant the section layout reserves per labelled section, so a
-    // chip can never outgrow the space left for it.
-    height: GROUP_LABEL_HEIGHT,
-    color: theme.palette.text.secondary,
-    background: alpha(theme.palette.background.paper, GROUP_LABEL_BG_OPACITY),
-    borderRadius: GROUP_LABEL_RADIUS,
-    whiteSpace: 'nowrap' as const,
-    userSelect: 'none' as const,
-  }
-  return {
-    divider: {
-      position: 'absolute' as const,
-      left: 0,
-      right: 0,
-      height: 1,
-      background: theme.palette.divider,
-      pointerEvents: 'none' as const,
-      zIndex: 6,
-    },
-    controls: {
-      position: 'absolute' as const,
-      left: GROUP_LABEL_INSET_X,
-      display: 'flex',
-      alignItems: 'center',
-      gap: 2,
-      zIndex: 6,
-      // The row is only as wide as its chips, but it still sits over the left
-      // edge of every coverage band; without this the gap around the chips (and
-      // the whole non-interactive label, when the pileup is hidden) swallowed
-      // the coverage hover there. The chips take pointer events back below.
-      pointerEvents: 'none' as const,
-    },
-    button: {
-      ...chip,
-      cursor: 'pointer',
-      border: 'none',
-      pointerEvents: 'auto' as const,
-      '&:hover': {
-        background: theme.palette.background.paper,
-      },
-    },
-    // Plain header when the pileup is hidden: collapse/expand are no-ops on a
-    // coverage-only stack, so the group name carries no button. It still takes
-    // the right-click that hides the lane, which is why the caller hands it
-    // `pointerEvents` rather than this class fixing them off — the row above is
-    // `none` so the gaps around the chips don't swallow the coverage hover, and
-    // a chip that answers a click has to opt back in exactly as the button does.
-    label: chip,
-    icon: {
-      fontSize: GROUP_LABEL_ICON_SIZE,
-    },
-  }
-})
 
 // The second chip: what the group's height button does, says and looks like.
 // One place decides all three, because they have to describe the same action —
@@ -135,7 +67,7 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const { classes } = useStyles()
+  const { classes } = useGroupLabelStyles()
   // The chip's right-click target, held as one value: the click point and which
   // lane it landed on can't disagree, and `undefined` is the closed state. Local
   // rather than on the model — nothing outside this overlay asks where a menu
@@ -180,7 +112,7 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
       {renderSections.map((section, i) => {
         const top = bandScreenTop(section.coverageTop, scroll)
         // Cull and sticky-pin per `groupChipTop`, which the export shares.
-        const chipTop = groupChipTop(top, section.height, scroll)
+        const chipTop = groupChipTop(top, section.height, scroll.canvasHeight)
         if (chipTop === undefined) {
           return null
         }
