@@ -1322,27 +1322,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 680,
   },
 
-  // The gene-level zoom of the same lanes: a ~35 kb cut around the tandem
-  // expansion the gene_orthologs figure reads (three grape copies at 836-863 kb
-  // against one peach and one cacao ortholog), close enough that each ribbon
-  // connects one gene to one gene. The distant lanes thin out to what each
-  // genome kept, which at this width reads per gene rather than per block.
-  {
-    mode: 'url',
-    name: 'multiway_synteny/lgv_track_zoom',
-    settleMs: 25000,
-    url: LGV_TRACK_ZOOM_SESSION,
-    readySelector: displaySettled('multiway-synteny-display'),
-    readyTimeout: 120000,
-    viewportHeight: 680,
-  },
-
-  // The click half of the interaction the zoom figure's prose names: clicking
-  // a ribbon keeps its ortholog group outlined down the stack — the pairwise
-  // view's own edge pass — and opens the pair's details. The click lands in
-  // the grape-peach gutter at a gene the whole stack chains through, and the
-  // outline outlives the resize-and-refetch the opening widget causes, which
-  // is what lets one frame show both.
+  // The gene-level zoom of the same lanes, with a ribbon clicked: a ~35 kb cut
+  // around the tandem expansion the gene_orthologs figure reads, close enough
+  // that each ribbon connects one gene to one gene. Clicking a ribbon keeps its
+  // ortholog group outlined down the stack and opens the pair's details. The
+  // click lands in the grape-peach gutter at a gene the whole stack chains
+  // through, and the outline outlives the resize-and-refetch the opening
+  // widget causes, which is what lets one frame show both.
   {
     mode: 'url',
     name: 'multiway_synteny/lgv_track_clicked',
@@ -5162,8 +5148,8 @@ export const syntenyVideoFixtures = {
     views: [{ type: 'LinearSyntenyView', views: [{}, {}] }],
   }),
   // Where the multi-way zoom-out tour starts, which is the state
-  // `multiway_synteny/lgv_track_zoom` above captures: the gene-level cut of the
-  // grape lanes, close enough that each ribbon connects one gene to one
+  // `multiway_synteny/lgv_track_clicked` above opens on: the gene-level cut of
+  // the grape lanes, close enough that each ribbon connects one gene to one
   // ortholog. The tour zooms OUT from here, so the re-fit each lane makes as
   // the anchor's window widens is the film's whole subject — the two committed
   // figures are its endpoints and the re-layout between them is what a still
