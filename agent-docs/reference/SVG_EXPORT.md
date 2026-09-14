@@ -681,9 +681,10 @@ flavor of drift).
   `opts.createCanvas` fallback ritual.
 - `PaintLayer({ width, height, opts, paint }) → ReactNode` — raster-vs-vector
   dispatch (`@jbrowse/core/util/paintLayer`).
-- `SvgExport` — `SvgChrome`/`SVGMessageBox` (the "region too large" terminal),
-  `SvgClipRect` (clipPath wrapper) and `SvgThemeProviders`, in
-  `@jbrowse/core/svg/SvgExport`.
+- `SvgExport` — `SvgChrome`/`SVGMessageBox` (the "region too large" terminal)
+  and `SvgClipRect` (clipPath wrapper), in `@jbrowse/core/svg/SvgExport`.
+- `SvgThemeProviders` — the export theme's MUI and style providers, in
+  `@jbrowse/core/svg/SvgThemeProviders`.
 - `serializeSvg(node)` — one standalone document to file markup
   (`@jbrowse/core/svg/serializeSvg`); see below.
 - `exportViewSvg(view, opts, load)` — the body of every view's `exportSvg`

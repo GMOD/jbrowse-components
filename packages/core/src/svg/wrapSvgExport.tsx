@@ -1,4 +1,5 @@
-import { SVGExportRoot, SvgThemeProviders } from './SvgExport.tsx'
+import { SVGExportRoot } from './SvgExport.tsx'
+import { SvgThemeProviders } from './SvgThemeProviders.tsx'
 import { serializeSvg } from './serializeSvg.ts'
 
 import type { ThemeOptions } from '@mui/material'

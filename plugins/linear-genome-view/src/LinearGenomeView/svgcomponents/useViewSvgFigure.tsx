@@ -6,7 +6,7 @@ import {
   useSyncExternalStore,
 } from 'react'
 
-import { SvgThemeProviders } from '@jbrowse/core/svg/SvgExport'
+import { SvgThemeProviders } from '@jbrowse/core/svg/SvgThemeProviders'
 import { exportMargin } from '@jbrowse/core/svg/constants'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { svgTrackName } from '@jbrowse/core/svg/trackNames'

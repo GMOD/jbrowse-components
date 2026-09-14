@@ -1,4 +1,4 @@
-import { SvgThemeProviders } from '@jbrowse/core/svg/SvgExport'
+import { SvgThemeProviders } from '@jbrowse/core/svg/SvgThemeProviders'
 import { serializeSvg } from '@jbrowse/core/svg/serializeSvg'
 import { awaitSvgRenders } from '@jbrowse/core/svg/svgReady'
 import { createSvgRasterCanvas } from '@jbrowse/core/util/createSvgRasterCanvas'
