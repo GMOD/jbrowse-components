@@ -48,7 +48,7 @@ start fresh fetches.
 It deliberately leaves the too-large gate alone. `regionTooLarge` is derived
 from the cached byte estimate, which a blocked display re-takes once per settled
 viewport, so it releases itself and needs no imperative clear; keeping the
-estimate is what stops the banner flickering on an ordinary clear.
+estimate stops the banner flickering on an ordinary clear.
 
 ## The whole fetch chain
 
@@ -188,13 +188,13 @@ return refused
 ```
 
 `ctx.isStale()` returns `true` if the user panned/zoomed or settings changed
-while the fetch was in flight. Where the check goes is the decision the helper
-makes for you, and it is the only thing that separates them: per region, results
-commit as they arrive; around the batch, as above, a cross-region decision can't
-be made from a half-superseded set. `fetchRegions` itself is the primitive
-underneath all three, and no display calls it directly — one that did would own
-both guards and the `ctx.commitRegion` beside its own store by hand, which is
-the class of bug the helpers exist to make unavailable.
+while the fetch was in flight. The helper decides where the check goes, and that
+is the only thing that separates them: per region, results commit as they
+arrive; around the batch, as above, a cross-region decision can't be made from a
+half-superseded set. `fetchRegions` itself is the primitive underneath all
+three, and no display calls it directly — one that did would own both guards and
+the `ctx.commitRegion` beside its own store by hand, exactly the bug class the
+helpers exist to prevent.
 
 ## rpcProps: the cache key
 
@@ -244,8 +244,8 @@ results triggers another settings change.
 If you need to extend a parent class's `rpcProps`, capture the super version
 before redefining it (the same
 [super-capture pattern](/docs/developer_guides/mst_patterns#self-over-this-in-views)
-used for any extended view) so you don't silently drop the parent's
-dependencies.
+used for any extended view) so overriding it doesn't drop the parent's
+dependencies with nothing to flag it.
 
 ## Byte estimation and regionTooLarge
 
@@ -327,7 +327,7 @@ and captures `fetchGeneration` as its staleness epoch.
 That counter bumps when a **current** fetch ends (success or error — a
 superseded run must not bump for the run that replaced it) and on the internal
 `cancelFetch` reset; the user-facing `cancelFetchByUser` deliberately does not
-bump, which is what makes that cancel durable. `FetchVisibleRegions` reads it to
+bump, so that cancel stays durable. `FetchVisibleRegions` reads it to
 re-evaluate once the fetch is over; staleness itself is the token rotation's
 `isCurrent`, not this counter.
 

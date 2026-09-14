@@ -60,9 +60,9 @@ with PLINK and read through
 
 ## Precompute the LD with PLINK
 
-Three steps: thin the variants, correlate them, index the table.
-`keep.CMgam.txt` is the population, two tab-separated columns of the same sample
-id, the family/individual pair plink asks for.
+Thin the variants, correlate them, then index the table. `keep.CMgam.txt` is the
+population, two tab-separated columns of the same sample id, the
+family/individual pair plink asks for.
 
 <!-- from: scripts/build_ag1000g_ld.sh -->
 

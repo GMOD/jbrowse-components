@@ -21,9 +21,8 @@ A `FeatureTrack` normally draws its features as glyphs in rows, which says where
 they are and nothing about the numbers on them. A `QuantitativeTrack` plots one
 value per position from a BigWig. In between sit the files that carry a value
 per feature — a BED with a real score column, a segment file with a log ratio
-per interval, a peak file with a signal and a q-value — and those are what this
-display plots: the value on a y-axis, the interval on x, and a second field as
-colour.
+per interval, a peak file with a signal and a q-value — and this display plots
+them: the value on a y-axis, the interval on x, and a second field as colour.
 
 The mark display attaches to an `AlignmentsTrack` and a `VariantTrack` because
 every adapter behind those serves features with fields. What differs is which
@@ -146,8 +145,8 @@ axis, and a config declaring two is refused when it is read.
 ## Colour scales
 
 `color` as a string paints every feature that colour (or whatever the jexl
-callback answers). As an object it binds a field to a scale, which is what the
-legend can describe:
+callback answers). As an object it binds a field to a scale, and the legend
+describes that binding:
 
 - **categorical** — `{ "field": "strand", "scale": "categorical" }` hands a
   palette entry to each distinct value, derived from the value itself so every
@@ -370,12 +369,12 @@ that layer draws the sidecar's bins there instead of the banner:
 
 The sidecar's bars are drawn as bars like any other — same y axis, same hover,
 same SVG export — and hovering one reads out the bin's count. Marks that are not
-the density draw nothing there, and a chip in the corner says the sidecar is
-what is on screen; the track menu's **Density band** submenu switches between
+the density draw nothing there, and a chip in the corner marks the sidecar as
+the source; the track menu's **Density band** submenu switches between
 Automatic, Features only and Density only, and carries the Force-load the banner
 would have. Clicking a bin opens nothing, because reading the features back is
 the download the budget refused. With no mark declaring `"source": "density"`,
-the banner is what you get, exactly as before.
+the banner still appears, unchanged.
 
 <Figure src="/img/mark_display/density_sidecar.png" caption="Chromosome 1 end to end, past the budget: the Alu track's sidecar bins draw as the density mark, with the chip in the corner naming what is on screen."/>
 

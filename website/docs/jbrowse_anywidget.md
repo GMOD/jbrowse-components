@@ -17,9 +17,9 @@ Colab, with two-way sync of the visible region between Python and the view: set
 can also hold a linear synteny view or a dotplot (`synteny_view`, `dotplot_view`
 build the specs). See the E. coli example below.
 
-It replaces the older Dash-based `jbrowse-jupyter` + `dash_jbrowse` stack with a
-prebuilt ESM bundle loaded by anywidget, so there is no Dash server to run and
-no component-generation step.
+`jbrowse-anywidget` replaces the older Dash-based `jbrowse-jupyter` +
+`dash_jbrowse` stack with a prebuilt ESM bundle loaded by anywidget, so there is
+no Dash server to run and no component-generation step.
 
 Install from GitHub for now (below). A PyPI release is planned, after which
 `pip install jbrowse-anywidget` will work directly. The example notebooks each
@@ -63,9 +63,9 @@ view            # display the widget
 view.location   # read back the current region after panning
 ```
 
-Python adds only what JSON can't express itself: `add_features` (turn an
-in-memory pandas DataFrame into a track, no file written) and `make_assembly` (a
-little assembly boilerplate).
+`add_features` turns an in-memory pandas DataFrame into a track with no file
+written, and `make_assembly` writes a little assembly boilerplate. Both express
+what plain JSON can't.
 
 For human and model-organism data, `fetch_hub("hg38")` (also `hg19`, `mm10`, or
 a GenArk `GCA_...`) returns a ready, CORS-enabled assembly config from
@@ -92,7 +92,7 @@ Each opens in Colab and runs top-to-bottom.
 | [Region-reactive](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/10_region_reactive.ipynb)                        | Recompute pysam coverage only over the window in view, adapting to zoom                           |
 | [Compare genomes (synteny)](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/11_synteny_ecoli.ipynb)                | Four _E. coli_ strains in a linear synteny view from one all-vs-all PAF                           |
 | [Large results](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/12_large_data.ipynb)                               | Where `add_features` stops being the right door, and writing a file starts                        |
-| [Large signal](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/13_large_wiggle.ipynb)                              | Three routes for a quantitative track, which is the data type that gets big fastest               |
+| [Large signal](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/13_large_wiggle.ipynb)                              | Three routes for a quantitative track, the data type that gets big fastest                        |
 
 Notebooks 05–07 are the core loop: **run an analysis in Python, load the result
 onto the genome**, using the tools scientists already reach for (pysam,

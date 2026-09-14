@@ -185,10 +185,9 @@ normal outcome.
 
 On Enter, the exact hits win if there are any and everything that matched is the
 fallback; the winning set navigates when it holds one result and opens a picker
-otherwise. So `exact` is what keeps a precise name from offering everything it
-prefixes. Neither the label nor the display string decides it: those are display
-text, and a hit that matched on an ID or a description has neither equal to the
-query.
+otherwise. So `exact` keeps a precise name from offering everything it prefixes.
+Neither the label nor the display string decides it: those are display text, and
+a hit that matched on an ID or a description has neither equal to the query.
 
 ## Configuration schema
 
@@ -255,9 +254,9 @@ export default ConfigurationSchema(
 ````
 
 `assemblyNames` is required; `TextSearchManager` uses it to pick which adapters
-to query for a given assembly. The `explicitIdentifier` is what a config's
-`textSearchAdapterId` writes to, and what the adapter cache keys on — two
-adapters sharing an id are one cache entry. (`TrixTextSearchAdapter` uses
+to query for a given assembly. A config's `textSearchAdapterId` writes to
+`explicitIdentifier`, and the adapter cache keys on it too — two adapters
+sharing an id are one cache entry. (`TrixTextSearchAdapter` uses
 `implicitIdentifier` instead, so its id is optional in a config.)
 
 The `#config` / `#slot` JSDoc tags generate the published config page for the

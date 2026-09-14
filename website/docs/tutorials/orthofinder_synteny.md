@@ -128,7 +128,7 @@ in every one of these genomes, so its orthogroup is over `--max-copies` and
 contributes no row, and what chains across the stack is the single-copy
 neighbourhood on either side of the cluster.
 
-<Figure caption="The human HOXD cluster over chicken, frog, gar and zebrafish lanes from one OrthoFinder orthogroups track. Every lane draws its own genes across the cluster and the ribbons there are scattered slivers; the solid chains sit to the right of it, on the single-copy genes the orthogroup table could resolve." src="/img/multiway_synteny/vertebrate_hox_lanes.png" />
+<Figure caption="The human HOXD cluster over chicken, frog, gar and zebrafish lanes from one OrthoFinder orthogroups track. Every lane draws the genes annotated in that genome across the cluster and the ribbons there are scattered slivers; the solid chains sit to the right of it, on the single-copy genes the orthogroup table could resolve." src="/img/multiway_synteny/vertebrate_hox_lanes.png" />
 
 ## Wheat: six genomes of one polyploid history {#wheat}
 
@@ -226,7 +226,7 @@ that fly keeps these orthologs on.
 
 Every fly keeps all of the melanogaster genes in this 3L window, from _Bre1_ to
 _PXo_. The near relatives keep them in order; the distant ones reverse the
-block, which the header says as `[rev]`.
+block, and the header marks that `[rev]`.
 
 <Figure caption="A window on melanogaster 3L over four Drosophila lanes from one orthogroups track. simulans and yakuba draw the same genes in the same order on their own 3L; pseudoobscura and virilis draw them reversed, and the pseudoobscura lane names the X." src="/img/multiway_synteny/drosophila_lanes.png" />
 
@@ -252,7 +252,7 @@ those.
 A
 [multi-way synteny track](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
 makes the size difference per-gene: each lane is fitted to the window's
-orthologs in its own coordinates and says what scale that took.
+orthologs in its own coordinates, with the scale it took printed in the header.
 
 ```json session config=https://jbrowse.org/demos/orthofinder_solanaceae/config.json
 {
@@ -376,11 +376,10 @@ python3 orthogroups_to_blocks.py Orthogroups.tsv -o tauschii.blocks \
 ```
 
 The table is named after one genome by convention only. The script prints the
-column order off the header row, which is what `blockAssemblies` has to be. A
-column is named after its proteome file minus extensions;
-`--assembly COLUMN=NAME` renames one, and a key matching no column simply never
-fires, so a typo leaves the column under its file's name. A `--bed` key matching
-no column is an error.
+column order off the header row, and `blockAssemblies` has to match it. A column
+is named after its proteome file minus extensions; `--assembly COLUMN=NAME`
+renames one, and a key matching no column simply never fires, so a typo leaves
+the column under its file's name. A `--bed` key matching no column is an error.
 
 ### What to do with a duplicated gene
 
@@ -550,8 +549,8 @@ it writes.
 
 Column 2 also takes a proteome, which saves translating one Ensembl already
 publishes. Its headers then carry a `gene:<id>` tag that has to match the GFF3's
-`ID=gene:<id>`. The run says which of the two it read, and prints the share of
-ids it placed.
+`ID=gene:<id>`. The run prints which of the two it read, and the share of ids it
+placed.
 
 Name the files in a manifest, one line per genome:
 

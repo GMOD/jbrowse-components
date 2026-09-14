@@ -108,7 +108,7 @@ A lane not named in `sampleColorMap` takes a color from the categorical palette
 by its position in the stack, so its color moves as the window's class list
 changes.
 
-Two things worth knowing about the config, both because their absence is silent:
+Two details in the config are easy to miss:
 
 - The display is not the track's default, so it needs a real `displays` entry
   rather than the `displayDefaults` shorthand, whose `color` would reach the

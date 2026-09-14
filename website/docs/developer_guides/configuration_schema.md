@@ -97,8 +97,7 @@ export default BedGraphAdapter
 ````
 
 The name must match the `type` field in config JSON, and `explicitlyTyped: true`
-is what requires that field to be present. Each slot becomes an observable MST
-property.
+requires that field to be present. Each slot becomes an observable MST property.
 
 The `Instance<typeof …>` export at the bottom is how the rest of the codebase
 gets a typed handle on the schema — it is the `CONF` in
@@ -110,11 +109,10 @@ The `#config`, `#slot`, and `#preProcessSnapshot` JSDoc tags generate the
 
 ## Slot types
 
-A slot's `type` is one of a closed set. The name is what everything downstream
-keys off: the MST type the value is built from, what a `getConf` read of it is
-typed as, and — because the system is typed — which control the configuration
-editor renders for it, so a slot can be edited graphically without an author
-writing any UI.
+A slot's `type` is one of a closed set. Everything downstream keys off the name:
+the MST type the value is built from, what a `getConf` read of it is typed as,
+and which control the configuration editor renders for it. Because the system is
+typed, a slot can be edited graphically without an author writing any UI.
 
 <!-- SLOT_TYPES START -->
 
@@ -246,8 +244,7 @@ depends on the kind of entry:
 - **A slot the child redeclares merges field-by-field over the base slot**, so
   the override states only what differs and inherits the rest: `description`,
   `advanced`, `contextVariable`, `validate` and `model`. Keep `type` in the
-  override either way: that is what marks an entry as a slot rather than a
-  nested sub-schema.
+  override either way: a slot has `type`, and a nested sub-schema does not.
 - **A nested sub-schema or a constant replaces the base entry wholesale.** They
   have no fields to fold.
 
@@ -283,9 +280,9 @@ say), state the field explicitly, as above. Overrides that only moved a
 ## preProcessSnapshot
 
 Use `preProcessSnapshot` to normalize incoming config JSON before the MST model
-is created. It is what makes the `uri` shorthand work: `BamAdapter` passes this
-function, which expands a bare `uri` into the `bamLocation` and `index` slots
-the schema actually declares, and derives the index name from it.
+is created. `BamAdapter` passes this function to make the `uri` shorthand work:
+it expands a bare `uri` into the `bamLocation` and `index` slots the schema
+actually declares, and derives the index name from it.
 
 <!-- include: plugins/alignments/src/BamAdapter/configSchema.ts#preProcess -->
 
@@ -309,10 +306,9 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 }
 ```
 
-`fillLocations` is what settles precedence: the derived locations fill in the
-slots, and any slot the config spells out for itself wins. So a config naming
-both a `uri` and an index that does not sit next to the data file keeps the
-index it named.
+`fillLocations` settles precedence: the derived locations fill in the slots, and
+any slot the config spells out for itself wins. So a config naming both a `uri`
+and an index that does not sit next to the data file keeps the index it named.
 
 Passed as `preProcessSnapshot: normalizeSnapshot` in the schema's options, that
 allows minimal configs in `config.json` — neither `bamLocation` nor `index` is
@@ -442,8 +438,8 @@ concrete**. Type the state model factory's `configSchema` parameter to the
 schema's own type, not to `AnyConfigurationSchemaType`, or the reads degrade to
 `any` with no compile error to say so. A `conf` getter typed off the concrete
 schema (`get conf(): LinearPairedArcDisplayConfig`) is still the tidy way to
-name it once, the same move as `BaseAdapter<CONF>`, but it is no longer what
-buys the checking.
+name it once, the same move as `BaseAdapter<CONF>`, but it no longer buys the
+checking.
 
 ## Frozen track hydration
 
@@ -454,10 +450,11 @@ node is cached on the `PluginManager`: MST's custom-reference `get()` memoizes
 nothing, so without that cache every read of `track.configuration` would
 fabricate a fresh non-identical node.
 
-This is why `session.getTrackById(id)` hands back a plain object for a track
-nobody has opened: access it with `readConfObject`, not `getConf`. (There is a
-`getTracksById()` returning the whole map, but it is deprecated — reading it
-subscribes the caller to every track, so an edit to any one of them wakes it.)
+The cache is why `session.getTrackById(id)` hands back a plain object for a
+track nobody has opened: access it with `readConfObject`, not `getConf`. (There
+is a `getTracksById()` returning the whole map, but it is deprecated — reading
+it subscribes the caller to every track, so an edit to any one of them wakes
+it.)
 
 ## Config callbacks (jexl)
 
@@ -557,11 +554,11 @@ A callback may call custom jexl functions your plugin registers with
 for a worked example). The [jexl config guide](/docs/config_guides/jexl) covers
 the expression language itself.
 
-`contextVariable` is editor metadata and nothing more: it is what raises the
-config editor's value/callback toggle, and no part of the read path consults it.
-A slot that declares none is still reachable by hand-writing `jexl:` into the
-JSON, so declare one to make the editor work — but never read it as a signal
-that a slot does or doesn't hold a callback.
+`contextVariable` is editor metadata and nothing more: it raises the config
+editor's value/callback toggle, and no part of the read path consults it. A slot
+that declares none is still reachable by hand-writing `jexl:` into the JSON, so
+declare one to make the editor work — but never read it as a signal that a slot
+does or doesn't hold a callback.
 
 ## Configuration internals
 

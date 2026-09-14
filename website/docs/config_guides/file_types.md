@@ -7,10 +7,10 @@ guide_category: Core configuration
 ---
 
 Every track reads data through an `adapter` whose `type` selects the reader, and
-the file's extension is what picks that type. Find your format in the tables
-below for the adapter that reads it and a link to its full config docs. Most
-adapters accept the [`uri` shorthand](#the-uri-shorthand), and a track over a
-format listed here can skip both keys — see
+the file's extension picks that type. Find your format in the tables below for
+the adapter that reads it and a link to its full config docs. Most adapters
+accept the [`uri` shorthand](#the-uri-shorthand), and a track over a format
+listed here can skip both keys — see
 [the whole-track shorthand](#the-whole-track-shorthand).
 
 ## The `uri` shorthand
@@ -68,13 +68,13 @@ that inference runs on a track config too:
 }
 ```
 
-The `Track type` column below is what the track becomes, the `Adapter` column is
-what it reads through, `name` defaults to the file name, and a config declaring
-exactly one assembly supplies `assemblyNames`. Write any of those keys yourself
-to override the guess: an explicit `type` picks a track type the extension would
-not, and an `adapter` block replaces the guessed one outright. A format the
-tables do not list needs the full form, and so does a file whose extension names
-one format while it holds another
+The `Track type` column below names what the track becomes, the `Adapter` column
+names what it reads through, `name` defaults to the file name, and a config
+declaring exactly one assembly supplies `assemblyNames`. Write any of those keys
+yourself to override the guess: an explicit `type` picks a track type the
+extension would not, and an `adapter` block replaces the guessed one outright. A
+format the tables do not list needs the full form, and so does a file whose
+extension names one format while it holds another
 ([the shortest track](/docs/config_guides/tracks#the-shortest-track)).
 
 ## Sequence / assembly

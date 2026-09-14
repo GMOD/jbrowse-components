@@ -27,7 +27,7 @@ track dialog. For complex logic, register a jexl function in a small plugin.
 }
 ```
 
-<Figure src="/img/customized_feature_details.png" caption="A feature detail panel reshaped by the formatDetails callback above. The red callout marks the name field, which the callback rewrote into an HTML hyperlink (here, a Google search for the gene name) instead of plain text. The same callback also injects the extra 'newfield' row and drops the default 'type' row."/>
+<Figure src="/img/customized_feature_details.png" caption="A feature detail panel reshaped by the formatDetails callback above. The red callout marks the name field, which the callback rewrote into an HTML hyperlink (here, a Google search for the gene name); the callback also injects the extra 'newfield' row and drops the default 'type' row."/>
 
 The `<a>` markup is needed only because the link text differs from the URL; a
 value that is nothing but a URL is [linked for you](#bare-urls). The slots
@@ -93,7 +93,7 @@ every feature is written as a plain object. A GFF3 gene nests three levels deep
 
 ## Session-wide `formatDetails`
 
-The same four slots exist under
+The `feature`, `subfeatures`, `depth` and `maxDepth` slots also exist under
 [`configuration.formatDetails`](/docs/config/formatdetails/), applied to every
 track:
 

@@ -52,9 +52,9 @@ three times. The copies across subgenomes are homoeologs, and a table of them is
 a comparative dataset from one assembly, so `MCScanBlocksAdapter` puts one
 genome on both axes.
 
-Where the copies sit is the karyotype; a segment moved between groups leaves the
-diagonal. How hard selection held each pair together is dN/dS, a per-pair
-measurement and therefore a colour.
+The karyotype shows where the copies sit, and a segment moved between groups
+leaves the diagonal. dN/dS is a per-pair measurement of how hard selection held
+each pair together, so it becomes a colour.
 
 ## Producing the data
 

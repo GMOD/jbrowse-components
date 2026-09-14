@@ -44,8 +44,8 @@ the config's `tracks` array already showing:
 
 A view's `tracks` names `trackId`s from the top-level `tracks` array; the
 session never repeats an adapter. A track missing from that array (or from the
-assembly) silently fails to open, which is what `jbrowse validate` reports, and
-why a pipeline that regenerates `config.json` must
+assembly) fails to open with no error in the browser; `jbrowse validate` reports
+it, which is why a pipeline that regenerates `config.json` must
 [keep trackIds stable](/docs/config_guides/deploying#keep-trackids-stable-for-reproducible-links).
 
 ## Sessions the app exports

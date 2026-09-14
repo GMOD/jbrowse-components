@@ -19,8 +19,8 @@ script there are two tools:
 | shows  | the tracks                          | the whole app: chrome, menus, dialogs, overview ideogram |
 | covers | the SVG-export rendering path       | canvas and WebGPU rendering, exactly as a user sees it   |
 
-- `@jbrowse/img` by default: a static figure of some tracks is what most
-  requests amount to.
+- Use `@jbrowse/img` by default; most requests are just a static figure of some
+  tracks.
 - `@jbrowse/capture` when the answer depends on the real application: a
   canvas-rendered display, a dialog or menu, or state you want to click into and
   read back.
@@ -92,4 +92,4 @@ For one display rather than the whole app:
 - **A slow remote file** outlives the loading overlay. Raise `--timeout`, and
   `--settle` for the last repaint.
 - **Read the image you produced.** An empty track is obvious in a picture and
-  invisible in an exit code, which is the whole reason to take one.
+  invisible in an exit code.

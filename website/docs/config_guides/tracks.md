@@ -168,10 +168,9 @@ would download, and the features that would land on screen. Regions under about
 20 kb are never held back, and adapters that summarize at screen resolution
 (bigWig, Hi-C, MultiWiggle, sequence) are never too large.
 
-Alignments and MAF tracks are the exception: their cost per reference base
-scales with read depth or with the number of aligned species, which zooming does
-not reduce, so the message can appear at any zoom and offers only **Force
-load**.
+Alignments and MAF tracks' cost per reference base scales with read depth or
+with the number of aligned species instead, which zooming does not reduce, so
+the message can appear at any zoom and offers only **Force load**.
 
 ### Raising the feature limit
 

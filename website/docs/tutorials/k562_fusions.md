@@ -158,8 +158,8 @@ _ABL1_ alignment lands in neither window.
 ## Where the DNA broke
 
 A fusion caller only reports transcribed junctions, so both of its breakpoints
-sit on exon edges and say nothing about where the chromosome broke or how much
-of it is amplified. Two DNA assays on the same cells answer that: ENCODE's 10X
+sit on exon edges and mark neither where the chromosome broke nor how much of it
+is amplified. Two DNA assays on the same cells answer that: ENCODE's 10X
 Chromium linked-read run on K562 (ENCSR053AXS,
 [Zhou et al. 2019](https://doi.org/10.1101/gr.234948.118)) called the breakends,
 and DepMap's WGS segmentation gives the copy number. The build script lifts the

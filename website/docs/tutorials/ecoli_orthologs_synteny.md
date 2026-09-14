@@ -12,9 +12,10 @@ We look at one K-12 operon across forty-three other E. coli and Shigella genomes
 at once, without aligning any of them. RefSeq's bacterial pipeline gives an
 orthologous gene the same symbol in every strain it names, so the ortholog table
 is a join on the gene name over the GFF3 files, and each genome becomes a lane
-under the K-12 view carrying its own gene models. The join sees the core genome
-and nothing else: at a cluster that differs between strains the lanes draw their
-own genes and no ribbons, which is where the page ends.
+under the K-12 view, carrying the gene models annotated in that genome. The join
+matches only the core genome. At a cluster that differs between strains, each
+lane draws the genes annotated there with no ribbons connecting them, which is
+where the page ends.
 
 ## Prerequisites
 
@@ -184,7 +185,7 @@ Shigella genomes fall toward the bottom without anything naming them.
 }
 ```
 
-<Figure caption="The atp operon on K-12 over forty-three E. coli and Shigella lanes from one gene-symbol ortholog track, each lane drawing its own RefSeq gene models. Every gene's color runs the full stack; the lanes marked [rev] are the ones running this window's genes in the opposite order to K-12, which the display then mirrors so their ribbons draw straight." src="/img/multiway_synteny/ecoli_symbol_atp_operon.png" />
+<Figure caption="The atp operon on K-12 over forty-three E. coli and Shigella lanes from one gene-symbol ortholog track, each lane drawing the RefSeq gene models annotated in that genome. Every gene's color runs the full stack; the lanes marked [rev] are the ones running this window's genes in the opposite order to K-12, which the display then mirrors so their ribbons draw straight." src="/img/multiway_synteny/ecoli_symbol_atp_operon.png" />
 
 ## Where the join stops
 
@@ -196,13 +197,13 @@ MG1655_TMP32XR1 are all K-12 derivatives, whose cluster is K-12's gene for gene.
 Below them the flanking genes chain down every lane, _galF_ on one side and
 _wzzB_ and _ugd_ on the other (_gnd_ itself is a locus tag in most PGAP
 annotations, so it joins only a handful of lanes), and between the flanks each
-lane draws whatever its own annotation holds with no ribbon to it. That is the
-accessory genome as the join sees it.
+lane draws whatever annotation it holds, with no ribbon to it. That is the
+accessory genome, the part a symbol join cannot connect.
 
 <Figure caption="The O-antigen cluster on K-12 over the same forty-three lanes. The six K-12 derivatives at the top of the stack match the cluster gene for gene; in every lane below, the flanking galF, wzzB and ugd chains run through and the cluster between them is that strain's own, joined to nothing." src="/img/multiway_synteny/ecoli_symbol_oantigen.png" />
 
-For the variable loci the table wants a homology call across the proteomes, an
-[OrthoFinder](/docs/tutorials/orthofinder_synteny) run, or the
+The variable loci need a homology call across the proteomes to fill the table:
+an [OrthoFinder](/docs/tutorials/orthofinder_synteny) run, or the
 [all-vs-all alignment](/docs/tutorials/allvsall_synteny) that draws the same
 locus base by base for five strains.
 

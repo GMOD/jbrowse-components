@@ -52,16 +52,16 @@ assembly.
 The alignment here is the graph itself. Minigraph-Cactus writes every haplotype
 into the graph as a walk through its nodes, and two walks that pass through one
 node carry identical sequence there. A haplotype's pairwise alignment to GRCh38
-is therefore its walk read against the reference walk: the nodes both traverse
-are matches, the nodes only one of them traverses between two shared ones are
+is therefore its walk read against the reference walk. The nodes both traverse
+are matches; the nodes only one of them traverses between two shared ones are
 the indels and substitutions.
 
 `gfa_to_pairwise_paf.py` streams the GFA once and keeps only the reference walks
-and the haplotypes asked for; every other walk is skipped unparsed, which is
-what makes the whole graph tractable on a laptop. For each haplotype it chains
-the shared nodes in reference order into records and writes an `=`/`X`/`I`/`D`
-CIGAR off the node lengths with PanSN names, which is what `make-pif` and the
-adapter below expect:[^converter-report]
+and the haplotypes asked for; every other walk is skipped unparsed, so the whole
+graph stays tractable on a laptop. For each haplotype it chains the shared nodes
+in reference order into records and writes an `=`/`X`/`I`/`D` CIGAR off the node
+lengths with PanSN names, the format `make-pif` and the adapter below
+expect:[^converter-report]
 
 <!-- from: scripts/build_hprc_multiway_synteny.sh -->
 
@@ -94,10 +94,10 @@ jbrowse make-pif hprc_multiway_gfa.paf --csi --out hprc_multiway_gfa.pif.gz
 Each haplotype is an assembly of its chromosome lengths alone, a
 `ChromSizesAdapter` over the file the converter wrote, since the lanes never
 read sequence. Its gene track is the release's CAT annotation of that assembly,
-whole genome, from the index above: the GFF3 sorted, bgzipped and tabix-indexed
-as in the [web quickstart](/docs/quickstart_web), with the intron and codon rows
-dropped. A lane finds its gene models through the session, so the track only has
-to exist under the lane's assembly name.
+whole genome, from the index above. The GFF3 is sorted, bgzipped and
+tabix-indexed as in the [web quickstart](/docs/quickstart_web), with the intron
+and codon rows dropped. A lane finds its gene models through the session, so the
+track only has to exist under the lane's assembly name.
 
 ## The alignment track
 
@@ -141,7 +141,7 @@ reference at the centre, which is the shape a lane stack anchored on hg38 reads.
 The [linear synteny view guide](/docs/user_guides/linear_synteny_view) covers
 the lane controls, the ribbons and the launches each lane header offers.
 
-<Figure caption="The header menu of one haplotype lane: open it at the matching region in its own view, or move and hide the lane. The menu offers to re-anchor on the haplotype too, since a PIF header names no anchor, but every record here pairs a haplotype with GRCh38, so a stack anchored on a haplotype draws GRCh38 as its one lane." src="/img/multiway_synteny/hprc_lane_menu.png" />
+<Figure caption="The header menu of one haplotype lane opens it at the matching region in its own view, or moves and hides the lane. The menu offers to re-anchor on the haplotype too, since a PIF header names no anchor, but every record here pairs a haplotype with GRCh38, so a stack anchored on a haplotype draws GRCh38 as its one lane." src="/img/multiway_synteny/hprc_lane_menu.png" />
 
 ## The CFH cluster, eight haplotypes
 
@@ -188,8 +188,7 @@ one side and _CFHR4_ onward on the other, place in every lane.
 
 The four carriers also sort together, at the bottom of this stack, because lane
 order is densest first over the fetched window and a lane whose alignment skips
-the cluster places less of it; `rowOrder` is what pins an order that has to
-hold.
+the cluster places less of it; `rowOrder` pins an order that has to hold.
 
 ## The whole chromosome
 

@@ -127,8 +127,8 @@ wholly inside the segment, or wholly outside it, maps as an ordinary LR pair.
 </figure>
 
 The duplication half of an inverted duplication has no orientation signature.
-Where the second copy went is what the call's `INFO.CPX_INTERVALS` names, and no
-pair in the pileup states it.
+The call's `INFO.CPX_INTERVALS` names where the second copy went, and no pair in
+the pileup states it.
 
 ### Insert size
 

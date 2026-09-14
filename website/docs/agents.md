@@ -12,12 +12,12 @@ screenshot the result in the app you already have open.
 
 ## What it looks like
 
-A real Claude Code session driving JBrowse Desktop over the four MCP tools and
-nothing else — no shell, no files. The terminal is in frame, so what was asked
-and what the agent ran are both on screen. The bigWigs stream from GEO by range
-request, and the ratio is computed against the live session the way deepTools
-`bigwigCompare` would: depth-normalized, finely binned, smoothed over a window
-several bins wide.
+The video below shows a real Claude Code session driving JBrowse Desktop over
+the four MCP tools and nothing else — no shell, no files. The terminal is in
+frame, so what was asked and what the agent ran are both on screen. The bigWigs
+stream from GEO by range request, and the ratio is computed against the live
+session the way deepTools `bigwigCompare` would: depth-normalized, finely
+binned, smoothed over a window several bins wide.
 
 <Video src="/media/mcp/agent_geo_ratio_take1.mp4" caption="Asked to open hg38 at CDKN1A, add four GEO ATAC-seq bigWigs comparing nutlin against a vehicle control, derive a log2 nutlin-over-vehicle track, and test whether the gain is a normalization artifact. The agent put CDKN1A beside GAPDH and a gene desert: only CDKN1A holds a one-sided signal." />
 
@@ -64,8 +64,8 @@ that serves the bridge, which is the quickest way to tell.
    binary is `%LOCALAPPDATA%\Programs\JBrowse 2\jbrowse-desktop.exe` and on
    Linux it is the AppImage you downloaded.
 
-3. Restart the client and ask it to open JBrowse. It lists your recent sessions,
-   which proves the whole path.
+3. Restart the client and ask it to open JBrowse. If it lists your recent
+   sessions, the client, the app and the bridge are all connected.
 
 Then ask in plain words:
 
@@ -127,7 +127,7 @@ jb.trackModel(trackId).applyDisplaySettings(s) // restyle, and report what lande
 jb.waitReady(ms) // wait for drawing, and report what did not draw
 ```
 
-Each helper is there because the raw model gets that answer wrong silently: a
+Each helper exists because the raw model gets that answer wrong with no error: a
 refName the file spells differently, a settings key the display drops, a track
 that settled without drawing. Everything else is the model itself.
 

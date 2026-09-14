@@ -32,8 +32,8 @@ and target coordinates, which is what a CIGAR encodes, so each hit is drawn the
 way a read is: blocks as aligned runs, a target gap as a deletion, a query gap
 as an insertion, and the unaligned ends of the query as soft clips. Because the
 sequence you submitted is known, the hit also carries it, and the pileup marks
-every base that disagrees with the reference. That is the difference between a
-hit that is your sequence and one that merely scores well.
+every base that disagrees with the reference, so a hit that is your sequence can
+be told from one that only scores well.
 
 BLAT returns every placement of a query. The best-scoring one is primary and the
 rest are marked secondary, so competing mappings of one sequence stay off the
@@ -88,25 +88,24 @@ options as BLAT search.
 
 Predicted amplicons arrive as a track, with the same **Search results** panel
 listing every product with its size and primer pair. As with BLAT, clicking a
-product is what takes the view to it.
+product takes the view to it.
 
 A PCR product has the shape of a paired-end read: two short oriented footprints
 pointing at each other with an unsequenced insert between them, so each product
-is drawn as a read pair with view-as-pairs on. The two arrows converge whatever
-strand the product is reported on, because a primer's direction is its own and
-not the amplicon's, and the line between them is the interior you never
-sequence.
+is drawn as a read pair with view-as-pairs on. The two arrows converge
+regardless of which strand the product is reported on, because each primer's
+direction does not follow the amplicon's strand. The line between them is the
+interior you never sequence.
 
 Because the primers themselves are carried as the reads' bases, a base where a
 primer disagrees with the template is drawn as a mismatch. UCSC tolerates one
-toward a primer's 5' end and still reports the product, which is what a primer
-sitting over a SNP looks like; it requires the last 15 bases at the 3' end to
-match exactly, and reports no product otherwise.
+toward a primer's 5' end and still reports the product, as it would for a primer
+sitting over a SNP; it requires the last 15 bases at the 3' end to match
+exactly, and reports no product otherwise.
 
 More than one product means more than one band. The results panel counts the
-products and lists each size, which is what you compare a gel against, and says
-so explicitly when there is more than one. Two products of similar size will not
-resolve.
+products, lists each size to compare against a gel, and states explicitly when
+more than one product exists. Two products of similar size will not resolve.
 
 <Figure src="/img/desktop-ispcr.png" caption="The In-silico PCR dialog on hg19. Forward and reverse primer fields with a max product size, sharing the same assembly picker and advanced apiKey/proxy options as BLAT search."/>
 

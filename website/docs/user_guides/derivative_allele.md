@@ -5,10 +5,10 @@ description:
 guide_category: Analysis
 ---
 
-A split read is an ordered, oriented list of reference intervals, which is what
-a derivative allele is. **Launch → Reconstruct derivative allele...** in the
-alignments track menu groups the reads in the window by the route their split
-alignments describe, lists each route with the number of reads that
+A split read is an ordered, oriented list of reference intervals — the same
+structure as a derivative allele. **Launch → Reconstruct derivative allele...**
+in the alignments track menu groups the reads in the window by the route their
+split alignments describe, lists each route with the number of reads that
 independently take it, and draws the chosen one as a synteny or breakpoint split
 view. It works from `SA` tags, so it needs long reads and an event large enough
 that the aligner wrote it as a split alignment.
@@ -114,14 +114,15 @@ reach were seen only by short reads in that study. Where a junction is
 recovered, its two ends land within a few bases of the called breakend, and no
 matched normal recovers a somatic junction at the same windows.
 
-Reading a split alignment as an ordered list of reference intervals is what
-long-read SV callers extract before they cluster anything
+Long-read SV callers extract a split alignment as an ordered list of reference
+intervals before they cluster anything
 ([Sedlazeck et al. 2018](https://doi.org/10.1038/s41592-018-0001-7)), and
-ordering those intervals into a derivative chromosome is what long-read
-rearrangement pipelines do with them
+long-read rearrangement pipelines order those intervals into a derivative
+chromosome
 ([Cretu Stancu et al. 2017](https://doi.org/10.1038/s41467-017-01343-4),
-[Mitsuhashi et al. 2020](https://doi.org/10.1186/s13073-020-00762-1)). This is
-the visualization half of that lineage, in the manner of Ribbon
+[Mitsuhashi et al. 2020](https://doi.org/10.1186/s13073-020-00762-1)). This
+reconstruction is the visualization half of that lineage, in the manner of
+Ribbon
 ([Nattestad et al. 2021](https://doi.org/10.1093/bioinformatics/btaa1080)): it
 groups those chains and counts them, and where two routes disagree it lists both
 with their counts.

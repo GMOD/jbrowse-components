@@ -81,8 +81,8 @@ that ClinVar is over its fetch-size gate at a whole-gene zoom:
 }
 ```
 
-That track draws once the view is zoomed in, and a read over the same span is
-refused the same way, which is what the next recipe narrows.
+That track draws once the view is zoomed in. A read over the same span is
+refused the same way; the next recipe narrows the region to work around it.
 
 ## Tabulate what is on screen
 
@@ -427,8 +427,8 @@ return { out, bytes: svg.length, loc: view.visibleLocStrings }
 - `{ format: 'png' }` rasterizes on the way to the file, and is the one case
   where the return value is still the SVG markup rather than the bytes written.
 - Leave `save` alone to get the normal download instead.
-- `rasterizeLayers: true` embeds each display's heavy layer as a PNG rather than
-  emitting vector elements, which is what a hundred-thousand-read pileup wants.
+- `rasterizeLayers: true` embeds each display's heavy layer as a PNG instead of
+  vector elements, useful for a hundred-thousand-read pileup.
 - A track that failed to load makes the export fail rather than come out with a
   gap: `exportSvg` rejects with `Cannot export:` and the errors behind it. Read
   `notReady` from `jb.waitReady` first, and hide the offending track if the
@@ -545,7 +545,7 @@ return { seated, ...(await jb.waitReady(30000)) }
 - A leaf spelled with any other key throws naming it, and a layout that seats no
   view throws rather than leaving a blank tab.
 - Calling `session.applyLayoutSpec` directly does neither of the two things
-  `session.layoutViews` adds, and the views stay stacked with nothing said.
+  `session.layoutViews` adds, and the views stay stacked with no error.
 
 ## See also
 

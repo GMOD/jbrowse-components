@@ -150,9 +150,9 @@ matrix-balanced counts, and against the steep decay of contact with distance the
 compartment signal stays a faint texture. Balanced counts on a linear ramp show
 the most of it; `Log scale` on a deeply sequenced file returns solid red.
 
-The compartment call itself is what to load, and the processing pipeline has
-already made it. ENCODE publishes two such files per Hi-C experiment, both
-derived from the matrix in the same track:
+Load the compartment call itself; the processing pipeline has already made it.
+ENCODE publishes two such files per Hi-C experiment, both derived from the
+matrix in the same track:
 
 - The **compartment eigenvector**, a BigWig. Its sign is the compartment
   assignment and its magnitude is how strongly a bin belongs, so it loads as an

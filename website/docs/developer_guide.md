@@ -28,8 +28,8 @@ A product is an application published on its own: `jbrowse-web` in a browser,
 embedded React components.
 
 A plugin adds functionality to a product **at runtime**. Anyone can write and
-publish one, and a product loads plugins from a URL. A product can also be built
-with its plugins bundled in, which is what the embedded components do.
+publish one, and a product loads plugins from a URL. A product can also be
+built with its plugins bundled in; the embedded components ship this way.
 
 <Figure src="/img/product_architecture.png" caption="A product instantiates the RootModel, and the state tree below it runs from the session through views, tracks and displays. Each React component on the right observes the state node across from it."/>
 
@@ -44,7 +44,7 @@ Plugin templates:
 Working plugin examples:
 
 - [jbrowse-plugin-ucsc-api](https://github.com/cmdcolin/jbrowse-plugin-ucsc-api)
-  is the smallest of these, an adapter that reads the UCSC REST API
+  is the smallest of these: an adapter that reads the UCSC REST API
 - [jbrowse-plugin-gwas](https://github.com/cmdcolin/jbrowse-plugin-gwas) draws
   GWAS data as a manhattan plot
 - [jbrowse-plugin-biothings-api](https://github.com/cmdcolin/jbrowse-plugin-biothings-api)
@@ -55,8 +55,8 @@ Working plugin examples:
   GDC cancer data GraphQL API, and adds a drawer widget and a track type that
   colors variants by impact score
 - [jbrowse-plugin-systeminformation](https://github.com/garrettjstevens/jbrowse-plugin-systeminformation)
-  reaches node system libraries from JBrowse Desktop. A desktop-only plugin like
-  this one ships as a CJS bundle, which is what Electron loads
+  reaches node system libraries from JBrowse Desktop. A desktop-only plugin
+  like this one ships as a CJS bundle, since that's what Electron loads
 
 The [jbrowse-plugin-list](https://github.com/GMOD/jbrowse-plugin-list) is the
 community plugin registry: browse it to find published plugins, or submit your

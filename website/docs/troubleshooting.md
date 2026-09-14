@@ -76,8 +76,8 @@ and does nothing. `jbrowse validate` catches exactly that; see
 ## My saved session fails to load
 
 A restored session looks its tracks up by `trackId`. Changing or deleting one
-breaks every saved session that references it, the whole session and not just
-that track. See
+breaks every saved session that references it, and the whole session fails to
+load, including its other tracks. See
 [keeping trackIds stable](/docs/config_guides/deploying#keep-trackids-stable-for-reproducible-links).
 
 ## Where can I get help or report a bug

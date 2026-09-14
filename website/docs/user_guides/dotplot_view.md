@@ -85,7 +85,7 @@ unpainted gaps inside the arms are where the two copies differ.
 
 Which view to reach for is a question of how many alignments are in frame. Every
 ribbon spans the full height of the strip, so ribbons stack rather than
-separate: the same track over the whole 4.8 Mb box above is a mat, where a
+separate. The same track over the whole 4.8 Mb box above is a mat, whereas a
 dotplot gives each alignment its own place on two axes. Use the plot to find the
 structures and a synteny view on one of them.
 

@@ -303,8 +303,7 @@ Use `"indexType": "CSI"` for an index created with `--csi`.
 | Large genomes       | Slow / memory-heavy | Efficient                 |
 | Bidirectional query | No                  | Yes                       |
 
-PAFAdapter is fine for small alignments. PIF is strongly preferred for
-whole-genome comparisons.
+PAFAdapter is fine for small alignments. Use PIF for whole-genome comparisons.
 
 ## Comparison with pairix
 

@@ -4,9 +4,9 @@ description:
   Set up a self-hosted JBrowse Web instance and add an assembly and tracks
 ---
 
-This guide sets up a self-hosted JBrowse Web instance with the `@jbrowse/cli`
-command-line tool: download JBrowse, add an assembly and tracks, and serve the
-result as a folder of files on a web server. The same folder opens in
+The `@jbrowse/cli` command-line tool sets up a self-hosted JBrowse Web instance:
+download JBrowse, add an assembly and tracks, and serve the result as a folder
+of files on a web server. The same folder opens in
 [JBrowse Desktop](/docs/quickstart_desktop) with no server
 ([](/docs/tutorials/cli_desktop)), and [](/docs/embedded_components) puts a view
 in your own web app.
@@ -157,8 +157,8 @@ and [](/docs/tutorials/synteny_visualization) runs one end to end.
 The folder is a static site: plain files a web server hands out unchanged, and
 the visitor's browser fetches the pieces of each data file it needs. Any web
 server, S3 or GCS bucket, or institutional file host can serve it
-([](/docs/config_guides/deploying)). Two properties decide whether a host works,
-and both fail quietly:
+([](/docs/config_guides/deploying)). Two properties decide whether a host works.
+Missing either produces no error message, just a track that looks broken:
 
 - **Byte-range requests.** JBrowse reads slices of a BAM, CRAM, BigWig or tabix
   file, so the host has to answer a `Range` header with `206 Partial Content`. A
@@ -183,9 +183,9 @@ jbrowse text-index
 ```
 
 Indexes the GFF3, GTF and VCF tracks in the config so names can be typed into
-the location box. Every other track is skipped silently; name one with
-`--tracks` and it says why. [](/docs/config_guides/text_searching) covers which
-attributes are indexed and how to narrow the set.
+the location box. Every other track is skipped with no message; name one with
+`--tracks` and it explains why. [](/docs/config_guides/text_searching) covers
+which attributes are indexed and how to narrow the set.
 
 ## Tips
 

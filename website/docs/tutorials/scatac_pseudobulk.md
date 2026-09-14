@@ -150,7 +150,7 @@ types:
 }
 ```
 
-Three things in that list are worth writing by hand:
+Three fields in that list are worth setting by hand:
 
 - **Order.** Subadapters draw in the order given, so group them by lineage
 - **`color`.** Take each row's from the cluster's color in your analysis, so a
@@ -182,7 +182,8 @@ A published atlas needs no pipeline at all: [CATlas](https://www.catlas.org/)
 serves hg38 coverage from
 `https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/`, one file
 per cell type. Percent-encode the `+` in a cell-type name
-(`T_lymphocyte_2_CD4%2B.bw`), the one way those URLs go wrong quietly.
+(`T_lymphocyte_2_CD4%2B.bw`); left unencoded, the URL breaks and the row loads
+with no data.
 
 [`defaultRendering`](/docs/config/multilinearwiggledisplay/#slot-defaultrendering)
 lists every drawing mode, and the track menu switches between them live.

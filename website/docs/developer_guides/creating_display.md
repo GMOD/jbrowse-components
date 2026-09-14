@@ -135,8 +135,8 @@ already do this?"
 <!-- CROSS_CUTTING_MIXINS END -->
 
 Order matters in one place: `types.compose` gives a collision to the later
-argument, so composing `HeightModeMixin()` before `TrackHeightMixin()` silently
-leaves grow mode inert. The mixin reports that at attach.
+argument, so composing `HeightModeMixin()` before `TrackHeightMixin()` leaves
+grow mode inert. The mixin reports the ordering problem at attach.
 
 ## Walkthroughs
 

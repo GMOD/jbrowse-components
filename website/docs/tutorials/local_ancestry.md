@@ -251,7 +251,7 @@ Orange means a stretch that resembles a present-day gray wolf more than a breed
 dog; both panels are modern, so what domestication carried into dogs sits in
 both and separates nothing.
 
-Blocks break up towards the end of chr1, tracking the genetic map: the build
+Blocks break up towards the end of chr1, tracking the genetic map. The build
 script tiles the chromosome and prints block-edge count and recombination per
 window, and the busiest window on one is the busiest on the other.
 

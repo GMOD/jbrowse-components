@@ -134,9 +134,9 @@ bash build_rgfa_tabix.sh hprc-v2.1-mc-grch38.sv.gfa.gz out
 bash build_pggb_tabix.sh graph.gfa graph K12
 ```
 
-A plain GFA states no reference of its own, which is why that third argument
-exists and why an rGFA needs no equivalent: `SR` already says which segments are
-the backbone.
+A plain GFA carries no reference of its own, which is why that third argument
+exists and why an rGFA needs no equivalent: `SR` already names which segments
+are the backbone.
 
 The rGFA route wants **GNU awk**. Its links pass builds a hash table with about
 760,000 keys, which gawk does in seconds and the BSD awk macOS ships does in
@@ -184,7 +184,7 @@ indexes, as `GbzBaseSyntenyAdapter` does from a database. The same pair behind a
 
 ## Checking the index against the graph
 
-The index states coordinates the graph file also states, so the two can be
+The index carries coordinates the graph file also carries, so the two can be
 compared directly. Query a locus out of the index, then ask the graph about one
 of the segments it returned:
 
@@ -207,7 +207,7 @@ result** where the reference is tiled means the query used the wrong namespace:
 segments are indexed under the graph's PanSN names, so a bare `chr1` finds
 nothing where `GRCh38#0#chr1` finds everything. A window that comes back with
 **backbone rows and no alleles** is a locus where the graph collapsed rather
-than one it holds nothing for, which is what minigraph does to near-identical
+than one it holds nothing for; minigraph does exactly that to near-identical
 segmental duplications.
 
 ## Where the graph varies: the bubble file
@@ -303,11 +303,11 @@ unchanged, since `maxGraphNodes` counts what actually came back.
 
 ## What the variation is: the allele inventory
 
-The bubbles say where the graph varies. One row per allele, anchored on the
-reference and carrying its size, says what the variation is. It is derived from
-the two indexes rather than from the graph, so it costs seconds off a small pair
-rather than a re-read of the whole file, and it works on somebody else's hosted
-index with no graph in hand at all:
+The bubbles report where the graph varies. One row per allele, anchored on the
+reference and carrying its size, reports what the variation is. It is derived
+from the two indexes rather than from the graph, so it costs seconds off a small
+pair rather than a re-read of the whole file, and it works on somebody else's
+hosted index with no graph in hand at all:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_rgfa_alleles.sh
@@ -315,7 +315,7 @@ bash build_rgfa_alleles.sh out
 ```
 
 Each row carries a `CIGAR` against the reference span it replaces
-(`2062M63348I`), which is what makes the lane legible: an insertion consumes no
+(`2062M63348I`), which makes the lane legible: an insertion consumes no
 reference, so its start and end cannot state its size, and a plain feature track
 would draw a 63 kb allele one pixel wide. An `AlignmentsTrack` walks the CIGAR
 instead and draws the insertion at its real magnitude, with the same glyph it
@@ -349,7 +349,7 @@ apply before reading lengths in bulk.
 
 ## Who carries what
 
-An rGFA cannot say who carries a segment. `SR` is build order, so a segment
+An rGFA does not record who carries a segment. `SR` is build order, so a segment
 names the assembly that contributed it first and never the rest, and this is the
 one thing the format leaves out. There are two ways to get it back, and which
 one is open to you depends on what you have beside the graph.

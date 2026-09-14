@@ -67,9 +67,9 @@ ENCODE publishes both as annotation files derived from the matrix:
 
 <Figure src="/img/hic/loops_and_domains.png" caption="Bands on the two corners of one MYC contact domain, with its Arrowhead arc, its bounding HiCCUPS loop and the denser triangle in the matrix all ending on them, under twelve single-cell ATAC pseudobulks." links="Open this view=hic/loops_and_domains" />
 
-The loop is what holds the domain together, so the block in the matrix, the
-Arrowhead arc and the HiCCUPS arc all end on the domain's two corners. _MYC_ is
-at the left one. A loop anchored at both corners of a domain is what
+The loop holds the domain together, so the block in the matrix, the Arrowhead
+arc and the HiCCUPS arc all end on the domain's two corners. _MYC_ is at the
+left one. A loop anchored at both corners of a domain is what
 [Rao et al. 2014](https://doi.org/10.1016/j.cell.2014.11.021) called a loop
 domain, and found across the genome. The ATAC lane comes from outside the
 contact map: GM12878 is a B-lymphoblastoid line, and all twelve lineages are
@@ -262,8 +262,8 @@ into rows. Loops, whose mates differ, are the paired-arc case. See the
 To color or filter either track by a column, set
 [`columnNames`](/docs/config/bedpeadapter/#slot-columnnames) explicitly. Juicer
 writes its version banner after the defline, so names read off the header make
-every column past the tenth `undefined`, and a jexl expression on one silently
-evaluates against nothing. HiCCUPS writes 24 columns and Arrowhead 16.
+every column past the tenth `undefined`, and a jexl expression on one evaluates
+against nothing, with no error. HiCCUPS writes 24 columns and Arrowhead 16.
 
 Both callers leave `name` and `score` at `.` and put what they rank by further
 along: HiCCUPS' is `observed`, Arrowhead's a second column called `score`.

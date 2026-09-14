@@ -54,9 +54,9 @@ JBrowseR(
 )
 ```
 
-R adds what a config can't express itself: `track_data_frame()` turns an
-in-memory data frame into a track (no file, no server), and `assembly()` writes
-a little assembly boilerplate from a FASTA URL. For full control, hand a whole
+`track_data_frame()` turns an in-memory data frame into a track (no file, no
+server), and `assembly()` writes a little assembly boilerplate from a FASTA URL.
+Both express what a plain config file can't. For full control, hand a whole
 JBrowse `config.json` to `JBrowseR(config = ...)`.
 
 ## Comparing genomes

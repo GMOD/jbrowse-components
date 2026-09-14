@@ -471,7 +471,7 @@ genome view (this region)** cuts a subgraph at whatever is on screen.
 
 A kilobase or two is the width to open one at. Past the flagellar operon, K12
 carries an IS1 element the other four skip. A second copy of the segments track,
-colored by the `SM:Z:` carriage the walk recorded, says which segments those
+colored by the `SM:Z:` carriage the walk recorded, shows which segments those
 are; the pggb page gives
 [that track's config](/docs/tutorials/pangenome_ecoli#carriage-as-a-linear-lane).
 
@@ -503,8 +503,8 @@ the only difference. The gold band marks `chr:1,000,000-1,100,000` in both.
 <Figure caption="The same paths and the same colors on K12's coordinates. The gold band is the same 100 kb in both figures, and takes up a visibly smaller share of this axis than of the graph axis above." src="/img/pangenome_cactus/graph_correspondence.png" />
 
 The graph axis counts pangenome bases, so a locus where other strains carry
-sequence K12 lacks takes up more of it. This is the 100 kb window where that gap
-is largest, which is why it sits over a dip in the depth track. Node ids in a
+sequence K12 lacks takes up more of it. This 100 kb window has the largest such
+gap, and it sits over a dip in the depth track for that reason. Node ids in a
 Cactus graph run `1..N` in node order, so walking K12's `P` line turns a K12
 offset into a pangenome offset; `build_ecoli_pangenome_cactus.sh` does that
 walk.

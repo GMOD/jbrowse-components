@@ -66,7 +66,7 @@ https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi
 ```
 
 The form pairs the indexes with the FASTA and fills in a name from the filename.
-Set the name to `hg38`, which is what the rest of this page calls it.
+Set the name to `hg38`; the rest of this page uses that name.
 
 <Figure caption="Assembly manager page for adding a new assembly." src="/img/hg38_assembly_table.png"/>
 
@@ -103,8 +103,8 @@ live and, through the admin-server, persist to the config file.
 
 ## Setting a default session
 
-The default session is what a visitor sees first. Open the Set default session
-form from the Admin menu:
+A new visitor sees the default session first. Open the Set default session form
+from the Admin menu:
 
 <Figure caption="The 'Set default session' will persist your current session into the config file so any subsequent visitors to the app will see this session." src="/img/default_session_form.png"/>
 

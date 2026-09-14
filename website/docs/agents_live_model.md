@@ -105,7 +105,7 @@ Reading:
   load the user stopped, which `track.activeDisplay.reload()` retries),
   `offscreen` (views taller than the window) and the `drawer` and `dialog`
   above. None of those raises a toast and all of them look plausible in a
-  screenshot; this report is what tells.
+  screenshot, so check this report instead.
 
 Lower level, frozen at what shipped:
 
@@ -120,8 +120,8 @@ Lower level, frozen at what shipped:
   and `await jb.getFeatureAdapterOrThrow` builds an adapter to ask a file what
   it holds before adding it as a track — both under
   [Reading data directly](#reading-data-directly-fast-path).
-- `jb.renameRegionsIfNeeded` is what `jb.getFeatures` already does for you, and
-  what raw adapter code has to call itself.
+- `jb.renameRegionsIfNeeded` runs automatically inside `jb.getFeatures`; raw
+  adapter code has to call it directly.
 - `jb.getRpcSessionId(trackModel)` with `jb.createStopToken` /
   `jb.stopStopToken` are for an `rpcManager.call` of your own — a method
   `getFeatures` does not cover — on the same worker the track's display uses,
@@ -406,7 +406,7 @@ await jb.view().launchTrack('nutlin-log2')
 - A freshly created view throws "width undefined" from its region getters until
   it mounts and navigates. Read them with `await jb.visibleRegions(viewId)`,
   which waits for both: `initialized` is already true in the window before
-  navigation, where `visibleRegions` is silently empty.
+  navigation, where `visibleRegions` returns empty with no error.
 - Long synchronous loops block the UI thread, so chunk big work with
   `await new Promise(r => setTimeout(r))` between batches.
 - "Does it all fit in the window" is arithmetic: `jb.sessionSummary()` reports

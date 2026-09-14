@@ -35,9 +35,9 @@ caller-specific `SVTYPE=TRA` used by some tools.
 Single-locus deletions and duplications load into the table like anything else,
 but the circular overview cannot draw them: a chord runs between a record's two
 ends, and at whole-genome scale a deletion's two ends are the same point. The
-legend below the circle is what says so — it counts every class in the rows on
-screen, including the ones with no chord to draw, so a mostly-local callset
-reads as such.
+legend below the circle says so — it counts every class in the rows on screen,
+including the ones with no chord to draw, so a mostly-local callset reads as
+such.
 
 Compatible variant callers include:
 

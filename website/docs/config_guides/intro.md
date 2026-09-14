@@ -53,9 +53,9 @@ the same object at runtime, with one assembly:
 
 ## Checking a config with jbrowse validate
 
-**JBrowse silently ignores a config key it does not recognize.** The track still
-appears, so the only symptom of a misspelled setting, or one written in an older
-JBrowse version's format, is a color, height or filter that does nothing.
+**JBrowse ignores a config key it does not recognize.** The track still appears,
+so the only symptom of a misspelled setting, or one written in an older JBrowse
+version's format, is a color, height or filter that does nothing.
 [`jbrowse validate`](/docs/cli#jbrowse-validate) checks for exactly this,
 against the slot definitions read out of JBrowse itself, without opening any
 data file:
@@ -72,12 +72,13 @@ error: defaultSession.views[0].tracks[0]: trackId "sample_bem" is not defined in
 3 error(s), 0 warning(s) in myconfig.json
 ```
 
-It exits non-zero on errors (`--json` for machine-readable output), so it can
-gate a deploy; see [](/docs/agents) if an AI assistant is writing the config.
+`jbrowse validate` exits non-zero on errors (`--json` for machine-readable
+output), so it can gate a deploy; see [](/docs/agents) if an AI assistant is
+writing the config.
 
 ## The schema, in an editor
 
-The same checks are published as a JSON Schema at
+The same checks `jbrowse validate` runs are also published as a JSON Schema at
 `https://jbrowse.org/jb2/schema/v5/config.json`, generated from JBrowse's own
 type registry. A `$schema` line at the top of the file is all an editor needs to
 complete type names, slot names and enum members, show each slot's description

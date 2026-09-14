@@ -55,9 +55,9 @@ becomes a new session on that assembly.
   plain FASTA (indexed on open, reading the whole file, so supply a `.fai` for a
   large genome), 2bit, or `.chrom.sizes`.
 - A `.chrom.sizes` gives the assembly its reference names and lengths and no
-  bases, a fraction of the size, which is what whole-genome and synteny views
-  need. The dialog warns that the sequence track and GC content then draw
-  nothing, CRAM cannot decode, and a feature has no sequence to show.
+  bases, a fraction of the size and enough for whole-genome and synteny views.
+  The dialog warns that the sequence track and GC content then draw nothing,
+  CRAM cannot decode, and a feature has no sequence to show.
 - **More options** sets a display name, refName aliases (`chr1` and `1` as one
   contig) or cytobands. **Add another genome** stages the current one and starts
   on the next, for comparative views. **Open** opens a linear genome view on the
@@ -91,11 +91,11 @@ Open the **File** menu and choose **Open track...**, or use the track selector's
 
 ### Gene annotations (GFF3 and GTF)
 
-A plain `.gff3` or `.gtf` needs no index, which is the fast path for one
-chromosome's worth of annotation. An unindexed file is parsed once and held
-whole in memory, so sort, bgzip and tabix anything genome-scale
-(`jbrowse sort-gff` handles both formats) and give the form the `.gz` as the
-main file; it infers the `.tbi` beside it.
+A plain `.gff3` or `.gtf` needs no index, the fast path for one chromosome's
+worth of annotation. An unindexed file is parsed once and held whole in memory,
+so sort, bgzip and tabix anything genome-scale (`jbrowse sort-gff` handles both
+formats) and give the form the `.gz` as the main file; it infers the `.tbi`
+beside it.
 
 ### Connecting to a track hub
 

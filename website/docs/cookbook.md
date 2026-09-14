@@ -26,7 +26,7 @@ An assembly to supply the reference sequence, and a track to draw on it:
 JBrowse reads the adapter and the track type off the file's extension, finds the
 index sibling, and takes `name` from the file name
 ([the shortest track](/docs/config_guides/tracks#the-shortest-track)). The same
-track written out, which is where every recipe below starts:
+track written out. Every recipe below starts from this:
 
 ```json addtrack
 {
@@ -232,9 +232,9 @@ session-wide form, and the About dialog.
 ## Feature tracks
 
 [`heightMode`](/docs/config/linearcanvasbasedisplay/#slot-heightmode) `fit`
-shrinks the features so the whole stack fits the height, which is what gets a
-dense track into a screenshot without a scrollbar. `jexlFilters` draws only the
-features that pass every expression, on variant and alignments tracks too:
+shrinks the features so the whole stack fits the height, putting a dense track
+into a screenshot with no scrollbar. `jexlFilters` draws only the features that
+pass every expression, on variant and alignments tracks too:
 
 ```json addtrack
 {

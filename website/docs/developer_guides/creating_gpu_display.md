@@ -25,16 +25,16 @@ have, you never come here.
 
 `@jbrowse/render-core` and `@jbrowse/shader-tools` are on npm. Both are
 `@experimental`, so pin an exact version and expect to rebuild on upgrade.
-`render-core`'s GPU surface is static-import-only, which is what makes a GPU
-display a [build-step plugin](/docs/developer_guides/simple_plugin).
+`render-core`'s GPU surface is static-import-only, which makes a GPU display a
+[build-step plugin](/docs/developer_guides/simple_plugin).
 
 :::
 
 ## Architecture overview
 
-<Figure caption="The whole idea, before any of the machinery. The worker sends the data to the GPU when the region changes, and it stays there; every frame after that just redraws what the GPU already holds. Panning and zooming never refetch or reparse — that is what makes a GPU display different from a Canvas2D one, and everything named in the next figure exists to keep it true." src="/img/gpu_display_tldr.png" />
+<Figure caption="The whole idea, before any of the machinery. The worker sends the data to the GPU when the region changes, and it stays there; every frame after that just redraws what the GPU already holds. Panning and zooming never refetch or reparse, unlike a Canvas2D display; everything named in the next figure exists to keep that true." src="/img/gpu_display_tldr.png" />
 
-<Figure caption="The three dashed doors are where a change re-enters: rpcProps() above the worker, gpuProps() at the upload autorun, everything else at the frame, and what is left below a door is what that change costs. Every upload calls renderNow(), which bumps renderTick and closes the loop; a draw that reports it painted flips canvasDrawn, which readiness testids and DisplayChrome wait on." src="/img/gpu_display_lifecycle.png" />
+<Figure caption="The three dashed doors are where a change re-enters: rpcProps() above the worker, gpuProps() at the upload autorun, everything else at the frame, and what remains below a door is the cost of that change. Every upload calls renderNow(), which bumps renderTick and closes the loop; a draw that reports it painted flips canvasDrawn, which readiness testids and DisplayChrome wait on." src="/img/gpu_display_lifecycle.png" />
 
 The model keeps two autoruns running at all times (owned by
 `RenderLifecycleMixin`, installed by `installUpload`):
@@ -501,11 +501,10 @@ What each member is held to:
   with nothing to draw releases its buffer.
 - **`writeUniforms`** uses the generated packer (`shader.writeUniforms`), which
   makes the set total: the scratch buffer outlives the frame, so a field left
-  out of an offset-poke would silently redraw with last frame's value. The
-  `bpRangeX` triple comes from `bpRangeXTuple`, never by hand — it carries the
-  reversed pivot, which is the part that goes wrong. Widths are CSS px
-  (`clip.scissorW`, the block column), so a min-width floor is a CSS pixel on
-  every DPR.
+  out of an offset-poke would redraw with last frame's value. The `bpRangeX`
+  triple comes from `bpRangeXTuple`, never by hand — it carries the reversed
+  pivot, which is the part that goes wrong. Widths are CSS px (`clip.scissorW`,
+  the block column), so a min-width floor is a CSS pixel on every DPR.
 - **`placeScore`** places one instance, and both the painter and the ink go
   through it, so the box is written once. It reads what the block fixes off a
   frame: `bpProjection(block)` and `projectBp` mirror bp→px on a reversed block
@@ -878,10 +877,10 @@ export default function LinearScoreDisplayF(pluginManager: PluginManager) {
 ```
 
 Both the model and the component load late. A state model is eager — anything
-registered at plugin install loads everything it names by value — so a
-`stateModel` handed as a thunk is what keeps the display's mixins, its
-`installUpload` and everything behind them out of every host's startup bundle
-until a track first shows the display or a session names it.
+registered at plugin install loads everything it names by value — so handing
+`stateModel` as a thunk keeps the display's mixins, its `installUpload` and
+everything behind them out of every host's startup bundle until a track first
+shows the display or a session names it.
 
 ## The WebGL2 context ceiling
 

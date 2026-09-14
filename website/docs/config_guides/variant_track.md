@@ -246,7 +246,7 @@ reads of the same block:
 
 - **D'** asks whether recombination has been seen between two markers, so it
   saturates near 1 wherever no recombinant haplotype has turned up. It recovers
-  where crossing over stops, which is what finds an inversion's breakpoints
+  where crossing over stops, which finds an inversion's breakpoints
 - **r²** asks how well one marker predicts the other, which also requires the
   two to be at similar frequency, so it draws the sharper boundary. It says
   whether one marker can stand in for another

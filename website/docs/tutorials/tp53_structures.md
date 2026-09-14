@@ -66,9 +66,9 @@ its ruler starts at 94, the residue of p53 the construct begins at, so a tick
 under the row is the number a paper would cite.
 
 Under the STRUCT row of the AlphaFold panel, pLDDT is high across the core and
-falls away at both ends of the protein, which is the same region the crystal
-panels leave as gap: the tails that the crystals do not contain are the tails
-the model is least sure of.
+falls away at both ends of the protein. The crystal panels leave the same region
+as a gap: the tails missing from both crystals are the tails the model is least
+sure of.
 
 ## The crystal keeps its annotations
 
@@ -102,10 +102,9 @@ both map it; hover the intron beside the exon and nothing lights anywhere.
 
 ## The complex maps the right chain
 
-1YCR is not a p53 structure so much as an MDM2 structure with a piece of p53 in
-it: MDM2's N-terminal domain and a fifteen-residue peptide from p53's
-transactivation region. Both are chains of the file, and only one of them is
-encoded by the transcript.
+1YCR is an MDM2 structure carrying a piece of p53: MDM2's N-terminal domain and
+a fifteen-residue peptide from p53's transactivation region. Both are chains of
+the file, and only one of them is encoded by the transcript.
 
 The 1YCR panel's **Mapped chain** picker shows both. The plugin picked the
 peptide, whose alignment is a short exact match near the start of the transcript
@@ -116,9 +115,9 @@ row; MDM2 is listed above it.
 Switch the picker to Chain A. The alignment is recomputed against MDM2, and the
 GENOME row becomes a scatter of gapped fragments, since nothing in the
 transcript encodes it; hovering the structure now reaches no consistent codon.
-Switch back to Chain B and the peptide's alignment returns. A complex of two
-paralogs is where the plugin's own choice can land on the wrong one, and the
-picker is the way back.
+Switch back to Chain B and the peptide's alignment returns. In a complex of two
+paralogs, the plugin's automatic choice can land on the wrong chain, and the
+picker switches it.
 
 ## Checking the hotspot against the sequence
 

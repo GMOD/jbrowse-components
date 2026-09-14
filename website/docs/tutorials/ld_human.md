@@ -101,7 +101,7 @@ variants are picked for correlation, so it is a property of the file. That is
 also why the two cohorts below are a fair comparison rather than one filter
 applied twice.
 
-The block is a selective sweep: the allele that keeps lactase switched on into
+The block is a selective sweep. The allele that keeps lactase switched on into
 adulthood, `rs4988235`, rose in frequency and carried its neighbouring variants
 with it ([Bersaglieri et al. 2004](https://doi.org/10.1086/421051)). Its
 [dbSNP report](https://www.ncbi.nlm.nih.gov/snp/rs4988235) carries the ClinVar
@@ -109,8 +109,8 @@ entry and the per-population frequency table.
 
 ## Cut the region out of the VCF
 
-The slice decides the picture: reach past both edges of the block, and cut the
-region twice, once over the whole release and once over the European panel the
+The slice decides the picture. Reach past both edges of the block, and cut the
+region twice: once over the whole release and once over the European panel the
 sweep happened in. r² is a correlation across every sample in the file, so the
 two files give two different triangles.
 
@@ -135,9 +135,9 @@ this window's width comes from.
 
 ## Correlate the variants with PLINK
 
-Two steps per cohort: pick the common variants, then correlate every pair of
-them. The MAF floor is what keeps the table to a size a browser can draw. Every
-pair is a row, so n variants cost n(n-1)/2 of them.
+Pick the common variants per cohort, then correlate every pair of them. The MAF
+floor keeps the table to a size a browser can draw. Every pair is a row, so n
+variants cost n(n-1)/2 of them.
 
 <!-- from: scripts/build_lct_ld.sh -->
 
@@ -265,10 +265,10 @@ Run the clustering two ways:
 The highlight is _LCT_ and _MCM6_. `rs4988235` is an enhancer variant in _MCM6_
 intron 13.
 
-- **Ordering is what makes a block visible.** In file order the matrix is a
-  plaid, because which allele is non-reference varies from site to site.
-  Clustering puts near-identical chromosomes together, and a swept haplotype
-  carries little variation of its own, so it resolves into one slab
+- **Ordering makes a block visible.** In file order the matrix is a plaid,
+  because which allele is non-reference varies from site to site. Clustering
+  puts near-identical chromosomes together, and a swept haplotype carries little
+  variation of its own, so it resolves into one slab
 - **The ClinVar lane marks the causal variant.** `rs4988235` falls below the
   frequency floor, so it is not a column, and the lane places it independently
 - **Narrow that lane or it marks nothing.** It is the hub's ClinVar track

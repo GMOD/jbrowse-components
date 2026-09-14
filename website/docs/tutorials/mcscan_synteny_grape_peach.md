@@ -96,10 +96,11 @@ chr1	33170	35791	VIT_201s0011g00030.1	0	+
 
 Column 1 must use the same reference sequence names as the JBrowse assembly.
 
-Which mismatches are loud and which are silent is in the
-[synteny track guide](/docs/config_guides/synteny_track#gene-ids-are-the-join-in-the-mcscan-adapters).
-The one that bites here is jcvi stripping isoform suffixes unless run with
-`--no_strip_names`, which the [script](#reproduce-it-end-to-end) passes.
+Some mismatches raise an error and others load without one; the
+[synteny track guide](/docs/config_guides/synteny_track#gene-ids-are-the-join-in-the-mcscan-adapters)
+says which. The one that bites here is jcvi stripping isoform suffixes unless
+run with `--no_strip_names`, which the [script](#reproduce-it-end-to-end)
+passes.
 
 ## Producing the data
 
@@ -200,8 +201,8 @@ the full `displays` array:
 }
 ```
 
-A bar says a block is there and which way round it runs; the ribbons say whether
-the genes inside hold their order.
+A bar marks that a block is there and which way round it runs; the ribbons mark
+whether the genes inside hold their order.
 
 ## What an anchor looks like up close
 
@@ -210,8 +211,8 @@ Zoom to one block with both gene tracks on and set to **Show only genes**.
 <Figure caption="One MCScan block on grape chr19 against peach Pp04, both gene tracks set to Show only genes. Each ribbon is one .anchors line drawn across each gene's own extent; the genes between them have no anchor in this run." src="/img/mcscan_synteny/gene_level.png" />
 
 Most genes carry no ribbon, since MCScan anchors only the pairs it could call
-confidently. Zooming further widens the ribbons, since the file says only which
-gene pairs with which.
+confidently. Zooming further widens the ribbons, since the file records only
+which gene pairs with which.
 
 ## The same anchors as a dotplot
 
@@ -219,7 +220,7 @@ Either track also loads in a dotplot (**Add → Dotplot view**), where a gene pa
 is one point and a block a run of them. The axes start in index order;
 **Re-order chromosomes** sorts the vertical axis to follow the horizontal one.
 
-<Video src="/media/synteny/dotplot_reorder.mp4" caption="The axes as they open, in each assembly's own index order, and then re-sorted: the reorder is a dialog off the dotplot header's overflow menu, and it reports how many grape chromosomes it moved and how many it flipped." />
+<Video src="/media/synteny/dotplot_reorder.mp4" caption="The axes as they open, in each assembly's own index order, and then re-sorted. The reorder is a dialog off the dotplot header's overflow menu; it reports how many grape chromosomes it moved and how many it flipped." />
 
 <Figure caption="Peach against grape after Re-order chromosomes, every point one orthologous gene pair from the .anchors file. Each run of points is one MCScan block." src="/img/mcscan_synteny/dotplot.png" />
 
@@ -252,7 +253,7 @@ The track configs [above](#loading-both-tracks) load the result unchanged.
 - `--chr-prefix peach=Pp0` prepends to the refNames, and `--keep-chr-tag` keeps
   MCScanX's tag, stripped by default (`vv1` becomes `1`)
 - `--strand-gff3 peach=peach.gff3.gz` recovers strand from the annotation, which
-  is what draws an `.anchors` pair as inverted
+  draws an `.anchors` pair as inverted
 
 `--fai peach=peach.fa.fai` checks the refNames against the assembly; an unknown
 name draws empty. An anchors score becomes `-log10` of MCScanX's e-value.

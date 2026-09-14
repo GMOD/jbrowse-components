@@ -73,7 +73,7 @@ pinned toward the top of its track. The highlight follows the feature as you pan
 and zoom. Search again to move it, or click "Clear search highlight" in the
 header bar.
 
-<Figure caption="Selecting a feature from the search results pins it to the top of its track and boxes and tints that specific feature, not just the surrounding region." src="/img/search_feature_highlight.png" />
+<Figure caption="Selecting a feature from the search results pins it to the top of its track and boxes and tints that specific feature." src="/img/search_feature_highlight.png" />
 
 When several indexed annotation tracks match the same gene at one place, JBrowse
 navigates straight there, through an open track where there is one. The picker
@@ -172,7 +172,7 @@ The session URL contains:
 - per-track display state, such as an alignments track's soft-clipping and sort
   settings
 
-So a link can carry custom tracks without a JBrowse admin.
+A shared link can therefore carry custom tracks without a JBrowse admin.
 
 ## Track menu
 
@@ -203,8 +203,8 @@ Two things happen to values on the way in, with no configuration:
 
 - **A value that is just a URL becomes a link**, so a GFF3 attribute like
   `url=https://www.uniprot.org/uniprotkb/P12345` is clickable
-- **HTML is rendered rather than escaped**, after a sanitizer. Text that only
-  looks like a tag is left alone, so a VCF `<TRA>` allele still reads as `<TRA>`
+- **HTML renders after passing through a sanitizer.** Text that only looks like
+  a tag is left alone, so a VCF `<TRA>` allele still reads as `<TRA>`
 
 To add, rename or hide fields, see
 [customizing feature details](/docs/config_guides/customizing_feature_details).

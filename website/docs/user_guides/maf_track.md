@@ -172,8 +172,8 @@ sample names a genome the session can open: a sample configured with an
 id is itself an assembly the session already holds, as the strains of a
 [pangenome alignment](/docs/tutorials/pangenome_ecoli#whole-genome-alignment-maf-projection)
 are. If the session does not already hold a configured assembly, JBrowse fetches
-just that one at click time, which is what lets a 26-way or 470-way alignment
-stay navigable without every species' genome being present in the config.
+just that one at click time, so a 26-way or 470-way alignment stays navigable
+without every species' genome being present in the config.
 
 The track menu's **Launch** submenu lists the same entries over the visible
 window, so reaching a species' genome needs no selection.
@@ -219,7 +219,7 @@ reference at, where a stretch it does not reach at all scores zero, and
 hierarchical clustering over those scores gives the row order and the
 dendrogram.
 
-That is the ordering a cohort alignment wants. A file of one species ships no
+A cohort alignment wants exactly this ordering. A file of one species ships no
 guide tree, since which haplotypes group together is a property of the locus, so
 its rows arrive in the order the file names them. Under an active subtree filter
 the run covers the visible rows only, so it resolves the structure inside the

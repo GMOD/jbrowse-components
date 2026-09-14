@@ -76,7 +76,7 @@ python -m jcvi.compara.catalog ortholog --no_strip_names --dbtype prot \
   --align_soft diamond_blastp --no_dotplot human rhesus
 ```
 
-Two silent traps:
+Two traps:
 
 - the alignment file has to be **query = the first species, subject = the
   second**. Reversed, every id is looked up in the wrong BED and the run ends
@@ -150,7 +150,7 @@ colour as it is; `drawCurves` separates stacked neighbours.
 
 The neighbourhood is collinear, so colour is the only thing that varies.
 Adaptive evolution of primate lysozyme is one of the older results in molecular
-evolution, the enzyme having been recruited as a digestive protein in foregut
+evolution. The enzyme was recruited as a digestive protein in foregut
 fermenters.
 
 Clicking the orange link shows a handful of synonymous differences and a Fisher

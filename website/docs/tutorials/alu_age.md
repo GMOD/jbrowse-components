@@ -62,8 +62,7 @@ copy has drifted from that consensus, in tenths of a percent. Copies accumulate
 mutations at about the neutral rate once they land, so a copy's divergence is
 its age, and the subfamily name is a second, coarser reading of the same thing.
 
-Nothing about the file is specific to repeats. What the track below needs from
-any file is:
+What the track below needs from any file, not just repeats, is:
 
 - BED-like rows, bgzipped and tabix-indexed ([quickstart](/docs/quickstart_web)
   covers the prep)
@@ -132,10 +131,10 @@ read back.
 The name and the divergence are two columns, the colour reads one and the height
 the other, and each colour groups by height.
 
-`maxBpPerPx` is the last key, and the next step is what it is for: the mark
-draws only while the view is narrower than that many base pairs per pixel.
-Hovering a bar reads out its value and its lineage, and clicking one opens the
-row.
+`maxBpPerPx` is the last key: the mark draws only while the view is narrower
+than that many base pairs per pixel, and the next section covers what happens
+once it isn't. Hovering a bar reads out its value and its lineage, and clicking
+one opens the row.
 
 ## Zooming out: copies per bin
 

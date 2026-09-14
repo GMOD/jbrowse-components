@@ -8,11 +8,10 @@ guide_category: Tutorials
 tutorial_category: Cancer genomics
 ---
 
-A rearrangement can take several junctions to make, and the genes it brings
-together say nothing about how many. Search a somatic SV callset for chains of
-junctions a single long read could cross, rebuild the derivative allele from the
-reads that span it, and show that reconstruction against the reference as a
-synteny view.
+A rearrangement can take several junctions to make, and which genes it joins
+does not reveal how many. Search a somatic SV callset for chains of junctions a
+single long read could cross, rebuild the derivative allele from the reads that
+span it, and show that reconstruction against the reference as a synteny view.
 
 ## Prerequisites
 
@@ -132,7 +131,7 @@ approves it for the rest of the session.
 
 A breakpoint split view, the right half of the figure above, stacks the loci the
 chain visits and draws the reads that leave one panel and arrive in another. The
-reads already know which loci those are and in what order, so the view is built
+reads already carry which loci those are and in what order, so the view is built
 from them. On the tumor track, **Launch → Reconstruct derivative allele...**
 lists the routes the reads describe; pick one, set **Draw as** to **Breakpoint
 split view** and choose **Replace current view**, and the launching view is
@@ -216,12 +215,12 @@ on read count are ordered by segment count. More than one row means more than
 one allele: reads reaching the anchors from different directions describe
 different routes through the same breakpoints.
 
-The reads cannot vouch for their own routes, so the check comes from outside
-them. COLO829's multi-platform truth set was called on short reads, long reads,
-linked reads and optical maps, and validated by capture sequencing and PCR.
-Loaded as a track beside the pileup, it puts a validated call at every junction
-all three rows cross, so the two rows tied on read count are two alleles through
-one locus.
+The reads alone cannot confirm which route is correct, so the check comes from
+outside them. COLO829's multi-platform truth set was called on short reads, long
+reads, linked reads and optical maps, and validated by capture sequencing and
+PCR. Loaded as a track beside the pileup, it puts a validated call at every
+junction all three rows cross, so the two rows tied on read count are two
+alleles through one locus.
 
 <Figure caption="Top: the candidate list at the chr9 fold-back anchors. Bottom: the two-segment fold-back drawn, two windows of chr9 above with the truth set's validated calls, the allele below. The ribbons leave chr9 at a validated call and cross where the arm turns around." src="/img/cancer_sv/foldback_reconstruction.png" />
 

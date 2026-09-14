@@ -48,8 +48,8 @@ A folder category replaces the whole category with one row showing how many of
 its tracks are on; clicking it opens a faceted selector scoped to that category.
 Users switch any category between folder and list from its context menu ("Show
 as folder" / "Show as list"). Top-level group rows (the config's own tracks, and
-each connection) cannot become folders, since clicking a connection's row is
-what loads it. Plugins replace the folder dialog through
+each connection) cannot become folders, since clicking a connection's row loads
+it. Plugins replace the folder dialog through
 [`TrackSelector-folderDialog`](/docs/developer_guides/extension_points#trackselector-folderdialog).
 
 ## Faceted track selector

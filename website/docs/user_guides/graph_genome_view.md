@@ -68,7 +68,7 @@ To skip indexing entirely, [Route 2](#route-2-a-gfa-file) opens a GFA as a file.
 
 A graph is a set of segments and links, which is all force-directed layout
 needs. Drawing it **beside a linear view** also needs each segment's position on
-a reference, and that is what the formats differ on.
+a reference, and the formats differ on where that position lives.
 
 | Format                                                        | Where positions live                 | Opening a locus                          |
 | ------------------------------------------------------------- | ------------------------------------ | ---------------------------------------- |
@@ -120,9 +120,9 @@ The plain-GFA walk makes four choices worth knowing:
   reaches their segments first. A bare sample (`GRCh38`) is enough where the
   reference is haploid; on a diploid one, write the haplotype (`HG002#1`), or
   the script picks one and says on stderr which.
-- The walk also records **who carries each segment**, as `SM:Z:` in the index,
-  which is the one thing rGFA cannot state. That is what fills `carriedBy` in
-  the node popup on this route.
+- The walk also records **who carries each segment**, as `SM:Z:` in the index —
+  the one thing rGFA cannot state. That value fills `carriedBy` in the node
+  popup on this route.
 - When a path reaches a segment twice, **the first visit wins**: a node draws as
   one tube at one x. The repeat stays visible as depth.
 - A segment the reference never visits is placed on **its own carrier's
@@ -404,8 +404,8 @@ jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'
 
 Hover a node and the reference interval it occupies is highlighted in every
 linear view beside it; hover the linear view and the segment under the cursor
-lights up in the graph. Nothing to configure, and it is what makes a rank>0
-allele locatable at all, since those have no reference coordinates.
+lights up in the graph. This needs no configuration, and it is the only way to
+locate a rank>0 allele at all, since those have no reference coordinates.
 
 The reverse works from any track. A gene gives a coordinate, which is enough:
 rGFA segments do not overlap on a stable sequence, so one backbone segment
@@ -417,8 +417,8 @@ aligns straight through it.
 
 The lane is a projection onto K12's coordinates, so it has a column for every
 base K12 has and none for a base it does not; 65 kb that exists only in CFT073
-has nowhere in it to be drawn. The graph holds both, which is what the node in
-the lower panel is.
+has nowhere in it to be drawn. The graph holds both, and the node in the lower
+panel represents exactly that.
 
 <Figure caption="Hovering CFT073's allele in the graph highlights the reference interval it occupies in the linear view above, across every track there. The ringed node is 65.4 kb carried only by CFT073, and it attaches to K12 across a 2.1 kb band — the interval between the segments the allele leaves and rejoins." src="/img/pangenome/rgfa_hover_sync.png" />
 

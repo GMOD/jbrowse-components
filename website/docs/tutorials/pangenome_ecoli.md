@@ -231,9 +231,9 @@ untangle writes no CIGAR and states its identity in an `id:f:` tag, which a
 synteny track reads on a record with no `de:f:`.
 
 On a near-colinear bacterial pangenome untangle finds few boundaries, so `-e`
-forces one every N bp of the sorted graph, which is what makes the figures below
-readable. The cut is baked into the file, so leave it off on a graph with many
-haplotypes. The
+forces one every N bp of the sorted graph, making the figures below readable.
+The cut is baked into the file, so leave it off on a graph with many haplotypes.
+The
 [Minigraph-Cactus tutorial](/docs/tutorials/pangenome_cactus#all-vs-all-synteny-projection)
 builds the same projection with `halSynteny`.
 
@@ -432,7 +432,7 @@ python3 reroot_maf.py pggb/*.smooth.maf ecoli_pggb.maf K12#1#chr
 ```
 
 An index keys a block on its first row, so a repeat's second copy is only
-queryable once it anchors a block of its own, which is why
+queryable once it anchors a block of its own. That is why
 [`reroot_maf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/reroot_maf.py)
 splits them.
 
@@ -574,11 +574,11 @@ Zoomed out, the track is the pangenome's core/accessory landscape along K12:
   elements
 
 The depth lane is drawn [at the end of this section](#per-strain-presence),
-under the per-strain rows. Zoom into one trough and the gene lane names it,
-which is what the figure below does for the widest.
+under the per-strain rows. Zoom into one trough and the gene lane names it, as
+the figure below does for the widest.
 
-An unrelated isolate's long reads say the same thing without the graph: nanopore
-reads from _E. coli_ E146
+An unrelated isolate's long reads show the same thing without the graph:
+nanopore reads from _E. coli_ E146
 ([ENA DRR193901](https://www.ebi.ac.uk/ena/browser/view/DRR193901)), a clinical
 isolate that is not one of the five, mapped straight onto K12 with
 `minimap2 -ax map-ont`. The pileup links supplementary segments, so a read split
@@ -651,7 +651,7 @@ where `group` is the PanSN path and `pav` the fraction.
 }
 ```
 
-Under the aggregate curve, these rows say which strain each dip is missing.
+Under the aggregate curve, these rows show which strain each dip is missing.
 Across the shaded span K12 carries _ybaL_ through the allantoin operon, one row
 goes white for its full width, and a second goes white over the _rhsD_ Rhs
 element alone.
@@ -969,8 +969,8 @@ one:
 - `view -g` writes GFA
 
 `-E` is the aggressive option; `-c`/`-d` expand by a bounded number of steps or
-bp instead, which is what the view's own **Graph context** setting does when it
-cuts from an index:
+bp instead, the same bound the view's own **Graph context** setting applies when
+it cuts from an index:
 
 ```bash
 in_pggb bash -c "odgi extract -i /data/$og -r K12#1#chr:1004500-1004900 -E -o - \

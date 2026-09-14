@@ -123,8 +123,9 @@ pair. Tick both, under Comparative Genomics:
 
 <Figure src="/img/genomes_basics/multiz_alignment.png" caption="TP53's DNA binding domain at base zoom: one transcript, phyloP 470-way, and the 470-way multiz alignment it was computed from. A base is drawn only where it differs from human." />
 
-Most columns are blank, which is what a positive score is made of. phyloP counts
-substitution events on the tree:
+Most columns are blank, since no species differs from human at those bases, and
+conserved columns give a positive score. phyloP counts substitution events on
+the tree:
 
 - **Under S240**, nearly every species differs from human, but all carry the
   **same** base: one substitution on the human branch, and the score stays above

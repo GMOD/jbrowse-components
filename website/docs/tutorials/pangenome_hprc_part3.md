@@ -109,7 +109,7 @@ The alignment above draws each haplotype on GRCh38's axis. A
 [multi-way synteny track](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
 is the other reading: one lane per haplotype, each in that assembly's own contig
 coordinates and carrying that assembly's own CAT gene models. The graph already
-states what the lanes need. A `.gbz` holds one walk per haplotype, and release
+holds what the lanes need. A `.gbz` holds one walk per haplotype, and release
 2.1 publishes that graph as a **gbz-base database**, the graph in SQLite with
 its tables laid out so a window is a handful of range requests. Every
 graph-derived track on this page reads release **2.1**, so a segment id in the
@@ -185,7 +185,7 @@ the window, and those are the gene models the lanes draw.
 ```
 
 The track opens on the assemblies its `assemblyNames` lists beside hg38, and
-`assemblyNameToPanSN` says which haplotype each one is. **Choose lanes...** on
+`assemblyNameToPanSN` names which haplotype each one is. **Choose lanes...** on
 the track menu lists every haplotype the graph names, grouped by sample. Ticking
 every one draws the whole cohort, and the dialog's reset goes back to the eight.
 
@@ -229,11 +229,11 @@ The session below opens the CFH cluster at chr1:196,640,000-196,900,000:
 }
 ```
 
-`rowOrder` puts every non-carrier above every carrier, which is what makes the
-deletion readable. Every lane sits at a different coordinate on a different
-contig. Between the last non-carrier and the first carrier the ribbon over
-_CFHR3_ and _CFHR1_ narrows to a point, because the carriers' walks skip that
-stretch of GRCh38, and the carriers' own annotations have no model there.
+`rowOrder` puts every non-carrier above every carrier, making the deletion
+readable. Every lane sits at a different coordinate on a different contig.
+Between the last non-carrier and the first carrier the ribbon over _CFHR3_ and
+_CFHR1_ narrows to a point, because the carriers' walks skip that stretch of
+GRCh38, and the carriers' own annotations have no model there.
 
 <Figure caption="The CFH cluster's eight lanes read from the graph at load time, the non-carriers above the carriers, from two hosted files and no offline step. Each lane is one haplotype's walk aligned to hg38 as a CIGAR, and because the eight assemblies are in the session, each draws that haplotype's own CAT genes at its own coordinates over it: a lane whose genes stop where hg38's CFHR3 and CFHR1 are is a haplotype that lacks them." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
 
@@ -262,7 +262,7 @@ lanes...** picks others. The cut carries one W line per haplotype walk, named
 through the companion, and **Sample rows** in the **Layout** dropdown gives each
 haplotype a row.
 
-The same cut force-directed is where the walks say most. A node draws thicker
+The same cut, force-directed, is where the walks show most. A node draws thicker
 the more of the nine walks carry it, so the reference is fat and each
 haplotype's private run of kringle copies is a thin loop. The **Walk** dropdown
 lifts one haplotype out: its route keeps its ink, the rest fades, and a readout
@@ -330,10 +330,10 @@ liftOver is one, rehosted as an indexed PAF:
 ```
 
 Taken at the window above, it opens hg38 over hs1, each panel already at the
-interval the graph states for it. Without such a track the entry stays, greyed
-out, and its tooltip says what is missing.
+interval the graph gives for it. Without such a track the entry stays, greyed
+out, and its tooltip names what is missing.
 
-<Figure caption="The graph's own Launch menu at the CHM13 window, with hg38 and hs1 loaded and the liftOver between them in the session. Above, the hg38 window and the cut in reference-position colors, the CHM13 node ringed. Below, the synteny view the Linear synteny view entry opened: hg38 over hs1, each panel framed on the locus the graph states for it, with the liftOver alignment drawn as pink ribbons between them and the node as one dark bar on hs1." src="/img/pangenome/hprc_synteny_launch.png" />
+<Figure caption="The graph's own Launch menu at the CHM13 window, with hg38 and hs1 loaded and the liftOver between them in the session. Above, the hg38 window and the cut in reference-position colors, the CHM13 node ringed. Below, the synteny view the Linear synteny view entry opened: hg38 over hs1, each panel framed on the locus the graph gives for it, with the liftOver alignment drawn as pink ribbons between them and the node as one dark bar on hs1." src="/img/pangenome/hprc_synteny_launch.png" />
 
 ## Reproduce it end to end
 

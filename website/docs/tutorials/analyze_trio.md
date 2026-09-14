@@ -223,7 +223,7 @@ Read the rows in pairs:
 
 - **Blue rows are the child's paternal chromosome.** Exactly one of them is
   filled at any position, and that is which of the father's two copies the child
-  got there there; every step between the blue rows is a crossover.
+  got there; every step between the blue rows is a crossover.
 - **Red rows work the same way** for the maternal chromosome.
 
 That rule is the figure's own control: two filled blue rows at a position, or

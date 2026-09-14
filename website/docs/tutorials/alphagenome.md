@@ -154,8 +154,8 @@ shared scale** for one track per pick instead.
 
 On that shared axis, _TAL1_ carries predicted transcription in K562 and
 essentially none in GM12878, on the annotated exons. The lane to the right is
-_STIL_, predicted in both lines, which says the flat GM12878 row is a prediction
-rather than a track that failed to load.
+_STIL_, predicted in both lines, which shows the flat GM12878 row is a
+prediction rather than a track that failed to load.
 
 <Figure caption="Predicted polyA plus RNA-seq over TAL1 in K562 and GM12878, both rows on one y-axis. The K562 row carries a block of signal across the annotated exons that the GM12878 row does not." src="/img/alphagenome/expression_two_cell_lines.png" />
 

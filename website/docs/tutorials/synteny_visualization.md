@@ -142,7 +142,7 @@ panels. Features with no value are grey; most genes here carry only a locus tag.
 
 <Figure caption="The click and its result. Left, the Color by attribute dialog on the first strain's gene track with the attribute name set to gene. Right, the same three strains after applying it: a shared symbol holds one color down all three panels." src="/img/sv_synteny/color_by_attribute_steps.png" links="Dialog=sv_synteny/color_by_attribute,Result=sv_synteny/ortholog_colors" />
 
-The dialog writes a display color expression, which is one line of config:
+The dialog writes a display color expression, one line of config:
 
 ```json addtrack
 {

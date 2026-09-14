@@ -6,8 +6,8 @@ description:
 guide_category: Core concepts
 ---
 
-Your plugin runs _inside_ the host JBrowse app, sharing its JavaScript runtime.
-So "where does this import come from?" has two answers:
+Your plugin runs _inside_ the host JBrowse app, sharing its JavaScript runtime,
+so an import resolves one of two ways:
 
 - Re-exports are a fixed set of libraries the host already loaded. Your plugin
   must use the host's copy, not bundle its own.

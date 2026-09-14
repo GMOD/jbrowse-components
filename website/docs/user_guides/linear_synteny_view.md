@@ -22,10 +22,9 @@ in the import form reverses it.
 
 How the two line up base by base is recorded per alignment as a **CIGAR**, a
 compact code where e.g. `120M3I45M` is 120 matching bases, 3 extra bases in one
-genome, then 45 more matches. It is what the ribbon tooltips report and what the
-CIGAR indel modes paint, so an alignment file carrying no CIGARs can only be
-drawn as solid blocks. For which file formats carry one and which adapter reads
-each, see
+genome, then 45 more matches. The ribbon tooltips report it and the CIGAR indel
+modes paint it, so an alignment file carrying no CIGARs can only be drawn as
+solid blocks. For which file formats carry one and which adapter reads each, see
 [the alignment format glossary](/docs/config_guides/synteny_track#alignment-format-glossary).
 
 ## Opening a linear synteny view
@@ -161,9 +160,9 @@ once it settles. Turn following off to keep it where you put it.
 - The same menu offers **Move top panel to the matching region** and **Move
   bottom panel to the matching region**. These leave one panel alone and send
   the other to the sequence that panel's visible window aligns to, resolved
-  through the alignment's CIGAR, which is what to reach for on a chain-scale
-  alignment whose midpoint can be tens of megabases from what is on screen.
-  There are two items because a ribbon sits between two panels
+  through the alignment's CIGAR — reach for this on a chain-scale alignment
+  whose midpoint can be tens of megabases from what is on screen. There are two
+  items because a ribbon sits between two panels
 - The same item is on the right-click menu of a synteny track opened as a track
   _inside_ a panel, as **Move other panel to the matching region** — there the
   panel you clicked in is the one that stays
@@ -260,8 +259,8 @@ takes the whole section with it.
 **Scope** — which alignments make it into the picture at all.
 
 - **Off-screen mates** marks the ones this view cannot draw (below)
-- **Min length** hides ones shorter than it, which is what clears the hairball
-  of short spurious chains at whole-genome zoom
+- **Min length** hides ones shorter than it, clearing the hairball of short
+  spurious chains at whole-genome zoom
 
 Ribbons thinner than a pixel fade by their on-screen width once the view is
 dense enough to tangle, so an unfiltered whole-genome view does not read as a
@@ -326,8 +325,8 @@ that would have to show that contig for the two to be a ribbon.
 
 Each panel of a pair is queried for the alignments anchored in the window it is
 showing, so both edges account for everything on their own side. That second
-query, from the lower panel, is what the setting costs on an indexed
-whole-genome file; turning it off drops both the query and the marks.
+query, from the lower panel, is the setting's cost on an indexed whole-genome
+file; turning it off drops both the query and the marks.
 
 A run too narrow to hold its own name goes unlabelled, which at whole-chromosome
 zoom is most of them. Hover any mark and it names the contig it points at, and

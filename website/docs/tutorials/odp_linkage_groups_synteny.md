@@ -66,8 +66,8 @@ jelly (`BIN`, _Bolinopsis microptera_), amphioxus (`BFL`, _Branchiostoma
 floridae_) and a second sponge (`CLAa`, a cladorhizid). odp compares genomes two
 at a time, so the deposit holds one table per pair. Each is every reciprocal
 best protein hit between the two, and a pair keeps several times the orthologs a
-table requiring a gene in all four genomes at once would, which is what keeps
-the plots dense enough to show a pattern.
+table requiring a gene in all four genomes at once would, which keeps the plots
+dense enough to show a pattern.
 
 A table's row is the gene pair, the group, where each gene sits, and the color:
 
@@ -106,10 +106,10 @@ mRNA.RE14076  Em0019g57a  .    #000000
 
 ## Loading it as a synteny track
 
-`attributeColumns` is what makes the last two columns reachable. Each name in it
-becomes a color-by mode named after the column, so `gene_group` becomes a mode;
-`color` is the palette the file puts beside each label and is never offered as a
-mode of its own.
+`attributeColumns` makes the last two columns reachable. Each name in it becomes
+a color-by mode named after the column, so `gene_group` becomes a mode; `color`
+is the palette the file puts beside each label and is never offered as a mode of
+its own.
 
 ```json addtrack
 {
@@ -138,10 +138,10 @@ six-genome stack at the end.
 
 Open the jellyfish-against-sponge table as a dotplot and pick **gene_group**
 under **Color by value** on the palette button in the view header; the legend
-comes up with it. Then **Re-order chromosomes** on the view menu: it sorts the
+comes up with it. Then **Re-order chromosomes** on the view menu sorts the
 vertical genome's chromosomes by where their orthologs land along the horizontal
-one, which is what turns one block per group into a diagonal. The same view as a
-session, with the sponge's unplaced scaffolds left off its axis:
+one, turning one block per group into a diagonal. The same view as a session,
+with the sponge's unplaced scaffolds left off its axis:
 
 ```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
 {
@@ -168,13 +168,12 @@ session, with the sponge's unplaced scaffolds left off its axis:
 
 <Figure caption="Rhopilema against Ephydatia, every ortholog colored by the BCnS linkage group odp assigned it and the sponge chromosomes sorted against the jellyfish. Each group is one block where a jellyfish chromosome meets a sponge chromosome, and the blocks run down the diagonal. The grey points are the orthologs in no group." src="/img/linkage_groups/alg_dotplot_res_emu.png" />
 
-The blocks are the whole claim. Inside a block the points fill the square: gene
-order has been shuffled thoroughly, while the membership of the chromosome has
-not, and that membership is what a linkage group is.
+The blocks are the whole claim. Inside a block the points fill the square,
+because gene order has been shuffled thoroughly while chromosome membership has
+not. A linkage group is that membership.
 
-Two things in the frame are worth knowing before reading too much into it. The
-column structure is true by construction, since the BCnS groups were defined so
-that each one is a jellyfish chromosome. The row structure is not: the sponge
+The column structure is true by construction, since the BCnS groups were defined
+so that each one is a jellyfish chromosome. The row structure is not: the sponge
 was one of the genomes the groups were built on, but its chromosomes were free
 to disagree, and they largely do not.
 
@@ -190,8 +189,8 @@ vertical genome is the whole change.
 
 The sponge holding the groups whole while the comb jelly holds them loosely is
 the shape of the argument Schultz et al. make for the comb jellies branching off
-before the sponges did, and the outgroup frame is what the other two are read
-against.
+before the sponges did. The other two figures are read against this outgroup
+frame.
 
 ## Six genomes stacked
 
@@ -276,14 +275,14 @@ chromosome that holds most of them:
 | F     | 162 / 162 | 25 / 116   | 20 / 97      |
 | M     | 152 / 152 | 26 / 122   | 22 / 101     |
 
-The sponge column settles the first figure, and says why: the group database was
-built with the sponge in it, so an ortholog it assigns to a group is on that
-group's sponge chromosome by definition. The other two columns are the ones the
-figures are about. In both, the chromosome holding most of a group holds a
-minority of it, and the comb jelly leads _Capsaspora_ by a margin that varies
-from group to group. A group at a time, the comb jelly and the outgroup are hard
-to tell apart; the difference the second and third figures show is a property of
-the table as a whole.
+The sponge column shows every ortholog on its group's chromosome because the
+group database was built with the sponge in it: an ortholog assigned to a group
+is on that group's sponge chromosome by definition. The other two columns are
+what the figures are about. In both, the chromosome holding most of a group
+holds a minority of it, and the comb jelly leads _Capsaspora_ by a margin that
+varies from group to group. A group at a time, the comb jelly and the outgroup
+are hard to tell apart; the difference the second and third figures show is a
+property of the table as a whole.
 
 ## Reproduce it end to end
 

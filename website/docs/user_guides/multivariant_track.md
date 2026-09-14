@@ -83,9 +83,9 @@ simple homozygous-alt call, and uncalled genotypes (`./.`) are left blank.
 
 In **phased** mode (`renderingMode: 'phased'`), each sample is split into one
 row per haplotype and every haplotype cell is colored reference vs alt on its
-own, rather than collapsed to a dosage. This is what makes inherited haplotype
-blocks line up as the contiguous vertical bands in the trio matrix above. Phased
-mode requires phased genotypes (`|`-separated) in the VCF.
+own, rather than collapsed to a dosage, so inherited haplotype blocks line up as
+the contiguous vertical bands in the trio matrix above. Phased mode requires
+phased genotypes (`|`-separated) in the VCF.
 
 You can switch modes from the track menu, or set `renderingMode` in the display
 configuration.

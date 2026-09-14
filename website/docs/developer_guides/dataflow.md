@@ -53,14 +53,14 @@ Everything inside the box runs off the UI thread, in a pool that leaves one core
 for the UI and is capped at five —
 [`workerCount`](/docs/config/rpcoptions#slot-workercount) overrides that. A
 track's queries are **sticky** to one worker, so a second query from the same
-track queues behind the first. That stickiness is what makes the inflate pool
-inside the worker worth having, and it is also a ceiling: one track's parse is
+track queues behind the first. That stickiness makes the inflate pool inside the
+worker worth having, and it is also a ceiling: one track's parse is
 single-threaded however many cores the machine has.
 
 The main thread holds the result, uploads it, and draws it.
 
-**Which hosts spawn that pool is the host's decision.** jbrowse-web and desktop
-always do. An embedded component runs the same pool once the page hands it a
+**Spawning that pool is the host's decision.** jbrowse-web and desktop always
+do. An embedded component runs the same pool once the page hands it a
 `makeWorkerInstance` factory; without one it runs every step in the box on the
 UI thread, so a deep BAM stalls whatever else the page is drawing. Constructing
 a worker is bundler-specific, so the factory is the host's to write — the
@@ -130,9 +130,9 @@ returns re-uploads, and everything else is a frame.
 
 A display with no working GPU backend takes the dashed branch and draws the same
 data with a Canvas2D function. [](/docs/developer_guides/svg_export) runs that
-same function against a context that serializes each call, which is what stops
-on-screen and exported pixels drifting apart. Every canvas-drawing display
-supplies one, and the shader path is the optional accelerator on top.
+same function against a context that serializes each call, so on-screen and
+exported pixels never drift apart. Every canvas-drawing display supplies one,
+and the shader path is the optional accelerator on top.
 
 ## Where the parsers sit
 
@@ -146,5 +146,5 @@ ones each draw this segment with the same legend:
 - [`@gmod/cram`](https://github.com/GMOD/cram-js/blob/main/docs/dataflow.md) —
   CRAM, whose unit is a slice
 
-What JBrowse adds on top of them is the rest of this figure: the decision not to
-fetch, the reduction to columns, and the boundary they cross.
+JBrowse adds the rest of this figure on top of them: the decision not to fetch,
+the reduction to columns, and the boundary they cross.

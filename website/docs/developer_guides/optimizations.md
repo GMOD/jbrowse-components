@@ -306,8 +306,8 @@ million. They are also the buffers the graphics card takes, so the main thread
 uploads them without reading them. The decoder writes the arrays the shader
 reads, and no step in between converts between representations.
 
-That is the largest single win here. The MAF worker is where it was measured:
-sending typed arrays instead of objects took its `postMessage` from 3.3 s to
+Sending typed arrays instead of objects is the largest single win here. The MAF
+worker is where it was measured: doing so took its `postMessage` from 3.3 s to
 0.03 ms on one region.
 
 ## The frame clock

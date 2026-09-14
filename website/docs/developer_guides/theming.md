@@ -104,12 +104,11 @@ methylation colors are the worked case: the RPC worker packs them to ABGR per
 modified base and returns them inside its vertex data, and the legend on the
 main thread labels those same pixels.
 
-Where the color is applied is what decides which mechanism it uses.
-`modificationFwd` and `modificationRev` sit right beside these and are palette
-members, because the renderer sets them as shader uniforms, so a theme switch
-recomputes a getter and redraws. A color the worker has already baked into
-vertex data would need a theme switch to invalidate the alignments fetch, so it
-is fixed instead.
+Where the color is applied decides which mechanism it uses. `modificationFwd`
+and `modificationRev` sit right beside these and are palette members, because
+the renderer sets them as shader uniforms, so a theme switch recomputes a getter
+and redraws. A color the worker has already baked into vertex data would need a
+theme switch to invalidate the alignments fetch, so it is fixed instead.
 
 Import them from `@jbrowse/core/ui/palette`, which has no toolkit in its module
 graph, or from `@jbrowse/core/ui/theme`, which re-exports the same values

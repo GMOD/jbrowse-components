@@ -43,8 +43,8 @@ windows, every cache still well under its own 1 GB ceiling throughout:
 <!-- END GENERATED MEASUREMENT cache-budget-retention-climb -->
 
 The idle timeouts reclaim what has gone quiet, and nothing is quiet while the
-reader browses. So it is **one `SharedBudget` per JS context** — one per RPC
-worker plus one on the main thread.
+reader browses. Each JS context therefore gets **one `SharedBudget`** — one per
+RPC worker plus one on the main thread.
 
 ### Splitting a budget by track count
 
@@ -66,9 +66,10 @@ all: the divisor makes each share too small to hold one working set. A shared
 budget yields only what is globally least-recently-used, so idle tracks hand
 their space to the one being panned.
 
-One budget, because `SharedBudget.total` sums over its members, so they must all
-weigh the same unit — cram weighs a decoded slice's byte length, where it used
-to weigh a record count that could not be summed with bam and tabix's bytes.
+There is one budget because `SharedBudget.total` sums over its members, so they
+must all weigh the same unit — cram weighs a decoded slice's byte length, where
+it used to weigh a record count that could not be summed with bam and tabix's
+bytes.
 
 ## Unbounded retention
 

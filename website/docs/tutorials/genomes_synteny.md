@@ -83,8 +83,7 @@ header:
   inside each block as see-through gaps
 
 The palette button in the same header sets what ribbons are colored by.
-**Strand** paints each block by its orientation, and is what the figures below
-use.
+**Strand** paints each block by its orientation; the figures below use it.
 
 <Figure src="/img/genomes_synteny/ribbon_settings.png" links="As it opens=genomes_synteny/ribbons_default,Curved + transparent indels=genomes_synteny/ribbons_curved" caption="The same TNNT3 comparison before and after both settings, with the menu that holds them open on top. Top: straight ribbons with colored indels. Bottom: curved ribbons with transparent indels." />
 

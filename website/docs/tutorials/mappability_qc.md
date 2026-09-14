@@ -59,10 +59,10 @@ Genomes high-coverage short-read CRAM and its ONT long-read release
 
 _SMN1_ and _SMN2_ sit about 900 kb apart on chromosome 5 and are roughly 99.9%
 identical across their ~28 kb. Which of the two a read came from is the
-clinically interesting question, since it is the copy number of _SMN1_ that
-spinal muscular atrophy turns on, and it is also the question a 150 bp read
-cannot answer: the same sequence exists twice, so an aligner given a read from
-either copy has two equally good places to put it.
+clinically interesting question, since spinal muscular atrophy turns on the copy
+number of _SMN1_. A 150 bp read cannot answer it: the same sequence exists
+twice, so an aligner given a read from either copy has two equally good places
+to put it.
 
 An aligner reports that as MAPQ 0. The read is still aligned and still drawn
 where it aligned; MAPQ is `-10 log10 Pr{mapping position is wrong}`
@@ -101,12 +101,12 @@ tabix https://jbrowse.org/ucsc/hg38/liftOver/hg38ToHs1.over.pif.gz \
 Several of the chains it returns are long, they overlap each other on both
 sides, and some of them run backwards.
 
-<Figure src="/img/qc/smn_vs_t2t.png" caption="GRCh38 above, T2T-CHM13 below, each framed on its own SMN2-to-SMN1 span, ribbons from UCSC's liftOver chains and colored by strand. Three chains cross rather than stack." links="Open this view=qc/smn_vs_t2t" />
+<Figure src="/img/qc/smn_vs_t2t.png" caption="GRCh38 above, T2T-CHM13 below, each framed on its own SMN2-to-SMN1 span, ribbons from UCSC's liftOver chains and colored by strand. Three chains cross each other." links="Open this view=qc/smn_vs_t2t" />
 
 The gene order is the same in both assemblies (_SMN2_ first, then _SMN1_), so
 this is two copies similar enough that a whole-genome chainer can join either
-one to either one, which is what the Umap and MAPQ lanes below say per base. The
-array is a different length in the two assemblies, the genes sitting closer
+one to either one; the Umap and MAPQ lanes below show the same thing per base.
+The array is a different length in the two assemblies, the genes sitting closer
 together in CHM13.
 
 The 1000 Genomes ONT release, the same project as the long-read SV callset in
@@ -126,7 +126,7 @@ references the columns barely move.
 
 ## What the lanes are
 
-<Figure src="/img/qc/smn1_evidence.png" caption="The SMN cassette, holding SERF1A, SMN1 and NAIP, with the same four lanes and one read per row. Almost every read is red: mapped where it is drawn, and fitting somewhere else just as well." links="Open this view=qc/smn1_evidence" />
+<Figure src="/img/qc/smn1_evidence.png" caption="The SMN cassette, holding SERF1A, SMN1 and NAIP, with the same four lanes and one read per row. Almost every read is red, mapped where it is drawn and fitting somewhere else just as well." links="Open this view=qc/smn1_evidence" />
 
 The lanes are independent of each other:
 
@@ -135,7 +135,7 @@ The lanes are independent of each other:
   the genome. Positions where no 100-mer is unique are absent from the file
   rather than stored as zero, so the lane goes blank rather than to the floor.
   Most of the genome scores near the top of its range, so a blank stretch is
-  unusual. How it summarizes decides whether it survives a wide window: the
+  unusual. How it summarizes decides whether it survives a wide window. The
   default **Score → Summary score mode → Whiskers** draws each pixel's min and
   max, so a bin touching one unique position paints full height, while
   **Minimum** takes the worst position in the bin and sits on the floor across
@@ -163,20 +163,20 @@ high-coverage CRAM, added to the session; the figure's link opens both together.
 
 `scan_mappability_qc.sh` counts the reads in equal windows over _SMN1_ and over
 the right-hand end of the frame, from the same library, and they come back at
-the same depth: without a MAPQ filter a coverage track draws flat across both.
+the same depth. Without a MAPQ filter a coverage track draws flat across both.
 What separates them is the share of those reads sitting at MAPQ 0, which is most
 of them at _SMN1_ and almost none at the control.
 
-The gnomAD lane is what a MAPQ filter does to a depth track, in a different set
-of samples. It drops to a fraction of the control's depth over _SMN1_, because
-MAPQ 0 reads were dropped before the average was taken.
+The gnomAD lane shows what a MAPQ filter does to a depth track, in a different
+set of samples. It drops to a fraction of the control's depth over _SMN1_,
+because MAPQ 0 reads were dropped before the average was taken.
 
 ## SV calls over the block
 
 The long-read lane in the wide figure is empty across the block. Counting over
 the flagged block and an equal-width window on either side of it,
-`scan_mappability_qc.sh` finds the callset nearly silent inside and populated on
-both sides, where the older DGV catalogue carries records throughout.
+`scan_mappability_qc.sh` finds few calls in the callset inside the block and
+many on both sides, where the older DGV catalogue carries records throughout.
 
 Widen the same count to the whole chromosome and both catalogues put a larger
 share of their calls inside the flagged regions than those regions' share of

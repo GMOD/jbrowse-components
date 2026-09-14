@@ -125,7 +125,7 @@ or the variability curve first and cut the tier around it.[^max-region-bp]
 
 ## The allele inventory
 
-The bubbles say where the graph varies. A third hosted file says what the
+The bubbles report where the graph varies. A third hosted file reports what the
 variation is: one row per allele the graph holds, anchored on GRCh38 and derived
 from the two indexes
 [part 1 loads](/docs/tutorials/pangenome_hprc#load-the-graph).
@@ -143,11 +143,11 @@ from the two indexes
 }
 ```
 
-The `AlignmentsTrack` over a BED is what draws the sizes. Each row carries a
-`CIGAR` against the reference span it replaces (`2062M63348I`), and the
-alignments display draws whatever has one, so the alleles pack into rows and
-each insertion draws at its real magnitude. At the CFH cluster on chr1 one of
-those rows is the 84,684 bp deletion between _CFHR3_ and _CFHR1_, which part 1
+An `AlignmentsTrack` over a BED draws the sizes. Each row carries a `CIGAR`
+against the reference span it replaces (`2062M63348I`), and the alignments
+display draws whatever has one, so the alleles pack into rows and each insertion
+draws at its real magnitude. At the CFH cluster on chr1 one of those rows is the
+84,684 bp deletion between _CFHR3_ and _CFHR1_, which part 1
 [draws on the same coordinates as a graph edge](/docs/tutorials/pangenome_hprc#insertions-deletions-and-their-sizes).
 
 The whole graph holds a few hundred thousand alleles, so a wide window is dense.
@@ -254,14 +254,14 @@ view: the C4 window is a couple of seconds over HTTP. It carries 231 sample
 columns, CHM13 not being among them, so phased mode draws 462 rows and `AN` tops
 out there too.
 
-`AT` is what this file adds: it states each allele as the **traversal** it takes
-through the graph, the same statement the `AT` in a pggb VCF makes, which the
-wave file drops (`bcftools annotate -x INFO/AT` is in its own header). The
+This file adds `AT`: it records each allele as the **traversal** it takes
+through the graph, the same field a pggb VCF's `AT` carries, which the wave file
+drops (`bcftools annotate -x INFO/AT` is in its own header). The
 [same `LV==0` filter](#the-variant-callset) cuts this lane to top-level sites,
 the tier the [bubble track](#the-bubble-track) holds, and a record matches a
 bubble by interval.[^integer-nodes]
 
-With this lane loaded the two readings sit over one coordinate and say
+With this lane loaded the two readings sit over one coordinate and show
 different, compatible things: the [allele inventory](#the-allele-inventory)
 gives the haplotype the graph credits an allele to, and a genotype column here
 gives the haplotypes that walk it.
@@ -272,8 +272,9 @@ The graph and the callset are the same object at two resolutions. minigraph
 records structural variation (roughly >50 bp) and collapses everything smaller,
 so SNPs are absent from the graph even though every one is in the VCF. Filter
 the callset to that same tier and the two describe the same events from opposite
-ends. The graph states an allele and its length, and collapsing is what let it
-be found at all. The callset never lost the samples, so it states whose.
+ends. The graph records an allele and its length, and collapsing the smaller
+variation made it findable. The callset never lost the samples, so it records
+whose.
 
 What lines up is the event: mark an interval in the linear view and it crosses
 the genes, the segments lane and the genotype matrix in one column, and the

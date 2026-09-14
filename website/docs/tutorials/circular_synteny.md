@@ -76,8 +76,8 @@ of thousands of short ones, most of them repeats and gene copies, and the circle
 draws every row it is given. So the chain becomes a PAF, the PAF is cut to the
 rows of 100 kb and over, and those rows are indexed as a PIF without their
 CIGARs: a ribbon is drawn between a row's two spans and never reads the
-alignment inside, and dropping column 13 onward is what keeps the file small
-enough to fetch whole.
+alignment inside, so dropping column 13 onward keeps the file small enough to
+fetch whole.
 
 <!-- from: scripts/build_circular_synteny.sh -->
 
@@ -116,9 +116,9 @@ The circular view's `assembly` takes a list, and each assembly lays its
 chromosomes out in turn: hg38 takes the first arc of the circle and mm39 the
 next, and a ribbon crosses between them. `displayedRegionNames` is resolved
 against each assembly separately, so one list of chromosome names keeps both
-genomes' unplaced contigs off the circle. `autoDiagonalize` is what makes the
-result readable, and the next section says what it does. The import form opens a
-single assembly, so a two-assembly circle is written as a session:
+genomes' unplaced contigs off the circle. `autoDiagonalize` makes the result
+readable; the next section explains how. The import form opens a single
+assembly, so a two-assembly circle is written as a session:
 
 ```json session config=https://jbrowse.org/demos/circular_synteny/config.json
 {
@@ -198,7 +198,7 @@ with nothing joining either X to an autosome.
 The chain rows shorter than the cut are where the X does touch the autosomes:
 the full liftOver PIF holds a few hundred of them between human chrX and mouse
 autosomes, each a repeat or a retrocopy a few hundred bases long, and the cut at
-100 kb is what keeps them off the circle.
+100 kb keeps them off the circle.
 
 ## Gene density as a ring
 

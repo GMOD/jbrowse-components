@@ -123,10 +123,10 @@ record, at chr17:36,108,706-36,155,499 with three symbolic alleles (`<CN2>`,
 widest range, and between 36,155,499 and 36,461,232 the GRCh38 release has no
 copy-number record.
 
-A VCF record is one interval with fixed breakpoints and a few symbolic alleles,
-which nested multiallelic copy number is not. Depth in turn carries no genotype,
-allele frequency or phasing. Where the variation fits the representation, they
-agree:
+A VCF record is one interval with fixed breakpoints and a few symbolic alleles;
+nested multiallelic copy number does not fit that shape. Depth carries no
+genotype, allele frequency or phasing either. Where the variation fits the
+representation, they agree:
 
 <Figure caption="UGT2B17 on chr4, a biallelic deletion: depth is flat at two, one or zero copies with the same breakpoints in every carrier, and the SV map calls it as a CN0 deletion. Same track settings as the CCL3L1 figure." src="/img/cnv1000g/ugt2b17_biallelic.png" />
 
@@ -156,11 +156,11 @@ Against the hosted files, at a median range request of 25 ms:
 | bytes                                     | 48.39 MB     | 0.22 MB    |
 | wall clock                                | 24.5 s       | 0.2 s      |
 
-Six reads per BigWig, against two metadata reads plus one chunk of 2504 samples
-by 256 bins. Every BigWig needs a few dependent reads to find where a region's
-values live, so the cost is a round trip times the number of files. One array of
-samples by bins, where a single read covers every sample, answers in a couple of
-requests.
+Each BigWig takes six reads; the Zarr store takes two metadata reads plus one
+chunk of 2504 samples by 256 bins. Every BigWig needs a few dependent reads to
+find where a region's values live, so the cost is a round trip times the number
+of files. The Zarr store is one array of samples by bins, so a single read
+covers every sample and the window loads in a couple of requests.
 
 [Zarr](https://zarr.dev/) v3 is that format and needs no tile server:
 [zarrita.js](https://github.com/manzt/zarrita.js) reads chunks off static
@@ -204,9 +204,9 @@ hosted (see [configuring plugins](/docs/config_guides/plugins)):
 }
 ```
 
-The adapter config is the store's location and nothing else: the sample list,
-bin size and resolution levels are attributes of the store. A relative `uri`
-resolves against the config that holds it.
+The adapter config gives only the store's location; the sample list, bin size
+and resolution levels are attributes of the store. A relative `uri` resolves
+against the config that holds it.
 
 <Figure caption="All 2504 individuals of the 1000 Genomes panel, clustered, from a single Zarr store. Red is a gain over the diploid baseline, blue a loss, white two copies: the CCL3L1/CCL4L1 block stands in flat diploid on both sides of it." src="/img/cnv1000g/zarr_cohort.png" />
 

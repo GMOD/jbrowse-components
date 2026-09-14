@@ -93,7 +93,7 @@ about two minutes before it answers with a timeout while the app carries on
 working, and the alignment is longer than that. An agent that puts the aligner
 in the background and polls it handles this; one that waits for it inside a
 single call reports a failure that did not happen. The phrase "in the
-background" in the request above is what buys that.
+background" in the request above tells the agent to do that.
 
 It is worth having the alignment finish before anything opens. Two genomes side
 by side with nothing between them look like the finished comparison, and an
@@ -143,8 +143,8 @@ Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX.
 ```
 
 The alias names work because the merged config kept each assembly's chromAlias
-file. An agent that quantifies what restricting the axes drops, rather than just
-doing it, is worth more than one that does not.
+file. Ask it to quantify what restricting the axes drops, not just apply the
+change.
 
 ## Ask where they disagree
 
@@ -153,7 +153,7 @@ Where do the two genomes run in opposite directions? Answer from the
 alignment file, not from the dotplot, and show me the numbers.
 ```
 
-The last clause is the one that matters. A dotplot shows that two genomes are
+The last clause avoids a real failure: a dotplot shows that two genomes are
 mostly colinear, but a reverse-strand block a few hundred kilobases wide is a
 few pixels at whole-genome zoom, and an agent asked to describe a picture will
 describe it. The same information is in the PAF as numbers. Aligned bases per
@@ -222,7 +222,7 @@ band, and the genes on the two rows run in opposite directions through it.
 
 ## What you had to tell it
 
-Three sentences, and each one is a failure that is quiet rather than loud:
+Three sentences, and each heads off a failure with no error message:
 
 - **Start long work in the background, and let it finish before opening
   anything.** Otherwise a tool call times out over an aligner that is fine, and
@@ -232,7 +232,7 @@ Three sentences, and each one is a failure that is quiet rather than loud:
 - **Answer from the file, not the picture.** Otherwise you get a description of
   a dotplot, which cannot resolve the thing you asked about.
 
-Two more are worth knowing because the agent hits them on its own. Ask it to
+Two more come up because the agent runs into them unprompted. Ask it to
 screenshot and read the image back after anything it builds: a wrong track id,
 an empty region and a dropped setting all render as a plausible browser with
 something missing. And ask it to say the numbers before it navigates, so what

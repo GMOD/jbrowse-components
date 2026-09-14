@@ -91,8 +91,8 @@ adapter takes any two columns and never consults column 0, so either shape
 loads.
 
 - **jcvi MCScan tables are anchored.** A peach-cacao ortholog with no grape
-  counterpart has no row, so peach against cacao is what their shared grape
-  genes imply. [Direct vs transitive pairs](#direct-vs-transitive-pairs)
+  counterpart has no row, so any peach-cacao link runs through their shared
+  grape genes. [Direct vs transitive pairs](#direct-vs-transitive-pairs)
   measures that.
 - **OrthoFinder infers each orthogroup across all genomes at once**, so every
   pair of columns rests on the same inference.
@@ -152,10 +152,10 @@ for sp in grape peach cacao; do
 done
 ```
 
-Both sides key on the mRNA's GFF3 `ID`: gffread names each CDS after it, and
-`--key=ID` writes it into BED column 4. For a key it cannot resolve jcvi
-generates `mrna_494685`, which joins to nothing, and that is what
-`--key=transcript_id` and `--key=Name` produce on an NCBI annotation.
+Both sides key on the mRNA's GFF3 `ID`. gffread names each CDS after it, and
+`--key=ID` writes it into BED column 4. For a key it cannot resolve, jcvi
+generates `mrna_494685`, which joins to nothing; `--key=transcript_id` and
+`--key=Name` produce that same unjoinable id on an NCBI annotation.
 
 Then catalog orthologs against the reference, MCScan each pair, and join:
 
@@ -266,7 +266,7 @@ python3 compara_to_blocks.py Compara.116.protein_default.homologies.tsv.gz \
 
 `attributeColumns` can name `identity`, `homology_identity` and `goc_score` the
 way the scored table above names `score`. A partner species the export lacks
-writes no table and says nothing, so check each `--species` name against the
+writes no table, with no error, so check each `--species` name against the
 file's `homology_species` column. [](/docs/tutorials/homoeolog_synteny) uses
 this route for one panel.
 
@@ -417,7 +417,7 @@ draws every mate at once:
 
 ## Each genome in its own coordinates
 
-On grape's axis a lane reads as presence and absence and cannot say where in
+On grape's axis a lane reads as presence and absence and does not show where in
 peach those genes sit. **Display types → Multi-way synteny display** redraws the
 lanes in each genome's own coordinates:
 
@@ -475,8 +475,8 @@ Each lane has its own scale, so each lane states it:
 - **Left**: where the lane starts, with `[rev]` where its gene order runs
   against grape's
 - **Right**: the lane's span, and its multiple of grape's span where that is not
-  one. Spans snap to a short ladder of multiples, so a pan rarely moves a lane's
-  content
+  one. Spans snap to one of a few fixed multiples, so a pan rarely moves a
+  lane's content
 - **Ticks** fall at one interval shared by every mate lane. A lane zoomed too
   far out for ticks draws none
 - **The view's gridlines stop at the grape lane**, the only lane they are true

@@ -11,9 +11,10 @@ tutorial_category: Synteny & comparative genomics
 We look at one human locus across seven other primates at once. NCBI gives an
 orthologous gene the same symbol in every species it annotates, so an ortholog
 table is a join on the gene name, built from eight GFF3 files in seconds. Each
-primate then becomes a lane under the human view, in its own coordinates,
-carrying its own gene models. The join reaches exactly as far as the naming
-does, and a gene family whose copies carry placeholder names is where it stops.
+primate then becomes a lane under the human view, laid out in that genome's own
+coordinates with its own gene models annotated on it. The join reaches exactly
+as far as the naming does, and a gene family whose copies carry placeholder
+names is where it stops.
 
 ## Prerequisites
 
@@ -98,8 +99,8 @@ gets a row per copy, which the
 [OrthoFinder page](/docs/tutorials/orthofinder_synteny#what-to-do-with-a-duplicated-gene)
 draws as a ribbon per copy over maize's whole-genome duplication. Little of that
 reaches these eight: RefSeq gives a duplicated primate gene either its own
-lettered symbol, _AMY1A_ against _AMY1B_, or a `LOC` placeholder. What it does
-reach is the pseudoautosomal genes, annotated on both X and Y, so each Y copy
+lettered symbol, _AMY1A_ against _AMY1B_, or a `LOC` placeholder. The
+pseudoautosomal genes are the exception: annotated on both X and Y, each Y copy
 gets a row of its own. The helper prints how much of each column it filled; for
 these eight the lanes come back nearly full, because the annotations share one
 naming pipeline.
@@ -251,12 +252,12 @@ and a session or a config authors the same thing as `rowOrder`.
 <Figure caption="The TP53 neighbourhood on human chr17 over seven primate lanes from one gene-symbol ortholog track, each lane drawing its own RefSeq gene models on its own chromosome. Every lane keeps the block in order; the siamang lane reads it backwards, so its header says [rev] and its ribbons are the reversed-strand ones, drawn straight because the lane is mirrored." src="/img/multiway_synteny/primate_tp53_lanes.png" />
 
 Zoomed out to four megabases the same track reads as a synteny painting, and
-color is what separates the two things it draws. A bundle painted as reversed is
-a block that lane reads backwards from the lane above it, whether the mirroring
-left it drawn straight or crossed: one block runs down the middle of the frame
-with same-orientation flanks on either side of it, and one pair of lanes crosses
-near the right-hand edge. The headers carry the other fact: every lane sits at
-its own offset and its own scale, and a lane whose header names a multiple is
+color separates the two things it draws. A bundle painted as reversed is a block
+that lane reads backwards from the lane above it, whether the mirroring left it
+drawn straight or crossed: one block runs down the middle of the frame with
+same-orientation flanks on either side of it, and one pair of lanes crosses near
+the right-hand edge. The headers carry the other fact: every lane sits at its
+own offset and its own scale, and a lane whose header names a multiple is
 holding the same genes over more sequence.
 
 <Figure caption="Four megabases of human chr17 over the seven primate lanes, ribbons colored by strand. Blue is a block read backwards from the lane above: one runs down the middle of the frame between same-orientation flanks, and the two bottom lanes cross where a block flips between them." src="/img/multiway_synteny/primate_chr17_inversions.png" />
@@ -280,9 +281,9 @@ one holding more of the window's genes and names the other in its header, and
 The join is exactly as good as the naming. The salivary amylase cluster on human
 chr1 is a run of near-identical copies whose human names are lettered (_AMY1A_,
 _AMY1B_, _AMY1C_), while the other primates' copies were left as placeholder
-`LOC` ids, so most of them have no row in the table. Every lane still draws its
-own copies from its own annotation, and the ribbons stop where the naming does.
-For a locus like this the table wants a real homology call, which is what the
+`LOC` ids, so most of them have no row in the table. Every lane still draws the
+gene copies annotated in that genome, and the ribbons stop where the naming
+does. A locus like this needs a real homology call, such as the one the
 [OrthoFinder page](/docs/tutorials/orthofinder_synteny) builds, or an alignment.
 
 ## Reproduce it end to end

@@ -87,9 +87,9 @@ Every drawer action is on the session, so they read
 
 The `init` prop accepts two sets of keys. `InitState` keys need resolving on
 load (a locstring has to become regions, a track id has to become an open
-track), which is why they live in a one-shot blob. `LinearGenomeViewLaunchProps`
-are plain view props forwarded straight onto the snapshot, so they round-trip on
-save like any other setting:
+track), so they live in a one-shot blob. `LinearGenomeViewLaunchProps` are plain
+view props forwarded straight onto the snapshot, so they round-trip on save like
+any other setting:
 
 <!-- include: plugins/linear-genome-view/src/LinearGenomeView/types.ts#initState -->
 

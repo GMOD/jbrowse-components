@@ -141,7 +141,7 @@ MSA. The dialog opens on its **Orthologs (fast)** tab, and three fields matter:
 - **Choose isoform** picks which transcript becomes the query row, the one the
   genome view stays linked to
 
-**MSA Algorithm** is what EBI is asked to run, Clustal Omega by default, and it
+**MSA Algorithm** sets which aligner EBI runs, Clustal Omega by default, and it
 is where the wait is. The cost scales with the row count.
 
 NCBI publishes one ortholog gene per species for most annotated genes. A gene
@@ -223,12 +223,12 @@ the same projection of the rest of the record.
 
 ### Trying other genes
 
-The same click-path works on any gene whose symbol NCBI recognises. What changes
-is how far down the tree the panel reaches, read off the tree on the left. Every
-_NLRP1_ ortholog NCBI has is a mammal, so the panel stops at mammals however
-high **Rows to align** is set, while _CFTR_ reaches birds, amphibians and fish.
-Genes annotated with an Ensembl identifier and no symbol fall through to the
-BLAST tab.
+The same click-path works on any gene whose symbol NCBI recognises, though how
+far down the tree the panel reaches varies by gene, read off the tree on the
+left. Every _NLRP1_ ortholog NCBI has is a mammal, so the panel stops at mammals
+however high **Rows to align** is set, while _CFTR_ reaches birds, amphibians
+and fish. Genes annotated with an Ensembl identifier and no symbol fall through
+to the BLAST tab.
 
 ## Where each MSA comes from
 

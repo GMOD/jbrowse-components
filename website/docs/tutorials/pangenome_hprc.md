@@ -173,10 +173,10 @@ way the C4 figure [above](#the-route-end-to-end) is.
 
 Each segment is drawn at the position its tags give, so the GRCh38 backbone
 tiles the reference. Both files are ours, and the first is one command over any
-rGFA: `gfa2bed -m` reads the `SN`/`SO`/`SR` tags, which is what puts each
-segment at a reference coordinate. Every segment in `sv.gfa`, the minigraph
-stage of the Minigraph-Cactus build, carries those tags, so JBrowse opens any
-locus in it with no extraction step.
+rGFA: `gfa2bed -m` reads the `SN`/`SO`/`SR` tags and puts each segment at a
+reference coordinate. Every segment in `sv.gfa`, the minigraph stage of the
+Minigraph-Cactus build, carries those tags, so JBrowse opens any locus in it
+with no extraction step.
 
 <!-- from: scripts/build_rgfa_tabix.sh -->
 
@@ -186,9 +186,10 @@ gfatools gfa2bed -m your-graph.gfa.gz | sort -k1,1 -k2,2n | bgzip > your-graph.s
 tabix -f -p bed your-graph.segs.bed.gz
 ```
 
-The links index comes from the same script's second pass over the L-lines.
+The links index comes from the same script's second pass over the L-lines. We
+ran
 [`build_rgfa_tabix.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_rgfa_tabix.sh)
-is what we ran on HPRC's `sv.gfa.gz`, and
+on HPRC's `sv.gfa.gz`, and
 [Preparing your own graph](/docs/tutorials/pangenome_prepare_graph) walks it.
 The base-level `gfa.gz` beside `sv.gfa` keeps positions in its path lines
 instead, and
@@ -207,8 +208,8 @@ The graph draws a window at a time, and there are three ways to pick one:
 - **Right-click one segment** to cut the graph around that segment.
 
 Each launch makes a pane that holds the window it was cut from while the linear
-view moves on. Around a hundred kilobases is what the layout draws legibly at
-segment resolution, and the view refuses a cut past 5 Mb;
+view moves on. The layout draws legibly at segment resolution up to around a
+hundred kilobases, and the view refuses a cut past 5 Mb;
 [the bubble tier](/docs/tutorials/pangenome_hprc_part2#a-whole-chromosome-as-a-graph)
 draws a wider span. The C4 figure [above](#the-route-end-to-end) is one such
 cut.
@@ -289,7 +290,7 @@ until the backbone chain is in frame, so the tangle sits between flanks that
 read as a plain chain. The amylase locus is one: cut
 `chr1:103,500,000-103,850,000` rather than the bubble alone.
 
-The graph's own bubble index says what that window holds, and tabix reads it
+The graph's own bubble index reports what that window holds, and tabix reads it
 over HTTP. The bubble spanning _AMY1A_ and _AMY1B_ is the first row:
 
 ```bash
@@ -328,8 +329,8 @@ states each segment's source sequence (`SN`) and offset (`SO`):
 
 Either way the node's haplotype is named, in the tooltip and in the details
 panel a left-click opens. The panel calls it `contributingAssembly`, the first
-assembly to contribute the segment, and who carries that sequence is the
-callset's to say:
+assembly to contribute the segment; the callset, not this panel, records who
+else carries that sequence:
 [part 2](/docs/tutorials/pangenome_hprc_part2#carriage-at-the-graphs-own-granularity)
 reads one genotype per haplotype at the site under the node you clicked.
 
@@ -399,7 +400,7 @@ tabix -p gff hprc_mhc_NA20809.2.genes.gff3.gz
 ```
 
 The segments track draws on the haplotype too once `assemblyNames` lists it and
-`assemblyNameToPanSN` says which haplotype the name means. That entry is the
+`assemblyNameToPanSN` names which haplotype the entry means. That entry is the
 whole of the join: a graph cut from the track reads the same map to open a node
 credited to `NA20809#2` on `NA20809.2`, so the assembly can carry any name the
 session likes. `hg38` stays first, because a graph is cut on the first assembly

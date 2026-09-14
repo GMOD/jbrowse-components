@@ -67,7 +67,7 @@ adds:
   Rows of a sample that leaves it unset are not offered. Write it out: ids are
   UCSC db names in some alignments, scientific names in others and lab-internal
   ids in others still, so a name lookup can land on the wrong genome and report
-  coordinates that are silently wrong
+  wrong coordinates with no warning
 - **`assemblyConfigLocation`** the config to load `assemblyName` from when the
   session does not already hold it. JBrowse fetches just that assembly at click
   time, which keeps a 26-way or 470-way navigable on a site with one config per

@@ -96,8 +96,8 @@ A [bedMethyl](https://www.encodeproject.org/data-standards/wgbs/) from
 fraction at each CpG, one row per modification type. Bgzipped and tabix-indexed
 (the [methylation tutorial](/docs/tutorials/methylation) has the commands), it
 loads through `BedTabixAdapter` as a `MultiQuantitativeTrack` with one subtrack
-per modification type, which is also what a `.bedmethyl.gz` auto-detects as in
-the Add track form:
+per modification type; a `.bedmethyl.gz` also auto-detects as this in the Add
+track form:
 
 ```json addtrack
 {

@@ -61,8 +61,8 @@ views.
 
 Every package also exports an imperative controller — `createLinearGenomeView`,
 `createCircularGenomeView`, `createApp` — with no JSX and no React root for you
-to manage. It's what the [Python anywidget](/docs/jbrowse_anywidget), R
-htmlwidgets, and plain `<script>` pages are built on. See the vanillajs rows in
+to manage. The [Python anywidget](/docs/jbrowse_anywidget), R htmlwidgets, and
+plain `<script>` pages are built on these controllers. See the vanillajs rows in
 [bundler examples](#bundler-examples) below for a working reference
 implementation of each.
 

@@ -280,8 +280,8 @@ order so each can name what the ones before it registered:
 - `sessionConnections` attaches connections, UCSC track hubs or JBrowse hubs,
   and waits for each to finish fetching before launching the views, so a view
   can name an assembly or trackId the connection supplies. A spec with no
-  `views` leaves the connection to open its own view where it starts, which is
-  what [`&hubURL=`](#huburl) does.
+  `views` leaves the connection to open its own view where it starts.
+  [`&hubURL=`](#huburl) relies on exactly this.
 - `sessionTracks` registers track configs, the spec form of `&sessionTracks=`.
 - `views`, then a `layout` that tiles them into a
   [workspace](#tiled-views--workspaces).

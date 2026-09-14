@@ -706,8 +706,8 @@ Back in the reconstruction, reading the list below the top route is the other
 half of the exercise. This window ends at the chr13 q-terminus, so most of what
 is offered under the real junction is reads mismapped into the terminal repeats
 of other chromosomes, each a confident-looking two-segment route with a real
-read count behind it. The read count ranks the routes. What picks this one out
-is that the caller and the assembly put its two ends in the same two places.
+read count behind it. The read count ranks the routes; this route is picked out
+because the caller and the assembly put its two ends in the same two places.
 
 The reconstruction is bounded twice by what is loaded. It is assembled from the
 reads in the **displayed regions**, which is why both sides of this junction are
@@ -959,8 +959,8 @@ Give each haplotype its own row rather than letting both align to one. **Add
 row** in the import form takes a third panel, so the stack reads hap2, GRCh38,
 hap1, with a level of ribbons per adjacent pair. In one row the reference
 carries alignments from both haplotypes at once and the scaffold names on it
-come from either, which is the thing to avoid: what makes the fusion legible is
-that hap1's ribbons cross where hap2's do not.
+come from either, so avoid that layout. Separate rows make the fusion legible,
+since hap1's ribbons cross where hap2's do not.
 
 <Figure caption="A three-row synteny view of the chr3/chr13 selection: hap2 on top, GRCh38 chr3 and chr13 in the middle, and the fused chr3_chr13_hap1 scaffold below, at a raised minimum alignment length. The two blue bands on the reference row are the breakends of the translocation above, chr3:139,976,414 and chr13:114,353,244, the same two positions the breakpoint split view opened on. The ribbons below the reference cross between them, where hap1 joins the two chromosomes; the ribbons above run to hap2, whose chr13 is unrearranged and whose chr3 material sits in a scaffold fused with chr6 and chr11." src="/img/sv_cgiab/synteny_view.png" />
 

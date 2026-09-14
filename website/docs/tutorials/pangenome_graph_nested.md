@@ -8,11 +8,11 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
-A bubble index says where a graph varies and how much, one row per bubble, but a
-large bubble is a region rather than a variant: the densest bubble in the mouse
-strain graph holds hundreds of segments inside one intron of _Dock2_. We draw it
-as a force-directed graph, open it, and let the graph itself say what the inside
-is made of, because no index row describes the inside of a bubble.
+A bubble index reports where a graph varies and how much, one row per bubble,
+but a large bubble is a region rather than a variant: the densest bubble in the
+mouse strain graph holds hundreds of segments inside one intron of _Dock2_. No
+index row describes the inside of a bubble, so we draw it as a force-directed
+graph and open it to show what the inside is made of.
 [Pangenomes beyond human](/docs/tutorials/pangenome_nonhuman) is where this
 graph comes from and where the bubble was found.
 
@@ -46,20 +46,20 @@ as rGFA projections.
 ## One bubble, one label
 
 Open the _Dock2_ window as a graph and pick **Force-directed layout**. The index
-knows this window as a single bubble, so the whole cut is that bubble and one
-label names it with what the index says: a superbubble, with its segment count
+lists this window as a single bubble, so the whole cut is that bubble, and one
+label names it with the index's own terms: a superbubble, with its segment count
 and the span of its routes. A halo around everything would mark nothing, so a
 bubble that is the whole drawing keeps its label and goes without one.
 
 <Figure caption="The Dock2 intron window with the RefSeq genes, the bubbles lane and the rGFA segments above the force-directed graph. The bubbles lane is one row and the graph carries one label, naming the whole cut as a superbubble." src="/img/pangenome/graph_mouse_dock2_halos.png" />
 
 Dock2 itself is pinned under the backbone, with no exon stretch anywhere in the
-cut: the gene track says on the graph what the linear view says above it, that
-this is intron.
+cut: the gene track shows the same fact on the graph that the linear view shows
+above it, that this is intron.
 
-A superbubble is what the index calls a bubble too big to type. The label is
-honest about that: it gives a segment count and a route range and no kind, since
-the row's numbers describe the whole region at once.
+A superbubble is the index's name for a bubble too big to type. The label
+reflects that: it gives a segment count and a route range and no kind, since the
+row's numbers describe the whole region at once.
 
 ## Open it, and open what is inside
 
@@ -93,8 +93,8 @@ tabix https://jbrowse.org/demos/mouse_pangenome/mouse-mm39-minigraph.bubbles.bed
   'mm39#0#chr11:34516044-34560497'
 ```
 
-Its segment count and route span are what the label printed. The bubbles inside
-it are in no file: they are read off the popped graph's layering each time it
+The label printed this same segment count and route span. The bubbles inside it
+are in no file: they are read off the popped graph's layering each time it
 opens, and closing the level discards them.
 
 ## See also

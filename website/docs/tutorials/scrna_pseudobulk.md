@@ -83,8 +83,8 @@ ways.
 
 [`build_scrna_pseudobulk.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_scrna_pseudobulk.sh)
 instead reads the BAM by region over HTTPS, accumulating each cell type's
-coverage in one pass with no download, split or scratch space. Either way the
-last step is where the normalization lands:
+coverage in one pass with no download, split or scratch space. Either route
+applies the normalization in its last step:
 
 <!-- from: scripts/build_scrna_pseudobulk.sh -->
 

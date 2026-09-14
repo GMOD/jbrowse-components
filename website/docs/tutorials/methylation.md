@@ -47,9 +47,8 @@ bucket.
 ## The SNRPN imprinting center
 
 At this locus on chr15, one parental allele is methylated and the other is not.
-That makes it a dataset with its own control: the views have to come out as two
-populations, and the reads and the aggregate profile have to agree on which
-allele is which.
+The views have to come out as two populations, and the reads and the aggregate
+profile have to agree on which allele is which.
 
 ## Per-read methylation from the alignments
 
@@ -71,11 +70,10 @@ assembly already configured in JBrowse (see the
 }
 ```
 
-Set **Color by... → Modifications** from the track menu and each read is painted
-with its own 5mC calls. Two modes are offered: one paints only the positions the
-MM tag reports as modified, the other (IGV's "2-color" scheme) also fills in
-every CpG the tag left implicit, so an unmethylated region reads as solid blue.
-The
+Set **Color by... → Modifications** from the track menu to paint each read with
+its 5mC calls. One mode paints only the positions the MM tag reports as
+modified; the other (IGV's "2-color" scheme) also fills in every CpG the tag
+left implicit, so an unmethylated region reads as solid blue. The
 [alignments track guide](/docs/user_guides/alignments_track#modifications-and-methylation)
 covers both modes, the probability threshold, and the cytosine-context submenu.
 
@@ -151,14 +149,13 @@ for producing `HP`-tagged reads.
 ## Aggregate for navigation, reads for detail
 
 Keep the bedMethyl track for whole-genome navigation, since it stays quick at
-any zoom and is what a tumor-versus-normal comparison reads off, then drop the
-per-read BAM or CRAM below it once you are there, for the single-molecule and
+any zoom, and a tumor-versus-normal comparison reads directly off it. Add the
+per-read BAM or CRAM below it once you narrow in, for the single-molecule and
 [allele-specific](#splitting-the-alleles-apart) detail only the reads carry.
 
-To compare two samples rather than two alleles, run `modkit dmr` on their
-per-sample pileups and load its BED output as a `FeatureTrack` beside the
-bedMethyl tracks, so the differentially-methylated regions line up with the
-positions driving them.
+To compare two samples, run `modkit dmr` on their per-sample pileups and load
+its BED output as a `FeatureTrack` beside the bedMethyl tracks, so the
+differentially-methylated regions line up with the positions driving them.
 
 ## See also
 

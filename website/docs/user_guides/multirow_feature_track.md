@@ -92,9 +92,9 @@ repeat name, which is thousands of rows rather than twenty.
 
 Swapping the final `[0]` for `[1]` splits by family instead of class.
 
-This isn't the track's default display, so it needs an explicit `displays` entry
-rather than the `displayDefaults` shorthand (whose `color` would also reach the
-default display).
+The multi-row display isn't the track's default, so it needs an explicit
+`displays` entry rather than the `displayDefaults` shorthand (whose `color`
+would also reach the default display).
 
 ## Preparing the file
 
@@ -180,9 +180,9 @@ Rows start in file order. Three ways to change that:
   explicit order in config.
 - Right-click a position and choose **Sort rows by color here** to order rows by
   the value each carries at that exact base, the analogue of an alignments
-  track's sort-by-base. Rows sharing a value become contiguous blocks, which is
-  what turns a QTL painting at its peak into a clean split by allele. **Clear
-  row sort** restores the previous order.
+  track's sort-by-base. Rows sharing a value become contiguous blocks, turning a
+  QTL painting at its peak into a clean split by allele. **Clear row sort**
+  restores the previous order.
 - **Clustering → Cluster rows by similarity...** reorders rows so that samples
   with similar paintings sit together, and draws a dendrogram in the sidebar.
   See [](/docs/user_guides/clustering).

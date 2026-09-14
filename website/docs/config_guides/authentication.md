@@ -41,7 +41,7 @@ have to share `https://host` and port:
 | `https://mysite.org/jbrowse/` | `https://data.mysite.org/` | no, different origin |
 | `https://mysite.org/jbrowse/` | an S3 or other bucket URL  | no, different origin |
 
-Protect both, not just the app: a login page in front of JBrowse while the data
+Protect the data folder too: a login page in front of JBrowse while the data
 folder stays world-readable protects nothing, since the file URLs are in
 config.json.
 
@@ -71,8 +71,8 @@ In rough order of simplicity:
   signature expires, taking any saved session or share link with it.
 - **`internetAccounts`** (the rest of this page), for data you do not control:
   Dropbox, Google Drive, an OAuth-protected API, a portal that issues tokens.
-  JBrowse only forwards a credential the user already has; it is not an
-  access-control system.
+  JBrowse only forwards a credential the user already has and grants no access
+  on its own.
 
 Data on a different origin than the app also needs
 [CORS](/docs/config_guides/serving_data#cors-errors-on-remote-files), including

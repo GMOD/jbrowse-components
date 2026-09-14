@@ -116,7 +116,7 @@ polyploid, pooled, or mixed sample. Here every allele clearing the het fraction
 joins the call, so such a site can report as V, H, D, or B rather than being
 truncated to two alleles.
 
-This is quality-independent calling: it counts and weights reads without using
+The calling is quality-independent: it counts and weights reads without using
 base quality scores or a genotype likelihood model. It answers "what do these
 reads say is here"; for genotypes and confidence scores, use a dedicated caller.
 

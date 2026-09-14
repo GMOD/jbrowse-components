@@ -17,8 +17,8 @@ request, bypassing the browser cache:
 
 ## Loading config.json from another path
 
-The same `<head>` script moves the config JBrowse loads by default, for a
-deployment whose config does not sit next to index.html. A
+A `<head>` script like the one above moves the config JBrowse loads by default,
+for a deployment whose config does not sit next to index.html. A
 [`?config=`](/docs/urlparams#config) in the URL still wins over it:
 
 ```html

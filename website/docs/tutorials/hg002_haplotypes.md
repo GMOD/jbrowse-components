@@ -99,8 +99,8 @@ chromosome 8 is the one to look at closely. HG002 is heterozygous for the 8p23.1
 inversion polymorphism (Bosch _et al._ 2009), so the maternal and paternal
 copies of that arm run in opposite directions, and the Q100 chain carries it as
 its largest inverted block, close to 4 Mb. The plot places it; a linear synteny
-view is where the two copies can be read against each other, with each
-haplotype's own tracks beside the ribbons.
+view reads the two copies against each other, with each haplotype's own tracks
+beside the ribbons.
 
 There are two ways into that view. From the plot, drag a box around the cell
 where `chr8_MATERNAL` meets `chr8_PATERNAL` and pick **Zoom in**; near the start
@@ -119,7 +119,7 @@ here on the top panel is the only one to navigate. Type
 `chr8_MATERNAL:5,250,000-14,250,000` into its search box, and the paternal panel
 arrives on the matching stretch of `chr8_PATERNAL` on its own. Then:
 
-- pick **Strand** from the palette icon, the coloring the plot used: collinear
+- pick **Strand** from the palette icon, matching the plot's coloring: collinear
   red, inverted blue
 - turn the chain track on in each panel's own track selector, where it draws as
   blocks on that panel's own ruler. The inverted block is the long blue bar in
@@ -166,10 +166,10 @@ Then, on each gene lane:
 
 At 9 Mb across, the two haplotypes sit some tens of kilobases out of register,
 which is a few pixels, so the same window typed into both panels would have
-looked lined up. Zoomed in, the offset is the whole screen: the same coordinate
-is no longer the same sequence, because every upstream indel shifts one
-haplotype against the other. Following is what keeps the panels on the same
-sequence. It walks the top panel's window through the chain's CIGAR and sends
+looked lined up. Zoomed in, the offset fills the whole screen. The same
+coordinate is no longer the same sequence, because every upstream indel shifts
+one haplotype against the other. Following keeps the panels on the same
+sequence: it walks the top panel's window through the chain's CIGAR and sends
 the panel below there on every pan, so the ribbons stay near-vertical however
 far you go.
 

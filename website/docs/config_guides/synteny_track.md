@@ -43,7 +43,7 @@ explains them.
   and most modern aligners
 - **PIF** JBrowse's indexed PAF, made with
   [`jbrowse make-pif`](/docs/cli#jbrowse-make-pif). The browser fetches only the
-  region on screen, which is what makes a whole-genome alignment usable
+  region on screen, which makes a whole-genome alignment usable
 - **pairwise vs multi-genome** a pairwise file compares two genomes. A
   multi-genome file holds many, aligned all-vs-all or each against one
   reference, which lets a linear synteny view stack more than two rows. Its
@@ -278,9 +278,9 @@ session spec:
 }
 ```
 
-`displayedRegionNames` is resolved against each assembly in turn, which is what
-keeps a few named chromosomes of both genomes on a circle rather than every
-unplaced contig of either.
+`displayedRegionNames` is resolved against each assembly in turn, which keeps a
+few named chromosomes of both genomes on the circle instead of every unplaced
+contig of either.
 
 ## See also
 

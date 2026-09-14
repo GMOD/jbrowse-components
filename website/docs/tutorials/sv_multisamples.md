@@ -50,7 +50,7 @@ genotypes across all 3,202 individuals.
 `HGSV_1821` is a deletion on chr1 spanning the whole of _RHD_, so samples called
 homozygous carry no copy of that gene. Deleting _RHD_ is the most common cause
 of the RhD-negative blood type. The call is `PASS` and common enough to fill all
-three genotype classes, and read depth settles whether a gene is present twice,
+three genotype classes, and read depth shows whether a gene is present twice,
 once, or not at all.
 
 The tracks are added with `jbrowse add-track`. The callset is bgzip-compressed
@@ -81,10 +81,10 @@ track menu keys every row on the whole window and draws the dendrogram.
 Dark blue is no copy of _RHD_, light blue one, grey two, and the olive stripe is
 a separate nested call.
 
-A matrix cell says a sample carries something at that column, not which call.
-Loading the same VCF again in the ordinary variant display puts each record on
-its own row with its id, class and size. Cell coloring by **SV type** is the
-other way to ask, shown in the
+A matrix cell marks that a sample carries something at that column, not which
+call. Loading the same VCF again in the ordinary variant display puts each
+record on its own row with its id, class and size. Cell coloring by **SV type**
+is the other way to ask, shown in the
 [multi-variant track guide](/docs/user_guides/multivariant_track).
 
 Three lanes read below, over NCBI RefSeq genes:
@@ -157,7 +157,7 @@ class, each with its own coverage curve and arcs.
 The call also names a duplicated copy in its `INFO.CPX_INTERVALS`, and no band
 shows it. A copy landing beside its origin leaves pair orientation alone, so
 that half of the call is back to reading the coverage, at a size where the
-profile's own noise is the same shape.
+profile's noise is the same shape.
 
 ## See also
 

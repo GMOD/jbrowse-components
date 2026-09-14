@@ -66,7 +66,7 @@ jbrowse add-track variants.vcf.gz --load copy --out myproject --name "My variant
 `--name hg38` is the assembly name the session and the assembly selector use.
 `--name` on a track is its label in the track list.
 
-`--load` says how the CLI places a local file relative to the config (omit it
+`--load` sets how the CLI places a local file relative to the config (omit it
 for a remote URL, which is referenced in place):
 
 | `--load`  | What it does                                                       |

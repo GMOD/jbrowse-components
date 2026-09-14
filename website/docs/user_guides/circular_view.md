@@ -72,10 +72,9 @@ of ideogram it belongs to.
 A `SyntenyTrack` draws each alignment as a ribbon between the span it covers on
 one side and the span its mate covers on the other, so a block's extent is on
 the figure and an inversion reads as a twist. A track aligning two genomes needs
-both of them on the circle, which is what `assembly: ['hg38', 'mm39']` does —
-each assembly lays its chromosomes out in turn. The import form opens one
-assembly, so a two-genome circle is written as a session or a
-[URL spec](/docs/urlparams).
+both of them on the circle, set with `assembly: ['hg38', 'mm39']` — each
+assembly lays its chromosomes out in turn. The import form opens one assembly,
+so a two-genome circle is written as a session or a [URL spec](/docs/urlparams).
 
 Both arcs of a two-genome circle run the same way round, so a genome left in its
 own contig order puts every matching pair of chromosomes at opposite ends of a

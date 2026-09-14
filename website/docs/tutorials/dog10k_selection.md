@@ -99,8 +99,8 @@ WINDOW=20000 REGIONS=chr15:40600000-42600000 \
 <Figure caption="Top: Fst between the toy/small and giant panels in 200 kb windows across the 38 autosomes, three body-size genes labelled, dashed significance line. Bottom: the wedge's span, two megabases of chr15 rebinned to 20 kb, where that point resolves into a sweep sitting on IGF1. The band is the top half's own 200 kb window." src="/img/dog10k-size-fst-scan.png" links="Whole genome=dog10k-size-fst-scan-genome,IGF1 window=dog10k-size-fst-scan-igf1" />
 
 Each point is a window, so a peak names a region. A genome-wide scan bins wide
-enough to hold down twelve thousand windows' worth of noise, which is what makes
-the _IGF1_ peak a single bar.
+enough to hold down twelve thousand windows' worth of noise, and that binning
+makes the _IGF1_ peak a single bar.
 
 Fst has no p-value, so
 [`significanceLine`](/docs/config/linearmanhattandisplay/#slot-significanceline)
@@ -211,7 +211,7 @@ Clustering reads the region on screen, and over the whole window the separating
 columns are diluted by the undifferentiated sites around them. Zoom to the core,
 cluster there, then widen back out: the order holds, because it is stored per
 sample name. A session can state it directly, since the display takes
-`clusterRegion` beside `runClustering`, which is what the figure below does.
+`clusterRegion` beside `runClustering`; the figure below does exactly that.
 
 <Video src="/media/dog10k/igf1_cluster_route.mp4" caption="The route on the differentiated core: rows in the panel's build order, the track menu's clustering run, and the same order held when the window widens back out. The size swatch starts as three breed blocks and ends interleaved." />
 

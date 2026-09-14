@@ -33,7 +33,7 @@ has something to show.
 
 That file carries no LD of its own. The LD-colored demo below is a second pair,
 `gwas_giant-bmi_meta_women-only.gz` with a PLINK table beside it, both under
-`jbrowse.org/demos/gwas/`, which is what the demo config wires together.
+`jbrowse.org/demos/gwas/` and wired together by the demo config.
 
 ## Public data sources
 
@@ -104,7 +104,7 @@ plink2 --vcf fto.vcf.gz --double-id --set-missing-var-ids @:# \
 ```
 
 `--clump` then reads the summary statistics themselves. The columns are named
-rather than positional, and `--clump-log10 input-only` is what says the p-value
+rather than positional, and `--clump-log10 input-only` tells plink2 the p-value
 column is already -log10, as `neg_log_pvalue` is:
 
 ```bash
@@ -123,9 +123,9 @@ awk 'NR==FNR{pos[$2]=$4; next} FNR>1 {n=split($11,m,","); lo=$2; hi=$2
   fto.bim fto.clumps | sort -k2,2n > clumps.bed
 ```
 
-Over the example file that gives three clumps at FTO, and the big one is the
-answer to what the peak is tagging: index `rs1121980`, 51 variants, spanning 51
-kb of FTO's first intron. Load `clumps.bed` through a
+Over the example file that gives three clumps at FTO, and the big one shows what
+the peak is tagging: index `rs1121980`, 51 variants, spanning 51 kb of FTO's
+first intron. Load `clumps.bed` through a
 [`BedAdapter`](/docs/config/bedadapter) beside the GWAS track.
 
 ## Add GWAS track workflow

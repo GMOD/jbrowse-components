@@ -71,9 +71,9 @@ or not, and the lanes on this page are drawn from that.
 UCSC's chains are one alignment per genome, each between hg38 and that genome
 alone. Composed, they make a star with hg38 at the centre: hg38 against
 chimpanzee, hg38 against mouse, and no row anywhere that aligns chimpanzee to
-mouse. That is exactly the shape a lane stack anchored on hg38 reads. Each lane
-is placed from its own chain, and the ribbons between two adjacent mate lanes
-are composed through the human coordinates they share.
+mouse. A lane stack anchored on hg38 reads exactly that shape. Each lane is
+placed from its own chain, and the ribbons between two adjacent mate lanes are
+composed through the human coordinates they share.
 
 Each hosted file is a chain converted to PAF and indexed with
 `jbrowse make-pif`, which can write a coarse tier beside the per-base one for
@@ -178,18 +178,18 @@ genomes placing the most of the window sit at the top.
 ```
 
 Around _TP53_ every lane places the whole window from one chain, with the same
-genes in the same order, and the ribbons say where that chain is not continuous.
-A liftOver chain carries its insertions and deletions inside one record, and the
-track cuts each record at every indel of 10 kb or more, so a ribbon is drawn per
-gap-free run and the white wedges between runs are the stretches one genome has
-and the other lacks: at 300 kb the mouse chain holds some 3,400 indels totalling
-146 kb of insertion and 168 kb of deletion, the largest 25 kb, and the cow chain
-an 89 kb gap near _SLC35G6_, and those are what the wedges in the lower lanes
-are. The apes' chains carry gaps under the cut and draw as near-continuous
-ribbons. The header of each lane says which chromosome that is in the genome and
-how far the lane's frame reaches, with `[rev]` on the mouse lane, whose chain
-runs the other way against hg38 here. The lanes stack densest first, by how much
-of the window each places.
+genes in the same order, and the ribbons show where that chain is not
+continuous. A liftOver chain carries its insertions and deletions inside one
+record, and the track cuts each record at every indel of 10 kb or more, so a
+ribbon is drawn per gap-free run and the white wedges between runs are the
+stretches one genome has and the other lacks: at 300 kb the mouse chain holds
+some 3,400 indels totalling 146 kb of insertion and 168 kb of deletion, the
+largest 25 kb, and the cow chain an 89 kb gap near _SLC35G6_, and those are what
+the wedges in the lower lanes are. The apes' chains carry gaps under the cut and
+draw as near-continuous ribbons. The header of each lane shows which chromosome
+that is in the genome and how far the lane's frame reaches, with `[rev]` on the
+mouse lane, whose chain runs the other way against hg38 here. The lanes stack
+densest first, by how much of the window each places.
 
 <Figure caption="The TP53 neighbourhood on hg38 over eight UCSC genome lanes from one composed liftOver track, each lane drawing its own RefSeq gene models on its own chromosome. Every lane places the window from one chain; the white wedges in the ribbons are that chain's indels of 10 kb or more, few in the apes and many in mouse, cow and dog, and the mouse lane is reversed." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
 
@@ -197,15 +197,15 @@ Eight megabases toward the centromere the same stack looks different. No chain
 runs the window through: the region is a segmental-duplication hotspot, every
 genome places it as several blocks, and most of those blocks run the other way
 against their neighbours, so five of the eight lanes carry `[rev]` in their
-headers. The crossings are a separate fact from the marker: a mirrored lane
-draws its inversions straight, and a ribbon crosses where one block runs against
-its neighbour inside a lane. The marmoset lane is the clearest case: its chain
+headers. The crossings are a separate fact from the marker. A mirrored lane
+draws its inversions straight; a ribbon crosses where one block runs against its
+neighbour inside a lane. The marmoset lane is the clearest case: its chain
 covers the left of the window forwards and then stops, and the rest of the
 window is placed by a reversed block further along the same chromosome. The
 gorilla lane names chr17 in its header beside the chr5 frame it drew. chr17 is
-the homologous chromosome, and some of this window aligns there as well, so the
-chr5 frame is not the whole picture. **Show … in this lane** on that lane's
-header menu pins it onto the other contig.
+the homologous chromosome, and some of this window aligns there too, so the chr5
+frame does not show everything the alignment places. **Show … in this lane** on
+that lane's header menu pins it onto the other contig.
 
 <Figure caption="hg38 chr17 near the PMP22 segmental duplications over the same eight lanes. Every genome places the window as several blocks and most run against their neighbours: five lanes carry a reversed marker in their headers, the crossed ribbons are where a block runs against its neighbour inside a lane, and the gorilla lane names a second chromosome that also places the window." src="/img/multiway_synteny/hg38_vertebrates_17p_break.png" />
 
@@ -224,7 +224,7 @@ Each lane is one genome in its own coordinates, fitted to wherever its alignment
 places the anchor window, so the number at a lane's right edge is the span that
 lane shows and the multiple after it is how much wider than the anchor window
 that is: how much of that genome the lane had to open up to hold everything the
-window placed in it, rounded to a short ladder of rungs. Ribbons join a lane to
+window placed in it, rounded to one of a few fixed steps. Ribbons join a lane to
 the lane directly above it, and where a source holds no alignment between two
 mates, as this star does not, the ribbon between them is composed through the
 anchor. Hovering a ribbon lights the same alignment in every lane it reaches;

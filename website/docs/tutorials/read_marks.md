@@ -54,9 +54,8 @@ Every record in a BAM or CRAM is a read with its position, and beside the
 position a handful of numbers the aligner wrote: its mapping quality, and for a
 paired read the distance from its start to its mate's end, the template length,
 signed by which mate is leftmost. An alignments track draws each read as a bar
-and can colour it by those numbers; what it cannot do is plot one of them on an
-axis. The mark display does exactly that, over the same file, by naming the
-field.
+and can colour it by those numbers, but it cannot plot one of them on an axis.
+The mark display does that, over the same file, by naming the field.
 
 The window is 30 kb of an intron of _EFCAB8_ on chromosome 20, where the callset
 says NA12878 carries one copy of a 3.9 kb deletion.
@@ -198,9 +197,9 @@ Zoom to the left edge of the dip, `chr20:32,936,200-32,939,200`.
 
 <Figure src="/img/read_marks/pileup.png" caption="The left breakpoint at 3 kb, the reads stacked and coloured by their pair's insert. The red reads end together at 32,937,680, where their mates lie 4 kb to the right; the pale reads run across it, and thin out on the far side." />
 
-The pinned `domain` is what makes the key stable: an unpinned ramp spans the
-values on screen, and a window with no spanning pair would paint its longest
-ordinary insert red.
+Pinning the `domain` keeps the key stable: an unpinned ramp spans the values on
+screen, and a window with no spanning pair would paint its longest ordinary
+insert red.
 
 ## Scanning the chromosome for the same signature
 
@@ -383,9 +382,9 @@ pairs out of it, writes a JBrowse with the two tracks above and prints the
 callset's deletions for the chromosome. Given your own BAM or CRAM and the FASTA
 it was aligned to, `bash build_read_marks.sh reads.cram genome.fa`, it builds
 the same two tracks over your file, and `CHROM` in the environment picks the
-chromosome to scan. What the reads track needs from any file is what every
-aligner writes: a mapping quality and, for paired reads, a template length. The
-tools it needs are the ones under [Prerequisites](#prerequisites).
+chromosome to scan. The reads track needs only what every aligner writes: a
+mapping quality and, for paired reads, a template length. The tools it needs are
+the ones under [Prerequisites](#prerequisites).
 
 ## See also
 

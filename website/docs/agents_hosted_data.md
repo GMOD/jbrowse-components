@@ -182,9 +182,8 @@ and no assembly is built.
   `@jbrowse/capture url` prints it as a link.
 - Your file must be reachable by the browser: a public URL with CORS enabled, or
   a local server.
-- Its refNames must match the assembly, which is where the hub's alias table
-  earns its place: a VCF using `1` works against a config whose contigs are
-  `chr1`.
+- Its refNames must match the assembly or one of the hub's aliases, so a VCF
+  using `1` works against a config whose contigs are `chr1`.
 
 ## Limits of the hosted hubs
 

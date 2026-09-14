@@ -73,7 +73,8 @@ them out. Each breakend pair is written twice and collapses to one. The result
 is the same 100 junctions, in the same order, that `sv_multihop.py chains`
 reports in the
 [multi-hop tutorial](/docs/tutorials/cancer_sv#finding-the-chains), because
-neither parses the ALT bracket by hand, which goes wrong four ways, all silent:
+neither parses the ALT bracket by hand, which goes wrong four ways, none of them
+raising an error:
 
 - the replacement string may carry inserted sequence either side of the bracket
   (`GTGATGGATTCA[CHR12:72273112[`)
@@ -111,9 +112,9 @@ and `--width`.
 `featureHeight:super-compact` draws reads at 1 px apiece, which keeps six
 pileups on one screen.
 
-A curve says two loci are joined; a contig says in what order and orientation.
-The [multi-hop tutorial](/docs/tutorials/cancer_sv) builds that contig from
-these reads, and rendering it is another `jb2export` run with a different
+A curve marks two loci as joined; a contig shows the order and orientation. The
+[multi-hop tutorial](/docs/tutorials/cancer_sv) builds that contig from these
+reads, and rendering it is another `jb2export` run with a different
 `--assembly`.
 
 ## The same export over the normal
@@ -132,7 +133,7 @@ Side by side, the somatic calls are the ones with curves in `tumor/` and none in
 
 ## Reading the sheet
 
-What each picture says:
+What each picture shows:
 
 - **a fan of curves at both breakends** is the junction as the reads describe it
 - **nothing connecting the panels** means the reads do not support the caller's
@@ -140,8 +141,8 @@ What each picture says:
   off that `--flank` missed it. Re-render that row wider
 - **curves in the normal too** means germline, not somatic
 - **a dense fan in a region of ragged coverage** is usually a repeat. The
-  connectors are drawn from what the aligner said, so a read mismapped into a
-  repeat contributes a confident-looking curve
+  connectors are drawn from what the aligner reported, so a read mismapped into
+  a repeat contributes a confident-looking curve
 
 ## Opening a call in the browser
 
@@ -173,8 +174,8 @@ two commands:
   carries the copy number under the reads
 
 Ordering breakends into a derivative chromosome needs allele-specific copy
-number and a centromere constraint, which is what
-[LINX does with PURPLE's purity and ploidy](https://doi.org/10.1016/j.xgen.2022.100112).
+number and a centromere constraint.
+[LINX derives both from PURPLE's purity and ploidy](https://doi.org/10.1016/j.xgen.2022.100112).
 
 ## Reproduce it end to end
 

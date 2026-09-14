@@ -119,10 +119,11 @@ export default function JB2TrackHubConnection(pluginManager: PluginManager) {
 ```
 
 `lazyConnect` keeps a connection's parsing code out of the startup bundle until
-someone actually connects, and it owns the failure policy — it logs, notifies,
-and breaks the connection — so each `doConnect` is only the happy path. It also
-re-checks `isAlive(self)` after the dynamic import, since `doConnect` walks up
-to the session and a StrictMode double-mount can dispose the node mid-import.
+someone actually connects, and it handles connection failure — it logs,
+notifies, and breaks the connection — so each `doConnect` is only the happy
+path. It also re-checks `isAlive(self)` after the dynamic import, since
+`doConnect` walks up to the session and a StrictMode double-mount can dispose
+the node mid-import.
 
 The `doConnect` module is where the configuration is read and the tracks are
 added:

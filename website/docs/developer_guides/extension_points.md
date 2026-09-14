@@ -148,13 +148,13 @@ export interface ElementList<P> {
 }
 ```
 
-`args` alone cannot say which shape a point has: a `TrackTypeGuesser` takes an
-argument and returns a string, which is what a function component does too, so a
-structural test admits it as a wrappable slot. `kind` exists only in the type —
-nothing sets it at runtime, and nothing reads it. `extensionPointShapes.test.ts`
-pins each seam against the points of the other shapes, and fails a new
-`ComponentList` or `ElementList` declared the long way, which would otherwise be
-a point no producer accepts.
+`args` alone cannot say which shape a point has. A `TrackTypeGuesser` takes an
+argument and returns a string — the same signature a function component has — so
+a structural test admits it as a wrappable slot. `kind` exists only in the type
+— nothing sets it at runtime, and nothing reads it.
+`extensionPointShapes.test.ts` pins each seam against the points of the other
+shapes, and fails a new `ComponentList` or `ElementList` declared the long way,
+which would otherwise be a point no producer accepts.
 
 ## API
 
@@ -303,8 +303,9 @@ wrapComponent(pm, 'Core-replaceWidget', ({ DefaultComponent, ...rest }) => (
 ))
 ```
 
-It takes the point's name, so the same call fills any single-component slot:
-`Core-replaceAbout` and the desktop start-screen panels work exactly like this.
+`wrapComponent` takes the point's name, so the same call fills any
+single-component slot: `Core-replaceAbout` and the desktop start-screen panels
+work exactly like this.
 
 Wrappers from different plugins nest, so two plugins can both add content
 without either one disappearing. Two callbacks registered on the point by hand
@@ -358,11 +359,11 @@ item appends a timestamp to the id), so scoping by id does not silently stop
 applying the first time someone copies the track. Pass a `RegExp` if you want to
 control the matching yourself.
 
-It reads either the widget model these points carry or the track config the
-About points carry, so one call scopes a contribution to any of them — including
-[`Core-customizeAbout`](#core-customizeabout), which transforms a config and
-renders nothing. Anything the fields cannot express joins the same condition;
-the panel below adds `depth` to it.
+`matchesTrackSelector` reads either the widget model these points carry or the
+track config the About points carry, so one call scopes a contribution to any of
+them — including [`Core-customizeAbout`](#core-customizeabout), which transforms
+a config and renders nothing. Anything the fields cannot express joins the same
+condition; the panel below adds `depth` to it.
 
 Don't reach for `matchTrackId` from `@jbrowse/core/util` — that one tests an id
 against patterns you supply, so the copy-track normalization is back to being
@@ -449,7 +450,7 @@ has finished. A hand-written callback that returns its own promise gets that
 wrong, and gets it wrong invisibly: the symptom is a producer that stops waiting
 early, which reads as a race rather than as the wrong registration method.
 
-That is how `Core-handleUnrecognizedAssembly` works — a handler supplies the
+`Core-handleUnrecognizedAssembly` works that way — a handler supplies the
 assembly out of band, and its promise is what lets `waitForAssembly` stop
 waiting on an event rather than on a clock. The producer there fires the point
 with the **sync** runner and awaits the folded value itself; only
