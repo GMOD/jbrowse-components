@@ -1309,6 +1309,10 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
           loadedRegion: C4_REGION,
           layoutMode: 'force',
           colorScheme: 'reference-position',
+          // Halos and route chips are introduced on the KIV-2 figure further
+          // down; here they arrived unexplained, and one chip sat over the
+          // C4A junction the backbone label points past.
+          showBubbles: false,
         },
       ],
     }),
