@@ -576,7 +576,7 @@ export const ldSpecs: ScreenshotSpec[] = [
               summaryScoreMode: 'max',
               minScore: 0.1,
               maxScore: 0.5,
-              height: 170,
+              height: 140,
             },
             // A MEASURED genetic map, which is the only honest way to say
             // where the block ends: it is counted off crossovers, in cM/Mb, and
@@ -630,10 +630,12 @@ export const ldSpecs: ScreenshotSpec[] = [
               type: 'LinearWiggleDisplay',
               minScore: 0,
               maxScore: 100,
-              height: 100,
+              height: 80,
             },
-            { trackId: 'kgp_lct_pooled', type: 'LDTrackDisplay', height: 250 },
-            { trackId: 'kgp_lct_panel', type: 'LDTrackDisplay', height: 250 },
+            // 200 cuts the panel block's apex and keeps both of its edges, which
+            // are what the figure compares against the map above
+            { trackId: 'kgp_lct_pooled', type: 'LDTrackDisplay', height: 200 },
+            { trackId: 'kgp_lct_panel', type: 'LDTrackDisplay', height: 200 },
           ],
         },
       ],
@@ -643,52 +645,21 @@ export const ldSpecs: ScreenshotSpec[] = [
     readySelector: displayPainted('ld-display'),
     // 42 MB of genotypes across the two lanes, the pooled one on 2504 samples
     readyTimeout: 600000,
-    // the gene lane, the Fst scatter, the deCODE map, then two 250 px LD
-    // triangles + headers + ruler/overview. The triangles came down from 330
-    // (reviewer: "reduce heights of the linkage tracks"), which costs nothing
-    // legible: the block is a shape, not a height, and the room it frees is
-    // what the Fst lane takes.
-    //
-    // Deleting the 1 - r² band each LD lane reserved gives back 100 px, and
-    // hg38's RefSeq over this window spends about the same again: the frame
-    // holds a dozen more genes than the hg19 one did, so the gene lane stacks
-    // deeper. Sized from the run's own clipped report rather than by
-    // subtracting what was removed, which is what got this 103 px short.
-    viewportHeight: 1195,
+    viewportHeight: 1070,
     settleMs: 8000,
-    // The one variant the lane exists for, named on it. With the floor raised
-    // the lane is legible, but it is still thousands of surviving points and
-    // nothing in it says which one is the lactase-persistence allele; a reader
-    // would have to take the caption's word and count pixels off the highlight
-    // band. rs4988235 is chr2:135,851,076 on hg38, so the pill anchors to the
-    // coordinate rather than to a measured x.
     annotations: [
       {
         type: 'text',
         text: 'rs4988235',
         fontSize: 16,
-        anchor: {
-          track: 'kgp_lct_fst',
-          locus: 'chr2:135,851,076',
-          fracY: 0.42,
-          alignX: 'left',
-          dx: -150,
-        },
-      },
-      {
-        type: 'arrow',
-        fromAnchor: {
-          track: 'kgp_lct_fst',
-          locus: 'chr2:135,851,076',
-          fracY: 0.38,
-          alignX: 'left',
-          dx: -80,
-        },
+        leader: true,
         anchor: {
           track: 'kgp_lct_fst',
           locus: 'chr2:135,851,076',
           fracY: 0.09,
         },
+        dx: -90,
+        dy: 30,
       },
     ],
   },
@@ -859,7 +830,7 @@ export const ldSpecs: ScreenshotSpec[] = [
     mode: 'compose',
     name: 'ld/lct_sweep_two_scales',
     parts: ['ld/lct_fst_scan', 'ld/lct_pooled_vs_panel'],
-    gutter: 120,
+    gutter: 70,
     annotations: [
       {
         type: 'trapezoid',
@@ -1186,7 +1157,7 @@ export const ldSpecs: ScreenshotSpec[] = [
             {
               trackId: 'hg38-clinvarMain',
               type: 'LinearBasicDisplay',
-              height: 70,
+              height: 56,
               jexlFiltersSetting: [
                 "jexl:get(feature,'phenotypeList')=='LACTASE PERSISTENCE'",
               ],
@@ -1250,187 +1221,51 @@ export const ldSpecs: ScreenshotSpec[] = [
     // matrix, and its own dismissal is volatile state a session spec cannot
     // arrive in.
     hideSelectors: ['.MuiSnackbar-root'],
-    // gene(60) + clinvar(70) + the 260px LD band + the 520px matrix, their
-    // headers and the ruler. Sized from the run's own clipped/blank report.
-    // 1518 -> 1238: 100 px off the LD band and 180 off the matrix, both argued
-    // where they are set.
-    viewportHeight: 1238,
-    // WHAT THE CLUSTERING PRODUCED, marked (reviewer: "does this figure
-    // somewhat 'clearly' show the clustering? please analyze. if needed add red
-    // text annotation to figure showing groupings in the multi-sample variant
-    // view").
-    //
-    // It does, and the thing to look at is a shape rather than the dendrogram:
-    // the clustered rows resolve into one band that is uniform straight across
-    // the block while every row outside it is speckled, which is what a
-    // haplotype that travelled as one piece looks like on a matrix. The
-    // dendrogram beside it is 550 rows deep in ~40 px of gutter and can only
-    // ever be a texture at this height, so it is not what the pill points at.
-    //
-    // The pills carry NUMBERS, not adjectives (reviewer: "the text 'one
-    // clustered haplotype' is too vague ... i need more detail"). The one they
-    // carry comes from the file: at rs4988235 (chr2:135,851,076 on hg38) the
-    // slice is 90 alt of 300 haplotype rows -- 150 samples, 90 carrying the
-    // persistence allele -- checkable with
-    // `bcftools query -r chr2:135851076 -f '[%GT\n]'` on the hosted VCF. Same
-    // 150 samples the hg19 cut used, so that count did not move. 90/300 is MAF
-    // 0.30, BELOW this figure's own 0.35 filter, so the causal variant is not
-    // one of the drawn columns and the clustering never sees it.
-    //
-    // WHAT THE PILL MUST NOT SAY, and did on hg19: that the slab IS those 90.
-    // On this callset it is not. Measured two ways and they agree.
-    //
-    // Off the capture: one contiguous cluster of ~124 of 300 rows is decided the
-    // same way across a 249-column run, and NONE of the other 176 rows matches
-    // it there -- a clean separation, just a wider cluster than the carrier set.
-    //
-    // Off the VCF, over the clustering window at the same MAF floor (230
-    // columns): carrier haplotypes agree with the carrier consensus at 0.963
-    // mean against 0.301 for non-carriers, so the sweep signal is very strong.
-    // But the agreement tail is gradual rather than a cliff -- >=0.90 takes 90
-    // haplotypes of which 82 are carriers, >=0.60 takes 123 of which 89 are.
-    // So the cluster holds essentially every carrier PLUS a few dozen
-    // chromosomes carrying most of the same background, which is what a young
-    // haplotype at 30% frequency should look like. Say that; don't restore the
-    // arithmetic coincidence.
-    //
-    // CLUSTER, NOT CLADE, in the pill and in this file (review: "please be
-    // careful about using the term 'clade' to refer to humans"). These rows are
-    // the output of hierarchical clustering over one window, which is what the
-    // pill can name; a clade says descent, and the dendrogram beside it fits no
-    // evolutionary model and computes no support, so it does not establish one.
-    // user_guides/clustering.md carries the same caution about the tree.
-    //
-    // TWO PILLS, AND EVERY MARK POINTS AT SOMETHING (review: "there are too
-    // many red text annotations, unclear what they are pointing at. might need
-    // red arrow from the 'unbroken across block' and ideally the red text is
-    // not overlapping the sample labels on left").
-    //
-    // The three that were here were stacked down the matrix lane at chr2
-    // 134,470,000, which is x 42 css px -- inside the dendrogram-and-population
-    // gutter, so all three sat on the sidebar they were meant to be beside. The
-    // gutter measures 107 css px on this capture (the sidebar's right edge
-    // against a 1490 px data area over 2.5 Mb, so 1678 bp/px), and the pill now
-    // starts at 134,650,000, which is 149.
-    //
-    // The third pill is folded into the second as its second line. "Everything
-    // else: no shared block" was a whole pill for the half of the finding that
-    // the OTHER arrow now makes: two heads out of one pill, one into the cluster
-    // and one into the mosaic below it, is the same statement with one box
-    // instead of two and with both ends of it identified.
-    //
-    // BIGGER AND SHORTER (earlier review: "make red text box annotation text
-    // larger and less wordy"): 17 -> 22 px, and the counts are gone. The count
-    // they carried was hard-won and it belongs in the caption rather than here
-    // -- it is exactly the "specific value a reader cannot check against the
-    // picture" that website/CLAUDE.md rules out of a callout. The measurement
-    // itself stays in the paragraph below.
-    //
-    // THE STRIPE PILL MOVED TO THE ClinVar LANE, which is the one band in this
-    // figure that is genuinely empty: its jexl filter leaves two marks, both at
-    // the stripe. So the label sits on the lane directly above the stripe,
-    // right-aligned to end short of it, with an arrow across the gap. In the
-    // matrix lane it had nowhere to go that was not either the sidebar or the
-    // data.
-    //
-    // It answers "why only [a] small region highlighted? what is the scientific
-    // story there?": the stripe is LCT/MCM6, 89 kb, the locus selection acted
-    // on, and the block it dragged along is the whole width of the triangle
-    // above. Naming the stripe is all the pill has to do -- the ratio is then
-    // visible, and stating it would be stating the obvious. The highlight
-    // itself carries no label because a highlight writes one at its top-left,
-    // which here lands on the LCT gene's own label in the lane above.
-    //
-    // ARROW HEADS ARE GENOMIC, the matrix's columns are not (matrix mode gives
-    // every variant equal width), so the heads are placed to land inside the
-    // drawn block rather than at a variant. fracY 0.30 and 0.78 are the cluster's
-    // and the mosaic's centres, measured off the capture -- the cluster occupies
-    // the top ~0.08-0.52 of the lane and the mosaic the rest.
-    //
-    // 135,900,000 -> 135,760,000 (review: "the arrows might be slightly
-    // pointing to the wrong place, too far to right, off"). Measured off the
-    // capture against the highlight, whose edges are known: the cluster's
-    // unbroken slab runs about 135.73-135.97 Mb, so 135,900,000 was inside it
-    // but within a head's length of its right edge, and an arrowhead is drawn
-    // short of its anchor -- so both heads landed on the edge where the slab
-    // stops rather than in it. 135,760,000 is left of the LCT/MCM6 stripe, in
-    // the part of the slab no highlight tints.
-    //
-    // Both heads share that x on purpose. The claim is about ROWS -- these rows
-    // hold the block, those rows do not -- so two heads in one column of the
-    // matrix say it and two heads at different columns would not.
+    // gene(60) + clinvar(56) + the 260px LD band + the 520px matrix, their
+    // headers and the ruler
+    viewportHeight: 1224,
+    // The pills name what the clustering produced, never how many carriers:
+    // the cluster holds essentially every rs4988235 carrier plus a few dozen
+    // chromosomes on most of the same background (bcftools query on the hosted
+    // VCF at chr2:135851076). Both heads share one x inside the slab, since the
+    // claim is about rows, and the matrix's columns are not genomic.
     annotations: [
       {
         type: 'text',
-        text: 'LCT/MCM6: the locus the sweep acted on',
-        fontSize: 22,
-        // one line. At 420 it wrapped, and a right-aligned pill wraps its LAST
-        // word onto a line of its own against the arrow it points with.
-        maxWidth: 500,
-        textAlign: 'end',
-        anchor: {
-          track: 'hg38-clinvarMain',
-          locus: 'chr2:135,690,000',
-          fracY: 0.5,
-          alignX: 'left',
-        },
-      },
-      {
-        type: 'arrow',
-        fromAnchor: {
-          track: 'hg38-clinvarMain',
-          locus: 'chr2:135,700,000',
-          fracY: 0.5,
-          alignX: 'left',
-        },
+        text: 'LCT/MCM6',
+        fontSize: 20,
+        leader: true,
         anchor: {
           track: 'hg38-clinvarMain',
           locus: 'chr2:135,787,850',
           fracY: 0.5,
           alignX: 'left',
         },
+        dx: -60,
       },
       {
         type: 'text',
-        text: 'One cluster, unbroken across the block.\nEvery other row: mosaic.',
+        text: 'Swept haplotype: one uniform cluster',
         fontSize: 22,
-        maxWidth: 340,
-        anchor: {
-          track: 'kgp_lct_haplotypes',
-          locus: 'chr2:134,650,000',
-          fracY: 0.52,
-          alignX: 'left',
-        },
-      },
-      {
-        type: 'arrow',
-        fromAnchor: {
-          track: 'kgp_lct_haplotypes',
-          locus: 'chr2:135,290,000',
-          fracY: 0.46,
-          alignX: 'left',
-        },
+        leader: true,
         anchor: {
           track: 'kgp_lct_haplotypes',
           locus: 'chr2:135,760,000',
-          fracY: 0.3,
-          alignX: 'left',
+          fracY: 0.27,
         },
+        dx: -260,
       },
       {
-        type: 'arrow',
-        fromAnchor: {
-          track: 'kgp_lct_haplotypes',
-          locus: 'chr2:135,290,000',
-          fracY: 0.58,
-          alignX: 'left',
-        },
+        type: 'text',
+        text: 'Every other haplotype: mosaic',
+        fontSize: 22,
+        leader: true,
         anchor: {
           track: 'kgp_lct_haplotypes',
           locus: 'chr2:135,760,000',
-          fracY: 0.78,
-          alignX: 'left',
+          fracY: 0.75,
         },
+        dx: -260,
       },
     ],
   },
