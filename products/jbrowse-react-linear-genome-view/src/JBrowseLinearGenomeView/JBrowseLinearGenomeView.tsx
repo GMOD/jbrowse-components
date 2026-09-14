@@ -7,7 +7,10 @@ import { getEnv } from '@jbrowse/core/util'
 import { useScrollPortHeightVar } from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { EmbeddedViewContainer } from '@jbrowse/embedded-core'
-import { drawerGridTemplateColumns } from '@jbrowse/product-core'
+import {
+  AppReadyMarker,
+  drawerGridTemplateColumns,
+} from '@jbrowse/product-core'
 import { ScopedCssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -124,6 +127,7 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
                 module scope is two `lazy()` calls, so the toast and its
                 stack-trace dialog arrive only if something is reported. */}
             <Snackbar session={session} />
+            <AppReadyMarker session={session} />
           </ScopedCssBaseline>
         </div>
       </StyleThemeProvider>

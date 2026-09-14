@@ -286,6 +286,14 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
           </div>
         </div>
       </div>
+      <span
+        data-app-assemblies="["volvox"]"
+        data-app-phase="ready"
+        data-app-tracks="[]"
+        data-app-views="1"
+        data-testid="app-ready-marker"
+        hidden=""
+      />
     </div>
   </div>
 </div>

@@ -1,8 +1,8 @@
 import { openTracks, openViews } from '@jbrowse/core/util/openViews'
 import { observer } from 'mobx-react'
 
-import type { AppSession } from './types.ts'
 import type {
+  AbstractSessionModel,
   AbstractTrackModel,
   AbstractViewModel,
 } from '@jbrowse/core/util/types'
@@ -105,7 +105,7 @@ function viewLoading(view: AbstractViewModel) {
 const AppReadyMarker = observer(function AppReadyMarker({
   session,
 }: {
-  session: AppSession
+  session: AbstractSessionModel
 }) {
   const views = openViews(session)
   const tracks = openTracks(session)

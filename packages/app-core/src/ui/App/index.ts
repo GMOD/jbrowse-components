@@ -1,3 +1,3 @@
 export { App } from './App.tsx'
-export { default as AppReadyMarker } from './AppReadyMarker.tsx'
+export { AppReadyMarker } from '@jbrowse/product-core'
 export { default as DialogQueue } from './DialogQueue.tsx'

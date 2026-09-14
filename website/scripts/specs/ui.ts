@@ -2318,6 +2318,7 @@ export const uiSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'config_not_found',
+    noSession: true,
     url: '',
     readyText: 'It worked!',
     viewportWidth: 1200,

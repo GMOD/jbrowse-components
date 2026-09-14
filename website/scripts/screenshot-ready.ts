@@ -83,6 +83,10 @@ export async function waitForReady(
     spec.readyText ? textSelector(spec.readyText) : undefined,
     spec.readySelector,
   ].filter((s): s is string => s !== undefined)
+  if ('noSession' in spec && spec.noSession) {
+    await waitForPlainPage(page, spec, readySelectors)
+    return
+  }
   try {
     // first: while a view reads data-view-phase=loading it has mounted no
     // displays, so the spec's own ready selector and every display-level signal
@@ -135,6 +139,29 @@ export async function waitForReady(
       timeout: readyTimeout,
     })
     await settlePass(page, spec)
+  }
+}
+
+async function waitForPlainPage(
+  page: Page,
+  spec: SessionUrlSpec,
+  readySelectors: string[],
+) {
+  const timeout = readyTimeoutOf(spec)
+  try {
+    if (readySelectors.length === 0) {
+      throw new Error(
+        `${spec.name}: a noSession spec needs readyText or readySelector, ` +
+          'which is the only positive signal such a page has',
+      )
+    }
+    for (const selector of readySelectors) {
+      await waitForVisible(page, selector, { timeout })
+    }
+    await page.waitForNetworkIdle({ idleTime: 500, timeout })
+  } catch (e) {
+    await debugDump(page, spec.name)
+    throw e
   }
 }
 

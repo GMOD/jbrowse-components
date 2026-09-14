@@ -258,6 +258,10 @@ export interface SessionUrlSpec extends CommonSpecFields {
   // genomes.jbrowse.org catalog pages) opens a page, and the default label
   // would be a false statement about where the link goes.
   liveLabel?: string
+  // the page holds no JBrowse session to publish `[data-app-phase]` — a plain
+  // web page, or jbrowse-web's no-config landing — so `readyText` or
+  // `readySelector` is its whole positive signal, followed by network idle
+  noSession?: boolean
   readyText?: string // text to wait for before settle
   readySelector?: string // CSS selector to wait for before settle
   readyTimeout?: number // ms override for the ready wait (default 30000)

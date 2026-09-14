@@ -86,6 +86,7 @@ export type {
 
 export {
   AboutDialog,
+  AppReadyMarker,
   Drawer,
   DrawerControls,
   DrawerHeader,

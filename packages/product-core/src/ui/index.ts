@@ -1,3 +1,4 @@
+export { default as AppReadyMarker } from './AppReadyMarker.tsx'
 export { default as AboutDialog } from './AboutDialog.tsx'
 export { default as Drawer } from './Drawer.tsx'
 export { default as DrawerControls } from './DrawerControls.tsx'

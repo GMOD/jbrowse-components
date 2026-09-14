@@ -247,6 +247,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'genomes_basics/site_home',
+    noSession: true,
     url: SITE,
     readyText: 'GenArk',
     viewportWidth: 1100,
@@ -262,6 +263,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'genomes_basics/site_search',
+    noSession: true,
     url: SITE,
     readyText: 'GenArk',
     viewportWidth: 1100,
@@ -289,6 +291,7 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'genomes_basics/site_ucsc_list',
+    noSession: true,
     url: `${SITE}/ucsc`,
     readyText: 'hg38',
     viewportHeight: 1000,

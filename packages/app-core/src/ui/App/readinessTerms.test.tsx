@@ -1,7 +1,6 @@
 import { viewSettled } from '@jbrowse/core/util/whenViewSettled'
+import { AppReadyMarker } from '@jbrowse/product-core'
 import { render } from '@testing-library/react'
-
-import AppReadyMarker from './AppReadyMarker.tsx'
 
 import type { AppSession } from './types.ts'
 

@@ -6,7 +6,7 @@ import Snackbar from '@jbrowse/core/ui/Snackbar'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { EmbeddedViewContainer } from '@jbrowse/embedded-core'
-import { ModalWidget } from '@jbrowse/product-core'
+import { AppReadyMarker, ModalWidget } from '@jbrowse/product-core'
 import { ScopedCssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -56,6 +56,7 @@ const JBrowseCircularGenomeView = observer(function JBrowseCircularGenomeView({
                 so this product dropped them all. Module scope is two `lazy()`
                 calls, so it costs the eager bundle nothing. */}
             <Snackbar session={session} />
+            <AppReadyMarker session={session} />
           </ScopedCssBaseline>
         </div>
       </StyleThemeProvider>

@@ -2,12 +2,15 @@ import { Suspense, lazy } from 'react'
 
 import Snackbar from '@jbrowse/core/ui/Snackbar'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { ModalWidget, drawerGridTemplateColumns } from '@jbrowse/product-core'
+import {
+  AppReadyMarker,
+  ModalWidget,
+  drawerGridTemplateColumns,
+} from '@jbrowse/product-core'
 import { AppBar } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import AppFab from './AppFab.tsx'
-import AppReadyMarker from './AppReadyMarker.tsx'
 import AppToolbar from './AppToolbar.tsx'
 import DialogQueue from './DialogQueue.tsx'
 import ViewsContainer from './ViewsContainer.tsx'
