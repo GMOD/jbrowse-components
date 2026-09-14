@@ -502,8 +502,6 @@ try {
   // without this the TUI opens on a warning about it, which is the first thing
   // the video would show
   tmux('set-option', '-t', SESSION, 'focus-events', 'on')
-  // Sonnet, not the session default (Fable) — a lighter model is the honest
-  // thing to show in a public demo, and plenty for driving the app
   // The invocation goes in a script rather than down the wire: a take's system
   // prompt runs past a thousand characters, and zsh's line editor never submits
   // a send-keys line that long — it redraws it, echoes it truncated and sits
@@ -519,7 +517,7 @@ try {
   const startScript = path.join(cwd, 'start-session.sh')
   fs.writeFileSync(
     startScript,
-    `#!/bin/sh\nexport PATH=${JSON.stringify(binDir)}:"$PATH"\nexec claude --model sonnet \\\n  --mcp-config ${JSON.stringify(mcpConfig)} --strict-mcp-config \\\n  --allowedTools '${MCP_TOOLS}${SHELL ? ',Bash,Read,Write,Edit,Glob,Grep' : ''}' \\\n  --append-system-prompt ${JSON.stringify(system)}\n`,
+    `#!/bin/sh\nexport PATH=${JSON.stringify(binDir)}:"$PATH"\nexec claude --model opus \\\n  --mcp-config ${JSON.stringify(mcpConfig)} --strict-mcp-config \\\n  --allowedTools '${MCP_TOOLS}${SHELL ? ',Bash,Read,Write,Edit,Glob,Grep' : ''}' \\\n  --append-system-prompt ${JSON.stringify(system)}\n`,
   )
   fs.chmodSync(startScript, 0o755)
   tmux('send-keys', '-t', SESSION, './start-session.sh', 'Enter')

@@ -488,6 +488,64 @@ minimap2 -cx asm20 t1.fa q1.fa |
 - `jbrowse make-pif` indexes the PAF for a `PairwiseIndexedPAFAdapter`, and the
   query is minimap2's second argument.
 
+## Two genomes and the alignment between them, in one spec
+
+Build the comparison as one session spec rather than a chain of actions. The
+spec names both assemblies, the alignment track and every view that shows it,
+and `jb.loadSessionSpec` reports what did not draw. Two GenArk flies, with the
+PIF from the recipe above, as a synteny view over a whole-genome dotplot:
+
+```js
+const hub = acc =>
+  `https://jbrowse.org/hubs/genark/GCF/${acc.slice(4, 7)}/${acc.slice(7, 10)}/${acc.slice(10, 13)}/${acc}/config.json`
+const [sim, mau] = await Promise.all(
+  ['GCF_016746395.2', 'GCF_004382145.1'].map(async acc =>
+    (await fetch(hub(acc))).json(),
+  ),
+)
+const target = sim.assemblies[0].name
+const query = mau.assemblies[0].name
+return jb.loadSessionSpec({
+  sessionAssemblies: [sim.assemblies[0], mau.assemblies[0]],
+  sessionTracks: [
+    {
+      type: 'SyntenyTrack',
+      trackId: 'sim_vs_mau',
+      name: 'D. simulans vs D. mauritiana',
+      assemblyNames: [query, target],
+      adapter: {
+        type: 'PairwiseIndexedPAFAdapter',
+        uri: '/data/sim_vs_mau.pif.gz',
+        queryAssembly: query,
+        targetAssembly: target,
+      },
+    },
+  ],
+  views: [
+    {
+      type: 'LinearSyntenyView',
+      views: [
+        { assembly: target, loc: 'chr2R' },
+        { assembly: query, loc: 'chr2R' },
+      ],
+      tracks: ['sim_vs_mau'],
+    },
+    {
+      type: 'DotplotView',
+      views: [{ assembly: target }, { assembly: query }],
+      tracks: ['sim_vs_mau'],
+    },
+  ],
+})
+```
+
+- The hosted configs carry each assembly's sequence and chromAlias file, so
+  `chr2R` answers for the `NC_` names the FASTA used.
+- `sessionTracks` takes each config's gene track too; leave out any trackId the
+  open session already has, which the notifications name.
+- A gene track at whole-chromosome zoom reports `tooLarge` in `notReady`. Add it
+  to a row once the view is on a region.
+
 ## The same data under another display
 
 `track.compatibleDisplays` is the set the containing view can draw, and

@@ -188,7 +188,7 @@ What is established, each of it paid for:
 ## Linux: `recordDemoTui.mjs`
 
 `node scripts/agent-demos/recordDemoTui.mjs <outdir> [takes/<name>.mjs]` writes
-`<outdir>/demo-captioned.mp4`. It shows the REAL Claude Code TUI (Sonnet) driven
+`<outdir>/demo-captioned.mp4`. It shows the REAL Claude Code TUI (Opus) driven
 by `tmux send-keys` — not the formatted `claude -p` stream `recordDemoLinux.mjs`
 films, which reads as a fake — beside the built-in hg38, with the narration
 burned in as ASS captions.
