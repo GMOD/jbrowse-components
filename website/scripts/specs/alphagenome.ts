@@ -68,6 +68,7 @@ const JURKAT_INSERTION = 'chr1:47239297 C>CCGTTTCCTAACC'
 // plugin and a miss opens the display's own menu without it.
 const ENHANCER_1_LOCUS = 'chr1:47,212,073'
 const TOP_ROW = 0.1
+const MIN_SCORE_SLIDER = '[data-testid="min-score-slider"]'
 const PREDICT_VARIANT_EFFECT =
   '[data-testid="cascading-menuitem-predict_variant_effect_with_alphagenome"]'
 
@@ -242,23 +243,62 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
     viewportHeight: 800,
   },
 
-  // Splice junctions come back as arcs — a sashimi plot — and never join a
+  // Splice junctions come back as arcs, a sashimi plot, and never join a
   // stacked track, because they are not a quantitative row.
   //
-  // K562's alone. The claim is that the arcs land on the same exon boundaries
-  // the RefSeq track draws, which is about one track against the annotation
-  // rather than about two cell lines.
+  // Both cell lines, over TAL1 alone (review: "too many split junctions to
+  // understand"). K562's arcs land on the exon boundaries RefSeq draws and
+  // GM12878's lane is empty, since TAL1 is off there. The adapter keeps every
+  // junction above 0.01, which over TAL1 is sixty-odd faint arcs around eight
+  // strong ones, so the track's own Min score slider goes to 0.5 of the 0-5
+  // its loaded scores span.
   {
     ...common,
     name: 'alphagenome/splice_junctions',
     actions: [
       ...buildQuery,
       ...predictCached,
-      ...pick('splice_junctions', 'K562'),
+      ...pick('splice_junctions', 'polyA plus'),
       row('splice_junctions', 'k562-polya-plus-rna-seq'),
+      row('splice_junctions', 'gm12878-polya-plus-rna-seq'),
       ...addAndSettle('arc-display'),
+      {
+        type: 'type',
+        selector: 'input[placeholder="Search for location"]',
+        value: 'chr1:47,207,000..47,235,000',
+        clear: true,
+      },
+      { type: 'press', key: 'Enter' },
+      { type: 'waitForAppSettled' },
+      {
+        type: 'click',
+        selector:
+          '[data-testid="track_menu_icon"][data-trackid$="-junctions-reference-0"]',
+      },
+      { type: 'waitForText', text: 'Min score' },
+      // a tenth of the way along the 220 px slider, whose scores span 0-5
+      {
+        type: 'click',
+        anchor: { selector: MIN_SCORE_SLIDER, alignX: 'left', dx: 22 },
+      },
+      { type: 'waitForText', text: 'Min score: 0.50' },
+      { type: 'click', selector: '.MuiMenu-root .MuiBackdrop-root' },
+      { type: 'waitForSelector', selector: '.MuiMenu-root', hidden: true },
+      { type: 'waitForAppSettled' },
     ],
-    viewportHeight: 760,
+    viewportHeight: 690,
+    annotations: [
+      {
+        type: 'text',
+        text: 'GM12878: TAL1 is off, so no junctions',
+        fontSize: 18,
+        anchor: {
+          track: 'demo-tal1-interval-junctions-reference-2',
+          locus: 'chr1:47,221,000',
+          fracY: 0.5,
+        },
+      },
+    ],
   },
 
   // Contact maps come at 2 kb bins and only for about a dozen cell lines.

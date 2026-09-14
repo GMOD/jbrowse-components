@@ -179,11 +179,15 @@ track.
 
 **Splice junctions** come back as arcs, a sashimi plot. AlphaGenome returns tens
 of thousands for a megabase, so the adapter ships them whole and thresholds them
-in the browser. Add the K562 polyA junctions and the arcs land on the exon
-boundaries the RefSeq track draws, colored by strand, one color here because
-every junction over _TAL1_ is on the gene's strand.
+in the browser. Add the K562 and GM12878 polyA junctions and zoom in to _TAL1_.
+The adapter's own threshold is low, which over one gene leaves dozens of faint
+arcs around a few strong ones; raise the Min score slider in the K562 track's
+menu and the strong ones remain, landing on the exon boundaries the RefSeq track
+draws. The arcs are colored by strand, one color here because every junction
+over _TAL1_ is on the gene's strand, and the GM12878 lane is empty because
+_TAL1_ is off there.
 
-<Figure caption="Predicted splice junctions for K562 polyA plus RNA-seq, as sashimi arcs. The arcs span the introns between the TAL1 exons the RefSeq track draws above them, with a second set over STIL to the right." src="/img/alphagenome/splice_junctions.png" />
+<Figure caption="Predicted splice junctions over TAL1 for K562 and GM12878 polyA plus RNA-seq, with the K562 track's minimum score raised. The K562 arcs join the exons the RefSeq track draws; the GM12878 lane has none." src="/img/alphagenome/splice_junctions.png" />
 
 **Contact maps** come back as a triangle at 2 kb bins, and only for about a
 dozen cell lines, GM12878 among them. Predicted maps are much less skewed than
