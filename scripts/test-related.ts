@@ -11,8 +11,12 @@
  * A changed file whose compiled output is unchanged — comments, types,
  * formatting — selects nothing.
  *
- * Usage: `pnpm test-related [base-ref]` (default `main`). Extra jest flags pass
- * through after `--`.
+ * `products/jbrowse-web` suites run only when the change is in it or with
+ * `--with-web`, so the default never selects more than the static graph minus
+ * jbrowse-web did.
+ *
+ * Usage: `pnpm test-related [base-ref] [--with-web]` (default `main`). Extra
+ * jest flags pass through after `--`.
  */
 import { execFileSync, spawn } from 'node:child_process'
 import fs from 'node:fs'
@@ -37,25 +41,28 @@ const CODE = /\.(ts|tsx|js|jsx|cjs|mjs)$/
 const JSX = /\.(tsx|jsx|js)$/
 const TEST = /\.test\.(ts|tsx|js|jsx)$/
 const NOT_A_SUITE = /(^|\/)(dist|demos)\/|^products\/aws\//
+const WEB = 'products/jbrowse-web/'
 // Loaded by jest itself or resolved outside the repo, so in no footprint, and
 // a change to any of them can move every suite.
 const HARNESS =
-  /^(jest\.config\.js|babel\.config\.cjs|pnpm-lock\.yaml|config\/jest\/)/
+  /^(jest\.config\.js|babel\.config\.cjs|pnpm-lock\.yaml|config\/jest\/.*\.cjs)$/
 
 const argv = process.argv.slice(2)
 const passThroughAt = argv.indexOf('--')
 const jestArgs = passThroughAt === -1 ? [] : argv.slice(passThroughAt + 1)
 const own = passThroughAt === -1 ? argv : argv.slice(0, passThroughAt)
-const flags = own.filter(a => a.startsWith('-'))
+const withWeb = own.includes('--with-web')
+const flags = own.filter(a => a.startsWith('-') && a !== '--with-web')
 if (flags.length > 0) {
   console.error(
     `Unknown option ${flags.join(' ')}. Jest flags go after \`--\`.`,
   )
   process.exit(2)
 }
-const ref = own[0] ?? 'main'
+const ref = own.find(a => !a.startsWith('-')) ?? 'main'
 
 const root = git('rev-parse', '--show-toplevel').trim()
+const jest = path.join(root, 'node_modules/.bin/jest')
 const primary = path.dirname(
   path.resolve(root, git('rev-parse', '--git-common-dir').trim()),
 )
@@ -130,11 +137,10 @@ let byGraph = 0
 if (unrecorded.length > 0 && staticInputs.length > 0) {
   const missing = new Set(unrecorded)
   const related = lines(
-    execFileSync(
-      'npx',
-      ['jest', '--listTests', '--findRelatedTests', ...staticInputs],
-      { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
-    ),
+    execFileSync(jest, ['--listTests', '--findRelatedTests', ...staticInputs], {
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+    }),
   )
   for (const abs of related) {
     const test = path.relative(root, abs)
@@ -145,19 +151,32 @@ if (unrecorded.length > 0 && staticInputs.length > 0) {
   }
 }
 
-const byChange = selected.size - byFootprint - byGraph
+const skippedWeb =
+  withWeb || liveSources.some(f => f.startsWith(WEB))
+    ? []
+    : [...selected].filter(t => t.startsWith(WEB) && !live.includes(t))
+for (const t of skippedWeb) {
+  selected.delete(t)
+}
+
 console.log(
   `${changed.length} changed file(s) against ${ref}, ${inert.length} compiling to identical output`,
 )
-if (harness.length > 0) {
-  console.log(`Every suite, for the test harness: ${harness.join(', ')}`)
-} else {
+console.log(
+  `${selected.size} suite(s): ${byFootprint} by footprint, ${byGraph} by the static graph (${unrecorded.length} have no footprint yet)`,
+)
+if (skippedWeb.length > 0) {
   console.log(
-    `${selected.size} suite(s): ${byFootprint} by footprint, ${byGraph} by the static graph (${unrecorded.length} have no footprint yet), ${byChange} changed test file(s)`,
+    `Skipped ${skippedWeb.length} products/jbrowse-web suite(s) that executed the change; --with-web runs them.`,
   )
-  if (selected.size === 0) {
-    process.exit(0)
-  }
+}
+if (harness.length > 0) {
+  console.log(
+    `${harness.join(', ')} changed, which no footprint records; \`pnpm test\` runs every suite.`,
+  )
+}
+if (selected.size === 0) {
+  process.exit(0)
 }
 
 // `--runTestsByPath` ends with a "Ran all test suites within paths" line naming
@@ -165,13 +184,8 @@ if (harness.length > 0) {
 const FOOTER = 'Ran all test suites within paths '
 
 const child = spawn(
-  'npx',
-  [
-    'jest',
-    '--ci',
-    ...(harness.length > 0 ? [] : ['--runTestsByPath', ...selected]),
-    ...jestArgs,
-  ],
+  jest,
+  ['--ci', '--runTestsByPath', ...selected, ...jestArgs],
   { stdio: ['inherit', 'inherit', 'pipe'] },
 )
 for await (const line of readline.createInterface({ input: child.stderr })) {
