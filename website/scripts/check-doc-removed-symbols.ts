@@ -153,6 +153,18 @@ const ABSENT_ON_PURPOSE = new Map([
     'HIT_GATES',
     "draw-pass-registries names the pileup's retired hit-gate record, replaced by defineMark's structural draw/hit parity",
   ],
+  [
+    'ConfigSlotDefaults',
+    'TEST_INFRASTRUCTURE names the test file as a historical example of a suite that went red on main',
+  ],
+  [
+    'AlignmentsFilters',
+    'TEST_INFRASTRUCTURE names the test file as a historical example of a suite that went red on main',
+  ],
+  [
+    'ReversedRegionLabels',
+    'TEST_INFRASTRUCTURE names the test file as a historical example of a suite that went red on main',
+  ],
 ])
 
 const LADDER = ['~128', '~512', '~2048']
