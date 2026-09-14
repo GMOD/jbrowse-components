@@ -389,15 +389,6 @@ const agKaryotypeTrack = (
   ],
 })
 
-// Published 2La extent (White et al. 2007, AgamP3 coordinates, which are the
-// AgamP4 ones on this arm). Used to anchor the two callouts, one per population
-// lane, so each sits over the span it is about. It was also drawn as a
-// `highlight` band across both lanes; review asked for that off, and it was
-// doing the callouts' job badly anyway — a tinted rectangle says "look here"
-// and the reader still has to be told that the block filling it in one lane and
-// not the other is the whole result.
-const TWO_LA_LOCUS = 'chr2L:20,524,058-42,165,532'
-
 // The per-population point, shown rather than asserted, WITHOUT making a figure
 // out of human population differences. Both lanes are the same locus, window,
 // MAF floor and settings; the only difference is which samples went in. Pooled
@@ -1033,102 +1024,39 @@ export const ldSpecs: ScreenshotSpec[] = [
     // r² ramp, which the callout beside it currently misses by 3 px, would be
     // under that callout. Worth doing only together with re-anchoring both
     // callouts, which is a bigger change than the 100 px it returns.
-    viewportHeight: 1385,
+    viewportHeight: 1395,
     settleMs: 8000,
-    // One callout per lane, saying what each lane shows rather than only naming
-    // the span (review: "a red text annotation on both cameroon and gabon
-    // tracks that says why this is interesting"). Both anchor to the same
-    // published locus in their own track, so they sit over the span they
-    // describe and move with the layout. chr2L, not 2L: the anchor locus is
-    // resolved against the assembly's canonical names (the .ld.gz's own 2L is
-    // the adapter's business), so a bare name here resolves to nothing and
-    // fails the spec outright.
-    //
-    // Plain words for everything except the mechanism itself: arrangement is
-    // "version", but recombination is named ("recombine"), which is the term
-    // the tutorial prose and every source on 2La uses and the one word a reader
-    // can look up (review: "the term 'shuffle' should use biological language
-    // e.g. 'recombine'"). The mechanism — two versions that cannot recombine
-    // with each other — is stated rather than implied, because it is the whole
-    // reason one panel is red and the other is not.
-    //
-    // Flat statements, no counts and no emphasis (review: "very 'strong'
-    // language ... prefer to be a little more dry ... avoid referring to exact
-    // numbers, just general concepts"). The numbers behind them are in the
-    // caption and the tutorial prose, where they can be attributed: Gabon is 64
-    // standard homozygotes and 5 heterozygotes of 69, Cameroon 168/79/50 of 297
-    // (build_ag1000g_ld.sh prints these, and the sample TSVs this figure
-    // colours its rows from carry them). Gabon is therefore "nearly every",
-    // never "fixed", and the label points at the carriers in the lane below
-    // rather than denying they exist (review: "there are inversions in the
-    // gabon population, so unclear if that is considered here").
-    //
-    // "Recombines freely" is a claim about the COMMON variation only, which is
-    // all these panels contain: both are built at --maf 0.2, and Gabon's
-    // inverted version sits at 5 of 138 haplotypes, so the variants that tag it
-    // are below that floor and absent from the file. A label reading "nothing
-    // stays linked" would claim more — unfiltered, those five carriers' own
-    // rare tag SNPs would still correlate with each other.
+    // One box per population around its LD panel and karyotype lane, so the
+    // label says which pair of tracks it covers (review: "reduce the red text
+    // boxes to the bare minimum"). The box's lower edge also sits under Gabon's
+    // five heterozygotes, the last rows of the lane, so their band does not read
+    // as cropped.
     annotations: [
-      {
-        type: 'text',
-        anchor: {
-          track: 'ag1000g_2l_cmgam',
-          locus: TWO_LA_LOCUS,
-          fracY: 0,
-          dy: 20,
+      ...(
+        [
+          ['cmgam', 'Cameroon: 2La inversion common, LD spans it'],
+          ['gagam', 'Gabon: 2La inversion rare, no LD block'],
+        ] as const
+      ).flatMap(([pop, text]) => [
+        {
+          type: 'box' as const,
+          pad: 0,
+          strokeWidth: 3,
+          fromAnchor: { track: `ag1000g_2l_${pop}`, dy: -28 },
+          anchor: { track: `ag1000g_2la_karyotype_${pop}` },
         },
-        text: 'Both versions are common here, and they do not\nrecombine with each other, so this span is\ninherited as one piece.',
-        // 16, not the 18 the one-line labels used: these say more, and at 18 a
-        // ~50 character line runs past maxWidth 430, which is where the r²
-        // legend sits in the top right corner of both panels.
-        fontSize: 16,
-        maxWidth: 430,
-      },
-      {
-        type: 'text',
-        anchor: {
-          track: 'ag1000g_2l_gagam',
-          locus: TWO_LA_LOCUS,
-          fracY: 0,
-          dy: 20,
+        {
+          type: 'text' as const,
+          text,
+          fontSize: 20,
+          maxWidth: 600,
+          anchor: {
+            track: `ag1000g_2l_${pop}`,
+            locus: 'chr2L:4,500,000',
+            fracY: 0.55,
+          },
         },
-        text: 'Nearly every mosquito here carries the same\nversion, so this span recombines freely.\nThe few that do not are the blue band below.',
-        fontSize: 16,
-        maxWidth: 430,
-      },
-      // POINT AT THE BAND, because it is the one thing in this figure that
-      // looks like a defect (review: "are you happy with this figure?").
-      //
-      // Gabon's five heterozygotes are the last five of its 69 rows -- the lane
-      // is grouped in dosage order -- so their band is the lane's own bottom
-      // edge, 12 px of blue lying against the app frame's border. It is not
-      // cropped and it reads as cropped, which is worse than cropped: a reader
-      // who takes it for a clip discounts the sentence above it, and that
-      // sentence is the whole reason the Gabon panel is white.
-      //
-      // An arrow is what settles it. A mark aimed at something is a statement
-      // that the something is there in full, and it does the parenthetical's
-      // job in the callout above better than the parenthetical did -- so the
-      // sentence gets its own line back and stops describing a position.
-      //
-      // The head goes to fracY 0.94 rather than 1: the band's centre. At 170 px
-      // and 5 of 69 rows it spans roughly 0.88-1.0, and a head ON the border
-      // would restate the ambiguity it is there to remove.
-      {
-        type: 'arrow',
-        fromAnchor: {
-          track: 'ag1000g_2l_gagam',
-          locus: TWO_LA_LOCUS,
-          fracY: 0,
-          dy: 96,
-        },
-        anchor: {
-          track: 'ag1000g_2la_karyotype_gagam',
-          locus: TWO_LA_LOCUS,
-          fracY: 0.94,
-        },
-      },
+      ]),
     ],
   },
   // ld/anopheles_r2_vs_dprime was here and is DELETED (review: "i dont need a

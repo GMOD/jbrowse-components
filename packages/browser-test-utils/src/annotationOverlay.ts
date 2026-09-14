@@ -201,6 +201,7 @@ export interface Annotation {
   // for 'arrow' with an anchored head: the tail can be anchored too, so a
   // callout's whole geometry is model-derived. Same shape as `anchor`, read the
   // same way (`alignX`/`alignY` included); `from` is the raw-pixel fallback.
+  // A 'box' with both wraps the two rects together, e.g. a run of tracks.
   fromAnchor?: AnnotationAnchor
   dx?: number
   dy?: number
@@ -462,6 +463,17 @@ export function drawAnnotationOverlay(
   // a short vertical arrow at a track's left edge + 400 and drew a diagonal
   // across the whole panel, because a track's rect is the full view width and
   // half of that is what the tail was off by.
+  function unionRect(a: Rect, b: Rect) {
+    const left = Math.min(a.left, b.left)
+    const top = Math.min(a.top, b.top)
+    return {
+      left,
+      top,
+      width: Math.max(a.left + a.width, b.left + b.width) - left,
+      height: Math.max(a.top + a.height, b.top + b.height) - top,
+    }
+  }
+
   function anchorPoint(rect: Rect, anchor: Anchor) {
     const alignX = anchor?.alignX ?? 'center'
     const alignY = anchor?.alignY ?? 'center'
@@ -489,7 +501,11 @@ export function drawAnnotationOverlay(
     const dy = a.dy ?? 0
     const from = a.fromAnchor ? anchorRect(a.fromAnchor) : undefined
     const tail = from ? anchorPoint(from, a.fromAnchor) : a.from
-    const r = anchorRect(a.anchor)
+    const anchored = anchorRect(a.anchor)
+    const r =
+      a.type === 'box' && from && anchored
+        ? unionRect(from, anchored)
+        : anchored
     if (!r) {
       return {
         ...a,
