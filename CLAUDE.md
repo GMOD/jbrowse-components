@@ -87,9 +87,11 @@ survive only for prebuilt plugin bundles; `no-restricted-syntax` fails a call.
 - **`pnpm verify` and `pnpm test-related`**, in your own worktree. verify
   formats, spell-checks and lints the files changed against main (`--all` for
   the tree). test-related runs the suites whose footprint — the files they
-  executed on their last run — holds a changed file, jbrowse-web included; a
-  comment- or type-only edit runs nothing. `reference/TEST_INFRASTRUCTURE.md`
-  §"Which suites a change runs".
+  executed on their last run — holds a changed file; a comment- or type-only
+  edit runs nothing. **Add `--with-web` before landing anything that moves a
+  config slot, a menu, a label or a snapshot shape**: jbrowse-web suites are
+  otherwise left out unless the change is in jbrowse-web.
+  `reference/TEST_INFRASTRUCTURE.md` §"Which suites a change runs".
 - **An agent's jest run prints nothing for a passing suite.** jest 30 swaps in
   `AgentReporter` once it detects an agent environment (`CLAUDECODE` is one),
   and it prints only files that fail — so every `console.log`/`warn`/`error` a

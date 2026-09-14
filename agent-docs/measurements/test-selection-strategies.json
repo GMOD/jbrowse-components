@@ -4,24 +4,23 @@
   "published": false,
   "source": {
     "kind": "hand",
-    "repro": "The last 400 non-merge commits on main as of 116cc66d41; the 263 that touched a .ts/.tsx/.js/.jsx file still present at that commit, test files excluded. One recorded full run (2136 suites, JEST_MAX_WORKERS=4, nice 15, on battery at load ~10-25) supplied each suite's footprint and its wall time (endTime - startTime from --json). Per commit, each strategy's selected suites are summed by that wall time. 'static' is @jest/core SearchSource.findRelatedTests over the commit's files in one process; 'static, no web' drops products/jbrowse-web unless the commit touched it, which is what test-related did before footprints. 'footprint' selects suites whose footprint holds a changed file; 'footprint + compile filter' first drops files whose @babel/preset-typescript output (comments: false, compact) is identical at C^ and C.",
-    "notes": "Graph and footprints are at 116cc66d41 while the commits are historical, so a file's importers are today's rather than the commit's. Suite-seconds are contended 4-worker times, ~1.3x a quiet box. Over all 263 commits the footprint picked exactly one suite the static graph did not. The distribution is bimodal: ~40% of commits touch a module every app-level suite executes at import (render-core marks, a plugin index, a config schema) and still select most of them. Function-level selection off V8 precise coverage was measured and declined: it added ~27% to every run and moved the mean from 441 to 415, because most changed lines in those modules are top-level."
+    "repro": "The last 400 non-merge commits on main as of b5c18e35ac; the 264 that touched a .ts/.tsx/.js/.jsx source file still present, test files excluded. Each suite is priced at the median of its durations in jest's perf cache (node_modules/.cache/jest/perf-cache-jbrowse-default-*), footprints are the primary checkout's from one full run, and per commit each strategy's selected suites are summed. 'static' is @jest/core SearchSource.findRelatedTests over the commit's files in one process. 'footprint' selects suites whose footprint holds a changed file after dropping files whose @babel/preset-typescript output (comments: false, compact) is identical at C^ and C. 'no web' drops products/jbrowse-web suites unless the commit touched a jbrowse-web source file.",
+    "notes": "Graph and footprints are today's while the commits are historical, so a file's importers are today's rather than the commit's. 'footprint, no web' selected no more suite-seconds than 'static, no web' on any of the 264 commits; a footprint is a subset of the static graph apart from one suite over the whole set, and the compile filter only removes. About 40% of commits touch a module every app-level suite executes at import (a config schema, a plugin index, render-core's marks), which is what keeps the with-web mean high. Function-level selection off V8 precise coverage was measured and declined: it added ~27% to every run and moved the with-web mean by ~6%, because most changed lines in those modules are top-level."
   },
   "columns": [
     { "key": "strategy", "label": "selection", "format": "text", "align": "left" },
     { "key": "median", "label": "median suite-seconds", "format": "s", "precision": 0, "align": "right" },
     { "key": "mean", "label": "mean suite-seconds", "format": "s", "precision": 0, "align": "right" },
-    { "key": "under30", "label": "commits at ≤30s", "format": "int", "align": "right" },
-    { "key": "over300", "label": "commits over 300s", "format": "int", "align": "right" },
-    { "key": "missesWeb", "label": "skips web suites it reaches", "format": "text", "align": "left" }
+    { "key": "p90", "label": "p90 suite-seconds", "format": "s", "precision": 0, "align": "right" },
+    { "key": "totalMin", "label": "all 264 commits", "format": "text", "align": "right" }
   ],
   "rows": [
-    { "values": { "strategy": "static", "median": 772, "mean": 616, "under30": 74, "over300": 183, "missesWeb": "no" } },
-    { "values": { "strategy": "static, no web", "median": 195, "mean": 222, "under30": 74, "over300": 73, "missesWeb": "yes" } },
-    { "values": { "strategy": "footprint", "median": 142, "mean": 441, "under30": 113, "over300": 121, "missesWeb": "no" } },
+    { "values": { "strategy": "static, no web (test-related before footprints)", "median": 138, "mean": 215, "p90": 599, "totalMin": "944 min" } },
     {
-      "values": { "strategy": "footprint + compile filter", "median": 38, "mean": 376, "under30": 131, "over300": 105, "missesWeb": "no" },
-      "emphasize": ["median"]
-    }
+      "values": { "strategy": "footprint, no web (test-related)", "median": 16, "mean": 138, "p90": 420, "totalMin": "606 min" },
+      "emphasize": ["median", "mean"]
+    },
+    { "values": { "strategy": "static", "median": 603, "mean": 486, "p90": 874, "totalMin": "2137 min" } },
+    { "values": { "strategy": "footprint (test-related --with-web)", "median": 19, "mean": 297, "p90": 766, "totalMin": "1309 min" } }
   ]
 }

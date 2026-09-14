@@ -115,15 +115,9 @@ const footprints = readFootprints(
 
 const selected = new Set(live.filter(f => TEST.test(f) && fs.existsSync(f)))
 const liveSources = live.filter(f => !TEST.test(f))
-let byFootprint = 0
 for (const [test, files] of footprints) {
-  if (
-    !selected.has(test) &&
-    fs.existsSync(test) &&
-    liveSources.some(f => files.has(f))
-  ) {
+  if (fs.existsSync(test) && liveSources.some(f => files.has(f))) {
     selected.add(test)
-    byFootprint++
   }
 }
 
@@ -163,7 +157,7 @@ console.log(
   `${changed.length} changed file(s) against ${ref}, ${inert.length} compiling to identical output`,
 )
 console.log(
-  `${selected.size} suite(s): ${byFootprint} by footprint, ${byGraph} by the static graph (${unrecorded.length} have no footprint yet)`,
+  `${selected.size} suite(s), ${byGraph} of those picked by the static graph because ${unrecorded.length} suite(s) have no footprint yet`,
 )
 if (skippedWeb.length > 0) {
   console.log(

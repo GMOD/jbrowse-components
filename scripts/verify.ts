@@ -52,6 +52,13 @@ interface Gate {
 }
 
 const pnpm = (script: string) => ['pnpm', script]
+// A pnpm invocation costs ~2s before its script starts, so the gates that are
+// plain node scripts run as node.
+const nodeScript = (file: string) => [
+  process.execPath,
+  '--experimental-strip-types',
+  join(root, 'scripts', file),
+]
 const bin = (name: string) => join(root, 'node_modules/.bin', name)
 const ESLINT_FILES = /\.(js|cjs|mjs|jsx|ts|cts|mts|tsx|astro)$/
 
@@ -85,7 +92,7 @@ const GATES: Gate[] = [
   // Milliseconds, and it is the only gate that sees a case-only module
   // collision at all: `typecheck` runs --noEmit, so nothing collides there, and
   // `build:esm` is not a gate here. See the script's header.
-  { name: 'case collisions', argv: pnpm('check-case-collisions') },
+  { name: 'case collisions', argv: nodeScript('check-case-collisions.ts') },
   {
     name: 'spelling',
     argv: scoped(['typos'], files => ['typos', '--force-exclude', ...files]),
@@ -117,7 +124,7 @@ const GATES: Gate[] = [
         : undefined
     }),
   },
-  { name: 'typecheck', argv: pnpm('typecheck') },
+  { name: 'typecheck', argv: nodeScript('typecheck.ts') },
   {
     name: 'generated artifacts',
     argv: ['pnpm', 'autogen', '--check'],

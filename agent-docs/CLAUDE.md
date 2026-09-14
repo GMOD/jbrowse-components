@@ -177,9 +177,12 @@ push or open a PR unless asked.
 `verify` runs format, typos, oxlint and eslint over the files changed against
 main, plus the whole-program typecheck — seconds, where the same gates over the
 tree are ~2 minutes (`--all`). `test-related` runs the suites that executed a
-changed file on their last run, jbrowse-web included, so a suite that exercises
-the change from outside is in the run where `pnpm test <path>` would miss it.
-How it selects, and what it costs against the static graph:
+changed file on their last run, so a suite that exercises the change from
+outside is in the run where `pnpm test <path>` would miss it. It leaves
+`products/jbrowse-web` out unless the change is in jbrowse-web: **run
+`pnpm test-related --with-web` before landing anything that moves a config
+slot, a menu, a label or a snapshot shape**, since those suites are where that
+class of change goes red. How it selects, and what it costs:
 `reference/TEST_INFRASTRUCTURE.md` §"Which suites a change runs".
 
 **Three CI jobs are gated by none of that**: `pnpm check-docs`, `pnpm build:esm`
