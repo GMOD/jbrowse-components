@@ -46,10 +46,11 @@ per px:
 
 _See the **Config slots** section below for all available configuration fields._
 
-A display whose picture is declared in config: a list of marks — bars, points
-or spans — each with an encoding naming which feature fields feed its
-channels. One fetch per region evaluates every encoding in the worker; the
-marks draw in order over one score axis.
+A grammar of graphics over a feature, alignments or variant track: a list of
+marks — bars, points or spans — each with an encoding naming which feature
+fields feed its channels and a transform list run before it. One fetch per
+region evaluates every encoding in the worker; the marks draw in order over
+one score axis.
 
 ## Related links
 

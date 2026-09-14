@@ -93,7 +93,7 @@ export const TUTORIAL_CATEGORIES = [
   'Population genomics',
   'Epigenomics & single cell',
   'Transcriptomics & proteins',
-  'Plots from your data',
+  'Grammar of graphics',
   'Configuration & embedding',
 ]
 
@@ -143,7 +143,6 @@ export const TUTORIAL_ORDER = [
   'rnaseq',
   'alu_age',
   'read_marks',
-  'gene_density',
   'cookbook',
   'display_settings',
   'embed_linear_genome_view',

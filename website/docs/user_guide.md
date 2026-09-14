@@ -138,14 +138,14 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/dtu)
 - [](/docs/tutorials/tp53_structures)
 
-### Plots from your data
+### Grammar of graphics
 
 - [](/docs/tutorials/alu_age)
 - [](/docs/tutorials/read_marks)
-- [](/docs/tutorials/gene_density)
 
 ### Configuration & embedding
 
 - [](/docs/tutorials/display_settings)
 - [](/docs/tutorials/embed_linear_genome_view)
 - [](/docs/tutorials/cli_desktop)
+- [](/docs/tutorials/gene_density)

@@ -18,20 +18,12 @@ entry, and a `stack` over a BAM is a pileup.
 
 ## When to reach for it
 
-A `FeatureTrack` normally draws its features as glyphs in rows, which says where
-they are and nothing about the numbers on them. A `QuantitativeTrack` plots one
-value per position from a BigWig. In between sit the files that carry a value
-per feature — a BED with a real score column, a segment file with a log ratio
-per interval, a peak file with a signal and a q-value — and this display plots
-them: the value on a y-axis, the interval on x, and a second field as colour.
-
-The mark display attaches to an `AlignmentsTrack` and a `VariantTrack` because
-every adapter behind those serves features with fields. What differs is which
-fields answer: a read's `score` is its MAPQ and `name` its QNAME, and a
-variant's quality is `QUAL` rather than `score`. The format-typed displays those
-tracks open with know things this one does not, such as a read's mismatches or a
-callset's genotypes, so reach for the mark display where the question is a
-field, not where it is the format.
+- **A value per feature.** A BED score, a segment's log ratio, a peak's signal
+  and q-value: a `FeatureTrack` draws glyphs and a `QuantitativeTrack` reads a
+  BigWig, and this display plots the field on a y-axis with a second as colour.
+- **A read's or a variant's fields.** On an `AlignmentsTrack` a read's `score`
+  is its MAPQ; on a `VariantTrack` the quality is `QUAL`. The format-typed
+  displays still own what is not a field, such as mismatches and genotypes.
 
 ## A worked example
 

@@ -576,10 +576,11 @@ const markSchema = ConfigurationSchema(
 /**
  * #config LinearMarkDisplay
  * #category display
- * A display whose picture is declared in config: a list of marks — bars, points
- * or spans — each with an encoding naming which feature fields feed its
- * channels. One fetch per region evaluates every encoding in the worker; the
- * marks draw in order over one score axis.
+ * A grammar of graphics over a feature, alignments or variant track: a list of
+ * marks — bars, points or spans — each with an encoding naming which feature
+ * fields feed its channels and a transform list run before it. One fetch per
+ * region evaluates every encoding in the worker; the marks draw in order over
+ * one score axis.
  *
  * #example
  * A BED score column as bars, coloured by strand, with the key on screen,

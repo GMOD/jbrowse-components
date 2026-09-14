@@ -5,7 +5,7 @@ description:
   Declare a BED column as the height of a bar and another as its colour, count
   features per bin zoomed out, and read a density sidecar past the fetch budget
 guide_category: Tutorials
-tutorial_category: Plots from your data
+tutorial_category: Grammar of graphics
 ---
 
 `LinearMarkDisplay` is a grammar of graphics over a track: each entry in `marks`
