@@ -1921,12 +1921,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
     viewportHeight: 1000,
   },
 
-  // Eukaryote scale in one picture: all of hg38 chr1 over the eight HPRC
+  // Eukaryote scale in one picture: all of hg38 chr12 over the eight HPRC
   // haplotypes, which the coarse tier of the graph-derived PIF serves in one
-  // fetch. Every lane is a whole haplotype chromosome in its own frame.
+  // fetch. chr12 because every one of the eight assembled it as a single
+  // contig no longer than hg38's by more than the rung tolerance, so each lane
+  // is its whole chromosome at the anchor's scale. On chr1 three haplotypes
+  // split it into two scaffolds at the centromere and two run over 1% long and
+  // drop to the 1.5x rung, and both read as lanes missing 1q.
   {
     mode: 'url',
-    name: 'multiway_synteny/hprc_chr1_whole',
+    name: 'multiway_synteny/hprc_chr12_whole',
     url: sessionSpec(
       encodeURIComponent('https://jbrowse.org/demos/hprc_multiway/config.json'),
       {
@@ -1934,7 +1938,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
           {
             type: 'LinearGenomeView',
             assembly: 'hg38',
-            loc: 'chr1:1-248,956,422',
+            loc: 'chr12:1-133,275,309',
             tracks: [
               {
                 trackId: 'hprc_multiway',

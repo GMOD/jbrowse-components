@@ -193,14 +193,14 @@ hold.
 
 ## The whole chromosome
 
-The deletion reads the same way at any zoom the index serves. Over the whole of
-chr1 the coarse tier answers the fetch in one pass and the picture is the
-assembly: the centromere splits each lane where the graph aligns nothing, and a
-haplotype whose chr1 was assembled as two scaffolds shows one of them, with the
-other named in its header. The track menu's **Level of detail** entry picks the
-tier by hand.
+The same track serves a whole chromosome. Over all of chr12 the coarse tier
+answers the fetch in one pass, and each lane is that haplotype's assembled
+chromosome. The track menu's **Level of detail** entry picks the tier by hand.
 
-<Figure caption="All of hg38 chr1 over the eight haplotype lanes, served from the coarse tier of the graph-derived index. Each lane is a haplotype's chromosome in its own frame, split at the centromere; three lanes name a second scaffold in their headers because their chr1 was assembled in two pieces." src="/img/multiway_synteny/hprc_chr1_whole.png" />
+<Figure caption="All of hg38 chr12 over the eight haplotype lanes, served from the coarse tier of the graph-derived index. Every haplotype assembled chr12 as one contig, so each lane runs end to end, and the graph aligns nothing across the centromere in any of them." src="/img/multiway_synteny/hprc_chr12_whole.png" />
+
+A haplotype that assembled a chromosome in two pieces draws the piece holding
+most of the window, and names the other in the lane header.
 
 ## Reproduce it end to end
 

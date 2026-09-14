@@ -640,9 +640,15 @@ different datasets. The 2026-09-09 reshoot settled it, and the two now agree
 haplotype for haplotype. `multiway_synteny/hg38_vertebrates_17p_break` was stale
 the same way against `05ec50660e` — it drew the marmoset lane `[rev]` at
 `2.4Mbp 2x` where the code decides forward at rung 3 — and the same reshoot
-fixed it, along with `multiway_synteny/hprc_chr1_whole`, whose earlier capture
-drew three haplotype lanes at `373 Mbp 1.5×` where the cut records now frame
-them at `249 Mbp 1×`.
+fixed it.
+
+The whole-chromosome figure is `multiway_synteny/hprc_chr12_whole` because chr1
+drew lanes that looked like haplotypes missing 1q, for two reasons that are both
+correct output. HG00099, HG00128 and HG01109 assembled chr1 as two scaffolds
+split at the centromere, and a lane draws one contig. HG00097 and HG02055
+assembled it over `RUNG_TOLERANCE` longer than hg38's, so `pickRung` frames them
+at `1.5×` and a third of the lane is blank. Every haplotype's chr12 is one
+contig within the tolerance.
 
 ### 4.11 A long `alsoOn` overflowed an exported figure — fixed
 
