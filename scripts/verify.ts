@@ -1,6 +1,7 @@
 // One command for the CI gates that nothing local runs.
 //
-//   pnpm verify          the fast gates (seconds to ~2 min)
+//   pnpm verify          the fast gates over what this branch changed (seconds)
+//   pnpm verify --all    the fast gates over the whole tree, as CI runs them
 //   pnpm verify --full   adds `autogen --check`, `check-docs`, `build:esm` (~5 min)
 //
 // The definition of done in agent-docs/CLAUDE.md is typecheck, scoped tests,
@@ -8,30 +9,39 @@
 // and the spell check — so a change can be green by every measure an author
 // runs and still land red. On 2026-08-12 all three were red on `main` at once,
 // and the format failures had arrived on three different commits, which is what
-// says it was a gate nobody ran rather than one slip. The repo has 21 separate
-// check/lint/format scripts and, until this file, nothing that ran a useful
-// subset of them together.
+// says it was a gate nobody ran rather than one slip.
+//
+// Format, spelling and both linters take the files changed against `main`
+// (`scripts/changedFiles.ts`). oxfmt, typos and eslint judge a file on its own
+// text, so the scoped run is exact for them; type-aware oxlint can flag an
+// unchanged file after a type it reads moves, which `--all` and CI still catch.
+// Scoped, eslint is ~3s where the whole tree is ~95s. Typecheck is
+// whole-program either way and ~2s warm.
 //
 // Every gate runs even after one fails, and the summary lists all of them. That
 // is the same lesson scripts/autogen.ts records in its own header: CI used to
 // report only the first stale artifact, so fixing it revealed the next, and the
-// loop cost a push per failure. Reporting one gate at a time costs the same.
+// loop cost a push per failure.
 //
-// Deliberately NOT here: `pnpm test`. Which tests to run is a judgement about
-// what you touched — CLAUDE.md is explicit that a scoped `pnpm test <dir>` is
-// the right call and that a full-suite run from the shared checkout actively
-// lies, because other agents edit the tree mid-run.
+// Deliberately NOT here: `pnpm test-related`, which answers a different
+// question — what the change broke rather than whether it is well-formed.
 
 import { spawnSync } from 'node:child_process'
+import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
+import { changedFiles } from './changedFiles.ts'
+
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const full = process.argv.includes('--full')
+const all = process.argv.includes('--all')
 
 interface Gate {
   name: string
-  argv: string[]
+  // A function is the gate's argv over the changed files, or undefined when
+  // none of them is its kind of file.
+  argv: string[] | ((files: string[]) => string[] | undefined)
   // Skipped with a warning when the binary is absent, rather than failing the
   // run. Same treatment build-shaders gives naga and glslangValidator: a
   // contributor without the tool installed still gets every other gate, and CI
@@ -42,17 +52,71 @@ interface Gate {
 }
 
 const pnpm = (script: string) => ['pnpm', script]
+const bin = (name: string) => join(root, 'node_modules/.bin', name)
+const ESLINT_FILES = /\.(js|cjs|mjs|jsx|ts|cts|mts|tsx|astro)$/
+
+function scoped(
+  whole: string[],
+  over: (files: string[]) => string[] | undefined,
+): Gate['argv'] {
+  return all ? whole : over
+}
 
 const GATES: Gate[] = [
   // Cheapest first, so the common failure is also the fastest to hear about.
-  { name: 'format', argv: pnpm('check-format') },
+  {
+    name: 'format',
+    argv: scoped(pnpm('check-format'), files => [
+      bin('oxfmt'),
+      '--check',
+      '--no-error-on-unmatched-pattern',
+      ...files,
+    ]),
+  },
+  {
+    name: 'format (astro)',
+    argv: scoped([], files => {
+      const astro = files.filter(f => f.endsWith('.astro'))
+      return astro.length > 0
+        ? [bin('prettier'), '--check', ...astro]
+        : undefined
+    }),
+  },
   // Milliseconds, and it is the only gate that sees a case-only module
   // collision at all: `typecheck` runs --noEmit, so nothing collides there, and
   // `build:esm` is not a gate here. See the script's header.
   { name: 'case collisions', argv: pnpm('check-case-collisions') },
-  { name: 'spelling', argv: ['typos'], optionalBinary: 'typos' },
-  { name: 'lint', argv: pnpm('lint') },
-  { name: 'lint (eslint)', argv: pnpm('lint:eslint') },
+  {
+    name: 'spelling',
+    argv: scoped(['typos'], files => ['typos', '--force-exclude', ...files]),
+    optionalBinary: 'typos',
+  },
+  {
+    name: 'lint',
+    argv: scoped(pnpm('lint'), files => [
+      bin('oxlint'),
+      '--type-aware',
+      '--deny-warnings',
+      '--no-error-on-unmatched-pattern',
+      '--',
+      ...files,
+    ]),
+  },
+  {
+    name: 'lint (eslint)',
+    argv: scoped(pnpm('lint:eslint'), files => {
+      const lintable = files.filter(f => ESLINT_FILES.test(f))
+      return lintable.length > 0
+        ? [
+            bin('eslint'),
+            '--max-warnings',
+            '0',
+            '--no-warn-ignored',
+            ...lintable,
+          ]
+        : undefined
+    }),
+  },
   { name: 'typecheck', argv: pnpm('typecheck') },
   {
     name: 'generated artifacts',
@@ -73,11 +137,20 @@ const GATES: Gate[] = [
   { name: 'esm build', argv: pnpm('build:esm'), slow: true },
 ]
 
-function have(bin: string) {
+function have(name: string) {
   return (
-    spawnSync(process.platform === 'win32' ? 'where' : 'which', [bin], {
+    spawnSync(process.platform === 'win32' ? 'where' : 'which', [name], {
       stdio: 'ignore',
     }).status === 0
+  )
+}
+
+const changed = all
+  ? []
+  : changedFiles('main').files.filter(f => existsSync(join(root, f)))
+if (!all) {
+  console.log(
+    `Format, spelling and lint over the ${changed.length} file(s) changed against main; --all for the whole tree.`,
   )
 }
 
@@ -86,6 +159,15 @@ const skipped: string[] = []
 
 for (const gate of GATES) {
   if (gate.slow && !full) {
+    continue
+  }
+  const argv =
+    typeof gate.argv === 'function'
+      ? changed.length > 0
+        ? gate.argv(changed)
+        : undefined
+      : gate.argv
+  if (!argv || argv.length === 0) {
     continue
   }
   if (gate.optionalBinary && !have(gate.optionalBinary)) {
@@ -97,7 +179,7 @@ for (const gate of GATES) {
     continue
   }
   console.log(`\n=== ${gate.name}`)
-  const { status } = spawnSync(gate.argv[0]!, gate.argv.slice(1), {
+  const { status } = spawnSync(argv[0]!, argv.slice(1), {
     cwd: root,
     stdio: 'inherit',
     shell: process.platform === 'win32',

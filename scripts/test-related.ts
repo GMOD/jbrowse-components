@@ -1,139 +1,187 @@
 /**
- * Run every jest suite that reaches the files this branch changed.
+ * Run the jest suites that executed a file this branch changed.
  *
- * `pnpm test <directory>` scopes by PATH, so it runs the suites that live beside
- * the change and none of the ones that exercise it from outside.
- * `--findRelatedTests` walks the module graph instead, so a suite that imports
- * the app — and so, transitively, the changed file — is included.
+ * Every jest run records a footprint per suite — the repo files it loaded
+ * (`config/jest/footprints.cjs`) — and a suite is selected when its footprint
+ * holds a changed file. The static import graph (`--findRelatedTests`) is only
+ * the fallback for a suite with no footprint yet, because it cannot
+ * discriminate: every jbrowse-web suite imports `corePlugins`, so statically
+ * each one is related to nearly every plugin file.
  *
- * **`products/jbrowse-web` is left out unless the change is in it**, and the
- * reason is that the graph gives no answer there. Every suite in
- * `products/jbrowse-web/src/tests` imports `corePlugins`, so every one of them
- * is related to every file in every plugin: measured 2026-08-30, a change in
- * wiggle, one in variants and one in linear-comparative-view each returned the
- * SAME 164 suites, and a `packages/core` change returned those plus 12. That is
- * a constant, not a selection — and it is 77% of the clock, 224s of a 269-suite
- * run against 52s for the other 131.
+ * A changed file whose compiled output is unchanged — comments, types,
+ * formatting — selects nothing.
  *
- * What that costs is real and worth stating: those suites are the ones that
- * caught a config-slot removal staling `ConfigSlotDefaults`, a menu becoming a
- * submenu breaking `AlignmentsFilters`, and a new scalebar caption staling
- * `ReversedRegionLabels` — each a change whose own tests moved with it. CI runs
- * the whole suite and is where they land now. `--with-web` puts them back.
- *
- * Usage: `pnpm test-related [base-ref] [--with-web]` (default base `main`).
- * Extra jest flags pass through after `--`.
+ * Usage: `pnpm test-related [base-ref]` (default `main`). Extra jest flags pass
+ * through after `--`.
  */
 import { execFileSync, spawn } from 'node:child_process'
+import fs from 'node:fs'
+import { createRequire } from 'node:module'
+import path from 'node:path'
 import readline from 'node:readline'
 
-// Source files only. A changed snapshot, golden or generated doc has no module
-// graph to walk, and handing jest a `.snap` makes it match nothing at all —
-// which reads as "no related tests" rather than as the no-op it is.
-const SOURCE = /\.(ts|tsx|js|jsx)$/
-// Their own suites are what `--findRelatedTests` would return for them anyway,
-// and passing a test file makes jest run it whether or not the change reaches
-// anything else.
-const TEST = /\.test\.(ts|tsx)$|\.d\.ts$/
-const WEB = 'products/jbrowse-web/'
+import { transformSync } from '@babel/core'
 
-function git(...args: string[]) {
-  return execFileSync('git', args, { encoding: 'utf8' })
+import { changedFiles, git, lines } from './changedFiles.ts'
+
+const { readFootprints } = createRequire(import.meta.url)(
+  '../config/jest/footprints.cjs',
+) as {
+  readFootprints: (
+    cacheDirectory: string,
+    checkoutRoots: string[],
+  ) => Map<string, Set<string>>
 }
+
+const CODE = /\.(ts|tsx|js|jsx|cjs|mjs)$/
+const JSX = /\.(tsx|jsx|js)$/
+const TEST = /\.test\.(ts|tsx|js|jsx)$/
+const NOT_A_SUITE = /(^|\/)(dist|demos)\/|^products\/aws\//
+// Loaded by jest itself or resolved outside the repo, so in no footprint, and
+// a change to any of them can move every suite.
+const HARNESS =
+  /^(jest\.config\.js|babel\.config\.cjs|pnpm-lock\.yaml|config\/jest\/)/
 
 const argv = process.argv.slice(2)
 const passThroughAt = argv.indexOf('--')
 const jestArgs = passThroughAt === -1 ? [] : argv.slice(passThroughAt + 1)
 const own = passThroughAt === -1 ? argv : argv.slice(0, passThroughAt)
-const withWeb = own.includes('--with-web')
-const base = own.find(a => a !== '--with-web')
+const flags = own.filter(a => a.startsWith('-'))
+if (flags.length > 0) {
+  console.error(
+    `Unknown option ${flags.join(' ')}. Jest flags go after \`--\`.`,
+  )
+  process.exit(2)
+}
+const ref = own[0] ?? 'main'
 
-// Committed changes against the base, plus whatever is still in the working
-// tree — a run before committing is the one that saves the round trip.
-const ref = base ?? 'main'
-const changed = [
-  ...git('diff', '--name-only', `${ref}...HEAD`).split('\n'),
-  ...git('diff', '--name-only', 'HEAD').split('\n'),
-  ...git('ls-files', '--others', '--exclude-standard').split('\n'),
-]
-  .map(f => f.trim())
-  .filter(f => f && SOURCE.test(f) && !TEST.test(f))
-
-const files = [...new Set(changed)]
-if (files.length === 0) {
-  console.log(`No changed source files against ${ref} — nothing to run.`)
+const root = git('rev-parse', '--show-toplevel').trim()
+const primary = path.dirname(
+  path.resolve(root, git('rev-parse', '--git-common-dir').trim()),
+)
+process.chdir(root)
+const { base, files: changed } = changedFiles(ref)
+if (changed.length === 0) {
+  console.log(`Nothing changed against ${ref}.`)
   process.exit(0)
 }
 
-console.log(`${files.length} changed source file(s) against ${ref}:`)
-for (const f of files.slice(0, 20)) {
-  console.log(`  ${f}`)
-}
-if (files.length > 20) {
-  console.log(`  ... and ${files.length - 20} more`)
+function compiled(source: string, file: string) {
+  try {
+    return transformSync(source, {
+      filename: path.join(root, file),
+      babelrc: false,
+      configFile: false,
+      presets: ['@babel/preset-typescript'],
+      parserOpts: { plugins: JSX.test(file) ? ['jsx'] : [] },
+      comments: false,
+      compact: true,
+      sourceMaps: false,
+    })?.code
+  } catch {
+    return undefined
+  }
 }
 
-// A change IN jbrowse-web keeps them: they are the suites that cover it, and
-// dropping them would leave the run empty for anyone working on the app.
-const touchesWeb = files.some(f => f.startsWith(WEB))
-const skipWeb = !withWeb && !touchesWeb
+function compilesUnchanged(file: string) {
+  if (!CODE.test(file) || !fs.existsSync(file)) {
+    return false
+  }
+  let before: string
+  try {
+    before = git('show', `${base}:${file}`)
+  } catch {
+    return false
+  }
+  const after = compiled(fs.readFileSync(file, 'utf8'), file)
+  return after !== undefined && after === compiled(before, file)
+}
 
-function listRelated() {
-  return execFileSync(
-    'npx',
-    ['jest', '--listTests', '--findRelatedTests', ...files],
-    {
-      encoding: 'utf8',
-      maxBuffer: 64 * 1024 * 1024,
-    },
+const harness = changed.filter(f => HARNESS.test(f))
+const inert = changed.filter(compilesUnchanged)
+const live = changed.filter(f => !inert.includes(f))
+
+const footprints = readFootprints(
+  path.join(primary, 'node_modules/.cache/jest'),
+  [root, primary],
+)
+
+const selected = new Set(live.filter(f => TEST.test(f) && fs.existsSync(f)))
+const liveSources = live.filter(f => !TEST.test(f))
+let byFootprint = 0
+for (const [test, files] of footprints) {
+  if (
+    !selected.has(test) &&
+    fs.existsSync(test) &&
+    liveSources.some(f => files.has(f))
+  ) {
+    selected.add(test)
+    byFootprint++
+  }
+}
+
+const unrecorded = lines(git('ls-files', '*.test.*')).filter(
+  f => TEST.test(f) && !NOT_A_SUITE.test(f) && !footprints.has(f),
+)
+const staticInputs = liveSources.filter(
+  f => fs.existsSync(f) && (CODE.test(f) || f.endsWith('.json')),
+)
+let byGraph = 0
+if (unrecorded.length > 0 && staticInputs.length > 0) {
+  const missing = new Set(unrecorded)
+  const related = lines(
+    execFileSync(
+      'npx',
+      ['jest', '--listTests', '--findRelatedTests', ...staticInputs],
+      { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 },
+    ),
   )
-    .split('\n')
-    .map(l => l.trim())
-    .filter(Boolean)
-}
-
-// `--runTestsByPath` makes jest end with a "Ran all test suites within paths"
-// line naming every one of them — ~10KB of absolute paths, into the terminal or
-// an agent's context, on every run. Everything else streams through untouched.
-const FOOTER = 'Ran all test suites within paths '
-
-async function run(args: string[]) {
-  const child = spawn('npx', ['jest', '--ci', ...args, ...jestArgs], {
-    stdio: ['inherit', 'inherit', 'pipe'],
-  })
-  for await (const line of readline.createInterface({ input: child.stderr })) {
-    if (!line.startsWith(FOOTER)) {
-      process.stderr.write(`${line}\n`)
+  for (const abs of related) {
+    const test = path.relative(root, abs)
+    if (missing.has(test) && !selected.has(test)) {
+      selected.add(test)
+      byGraph++
     }
   }
-  const code = await new Promise<number>(resolve => {
-    child.on('close', c => {
-      resolve(c ?? 1)
-    })
-  })
-  if (code !== 0) {
-    process.exit(code)
+}
+
+const byChange = selected.size - byFootprint - byGraph
+console.log(
+  `${changed.length} changed file(s) against ${ref}, ${inert.length} compiling to identical output`,
+)
+if (harness.length > 0) {
+  console.log(`Every suite, for the test harness: ${harness.join(', ')}`)
+} else {
+  console.log(
+    `${selected.size} suite(s): ${byFootprint} by footprint, ${byGraph} by the static graph (${unrecorded.length} have no footprint yet), ${byChange} changed test file(s)`,
+  )
+  if (selected.size === 0) {
+    process.exit(0)
   }
 }
 
-if (!skipWeb) {
-  await run(['--findRelatedTests', ...files])
-} else {
-  const all = listRelated()
-  const paths = all.filter(p => !p.includes(`/${WEB}`))
-  const skipped = all.length - paths.length
-  if (skipped) {
-    console.log(
-      `\nSkipping ${skipped} products/jbrowse-web suite(s): they import corePlugins, so the same set is "related" to any change anywhere and it is most of the run. CI covers them.\n  pnpm test-related ${ref} --with-web    # to include them`,
-    )
+// `--runTestsByPath` ends with a "Ran all test suites within paths" line naming
+// every path, which is kilobytes of noise in an agent's context.
+const FOOTER = 'Ran all test suites within paths '
+
+const child = spawn(
+  'npx',
+  [
+    'jest',
+    '--ci',
+    ...(harness.length > 0 ? [] : ['--runTestsByPath', ...selected]),
+    ...jestArgs,
+  ],
+  { stdio: ['inherit', 'inherit', 'pipe'] },
+)
+for await (const line of readline.createInterface({ input: child.stderr })) {
+  if (!line.startsWith(FOOTER)) {
+    process.stderr.write(`${line}\n`)
   }
-  if (paths.length === 0) {
-    console.log('\nNothing left to run outside products/jbrowse-web.')
-    process.exit(0)
-  }
-  // `--runTestsByPath` rather than re-deriving the set: the list above already
-  // is the answer, and asking jest for it twice can only disagree with itself.
-  // `--testPathPatterns` is not an option — jest ignores it outright alongside
-  // `--findRelatedTests`, which is what a one-invocation version would need.
-  await run(['--runTestsByPath', ...paths])
 }
+const code = await new Promise<number>(resolve => {
+  child.on('close', c => {
+    resolve(c ?? 1)
+  })
+})
+process.exit(code)

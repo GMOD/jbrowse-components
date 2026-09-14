@@ -193,6 +193,7 @@ const baseConfig = {
     '<rootDir>/config/jest/requestIdleCallback.js',
     '<rootDir>/config/jest/scrollIntoView.js',
   ],
+  runtime: '<rootDir>/config/jest/footprintRuntime.cjs',
   // In every project, not only the one that instantiates displays: the gate is
   // two hooks over a buffer `console.js` fills, so it costs nothing where no
   // display exists, and a project added later inherits it instead of quietly
