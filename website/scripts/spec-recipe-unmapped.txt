@@ -19,13 +19,14 @@ height
 jexlFiltersSetting
 label
 legend
-maxRegionBp
 orthologParams
 paneHeight
 readConnections
 rowOrder
 sampleColorMap
 showBranchLength
+showBubbles
+showGenes
 showLegend
 showVariantLane
 sideBySide

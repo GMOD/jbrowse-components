@@ -202,6 +202,9 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
           loadedRegion: IS1_REGION,
           layoutMode: 'force',
           colorScheme: 'reference-position',
+          // a SNP halo on every backbone joint, and a second deletion label
+          // over the arc's own
+          showBubbles: false,
         },
       ],
     }),
