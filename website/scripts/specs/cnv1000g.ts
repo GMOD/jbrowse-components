@@ -32,7 +32,7 @@ const CCL3L1_WINDOW = 'chr17:36,080,000-36,270,000'
 // Bounded by the store rather than by taste: build_signal_zarr.ts was run with
 // `--region chr17:35000000-37500000`, so a window past that renders empty
 // flanks that look like ordinary two-copy sequence and are actually no data.
-const CCL3L1_CONTEXT_WINDOW = 'chr17:35,975,000-36,675,000'
+export const CCL3L1_CONTEXT_WINDOW = 'chr17:35,975,000-36,675,000'
 
 // The 1000 Genomes phase 3 integrated SV map, lifted to GRCh38, already in
 // config_demo. It is the comparison the tutorial is built on, not a second data
@@ -92,7 +92,7 @@ const LADDER_TRACK = {
 // single extra copy pair. Symmetric around the pivot is the only way a
 // diverging scale reads as diverging. The cost is that gains past 4 clamp,
 // which the legend's own bar shows.
-const CN_HEATMAP_SETTINGS = {
+export const CN_HEATMAP_SETTINGS = {
   type: 'MultiLinearWiggleDisplay',
   defaultRendering: 'multirowdensity',
   bicolorPivot: 2,
@@ -111,13 +111,13 @@ const CN_HEATMAP = {
 // element as its first-paint testid, so this waits on the post-clustering frame
 // even though `showTree: false` removes the dendrogram (which is the only other
 // DOM evidence clustering ran).
-const CLUSTERED_READY = `${displayPainted('multi-wiggle-display')}[data-clustered="true"]`
+export const CLUSTERED_READY = `${displayPainted('multi-wiggle-display')}[data-clustered="true"]`
 
 // The tutorial's own config: hg38, the 2504-sample Zarr store in test_data,
 // RefSeq genes and the SV map. It loads jbrowse-plugin-zarr from its published
 // beta bundle at jbrowse.org/demos/zarr/, the same arrangement as
 // graphgenomeviewer, so the figures below need network for the plugin itself.
-const CNV_CONFIG = 'test_data/1000g_cnv/config.json'
+export const CNV_CONFIG = 'test_data/1000g_cnv/config.json'
 
 // Kept although nothing uses it now (the whole-chromosome figures went with
 // cnv1000g/genome_summary_bins), because both halves cost a session to learn:

@@ -13,10 +13,11 @@ import { displaySettled } from '@jbrowse/browser-test-utils'
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import { GRAPH_DRAWN, referencePositionColor } from './graph-fixtures.ts'
 
-import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
+import type { Annotation, ScreenshotSpec } from '../screenshot-spec-types.ts'
 
 const CONFIG = encodeURIComponent('https://jbrowse.org/demos/hprc/config.json')
 const SEGMENTS_TRACK = 'hprc_minigraph_segments'
+const LANES_TRACK = 'hprc_v2_1_gbz_lanes'
 
 // The window pangenome/hprc_gbz_cfhr_lanes draws, so the lane half of the
 // figure is the committed one and the graph is cut from the same coordinates.
@@ -53,7 +54,7 @@ const laneView = (lanesHeight: number) => ({
       color: referencePositionColor(CFHR_REGION),
     },
     {
-      trackId: 'hprc_v2_1_gbz_lanes',
+      trackId: LANES_TRACK,
       type: 'MultiWaySyntenyDisplay',
       rowOrder: [
         'HG00097.1',
@@ -71,10 +72,11 @@ const laneView = (lanesHeight: number) => ({
 })
 
 const GRAPH_VIEW = 'paper_cfhr_graph'
-// The force layout's fit is on the node bounding box, and the size labels hang
-// outside it, so "84.7 kb deletion" — the one edge the caption names — lands
-// under the pane's left border at the fitted scale. One zoom-out brings it in.
-const GRAPH_ZOOM_OUT = `[data-testid="view-container-${GRAPH_VIEW}"] [aria-label="Zoom out"]`
+
+const BACKBONE_NODE = 's621556'
+const BACKBONE_LOCUS = 'chr1:196,724,000'
+const UPSTREAM_NODE = 's621552'
+const DELETION_LOCUS = 'chr1:196,810,000'
 
 const graphView = (layoutMode: 'auto' | 'force') => ({
   id: GRAPH_VIEW,
@@ -111,6 +113,42 @@ const gates = {
   hideTooltip: true,
 } as const
 
+const callouts: Annotation[] = [
+  {
+    type: 'text',
+    text: '66.3 kb segment',
+    leader: true,
+    fontSize: 20,
+    anchor: { track: SEGMENTS_TRACK, locus: BACKBONE_LOCUS, fracY: 0.85 },
+    dx: 60,
+    dy: -60,
+  },
+  {
+    type: 'text',
+    text: '84.7 kb deletion',
+    fontSize: 20,
+    anchor: { track: LANES_TRACK, locus: DELETION_LOCUS, fracY: 0.56 },
+  },
+  {
+    type: 'text',
+    text: '66.3 kb segment',
+    leader: true,
+    fontSize: 20,
+    anchor: { view: 1, graphNode: BACKBONE_NODE },
+    dx: 60,
+    dy: 150,
+  },
+  {
+    type: 'text',
+    text: 'upstream of the window',
+    leader: true,
+    fontSize: 20,
+    anchor: { view: 1, graphNode: UPSTREAM_NODE },
+    dx: 40,
+    dy: -120,
+  },
+]
+
 export const paperHprcWorkspaceSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
@@ -119,22 +157,7 @@ export const paperHprcWorkspaceSpecs: ScreenshotSpec[] = [
     viewportWidth: 1900,
     viewportHeight: 940,
     ...gates,
-    actions: [
-      { type: 'click', selector: GRAPH_ZOOM_OUT },
-      { type: 'waitForAppSettled', timeout: 60000 },
-      // The mouse stays where it clicked, so the button keeps its hover
-      // background in the capture. Park it on the blank page below the graph
-      // pane, where nothing reacts to a pointer.
-      {
-        type: 'hover',
-        anchor: {
-          selector: `[data-testid="view-container-${GRAPH_VIEW}"]`,
-          alignX: 'center',
-          alignY: 'bottom',
-          dy: -30,
-        },
-      },
-    ],
+    annotations: callouts,
   },
   {
     mode: 'url',
@@ -157,7 +180,8 @@ export const paperHprcWorkspaceSpecs: ScreenshotSpec[] = [
     name: 'paper/hprc_lanes_graph_stacked_force',
     url: workspace('force', 'vertical', 55),
     viewportWidth: 1500,
-    viewportHeight: 1600,
+    viewportHeight: 1440,
     ...gates,
+    annotations: callouts,
   },
 ]
