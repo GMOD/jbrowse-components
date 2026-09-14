@@ -47,11 +47,14 @@ export function resolveUriLocation(location: UriLocation) {
 }
 
 /**
- * The local path a `file:` URI names, or undefined for any other scheme. A
- * Windows URL parses as `/C:/data/x.bam`, whose leading slash is part of the URL
- * grammar rather than the path.
+ * The local path a `file:` URI or a bare absolute path names, or undefined for
+ * anything else. A Windows URL parses as `/C:/data/x.bam`, whose leading slash
+ * is part of the URL grammar rather than the path.
  */
-function fileUrlToLocalPath(uri: string) {
+function uriToLocalPath(uri: string) {
+  if (uri.startsWith('/') || /^[a-z]:[\\/]/i.test(uri)) {
+    return uri
+  }
   if (!uri.startsWith('file:')) {
     return undefined
   }
@@ -125,14 +128,11 @@ export function openLocation(
     // and read every one of them unauthenticated.
     const absoluteLocation = resolveUriLocation(location)
 
-    // A file: URI names a path on this machine, not something to fetch. Desktop
-    // reaches this by way of the shorthand forms: a config.json opened from disk
-    // carries a baseUri of its own directory, so `{ type: 'BamAdapter', uri:
-    // 'reads.bam' }` resolves here as file:///dir/reads.bam — and so does every
-    // sibling the shorthand derived from it (.bai, .fai, .gzi). Reading them as
-    // localPath keeps that whole chain on the one code path that can open a
-    // local file, instead of a fetch that no range request survives.
-    const localPath = fileUrlToLocalPath(absoluteLocation.uri)
+    // A file: URI or a bare absolute path names a file on this machine. A
+    // config.json opened from disk resolves `uri: 'reads.bam'` against its own
+    // directory to file:///dir/reads.bam, and a session built over MCP writes
+    // `uri: '/dir/reads.bam'` with no baseUri at all; fetched, either is a 404.
+    const localPath = uriToLocalPath(absoluteLocation.uri)
     if (localPath !== undefined && (isNode || isElectron)) {
       return openLocation({ localPath, locationType: 'LocalPathLocation' })
     }

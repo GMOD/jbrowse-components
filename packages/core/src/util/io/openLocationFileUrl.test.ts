@@ -38,6 +38,18 @@ test('a percent-encoded file: uri decodes to the path it names', () => {
   expect(keyOf(encoded)).toBe(keyOf(asPath))
 })
 
+test('a bare absolute path with no baseUri opens as a local path', () => {
+  const bare = openLocation({
+    uri: '/data/proj/reads.bam',
+    locationType: 'UriLocation',
+  })
+  const asPath = openLocation({
+    localPath: '/data/proj/reads.bam',
+    locationType: 'LocalPathLocation',
+  })
+  expect(keyOf(bare)).toBe(keyOf(asPath))
+})
+
 test('an http uri is still opened remotely', () => {
   const remote = openLocation({
     uri: 'https://example.com/x.bam',
