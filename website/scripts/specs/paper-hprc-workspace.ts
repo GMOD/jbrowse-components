@@ -34,7 +34,7 @@ const CFHR_REGION = {
 // comma-separated list would be an OR that fires on whichever landed first.
 const BOTH_READY = `body:has(${displaySettled('multiway-synteny-display')}):has(${GRAPH_DRAWN}) [data-testid="graph-layout-select"]`
 
-const laneView = (lanesHeight: number) => ({
+const laneView = (lanesHeight: number, genesHeight: number) => ({
   type: 'LinearGenomeView',
   assembly: 'hg38',
   loc: CFHR_WINDOW,
@@ -44,7 +44,7 @@ const laneView = (lanesHeight: number) => ({
       type: 'LinearBasicDisplay',
       geneGlyphMode: 'longestCoding',
       displayMode: 'compact',
-      height: 70,
+      height: genesHeight,
     },
     {
       trackId: SEGMENTS_TRACK,
@@ -92,9 +92,10 @@ const workspace = (
   direction: 'horizontal' | 'vertical',
   size: number,
   lanesHeight = 460,
+  genesHeight = 70,
 ) =>
   sessionSpec(CONFIG, {
-    views: [laneView(lanesHeight), graphView(layoutMode)],
+    views: [laneView(lanesHeight, genesHeight), graphView(layoutMode)],
     layout: {
       direction,
       children: [
@@ -178,9 +179,9 @@ export const paperHprcWorkspaceSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'paper/hprc_lanes_graph_stacked_force',
-    url: workspace('force', 'vertical', 55),
+    url: workspace('force', 'vertical', 60, 460, 50),
     viewportWidth: 1500,
-    viewportHeight: 1440,
+    viewportHeight: 1420,
     ...gates,
     annotations: callouts,
   },

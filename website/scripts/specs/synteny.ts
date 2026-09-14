@@ -3514,7 +3514,7 @@ export const syntenySpecs: ScreenshotSpec[] = [
                     // is the WHITE, and a 3px gap in a 7px bar is not a gap
                     // anyone sees.
                     featureHeight: 20,
-                    height: 115,
+                    height: 100,
                   },
                 ],
               },
@@ -3542,12 +3542,13 @@ export const syntenySpecs: ScreenshotSpec[] = [
             // inversion is blue in the lane AND a blue ribbon in the band.
             colorBy: 'strand',
             minAlignmentLength: 10000,
-            levelHeights: [100, 100, 100, 100],
+            collapseEmptyRows: true,
+            levelHeights: [120, 120, 120, 120],
           },
         ],
       },
     ),
-    viewportHeight: 1030,
+    viewportHeight: 890,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     settleMs: 15000,
