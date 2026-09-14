@@ -2,17 +2,16 @@
 title: Synteny visualization (OrthoFinder orthogroups)
 sidebar_label: Synteny (OrthoFinder)
 description:
-  Stack genomes too diverged to align, using OrthoFinder orthogroups as the
+  Stack genomes on OrthoFinder orthogroups, built from protein homology, as the
   synteny table
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
 An [OrthoFinder](https://github.com/davidemms/OrthoFinder) run groups genes by
-homology and says nothing about position, so it produces a synteny track for
-genomes no aligner can line up. `Orthogroups.tsv` converts to the `.blocks`
-table `MCScanBlocksAdapter` reads, with one BED per genome, and a duplicated
-gene becomes several rows.
+protein homology and says nothing about position. `Orthogroups.tsv` converts to
+the `.blocks` table `MCScanBlocksAdapter` reads, with one BED of gene positions
+per genome, and a duplicated gene becomes several rows.
 
 ## Prerequisites
 
@@ -65,11 +64,12 @@ division's protein FASTA and GFF3 per genome.
 
 ## Orthogroups as a synteny source
 
-OrthoFinder clusters proteins into orthogroups without reference to position, so
-a table of orthogroups is a synteny track for a human against a zebrafish, past
-the divergence where [minimap2](/docs/tutorials/synteny_visualization) and
-[MCScan](/docs/tutorials/mcscan_synteny_grape_peach) return nothing. Nothing in
-an orthogroup asserts synteny, so any collinearity in the ribbons is a property
+A table of orthogroups draws as a synteny track for any genomes with annotated
+proteins, alongside the alignment-based tracks of the
+[minimap2](/docs/tutorials/synteny_visualization) and
+[MCScan](/docs/tutorials/mcscan_synteny_grape_peach) tutorials. OrthoFinder
+clusters proteins into orthogroups without reference to position, so nothing in
+an orthogroup asserts synteny, and any collinearity in the ribbons is a property
 of the genomes.
 
 Five sets follow, a section each; the second half of the page builds `wheat`
