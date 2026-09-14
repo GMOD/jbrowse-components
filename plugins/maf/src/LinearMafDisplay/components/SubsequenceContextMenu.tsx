@@ -14,13 +14,6 @@ import {
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { ContextCoord } from './useDragSelection.ts'
 
-/**
- * Right-click menu shown after the user finishes a drag-selection on the MAF
- * canvas. "All rows" opens the subsequence widget for every visible sample;
- * "selected rows" narrows it to the rows the drag rectangle vertically covers
- * (via the shared `rowSpanAtY`, so the selection lands on the same rows the
- * hover hit-test would report).
- */
 // The two lists the selection's rows lead to, built from one pass over them
 // rather than one each: the same pair the track menu offers over the visible
 // region.
@@ -36,6 +29,14 @@ function rowTargetItems(
   ]
 }
 
+/**
+ * Right-click menu shown after the user finishes a drag-selection on the MAF
+ * canvas: three submenus, so each destination is one row however many species
+ * the drag covers. "All rows" opens the subsequence widget for every visible
+ * sample; "Selected rows" narrows it to the rows the drag rectangle vertically
+ * covers (via the shared `rowSpanAtY`, so the selection lands on the same rows
+ * the hover hit-test would report).
+ */
 const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
   model,
   contextCoord,
@@ -69,27 +70,32 @@ const SubsequenceContextMenu = observer(function SubsequenceContextMenu({
         setContextCoord(undefined)
       }}
       menuItems={[
-        zoomGatedItem(
-          {
-            label: 'View subsequences (all rows)',
-            onClick: () => {
-              openRows(samples)
-            },
-          },
-          zoomHint,
-        ),
-        zoomGatedItem(
-          {
-            label: 'View subsequences (selected rows)',
-            onClick: () => {
-              const { startRow, endRow } = contextCoord
-                ? rowSpanAtY(model, contextCoord.startY, contextCoord.endY)
-                : { startRow: 0, endRow: 0 }
-              openRows(samples.slice(startRow, endRow))
-            },
-          },
-          zoomHint,
-        ),
+        {
+          label: 'View subsequences',
+          subMenu: [
+            zoomGatedItem(
+              {
+                label: 'All rows',
+                onClick: () => {
+                  openRows(samples)
+                },
+              },
+              zoomHint,
+            ),
+            zoomGatedItem(
+              {
+                label: 'Selected rows',
+                onClick: () => {
+                  const { startRow, endRow } = contextCoord
+                    ? rowSpanAtY(model, contextCoord.startY, contextCoord.endY)
+                    : { startRow: 0, endRow: 0 }
+                  openRows(samples.slice(startRow, endRow))
+                },
+              },
+              zoomHint,
+            ),
+          ],
+        },
         ...(contextCoord ? rowTargetItems(model, contextCoord) : []),
       ]}
     />

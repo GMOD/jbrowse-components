@@ -107,8 +107,7 @@ function labels(items: MenuItem[]) {
 test('the drag menu’s three offers reach the track menu', () => {
   expect(labels(launchSubMenu(model()))).toEqual([
     'View subsequences (visible region)',
-    'Open s1 at the matching region',
-    'Open s2 at the matching region',
+    'Open aligned genome at the matching region',
     'Linear synteny view, hg38 vs...',
   ])
 })

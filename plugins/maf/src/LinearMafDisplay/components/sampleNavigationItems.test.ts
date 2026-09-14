@@ -1,3 +1,5 @@
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+
 import {
   findAssemblyConf,
   openSampleInNewView,
@@ -89,6 +91,13 @@ function itemsFor(
   return sampleNavigationItems(session, m, selectedRowTargets(session, m, c))
 }
 
+function subMenuLabels(items: ReturnType<typeof sampleNavigationItems>) {
+  const [item] = items
+  return item && 'subMenu' in item
+    ? resolveSubMenu(item).map(i => ('label' in i ? i.label : undefined))
+    : []
+}
+
 // A pangenome MAF carries the reference as a sample; the row leads nowhere the
 // view is not already, however the config spells the assembly.
 test('the reference row is screened out through its aliases', () => {
@@ -99,34 +108,25 @@ test('the reference row is screened out through its aliases', () => {
       2: target('SPRET_EiJ', 2000),
     }),
   )
-  expect(items.map(i => ('label' in i ? i.label : undefined))).toEqual([
-    'Open SPRET_EiJ at the matching region',
-  ])
+  expect(subMenuLabels(items)).toEqual(['SPRET_EiJ chr2:2001-2020'])
 })
 
-test('one entry per navigable row in the selection', () => {
+test('one submenu entry per navigable row in the selection', () => {
   const items = itemsFor(
     model({ 0: target('SPRET_EiJ', 1000), 1: target('PWK_PhJ', 2000) }),
   )
-  expect(items.map(i => ('label' in i ? i.label : undefined))).toEqual([
-    'Open SPRET_EiJ at the matching region',
-    'Open PWK_PhJ at the matching region',
+  expect(items).toHaveLength(1)
+  expect(subMenuLabels(items)).toEqual([
+    'SPRET_EiJ chr2:1001-1020',
+    'PWK_PhJ chr2:2001-2020',
   ])
 })
 
 test('rows with no navigation target contribute nothing', () => {
   expect(itemsFor(model({}))).toEqual([])
-  expect(itemsFor(model({ 1: target('rn6', 5) }))).toHaveLength(1)
-})
-
-test('many navigable rows collapse into a submenu', () => {
-  const targets = Object.fromEntries(
-    Array.from({ length: 8 }, (_, i) => [i, target(`s${i}`, i * 100)]),
+  expect(subMenuLabels(itemsFor(model({ 1: target('rn6', 5) })))).toHaveLength(
+    1,
   )
-  const items = itemsFor(model(targets), { ...coord, endY: 80 })
-  expect(items).toHaveLength(1)
-  const [item] = items
-  expect(item && 'subMenu' in item && item.subMenu).toHaveLength(8)
 })
 
 // Two 100bp regions abutting at px 15, 1px = 1bp. A drag (or the track menu's

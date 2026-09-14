@@ -1,4 +1,4 @@
-import { isSameAssemblyName, openMateLabel } from '@jbrowse/core/util/tracks'
+import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 
 import { launchMafRowSynteny } from '../launchMafRowSynteny.ts'
 import {
@@ -46,9 +46,6 @@ export type SampleNavigationModel = MafHitTestModel & {
   ) => (SampleNavigationTarget & { rowIndex: number })[]
   view: { assemblyNames: string[] }
 }
-
-/** Above this many navigable rows the entries move into a submenu. */
-const MAX_INLINE_ITEMS = 6
 
 /**
  * The rows a drag selection covers that lead somewhere: each with the sample's
@@ -153,8 +150,8 @@ function rowTargetsBetween(
 }
 
 /**
- * "Open this species' own genome here" entries for the rows a drag selection
- * covers. A row contributes an entry only when its sample carries an
+ * "Open this species' own genome here", one submenu entry per row a drag
+ * selection covers. A row contributes an entry only when its sample carries an
  * `assemblyName` (so there is a genome to navigate to) and it has aligned bases
  * in the selection — the menu is built from the data rather than listing dead
  * rows for every sample.
@@ -180,23 +177,20 @@ export function sampleNavigationItems(
 
   return targets.length === 0
     ? []
-    : targets.length <= MAX_INLINE_ITEMS
-      ? targets.map(t => menuItem(t, openMateLabel(t.sampleLabel)))
-      : [
-          {
-            label: 'Open aligned genome at the matching region',
-            subMenu: targets.map(t =>
-              menuItem(t, `${t.sampleLabel} ${navigationLocString(t)}`),
-            ),
-          },
-        ]
+    : [
+        {
+          label: 'Open aligned genome at the matching region',
+          subMenu: targets.map(t =>
+            menuItem(t, `${t.sampleLabel} ${navigationLocString(t)}`),
+          ),
+        },
+      ]
 }
 
 /**
  * The comparison, beside the jump above: the reference against one aligned
  * sample as a two-row synteny view over the selection, ribbons cut from the
- * MAF columns. One submenu whatever the row count — the per-row jump entries
- * already fill the menu, and this is the same list read a second way.
+ * MAF columns — the same list read a second way.
  */
 export function mafSyntenyLaunchItems(
   session: MafSyntenyHost & NotificationSink,
