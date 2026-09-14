@@ -1,3 +1,9 @@
+import {
+  OVERFLOW_GROUP_KEY,
+  capGroupKeys,
+  compareGroupKeys,
+  overflowLabel,
+} from './groupKeys.ts'
 import { stringToJexlExpression } from './jexlStrings.ts'
 import SimpleFeature, { buildJexlContext } from './simpleFeature.ts'
 
@@ -7,6 +13,8 @@ import type {
   AggregateStep,
   BinStep,
   CoverageStep,
+  FacetSection,
+  FacetSpec,
   FlattenStep,
   StackStep,
   TransformStep,
@@ -369,6 +377,59 @@ function coverage(features: readonly Feature[], step: CoverageStep) {
     }
   }
   return out
+}
+
+/**
+ * #api
+ * Stack the facet groups themselves: `stack`'s `groupby` numbers every group
+ * from 0, so the sections overlap until each one's rows are offset by the
+ * rows of the groups above it. The order is `compareGroupKeys` and the tail
+ * past the cap merges into one overflow section, the same two rules the chip
+ * row reads, so a layout and a reading of it agree without sharing state.
+ *
+ * A group's height is its own highest row plus one, which is right whether or
+ * not the `stack` grouped by this field — an ungrouped pack simply leaves one
+ * group spanning every row.
+ */
+export function facetRows(
+  features: readonly Feature[],
+  { field, as = DEFAULT_STACK_AS }: FacetSpec,
+) {
+  const labels = new Map<string, string>()
+  const rows = features.map(f => {
+    const raw = f.get(field)
+    const key = raw === undefined || raw === null ? '' : String(raw)
+    if (!labels.has(key)) {
+      labels.set(key, key === '' ? `${field}: none` : `${field}: ${key}`)
+    }
+    return { feature: f, key, row: Number(f.get(as)) || 0 }
+  })
+  const { sectionOf, mergedCount } = capGroupKeys(labels.keys())
+  const heights = new Map<string, number>()
+  for (const r of rows) {
+    r.key = sectionOf(r.key)
+    heights.set(r.key, Math.max(heights.get(r.key) ?? 0, r.row + 1))
+  }
+  const sections: FacetSection[] = []
+  const firstRows = new Map<string, number>()
+  let next = 0
+  for (const key of [...heights.keys()].sort(compareGroupKeys)) {
+    const rowCount = heights.get(key)!
+    const label =
+      key === OVERFLOW_GROUP_KEY
+        ? overflowLabel(mergedCount)
+        : (labels.get(key) ?? key)
+    sections.push({ key, label, firstRow: next, rowCount })
+    firstRows.set(key, next)
+    next += rowCount
+  }
+  return {
+    features: rows.map(
+      ({ feature, key, row }) =>
+        new DerivedFeature(feature, { [as]: row + firstRows.get(key)! }),
+    ) as readonly Feature[],
+    sections,
+  }
 }
 
 /**

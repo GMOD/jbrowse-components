@@ -7480,6 +7480,29 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "additionalProperties": false
     },
+    "MarkFacet": {
+      "title": "MarkFacet",
+      "anyOf": [
+        {
+          "type": "string",
+          "description": "Shorthand for \`{ \\"field\\": ... }\`."
+        },
+        {
+          "type": "object",
+          "properties": {
+            "field": {
+              "description": "field whose values take their own rows.",
+              "$ref": "#/$defs/StringOrJexl",
+              "default": ""
+            }
+          },
+          "patternProperties": {
+            "^_+comment": {}
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "Mark": {
       "title": "Mark",
       "type": "object",
@@ -7558,6 +7581,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "items": {
             "$ref": "#/$defs/MarkTransformStep"
           }
+        },
+        "facet": {
+          "$ref": "#/$defs/MarkFacet"
         },
         "source": {
           "description": "features, or density past the fetch budget.",

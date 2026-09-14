@@ -114,6 +114,11 @@ export function markValueScale(state: MarkRenderState, i: number) {
     : { domain: state.domainY, scaleType: state.scaleTypeY }
 }
 
+/** The px each band of a span mark gets: the plot split by the row count. */
+export function markRowHeightPx(canvasHeight: number, rowCount: number) {
+  return Math.max(1, Math.floor(canvasHeight / rowCount))
+}
+
 export function markDrawsAt(
   { minBpPerPx, maxBpPerPx }: MarkEntry,
   bpPerPx: number,
@@ -174,7 +179,7 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
           channels: (d: MarkRegionData) =>
             withLanes(d.layers[i], SHAPE_VALUE_LANES.span),
           params: (s: MarkRenderState) => ({
-            rowHeight: Math.max(1, Math.floor(s.canvasHeight / s.rowCount)),
+            rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
             rowProportion: 1,
             minWidthPx: s.minWidthPx,
             seamPx: 0,

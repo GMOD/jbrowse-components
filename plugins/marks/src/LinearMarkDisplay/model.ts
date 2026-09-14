@@ -19,6 +19,7 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { createStopTokenRotation } from '@jbrowse/core/util/createStopTokenRotation'
 import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 import Flatbush from '@jbrowse/core/util/flatbush'
+import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import {
   activeJexlFilters,
   configuredJexlFilters,
@@ -28,6 +29,7 @@ import { DEFAULT_MARK_COLOR, valueField } from '@jbrowse/core/util/markEncoding'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
+import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin, {
   legendCheckboxItem,
 } from '@jbrowse/display-kit/LegendMixin'
@@ -57,6 +59,11 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 
 import { binStepWidth } from './autoBin.ts'
 import { densityRegionData } from './densityLayer.ts'
+import {
+  foldFacetSections,
+  remapFacetRows,
+  visibleFacetLayout,
+} from './facet.ts'
 import { sameMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend, colorSection, markColorScales } from './legend.ts'
 import { SHAPE_LANES, buildMarkList, markDrawsAt } from './markList.ts'
@@ -69,6 +76,7 @@ import type {
   MarkShapeName,
   MarkTransformStepConfig,
 } from './configSchema.ts'
+import type { FacetLayout } from './facet.ts'
 import type { MarkHitInfo } from './findMarkHit.ts'
 import type {
   MarkEntry,
@@ -82,6 +90,7 @@ import type {
   AggregateOp,
   ColorEncoding,
   EncodedFeaturesResult,
+  FacetSection,
   GlyphEncoding,
   GlyphName,
   LayerRequest,
@@ -321,9 +330,9 @@ export function stateModelFactory(
   return types
     .compose(
       'LinearMarkDisplay',
-      BaseDisplay,
-      TrackHeightMixin(),
-      MultiRegionDisplayMixin(),
+      // Nested so the parts stay under `types.compose`'s nine, the ceiling
+      // whose tenth part erases every prop instead of failing.
+      types.compose(BaseDisplay, TrackHeightMixin(), MultiRegionDisplayMixin()),
       // Where the byte gate refuses the features, a mark declaring
       // `source: 'density'` draws the adapter's sidecar in the banner's place
       // — see `densityPayloads`.
@@ -332,6 +341,7 @@ export function stateModelFactory(
       LegendMixin(),
       ContextMenuMixin<MarkDisplayContextMenuInfo>(),
       StoredHoverMixin<MarkHitInfo>(sameMarkHit),
+      HiddenGroupsMixin(),
       types.model({
         type: types.literal('LinearMarkDisplay'),
         /**
@@ -380,6 +390,29 @@ export function stateModelFactory(
        */
       get markShapes(): MarkShapeName[] {
         return self.conf.marks.map((m: MarkConfig) => m.shape)
+      },
+      /**
+       * #getter
+       * The facet field: the categorical field whose values each take their
+       * own band of rows, off the first mark declaring one, or `''`.
+       */
+      get facetField(): string {
+        const faceted = self.conf.marks.find(
+          (m: MarkConfig) => m.facet.field !== '',
+        )
+        return faceted?.facet.field ?? ''
+      },
+      /**
+       * #getter
+       * `HiddenGroupsMixin`'s hook: a section key means nothing outside the
+       * facet that issued it, so moving the field drops what was hidden.
+       */
+      get groupKeySpace(): string {
+        return groupKeySpaceOf(
+          this.facetField
+            ? { type: 'facet', field: this.facetField }
+            : undefined,
+        )
       },
       /**
        * #getter
@@ -466,6 +499,7 @@ export function stateModelFactory(
             encoding: encodingOf(m),
             lanes: [...SHAPE_LANES[shape]],
             ...(transform.length > 0 ? { transform } : {}),
+            ...(m.facet.field ? { facet: { field: m.facet.field } } : {}),
           }
         })
       },
@@ -534,16 +568,48 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * The layers the display draws, keyed by displayedRegionIndex: the
+       * The layers as they came back, keyed by displayedRegionIndex: the
        * foundation's per-region store, or the density tier's bins where the
        * gate refused the features and a mark declared the sidecar. One map,
        * so the domain, the legend, the hover, the highlight and the SVG
        * export read the tier through the paths they already had.
        */
-      get rpcDataMap(): ReadonlyMap<number, MarkRegionData> {
+      get featurePayloads(): ReadonlyMap<number, MarkRegionData> {
         return self.coarseTierStandsIn
           ? self.densityPayloads
           : (self.regionPayloads as ReadonlyMap<number, MarkRegionData>)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The facet's sections over every loaded region, in key order.
+       */
+      get facetSections(): FacetSection[] {
+        return self.facetField ? foldFacetSections(self.featurePayloads) : []
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Where each visible section sits: the hidden ones gone and the rest
+       * re-cumulated, which is the row space every region is offset onto.
+       */
+      get facetLayout(): FacetLayout {
+        return visibleFacetLayout(self.facetSections, self.hiddenGroupKeys)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The layers the display draws: faceted, every region's rows offset
+       * onto the one layout, so a chip and the band under it agree whichever
+       * region a span came from.
+       */
+      get rpcDataMap(): ReadonlyMap<number, MarkRegionData> {
+        return self.facetSections.length > 0
+          ? remapFacetRows(self.featurePayloads, self.facetLayout)
+          : self.featurePayloads
       },
     }))
     .views(self => ({
@@ -730,6 +796,9 @@ export function stateModelFactory(
        * carries, plus one
        */
       get rowCount(): number {
+        if (self.facetLayout.rowCount > 0) {
+          return self.facetLayout.rowCount
+        }
         const { visible } = self.markView
         let highest = 0
         for (const data of self.rpcDataMap.values()) {

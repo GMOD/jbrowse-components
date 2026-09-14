@@ -1,4 +1,5 @@
 import type { MarkShapeName } from '../configSchema.ts'
+import type { FacetLayout } from '../facet.ts'
 import type { MarkHitInfo } from '../findMarkHit.ts'
 import type { MarkLegendSection } from '../legend.ts'
 import type {
@@ -33,6 +34,10 @@ export interface MarkDisplayModel extends WiggleGpuDisplayModel<
   legendSections: MarkLegendSection[]
   skippedFeatures: SkippedFeatures
   densityStandInNotice: string | undefined
+  facetLayout: FacetLayout
+  hiddenGroups: { size: number }
+  hideGroup: (key: string) => void
+  showAllGroups: () => void
   showLegend: boolean
   setHoveredFeature: (hit: MarkHitInfo | undefined) => void
   clearHoveredFeature: () => void

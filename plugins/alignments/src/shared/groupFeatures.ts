@@ -9,7 +9,7 @@ import {
   capGroupKeys,
   compareGroupKeys,
   overflowLabel,
-} from '@jbrowse/display-kit/groupKeys'
+} from '@jbrowse/core/util/groupKeys'
 
 import { PAIR_DIRECTION_NUM } from './buildBaseFeatureData.ts'
 import { featureChainKey } from './chainGroupingKey.ts'
@@ -34,7 +34,7 @@ export {
   OVERFLOW_GROUP_KEY,
   compareGroupKeys,
   overflowLabel,
-} from '@jbrowse/display-kit/groupKeys'
+} from '@jbrowse/core/util/groupKeys'
 
 export interface FeatureGroup {
   // '' is the "untagged"/"unknown" sentinel, which `groupKeyRank` sorts

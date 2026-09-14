@@ -1,9 +1,9 @@
-import { NO_HIDDEN_GROUPS } from '@jbrowse/display-kit/HiddenGroupsMixin'
 import {
   OVERFLOW_GROUP_KEY,
   compareGroupKeys,
   overflowLabel,
-} from '@jbrowse/display-kit/groupKeys'
+} from '@jbrowse/core/util/groupKeys'
+import { NO_HIDDEN_GROUPS } from '@jbrowse/display-kit/HiddenGroupsMixin'
 
 import {
   downJunctionKeys,
@@ -21,7 +21,7 @@ import type {
   RegionJunctions,
 } from '../features/sashimi/junctions.ts'
 import type { SashimiArcsMode } from './constants.ts'
-import type { GroupId } from '@jbrowse/display-kit/groupKeys'
+import type { GroupId } from '@jbrowse/core/util/groupKeys'
 
 export { NO_HIDDEN_GROUPS }
 
@@ -117,7 +117,7 @@ function sashimiRegionsByGroup(
   return byGroup
 }
 
-export type { GroupId } from '@jbrowse/display-kit/groupKeys'
+export type { GroupId } from '@jbrowse/core/util/groupKeys'
 
 // Whether the fetch produced NAMED sections, and so whether to draw the section
 // labels + dividers. Reads the data rather than the `groupBy` setting: chain mode

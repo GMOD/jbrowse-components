@@ -42,6 +42,8 @@ export type {
   Encoded,
   EncodedChannels,
   EncodedFeaturesResult,
+  FacetSection,
+  FacetSpec,
   FieldRef,
   FilterStep,
   FormulaStep,

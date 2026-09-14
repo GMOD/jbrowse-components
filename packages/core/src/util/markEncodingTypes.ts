@@ -201,6 +201,8 @@ export interface EncodedChannels {
   scale?: ColorScaleTable
   /** The glyph channel's table, when `glyph` is a scale. */
   glyphScale?: GlyphScaleTable
+  /** The sections a declared facet stacked, in key order. */
+  facet?: FacetSection[]
 }
 
 /**
@@ -221,6 +223,8 @@ export interface LayerRequest {
   lanes: LaneName[]
   /** This layer's own steps, run after the request's shared ones. */
   transform?: TransformStep[]
+  /** The row facet stacked over the steps' rows, and its section table. */
+  facet?: FacetSpec
 }
 
 /**
@@ -363,4 +367,29 @@ export type CoreEncodeFeaturesArgs = {
   filters?: string[]
   byteLimit?: number
   sequenceAdapter?: Record<string, unknown>
+}
+
+/**
+ * #api
+ * A layer's row facet: partition the features on `field`, and stack each
+ * value's rows under the groups above it. The rows themselves are a `stack`
+ * step's, grouped by the same field — the facet is the offset between the
+ * groups and the section table a display names them from.
+ */
+export interface FacetSpec {
+  field: FieldRef
+  /** The row field the offset is written over, `row` by default. */
+  as?: string
+}
+
+/**
+ * #api
+ * One faceted section as the worker stacked it: its sort key, the chip's
+ * name, the row it starts on and how many rows it holds.
+ */
+export interface FacetSection {
+  key: string
+  label: string
+  firstRow: number
+  rowCount: number
 }

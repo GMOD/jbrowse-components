@@ -1,4 +1,4 @@
-import { MAX_GROUPS, OVERFLOW_GROUP_KEY } from '@jbrowse/display-kit/groupKeys'
+import { MAX_GROUPS, OVERFLOW_GROUP_KEY } from '@jbrowse/core/util/groupKeys'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 
 import {

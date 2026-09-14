@@ -1,4 +1,4 @@
-import { compareGroupKeys } from '@jbrowse/display-kit/groupKeys'
+import { compareGroupKeys } from '@jbrowse/core/util/groupKeys'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 
 import {
@@ -31,7 +31,7 @@ import type {
   LayoutRegionData,
 } from './layoutInputs.ts'
 import type { PackPrep, PackTrims } from './packRef.ts'
-import type { GroupId } from '@jbrowse/display-kit/groupKeys'
+import type { GroupId } from '@jbrowse/core/util/groupKeys'
 
 // Regions sharing an `assembly:refName` key share one layout, so a spanning
 // feature gets the same Y in every region it appears in.

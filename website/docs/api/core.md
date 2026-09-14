@@ -170,6 +170,41 @@ transferables.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncoding.ts)
 
+## facetRows
+
+Stack the facet groups themselves: `stack`'s `groupby` numbers every group
+from 0, so the sections overlap until each one's rows are offset by the
+rows of the groups above it. The order is `compareGroupKeys` and the tail
+past the cap merges into one overflow section, the same two rules the chip
+row reads, so a layout and a reading of it agree without sharing state.
+
+A group's height is its own highest row plus one, which is right whether or
+not the `stack` grouped by this field — an ungrouped pack simply leaves one
+group spanning every row.
+
+```js
+// type signature
+(features: readonly Feature[], { field, as }: FacetSpec) => { features: readonly Feature[]; sections: FacetSection[]; }
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
+
+## FacetSection
+
+One faceted section as the worker stacked it: its sort key, the chip's
+name, the row it starts on and how many rows it holds.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
+## FacetSpec
+
+A layer's row facet: partition the features on `field`, and stack each
+value's rows under the groups above it. The rows themselves are a `stack`
+step's, grouped by the same field — the facet is the offset between the
+groups and the section table a display names them from.
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/markEncodingTypes.ts)
+
 ## FieldRef
 
 Where a channel's value comes from: a feature field name, read natively

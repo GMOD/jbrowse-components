@@ -3,7 +3,7 @@ import {
   capGroupKeys,
   compareGroupKeys,
   overflowLabel,
-} from '@jbrowse/display-kit/groupKeys'
+} from '@jbrowse/core/util/groupKeys'
 
 import {
   STRAND_COLOR_JEXL,
@@ -15,7 +15,7 @@ import type {
   FeatureDataResult,
   FlatbushItem,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
-import type { GroupId } from '@jbrowse/display-kit/groupKeys'
+import type { GroupId } from '@jbrowse/core/util/groupKeys'
 
 export type FeatureGroupByType = 'strand' | 'attribute'
 

@@ -4,6 +4,7 @@ import { ScorePlotChrome } from '@jbrowse/wiggle-core/ScorePlotChrome'
 import { observer } from 'mobx-react'
 
 import { findMarkHit } from '../findMarkHit.ts'
+import MarkFacetChips from './MarkFacetChips.tsx'
 import MarkTooltip from './MarkTooltip.tsx'
 
 import type { MarkTooltipModel } from './MarkTooltip.tsx'
@@ -32,6 +33,9 @@ const LinearMarkDisplayComponent = observer(
           )
         }
         contextMenu={model}
+        overlay={({ plotHeight }) => (
+          <MarkFacetChips model={model} plotHeight={plotHeight} />
+        )}
         tooltip={mouseState => (
           <MarkTooltip model={model} mouseState={mouseState} />
         )}

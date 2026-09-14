@@ -242,6 +242,29 @@ const markValueSchema = ConfigurationSchema(
   { preProcessSnapshot: liftField },
 )
 
+const markFacetSchema = ConfigurationSchema(
+  'MarkFacet',
+  {
+    /**
+     * #slot marks.facet.field
+     * The categorical feature field whose values each take their own band of
+     * rows, one section per value, named by a chip. The rows themselves come
+     * from a `stack` step grouped by the same field — the facet is the offset
+     * between one group's rows and the next, so a section stacks under the
+     * ones above it rather than over them. Sections order the way every
+     * in-track grouping orders, digits by magnitude, and the tail past 40
+     * merges into one. Empty for a display with no facet. Writing
+     * `facet: 'type'` directly on the mark lands here.
+     */
+    field: {
+      type: 'string',
+      defaultValue: '',
+      description: 'field whose values take their own rows',
+    },
+  },
+  { preProcessSnapshot: liftField },
+)
+
 const markEncodingSchema = ConfigurationSchema('MarkEncoding', {
   /**
    * #slot marks.encoding.x
@@ -532,6 +555,13 @@ const markSchema = ConfigurationSchema(
      * `y`.
      */
     transform: types.array(transformStepSchema),
+    /**
+     * #slot marks.facet
+     * The row facet: a field, or an object naming it, whose values each take
+     * their own band of rows with a chip over it. A reader hides a section
+     * from its chip.
+     */
+    facet: markFacetSchema,
     /**
      * #slot marks.source
      * Where this mark draws from once the byte gate refuses the features.

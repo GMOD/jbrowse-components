@@ -5379,6 +5379,16 @@ export const configManifest: ConfigManifest = {
               ]
             },
             {
+              "name": "facet",
+              "type": "MarkFacetConfigurationSchema",
+              "subSlots": [
+                {
+                  "name": "field",
+                  "type": "(JexlString | string)"
+                }
+              ]
+            },
+            {
               "name": "source",
               "type": "(JexlString | MarkSource)"
             },

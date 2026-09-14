@@ -1,5 +1,5 @@
 import { SimpleFeature } from '@jbrowse/core/util'
-import { groupKeySpaceOf } from '@jbrowse/display-kit/groupKeys'
+import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 
 import {
   GROUP_BY_DIMENSIONS,

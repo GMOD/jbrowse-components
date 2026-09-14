@@ -15,6 +15,7 @@ import {
   isFeature,
   pluralize,
 } from '@jbrowse/core/util'
+import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
 import {
   activeJexlFilters,
   configuredJexlFilters,
@@ -32,7 +33,6 @@ import {
   autorunOnReadyView,
   onDisplayedRegionsChange,
 } from '@jbrowse/display-kit/displayAutoruns'
-import { groupKeySpaceOf } from '@jbrowse/display-kit/groupKeys'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
