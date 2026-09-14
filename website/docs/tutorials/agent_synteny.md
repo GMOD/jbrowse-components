@@ -80,13 +80,13 @@ The aligner it runs:
 <!-- from: scripts/build_fly_agent_synteny.sh -->
 
 ```bash
-## asm10 is the preset for assemblies up to about 10% divergence.
+## The largest chromosome measures 2.4% divergence (de:f), past asm10's 1%.
 ## --cs writes the difference string the index below carries.
-minimap2 -t 8 -cx asm10 --cs mau.fa.gz sim.fa.gz > sim_vs_mau.paf
+minimap2 -t 8 -cx asm20 --cs mau.fa.gz sim.fa.gz > sim_vs_mau.paf
 ```
 
-Whole genome against whole genome takes several minutes and about 8 GB of
-memory, and produces 9,494 alignment records.
+Whole genome against whole genome takes about seven minutes on 16 threads and 14
+GB of memory, and produces 6,663 alignment records.
 
 **This is where a tool call outlives its budget.** A `run_javascript` call has
 about two minutes before it answers with a timeout while the app carries on
@@ -196,13 +196,13 @@ Grouping the reverse-strand blocks of 5 kb or more, and cutting a group wherever
 half a megabase passes with none, gives three regions:
 
 ```
-2R  sim    59,995 - 2,256,808  <->  mau   628,956 - 3,646,198   (2.20 Mb, 68 blocks)
-X   sim 8,304,208 - 8,752,357  <->  mau 8,530,265 - 8,980,209   (0.45 Mb,  9 blocks)
-X   sim 21,441,285 - 22,030,225 <->  mau 21,459,299 - 22,873,009 (0.59 Mb, 15 blocks)
+2R  sim    59,995 - 2,256,808  <->  mau   628,956 - 3,646,198   (2.20 Mb, 75 blocks)
+X   sim 8,303,553 - 8,752,357  <->  mau 8,530,265 - 8,980,862   (0.45 Mb,  2 blocks)
+X   sim 21,441,285 - 22,026,996 <->  mau 21,459,277 - 22,872,816 (0.59 Mb, 12 blocks)
 ```
 
 The 2R region is the largest and the least tidy: 2.2 Mb at the centromere-
-proximal end of the arm, in 68 short blocks because the sequence there is
+proximal end of the arm, in 75 short blocks because the sequence there is
 repeat-rich. The two X regions are smaller and cleaner.
 
 Ask which grouping it used. "The largest inversion" depends on how far apart two

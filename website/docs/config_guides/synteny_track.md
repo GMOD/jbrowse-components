@@ -68,8 +68,14 @@ explains them.
 ## Quick start: PAF from minimap2
 
 ```bash
-minimap2 -cx asm5 target.fa query.fa > alignment.paf
+minimap2 -cx asm20 target.fa query.fa > alignment.paf
 ```
+
+`asm5`, `asm10` and `asm20` suit about 0.1%, 1% and 5% divergence. Measure it
+before choosing: align one chromosome with `asm20` and read the `de:f` tag,
+minimap2's per-alignment divergence. D. simulans against D. mauritiana, sister
+species, reads 2.4%, and `asm5` splits their largest chromosome into 6,805
+records where `asm20` gives 278.
 
 ```json addtrack
 {

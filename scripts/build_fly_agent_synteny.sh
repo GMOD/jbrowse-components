@@ -15,7 +15,7 @@
 # Everything is pinned (fixed accessions, fixed preset), so re-running
 # reproduces the same view.
 #
-# The alignment is the long step: about 8 minutes on 8 threads, 7 GB peak RSS.
+# The alignment is the long step: about 7 minutes with THREADS=16, 14 GB peak RSS.
 #
 # Requires: minimap2, jq, curl, and node (JBrowse CLI, fetched via npx unless
 #           `jbrowse` is on PATH).
@@ -45,10 +45,10 @@ fi
   "https://hgdownload.soe.ucsc.edu/hubs/GCF/004/382/145/$MAU_ACC/$MAU_ACC.fa.gz"
 
 # ── Align, query first ───────────────────────────────────────────────────────
-# asm10 is the preset for assemblies up to about 10% divergence, which covers
-# these two. --cs writes the difference string the PIF index carries.
+# The largest chromosome measures 2.4% divergence (de:f), past asm10's 1%.
+# --cs writes the difference string the PIF index carries.
 if [ ! -f sim_vs_mau.paf ]; then
-  minimap2 -t "${THREADS:-8}" -cx asm10 --cs mau.fa.gz sim.fa.gz > sim_vs_mau.paf
+  minimap2 -t "${THREADS:-8}" -cx asm20 --cs mau.fa.gz sim.fa.gz > sim_vs_mau.paf
 fi
 
 # make-pif writes <stem>.pif.gz and its .tbi next to the input

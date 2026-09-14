@@ -459,7 +459,34 @@ return { ...added, valuesInView: values.length }
   [live model guide](/docs/agents_live_model) shows how) and compare against the
   assembly's names.
 - In JBrowse Web the location must be a URL the host serves with CORS headers; a
-  local path is refused before anything is added.
+  local path is refused before anything is added. JBrowse Desktop takes an
+  absolute path wherever it takes a URL.
+
+## Align two genomes before comparing them
+
+minimap2 picks its seeds and penalties from a preset, and the preset has to
+match how far apart the genomes are: `asm5`, `asm10` and `asm20` suit about
+0.1%, 1% and 5% divergence. How closely related two species sound is not a
+measurement. Align the largest chromosome of each with `asm20` first and read
+the divergence off the `de:f` tag. The two genomes may name that chromosome
+differently, so pick it from each `.fai`:
+
+```bash
+zcat query.fa.gz | bgzip > q.fa.gz && samtools faidx q.fa.gz
+zcat target.fa.gz | bgzip > t.fa.gz && samtools faidx t.fa.gz
+samtools faidx q.fa.gz "$(sort -k2,2nr q.fa.gz.fai | head -1 | cut -f1)" > q1.fa
+samtools faidx t.fa.gz "$(sort -k2,2nr t.fa.gz.fai | head -1 | cut -f1)" > t1.fa
+minimap2 -cx asm20 t1.fa q1.fa |
+  awk '{for(i=13;i<=NF;i++) if($i~/^de:f:/){split($i,t,":"); d+=t[3]*($4-$3)}; n+=$4-$3} END {print d/n}'
+```
+
+- D. simulans against D. mauritiana, sister species, reads 0.024 on their
+  largest chromosome. `asm5` splits it into 6,805 records and leaves more of it
+  unaligned; `asm20` gives 278.
+- Whole genomes take minutes, past a tool call's budget, so run the aligner in
+  the background and poll it.
+- `jbrowse make-pif` indexes the PAF for a `PairwiseIndexedPAFAdapter`, and the
+  query is minimap2's second argument.
 
 ## The same data under another display
 

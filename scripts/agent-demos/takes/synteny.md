@@ -49,16 +49,16 @@ curl -sL -o mau.fa.gz https://hgdownload.soe.ucsc.edu/hubs/GCF/004/382/145/GCF_0
 43 MB and 47 MB. The alignment itself is the long step:
 
 ```bash
-minimap2 -t 8 -cx asm10 --cs mau.fa.gz sim.fa.gz > sim_vs_mau.paf
+minimap2 -t 8 -cx asm20 --cs mau.fa.gz sim.fa.gz > sim_vs_mau.paf
 ```
 
-Measured once, on a machine at load 30 to 130 from other work: 447 s wall, 1840
-s CPU, 7.2 GB peak RSS, 9,494 PAF records. Idle, with all 16 threads, expect two
-to three minutes. The encoder collapses a static app to 0.6 s, so the wait costs
-nothing in the finished clip, but the MCP call timeout is 120 s: the agent has
-to run the aligner in the shell, in the background, and poll. If a take needs to
-be short, slicing one arm from each genome with `samtools faidx` cuts the work
-by five; 2R and X are the arms with the answer.
+Measured with 16 threads: 420 s wall, 1860 s CPU, 14 GB peak RSS, 6,663 PAF
+records. The largest chromosome measures 2.4% divergence, so `asm5` fragments it
+and `asm10` is past its range. The encoder collapses a static app to 0.6 s, so
+the wait costs nothing in the finished clip, but the MCP call timeout is 120 s:
+the agent has to run the aligner in the shell, in the background, and poll. If a
+take needs to be short, slicing one arm from each genome with `samtools faidx`
+cuts the work by five; 2R and X are the arms with the answer.
 
 `jbrowse make-pif sim_vs_mau.paf --out sim_vs_mau.pif.gz` takes 5 s and writes
 the `.tbi` beside it. The merged config below passes
@@ -83,7 +83,7 @@ jq -n --slurpfile s <(curl -s $S) --slurpfile m <(curl -s $M) --arg pif "$PWD/si
     tracks: ([$s.tracks[], $m.tracks[]] | map(select(.trackId | endswith("ncbiRefSeq")))) + [{
       type: "SyntenyTrack",
       trackId: "sim_vs_mau",
-      name: "D. simulans vs D. mauritiana (minimap2 asm10)",
+      name: "D. simulans vs D. mauritiana (minimap2 asm20)",
       assemblyNames: ["GCF_016746395.2", "GCF_004382145.1"],
       adapter: {
         type: "PairwiseIndexedPAFAdapter",
@@ -129,7 +129,7 @@ carry it, in two different shapes, and the dotplot shows both as blue against a
 red diagonal:
 
 ```
-D. simulans 2R    59,995 -  2,256,808  <->  D. mauritiana 2R    628,956 -  3,646,198   (2.2 Mb, 68 blocks of 5 kb or more, no forward block among them)
+D. simulans 2R    59,995 -  2,256,808  <->  D. mauritiana 2R    628,956 -  3,646,198   (2.2 Mb, 75 blocks of 5 kb or more, no forward block among them)
 D. simulans X  8,412,821 -  8,752,357  <->  D. mauritiana X   8,530,265 -  8,869,423   (340 kb, blocks of 57 to 132 kb)
 D. simulans X 21,604,635 - 21,885,769  <->  D. mauritiana X  22,512,673 - 22,788,933   (280 kb)
 ```
@@ -151,7 +151,7 @@ PAF or `jb.getFeatures` on the track rather than describing the dotplot.
 | ------------------------------------ | -------------------------------------------------------------------------- |
 | Both configs hosted, genes plus Trix | fetched both; 19 tracks each, `TrixTextSearchAdapter`, chromAlias file     |
 | No chain between them                | the only SyntenyTrack in each is `*_to_dm6_liftOver`                       |
-| Whole-genome asm10 runs              | 447 s wall on a loaded machine, 9,494 records, 7.2 GB RSS                  |
+| Whole-genome asm20 runs              | 420 s wall on 16 threads, 6,663 records, 14 GB RSS                         |
 | PIF builds                           | `jbrowse make-pif`, 5 s, 21 MB plus tbi                                    |
 | The inversions are on 2R and X       | reverse-strand aligned bases per arm; the three segments listed above      |
 | The config opens in Desktop          | `open` on the merged config, then the synteny and dotplot specs; both drew |
