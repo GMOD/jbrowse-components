@@ -1,4 +1,8 @@
-import { activeCount, undoItems } from '@jbrowse/core/ui/filterMenuItems'
+import {
+  activeCount,
+  clearAll,
+  undoItems,
+} from '@jbrowse/core/ui/filterMenuItems'
 
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -15,14 +19,11 @@ describe('declared narrowings drive count and clear together', () => {
     display.hideFeature('gene2')
     display.setShowOnlyGenes(true)
 
-    const before = activeCount(display.featureNarrowings())
-    expect(before).toBe(4)
-    expect(display.featureFilterCount()).toBe(before)
+    expect(activeCount(display.featureNarrowings())).toBe(4)
 
-    display.clearAllFeatureFilters()
+    clearAll(display.featureNarrowings())
 
     expect(activeCount(display.featureNarrowings())).toBe(0)
-    expect(display.featureFilterCount()).toBe(0)
   })
 
   it('gives every active narrowing and mark a way back', () => {

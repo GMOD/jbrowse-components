@@ -84,7 +84,9 @@ export function resolveRowColorStrings(
 /**
  * Values named in `rowOrder` come first, the rest sorted through
  * `compareRowValues`, which compares numerically when both sides are numbers —
- * a bare `sort()` files a chromHMM run's 25 states as 1, 10, 11, 2, 20.
+ * a bare `sort()` files a chromHMM run's 25 states as 1, 10, 11, 2, 20. The
+ * `''` row, the features carrying no value, goes last, where every other
+ * grouping in the tree files its catch-all.
  */
 export function orderPartitionValues(
   values: Set<string>,
@@ -92,6 +94,9 @@ export function orderPartitionValues(
 ): string[] {
   const listed = [...new Set(rowOrder)].filter(v => values.has(v))
   const seen = new Set(listed)
-  const rest = [...values].filter(v => !seen.has(v)).sort(compareRowValues)
-  return [...listed, ...rest]
+  const rest = [...values]
+    .filter(v => !seen.has(v) && v !== '')
+    .sort(compareRowValues)
+  const unanswered = values.has('') && !seen.has('') ? [''] : []
+  return [...listed, ...rest, ...unanswered]
 }

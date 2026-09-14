@@ -291,9 +291,10 @@ export default function stateModelFactory(
             values.add(v)
           }
         }
-        return orderPartitionValues(values, self.rowOrder).map(name => ({
-          name,
-        }))
+        const unanswered = `(no ${effectivePartitionField(self)})`
+        return orderPartitionValues(values, self.rowOrder).map(name =>
+          name === '' ? { name, label: unanswered } : { name },
+        )
       })
       return {
         /**

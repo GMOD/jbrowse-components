@@ -249,7 +249,6 @@ export function prepareRefPack(
       features,
       labeledFeatureIds,
       bpPerPx,
-      inputs.collapseDepth,
       metrics.singleRow,
     ),
   }

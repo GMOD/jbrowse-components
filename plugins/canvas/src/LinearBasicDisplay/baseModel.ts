@@ -8,7 +8,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { Highlighter } from '@jbrowse/core/ui/Icons'
-import { activeCount, clearAll } from '@jbrowse/core/ui/filterMenuItems'
 import {
   getDialogHost,
   getPaletteHost,
@@ -311,9 +310,7 @@ export default function baseStateModelFactory(
         /**
          * #method
          * What the `jexlFilters` config slot alone declares,
-         * `jexl:`-prefixed; in its own block so `featureFilterCount`, which
-         * subclasses super-capture and call unbound, reaches it through
-         * `self`.
+         * `jexl:`-prefixed.
          */
         configuredFilters(): string[] {
           return configuredJexlFilters(self)
@@ -1236,25 +1233,6 @@ export default function baseStateModelFactory(
               },
             },
           }
-        },
-      }))
-      .views(self => ({
-        /**
-         * #method
-         * How many independent things are narrowing what the display shows,
-         * derived so it cannot drift from the list it counts.
-         */
-        featureFilterCount(): number {
-          return activeCount(self.featureNarrowings())
-        },
-      }))
-      .actions(self => ({
-        /**
-         * #action
-         * Reverse every narrowing.
-         */
-        clearAllFeatureFilters() {
-          clearAll(self.featureNarrowings())
         },
       }))
       .views(self => ({

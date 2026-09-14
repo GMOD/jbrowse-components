@@ -76,3 +76,16 @@ test('a mixed numeric/text partition column still orders every value', () => {
     orderPartitionValues(new Set(['10', 'Quies', '2', 'TssA']), []),
   ).toEqual(['2', '10', 'Quies', 'TssA'])
 })
+
+test('the features carrying no value file last, after every real value', () => {
+  expect(orderPartitionValues(new Set(['', 'b', '10', 'a']), [])).toEqual([
+    '10',
+    'a',
+    'b',
+    '',
+  ])
+})
+
+test('rowOrder may still pin the empty value where it says', () => {
+  expect(orderPartitionValues(new Set(['', 'a']), ['', 'a'])).toEqual(['', 'a'])
+})

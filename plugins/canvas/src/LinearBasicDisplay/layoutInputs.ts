@@ -47,7 +47,6 @@ export interface LayoutInputs {
   // A hidden section's features leave the pack. Keys mean nothing outside the
   // grouping that issued them, so the set is dropped when it changes.
   hiddenGroupKeys?: ReadonlySet<string>
-  collapseDepth?: number
   // Row 0 for everything without collapsed mode's label suppression, for a
   // fixed-height density band whose records are meant to share pixels.
   flattenRows?: boolean

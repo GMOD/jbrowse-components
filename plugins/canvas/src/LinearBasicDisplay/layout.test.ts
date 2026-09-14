@@ -1110,21 +1110,6 @@ test('incremental memo: changing maxIsoformsPerGene recomputes its group, the sa
   expect(fewer.get(0)).not.toBe(first.get(0))
 })
 
-test('incremental memo: changing collapseDepth recomputes its group, the same depth reuses it', () => {
-  const memo = createIncrementalLayout()
-  const a = makeFeatureData({
-    features: [{ featureId: 'f1', startBp: 100, endBp: 500, height: 20 }],
-  })
-  const first = memo(new Map([[0, a]]), { ...incInputs(), collapseDepth: 25 })
-  const same = memo(new Map([[0, a]]), { ...incInputs(), collapseDepth: 25 })
-  expect(same.get(0)).toBe(first.get(0))
-  const shallower = memo(new Map([[0, a]]), {
-    ...incInputs(),
-    collapseDepth: 5,
-  })
-  expect(shallower.get(0)).not.toBe(first.get(0))
-})
-
 test('incremental: adding a new region does not move features in existing regions', () => {
   const a = makeFeatureData({
     features: [

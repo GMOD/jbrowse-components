@@ -6,6 +6,7 @@ import {
   createBaseTrackConfig,
   createBaseTrackModel,
 } from '@jbrowse/core/pluggableElementTypes/models'
+import { activeCount } from '@jbrowse/core/ui/filterMenuItems'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory } from '@jbrowse/plugin-linear-genome-view'
 
@@ -149,28 +150,28 @@ describe('canvas display runtime filters', () => {
 
   it('does not count a runtime override equal to the config default', () => {
     const display = createDisplay([`get(feature,'type')=='gene'`])
-    expect(display.featureFilterCount()).toBe(0)
+    expect(activeCount(display.featureNarrowings())).toBe(0)
 
     display.setJexlFilters(display.activeFilters())
-    expect(display.featureFilterCount()).toBe(0)
+    expect(activeCount(display.featureNarrowings())).toBe(0)
 
     const defaulted = createDisplay()
     defaulted.setJexlFilters(defaulted.activeFilters())
-    expect(defaulted.featureFilterCount()).toBe(0)
+    expect(activeCount(defaulted.featureNarrowings())).toBe(0)
   })
 
   it('counts an override that differs from the config default, either way', () => {
     const narrower = createDisplay([`get(feature,'type')=='gene'`])
     narrower.setJexlFilters([`jexl:get(feature,'score')>5`])
-    expect(narrower.featureFilterCount()).toBe(1)
+    expect(activeCount(narrower.featureNarrowings())).toBe(1)
 
     const widened = createDisplay([`get(feature,'type')=='gene'`])
     widened.setJexlFilters([])
-    expect(widened.featureFilterCount()).toBe(1)
+    expect(activeCount(widened.featureNarrowings())).toBe(1)
 
     const empty = createDisplay([])
     empty.setJexlFilters([])
-    expect(empty.featureFilterCount()).toBe(0)
+    expect(activeCount(empty.featureNarrowings())).toBe(0)
   })
 
   it('rpcProps().displayConfig.jexlFilters carries the effective filters', () => {

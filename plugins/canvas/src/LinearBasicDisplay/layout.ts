@@ -420,7 +420,6 @@ const LAYOUT_CACHE_KEYS_RECORD: Record<
   expandedGeneIds: true,
   groupBy: true,
   hiddenGroupKeys: true,
-  collapseDepth: true,
   flattenRows: true,
   dropBelowLabelRows: true,
 }

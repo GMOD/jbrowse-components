@@ -15,20 +15,31 @@ interface Bin {
 
 type Encoding = 'presence' | 'scalar' | 'categorical'
 
+// Past this many distinct values a field is an identifier, not a category:
+// one-hot over it is a row of channels no two rows share, so the distance
+// carries only coverage, at `channels` times the cost of measuring coverage
+// directly. `name` under the auto pick is the field that gets here.
+export const MAX_CATEGORICAL_VALUES = 64
+
 function chooseEncoding(clusterField: string, values: Set<string>): Encoding {
   if (clusterField === '') {
     return 'presence'
   }
   let anyValue = false
+  let numeric = true
   for (const v of values) {
     if (v !== '') {
       anyValue = true
-      if (!Number.isFinite(Number(v))) {
-        return 'categorical'
-      }
+      numeric &&= Number.isFinite(Number(v))
     }
   }
-  return anyValue ? 'scalar' : 'presence'
+  if (!anyValue) {
+    return 'presence'
+  }
+  if (numeric) {
+    return 'scalar'
+  }
+  return values.size > MAX_CATEGORICAL_VALUES ? 'presence' : 'categorical'
 }
 
 /**

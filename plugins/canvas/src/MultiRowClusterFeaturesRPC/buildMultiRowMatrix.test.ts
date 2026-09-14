@@ -1,4 +1,7 @@
-import { buildMultiRowMatrix } from './buildMultiRowMatrix.ts'
+import {
+  MAX_CATEGORICAL_VALUES,
+  buildMultiRowMatrix,
+} from './buildMultiRowMatrix.ts'
 
 import type { MatrixFeature } from './buildMultiRowMatrix.ts'
 
@@ -210,6 +213,29 @@ describe('the width budget', () => {
     // 4 values + gap = 5 channels, so 20 bins; 9 + gap = 10 channels, 10 bins.
     expect(build(4)[0]).toHaveLength(100)
     expect(build(9)[0]).toHaveLength(100)
+  })
+
+  test('a vocabulary past the categorical bound measures coverage, within budget', () => {
+    // Under the auto pick `name` reaches here near-unique per feature; a
+    // one-hot over it is `channels` wide per bin, and two regions apiece
+    // holding at least one bin put a whole-genome view far past `maxCells`.
+    const regions = Array.from({ length: 25 }, (_, i) => ({
+      start: i * 1000,
+      end: i * 1000 + 1000,
+    }))
+    const numValues = MAX_CATEGORICAL_VALUES + 1
+    const rows = buildRows({
+      sources: ['s1', 's2'],
+      regions,
+      clusterField: 'name',
+      maxCells: 100,
+      features: Array.from({ length: numValues }, (_, i) =>
+        feature(i % 2 ? 's1' : 's2', 0, 1000, `v${i}`, i % 25),
+      ),
+    })
+    expect(rows[0]).toHaveLength(100)
+    expect(rows[0]).toContain(1)
+    expect(new Set(rows[0]).size).toBeLessThanOrEqual(2)
   })
 
   test('maxBins still caps a narrow encoding', () => {

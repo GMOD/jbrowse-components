@@ -1,4 +1,5 @@
 import { resolveSubMenu, staysOpenOnClick } from '@jbrowse/core/ui'
+import { activeCount, clearAll } from '@jbrowse/core/ui/filterMenuItems'
 
 import { STRAND_COLOR_JEXL } from '../RenderFeatureDataRPC/featureColors.ts'
 import { createTestEnvironment } from './testEnv.ts'
@@ -157,18 +158,18 @@ describe('canvas track menu shape', () => {
 
     display.toggleSoloFeature('gene1')
     display.toggleSoloFeature('gene2')
-    expect(display.featureFilterCount()).toBe(0)
+    expect(activeCount(display.featureNarrowings())).toBe(0)
     const collecting: MenuItem[] = display.trackMenuItems()
     expect(collecting.some(i => labelOf(i) === 'Filter by... (1)')).toBe(false)
 
     display.applySolo()
-    expect(display.featureFilterCount()).toBe(1)
+    expect(activeCount(display.featureNarrowings())).toBe(1)
     expect(
       subMenuOf(display.trackMenuItems(), 'Filter by... (1)').map(labelOf),
     ).toContain('Clear all filters')
 
-    display.clearAllFeatureFilters()
-    expect(display.featureFilterCount()).toBe(0)
+    clearAll(display.featureNarrowings())
+    expect(activeCount(display.featureNarrowings())).toBe(0)
   })
 
   it('counts each independent filter, including a subclass own', () => {
@@ -176,9 +177,9 @@ describe('canvas track menu shape', () => {
     const { display } = createDisplay()
 
     display.hideFeature('gene1')
-    expect(display.featureFilterCount()).toBe(1)
+    expect(activeCount(display.featureNarrowings())).toBe(1)
     display.setShowOnlyGenes(true)
-    expect(display.featureFilterCount()).toBe(2)
+    expect(activeCount(display.featureNarrowings())).toBe(2)
     expect(
       display
         .trackMenuItems()

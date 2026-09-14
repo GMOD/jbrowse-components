@@ -179,7 +179,6 @@ export function planDensityCollapse(
   features: ReadonlyMap<string, DensityBox>,
   labeledFeatureIds: ReadonlySet<string>,
   bpPerPx: number,
-  collapseDepth: number | undefined,
   singleRow: boolean,
 ) {
   const eligible: [string, DensityBox][] = []
@@ -208,10 +207,7 @@ export function planDensityCollapse(
     }
   }
 
-  const collapsedFeatureIds = deeplyPiledIds(
-    candidates,
-    collapseDepth ?? DENSITY_COLLAPSE_DEPTH,
-  )
+  const collapsedFeatureIds = deeplyPiledIds(candidates, DENSITY_COLLAPSE_DEPTH)
   return {
     collapsedFeatureIds,
     collapsedSpansPx: mergeSpans(
