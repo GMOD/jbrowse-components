@@ -356,7 +356,7 @@ anchor too.
 
 <Figure caption="Peach chromosome 1 over grape chromosome 1, from MCScan blocks. Above, the ribbons alone. Below, the same view marking the alignments it has no second endpoint for — most of this peach chromosome is syntenic to grape chromosomes other than the one stacked under it." src="/img/synteny_offscreen_mates.png" />
 
-<Figure caption="A window of peach chromosome 1 where the grape chromosome stacked under it has no alignments at all. Above, the band is empty apart from the marks and the grape chromosome they name. Below, that chromosome is the one on the bottom panel, and the same alignments are ribbons." src="/img/synteny_offscreen_mates_click.png" />
+<Figure caption="A window of peach chromosome 1 where the grape chromosome stacked under it has no alignments. Above, a hovered mark names the grape chromosome its alignments go to and what a click does. Below, the click has added that chromosome to the grape panel at the mate's locus, and the mark is a ribbon." src="/img/synteny_offscreen_mates_click.png" />
 
 ### Alignments anchored on the lower panel
 

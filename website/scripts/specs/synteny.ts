@@ -823,9 +823,9 @@ function peachGrapeChr1({
 // for a fringe on them, and here there is nothing for it to be a fringe on.
 const PEACH_EMPTY_WINDOW = 'NC_034009.1:18,000,000-22,000,000'
 
-// The grape chromosome those anchors go to, and so the row a click on one of the
-// marks navigates to.
-const GRAPE_MATE_CHR = 'NC_081809.1'
+// A run of top-strip marks inside PEACH_EMPTY_WINDOW, all naming the grape
+// chromosome those anchors go to.
+const OFFSCREEN_MARK_LOCUS = 'NC_034009.1:20,371,000'
 
 export const syntenySpecs: ScreenshotSpec[] = [
   // The two halves of the off-screen mate figure. Same view, same window; the
@@ -858,47 +858,87 @@ export const syntenySpecs: ScreenshotSpec[] = [
     parts: ['synteny_offscreen_mates_off', 'synteny_offscreen_mates_on'],
   },
 
-  // What clicking a mark does, as the two states it moves between. Declared as
-  // two sessions for the same reason the pair above is: each stays an openable
-  // live link, where a capture that clicked its way to the second would leave
-  // the reader nothing to open.
-  //
-  // Zoomed to a window the stacked chromosome has no anchors in, so the first
-  // frame is a band with nothing but marks in it. The pair above is at whole
-  // chromosome, where the marks sit over a field of ribbons — this is the state
-  // a reader is actually in when the question arises, and it is also the one
-  // that exercises the label: a stretch running past both edges of the window is
-  // named over the part in view rather than centred on a midpoint off screen.
+  // What clicking a mark does, driven rather than declared: the hover's tooltip
+  // says what the click will do, and the second frame is the click's own
+  // result, the facing panel on the mate's locus with the marks turned into
+  // ribbons. Zoomed to a window the stacked grape chromosome has no anchors in,
+  // so the band in the first frame holds nothing but marks.
   {
     mode: 'url',
-    name: 'synteny_offscreen_mates_before_click',
+    name: 'synteny_offscreen_mates_click',
     url: peachGrapeChr1({ marks: true, peachLoc: PEACH_EMPTY_WINDOW }),
     viewportWidth: 1400,
     viewportHeight: 424,
     readySelector: displayPainted('synteny_canvas'),
     readyTimeout: 120000,
     settleMs: 12000,
-  },
-  {
-    mode: 'url',
-    name: 'synteny_offscreen_mates_after_click',
-    url: peachGrapeChr1({
-      marks: true,
-      peachLoc: PEACH_EMPTY_WINDOW,
-      grapeLoc: GRAPE_MATE_CHR,
-    }),
-    viewportWidth: 1400,
-    viewportHeight: 424,
-    readySelector: displayPainted('synteny_canvas'),
-    readyTimeout: 120000,
-    settleMs: 12000,
-  },
-  {
-    mode: 'compose',
-    name: 'synteny_offscreen_mates_click',
-    parts: [
-      'synteny_offscreen_mates_before_click',
-      'synteny_offscreen_mates_after_click',
+    hideSelectors: ['.MuiSnackbar-root'],
+    stages: [
+      {
+        actions: [
+          {
+            type: 'hover',
+            anchor: {
+              view: [0, 0],
+              locus: OFFSCREEN_MARK_LOCUS,
+              fracY: 1,
+              dy: 3,
+            },
+          },
+          { type: 'waitForText', text: 'Click to add it' },
+        ],
+        annotations: [
+          {
+            type: 'text',
+            text: '(1) Hover a mark',
+            anchor: {
+              selector: '[data-testid="app-bar"]',
+              alignX: 'left',
+              alignY: 'top',
+              dx: 24,
+              dy: 30,
+            },
+            fontSize: 22,
+          },
+        ],
+      },
+      {
+        actions: [
+          {
+            type: 'click',
+            anchor: {
+              view: [0, 0],
+              locus: OFFSCREEN_MARK_LOCUS,
+              fracY: 1,
+              dy: 3,
+            },
+          },
+          { type: 'waitForAppSettled', timeout: 120000 },
+          {
+            type: 'hover',
+            anchor: {
+              view: [0, 1],
+              locus: 'NC_081809.1:25,590,000',
+              fracY: 0.5,
+            },
+          },
+          { type: 'delay', ms: 1000 },
+        ],
+        annotations: [
+          {
+            type: 'text',
+            text: '(2) Click it: the grape panel moves to that mate',
+            anchor: {
+              selector: '[data-testid="app-bar"]',
+              alignX: 'left',
+              alignY: 'top',
+              dx: 24,
+              dy: 30,
+            },
+            fontSize: 22,
+          },
+        ],
+      },
     ],
   },
 
