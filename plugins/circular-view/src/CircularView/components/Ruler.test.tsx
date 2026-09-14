@@ -40,9 +40,7 @@ function screenRotationDeg(text: Element, offsetRadians: number) {
   return ((deg % 360) + 360) % 360
 }
 
-// a slice narrow enough that the label can't fit along the arc renders radially,
-// a wide one renders tangentially; both have to stay right-side-up
-const widths = { perpendicular: 0.06, parallel: 0.45 }
+const orientations = { radial: false, 'along the arc': true }
 
 // includes offsets wound past a full turn: offsetRadians accumulates without
 // bound as the user rotates, so orientation must not depend on its winding
@@ -54,7 +52,7 @@ test('an elision names how many regions it swallowed', () => {
   const { container } = render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <svg>
-        <Ruler model={makeModel(0)} slice={makeSlice(1, 0.45)} />
+        <Ruler model={makeModel(0)} slice={makeSlice(1, 0.45)} alongArc />
       </svg>
     </ThemeProvider>,
   )
@@ -66,7 +64,7 @@ test('an elision names how many regions it swallowed', () => {
   )
 })
 
-describe.each(Object.entries(widths))('%s labels', (_name, widthRadians) => {
+describe.each(Object.entries(orientations))('%s labels', (_name, alongArc) => {
   test.each(offsets)('are never upside-down at offset %d', offsetRadians => {
     const model = makeModel(offsetRadians)
     // 24 positions around the circle, half-step offset so none lands exactly
@@ -80,7 +78,11 @@ describe.each(Object.entries(widths))('%s labels', (_name, widthRadians) => {
       const { container, unmount } = render(
         <ThemeProvider theme={createJBrowseTheme()}>
           <svg>
-            <Ruler model={model} slice={makeSlice(radians, widthRadians)} />
+            <Ruler
+              model={model}
+              slice={makeSlice(radians, 0.45)}
+              alongArc={alongArc}
+            />
           </svg>
         </ThemeProvider>,
       )

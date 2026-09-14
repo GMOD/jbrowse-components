@@ -14,7 +14,7 @@ import {
   renderRingBodies,
 } from '../../rings/ringSvg.tsx'
 import { Rulers } from '../components/Ruler.tsx'
-import { labelGutterPx } from '../rulerLabels.ts'
+import { figureGutterPx } from '../rulerLabels.ts'
 
 import type { CircularViewModel, ExportSvgOptions } from '../model.ts'
 
@@ -93,7 +93,7 @@ export async function renderToSvg(
   // whichever is larger: a 12-character RefSeq accession already overruns the
   // default 80px and used to come out with its last characters cut off at the
   // canvas edge.
-  const gutterPx = Math.max(paddingPx, labelGutterPx(model))
+  const gutterPx = Math.max(paddingPx, figureGutterPx(model))
   const figureSize = 2 * (radiusPx + gutterPx)
   const center = radiusPx + gutterPx
   const rings = await paintRingsSvg(ringHost, ringBodies, opts, theme, {

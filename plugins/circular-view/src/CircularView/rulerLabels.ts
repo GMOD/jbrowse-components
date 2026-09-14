@@ -20,9 +20,7 @@ export function labelWidthPx(text: string) {
   return text.length * charWidthPx
 }
 
-// a label short enough to sit along its own arc runs tangentially; a longer one
-// radiates outward instead
-export function labelFitsAlongArc(text: string, maxWidthPx: number) {
+function labelFitsAlongArc(text: string, maxWidthPx: number) {
   return labelWidthPx(text) < maxWidthPx
 }
 
@@ -45,6 +43,31 @@ export function sliceLabelText(slice: Slice) {
   return regionLabelText(slice.region)
 }
 
+export function sliceArcWidthPx(slice: Slice, radiusPx: number) {
+  return (slice.endRadians - slice.startRadians) * radiusPx
+}
+
+/**
+ * Whether this figure's labels run along their arcs or radiate outward. One
+ * answer for every label, so a circle never mixes the two: along the arcs only
+ * when each drawn label fits its own.
+ */
+export function labelsRunAlongArcs({
+  radiusPx,
+  staticSlices,
+}: {
+  radiusPx: number
+  staticSlices: Slice[]
+}) {
+  return staticSlices.every(slice => {
+    const text = sliceLabelText(slice)
+    const maxWidthPx = sliceArcWidthPx(slice, radiusPx)
+    return (
+      !labelIsDrawn(text, maxWidthPx) || labelFitsAlongArc(text, maxWidthPx)
+    )
+  })
+}
+
 /**
  * The most room this figure's labels could need outside the ruler arc, from the
  * label TEXT alone.
@@ -62,9 +85,8 @@ export function maxLabelGutterPx(labels: string[]) {
 }
 
 /**
- * How far past the ruler arc this figure's labels actually reach. A label too
- * long for its own arc radiates outward (see `RulerLabel`), so the longest of
- * those sets how much room the figure has to leave outside the circle.
+ * How far past the ruler arc this figure's labels actually reach: half a line
+ * when they run along their arcs, the longest label when they radiate.
  *
  * The on-screen view reserves a fixed `paddingPx` for this and lives in a box
  * that clips anyway; an SVG export is a standalone artifact, so it sizes its
@@ -76,22 +98,67 @@ export function labelGutterPx(model: {
   staticSlices: Slice[]
 }) {
   const { radiusPx, staticSlices } = model
+  const alongArcs = labelsRunAlongArcs(model)
   return max(
     staticSlices.map(slice => {
       const text = sliceLabelText(slice)
-      const maxWidthPx = (slice.endRadians - slice.startRadians) * radiusPx
-      if (!labelIsDrawn(text, maxWidthPx)) {
+      if (!labelIsDrawn(text, sliceArcWidthPx(slice, radiusPx))) {
         return 0
       }
       return (
         labelOffsetPx +
         // a tangential label is centered on the anchor, so it reaches outward
         // by half its height rather than by its length
-        (labelFitsAlongArc(text, maxWidthPx)
-          ? labelFontSizePx / 2
-          : labelWidthPx(text))
+        (alongArcs ? labelFontSizePx / 2 : labelWidthPx(text))
       )
     }),
     0,
+  )
+}
+
+export const assemblyLabelFontSizePx = 15
+
+// between the ruler labels and the assembly arc, and between that arc and the
+// assembly's name
+export const assemblyArcGapPx = 6
+
+// what the assembly names add outside the ruler labels
+export const assemblyBandPx = 2 * assemblyArcGapPx + assemblyLabelFontSizePx
+
+export interface AssemblyArc {
+  assemblyName: string
+  startRadians: number
+  endRadians: number
+}
+
+/**
+ * One arc per run of consecutive slices from the same assembly, which is what
+ * names the genomes on a circle holding more than one. None for a single
+ * assembly, where the view's own title already says it.
+ */
+export function assemblyArcs(staticSlices: Slice[]) {
+  const arcs: AssemblyArc[] = []
+  for (const { region, startRadians, endRadians } of staticSlices) {
+    const assemblyName = region.elided
+      ? region.regions[0]?.assemblyName
+      : region.assemblyName
+    const last = arcs.at(-1)
+    if (last?.assemblyName === assemblyName) {
+      last.endRadians = endRadians
+    } else if (assemblyName !== undefined) {
+      arcs.push({ assemblyName, startRadians, endRadians })
+    }
+  }
+  return new Set(arcs.map(a => a.assemblyName)).size > 1 ? arcs : []
+}
+
+/** The export's margin: the ruler labels, then the assembly names if any. */
+export function figureGutterPx(model: {
+  radiusPx: number
+  staticSlices: Slice[]
+}) {
+  return (
+    labelGutterPx(model) +
+    (assemblyArcs(model.staticSlices).length > 0 ? assemblyBandPx : 0)
   )
 }

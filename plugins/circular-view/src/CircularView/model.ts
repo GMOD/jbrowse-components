@@ -39,7 +39,11 @@ import ShuffleIcon from '@mui/icons-material/Shuffle'
 
 import { RingHost } from '../rings/ringHost.ts'
 import { circularLaunchKeys } from './launchKeys.ts'
-import { maxLabelGutterPx, regionLabelText } from './rulerLabels.ts'
+import {
+  assemblyBandPx,
+  maxLabelGutterPx,
+  regionLabelText,
+} from './rulerLabels.ts'
 import { calculateStaticSlices } from './slices.ts'
 
 import type { SliceRegion } from './slices.ts'
@@ -423,7 +427,8 @@ function stateModelFactory(pluginManager: PluginManager) {
             // drawn at a negative x and the box clips it — which is what
             // shrinking the padding at all did to `chr15`..`chr17` on the SV
             // tutorial's figure
-            maxLabelGutterPx(this.elidedRegions.map(regionLabelText)),
+            maxLabelGutterPx(this.elidedRegions.map(regionLabelText)) +
+              (this.assemblyNames.length > 1 ? assemblyBandPx : 0),
           ),
         )
       },

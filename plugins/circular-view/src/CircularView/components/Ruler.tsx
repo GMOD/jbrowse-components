@@ -10,14 +10,19 @@ import { useTheme } from '@mui/material/styles'
 import { observer } from 'mobx-react'
 
 import {
-  labelFitsAlongArc,
+  assemblyArcGapPx,
+  assemblyArcs,
+  assemblyLabelFontSizePx,
   labelFontSizePx,
+  labelGutterPx,
   labelIsDrawn,
   labelOffsetPx,
+  labelsRunAlongArcs,
   sliceLabelText,
 } from '../rulerLabels.ts'
 
 import type { CircularViewModel } from '../model.ts'
+import type { AssemblyArc } from '../rulerLabels.ts'
 import type {
   Slice,
   SliceElidedRegion,
@@ -26,7 +31,10 @@ import type {
 
 // the slice's own angular span as an SVG arc. A slice covers its region
 // exactly, so this is equally the arc from its first base to its last
-function sliceArcPath(slice: Slice, radiusPx: number) {
+function sliceArcPath(
+  slice: Pick<Slice, 'startRadians' | 'endRadians'>,
+  radiusPx: number,
+) {
   const { startRadians, endRadians } = slice
   const arcTo = (radians: number, largeArc: '0' | '1') => [
     'A',
@@ -59,12 +67,38 @@ function sliceArcPath(slice: Slice, radiusPx: number) {
   ).join(' ')
 }
 
+// The view rotates the whole figure by offsetRadians, so which half of the
+// screen a label lands on - and therefore which way it has to be flipped to
+// read right-side-up - depends on that rotation too. cos/sin of the on-screen
+// angle answer that without normalizing offsetRadians, which grows without
+// bound as the user rotates.
+//
+// Along the arc: centered, flipped end-for-end on the bottom half. Radial:
+// radiating outward from the arc, flipped on the left half. Both flips keep the
+// anchored text outside the arc.
+function labelPlacement(
+  radians: number,
+  offsetRadians: number,
+  alongArc: boolean,
+) {
+  const deg = radToDeg(radians)
+  const screenRadians = radians + offsetRadians
+  const rightHalf = Math.cos(screenRadians) > 0
+  const bottomHalf = Math.sin(screenRadians) > 0
+  return alongArc
+    ? { textAnchor: 'middle', rotation: deg + (bottomHalf ? -90 : 90) }
+    : rightHalf
+      ? { textAnchor: 'start', rotation: deg }
+      : { textAnchor: 'end', rotation: deg + 180 }
+}
+
 const RulerLabel = observer(function RulerLabel({
   offsetRadians,
   text,
   maxWidthPx,
   radians,
   radiusPx,
+  alongArc,
   title,
   color,
 }: {
@@ -73,6 +107,7 @@ const RulerLabel = observer(function RulerLabel({
   maxWidthPx: number
   radiusPx: number
   radians: number
+  alongArc: boolean
   // hover text, only where it says something the label doesn't — an elision's
   // count expands to what it stands for, a refName is already itself
   title?: string
@@ -82,25 +117,11 @@ const RulerLabel = observer(function RulerLabel({
     return null
   }
   const textXY = polarToCartesian(radiusPx + labelOffsetPx, radians)
-  const deg = radToDeg(radians)
-  const parallel = labelFitsAlongArc(text, maxWidthPx)
-  // the view rotates the whole figure by offsetRadians, so which half of the
-  // screen a label lands on - and therefore which way it has to be flipped to
-  // read right-side-up - depends on that rotation too. cos/sin of the on-screen
-  // angle answer that without normalizing offsetRadians, which grows without
-  // bound as the user rotates.
-  const screenRadians = radians + offsetRadians
-  const rightHalf = Math.cos(screenRadians) > 0
-  const bottomHalf = Math.sin(screenRadians) > 0
-  // parallel: text along the ruler arc, centered, flipped end-for-end on the
-  // bottom half. perpendicular: text radiating outward from the arc, flipped on
-  // the left half. Both flips keep the anchored text outside the arc.
-  const textAnchor = parallel ? 'middle' : rightHalf ? 'start' : 'end'
-  const rotation = parallel
-    ? deg + (bottomHalf ? -90 : 90)
-    : rightHalf
-      ? deg
-      : deg + 180
+  const { textAnchor, rotation } = labelPlacement(
+    radians,
+    offsetRadians,
+    alongArc,
+  )
   return (
     <text
       x={0}
@@ -124,6 +145,7 @@ const RulerLabel = observer(function RulerLabel({
 const RulerArc = observer(function RulerArc({
   model,
   slice,
+  alongArc,
   text,
   title,
   labelColor,
@@ -132,6 +154,7 @@ const RulerArc = observer(function RulerArc({
 }: {
   model: CircularViewModel
   slice: Slice
+  alongArc: boolean
   text: string
   title?: string
   labelColor: string
@@ -145,6 +168,7 @@ const RulerArc = observer(function RulerArc({
       <RulerLabel
         text={text}
         title={title}
+        alongArc={alongArc}
         offsetRadians={offsetRadians}
         maxWidthPx={(endRadians - startRadians) * radiusPx}
         radians={(endRadians + startRadians) / 2}
@@ -165,10 +189,12 @@ const RulerArc = observer(function RulerArc({
 const ElisionRulerArc = observer(function ElisionRulerArc({
   model,
   slice,
+  alongArc,
   region,
 }: {
   model: CircularViewModel
   slice: Slice
+  alongArc: boolean
   region: SliceElidedRegion
 }) {
   const theme = useTheme()
@@ -176,6 +202,7 @@ const ElisionRulerArc = observer(function ElisionRulerArc({
     <RulerArc
       model={model}
       slice={slice}
+      alongArc={alongArc}
       // the label is bracketed ("[24]") to read as a count rather than as a
       // refName; the hover text is a sentence, so it takes the bare number
       text={sliceLabelText(slice)}
@@ -190,10 +217,12 @@ const ElisionRulerArc = observer(function ElisionRulerArc({
 const RegionRulerArc = observer(function RegionRulerArc({
   model,
   slice,
+  alongArc,
   region,
 }: {
   model: CircularViewModel
   slice: Slice
+  alongArc: boolean
   region: SliceNonElidedRegion
 }) {
   const theme = useTheme()
@@ -213,6 +242,7 @@ const RegionRulerArc = observer(function RegionRulerArc({
     <RulerArc
       model={model}
       slice={slice}
+      alongArc={alongArc}
       text={sliceLabelText(slice)}
       labelColor={color}
       strokeColor={color}
@@ -223,14 +253,72 @@ const RegionRulerArc = observer(function RegionRulerArc({
 const Ruler = observer(function Ruler({
   model,
   slice,
+  alongArc,
 }: {
   model: CircularViewModel
   slice: Slice
+  alongArc: boolean
 }) {
   return slice.region.elided ? (
-    <ElisionRulerArc region={slice.region} model={model} slice={slice} />
+    <ElisionRulerArc
+      region={slice.region}
+      model={model}
+      slice={slice}
+      alongArc={alongArc}
+    />
   ) : (
-    <RegionRulerArc region={slice.region} model={model} slice={slice} />
+    <RegionRulerArc
+      region={slice.region}
+      model={model}
+      slice={slice}
+      alongArc={alongArc}
+    />
+  )
+})
+
+const AssemblyArcLabel = observer(function AssemblyArcLabel({
+  model,
+  arc,
+  radiusPx,
+}: {
+  model: CircularViewModel
+  arc: AssemblyArc
+  radiusPx: number
+}) {
+  const theme = useTheme()
+  const { assemblyName, startRadians, endRadians } = arc
+  const radians = (startRadians + endRadians) / 2
+  const labelRadiusPx =
+    radiusPx + assemblyArcGapPx + assemblyLabelFontSizePx / 2
+  const { textAnchor, rotation } = labelPlacement(
+    radians,
+    model.offsetRadians,
+    true,
+  )
+  const name =
+    getSession(model).assemblyManager.get(assemblyName)?.displayName ??
+    assemblyName
+  return (
+    <>
+      <path
+        d={sliceArcPath(arc, radiusPx)}
+        stroke={theme.palette.text.secondary}
+        strokeWidth={1.5}
+        fill="none"
+      />
+      <text
+        x={0}
+        y={0}
+        fontSize={assemblyLabelFontSizePx}
+        fontWeight={600}
+        textAnchor={textAnchor}
+        dominantBaseline="middle"
+        transform={`translate(${polarToCartesian(labelRadiusPx, radians)}) rotate(${rotation})`}
+        fill={theme.palette.text.primary}
+      >
+        {name}
+      </text>
+    </>
   )
 })
 
@@ -241,9 +329,29 @@ export const Rulers = observer(function Rulers({
 }: {
   model: CircularViewModel
 }) {
-  return model.staticSlices.map(slice => (
-    <Ruler key={slice.key} model={model} slice={slice} />
-  ))
+  const { staticSlices, radiusPx } = model
+  const alongArc = labelsRunAlongArcs(model)
+  const assemblyRadiusPx = radiusPx + labelGutterPx(model) + assemblyArcGapPx
+  return (
+    <>
+      {staticSlices.map(slice => (
+        <Ruler
+          key={slice.key}
+          model={model}
+          slice={slice}
+          alongArc={alongArc}
+        />
+      ))}
+      {assemblyArcs(staticSlices).map(arc => (
+        <AssemblyArcLabel
+          key={`${arc.assemblyName}-${arc.startRadians}`}
+          model={model}
+          arc={arc}
+          radiusPx={assemblyRadiusPx}
+        />
+      ))}
+    </>
+  )
 })
 
 export default Ruler
