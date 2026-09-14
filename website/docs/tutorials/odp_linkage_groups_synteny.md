@@ -143,7 +143,7 @@ vertical genome's chromosomes by where their orthologs land along the horizontal
 one, which is what turns one block per group into a diagonal. The same view as a
 session, with the sponge's unplaced scaffolds left off its axis:
 
-```json session
+```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
 {
   "defaultSession": {
     "name": "Ancestral linkage groups",
@@ -158,7 +158,8 @@ session, with the sponge's unplaced scaffolds left off its axis:
         "tracks": ["RES_EMU"],
         "colorBy": "attribute:gene_group",
         "autoDiagonalize": true,
-        "lineWidth": 3
+        "lineWidth": 4,
+        "height": 860
       }
     ]
   }
@@ -185,7 +186,7 @@ vertical genome is the whole change.
 
 <Figure caption="The jellyfish against Hormiphora, sorted and colored the same way. The groups still favor particular comb jelly chromosomes, and each one is spread over several of them." src="/img/linkage_groups/alg_dotplot_res_hca.png" />
 
-<Figure caption="The jellyfish against Capsaspora. The column structure the groups were defined by is still there; the rows have nothing to hold it, and the grey outnumbers every color." src="/img/linkage_groups/alg_dotplot_res_cow.png" />
+<Figure caption="The jellyfish against Capsaspora, sorted and colored the same way. Each group spreads over several Capsaspora chromosomes, and fewer of the points gather into clusters than in the comb jelly." src="/img/linkage_groups/alg_dotplot_res_cow.png" />
 
 The sponge holding the groups whole while the comb jelly holds them loosely is
 the shape of the argument Schultz et al. make for the comb jellies branching off
@@ -205,14 +206,14 @@ only the orthologs in a group, `drawCurves` bundles the ribbons, and the fade a
 whole-genome view applies to sub-pixel ribbons is off, since the ribbons' color
 is the figure.
 
-```json session
+```json session config=https://jbrowse.org/demos/odp_linkage_groups/config.json
 {
   "defaultSession": {
     "name": "Ancestral linkage groups, six genomes",
     "views": [
       {
         "type": "LinearSyntenyView",
-        "displayName": "Bolinopsis / Hormiphora / Rhopilema / Branchiostoma / Ephydatia / Cladorhizid",
+        "displayName": "Comb jellies, jellyfish, amphioxus, sponges",
         "views": [
           { "assembly": "BIN", "displayedRegionNames": ["BIN*"] },
           { "assembly": "HCA", "displayedRegionNames": ["HCA*"] },

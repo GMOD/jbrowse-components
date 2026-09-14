@@ -209,8 +209,8 @@ cat > session.json <<'JSON'
       "tracks": ["RES_EMU"],
       "colorBy": "attribute:gene_group",
       "autoDiagonalize": true,
-      "lineWidth": 3,
-      "height": 940
+      "lineWidth": 4,
+      "height": 860
     }
   ]
 }

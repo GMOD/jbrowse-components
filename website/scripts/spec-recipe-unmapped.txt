@@ -14,12 +14,15 @@ colorDomain
 connectedView
 connectedViewId
 displayMode
+fadeThinAlignmentsMode
 followAnchorIndex
 followSynteny
 height
+hideUnlabelled
 jexlFiltersSetting
 label
 legend
+lineWidth
 orthologParams
 paneHeight
 readConnections
