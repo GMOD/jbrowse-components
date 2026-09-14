@@ -903,3 +903,276 @@ export const videoCaptioned: string[] = [
   "ui/sequence_search_motifs",
   "variants/trio_phased_matrix"
 ]
+
+// Each tour's step captions in order, for the recipe dialog remark-video puts
+// beside the clip.
+export const videoSteps: Record<string, string[]> = {
+  "pangenome/pggb_subgraph_launch": [
+    "Add the graph track by pasting its config",
+    "chr:1,299,300-1,300,900",
+    "Cut the window on screen out as a subgraph"
+  ],
+  "pangenome_cactus/subgraph_launch": [
+    "Add the graph track by pasting its config",
+    "chr:1,978,100-1,979,700",
+    "Cut the window on screen out as a subgraph"
+  ],
+  "pangenome/tier_to_fine": [
+    "Hover a node for the segments it collapses",
+    "Take the bubble down to the fine index"
+  ],
+  "pangenome/pggb_layout_switch": [
+    "Re-lay the same rows out with the force engine"
+  ],
+  "pangenome/hprc_end_to_end": [
+    "Add the graph track by pasting its config",
+    "chr6:32,500,000-32,560,000",
+    "Cut the window on screen out as a subgraph",
+    "Lay the alleles out on GRCh38 coordinates",
+    "Find where this node attaches in hg38"
+  ],
+  "pangenome/pggb_out_to_strain": [
+    "Open this allele on the CFT073 assembly"
+  ],
+  "pangenome/hprc_cluster_callset": [
+    "Cluster the 464 haplotypes by genotype"
+  ],
+  "pangenome/hprc_out_to_haplotype": [
+    "The MHC class II cut, with NA20809 haplotype 2 loaded",
+    "Hover an allele for the haplotype that contributed it",
+    "Open in NA20809.2",
+    "NA20809 haplotype 2, on its own chromosome 6",
+    "Zoom out for its neighbours"
+  ],
+  "pangenome/hprc_tier_to_fine": [
+    "The MHC, one node per bubble",
+    "Hover the MHC class II bubble",
+    "Open in hg38",
+    "The linear view lands on the bubble's own span",
+    "Drag across the scale bar",
+    "Graph genome view (this selection)",
+    "Cut it from the fine index",
+    "The same window, one node per segment"
+  ],
+  "proteins/genomes_protein_launch": [
+    "Open this gene as its AlphaFold structure",
+    "chr17:7,674,400-7,676,600",
+    "Hover a coding position",
+    "An intronic position maps to no residue",
+    "Back on the exon, and the residue is back"
+  ],
+  "proteins/tiled_views": [
+    "Line the gene up against its orthologs",
+    "Rows to align: 15",
+    "Fit the alignment to its panel",
+    "And the same gene as a structure, beside it",
+    "Tile the three views side by side",
+    "chr17:7,674,400-7,676,600",
+    "Hover a coding position",
+    "An intronic position maps to no residue",
+    "Back on the exon, and the residue is back"
+  ],
+  "proteins/annotation_1d": [
+    "Open a view whose genome is the protein itself",
+    "Two destinations, not one",
+    "No tracks active",
+    "Four of its tracks, in residue coordinates",
+    "DNA binding",
+    "Natural variant",
+    "AlphaFold confidence (pLDDT)",
+    "AlphaMissense scores"
+  ],
+  "dog10k/igf1_cluster_route": [
+    "Cluster the breeds by genotype",
+    "chr15:41,348,000-41,752,000"
+  ],
+  "tcga/cohort_cnv_clustering": [
+    "Cluster the 1104 tumors by their profile"
+  ],
+  "tcga/mutations_collapse_introns": [
+    "Reshape CDH1 to its coding exons"
+  ],
+  "qtl/painting_sort": [
+    "Sort the strains by genotype under the peak"
+  ],
+  "methylation/group_by_hp": [
+    "Group the pileup by the HP tag",
+    "HP",
+    "Keep the modification coloring"
+  ],
+  "synteny/multiway_zoom_out": [
+    "Hover a ribbon",
+    "Zoom out"
+  ],
+  "synteny/multiway_launch_stack": [
+    "Launch a stacked view, one panel per grass",
+    "One panel per grass"
+  ],
+  "synteny/three_strain_import": [
+    "Build the stack a row at a time",
+    "Row 2",
+    "Row 1",
+    "Add row",
+    "Row 3",
+    "26695 against CHC155",
+    "CHC155 against J99",
+    "hpylori_26695.gff",
+    "hpylori_chc155.gff",
+    "hpylori_j99.gff"
+  ],
+  "synteny/hg002_dotplot_import": [
+    "Plot one genome against itself",
+    "One assembly on both axes",
+    "Plot only certain chromosomes",
+    "X axis: *_MATERNAL",
+    "Y axis: *_PATERNAL",
+    "Color the plot by strand"
+  ],
+  "synteny/hg002_follow_panels": [
+    "Same coordinates typed into both panels: the genes sit 240 kb apart",
+    "Follow: the panel below is placed from the top one via the chain",
+    "The same genes now sit under each other, the markers upright",
+    "Drag the top panel: the one below keeps pace untouched",
+    "The panel below was never touched"
+  ],
+  "synteny/dotplot_reorder": [
+    "Re-order the vertical axis on demand",
+    "The vertical axis, against the fixed horizontal one"
+  ],
+  "synteny/restack_around_locus": [
+    "Drag across the scale bar",
+    "Linear synteny view",
+    "The reference opens on top",
+    "Move grape between peach and cacao"
+  ],
+  "synteny/allvsall_launch_from_selection": [
+    "Drag across the scale bar",
+    "Linear synteny view",
+    "One panel per strain that aligns",
+    "Move IAI39 up"
+  ],
+  "synteny/liftover_launch": [
+    "Open this chain block as a two-panel view",
+    "Use CIGAR to map the current visible region to the target",
+    "Copy this view's tracks into its panel"
+  ],
+  "synteny/ecoli_roundtrip": [
+    "K-12: one lane per strain, and the graph segments",
+    "Drag across the scale bar",
+    "The graph or the stack, from one selection",
+    "Linear synteny view",
+    "One panel per strain that aligns",
+    "The stack, anchored on K-12, with its lanes on the top row",
+    "The lane cuts a graph of its own, from here",
+    "The graph, cut from inside the stack",
+    "Drag on the Sakai row",
+    "Linear synteny view",
+    "The same dialog, anchored on Sakai",
+    "The stack re-anchored on Sakai, the graph still below"
+  ],
+  "synteny/maf_row_synteny": [
+    "The alignment, one row per strain",
+    "Drag across the rows",
+    "One entry per strain the drag covers",
+    "NCTC86",
+    "K-12 over NCTC86, the ribbon cut from the columns"
+  ],
+  "sv/inspector_route": [
+    "Open the SV inspector on a callset of its own",
+    "The SKBR3 VCF, by URL",
+    "Filter the table to X, either end"
+  ],
+  "sv/derivative_allele_route": [
+    "Let the reads reconstruct the derivative allele",
+    "3 → 10 → 12 (inverted) → 3 (inverted)",
+    "Draw as: Breakpoint split view"
+  ],
+  "sv/multisample_sort": [
+    "Order the callset by genotype at the deletion",
+    "Re-key the same rows on the whole window"
+  ],
+  "sv_cgiab/copy_number_layout": [
+    "Pin the score axis by hand",
+    "0",
+    "3",
+    "Draw the two rows on one axis, as points"
+  ],
+  "ui/bookmark_region": [
+    "Bookmark the span on screen",
+    "Open the bookmark widget from the view menu",
+    "PTEN 5' end",
+    "chr10:100,000,000-100,200,000",
+    "Click the saved row to navigate back"
+  ],
+  "ui/open_track_url": [
+    "Open a track from a URL",
+    "Paste the bigwig URL",
+    "The name and adapter the form resolved"
+  ],
+  "ui/feature_sequence_types": [
+    "Open the transcript details",
+    "CDS",
+    "Protein",
+    "Genomic w/ full introns +/- up+down stream"
+  ],
+  "ui/sequence_search_motifs": [
+    "Scan the reference itself for motifs",
+    "Motif list",
+    "Edit the list",
+    "Launch one track per motif"
+  ],
+  "ui/bulk_add_tracks": [
+    "Add four files in one go, in any order",
+    "Add 3 tracks"
+  ],
+  "ui/add_genome": [
+    "Give a JBrowse with no genome one",
+    "The FASTA and its two indexes",
+    "Genome name",
+    "hg38"
+  ],
+  "variants/trio_phased_matrix": [
+    "Redraw the lane as one row per sample",
+    "Split each sample into its two haplotypes",
+    "chr1:62,174,000-65,097,304"
+  ],
+  "repeats/painting_display_switch": [
+    "Redraw the packed lane as a painting",
+    "Partition the rows by a column of the file",
+    "repClass"
+  ],
+  "hic/two_regions": [
+    "Both windows in the box, separated by a space",
+    "chr9 against chr22"
+  ],
+  "epigenomics/bisulfite_contexts": [
+    "Color the reads by the CHG context",
+    "Color the reads by the CHH context"
+  ],
+  "epigenomics/chromhmm_cluster": [
+    "Cluster the epigenomes by similarity"
+  ],
+  "config/settings_to_json": [
+    "Three settings off one open menu",
+    "Color the reads by insert size and orientation",
+    "Link each read to its mate",
+    "Put the soft-clipped bases back on",
+    "Hand the session back with the settings readable",
+    "The share dialog grows a control as it is used"
+  ],
+  "genomes_basics/gnomad_filter": [
+    "Keep only the predicted loss-of-function variants",
+    "jexl:feature.annot == 'pLoF'"
+  ],
+  "genomes_basics/find_a_track": [
+    "Find a conservation track in the hg38 catalog",
+    "phyloP"
+  ]
+}
+
+// The track config a tour pastes into the app, for the same dialog.
+export const videoPastes: Record<string, string> = {
+  "pangenome/hprc_end_to_end": "{\n  \"type\": \"FeatureTrack\",\n  \"trackId\": \"hprc_minigraph_segments\",\n  \"name\": \"HPRC release 2 graph (rGFA segments)\",\n  \"assemblyNames\": [\"hg38\"],\n  \"adapter\": {\n    \"type\": \"RgfaTabixAdapter\",\n    \"uri\": \"https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38\",\n    \"assemblyNameToPanSN\": { \"hg38\": \"GRCh38\" }\n  },\n  \"displayDefaults\": {\n    \"color\": \"jexl:feature.rank==0 ? 'rgb(52,152,219)' : 'rgb(237,137,44)'\"\n  }\n}",
+  "pangenome/pggb_subgraph_launch": "{\n  \"type\": \"FeatureTrack\",\n  \"trackId\": \"ecoli_pggb_segments\",\n  \"name\": \"pggb graph segments (whole graph, by locus)\",\n  \"assemblyNames\": [\"K12\"],\n  \"adapter\": {\n    \"type\": \"RgfaTabixAdapter\",\n    \"uri\": \"https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb\"\n  },\n  \"displayDefaults\": { \"showLabels\": \"none\" }\n}",
+  "pangenome_cactus/subgraph_launch": "{\n  \"type\": \"FeatureTrack\",\n  \"trackId\": \"ecoli_cactus_segments\",\n  \"name\": \"MC graph: segments (whole graph, by locus)\",\n  \"assemblyNames\": [\"K12\"],\n  \"adapter\": {\n    \"type\": \"RgfaTabixAdapter\",\n    \"uri\": \"https://jbrowse.org/demos/ecoli_pangenome/ecoli_cactus\"\n  },\n  \"displayDefaults\": { \"showLabels\": false }\n}"
+}

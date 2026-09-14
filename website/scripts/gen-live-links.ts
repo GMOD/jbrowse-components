@@ -26,7 +26,7 @@ import {
   specs,
 } from './screenshot-specs.ts'
 import { videoFrame } from './video-spec-rules.ts'
-import { externalClips, videoSpecs } from './video-specs.ts'
+import { externalClips, pastedTrackConfigs, videoSpecs } from './video-specs.ts'
 
 const figureLiveRefs = Object.fromEntries(
   specs.flatMap(spec => {
@@ -58,6 +58,28 @@ const videoCaptioned = videoSpecs
   .filter(spec => spec.steps.some(step => step.say))
   .map(spec => spec.name)
   .sort()
+
+// The words each tour holds across its frames, in order, for the recipe
+// dialog beside the clip: the same strings the `.vtt` carries, so the dialog
+// lists the route a reader just watched rather than a second wording of it.
+const videoSteps = Object.fromEntries(
+  videoSpecs
+    .map(
+      spec =>
+        [
+          spec.name,
+          spec.steps.flatMap(step => (step.say ? [step.say] : [])),
+        ] as const,
+    )
+    .filter(([, steps]) => steps.length > 0),
+)
+
+// The config a tour pastes into the app, verbatim, so the dialog hands over
+// the same characters the page's fence prints and check-paste-configs holds
+// the two together.
+const videoPastes = Object.fromEntries(
+  pastedTrackConfigs.map(entry => [entry.video, entry.json] as const),
+)
 
 const outFile = join(
   dirname(fileURLToPath(import.meta.url)),
@@ -99,6 +121,13 @@ export const videoFrames: Record<
 // nothing else, so a tour that names none of its steps does not ship a caption
 // element pointing at a file the store has never held.
 export const videoCaptioned: string[] = ${JSON.stringify(videoCaptioned, null, 2)}
+
+// Each tour's step captions in order, for the recipe dialog remark-video puts
+// beside the clip.
+export const videoSteps: Record<string, string[]> = ${JSON.stringify(videoSteps, null, 2)}
+
+// The track config a tour pastes into the app, for the same dialog.
+export const videoPastes: Record<string, string> = ${JSON.stringify(videoPastes, null, 2)}
 `
 
 checkOrWrite({

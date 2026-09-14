@@ -7,7 +7,10 @@
 //
 // Tracks need no refusal: "Add track from pasted JSON"
 // (plugins/data-management/src/AddTrackWidget/components/PasteConfigWorkflow.tsx)
-// takes any track config verbatim, in Desktop and in a web session alike.
+// takes any track config verbatim, in Desktop and in a web session alike. A
+// graph track has a form of its own in the GraphGenomeView plugin, and the tab
+// walks that instead, since a config pasted as JSON is the one route a reader
+// cannot adapt to their own file without reading the adapter's docs.
 import { aliasesUri } from './derive-add-assembly.ts'
 import { asRecord, nonEmpty } from './derive-cli-command.ts'
 
@@ -74,7 +77,89 @@ function moreOption(label: string, value: string) {
   ]
 }
 
-export function desktopTrackNodes(json: string): RootContent[] {
+// The GraphGenomeView plugin's add-track form
+// (src/GraphAddTrackWorkflow in jbrowse-plugin-graphgenomeviewer), held by
+// scripts/check-menu-labels.ts against that checkout the way DESKTOP_UI_LABELS
+// is held against this repo.
+export const GRAPH_FORM_LABELS = {
+  workflow: 'Add pangenome graph track',
+  fileType: 'File type',
+  sample: 'Sample name in the graph',
+  trackName: 'Track name',
+  assembly: 'Assembly',
+}
+
+const GRAPH_ADAPTERS: Record<
+  string,
+  { choice: string; locationSlot: string; suffix: string }
+> = {
+  RgfaTabixAdapter: {
+    choice: 'rGFA segments (tabix BED pair)',
+    locationSlot: 'segmentsLocation',
+    suffix: '.segs.bed.gz',
+  },
+  MinigraphBubbleAdapter: {
+    choice: 'Minigraph bubbles (tabix BED)',
+    locationSlot: 'bubblesLocation',
+    suffix: '',
+  },
+}
+
+function field(label: string, value: string) {
+  return [strong(label), text(': '), inline(value)]
+}
+
+// The form's fields, filled from the config, or undefined for a config the
+// form has no field for (a display the config sets by hand).
+function graphFormNodes(
+  config: Record<string, unknown>,
+): RootContent[] | undefined {
+  const adapter = asRecord(config.adapter)
+  const form = GRAPH_ADAPTERS[String(adapter.type)]
+  const assembly = (config.assemblyNames as unknown[] | undefined)?.[0]
+  if (!form || config.displays || typeof assembly !== 'string') {
+    return undefined
+  }
+  const file =
+    typeof adapter.uri === 'string'
+      ? `${adapter.uri}${form.suffix}`
+      : asRecord(adapter[form.locationSlot]).uri
+  if (typeof file !== 'string') {
+    return undefined
+  }
+  const sample = asRecord(adapter.assemblyNameToPanSN)[assembly]
+  return [
+    raw('<div class="desktop-steps">'),
+    paragraph([
+      text(
+        'In JBrowse Desktop, or in any running JBrowse Web session, open a view on this track’s assembly, then ',
+      ),
+      strong(DESKTOP_UI_LABELS.openTrack),
+      text(', choose '),
+      strong(GRAPH_FORM_LABELS.workflow),
+      text(', and fill in:'),
+    ]),
+    bullets([
+      field(GRAPH_FORM_LABELS.fileType, form.choice),
+      field('Path', file),
+      ...(typeof sample === 'string'
+        ? [field(GRAPH_FORM_LABELS.sample, sample)]
+        : []),
+      field(GRAPH_FORM_LABELS.trackName, String(config.name ?? config.trackId)),
+      field(GRAPH_FORM_LABELS.assembly, assembly),
+    ]),
+    raw('</div>'),
+  ]
+}
+
+export function desktopTrackNodes(
+  config: Record<string, unknown>,
+  json: string,
+): RootContent[] {
+  const form = graphFormNodes(config)
+  if (form) {
+    return form
+  }
   return [
     raw('<div class="desktop-steps">'),
     paragraph([

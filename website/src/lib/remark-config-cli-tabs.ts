@@ -164,7 +164,7 @@ const TAGS: TagEntry[] = [
     matches: isAddtrack,
     build: (config, json) => [
       cliTab(config, json),
-      { label: 'JBrowse Desktop', nodes: desktopTrackNodes(json) },
+      { label: 'JBrowse Desktop', nodes: desktopTrackNodes(config, json) },
     ],
     refusal: '',
   },

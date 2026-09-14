@@ -38,7 +38,10 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { DESKTOP_UI_LABELS } from '../src/lib/derive-desktop-steps.ts'
+import {
+  DESKTOP_UI_LABELS,
+  GRAPH_FORM_LABELS,
+} from '../src/lib/derive-desktop-steps.ts'
 import { docFiles, reportProblems } from './check-utils.ts'
 import { norm, sourceLabels } from './menu-label-corpus.ts'
 import {
@@ -275,6 +278,20 @@ for (const label of Object.values(DESKTOP_UI_LABELS)) {
         .map(s => JSON.stringify(s))
         .join(', ')}\n      in DESKTOP_UI_LABELS ${JSON.stringify(label)}`,
     )
+  }
+}
+
+// The graph form's labels live in the plugin checkout, so they are held
+// against it, and go unchecked where it is not on disk, the same as the pages
+// that name its menus.
+const graphLabels = externalLabels.get(PLUGIN_SRC('graphgenomeviewer'))
+if (graphLabels) {
+  for (const label of Object.values(GRAPH_FORM_LABELS)) {
+    if (!graphLabels.has(norm(label))) {
+      errorLines.push(
+        `  src/lib/derive-desktop-steps.ts — the graph plugin renders no ${JSON.stringify(label)}\n      in GRAPH_FORM_LABELS`,
+      )
+    }
   }
 }
 

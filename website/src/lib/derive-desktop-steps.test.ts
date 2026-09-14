@@ -1,4 +1,7 @@
-import { desktopAssemblyNodes } from './derive-desktop-steps.ts'
+import {
+  desktopAssemblyNodes,
+  desktopTrackNodes,
+} from './derive-desktop-steps.ts'
 
 import type { RootContent } from 'mdast'
 
@@ -71,4 +74,39 @@ test.each([
   expect(
     desktopAssemblyNodes({ name: 'hg38', uri: 'hg38.fa.gz', ...extra }),
   ).toBeUndefined()
+})
+
+test('a graph adapter walks the plugin form instead of the paste box', () => {
+  const config = {
+    type: 'FeatureTrack',
+    trackId: 'hprc_minigraph_segments',
+    name: 'HPRC release 2 graph (rGFA segments)',
+    assemblyNames: ['hg38'],
+    adapter: {
+      type: 'RgfaTabixAdapter',
+      uri: 'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38',
+      assemblyNameToPanSN: { hg38: 'GRCh38' },
+    },
+  }
+  const out = flatten(desktopTrackNodes(config, JSON.stringify(config)))
+  expect(out).toContain('Add pangenome graph track')
+  expect(out).toContain('rGFA segments (tabix BED pair)')
+  expect(out).toContain(
+    'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.segs.bed.gz',
+  )
+  expect(out).toContain('GRCh38')
+  expect(out).not.toContain('Add track from pasted JSON')
+})
+
+test('a graph track with hand-set displays falls back to the paste box', () => {
+  const config = {
+    type: 'FeatureTrack',
+    trackId: 't',
+    assemblyNames: ['hg38'],
+    adapter: { type: 'MinigraphBubbleAdapter', uri: 'https://x/b.bed.gz' },
+    displays: [{ type: 'LinearBasicDisplay', displayId: 'd' }],
+  }
+  expect(flatten(desktopTrackNodes(config, '{}'))).toContain(
+    'Add track from pasted JSON',
+  )
 })

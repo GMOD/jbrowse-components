@@ -130,9 +130,8 @@ function panels(recipe: Recipe): Panel[] {
   ]
 }
 
-export function recipeDialogHtml(recipe: Recipe, id: string): string {
+function dialogHtml(id: string, list: Panel[]): string {
   const name = `${id}-tabs`
-  const list = panels(recipe)
   return [
     `<dialog class="spec-dialog" id="${id}">`,
     '<form method="dialog" class="spec-dialog-close-form">',
@@ -156,14 +155,49 @@ export function recipeDialogHtml(recipe: Recipe, id: string): string {
   ].join('')
 }
 
+export function recipeDialogHtml(recipe: Recipe, id: string): string {
+  return dialogHtml(id, panels(recipe))
+}
+
+// The video's own panel first: what the clip does, as the words it held on
+// screen, and the config it pasted. The session panels that follow are the
+// figure recipe's, built from the session the clip starts in.
+export function videoRecipeDialogHtml(
+  recipe: Recipe,
+  id: string,
+  video: { steps: string[]; paste?: string },
+): string {
+  const walkthrough: Panel = {
+    label: 'Follow the video',
+    body: [
+      note(
+        `<a href="${escapeAttr(recipe.liveUrl)}" target="_blank" rel="noopener noreferrer">Open the session the video starts in ↗</a>, then take the steps it shows:`,
+      ),
+      `<ol class="spec-steps">${video.steps
+        .map(step => `<li><span class="spec-step-title">${escapeAttr(step)}</span></li>`)
+        .join('')}</ol>`,
+      ...(video.paste
+        ? [
+            note('The track config the video pastes, as the page above prints it:'),
+            copyableBlock(video.paste, 'spec-json'),
+          ]
+        : []),
+    ].join(''),
+  }
+  return dialogHtml(id, [walkthrough, ...panels(recipe)])
+}
+
 // a "steps/recipe" glyph (lucide clipboard-list). The label beside it carries
 // the meaning — an icon alone read as decoration and went unclicked — so the
 // pair stays muted and the tooltip says the longer form
 const RECIPE_ICON =
   '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4"/><path d="M12 16h4"/><path d="M8 11h.01"/><path d="M8 16h.01"/></svg>'
 
-export function recipeButtonHtml(id: string): string {
+export function recipeButtonHtml(
+  id: string,
+  label = 'Make this view yourself',
+): string {
   // no aria-label: the visible text is the accessible name, and an aria-label
   // that differs from it is what voice control tries and fails to match
-  return `<button type="button" class="spec-help" data-spec-dialog="${id}" title="How to make this view yourself">${RECIPE_ICON}<span>Make this view yourself</span></button>`
+  return `<button type="button" class="spec-help" data-spec-dialog="${id}" title="How to ${escapeAttr(label.toLowerCase())}">${RECIPE_ICON}<span>${escapeAttr(label)}</span></button>`
 }

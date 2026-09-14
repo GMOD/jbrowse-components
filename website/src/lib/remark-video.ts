@@ -6,7 +6,11 @@ import {
   videoCaptioned,
   videoFrames,
   videoLiveRefs,
+  videoPastes,
+  videoSteps,
 } from './liveLinks.generated.ts'
+import { recipeButtonHtml, videoRecipeDialogHtml } from './spec-recipe/html.ts'
+import { buildRecipe } from './spec-recipe/recipe.ts'
 
 import type { Heading, Root } from 'mdast'
 import type { Plugin } from 'unified'
@@ -80,6 +84,7 @@ const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
   return (tree, file) => {
     const videos: VideoRef[] = []
     const anchors: string[] = []
+    let dialogCount = 0
     // The heading the walk is under. `visit` with no test runs in document
     // order, so the last one seen when a tag turns up is the one above it.
     let section = ''
@@ -167,6 +172,26 @@ const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
       const link = live
         ? ` <a href="${live}" target="_blank" rel="noopener noreferrer">${label}</a>`
         : ''
+      // The figure recipe's dialog, with the clip's own steps in front: the
+      // link hands the reader the start state, and the dialog is the route
+      // from there, as the words the clip held on screen, plus the config it
+      // pasted. A clip with no live session has nothing to build on.
+      const recipe = live ? buildRecipe(live, name) : undefined
+      const steps = videoSteps[name] ?? []
+      const id = `video-dialog-${dialogCount}`
+      const help =
+        recipe && steps.length
+          ? {
+              button: recipeButtonHtml(id, 'Make this video yourself'),
+              dialog: videoRecipeDialogHtml(recipe, id, {
+                steps,
+                paste: videoPastes[name],
+              }),
+            }
+          : { button: '', dialog: '' }
+      if (help.dialog) {
+        dialogCount++
+      }
       const anchor = anchorFor(name)
       // One entry per section, landing on the first clip in it.
       // pangenome_ecoli runs four clips under one h3, and four links reading
@@ -175,7 +200,7 @@ const remarkVideo: Plugin<[{ base?: string }?], Root> = (options = {}) => {
       if (!videos.some(entry => entry.section === section)) {
         videos.push({ id: anchor, section })
       }
-      return `<figure id="${anchor}">${frameVideo}<figcaption>${caption}${link}</figcaption></figure>`
+      return `<figure id="${anchor}">${frameVideo}<figcaption>${caption}${link}${help.button}</figcaption>${help.dialog}</figure>`
     }
     visit(tree, node => {
       if (node.type === 'heading' && SECTION_DEPTHS.has(node.depth)) {
