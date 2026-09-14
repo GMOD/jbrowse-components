@@ -1,0 +1,261 @@
+{
+  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
+  "assemblies": [
+    {
+      "name": "RES",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "RES-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "RES.chrom.sizes"
+          }
+        }
+      }
+    },
+    {
+      "name": "EMU",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "EMU-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "EMU.chrom.sizes"
+          }
+        }
+      }
+    },
+    {
+      "name": "HCA",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HCA-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "HCA.chrom.sizes"
+          }
+        }
+      }
+    },
+    {
+      "name": "COW",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "COW-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "COW.chrom.sizes"
+          }
+        }
+      }
+    },
+    {
+      "name": "BIN",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "BIN-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "BIN.chrom.sizes"
+          }
+        }
+      }
+    },
+    {
+      "name": "BFL",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "BFL-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "BFL.chrom.sizes"
+          }
+        }
+      }
+    },
+    {
+      "name": "CLAa",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "CLAa-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "ChromSizesAdapter",
+          "chromSizesLocation": {
+            "uri": "CLAa.chrom.sizes"
+          }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "SyntenyTrack",
+      "trackId": "RES_EMU",
+      "name": "RES vs EMU orthologs, colored by BCnS linkage group",
+      "assemblyNames": ["RES", "EMU"],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "RES_EMU.blocks.gz",
+        "blockAssemblies": ["RES", "EMU"],
+        "bedLocations": [
+          {
+            "uri": "RES_EMU.RES.bed.gz"
+          },
+          {
+            "uri": "RES_EMU.EMU.bed.gz"
+          }
+        ],
+        "attributeColumns": ["gene_group", "color"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "RES_HCA",
+      "name": "RES vs HCA orthologs, colored by BCnS linkage group",
+      "assemblyNames": ["RES", "HCA"],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "RES_HCA.blocks.gz",
+        "blockAssemblies": ["RES", "HCA"],
+        "bedLocations": [
+          {
+            "uri": "RES_HCA.RES.bed.gz"
+          },
+          {
+            "uri": "RES_HCA.HCA.bed.gz"
+          }
+        ],
+        "attributeColumns": ["gene_group", "color"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "RES_COW",
+      "name": "RES vs COW orthologs, colored by BCnS linkage group",
+      "assemblyNames": ["RES", "COW"],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "RES_COW.blocks.gz",
+        "blockAssemblies": ["RES", "COW"],
+        "bedLocations": [
+          {
+            "uri": "RES_COW.RES.bed.gz"
+          },
+          {
+            "uri": "RES_COW.COW.bed.gz"
+          }
+        ],
+        "attributeColumns": ["gene_group", "color"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "BIN_HCA",
+      "name": "BIN vs HCA orthologs, colored by BCnS linkage group",
+      "assemblyNames": ["BIN", "HCA"],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "BIN_HCA.blocks.gz",
+        "blockAssemblies": ["BIN", "HCA"],
+        "bedLocations": [
+          {
+            "uri": "BIN_HCA.BIN.bed.gz"
+          },
+          {
+            "uri": "BIN_HCA.HCA.bed.gz"
+          }
+        ],
+        "attributeColumns": ["gene_group", "color"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "RES_BFL",
+      "name": "RES vs BFL orthologs, colored by BCnS linkage group",
+      "assemblyNames": ["RES", "BFL"],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "RES_BFL.blocks.gz",
+        "blockAssemblies": ["RES", "BFL"],
+        "bedLocations": [
+          {
+            "uri": "RES_BFL.RES.bed.gz"
+          },
+          {
+            "uri": "RES_BFL.BFL.bed.gz"
+          }
+        ],
+        "attributeColumns": ["gene_group", "color"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "BFL_EMU",
+      "name": "BFL vs EMU orthologs, colored by BCnS linkage group",
+      "assemblyNames": ["BFL", "EMU"],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "BFL_EMU.blocks.gz",
+        "blockAssemblies": ["BFL", "EMU"],
+        "bedLocations": [
+          {
+            "uri": "BFL_EMU.BFL.bed.gz"
+          },
+          {
+            "uri": "BFL_EMU.EMU.bed.gz"
+          }
+        ],
+        "attributeColumns": ["gene_group", "color"]
+      }
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "EMU_CLAa",
+      "name": "EMU vs CLAa orthologs, colored by BCnS linkage group",
+      "assemblyNames": ["EMU", "CLAa"],
+      "adapter": {
+        "type": "MCScanBlocksAdapter",
+        "uri": "EMU_CLAa.blocks.gz",
+        "blockAssemblies": ["EMU", "CLAa"],
+        "bedLocations": [
+          {
+            "uri": "EMU_CLAa.EMU.bed.gz"
+          },
+          {
+            "uri": "EMU_CLAa.CLAa.bed.gz"
+          }
+        ],
+        "attributeColumns": ["gene_group", "color"]
+      }
+    }
+  ],
+  "defaultSession": {
+    "name": "Ancestral linkage groups",
+    "views": [
+      {
+        "type": "DotplotView",
+        "displayName": "Rhopilema (jellyfish) vs Ephydatia (sponge)",
+        "views": [
+          {
+            "assembly": "RES"
+          },
+          {
+            "assembly": "EMU",
+            "displayedRegionNames": ["EMU*"]
+          }
+        ],
+        "tracks": ["RES_EMU"],
+        "colorBy": "attribute:gene_group",
+        "autoDiagonalize": true,
+        "lineWidth": 4,
+        "height": 860
+      }
+    ]
+  }
+}
