@@ -3,15 +3,15 @@
     "name": "volvox_alignments",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:49:48.755Z",
-    "hash": "d6b55165fba1bd9a797993d3121e03df24d38732"
+    "reviewedAt": "2026-09-14T04:12:52.212Z",
+    "hash": "0357638ee6f9cbea6c681664cbf19d7d5a99ab23"
   },
   "volvox_variants": {
     "name": "volvox_variants",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:49:51.105Z",
-    "hash": "2242facbbd1b9dadf4acb0a3dd5f6ae4a8cc9fef"
+    "reviewedAt": "2026-09-14T04:12:53.544Z",
+    "hash": "3f990b0c9c08d4a5134ca8957b274355f8801e42"
   },
   "variant_with_pileup": {
     "name": "variant_with_pileup",
@@ -30,8 +30,8 @@
     "name": "bigwig_line",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:31:29.398Z",
-    "hash": "e70ca3751011f7fe8a0d1f230a56e43ad68a943b"
+    "reviewedAt": "2026-09-14T03:28:15.735Z",
+    "hash": "cdb7b5e8113977b33c4bf6782a629cd312342bde"
   },
   "sequence_track": {
     "name": "sequence_track",
@@ -96,9 +96,9 @@
   "sv_synteny/dotplot_import": {
     "name": "sv_synteny/dotplot_import",
     "status": "good",
-    "note": "ALL THREE, in the app rather than in the spec.\n\nTHE SEARCH BOXES ARE OPT-IN NOW, behind 'Plot only certain chromosomes', and\nunticking clears both so no filter can be applied from a box nobody can see. You\nwere right about why: two empty text fields sitting between the reader and\nLaunch read as required, and the case they exist for -- an assembly fragmented\ninto hundreds of scaffolds -- is the rare one.\n\nONE ROW PER AXIS. The four controls were a single flowed row that wrapped\nwherever the window width put it, so on a wide window they read as four\nunrelated fields; the row is the axis now.\n\nOUTLINED. ChromosomeFilter sets it against the theme's 'standard' default, since\nit sits beside an assembly dropdown that draws its own outline and underlined it\nread as page text with a rule under it. On the control rather than on the theme\n-- flipping the theme restyles every TextField in the app and moves every figure\nwith a form in it, which wants its own round.\n\nThree figures show this form and all three are regenerated;\nhg002_haplotypes_import_form now clicks the checkbox as part of its path, so the\noutlined boxes are visible there.",
-    "reviewedAt": "2026-08-16T04:58:30.744Z",
-    "hash": "bba3d425db3782f80ac09896a521683020e2f7b9"
+    "note": "",
+    "reviewedAt": "2026-09-14T04:11:38.188Z",
+    "hash": "343ffa3749792ca7bda75718cddb51188eb5e8c3"
   },
   "sv_synteny/dotplot": {
     "name": "sv_synteny/dotplot",
@@ -117,8 +117,8 @@
     "name": "bigwig/whole_genome_coverage",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:31:46.849Z",
-    "hash": "79f441fb4b0015821ec0a5c3bde2940a9b8d4b20"
+    "reviewedAt": "2026-09-14T03:28:18.417Z",
+    "hash": "1184c0f78dc52e943076c402359b75ed4d8fd94b"
   },
   "sv_inspector_begin": {
     "name": "sv_inspector_begin",
@@ -156,8 +156,8 @@
     "name": "multisv",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:43:41.462Z",
-    "hash": "cc978c82d7873d5ff0bafdf23226b7e7d2525dcf"
+    "reviewedAt": "2026-09-14T03:46:39.723Z",
+    "hash": "9a2d1fc22534ebdfe5ad0a2532be7b0c79b31612"
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
@@ -183,8 +183,8 @@
     "name": "inverted_duplication",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:40:25.227Z",
-    "hash": "83679a51ecdb3ed7d210259291c5006a2a30c603"
+    "reviewedAt": "2026-09-14T03:41:13.755Z",
+    "hash": "478022dde33279da7b8dd4c26f7416b3fb42a516"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
@@ -197,8 +197,8 @@
     "name": "sv_cgiab/cnv_show_all_regions",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:47:56.828Z",
-    "hash": "a7f37e189847fdbb78418bf5bf92d270a7612396"
+    "reviewedAt": "2026-09-14T04:09:02.132Z",
+    "hash": "22b0e251aaf769f0e81b479ed4b394b7387068d3"
   },
   "sv_cgiab/deletion_linear_view": {
     "name": "sv_cgiab/deletion_linear_view",
@@ -218,8 +218,8 @@
     "name": "sv_cgiab/synteny_view",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:48:31.276Z",
-    "hash": "77e50024ad1ecacb0e65247525855656a5dc5e9e"
+    "reviewedAt": "2026-09-14T04:09:59.725Z",
+    "hash": "e1eb13a7b99777b46697e76308d91e2f7187b05a"
   },
   "linear_synteny": {
     "name": "linear_synteny",
@@ -244,29 +244,29 @@
     "name": "add_track_form",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T00:47:30.634Z",
-    "hash": "ab94062f66ce630f9c9bb2ab4dd0ac943bffb312"
+    "reviewedAt": "2026-09-14T03:23:37.411Z",
+    "hash": "69fa85e3534d01ca3c858cee17aac97cae699d1d"
   },
   "alignments_soft_clipped_menu": {
     "name": "alignments_soft_clipped_menu",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:31:08.572Z",
-    "hash": "421278d5fbbfc72af292d814def33c88a3175c79"
+    "reviewedAt": "2026-09-14T03:23:42.629Z",
+    "hash": "fb5053e50ee9cafe388c559741f4f2ecb072279c"
   },
   "alignments_sort_by_base": {
     "name": "alignments_sort_by_base",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:31:06.460Z",
-    "hash": "519c5528a868a62f5e430d10103cb5bc293e9a05"
+    "reviewedAt": "2026-09-14T03:23:45.203Z",
+    "hash": "46792289a9905f5e3164277064cf5e165a1e39b7"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
-    "status": "good",
-    "note": "Sweep of 2026-08-15: nothing in the frame differs above the row-alignment tolerance.",
-    "reviewedAt": "2026-08-15T22:56:16.223Z",
-    "hash": "45f7d772647ec9f1f0bb0998574aa283c9ef26d7"
+    "status": "bad",
+    "note": "the filter dialog 'tag name and value' doesnt give enough hints and say that * means 'any'",
+    "reviewedAt": "2026-09-14T03:24:26.327Z",
+    "hash": "33015b1ae086cc3666e63e4226f1f6675469b71a"
   },
   "alignments/modifications1": {
     "name": "alignments/modifications1",
@@ -279,8 +279,8 @@
     "name": "alignments/select_arc_display",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:31:20.043Z",
-    "hash": "875ab695bf493b3c5b9b0af64b9423f60161db5e"
+    "reviewedAt": "2026-09-14T03:24:43.378Z",
+    "hash": "6b220049b4f1cf14b7eb96a394432d8e1019a5e4"
   },
   "bookmark_widget_create": {
     "name": "bookmark_widget_create",
@@ -334,8 +334,8 @@
     "name": "hierarchical/hierarchical_user_menu-fs8",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:40:08.318Z",
-    "hash": "4557fd089b86f6c8f04fd43ae9237d75b954883c"
+    "reviewedAt": "2026-09-14T03:41:15.519Z",
+    "hash": "a5aee49035692639b0e9cb57ffffc72183308ce5"
   },
   "hs1_vs_mm39_synteny": {
     "name": "hs1_vs_mm39_synteny",
@@ -359,15 +359,15 @@
     "name": "lgv_usage_guide",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:41:10.130Z",
-    "hash": "213f1f3dba95c6de4ff753bac015a819a424ff46"
+    "reviewedAt": "2026-09-14T03:43:54.192Z",
+    "hash": "7733426741b4c35cff9efa9893eb4ec4315bf86e"
   },
   "linear_align_ctx_menu": {
     "name": "linear_align_ctx_menu",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:41:12.295Z",
-    "hash": "2b3bc8a8f8f7707a626c8f7ef94b6f2d84520870"
+    "reviewedAt": "2026-09-14T03:43:55.483Z",
+    "hash": "3c0bc4e1029822e5a01faae890f958a859a5ca92"
   },
   "methylation/arabidopsis_bisulfite_chh": {
     "name": "methylation/arabidopsis_bisulfite_chh",
@@ -389,10 +389,10 @@
   },
   "multiwig/addtrack": {
     "name": "multiwig/addtrack",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:44:18.609Z",
-    "hash": "45b413d205beecc875433decfc9801c2ac0a2815"
+    "status": "bad",
+    "note": "no black pills, just white background, black text",
+    "reviewedAt": "2026-09-14T03:51:59.521Z",
+    "hash": "94efdd58e5572a9e96aca1b2e83895de3178614b"
   },
   "plugin_store": {
     "name": "plugin_store",
@@ -405,15 +405,15 @@
     "name": "add_track_tracklist",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:29:53.571Z",
-    "hash": "018ab7ee8d1ed255de5a41e06a2726918c701032"
+    "reviewedAt": "2026-09-14T03:23:40.021Z",
+    "hash": "e5c15f834532ecbfb7cb02fc68d3468f3ff2687c"
   },
   "alignments/compact": {
     "name": "alignments/compact",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:31:01.966Z",
-    "hash": "2431496bb9cd6e7673ad34b341793cda396aecf3"
+    "reviewedAt": "2026-09-14T03:23:47.786Z",
+    "hash": "4882f338a93dfbd44a3ac45d0e25a18285304a81"
   },
   "bookmark_widget_edit_colors": {
     "name": "bookmark_widget_edit_colors",
@@ -423,17 +423,17 @@
   },
   "customized_feature_details": {
     "name": "customized_feature_details",
-    "status": "good",
-    "note": "FIXED IN THE APP, and the shading was wrong rather than merely ugly. The\nfetch buffers half a viewport either side and the packer places every buffered\nfeature, so a window holding nine genes can carry a stack twenty rows deep whose\nbottom rows draw nothing in view. The scrollbar and the edge shadow are two\nreadouts of one number, and measured over the whole pack they answered 'features\nare hidden below' about a track showing all of them -- and offered a scroll\ngesture onto blank canvas.\n\nscrollExtentMaxY measures the same on-screen set the fit ladder already\nmeasures, on the same 500ms coarse debounce, so a pan re-measures once it\nsettles. Fit mode was already narrowed at the source. The DRAWING height is\nuntouched, so a buffered feature keeps its box and its label and is unreachable\nrather than clipped.\n\nThree figures in this pass came back for it; this is the one where nothing was\nbelow the fold at all, and its bottom band is now the same white as the rest of\nthe track.",
-    "reviewedAt": "2026-08-16T04:58:08.579Z",
-    "hash": "b78d8f04520dac5735d6300f5c1d52eb5d3a5c19"
+    "status": "bad",
+    "note": "it is not common to have black pill comments",
+    "reviewedAt": "2026-09-14T03:36:01.046Z",
+    "hash": "19897acb46845093224b10bf0dd4b48591da0330"
   },
   "customized_theme": {
     "name": "customized_theme",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:33:48.722Z",
-    "hash": "4941d99e8c89b6a3d629023196826e486d1c362b"
+    "reviewedAt": "2026-09-14T03:36:02.550Z",
+    "hash": "17a098f7886f38448f664f1045a4cf9f33d07007"
   },
   "cytobands": {
     "name": "cytobands",
@@ -469,8 +469,8 @@
     "name": "edit_track_settings",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:34:50.734Z",
-    "hash": "0877341a05cf1d3aefeb0c7a00833b97aac2a52c"
+    "reviewedAt": "2026-09-14T03:37:02.647Z",
+    "hash": "c2ee67c91294e343f24956aa7764a1ddd104ab5c"
   },
   "favorite_tracks": {
     "name": "favorite_tracks",
@@ -482,22 +482,22 @@
     "name": "feature_detail_sequence",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-16T03:39:19.189Z",
-    "hash": "fb7800ef5eebc089de6025114743ac0b830c1102"
+    "reviewedAt": "2026-09-14T03:37:11.760Z",
+    "hash": "64a42ea66b749545ccd78b8173177d2d5bc82072"
   },
   "hic_track": {
     "name": "hic_track",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:39:48.790Z",
-    "hash": "b154ab1d810bd7fb03f532bc5846c890e06ca8d9"
+    "reviewedAt": "2026-09-14T03:40:29.514Z",
+    "hash": "f8389b83356734a616e27c801d1f2bcff5e2e0cb"
   },
   "read_vs_ref_insertion": {
     "name": "read_vs_ref_insertion",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:46:57.134Z",
-    "hash": "85dba0d867cf40f148b95d33544d10e6a4224d7c"
+    "reviewedAt": "2026-09-14T04:07:58.898Z",
+    "hash": "d3742c0e017c009b8bceba4b7923aea958b5aced"
   },
   "recent_tracks": {
     "name": "recent_tracks",
@@ -552,8 +552,8 @@
     "name": "share_button",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:47:22.493Z",
-    "hash": "34c017c15d23b53f35ebc994c3643e6ec5f02068"
+    "reviewedAt": "2026-09-14T04:08:12.815Z",
+    "hash": "2db79c54fefee758ff02613d099e029e7ba3f335"
   },
   "sv_inspector_importform": {
     "name": "sv_inspector_importform",
@@ -583,15 +583,15 @@
     "name": "track_menu",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:49:23.624Z",
-    "hash": "f8d8dcc4200e3a1aaede46062f73a68d522b010d"
+    "reviewedAt": "2026-09-14T04:12:39.144Z",
+    "hash": "842d2442c511cce3c96079546ae1ad2495daabba"
   },
   "tracklabels": {
     "name": "tracklabels",
     "status": "good",
     "note": "re-reviewed after the settings-menu refactor re-shoot (2026-08-24): Show... submenu open, Track labels radio group (Overlapping/Offset/Hidden) visible and boxed, menu reads correctly.",
-    "reviewedAt": "2026-08-28T12:52:27.000Z",
-    "hash": "b95273f4fb62f3a7641f79f213f81f62dfd8364d"
+    "reviewedAt": "2026-09-14T04:12:41.170Z",
+    "hash": "055f06438aa1f74153c31ed894c1aae52500f35c"
   },
   "trio-basic": {
     "name": "trio-basic",
@@ -609,15 +609,15 @@
     "name": "trio-matrix-phased",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-10T23:13:27.697Z",
-    "hash": "d1d74dc7a9317b460a5b3ca1a3ca7c374b8c2b48"
+    "reviewedAt": "2026-09-14T04:12:45.027Z",
+    "hash": "ec82c54ccdfce96fa4c0e324ea600e320bf82800"
   },
   "trio-matrix-phased-clean": {
     "name": "trio-matrix-phased-clean",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:49:29.825Z",
-    "hash": "c693378bd6a97f4c8205d68496397fd6d1f1dd29"
+    "reviewedAt": "2026-09-14T04:12:47.129Z",
+    "hash": "4b2798122133b1285a2fa0709db0440acf1b7a9d"
   },
   "upstream_downstream_details": {
     "name": "upstream_downstream_details",
@@ -864,15 +864,15 @@
     "name": "gene_track_color_by_cds",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:36:53.348Z",
-    "hash": "8e0c34c42b23412b952cf9dc368e18b3bfec5c16"
+    "reviewedAt": "2026-09-14T03:37:50.360Z",
+    "hash": "6eb78ff2ee949a2f04ad10247f321cc511cb9066"
   },
   "gene_track_mature_peptides": {
     "name": "gene_track_mature_peptides",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:36:54.937Z",
-    "hash": "5c3bf269b21e0ea1b04dae17d2ab823313245e13"
+    "reviewedAt": "2026-09-14T03:37:52.292Z",
+    "hash": "571d809fe006e0ada98f28528d5ebc9ea7b4d5be"
   },
   "rnaseq/single_read": {
     "name": "rnaseq/single_read",
@@ -891,8 +891,8 @@
     "name": "sv_cgiab/translocation_breakpoint_split",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-09T16:04:39.769Z",
-    "hash": "2acb367bdcd4f063a5d1ab8efc247aa77ee53af5"
+    "reviewedAt": "2026-09-14T04:10:43.726Z",
+    "hash": "8c73ccab380cdba0207b1cf00bc78ae08972948b"
   },
   "sv_inspector_importform_filtered": {
     "name": "sv_inspector_importform_filtered",
@@ -904,29 +904,29 @@
     "name": "trio-crossover-paternal",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:49:27.341Z",
-    "hash": "9e8c60588edaeb5420b9986be8bbd5dc6ef9d69c"
+    "reviewedAt": "2026-09-14T04:12:43.803Z",
+    "hash": "72bffc0375b05b1bf9de9e9e69d01dbf097c37d9"
   },
   "trio-crossover-maternal": {
     "name": "trio-crossover-maternal",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:49:25.803Z",
-    "hash": "20438a3fbecd4e67d07388731a0c3fa7343b97c8"
+    "reviewedAt": "2026-09-14T04:12:42.533Z",
+    "hash": "2d4e50cceac5321c1a3ef4f89fdb8bdad1a3b6b8"
   },
   "maf_track": {
     "name": "maf_track",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-10T15:36:24.254Z",
-    "hash": "595c6ac037e3e7cda41cd736df5361ea2538ff03"
+    "reviewedAt": "2026-09-14T03:45:56.486Z",
+    "hash": "37ada4bea444cdd7b5c592585163fff5fea9f782"
   },
   "alignments/haplotype_groupby": {
     "name": "alignments/haplotype_groupby",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:30:57.434Z",
-    "hash": "95849aefaa3553a4c030d8fec5c27ec0e5264582"
+    "reviewedAt": "2026-09-14T03:24:28.004Z",
+    "hash": "60a627989604326c75292e70d8123392fa7824ca"
   },
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
@@ -1087,17 +1087,17 @@
   },
   "protein/connected": {
     "name": "protein/connected",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:46:25.366Z",
-    "hash": "69254c03131a684ca5a95fd3d778b0dbbb125620"
+    "status": "bad",
+    "note": "is this a good figure. the clinvar is kind of pointless distracting noise. should just highlight what is going on with arrows and/or red text box blurbs. improve y-screen real estate where possible",
+    "reviewedAt": "2026-09-14T04:06:55.856Z",
+    "hash": "2924de5410d3bdfa86456775c3bb188e7e26337a"
   },
   "sv_cgiab/dotplot_import_form": {
     "name": "sv_cgiab/dotplot_import_form",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-16T05:23:34.899Z",
-    "hash": "d3036f434fdf5f78220ad97dca07f7fdd2504adf"
+    "reviewedAt": "2026-09-14T04:09:36.148Z",
+    "hash": "a5ea48f014c055bfb6369ccc43d8df8234bc6a73"
   },
   "feature_detail_protein": {
     "name": "feature_detail_protein",
@@ -1115,10 +1115,10 @@
   },
   "chromhmm": {
     "name": "chromhmm",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:33:12.520Z",
-    "hash": "dd8c7e10ef1c72efe7721e12a613f1c5e4befaf2"
+    "status": "bad",
+    "note": "this figure is quite noisy. unclear that it is really a strong figure.  what are your thoughts? i might suggest deleting, or getting better dataset, etc.",
+    "reviewedAt": "2026-09-14T03:33:38.692Z",
+    "hash": "8dbb37c8e1be3bb190bcf9f3574c54e4cafbce75"
   },
   "jbrowse-img/hic": {
     "name": "jbrowse-img/hic",
@@ -1131,22 +1131,22 @@
     "name": "maf_470way",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:41:17.842Z",
-    "hash": "7e81c9b1071ed0d8eb2c32ba8c807b8c4daff02f"
+    "reviewedAt": "2026-09-14T03:45:14.912Z",
+    "hash": "c4ab1e63c503eeb9acbd25db439f8ff088c8d034"
   },
   "maf_470way_codon": {
     "name": "maf_470way_codon",
-    "status": "bad",
-    "note": "the tree sidebar is incorrectly positioned too far low",
-    "reviewedAt": "2026-08-24T05:41:39.068Z",
-    "hash": "515583de7301c5411baac987f74f7af4f0398f79"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:45:22.369Z",
+    "hash": "63971facd7a6fa36a0e5492b7b29f99549898b7e"
   },
   "maf_color_by_chromosome": {
     "name": "maf_color_by_chromosome",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-10T15:36:16.697Z",
-    "hash": "b03cd67466aa6bc73622ca773ba94ebd739c5d3c"
+    "reviewedAt": "2026-09-14T03:45:27.717Z",
+    "hash": "1cdc5e07c06b16cf3dfdb2d351cfa06e1c1ad22c"
   },
   "sv_cgiab/cnv_log2_baf": {
     "name": "sv_cgiab/cnv_log2_baf",
@@ -1166,15 +1166,15 @@
     "name": "maf_codon_tooltip",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:41:41.430Z",
-    "hash": "14787ed72d0b809bfa64a7719238206cc8f509c4"
+    "reviewedAt": "2026-09-14T03:45:25.708Z",
+    "hash": "21c66583865b8e59ebef05343b729e7e3ecc89e9"
   },
   "gc_content": {
     "name": "gc_content",
     "status": "bad",
     "note": "might add third text annotation saying replication origin. or try to reduce textbox to just one are the origin",
-    "reviewedAt": "2026-08-24T05:36:48.787Z",
-    "hash": "64133d76f6b2ce855529e27f90ba7e295a46357d"
+    "reviewedAt": "2026-09-14T03:37:25.092Z",
+    "hash": "616418dd2cf596a0bfd65f34fb030ddbb189132a"
   },
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
@@ -1187,8 +1187,8 @@
     "name": "variants/consequence_impact_1000g",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:49:35.115Z",
-    "hash": "7427b016c6a9058e46b8f7d2306ba4421389a9ef"
+    "reviewedAt": "2026-09-14T04:12:49.309Z",
+    "hash": "45d9d2569dd5697d806235f866f18a94be104e4f"
   },
   "sv_cgiab/driver_smad4_loh": {
     "name": "sv_cgiab/driver_smad4_loh",
@@ -1215,15 +1215,15 @@
     "name": "search_feature_highlight",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:47:14.659Z",
-    "hash": "2a370770518a43f4d9a6f14f5755a2669383bde4"
+    "reviewedAt": "2026-09-14T04:08:09.543Z",
+    "hash": "6df920c5948c4a4f5e5f0b970b421edb4043f815"
   },
   "display_settings_url_snapshot": {
     "name": "display_settings_url_snapshot",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:34:00.199Z",
-    "hash": "692419195d7a5061b04d70b8f35f362f8e70b7bf"
+    "reviewedAt": "2026-09-14T03:36:22.635Z",
+    "hash": "afcff2ddefa15c542dbb8c8c9a637d2ffd08f49d"
   },
   "gallery/breakpoint_multihop": {
     "name": "gallery/breakpoint_multihop",
@@ -1317,15 +1317,15 @@
     "name": "methylation/chromatin_accessibility_6ma",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:43:15.083Z",
-    "hash": "ab15f03bd1f3d78f0fd1283d8c7c0995d57e0c31"
+    "reviewedAt": "2026-09-14T03:46:28.904Z",
+    "hash": "1d39175bfc5e7320d1d52dcf2816a0104d379052"
   },
   "multiway_synteny/ecoli_import_form": {
     "name": "multiway_synteny/ecoli_import_form",
     "status": "good",
     "note": "DONE, the Launch callout is gone. The arrow that crossed the frame to reach the submit button was the largest thing in the figure, and the label it carried ('...then Launch') was doing two jobs; it now reads 'Every assembly in the track becomes a row' and points at the rows box the sentence is about. The Quick start callout stays — which mode the form opens in is not obvious. viewportHeight 340 -> 356 so the button the figure no longer points at is at least fully in frame.",
-    "reviewedAt": "2026-08-04T18:17:20.473Z",
-    "hash": "217a25b65c5b45ae928192bb8069eb34149e8351"
+    "reviewedAt": "2026-09-14T03:46:55.501Z",
+    "hash": "0ce49eca13f613e0ee6fa8f8fab8c4de3b0cde7c"
   },
   "rnaseq/basic": {
     "name": "rnaseq/basic",
@@ -1338,22 +1338,22 @@
     "name": "synteny_human_chimp_cigar_modes",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:48:53.589Z",
-    "hash": "8d5170f3b73d0a5bb104a58afc0fededc72cc312"
+    "reviewedAt": "2026-09-14T04:12:07.707Z",
+    "hash": "9b5b099e2c7e2c4d6ee7bfdd88ff1d4903c97980"
   },
   "synteny_te_picalm_alu": {
     "name": "synteny_te_picalm_alu",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:49:05.692Z",
-    "hash": "9561026f19903bb0b93e80aaf29f4d3d9f759418"
+    "reviewedAt": "2026-09-14T04:12:32.363Z",
+    "hash": "710c8a99b595b34a856fae44877ae9b24b94832e"
   },
   "cookbook_color_by_strand": {
     "name": "cookbook_color_by_strand",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:33:22.200Z",
-    "hash": "485e633e94dfea25860e1ad134b48f6d7edbb6a4"
+    "reviewedAt": "2026-09-14T03:35:43.038Z",
+    "hash": "2544cce84ae5a1159eee30c90c929875b8083735"
   },
   "popgen/fst_in2lt_2L": {
     "name": "popgen/fst_in2lt_2L",
@@ -1379,8 +1379,8 @@
     "name": "qtl/bxd_tyrp1_locus",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-10T15:43:46.034Z",
-    "hash": "83911b562016f6856fa0bbd4133393d7ffd49a03"
+    "reviewedAt": "2026-09-14T04:07:35.675Z",
+    "hash": "931dc0862396dcaad585ce61f3faa8fa43fb1400"
   },
   "encode_hic_loops_arcs": {
     "name": "encode_hic_loops_arcs",
@@ -1467,8 +1467,8 @@
     "name": "multiway_synteny/ecoli_one_vs_all",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-10T15:38:42.116Z",
-    "hash": "00ef19e273803b9fece755c252ab11187abe430d"
+    "reviewedAt": "2026-09-14T03:47:52.858Z",
+    "hash": "1fe0fea6f0194f6b806e1fe95117f77a2ffb78b8"
   },
   "popgen/genotype_matrix_in2lt": {
     "name": "popgen/genotype_matrix_in2lt",
@@ -1487,15 +1487,15 @@
     "name": "popgen/tajimad_cyp6g1",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:46:14.514Z",
-    "hash": "5c4ca3c3000c07f2a1d5058a32079f6cd75acaec"
+    "reviewedAt": "2026-09-14T04:05:27.269Z",
+    "hash": "2fa2d21d09d5494ca3ab6ae818a0733b54bbc877"
   },
   "qtl/bxd_painting_sorted": {
     "name": "qtl/bxd_painting_sorted",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:46:55.612Z",
-    "hash": "41faf3febf002bc4de1043d657327e3bd6bdf4b5"
+    "reviewedAt": "2026-09-14T04:07:33.454Z",
+    "hash": "6cdb6111769d575e15ae94dcedf451146bf1bb27"
   },
   "rnaseq/pkm_mutually_exclusive": {
     "name": "rnaseq/pkm_mutually_exclusive",
@@ -1534,8 +1534,8 @@
     "name": "multiway_synteny/grape_peach_cacao_gene_orthologs",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:44:15.615Z",
-    "hash": "9bc0804cb4e9e4a9f3a286b273102ad2489c0a71"
+    "reviewedAt": "2026-09-14T03:48:01.998Z",
+    "hash": "063efcbe9d19699f8186f1f0d297bffda84303ef"
   },
   "sv_cgiab/cnv_chr17_loh": {
     "name": "sv_cgiab/cnv_chr17_loh",
@@ -1555,15 +1555,15 @@
     "name": "multiway_synteny/ecoli_stx_island",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:43:59.297Z",
-    "hash": "915a92fd2039fbdb231fe20ffa92d09ca11d5c90"
+    "reviewedAt": "2026-09-14T03:47:55.132Z",
+    "hash": "db59c25d9c4a85c6b7f9f72e088394e17855c217"
   },
   "cookbook_color_by_type": {
     "name": "cookbook_color_by_type",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:33:25.618Z",
-    "hash": "f54574300986b214d810fcaa49c4af7209981e05"
+    "reviewedAt": "2026-09-14T03:35:44.625Z",
+    "hash": "b5ac03c90ae7b0e5cf8c1cc30e0a43e77dc48141"
   },
   "cookbook_multiwig": {
     "name": "cookbook_multiwig",
@@ -1622,8 +1622,8 @@
     "name": "multisv_svtype",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-13T17:36:05.561Z",
-    "hash": "eeafa56b94b2f44f02cb8d489d97ac026a1bff6e"
+    "reviewedAt": "2026-09-14T03:46:44.819Z",
+    "hash": "a1e64e65c178dc481b7bea9cc1ef88301b9f3083"
   },
   "pangenome_cactus/depth": {
     "name": "pangenome_cactus/depth",
@@ -1643,8 +1643,8 @@
     "name": "pangenome_cactus/maf",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:44:51.575Z",
-    "hash": "5d4d7748b36d248899b6939c304c5c900ebfd549"
+    "reviewedAt": "2026-09-14T03:52:53.647Z",
+    "hash": "6760dbfdbd595f1b1118d44eb15f382ea2715ccb"
   },
   "pangenome_cactus/pav": {
     "name": "pangenome_cactus/pav",
@@ -1675,59 +1675,59 @@
   },
   "sv_cgiab/cnv_depth_baf": {
     "name": "sv_cgiab/cnv_depth_baf",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-11T05:32:06.800Z",
-    "hash": "7958d78ab93fc0303e17580acd3199ba2cfcd4b1"
+    "status": "bad",
+    "note": "unclear what is going on here, might need red text annotation",
+    "reviewedAt": "2026-09-14T04:09:00.036Z",
+    "hash": "8cc1232c6cd8be95cbe380fbbe1a036acd3e123b"
   },
   "tcga/cohort_cnv_erbb2": {
     "name": "tcga/cohort_cnv_erbb2",
     "status": "good",
     "note": "please render the gene track more compact, and add red text annotation saying what the user is seeing e.g ",
-    "reviewedAt": "2026-08-11T20:08:19.809Z",
-    "hash": "b7b047814ea848e2becc6e5a7f12a43f3ef2b5fc"
+    "reviewedAt": "2026-09-14T04:12:35.034Z",
+    "hash": "b0f37e24c5b94bc266cac783169fef2f9b78f16f"
   },
   "tcga/cohort_cnv_genome": {
     "name": "tcga/cohort_cnv_genome",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-14T23:29:40.984Z",
-    "hash": "a6289bb9899bbb4cf8d5ce11587e46726ce75b4f"
+    "reviewedAt": "2026-09-14T04:12:37.737Z",
+    "hash": "34a735e82ad7ed4928ff92e3a0c930c4ace8b43c"
   },
   "variants/potato_missingness": {
     "name": "variants/potato_missingness",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:49:46.395Z",
-    "hash": "90307caaf75c47a3e571d27ebb19c788ed3de6b8"
+    "reviewedAt": "2026-09-14T04:12:50.615Z",
+    "hash": "140c99b8da48cb95bdaa0546d38da250873b5c31"
   },
   "sv_cgiab/dotplot_hap1": {
     "name": "sv_cgiab/dotplot_hap1",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:48:00.845Z",
-    "hash": "dd226571e19d182555108116a90ecc9334ce557d"
+    "reviewedAt": "2026-09-14T04:09:04.387Z",
+    "hash": "71079ee4e816e1542a6b0eaf8c0520285f9e6e2b"
   },
   "sv_cgiab/dotplot_hap2": {
     "name": "sv_cgiab/dotplot_hap2",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:48:02.742Z",
-    "hash": "1b5992ef05c690505ca7625ee112a42d17123039"
+    "status": "bad",
+    "note": "ideally combine hap 1 and hap2 into a single multi-part figure.  could even use jbrowse workspaces if it helps",
+    "reviewedAt": "2026-09-14T04:09:33.154Z",
+    "hash": "439932c43f3e444e299435e56d65c39384062a72"
   },
   "pangenome_cactus/graph_correspondence": {
     "name": "pangenome_cactus/graph_correspondence",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:44:49.623Z",
-    "hash": "2dfd7ff820a6d01dac4aed1be0fe31aea40a4f57"
+    "reviewedAt": "2026-09-14T03:52:50.736Z",
+    "hash": "140c2f390a238e6798b0c7fe4ecc4028c2c2aa6d"
   },
   "alignments/height_mode_fit": {
     "name": "alignments/height_mode_fit",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:30:55.827Z",
-    "hash": "0237668e55e90729dc7e60e1799687a5428c2b38"
+    "reviewedAt": "2026-09-14T03:24:40.121Z",
+    "hash": "8d8ea4b93bc582bcae86dd62618bc335655cef50"
   },
   "alignments/height_mode_fixed": {
     "name": "alignments/height_mode_fixed",
@@ -1785,10 +1785,10 @@
   },
   "multirow/display_types_menu": {
     "name": "multirow/display_types_menu",
-    "status": "bad",
-    "note": "might need regen i think pastel colors turned more bold",
-    "reviewedAt": "2026-08-24T05:43:39.796Z",
-    "hash": "d28d13edd128327cde288f0bbe437cf70b928bbe"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:46:37.973Z",
+    "hash": "cb50f6051f7eddd0ea9a0318d52302706c97dcc9"
   },
   "pangenome_cactus/boxed_locus_synteny": {
     "name": "pangenome_cactus/boxed_locus_synteny",
@@ -1828,8 +1828,8 @@
     "name": "synteny_hg38_hs1_tnnt3",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:48:51.769Z",
-    "hash": "b652e7ce69f8e0c87e892a018e9f7eb6bf312fe2"
+    "reviewedAt": "2026-09-14T04:12:06.334Z",
+    "hash": "2b80df768dd39a4c3decf892b0ffc6418a44775f"
   },
   "variants/potato_missingness_before": {
     "name": "variants/potato_missingness_before",
@@ -1863,8 +1863,8 @@
     "name": "genomes_synteny/ribbon_settings",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:38:49.146Z",
-    "hash": "3888ffe0715a8f3c22ff6dbe9263e80791212451"
+    "reviewedAt": "2026-09-14T03:39:30.225Z",
+    "hash": "8f52a10179028249b9072b4d7b2b18aa28e6d39a"
   },
   "genomes_synteny/launch_menu": {
     "name": "genomes_synteny/launch_menu",
@@ -1896,17 +1896,17 @@
   },
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:46:10.107Z",
-    "hash": "4b2c780e5c08838aa1abee10d28ec85a0b542c5b"
+    "status": "bad",
+    "note": "the graphgenomeviewer lines are overly thick IMO in nearly all screenshots, consider thinning",
+    "reviewedAt": "2026-09-14T04:05:16.614Z",
+    "hash": "75e32b43473923bf01c67121585c941481a32cfd"
   },
   "genomes_synteny/launch_sequence": {
     "name": "genomes_synteny/launch_sequence",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:38:43.846Z",
-    "hash": "80a09c45fb4202a78d1517b2771f38728102857d"
+    "status": "bad",
+    "note": "somewhat complex workflow. might be nice if it got user there in one step. i am unsure if we should make curves and transparent indels the default",
+    "reviewedAt": "2026-09-14T03:39:25.918Z",
+    "hash": "1b8336da29c4a55516d2de70e1cda0a934ff2626"
   },
   "pangenome/pangenome_variants": {
     "name": "pangenome/pangenome_variants",
@@ -1919,8 +1919,8 @@
     "name": "multiway_synteny/ecoli_launch_from_selection",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:43:53.714Z",
-    "hash": "1d79729754268d48e74c2c107657b896c2212b52"
+    "reviewedAt": "2026-09-14T03:47:48.385Z",
+    "hash": "f469f0448f91c8b10177ac4c7e2c05cd0db63961"
   },
   "desktop-ispcr-results": {
     "name": "desktop-ispcr-results",
@@ -1945,10 +1945,10 @@
   },
   "cnv1000g/zarr_cohort": {
     "name": "cnv1000g/zarr_cohort",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-14T13:13:02.641Z",
-    "hash": "16339cf75ce44f00529a1c3258199a5a192ca49f"
+    "status": "bad",
+    "note": "this is a 'visually interesting' figure, but can it be improved? is there a better clustering possible beyondwhat we offer?",
+    "reviewedAt": "2026-09-14T03:35:40.840Z",
+    "hash": "58faa9c49e994043b3a1e93e2f75e895441170c7"
   },
   "desktop-cli-config": {
     "name": "desktop-cli-config",
@@ -1959,10 +1959,10 @@
   },
   "pangenome/hprc_c4_subgraph": {
     "name": "pangenome/hprc_c4_subgraph",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-14T02:35:28.045Z",
-    "hash": "d2444894745a9517f7bf47b83d19dfdc8d19cc47"
+    "status": "bad",
+    "note": "are you happy with this figure? c4 is complicated. we should just show it just to show-it-sake",
+    "reviewedAt": "2026-09-14T03:56:21.178Z",
+    "hash": "da4e48245a4a9b9e950daf08e560ccb88a4a56ef"
   },
   "pangenome/hprc_graph_vs_callset": {
     "name": "pangenome/hprc_graph_vs_callset",
@@ -2043,10 +2043,10 @@
   },
   "pangenome/rgfa_launch_out_menu": {
     "name": "pangenome/rgfa_launch_out_menu",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-08T00:17:00.463Z",
-    "hash": "c78b7d4002dac4e5ae7476651139524b95d35bbf"
+    "status": "bad",
+    "note": "bad use of y-screen real estate",
+    "reviewedAt": "2026-09-14T04:04:05.909Z",
+    "hash": "0f54365029436a1dffbac211d8b521762b5f3065"
   },
   "pangenome/hprc_lpa_kiv2": {
     "name": "pangenome/hprc_lpa_kiv2",
@@ -2099,8 +2099,8 @@
     "name": "dog10k-cyp1a2-cohort-copy-number",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:34:07.039Z",
-    "hash": "9883df5cf2e2e01988e7ba0d82112a3d8492573e"
+    "reviewedAt": "2026-09-14T03:36:31.086Z",
+    "hash": "886c34dffa2eb31daea1ddc983daa702ffa1747f"
   },
   "dog10k-cyp1a2-copy-number": {
     "name": "dog10k-cyp1a2-copy-number",
@@ -2113,8 +2113,8 @@
     "name": "dog10k-cyp1a2-nonsense",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:34:12.447Z",
-    "hash": "934b660819321e12c9871918845031b8661d54f3"
+    "reviewedAt": "2026-09-14T03:36:34.187Z",
+    "hash": "5a3326f511fec97693152823470145dd144553c9"
   },
   "dog10k-denr-sine-deletions": {
     "name": "dog10k-denr-sine-deletions",
@@ -2127,15 +2127,15 @@
     "name": "dog10k-wolfdog-ancestry",
     "status": "good",
     "note": "much less text annotation please",
-    "reviewedAt": "2026-08-10T15:32:43.329Z",
-    "hash": "22be5c197766fd2ee53e90bdaa91cb431b91c13e"
+    "reviewedAt": "2026-09-14T03:36:51.230Z",
+    "hash": "bbfbac33f27b4b4f7c4e3ac64b33126a1f3b6295"
   },
   "mcscan_anchors": {
     "name": "mcscan_anchors",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:49:59.221Z",
-    "hash": "ec193d8e96559bc8b155d92f6c950fca1e530bf2"
+    "reviewedAt": "2026-09-14T03:46:26.103Z",
+    "hash": "355a7e6c2c4ad3a80d9a8cabb85e4cfc9ce95b57"
   },
   "sv_synteny/linear_synteny_ortholog_colors": {
     "name": "sv_synteny/linear_synteny_ortholog_colors",
@@ -2148,22 +2148,22 @@
     "name": "dog10k-nhej1-cea-deletion",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:34:24.711Z",
-    "hash": "84a79c9b0557fd1e86811a6d6a677f11de823ab5"
+    "reviewedAt": "2026-09-14T03:36:48.381Z",
+    "hash": "212189f714e7248aed6bb5a17dba695e544ecdb6"
   },
   "pangenome/hprc_amylase_graph": {
     "name": "pangenome/hprc_amylase_graph",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-14T02:35:25.302Z",
-    "hash": "934248e819e459344a3e2f7b1bcd9f7438a6d833"
+    "status": "bad",
+    "note": "are you happy with this figure? amylase is complicated. we should just show it just to show-it-sake",
+    "reviewedAt": "2026-09-14T03:56:08.889Z",
+    "hash": "4d188ea769c2410d428b25df7e44ebfab04393a2"
   },
   "dog10k-igf1-haplotype": {
     "name": "dog10k-igf1-haplotype",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:34:21.493Z",
-    "hash": "d6cf78e159bdb64d5bf7b3e742b01260ac55bf6b"
+    "reviewedAt": "2026-09-14T03:36:46.259Z",
+    "hash": "137901f9ca24de47c29d03f7b954f3acfb8b2c64"
   },
   "dog10k-slc28a3-copy-number": {
     "name": "dog10k-slc28a3-copy-number",
@@ -2174,10 +2174,10 @@
   },
   "ld/anopheles_2la": {
     "name": "ld/anopheles_2la",
-    "status": "good",
-    "note": "Happy with the design -- two populations at one locus, each panel over the\ngenotypes it was computed from, the second one white, which is the control the\nfirst needs. Not with one thing in it, which is now fixed.\n\nGabon's five heterozygotes are the last five of its 69 rows, the lane being\ngrouped in dosage order, so their band is the lane's own bottom edge: 12 px of\nblue lying against the app frame's border. The spec already recorded that it is\nnot cropped and that it looks cropped, which is worse than cropped -- a reader\nwho takes it for a clip discounts the sentence above it, and that sentence is the\nwhole reason the Gabon panel is allowed to be white.\n\nAn arrow settles it, and does the job the callout's parenthetical was doing, so\nthat sentence gets its own line back and stops describing a position. Head at\nfracY 0.94, the band's centre rather than the border it sits on.\n\nNothing else moved: the remaining white is argued in the spec against two\nalternatives that were rendered and rejected, and the Gabon panel's emptiness is\nthe finding rather than slack.",
-    "reviewedAt": "2026-08-15T01:04:14.367Z",
-    "hash": "de00931baa98ddef5ce00dae7ccc7b76f9715812"
+    "status": "bad",
+    "note": "too much text in the red boxes. reduce the red text boxes to the bare minimum including just saying \"LD with many inversions in population - Cameroon\" at top and \"LD w/ very few inversions - Gabon\" or something like that, making it clear, via larger boxes over the top and bottom two and bottom two tracks are shared",
+    "reviewedAt": "2026-09-14T03:43:21.920Z",
+    "hash": "4abd0478cddda264b0a2de63c3287d2d5419e672"
   },
   "ld/lct_pooled_vs_panel": {
     "name": "ld/lct_pooled_vs_panel",
@@ -2204,8 +2204,8 @@
     "name": "multiway_synteny/blocks_one_vs_all",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:43:51.445Z",
-    "hash": "d7b929fd9a6c84bb75fa719a22a2172a00900498"
+    "reviewedAt": "2026-09-14T03:46:47.010Z",
+    "hash": "b680b201bbe2c181557c4325cc239ead12aac68a"
   },
   "sv_synteny/ortholog_colors": {
     "name": "sv_synteny/ortholog_colors",
@@ -2223,17 +2223,17 @@
   },
   "pangenome/rgfa_paa_bubble": {
     "name": "pangenome/rgfa_paa_bubble",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:46:05.324Z",
-    "hash": "59a21cf96dc02675db7868986889d006641c7bb5"
+    "status": "bad",
+    "note": "calling things a deletion in the graph is somewhat confusing because its always 'relative to what'. we might reconsider labeling 'deletion' at all",
+    "reviewedAt": "2026-09-14T04:04:47.306Z",
+    "hash": "fe4ffcb34d8d5b9577c3cde5927da911cb53807d"
   },
   "pangenome/hprc_cfhr_deletion": {
     "name": "pangenome/hprc_cfhr_deletion",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:45:00.040Z",
-    "hash": "07c6be73e92287be082a7ee71782651f3700de01"
+    "reviewedAt": "2026-09-14T03:56:24.186Z",
+    "hash": "5902d1dbf65bac12bc991ec718b3d1c4fe9d0554"
   },
   "dog10k-fgf4-retrogene": {
     "name": "dog10k-fgf4-retrogene",
@@ -2243,10 +2243,10 @@
   },
   "pangenome/graph_context": {
     "name": "pangenome/graph_context",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:44:55.412Z",
-    "hash": "800d0c467819bd70d5a44336c20a94c9ede83bbc"
+    "status": "bad",
+    "note": "are you happy with this",
+    "reviewedAt": "2026-09-14T03:54:43.631Z",
+    "hash": "cf85f0ab63569cb52f0b5764b810c7fcef2a49c9"
   },
   "dog10k-size-fst-scan": {
     "name": "dog10k-size-fst-scan",
@@ -2259,8 +2259,8 @@
     "name": "dog10k-fgf4-retrogene-synteny",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:34:17.420Z",
-    "hash": "61f1720312e6e3d63f7c23f413a45d9927315cad"
+    "reviewedAt": "2026-09-14T03:36:43.005Z",
+    "hash": "51ac4c2d8769cffab0b785bda90167122b55613f"
   },
   "pangenome/pggb_collapsed_repeat": {
     "name": "pangenome/pggb_collapsed_repeat",
@@ -2294,15 +2294,15 @@
     "name": "scrna/percell_lyz",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-10T15:44:05.286Z",
-    "hash": "96b03cd982481cd02f47bf5b2a2820489506d8a3"
+    "reviewedAt": "2026-09-14T04:08:07.515Z",
+    "hash": "5744729ae42fecc7f490df176622d43ce74f09c8"
   },
   "cancer_sv/k562_bcr_abl_split": {
     "name": "cancer_sv/k562_bcr_abl_split",
-    "status": "good",
-    "note": "BOTH. The legend's arc section says Split alignment (inverted) / (same strand)\n/ (interchromosomal) -- SPLIT_JUNCTION_LABELS is the overlay's own wording table\nso both existing rows moved together, and the interchromosomal row is new there:\nCATEGORY_LEGEND names that category for reads and arcs alike, and its bare\n'Inter-chromosomal' is a property of the pair rather than of the mark. On a curve\nthe mark IS the split alignment. The read-fill rows keep 'Split segment', which\nis the distinction the two legend headings already draw.\n\nreadConnectionsHeight 35 -> 90. At 35 this frame's two junctions had domes close\nenough to read as one mark stepping over the middle panel; they are separately\nweighted now, which is what the frame is comparing. viewportHeight follows to\n1816, the 25.3 css px the run reported newly below the fold.\n\nThree other figures moved on the rename alone and were re-pushed:\nalignments/read_cloud and inversion_long_read key split rows,\ncancer_sv/derivative_inserts keys the interchromosomal one. Found structurally\n(every spec carrying both showLegend and a connections mode) rather than by\npixels, since a label edit moves no coloured pixel.",
-    "reviewedAt": "2026-08-15T01:04:12.667Z",
-    "hash": "a259e3c13721d12b13f78e3d23d1042561a67670"
+    "status": "bad",
+    "note": "are you happy with this screenshot? it is a bit tall and noisy.",
+    "reviewedAt": "2026-09-14T03:31:40.709Z",
+    "hash": "3ab138a755ced3eaafffc45224fa92b0cfabc4e6"
   },
   "desktop-add-track-steps": {
     "name": "desktop-add-track-steps",
@@ -2348,10 +2348,10 @@
   },
   "cancer_sv/derivative_inserts": {
     "name": "cancer_sv/derivative_inserts",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:31:57.725Z",
-    "hash": "857a0032cb68a1fbd546988af47444dce917e611"
+    "status": "bad",
+    "note": "see notes in cancer_sv/derivative_autogenerated. this figure is better, showing the reads, but need to be careful stuff",
+    "reviewedAt": "2026-09-14T03:30:33.262Z",
+    "hash": "51d2007be68c1124b0b1127f7632453467fc1e14"
   },
   "cancer_sv/multihop_tumour_vs_normal": {
     "name": "cancer_sv/multihop_tumour_vs_normal",
@@ -2369,10 +2369,10 @@
   },
   "cancer_sv/derivative_synteny": {
     "name": "cancer_sv/derivative_synteny",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:32:04.012Z",
-    "hash": "220e0330d590ac434643ffd0b6330ba4139e11a9"
+    "status": "bad",
+    "note": "see notes in cancer_sv/derivative_autogenerated. this figure is better, showing the reads, but need to be careful stuff. the coloring of red vs bluesomewhat unclear also, usage of split alignments unclear, etc.",
+    "reviewedAt": "2026-09-14T03:30:59.308Z",
+    "hash": "4907f413c3a9bd26a237e8b9a754bd14b52f8da2"
   },
   "dog10k-size-fst-scan-genome": {
     "name": "dog10k-size-fst-scan-genome",
@@ -2392,43 +2392,43 @@
     "name": "pangenome/hprc_chm13_allele",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-11T15:47:49.515Z",
-    "hash": "987bba72cd75650a322a4c6d110de084b11aab3a"
+    "reviewedAt": "2026-09-14T03:56:30.958Z",
+    "hash": "9087ceb126eca8ce8c10321b9987c4fa82b92e95"
   },
   "dotplot_self_chry": {
     "name": "dotplot_self_chry",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:34:41.449Z",
-    "hash": "5db70bdbbc85139a5998c6d716be058cf6947c41"
+    "reviewedAt": "2026-09-14T03:36:57.045Z",
+    "hash": "e0a42f1d34458276fa333af7a8634d240175b8f6"
   },
   "orthofinder_synteny/grasses": {
     "name": "orthofinder_synteny/grasses",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:44:22.512Z",
-    "hash": "3bc2808828cc25d8c5c9ea9170f9f717c4297947"
+    "reviewedAt": "2026-09-14T03:52:03.591Z",
+    "hash": "62b715239979fa381ac490640f566f23dff72ab2"
   },
   "orthofinder_synteny/vertebrates": {
     "name": "orthofinder_synteny/vertebrates",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:44:29.164Z",
-    "hash": "bc6513dc45abf899c5d0186f5fb82badae9fa9be"
+    "reviewedAt": "2026-09-14T03:52:10.928Z",
+    "hash": "c26e5e5c669dc929e73a2ea60c88532bc621d5db"
   },
   "orthofinder_synteny/wheat": {
     "name": "orthofinder_synteny/wheat",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:44:32.781Z",
-    "hash": "6bf937fe59f2229fb065766e8608ea967583a2a1"
+    "reviewedAt": "2026-09-14T03:52:12.944Z",
+    "hash": "dc3091f0ebec8ec1b781c4a766a40071488113d5"
   },
   "hic/faint_contacts": {
     "name": "hic/faint_contacts",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:39:57.417Z",
-    "hash": "d4bf3d9c2c460e30ce0b67a0ecc568cc5c9985ea"
+    "reviewedAt": "2026-09-14T03:40:53.139Z",
+    "hash": "8430e292e15eb3e4c7eb882465da4e194512e299"
   },
   "methylation/hg002_snrpn_ungrouped": {
     "name": "methylation/hg002_snrpn_ungrouped",
@@ -2441,8 +2441,8 @@
     "name": "orthofinder_synteny/wheat_4a",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:44:35.562Z",
-    "hash": "c523ba0f937fc44d1f0ebd27815833519d55b26f"
+    "reviewedAt": "2026-09-14T03:52:15.344Z",
+    "hash": "a353b67d16a8f591997e1feaa520965d3e09ee3c"
   },
   "pangenome_cactus/builders": {
     "name": "pangenome_cactus/builders",
@@ -2462,8 +2462,8 @@
     "name": "scatac/pbmc5k_marker_swap",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:47:08.356Z",
-    "hash": "0e3142cf78461f45874af1283e758c2bdf117f22"
+    "reviewedAt": "2026-09-14T04:08:05.293Z",
+    "hash": "fcd1fe0b7612889996dd34b70aa61976fefe853f"
   },
   "tcga/mutations_tp53_subtype": {
     "name": "tcga/mutations_tp53_subtype",
@@ -2474,31 +2474,31 @@
   },
   "cancer_sv/derivative_autogenerated": {
     "name": "cancer_sv/derivative_autogenerated",
-    "status": "good",
-    "note": "DONE by reordering, which is what the repeat was about. Last round's answer was that the simple example already exists (the fold-back, two segments on one chromosome) and is deliberately SECOND so the harder case comes first. You asked again unchanged, so that ordering is the thing being rejected, not the figure being missed. cancer_sv.md now opens the reconstruction section on the fold-back as the smallest thing the menu produces, and reaches this four-segment allele after it under its own heading. The der(3) prose also stops hiding why this frame is hard: the reconstruction is anchored on the window the pileup was showing, so the reference row is tens of kb of chr3 with the two insert loci in a few pixels at its right edge, and the ribbons reaching them are hairlines because the segments are hairlines. That is said on the page now instead of being discovered.  previous notes:  might also be good to get a more clear example of an SV, this one is complex.  previous notes: Answering the ribbon question first, because it is the one with a fact behind it: yes, expected, and real. The two right-hand pieces are 199 bp of chr10 and 183 bp of chr12 inverted, against a 61 kb allele that is 52.3 kb of chr3 plus an 8.4 kb inverted chr3 return -- the sizes are on the figure itself, written by the segment track along the allele, and they come from derive's PAF rather than from the picture. So the ribbons are hairlines because the segments are hairlines, about 0.3% of the allele each, not because anything failed to align. They are templated inserts at the junction, they are the reason this event needs four segments rather than two, and the very next figure (cancer_sv/derivative_inserts) opens those junctions at base scale where the same two pieces are ribbons as wide as the chr3 arms and the realigned reads cross every join at flat depth. Incidental would look like one read's worth of support; this path has 26 reads crossing it in the same order and orientation. The gene track is chaotic for the same reason and the caption now says so rather than leaving it to be discovered: the reference row is a three-locus window whose second and third loci are a few hundred bases wide, so at the right-hand edge two loci's genes plus the gene track carried up from the launching view collide in a few pixels. That crowding IS the 199 bp and 183 bp, drawn honestly. On aligning reads to the derived contig outside JBrowse and plotting them here: that is cancer_sv/realigned_reads, one section down -- derive's consensus with the spanning reads realigned onto it, beside the same molecules against hg38 where they are torn in four, a real BAM on both sides, and both panes now labelled with which assembly they were aligned to.  FIXED: the dialog frame now carries the route that opens it -- 'Track menu -> Launch -> Reconstruct derivative allele...' -- in the same shape as the pill on cancer_sv/multihop_reads, naming the three clicks this stage's own actions drive, so the label and the capture cannot drift. The result frame also drops the reference-sequence lane (see the foldback note). On the 'more clear example of an SV': the fold-back figure directly below IS that example -- two segments rather than four, one chromosome rather than three -- and it is deliberately the second one so the harder case comes first.",
-    "reviewedAt": "2026-08-16T03:33:52.751Z",
-    "hash": "7fc1ad54389ea62c6dde83a4b5060327e431c6e2"
+    "status": "bad",
+    "note": "this looks 'visually interesting' but what evidence is there that this is 'real'? i dont know if we satisfy this. to some extent, this leads me to believe that we need to be very careful here. i thought reads aligned to derivative is valuable but that may be done offline. we may want to even remove in-app derivative allele calculation and make it external only if we cant nail this",
+    "reviewedAt": "2026-09-14T03:31:12.553Z",
+    "hash": "9f208a674ef5410c37aaa67b379f4fd2ada9e940"
   },
   "cancer_sv/foldback_reconstruction": {
     "name": "cancer_sv/foldback_reconstruction",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-09T21:35:58.399Z",
-    "hash": "6f5b0dc2ddad10ff83db15c53666a0009f12e757"
+    "status": "bad",
+    "note": "this looks 'visually interesting' but what evidence is there that this is 'real'? i dont know if we satisfy this. to some extent, this leads me to believe that we need to be very careful here. i thought reads aligned to derivative is valuable but that may be done offline. we may want to even remove in-app derivative allele calculation and make it external only if we cant nail this",
+    "reviewedAt": "2026-09-14T03:31:14.477Z",
+    "hash": "13770d08d76a95108701a7e23a764c9687717f31"
   },
   "hic/overlay_controls": {
     "name": "hic/overlay_controls",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:40:04.769Z",
-    "hash": "132b3fd1238f7607408ceed8bac4bcb08d1ea2f8"
+    "reviewedAt": "2026-09-14T03:41:10.773Z",
+    "hash": "6e0ab23d005b063cdb5c6e9c150713324ea1b959"
   },
   "pangenome/graph_resolution": {
     "name": "pangenome/graph_resolution",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:44:57.501Z",
-    "hash": "ce9ab04bbf17ad54f2fa44936fc8f188acada66d"
+    "reviewedAt": "2026-09-14T03:55:48.413Z",
+    "hash": "77ccfeba52a42b9c1d730e01e1efd3a65747958b"
   },
   "cancer_sv/realigned_reads": {
     "name": "cancer_sv/realigned_reads",
@@ -2511,8 +2511,8 @@
     "name": "cancer_sv/split_view_from_breakend",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:33:04.726Z",
-    "hash": "9ffd2337445b6e18ca0416b0128b32b840b0026c"
+    "reviewedAt": "2026-09-14T03:32:45.379Z",
+    "hash": "54daee82dcecdc3d22784896155bae6a7e5e7ea1"
   },
   "hic/whole_genome": {
     "name": "hic/whole_genome",
@@ -2525,15 +2525,15 @@
     "name": "methylation/hg002_snrpn_group_by_hp",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:43:21.266Z",
-    "hash": "b29b326d0a0062cd819fe1508e5e7ab1300e0b6f"
+    "reviewedAt": "2026-09-14T03:46:32.909Z",
+    "hash": "bafa65adda53130d35f9b9a7e5e1178e0854d2e9"
   },
   "multisv_rhd": {
     "name": "multisv_rhd",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:43:43.653Z",
-    "hash": "3c316a2565faa0abd32dda51bde388f967cb9b4b"
+    "reviewedAt": "2026-09-14T03:46:42.045Z",
+    "hash": "9747fe412eb8cbaf53bbf5eb03e72214bf448466"
   },
   "alignments/strand_split_coverage": {
     "name": "alignments/strand_split_coverage",
@@ -2551,17 +2551,17 @@
   },
   "hic/compartment_switch": {
     "name": "hic/compartment_switch",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:39:52.844Z",
-    "hash": "fdd382d320711cd3809e6e3d6645fad161b8e2e9"
+    "status": "bad",
+    "note": "this is sort of unclear, why is this interesting. how would anyone know this is an important result",
+    "reviewedAt": "2026-09-14T03:40:48.660Z",
+    "hash": "ff71455921c3a180606c80c78c0b29abe985c422"
   },
   "hic/loops_and_domains": {
     "name": "hic/loops_and_domains",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:40:03.134Z",
-    "hash": "9129abce376a10bdd72a40922cb36b75d004c6d2"
+    "status": "bad",
+    "note": "this is sort of unclear, why is this interesting. how would anyone know this is an important result",
+    "reviewedAt": "2026-09-14T03:41:08.495Z",
+    "hash": "25e43cee5e26c6606a4b92197d2e7714640f72cc"
   },
   "jbrowse-img/gene_name_search": {
     "name": "jbrowse-img/gene_name_search",
@@ -2607,10 +2607,10 @@
   },
   "ld/lct_haploblock": {
     "name": "ld/lct_haploblock",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:40:59.849Z",
-    "hash": "fe4a3e34f94614608311efb1aea485e8c7396568"
+    "status": "bad",
+    "note": "are you happy with this figure? suggest further improvements as needed",
+    "reviewedAt": "2026-09-14T03:43:35.302Z",
+    "hash": "6dab9a2fa13872facc9d2deaa0c2e6ed204fea94"
   },
   "rnaseq/strand_split_coverage": {
     "name": "rnaseq/strand_split_coverage",
@@ -2623,8 +2623,8 @@
     "name": "maf_summary_tier",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:42:48.657Z",
-    "hash": "268f4da489c5b35d8db57c82e27aeabd699079b9"
+    "reviewedAt": "2026-09-14T03:45:54.515Z",
+    "hash": "a8f4fb2afa40226da21713a15e5f9714745d413e"
   },
   "mcscan_synteny/gene_level": {
     "name": "mcscan_synteny/gene_level",
@@ -2635,10 +2635,10 @@
   },
   "orthofinder_synteny/wheat_4a_urartu": {
     "name": "orthofinder_synteny/wheat_4a_urartu",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:44:45.788Z",
-    "hash": "99b7363a39bb2fe5a5bddcdaa52670dd55039298"
+    "status": "bad",
+    "note": "too similar to orthofinder_synteny/wheat_4a, just delete or something.",
+    "reviewedAt": "2026-09-14T03:52:31.066Z",
+    "hash": "7ea3432028d39c37579e75a9e0bcaed7d244319e"
   },
   "multisv_rhd_dosage": {
     "name": "multisv_rhd_dosage",
@@ -2649,17 +2649,17 @@
   },
   "genomes_msa/launch_sequence": {
     "name": "genomes_msa/launch_sequence",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:38:10.752Z",
-    "hash": "f2c857f8415b549feb57dd711814d510969cf417"
+    "status": "bad",
+    "note": "are you happy with this figure? any further changes or user interface improvements?",
+    "reviewedAt": "2026-09-14T03:38:40.374Z",
+    "hash": "6aedb8c8e9a3292ef7b33af41fc8de827594e4d9"
   },
   "genomes_msa/pyrin_residues": {
     "name": "genomes_msa/pyrin_residues",
     "status": "bad",
-    "note": "might benefit from zooming out the msa more\n\nprevious notes:\nsee notes in genomes_msa/launch_sequence   See genomes_msa/launch_sequence: both halves need a msaview plugin deploy, and the species list is already fully checked.  STILL FLAGGED, and now for a NEW reason: msaview 2.8.0's wider species list moves this figure's columns. Measured -- with twelve rows, ten of them are pure gap at the columns the view opens on, because the run includes proteins whose N termini extend past the human one (rhesus 1541 aa, gorilla 1556 aa against human 1473) and the alignment's opening columns are that extension, with the pyrin columns further right. So the regenerated capture showed leading gaps rather than the residues under the pyrin block, which is the opposite of this figure's point. I RESTORED THE COMMITTED PNG rather than ship a fresh figure under a caption that no longer described it, and said in the tutorial that this one is a deliberately small five-species run. TO FIX PROPERLY, one of: drive the launch dialog to uncheck the species this comparison does not need (a spec action per checkbox, keeps the columns where the view opens them), or scroll the MSA view to the pyrin columns, which needs something the spec can reach -- there is no scrollX prop and the view is built by the plugin's launch, so today the only in-app lever is the 'Hide columns w/ >100% gaps' slider.  FIXED, and declaratively, which was the review ask. jbrowse-plugin-msaview 2.8.2 teaches LaunchView-MsaView a fourth alignment source, orthologParams, so the Orthologs tab is reachable from a session spec: this spec no longer right-clicks, opens the dialog or submits, and allowedGappyness does the aiming. Measured on this alignment (1705 columns, twelve rows): the gorilla alone holds columns 0-31 (91.7% gaps) and the gorilla with the horse holds 32-81 (83.3%), while the human M and eight other rows start together at column 82, so allowedGappyness 80 drops both runs and keeps anything a third row reaches (75%). The view opens on the human N terminus with the pyrin call nine residues in. The slider route was tried first and is a dead end: the testid reaches the control (react-msaview 5.7.2) but PageDown does not move the value. Rows read off the model rather than the picture -- Pyrin_NALPs on human, chimpanzee, gorilla and marmoset; a generic DD on horse and rhesus; sheep, cattle and dog carrying residues with nothing called; mouse and guinea pig gap because their rows begin further right. The tutorial paragraph calling this a five-species run is gone with it. Still true, and still the view's own doing rather than the frame's: the domain KEY is clipped by the MsaView fixed height. CORRECTION to this note above: react-msaview DOES have a scrollX snapshot prop (and highlightColumns is a launch arg), so the sentence saying there is none is wrong and should not be used to rule that lever out. It is a pixel offset clamped against maxScrollX, which is derived from the loaded alignment, so a value set at launch may be clamped to 0 before the data lands -- untested, because allowedGappyness is the better lever anyway: it says something about the columns rather than about a scroll position, so it survives a change in row count or colWidth. RETRACTED, the part of this note about the domain KEY: it is not clipped. Measured on the figure geometry -- 18 entries, Paper 330px (60% of the 550px MSA panel) ending at y=813, nearest clipping ancestor ending at 855, zero rows past that edge, and the inner div scrolls (clientHeight 296, scrollHeight 313). It is a scrollable key sized off the view, and a scrollable list whose last row is half-visible is indistinguishable from truncation in a screenshot, which is where this claim came from every time. Nothing to fix in react-msaview; making the last entries readable without scrolling would be a design change, argued on its own merits. Recorded in react-msaview agent-docs/ideas.md so it does not get re-opened.",
-    "reviewedAt": "2026-08-24T05:38:25.758Z",
-    "hash": "a1cc6f093af634bd4efef8998eccc8042fbb0d80"
+    "note": "are you happy with this figure? any further changes or user interface improvements? might benefit from zooming out the msa more\n\nprevious notes:\nsee notes in genomes_msa/launch_sequence   See genomes_msa/launch_sequence: both halves need a msaview plugin deploy, and the species list is already fully checked.  STILL FLAGGED, and now for a NEW reason: msaview 2.8.0's wider species list moves this figure's columns. Measured -- with twelve rows, ten of them are pure gap at the columns the view opens on, because the run includes proteins whose N termini extend past the human one (rhesus 1541 aa, gorilla 1556 aa against human 1473) and the alignment's opening columns are that extension, with the pyrin columns further right. So the regenerated capture showed leading gaps rather than the residues under the pyrin block, which is the opposite of this figure's point. I RESTORED THE COMMITTED PNG rather than ship a fresh figure under a caption that no longer described it, and said in the tutorial that this one is a deliberately small five-species run. TO FIX PROPERLY, one of: drive the launch dialog to uncheck the species this comparison does not need (a spec action per checkbox, keeps the columns where the view opens them), or scroll the MSA view to the pyrin columns, which needs something the spec can reach -- there is no scrollX prop and the view is built by the plugin's launch, so today the only in-app lever is the 'Hide columns w/ >100% gaps' slider.  FIXED, and declaratively, which was the review ask. jbrowse-plugin-msaview 2.8.2 teaches LaunchView-MsaView a fourth alignment source, orthologParams, so the Orthologs tab is reachable from a session spec: this spec no longer right-clicks, opens the dialog or submits, and allowedGappyness does the aiming. Measured on this alignment (1705 columns, twelve rows): the gorilla alone holds columns 0-31 (91.7% gaps) and the gorilla with the horse holds 32-81 (83.3%), while the human M and eight other rows start together at column 82, so allowedGappyness 80 drops both runs and keeps anything a third row reaches (75%). The view opens on the human N terminus with the pyrin call nine residues in. The slider route was tried first and is a dead end: the testid reaches the control (react-msaview 5.7.2) but PageDown does not move the value. Rows read off the model rather than the picture -- Pyrin_NALPs on human, chimpanzee, gorilla and marmoset; a generic DD on horse and rhesus; sheep, cattle and dog carrying residues with nothing called; mouse and guinea pig gap because their rows begin further right. The tutorial paragraph calling this a five-species run is gone with it. Still true, and still the view's own doing rather than the frame's: the domain KEY is clipped by the MsaView fixed height. CORRECTION to this note above: react-msaview DOES have a scrollX snapshot prop (and highlightColumns is a launch arg), so the sentence saying there is none is wrong and should not be used to rule that lever out. It is a pixel offset clamped against maxScrollX, which is derived from the loaded alignment, so a value set at launch may be clamped to 0 before the data lands -- untested, because allowedGappyness is the better lever anyway: it says something about the columns rather than about a scroll position, so it survives a change in row count or colWidth. RETRACTED, the part of this note about the domain KEY: it is not clipped. Measured on the figure geometry -- 18 entries, Paper 330px (60% of the 550px MSA panel) ending at y=813, nearest clipping ancestor ending at 855, zero rows past that edge, and the inner div scrolls (clientHeight 296, scrollHeight 313). It is a scrollable key sized off the view, and a scrollable list whose last row is half-visible is indistinguishable from truncation in a screenshot, which is where this claim came from every time. Nothing to fix in react-msaview; making the last entries readable without scrolling would be a design change, argued on its own merits. Recorded in react-msaview agent-docs/ideas.md so it does not get re-opened.",
+    "reviewedAt": "2026-09-14T03:38:52.247Z",
+    "hash": "8ceec4987ad8e7735cff1d96b083364f32848494"
   },
   "cancer_sv/multihop_reads": {
     "name": "cancer_sv/multihop_reads",
@@ -2672,15 +2672,15 @@
     "name": "feature_plotting_threads",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-07T03:37:33.792Z",
-    "hash": "ac1986723365ffbfe89bdeea0cd355101bfe437e"
+    "reviewedAt": "2026-09-14T03:37:14.868Z",
+    "hash": "08de35889a952c96fceec33d37ee668d428b355b"
   },
   "gpu_display_lifecycle": {
     "name": "gpu_display_lifecycle",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:39:02.935Z",
-    "hash": "2432497c204aadb4e584189f2e9bc826d835c183"
+    "reviewedAt": "2026-09-14T03:39:32.887Z",
+    "hash": "d1ca8f9bcb2a32f7beee23184d57840fedd7ff3a"
   },
   "homoeolog_synteny/oat_homoeologs": {
     "name": "homoeolog_synteny/oat_homoeologs",
@@ -2712,9 +2712,9 @@
   "pangenome/hprc_whole_chromosome": {
     "name": "pangenome/hprc_whole_chromosome",
     "status": "bad",
-    "note": "The graph pane cannot show complex structural variation and should not be\nasked to: the tier is one node per bubble in reference order, so it IS a path and\nevery branch was collapsed when the tier was built. The complex variation is what\nthe fine-index figures higher up the page draw. What this frame is FOR is finding\nthem, and nothing in it said so.\n\nA lane of the three chr1 loci the page opens -- the amylase bubble, the 1q21.1\ninversion, the CFHR3/CFHR1 deletion -- on the same axis as the curve, with their\nown coordinates from the constants those figures use. A FeatureTrack rather than\na highlight: at 178 kb per css px the widest of the three is 0.7 px, so a shaded\nband would be a hairline with a floating label.\n\nWHAT IT DOES NOT CLAIM, because I checked and it is false: that these are the\npeaks. Ranked by segment count over all 9,444 chr1 bubbles they are 50th, 77th\nand 155th -- the top 2%, not the top 5, and the chromosome's biggest bubble by a\nfactor of ten is at 2.65 Mb and this page never opens it. So the prose says the\ncoarse view narrows a chromosome to a few dozen candidates, which is what it\ndoes.",
-    "reviewedAt": "2026-08-24T05:45:18.833Z",
-    "hash": "e97ac67783e156f588a03278c7fdb2bcf4c5fea2"
+    "note": "not sure this is a good figure, it also captured 'computing layout' -- extremely undesirable to capture loading states",
+    "reviewedAt": "2026-09-14T04:03:13.934Z",
+    "hash": "1f6d64e073b00ad3533205a42e03632d522293d8"
   },
   "pangenome/pggb_carriage": {
     "name": "pangenome/pggb_carriage",
@@ -2760,8 +2760,8 @@
     "name": "selection_pressure/lysozyme",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:47:20.551Z",
-    "hash": "67b5a102438c3dca90731e0ce7e4952a1efacc93"
+    "reviewedAt": "2026-09-14T04:08:11.155Z",
+    "hash": "32bca81179591b4f0eb6fddabfda125ddeafe5a5"
   },
   "wolfdog_ancestry_pipeline": {
     "name": "wolfdog_ancestry_pipeline",
@@ -2774,15 +2774,15 @@
     "name": "dog10k-diet-genes",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:34:15.152Z",
-    "hash": "dde6f0c8345671708579e76dae4d8a8de1bac9fa"
+    "reviewedAt": "2026-09-14T03:36:39.895Z",
+    "hash": "25d23a89785619338a22ca9adbe437229a43c4d9"
   },
   "dtu/dtu_colored_gene_glyph": {
     "name": "dtu/dtu_colored_gene_glyph",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-14T02:39:00.477Z",
-    "hash": "3b750047324efe0836262f78eae1db663cc338ab"
+    "reviewedAt": "2026-09-14T03:37:00.549Z",
+    "hash": "21bd77c4a850d5c1bd4fb57f41ef3ad95326e1b0"
   },
   "genomes_basics/phylop_bases": {
     "name": "genomes_basics/phylop_bases",
@@ -2808,8 +2808,8 @@
     "name": "qc/smn_vs_t2t",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:46:46.852Z",
-    "hash": "a2f0033acdea8f9551c7c6eda76b7ebc89f47522"
+    "reviewedAt": "2026-09-14T04:07:20.965Z",
+    "hash": "591991f407fe88aaa404ea9e8cff4b5e98e47c65"
   },
   "qc/control_evidence": {
     "name": "qc/control_evidence",
@@ -2859,9 +2859,9 @@
   "gpu_display_tldr": {
     "name": "gpu_display_tldr",
     "status": "good",
-    "note": "'once per region' is a hard to understand claim. might just not even say it. data returned in 'absolute bp' unclear what that means like...just normal coordinates? its not a unambigous term...unless we define glossary or make better term or say uint32 genomic coordinates. the way it says 'kept' is weird. also even saying 'uploaded once' is weird. i know what it means kinda, but we want it to be easy for someone that doesnt know gpu FIXED 2026-08-09: every phrase named, plus the caption, which repeated two of them. 'once per region' stated a RATE where the reader needs an EVENT, and invited the question 'as opposed to what?' -- it is 'sent once, when the region changes'. 'absolute bp' is not a term anyone outside this codebase shares and reads as distinguishing itself from something unnamed -- it is 'uint32 genomic coordinates', your wording, which stands on its own. 'uploaded once, kept' described the transfer from the GPU's side and left 'kept' load-bearing -- the box now says what is true of it, 'the data stays here'. 'drawn from those buffers' leaned on the previous box's noun, so both boxes now share one, GPU memory, and the pair reads without holding 'buffers' and 'those buffers' together. The boxes also went from 3.6 to 5.1 wide: graphviz centers a box on its edge and hangs the label to the right, so once the labels got longer the stack sat in the left two thirds with text floating off it. 912x812 now, still no page scaling.",
-    "reviewedAt": "2026-08-09T05:57:32.645Z",
-    "hash": "63f074b6b18929aa66bd422e6700fe93f6b429f0"
+    "note": "",
+    "reviewedAt": "2026-09-14T03:39:43.190Z",
+    "hash": "1134c989bc61dbba7a2bfe515fc4f1710f9898df"
   },
   "qc/smn_read_placement": {
     "name": "qc/smn_read_placement",
@@ -2888,15 +2888,15 @@
     "name": "synteny_self_chry_palindromes",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:49:03.056Z",
-    "hash": "7e194d3ccc7ca5698b493945db0c2727a369edd8"
+    "reviewedAt": "2026-09-14T04:12:30.398Z",
+    "hash": "ac1fb312c292035aa7bfe4157d0e5a42674b41e9"
   },
   "sv_cgiab/three_ways": {
     "name": "sv_cgiab/three_ways",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:48:39.385Z",
-    "hash": "5cff3363a102785958ff58bd172af29044c1256f"
+    "status": "bad",
+    "note": "see other figure notes on derived alleles. unclear what is 'important' for user to see here. there are just tons of options for derivatinve allele. what is best? why? they cant feasibly explore all in reaosnable time",
+    "reviewedAt": "2026-09-14T04:10:41.703Z",
+    "hash": "7ccd3d5aef8097a8a25f26ba40e99592a2b03732"
   },
   "cancer_sv/k562_fusion_inspector_all": {
     "name": "cancer_sv/k562_fusion_inspector_all",
@@ -2914,10 +2914,10 @@
   },
   "hg002_haplotypes_follow_panel": {
     "name": "hg002_haplotypes_follow_panel",
-    "status": "bad",
+    "status": "good",
     "note": "previous screenshot had a nice simpl einsertion, noit shown now ",
-    "reviewedAt": "2026-08-24T05:39:39.792Z",
-    "hash": "1ddc12c7e737aa87527178972ddf678633eec272"
+    "reviewedAt": "2026-09-14T03:39:47.293Z",
+    "hash": "46b3ce054e6c362ca31ece787136906d8c24391a"
   },
   "jbrowse-img/sv_review_pair": {
     "name": "jbrowse-img/sv_review_pair",
@@ -2928,10 +2928,10 @@
   },
   "pangenome/rgfa_insertion_synteny": {
     "name": "pangenome/rgfa_insertion_synteny",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:46:02.424Z",
-    "hash": "dd06d5eaca9101654a1af6eb18f709b44124fa67"
+    "status": "bad",
+    "note": "might need 1-2  very brief red text annotation blurbs showing what is happening",
+    "reviewedAt": "2026-09-14T04:03:53.896Z",
+    "hash": "17951783e5ccf5d43d946c2289dd1ee5246612dd"
   },
   "sv_synteny/color_by_attribute_steps": {
     "name": "sv_synteny/color_by_attribute_steps",
@@ -2944,15 +2944,15 @@
     "name": "sv_cgiab/driver_cdkn2a_deletion",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-11T05:30:42.015Z",
-    "hash": "bdfdf54bf19d2f0012ae99499fe765633d620a83"
+    "reviewedAt": "2026-09-14T04:09:39.373Z",
+    "hash": "3ce76248a5f3ab51c4bc5da17d8f3267d962af01"
   },
   "hg002_haplotypes_8p23_inversion": {
     "name": "hg002_haplotypes_8p23_inversion",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:39:09.771Z",
-    "hash": "39b1da84c43072ec57dcc6c15913b013c127710a"
+    "reviewedAt": "2026-09-14T03:39:45.542Z",
+    "hash": "e42af737a0ff58ceea352e9e7069c42850655d97"
   },
   "jbrowse-img/sv_review_normal": {
     "name": "jbrowse-img/sv_review_normal",
@@ -2978,9 +2978,9 @@
   "cancer_sv/k562_fusion_inspector_reads": {
     "name": "cancer_sv/k562_fusion_inspector_reads",
     "status": "bad",
-    "note": "do you believe the sashimi arcs are accurate? they are a little all over the place",
-    "reviewedAt": "2026-08-24T05:32:48.847Z",
-    "hash": "69d5025b2115ea37efe9978b0facd30aebaa44a9"
+    "note": "are you happy with this screenshot? it is a bit tall and noisy.. the read connections arcs connecting the chromosomes might be connecting the wrong place? most arcs should be same as the purple beziers",
+    "reviewedAt": "2026-09-14T03:32:35.577Z",
+    "hash": "dda0b73677ee9ca115073222c7c08a95b7d9b24d"
   },
   "jbrowse-img/sv_review_derivative": {
     "name": "jbrowse-img/sv_review_derivative",
@@ -2993,8 +2993,8 @@
     "name": "cancer_sv/k562_fusion_inspector_pair",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:32:08.677Z",
-    "hash": "18ec8cb77c5833ced70a320fe3968dc48120528a"
+    "reviewedAt": "2026-09-14T03:31:42.500Z",
+    "hash": "df0064913f7b408e9dfe52c7f42b942f4f1ae51f"
   },
   "hg002_haplotypes_wholegenome": {
     "name": "hg002_haplotypes_wholegenome",
@@ -3006,9 +3006,9 @@
   "hg002_haplotypes_import_form": {
     "name": "hg002_haplotypes_import_form",
     "status": "good",
-    "note": "HELP TOOLTIPS ON BOTH BOXES. The glob is the whole reason a typed box beat a\npicker here, and a reader who does not already know it reads the placeholder's\n*_MATERNAL as an example NAME rather than as a pattern.\n\nThe tooltip says what the box takes: comma-separated names, a name may be a\nglob, *_MATERNAL takes every sequence ending that way and chr1* every one\nstarting with it, empty means the whole assembly. On ChromosomeFilter itself, so\nthe linear-synteny form's per-row boxes get it too.",
-    "reviewedAt": "2026-08-16T06:46:36.693Z",
-    "hash": "f94554df0780d467dfd7d88de013ea4a37498428"
+    "note": "",
+    "reviewedAt": "2026-09-14T03:39:59.446Z",
+    "hash": "fced660aa9820d015e25cd15d3c97bb59ac73301"
   },
   "genomes_basics/about_track": {
     "name": "genomes_basics/about_track",
@@ -3028,15 +3028,15 @@
     "name": "genomes_basics/genark_axolotl",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:37:01.396Z",
-    "hash": "956859ad7ef066e62c28aed4410ea8b7aefe39f1"
+    "reviewedAt": "2026-09-14T03:37:54.257Z",
+    "hash": "335cd960a2396ae6b3ba2442abc7bd513fae21ba"
   },
   "genomes_basics/gnomad_filter_menu": {
     "name": "genomes_basics/gnomad_filter_menu",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:37:06.036Z",
-    "hash": "29d2af8ed93d9f00ab5fa28f5b01ceed5e112777"
+    "reviewedAt": "2026-09-14T03:37:56.772Z",
+    "hash": "bf698d288c9cda91131e85d2861fa946ad282ccf"
   },
   "genomes_basics/gnomad_filters": {
     "name": "genomes_basics/gnomad_filters",
@@ -3049,8 +3049,8 @@
     "name": "genomes_basics/isoform_control",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:37:13.035Z",
-    "hash": "caf027dc4a2f62f5751428b91e1b869beb08c85a"
+    "reviewedAt": "2026-09-14T03:37:59.405Z",
+    "hash": "b75a2d697c915e208cec4e4e67a80a5aee555fd9"
   },
   "genomes_basics/p53_element_sequence": {
     "name": "genomes_basics/p53_element_sequence",
@@ -3084,29 +3084,29 @@
     "name": "genomes_basics/search_tp53",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:37:51.914Z",
-    "hash": "fc05ae30e70c642f4f52d809d363e6e77a173329"
+    "reviewedAt": "2026-09-14T03:38:04.782Z",
+    "hash": "6d8d746037a91cd7b06c29abfde571f8b221b363"
   },
   "genomes_basics/site_home": {
     "name": "genomes_basics/site_home",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-13T17:34:43.650Z",
-    "hash": "d016201bf9e89e3d2b251a01885db885ed69d2ac"
+    "reviewedAt": "2026-09-14T03:38:07.100Z",
+    "hash": "a6bc8a7143bd0f7927aa80af4f6e49f0049c056d"
   },
   "genomes_basics/site_search": {
     "name": "genomes_basics/site_search",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-15T12:31:29.316Z",
-    "hash": "3ee5ab3d2674f9d9761d8c3f16b5d4ffd4b139cd"
+    "reviewedAt": "2026-09-14T03:38:09.390Z",
+    "hash": "1f651ca290b08744ddea71ee912ca64017566ffb"
   },
   "genomes_basics/site_ucsc_list": {
     "name": "genomes_basics/site_ucsc_list",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-13T17:34:48.226Z",
-    "hash": "5b17c396a2a202fa563a498b730aa6a25628028d"
+    "reviewedAt": "2026-09-14T03:38:10.994Z",
+    "hash": "a03f304164f5c50ec10f4761c6547a1379a63f6c"
   },
   "genomes_basics/turn_on_phylop": {
     "name": "genomes_basics/turn_on_phylop",
@@ -3124,10 +3124,10 @@
   },
   "pangenome_cactus/graph_bubble": {
     "name": "pangenome_cactus/graph_bubble",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-14T02:35:22.613Z",
-    "hash": "4215aeb06806500f4562a3d994d126d328c3f897"
+    "status": "bad",
+    "note": "red text box covers up graph, too wordy also",
+    "reviewedAt": "2026-09-14T03:52:46.010Z",
+    "hash": "d8b6a0657fd7f6457b3b0d7cbb3599ffbcf31c00"
   },
   "fetch_chain": {
     "name": "fetch_chain",
@@ -3154,15 +3154,15 @@
     "name": "cookbook_color_by_type_two_ways",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:33:34.090Z",
-    "hash": "b11b0a1ee5e4d038a54d58378b5803266e05163e"
+    "reviewedAt": "2026-09-14T03:35:46.706Z",
+    "hash": "7a385e70e07aef38742d22a32be83d444d5e9de3"
   },
   "hg002_haplotypes_location_markers": {
     "name": "hg002_haplotypes_location_markers",
-    "status": "good",
-    "note": "re-reviewed after the settings-menu refactor re-shoot (2026-08-24): ribbons menu open, Location markers checked and boxed, markers visible between panels, matches the title.",
-    "reviewedAt": "2026-08-28T12:52:27.000Z",
-    "hash": "26b3052e2c8c9f4eaa6b59a085d05c4a2a401698"
+    "status": "bad",
+    "note": "this is not a very powerful screenshot as is. try to find a big deletion or insertion helps to show the location markers flow around it",
+    "reviewedAt": "2026-09-14T03:40:27.431Z",
+    "hash": "52face671512d7f157ea45dc8dc0ac401b951fcc"
   },
   "inversion_pair_orientation": {
     "name": "inversion_pair_orientation",
@@ -3175,15 +3175,15 @@
     "name": "orthofinder_synteny/grasses_maize_wgd",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:44:24.712Z",
-    "hash": "58c83cae4a69e2548784575d64259c72ce23b12d"
+    "reviewedAt": "2026-09-14T03:52:06.350Z",
+    "hash": "96b9d553978b78bdbd8d35bdb3df0942ea3d8a9d"
   },
   "popgen/in2lt_inversion": {
     "name": "popgen/in2lt_inversion",
     "status": "good",
-    "note": "It was drawn and it was clipped. chr2L is the FIRST region of the row above,\nso the wedge's narrow end starts at x 12 and its wide end at x 0 -- a\nnear-vertical line running off the left edge of the image. Correct geometry with\nnowhere to be.\n\nComposeSpec has a sideMargin now, the mirror of the gutter that exists so the\nwedge's two HORIZONTAL edges are not the same line. 60 px each side puts it\ninside the frame. It moves each part's box so annotateComposition reads it too;\nthe '19 In(2L)t carriers' arrow still lands on the carrier block, which is the\ncheck that says so.\n\nThe slant stays slight because that is the data: the panel below is the left end\nof the row above, not a slice out of its middle.",
-    "reviewedAt": "2026-08-15T01:05:09.649Z",
-    "hash": "a377537b28ebdb1ac8f0908a7442c665f112e0cb"
+    "note": "",
+    "reviewedAt": "2026-09-14T04:05:24.676Z",
+    "hash": "a8bca870fa28de93df4ce2d60239bf05baaf2449"
   },
   "gallery/inverted_duplication": {
     "name": "gallery/inverted_duplication",
@@ -3215,38 +3215,38 @@
   },
   "ld/lct_sweep_two_scales": {
     "name": "ld/lct_sweep_two_scales",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:41:08.125Z",
-    "hash": "2f94de9db10b8545eea0c26e850b0fac886f686b"
+    "status": "bad",
+    "note": "try to improve y-screen real estate",
+    "reviewedAt": "2026-09-14T03:43:51.731Z",
+    "hash": "e75a88692f69ddd4798517a857d6bbe7545c989f"
   },
   "dataflow": {
     "name": "dataflow",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:33:58.078Z",
-    "hash": "68e78caa4819e6d1aa830d133e54b278c92e5d0e"
+    "reviewedAt": "2026-09-14T03:36:05.597Z",
+    "hash": "93546e073e8541d054e78b716179636b06bdc7cd"
   },
   "genomes_msa/genomic_domains": {
     "name": "genomes_msa/genomic_domains",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:37:55.390Z",
-    "hash": "61342fac247a3362ba3db3e130accd50e6bb1ec1"
+    "reviewedAt": "2026-09-14T03:38:14.578Z",
+    "hash": "6eacdd5460bcaee928e9dd679497ac1c2753f8d1"
   },
   "protein/annotation_1d": {
     "name": "protein/annotation_1d",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:46:22.398Z",
-    "hash": "c4edd260f26f1a2f71177baae25bdcc196894e97"
+    "status": "bad",
+    "note": "unclear if this is a good figure. need to use bicolor pivot of 0.5 to really make the colors pop onthe alphafold. ",
+    "reviewedAt": "2026-09-14T04:06:00.157Z",
+    "hash": "0900e8832b9800259ca5caad8bfc661371ad00d5"
   },
   "sv_cgiab/cnv_callset_comparison": {
     "name": "sv_cgiab/cnv_callset_comparison",
     "status": "bad",
-    "note": "might help to show larger scale pattern with zoom out. the wiggle tracks are barely visible point size also",
-    "reviewedAt": "2026-08-24T05:47:50.833Z",
-    "hash": "bc74112a044d5cc7004fa73569f94a7f30a214a8"
+    "note": "this is just not a good figure. no idea what is going on. might help to show larger scale pattern with zoom out. the wiggle tracks are barely visible point size also. if we cant get this working, we should delete",
+    "reviewedAt": "2026-09-14T04:08:42.795Z",
+    "hash": "4b2852d7b49f4630aca981cccbe6ab9aefd3decd"
   },
   "sv_cgiab/methylation_cdkn2b": {
     "name": "sv_cgiab/methylation_cdkn2b",
@@ -3257,10 +3257,10 @@
   },
   "sv_cgiab/subclonal_cnv": {
     "name": "sv_cgiab/subclonal_cnv",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:48:21.979Z",
-    "hash": "25c339db8fca8419f76a099c2c0ccac5c469bcdc"
+    "status": "bad",
+    "note": "unclear what is going on here. not a figure powerful figure. consider delete",
+    "reviewedAt": "2026-09-14T04:09:52.389Z",
+    "hash": "168c44f590cd00c5160a9fa98d173148fded9381"
   },
   "sv_cgiab/sv_callset_comparison": {
     "name": "sv_cgiab/sv_callset_comparison",
@@ -3271,10 +3271,10 @@
   },
   "synteny_follow_unaligned": {
     "name": "synteny_follow_unaligned",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:48:49.589Z",
-    "hash": "66cf291cca16fcc31d5c3baa16622efd9b9f7cd2"
+    "status": "bad",
+    "note": "frankly, i dont understand the messagfe of this screenshot. consider deleting or making a single panel",
+    "reviewedAt": "2026-09-14T04:12:04.246Z",
+    "hash": "ee38a3826693949b963105e84f1503a8df2240b0"
   },
   "synteny_offscreen_mates": {
     "name": "synteny_offscreen_mates",
@@ -3285,9 +3285,471 @@
   },
   "synteny_offscreen_mates_click": {
     "name": "synteny_offscreen_mates_click",
+    "status": "bad",
+    "note": "this is a bad figure. get better example or delete",
+    "reviewedAt": "2026-09-14T04:12:27.871Z",
+    "hash": "f7879803dde8e96ac7d303a433f4d271d002219e"
+  },
+  "alphagenome/accessibility_shared_axis": {
+    "name": "alphagenome/accessibility_shared_axis",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:49:00.436Z",
-    "hash": "5df3ee26ae5bef11b1fed785cad07eccf0dc7e6d"
+    "reviewedAt": "2026-09-14T03:24:46.975Z",
+    "hash": "f64da7b0fac75b368a0883f57614cc3a039d7755"
+  },
+  "alphagenome/contact_map": {
+    "name": "alphagenome/contact_map",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:24:57.146Z",
+    "hash": "ee0d68dff7faf50522adbc1d0981a85c67a7c237"
+  },
+  "alphagenome/expression_two_cell_lines": {
+    "name": "alphagenome/expression_two_cell_lines",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:24:59.703Z",
+    "hash": "131a3d72406d82d9972fc6b1bab300560f8fafc8"
+  },
+  "alphagenome/predict_variant_menu": {
+    "name": "alphagenome/predict_variant_menu",
+    "status": "bad",
+    "note": "add red box around the predict variant effect with alphagenome menu item. this is a general lesson, check other screenshots for this if needed",
+    "reviewedAt": "2026-09-14T03:25:37.249Z",
+    "hash": "45ff9a882b4dd992cd936a85f6210e8ed5e9693a"
+  },
+  "alphagenome/splice_junctions": {
+    "name": "alphagenome/splice_junctions",
+    "status": "bad",
+    "note": "this is honestly too many split junctions to 'understand'. what is thepoint beside visual noise. need difference?",
+    "reviewedAt": "2026-09-14T03:26:10.322Z",
+    "hash": "baca7cecc44b987da4c4cc0b33b7b53f8f259ae9"
+  },
+  "alphagenome/variant_difference": {
+    "name": "alphagenome/variant_difference",
+    "status": "bad",
+    "note": "analyze their https://www.alphagenomedocs.com/colabs/example_analysis_workflow.html further, make sure we got this right https://www.alphagenomedocs.com/colabs/example_analysis_workflow.html, show the accessibility delta also",
+    "reviewedAt": "2026-09-14T03:26:53.629Z",
+    "hash": "43313d169c9d3ee3b22c40d7a10a707c9227500b"
+  },
+  "alu_age/binned": {
+    "name": "alu_age/binned",
+    "status": "bad",
+    "note": "hard to tell what i am seeing. is this 'significant'? how would a reader tell. need better tutorial that seriously clarifies this. a whole genome bed file showing significant regions. etc might help, combinin with alu_age/chromosome as multipart figure, etc.",
+    "reviewedAt": "2026-09-14T03:27:51.012Z",
+    "hash": "23ce7dfd9120be941400b388551e0d3e860dee24"
+  },
+  "alu_age/chromosome": {
+    "name": "alu_age/chromosome",
+    "status": "bad",
+    "note": "see notes on alu_age/binned",
+    "reviewedAt": "2026-09-14T03:27:58.873Z",
+    "hash": "e84a2bb545ffb8508eabff6064a014ff331d52f4"
+  },
+  "alu_age/locus": {
+    "name": "alu_age/locus",
+    "status": "bad",
+    "note": "see notes on alu_age/binned",
+    "reviewedAt": "2026-09-14T03:28:07.619Z",
+    "hash": "c2df6d2511fa7732ffc7328a8edb30443c27ee66"
+  },
+  "circular_synteny/ribbon_hover": {
+    "name": "circular_synteny/ribbon_hover",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:33:42.062Z",
+    "hash": "829fc7e3d92e6f6c799a6cca5eb975ec809e7c70"
+  },
+  "circular_synteny/ribbons": {
+    "name": "circular_synteny/ribbons",
+    "status": "bad",
+    "note": "this is varying parallel and orthogonal chromosome names. the assemblynames are also not displayed",
+    "reviewedAt": "2026-09-14T03:34:10.718Z",
+    "hash": "d3637a58cb8cbdac13e63efd73734f4789555a83"
+  },
+  "circular_synteny/rings": {
+    "name": "circular_synteny/rings",
+    "status": "bad",
+    "note": "should have a legend saying what the density ring is",
+    "reviewedAt": "2026-09-14T03:35:00.848Z",
+    "hash": "f91cddd22aaa04d57fee01919830ef2ae5197518"
+  },
+  "circular_view/coverage_ring_chords": {
+    "name": "circular_view/coverage_ring_chords",
+    "status": "bad",
+    "note": "should have a legend saying what the density ring is",
+    "reviewedAt": "2026-09-14T03:35:04.509Z",
+    "hash": "122a0a46675287c9137ffeae99bc2e0fe785132b"
+  },
+  "circular_synteny/x_control": {
+    "name": "circular_synteny/x_control",
+    "status": "bad",
+    "note": "should have a legend saying what the density ring is",
+    "reviewedAt": "2026-09-14T03:35:06.783Z",
+    "hash": "9c56c1c11241e04d2549f24199749dadc7fb480d"
+  },
+  "display_autoruns": {
+    "name": "display_autoruns",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:36:20.502Z",
+    "hash": "a2652795f9f5fa5f516058efed42fc842ea05d9c"
+  },
+  "gene_density_1q21": {
+    "name": "gene_density_1q21",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:37:29.112Z",
+    "hash": "4628227c6c7ff052d2429de57e82cbe80cd1994e"
+  },
+  "gene_density_chr1": {
+    "name": "gene_density_chr1",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:37:31.616Z",
+    "hash": "50a49e60dea5c48b45aaaffd6627167a8a2421a2"
+  },
+  "linkage_groups/alg_dotplot_res_emu": {
+    "name": "linkage_groups/alg_dotplot_res_emu",
+    "status": "bad",
+    "note": "this is a bad screenshot the dots are quite sparse, it is uninformative. ",
+    "reviewedAt": "2026-09-14T03:44:18.067Z",
+    "hash": "1a0b582f386b500b9720b42157182c85f46ebfff"
+  },
+  "linkage_groups/alg_dotplot_res_hca": {
+    "name": "linkage_groups/alg_dotplot_res_hca",
+    "status": "bad",
+    "note": "this is a bad screenshot the dots are VERY sparse, it is uninformative. ",
+    "reviewedAt": "2026-09-14T03:44:21.371Z",
+    "hash": "3cb67b1d3a663762bd7e20a1c78f0c8a6f930e37"
+  },
+  "linkage_groups/alg_stack": {
+    "name": "linkage_groups/alg_stack",
+    "status": "bad",
+    "note": "this is a fairly good screenshot. though, the legend does cover up some contents. not sure what to do there, if can zoom out farther than full width, might help. ",
+    "reviewedAt": "2026-09-14T03:45:12.860Z",
+    "hash": "55cc6ca130c3338b27af6094e501f20181fe6078"
+  },
+  "maf_row_menu": {
+    "name": "maf_row_menu",
+    "status": "bad",
+    "note": "we should consider putting all these context options into submenus inside the context menu",
+    "reviewedAt": "2026-09-14T03:45:52.471Z",
+    "hash": "fa4f9655ebea61c54c3ac4b777f883af4f5eb764"
+  },
+  "mark_display/density_sidecar": {
+    "name": "mark_display/density_sidecar",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:45:58.763Z",
+    "hash": "a20c609a934e95f900fdf4c88953ad9b1c38de30"
+  },
+  "mark_display/multiscale": {
+    "name": "mark_display/multiscale",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:46:00.853Z",
+    "hash": "b022f0d31fffd2de6eb5318c3d031943acf5860f"
+  },
+  "mark_display/two_axes": {
+    "name": "mark_display/two_axes",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:46:02.871Z",
+    "hash": "7169a09d47b8eb85cefc7771ba934be564b157ce"
+  },
+  "multiway_synteny/drosophila_lanes": {
+    "name": "multiway_synteny/drosophila_lanes",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:46:49.118Z",
+    "hash": "51b966b73ff727226dcfde1cf900f517a6848492"
+  },
+  "multiway_synteny/ecoli_alignment_menu": {
+    "name": "multiway_synteny/ecoli_alignment_menu",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:46:53.322Z",
+    "hash": "b1f2649188aa68506a8755dbdf7a1775c7ea9e34"
+  },
+  "multiway_synteny/ecoli_island_lanes": {
+    "name": "multiway_synteny/ecoli_island_lanes",
+    "status": "bad",
+    "note": "there are weird overlapping arrows. this is potentially due to my weird insistence on strand arrows being outside bounds of feature. not sure best solution. maybe should be inside bounds for this? ",
+    "reviewedAt": "2026-09-14T03:47:43.208Z",
+    "hash": "318f8e6bf35d1b19323cc6fbd510fd8c423f2a83"
+  },
+  "multiway_synteny/ecoli_symbol_atp_operon": {
+    "name": "multiway_synteny/ecoli_symbol_atp_operon",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:47:57.024Z",
+    "hash": "2533986d61d1edfa0f0c2dec053d98763b3111cd"
+  },
+  "multiway_synteny/ecoli_symbol_oantigen": {
+    "name": "multiway_synteny/ecoli_symbol_oantigen",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:47:59.215Z",
+    "hash": "0d768b1896be6ef1ceb80c2952f4bc7f65e003dc"
+  },
+  "multiway_synteny/grasses_rice_lanes": {
+    "name": "multiway_synteny/grasses_rice_lanes",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:48:04.022Z",
+    "hash": "d2c2f800685348df21394bb7e9361aa5260b66fc"
+  },
+  "multiway_synteny/hg38_vertebrates_17p_break": {
+    "name": "multiway_synteny/hg38_vertebrates_17p_break",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:48:11.551Z",
+    "hash": "56a5be5a5f4649770d3990251126cac168f03f39"
+  },
+  "multiway_synteny/hg38_vertebrates_tp53": {
+    "name": "multiway_synteny/hg38_vertebrates_tp53",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:48:13.544Z",
+    "hash": "45109e3ed98f5cb88325cfa89e710a6154181aaf"
+  },
+  "multiway_synteny/hprc_cfh_haplotypes": {
+    "name": "multiway_synteny/hprc_cfh_haplotypes",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:48:15.519Z",
+    "hash": "4138f8f65b3736a9809d51eeafa567e95fbada64"
+  },
+  "multiway_synteny/hprc_chr1_whole": {
+    "name": "multiway_synteny/hprc_chr1_whole",
+    "status": "bad",
+    "note": "sort of unclear what i'm looking at here. the whole genome overview is 'impressive' but i think confusing. why would there be humans missing the  right side of chr1",
+    "reviewedAt": "2026-09-14T03:48:59.348Z",
+    "hash": "fe9d0784f95bad9fc29f732dec88f069e6f050c4"
+  },
+  "multiway_synteny/hprc_lane_menu": {
+    "name": "multiway_synteny/hprc_lane_menu",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:49:01.036Z",
+    "hash": "150d63cb923ecff4e77034c6249885d0a7b67d8a"
+  },
+  "multiway_synteny/lane_header_menu": {
+    "name": "multiway_synteny/lane_header_menu",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:49:03.695Z",
+    "hash": "0e9da7148b29ffe35f247f9dc16eff35ab46b662"
+  },
+  "multiway_synteny/lgv_track_clicked": {
+    "name": "multiway_synteny/lgv_track_clicked",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:49:06.897Z",
+    "hash": "c56c7350a44db810f37c25eeebb29c5943c11f37"
+  },
+  "multiway_synteny/lgv_track_lanes": {
+    "name": "multiway_synteny/lgv_track_lanes",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:49:08.883Z",
+    "hash": "2312391a9049bb268bd5be94ceb39a9f3e7cd1fc"
+  },
+  "multiway_synteny/lgv_track_zoom": {
+    "name": "multiway_synteny/lgv_track_zoom",
+    "status": "bad",
+    "note": "honestly, too many screenshots duplicating info here with  multiway_synteny/lgv_track_lanes and multiway_synteny/lgv_track_clicked we need to consolidate",
+    "reviewedAt": "2026-09-14T03:49:36.289Z",
+    "hash": "b23823accda1d70e9685e05195be5fa817a89497"
+  },
+  "multiway_synteny/primate_amy_cluster": {
+    "name": "multiway_synteny/primate_amy_cluster",
+    "status": "bad",
+    "note": "are you satisfied with the message here? unclear. need red textannotation to clarify if there is something meaningful. if not, considerdeleting. this is a general message: need to generalize across more figures...the reuslts should be obvious and annotated with a red text box where it helps clarify the biology (can ask me when it helps)",
+    "reviewedAt": "2026-09-14T03:50:47.390Z",
+    "hash": "292fa4fd9e3f4ff9e9a55e892a294e3bab99d5e0"
+  },
+  "multiway_synteny/primate_chr17_inversions": {
+    "name": "multiway_synteny/primate_chr17_inversions",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:50:49.468Z",
+    "hash": "a733394d7a9a065d1c910ab7f9bdc412abdf528b"
+  },
+  "multiway_synteny/primate_chr2_fusion": {
+    "name": "multiway_synteny/primate_chr2_fusion",
+    "status": "bad",
+    "note": "i said previously, this is not a terribly bad example, but its frankly not the right visualization to 'prove' th chr2 fusion,so unclear why we think this isa good example",
+    "reviewedAt": "2026-09-14T03:51:32.571Z",
+    "hash": "bcac6cfab08dd338d6f337fd08877ff6f34c57f2"
+  },
+  "multiway_synteny/primate_tp53_lanes": {
+    "name": "multiway_synteny/primate_tp53_lanes",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:51:35.272Z",
+    "hash": "0ee390dd0172c2dd63dd64d27fe02458138dc68b"
+  },
+  "multiway_synteny/solanaceae_lanes": {
+    "name": "multiway_synteny/solanaceae_lanes",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:51:37.945Z",
+    "hash": "b9eb9d458d468cbf749a3d157bc907b3a958ebbd"
+  },
+  "multiway_synteny/vertebrate_hox_lanes": {
+    "name": "multiway_synteny/vertebrate_hox_lanes",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:51:43.691Z",
+    "hash": "437ca2b2aea0ee110a53d43d7328ffc45c1ddb45"
+  },
+  "orthofinder_synteny/drosophila": {
+    "name": "orthofinder_synteny/drosophila",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:52:01.030Z",
+    "hash": "ec051793dae06454a9338ea96f744bc1d4690903"
+  },
+  "orthofinder_synteny/solanaceae": {
+    "name": "orthofinder_synteny/solanaceae",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:52:08.182Z",
+    "hash": "a1b86484a5dfc2f9fc416e43d2587f87808eab03"
+  },
+  "pangenome/bovine_bola": {
+    "name": "pangenome/bovine_bola",
+    "status": "bad",
+    "note": "unclear what i'm looking at. need red text annotationpotentially",
+    "reviewedAt": "2026-09-14T03:53:07.787Z",
+    "hash": "afc5f127519cf6542a93758a6d37523e0524398b"
+  },
+  "pangenome/bovine_whole_chromosome": {
+    "name": "pangenome/bovine_whole_chromosome",
+    "status": "bad",
+    "note": " the whole chromosome is too busy frankly and linearized view is sortofpointless, we have thelinaergenomeview, justshow stuff there",
+    "reviewedAt": "2026-09-14T03:53:43.180Z",
+    "hash": "471e77310ca9b1b2c2a858bb231940d8f5ebd192"
+  },
+  "pangenome/genomes_hprc_chr21_tier": {
+    "name": "pangenome/genomes_hprc_chr21_tier",
+    "status": "bad",
+    "note": " the whole chromosome is too busy frankly and linearized view is sortofpointless, we have thelinaergenomeview, justshow stuff there",
+    "reviewedAt": "2026-09-14T03:53:49.800Z",
+    "hash": "f3f6ca2fc28c2bec22e1fbb6db81074f2ccd8e3d"
+  },
+  "pangenome/genomes_hprc_launcher": {
+    "name": "pangenome/genomes_hprc_launcher",
+    "status": "bad",
+    "note": "terrible ui. need to check if this was updated",
+    "reviewedAt": "2026-09-14T03:54:34.917Z",
+    "hash": "1aa98ac479ea5366f5b33caa5c7c6360a6d6dbe1"
+  },
+  "pangenome/genomes_hprc_mhc_graph": {
+    "name": "pangenome/genomes_hprc_mhc_graph",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:54:21.243Z",
+    "hash": "4dca876181bc0405ef56bf5c2c5cc94387710472"
+  },
+  "pangenome/genomes_hprc_page": {
+    "name": "pangenome/genomes_hprc_page",
+    "status": "bad",
+    "note": "terrible ui. need to check if this was updated",
+    "reviewedAt": "2026-09-14T03:54:36.569Z",
+    "hash": "559786ece33885710215cd81cf137ea37014b0c0"
+  },
+  "pangenome/graph_kiv2_halos": {
+    "name": "pangenome/graph_kiv2_halos",
+    "status": "bad",
+    "note": "are you happy with this",
+    "reviewedAt": "2026-09-14T03:54:47.344Z",
+    "hash": "051258589f04bfb7249e5ec7f9656e98755251c2"
+  },
+  "pangenome/graph_kiv2_walk_lifted": {
+    "name": "pangenome/graph_kiv2_walk_lifted",
+    "status": "bad",
+    "note": "this is frankly a pointless figure without corresponding lineargenomeview",
+    "reviewedAt": "2026-09-14T03:55:03.811Z",
+    "hash": "1577cb7b9c41feafb4d428b35d2c1516e15052f2"
+  },
+  "pangenome/graph_kiv2_walks": {
+    "name": "pangenome/graph_kiv2_walks",
+    "status": "bad",
+    "note": "hard to tell whats going on, so much text annotations in the graphgenomeviewer itself makes it hard to see",
+    "reviewedAt": "2026-09-14T03:55:23.675Z",
+    "hash": "931679130b1b6f7a0f3fa48a451e83d215536625"
+  },
+  "pangenome/graph_mouse_dock2_pops": {
+    "name": "pangenome/graph_mouse_dock2_pops",
+    "status": "bad",
+    "note": "this is frankly a pointless figure without corresponding lineargenomeview, consider deleting",
+    "reviewedAt": "2026-09-14T03:55:42.871Z",
+    "hash": "9c60ab50e64e1bc4014e1b0dee8e6b43e367f852"
+  },
+  "pangenome/graph_mouse_nnt_halos": {
+    "name": "pangenome/graph_mouse_nnt_halos",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T03:55:45.714Z",
+    "hash": "a73f219bfa6c84e91f7db4572a9600643bdc64e1"
+  },
+  "pangenome/hprc_kiv2_gbz_walks": {
+    "name": "pangenome/hprc_kiv2_gbz_walks",
+    "status": "bad",
+    "note": "way too busy of a figure",
+    "reviewedAt": "2026-09-14T04:02:41.602Z",
+    "hash": "58341380bead8c66a4624b0c53a4199e3a7c8214"
+  },
+  "protein/tp53_hotspot": {
+    "name": "protein/tp53_hotspot",
+    "status": "bad",
+    "note": "is this a good figure. the clinvar is kind of pointless distracting noise. should just highlight what is going on with arrows and/or red text box blurbs. improve y-screen real estate where possible",
+    "reviewedAt": "2026-09-14T04:07:00.378Z",
+    "hash": "c20f2f232460c8424e7318f615d1051326557bf0"
+  },
+  "protein/tp53_mapped_chain": {
+    "name": "protein/tp53_mapped_chain",
+    "status": "bad",
+    "note": "is this a good figure. the clinvar is kind of pointless distracting noise. should just highlight what is going on with arrows and/or red text box blurbs. improve y-screen real estate where possible",
+    "reviewedAt": "2026-09-14T04:07:02.737Z",
+    "hash": "0af6d742716aa97aa5c1227d37aaca3fe8837720"
+  },
+  "protein/tp53_three_structures": {
+    "name": "protein/tp53_three_structures",
+    "status": "bad",
+    "note": "this is duplicating too much of other figures. also is this a good figure. the clinvar is kind of pointless distracting noise. should just highlight what is going on with arrows and/or red text box blurbs. improve y-screen real estate where possible",
+    "reviewedAt": "2026-09-14T04:07:15.627Z",
+    "hash": "a9a4ee55cd5d448a014806a360b32ac0c2c6615e"
+  },
+  "read_marks/chromosome": {
+    "name": "read_marks/chromosome",
+    "status": "bad",
+    "note": "unclear what is being shown",
+    "reviewedAt": "2026-09-14T04:07:49.947Z",
+    "hash": "5f2ec44e60276ec27debfc9add1967f73421f88d"
+  },
+  "render_rates": {
+    "name": "render_rates",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T04:08:02.466Z",
+    "hash": "67e43ffd197a2aa53540743a70cc8d8110da79e1"
+  },
+  "sv_cgiab/vntr_tumor_normal": {
+    "name": "sv_cgiab/vntr_tumor_normal",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-14T04:10:50.666Z",
+    "hash": "a8421c019323b97d108a85b1e5d8e36806a57288"
+  },
+  "sv_channels": {
+    "name": "sv_channels",
+    "status": "bad",
+    "note": "why do we use vertical dashed lines for interchrom? consider non-dashed",
+    "reviewedAt": "2026-09-14T04:11:34.883Z",
+    "hash": "b882396c7bb0bc499d2c10152ed9399702c75d41"
   }
 }
