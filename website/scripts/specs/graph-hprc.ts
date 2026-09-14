@@ -309,17 +309,6 @@ const KIV2_BUBBLE_REGION = {
 const KIV2_GBZ_WALKS_GFA =
   'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.kiv2.eight-haplotypes.gfa'
 
-// The whole of chr1, for the figure that loads a subgraph over all of it. One
-// constant for both views there: the graph's loadedRegion IS the domain of the
-// reference-position ramp, so a second copy of these numbers is a way for the
-// lane's colors and the graph's to silently disagree.
-const CHR1_REGION = {
-  refName: 'chr1',
-  assemblyName: 'hg38',
-  start: 0,
-  end: 248956422,
-}
-
 // MHC class II, the densest window in the tutorial's locus table, and the one
 // where the graph and the callset are worth putting in one frame.
 const MHC_CLASSII_REGION = {
@@ -1077,27 +1066,10 @@ export const hprcVideoFixtures = {
 }
 
 export const hprcGraphSpecs: ScreenshotSpec[] = [
-  // A WHOLE HUMAN CHROMOSOME AS A GRAPH. This is the scale claim, and the two
-  // numbers that make it are in the header: 249 Mb of GRCh38 chr1, drawn from
-  // the hosted level-of-detail tier.
-  //
-  // The tier is one node per BUBBLE rather than one per segment
-  // (scripts/build_bubble_tier.sh over the `gfatools bubble` decomposition HPRC
-  // publishes, hosted as hprc-v2.1-mc-grch38.tier10000.*). Measured off that
-  // file: 474 nodes for all of chr1, against ~751k segments in the graph and
-  // 3,034 for 5 Mb of the FINE index, which is already undrawable. So this is
-  // not the same picture zoomed out — it is a different granularity of the same
-  // graph, and the fine index is what the locus figures on this page use.
-  //
-  // maxRegionBp is why it can be drawn at all. The view's bp ceiling is 5 Mb,
-  // which is a proxy for node count and a good one only at fine granularity; a
-  // tier breaks the proxy, so a session pointed at one says so. maxGraphNodes
-  // is untouched and still counts what actually came back. Needs the plugin
-  // bundle pinned at aee5e17f4b2c or later.
-  //
-  // The segments lane above is the same tier file as an ordinary FeatureTrack,
-  // which is the other half of the claim: at 249 Mb the FINE segments track
-  // refuses with "Too many features", and this one draws.
+  // All 249 Mb of GRCh38 chr1 off the hosted bubble tier
+  // (hprc-v2.1-mc-grch38.tier10000.*, one node per bubble: 474 for chr1). At
+  // this span the FINE segments track refuses with "Too many features" and the
+  // tier lane draws.
   {
     mode: 'url',
     name: 'pangenome/hprc_whole_chromosome',
@@ -1199,12 +1171,6 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
               trackId: 'hprc_tier',
               type: 'LinearBasicDisplay',
               showLabels: 'none',
-              // The graph pane's own reference-position ramp, over the same
-              // 249 Mb the subgraph is cut from, so a block up here and the
-              // node it is is the same color (review: "the canvas nodes are not
-              // rainbow colored like the graph is"). Same helper the LPA and
-              // MHC segment lanes use; this lane simply never got it.
-              color: referencePositionColor(CHR1_REGION),
               // PACKED, and collapsed was tried and reverted. Three rows of
               // yellow boxes at 178 kb per pixel is close to a mat, so
               // collapsing to one row looked like the same cleanup the qc
@@ -1216,39 +1182,17 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
             },
           ],
         },
-        {
-          type: 'GraphGenomeView',
-          loadedTrackId: 'hprc_tier',
-          loadedRegion: CHR1_REGION,
-          // the whole point: 249 Mb past the 5 Mb default
-          maxRegionBp: 250000000,
-          // ANCHORED, and the Bandage force drawing was TRIED here rather than
-          // declined on another figure's measurement (review: "please try the
-          // bandage graph. humor me"). It does not work, and the reason is in
-          // the pane's own header: 474 nodes and 473 edges. n-1 edges on a
-          // connected drawing is a PATH -- the tier is one node per bubble in
-          // reference order with one edge between consecutive bubbles, so every
-          // branch the graph had was collapsed away when the tier was built.
-          // A force layout of a path is a long wiggly line; rendered, it fills
-          // the pane with one arc at 4.2% zoom and runs off both edges, and
-          // nothing about the chromosome is legible in it. The anchored layout
-          // of the same path is the reference axis, which is the one thing the
-          // drawing has to say at this scale. Bandage's own subject -- where the
-          // graph branches -- is what the locus figures on this page draw, on
-          // the fine index.
-          layoutMode: 'auto',
-          colorScheme: 'reference-position',
-        },
       ],
     }),
-    readySelector: TOOLBAR_READY,
     readyTimeout: 300000,
     settleMs: 15000,
     viewportWidth: 1400,
-    // the cytoband lane, the loci lane, the variability curve, the tier lane,
-    // and a two-row anchored drawing. +90 for the loci lane, its header and the
-    // row its labels take, which is 25 more than the lane's own height.
-    viewportHeight: 823,
+    // No graph pane (review: "the whole chromosome is too busy frankly and
+    // linearized view is sortofpointless, we have thelinaergenomeview"). The
+    // tier is a path, one node per bubble with an edge to the next, so its
+    // anchored drawing restated the lanes above and a force drawing of it is
+    // one arc; the tier lane carries the same nodes on the axis.
+    viewportHeight: 580,
     hideTooltip: true,
     // The blank is the loudest thing in the picture and nothing on the image
     // said what it was. The caption used to call it the centromere and 1q12,

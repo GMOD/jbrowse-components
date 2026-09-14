@@ -65,7 +65,7 @@ allele, and one bubble in the HLA class II window spans tens of kilobases
 depending on the haplotype.[^path-count] HPRC publishes no bubble file, so this
 one is ours too, built with `gfatools bubble`.
 
-## A whole chromosome as a graph
+## A whole chromosome, one node per bubble {#a-whole-chromosome-as-a-graph}
 
 The segments track [part 1 loads](/docs/tutorials/pangenome_hprc#load-the-graph)
 draws one node per **segment**, and a window past a few hundred kilobases is
@@ -111,7 +111,7 @@ its `score`, so the only change is the track type:
 }
 ```
 
-<Figure caption="All 249 Mb of GRCh38 chr1 with the cytogenetic bands on the same axis, then the three chr1 loci this page opens, then three lanes off two files: the bubble file as a curve of segments per bubble, the same bubbles as the tier's segments lane, and the tier as a graph. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
+<Figure caption="All 249 Mb of GRCh38 chr1 with the cytogenetic bands on the same axis, then the three chr1 loci this page opens, then two lanes off two files: the bubble file as a curve of segments per bubble, and the same bubbles as the tier's segments lane. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
 
 The two granularities are read together, the tier to find an event and the fine
 index to open it, and the move between them is the node's own menu. On a tier
@@ -368,10 +368,8 @@ split it finds before slicing out one haplotype of each kind.
 [^max-region-bp]:
     The view refuses a cut over 5 Mb, a proxy for node count that holds at
     segment granularity and breaks on a tier, so a `GraphGenomeView` pointed at
-    one carries **`maxRegionBp`** raised to the span it is drawing, which the
-    [whole-chromosome figure](#a-whole-chromosome-as-a-graph) links a session
-    for. The real ceiling is unchanged: `maxGraphNodes` counts what actually
-    came back.
+    one carries **`maxRegionBp`** raised to the span it is drawing. The real
+    ceiling is unchanged: `maxGraphNodes` counts what actually came back.
 
 [^integer-nodes]:
     `ID` and `AT` name base-level integer nodes (`>161001867>161004536`), where

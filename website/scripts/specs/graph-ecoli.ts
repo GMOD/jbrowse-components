@@ -483,6 +483,18 @@ const LAUNCH_OUT_REGION = {
   start: 4400000,
   end: 4450000,
 }
+const LAUNCH_OUT_URL = sessionSpec(ECOLI_PANGENOME_CONFIG, {
+  views: [
+    {
+      id: 'launch_out_graph',
+      type: 'GraphGenomeView',
+      loadedTrackId: ECOLI_SEGMENTS_TRACK,
+      loadedRegion: LAUNCH_OUT_REGION,
+      layoutMode: 'force',
+      colorScheme: 'stable-rank',
+    },
+  ],
+})
 
 // K12's asnW/asnU/asnV cluster: three of the four asn tRNA genes, which are the
 // sites E. coli pathogenicity islands integrate at. Chosen by scanning the
@@ -2783,51 +2795,11 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
       },
     ],
   },
-  // THE SAME INSERTION AS AN ALIGNMENT (review on rgfa_hover_sync: "if possible
-  // show this in a synteny view too. that is very convincing"). It is, and it is
-  // a different KIND of evidence rather than a second drawing of the same one:
-  // the hover figure's claim comes out of the graph's own index — s2037 is
-  // 65,410 bp of CFT073 and its two links land 2,062 bp apart on K12 — and this
-  // one comes out of wfmash's all-vs-all alignment, which the graph had no part
-  // in. Two files agreeing is what makes it convincing.
-  //
-  // Coordinates are the graph's, not measured off a picture:
-  // `node scripts/probe-graph-nodes.ts pangenome/rgfa_hover_sync` prints s2037
-  // at `CFT073#1#chr:1,175,651` with length 65,410, and its neighbours s402
-  // (K12 chr:1,095,051 +451) and s405 (K12 chr:1,097,564), which is the 2,062 bp
-  // the hover band draws.
-  //
-  // The two panels are at wildly different scales on purpose -- 28 kb of K12
-  // against 138 kb of CFT073 -- because that IS the finding. Each panel is its
-  // own view with its own bp/px, so the flanks still align ribbon to ribbon and
-  // the 114 kb between them lands on nothing at all.
-  //
-  // ZOOMED OUT (review: "zoom out please"), and the zoom-out found a
-  // registration bug the old crop was hiding. The windows are now derived from
-  // the PAF's own chain ends rather than from the graph's segment interval:
-  // `tabix ecoli_pggb_ava.pif.gz 'tK12#1#chr:1050000-1150000'` gives two chains
-  // to CFT073, K12 887,944-1,094,152 <-> CFT073 942,350-1,127,332 and K12
-  // 1,097,432-1,183,704 <-> CFT073 1,241,061-1,327,893, so each window is its
-  // chain end plus ~12 kb of flank and the two edges map onto each other. The
-  // old CFT073 window started at 1,170,000 -- 43 kb PAST where the left flank
-  // reaches it -- so the left ribbon left the frame at the bottom-left corner
-  // and only the right flank was actually registered.
-  //
-  // The shaded block is the alignment's, not the graph's: the CFT073 span that
-  // no K12 chain touches at all. The node the hover figure rings is the last
-  // stretch of it (s2037 runs 1,175,651-1,241,061, ending exactly where the
-  // right chain resumes) and what precedes it is the same bubble's s2030-s2036,
-  // all rank 2 -- so at the old crop the frame showed part of the gap and
-  // labelled it the whole of it.
-  //
-  // NOTHING DRAWN ON TOP. Two pills used to name the block and the K12 gap, over
-  // a 10% grey highlight on each. Once the frame was widened to its chain ends
-  // the pills were describing the most obvious thing in it (review: "the text
-  // annotations here are...frankly nonsense. like its obvious there is a big
-  // gap. what is the point?") -- the rule now written down in
-  // website/CLAUDE.md. The highlights went with them for a duller reason: at
-  // that alpha neither was visible in the capture, so they were a setting the
-  // figure did not have.
+  // The insertion rgfa_hover_sync rings, from wfmash's all-vs-all alignment
+  // rather than the graph's index. Each window is a PAF chain end plus ~12 kb of
+  // flank (`tabix ecoli_pggb_ava.pif.gz 'tK12#1#chr:1050000-1150000'`: K12
+  // 887,944-1,094,152 <-> CFT073 942,350-1,127,332 and K12 1,097,432-1,183,704
+  // <-> CFT073 1,241,061-1,327,893), so the frame edges map onto each other.
   {
     mode: 'url',
     name: 'pangenome/rgfa_insertion_synteny',
@@ -2865,9 +2837,36 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
     // same 1000 px would have cost the gene lane its labels, which the caption
     // reads the cluster's names out of
     viewportWidth: 1400,
-    // two gene lanes, two rulers and the 200 px band between them
     viewportHeight: 582,
     hideTooltip: true,
+    annotations: [
+      {
+        type: 'text',
+        text: 'sequence only CFT073 carries',
+        fontSize: 18,
+        anchor: {
+          view: [0, 1],
+          track: 'CFT073_genes',
+          locus: 'chr:1,127,332-1,241,061',
+          fracY: 0,
+          dy: -70,
+        },
+      },
+      {
+        type: 'text',
+        text: 'insertion site in K12',
+        fontSize: 18,
+        leader: true,
+        anchor: {
+          view: [0, 0],
+          track: 'K12_genes',
+          locus: 'chr:1,095,502-1,097,564',
+          fracY: 1,
+        },
+        dx: 60,
+        dy: 70,
+      },
+    ],
   },
   // The way back out of the graph, on the one fixture where it can do more than
   // return to the reference: all five strains loaded as assemblies, so the graph
@@ -2897,48 +2896,16 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'pangenome/rgfa_launch_out_menu',
-    url: sessionSpec(ECOLI_PANGENOME_CONFIG, {
-      views: [
-        {
-          // pinned so the actions and the callout can scope to this view rather
-          // than to whichever view the launch adds beside it
-          id: 'launch_out_graph',
-          type: 'GraphGenomeView',
-          loadedTrackId: ECOLI_SEGMENTS_TRACK,
-          loadedRegion: LAUNCH_OUT_REGION,
-          // The view's own default drawing, per review: "we need to just use
-          // force directed bandage graphs. the backbone graphs are too hard to
-          // understand. across all our figures. backbone too complicated. if we
-          // wanted linear, we'd use our lineargenomeview." Sample rows drew this
-          // subgraph as a K12 line with five labelled rows of stubs under it,
-          // which is the linear reading of a graph and the one a linear view
-          // already gives. The menu this figure is about names each strain
-          // itself, so nothing here needed the row labels.
-          layoutMode: 'force',
-          colorScheme: 'stable-rank',
-        },
-      ],
-    }),
-    // the row labels went with the sample-rows layout; the toolbar is what says
-    // a force drawing has arrived
+    url: LAUNCH_OUT_URL,
     readySelector: TOOLBAR_READY,
     readyTimeout: 90000,
     settleMs: 3000,
     viewportWidth: 1000,
-    // the taller of the two frames, which is now the graph plus its cascade: a
-    // force drawing is about as tall as it is wide where the five sample rows
-    // were flat. The synteny frame sets its own below.
-    viewportHeight: 820,
+    viewportHeight: 360,
     hideTooltip: true,
     stages: [
       {
-        // The graph pane plus the cascade hanging off its menu. This is also the
-        // viewport stage two ACTS in — a stage resizes after its own actions —
-        // and below ~430 the synteny item click stops launching anything
-        // (verified at 350 and 410 against the sample-rows drawing: the debug
-        // capture shows the menu dismissed and no view added). Cause not
-        // established; treat 430 as a measured floor rather than a tidy number.
-        viewportHeight: 820,
+        viewportHeight: 360,
         actions: [
           {
             type: 'click',
@@ -2967,20 +2934,10 @@ export const ecoliGraphSpecs: ScreenshotSpec[] = [
         ],
       },
       {
-        // Re-opened from scratch rather than clicked out of the cascade stage
-        // one left standing: the frames differ in height, and the resize that
-        // buys frame one its tight crop lands between the two stages and moves
-        // the menu under it — the synteny row was then clicked at its old
-        // position and nothing launched.
-        closeMenusFirst: true,
-        // The launched synteny view alone, so the frame is the result rather
-        // than 430px of the graph that produced it plus the result (review: "in
-        // the second frame we might just want the graphgenomeview panel to be
-        // closed"). Frame one is where the graph and its menu are seen. 940 held
-        // the graph and the synteny view together; five panels on their own want
-        // this much, and at 560 the last one was cut, at 700 there were 107px of
-        // blank under them.
-        viewportHeight: 600,
+        // Reloaded at its own height, since the synteny click launched nothing
+        // at the first frame's height (below ~430)
+        url: LAUNCH_OUT_URL,
+        viewportHeight: 710,
         actions: [
           {
             type: 'click',

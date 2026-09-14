@@ -18,11 +18,7 @@
 // deconstructed into a VCF that does. Each figure below is picked to show one
 // of those.
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
-import {
-  TOOLBAR_READY,
-  local,
-  referencePositionColor,
-} from './graph-fixtures.ts'
+import { TOOLBAR_READY, local } from './graph-fixtures.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
@@ -202,30 +198,7 @@ const dock2Spec: ScreenshotSpec = {
 // 1 2 3 4 1 5 6 7 8 9 1, i.e. ANG, GAU and YAK share one allele and the other
 // eight assemblies each carry their own. That is a cattle MHC behaving exactly
 // like the human one, and it is invisible in the graph lanes.
-const BOLA_REGION = {
-  refName: 'chr23',
-  assemblyName: 'bosTau9',
-  start: 25_844_769,
-  end: 25_968_809,
-}
 const BOLA_LOC = 'chr23:25,844,769-25,968,809'
-
-// Whole bosTau9 chr23 off the coarse tier. The scale claim, and the cheapest
-// possible check that the tier is not a human-only trick: 52.5 Mb of cattle
-// chromosome in a few hundred nodes, where the FINE segments track over the
-// same span refuses with "Too many features".
-//
-// maxRegionBp is what makes it drawable: the view's 5 Mb ceiling is a proxy for
-// node count and a good one only at segment granularity, so a session pointed
-// at a tier says otherwise. maxGraphNodes is untouched and still counts what
-// came back.
-const CHR23_LENGTH = 52_498_615
-const CHR23_REGION = {
-  refName: 'chr23',
-  assemblyName: 'bosTau9',
-  start: 0,
-  end: CHR23_LENGTH,
-}
 
 export const nonHumanGraphSpecs: ScreenshotSpec[] = [
   {
@@ -330,51 +303,61 @@ export const nonHumanGraphSpecs: ScreenshotSpec[] = [
             {
               trackId: 'bovine_minigraph_bubbles',
               type: 'LinearBasicDisplay',
-              height: 70,
-            },
-            {
-              trackId: 'bovine_minigraph_alleles',
-              type: 'LinearPileupDisplay',
               height: 90,
             },
-            // The lane the graph cannot replace. One row per assembly, so the
-            // nine-allelic site at 25,864,769 reads as nine different colors
-            // across eleven rows rather than as one wide box. 11 rows at ~17 px
-            // is the floor that keeps the row labels legible.
+            // One row per assembly, so the nine-allelic site at 25,864,769
+            // reads across eleven rows rather than as one wide box. 11 rows at
+            // ~17 px is the floor that keeps the row labels legible.
             {
               trackId: 'bovine_pangenome_vcf',
               type: 'LinearMultiSampleVariantDisplay',
               height: 190,
             },
             {
-              trackId: 'bovine_minigraph_segments',
-              type: 'LinearBasicDisplay',
-              height: 80,
+              trackId: 'bovine_minigraph_alleles',
+              type: 'LinearPileupDisplay',
+              height: 90,
             },
           ],
         },
-        {
-          type: 'GraphGenomeView',
-          displayName: 'BoLA graph',
-          loadedTrackId: 'bovine_minigraph_segments',
-          loadedRegion: BOLA_REGION,
-          connectedViewId: 'bovine-bola-lgv',
-          colorScheme: 'reference-position',
-          // Anchored, same finding as both mouse figures: 90 nodes and 118
-          // edges is a chain with two loops in it, and the force layout drew it
-          // as one loop plus a disconnected 22.6 kb stub running off the frame.
-          // Anchored puts the two big insertions under the reference span they
-          // replace, which is where the callset lane above says they are.
-          layoutMode: 'auto',
-        },
       ],
     }),
-    readySelector: TOOLBAR_READY,
     readyTimeout: 300000,
     settleMs: 15000,
     viewportWidth: 1400,
-    viewportHeight: 1180,
+    // No graph pane and no segments lane (review: "unclear what i'm looking
+    // at"): the anchored drawing's rank rows restated the lanes, and what the
+    // figure compares is the graph's lanes against the callset.
+    viewportHeight: 800,
     hideTooltip: true,
+    annotations: [
+      {
+        type: 'text',
+        text: 'each red row is a different allele',
+        fontSize: 18,
+        leader: true,
+        anchor: {
+          track: 'bovine_pangenome_vcf',
+          locus: 'chr23:25,905,000',
+          fracY: 0.2,
+        },
+        dx: 30,
+        dy: -70,
+      },
+      {
+        type: 'text',
+        text: 'the graph names no carrier',
+        fontSize: 18,
+        leader: true,
+        anchor: {
+          track: 'bovine_minigraph_alleles',
+          locus: 'chr23:25,935,000',
+          fracY: 0.45,
+        },
+        dx: -60,
+        dy: 30,
+      },
+    ],
   },
   {
     mode: 'url',
@@ -393,34 +376,31 @@ export const nonHumanGraphSpecs: ScreenshotSpec[] = [
               trackId: 'bovine_minigraph_tier',
               type: 'LinearBasicDisplay',
               showLabels: 'none',
-              // The graph pane's own ramp over the same span, so a block up
-              // here and the node it is are the same color.
-              color: referencePositionColor(CHR23_REGION),
               height: 60,
             },
           ],
         },
-        {
-          type: 'GraphGenomeView',
-          displayName: 'chr23 graph (bubble tier)',
-          loadedTrackId: 'bovine_minigraph_tier',
-          loadedRegion: CHR23_REGION,
-          maxRegionBp: CHR23_LENGTH,
-          connectedViewId: 'bovine-chr23-lgv',
-          colorScheme: 'reference-position',
-          // Anchored: the tier is one node per bubble in reference order with
-          // one edge between consecutive bubbles, so it is a PATH, and a force
-          // layout of a path is a long wiggly line that says nothing about the
-          // chromosome. Same finding as the HPRC chr1 figure.
-          layoutMode: 'auto',
-        },
       ],
     }),
-    readySelector: TOOLBAR_READY,
     readyTimeout: 300000,
     settleMs: 15000,
     viewportWidth: 1400,
-    viewportHeight: 780,
+    viewportHeight: 550,
     hideTooltip: true,
+    annotations: [
+      {
+        type: 'text',
+        text: 'BoLA',
+        fontSize: 18,
+        leader: true,
+        anchor: {
+          track: 'bovine_bubble_score',
+          locus: 'chr23:25,900,000',
+          fracY: 0.15,
+        },
+        dx: -100,
+        dy: -10,
+      },
+    ],
   },
 ]

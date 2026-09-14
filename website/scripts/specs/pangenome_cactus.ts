@@ -209,39 +209,19 @@ export const pangenomeCactusSpecs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     settleMs: 4000,
     viewportWidth: 1000,
-    // GraphGenomeView takes no `height` through the launch snapshot; the pane
-    // sizes itself to its drawing, and this force drawing is a long diagonal
-    // thread with the bubble at one end, so it is taller than it is wide. Sized
-    // off the run's own CONTENT CLIPPED BELOW THE FOLD rather than off the PNG.
-    viewportHeight: 1160,
+    viewportHeight: 890,
     hideTooltip: true,
-    // The one thing this drawing gets read backwards (review: "the 'deletion
-    // loop' is very large ... larger than the insertions, which is
-    // counterintuitive"). The dashed edge is a single link between the two
-    // flanking anchors and holds no bases at all; in a force layout its drawn
-    // length is a spring at rest, so it bows out around the tube it bypasses and
-    // ends up the biggest thing in the frame. The app labels it with the length
-    // it SKIPS, which is the length of the tube inside it -- so the two are the
-    // same 776 bp drawn twice, once as sequence and once as a route past it.
-    //
-    // A callout rather than a layout change: `auto` would rank the nodes by
-    // reference position and draw the link as a short arc, which reads right and
-    // loses what this figure is for (see the note above -- the anchored layout
-    // flattens the K12-only arm against the backbone it parallels).
+    // The dashed edge is one link with no bases; its bow is the force layout's
+    // spring, so it reads as the biggest thing in the frame unless named.
     annotations: [
       {
         type: 'text',
-        text: 'The dashed edge is one link and carries no sequence. How far it bows out is the force layout, not a length -- the bases it skips are the tube it goes around.',
+        text: 'the other four strains skip this node',
         fontSize: 18,
-        maxWidth: 420,
-        textAlign: 'start',
-        anchor: {
-          selector: '[data-testid="graph-genome-canvas"]',
-          alignX: 'left',
-          alignY: 'top',
-          dx: 300,
-          dy: 30,
-        },
+        leader: true,
+        anchor: { view: 1, graphNode: '258914' },
+        dx: 220,
+        dy: 70,
       },
     ],
   },

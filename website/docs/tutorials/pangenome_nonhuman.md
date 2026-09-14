@@ -88,11 +88,11 @@ vg convert -g "$TMPDIR/$k.renamed.gfa" -p > "$TMPDIR/$k.vg"
 vg deconstruct -p "chr$k" -a -t "$THREADS" "$TMPDIR/$k.vg" > "vcf/chr$k.vcf.tmp"
 ```
 
-<Figure caption="The BoLA class II region on ARS-UCD1.2: RefSeq genes, the bubbles lane, the allele inventory, the deconstructed callset with one row per assembly, and the rGFA segments, over the same window as an anchored graph. The callset lane resolves alleles the graph lanes can only show as bulk presence and absence." src="/img/pangenome/bovine_bola.png" />
+<Figure caption="The BoLA class II region on ARS-UCD1.2: RefSeq genes, the bubbles lane, the deconstructed callset with one row per assembly, and the allele inventory. The callset resolves alleles the graph lanes can only show as bulk presence and absence." src="/img/pangenome/bovine_bola.png" />
 
 Read the genotype rows across: most assemblies carry a different allele here,
 which is cattle MHC behaving much like human MHC. None of it is visible in the
-graph lanes above.
+graph lanes around it.
 
 ## A whole chromosome, off the coarse tier
 
@@ -101,21 +101,19 @@ which is what makes a whole chromosome drawable, and it is not a human-only
 trick. Over a full cattle chromosome the _fine_ segments track refuses with "Too
 many features"; the tier draws.
 
-<Figure caption="A whole ARS-UCD1.2 chromosome with the RefSeq genes, the segments-per-bubble curve and the bubble tier on one axis, and the tier drawn as an anchored graph below. Every x in the graph pane is a reference coordinate, so the backbone runs left to right under the linear view." src="/img/pangenome/bovine_whole_chromosome.png" />
+<Figure caption="A whole ARS-UCD1.2 chromosome with the RefSeq genes, the segments-per-bubble curve and the bubble tier on one axis. BoLA is the densest stretch of the curve." src="/img/pangenome/bovine_whole_chromosome.png" />
 
-Two settings make it work. The view refuses a cut wider than 5 Mb, which is a
-proxy for node count and a good one only at segment granularity, so a session
-pointed at a tier raises `maxRegionBp` explicitly. The layout is anchored rather
-than force-directed: a tier is one node per bubble in reference order, which is
-a chain, and a force layout draws a chain as an arc.
+A graph view pointed at a tier raises `maxRegionBp` explicitly, because the view
+refuses a cut wider than 5 Mb, which is a proxy for node count and a good one
+only at segment granularity.
 
 :::note
 
-That applies to the locus figures above too. These panels are a dozen or two
-assemblies rather than ninety haplotypes, so their cuts are chains with a few
-loops and the anchored layout reads better at every scale here. Check the node
-and edge counts in the graph pane's header before reaching for the force layout;
-it earns its place where the bubbles lane says a window is genuinely tangled.
+These panels are a dozen or two assemblies rather than ninety haplotypes, so
+their cuts are chains with a few loops and the anchored layout often reads
+better. Check the node and edge counts in the graph pane's header before
+reaching for the force layout; it earns its place where the bubbles lane says a
+window is genuinely tangled.
 
 :::
 
