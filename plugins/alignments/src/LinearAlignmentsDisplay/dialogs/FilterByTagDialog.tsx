@@ -219,6 +219,7 @@ function TagFilterSection(props: {
           label="Tag value"
           variant="outlined"
           size="small"
+          margin="none"
           value={tagValue}
           placeholder="*"
           helperText="* matches any value"

@@ -36,10 +36,9 @@ async function testFilterTrack(trackId: string, tag: string, value: string) {
   fireEvent.change(await screen.findByLabelText('Tag name', ...opts), {
     target: { value: tag },
   })
-  fireEvent.change(
-    await screen.findByPlaceholderText('Enter value or * for any'),
-    { target: { value } },
-  )
+  fireEvent.change(await screen.findByLabelText('Tag value'), {
+    target: { value },
+  })
   fireEvent.click(await screen.findByText('Submit'))
   const display = await findDisplayPainted('pileup-display', delay)
   expectCanvasMatch(findCanvasIn(display))
