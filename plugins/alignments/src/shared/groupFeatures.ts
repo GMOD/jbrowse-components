@@ -5,8 +5,8 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/cigar-utils'
 import {
-  MAX_GROUPS,
   OVERFLOW_GROUP_KEY,
+  capGroupKeys,
   compareGroupKeys,
   overflowLabel,
 } from '@jbrowse/display-kit/groupKeys'
@@ -188,33 +188,31 @@ function mapqKey(feature: Feature): GroupKey {
 // keys, and GroupByDialog refuses `tag` up front with the distinct values in
 // hand.
 
-// Merge the tail past MAX_GROUPS into one overflow section rather than dropping
-// its reads. Runs on the already-ordered list, so which groups survive follows
-// from the key set alone and not from per-region read counts. The cap is still
-// region-local, so a cross-region union can exceed MAX_GROUPS when regions expose
-// wildly different value sets; it bounds the per-group region-width cost, which
-// is what actually blows up.
-//
-// The untagged group is held out and re-pinned ahead of the overflow bucket:
-// reads *lacking* the grouping tag are a distinct answer users look for, and it
-// sorts into the very tail this merges.
-function capGroups(groups: FeatureGroup[]) {
-  const untagged = groups.at(-1)?.key === '' ? groups.pop() : undefined
-  const overflow = groups.splice(MAX_GROUPS - (untagged ? 2 : 1))
-  const mergedKeys = overflow.map(g => g.key)
-  const merged = {
-    key: OVERFLOW_GROUP_KEY,
-    label: overflowLabel(mergedKeys.length),
-    features: overflow.flatMap(g => g.features),
-    mergedKeys,
-  }
-  return untagged ? [...groups, untagged, merged] : [...groups, merged]
-}
-
+// The tail past `MAX_GROUPS` merges into one overflow section rather than
+// dropping its reads, by the same `capGroupKeys` rule a display reading the
+// sections applies, so which groups survive follows from the key set alone
+// and not from per-region read counts. The cap is region-local, so a
+// cross-region union can exceed MAX_GROUPS when regions expose wildly
+// different value sets; it bounds the per-group region-width cost, which is
+// what actually blows up.
 function orderGroups(groups: FeatureGroup[]) {
   const ordered = groups.sort((a, b) => compareGroupKeys(a.key, b.key))
-  // > (not >=) so the cap only ever fires when it genuinely merges 2+ groups.
-  return ordered.length > MAX_GROUPS ? capGroups(ordered) : ordered
+  const { sectionOf, mergedCount } = capGroupKeys(ordered.map(g => g.key))
+  if (mergedCount === 0) {
+    return ordered
+  }
+  const kept: FeatureGroup[] = []
+  const overflow: FeatureGroup[] = []
+  for (const g of ordered) {
+    ;(sectionOf(g.key) === g.key ? kept : overflow).push(g)
+  }
+  kept.push({
+    key: OVERFLOW_GROUP_KEY,
+    label: overflowLabel(overflow.length),
+    features: overflow.flatMap(g => g.features),
+    mergedKeys: overflow.map(g => g.key),
+  })
+  return kept
 }
 
 function appendFeature(
@@ -405,22 +403,6 @@ export function groupByForMode(
   return isChainMode && !isChainGroupableType(groupBy?.type)
     ? undefined
     : groupBy
-}
-
-// Identity of the key space a grouping hands out keys in. A group key means
-// nothing on its own: `''` is the ungrouped lane (`singleSection`) AND the
-// catch-all bucket of `tag`, `pairOrientation` and `mateAssembly`, and the
-// digit keys `mapq` and `pairOrientation` emit overlap outright. Two groupings
-// share a key space only when this string matches, so anything holding
-// per-group state has one question to ask rather than a list of dimensions to
-// keep up with. Takes the EFFECTIVE grouping (`groupByForMode`) — chain mode
-// degrades a per-read dimension to ungrouped without the slot moving.
-export function groupKeySpaceOf(groupBy: GroupBy | undefined) {
-  return groupBy === undefined
-    ? ''
-    : groupBy.type === 'tag'
-      ? `${groupBy.type}\0${groupBy.tag}`
-      : groupBy.type
 }
 
 // Dimensions as menu radio options, in the given order: the one join between the

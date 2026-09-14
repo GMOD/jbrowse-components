@@ -1,3 +1,4 @@
+import { NO_HIDDEN_GROUPS } from '@jbrowse/display-kit/HiddenGroupsMixin'
 import {
   OVERFLOW_GROUP_KEY,
   compareGroupKeys,
@@ -22,10 +23,7 @@ import type {
 import type { SashimiArcsMode } from './constants.ts'
 import type { GroupId } from '@jbrowse/display-kit/groupKeys'
 
-// The "this display hides no lane" answer, shared so every `hiddenGroupKeys`
-// getter returns one identity — a fresh `new Set()` per evaluation reruns
-// `groupOrder`, `rawDataByGroup` and `readIdIndexMap` on any invalidation.
-export const NO_HIDDEN_GROUPS: ReadonlySet<string> = new Set()
+export { NO_HIDDEN_GROUPS }
 
 // The one place the `rpcDataMap` → groups nested walk is spelled; every scan
 // below and the model's `.some`/max getters iterate it rather than re-nesting

@@ -1,11 +1,11 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import { groupKeySpaceOf } from '@jbrowse/display-kit/groupKeys'
 
 import {
   GROUP_BY_DIMENSIONS,
   MAX_GROUPS,
   OVERFLOW_GROUP_KEY,
   groupByForMode,
-  groupKeySpaceOf,
   isChainGroupableType,
   normalizeGroupBy,
   partitionChains,

@@ -83,3 +83,22 @@ export interface GroupId {
   key: string
   label: string
 }
+
+/**
+ * Identity of the key space a grouping hands out keys in: the dimension plus
+ * whatever parameter it takes (a tag, an attribute). A key means nothing on
+ * its own, since `''` is both the ungrouped section and every dimension's
+ * catch-all, so anything keyed by group key is dropped when this moves. Takes
+ * the normalized grouping, whose only fields are `type` and the parameter.
+ */
+export function groupKeySpaceOf(
+  groupBy: { type: string; [param: string]: string | undefined } | undefined,
+) {
+  if (groupBy === undefined) {
+    return ''
+  }
+  const { type, ...params } = groupBy
+  return [type, ...Object.values(params).filter(v => v !== undefined)].join(
+    '\0',
+  )
+}

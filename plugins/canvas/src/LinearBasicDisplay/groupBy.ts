@@ -99,17 +99,6 @@ export function normalizeFeatureGroupBy(
   return undefined
 }
 
-// Identity of the key space a grouping hands out keys in: a key means nothing
-// on its own, since `''` is both the ungrouped section and every dimension's
-// catch-all, so per-key state is dropped when this moves.
-export function groupKeySpaceOf(groupBy: FeatureGroupBy | undefined) {
-  return groupBy === undefined
-    ? ''
-    : groupBy.type === 'attribute'
-      ? `attribute\0${groupBy.attribute}`
-      : groupBy.type
-}
-
 export interface FeatureGroupSection extends GroupId {
   top: number
   height: number

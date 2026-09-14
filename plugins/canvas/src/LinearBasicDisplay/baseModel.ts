@@ -24,6 +24,7 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
+import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
@@ -32,14 +33,15 @@ import {
   autorunOnReadyView,
   onDisplayedRegionsChange,
 } from '@jbrowse/display-kit/displayAutoruns'
+import { groupKeySpaceOf } from '@jbrowse/display-kit/groupKeys'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
-import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import { installUpload } from '@jbrowse/render-core/installUpload'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { observable, reaction, toJS } from 'mobx'
+import { toJS } from 'mobx'
 
 import { themedColorTable } from '../RenderFeatureDataRPC/colorClasses.ts'
 import { labelFontSize } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
@@ -80,7 +82,6 @@ import {
 import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
 import {
   featureGroupSections,
-  groupKeySpaceOf,
   normalizeFeatureGroupBy,
   sectionIdsOf,
 } from './groupBy.ts'
@@ -196,15 +197,18 @@ export default function baseStateModelFactory(
     types
       .compose(
         'LinearCanvasBaseDisplay',
-        BaseDisplay,
-        TrackHeightMixin(),
-        HeightModeMixin(),
+        types.compose(
+          BaseDisplay,
+          TrackHeightMixin(),
+          HeightModeMixin(),
+          MultiRegionDisplayMixin(),
+        ),
         LegendMixin(),
-        MultiRegionDisplayMixin(),
         CanvasFeatureGateMixin(),
         // After both gate mixins, since it keys off their verdict.
         DensityBandMixin(),
         ContextMenuMixin<FeatureContextMenuInfo>(),
+        HiddenGroupsMixin(),
         types.model({
           /**
            * #property
@@ -279,14 +283,6 @@ export default function baseStateModelFactory(
          * from this display, read by the LGV crosshair overlay
          */
         sequenceHoverPosition: undefined as SequenceHoverPosition | undefined,
-        /**
-         * #volatile
-         * Group keys the user hid from the stack. A key means nothing outside
-         * the grouping that issued it, since `''` is both the ungrouped
-         * section and every dimension's catch-all, so the set is dropped when
-         * `groupKeySpace` moves.
-         */
-        hiddenGroups: observable.set<string>(),
         // #endregion
       }))
       .volatile(fitLadderVolatiles)
@@ -420,20 +416,10 @@ export default function baseStateModelFactory(
         /**
          * #getter
          * Identity of the key space the grouping hands out keys in; the
-         * per-key state above is dropped when it moves.
+         * hidden sections are dropped when it moves.
          */
         get groupKeySpace() {
           return groupKeySpaceOf(this.groupBy)
-        },
-
-        /**
-         * #getter
-         * A fresh Set per change rather than the observable set itself, so
-         * the layout memo, which compares its inputs by identity, sees a
-         * hide.
-         */
-        get hiddenGroupKeys(): ReadonlySet<string> {
-          return new Set(self.hiddenGroups)
         },
 
         /**
@@ -1136,32 +1122,6 @@ export default function baseStateModelFactory(
 
         /**
          * #action
-         * Drop a section from the stack. Reversed by `showAllGroups`, which
-         * the "Show..." menu offers while anything is hidden, since a hidden
-         * section draws no chip of its own to come back from.
-         */
-        hideGroup(key: string) {
-          self.hiddenGroups.add(key)
-        },
-
-        /**
-         * #action
-         */
-        showAllGroups() {
-          self.hiddenGroups.clear()
-        },
-
-        /**
-         * #action
-         * Forget every hidden section: a key names a section only within the
-         * grouping that issued it.
-         */
-        dropGroupState() {
-          self.hiddenGroups.clear()
-        },
-
-        /**
-         * #action
          */
         openSetColorDialog(showUtrColor = true) {
           getDialogHost(self).queueDialog(handleClose => [
@@ -1468,20 +1428,6 @@ export default function baseStateModelFactory(
             )
 
             installYMorphAutorun(self)
-
-            // A reaction rather than a line in `setGroupBy`: the settings
-            // editor and a reset write the slot without it, and a stale key
-            // would carry its meaning to a section that never earned it.
-            addDisposer(
-              self,
-              reaction(
-                () => self.groupKeySpace,
-                () => {
-                  self.dropGroupState()
-                },
-                { name: 'CanvasGroupKeySpaceReset' },
-              ),
-            )
           },
         }
       })

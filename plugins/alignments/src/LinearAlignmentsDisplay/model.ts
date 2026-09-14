@@ -29,6 +29,7 @@ import { sameStrings } from '@jbrowse/core/util/sameStrings'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import DensityTierMixin from '@jbrowse/display-kit/DensityTierMixin'
 import HeightModeMixin from '@jbrowse/display-kit/HeightModeMixin'
+import HiddenGroupsMixin from '@jbrowse/display-kit/HiddenGroupsMixin'
 import LegendMixin from '@jbrowse/display-kit/LegendMixin'
 import MultiRegionDisplayMixin from '@jbrowse/display-kit/MultiRegionDisplayMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
@@ -36,6 +37,7 @@ import { coarseTierPending } from '@jbrowse/display-kit/coarseTierPhase'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { onDisplayedRegionsChange } from '@jbrowse/display-kit/displayAutoruns'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
+import { groupKeySpaceOf } from '@jbrowse/display-kit/groupKeys'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { subPixelBinBp } from '@jbrowse/display-kit/subPixelBinBp'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
@@ -50,13 +52,7 @@ import {
   visibleStatsDomain,
 } from '@jbrowse/wiggle-core'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core/constants'
-import {
-  autorun,
-  compareStructural,
-  computed,
-  observable,
-  reaction,
-} from 'mobx'
+import { autorun, compareStructural, computed, observable } from 'mobx'
 
 import { computeReadChains } from '../features/arcs/arcChains.ts'
 import { arcColorLegendCategory } from '../features/arcs/arcColors.ts'
@@ -75,7 +71,7 @@ import {
   isPerBaseScheme,
   workerColorBy,
 } from '../shared/colorSchemes.ts'
-import { groupByForMode, groupKeySpaceOf } from '../shared/groupFeatures.ts'
+import { groupByForMode } from '../shared/groupFeatures.ts'
 import {
   arcKeyFoldsIntoReadKey,
   LEGEND_MAX_WIDTH,
@@ -123,7 +119,6 @@ import {
   buildReadIdIndexMap,
   buildSashimiDownKeys,
   hasNamedGroups,
-  NO_HIDDEN_GROUPS,
   orderedGroups,
 } from './groupedDataMaps.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
@@ -345,10 +340,12 @@ export default function stateModelFactory(
     types
       .compose(
         'LinearAlignmentsDisplay',
-        BaseDisplay,
-        TrackHeightMixin(),
-        HeightModeMixin(),
-        MultiRegionDisplayMixin(),
+        types.compose(
+          BaseDisplay,
+          TrackHeightMixin(),
+          HeightModeMixin(),
+          MultiRegionDisplayMixin(),
+        ),
         // Where the byte gate refuses the reads, the coverage band draws the
         // adapter's density sidecar instead of the banner — see
         // `densityCoverageRegions`.
@@ -358,6 +355,7 @@ export default function stateModelFactory(
         ScoreScaleMixin(),
         LegendMixin(),
         ContextMenuMixin<AlignmentsContextMenuInfo>(),
+        HiddenGroupsMixin(),
         // Track-menu settings are config slots (read via getConf, written via
         // setConf) so an edit survives hide/retick and a config
         // default can be set declaratively. The plain MST fields below are the
@@ -406,22 +404,10 @@ export default function stateModelFactory(
            * #volatile
            * Group keys whose pileup is collapsed to just its coverage band
            * (in-track grouping). Keyed by group key so it survives re-fetches;
-           * volatile so it resets on reload. A key means nothing outside the
-           * grouping that issued it — `''` is the ungrouped lane AND several
-           * dimensions' catch-all bucket — so the whole set is dropped when
-           * `groupKeySpace` moves (`AlignmentsGroupKeySpaceReset`).
+           * volatile so it resets on reload, and dropped with the mixin's
+           * `hiddenGroups` when `groupKeySpace` moves.
            */
           collapsedGroups: observable.set<string>(),
-          /**
-           * #volatile
-           * Group keys the user hid from the stack, keyed and dropped exactly
-           * like `collapsedGroups` — one lane's reads are then out of every
-           * cross-group derivation too (coverage scale, legend, arcs), which is
-           * the point: a lane hidden is a lane the rest of the stack is read
-           * without. `hiddenGroupKeys` is what applies it, and folds in the lane
-           * a display hides on its own behalf.
-           */
-          hiddenGroups: observable.set<string>(),
           /**
            * #volatile
            * Per-group pileup height override in px (in-track grouping). Keyed by
@@ -529,33 +515,6 @@ export default function stateModelFactory(
       // setters) is `ScoreScaleMixin`, composed above — the same one the wiggle
       // family composes, so the shared score menu and SetMinMaxDialog take this
       // model with no adapter shim and the two can't drift.
-      .views(() => ({
-        /**
-         * #getter
-         * Lanes the DISPLAY hides on its own behalf, as opposed to the ones the
-         * user hid from a chip (`hiddenGroups`). Empty here; LGVSyntenyDisplay
-         * overrides it to hide the self-alignment lane of an all-vs-all track.
-         * The overridable half, so a display stating one can't drop the other.
-         */
-        get displayHiddenGroupKeys(): ReadonlySet<string> {
-          return NO_HIDDEN_GROUPS
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Group keys that `groupOrder` drops, so a lane leaves the stack — and
-         * every cross-group derivation — without any consumer of the order
-         * learning about it. Both halves: what the user hid, and what the
-         * display hides for itself.
-         */
-        get hiddenGroupKeys(): ReadonlySet<string> {
-          const own = self.displayHiddenGroupKeys
-          return self.hiddenGroups.size === 0
-            ? own
-            : new Set([...own, ...self.hiddenGroups])
-        },
-      }))
       .views(self => ({
         /**
          * #getter
@@ -3169,6 +3128,33 @@ export default function stateModelFactory(
         },
       }))
       .actions(self => {
+        const dropHiddenGroups = self.dropGroupState
+        return {
+          /**
+           * #action
+           * Collapse/expand a stacked group's pileup (coverage stays visible).
+           */
+          toggleGroupCollapsed(key: string) {
+            if (self.collapsedGroups.has(key)) {
+              self.collapsedGroups.delete(key)
+            } else {
+              self.collapsedGroups.add(key)
+            }
+          },
+
+          /**
+           * #action
+           * The mixin's reset plus the collapses and per-group height
+           * overrides, which are keyed by group key too.
+           */
+          dropGroupState() {
+            dropHiddenGroups()
+            self.collapsedGroups.clear()
+            self.groupMaxHeightOverrides.clear()
+          },
+        }
+      })
+      .actions(self => {
         const superSetError = self.setError
         const superSetHeightMode = self.setHeightMode
         const superCloseContextMenu = self.closeContextMenu
@@ -3426,26 +3412,13 @@ export default function stateModelFactory(
            * `null` override (not a cleared override) so it beats a configured
            * `groupBy` default rather than falling back to it.
            *
-           * Doesn't drop the per-lane state: `AlignmentsGroupKeySpaceReset`
-           * does that for this write and for the ones no action of this
+           * Doesn't drop the per-lane state: `HiddenGroupsMixin`'s key-space
+           * reset does that for this write and for the ones no action of this
            * display makes.
            */
           setGroupBy(groupBy?: GroupBy) {
             setConf(self, 'groupBy', groupBy ?? null)
             self.scrollTop = 0
-          },
-
-          /**
-           * #action
-           * Forget every collapse, height override and hidden lane. Each is
-           * keyed by group key, and a group key only names a lane within the
-           * grouping that issued it, so a key-space change invalidates all of
-           * them at once.
-           */
-          dropGroupLaneState() {
-            self.collapsedGroups.clear()
-            self.groupMaxHeightOverrides.clear()
-            self.hiddenGroups.clear()
           },
 
           /**
@@ -3459,39 +3432,6 @@ export default function stateModelFactory(
             setConf(self, 'collapseGroupRows', flag)
             self.groupMaxHeightOverrides.clear()
             self.scrollTop = 0
-          },
-
-          /**
-           * #action
-           * Collapse/expand a stacked group's pileup (coverage stays visible).
-           */
-          toggleGroupCollapsed(key: string) {
-            if (self.collapsedGroups.has(key)) {
-              self.collapsedGroups.delete(key)
-            } else {
-              self.collapsedGroups.add(key)
-            }
-          },
-
-          /**
-           * #action
-           * Drop a lane from the stack. Its reads leave every cross-group
-           * derivation with it — the shared coverage scale, the legend, the arc
-           * pool — which is what hiding is for: reading the rest of the stack
-           * without the lane that dominates it. Reversed by `showAllGroups`,
-           * which the "Show..." menu offers while anything is hidden, since a
-           * hidden lane draws no chip of its own to come back from.
-           */
-          hideGroup(key: string) {
-            self.hiddenGroups.add(key)
-          },
-
-          /**
-           * #action
-           * Put every hidden lane back.
-           */
-          showAllGroups() {
-            self.hiddenGroups.clear()
           },
 
           /**
@@ -4248,25 +4188,6 @@ export default function stateModelFactory(
                 }
               },
               { name: 'AlignmentsFitHeight' },
-            ),
-          )
-          // Drop the collapses and height overrides whenever the grouping key
-          // space moves. A reaction rather than a line in `setGroupBy`, because
-          // the effective grouping also moves with no action of this display
-          // involved: Reset track settings drops the whole config delta, the
-          // settings editor writes the `groupBy` slot directly, and entering
-          // chain mode degrades a per-read dimension (`groupByForMode`). Left
-          // behind, a key carries its meaning to a lane that never earned it —
-          // and `''`, which every one of those routes can land on, is the
-          // ungrouped lane, which draws no chip to expand itself again.
-          addDisposer(
-            self,
-            reaction(
-              () => self.groupKeySpace,
-              () => {
-                self.dropGroupLaneState()
-              },
-              { name: 'AlignmentsGroupKeySpaceReset' },
             ),
           )
 
