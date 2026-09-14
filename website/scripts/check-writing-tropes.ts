@@ -20,6 +20,9 @@ const GENERATED_PREFIXES = [
   'cli.md',
   'jbrowse-img.md',
   'jbrowse-capture.md',
+  'user_guide.md',
+  'config_guide.md',
+  'developer_guide.md',
 ]
 
 const tropeRe =

@@ -5,3 +5,4 @@
 # A higher count is a regression: write the plain verb, or say what happens
 # instead of "silently".
 developer_guides/upgrading_v5.md 4
+tutorials/pangenome_hprc.md 1
