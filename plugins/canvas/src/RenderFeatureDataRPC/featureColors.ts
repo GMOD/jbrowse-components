@@ -13,7 +13,7 @@ export const UTR_DEFAULT_COLOR = utrDefaultColor
 // `feature.strand`, the short form the docs teach, so a user who types that by
 // hand gets the menu radio to agree with the painted track.
 export const STRAND_COLOR_JEXL =
-  "jexl:feature.strand==1?'#d62728':feature.strand==-1?'#1f77b4':'goldenrod'"
+  "jexl:feature.strand==1?'tomato':feature.strand==-1?'cornflowerblue':'goldenrod'"
 
 // **Color by attribute**. The `colorByAttribute` getter reads the attribute
 // name back out of the stored slot, and the generic return type lets a caller

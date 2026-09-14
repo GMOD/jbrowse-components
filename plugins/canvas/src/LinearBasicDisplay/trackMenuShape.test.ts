@@ -260,7 +260,7 @@ describe('color swatches under a per-feature jexl slot', () => {
 describe('the built-in strand color expression', () => {
   it('is the documented short form, not get(feature,...)', () => {
     expect(STRAND_COLOR_JEXL).toBe(
-      "jexl:feature.strand==1?'#d62728':feature.strand==-1?'#1f77b4':'goldenrod'",
+      "jexl:feature.strand==1?'tomato':feature.strand==-1?'cornflowerblue':'goldenrod'",
     )
   })
 
