@@ -281,16 +281,10 @@ export default function baseStateModelFactory(
         sequenceHoverPosition: undefined as SequenceHoverPosition | undefined,
         /**
          * #volatile
-         * Group keys whose section packs onto one row. A key means nothing
-         * outside the grouping that issued it, since `''` is both the
-         * ungrouped section and every dimension's catch-all, so the set is
-         * dropped when `groupKeySpace` moves.
-         */
-        collapsedGroups: observable.set<string>(),
-        /**
-         * #volatile
-         * Group keys the user hid from the stack, keyed and dropped exactly
-         * like `collapsedGroups`.
+         * Group keys the user hid from the stack. A key means nothing outside
+         * the grouping that issued it, since `''` is both the ungrouped
+         * section and every dimension's catch-all, so the set is dropped when
+         * `groupKeySpace` moves.
          */
         hiddenGroups: observable.set<string>(),
         // #endregion
@@ -436,14 +430,7 @@ export default function baseStateModelFactory(
          * #getter
          * A fresh Set per change rather than the observable set itself, so
          * the layout memo, which compares its inputs by identity, sees a
-         * collapse.
-         */
-        get collapsedGroupKeys(): ReadonlySet<string> {
-          return new Set(self.collapsedGroups)
-        },
-
-        /**
-         * #getter
+         * hide.
          */
         get hiddenGroupKeys(): ReadonlySet<string> {
           return new Set(self.hiddenGroups)
@@ -639,7 +626,6 @@ export default function baseStateModelFactory(
             expandedGeneIds: self.expandedGeneIdSet,
             groupBy: self.groupBy,
             hiddenGroupKeys: self.hiddenGroupKeys,
-            collapsedGroupKeys: self.collapsedGroupKeys,
           }
         },
         /**
@@ -750,6 +736,15 @@ export default function baseStateModelFactory(
          */
         get showsGroupLabels() {
           return this.groupSections.length > 0
+        },
+        /**
+         * #getter
+         * A grouped track puts its track label above the plot, where it
+         * cannot cover the first section's chip. Reads the setting, not the
+         * sections, so the label does not jump when data lands.
+         */
+        get prefersOffset() {
+          return self.groupBy !== undefined
         },
         /**
          * #getter
@@ -1141,18 +1136,6 @@ export default function baseStateModelFactory(
 
         /**
          * #action
-         * Pack a section onto one row, or give it its rows back.
-         */
-        toggleGroupCollapsed(key: string) {
-          if (self.collapsedGroups.has(key)) {
-            self.collapsedGroups.delete(key)
-          } else {
-            self.collapsedGroups.add(key)
-          }
-        },
-
-        /**
-         * #action
          * Drop a section from the stack. Reversed by `showAllGroups`, which
          * the "Show..." menu offers while anything is hidden, since a hidden
          * section draws no chip of its own to come back from.
@@ -1170,11 +1153,10 @@ export default function baseStateModelFactory(
 
         /**
          * #action
-         * Forget every collapse and hidden section: a key names a section
-         * only within the grouping that issued it.
+         * Forget every hidden section: a key names a section only within the
+         * grouping that issued it.
          */
         dropGroupState() {
-          self.collapsedGroups.clear()
           self.hiddenGroups.clear()
         },
 

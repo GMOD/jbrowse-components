@@ -3,7 +3,9 @@ import { alpha } from '@mui/material'
 
 import {
   GROUP_LABEL_BG_OPACITY,
+  GROUP_LABEL_BORDER_WIDTH,
   GROUP_LABEL_FONT_SIZE,
+  GROUP_LABEL_FONT_WEIGHT,
   GROUP_LABEL_HEIGHT,
   GROUP_LABEL_ICON_SIZE,
   GROUP_LABEL_INSET_X,
@@ -22,11 +24,14 @@ export const useGroupLabelStyles = makeStyles()(theme => {
     alignItems: 'center',
     padding: `0 ${GROUP_LABEL_PADDING_X}px`,
     fontSize: GROUP_LABEL_FONT_SIZE,
+    fontWeight: GROUP_LABEL_FONT_WEIGHT,
     // The same constant the section layout reserves per labelled section, so a
     // chip can never outgrow the space left for it.
     height: GROUP_LABEL_HEIGHT,
-    color: theme.palette.text.secondary,
+    boxSizing: 'border-box' as const,
+    color: theme.palette.text.primary,
     background: alpha(theme.palette.background.paper, GROUP_LABEL_BG_OPACITY),
+    border: `${GROUP_LABEL_BORDER_WIDTH}px solid ${theme.palette.text.disabled}`,
     borderRadius: GROUP_LABEL_RADIUS,
     whiteSpace: 'nowrap' as const,
     userSelect: 'none' as const,
@@ -56,7 +61,6 @@ export const useGroupLabelStyles = makeStyles()(theme => {
     button: {
       ...chip,
       cursor: 'pointer',
-      border: 'none',
       pointerEvents: 'auto' as const,
       '&:hover': {
         background: theme.palette.background.paper,

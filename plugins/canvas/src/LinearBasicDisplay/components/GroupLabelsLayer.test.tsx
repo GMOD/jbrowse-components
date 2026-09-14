@@ -1,26 +1,22 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 import { ThemeProvider } from '@mui/material'
-import { render } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 
 import GroupLabelsLayer from './GroupLabelsLayer.tsx'
 
 import type { GroupLabelsModel } from './GroupLabelsLayer.tsx'
 
 function renderLayer(
-  model: Pick<
-    GroupLabelsModel,
-    'showsGroupLabels' | 'groupSections' | 'scrollTop' | 'height'
-  >,
+  model: Omit<GroupLabelsModel, 'hideGroup'>,
+  hideGroup = jest.fn(),
 ) {
   return render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <GroupLabelsLayer
         model={{
           ...model,
-          collapsedGroupKeys: new Set(),
-          toggleGroupCollapsed: jest.fn(),
-          hideGroup: jest.fn(),
+          hideGroup,
         }}
       />
     </ThemeProvider>,
@@ -66,6 +62,36 @@ test('a section scrolled wholly off screen draws nothing', () => {
     height: 200,
   })
   expect(queryAllByTestId('group-label-chip')).toHaveLength(0)
+})
+
+test("a chip's hide button hides its section, and a lone section offers none", () => {
+  const hideGroup = jest.fn()
+  const { getByTitle, rerender, queryByTitle } = renderLayer(
+    {
+      showsGroupLabels: true,
+      groupSections: sections,
+      scrollTop: 0,
+      height: 200,
+    },
+    hideGroup,
+  )
+  fireEvent.click(getByTitle('Hide "Reverse strand"'))
+  expect(hideGroup).toHaveBeenCalledWith('-')
+
+  rerender(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <GroupLabelsLayer
+        model={{
+          showsGroupLabels: true,
+          groupSections: sections.slice(0, 1),
+          scrollTop: 0,
+          height: 200,
+          hideGroup,
+        }}
+      />
+    </ThemeProvider>,
+  )
+  expect(queryByTitle('Hide "Forward strand"')).toBeNull()
 })
 
 test('ungrouped draws nothing', () => {

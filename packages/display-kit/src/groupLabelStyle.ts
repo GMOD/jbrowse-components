@@ -4,6 +4,8 @@
  * the same label fallback.
  */
 export const GROUP_LABEL_FONT_SIZE = 11
+export const GROUP_LABEL_FONT_WEIGHT = 600
+export const GROUP_LABEL_BORDER_WIDTH = 1
 export const GROUP_LABEL_PADDING_X = 4
 export const GROUP_LABEL_RADIUS = 3
 
@@ -11,8 +13,6 @@ export const GROUP_LABEL_RADIUS = 3
 // which would fade the chip's text and chevron along with the box.
 export const GROUP_LABEL_BG_OPACITY = 0.85
 
-// The chevron the on-screen chip draws before its text. Part of the chip's
-// width, so the static twin reserves the same slot.
 export const GROUP_LABEL_ICON_SIZE = 14
 
 // Left inset of the chip row from the content edge, on both paths.

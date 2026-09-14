@@ -70,8 +70,6 @@ function sectionAssignment(
 interface SectionPrep {
   id: GroupId
   prep: PackPrep
-  // A collapsed section packs onto one row and keeps no label.
-  collapsed: boolean
 }
 
 interface RefSections {
@@ -81,20 +79,6 @@ interface RefSections {
 }
 
 const UNGROUPED: GroupId = { key: '', label: '' }
-
-function sectionInputs<T extends LabelRoomFactorFreeInputs>(
-  inputs: T,
-  key: string,
-): T {
-  return inputs.collapsedGroupKeys?.has(key)
-    ? {
-        ...inputs,
-        showLabels: false,
-        showDescriptions: false,
-        flattenRows: true,
-      }
-    : inputs
-}
 
 // One preparation per section of a ref group, in stacking order. Ungrouped is
 // the one-section case, so nothing downstream carries an ungrouped branch.
@@ -111,7 +95,6 @@ function prepareRefSections(
         {
           id: UNGROUPED,
           prep: prepareRefPack(regions, inputs, metrics),
-          collapsed: false,
         },
       ],
       hiddenIds,
@@ -138,13 +121,7 @@ function prepareRefSections(
       .sort((a, b) => compareGroupKeys(a.id.key, b.id.key))
       .map(({ id, ids }) => ({
         id,
-        prep: prepareRefPack(
-          regions,
-          sectionInputs(inputs, id.key),
-          metrics,
-          ids,
-        ),
-        collapsed: !!inputs.collapsedGroupKeys?.has(id.key),
+        prep: prepareRefPack(regions, inputs, metrics, ids),
       })),
     hiddenIds,
   }
@@ -201,18 +178,14 @@ function mergeSections(
   const layoutMap = new Map<string, number>()
   const layoutHeights = new Map<string, number>()
   const droppedLabelIds = new Set<string>()
-  const labelFreeIds = new Set<string>()
   const trims = new Map<string, IsoformTrim>()
   const badges = new Map<string, IsoformBadge>()
   const gapSpreads = new Map<string, IsoformGapSpread>()
   const features: PackPrep['features'] = new Map()
   const collapsedFeatureIds = new Set<string>()
-  for (const { id, prep, pack, collapsed } of sections) {
+  for (const { id, prep, pack } of sections) {
     for (const [fid, y] of offsetLayoutMap(pack.layoutMap, tops.get(id.key)!)) {
       layoutMap.set(fid, y)
-      if (collapsed) {
-        labelFreeIds.add(fid)
-      }
     }
     for (const [fid, h] of pack.layoutHeights) {
       layoutHeights.set(fid, h)
@@ -248,7 +221,6 @@ function mergeSections(
     layoutMap,
     layoutHeights,
     droppedLabelIds,
-    labelFreeIds,
     trimPlan: { trims, badges },
     gapSpreads,
     features,
@@ -265,15 +237,14 @@ function packRefSections(
   return {
     hiddenIds,
     sections: sections.map(section => {
-      const own = sectionInputs(packInputs, section.id.key)
-      const trims = trimPreparedRef(section.prep, own, metrics)
+      const trims = trimPreparedRef(section.prep, packInputs, metrics)
       return {
         ...section,
         trims,
         pack: packPreparedRef(
           section.prep,
           trims,
-          own,
+          packInputs,
           metrics,
           prevYByFeatureId,
         ),
@@ -334,7 +305,6 @@ function layoutRefGroups(
         merged.layoutHeights,
         merged.droppedLabelIds,
         densityFadeIds,
-        merged.labelFreeIds,
       )
       out.set(n, cloned)
     }
@@ -450,7 +420,6 @@ const LAYOUT_CACHE_KEYS_RECORD: Record<
   expandedGeneIds: true,
   groupBy: true,
   hiddenGroupKeys: true,
-  collapsedGroupKeys: true,
   collapseDepth: true,
   flattenRows: true,
   dropBelowLabelRows: true,

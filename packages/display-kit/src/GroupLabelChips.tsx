@@ -1,8 +1,8 @@
-import { Fragment, useState } from 'react'
+import { Fragment } from 'react'
 
-import { ContextMenu } from '@jbrowse/core/ui'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 
 import { useGroupLabelStyles } from './groupLabelChipStyles.ts'
 import {
@@ -11,7 +11,6 @@ import {
   sectionKey,
 } from './groupLabelStyle.ts'
 
-import type { ContextMenuAnchor, MenuItem } from '@jbrowse/core/ui'
 import type React from 'react'
 
 /**
@@ -34,8 +33,8 @@ export interface GroupChipSection {
     text?: string
     onClick: () => void
   }
-  // The chip's right-click menu; absent, the chip takes no right-click.
-  menuItems?: MenuItem[]
+  // Draws a hide button after the chip; absent, the section cannot be hidden.
+  onHide?: () => void
 }
 
 /**
@@ -52,33 +51,15 @@ export function GroupLabelChips({
   canvasHeight: number
 }) {
   const { classes } = useGroupLabelStyles()
-  // The right-click target, held as one value: the click point and the menu it
-  // opened cannot disagree, and `undefined` is the closed state.
-  const [menu, setMenu] = useState<{
-    anchor: ContextMenuAnchor
-    items: MenuItem[]
-  }>()
-  const openMenu = (event: React.MouseEvent, items: MenuItem[]) => {
-    event.preventDefault()
-    setMenu({
-      anchor: { clientX: event.clientX, clientY: event.clientY },
-      items,
-    })
-  }
   return (
     <>
       {sections.map((section, i) => {
-        const { top, height, toggle, action, menuItems } = section
+        const { top, height, toggle, action, onHide } = section
         const chipTop = groupChipTop(top, height, canvasHeight)
         if (chipTop === undefined) {
           return null
         }
         const label = groupSectionLabel(section.label)
-        const onContextMenu = menuItems
-          ? (event: React.MouseEvent) => {
-              openMenu(event, menuItems)
-            }
-          : undefined
         return (
           <Fragment key={sectionKey(section.key)}>
             {i > 0 && top >= 0 && top <= canvasHeight ? (
@@ -98,7 +79,6 @@ export function GroupLabelChips({
                   type="button"
                   className={classes.button}
                   onClick={toggle.onClick}
-                  onContextMenu={onContextMenu}
                   title={toggle.title}
                 >
                   {toggle.collapsed ? (
@@ -109,12 +89,7 @@ export function GroupLabelChips({
                   <span data-testid="group-label-text">{label}</span>
                 </button>
               ) : (
-                <span
-                  className={classes.label}
-                  style={{ pointerEvents: menuItems ? 'auto' : 'none' }}
-                  data-testid="group-label-text"
-                  onContextMenu={onContextMenu}
-                >
+                <span className={classes.label} data-testid="group-label-text">
                   {label}
                 </span>
               )}
@@ -129,17 +104,20 @@ export function GroupLabelChips({
                   {action.text}
                 </button>
               ) : null}
+              {onHide ? (
+                <button
+                  type="button"
+                  className={classes.button}
+                  onClick={onHide}
+                  title={`Hide "${label}"`}
+                >
+                  <VisibilityOffIcon className={classes.icon} />
+                </button>
+              ) : null}
             </div>
           </Fragment>
         )
       })}
-      <ContextMenu
-        anchor={menu?.anchor}
-        menuItems={menu?.items ?? []}
-        onClose={() => {
-          setMenu(undefined)
-        }}
-      />
     </>
   )
 }

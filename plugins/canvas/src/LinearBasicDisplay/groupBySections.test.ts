@@ -91,7 +91,7 @@ test('an attribute grouping names its sections by value and the menu row by attr
   expect(display.rpcProps().displayConfig.groupByAttribute).toBe('biotype')
 })
 
-test('hiding and collapsing a section are per key and drop with the grouping', () => {
+test('hiding a section is per key and drops with the grouping', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()
   display.setRpcData(0, strandedRegionData(), ctgA)
@@ -109,13 +109,18 @@ test('hiding and collapsing a section are per key and drop with the grouping', (
     ),
   ).toContain('Show 1 hidden group')
 
-  display.toggleGroupCollapsed('-')
-  expect(display.collapsedGroupKeys.has('-')).toBe(true)
-
   display.setGroupBy({ type: 'attribute', attribute: 'biotype' })
   expect(display.hiddenGroups.size).toBe(0)
-  expect(display.collapsedGroupKeys.size).toBe(0)
   expect(display.groupSections).toHaveLength(2)
+})
+
+test('a grouped track offsets its track label before any data lands', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  expect(display.prefersOffset).toBe(false)
+  display.setGroupBy({ type: 'strand' })
+  expect(display.groupSections).toEqual([])
+  expect(display.prefersOffset).toBe(true)
 })
 
 test('an unrecognized grouping in the slot reads as ungrouped', () => {

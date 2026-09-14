@@ -9,7 +9,6 @@ import { scaleLaidOutData } from './applyLayout.ts'
 import { featureGroupSections } from './groupBy.ts'
 import { computeLaidOutData } from './layout.ts'
 import { maxBottom } from './layoutQueries.ts'
-import { packedContentHeight } from './layoutTestUtils.ts'
 import { isPlacedRow } from './rowPlacement.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -103,22 +102,6 @@ test('a hidden section leaves the pack and the stack closes over it', () => {
       s => s.key,
     ),
   ).toEqual(['-'])
-})
-
-test('a collapsed section packs onto one row and keeps no label', () => {
-  const raw = new Map([[0, regionData(STRANDED, true)]])
-  const out = computeLaidOutData(raw, {
-    ...base,
-    collapsedGroupKeys: new Set(['-']),
-  })
-  const tops = topsOf(out)
-  expect(tops.get('r1')).toBe(tops.get('r2'))
-  expect(tops.get('f1')).not.toBe(tops.get('f2'))
-  const labels = out.get(0)!.floatingLabelsData
-  expect([...labels.keys()].sort()).toEqual(['f1', 'f2'])
-  expect(
-    packedContentHeight(raw, { ...base, collapsedGroupKeys: new Set(['-']) }),
-  ).toBe(maxBottom(out))
 })
 
 test('an attribute grouping sections by the stamped key, unvalued last', () => {

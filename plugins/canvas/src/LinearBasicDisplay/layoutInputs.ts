@@ -44,11 +44,9 @@ export interface LayoutInputs {
   // Packs one section per group key, stacked in `compareGroupKeys` order with
   // a chip row above each. Read off the hit items, so no refetch.
   groupBy?: FeatureGroupBy
-  // A hidden section's features leave the pack; a collapsed one packs onto a
-  // single label-free row. Keys mean nothing outside the grouping that issued
-  // them, so both sets are dropped when it changes.
+  // A hidden section's features leave the pack. Keys mean nothing outside the
+  // grouping that issued them, so the set is dropped when it changes.
   hiddenGroupKeys?: ReadonlySet<string>
-  collapsedGroupKeys?: ReadonlySet<string>
   collapseDepth?: number
   // Row 0 for everything without collapsed mode's label suppression, for a
   // fixed-height density band whose records are meant to share pixels.

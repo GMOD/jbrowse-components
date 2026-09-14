@@ -197,9 +197,6 @@ export function applyLayoutToRegion(
   layoutHeights: Map<string, number>,
   droppedLabelIds: ReadonlySet<string>,
   densityFadeIds: ReadonlySet<string>,
-  // The features of a collapsed section, which packed onto one row and keep
-  // no label at all.
-  labelFreeIds: ReadonlySet<string> = new Set(),
 ) {
   const featureOffsets = new Float32Array(data.flatbushItems.length)
   for (let i = 0; i < data.flatbushItems.length; i++) {
@@ -238,11 +235,7 @@ export function applyLayoutToRegion(
   for (const [key, labelData] of data.floatingLabelsData) {
     const layoutKey = labelData.parentFeatureId ?? labelData.featureId
     const offset = layoutMap.get(layoutKey)
-    if (
-      offset === undefined ||
-      !isPlacedRow(offset) ||
-      labelFreeIds.has(layoutKey)
-    ) {
+    if (offset === undefined || !isPlacedRow(offset)) {
       data.floatingLabelsData.delete(key)
       continue
     }

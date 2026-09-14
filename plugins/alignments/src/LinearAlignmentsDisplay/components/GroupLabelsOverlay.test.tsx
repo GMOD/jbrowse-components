@@ -130,9 +130,11 @@ test('collapsed-row lanes get an icon-only expand button', () => {
 })
 
 // Nothing to collapse or resize on a coverage-only stack, so the chip is a
-// plain label rather than a dead button.
+// plain label rather than a dead button; hiding a lane still applies.
 test('the pileup hidden leaves plain labels', () => {
   renderOverlay({ showPileup: false })
-  expect(screen.queryByRole('button')).toBeNull()
-  expect(screen.getByText('HP: 1')).toBeDefined()
+  expect(
+    screen.getAllByRole('button').map(b => b.getAttribute('title')),
+  ).toEqual(['Hide "HP: 1"', 'Hide "HP: 2"'])
+  expect(screen.getByText('HP: 1').tagName).toBe('SPAN')
 })

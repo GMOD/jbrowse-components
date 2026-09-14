@@ -1,8 +1,6 @@
 import { GroupLabelChips } from '@jbrowse/display-kit/GroupLabelChips'
-import { groupSectionLabel } from '@jbrowse/display-kit/groupLabelStyle'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import { observer } from 'mobx-react'
 
 import { laneExpandable } from '../lanes.ts'
@@ -115,16 +113,10 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
                   },
                 }
               : undefined,
-          menuItems: canHideLane
-            ? [
-                {
-                  label: `Hide "${groupSectionLabel(label)}"`,
-                  icon: VisibilityOffIcon,
-                  onClick: () => {
-                    model.hideGroup(groupKey)
-                  },
-                },
-              ]
+          onHide: canHideLane
+            ? () => {
+                model.hideGroup(groupKey)
+              }
             : undefined,
         }
       })}

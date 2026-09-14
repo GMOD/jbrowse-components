@@ -4,9 +4,10 @@ import { measureText } from '@jbrowse/core/util'
 
 import {
   GROUP_LABEL_BG_OPACITY,
+  GROUP_LABEL_BORDER_WIDTH,
   GROUP_LABEL_FONT_SIZE,
+  GROUP_LABEL_FONT_WEIGHT,
   GROUP_LABEL_HEIGHT,
-  GROUP_LABEL_ICON_SIZE,
   GROUP_LABEL_INSET_X,
   GROUP_LABEL_PADDING_X,
   GROUP_LABEL_RADIUS,
@@ -18,9 +19,10 @@ import {
 import type { GroupChipSection } from './GroupLabelChips.tsx'
 import type { Theme } from '@mui/material'
 
-// Static equivalent of the on-screen chip (no collapse/expand affordances —
-// those are interactive-only). A background box behind the text, not bare
-// text, so the label stays legible over a busy background.
+const SEMIBOLD_WIDTH_FACTOR = 1.1
+
+// The on-screen chip without its buttons, which are interactive-only. A box
+// behind the text keeps the label legible over a busy background.
 export default function GroupLabelBox({
   x,
   y,
@@ -35,10 +37,8 @@ export default function GroupLabelBox({
   const fontSize = GROUP_LABEL_FONT_SIZE
   const paddingX = GROUP_LABEL_PADDING_X
   const height = GROUP_LABEL_HEIGHT
-  // The chevron's slot, empty here: the on-screen chip draws one before its text.
-  const textX = x + paddingX + GROUP_LABEL_ICON_SIZE
   const width =
-    measureText(text, fontSize) + paddingX * 2 + GROUP_LABEL_ICON_SIZE
+    measureText(text, fontSize) * SEMIBOLD_WIDTH_FACTOR + paddingX * 2
   return (
     <g>
       <rect
@@ -49,12 +49,15 @@ export default function GroupLabelBox({
         rx={GROUP_LABEL_RADIUS}
         fill={theme.palette.background.paper}
         fillOpacity={GROUP_LABEL_BG_OPACITY}
+        stroke={theme.palette.text.disabled}
+        strokeWidth={GROUP_LABEL_BORDER_WIDTH}
       />
       <text
-        x={textX}
+        x={x + paddingX}
         y={y + height - 4}
         fontSize={fontSize}
-        fill={theme.palette.text.secondary}
+        fontWeight={GROUP_LABEL_FONT_WEIGHT}
+        fill={theme.palette.text.primary}
       >
         {text}
       </text>

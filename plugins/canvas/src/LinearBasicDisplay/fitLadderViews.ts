@@ -57,7 +57,6 @@ export interface FitLadderHost {
     | 'pinnedFeatureIds'
     | 'groupBy'
     | 'hiddenGroupKeys'
-    | 'collapsedGroupKeys'
   > &
     Required<Pick<LayoutInputs, 'expandedGeneIds'>>
   showLabels: boolean
