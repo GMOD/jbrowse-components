@@ -334,6 +334,10 @@ export const alphagenomeSpecs: ScreenshotSpec[] = [
         selector: PREDICT_VARIANT_EFFECT,
         timeout: 30000,
       },
+      { type: 'delay', ms: 500 },
+    ],
+    annotations: [
+      { type: 'box', anchor: { selector: PREDICT_VARIANT_EFFECT } },
     ],
     // the context menu is the subject and it opens downward from the variant
     // row, so the frame has to cover the menu rather than just the tracks
