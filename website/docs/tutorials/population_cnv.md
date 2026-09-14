@@ -214,6 +214,16 @@ Two requests are metadata, once per store; the rest are chunks, each carrying
 every sample across a range of bins, so a view's cost follows the width of the
 window.
 
+## A nested deletion
+
+The store also covers chr3:162.5-163.2 Mb, where a 22 kb deletion sits inside a
+114 kb one. Clustering the panel there sorts individuals by which of the two
+they carry, and the long-read assembly calls of the Human Genome Structural
+Variation Consortium
+([Logsdon et al. 2025](https://doi.org/10.1038/s41586-025-09140-6)) place both:
+
+<Figure caption="All 2504 individuals over chr3:162.65-163.05 Mb, clustered, under HGSVC3 structural variants of 5 kb and longer. Each block of rows carries neither deletion, one or two copies of one of them, or one copy of each." src="/img/paper/cohort_cnv.png" />
+
 ## Build the store
 
 [`build_signal_zarr.ts`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_signal_zarr.ts)
@@ -230,11 +240,13 @@ node build_signal_zarr.ts \
   --out qm2_cn_1kb.zarr \
   --region chr17:35000000-37500000 \
   --region chr4:68000000-69000000 \
+  --region chr1:25150000-25450000 \
+  --region chr3:162500000-163200000 \
   --levels 1000,10000
 ```
 
-That is the command behind this tutorial's figures, all 2504 samples over the
-windows the page visits; this store lands at 1.4 MB.
+That is the command behind the hosted store, all 2504 samples over the windows
+its figures visit; the store lands at 2.4 MB.
 
 `--levels` is the resolution pyramid: one samples-by-bins array per entry,
 coarser ones averaged from the finest. The adapter reads the coarsest level
@@ -319,4 +331,7 @@ bash build_1000g_cnv_zarr.sh --whole-genome # every main contig, 10kb base and f
   one sample from CRAM to copy number, with the lab's own output to check
   against
 - [1000 Genomes phase 3 integrated SV map](https://doi.org/10.1038/nature15394)
+- Logsdon et al. (2025).
+  [Complex genetic variation in nearly complete human genomes](https://doi.org/10.1038/s41586-025-09140-6),
+  the HGSVC3 structural variant calls in the nested deletion figure
 - [Zarr v3 specification](https://zarr-specs.readthedocs.io/en/latest/v3/core/index.html)

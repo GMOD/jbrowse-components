@@ -32,7 +32,7 @@ const CCL3L1_WINDOW = 'chr17:36,080,000-36,270,000'
 // Bounded by the store rather than by taste: build_signal_zarr.ts was run with
 // `--region chr17:35000000-37500000`, so a window past that renders empty
 // flanks that look like ordinary two-copy sequence and are actually no data.
-export const CCL3L1_CONTEXT_WINDOW = 'chr17:35,975,000-36,675,000'
+const CCL3L1_CONTEXT_WINDOW = 'chr17:35,975,000-36,675,000'
 
 // The 1000 Genomes phase 3 integrated SV map, lifted to GRCh38, already in
 // config_demo. It is the comparison the tutorial is built on, not a second data
