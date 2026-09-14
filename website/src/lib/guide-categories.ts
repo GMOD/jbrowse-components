@@ -93,6 +93,7 @@ export const TUTORIAL_CATEGORIES = [
   'Population genomics',
   'Epigenomics & single cell',
   'Transcriptomics & proteins',
+  'Plots from your data',
   'Configuration & embedding',
 ]
 
@@ -140,6 +141,9 @@ export const TUTORIAL_ORDER = [
   'chromhmm',
   'scatac_pseudobulk',
   'rnaseq',
+  'alu_age',
+  'read_marks',
+  'gene_density',
   'cookbook',
   'display_settings',
   'embed_linear_genome_view',

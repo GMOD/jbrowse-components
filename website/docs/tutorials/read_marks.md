@@ -5,7 +5,7 @@ description:
   Declare a read's depth, insert size and mapping quality as the channels of a
   plot, with no variant caller in between, and scan a chromosome for a deletion
 guide_category: Tutorials
-tutorial_category: Configuration & embedding
+tutorial_category: Plots from your data
 ---
 
 `LinearMarkDisplay` is a grammar of graphics over a track: each entry in `marks`

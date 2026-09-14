@@ -45,6 +45,11 @@ generated directly from the source. For visuals, browse the
   without rebuilding or redeploying anything.
 - **Exports match the screen** - SVG export reuses the same drawing code as the
   on-screen renderer, so a figure looks exactly like what you saw.
+- **Plots declared in config** - a
+  [grammar of graphics](/docs/config_guides/mark_display) over any feature,
+  alignment or variant file: name a field for the y-axis, one for the colour,
+  and a transform to bin, count, stack or measure coverage, and the track draws
+  the plot with its axis and legend, no code
 
 ## View types
 
@@ -99,6 +104,10 @@ For the complete track-to-display mapping, see the
 - **Synteny** -
   [PAF, chain, delta, PIF, and MCScan](/docs/user_guides/linear_synteny_view)
   alignments between assemblies, colored by identity or mapping quality
+- **Plots from any feature file** -
+  [bars, points and stacked spans](/docs/config_guides/mark_display) from a BED
+  column, a read's insert size or a variant's quality, with a second axis, a
+  density per bin zoomed out and a sidecar past the fetch budget
 - **Multi-row feature / chromosome painting** - many feature rows in one track
   with clustering and per-position sorting, for local-ancestry and ChromHMM
   views
