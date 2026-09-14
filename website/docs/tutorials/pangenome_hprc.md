@@ -38,7 +38,8 @@ describes a current limit of the view. We welcome your [feedback](/contact).
   [other windows](#other-windows-to-cut), and the route itself runs none
 - nothing at all to look before building: the
   [HPRC page on genomes.jbrowse.org](/docs/tutorials/genomes_pangenome) draws
-  any window of this graph from a hosted form, on release 2's `v2.0` build
+  any window of this graph from a hosted form, on the release's earlier 2.0
+  build
 
 The steps below build no graph file.
 [Preparing your own graph](/docs/tutorials/pangenome_prepare_graph) builds one
@@ -158,11 +159,13 @@ the assembly and the gene track every figure on this page draws:
 ```
 
 The session below is that starting state, open on a 300 kb stretch of the MHC
-with the gene track showing. Its live link opens the same session on a hosted
-JBrowse with the plugin already loaded, which is the quickest way to follow the
-page without installing anything.
+with the gene track showing. The clip under
+[the cut](#cut-the-window-out-as-a-graph) was filmed from this session, and the
+link beside it opens the same state on a hosted JBrowse with the plugin already
+loaded, which is the quickest way to follow the page without installing
+anything.
 
-```json session config=test_data/graphgenomeview/hprc_tour.json
+```json session
 {
   "defaultSession": {
     "name": "HPRC part 1, before the graph",
