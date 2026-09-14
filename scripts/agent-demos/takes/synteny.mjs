@@ -8,7 +8,10 @@ with minimap2, samtools, jq and the jbrowse CLI on PATH. Your working directory
 is ${cwd}. Every file you create goes there, and the alignment runs in the shell,
 outside the app. The two genome FASTAs are already in ${cwd} as sim.fa.gz
 (D. simulans GCF_016746395.2) and mau.fa.gz (D. mauritiana GCF_004382145.1);
-their hosted JBrowse configs are at jbrowse.org under hubs/genark. After every
+their hosted JBrowse configs are at jbrowse.org under hubs/genark. Load the
+assemblies from those hosted configs, not from the local FASTAs; the local files
+are only for minimap2. A file on disk goes into a config as { localPath }, never
+as a uri, which the app fetches over HTTP. After every
 change to the app, screenshot and read the image.`
 
 export const TURNS = [
