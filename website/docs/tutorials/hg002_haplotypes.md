@@ -192,7 +192,7 @@ genes about 240 kb out of register.
 ribbon at regular positions, joining a point on the top row to where it maps on
 the bottom.
 
-<Figure caption="The same pair of panels with location markers on, and the settings menu that turned them on still open over it." src="/img/hg002_haplotypes_location_markers.png" />
+<Figure caption="Maternal over paternal chr11 across a maternal-only insertion, following, with location markers on and the settings menu that turned them on still open. The markers inside the insertion converge on one point of the paternal row, and those either side bend around it." src="/img/hg002_haplotypes_location_markers.png" />
 
 ## See also
 
