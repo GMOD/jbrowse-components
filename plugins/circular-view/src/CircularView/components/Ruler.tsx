@@ -86,10 +86,10 @@ function labelPlacement(
   const rightHalf = Math.cos(screenRadians) > 0
   const bottomHalf = Math.sin(screenRadians) > 0
   return alongArc
-    ? { textAnchor: 'middle', rotation: deg + (bottomHalf ? -90 : 90) }
+    ? { textAnchor: 'middle' as const, rotation: deg + (bottomHalf ? -90 : 90) }
     : rightHalf
-      ? { textAnchor: 'start', rotation: deg }
-      : { textAnchor: 'end', rotation: deg + 180 }
+      ? { textAnchor: 'start' as const, rotation: deg }
+      : { textAnchor: 'end' as const, rotation: deg + 180 }
 }
 
 const RulerLabel = observer(function RulerLabel({

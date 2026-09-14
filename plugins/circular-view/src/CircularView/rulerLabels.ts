@@ -120,7 +120,7 @@ export const assemblyLabelFontSizePx = 15
 
 // between the ruler labels and the assembly arc, and between that arc and the
 // assembly's name
-export const assemblyArcGapPx = 6
+export const assemblyArcGapPx = 10
 
 // what the assembly names add outside the ruler labels
 export const assemblyBandPx = 2 * assemblyArcGapPx + assemblyLabelFontSizePx
@@ -143,7 +143,7 @@ export function assemblyArcs(staticSlices: Slice[]) {
       ? region.regions[0]?.assemblyName
       : region.assemblyName
     const last = arcs.at(-1)
-    if (last?.assemblyName === assemblyName) {
+    if (last !== undefined && last.assemblyName === assemblyName) {
       last.endRadians = endRadians
     } else if (assemblyName !== undefined) {
       arcs.push({ assemblyName, startRadians, endRadians })
