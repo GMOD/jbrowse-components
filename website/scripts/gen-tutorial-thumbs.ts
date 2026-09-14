@@ -388,11 +388,11 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.14, 0.5],
   },
   odp_linkage_groups_synteny: {
-    // The jellyfish against sponge dotplot, framed off the legend column on the
-    // right so the card is the linkage group blocks themselves.
-    src: 'linkage_groups/alg_dotplot_res_emu.png',
-    band: [0.215, 0.7],
-    xband: [0.03, 0.71],
+    // the stack's lower bands, where the groups run as bundles; the dotplots
+    // carry callouts
+    src: 'linkage_groups/alg_stack.png',
+    band: [0.47, 0.96],
+    xband: [0, 0.55],
   },
   allvsall_synteny: {
     // The five-strain stack, past the app chrome. collapseEmptyRows on this

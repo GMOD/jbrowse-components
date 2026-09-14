@@ -4,22 +4,16 @@ import { sessionSpec } from '../screenshot-spec-helpers.ts'
 
 import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 
-// odp_linkage_groups_synteny.md. demos/odp_linkage_groups/README.md says what
-// the hosted config holds and how it was built.
 const ODP_CONFIG = encodeURIComponent(
   'https://jbrowse.org/demos/odp_linkage_groups/config.json',
 )
 
-// The legend lists 29 letter names, and each of these figures is about where
-// the colors fall rather than which group is which, so it goes, and the plot
-// area it covered comes back.
+// the figures are about where colors fall, not which of 29 letters each is
 const HIDE_LEGEND = {
   type: 'click',
   selector: '[aria-label="Hide legend"]',
 } as const
 
-// A1a throughout, the group the page's table and awk example follow: one cell
-// on the sponge plot, a whole column on the other two.
 function resDotplot(
   vertical: string,
   displayName: string,
