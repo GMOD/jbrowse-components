@@ -258,27 +258,30 @@ export function buildDerivativeVsRefSpec(
   // of the reference pieces it carries and where it came from, which is what
   // turns the lower panel from a ruler into the ribbons' legend.
   //
-  // Letters from `observedSegments`: the drawn outer segments carry a context
-  // flank, and a flank is not a piece of the allele.
+  // Letters, interval and size all from `observedSegments`: the drawn outer
+  // segments carry a context flank, and a flank is not a piece of the allele.
   const { segmentLetters } = letterSegments(candidate.observedSegments)
-  const segmentFeatures = features.map((feat, idx) => ({
-    uniqueId: `${refName}-${idx}-label`,
-    refName,
-    start: feat.mate.start,
-    end: feat.mate.end,
-    strand: feat.strand,
-    name: `${segmentLetters[idx]?.join('') ?? ''} · ${assembleLocString({
-      refName: feat.refName,
-      start: feat.start,
-      end: feat.end,
-    })} (${getBpDisplayStr(feat.end - feat.start)}${
-      // `inv`, not `inverted`: a label is drawn from its feature's own position,
-      // and every segment after the first sits in the last few hundred bases of
-      // the allele, so the ones that most need the marker are the ones with the
-      // least room to the panel edge for it.
-      feat.strand === -1 ? ', inv' : ''
-    })`,
-  }))
+  const segmentFeatures = features.map((feat, idx) => {
+    const seen = candidate.observedSegments[idx] ?? feat
+    return {
+      uniqueId: `${refName}-${idx}-label`,
+      refName,
+      start: feat.mate.start,
+      end: feat.mate.end,
+      strand: feat.strand,
+      name: `${segmentLetters[idx]?.join('') ?? ''} · ${assembleLocString({
+        refName: seen.refName,
+        start: seen.start,
+        end: seen.end,
+      })} (${getBpDisplayStr(seen.end - seen.start)}${
+        // `inv`, not `inverted`: a label is drawn from its feature's own position,
+        // and every segment after the first sits in the last few hundred bases of
+        // the allele, so the ones that most need the marker are the ones with the
+        // least room to the panel edge for it.
+        feat.strand === -1 ? ', inv' : ''
+      })`,
+    }
+  })
 
   const lgvRegions = gatherOverlaps(
     candidate.segments.map(seg => ({

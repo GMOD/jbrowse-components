@@ -188,6 +188,21 @@ describe('buildDerivativeVsRefSpec', () => {
     ])
   })
 
+  it('labels the outer segments with what the reads saw, not with the drawn flank', () => {
+    const FLANK = 2000
+    const last = CANDIDATE_SEGMENTS.length - 1
+    const { segmentsTrack } = build({
+      ...CANDIDATE,
+      segments: CANDIDATE_SEGMENTS.map((seg, i) => ({
+        ...seg,
+        start: i === 0 || i === last ? seg.start - FLANK : seg.start,
+      })),
+    })
+    const names = segmentsTrack.adapter.features.map(f => f.name)
+    expect(names[0]).toBe('ABC · chr3:25,326,822..25,359,568 (32.7Kbp)')
+    expect(names[last]).toBe('B′ · chr3:25,352,684..25,359,111 (6.43Kbp, inv)')
+  })
+
   it('places the labels in derivative coordinates, not reference ones', () => {
     // Same tiling as the ribbons' mates: the labels sit under the segments they
     // name, so a label that kept its reference start would land in a different
