@@ -6,9 +6,12 @@
 # One scored BED becomes one track that plots a numeric column: each copy's
 # divergence from its consensus as a bar coloured by subfamily lineage when
 # zoomed in, the count per bin with the AluY count over it when zoomed out, and
-# a `jbrowse make-density` sidecar past the fetch budget. The track is a mark
-# display declared in JSON, so the same config over another family's rows, or
-# another genome's RepeatMasker BED, is a change of file and of field name.
+# a `jbrowse make-density` sidecar past the fetch budget. A second file counts
+# the copies per megabase and tests whether the youngest lineage's share follows
+# the family's density, against a strand split that should not. The tracks are
+# mark displays declared in JSON, so the same config over another family's
+# rows, or another genome's RepeatMasker BED, is a change of file and of field
+# name.
 #
 # With no arguments it cuts the Alu rows out of jbrowse.org's copy of UCSC's
 # hg38 RepeatMasker table. Given a RepeatMasker-shaped BED (the one
@@ -16,15 +19,25 @@
 # was masked against, it builds the same track over that file.
 #
 # Requires: bgzip + tabix (htslib), samtools (for a FASTA's .fai),
-#           bedGraphToBigWig (UCSC), curl, awk, and node (the JBrowse CLI is
-#           fetched via npx unless `jbrowse` is on PATH).
+#           bedGraphToBigWig (UCSC), curl, awk, python3 (standard library
+#           only), and node (the JBrowse CLI is fetched via npx unless
+#           `jbrowse` is on PATH).
 # Usage:    bash scripts/build_alu_age.sh [outdir]
 #           bash scripts/build_alu_age.sh rmsk.bed.gz genome.fa [outdir]
 #           FAMILY=L1 YOUNG=L1HS bash scripts/build_alu_age.sh ...
 #
 set -euo pipefail
 
-for tool in bgzip tabix samtools bedGraphToBigWig curl awk node; do
+# Captured before the cd below, and the helper is fetched next to this file when
+# absent, so a bare `curl -fO` of this one script behaves like a repo checkout.
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+HELPERS=(alu_young_share.py)
+for h in "${HELPERS[@]}"; do
+  [ -f "$SCRIPT_DIR/$h" ] || curl -fsSL -o "$SCRIPT_DIR/$h" \
+    "https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/$h"
+done
+
+for tool in bgzip tabix samtools bedGraphToBigWig curl awk python3 node; do
   command -v "$tool" >/dev/null 2>&1 || {
     echo "error: '$tool' not found on PATH" >&2
     exit 1
@@ -103,6 +116,16 @@ else
   jb make-density "$BED" --chrom-sizes hg38.chrom.sizes
 fi
 
+# ── The young share per megabase ────────────────────────────────────────────
+# The copies per 1 Mb bin, the youngest lineage's copies and the plus-strand
+# copies, as a BED the same kind of track can plot, and the two rank
+# correlations against copies per bin that say whether the young share follows
+# the density. The helper's docstring says what each column is.
+SHARE="${BED%.bed.gz}.young_share.bed"
+python3 "$SCRIPT_DIR/alu_young_share.py" "$BED" "$SHARE" "$YOUNG"
+bgzip -f "$SHARE"
+tabix -f -p bed "$SHARE.gz"
+
 # ── JBrowse ─────────────────────────────────────────────────────────────────
 [ -f "$APP/index.html" ] || jb create "$APP"
 if [ -n "$FA" ]; then
@@ -110,7 +133,7 @@ if [ -n "$FA" ]; then
 else
   jb add-assembly "$UCSC/hg38.2bit" --name hg38 --type twoBit --force --out "$APP"
 fi
-cp -f "$BED" "$BED.tbi" "${BED%.gz}.density.bw" "$APP"/
+cp -f "$BED" "$BED.tbi" "${BED%.gz}.density.bw" "$SHARE.gz" "$SHARE.gz.tbi" "$APP"/
 
 # The CLI cannot write a marks list, so the track is JSON. @PLACEHOLDERS@ are
 # real JSON strings, so the heredoc parses on its own.
@@ -195,5 +218,39 @@ sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@FAMILY@|$FAMILY|g" -e "s|@BED@|$BED|g" \
 }
 JSON
 jb add-track-json track.json --out "$APP" --update
+
+# Two tracks over the per-megabase BED, one column each, on one fixed axis so
+# the strand lane's flatness reads against the young share's swing. Bars grow
+# from zero, red above and blue below.
+for lane in young:youngLog2 strand:strandLog2; do
+  kind=${lane%%:*}
+  field=${lane#*:}
+  sed -e "s|@ASSEMBLY@|$ASM|g" -e "s|@FAMILY@|$FAMILY|g" -e "s|@SHARE@|$(basename "$SHARE").gz|g" \
+    -e "s|@KIND@|$kind|g" -e "s|@FIELD@|$field|g" >"share_$kind.json" <<'JSON'
+{
+  "type": "FeatureTrack",
+  "trackId": "@FAMILY@_@KIND@_share",
+  "name": "@FAMILY@ @KIND@ share per Mb (log2)",
+  "assemblyNames": ["@ASSEMBLY@"],
+  "adapter": { "type": "BedTabixAdapter", "uri": "@SHARE@" },
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "@FAMILY@_@KIND@_share-LinearMarkDisplay",
+      "marks": [
+        {
+          "shape": "bar",
+          "encoding": {
+            "y": { "field": "@FIELD@", "domain": ["-1.5", "1.5"] },
+            "color": "jexl:feature.@FIELD@ > 0 ? '#d73027' : '#4575b4'"
+          }
+        }
+      ]
+    }
+  ]
+}
+JSON
+  jb add-track-json "share_$kind.json" --out "$APP" --update
+done
 
 echo "built $OUTDIR/$APP; serve it with: npx --yes serve $OUTDIR/$APP"

@@ -562,9 +562,9 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   },
   alu_age: {
     // The binned frame below the app header and the view's toolbar: the grey
-    // count swinging over a level red band is the card.
+    // count over the young share turning from red to blue is the card.
     src: 'alu_age/binned.png',
-    band: [0.42, 0.98],
+    band: [0.3, 0.98],
   },
   read_marks: {
     // The chromosome frame below the app header and the view's toolbar: the

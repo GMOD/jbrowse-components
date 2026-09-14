@@ -1,0 +1,158 @@
+{
+  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
+  "assemblies": [
+    {
+      "name": "hg38",
+      "aliases": ["GRCh38"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg38-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",
+          "chromSizes": "https://jbrowse.org/demos/gene_density/hg38.chrom.sizes"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "alu_age",
+      "name": "Alu copies",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.gz.tbi"
+          }
+        },
+        "densityAdapter": {
+          "type": "BigWigAdapter",
+          "bigWigLocation": {
+            "uri": "https://jbrowse.org/demos/gene_density/Alu.bed.density.bw"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "alu_age-LinearMarkDisplay",
+          "marks": [
+            {
+              "shape": "bar",
+              "transform": [
+                {
+                  "type": "formula",
+                  "expr": "jexl:substring(feature.name, 0, 4)",
+                  "as": ["lineage"]
+                }
+              ],
+              "encoding": {
+                "y": "milliDiv",
+                "color": {
+                  "field": "lineage",
+                  "scale": "categorical",
+                  "domain": ["AluJ", "AluS", "AluY", "FLAM", "FRAM"],
+                  "palette": [
+                    "#4575b4",
+                    "#fdae61",
+                    "#d73027",
+                    "#8c8c8c",
+                    "#8c8c8c"
+                  ]
+                }
+              },
+              "maxBpPerPx": 100
+            },
+            {
+              "shape": "bar",
+              "source": "density",
+              "transform": [
+                { "type": "bin", "step": "auto" },
+                {
+                  "type": "aggregate",
+                  "groupby": ["start", "end"],
+                  "ops": [{ "op": "count" }]
+                }
+              ],
+              "encoding": { "y": "count", "color": "#c0c0c0" },
+              "minBpPerPx": 100
+            },
+            {
+              "shape": "bar",
+              "transform": [
+                {
+                  "type": "filter",
+                  "expr": "jexl:startsWith(feature.name, 'AluY')"
+                },
+                { "type": "bin", "step": "auto" },
+                {
+                  "type": "aggregate",
+                  "groupby": ["start", "end"],
+                  "ops": [{ "op": "count" }]
+                }
+              ],
+              "encoding": { "y": "count", "color": "#d73027" },
+              "minBpPerPx": 100
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "alu_young_share",
+      "name": "AluY share per Mb, against the genome",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "Alu.young_share.bed.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "alu_young_share-LinearMarkDisplay",
+          "marks": [
+            {
+              "shape": "bar",
+              "encoding": {
+                "y": { "field": "youngLog2", "domain": ["-1.5", "1.5"] },
+                "color": "jexl:feature.youngLog2 > 0 ? '#d73027' : '#4575b4'"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "alu_strand_share",
+      "name": "Plus-strand share per Mb, against a half",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "uri": "Alu.young_share.bed.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearMarkDisplay",
+          "displayId": "alu_strand_share-LinearMarkDisplay",
+          "marks": [
+            {
+              "shape": "bar",
+              "encoding": {
+                "y": { "field": "strandLog2", "domain": ["-1.5", "1.5"] },
+                "color": "jexl:feature.strandLog2 > 0 ? '#d73027' : '#4575b4'"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

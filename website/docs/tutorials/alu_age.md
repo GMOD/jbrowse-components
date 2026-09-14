@@ -3,9 +3,9 @@ title: Transposon age from a scored BED (RepeatMasker Alu)
 sidebar_label: Transposon age (RepeatMasker Alu)
 description:
   Plot a numeric column of a BED as a bar per feature coloured by another
-  column, count the features per bin zoomed out, and read a features-per-bin
-  sidecar past the fetch budget, over the divergence of every Alu copy on a
-  chromosome
+  column, count the features per bin zoomed out, read a features-per-bin sidecar
+  past the fetch budget, and test whether the youngest Alu copies follow the
+  family's density
 guide_category: Tutorials
 tutorial_category: Configuration & embedding
 ---
@@ -16,8 +16,10 @@ consensus into a column of its annotation, and divergence accumulates with time,
 so the column is an age. One track plots that column as a bar per copy coloured
 by subfamily, counts the copies per bin once the view is too wide to show them,
 and draws a features-per-bin sidecar where the chromosome is too wide to fetch.
-The track is a mark display: a numeric column of any feature file becomes a plot
-with a JSON entry and no code, and the counting runs in the browser.
+A per-megabase count of the young copies then asks whether they follow the
+family's density, with a strand split beside it as the control. Every track is a
+mark display: a numeric column of any feature file becomes a plot with a JSON
+entry and no code.
 
 ## Prerequisites
 
@@ -28,6 +30,7 @@ with a JSON entry and no code, and the counting runs in the browser.
   file
 - [Node.js](https://nodejs.org/) and the [JBrowse CLI](/docs/cli), for
   `jbrowse make-density`
+- `python3`, standard library only, for the per-megabase counts
 - `bedGraphToBigWig` from the
   [UCSC utilities](https://hgdownload.soe.ucsc.edu/admin/exe/), which
   `make-density` runs
@@ -35,12 +38,15 @@ with a JSON entry and no code, and the counting runs in the browser.
 ## Where the data comes from
 
 The figures read UCSC's hg38 RepeatMasker table, rehosted on jbrowse.org with
-the Alu rows cut out and a density sidecar beside them.
+the Alu rows cut out, a density sidecar beside them, and the per-megabase counts
+built from those rows.
 
 - RepeatMasker, UCSC's `rmsk` table as BED with a column header:
   https://jbrowse.org/ucsc/hg38/rmsk.bed.gz
 - the Alu rows the figures open, with `.tbi` and `.density.bw` beside it:
   https://jbrowse.org/demos/gene_density/Alu.bed.gz
+- the per-megabase counts and shares, with `.tbi` beside it:
+  https://jbrowse.org/code/jb2/main/test_data/alu_age/Alu.young_share.bed.gz
 - reference lengths, for the sidecar's bigWig header:
   https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chrom.sizes
 - the sequence:
@@ -141,9 +147,9 @@ width from the zoom, so the bars stay a few pixels wide however far you zoom
 out, and `minBpPerPx` hands the view over from the first mark at exactly the
 width where that one switches off.
 
-The question the first figure raised, where the young copies sit, is a third
-mark: the same bin and count, over only the copies a `filter` step admits, drawn
-over the total in AluY's colour.
+The question the first figure raised, where the young copies sit, starts as a
+third mark: the same bin and count, over only the copies a `filter` step admits,
+drawn over the total in AluY's colour.
 
 ```json
 "marks": [
@@ -185,11 +191,10 @@ the marks in range draw, so the axis reads divergence zoomed in and counts
 zoomed out, and the legend is gone at the wide zoom because the marks drawing
 there have constant colours.
 
-<Figure src="/img/alu_age/binned.png" caption="Ten megabases of 1q21 to 1q23, the Alu copies per bin in grey with the AluY copies per bin over them in red. The grey rises and falls by several fold across the window; the red band under it stays close to level." />
-
-Alu copies pile up in the gene-rich, GC-rich stretches of the arm, and the grey
-follows them. The red does not, so the young copies sit more evenly along the
-arm than the old ones.
+The AluY count is a thin red strip under a grey total that swings by several
+fold, and whether the strip follows the swings is not something an eye can
+settle from two counts on one axis. The share of copies that are young can, and
+the next two sections build it.
 
 ## The whole chromosome: past the fetch budget
 
@@ -299,11 +304,91 @@ there.
 }
 ```
 
-<Figure src="/img/alu_age/chromosome.png" caption="Chromosome 1 end to end. The count mark draws the sidecar's bins, and the chip in the corner says so; the gap is the centromere, and the AluY mark is off." />
-
 A track with a sidecar carries a **Density band** entry in its track menu, with
 **Automatic**, **Features only** and **Density only**, so the swap can be held
 or forced by hand.
+
+## The young share per megabase
+
+The share is a ratio of two counts, and the sidecar only carries one of them, so
+a short script computes it for the whole genome: per megabase, the copies of the
+three Alu lineages, the AluY copies among them, and the copies on the plus
+strand. It writes them as a BED, one row per megabase, with two log2 columns:
+the megabase's young share against the genome-wide young share, and its
+plus-strand share against a half. The strand split is the control. Nothing about
+where Alu is dense should tilt which strand a copy landed on, so that column
+ought to come out flat wherever the young share does not.
+
+<!-- from: scripts/build_alu_age.sh -->
+
+```bash
+# columns: copies, young, plus, youngShare, youngLog2, strandLog2, one row per
+# 1 Mb bin holding at least 50 copies; prints the rank correlation of each share
+# against copies per bin
+python3 alu_young_share.py Alu.bed.gz Alu.young_share.bed AluY
+bgzip -f Alu.young_share.bed
+tabix -f -p bed Alu.young_share.bed.gz
+```
+
+Each column is one mark track over that file. The bar grows from zero, so
+`youngLog2` above the axis is a megabase richer in young copies than the genome
+and below it one poorer, and a jexl colour paints the two directions apart. Both
+tracks pin the same `domain`, so the strand lane's flatness reads against the
+young share's swing on one scale.
+
+```json addtrack
+{
+  "type": "FeatureTrack",
+  "trackId": "alu_young_share",
+  "name": "AluY share per Mb, against the genome",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "uri": "https://jbrowse.org/code/jb2/main/test_data/alu_age/Alu.young_share.bed.gz"
+  },
+  "displays": [
+    {
+      "type": "LinearMarkDisplay",
+      "displayId": "alu_young_share-LinearMarkDisplay",
+      "marks": [
+        {
+          "shape": "bar",
+          "encoding": {
+            "y": { "field": "youngLog2", "domain": ["-1.5", "1.5"] },
+            "color": "jexl:feature.youngLog2 > 0 ? '#d73027' : '#4575b4'"
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+The strand track is the same config with `strandLog2` in both places.
+
+<Figure src="/img/alu_age/young_share.png" caption="Top, chromosome 1 end to end: Alu copies from the density sidecar, the AluY share per megabase against the genome-wide share, and the plus-strand share against a half. Under the wedge, the same three tracks over a stretch where Alu-sparse megabases meet Alu-dense ones, with the copies now counted per bin in grey and AluY in red." links="Chromosome 1=alu_age/chromosome,The stretch under the wedge=alu_age/binned" />
+
+Where the grey is low the young share runs red, and where the grey piles up it
+turns blue; under the wedge the switch happens where the Alu-sparse megabases
+give way to the dense ones. The strand lane stays level across both. Older Alu
+copies are known to concentrate in GC-rich, gene-rich DNA, and the youngest have
+had the least time to.
+
+## Is the pattern more than noise
+
+One megabase's young share can swing by chance, so no single bar is the test.
+The test is the trend across every megabase of the genome, which
+`alu_young_share.py` prints as a Spearman rank correlation between each share
+and the copies per megabase:
+
+| share, per megabase | bins | Spearman rho |        p |
+| ------------------- | ---: | -----------: | -------: |
+| AluY share          | 2873 |       -0.688 | < 1e-300 |
+| plus-strand share   | 2873 |        0.003 |     0.87 |
+
+The young share falls as the copies rise, across the genome and not only on the
+arm in the figure, and the control split shows no trend at all over the same
+bins.[^perbin]
 
 ## Checking the bars against the rows
 
@@ -327,21 +412,23 @@ tabix https://jbrowse.org/demos/gene_density/Alu.bed.gz chr1:151,000,000-151,030
 The lineages order by mean divergence the way their bars ordered by height, and
 the fossil monomers sit with the oldest Alu lineage.
 
-The second figure's claim is that the red band is flatter than the grey, so take
-a megabase under a grey peak and one under a trough and count both:
+The share bars under the wedge are counts of the same rows, so count one red
+megabase and one blue one straight out of the Alu file, keeping the copies that
+start inside it:
 
 ```bash
-tabix https://jbrowse.org/demos/gene_density/Alu.bed.gz chr1:154,000,000-155,000,000 | wc -l
-tabix https://jbrowse.org/demos/gene_density/Alu.bed.gz chr1:154,000,000-155,000,000 | awk -F'\t' '$4 ~ /^AluY/' | wc -l
+tabix https://jbrowse.org/demos/gene_density/Alu.bed.gz chr1:191,000,001-192,000,000 |
+  awk -F'\t' '$2 >= 191000000 && $4 ~ /^Alu[JSY]/ { n++; y += ($4 ~ /^AluY/) }
+    END { print n " copies, " y " AluY" }'
 ```
 
-| window, chr1  | all Alu | AluY |
-| ------------- | ------: | ---: |
-| 154 to 155 Mb |     986 |   94 |
-| 157 to 158 Mb |     237 |   35 |
+| megabase, chr1 | Alu copies | AluY |
+| -------------- | ---------: | ---: |
+| 191 to 192 Mb  |        161 |   55 |
+| 203 to 204 Mb  |        690 |   47 |
 
-The total falls by about four fold between the two windows and the AluY count by
-less than three, so the AluY band is the flatter of the two.
+The dense megabase holds several times the copies and still fewer AluY copies,
+which is the blue bar.
 
 ## Reproduce it end to end
 
@@ -355,8 +442,9 @@ npx --yes serve alu_age_build/jbrowse2    # then open the printed URL
 ```
 
 With no arguments it fetches UCSC's hg38 RepeatMasker table, cuts the Alu rows
-out of it, indexes them, builds the sidecar and writes a JBrowse with the track
-above. Given your own RepeatMasker BED and the FASTA it was masked against,
+out of it, indexes them, builds the sidecar and the per-megabase shares, prints
+the two correlations, and writes a JBrowse with the tracks above. Given your own
+RepeatMasker BED and the FASTA it was masked against,
 `bash build_alu_age.sh rmsk.bed.gz genome.fa`, it builds the same track over
 your file; `FAMILY` and `YOUNG` in the environment pick another family and its
 youngest lineage. The tools it needs are the ones under
@@ -381,3 +469,9 @@ youngest lineage. The tools it needs are the ones under
   first described.
 - Smit, Hubley and Green (2013-2015).
   [RepeatMasker Open-4.0](https://www.repeatmasker.org)
+
+[^perbin]:
+    The page does not call individual megabases significant. Insertions cluster,
+    so the copies per megabase scatter several times more widely than
+    independent copies would, and a per-megabase test that assumed independence
+    would flag most of the genome.

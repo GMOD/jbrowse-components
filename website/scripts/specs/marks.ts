@@ -204,104 +204,129 @@ export const marksSpecs: ScreenshotSpec[] = [
   },
 ]
 
-// The Alu tutorial's track (docs/tutorials/alu_age.md): each copy's divergence
-// from its consensus as a bar coloured by lineage zoomed in, the count per
-// zoom-following bin with the AluY count over it zoomed out, and the
-// make-density sidecar past the fetch budget, all from one marks list.
-const ALU_AGE_TRACK = {
-  ...ALU_MARKS_TRACK,
-  trackId: 'alu_age',
-  name: 'Alu copies',
-  displays: [
-    {
-      type: 'LinearMarkDisplay',
-      displayId: 'alu_age-LinearMarkDisplay',
-      marks: [
-        {
-          shape: 'bar',
-          transform: [
-            {
-              type: 'formula',
-              expr: 'jexl:substring(feature.name, 0, 4)',
-              as: ['lineage'],
-            },
-          ],
-          encoding: {
-            y: 'milliDiv',
-            color: {
-              field: 'lineage',
-              scale: 'categorical',
-              domain: ['AluJ', 'AluS', 'AluY', 'FLAM', 'FRAM'],
-              palette: ['#4575b4', '#fdae61', '#d73027', '#8c8c8c', '#8c8c8c'],
-            },
-          },
-          maxBpPerPx: 100,
-        },
-        {
-          shape: 'bar',
-          source: 'density',
-          transform: [
-            { type: 'bin', step: 'auto' },
-            {
-              type: 'aggregate',
-              groupby: ['start', 'end'],
-              ops: [{ op: 'count' }],
-            },
-          ],
-          encoding: { y: 'count', color: '#c0c0c0' },
-          minBpPerPx: 100,
-        },
-        {
-          shape: 'bar',
-          transform: [
-            { type: 'filter', expr: "jexl:startsWith(feature.name, 'AluY')" },
-            { type: 'bin', step: 'auto' },
-            {
-              type: 'aggregate',
-              groupby: ['start', 'end'],
-              ops: [{ op: 'count' }],
-            },
-          ],
-          encoding: { y: 'count', color: '#d73027' },
-          minBpPerPx: 100,
-        },
-      ],
-    },
-  ],
-}
+// The Alu tutorial (docs/tutorials/alu_age.md). The config carries the tracks:
+// the copies as a mark display, and the per-megabase BED build_alu_age.sh
+// writes, plotted twice, as the AluY share against the genome-wide share and
+// as the plus-strand share against a half, the split that should come out flat.
+const ALU_AGE_CONFIG = 'test_data/alu_age/config.json'
+const ALU_AGE_TRACKS = [
+  { trackId: 'alu_age', type: 'LinearMarkDisplay', height: 110 },
+  { trackId: 'alu_young_share', type: 'LinearMarkDisplay', height: 90 },
+  { trackId: 'alu_strand_share', type: 'LinearMarkDisplay', height: 90 },
+]
 
-function aluAgeSpec(name: string, loc: string): ScreenshotSpec {
+function aluAgeSpec(
+  name: string,
+  loc: string,
+  tracks: object[],
+  extra: Partial<ScreenshotSpec> = {},
+): ScreenshotSpec {
   return {
     mode: 'url',
     name,
-    url: sessionSpec(CONFIG, {
-      sessionTracks: [ALU_AGE_TRACK],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc,
-          tracks: [
-            { trackId: 'alu_age', type: 'LinearMarkDisplay', height: 200 },
-          ],
-        },
-      ],
+    url: sessionSpec(ALU_AGE_CONFIG, {
+      views: [{ type: 'LinearGenomeView', assembly: 'hg38', loc, tracks }],
     }),
     readySelector: displayPainted('mark-display'),
     readyTimeout: 90000,
     settleMs: 8000,
-    viewportHeight: 410,
-  }
+    ...extra,
+  } as ScreenshotSpec
 }
 
+// A stretch where a run of Alu-sparse megabases meets a run of dense ones. The
+// wedge's narrow end is that span as a fraction of the composed part's width:
+// the data area starts at 12.4 of 3000 px and spans 2976 (see
+// ld/lct_sweep_two_scales)
+const BINNED_START = 184_000_000
+const BINNED_END = 212_000_000
+const BINNED_LOC = `chr1:${BINNED_START + 1}-${BINNED_END}`
+const CHR1_LENGTH = 248_956_422
+const partFrac = (bp: number) => (12.4 + (bp / CHR1_LENGTH) * 2976) / 3000
+
 export const aluAgeSpecs: ScreenshotSpec[] = [
-  // 30 kb of 1q21: one bar per Alu copy, its height the copy's divergence from
-  // its consensus and its colour the lineage read off the name, with the key.
-  aluAgeSpec('alu_age/locus', 'chr1:151,000,000-151,030,000'),
-  // 10 Mb of 1q21 to 1q23: the copies per zoom-following bin in grey, with the
-  // AluY copies per bin over them in the lineage's colour.
-  aluAgeSpec('alu_age/binned', 'chr1:150,000,000-160,000,000'),
-  // Chromosome 1 end to end, past the fetch budget: the sidecar's bins draw as
-  // the count mark, the chip names them, and the AluY mark draws nothing.
-  aluAgeSpec('alu_age/chromosome', 'chr1'),
+  aluAgeSpec(
+    'alu_age/locus',
+    'chr1:151,000,000-151,030,000',
+    [{ trackId: 'alu_age', type: 'LinearMarkDisplay', height: 200 }],
+    {
+      viewportHeight: 410,
+      annotations: [
+        {
+          type: 'text',
+          text: 'Bar height: divergence from consensus. Older copies are taller',
+          fontSize: 18,
+          maxWidth: 700,
+          anchor: {
+            track: 'alu_age',
+            locus: 'chr1:151,007,500',
+            fracY: 0.12,
+          },
+        },
+      ],
+    },
+  ),
+  aluAgeSpec('alu_age/chromosome', 'chr1', ALU_AGE_TRACKS, {
+    viewportHeight: 580,
+    annotations: [
+      {
+        type: 'text',
+        text: 'Control: the strand split stays level',
+        fontSize: 18,
+        maxWidth: 500,
+        anchor: {
+          track: 'alu_strand_share',
+          locus: 'chr1:134,000,000',
+          fracY: 0.2,
+        },
+      },
+    ],
+  }),
+  aluAgeSpec('alu_age/binned', BINNED_LOC, ALU_AGE_TRACKS, {
+    viewportHeight: 580,
+    annotations: [
+      {
+        type: 'text',
+        text: 'Alu sparse: more young copies',
+        fontSize: 18,
+        leader: true,
+        anchor: {
+          track: 'alu_young_share',
+          locus: 'chr1:191,500,000',
+          fracY: 0.3,
+        },
+        dx: -40,
+        dy: -95,
+      },
+      {
+        type: 'text',
+        text: 'Alu dense: fewer young copies',
+        fontSize: 18,
+        leader: true,
+        anchor: {
+          track: 'alu_young_share',
+          locus: 'chr1:203,500,000',
+          fracY: 0.75,
+        },
+        dx: 80,
+        dy: -177,
+      },
+    ],
+  }),
+  {
+    mode: 'compose',
+    name: 'alu_age/young_share',
+    parts: ['alu_age/chromosome', 'alu_age/binned'],
+    gutter: 70,
+    annotations: [
+      {
+        type: 'trapezoid',
+        fromAnchor: {
+          selector: '[data-part="0"]',
+          fracX: [partFrac(BINNED_START), partFrac(BINNED_END)],
+        },
+        anchor: { selector: '[data-part="1"]' },
+      },
+    ],
+  },
 ]
