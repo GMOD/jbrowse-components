@@ -795,6 +795,40 @@ describe('getScalebarRefNameLabels', () => {
     expect(caption).toBe('hg38')
   })
 
+  test('a standalone caption keeps the next region label out from under it', () => {
+    const blocks = (secondStartPx: number) => [
+      refBlock({
+        key: 'a',
+        refName: 'EMU3',
+        displayedRegionIndex: 0,
+        offsetPx: 0,
+        widthPx: secondStartPx,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+      refBlock({
+        key: 'b',
+        refName: 'EMU13',
+        displayedRegionIndex: 1,
+        offsetPx: secondStartPx,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+    ]
+    const drawn = (secondStartPx: number) => {
+      const { labels, caption, captionSpanPx } = getScalebarRefNameLabels({
+        blocks: blocks(secondStartPx),
+        offsetPx: 0,
+        prefix: 'Ephydatia (sponge)',
+      })
+      return { labels, caption, captionSpanPx }
+    }
+    const under = drawn(40)
+    expect(under.caption).toBe('Ephydatia (sponge)')
+    expect(under.labels).toEqual([])
+    const clear = drawn(Math.ceil(under.captionSpanPx) + 1)
+    expect(clear.labels.map(l => l.text)).toEqual(['EMU13'])
+  })
+
   test('a label fitted to its region can still overrun the view edge', () => {
     // chr14 starts 20px before the right edge of an 820px view, inside a region
     // 800px wide: it clears the region fit by a mile and is still cut in half by

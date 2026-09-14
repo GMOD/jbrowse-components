@@ -467,6 +467,10 @@ export function getScalebarRefNameLabels({
       sticky,
       minTransform: rowIsReversed ? captionSpanPx : 0,
     })
+    const captionStandsAlone = rowIsReversed || (hasPrefix && !stickyHasPrefix)
+    if (!sticky && captionStandsAlone && layout.transform < captionSpanPx) {
+      continue
+    }
     const withPrefix =
       !rowIsReversed && sticky && hasPrefix && layout.transform < captionSpanPx
     const name = withPrefix ? `${prefix}:${run.refName}` : run.refName
