@@ -108,7 +108,10 @@ recent sessions), and `docs` (`live-model`, `recipes`, `hosted-data`,
 documented type, compact pages `pnpm autogen` writes to
 `docs/typeDocs.generated.json` from the same pass as the website reference —
 bundled at build time, readable while the app is closed; a long topic answers
-with its headings and takes a `section`). The bundled docs match the packaged
+with its headings and takes a `section`, and `live-model` — the one every agent
+is told to read first — answers with its contract whole plus a contents of the
+deep dives below it, minus the browser-agent section a server running inside
+Desktop has no reader for). The bundled docs match the packaged
 `--mcp` entry by construction; the standalone shim asks the running app its
 version and prefixes every docs answer with a note when they disagree
 (`versionSkewNote`).

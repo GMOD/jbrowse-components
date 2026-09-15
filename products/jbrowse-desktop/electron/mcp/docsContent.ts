@@ -7,7 +7,7 @@ import liveModelGuide from '../../../../website/docs/agents_live_model.md'
 import recipes from '../../../../website/docs/agents_recipes.md'
 import automating from '../../../../website/docs/automating.md'
 import urlparams from '../../../../website/docs/urlparams.md'
-import { WHOLE_TOPICS } from './docLimits.ts'
+import { OMITTED_SECTIONS, SPLIT_TOPICS } from './docLimits.ts'
 import { searchDocs } from './docSearch.ts'
 import { readDocSection } from './docSections.ts'
 import typePages from './docs/typeDocs.generated.json'
@@ -18,7 +18,7 @@ import type { BridgeToolResult } from './stdioServer.ts'
 const TOPICS: Record<string, { summary: string; text: string }> = {
   'live-model': {
     summary:
-      'Driving the live session from run_javascript: model orientation, MST rules, direct adapter data access, waiting on renders',
+      'Driving the live session from run_javascript: the contract to read first — every jb member, what a call answers with, when to screenshot — then deep-dive sections you ask for by name',
     text: liveModelGuide,
   },
   recipes: {
@@ -71,7 +71,8 @@ export function docsToolResult(
   const entry = TOPICS[topic]
   if (entry) {
     return readDocSection(entry.text, section, {
-      whole: WHOLE_TOPICS.has(topic),
+      splitAt: SPLIT_TOPICS[topic],
+      omit: OMITTED_SECTIONS[topic],
     })
   }
   if (topic === 'types') {

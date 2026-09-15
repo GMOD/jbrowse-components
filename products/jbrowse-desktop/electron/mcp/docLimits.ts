@@ -2,20 +2,32 @@
 // composing one linear genome view needs a tenth of it. Over this size a bare
 // topic answers with its headings and the text before the first one.
 //
-// Its own module, importing nothing: agents_live_model.md sits just under this
-// line, and the test that holds it there (src/mcp/docsRoster.test.ts) is in the
-// renderer project, where reaching docSections.ts would drag the bundled .md
-// imports into a typecheck that has no loader for them.
+// Its own module, importing nothing: src/mcp/docsRoster.test.ts reads these
+// from the renderer project, where reaching docSections.ts would drag the
+// bundled .md imports into a typecheck that has no loader for them.
 export const TOC_ABOVE_CHARS = 20_000
 
 /**
- * Topics served whole however long they get.
+ * Topics whose bare answer is the text above this heading plus a table of
+ * contents of what is below it.
  *
- * The cap above exists for a REFERENCE — urlparams.md is 60 KB and an agent
- * composing one linear genome view needs a tenth of it. The live-model guide is
- * the opposite kind of document: it is the contract, `docs topic:"live-model"`
- * is what every agent is told to read first, and crossing the cap would answer
- * that with headings. It sat 43 characters under the line, so the next
- * paragraph anyone added to the contract had to be paid for by deleting one.
+ * `docs topic:"live-model"` is what every agent is told to read first, and the
+ * guide is 24 KB. The headings-only answer TOC_ABOVE_CHARS gives a reference
+ * would drop the contract — the part that has to arrive before the first
+ * run_javascript call — so the split is explicit instead: the contract whole,
+ * then the deep dives by name. `section:"all"` still reads everything.
  */
-export const WHOLE_TOPICS = new Set(['live-model'])
+export const SPLIT_TOPICS: Record<string, string> = {
+  'live-model': 'Deep dives',
+}
+
+/**
+ * Sections the docs tool leaves out, by topic.
+ *
+ * This server runs inside JBrowse Desktop, so the guide's browser-agent
+ * section describes a client that cannot be the one asking. The website page
+ * and the browser eval's `--guide` read the file itself and still carry it.
+ */
+export const OMITTED_SECTIONS: Record<string, string[]> = {
+  'live-model': ['In a browser'],
+}

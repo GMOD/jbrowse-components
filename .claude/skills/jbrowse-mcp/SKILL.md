@@ -21,6 +21,8 @@ agent three ways:
 - the same text after the value in a session's first `run_javascript` result,
   for the clients that drop it
 - `docs topic:"live-model"` — read it before your first `run_javascript` call.
+  It answers with the contract and a table of contents of its deep dives, which
+  you then ask for by `section` (or `section:"all"` for the whole guide).
   `docs topic:"recipes"` has a verified snippet for most asks,
   `docs topic:"hosted-data"` the config URL for any UCSC or GenArk assembly when
   nothing is open, and `docs topic:"session-spec"` the launch keys for a

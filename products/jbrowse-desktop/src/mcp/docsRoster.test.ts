@@ -4,7 +4,7 @@ import path from 'node:path'
 import { createJbApi } from '@jbrowse/app-core'
 
 import { CODE_TIMEOUT_DEFAULT_MS } from '../../electron/mcp/budgets.ts'
-import { WHOLE_TOPICS } from '../../electron/mcp/docLimits.ts'
+import { OMITTED_SECTIONS, SPLIT_TOPICS } from '../../electron/mcp/docLimits.ts'
 import { overCap } from '../../electron/mcp/textCaps.ts'
 import {
   MCP_TOOLS,
@@ -125,14 +125,17 @@ it('every copy stating the timeout default states the real one', () => {
   }
 })
 
-// The guide is the one topic whose point is being read whole — it is what
-// "read docs topic live-model FIRST" asks for, and past the size cap the docs
-// tool would answer that with a table of contents, silently. It is exempt by
-// name rather than by staying under a length, because it spent months 43
-// characters from the line: every paragraph added to the contract had to be
-// paid for by deleting one, and the check said so only after the edit.
-it('the guide is served whole rather than as a table of contents', () => {
-  expect([...WHOLE_TOPICS]).toContain('live-model')
+// The guide is what "read docs topic live-model FIRST" asks for, and it is
+// 22 KB, so it is served as a contract plus a table of contents of the deep
+// dives rather than whole or as headings alone. The headings the split and the
+// omission name have to exist in the file, or the guide silently reverts to
+// being served whole; docSections.test.ts holds the answer's size, where it can
+// measure the real one.
+it('the guide carries the headings the docs tool splits and omits it at', () => {
+  expect(copies.guide).toContain(`\n## ${SPLIT_TOPICS['live-model']}\n`)
+  for (const heading of OMITTED_SECTIONS['live-model']!) {
+    expect(copies.guide).toContain(`\n## ${heading}\n`)
+  }
 })
 
 // A filmed take lost five calls to the adapter probe coming back as a promise

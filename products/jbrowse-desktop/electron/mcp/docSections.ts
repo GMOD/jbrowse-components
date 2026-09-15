@@ -29,24 +29,53 @@ export function splitSections(markdown: string) {
 
 // A section runs until the next heading of its own level or shallower, so
 // asking for "Session spec" brings its view-type subsections along.
-function sectionWithChildren(sections: DocSection[], index: number) {
+function endOfSection(sections: DocSection[], index: number) {
   const { level } = sections[index]!
   let end = index + 1
   while (end < sections.length && sections[end]!.level > level) {
     end += 1
   }
+  return end
+}
+
+function sectionWithChildren(sections: DocSection[], index: number) {
   return sections
-    .slice(index, end)
+    .slice(index, endOfSection(sections, index))
+    .map(s => s.text)
+    .join('')
+}
+
+function findSection(sections: DocSection[], heading: string) {
+  const wanted = heading.trim().toLowerCase()
+  const exact = sections.findIndex(s => s.heading.toLowerCase() === wanted)
+  return exact !== -1
+    ? exact
+    : sections.findIndex(s => s.heading.toLowerCase().includes(wanted))
+}
+
+function withoutSections(markdown: string, omit: readonly string[]) {
+  const sections = splitSections(markdown)
+  const dropped = new Set<number>()
+  for (const heading of omit) {
+    const index = findSection(sections, heading)
+    if (index !== -1) {
+      for (let i = index; i < endOfSection(sections, index); i++) {
+        dropped.add(i)
+      }
+    }
+  }
+  return sections
+    .filter((_section, i) => !dropped.has(i))
     .map(s => s.text)
     .join('')
 }
 
 // each entry carries the size of the section with its children, so an agent
 // can weigh a 40 KB getter list against a 13 KB action list before asking
-function tableOfContents(sections: DocSection[]) {
+function tableOfContents(sections: DocSection[], from = 0) {
   const headed = sections
     .map((s, index) => ({ ...s, index }))
-    .filter(s => s.level > 0)
+    .filter(s => s.level > 0 && s.index >= from)
   const top = Math.min(...headed.map(s => s.level))
   return headed
     .map(
@@ -66,26 +95,32 @@ function withoutFrontmatter(preamble: string) {
 export function readDocSection(
   markdown: string,
   section: string,
-  { whole = false }: { whole?: boolean } = {},
+  { splitAt, omit }: { splitAt?: string; omit?: readonly string[] } = {},
 ): BridgeToolResult {
-  if (
-    section === 'all' ||
-    (!section && (whole || markdown.length <= TOC_ABOVE_CHARS))
-  ) {
-    return { text: markdown }
+  const served = omit?.length ? withoutSections(markdown, omit) : markdown
+  if (section === 'all') {
+    return { text: served }
   }
-  const sections = splitSections(markdown)
+  const sections = splitSections(served)
   if (!section) {
+    const marker = splitAt ? findSection(sections, splitAt) : -1
+    if (marker !== -1) {
+      const contract = sections
+        .slice(0, marker + 1)
+        .map(s => s.text)
+        .join('')
+      return {
+        text: `${withoutFrontmatter(contract)}\nPass one as "section" to read it, or "all" for the whole guide:\n${tableOfContents(sections, marker + 1)}\n`,
+      }
+    }
+    if (served.length <= TOC_ABOVE_CHARS) {
+      return { text: served }
+    }
     return {
-      text: `${withoutFrontmatter(sections[0]!.text)}\nThis topic is ${markdown.length} characters. Sections (pass one as "section", or "all" for everything):\n${tableOfContents(sections)}\n`,
+      text: `${withoutFrontmatter(sections[0]!.text)}\nThis topic is ${served.length} characters. Sections (pass one as "section", or "all" for everything):\n${tableOfContents(sections)}\n`,
     }
   }
-  const wanted = section.trim().toLowerCase()
-  const exact = sections.findIndex(s => s.heading.toLowerCase() === wanted)
-  const index =
-    exact !== -1
-      ? exact
-      : sections.findIndex(s => s.heading.toLowerCase().includes(wanted))
+  const index = findSection(sections, section)
   return index === -1
     ? {
         error: `No section "${section}". Sections:\n${tableOfContents(sections)}`,
