@@ -801,9 +801,23 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * and error checks resolve it directly through here.
        */
       get initAssembly() {
-        return self.pendingLaunch
-          ? getSession(self).assemblyManager.get(self.pendingLaunch.assembly)
+        const name = this.launchAssemblyName
+        return self.pendingLaunch && name !== undefined
+          ? getSession(self).assemblyManager.get(name)
           : undefined
+      },
+
+      /**
+       * #getter
+       * The assembly a pending launch is for: the one it names, else the one
+       * the view already shows. A re-launch of a materialized view (a
+       * `jb.setSession` document writing `loc` beside the built state) need
+       * not restate it; without the default the readiness gate waited on
+       * `assemblyManager.get(undefined)` for good. Undefined on a fresh view
+       * whose blob names none, which `error` reports.
+       */
+      get launchAssemblyName(): string | undefined {
+        return self.pendingLaunch?.assembly ?? self.assemblyNames[0]
       },
 
       /**
@@ -1218,12 +1232,12 @@ export function stateModelFactory(pluginManager: PluginManager) {
           // hand-authored JSON is what fills it, so the type is not a guarantee.
           // Naming the authoring mistake beats the downstream symptom, which is
           // the literal string "Assembly undefined not found".
-          if (!self.pendingLaunch.assembly) {
+          if (!this.launchAssemblyName) {
             return 'LinearGenomeView init needs an "assembly"'
           }
           const asm = this.initAssembly
           if (!asm) {
-            return `Assembly ${self.pendingLaunch.assembly} not found`
+            return `Assembly ${this.launchAssemblyName} not found`
           }
           if (asm.error) {
             return asm.error

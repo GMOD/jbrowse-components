@@ -818,30 +818,33 @@ describe('the jb roster', () => {
     rootModel: {},
   } as unknown as PluginManager)
 
-  it('is the documented 26 members', () => {
+  // Every member is either a helper that turns a silent wrong answer into a
+  // throw or a report, or one of four foundations (the two libraries and the
+  // two config readers). The internals that used to ride beside them — stop
+  // tokens, RPC session ids, region renaming, locstring parsing, the adapter
+  // builder — reach an agent through jb.require('@jbrowse/core/util'), the
+  // registry plugins link against, rather than as fixtures of this surface.
+  it('is the documented 23 members', () => {
     expect(Object.keys(jb).sort()).toEqual([
       'addTrack',
-      'createStopToken',
+      'addView',
       'describeSlots',
       'ensureRequire',
+      'fitToWindow',
       'getConf',
-      'getFeatureAdapterOrThrow',
       'getFeatures',
-      'getRpcSessionId',
       'help',
       'inspect',
       'listTracks',
       'loadSessionSpec',
       'mobx',
       'mst',
-      'parseLocString',
       'readConfObject',
-      'renameRegionsIfNeeded',
       'require',
       'rootModel',
       'session',
       'sessionSummary',
-      'stopStopToken',
+      'setSession',
       'trackModel',
       'view',
       'visibleRegions',
@@ -850,18 +853,7 @@ describe('the jb roster', () => {
   })
 
   it('hands through no core export beyond the frozen re-exports', () => {
-    const frozen = new Set([
-      'createStopToken',
-      'getConf',
-      'getFeatureAdapterOrThrow',
-      'getRpcSessionId',
-      'mobx',
-      'mst',
-      'parseLocString',
-      'readConfObject',
-      'renameRegionsIfNeeded',
-      'stopStopToken',
-    ])
+    const frozen = new Set(['getConf', 'mobx', 'mst', 'readConfObject'])
     const coreExports = new Set<unknown>(
       [configuration, getFeatureAdapter, util, stopToken].flatMap(m =>
         Object.values(m),
@@ -876,5 +868,338 @@ describe('the jb roster', () => {
         : [],
     )
     expect(handedThrough).toEqual([])
+  })
+})
+
+// A synteny view's rows count as open views: they are what shows a region and
+// a track. An agent looking at one synteny view read "3 views are open" with
+// nothing saying two of them were its rows, and a region read addressed to the
+// synteny view's own id answered "no view shows a region" over a view plainly
+// on screen.
+describe('rows of a nested view', () => {
+  const row = (id: string, loc: string) => ({
+    id,
+    type: 'LinearGenomeView',
+    assemblyNames: ['volvox'],
+    coarseVisibleLocStrings: loc,
+    initialized: true,
+    visibleRegions: [
+      { refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' },
+    ],
+    ownViews: [],
+    ownTracks: [],
+  })
+  const jb = createJbApi({
+    rootModel: {
+      session: {
+        views: [
+          {
+            id: 'syn',
+            type: 'LinearSyntenyView',
+            assemblyNames: ['volvox', 'volvox2'],
+            ownViews: [row('r1', 'ctgA:1-100'), row('r2', 'ctgB:1-100')],
+            ownTracks: [],
+          },
+        ],
+        assemblyNames: ['volvox'],
+      },
+    },
+  } as unknown as PluginManager)
+
+  it('names each row as a row of its parent', () => {
+    expect(() => jb.view()).toThrow(
+      /3 views are open: syn \(LinearSyntenyView on volvox, volvox2\); r1 \(LinearGenomeView on volvox at ctgA:1-100, a row of syn\); r2 .*a row of syn\)/,
+    )
+  })
+
+  it('sends a region read addressed to the parent to its rows', async () => {
+    await expect(jb.visibleRegions('syn')).rejects.toThrow(
+      /View syn \(LinearSyntenyView on volvox, volvox2\) shows no region of its own; its rows do: r1 .*; r2 .*— pass one of those as viewId/,
+    )
+    expect(await jb.visibleRegions('r2')).toHaveLength(1)
+  })
+})
+
+// Every filmed take spent two to five screenshot rounds shrinking things by
+// hand after the settle said `offscreen`. The overflow is arithmetic the settle
+// already does, so the fit spends it for the agent.
+describe('fitToWindow', () => {
+  afterEach(() => {
+    document.body.replaceChildren()
+  })
+  const sized = (height: number) => {
+    const part = {
+      height,
+      setHeight(px: number) {
+        part.height = px
+      },
+    }
+    return part
+  }
+  // jsdom lays nothing out, so the page is as tall as its parts say
+  function page(chrome: number, parts: { height: number }[]) {
+    Object.defineProperty(document.documentElement, 'scrollHeight', {
+      configurable: true,
+      get: () => chrome + parts.reduce((sum, p) => sum + p.height, 0),
+    })
+  }
+  const jbOver = (
+    displays: ReturnType<typeof sized>[],
+    levels: ReturnType<typeof sized>[] = [],
+  ) =>
+    createJbApi({
+      rootModel: {
+        session: {
+          views: [
+            {
+              id: 'v',
+              type: 'LinearGenomeView',
+              levels,
+              ownViews: [],
+              ownTracks: displays.map((activeDisplay, i) => ({
+                configuration: { trackId: `t${i}` },
+                activeDisplay,
+              })),
+            },
+          ],
+          snackbarMessages: [],
+        },
+      },
+    } as unknown as PluginManager)
+
+  it('answers plainly when the session already fits', async () => {
+    page(100, [])
+    expect(await jbOver([]).fitToWindow(100)).toEqual({
+      fits: true,
+      pageHeight: 100,
+      windowHeight: 768,
+    })
+  })
+
+  it('spends the overflow in proportion to headroom and reports each cut', async () => {
+    document.body.innerHTML = '<div data-app-phase="ready"></div>'
+    const tall = sized(600)
+    const short = sized(100)
+    const band = sized(300)
+    page(168, [tall, short, band])
+    expect(await jbOver([tall, short], [band]).fitToWindow(5000)).toEqual({
+      fits: true,
+      overflowBefore: 400,
+      overflowAfter: 0,
+      shrunk: [
+        { what: 'view v band 0', from: 300, to: 182 },
+        { what: 't0', from: 600, to: 345 },
+        { what: 't1', from: 100, to: 73 },
+      ],
+      settled: true,
+    })
+  })
+
+  it('says when the floors are what is left', async () => {
+    document.body.innerHTML = '<div data-app-phase="ready"></div>'
+    const nearFloor = sized(50)
+    page(1000, [nearFloor])
+    expect(await jbOver([nearFloor]).fitToWindow(5000)).toMatchObject({
+      fits: false,
+      overflowBefore: 282,
+      overflowAfter: 272,
+      shrunk: [{ what: 't0', from: 50, to: 40 }],
+      note: expect.stringContaining('floor'),
+    })
+  })
+})
+
+// One view from one spec entry, through the same LaunchView door a spec's
+// views take — not session.launchView, which is addView with a snapshot and
+// never runs a view's launcher.
+describe('addView', () => {
+  interface StubView {
+    id: string
+    type: string
+    displayName?: string
+    args: Record<string, unknown>
+    ownViews: never[]
+    ownTracks: never[]
+    setDisplayName: (name: string) => void
+  }
+  type Handler = (
+    session: { views: StubView[] },
+    args: Record<string, unknown>,
+  ) => Promise<void>
+  function harness(
+    handlers: Record<string, Handler>,
+    registered = ['LinearGenomeView'],
+  ) {
+    const views: StubView[] = []
+    const session = { views, assemblyNames: ['volvox'] }
+    const pluginManager = {
+      rootModel: { session },
+      extensionPoints: { has: (name: string) => name in handlers },
+      getElementTypeRecord: () => ({
+        has: (type: string) => registered.includes(type),
+      }),
+      getViewType: (type: string) => ({
+        acceptedKeys:
+          type === 'LinearGenomeView'
+            ? ['id', 'displayName', 'assembly', 'loc', 'tracks']
+            : undefined,
+        loadStateModel: async () => undefined,
+      }),
+      evaluateAsyncExtensionPointStrict: (
+        name: string,
+        args: Record<string, unknown>,
+      ) => handlers[name]?.(session, args),
+    } as unknown as PluginManager
+    return { session, jb: createJbApi(pluginManager) }
+  }
+  const lgv: Record<string, Handler> = {
+    'LaunchView-LinearGenomeView': async (s, { session: _s, ...args }) => {
+      const view: StubView = {
+        id: 'new',
+        type: 'LinearGenomeView',
+        args,
+        ownViews: [],
+        ownTracks: [],
+        setDisplayName(name) {
+          view.displayName = name
+        },
+      }
+      s.views.push(view)
+    },
+  }
+
+  it('opens one view through the door a spec takes, and names it', async () => {
+    const { session, jb } = harness(lgv)
+    expect(
+      await jb.addView(
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA',
+          displayName: 'second',
+        },
+        0,
+      ),
+    ).toEqual({ viewId: 'new' })
+    expect(session.views[0]).toMatchObject({
+      displayName: 'second',
+      args: { assembly: 'volvox', loc: 'ctgA' },
+    })
+    expect(session.views[0]!.args).not.toHaveProperty('type')
+  })
+
+  it('refuses a key the view does not take before opening anything', async () => {
+    const { session, jb } = harness(lgv)
+    await expect(
+      jb.addView(
+        // @ts-expect-error the misspelling being caught
+        { type: 'LinearGenomeView', asembly: 'volvox' },
+        0,
+      ),
+    ).rejects.toThrow(
+      /LinearGenomeView ignored unknown key\(s\): asembly — nothing was opened/,
+    )
+    expect(session.views).toHaveLength(0)
+  })
+
+  it('names an unknown type, and a type nothing here can launch', async () => {
+    const { jb } = harness(lgv, ['LinearGenomeView', 'GraphGenomeView'])
+    await expect(jb.addView({ type: 'Nope' }, 0)).rejects.toThrow(
+      /Unknown view type\(s\) in session spec: Nope/,
+    )
+    await expect(jb.addView({ type: 'GraphGenomeView' }, 0)).rejects.toThrow(
+      /GraphGenomeView cannot be launched from a session spec/,
+    )
+  })
+
+  it("throws the launcher's own failure", async () => {
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {})
+    const { jb } = harness({
+      'LaunchView-LinearGenomeView': async () => {
+        throw new Error('No assembly provided')
+      },
+    })
+    await expect(jb.addView({ type: 'LinearGenomeView' }, 0)).rejects.toThrow(
+      /Failed to launch LinearGenomeView view: Error: No assembly provided/,
+    )
+    error.mockRestore()
+  })
+})
+
+// The session as one document, rewritten: MST reconciles by identifier, so an
+// id the document keeps is patched in place and one it drops is closed.
+describe('setSession', () => {
+  afterEach(() => {
+    document.body.replaceChildren()
+  })
+  const View = mst.types
+    .model('StubView', {
+      id: mst.types.identifier,
+      type: mst.types.literal('StubView'),
+      label: '',
+    })
+    .views(() => ({
+      get ownViews() {
+        return []
+      },
+      get ownTracks() {
+        return []
+      },
+    }))
+  const takenOut: unknown[] = []
+  const Session = mst.types
+    .model('StubSession', { name: 'test', views: mst.types.array(View) })
+    .views(() => ({
+      get assemblyNames() {
+        return []
+      },
+    }))
+    .actions(() => ({
+      takeOutViewsMissingFrom(snapshot: unknown) {
+        takenOut.push(snapshot)
+      },
+    }))
+  const jbOver = (session: unknown) =>
+    createJbApi({ rootModel: { session } } as unknown as PluginManager)
+
+  it('patches a kept view in place, opens a new one, and closes what the document drops', async () => {
+    document.body.innerHTML = '<div data-app-phase="ready"></div>'
+    const session = Session.create({
+      views: [{ id: 'a', type: 'StubView', label: 'one' }],
+    })
+    const a = session.views[0]
+    const jb = jbOver(session)
+    const result = await jb.setSession(
+      {
+        views: [
+          { id: 'a', type: 'StubView', label: 'two' },
+          { id: 'b', type: 'StubView' },
+        ],
+      },
+      5000,
+    )
+    expect(session.views[0]).toBe(a)
+    expect(a!.label).toBe('two')
+    expect(session.views.map(v => v.id)).toEqual(['a', 'b'])
+    expect(session.name).toBe('test')
+    expect(result).toMatchObject({
+      settled: true,
+      session: { views: [{ id: 'a' }, { id: 'b' }] },
+    })
+
+    await jb.setSession({ views: [{ id: 'b', type: 'StubView' }] }, 5000)
+    expect(session.views.map(v => v.id)).toEqual(['b'])
+    // views leave through the session's own detach first, ADR-069
+    expect(takenOut).toHaveLength(2)
+  })
+
+  it('refuses what is not a document, and a document the model rejects, by name', async () => {
+    const jb = jbOver(Session.create({}))
+    await expect(
+      jb.setSession([] as unknown as Record<string, unknown>, 100),
+    ).rejects.toThrow(/takes the session as a document/)
+    await expect(
+      jb.setSession({ views: [{ id: 'x', type: 'Nope' }] }, 100),
+    ).rejects.toThrow(/jb\.setSession refused the document: .*Nope/)
   })
 })

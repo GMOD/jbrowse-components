@@ -469,7 +469,7 @@ try {
   const required = await run(`
     const util = jb.require('@jbrowse/core/util')
     return {
-      sameParse: util.parseLocString === jb.parseLocString,
+      sameParse: util.readConfObject === jb.readConfObject,
       catalog: jb.listTracks().total,
       vcfListed: jb.listTracks('volvox_test_vcf').total,
     }`)

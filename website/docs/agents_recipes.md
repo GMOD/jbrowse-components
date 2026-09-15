@@ -647,24 +647,70 @@ To show the same data twice at once, add the file a second time with
 
 ## Adding a view beside the open one
 
-`jb.loadSessionSpec` replaces the whole session. To keep what is open and add a
-view beside it, add one to the session and navigate it, naming the assembly
-since a fresh view has none:
+`jb.loadSessionSpec` replaces the whole session. `jb.addView` takes one entry of
+a spec's `views` array and opens it beside what is open, through the same
+launcher a spec uses:
 
 ```js
-const second = session.addView('LinearGenomeView', {
+const { viewId } = await jb.addView({
+  type: 'LinearGenomeView',
+  assembly: 'volvox',
+  loc: 'ctgA:40,000-50,000',
+  tracks: ['gff3tabix_genes'],
   displayName: 'second locus',
 })
-await second.navToLocString('ctgA:40,000-50,000', 'volvox')
-await second.launchTrack('gff3tabix_genes')
 return {
+  viewId,
   views: session.views.map(v => `${v.id}: ${v.displayName ?? v.type}`),
-  ...(await jb.waitReady(30000)),
 }
 ```
 
 `jb.sessionSummary()` then lists both views with their ids, and every helper
-that takes a `viewId` can be pointed at either.
+that takes a `viewId` can be pointed at either. A key the view does not take
+throws before anything opens, naming it.
+
+## Edit the session as a document
+
+What is open is one JSON document, and `jb.setSession` takes it back edited. A
+view keeping its `id` is patched in place: `loc` on it navigates, a
+`{ trackId }` entry in its `tracks` opens that track with any inline setting, a
+track removed from the array is closed, and a display's own props are written as
+they stand. Copy the snapshot first, since it is frozen:
+
+```js
+const doc = structuredClone(jb.mst.getSnapshot(session))
+const [view] = doc.views
+view.loc = 'ctgA:20,000-30,000'
+view.tracks = view.tracks.filter(t => t.type !== 'VariantTrack')
+view.tracks.push({ trackId: 'volvox_alignments', height: 150 })
+return jb.setSession(doc)
+```
+
+- The answer is the settle plus `session`, the summary after the rewrite.
+- Top-level keys the document leaves out keep their value, so `{ views }` is a
+  whole instruction. Views the document does not list are closed.
+- A document the model refuses throws naming the path and the value, and nothing
+  is applied.
+- Config slots (`displayMode`, `color`) live in the config, not the session:
+  restyle a shown track with `track.applyDisplaySettings`, or put the setting on
+  a `{ trackId }` entry.
+
+## Fit everything in the window
+
+The settle reports `offscreen` when the session is taller than the window.
+`jb.fitToWindow` spends that overflow across every display, synteny band and
+dotplot in proportion to the headroom each has above its floor:
+
+```js
+for (const t of jb.view().tracks) {
+  t.applyDisplaySettings({ height: 600 })
+}
+return jb.fitToWindow()
+```
+
+It answers `fits`, the overflow before and after, each cut as
+`{ what, from, to }`, and a note when every shrinkable thing is at its floor,
+which is when hiding a track or a `fullPage` screenshot is the answer.
 
 ## Side by side
 

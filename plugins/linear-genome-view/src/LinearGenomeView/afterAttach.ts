@@ -219,10 +219,16 @@ export function applyInitHighlights(
 
 async function applyInit(
   self: LinearGenomeViewModel,
-  init: InitState,
+  pending: InitState,
   { superseded }: InitApplyContext,
 ) {
   const session = getSession(self)
+  // A re-launch of a view already showing an assembly need not restate it:
+  // jb.setSession writes `loc` and track entries beside the built state, and
+  // the readiness gate resolved the same default before letting this run.
+  const init = pending.assembly
+    ? pending
+    : { ...pending, assembly: self.launchAssemblyName ?? pending.assembly }
   if (init.tracklist) {
     await openTracklist(self, session, superseded)
   }

@@ -57,6 +57,21 @@ Orientation and building:
   an error notification naming it — a spec has no return channel of its own, so
   a misspelled setting reports there instead of loading a track with the setting
   missing.
+- `jb.addView(spec, settleMs?)` opens one more view beside what is open, from
+  one entry of a spec's `views` array, through the same launcher a spec uses — a
+  ProteinView's `connectedView` shorthand included. A key the view does not take
+  throws before anything opens. It answers `{ viewId }` plus the settle.
+- `jb.setSession(document, settleMs?)` rewrites the session as a document:
+  `jb.mst.getSnapshot(jb.session)`, copied, edited, handed back. A view, track
+  or display whose `id` the document keeps is patched in place and stays
+  mounted; one the document drops is closed; an entry with no `id` is new. A
+  view's launch keys work beside its built state, so `loc` on it navigates and a
+  `{ trackId, height }` entry in its `tracks` opens that track with the setting.
+  Top-level keys left out keep their value, so `{ views }` is a whole
+  instruction. It answers the settle plus the summary.
+- `jb.fitToWindow(settleMs?)` shrinks every display, synteny band and dotplot in
+  proportion to its headroom until the session fits the window, and answers with
+  each cut and what it could not shrink. The settle's `offscreen` is the cue.
 - `session.layoutViews(spec)` arranges the views already open into panels
   without replacing the session: the same tree as a spec `layout` (a leaf
   carries `views`, a container `children` and a `direction`), with a leaf naming
@@ -108,25 +123,35 @@ Reading:
   above. None of those raises a toast and all of them look plausible in a
   screenshot, so check this report instead.
 
-Lower level, frozen at what shipped:
+The foundations under them:
 
 - `jb.require(name)` is the module registry plugins link against, by the same
   names (`'@jbrowse/core/util'`, `'@jbrowse/core/configuration'`, `'react'`). In
-  a browser, `await jb.ensureRequire()` once first.
+  a browser, `await jb.ensureRequire()` once first. Everything lower level than
+  the helpers above is there rather than on `jb`: `parseLocString`,
+  `renameRegionsIfNeeded`, `getRpcSessionId` and the stop tokens for an
+  `rpcManager.call` of your own are `jb.require('@jbrowse/core/util')`, and the
+  adapter cache a file probe needs is under
+  [Reading data directly](#reading-data-directly-fast-path).
 - `jb.mst` and `jb.mobx` are the whole mobx-state-tree and mobx APIs.
 - `jb.readConfObject(conf, 'slot')` and `jb.getConf(model, 'slot')` read config
   slots, which are not plain properties.
 - `jb.rootModel` is the root model.
-- `jb.parseLocString` parses `"chr1:100-200"` against an assembly's refNames,
-  and `await jb.getFeatureAdapterOrThrow` builds an adapter to ask a file what
-  it holds before adding it as a track — both under
-  [Reading data directly](#reading-data-directly-fast-path).
-- `jb.renameRegionsIfNeeded` runs automatically inside `jb.getFeatures`; raw
-  adapter code has to call it directly.
-- `jb.getRpcSessionId(trackModel)` with `jb.createStopToken` /
-  `jb.stopStopToken` are for an `rpcManager.call` of your own — a method
-  `getFeatures` does not cover — on the same worker the track's display uses,
-  and a token to cancel it with.
+
+## What changed since v4
+
+What you know about JBrowse 2 from before v5 is wrong in three places that cost
+filmed takes turns:
+
+- One `LinearAlignmentsDisplay` draws pileup, coverage, read arcs and read
+  cloud; they are its slots (`readConnections: 'arc'`), and
+  `LinearPileupDisplay`, `LinearSNPCoverageDisplay`, `LinearReadArcsDisplay` and
+  `LinearReadCloudDisplay` are aliases of it, not types to `replaceDisplay` to.
+- A view's launch keys go directly on the view object in a spec or a snapshot;
+  the v4 `init: { ... }` nesting is unwrapped with a warning.
+- Synteny and dotplot rows take `loc` and `displayedRegionNames` each, in a spec
+  and in `jb.setSession`, so an axis is navigated declaratively rather than
+  through `setDisplayedRegions`.
 
 ## Calls and what they answer with
 
@@ -296,22 +321,22 @@ return {
   screen as a track.
 
 **To find out what a remote file holds before adding it as a track, build its
-adapter and ask.** The helper is async and returns the adapter. `getRefNames()`
-is on every feature adapter; `getHeader()` answers for formats with one (BAM,
-CRAM, VCF, BED, GFF3) and `null` for a bigWig:
+adapter and ask.** The adapter cache is a registry module, and `getAdapter` is
+async and answers `{ dataAdapter }`. `getRefNames()` is on every feature
+adapter; `getHeader()` answers for formats with one (BAM, CRAM, VCF, BED, GFF3)
+and `null` for a bigWig:
 
 ```js
-const adapter = await jb.getFeatureAdapterOrThrow({
-  pluginManager,
-  sessionId: 'probe',
-  adapterConfig: {
-    type: 'BigWigAdapter',
-    bigWigLocation: { uri: url, locationType: 'UriLocation' },
-  },
+const { getAdapter } = jb.require(
+  '@jbrowse/core/data_adapters/dataAdapterCache',
+)
+const { dataAdapter } = await getAdapter(pluginManager, 'probe', {
+  type: 'BigWigAdapter',
+  bigWigLocation: { uri: url, locationType: 'UriLocation' },
 })
 return {
-  refNames: (await adapter.getRefNames()).slice(0, 5),
-  header: await adapter.getHeader(),
+  refNames: (await dataAdapter.getRefNames()).slice(0, 5),
+  header: await dataAdapter.getHeader(),
 }
 ```
 
@@ -319,8 +344,8 @@ The probe's adapter lives on the main thread under the `sessionId` you gave it,
 for the life of the page: fine for a header, not for features. `jb.getFeatures`
 does two things raw adapter code gets wrong without an error:
 
-- It renames canonical refNames to the file's spelling with
-  `jb.renameRegionsIfNeeded`; "ctgA" against a file saying "contigA" matches
+- It renames canonical refNames to the file's spelling with core's
+  `renameRegionsIfNeeded`; "ctgA" against a file saying "contigA" matches
   nothing and reads as "no data here".
 - It reads on the worker the track's display uses, so the index that display
   parsed is reused. A main-thread adapter for the same file is a second copy.

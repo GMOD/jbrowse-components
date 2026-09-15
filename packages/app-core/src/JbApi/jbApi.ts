@@ -10,15 +10,12 @@ import {
   retainAdapterSession,
 } from '@jbrowse/core/data_adapters/adapterSessionRefcount'
 import { adapterConfigCacheKey } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { adapterByteLimit } from '@jbrowse/core/rpc/byteBudget'
 import {
-  getRpcSessionId,
   isElectron,
   isSessionWithAddSessionTrack,
   objectHash,
   parseLocString,
-  renameRegionsIfNeeded,
 } from '@jbrowse/core/util'
 import { openTracks, openViews } from '@jbrowse/core/util/openViews'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
@@ -30,14 +27,27 @@ import {
   viewCanDisplayTrack,
   viewDisplayNames,
 } from '@jbrowse/core/util/tracks'
+import { unknownKeysMessage } from '@jbrowse/core/util/withLaunchInput'
 import * as mst from '@jbrowse/mobx-state-tree'
-import { getSnapshot, getType, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import {
+  applySnapshot,
+  getSnapshot,
+  getType,
+  isStateTreeNode,
+} from '@jbrowse/mobx-state-tree'
 import * as mobx from 'mobx'
 
 // relative, not '@jbrowse/app-core': a package self-import would make this
 // module depend on the barrel that exports it
-import { loadSessionSpec } from '../SessionSpec/index.ts'
+import {
+  flattenSpecView,
+  launchSpecView,
+  loadSessionSpec,
+  unknownSpecKeys,
+  viewTypeProblem,
+} from '../SessionSpec/index.ts'
 
+import type { ViewSpec } from '../SessionSpec/index.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes/models'
@@ -549,9 +559,131 @@ function offscreenViews(session: AbstractSessionModel, root: ParentNode) {
         windowHeight,
         scrollY: Math.round(win.scrollY),
         views,
-        note: 'the session is taller than the window; a viewport screenshot cuts these views off — shrink track heights, or screenshot with fullPage: true. A view with a negative top is scrolled out above the viewport (scrollY says by how much), not missing',
+        note: 'the session is taller than the window; a viewport screenshot cuts these views off — await jb.fitToWindow() to shrink what is open until it fits, or screenshot with fullPage: true. A view with a negative top is scrolled out above the viewport (scrollY says by how much), not missing',
       }
     : undefined
+}
+
+function overflow(root: ParentNode) {
+  const win = root.ownerDocument?.defaultView ?? window
+  return {
+    pageHeight: win.document.documentElement.scrollHeight,
+    windowHeight: win.innerHeight,
+  }
+}
+
+// What a shrink can leave a display, a synteny band or a dotplot at: enough to
+// still read a track's name and see that it drew.
+const MIN_HEIGHT_PX = 40
+
+interface Shrinkable {
+  what: string
+  height: number
+  setHeight: (px: number) => void
+}
+
+interface HeightSelf {
+  id: string
+  height?: unknown
+  setHeight?: (px: number) => void
+  levels?: { height?: unknown; setHeight?: (px: number) => void }[]
+}
+
+// Everything on screen whose height is its own state: each shown track's
+// display, each synteny band, and a view whose height is a declared property
+// rather than the sum of its tracks (a dotplot). A linear view's `height` is a
+// getter over its tracks, so shrinking it is shrinking them.
+function shrinkables(session: AbstractSessionModel): Shrinkable[] {
+  return openViews(session).flatMap(view => {
+    const v = view as unknown as HeightSelf
+    const declared =
+      isStateTreeNode(view) &&
+      (getType(view) as { properties?: Record<string, unknown> }).properties
+        ?.height !== undefined
+    const own: Shrinkable[] =
+      declared && typeof v.height === 'number' && v.setHeight
+        ? [{ what: `view ${v.id}`, height: v.height, setHeight: v.setHeight }]
+        : []
+    const bands = (v.levels ?? []).flatMap((level, i) =>
+      typeof level.height === 'number' && level.setHeight
+        ? [
+            {
+              what: `view ${v.id} band ${i}`,
+              height: level.height,
+              setHeight: level.setHeight,
+            },
+          ]
+        : [],
+    )
+    const displays = viewTracks(view).flatMap(track => {
+      const d = track.activeDisplay as
+        | (Record<string, unknown> & { setHeight?: (px: number) => void })
+        | undefined
+      return d && typeof d.height === 'number' && d.setHeight
+        ? [
+            {
+              what: track.configuration.trackId,
+              height: d.height,
+              setHeight: d.setHeight,
+            },
+          ]
+        : []
+    })
+    return [...own, ...bands, ...displays]
+  })
+}
+
+/**
+ * Shrink what is open until the session fits the window, and say what moved.
+ *
+ * Every filmed take spent two to five screenshot rounds on this by hand: the
+ * settle reported `offscreen`, the agent guessed which heights to cut and by
+ * how much, and looked again. The overflow is arithmetic the settle already
+ * does; this spends it across every display, band and dotplot in proportion to
+ * the headroom each has above the floor, so tall tracks give up the most and
+ * nothing goes below readable.
+ */
+async function fitToWindow(
+  session: AbstractSessionModel,
+  settleMs: number,
+  root: ParentNode = document,
+) {
+  const before = overflow(root)
+  const excess = before.pageHeight - before.windowHeight
+  if (excess <= 0) {
+    return { fits: true, ...before }
+  }
+  const items = shrinkables(session)
+  const headroom = items.map(i => Math.max(0, i.height - MIN_HEIGHT_PX))
+  const available = headroom.reduce((a, b) => a + b, 0)
+  const cut = Math.min(excess, available)
+  const shrunk = items.flatMap((item, i) => {
+    const share = available ? Math.round((cut * headroom[i]!) / available) : 0
+    if (share <= 0) {
+      return []
+    }
+    const to = item.height - share
+    item.setHeight(to)
+    return [{ what: item.what, from: item.height, to }]
+  })
+  const settle = await waitReady(settleMs, session, root)
+  const after = overflow(root)
+  const left = after.pageHeight - after.windowHeight
+  return {
+    fits: left <= 0,
+    overflowBefore: excess,
+    overflowAfter: Math.max(0, left),
+    shrunk,
+    ...(left > 0
+      ? {
+          note:
+            available < excess
+              ? `everything shrinkable is at its ${MIN_HEIGHT_PX} px floor — hide a track or a view, or screenshot with fullPage: true`
+              : 'still taller than the window after the settle — call jb.fitToWindow() again',
+        }
+      : {}),
+    ...settle,
+  }
 }
 
 function trackEntry(conf: BaseTrackConfig) {
@@ -663,14 +795,23 @@ function pickView(
       `No open view can display a ${wants!.trackType} (open views: ${onAssembly.map(v => v.type).join(', ')})`,
     )
   }
-  return onlyView(canDisplay, 'could take this')
+  return onlyView(session, canDisplay, 'could take this')
 }
 
-function describeView(view: AbstractViewModel) {
+// A synteny view's rows count as open views (they are what shows a region and
+// a track), and an agent looking at one synteny view read "3 views are open"
+// with nothing saying two of them were its rows.
+function parentView(session: AbstractSessionModel, view: AbstractViewModel) {
+  return openViews(session).find(v => v.ownViews.includes(view))
+}
+
+function describeView(session: AbstractSessionModel, view: AbstractViewModel) {
   const v = viewSelf(view)
   const on = v.assemblyNames?.length ? ` on ${v.assemblyNames.join(', ')}` : ''
   const at = v.coarseVisibleLocStrings ? ` at ${v.coarseVisibleLocStrings}` : ''
-  return `${v.id} (${v.type}${on}${at})`
+  const parent = parentView(session, view)
+  const row = parent ? `, a row of ${parent.id}` : ''
+  return `${v.id} (${v.type}${on}${at}${row})`
 }
 
 // A name that matches several views has no right first answer: two linear
@@ -678,14 +819,18 @@ function describeView(view: AbstractViewModel) {
 // first restyles one row or reads one region while the settle reports both.
 // The named-but-missing case already throws and lists the open views, so the
 // unnamed-and-plural case does the same.
-function onlyView(candidates: AbstractViewModel[], relation: string) {
+function onlyView(
+  session: AbstractSessionModel,
+  candidates: AbstractViewModel[],
+  relation: string,
+) {
   const [first, ...rest] = candidates
   if (!first) {
     throw new Error('No open view')
   }
   if (rest.length) {
     throw new Error(
-      `${candidates.length} views ${relation}: ${candidates.map(v => describeView(v)).join('; ')} — pass viewId to say which`,
+      `${candidates.length} views ${relation}: ${candidates.map(v => describeView(session, v)).join('; ')} — pass viewId to say which`,
     )
   }
   return first
@@ -697,7 +842,7 @@ function viewById(session: AbstractSessionModel, viewId?: string) {
     const named = candidates.find(v => v.id === viewId)
     if (!named) {
       throw new Error(
-        `No view with id "${viewId}". Open views: ${candidates.map(v => describeView(v)).join('; ') || 'none'}`,
+        `No view with id "${viewId}". Open views: ${candidates.map(v => describeView(session, v)).join('; ') || 'none'}`,
       )
     }
     return named
@@ -705,7 +850,7 @@ function viewById(session: AbstractSessionModel, viewId?: string) {
   if (!candidates.length) {
     throw new Error('No view is open — jb.loadSessionSpec can open one')
   }
-  return onlyView(candidates, 'are open')
+  return onlyView(session, candidates, 'are open')
 }
 
 interface JbRegion {
@@ -728,7 +873,7 @@ function shownTrackModel(
   if (shown.length > 1) {
     const where = openViews(session)
       .filter(v => viewTracks(v).some(t => t.configuration.trackId === trackId))
-      .map(v => describeView(v))
+      .map(v => describeView(session, v))
     throw new Error(
       `"${trackId}" is shown in ${shown.length} views: ${where.join('; ')} — pass viewId to say which`,
     )
@@ -805,8 +950,19 @@ async function visibleRegionsOf(
     v => (!viewId || v.id === viewId) && 'visibleRegions' in v,
   )
   if (!regionBearing.length) {
+    // the id of a synteny or breakpoint view names a container: its rows are
+    // what show a region, and "no view shows a region" over a view plainly on
+    // screen sent an agent guessing which id to try next
+    const named = viewId
+      ? openViews(session).find(v => v.id === viewId)
+      : undefined
+    const rows = named?.ownViews.filter(v => 'visibleRegions' in v) ?? []
     throw new Error(
-      'No view that shows a region — pass loc, or open a linear view first',
+      named
+        ? rows.length
+          ? `View ${describeView(session, named)} shows no region of its own; its rows do: ${rows.map(v => describeView(session, v)).join('; ')} — pass one of those as viewId, or pass loc`
+          : `View ${describeView(session, named)} shows no region — pass loc`
+        : 'No view that shows a region — pass loc, or open a linear view first',
     )
   }
   // a view on another assembly than the track would hand its region to a file
@@ -824,7 +980,7 @@ async function visibleRegionsOf(
     : regionBearing
   if (!candidates.length) {
     throw new Error(
-      `No open view is on ${trackAssemblies.join(', ')} (open views: ${regionBearing.map(v => describeView(v)).join('; ')}) — pass loc, or open a view on that assembly`,
+      `No open view is on ${trackAssemblies.join(', ')} (open views: ${regionBearing.map(v => describeView(session, v)).join('; ')}) — pass loc, or open a view on that assembly`,
     )
   }
   // among region-bearing views, the ones actually showing the track — two
@@ -834,6 +990,7 @@ async function visibleRegionsOf(
     viewTracks(v).some(t => t.configuration.trackId === preferTrackId),
   )
   const chosen = onlyView(
+    session,
     showing.length ? showing : candidates,
     showing.length ? `show "${preferTrackId}"` : 'show a region',
   )
@@ -1066,7 +1223,7 @@ const JB_HELP = `jb drives this JBrowse app programmatically (window.jb in a bro
 
 Orient first: jb.sessionSummary(). Introspect, never guess: jb.listTracks(search?, limit?) answers { total, tracks } with the trackIds; jb.describeSlots(jb.trackModel('someTrackId').activeDisplay.configuration) for the settings keys a display accepts — an unknown settings key is not an error, it lands in applyDisplaySettings' "unapplied" list, so read the report; jb.inspect('views.0') for a live node's getters, actions and modelType.
 
-The model is mobx-state-tree: mutate only through actions (raw assignment throws), and write display settings with track.applyDisplaySettings(settings). Build views declaratively with jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly, loc, tracks: [...] }] }); arrange the views already open into panels with session.layoutViews({ direction: 'horizontal', children: [{ views: [viewId] }, ...] }) — leaves name view ids or indexes into session.views; add data with jb.addTrack({ location }) (an absolute path or a URL); read data with await jb.getFeatures({ trackId, loc?, assembly?, viewId?, regions?, byteLimit? }) (or jb.getFeatures(trackId, loc?, opts?)), which renames refNames ("chr1" vs "1") so the file answers and reads on the worker the track's display uses — raw adapter code must call jb.renameRegionsIfNeeded itself. After changing anything, await jb.waitReady(ms) and read its notifications and notReady lists before trusting the screen.
+The model is mobx-state-tree: mutate only through actions (raw assignment throws), and write display settings with track.applyDisplaySettings(settings). Build views declaratively with jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly, loc, tracks: [...] }] }), which replaces the session; jb.addView(oneViewSpec) opens one more view beside what is open; jb.setSession(document) rewrites the session as a document — what jb.mst.getSnapshot(jb.session) answers, edited: a view keeps its id and is patched in place, loc on it navigates, a { trackId } entry in its tracks opens that track. Arrange open views into panels with session.layoutViews({ direction: 'horizontal', children: [{ views: [viewId] }, ...] }) — leaves name view ids or indexes into session.views; await jb.fitToWindow() shrinks what is open until the session fits the window; add data with jb.addTrack({ location }) (an absolute path or a URL); read data with await jb.getFeatures({ trackId, loc?, assembly?, viewId?, regions?, byteLimit? }) (or jb.getFeatures(trackId, loc?, opts?)), which renames refNames ("chr1" vs "1") so the file answers and reads on the worker the track's display uses. Anything lower level is jb.require('@jbrowse/core/util') and friends, the module registry plugins link against. After changing anything, await jb.waitReady(ms) and read its notifications and notReady lists before trusting the screen.
 
 Views nest and several can be open. jb.view(viewId?) is the open view, and jb.view(), jb.trackModel(trackId), jb.visibleRegions(), jb.addTrack and jb.getFeatures over a visible region throw naming the candidates rather than picking one when more than one view could answer — pass viewId (from jb.sessionSummary()) to say which.
 
@@ -1139,12 +1296,6 @@ export function createJbApi(
     readConfObject,
     getConf,
     describeSlots,
-    parseLocString,
-    getFeatureAdapterOrThrow,
-    getRpcSessionId,
-    renameRegionsIfNeeded,
-    createStopToken,
-    stopStopToken,
     // a default because an omitted number made the deadline NaN, and a view
     // that never readied then held the call open to the relay's own timeout
     waitReady: async (timeoutMs = 30_000) =>
@@ -1160,6 +1311,14 @@ export function createJbApi(
     visibleRegions: (viewId?: string) => visibleRegionsOf(live(), viewId),
     loadSessionSpec: async (spec: Record<string, unknown>, settleMs?: number) =>
       reported(await loadSpec(pluginManager, { spec, settleMs })),
+    addView: async (spec: ViewSpec, settleMs = SPEC_SETTLE_DEFAULT_MS) =>
+      reported(await addView(pluginManager, live(), spec, settleMs)),
+    setSession: async (
+      document: Record<string, unknown>,
+      settleMs = SPEC_SETTLE_DEFAULT_MS,
+    ) => reported(await setSession(live(), document, settleMs)),
+    fitToWindow: async (settleMs = 30_000) =>
+      reported(await fitToWindow(live(), settleMs)),
     addTrack: (opts: {
       location: string | string[]
       index?: string
@@ -1305,6 +1464,113 @@ async function addTrack(
   return settleMs > 0
     ? { ...shown, ...(await waitReady(settleMs, session)) }
     : shown
+}
+
+/**
+ * One view from one spec entry, into the open session, through the same
+ * `LaunchView-<type>` door `jb.loadSessionSpec` takes for each of its views —
+ * so the entry means the same thing in both places, a ProteinView's
+ * `connectedView` included. `session.launchView` is the other route and does
+ * not: it is `addView` with a snapshot, so it never runs a view's launcher.
+ *
+ * A key the view does not take throws before anything opens. A spec has no
+ * return channel and launches anyway with an error toast; an awaited call has
+ * one, and a view that opened without the setting the agent typed is the
+ * quietly-wrong answer this surface exists to refuse.
+ */
+async function addView(
+  pluginManager: PluginManager,
+  session: AbstractSessionModel,
+  spec: ViewSpec,
+  settleMs: number,
+) {
+  if (typeof spec !== 'object' || typeof spec.type !== 'string') {
+    throw new Error(
+      'jb.addView takes one view spec — an entry of a session spec\'s "views" array, e.g. { type: "LinearGenomeView", assembly, loc, tracks } (docs topic "session-spec")',
+    )
+  }
+  const flat = flattenSpecView(spec)
+  const problem = viewTypeProblem(pluginManager, flat.type)
+  if (problem) {
+    throw new Error(problem)
+  }
+  const unknown = await unknownSpecKeys(pluginManager, flat)
+  if (unknown.length) {
+    throw new Error(
+      `${unknownKeysMessage(flat.type, unknown)} — nothing was opened. docs topic "session-spec" lists the keys ${flat.type} takes`,
+    )
+  }
+  const { created, view, failure } = await launchSpecView(
+    session,
+    pluginManager,
+    flat,
+  )
+  if (failure) {
+    throw new Error(failure.message, { cause: failure.cause })
+  }
+  if (!view) {
+    throw new Error(`${flat.type} opened no view`)
+  }
+  const summary = {
+    viewId: view.id,
+    ...(created.length > 1 ? { created: created.map(v => v.id) } : {}),
+  }
+  return settleMs > 0
+    ? { ...summary, ...(await waitReady(settleMs, session)) }
+    : summary
+}
+
+interface SnapshotTarget {
+  takeOutViewsMissingFrom?: (snapshot: unknown) => void
+}
+
+/**
+ * The session as one document, rewritten: what `getSnapshot(session)` answers,
+ * edited, handed back. MST reconciles by identifier, so a view, track or
+ * display whose `id` the document keeps is patched in place and stays mounted,
+ * one the document drops is closed, and an entry with no id is new. A view's
+ * launch keys are accepted beside its built state — `loc` navigates it, a
+ * `{ trackId }` entry in its `tracks` opens that track — because the partition
+ * that sorts them runs on every snapshot the view is given, not only its
+ * first.
+ *
+ * Top-level keys the document leaves out keep their current value, so
+ * `{ views: [...] }` is a complete instruction.
+ *
+ * Views leave through the session's own detach first (ADR-069): `applySnapshot`
+ * destroys what the target lacks in place, under components still mounted
+ * over it, which is what undo had to route around.
+ */
+async function setSession(
+  session: AbstractSessionModel,
+  document: unknown,
+  settleMs: number,
+) {
+  if (
+    typeof document !== 'object' ||
+    document === null ||
+    Array.isArray(document)
+  ) {
+    throw new Error(
+      'jb.setSession takes the session as a document: what jb.mst.getSnapshot(jb.session) answers, edited. Top-level keys left out keep their current value.',
+    )
+  }
+  const next = {
+    ...(getSnapshot(session) as Record<string, unknown>),
+    ...document,
+  }
+  try {
+    ;(session as unknown as SnapshotTarget).takeOutViewsMissingFrom?.(next)
+    applySnapshot(session, next)
+  } catch (e) {
+    const detail = e instanceof Error ? e.message : String(e)
+    throw new Error(
+      `jb.setSession refused the document: ${detail.length > 1500 ? `${detail.slice(0, 1500)}…` : detail}`,
+      { cause: e },
+    )
+  }
+  const settle = await waitReady(settleMs, session)
+  return { ...settle, session: sessionSummary(session) }
 }
 
 // Under the 45 s one evaluation gets from the Claude in Chrome extension: a

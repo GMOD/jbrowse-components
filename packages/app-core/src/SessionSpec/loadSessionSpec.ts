@@ -253,6 +253,120 @@ function flattenedTabsContainers(layout: LayoutNode): boolean {
   return nestedTabsChild || children.some(flattenedTabsContainers)
 }
 
+export function unknownViewTypesMessage(types: string[]) {
+  return `Unknown view type(s) in session spec: ${types.join(', ')}. The plugin providing the view may be missing, or the type may be misspelled.`
+}
+
+export function noLauncherMessage(types: string[]) {
+  return `View type(s) ${types.join(', ')} cannot be launched from a session spec: no LaunchView extension point is registered for them.`
+}
+
+/**
+ * Why one view type cannot launch from a spec here, or nothing. Two causes,
+ * two messages: the type is unknown at all (a typo, or a plugin that was not
+ * loaded), or it exists but nothing taught it how to launch from a spec, which
+ * only the view's plugin can fix.
+ */
+export function viewTypeProblem(pluginManager: PluginManager, type: string) {
+  if (pluginManager.extensionPoints.has(`LaunchView-${type}`)) {
+    return undefined
+  }
+  // the record's `has`, not getElementType, which throws on an unregistered
+  // name rather than returning undefined
+  return pluginManager.getElementTypeRecord('view').has(type)
+    ? noLauncherMessage([type])
+    : unknownViewTypesMessage([type])
+}
+
+// v4 nested a view's settings under `init`. A spec never becomes a snapshot, so
+// `withLaunchInput`'s unwrap never runs on one and this surface does it itself,
+// in the same order: the flat spelling wins.
+export function flattenSpecView(spec: ViewSpec): ViewSpec {
+  const { init, ...view } = spec
+  if (init) {
+    console.warn(legacyInitMessage(view.type))
+  }
+  return init ? { ...init, ...view } : view
+}
+
+/**
+ * The keys a spec view names that its type does not take.
+ *
+ * The same classification a view snapshot gets, run here because a spec never
+ * becomes one: `LaunchView-<type>` takes these keys as arguments, so
+ * `withLaunchInput`'s partition never sees them and nothing names a typo.
+ * `{type: 'LinearGenomeView', asembly: 'volvox'}` reported only the launcher's
+ * downstream "No assembly provided", on the one surface written by hand with no
+ * compiler and no editor behind it.
+ *
+ * A view type that registers no launch keys classifies nothing: its launcher's
+ * vocabulary is undeclared, so every argument would read as a typo. A lazily
+ * registered type declares its properties on a state model that is not loaded
+ * yet, so it is loaded first — the launch would have loaded it anyway.
+ */
+export async function unknownSpecKeys(
+  pluginManager: PluginManager,
+  spec: ViewSpec,
+) {
+  const { type, ...view } = spec
+  if (!pluginManager.getElementTypeRecord('view').has(type)) {
+    return []
+  }
+  const viewType = pluginManager.getViewType(type)
+  await viewType.loadStateModel()
+  const accepted = viewType.acceptedKeys
+  return accepted
+    ? Object.keys(view).filter(key => !accepted.includes(key))
+    : []
+}
+
+/**
+ * Launch one spec view into the session through its `LaunchView-<type>`
+ * extension point, the same door `loadSessionSpec` uses for each of its views
+ * — so `jb.addView` and a spec agree on what a view entry means, a
+ * ProteinView's `connectedView` included.
+ *
+ * Strict so a launch handler that throws (missing/invalid assembly, unresolved
+ * track, ...) is returned as a failure instead of being swallowed by the plain
+ * extension-point runner, which would leave a silent empty session. A handler
+ * that legitimately no-ops returns normally and is unaffected.
+ *
+ * `created` is EVERY view the launch added, in creation order: a connected
+ * ProteinView creates its genome view and then itself. `view` is the entry's
+ * own, the one of the spec's type, which is where `displayName` goes — it used
+ * to land on the genome view a ProteinView opened first, and the structure came
+ * up "Untitled view". `type` is the dispatch key, not a setting: forwarding it
+ * would land in the view's launch blob and trip the "ignored unknown key(s):
+ * type" warning meant to catch typos.
+ */
+export async function launchSpecView(
+  session: AbstractSessionModel | undefined,
+  pluginManager: PluginManager,
+  spec: ViewSpec,
+) {
+  const { type, displayName, ...view } = spec
+  const before = new Set(session?.views.map(v => v.id))
+  let failure: { message: string; cause: unknown } | undefined
+  try {
+    await pluginManager.evaluateAsyncExtensionPointStrict(
+      `LaunchView-${type}`,
+      {
+        ...view,
+        session,
+      },
+    )
+  } catch (e) {
+    console.error(e)
+    failure = { message: `Failed to launch ${type} view: ${e}`, cause: e }
+  }
+  const created = session?.views.filter(v => !before.has(v.id)) ?? []
+  const named = created.find(v => v.type === type) ?? created[0]
+  if (named && displayName) {
+    named.setDisplayName(displayName)
+  }
+  return { created, view: named, ...(failure ? { failure } : {}) }
+}
+
 // use extension point named e.g. LaunchView-LinearGenomeView to initialize an
 // LGV session
 export async function loadSessionSpec(
@@ -345,95 +459,28 @@ export async function loadSessionSpec(
     }
     addSessionTracks(session, sessionTracks)
 
-    // a view type with no registered LaunchView-<type> extension point makes
+    // A view type with no registered LaunchView-<type> extension point makes
     // evaluateAsyncExtensionPoint a silent no-op, leaving an empty session with
-    // no diagnostic. Two different causes, so two messages: the view type is
-    // unknown here at all (a typo, or a plugin that wasn't loaded), or it exists
-    // but nothing taught it how to launch from a spec, which the spec author
-    // can't fix, only the view's plugin can.
+    // no diagnostic. Reported once per type, not per view.
+    const viewTypes = pluginManager.getElementTypeRecord('view')
     const notLaunchable = [
       ...new Set(
         views.flatMap(view =>
-          pluginManager.extensionPoints.has(`LaunchView-${view.type}`)
-            ? []
-            : [view.type],
+          viewTypeProblem(pluginManager, view.type) ? [view.type] : [],
         ),
       ),
     ]
-    // the record's `has`, not getElementType, which throws on an unregistered
-    // name rather than returning undefined
-    const viewTypes = pluginManager.getElementTypeRecord('view')
     const unknown = notLaunchable.filter(type => !viewTypes.has(type))
     const noLauncher = notLaunchable.filter(type => viewTypes.has(type))
     if (unknown.length) {
-      session?.notifyError(
-        `Unknown view type(s) in session spec: ${unknown.join(', ')}. The plugin providing the view may be missing, or the type may be misspelled.`,
-      )
+      session?.notifyError(unknownViewTypesMessage(unknown))
     }
     if (noLauncher.length) {
-      session?.notifyError(
-        `View type(s) ${noLauncher.join(', ')} cannot be launched from a session spec: no LaunchView extension point is registered for them.`,
-      )
+      session?.notifyError(noLauncherMessage(noLauncher))
     }
 
-    // v4 nested a view's settings under `init`. A spec never becomes a
-    // snapshot, so `withLaunchInput`'s unwrap never runs on one and this
-    // surface does it itself, in the same order: the flat spelling wins.
-    const specViews = views.map(({ init, ...view }) => {
-      if (init) {
-        console.warn(legacyInitMessage(view.type))
-      }
-      return init ? { ...init, ...view } : view
-    })
+    const specViews = views.map(view => flattenSpecView(view))
 
-    // The same classification a view snapshot gets, run here because a spec
-    // never becomes one: `LaunchView-<type>` takes these keys as arguments, so
-    // `withLaunchInput`'s partition never sees them and nothing names a typo.
-    // `{type: 'LinearGenomeView', asembly: 'volvox'}` reported only the
-    // launcher's downstream "No assembly provided", on the one surface written
-    // by hand with no compiler and no editor behind it.
-    //
-    // An ERROR rather than the snapshot path's warning: this surface's
-    // misplaced keys already report as errors, and the launcher's own failure
-    // lands as an error a line later — a warning under it reads as the lesser
-    // of the two, when it is the cause.
-    //
-    // A view type that registers no launch keys classifies nothing: its
-    // launcher's vocabulary is undeclared, so every argument would read as a
-    // typo.
-    //
-    // A lazily registered view type declares its properties on a state model
-    // that is not loaded yet, so it is loaded first — the launch below would
-    // have loaded it anyway.
-    await Promise.all(
-      specViews
-        .filter(({ type }) => viewTypes.has(type))
-        .map(({ type }) => pluginManager.getViewType(type).loadStateModel()),
-    )
-    for (const { type, ...view } of specViews) {
-      const accepted = viewTypes.has(type)
-        ? pluginManager.getViewType(type).acceptedKeys
-        : undefined
-      const unknown = accepted
-        ? Object.keys(view).filter(key => !accepted.includes(key))
-        : []
-      if (unknown.length) {
-        session?.notifyError(unknownKeysMessage(type, unknown))
-      }
-    }
-
-    // Launch sequentially and record the id each spec view created, so the
-    // layout below can map its indices to real views. Reading session.views
-    // positionally afterwards only works while every handler happens to addView
-    // synchronously and in order; capturing the delta per launch instead is
-    // correct even if a handler awaits or adds an auxiliary view, and lets a
-    // later spec view (e.g. a connected MsaView) reference an earlier one that
-    // now already exists. `type` is the dispatch key, not a setting: forwarding
-    // it would land in the view's launch blob and trip the spurious
-    // "ignored unknown key(s): type" warning meant to catch typos.
-    // `displayName` is applied here rather than forwarded because it is a base
-    // view prop every view type has, so one path covers all of them (including
-    // plugin-provided types whose launcher never heard of it).
     // Let any connection this spec registered finish before the views that
     // reference what it supplies are launched (see whenConnectionsSettle). Gated
     // on there being views: with none, nothing is waiting on the connection, and
@@ -450,33 +497,32 @@ export async function loadSessionSpec(
       return
     }
 
+    // Launch sequentially and record the ids each spec view created, so the
+    // layout below can map its indices to real views. Reading session.views
+    // positionally afterwards only works while every handler happens to addView
+    // synchronously and in order; capturing the delta per launch instead is
+    // correct even if a handler awaits or adds an auxiliary view, and lets a
+    // later spec view (e.g. a connected MsaView) reference an earlier one that
+    // now already exists.
+    //
+    // An unknown key is an ERROR rather than the snapshot path's warning: this
+    // surface's misplaced keys already report as errors, and the launcher's own
+    // failure lands as an error a line later — a warning under it reads as the
+    // lesser of the two, when it is the cause. Per view, so one bad view
+    // doesn't cost the rest.
     const createdViewIds: string[][] = []
-    for (const { type, displayName, ...view } of specViews) {
-      const before = new Set(session?.views.map(v => v.id))
-      // Strict so a launch handler that throws (missing/invalid assembly,
-      // unresolved track, ...) surfaces as a snackbar instead of being swallowed
-      // by the plain extension-point runner, which would leave a silent empty
-      // session. A handler that legitimately no-ops returns normally and is
-      // unaffected. Per-view try/catch so one bad view doesn't abort the rest.
-      try {
-        await pluginManager.evaluateAsyncExtensionPointStrict(
-          `LaunchView-${type}`,
-          {
-            ...view,
-            session,
-          },
-        )
-      } catch (e) {
-        console.error(e)
-        session?.notifyError(`Failed to launch ${type} view: ${e}`, e)
+    for (const spec of specViews) {
+      const unknownKeys = await unknownSpecKeys(pluginManager, spec)
+      if (unknownKeys.length) {
+        session?.notifyError(unknownKeysMessage(spec.type, unknownKeys))
       }
-      const created = session?.views.filter(v => !before.has(v.id)) ?? []
-      // The entry's own view, when its launcher created others beside it: a
-      // connected ProteinView's name went to the genome view it opened first,
-      // and the structure came up "Untitled view".
-      const named = created.find(v => v.type === type) ?? created[0]
-      if (named && displayName) {
-        named.setDisplayName(displayName)
+      const { created, failure } = await launchSpecView(
+        session,
+        pluginManager,
+        spec,
+      )
+      if (failure) {
+        session?.notifyError(failure.message, failure.cause)
       }
       createdViewIds.push(created.map(v => v.id))
     }

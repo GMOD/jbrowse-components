@@ -30,11 +30,13 @@ The short version, because it is what gets skipped: orient with
 `jb.sessionSummary()` and never assume state carried over — the user can click
 around between your calls. Introspect rather than guess (`jb.listTracks()` for
 trackIds, `jb.describeSlots(...)` for settings keys, `jb.inspect(path)` for what
-a live node can answer). After changing anything, `screenshot` and actually read
-the image, and read `notReady` in the settle result — a wrong trackId, an empty
-region or a dropped settings key all render as a plausible browser with
-something quietly missing. Verify data claims with `jb.getFeatures`, never from
-the picture.
+a live node can answer). Build with `jb.loadSessionSpec`, then change what is
+open as a document: `jb.setSession` takes the snapshot back edited, `jb.addView`
+adds one view, `jb.fitToWindow()` answers the settle's `offscreen`. After
+changing anything, `screenshot` and actually read the image, and read `notReady`
+in the settle result — a wrong trackId, an empty region or a dropped settings
+key all render as a plausible browser with something quietly missing. Verify
+data claims with `jb.getFeatures`, never from the picture.
 
 ## Repo-only
 

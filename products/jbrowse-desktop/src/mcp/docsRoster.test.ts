@@ -135,9 +135,10 @@ it('the guide is served whole rather than as a table of contents', () => {
   expect([...WHOLE_TOPICS]).toContain('live-model')
 })
 
-it('the guide awaits the adapter helper, which is async', () => {
-  expect(copies.guide).toMatch(/await jb\.getFeatureAdapterOrThrow\(/)
-  expect(copies.guide).not.toMatch(/[^t] jb\.getFeatureAdapterOrThrow\(\{/)
+// A filmed take lost five calls to the adapter probe coming back as a promise
+it('the guide awaits the adapter probe, which is async', () => {
+  expect(copies.guide).toMatch(/await getAdapter\(/)
+  expect(copies.guide).not.toMatch(/[^t] getAdapter\(/)
 })
 
 // The one member whose options list has drifted twice, in the same direction
