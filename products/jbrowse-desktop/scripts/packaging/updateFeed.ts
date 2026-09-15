@@ -49,25 +49,30 @@ export function latestYml({
  * The copy that ships inside the app, at `resources/app-update.yml`.
  *
  * `publisherName` turns on NsisUpdater's Authenticode check of the installer it
- * downloaded; without it `verifySignature` returns null and skips the check.
+ * downloaded; without it `verifySignature` returns null and skips the check. It
+ * is a list because the check runs against the installed app's copy of this
+ * file, so the release that changes publisher has to be preceded by one that
+ * already names the new certificate.
  */
 export function appUpdateYml({
   owner,
   repo,
   cacheDirName,
-  publisherName,
+  publisherNames = [],
 }: {
   owner: string
   repo: string
   cacheDirName: string
-  publisherName?: string
+  publisherNames?: string[]
 }) {
   return [
     'provider: github',
     `owner: ${owner}`,
     `repo: ${repo}`,
     `updaterCacheDirName: ${cacheDirName}`,
-    ...(publisherName ? [`publisherName: '${publisherName}'`] : []),
+    ...(publisherNames.length > 0
+      ? ['publisherName:', ...publisherNames.map(name => `  - '${name}'`)]
+      : []),
     '',
   ].join('\n')
 }

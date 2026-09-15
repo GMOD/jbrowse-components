@@ -23,6 +23,10 @@ export interface NsisScriptOptions {
   outputExe: string
   /** installer/uninstaller icon, already escaped */
   iconPath: string
+  /** the privacy policy shown during installation, already escaped */
+  privacyNoticeFile: string
+  /** basename of the file a cleared usage-reporting box writes into resources */
+  analyticsOptOutFile: string
   /** the executable's basename inside appDir, without .exe */
   appName: string
   /** the user-visible name: install dir, shortcuts, Add/Remove Programs */
@@ -50,6 +54,8 @@ export function createNsisScript({
   appDir,
   outputExe,
   iconPath,
+  privacyNoticeFile,
+  analyticsOptOutFile,
   appName,
   productName,
   version,
@@ -64,6 +70,7 @@ SetCompressor /SOLID lzma
 !include "MUI2.nsh"
 !include "FileFunc.nsh"
 !include "LogicLib.nsh"
+!include "Sections.nsh"
 
 Name "${productName}"
 OutFile "${outputExe}"
@@ -76,6 +83,18 @@ RequestExecutionLevel user
 !define MUI_ICON "${iconPath}"
 !define MUI_UNICON "${iconPath}"
 
+; The privacy policy on screen, and a box to turn off what it describes: both
+; are conditions of the SignPath Foundation certificate this installer is signed
+; with (https://signpath.org/terms). The license page is the only text page MUI
+; has, so it carries the policy — with the agreement wording replaced, since
+; there is nothing here to agree to.
+!define MUI_LICENSEPAGE_TEXT_TOP "How ${productName} reports usage. The next page can turn it off."
+!define MUI_LICENSEPAGE_TEXT_BOTTOM "Click Next to continue."
+!define MUI_LICENSEPAGE_BUTTON "Next"
+!insertmacro MUI_PAGE_LICENSE "${privacyNoticeFile}"
+
+!define MUI_COMPONENTSPAGE_TEXT_TOP "Clear the box below to stop ${productName} sending the anonymous usage report described on the previous page."
+!insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 
@@ -84,7 +103,8 @@ RequestExecutionLevel user
 
 !insertmacro MUI_LANGUAGE "English"
 
-Section "Install"
+Section "${productName}" SecApp
+  SectionIn RO
   ; electron-updater spawns this with --updated and *then* quits the app it is
   ; replacing, and Windows holds an unshareable write lock on a running exe, so
   ; \`File\` loses the race and aborts a silent install with no window to report
@@ -166,10 +186,42 @@ Section "Install"
   IntFmt $0 "0x%08X" $0
   WriteRegDWORD HKCU "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${productName}" "EstimatedSize" "$0"
 
+SectionEnd
+
+; Installs nothing — the checkbox is the whole point, and the hidden section
+; below reads its state. Checked by default, which is what the policy on the
+; first page describes.
+Section "Send anonymous usage reports" SecAnalytics
+SectionEnd
+
+; A leading '-' hides a section from the components page and runs it
+; unconditionally. Both of these have to run after SecAnalytics, because a
+; section's index constant does not exist until the section is declared.
+
+Section -AnalyticsChoice
+  ; The usage-reporting choice, as the file analyticsOptOut.ts reads. Only when
+  ; the user was actually asked: a background update runs this installer
+  ; silently, where the section states are the defaults — so acting on them
+  ; would switch reporting back on at every update for everyone who turned it
+  ; off.
+  \${IfNot} \${Silent}
+    \${If} \${SectionIsSelected} \${SecAnalytics}
+      Delete "$INSTDIR\\resources\\${analyticsOptOutFile}"
+    \${Else}
+      FileOpen $0 "$INSTDIR\\resources\\${analyticsOptOutFile}" w
+      FileClose $0
+    \${EndIf}
+  \${EndIf}
+SectionEnd
+
+Section -Relaunch
   ; electron-updater applies a background update by running this installer
   ; silently with --force-run (autoUpdater.ts calls quitAndInstall(true, true)).
   ; Relaunch the app so a background update does not leave the user with no
   ; window; a normal interactive install has no --force-run and does not.
+  ;
+  ; Last, so the app it starts reads an install that is already complete —
+  ; the section above is what it would otherwise race.
   \${GetParameters} $R0
   ClearErrors
   \${GetOptions} $R0 "--force-run" $R1

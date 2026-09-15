@@ -44,6 +44,7 @@ export function makeTestPaths() {
   const dir = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'jb-ipc-'))
   const paths: AppPaths = {
     userData: dir,
+    resources: path.join(dir, 'resources'),
     recentSessionsPath: path.join(dir, 'recent_sessions.json'),
     globalPluginsPath: path.join(dir, 'globalPlugins.json'),
     quickstartDir: path.join(dir, 'quickstart'),

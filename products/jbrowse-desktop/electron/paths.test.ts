@@ -18,6 +18,7 @@ function makePaths(root: string, sep: string): AppPaths {
   const join = (...parts: string[]) => [root, ...parts].join(sep)
   return {
     userData: root,
+    resources: join('resources'),
     recentSessionsPath: join('recent_sessions.json'),
     globalPluginsPath: join('globalPlugins.json'),
     quickstartDir: join('quickstart'),

@@ -12,6 +12,13 @@ import { SESSION_EXTENSION, hasSessionExtension } from './launchTarget.ts'
 
 export interface AppPaths {
   userData: string
+  /**
+   * The packaged app's `resources` directory — what `process.resourcesPath`
+   * points at. Unlike everything else here it is not under userData and the app
+   * never writes it: it is where the installer leaves what it decided, which
+   * today is the usage-reporting opt-out (see analyticsOptOut.ts).
+   */
+  resources: string
   recentSessionsPath: string
   globalPluginsPath: string
   quickstartDir: string
@@ -30,6 +37,7 @@ export function initializePaths(): AppPaths {
 
   return {
     userData,
+    resources: process.resourcesPath,
     recentSessionsPath: path.join(userData, 'recent_sessions.json'),
     globalPluginsPath: path.join(userData, 'globalPlugins.json'),
     quickstartDir: path.join(userData, 'quickstart'),

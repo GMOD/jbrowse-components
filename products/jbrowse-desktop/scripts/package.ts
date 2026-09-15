@@ -19,22 +19,20 @@ import { buildMac } from './packaging/mac.ts'
 import { ensureDir, fileSize, log } from './packaging/utils.ts'
 import { buildWindows } from './packaging/windows.ts'
 
-import type { Platform } from './packaging/config.ts'
+import type { Phase, Platform } from './packaging/config.ts'
 
 function currentPlatform(): Platform {
   const p = process.platform
   return p === 'darwin' ? 'mac' : p === 'win32' ? 'win' : 'linux'
 }
 
-function printBanner(platforms: string[]) {
+function printBanner(platforms: string[], phase: Phase) {
   const macSign = process.env.APPLE_ID ? 'enabled' : 'disabled (set APPLE_ID)'
-  const winSign = process.env.WINDOWS_SIGN_CREDENTIAL_ID
-    ? 'enabled'
-    : 'disabled (set WINDOWS_SIGN_*)'
   console.log(`JBrowse Desktop Packager v${VERSION}`)
   console.log(`Platforms: ${platforms.join(', ')}`)
+  console.log(`Phase: ${phase}`)
   console.log(`macOS signing: ${macSign}`)
-  console.log(`Windows signing: ${winSign}`)
+  console.log('Windows signing: SignPath, from release.yml')
 }
 
 function printResults() {
@@ -59,36 +57,50 @@ function printResults() {
   }
 }
 
+// The two phases that resume a Windows build part-way through a pair of
+// signing requests. They read what is already in dist/, so they must not be the
+// run that empties it.
+function resumesAWindowsBuild(phase: Phase) {
+  return phase === 'installer' || phase === 'finalize'
+}
+
 async function main() {
-  const { platforms: selected, noInstaller } = parsePackagingArgs()
+  const { platforms: selected, phase } = parsePackagingArgs()
   const platforms = selected.length > 0 ? selected : [currentPlatform()]
-  printBanner(platforms)
+  printBanner(platforms, phase)
 
-  if (noInstaller) {
-    console.log('  (--no-installer: skipping installer creation)')
+  if (resumesAWindowsBuild(phase)) {
+    if (platforms.some(p => p !== 'win')) {
+      console.error(`\n❌ --phase ${phase} is a Windows-only step`)
+      process.exit(1)
+    }
+    if (!fs.existsSync(DIST)) {
+      console.error(
+        `\n❌ --phase ${phase} resumes a build that is not there: ${DIST} does not exist.`,
+      )
+      process.exit(1)
+    }
+  } else {
+    log('Preparing dist directory...')
+    fs.rmSync(DIST, { recursive: true, force: true })
+    ensureDir(DIST)
+
+    if (
+      !fs.existsSync(BUILD) ||
+      !fs.existsSync(path.join(BUILD, 'electron.js'))
+    ) {
+      console.error('\n❌ Build directory not found. Run `pnpm build` first.')
+      process.exit(1)
+    }
   }
 
-  log('Preparing dist directory...')
-  fs.rmSync(DIST, { recursive: true, force: true })
-  ensureDir(DIST)
-
-  if (
-    !fs.existsSync(BUILD) ||
-    !fs.existsSync(path.join(BUILD, 'electron.js'))
-  ) {
-    console.error('\n❌ Build directory not found. Run `pnpm build` first.')
-    process.exit(1)
-  }
-
-  const builders: Record<
-    string,
-    (opts: { noInstaller: boolean }) => Promise<unknown>
-  > = { linux: buildLinux, mac: buildMac, win: buildWindows }
+  const builders: Record<string, (opts: { phase: Phase }) => Promise<unknown>> =
+    { linux: buildLinux, mac: buildMac, win: buildWindows }
 
   const failures: string[] = []
   for (const platform of platforms) {
     try {
-      await builders[platform]!({ noInstaller })
+      await builders[platform]!({ phase })
     } catch (e) {
       const err = e instanceof Error ? e : new Error(String(e))
       console.error(`\n❌ Error building for ${platform}:`, err.message)

@@ -8,6 +8,7 @@ import type { IpcChannels } from './channelTypes.ts'
 export const INVOKABLE_CHANNELS = [
   'quit',
   'userData',
+  'analyticsOptedOut',
   'checkForUpdates',
   'showConnectAgent',
   'indexFasta',

@@ -203,8 +203,10 @@ Steps 1-3 and 5 are yours; step 4 is CI running unattended off the tag.
    Do this after the npm publish in step 4 has landed, since it downloads the
    published tarball.
 
-`pnpm releasenotes [--tag v4.3.1]` prints the same body `release.yml` generates,
-to eyeball locally.
+`pnpm releasenotes [--tag v4.3.1]` prints the body `release.yml` generates, to
+eyeball locally. The release adds one line under it — the code signing
+attribution SignPath's terms ask for on any page the binaries are downloaded
+from.
 
 ## Figures in a draft
 

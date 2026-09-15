@@ -6,6 +6,7 @@ import { generateFastaIndex } from '@gmod/faidx'
 import { app, dialog } from 'electron'
 
 import { runAbortableJob } from '../abortableJob.ts'
+import { analyticsOptedOut } from '../analyticsOptOut.ts'
 import { getFileStream } from '../fileStream.ts'
 import { SESSION_EXTENSION, getFaiPath, hasSessionExtension } from '../paths.ts'
 import { ipcHandle } from './channels.ts'
@@ -35,6 +36,10 @@ export function registerFileHandlers(paths: AppPaths) {
 
   ipcHandle('userData', () => {
     return paths.userData
+  })
+
+  ipcHandle('analyticsOptedOut', () => {
+    return analyticsOptedOut(paths.resources)
   })
 
   // in-flight indexFasta runs, by the jobId their caller passed. Scoped to this

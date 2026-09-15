@@ -8,6 +8,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 
+import { ANALYTICS_OPT_OUT_FILE } from '../analyticsOptOut.ts'
 import { getFaiPath } from '../paths.ts'
 import { registerFileHandlers } from './fileHandlers.ts'
 import { captureHandlers, makeTestPaths } from './testUtil.ts'
@@ -164,4 +165,15 @@ test('a FASTA whose name needs escaping still indexes', async () => {
   expect(fs.readFileSync(faiPath, 'utf8')).toEqual(
     fs.readFileSync(path.join(VOLVOX, 'volvox.fa.fai'), 'utf8'),
   )
+})
+
+// The installer's usage-reporting checkbox, read back the way the renderer
+// reads it. The file is beside the app rather than under userData, so nothing
+// the app itself writes can answer this — and a handler that looked in the
+// wrong directory would report "opted in" for everyone who opted out.
+test('the usage-reporting opt-out is read from the resources directory', () => {
+  expect(invoke('analyticsOptedOut')).toBe(false)
+  fs.mkdirSync(paths.resources, { recursive: true })
+  fs.writeFileSync(path.join(paths.resources, ANALYTICS_OPT_OUT_FILE), '')
+  expect(invoke('analyticsOptedOut')).toBe(true)
 })

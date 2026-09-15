@@ -180,12 +180,30 @@ updates silently and relaunch the app. Note: users on an older per-machine build
 (installed under Program Files) will get a fresh per-user install on their next
 update rather than an in-place upgrade.
 
-For code signing, set these environment variables:
+A local `pnpm package:win` produces unsigned binaries. Windows code signing
+happens in `release.yml` through [SignPath.io](https://about.signpath.io), which
+signs an uploaded GitHub Actions artifact rather than a file on the runner — so
+the release runs the build in three parts with a signing request between each:
 
-- `WINDOWS_SIGN_CREDENTIAL_ID`
-- `WINDOWS_SIGN_USER_NAME`
-- `WINDOWS_SIGN_USER_PASSWORD`
-- `WINDOWS_SIGN_USER_TOTP`
+```sh
+pnpm package:win:no-installer   # unpacked app; SignPath signs jbrowse-desktop.exe
+pnpm package:win:installer      # NSIS wraps the signed exe; SignPath signs the installer
+pnpm package:win:finalize       # checks both signatures, writes latest.yml
+```
+
+The installer shows the privacy policy and a usage-reporting checkbox, which
+SignPath's terms require. The notice is generated at package time from the
+region `website/src/pages/privacy.md` marks with
+`<!-- installer notice start -->`, so there is one copy of the policy and an
+installer window gets the part of it that is about the app. `pnpm check:nsis`
+compiles the installer script and is what catches a policy that moved.
+
+Both requests need a human to approve them in SignPath. The release job reads
+`SIGNPATH_API_TOKEN` (a secret) and `SIGNPATH_ORGANIZATION_ID` (a repository
+variable), and names the project, signing policy and artifact configurations
+that must exist in SignPath. `WINDOWS_PUBLISHER_NAMES` in
+`scripts/packaging/config.ts` lists the certificate names clients accept, and
+the signed files are checked against it before they are published.
 
 ### All platforms
 

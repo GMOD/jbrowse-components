@@ -23,6 +23,13 @@ collect nothing.
 }
 ```
 
+## JBrowse Desktop on Windows
+
+The Windows installer shows the privacy policy and offers a "Send anonymous
+usage reports" checkbox. Clearing it turns the report off for that install
+whatever config or session you open afterwards, and a background update leaves
+the choice as you left it. Run the installer again to change it.
+
 ## See also
 
 - [](/docs/config_guides/intro)

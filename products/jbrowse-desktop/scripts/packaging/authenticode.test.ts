@@ -91,18 +91,31 @@ test('the signer is the certificate nothing else issued', () => {
 })
 
 const signer = signerCertificate([root, intermediate, leaf])
-const publisherName = 'Evolutionary Software Foundation'
+const publisherNames = ['Evolutionary Software Foundation']
 const before = new Date('2026-09-10')
 
 test('a current certificate under the expected name is fine', () => {
-  expect(auditSignature({ signer, publisherName, now: before })).toEqual([])
+  expect(auditSignature({ signer, publisherNames, now: before })).toEqual([])
+})
+
+// The list exists so a publisher change can reach clients a release before the
+// certificate does — which only works if a signature under any listed name
+// passes, not just the first.
+test('any of the expected names is enough', () => {
+  expect(
+    auditSignature({
+      signer,
+      publisherNames: ['SignPath Foundation', ...publisherNames],
+      now: before,
+    }),
+  ).toEqual([])
 })
 
 // app-update.yml carries publisherName to every client, and a mismatch is
 // checked there and nowhere else — so it refuses every Windows update.
 test('a certificate under another name is caught here', () => {
   expect(
-    auditSignature({ signer, publisherName: 'Someone Else', now: before }),
+    auditSignature({ signer, publisherNames: ['Someone Else'], now: before }),
   ).toEqual([expect.stringContaining('Windows updates would be refused')])
 })
 
@@ -110,12 +123,12 @@ test('a certificate under another name is caught here', () => {
 // saying so.
 test('an expired certificate is caught here', () => {
   expect(
-    auditSignature({ signer, publisherName, now: new Date('2028-01-01') }),
+    auditSignature({ signer, publisherNames, now: new Date('2028-01-01') }),
   ).toEqual([expect.stringContaining('expired on 2027-07-10')])
 })
 
 test('an unsigned file is a problem on its own', () => {
   expect(
-    auditSignature({ signer: undefined, publisherName, now: before }),
+    auditSignature({ signer: undefined, publisherNames, now: before }),
   ).toEqual(['it carries no Authenticode signature at all'])
 })
