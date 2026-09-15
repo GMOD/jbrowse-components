@@ -135,4 +135,117 @@ export const TASKS: EvalTask[] = [
       const order = jb.view().tracks.map(t => t.configuration.trackId)
       return { pass: order.join() === 'gff3tabix_genes', detail: { order } }`,
   },
+  {
+    name: 'hide-labels',
+    prompt: 'Hide the feature labels on the gene track.',
+    // showLabels, not a guess: jb.describeSlots on the gene display lists it
+    // with "none" among its modes, beside maxLabelFeatureDensity and
+    // subfeatureLabels, which are the two neighbours a guess lands on
+    grade: `
+      const t = ${shownTrack('gff3tabix_genes')}
+      const conf = t?.activeDisplay.configuration
+      const read = slot => conf && jb.readConfObject(conf, slot)
+      return {
+        pass: read('showLabels') === 'none',
+        detail: {
+          showLabels: read('showLabels'),
+          subfeatureLabels: read('subfeatureLabels'),
+          displayMode: read('displayMode'),
+        },
+      }`,
+  },
+  {
+    name: 'two-views',
+    prompt:
+      'Close the gene track in the view that shows ctgB, and leave the other view as it is.',
+    setup: `
+      await jb.addView({
+        type: 'LinearGenomeView',
+        assembly: 'volvox',
+        loc: 'ctgB:1-10,000',
+        tracks: ['gff3tabix_genes'],
+      })
+      return jb.waitReady(30000)`,
+    // what is open is per view; a display's config slots are not, so the two
+    // views cannot be styled apart — closing a track is the view-local change
+    grade: `
+      const views = session.views.map(v => ({
+        loc: String(v.coarseVisibleLocStrings),
+        tracks: v.tracks.map(t => t.configuration.trackId),
+      }))
+      const ctgB = views.find(v => v.loc.startsWith('ctgB'))
+      const ctgA = views.find(v => v.loc.startsWith('ctgA'))
+      return {
+        pass:
+          views.length === 2 &&
+          ctgB?.tracks.length === 0 &&
+          ctgA?.tracks.join() === 'gff3tabix_genes,volvox_test_vcf',
+        detail: views,
+      }`,
+  },
+  {
+    name: 'empty-session',
+    prompt: 'Show the gene track at ctgA:5,000-15,000.',
+    setup: `return jb.setSession({ views: [] })`,
+    grade: `
+      const v = session.views.find(v => v.type === 'LinearGenomeView')
+      const regions = v ? await jb.visibleRegions(v.id) : []
+      const r = regions[0]
+      const overlaps = !!r && r.refName === 'ctgA' && r.start < 15000 && r.end > 5000
+      const tracks = v ? v.tracks.map(t => t.configuration.trackId) : []
+      return {
+        pass: overlaps && tracks.includes('gff3tabix_genes'),
+        detail: { region: r, tracks },
+      }`,
+  },
+  {
+    name: 'count-region',
+    prompt:
+      'How many variants does volvox_test_vcf have in ctgA:20,000-30,000? Reply with just the number.',
+    // the truth here is zero, so the prompt rewards a read over a guess from
+    // the picture: nothing is drawn in that region to count
+    grade: `
+      const feats = await jb.getFeatures({ trackId: 'volvox_test_vcf', loc: 'ctgA:20,000-30,000' })
+      const truth = feats.length
+      const said = (answer.match(/\\d[\\d,]*/g) ?? []).map(n => Number(n.replaceAll(',', '')))
+      const wordForZero = truth === 0 && /\\b(zero|none|no variants)\\b/i.test(answer)
+      return { pass: said.includes(truth) || wordForZero, detail: { truth, said } }`,
+  },
+  {
+    name: 'binned-track',
+    prompt:
+      'Add a track showing the number of variants per 5 kb bin over ctgA:1-30,000.',
+    grade: `
+      const BIN = 5000
+      const variants = await jb.getFeatures({ trackId: 'volvox_test_vcf', loc: 'ctgA:1-30,000' })
+      const truth = new Array(30000 / BIN).fill(0)
+      for (const v of variants) {
+        const i = Math.floor(v.get('start') / BIN)
+        if (i >= 0 && i < truth.length) { truth[i] += 1 }
+      }
+      const derived = jb.view().tracks
+        .map(t => jb.mst.getSnapshot(t.configuration))
+        .filter(c => c.adapter?.type === 'FromConfigAdapter')
+      const scored = derived.map(c =>
+        [...c.adapter.features]
+          .sort((a, b) => a.start - b.start)
+          .map(f => f.score),
+      )
+      const match = scored.find(s => s.join() === truth.join())
+      return { pass: !!match, detail: { truth, scored } }`,
+  },
+  {
+    name: 'unknown-name',
+    // "the alignments track" names nothing in the catalog: volvox has a dozen,
+    // so the pass needs jb.listTracks rather than a trackId invented from the
+    // prompt
+    prompt: 'Show the alignments track.',
+    grade: `
+      const t = jb.view().tracks.find(t => t.type === 'AlignmentsTrack')
+      const phase = t?.activeDisplay?.displayPhase
+      return {
+        pass: !!t && (phase === undefined || phase === 'ready'),
+        detail: { trackId: t?.configuration.trackId, phase },
+      }`,
+  },
 ]
