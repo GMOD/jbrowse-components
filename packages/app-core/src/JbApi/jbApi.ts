@@ -1572,11 +1572,15 @@ async function showCatalogTrack(
     trackType: conf.type,
     assembly: getConfAssemblyNamesOrNone(conf)[0],
   }
-  return {
-    trackId: track.trackId,
-    trackType: track.trackType,
-    ...(await showTrack(pluginManager, session, track, args)),
-  }
+  const summary = { trackId: track.trackId, trackType: track.trackType }
+  // show:false over a catalog trackId asks for nothing — there is no file to
+  // add — and showing it anyway would contradict the flag
+  return args.show === false
+    ? summary
+    : {
+        ...summary,
+        ...(await showTrack(pluginManager, session, track, args)),
+      }
 }
 
 function isSettings(value: unknown): value is Record<string, unknown> {

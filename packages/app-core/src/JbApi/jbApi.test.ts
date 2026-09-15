@@ -563,6 +563,13 @@ describe('addTrack with a trackId the catalog already holds', () => {
     expect(shown).toEqual([['volvox_alignments', undefined]])
   })
 
+  it('shows nothing under show:false, as the file route does not', async () => {
+    expect(
+      await jb.addTrack({ trackId: 'volvox_alignments', show: false }),
+    ).toEqual({ trackId: 'volvox_alignments', trackType: 'AlignmentsTrack' })
+    expect(shown).toEqual([])
+  })
+
   it('names the catalog for a trackId in neither place', async () => {
     await expect(jb.addTrack({ trackId: 'nope' })).rejects.toThrow(
       /No track with trackId "nope" — jb.listTracks\(\)/,
