@@ -158,7 +158,14 @@ grown to the ring's radius). The example plugin's `score` shape declares
   labels drew (`mergeBounds`, `placeFeatureLabels`), so it loses the hit pad and
   the hand-measured label overhang and gains the morph for free — it walks
   `renderDataMap`, the interpolated map, rather than the settled layout, which
-  is what retired `morphOffsetFor`.
+  is what retired `morphOffsetFor`. Two of this decision's claims bend here,
+  on purpose. The seam "a display names instances and nothing about where
+  they are" does not hold for a label: labels are DOM text and not marks, so
+  the display derives their rects itself and the chrome receives finished
+  boxes, and that stays so until a label is a mark. And `soloInk` is one
+  display's gesture on the shared host, taken so the layer could go rather
+  than survive for one box kind; a second display wanting a kind of its own
+  is the signal to make the host take named lists with styles instead.
 - **`pinnedInk` is the third exported guide**, and the one exception to "nothing
   reaches `renderDisplaySvg`": a hover and a selection say where the reader's
   pointer was, a pin is what the figure is about. `renderDisplaySvg` draws it
