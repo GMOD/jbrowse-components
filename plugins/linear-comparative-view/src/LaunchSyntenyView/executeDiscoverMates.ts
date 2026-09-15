@@ -6,6 +6,7 @@ import type { MateDiscoveryResult } from './pickMatesForRegion.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { LodTier } from '@jbrowse/synteny-core'
 
 /**
  * Which assemblies a region aligns to, and where each one's panel will open —
@@ -25,11 +26,9 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
  * launch against an HSP table is tens of thousands of blocks). `resolvePanel`
  * turns each group into six numbers, and the CIGARs stay in the worker.
  *
- * No `lodMode`, so an indexed PIF serves its fine tier here whatever the display
- * that launched this is drawing: walking the CIGAR is what puts a panel on the
- * matching slice of its mate rather than on the whole block, and the coarse
- * tier's fold only bounds that to its gap. (Serving the fold here would spare
- * the whole-genome fine fetch a region launch makes; a perf follow-up.)
+ * The tier is the one `auto` picks at the panels' zoom. Walking the coarse
+ * fold's CIGAR lands within its `--coarse` bound of the real slice, and `auto`
+ * serves coarse only where that bound is sub-pixel.
  */
 export async function executeDiscoverMates({
   pluginManager,
@@ -38,6 +37,7 @@ export async function executeDiscoverMates({
   regions,
   trackAssemblyNames,
   anchorAssembly,
+  lodTier,
   stopToken,
   statusCallback,
 }: {
@@ -49,6 +49,7 @@ export async function executeDiscoverMates({
   regions: Region[]
   trackAssemblyNames: string[]
   anchorAssembly: string
+  lodTier: LodTier
   stopToken?: StopToken
   statusCallback?: StatusCallback
 }): Promise<MateDiscoveryResult> {
@@ -64,6 +65,7 @@ export async function executeDiscoverMates({
   const features = await dataAdapter.getFeaturesInMultipleRegionsArray(
     regions,
     {
+      lodMode: lodTier,
       stopToken,
       statusCallback,
     },

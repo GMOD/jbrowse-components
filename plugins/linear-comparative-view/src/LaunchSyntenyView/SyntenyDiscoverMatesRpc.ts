@@ -3,6 +3,7 @@ import RpcMethodTypeWithRenameRegions from '@jbrowse/core/pluggableElementTypes/
 import type { MateDiscoveryResult } from './pickMatesForRegion.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Region } from '@jbrowse/core/util'
+import type { LodTier } from '@jbrowse/synteny-core'
 
 export interface SyntenyDiscoverMatesArgs {
   adapterConfig: Record<string, unknown>
@@ -13,6 +14,7 @@ export interface SyntenyDiscoverMatesArgs {
   // panel at all; read from the config on the main thread, where the config is
   trackAssemblyNames: string[]
   anchorAssembly: string
+  lodTier: LodTier
 }
 
 // No `wire:` and no `deserializeReturn`. The return is plain numbers and names

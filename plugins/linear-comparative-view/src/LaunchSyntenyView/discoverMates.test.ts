@@ -25,7 +25,12 @@ const region: Region = {
 function setup({
   assemblyNames = ['volvox', 'volvox_ins'],
   anchorRegion = region,
-}: { assemblyNames?: string[]; anchorRegion?: Region } = {}) {
+  adapter = { type: 'PAFAdapter', uri: 'x.paf' },
+}: {
+  assemblyNames?: string[]
+  anchorRegion?: Region
+  adapter?: Record<string, unknown>
+} = {}) {
   const calls: {
     sessionId: string
     method: string
@@ -50,10 +55,15 @@ function setup({
   const track = schema.create({
     trackId: 't1',
     assemblyNames,
-    adapter: { type: 'PAFAdapter', uri: 'x.paf' },
+    adapter,
   })
   return {
-    discover: makeMateDiscovery({ session, track, region: anchorRegion }),
+    discover: makeMateDiscovery({
+      session,
+      track,
+      region: anchorRegion,
+      widthPx: 800,
+    }),
     calls,
   }
 }
@@ -127,4 +137,29 @@ test('an anchor no declared name matches stays as the region spells it', async (
   })
   await discover(createStopToken(), jest.fn())
   expect(calls[0]!.args.anchorAssembly).toBe('vvx')
+})
+
+test('the tier is the one auto picks at the zoom the panels open at', async () => {
+  const adapter = {
+    type: 'PairwiseIndexedPAFAdapter',
+    coarseBpPerPxThreshold: 10_000,
+  }
+  const tierFor = async (end: number) => {
+    const { discover, calls } = setup({
+      adapter,
+      anchorRegion: { ...region, start: 0, end },
+    })
+    await discover(createStopToken(), jest.fn())
+    return calls[0]!.args.lodTier
+  }
+  expect(await tierFor(1_000_000)).toBe('fine')
+  expect(await tierFor(20_000_000)).toBe('coarse')
+})
+
+test('an adapter with no coarse tier is always asked for fine', async () => {
+  const { discover, calls } = setup({
+    anchorRegion: { ...region, start: 0, end: 20_000_000 },
+  })
+  await discover(createStopToken(), jest.fn())
+  expect(calls[0]!.args.lodTier).toBe('fine')
 })

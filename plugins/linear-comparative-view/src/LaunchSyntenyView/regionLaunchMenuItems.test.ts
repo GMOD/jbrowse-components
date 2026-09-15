@@ -7,7 +7,13 @@ import {
 } from './regionLaunchMenuItems.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { AbstractSessionModel, Region } from '@jbrowse/core/util'
+import type {
+  AbstractSessionModel,
+  AbstractViewModel,
+  Region,
+} from '@jbrowse/core/util'
+
+const sourceView = { width: 800 } as AbstractViewModel
 
 // Real config models rather than stubs with a mocked readConfObject: the
 // discovery reads `type`, `trackId` and `assemblyNames` off them, which is
@@ -73,6 +79,7 @@ function menuItems(
     session,
     openTracks,
     anchorTracks: [],
+    sourceView,
   })
 }
 
@@ -98,6 +105,7 @@ test('a caller may supply the panels and name the star anchor, and both reach th
     session,
     openTracks: [t1],
     anchorTracks: [],
+    sourceView,
     discoverMatesFor: (trackId, roi) => {
       seen.push({ trackId, region: roi })
       return async () => ({ mates: [], unconfigured: ['from-lanes'] })
@@ -139,6 +147,7 @@ test('no region means no menu item', () => {
       session,
       openTracks: [t],
       anchorTracks: [],
+      sourceView,
     }),
   ).toEqual([])
 })
@@ -262,6 +271,7 @@ test('the queued dialog gets the rounded region', () => {
     session,
     openTracks: [t],
     anchorTracks: [],
+    sourceView,
   })[0]!
   if (!('onClick' in item)) {
     throw new Error('expected a flat item')

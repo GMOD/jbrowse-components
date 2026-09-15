@@ -6,6 +6,7 @@ import { executeDiscoverMates } from './executeDiscoverMates.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { LodTier } from '@jbrowse/synteny-core'
 
 jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter')
 const getFeaturesInMultipleRegionsArray = jest.fn()
@@ -51,6 +52,7 @@ function feature({
 function run(
   features: Feature[],
   trackAssemblyNames = ['volvox', 'volvox_ins'],
+  lodTier: LodTier = 'fine',
 ) {
   getFeaturesInMultipleRegionsArray.mockResolvedValue(features)
   return executeDiscoverMates({
@@ -60,6 +62,7 @@ function run(
     regions: [region],
     trackAssemblyNames,
     anchorAssembly: 'volvox',
+    lodTier,
   })
 }
 
@@ -124,16 +127,11 @@ test('an alignment ships as six numbers, not as itself', async () => {
   ])
 })
 
-// An indexed PIF's coarse tier carries no CIGAR at all, so asking for it here
-// would silently downgrade every launched panel from a CIGAR walk to an
-// interpolation across the whole block — including when the launch came from a
-// view zoomed out far enough to be drawing that coarse tier itself.
-test('no lodMode is requested, so the adapter serves its fine tier', async () => {
-  await run([feature({ mateAssembly: 'volvox_ins' })])
-  const [regions, opts] = getFeaturesInMultipleRegionsArray.mock.calls[0]! as [
-    Region[],
-    BaseOptions,
-  ]
+test('the resolved tier is the one the adapter is asked for', async () => {
+  await run([feature({ mateAssembly: 'volvox_ins' })], undefined, 'coarse')
+  const [regions, opts] = getFeaturesInMultipleRegionsArray.mock.calls.at(
+    -1,
+  )! as [Region[], BaseOptions]
   expect(regions).toEqual([region])
-  expect('lodMode' in opts).toBe(false)
+  expect(opts.lodMode).toBe('coarse')
 })

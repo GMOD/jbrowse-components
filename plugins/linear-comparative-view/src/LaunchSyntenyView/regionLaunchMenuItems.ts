@@ -145,7 +145,7 @@ export function syntenyRegionMenuItems({
   // assembly (the region's). Resolved by the caller, which has the view
   anchorTracks: TrackInit[]
   // the launching view, which the dialog offers to swap for the launched one
-  sourceView?: AbstractViewModel
+  sourceView: AbstractViewModel
   // the panels, from a caller that already knows them — the multiway display
   // hands over its lanes in their order — in place of the discovery RPC over
   // the whole dataset, which forgets the lanes the reader chose and, on a
@@ -181,6 +181,7 @@ export function syntenyRegionMenuItems({
                         track: tracks.find(track => track.trackId === trackId)!
                           .conf,
                         region: roi,
+                        widthPx: sourceView.width,
                       }),
                 starAnchor,
                 handleClose,

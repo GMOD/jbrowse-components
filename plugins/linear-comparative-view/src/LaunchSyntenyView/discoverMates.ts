@@ -1,5 +1,9 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { regionsInAssemblyNamespace } from '@jbrowse/synteny-core'
+import {
+  getCoarseBpPerPxThreshold,
+  regionsInAssemblyNamespace,
+  resolveLodTier,
+} from '@jbrowse/synteny-core'
 
 import type { MateDiscoveryResult } from './pickMatesForRegion.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -42,6 +46,7 @@ export function makeMateDiscovery({
   session,
   track,
   region,
+  widthPx,
 }: {
   // passed rather than reached for with getSession: `track` is a track *config*,
   // and a config node is not under the session in the state tree (a connection's
@@ -49,6 +54,9 @@ export function makeMateDiscovery({
   session: AssemblyHost & RpcHost
   track: AnyConfigurationModel
   region: Region
+  // the width the panels open at, which with the region's span is the zoom the
+  // tier is resolved against
+  widthPx: number
 }): MateDiscovery {
   return async (stopToken, statusCallback) => {
     const { rpcManager } = session
@@ -76,6 +84,14 @@ export function makeMateDiscovery({
       regions: [anchor!],
       trackAssemblyNames,
       anchorAssembly: anchor!.assemblyName,
+      lodTier: resolveLodTier({
+        bpPerPx: (region.end - region.start) / widthPx,
+        coarseBpPerPxThreshold: getCoarseBpPerPxThreshold({
+          configuration: track,
+        }),
+        lodMode: 'auto',
+        tierInfo: undefined,
+      }),
       stopToken,
       statusCallback,
     })

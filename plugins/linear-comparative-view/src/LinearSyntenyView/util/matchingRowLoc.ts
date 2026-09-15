@@ -39,22 +39,26 @@ export async function matchingRowLoc({
   trackId,
   region,
   assembly,
+  widthPx,
   stopToken = createStopToken(),
 }: {
   session: AssemblyHost & RpcHost & TrackCatalog
   trackId: string
   region: Region
   assembly: string
+  widthPx: number
   stopToken?: StopToken
 }) {
   const track = allSessionTracks(session).find(t => t.trackId === trackId)
   if (!track) {
     return undefined
   }
-  const { mates } = await makeMateDiscovery({ session, track, region })(
-    stopToken,
-    () => {},
-  )
+  const { mates } = await makeMateDiscovery({
+    session,
+    track,
+    region,
+    widthPx,
+  })(stopToken, () => {})
   const panel = mates.find(m =>
     isSameAssemblyName(m.assemblyName, assembly, session.assemblyManager),
   )

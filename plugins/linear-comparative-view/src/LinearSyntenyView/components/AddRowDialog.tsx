@@ -125,7 +125,8 @@ const AddRowDialog = observer(function AddRowDialog({
   // fails still adds the row, on its whole genome — the alignment is a
   // convenience, and a broken track reports itself on the band.
   async function add(assembly: string, syntenyTrackId: string) {
-    const region = zoomedInWindow(views.at(-1)!)
+    const row = views.at(-1)!
+    const region = zoomedInWindow(row)
     const stopToken = createStopToken()
     locating.current = stopToken
     setLocating(true)
@@ -136,6 +137,7 @@ const AddRowDialog = observer(function AddRowDialog({
             trackId: syntenyTrackId,
             region,
             assembly,
+            widthPx: row.width,
             stopToken,
           }).catch((e: unknown) => {
             if (isAbortException(e)) {
