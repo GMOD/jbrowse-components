@@ -45,7 +45,7 @@ export const HIT_SEARCH_PAD_PX =
 //
 // The spatial index is per *feature* (see computeVariantCells), so x and y are
 // resolved separately: x against the index, y arithmetically here. The caller
-// then walks the row band nearest-first, asks variantCellLookup whether a cell
+// then walks the row band nearest-first, asks `findCellIndex` whether a cell
 // exists at each (feature, row), and among those rejects any the cursor is not
 // actually over — so a small variant atop a large one stays selectable.
 export function computeVariantHitQuery(

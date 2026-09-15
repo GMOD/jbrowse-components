@@ -32,6 +32,7 @@ function matrixCellData(starts: number[]): CellDataResult {
     cellRowIndices: new Uint32Array(0),
     cellColors: new Uint32Array(0),
     numCells: 0,
+    refCellCount: 0,
     numFeatures: starts.length,
     featureData: [],
   }

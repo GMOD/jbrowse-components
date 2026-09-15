@@ -4,6 +4,7 @@ import { buildVariantHit } from '../../shared/buildVariantHit.ts'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
+import { findCellIndex } from '../../shared/variantCellLookup.ts'
 import { cellCarriesAlt } from '../../shared/variantCellStyles.ts'
 import { variantSurfaceHandlers } from '../../shared/variantSurface.ts'
 import { matrixCellAt } from './matrixHitTest.ts'
@@ -16,6 +17,30 @@ import type { LinearMultiSampleVariantMatrixDisplayModel } from '../model.ts'
 interface MatrixHit {
   fields: VariantTooltipFields
   featureData: VariantFeatureInfo & { featureId: string }
+  /** The drawn cell's instance in the mark's channels, for `hoverInk`. */
+  cell?: MatrixHoveredCell
+}
+
+export interface MatrixHoveredCell {
+  cellIndex: number
+}
+
+// The instance the painter drew for a screen row's genotype, or undefined where
+// the worker emitted no cell for it: a row is hoverable by its genotype (the
+// walk below) and lit by its ink, and a no-call decodes to a genotype no cell
+// was drawn for.
+function drawnCellAt(
+  model: LinearMultiSampleVariantMatrixDisplayModel,
+  featureIdx: number,
+  rowIdx: number,
+): MatrixHoveredCell | undefined {
+  const placed = model.placedMatrixData
+  const workerRow = model.rowUnmap?.[rowIdx] ?? -1
+  if (!placed || workerRow < 0) {
+    return undefined
+  }
+  const cellIndex = findCellIndex(placed, featureIdx, workerRow)
+  return cellIndex >= 0 ? { cellIndex } : undefined
 }
 
 // `mouseX`/`mouseY` are relative to the matrix canvas, which sits at
@@ -89,6 +114,7 @@ function getHoveredMatrixCell(
             : 0,
         }),
         featureData: feature,
+        cell: drawnCellAt(model, featureIdx, rowIdx),
       }
     }
   }
@@ -110,6 +136,9 @@ export function variantMatrixSurface(
       return baseFeature
         ? enrichFeatureFromClick(baseFeature, hit.featureData, hit.fields)
         : undefined
+    },
+    onHover: hit => {
+      model.setHoveredCell(hit?.cell)
     },
   }
 }

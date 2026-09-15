@@ -72,4 +72,16 @@ describe('findCellIndex', () => {
   test('handles no cells at all', () => {
     expect(findCellIndex(cells([], []), 0, 0)).toBe(-1)
   })
+
+  // The matrix packs its feature indices as floats for the shader's column
+  // attribute, and the same search reads them.
+  test('reads float feature indices the way it reads integer ones', () => {
+    const matrix: CellLookupData = {
+      ...data,
+      cellFeatureIndices: Float32Array.from(data.cellFeatureIndices),
+    }
+    expect(findCellIndex(matrix, 0, 0)).toBe(0)
+    expect(findCellIndex(matrix, 0, 2)).toBe(3)
+    expect(findCellIndex(matrix, 1, 1)).toBe(-1)
+  })
 })

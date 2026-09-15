@@ -246,6 +246,7 @@ describe('computeVariantMatrixCells cell bucket ordering', () => {
     // the 3 hom-ref cells lead, then the 3 alt-carrying ones, each bucket in
     // feature-major / row-minor order
     const refCount = 3
+    expect(result.refCellCount).toBe(refCount)
     expect(keys.slice(0, refCount)).toEqual([
       { feature: 0, row: 0 },
       { feature: 1, row: 1 },
@@ -270,6 +271,7 @@ describe('computeVariantMatrixCells cell bucket ordering', () => {
     const { result, keys } = build(features)
     expect(result.numCells).toBe(3)
     expect(result.cellFeatureIndices).toHaveLength(3)
+    expect(result.refCellCount).toBe(1)
     expect(keys).toEqual([
       // the one hom-ref cell
       { feature: 0, row: 0 },

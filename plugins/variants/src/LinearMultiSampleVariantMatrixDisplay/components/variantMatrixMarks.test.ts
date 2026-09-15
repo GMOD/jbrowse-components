@@ -1,10 +1,13 @@
 import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
 import { MockHal } from '@jbrowse/render-core/hal'
-import { paintMarkBlocks } from '@jbrowse/render-core/marks'
+import { defineMark, paintMarkBlocks } from '@jbrowse/render-core/marks'
+import { sweepMarkAgainstHit } from '@jbrowse/render-core/marks/drawAgainstHit'
 
+import { matrixCellMark } from './matrixCellMark.ts'
 import * as shader from './shaders/variantMatrix.iface.generated.ts'
 import { VARIANT_MATRIX_MARKS } from './variantMatrixMarks.ts'
 
+import type { MatrixCellChannels } from './matrixCellMark.ts'
 import type {
   MatrixRenderState,
   VariantMatrixRenderBlock,
@@ -194,5 +197,69 @@ describe('painter', () => {
       makeData({ cellColors: new Uint32Array([0x7f204080]) }),
     )
     expect(raw.fillStyle).toBe(`rgba(128,64,32,${127 / 255})`)
+  })
+})
+
+// Four cells over three columns, two of them stacked on one column, walked at
+// a 10px row and again at the 1px floor, where the sub-pixel rows share a
+// drawn pixel and the last-painted one has to answer. The matrix has no hit
+// test of its own — the tooltip walks rows by genotype — so the hit here is
+// the one `defineMark` derives from the ink, and the sweep holds that ink to
+// what the painter recorded, seam overdraw included.
+describe('draw against hit', () => {
+  const cells: MatrixCellChannels = {
+    featureIndex: Float32Array.of(0, 2, 2, 1),
+    row: Uint32Array.of(0, 0, 1, 3),
+    color: Uint32Array.of(0xff0000ff, 0xff00ff00, 0xffff0000, 0xff0000ff),
+    count: 4,
+  }
+  const frame = { canvasWidth: 300, canvasHeight: 200 }
+  const wholeCanvas = (): VariantMatrixRenderBlock => ({
+    displayedRegionIndex: 0,
+    start: 0,
+    end: 3,
+    screenStartPx: 0,
+    screenEndPx: frame.canvasWidth,
+    reversed: false,
+  })
+  const mark = (rowHeight: number, scrollTop = 0) =>
+    defineMark({
+      shape: matrixCellMark,
+      channels: (c: MatrixCellChannels) => c,
+      params: () => ({ numFeatures: 3, rowHeight, scrollTop }),
+    })
+
+  for (const rowHeight of [10, 0.1]) {
+    for (const maxDistSq of [Number.MIN_VALUE, Infinity]) {
+      test(`rowHeight ${rowHeight}, bound ${maxDistSq}`, () => {
+        expect(
+          sweepMarkAgainstHit(mark(rowHeight), cells, wholeCanvas(), frame, {
+            maxDistSq,
+          }),
+        ).toEqual([])
+      })
+    }
+  }
+
+  // Scrolled so row 0 is above the canvas: `paintBlock` skips its two cells,
+  // which positional attribution would read as the survivors, so the sweep
+  // paints one instance at a time.
+  const sliceCell = (c: MatrixCellChannels, i: number) => ({
+    featureIndex: c.featureIndex.subarray(i, i + 1),
+    row: c.row.subarray(i, i + 1),
+    color: c.color.subarray(i, i + 1),
+    count: 1,
+  })
+
+  test('a row scrolled off the canvas is painted by nobody and answers nobody', () => {
+    expect(
+      sweepMarkAgainstHit(
+        mark(10, 15),
+        cells,
+        wholeCanvas(),
+        { canvasWidth: 300, canvasHeight: 12 },
+        { sliceOne: sliceCell },
+      ),
+    ).toEqual([])
   })
 })

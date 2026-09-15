@@ -1,21 +1,34 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { installUpload, oneCell } from '@jbrowse/render-core/installUpload'
+import { inkOfInstances } from '@jbrowse/render-core/marks'
 
 import MultiSampleVariantBaseModelF from '../shared/MultiSampleVariantBaseModel.ts'
 import { clampLineZoneHeight } from '../shared/constants.ts'
 import { locusViewportXFor } from '../shared/genomicViewportX.ts'
 import { placeVariantRows } from '../shared/placeVariantRows.ts'
+import { VARIANT_MATRIX_MARKS } from './components/variantMatrixMarks.ts'
 
 import type { ConnectorCoord } from '../shared/ConnectorLines.tsx'
 import type { SharedVariantConfigModel } from '../shared/SharedVariantConfigSchema.ts'
+import type { Placed } from '../shared/placeVariantRows.ts'
+import type { MatrixHoveredCell } from './components/VariantMatrixComponent.tsx'
 import type {
   VariantMatrixRenderBlock,
   VariantMatrixRenderingBackend,
   VariantMatrixUploadData,
 } from './components/variantMatrixRenderingBackendTypes.ts'
+import type {
+  HighlightRect,
+  HighlightStyle,
+} from '@jbrowse/display-kit/highlightHost'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+
+/** The upload payload plus what the (feature, row) → cell lookup reads. */
+type PlacedMatrixData = Placed<
+  VariantMatrixUploadData & { refCellCount: number }
+>
 
 /**
  * #stateModel LinearMultiSampleVariantMatrixDisplay
@@ -45,6 +58,35 @@ export default function stateModelFactory(
           ? { ...snap, type: 'LinearMultiSampleVariantMatrixDisplay' }
           : snap,
       )
+      .volatile(() => ({
+        /**
+         * #volatile
+         * The genotype cell under the pointer, as `hoverInk` lights it. Beside
+         * the base's `hoveredFeature` (the tooltip) for the reason the sibling
+         * display keeps its own: the box needs the cell's instance, which the
+         * shared tooltip slot has no reason to carry.
+         */
+        hoveredCell: undefined as MatrixHoveredCell | undefined,
+      }))
+      .actions(self => {
+        const { clearHoveredFeature: superClearHoveredFeature } = self
+        return {
+          /**
+           * #action
+           */
+          setHoveredCell(cell?: MatrixHoveredCell) {
+            self.hoveredCell = cell
+          },
+          /**
+           * #action
+           * The base clears the tooltip; the highlight box goes with it.
+           */
+          clearHoveredFeature() {
+            superClearHoveredFeature()
+            self.hoveredCell = undefined
+          },
+        }
+      })
       .views(() => ({
         /**
          * #getter
@@ -55,6 +97,13 @@ export default function stateModelFactory(
          */
         get showsReferenceToggle() {
           return false
+        },
+        /**
+         * #getter
+         * A wash and a border: the cell colours are the data.
+         */
+        get highlightStyle(): HighlightStyle {
+          return 'box'
         },
       }))
       .views(self => ({
@@ -70,11 +119,11 @@ export default function stateModelFactory(
          * the upload autorun re-runs, and no RPC is involved. The regular display
          * does the same per region in `perRegionCellMap`.
          */
-        // Annotated down to what the backends actually consume, rather than
-        // inferred: the inferred type drags the worker's whole payload shape
-        // into this display's public type, and the SVG body would then have to
-        // name it too.
-        get placedMatrixData(): VariantMatrixUploadData | undefined {
+        // Annotated down to what the backends and the cell lookup consume,
+        // rather than inferred: the inferred type drags the worker's whole
+        // payload shape into this display's public type, and the SVG body would
+        // then have to name it too.
+        get placedMatrixData(): PlacedMatrixData | undefined {
           const { cellData, rowRemap } = self
           return cellData?.mode === 'matrix' && rowRemap
             ? placeVariantRows(cellData, rowRemap)
@@ -207,6 +256,28 @@ export default function stateModelFactory(
         },
       }))
       .views(self => ({
+        /**
+         * #getter
+         * The box of the hovered genotype cell, for the chrome's highlight: the
+         * cell's instance through the matrix cell mark's ink, moved to where
+         * the canvas sits in the display — past the bands above the rows and
+         * the column origin.
+         */
+        get hoverInk(): HighlightRect[] {
+          const cell = self.hoveredCell
+          if (!cell) {
+            return []
+          }
+          const { left } = self.columnGeometry
+          const top = self.rowsTopOffset
+          return inkOfInstances(
+            VARIANT_MATRIX_MARKS,
+            self.matrixBlocks,
+            index => self.matrixRegions.get(index),
+            self.renderState,
+            () => [{ mark: 0, index: cell.cellIndex }],
+          ).map(r => ({ ...r, left: r.left + left, top: r.top + top }))
+        },
         /**
          * #getter
          * The connector lines that actually draw — `connectorCoordsByColumn`

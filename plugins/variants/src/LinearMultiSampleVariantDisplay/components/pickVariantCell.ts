@@ -1,12 +1,12 @@
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 
+import { findCellIndex } from '../../shared/variantCellLookup.ts'
 import { drawnCellHeightPx } from './shaders/variant.js.generated.ts'
-import { findCellIndex } from './variantCellLookup.ts'
 import { variantCellSpanPx } from './variantCellSpan.ts'
 import { HIT_TOLERANCE_PX } from './variantHitTest.ts'
 import { VARIANT_MARKS } from './variantMarks.ts'
 
-import type { CellLookupData } from './variantCellLookup.ts'
+import type { CellLookupData } from '../../shared/variantCellLookup.ts'
 import type {
   VariantRenderBlock,
   VariantRenderState,
@@ -75,7 +75,7 @@ function withinCellTolerance(
  * the overlay's (`variantCellSpanPx`).
  *
  * Rows are screen rows throughout, in and out; `rowUnmap` converts each to the
- * worker numbering `findCellIndex` searches (see variantCellLookup.ts). A screen
+ * worker numbering `findCellIndex` searches (see shared/variantCellLookup.ts). A screen
  * row the fetched data has no cells for maps to -1 and is skipped, which is the
  * same outcome as a row that simply holds no cell here.
  */

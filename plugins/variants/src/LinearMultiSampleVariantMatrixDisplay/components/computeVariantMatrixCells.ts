@@ -44,6 +44,8 @@ export interface MatrixCellData {
   cellRowIndices: Uint32Array
   cellColors: Uint32Array
   numCells: number
+  /** Where the non-reference bucket starts; `findCellIndex` searches each. */
+  refCellCount: number
   numFeatures: number
   featureData: FeatureData[]
 }
@@ -282,6 +284,7 @@ export function computeVariantMatrixCells({
     cellRowIndices: trim ? rowIndices.slice(0, numCells) : rowIndices,
     cellColors: trim ? colors.slice(0, numCells) : colors,
     numCells,
+    refCellCount,
     numFeatures,
     featureData,
   }
