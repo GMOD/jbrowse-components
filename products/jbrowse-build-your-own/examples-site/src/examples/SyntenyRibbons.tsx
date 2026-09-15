@@ -1,329 +1,18 @@
-import { Suspense, useRef, useSyncExternalStore } from 'react'
+import { Suspense } from 'react'
 
 import { SessionPaletteProvider } from '@jbrowse/core/ui/PaletteContext'
-import { useCreateOnceAsync, useWidthSetter } from '@jbrowse/core/util/hooks'
-import { usePanZoom } from '@jbrowse/core/util/usePanZoom'
-import { DisplayUIProvider, TrackOverlaySlot } from '@jbrowse/display-ui'
-import {
-  LevelSyntenyCanvas,
-  type LinearSyntenyViewHelperModel,
-  type LinearSyntenyViewModel,
-} from '@jbrowse/plugin-linear-comparative-view'
-import { createViewStateAsync } from '@jbrowse/react-app2'
+import { useWidthSetter } from '@jbrowse/core/util/hooks'
+import { DisplayUIProvider } from '@jbrowse/display-ui'
+import { TrackStack, ViewStatus } from '@jbrowse/display-ui/embed'
+import { LevelSyntenyCanvas } from '@jbrowse/plugin-linear-comparative-view'
+import { useCreateViewState } from '@jbrowse/react-app2'
 import { observer } from 'mobx-react'
 
-import type { ReactNode } from 'react'
+import type {
+  LinearSyntenyViewHelperModel,
+  LinearSyntenyViewModel,
+} from '@jbrowse/plugin-linear-comparative-view'
 
-// Human and mouse at BRCA1, one above the other, and the ribbons that say which
-// piece of one is which piece of the other. Drag either row -- they move
-// independently, and the ribbons follow.
-//
-// The thing worth noticing is how little of this is new. A synteny view is a
-// view whose `views` are **ordinary linear genome views**, so every page before
-// this one applies to each row unchanged: `useWidthSetter`, `usePanZoom`,
-// `getTrack(id).activeDisplay.RenderingComponent`. What the synteny view adds is
-// `levels` -- one band between each pair of rows -- and the band is a component
-// over a model like everything else.
-//
-// The engine comes from a DIFFERENT published package here, and that is the
-// whole reason this page exists at the end. `@jbrowse/react-linear-genome-view2`,
-// which every other page uses, has a session with exactly one view slot, welded
-// to `LinearGenomeView` -- deliberately, since it is the single-view product.
-// Two views need a session with a views *array*, and that is
-// `@jbrowse/react-app2`. Nothing else about the technique changes; if you have
-// read the pages above, you can already read the rest of this file.
-//
-// Self-contained, like every page here: nothing below is imported from the rest
-// of this site, so you can copy the file and run it.
-
-// Human and mouse, ~90 My apart. Only the chromosome names are needed to lay
-// out a coordinate space, so the assemblies are `.chrom.sizes` rather than a
-// FASTA -- there is no base-level zoom on this page, and skipping the sequence
-// keeps two whole genomes cheap.
-const assemblies = [
-  {
-    name: 'hg38',
-    sequence: {
-      type: 'ReferenceSequenceTrack',
-      trackId: 'hg38-ref',
-      adapter: {
-        type: 'ChromSizesAdapter',
-        uri: 'https://jbrowse.org/ucsc/hg38/hg38.chrom.sizes',
-      },
-    },
-  },
-  {
-    name: 'mm39',
-    sequence: {
-      type: 'ReferenceSequenceTrack',
-      trackId: 'mm39-ref',
-      adapter: {
-        type: 'ChromSizesAdapter',
-        uri: 'https://jbrowse.org/ucsc/mm39/mm39.chrom.sizes',
-      },
-    },
-  },
-]
-
-// UCSC's hg38->mm39 liftOver chain, converted to PIF: a PAF sorted and indexed
-// on both sides, so the view fetches only the alignments over the window
-// instead of reading the whole file into memory. That is the difference between
-// this and `PAFAdapter`, and it is what makes a whole-genome alignment usable
-// as a track -- `jbrowse make-pif` produces one from any PAF.
-//
-// Note the two `assemblyNames`. The track's says which pair of rows it can sit
-// between; the adapter's is [query, target] and says which way round the file
-// is written.
-const syntenyTrack = {
-  type: 'SyntenyTrack',
-  trackId: 'hg38_mm39',
-  name: 'Human vs mouse (UCSC liftOver)',
-  assemblyNames: ['hg38', 'mm39'],
-  adapter: {
-    type: 'PairwiseIndexedPAFAdapter',
-    uri: 'https://jbrowse.org/ucsc/hg38/liftOver/hg38ToMm39.over.pif.gz',
-    // the index is a .csi beside the file, not the .tbi the shorthand assumes
-    csi: true,
-    assemblyNames: ['mm39', 'hg38'],
-  },
-}
-
-// One gene track per row -- ordinary feature tracks, nothing comparative about
-// them. A row is just a linear genome view, so this is the same track config it
-// was five pages ago; the only reason there are two is that there are two
-// genomes.
-const geneTracks = [
-  {
-    type: 'FeatureTrack',
-    trackId: 'hg38_genes',
-    name: 'RefSeq curated (human)',
-    assemblyNames: ['hg38'],
-    adapter: {
-      type: 'Gff3TabixAdapter',
-      uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
-      csi: true,
-    },
-    // One transcript per gene, on both rows. `auto` would pick this at
-    // whole-genome zoom and `all` here, and `all` is the wrong answer for a
-    // comparison: human BRCA1 has an order of magnitude more annotated
-    // isoforms than mouse Brca1, so the rows would differ in height for a
-    // reason that is about annotation depth rather than about the genes.
-    displayDefaults: { height: 110, geneGlyphMode: 'longestCoding' },
-  },
-  {
-    type: 'FeatureTrack',
-    trackId: 'mm39_genes',
-    name: 'RefSeq curated (mouse)',
-    assemblyNames: ['mm39'],
-    adapter: {
-      type: 'Gff3TabixAdapter',
-      uri: 'https://jbrowse.org/ucsc/mm39/ncbiRefSeqCurated.gff.gz',
-      csi: true,
-    },
-    // One transcript per gene, on both rows. `auto` would pick this at
-    // whole-genome zoom and `all` here, and `all` is the wrong answer for a
-    // comparison: human BRCA1 has an order of magnitude more annotated
-    // isoforms than mouse Brca1, so the rows would differ in height for a
-    // reason that is about annotation depth rather than about the genes.
-    displayDefaults: { height: 110, geneGlyphMode: 'longestCoding' },
-  },
-]
-
-// BRCA1, and its mouse ortholog Brca1. Coordinates are the RefSeq curated spans
-// plus a little air: hg38 chr17:43,044,295-43,125,364 and mm39
-// chr11:101,379,590-101,442,781.
-//
-// The gene is the point of opening here rather than at whole-genome zoom. At
-// ~90 My the liftOver chain has nothing to say about most of an intron, so the
-// ribbons collapse onto the coding exons -- the alignment picks out exactly the
-// part of the gene that had to stay put, against a human copy ~25% longer than
-// the mouse one.
-const HUMAN_LOC = 'chr17:43,040,000..43,130,000'
-const MOUSE_LOC = 'chr11:101,375,000..101,447,000'
-
-/**
- * `createViewStateAsync` from the app product takes its config in one blob and
- * builds the session from `defaultSession`, rather than the single-view
- * product's `setLaunch` on a view that already exists. Same idea, one level up:
- * declare what you want and let the engine resolve assemblies in the right
- * order.
- *
- * Async because this session names `LinearSyntenyView`, whose state model is
- * a dynamic import; the synchronous `createViewState` throws on one.
- *
- * `init` on the view snapshot is the synteny view's own version of `setLaunch`:
- * per row an assembly, where to open it and which tracks to show, and per band
- * which synteny track goes in it. The view resolves both assemblies first, then
- * builds a linear genome view for each row -- so a row arrives already at its
- * gene, rather than at the whole genome and then navigating.
- */
-async function makeView() {
-  const state = await createViewStateAsync({
-    config: {
-      assemblies,
-      tracks: [syntenyTrack, ...geneTracks],
-      defaultSession: {
-        name: 'synteny',
-        views: [
-          {
-            type: 'LinearSyntenyView',
-            views: [
-              {
-                assembly: 'hg38',
-                loc: HUMAN_LOC,
-                tracks: ['hg38_genes'],
-              },
-              {
-                assembly: 'mm39',
-                loc: MOUSE_LOC,
-                tracks: ['mm39_genes'],
-              },
-            ],
-            tracks: ['hg38_mm39'],
-            // Bezier ribbons rather than straight chords. Two rows opened at
-            // orthologous genes are offset from each other, so every chord
-            // runs at a slant; curves leave the two ends vertical and only
-            // bend in the middle, which is what makes a stack of them
-            // readable instead of a hatch pattern.
-            drawCurves: true,
-            // 'matches' leaves the indel wedges see-through and paints only
-            // the aligned runs. Human BRCA1 is ~25% longer than the mouse
-            // copy, so at 'full' the wedges for that extra sequence are the
-            // largest coloured areas on screen and the conserved exons --
-            // the thing worth seeing -- are the thin bits between them.
-            cigarMode: 'matches',
-          },
-        ],
-      },
-    },
-  })
-  // see the Pan and zoom example: scroll-to-zoom is a session preference, so
-  // this one call covers both rows and the band between them
-  state.session.setScrollZoom(true)
-  // `views` is a pluggable MST array, so its element type is resolved at
-  // runtime and there is nothing narrower than this to assert. The published
-  // `LinearSyntenyViewModel` is the type to assert to.
-  return {
-    session: state.session,
-    view: state.session.views[0] as LinearSyntenyViewModel,
-  }
-}
-
-type SyntenyView = Awaited<ReturnType<typeof makeView>>['view']
-type SyntenySession = Awaited<ReturnType<typeof makeView>>['session']
-type BrowserView = SyntenyView['views'][number]
-
-const TrackRow = observer(function TrackRow({
-  view,
-  trackId,
-}: {
-  view: BrowserView
-  trackId: string
-}) {
-  // `view.getTrack(id)`, not a scan of `view.tracks` comparing
-  // `configuration.trackId` by hand: the view keeps a map for exactly this. The
-  // guard stays -- a ready `view.status` says the view can draw, not that your
-  // track is instantiated yet.
-  const track = view.getTrack(trackId)
-  if (!track) {
-    return null
-  }
-  const display = track.activeDisplay
-  const { RenderingComponent } = display
-  // `TrackOverlaySlot`, not a plain sized div. A display draws floating chrome
-  // of its own -- a colour key, a corner control, the loading and error states
-  // -- and `contain: strict` seals that into its own stacking context, where
-  // nothing you paint over the stack can be out-z-indexed. The slot is the node
-  // it portals into, mounted beside the sandbox, and it is what JBrowse's own
-  // track container mounts. See the Track settings page.
-  return (
-    <TrackOverlaySlot zIndex={3} style={{ height: display.height }}>
-      <div style={{ position: 'absolute', inset: 0, contain: 'strict' }}>
-        <Suspense fallback={null}>
-          <RenderingComponent
-            model={display}
-            onHorizontalScroll={view.horizontalScroll}
-          />
-        </Suspense>
-      </div>
-    </TrackOverlaySlot>
-  )
-})
-
-// The box `usePanZoom`'s handlers go on -- see the Pan and zoom page for what
-// each property is doing, and for the one the hook writes itself. One per row
-// here, which is what lets the rows move independently.
-const viewport: React.CSSProperties = {
-  position: 'relative',
-  overflow: 'hidden',
-  cursor: 'grab',
-}
-
-/**
- * One genome row.
- *
- * `usePanZoom` is bound per row, against that row's own view, which is what
- * makes the rows move independently -- the gesture layer never knew about
- * synteny and does not need to. The width is NOT set here: the synteny view
- * takes one width and fans it out to every row, so there is a single
- * `useWidthSetter` at the bottom of this file rather than one per row.
- */
-const SyntenyRow = observer(function SyntenyRow({
-  view,
-  label,
-}: {
-  view: BrowserView
-  label: string
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-  const { containerProps } = usePanZoom(ref, view)
-  return (
-    <div ref={ref} {...containerProps} style={viewport}>
-      <div
-        style={{
-          fontSize: '0.7rem',
-          opacity: 0.7,
-          padding: '2px 4px',
-          userSelect: 'none',
-        }}
-      >
-        {label}
-      </div>
-      {view.status.type === 'ready'
-        ? view.tracks.map(track => (
-            <TrackRow
-              key={track.configuration.trackId}
-              view={view}
-              trackId={track.configuration.trackId}
-            />
-          ))
-        : null}
-    </div>
-  )
-})
-
-/**
- * The band between two rows.
- *
- * `LevelSyntenyCanvas` is the ribbon layer, and it is the one piece of this
- * page you could not write yourself: it drives the same GPU rendering backend
- * the rest of JBrowse draws with, so a hand-rolled substitute would be a worse
- * copy of the engine rather than chrome of your own. It is absolutely
- * positioned, so the band owns the height -- `level.height`, not whatever
- * happens to be drawn in it.
- *
- * The per-display `RenderingComponent` on top is the interactive half: the
- * tooltip, the right-click menu and the fetch status. It comes off the display
- * model rather than an import, exactly like a track's does. Its layer takes no
- * pointer events except where those states put them back.
- *
- * `LinearSyntenyViewHelperModel` on the prop rather than `view.levels[number]`.
- * That array is declared loosely inside the plugin to break a type cycle
- * between the view, the level and the display, so an element off it is `any` --
- * and so is everything you then read from one, including the displays below.
- * Naming the published type here is what gets them back; JBrowse's own
- * comparative render area does the same on the same value.
- */
 const Ribbons = observer(function Ribbons({
   level,
 }: {
@@ -352,149 +41,109 @@ const Ribbons = observer(function Ribbons({
   )
 })
 
-// A display paints no background of its own -- its labels are drawn straight
-// onto whatever is behind them, so light-theme text on a dark page is near-black
-// on near-black. This is the page's own answer to "which mode am I in".
-function readSiteMode(): 'light' | 'dark' {
-  const chosen = document.documentElement.dataset.theme
-  if (chosen === 'light' || chosen === 'dark') {
-    return chosen
-  }
-  return window.matchMedia('(prefers-color-scheme: dark)').matches
-    ? 'dark'
-    : 'light'
-}
-
-// The two places that answer can change from. The site's toggle writes an
-// attribute on <html> and the OS preference arrives as a media query, and
-// either can move without the other, so both are watched.
-function watchSiteMode(onChange: () => void) {
-  const observer = new MutationObserver(onChange)
-  observer.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['data-theme'],
-  })
-  const media = window.matchMedia('(prefers-color-scheme: dark)')
-  media.addEventListener('change', onChange)
-  return () => {
-    observer.disconnect()
-    media.removeEventListener('change', onChange)
-  }
-}
-
-/**
- * Follow whatever the page around this demo is themed as. All of this is the
- * *host's* half, and yours will look nothing like it -- swap it for however
- * your app already knows it is in dark mode.
- *
- * `useSyncExternalStore`, not `useState` + `useEffect`: the mode lives outside
- * React, so this reads it *during* render rather than publishing one value and
- * correcting it a paint later. The third argument is the server snapshot, for
- * a reader pasting this into a framework that prerenders.
- *
- * JBrowse's half is one mount, `SessionPaletteProvider` below. It writes the
- * config slot that *both* halves of the rendering derive from -- the palette
- * React draws with, and the theme shipped to the worker that bakes feature
- * labels into the image. `PaletteProvider` on its own is the near miss: it
- * colours React and leaves those baked labels in the old mode.
- */
-function useSiteMode() {
-  return useSyncExternalStore(
-    watchSiteMode,
-    readSiteMode,
-    () => 'light' as const,
-  )
-}
-
-// JBrowse's stock displays read a palette to colour their own *content*: the
-// feature display wants a highlight colour, the synteny display wants its
-// ribbon fills. That is a palette of colour strings, not a UI toolkit, so it
-// arrives through `SessionPaletteProvider` and Material UI is not involved.
-//
-// One mount covers both rows and the band between them. The palette is
-// session-wide, and a synteny view's rows are ordinary linear genome views
-// sharing this session -- not separately themed browsers.
-
-function DemoMessage({
-  error,
-  children,
-}: {
-  error?: boolean
-  children: ReactNode
-}) {
-  return (
-    <div
-      role={error ? 'alert' : 'status'}
-      style={{ fontSize: '0.85rem', opacity: 0.7, padding: 8 }}
-    >
-      {children}
-    </div>
-  )
-}
-
-const SyntenyRibbonsDemo = observer(function SyntenyRibbonsDemo({
+const Rows = observer(function Rows({
   view,
-  session,
 }: {
-  view: SyntenyView
-  session: SyntenySession
+  view: LinearSyntenyViewModel
 }) {
-  const mode = useSiteMode()
-  // One measurement for the whole stack: `setWidth` on the synteny view assigns
-  // it to every row, so the rows cannot disagree about how wide they are.
   const ref = useWidthSetter(view)
-  const { status } = view
-
   return (
-    <SessionPaletteProvider session={session} mode={mode}>
-      <DisplayUIProvider>
-        <div ref={ref}>
-          {status.type === 'ready' ? (
-            view.views.map((row, i) => {
-              const level = view.levels[i - 1]
-              return (
-                <div key={row.id}>
-                  {level ? <Ribbons level={level} /> : null}
-                  <SyntenyRow
-                    view={row}
-                    label={row.assemblyNames[0] ?? `row ${i + 1}`}
-                  />
+    <div ref={ref}>
+      {view.status.type === 'ready' ? (
+        view.views.map((row, i) => {
+          const level = view.levels[i - 1]
+          return (
+            <div key={row.id}>
+              {level ? <Ribbons level={level} /> : null}
+              <TrackStack view={row}>
+                <div style={{ fontSize: '0.7rem', opacity: 0.7, padding: 2 }}>
+                  {row.assemblyNames[0]}
                 </div>
-              )
-            })
-          ) : (
-            // A synteny view answers `view.status` with the same four values a
-            // linear one does, so this is the gate every other page here
-            // writes, on a view whose rows are themselves linear views.
-            //
-            // **Not `view.initialized`**, which is what this page used to gate
-            // on: that one waits on every row, so a failure in either assembly
-            // leaves it false for good and this box would say "loading" for as
-            // long as the tab stayed open. The status branch carries the error
-            // instead, and this view's `error` folds in its rows' -- so a 404
-            // on the mouse genome names itself here rather than stalling the
-            // pair.
-            <DemoMessage error={status.type === 'error'}>
-              {status.type === 'error'
-                ? `Could not load: ${status.error instanceof Error ? status.error.message : String(status.error)}`
-                : status.type === 'loading'
-                  ? status.message
-                  : 'Nothing to show yet'}
-            </DemoMessage>
-          )}
-        </div>
-      </DisplayUIProvider>
-    </SessionPaletteProvider>
+              </TrackStack>
+            </div>
+          )
+        })
+      ) : (
+        <ViewStatus view={view} />
+      )}
+    </div>
   )
 })
 
-// split out so every hook in the demo reads a view model that already exists
+const geneTrack = (assembly: string) => ({
+  trackId: `${assembly}_genes`,
+  name: `RefSeq curated (${assembly})`,
+  uri: `https://jbrowse.org/ucsc/${assembly}/ncbiRefSeqCurated.gff.gz`,
+  index: `https://jbrowse.org/ucsc/${assembly}/ncbiRefSeqCurated.gff.gz.csi`,
+  assemblyNames: [assembly],
+  displayDefaults: { height: 110, geneGlyphMode: 'longestCoding' },
+})
+
+const chromSizes = (assembly: string) => ({
+  name: assembly,
+  sequence: {
+    adapter: {
+      type: 'ChromSizesAdapter',
+      uri: `https://jbrowse.org/ucsc/${assembly}/${assembly}.chrom.sizes`,
+    },
+  },
+})
+
 const SyntenyRibbons = observer(function SyntenyRibbons() {
-  const created = useCreateOnceAsync(makeView)
-  return created ? (
-    <SyntenyRibbonsDemo session={created.session} view={created.view} />
-  ) : (
-    <DemoMessage>Loading…</DemoMessage>
+  const state = useCreateViewState({
+    config: {
+      assemblies: [chromSizes('hg38'), chromSizes('mm39')],
+      tracks: [
+        geneTrack('hg38'),
+        geneTrack('mm39'),
+        {
+          type: 'SyntenyTrack',
+          trackId: 'hg38_mm39',
+          name: 'Human vs mouse (UCSC liftOver)',
+          assemblyNames: ['hg38', 'mm39'],
+          adapter: {
+            type: 'PairwiseIndexedPAFAdapter',
+            uri: 'https://jbrowse.org/ucsc/hg38/liftOver/hg38ToMm39.over.pif.gz',
+            csi: true,
+            assemblyNames: ['mm39', 'hg38'],
+          },
+        },
+      ],
+      defaultSession: {
+        name: 'synteny',
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            views: [
+              {
+                assembly: 'hg38',
+                loc: 'chr17:43,040,000..43,130,000',
+                tracks: ['hg38_genes'],
+              },
+              {
+                assembly: 'mm39',
+                loc: 'chr11:101,375,000..101,447,000',
+                tracks: ['mm39_genes'],
+              },
+            ],
+            tracks: ['hg38_mm39'],
+            drawCurves: true,
+            cigarMode: 'matches',
+          },
+        ],
+      },
+    },
+  })
+  if (!state) {
+    return null
+  }
+  const { session } = state
+  return (
+    <SessionPaletteProvider session={session}>
+      <DisplayUIProvider>
+        <Rows view={session.views[0] as LinearSyntenyViewModel} />
+      </DisplayUIProvider>
+    </SessionPaletteProvider>
   )
 })
 

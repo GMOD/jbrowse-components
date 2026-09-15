@@ -873,8 +873,7 @@ async function viewStatusStatesAreDrawn(page, slug) {
   }
   try {
     await page.waitForFunction(
-      () =>
-        document.querySelector('.demo')?.innerText.includes('could not load'),
+      () => /could not load/i.test(document.querySelector('.demo')?.innerText),
       { timeout: 30000 },
     )
   } catch {

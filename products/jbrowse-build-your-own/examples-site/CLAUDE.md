@@ -4,151 +4,65 @@ Shared doctrine for all four sites:
 [agent-docs/reference/EXAMPLES_SITES.md](../../../agent-docs/reference/EXAMPLES_SITES.md).
 Local to this one:
 
-The published package an example may import from is
-`@jbrowse/react-linear-genome-view2`, plus the other published packages that doc
-names. This site is where the no-shared-helpers rule was learned.
+An example imports only published packages: `@jbrowse/react-linear-genome-view2`
+plus the others that doc names. The mounting, status and chrome blocks every
+page needs come from `@jbrowse/display-ui/embed` (`Track`, `TrackStack`,
+`ViewStatus`, `Scalebar`, `RegionSeams`, `LocationBox`), so an example file is
+its engine options, its own controls and nothing else. No comments in example
+files.
 
 ## `check-duplication.mjs` holds the copy-paste rule up from both sides
 
-Run by `pnpm check-links`, unique to this site. Two questions:
+Run by `pnpm check-links`. Two top-level blocks with the same name must match
+once comments are stripped (`DIVERGES` lists exceptions with a reason), and a
+block in `COPY_THRESHOLD` (3) files or more needs a `COPIED` entry. Both lists
+are empty. When a block starts repeating, the answer is almost always a helper
+in `@jbrowse/display-ui/embed` with a jest test, not a list entry: the copies
+drift, and fourteen hand-written track mounts once dropped the overlay slot
+together.
 
-**Are the copies identical?** Two top-level blocks with the same name must match
-once comments are stripped — the cost of the rule is drift, and the file that
-gets missed is a page teaching a bug with nothing to say so. A block that
-genuinely differs per page goes in `DIVERGES` **with a reason**.
+The check only sees named top-level declarations. Repeated inline JSX is
+invisible to it, so a styled box pasted into several pages needs a name before a
+green run means anything.
 
-**Should the copies exist?** A block in `COPY_THRESHOLD` (3) files or more needs
-a `COPIED` entry saying why it is the reader's own to write. Choosing between
-the two fixes _is_ the check:
+## What `smoke.mjs` measures
 
-- the reader would write it anyway — their box, their track config — so add the
-  entry.
-- the reader would _have_ to write it because JBrowse publishes no equivalent.
-  That is a missing export (`usePanZoom` was eight hand-rolled copies).
+**`MUI_BUDGET`** counts `Mui*`-classed elements and `muiThemedStyling` counts
+elements styled by MUI's default theme. Every page behind `DisplayUIProvider`
+scores zero; `multiple-tracks` is the stock page and keeps its three. When one
+fails, the fix is almost never the number: a display started rendering Material
+behind neither provider. The budget holds at rest, over everything
+`recordMuiFromLoad` saw from before the page's scripts ran (a fetch indicator
+exists only while loading), and after the hover sweep (`muiRaisedByHover`), so a
+failure naming only the "ever" number is the interesting one.
 
-Deliberately **not** a redundant-line budget: adding a page adds copies, which
-is the rule working. The line total is printed for the trend and gates nothing.
+**`everyDisplayIsInAnOverlaySlot`** requires every `[data-display-id]` inside a
+`[data-track-overlay-slot]`, since a display's floating chrome escapes its
+`contain: strict` sandbox into that slot. `Track` mounts it; a page that mounts
+`RenderingComponent` another way owes it too.
 
-**It only sees named top-level declarations, so behaviour that repeats has to be
-given a name.** Repeated inline JSX is invisible to both halves — the
-most-repeated thing here was a pan/zoom container div in 13 files, one of whose
-four style properties was `touchAction: 'none'`, whose absence makes the demo
-inert on a phone, silently. Naming it as `viewport` is what made it visible;
-`usePanZoom` writes that property itself now, so the constant is down to three.
-When a styled div reaches a fifth example, name it there rather than reading a
-green run as coverage.
-
-Keep both lists short. If either grows, the shared surface has outgrown
-copy-paste and the answer is a different rule argued here, not more entries.
-
-**A green run says the copies agree, never that they are right.** Fourteen of
-fifteen `TrackRow`s mounted `RenderingComponent` in a bare `contain: strict`
-box, which is the display's own stacking context — so `TrackOverlayPortal` found
-no host node, fell back to rendering inline, and left every display's corner
-controls, colour key, loading scrim and error bar under whatever the page
-painted over the stack. All fourteen were character-identical, so this file was
-silent; the fifteenth, `TrackSettings`, hit it and worked around it under a
-second name, and that name is what kept the rest from reading as wrong. When a
-block is renamed rather than fixed, the drift check stops being able to see the
-question.
-
-So the third question to ask of a copied block is whether it omits half of a
-contract JBrowse publishes. `everyDisplayIsInAnOverlaySlot` in `smoke.mjs` is
-that one, made measurable.
-
-## Three measured claims, and the first two are ratchets
-
-**`smoke.mjs` holds the evidence for this site's central claim**: `MUI_BUDGET`
-counts `Mui*`-classed elements and `muiThemedStyling` counts elements whose font
-came from MUI's default theme — the only way to see a `makeStyles` component.
-Every page installing `plainChromeOverlays` + `plainTrackControl` scores
-**zero** on both. When one fails, the fix is almost never the number: a display
-started rendering a Material component behind neither provider, and raising the
-budget quietly makes the prose false.
-
-**`MUI_BUDGET` is held at three instants, and the two you did not ask for are
-why.** The count at rest is the obvious half; `recordMuiFromLoad` samples from
-before the page's own scripts run and holds the _union_ to the same number.
-Everything else here runs once the page is quiet, and quiet means nothing is
-loading — so a component that exists only while something is fetching was
-structurally unreachable. That is not a hypothetical: `synteny` scored zero for
-as long as it existed while drawing a `MuiLinearProgress` on every visit, from
-`ComparativeFetchStatus`, which was then behind neither provider. **So a failure
-naming only the "ever" number is the interesting one** — it means the page is
-clean by the time you look at it, which is exactly why nobody had.
-
-**The instant after the hover sweep exists because the two halves deferred to
-each other.** `censusWhileHovering` runs only `muiThemedStyling`, which drops
-anything carrying a `Mui*` class on the stated grounds that the count above has
-those by name — and the count above is `muiBudget`, which reads the recorder's
-set before a pointer has been anywhere. So a Material element that only exists
-under the cursor was named-but-not-yet in one census and themed-but-excluded in
-the other. `muiRaisedByHover` reads the same set once the sweep is done: one
-`evaluate`, no new instrument, since the recorder is an interval nobody clears.
-It finds nothing today, and a tooltip is what it is aimed at — the one piece of
-display chrome behind neither bring-your-own provider, whose current plain
-rendering is pinned deterministically in `@jbrowse/core`'s
-`BaseTooltip.test.tsx` because a headless hover may or may not land on a
-feature.
-
-**`everyDisplayIsInAnOverlaySlot` is the third, and it is a contract rather than
-a number.** Every `[data-display-id]` must sit inside a
-`[data-track-overlay-slot]`, because a display's floating chrome escapes its
-`contain: strict` sandbox through `TrackOverlayPortal` and the host mounts the
-node it lands in. Two markers and one `closest()`, deliberately, rather than a
-list of the chrome to look for: such a list goes stale the next time a display
-grows a piece, and a stale list reads as a clean run. The display count is the
-floor — a page that mounted nothing fails rather than passing by having nothing
-to examine.
-
-Ask the mechanism here, not the symptom. Whether a seam happens to be over the
-corner control right now depends on the demo's data and its zoom, which is why
-this shipped broken on fourteen pages under a full green board.
-
-**A branch every copy renders can still be unreachable.** Every `ViewStatus` on
-this site has a `noRegions` arm, and for as long as all eighteen
-`createViewState` calls here passed `init`, no page could reach one — including
-the page whose whole argument for `view.status` over `view.ready` _is_ that
-state. The copies were right, the drift check was green, and the thing being
-taught had no demo anywhere. `loading-and-errors` now builds one engine with no
-`init`, and `viewStatusStatesAreDrawn` drives both ends of it: the state has to
-be drawn, and `setLaunch` has to get back out of it. When a demo's own prose
-names a case, grep the site for an input that produces it before believing the
-case is shown.
+**`viewStatusStatesAreDrawn`** drives the loading-and-errors page through the
+snackbar, `noRegions` (an engine built with no `init`) and a 404 assembly. When
+a demo names a state, check that some input on the site actually reaches it.
 
 **`eagerBundleSizes.json`** is written by `pnpm measure-eager-bundle` and
-re-checked by `pnpm smoke`. Going **under** a budget fails as well as over —
-bank the win by re-running and committing, or the next change spends it quietly.
+re-checked by `pnpm smoke`. Going **under** a budget fails as well as over, so
+bank a win by re-running and committing. Before hunting an import, check
+`agent-docs/reference/EAGER_BUNDLE.md`: whether a page was added or removed
+(budgets are coupled, ~13 KB gzip a page), and whether a shared React-free
+module got grouped with a lazy chunk.
 
-Two things to check before hunting an import, both in
-`agent-docs/reference/EAGER_BUNDLE.md`: **was a page added or removed** (budgets
-are coupled, ~13 KB gzip a page), and **is it a shared React-free module** (one
-imported by both an eager and a lazy module gets grouped with the lazy chunk, so
-the eager import pays for the whole chunk). That, not a component import, is
-what both regressions have been.
-
-## `pnpm probe-eager-graph` answers _why_, and is the one to reach for first
+## `pnpm probe-eager-graph` answers _why_
 
 `measure-eager-bundle` gives a number; this gives the modules behind it, by
-intersecting the pre-treeshake source graph with the post-treeshake chunks — so
-"is statically reachable" becomes "is actually paid for".
+intersecting the pre-treeshake source graph with the post-treeshake chunks.
 
     pnpm probe-eager-graph                                costliest eager modules
     pnpm probe-eager-graph --holds @mui/material/styles   who is keeping it here
     pnpm probe-eager-graph --no-build                     reuse the last dump
 
-Two traps are wired in rather than left as advice: it attributes at module
-level, never by chunk name (a rolldown chunk is named after one of its modules
-and holds unrelated ones); and when nothing first-party names the target
-directly it falls back to the package's barrel importers.
-
-Every run also prints **how much of the eager set the page's own static graph
-reaches**, which is the figure to quote when a budget moved and you need to know
-whether this page's imports did. It barely moves when a neighbouring page is
-added (0.6%, against gzip's 2.3%) — see "the noise is larger than the band" in
-EAGER_BUNDLE.md, which also says why it is uncompressed and why the per-page
-figures do not sum to the site.
-
-The probe build overwrites `dist/` — re-run `pnpm build` before trusting a
-measurement taken after it. The chrome bundle figures in the prose come from the
-repo-root `scripts/measureChromeBundle.ts`.
+It attributes by module, never by chunk name, and falls back to a package's
+barrel importers when nothing first-party names the target. Each run prints how
+much of the eager set the page's own static graph reaches, the figure to quote
+when a budget moved. The probe build overwrites `dist/`, so re-run `pnpm build`
+before trusting a later measurement.

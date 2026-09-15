@@ -7,8 +7,8 @@ import type { LinearGenomeViewModel } from '../index.ts'
 
 // PaddingBlocks draws every span along the row that is not track data, and the
 // geometry now comes from `model.paddingSpans` so a host writing its own chrome
-// reads the same numbers (see the getter's comment, and the byo site's
-// RegionBoundaries). What is left here is the mapping from a span's `kind` to
+// reads the same numbers (see the getter's comment, and `RegionSeams` in
+// `@jbrowse/display-ui/embed`). What is left here is the mapping from a span's `kind` to
 // what it looks like — three near-identical absolutely-positioned divs whose
 // only difference is a background, which is precisely the kind of table that
 // can be silently transposed.

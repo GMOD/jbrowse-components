@@ -88,6 +88,7 @@ copies did not:
 | `useSessionPalette(session, mode)` + `<PaletteProvider palette={…}>`, ×17 | nothing — every copy was right | `SessionPaletteProvider` |
 | the display mount, the status box and the measured pan/zoom column, ×18 | the mount's overlay slot, which fourteen copies dropped | `Track`, `ViewStatus`, `TrackStack` in `@jbrowse/display-ui/embed` |
 | a site-mode watcher on `data-theme` and the media query, ×18 | nothing | `SessionPaletteProvider` following the page's declared `color-scheme` |
+| region seams ×4, a scalebar row ×2, a location box ×2 | nothing | `RegionSeams`, `Scalebar`, `LocationBox` in `@jbrowse/display-ui/embed` |
 
 That is the argument for treating "the examples all write X" as a missing export
 rather than a duplication problem: the reader is not merely repeating himself,
