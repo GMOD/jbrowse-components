@@ -1,0 +1,158 @@
+{
+  "assemblies": [
+    {
+      "name": "hg38",
+      "displayName": "Human (hg38)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg38-refseq",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://jbrowse.org/ucsc/hg38/hg38.chromAlias.txt"
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://jbrowse.org/ucsc/hg38/hg38.cytoBand.txt.gz"
+        }
+      },
+      "geneticCodes": {
+        "chrM": 2
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "prediction",
+      "name": "Tiberius predictions",
+      "category": ["Review"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "uri": "https://jbrowse.org/genomes/GRCh38/tiberius_grch38.gff.gz"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "prediction-LinearBasicDisplay",
+          "heightMode": "grow",
+          "growMaxHeight": 130
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "reference_annotation",
+      "name": "GENCODE V49 - Comprehensive gene annotation",
+      "category": ["Review"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/hg38/gencode.v49.annotation.sorted.gff3.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/hg38/gencode.v49.annotation.sorted.gff3.gz.csi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "CSI"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "reference_annotation-LinearBasicDisplay",
+          "heightMode": "grow",
+          "growMaxHeight": 170,
+          "displayMode": "compact"
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "rnaseq_1",
+      "name": "RNA-seq \u00b7 brain (HBR)",
+      "category": ["Evidence"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "https://jbrowse.org/demos/tiberius_review/HBR_brain_rnaseq_chr22.bam"
+      },
+      "displays": [
+        {
+          "type": "LinearAlignmentsDisplay",
+          "displayId": "rnaseq_1-LinearAlignmentsDisplay",
+          "height": 170,
+          "featureHeight": 3,
+          "splicedReadsFirst": true
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "rnaseq_2",
+      "name": "RNA-seq \u00b7 universal reference (UHR)",
+      "category": ["Evidence"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "https://jbrowse.org/demos/tiberius_review/UHR_reference_rnaseq_chr22.bam"
+      },
+      "displays": [
+        {
+          "type": "LinearAlignmentsDisplay",
+          "displayId": "rnaseq_2-LinearAlignmentsDisplay",
+          "height": 170,
+          "featureHeight": 3,
+          "splicedReadsFirst": true
+        }
+      ]
+    }
+  ],
+  "plugins": [
+    {
+      "name": "Apollo",
+      "url": "https://jbrowse.org/demos/apollo3/jbrowse-plugin-apollo.umd.production.min.js"
+    }
+  ],
+  "configuration": {
+    "ApolloPlugin": {
+      "ontologies": [
+        {
+          "name": "Sequence Ontology",
+          "version": "2024-11-18",
+          "source": {
+            "uri": "https://jbrowse.org/demos/apollo3/so-2024-11-18.json",
+            "locationType": "UriLocation"
+          }
+        }
+      ]
+    }
+  },
+  "defaultSession": {
+    "name": "Apollo 3 local annotation",
+    "drawerPosition": "right",
+    "drawerWidth": 384,
+    "widgets": {},
+    "activeWidgets": {},
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "id": "apollo3_lgv",
+        "assembly": "hg38",
+        "loc": "chr22:49,987,402-50,067,759",
+        "tracks": ["prediction", "reference_annotation", "apollo_track_hg38"]
+      }
+    ]
+  }
+}

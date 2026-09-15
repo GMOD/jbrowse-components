@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Apollo 3 in JBrowse, with no server</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --fg: #1a1a1a;
+        --bg: #fff;
+        --muted: #555;
+        --line: #ddd;
+        --accent: #24264a;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --fg: #e8e8e8;
+          --bg: #14161a;
+          --muted: #a3a3a3;
+          --line: #333;
+          --accent: #9fb4c7;
+        }
+      }
+      body {
+        font:
+          16px/1.6 -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          Helvetica,
+          Arial,
+          sans-serif;
+        color: var(--fg);
+        background: var(--bg);
+        margin: 0 auto;
+        padding: 2.5rem 1rem 4rem;
+        max-width: 46rem;
+      }
+      h1 {
+        font-size: 1.6rem;
+        line-height: 1.25;
+        margin: 0 0 0.5rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+        margin: 2rem 0 0.5rem;
+      }
+      p,
+      li {
+        color: var(--fg);
+      }
+      .lede {
+        color: var(--muted);
+        margin-top: 0;
+      }
+      a {
+        color: var(--accent);
+      }
+      .go {
+        display: inline-block;
+        margin: 0.4rem 0.6rem 0.4rem 0;
+        padding: 0.6rem 1rem;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      code {
+        background: rgba(127, 127, 127, 0.15);
+        padding: 0.1em 0.35em;
+        border-radius: 3px;
+        font-size: 0.9em;
+      }
+      .note {
+        border-left: 3px solid var(--line);
+        padding-left: 1rem;
+        color: var(--muted);
+      }
+      footer {
+        margin-top: 3rem;
+        border-top: 1px solid var(--line);
+        padding-top: 1rem;
+        color: var(--muted);
+        font-size: 0.9em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Apollo 3 in JBrowse, with no server</h1>
+    <p class="lede">
+      Apollo 3 edits annotations inside JBrowse. It is usually run against a
+      collaboration server, but it does not have to be: an assembly that names
+      no internet account stores its edits in the browser instead. This demo is
+      that mode, over a Tiberius gene prediction on human chr22.
+    </p>
+
+    <p>
+      <a
+        class="go"
+        href="https://jbrowse.org/code/jb2/v5.0.0-beta.8/?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fapollo3%2Fconfig.json&apolloFeatures=H4sIAAAAAAAAA62ZzW7bOBRGX6XgagbwDMj7Q5HeTt-g3RWB4dpKYmDiprIKtAjy7gM7AcK2uv54gckuVhAeHYtHpPQU7u-4hPWnp7A57MM6zIfP43T4dtrcJYkxbe7G4xhWYRpvP4xfwzrs7ieisArzj8cxrMPr4YfDMayl1przIKvwsP0e1hqjFinDKpzmaXvch_VfaRW28zwdPn-bx1NYP4W729vLsJ_Cy3DhZnX57Lh9GN8-fffHx1eqd4_TuD_s5sOX45_h5nkVdveHf_fTeDz_s1_RH6bj9vz58oldjtondkY-7abD4_w_nt7fc4LUu_1pE23sl8M29z_vPxjAl19Ljj8DP95vT2NYx-fVb0ON378cN8lGeT1us5z_wAGzgHA-W7ougxwyauVm_CGecTwyGMhgj4zrMIYMuS5D-mUMnGo7vhRelEGWDAUy1CEDwBgy8nUZ2SEjl_bKHAYh35UxABmDR8Z1GENGuS6j9MsokdrxS8zVJ6MCGdUhA8AYMhIoaHIktCTOLQHHZR3mREmwoZ6IAhxLCKhocmS0Uo0NQWVR5z0FdTR5QgpwLCGgpMmR0ir8E4FGZz0SamnyxBTgWEJATZMjp7XQ0BLUPDinDOpp8gQV4FhCQFFTZ1I1xhhT1bd1Y4wky8swWwhqauqNageOtRADUaXOqF6GlGFoCbQ6pwyhqFJvVDtwLCFoadoZ1cuQg3JLULJzOUYoqtQb1Q4cSwiIKnVG9TxkiiU1BIk4OYWgqFJvVDtwLCEgqtQZVX35CnJDUHJ27l4IRZV6o9qBYwkBUaX-qCZSaTbjiQZevssssbycL4oqOaKKcAwhDKLK_VFNmqj5SpKSd0vHKKrsiCrCsYSAqHJ_VDkK1TcCjpWcK1WGO35HVBGOJQRElfujyimX5sbPlIy9jDllGEWVHVFFOJYQEFXujyozxSbrzGLsZewpg6LKjqgiHEsIiCr3R5WFtZm0LBqXhdhXCIoqO6KKcKynZCCq0h9VSZniG4GkEp17GUFRFUdUEY4lBERV-qMqStrc50S5OJ-HCIqqOKKKcCwh6EFqf1RFi2pLUAfnM3ZBURVHVBGOJQREVfqjKkPKzW5KBqrZKQRFVRxRRTiWEBBV6Y-qVJLSEFSm5d2uPWVQVMURVYRjCFEQVe2Pqp63U817tEiyHFXzClEUVXVEFeFYQkBUtT-qqsTNfluVjZWq_TYGRVUdUUU4lhAQVe2PquaS268k18H7egq-n3JEFeFYQkBUtT-qWlL7RGbh1TOcMiiq6ogqwnk-_9w8_weoxjBYXyAAAA"
+        >Open with the prediction loaded</a
+      >
+      <a
+        class="go"
+        href="https://jbrowse.org/code/jb2/v5.0.0-beta.8/?config=https%3A%2F%2Fjbrowse.org%2Fdemos%2Fapollo3%2Fconfig.json"
+        >Open with an empty annotation track</a
+      >
+    </p>
+
+    <h2>What you are looking at</h2>
+    <p>
+      Three tracks at <code>chr22:49,987,402-50,067,759</code>: the Tiberius
+      prediction, GENCODE 47 for comparison, and
+      <b>Annotations (Human (hg38))</b>, which Apollo adds by itself and which
+      is the editable one. Tiberius predicts one model across this window where
+      GENCODE annotates two genes, <i>IL17REL</i> and <i>TTLL8</i>. Splitting
+      that model in two is an edit, which is where a browser stops and an editor
+      starts.
+    </p>
+    <p>
+      The first link seeds the editable track with the prediction. The second
+      starts it empty, and you can pull any model in by right-clicking it in the
+      Tiberius track and choosing <b>Create Apollo annotation</b>.
+    </p>
+
+    <h2>Where the edits go</h2>
+    <p class="note">
+      Into IndexedDB in your own browser, under <code>Apollo-hg38</code>. They
+      are not uploaded anywhere, they are not shared, and clearing site data for
+      jbrowse.org removes them. Use <b>Download GFF3</b> in the Apollo menu to
+      keep anything worth keeping.
+    </p>
+
+    <h2>Running it yourself</h2>
+    <p>
+      The config is <a href="config.json">config.json</a>. The parts that matter
+      are the <code>plugins</code> entry pointing at the Apollo bundle, and the
+      absence of any <code>internetAccounts</code> key: that absence is what
+      selects the local, server-free driver. The Sequence Ontology is pinned to
+      a copy served from this directory, so the page does not fetch it from
+      GitHub on every load.
+    </p>
+
+    <footer>
+      Apollo 3 is by the Apollo team and is documented at
+      <a href="https://github.com/GMOD/Apollo3">GMOD/Apollo3</a>. The plugin
+      bundle here is built from its JBrowse 5 branch. The gene review workflow
+      this demo is the editing end of is described in the
+      <a href="https://jbrowse.org/jb2/docs/tutorials/gene_prediction_review/"
+        >gene prediction review tutorial</a
+      >.
+    </footer>
+  </body>
+</html>
