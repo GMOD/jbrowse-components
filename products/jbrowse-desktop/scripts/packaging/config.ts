@@ -62,6 +62,16 @@ export const APPLE_TEAM_ID = '9KR53J86Q2'
 export const GITHUB_OWNER = 'GMOD'
 export const GITHUB_REPO = 'jbrowse-components'
 
+// The privacy policy the Windows installer shows, and the site its
+// root-relative links resolve against. Read from the page the website
+// publishes, rather than copied into this package, so the installer cannot
+// disclose an older one than jbrowse.org does. privacyNotice.ts flattens it.
+export const PRIVACY_POLICY_MD = path.resolve(
+  ROOT,
+  '../../website/src/pages/privacy.md',
+)
+export const JBROWSE_SITE_URL = 'https://jbrowse.org/jb2'
+
 // The certificate CNs app-update.yml tells a client to accept on an installer
 // it downloaded — absent, NsisUpdater skips that check entirely. Not a secret:
 // each is printed inside every signed exe we publish. verifyWindowsSignature

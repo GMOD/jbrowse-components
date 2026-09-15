@@ -26,7 +26,7 @@ import { tmpdir } from 'os'
 import path from 'path'
 
 import { APP_NAME } from './packaging/config.ts'
-import { nsisScriptFor } from './packaging/windows.ts'
+import { nsisScriptFor, writePrivacyNotice } from './packaging/windows.ts'
 
 function fail(message: string): never {
   console.error(`\n❌ ${message}`)
@@ -54,7 +54,13 @@ fs.writeFileSync(path.join(appDir, 'resources', 'app.asar'), 'not a real asar')
 
 const outputExe = path.join(work, 'installer.exe')
 const scriptPath = path.join(work, 'installer.nsi')
-fs.writeFileSync(scriptPath, nsisScriptFor(appDir, outputExe, false))
+// Generated the same way the release generates it, so a privacy policy that
+// moved or stopped flattening fails a push rather than a tag.
+const privacyNoticeFile = writePrivacyNotice(work)
+fs.writeFileSync(
+  scriptPath,
+  nsisScriptFor({ appDir, outputExe, privacyNoticeFile, useWine: false }),
+)
 
 console.log(`Compiling the installer script with ${makensis}...`)
 const result = spawnSync(makensis, [scriptPath], { stdio: 'inherit' })

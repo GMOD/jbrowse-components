@@ -1,6 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 
+import { ANALYTICS_OPT_OUT_FILE } from '../../electron/analyticsOptOut.ts'
 import {
   JBROWSE_PROTOCOL,
   SESSION_EXTENSION,
@@ -10,12 +11,15 @@ import {
   APP_NAME,
   ASSETS,
   DIST,
+  JBROWSE_SITE_URL,
+  PRIVACY_POLICY_MD,
   PRODUCT_NAME,
   VERSION,
   packagedApp,
 } from './config.ts'
 import { createNsisScript } from './nsisScript.ts'
 import { packageApp } from './packager.ts'
+import { privacyNoticeText } from './privacyNotice.ts'
 import { generateLatestYml, log, run, runQuiet } from './utils.ts'
 import { verifyWindowsSignature } from './verifyWindows.ts'
 
@@ -36,21 +40,46 @@ function escapePath(p: string, useWine: boolean) {
   return useWine ? toWinePath(p) : p.replace(/\\/g, '\\\\')
 }
 
+// The privacy policy the installer shows, written into `dir` as plain text.
+//
+// makensis embeds it at compile time, so it has to be on disk before the script
+// is compiled — and it is generated from website/src/pages/privacy.md, so a
+// missing or empty policy fails the build rather than shipping an installer
+// that discloses nothing.
+export function writePrivacyNotice(dir: string) {
+  const file = path.join(dir, 'privacy-notice.txt')
+  fs.writeFileSync(
+    file,
+    privacyNoticeText(fs.readFileSync(PRIVACY_POLICY_MD, 'utf8'), {
+      siteUrl: JBROWSE_SITE_URL,
+    }),
+  )
+  return file
+}
+
 // The installer script for a packaged tree, ready to hand to makensis.
 //
 // Exported for `pnpm check:nsis`, which compiles the result — so that check
 // covers the escaping decided here as well as the script text itself, which
 // lives in nsisScript.ts and is pinned by nsis.test.ts. Until both existed, the
 // only thing that ever parsed this was the Windows release job.
-export function nsisScriptFor(
-  appDir: string,
-  outputExe: string,
-  useWine: boolean,
-) {
+export function nsisScriptFor({
+  appDir,
+  outputExe,
+  privacyNoticeFile,
+  useWine,
+}: {
+  appDir: string
+  outputExe: string
+  privacyNoticeFile: string
+  useWine: boolean
+}) {
   return createNsisScript({
     appDir: escapePath(appDir, useWine),
     outputExe: escapePath(outputExe, useWine),
     iconPath: escapePath(path.join(ASSETS, 'installerIcon.ico'), useWine),
+    privacyNoticeFile: escapePath(privacyNoticeFile, useWine),
+    analyticsOptOutFile: ANALYTICS_OPT_OUT_FILE,
     appName: APP_NAME,
     productName: PRODUCT_NAME,
     version: VERSION,
@@ -106,9 +135,15 @@ async function createWindowsInstaller(electronAppDir: string) {
 
   log('Creating NSIS installer...')
   const scriptPath = path.join(DIST, 'installer.nsi')
+  const privacyNoticeFile = writePrivacyNotice(DIST)
   fs.writeFileSync(
     scriptPath,
-    nsisScriptFor(electronAppDir, exePath, nsis.useWine),
+    nsisScriptFor({
+      appDir: electronAppDir,
+      outputExe: exePath,
+      privacyNoticeFile,
+      useWine: nsis.useWine,
+    }),
   )
 
   const scriptArg = nsis.useWine
@@ -118,6 +153,7 @@ async function createWindowsInstaller(electronAppDir: string) {
     run(`${nsis.cmd} "${scriptArg}"`)
   } finally {
     fs.rmSync(scriptPath, { force: true })
+    fs.rmSync(privacyNoticeFile, { force: true })
   }
 
   log(`Created: ${path.basename(exePath)}`)

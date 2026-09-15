@@ -22,6 +22,7 @@ beforeEach(() => {
   dir = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'jb-fsinit-'))
   paths = {
     userData: dir,
+    resources: path.join(dir, 'resources'),
     recentSessionsPath: path.join(dir, 'recent_sessions.json'),
     globalPluginsPath: path.join(dir, 'globalPlugins.json'),
     quickstartDir: path.join(dir, 'quickstart'),

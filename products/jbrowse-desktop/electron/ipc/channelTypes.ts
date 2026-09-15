@@ -141,6 +141,10 @@ export interface McpReadyState {
 export interface IpcChannels {
   quit: { args: []; return: void }
   userData: { args: []; return: string }
+  // Whether the Windows installer's usage-reporting box was cleared. Asked of
+  // the main process because the answer is a file beside the app, which is the
+  // one place an installer can leave a decision. See analyticsOptOut.ts.
+  analyticsOptedOut: { args: []; return: boolean }
   // The Help menu's manual update check. Returns as soon as the check has been
   // started: every outcome is reported by a native dialog from the main
   // process, so there is nothing for the renderer to wait for or to render.

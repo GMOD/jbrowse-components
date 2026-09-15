@@ -30,9 +30,10 @@ or share it. Google handles its copy under the
 [Google privacy policy](https://policies.google.com/privacy).
 
 To opt out in the apps, set `disableAnalytics: true` in your config
-([details](/docs/config_guides/disable_analytics)). Anywhere, you can block
-`google-analytics.com`, `googletagmanager.com` and `analytics.jbrowse.org`, or
-install the
+([details](/docs/config_guides/disable_analytics)). On Windows, the JBrowse
+Desktop installer offers the same choice as a checkbox, which holds for that
+install whatever you open in it. Anywhere, you can block `google-analytics.com`,
+`googletagmanager.com` and `analytics.jbrowse.org`, or install the
 [Google Analytics opt-out add-on](https://tools.google.com/dlpage/gaoptout).
 
 Questions: [contact us](/contact/).

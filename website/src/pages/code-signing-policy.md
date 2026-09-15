@@ -42,8 +42,9 @@ a zip, none of which carry an Authenticode signature.
 ## Privacy policy
 
 The [JBrowse privacy policy](/privacy/) says what JBrowse Desktop reports and
-how to turn it off. JBrowse reads your data files directly; they never pass
-through a JBrowse server.
+how to turn it off. The Windows installer shows that policy and offers a
+checkbox that turns the reporting off for the install. JBrowse reads your data
+files directly; they never pass through a JBrowse server.
 
 JBrowse Desktop is an [Electron](https://www.electronjs.org/) app, and reaches
 the network in three places: the usage report the privacy policy describes, the
