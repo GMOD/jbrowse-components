@@ -781,24 +781,52 @@ interface MinimalTrack extends IAnyType {
   configuration: { trackId: string }
 }
 
-// `showTrack` is the view's own MST action: an async launch holds action
-// context only for its synchronous prologue, so the show after the await must
-// re-enter the tree through an action. Optional only because `self` inside the
-// actions block that defines showTrack does not carry it yet.
-// A track already shown keeps its display, and used to keep its settings too:
-// showing it again applied nothing, so a spec entry or a session document
-// naming `{ trackId, height }` for a shown track restyled it only when it was
-// the one to open it. The inline keys go through the same routing a fresh
-// track's get; `type` picks a display for a new track and means nothing here.
+interface SettingsReport {
+  unapplied: string[]
+  failed: { key: string; error: string }[]
+}
+
+function notifySettingsReport(
+  session: { notifyError: (message: string) => void },
+  trackId: string,
+  displayType: string,
+  ignored: string[],
+  failed: SettingsReport['failed'],
+) {
+  if (ignored.length) {
+    session.notifyError(
+      `Track "${trackId}" ignored ${ignored.join(', ')}: not a setting the ${displayType} accepts`,
+    )
+  }
+  if (failed.length) {
+    session.notifyError(
+      `Track "${trackId}" rejected ${failed.map(f => `${f.key}: ${f.error}`).join('; ')}`,
+    )
+  }
+}
+
+// A shown track keeps its display, so no snapshot spread lands a key here and
+// every unapplied entry reached nothing. `type` picks a display for a new track
+// and means nothing to a shown one.
 function restyleShown<T>(
+  self: GenericView,
+  trackId: string,
   found: T,
   { type: _type, ...settings }: DisplayInitialSnapshot,
 ): T {
   const track = found as unknown as {
-    applyDisplaySettings?: (settings: Record<string, unknown>) => unknown
+    activeDisplay: { type: string }
+    applyDisplaySettings?: (settings: Record<string, unknown>) => SettingsReport
   }
   if (Object.keys(settings).length && track.applyDisplaySettings) {
-    track.applyDisplaySettings(settings)
+    const report = track.applyDisplaySettings(settings)
+    notifySettingsReport(
+      getSession(self),
+      trackId,
+      track.activeDisplay.type,
+      report.unapplied,
+      report.failed,
+    )
   }
   return found
 }
@@ -806,6 +834,10 @@ function restyleShown<T>(
 interface GenericView {
   type: string
   tracks: MSTArray<MinimalTrack>
+  // the view's own MST action: an async launch holds action context only for
+  // its synchronous prologue, so the show after the await re-enters the tree
+  // through it. Optional because `self` inside the actions block that defines
+  // showTrack does not carry it yet.
   showTrack?: (
     trackId: string,
     initialSnapshot?: object,
@@ -1116,7 +1148,7 @@ export function showTrackGeneric(
 
   const found = self.tracks.find(t => t.configuration.trackId === trackId)
   if (found) {
-    return restyleShown(found, displayInitialSnapshot)
+    return restyleShown(self, trackId, found, displayInitialSnapshot)
   }
 
   // Single choke point for all "open a track" paths — errors surface as
@@ -1182,62 +1214,32 @@ export function showTrackGeneric(
     // reference can resolve. Slots only, deliberately: this is the
     // declarative surface, and `allowSetters` stays off so a spec key cannot
     // reach internal display actions.
-    //
-    // `type` is dropped first because this function already consumed it
-    // (pickDisplayForView above), and only `failed` — a key whose write threw —
-    // is notified: `unapplied` here also holds the MST display props the
-    // snapshot spread above already applied, so notifying on it would report a
-    // correct call as broken. A throwing slot value used to reach the outer
-    // catch and raise a snackbar; per-key catching kept the track intact but
-    // took the message away with it.
     const displaySettings = Object.fromEntries(
       Object.entries(displayInitialSnapshot).filter(([key]) => key !== 'type'),
     )
     const report = (
       track as {
-        applyDisplaySettings: (settings: Record<string, unknown>) => {
-          unapplied: string[]
-          failed: { key: string; error: string }[]
-        }
+        applyDisplaySettings: (
+          settings: Record<string, unknown>,
+        ) => SettingsReport
       }
     ).applyDisplaySettings(displaySettings)
-    // A key that reached NOTHING, told apart from the ones `unapplied` holds
-    // legitimately. `unapplied` means "not a config slot", which covers both an
-    // MST display prop the snapshot spread above already applied and a
-    // misspelling that did nothing at all — so reporting the list wholesale
-    // called a correct spec broken, and reporting none of it let
-    // `{ trackId, colorSchem: 'x' }` load a plausible track with the setting
-    // silently missing. The display's own model type says which is which.
-    // Asked of the display NODE, not of its model type: `type.properties` sees
-    // declared props and misses everything else a key can legitimately reach —
-    // a volatile the snapshot spread above just set (`resolution` on the GC
-    // content display is one) reads as unreached and gets reported over a
-    // correct call.
-    // `unapplied` holds three kinds of entry, and only one of them means the
-    // key did nothing at all: applyDisplaySettings annotates `type` and the
-    // "a setter exists, pass allowSetters" case in parentheses, and pushes a
-    // BARE key when the display has neither a slot nor a setter for it. So the
-    // bare ones are the candidates, and the node itself settles the rest — the
-    // snapshot spread above may already have landed the key as a prop or a
-    // volatile, which is what `resolution` on the GC content display is.
+    // `unapplied` also holds keys the snapshot spread above already landed as a
+    // prop or volatile (`resolution` on the GC content display), and annotates
+    // the setter case in parentheses; only a bare key the node lacks reached
+    // nothing
     const drawn = (track as { displays: Record<string, unknown>[] }).displays[0]
-    const reachedNothing = drawn
-      ? report.unapplied.filter(
-          entry => !entry.includes(' (') && !(entry in drawn),
-        )
-      : []
-    if (reachedNothing.length > 0) {
-      session.notifyError(
-        `Track "${trackId}" ignored ${reachedNothing.join(', ')}: neither a setting the ${displayType} accepts nor one of its properties`,
-      )
-    }
-    if (report.failed.length) {
-      session.notifyError(
-        `Track "${trackId}" rejected ${report.failed
-          .map(f => `${f.key}: ${f.error}`)
-          .join('; ')}`,
-      )
-    }
+    notifySettingsReport(
+      session,
+      trackId,
+      displayType,
+      drawn
+        ? report.unapplied.filter(
+            entry => !entry.includes(' (') && !(entry in drawn),
+          )
+        : [],
+      report.failed,
+    )
     // if this track came from a connection, persist its config so it survives
     // reload without re-establishing the connection (no-op otherwise)
     session.captureConnectionTrack?.(trackId)
@@ -1303,7 +1305,7 @@ export async function launchTrackGeneric(
   const session = getSession(self)
   const found = self.tracks.find(t => t.configuration.trackId === trackId)
   if (found) {
-    return restyleShown(found, displayInitialSnapshot)
+    return restyleShown(self, trackId, found, displayInitialSnapshot)
   }
   try {
     const { picked } = resolveTrackDisplayChoice(

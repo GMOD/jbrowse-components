@@ -2296,6 +2296,29 @@ describe('TrackInit with display configuration', () => {
     expect(shown.displays[0]!.height).toBe(55)
   })
 
+  test('a key a shown track ignores is notified, as it is on first show', async () => {
+    const { Session, LinearGenomeModel, pluginManager } = initializeWithTracks()
+    const session = Session.create({ configuration: {} }, { pluginManager })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        assembly: 'volvox',
+        loc: 'ctgA:1-1000',
+        tracks: [],
+      }),
+    )
+    model.setWidth(800)
+    const ignored =
+      'Track "track1" ignored hieght: not a setting the LinearBareDisplay accepts'
+
+    await model.launchTrack('track1', {}, { hieght: 55 })
+    expect(console.warn).toHaveBeenCalledWith(ignored)
+    jest.mocked(console.warn).mockClear()
+
+    await model.launchTrack('track1', {}, { hieght: 55 })
+    expect(console.warn).toHaveBeenCalledWith(ignored)
+  })
+
   // The eval's agent wrote view.moveTrackToTop('volvox_test_vcf') and read
   // "Track ID not found": the menu passes a model id, an agent the trackId it
   // knows the track by, and both name one shown track.
