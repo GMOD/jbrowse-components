@@ -16,6 +16,10 @@ JBrowse never sends file URLs, track names or your data. The browser reads your
 data files directly, and they never pass through a JBrowse server. Embedded
 JBrowse components collect nothing.
 
+jbrowse-desktop also asks GitHub for the newest release so it can offer an
+update. That request reaches GitHub, which handles it under the
+[GitHub privacy statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
+
 This website (jbrowse.org/jb2) uses Google Analytics to count page visits, but
 only after you click OK on its banner. Google Analytics sets cookies and records
 the pages you view, your approximate location, browser and device type, and the
