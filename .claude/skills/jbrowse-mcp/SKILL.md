@@ -51,11 +51,20 @@ far cheaper. Verify data claims with `jb.getFeatures`, never from the picture.
   socket — with another Desktop instance running it attaches to that one.
 - Agent eval: `pnpm --filter @jbrowse/desktop eval:mcp` (same build, `claude` on
   PATH) runs a real `claude -p` session per task in
-  `scripts/agent-evals/tasks.ts` and grades the session state over the bridge,
-  reporting calls, errors, docs reads, screenshots, seconds and dollars per
-  task. `--model opus`, `--filter <name>`, `--runs N`. Judge a change to the
-  instructions, the docs or `jb` by its numbers, and add a task for each stumble
-  a filmed take shows.
+  `scripts/agent-evals/tasks.ts` and grades the session state over the bridge.
+  Per task it reports calls, errors, docs reads (with the topic and section of
+  each), screenshots, seconds, dollars, the run's four token counts, and the
+  tool_result chars the model was handed broken out by the tool that produced
+  them — pass rate sits at the ceiling, so a change to the instructions, the
+  docs or `jb` is judged by calls-to-success and by what those answers cost.
+  `--model opus`, `--filter <name>`, `--runs N` (which adds per-task medians),
+  `--out <dir>`, and `--client desktop`, which routes the server through
+  `scripts/agent-evals/desktopClientProxy.ts` to drop the initialize
+  `instructions` and so measure the Claude Desktop experience rather than Claude
+  Code's. Everything, events included, lands in the `--out` dir; `summary.json`
+  carries the totals and medians. Add a task for each stumble a filmed take
+  shows. The harness owns the app it launched and refuses to attach to a Desktop
+  it did not start, so close yours or pass `--attach`.
 - Browser-agent eval: `node scripts/agent-evals/webAgentEval.ts` runs the same
   tasks against a served `products/jbrowse-web/build` through the Claude in
   Chrome extension (`claude -p --chrome`), grading through a bridge the harness
