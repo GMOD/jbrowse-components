@@ -57,7 +57,7 @@ export interface GetManhattanDataArgs {
 // Generic in the argument type, rather than taking the three-field Pick
 // directly, so narrowing it does not throw away the rest of the caller's
 // object — the worker calls it on a bag that also carries `pluginManager` and
-// the status/stop-token handles, and needs those to survive the guard.
+// the status/signal handles, and needs those to survive the guard.
 export function ldColoringRequested<
   T extends Pick<
     GetManhattanDataArgs,

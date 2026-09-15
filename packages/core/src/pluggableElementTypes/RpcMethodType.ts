@@ -115,18 +115,13 @@ function isCloneable(thing: unknown) {
 
 // Values that structuredClone handles natively and that must pass through
 // ownArgs unchanged: `Object.entries` on them yields `[]`, so naive cloning
-// would collapse them to plain `{}` (e.g. a SharedArrayBuffer-backed stop token
-// would silently stop working, a typed array would lose its data).
+// would collapse them to plain `{}` (a typed array would lose its data).
 function isStructuredClonePassthrough(thing: object): boolean {
   return (
     thing instanceof File ||
     thing instanceof Blob ||
     thing instanceof ArrayBuffer ||
-    // SharedArrayBuffer is not an ArrayBuffer subclass; without this it
-    // collapses to {} and SAB-based stop tokens silently stop working. Nothing
-    // we ship mints one (see `signal.ts`, "Which path runs where"), so this
-    // arm is correctness for an isolated embedding host and nothing else —
-    // keep it, but it is not a hot path and never was.
+    // not an ArrayBuffer subclass
     (typeof SharedArrayBuffer !== 'undefined' &&
       thing instanceof SharedArrayBuffer) ||
     ArrayBuffer.isView(thing) ||
@@ -150,7 +145,7 @@ function isStructuredClonePassthrough(thing: object): boolean {
 // DataCloneError on every call a display makes.
 //
 // So: non-cloneable leaves (functions, Errors) and structured-clone natives
-// (typed arrays, Blobs, the SAB stop token...) pass through by reference
+// (typed arrays, Blobs...) pass through by reference
 // unchanged. A genuinely non-cloneable value that leaked in by mistake is still
 // caught — at the worker postMessage boundary, which is a real structuredClone.
 function ownArgs(
@@ -355,7 +350,7 @@ export default abstract class RpcMethodType<
    * is not cosmetic, because the two handles every method receives are the two
    * an author who did not write them down never forwards.
    *
-   * `CoreGetExportData` is the worked example: the stop token and status
+   * `CoreGetExportData` is the worked example: the signal and status
    * callback arrived on every call and its `execute` destructured neither, so
    * the Save-track-data dialog's cancel did nothing and its progress never moved
    * on the adapter-export branch. Nothing was mistyped — the fields simply were

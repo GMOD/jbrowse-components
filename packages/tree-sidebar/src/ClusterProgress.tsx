@@ -13,7 +13,7 @@ import type { RpcStatus } from '@jbrowse/core/util'
  * a Stop button pushed to the far right so it never crowds the text, and a
  * determinate bar underneath.
  *
- * `onStop` is optional: the manual tab's fetch runs on `useFetch`, whose token
+ * `onStop` is optional: the manual tab's fetch runs on `useFetch`, whose signal
  * is tied to the key and the mount, so the dialog's Cancel is its stop and a
  * second button would claim an affordance the hook doesn't expose. It still gets
  * the same label and bar.

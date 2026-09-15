@@ -56,7 +56,7 @@ test('passes the region, ctx and index through to call', async () => {
   await callEachRegion(NEEDED, ctx, (region, c, displayedRegionIndex) => {
     seen.push({
       refName: region.refName,
-      // the caller's stop token reaches every call, so one cancel takes the
+      // the caller's signal reaches every call, so one cancel takes the
       // whole fan-out down
       sameToken: c.signal === ctx.signal,
       index: displayedRegionIndex,

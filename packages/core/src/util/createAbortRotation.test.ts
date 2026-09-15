@@ -9,7 +9,7 @@ import { createStatusWindow } from './progress.ts'
 import type { RpcStatus } from './progress.ts'
 
 // The bare-autorun fetches (dotplot, synteny, multi-sample-variant sources, the
-// circular chord display) get their token rotation from here rather than from
+// circular chord display) get their abort rotation from here rather than from
 // `FetchMixin.runFetch`. Covered indirectly by those displays' suites — except
 // `dispose`, which none of them exercise, and which is the half that runs when
 // the display goes away mid-fetch.
@@ -116,7 +116,7 @@ describe('the status window', () => {
     expect(host.statusMessage).toBeUndefined()
   })
 
-  // A run that COMPLETES still holds the current token, so the token comparison
+  // A run that COMPLETES still holds the current signal, so the signal comparison
   // alone leaves its guard open — this is the term that closes it, and without
   // it the queued write below lands on top of the clear.
   test('end() clears, and drops the write queued behind the clear', () => {

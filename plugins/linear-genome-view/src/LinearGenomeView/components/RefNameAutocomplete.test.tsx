@@ -171,7 +171,7 @@ describe('RefNameAutocomplete', () => {
     await user.type(input, 'ctg')
 
     await waitFor(() => {
-      // the second argument is the per-fetch stop token: a fetcher that
+      // the second argument is the per-fetch signal: a fetcher that
       // forwards it lets the next keystroke cancel this query's ranking
       expect(fetchResults).toHaveBeenCalledWith('ctg', expect.anything())
     }, patience)
@@ -180,10 +180,10 @@ describe('RefNameAutocomplete', () => {
   it('aborts the previous query when a keystroke supersedes it', async () => {
     const user = userEvent.setup()
     const { session } = setup()
-    const tokens: AbortSignal[] = []
+    const signals: AbortSignal[] = []
     const fetchResults = jest.fn(async (_q: string, signal?: AbortSignal) => {
       if (signal) {
-        tokens.push(signal)
+        signals.push(signal)
       }
       return []
     })
@@ -200,17 +200,17 @@ describe('RefNameAutocomplete', () => {
     await user.click(input)
     await user.type(input, 'ctg')
     await waitFor(() => {
-      expect(tokens).toHaveLength(1)
+      expect(signals).toHaveLength(1)
     }, patience)
-    expect(tokens[0]!.aborted).toBe(false)
+    expect(signals[0]!.aborted).toBe(false)
 
     await user.type(input, 'A')
     await waitFor(() => {
-      expect(tokens).toHaveLength(2)
+      expect(signals).toHaveLength(2)
     }, patience)
     // the superseded query's signal is aborted; the live one is not
-    expect(tokens[0]!.aborted).toBe(true)
-    expect(tokens[1]!.aborted).toBe(false)
+    expect(signals[0]!.aborted).toBe(true)
+    expect(signals[1]!.aborted).toBe(false)
   })
 
   it('displays results returned by fetchResults', async () => {

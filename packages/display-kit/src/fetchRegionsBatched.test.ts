@@ -36,7 +36,7 @@ const ISSUED: GateFetchState = {
   tierKey: undefined,
 }
 
-// `self` supplies `fetchRegions`, which normally rotates the stop token, plus
+// `self` supplies `fetchRegions`, which normally rotates the signal, plus
 // the gate's two commit members. Running `work` directly with a ctx the test
 // controls isolates what this helper owns from that machinery.
 function selfWith(

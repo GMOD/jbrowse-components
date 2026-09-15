@@ -93,17 +93,18 @@ table is what the 4.3.0 package served and this build does not:
 
 <!-- BEGIN GENERATED ABI_REMOVED_NAMES -->
 
-48 names over 55 entries, since 7 of them were served from two modules each.
+51 names over 58 entries, since 7 of them were served from two modules each.
 
 <!-- prettier-ignore -->
 | What went | Names |
 | --- | --- |
 | the renderer registry | `RendererType`, `FeatureRendererType`, `BoxRendererType`, `CircularChordRendererType`, `ServerSideRendererType`, `GlyphType`, `getParentRenderProps` |
 | layout, which moved onto the GPU packing path | `PileupLayout`, `SceneGraph`, `calculateLayoutBounds`, `getLayoutId`, `MultiLayout`, `PrecomputedLayout` |
-| `AbortSignal` cancellation, which became stop tokens | `abortBreakPoint`, `checkAbortSignal`, `observeAbortSignal`, `makeAbortableReaction` |
+| the 2.x `AbortSignal` helpers; cancellation is an `AbortSignal` again, and `checkAbortSignal` is back | `abortBreakPoint`, `observeAbortSignal`, `makeAbortableReaction` |
+| stop tokens, replaced by the platform `AbortController` | `createStopToken` → `new AbortController()`, `stopStopToken` → `controller.abort()`, `checkStopToken` → `checkAbortSignal`, `createStopTokenChecker` → `createAbortBreakpoint` |
 | the renderer era's RPC retry and progress reporting | `RetryError`, `isRetryException`, `updateStatus2`, `getProgressDisplayStr`, `getStatsId` |
 | desktop file handles, which the desktop package now owns | `getFileHandleCache`, `setFileHandleCache`, `removeFileHandle`, `cleanupStaleHandles`, `getPendingFileHandleIds`, `setPendingFileHandleIds`, `clearPendingFileHandleIds`, `restorePendingFileHandles` |
-| renames with a survivor | `contrastingTextColor` → `makeContrasting`, `checkStopToken2` → `checkStopToken`, `assembleLocStringFast` → `assembleLocString`, `findLast` → `Array.prototype.findLast`, `findLastIndex` → `Array.prototype.findLastIndex` |
+| renames with a survivor | `contrastingTextColor` → `makeContrasting`, `checkStopToken2` → `checkAbortSignal`, `assembleLocStringFast` → `assembleLocString`, `findLast` → `Array.prototype.findLast`, `findLastIndex` → `Array.prototype.findLastIndex` |
 | react-dom, which a rendering library should not ask its host for — react-msaview owns its copy from 71e835ae, so published `jbrowse-plugin-msaview` 3.4.0 and `-tview` 2.2.1 break until they ship a build carrying it | `renderToStaticMarkup` |
 | names with no caller left in core, which the last callers inlined or folded away | `forEachWithStopTokenCheck`, `TextSearchManager`, `isContainedWithin`, `iterMap`, `when`, `blobToDataURL`, `cartesianToPolar`, `degToRad`, `getUriLink`, `defaultStops`, `useDebouncedCallback` |
 | the config models that were flattened | `isConfigurationSlotType` |
@@ -143,7 +144,7 @@ merely moved, the entry says which import to use instead.
 
 <!-- BEGIN GENERATED ABI_REMOVED_SUBPATHS -->
 
-16 subpaths the published `exports` map no longer serves, against what 4.3.0
+17 subpaths the published `exports` map no longer serves, against what 4.3.0
 published.
 
 <!-- prettier-ignore -->
@@ -165,6 +166,7 @@ published.
 | `@jbrowse/core/util/compositeMap` | dead, with no caller in or out of the tree |
 | `@jbrowse/core/util/layouts/BaseLayout` | the interface `GranularRectLayout` implemented for `MultiLayout` and `PrecomputedLayout` to share; deleted with them, along with the serialization types (`SerializedLayout`, `RectTuple`) that only the worker-to-main layout handoff used |
 | `@jbrowse/core/util/offscreenCanvasUtils` | the server-side canvas helpers behind `renderToAbstractCanvas` |
+| `@jbrowse/core/util/stopToken` | stop tokens are gone (ADR-122): a caller holds an `AbortController` and passes its `signal`; a worker checks with `checkAbortSignal` and yields through `createAbortBreakpoint`, both in `@jbrowse/core/util/aborting` |
 
 <!-- END GENERATED ABI_REMOVED_SUBPATHS -->
 

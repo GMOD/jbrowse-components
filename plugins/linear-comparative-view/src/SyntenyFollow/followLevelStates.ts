@@ -94,7 +94,7 @@ export interface FollowLevelState {
 export function createFollowLevelStates<Level extends object>() {
   let states = new WeakMap<Level, FollowLevelState>()
   let generation = 0
-  // The epoch's own stop token, minted on first use and stopped by `clear()`.
+  // The epoch's own signal, minted on first use and stopped by `clear()`.
   //
   // AN EPOCH, NOT A ROTATION. A rotation is for a fetch with a latest-wins
   // guard, and the CIGAR map explicitly rejects latest-wins — a later window

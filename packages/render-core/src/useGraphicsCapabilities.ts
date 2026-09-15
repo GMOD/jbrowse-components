@@ -14,7 +14,7 @@ import type { GraphicsCapabilities } from './graphicsCapabilities.ts'
  * a leaf so a third-party display can bundle it), so every hook here is its own
  * — `useRenderingBackend` and `useTabVisibilityRerender` are the same shape.
  *
- * It is also all this needs. `useFetch` carries keys, stop tokens, error state
+ * It is also all this needs. `useFetch` carries keys, signals, error state
  * and `mutate` for sources that change; capabilities are fixed for the life of
  * the page and already memoized in the module, so there is one value, fetched
  * once, that never invalidates. The effect exists only to deliver it.

@@ -320,7 +320,7 @@ export default function CoarseTierMixin<P extends object>() {
        * #action
        * Overridable hook (no-op base): the coarse read over `read.regions`,
        * answering one payload per region it covered or a refusal. `ctx` is the
-       * skeleton's — its `callRpc` carries the stop token and the status slot,
+       * skeleton's — its `callRpc` carries the signal and the status slot,
        * and `isStale` guards any write the read makes for itself before it
        * returns.
        */

@@ -144,21 +144,21 @@ test('clipLengthAtStartOfRead matches getClip(CIGAR) for every record', async ()
 // The signal is what makes a cancelled navigation reach the socket. Without it
 // a superseded fetch stops *processing* records but downloads the whole range
 // first, which on a 2000x pileup is the entire cost of the navigation it was
-// meant to abandon. BamAdapter has done this since stopTokenSignal landed;
+// meant to abandon. BamAdapter has done this since the signal reached the reader;
 // CramAdapter had the signal in hand and passed no signal.
 //
 // jest cannot cover what the signal does to a socket — see the comment at the
 // top of products/jbrowse-web/browser-tests/suites/fetch-cancellation.ts, which
 // covers that end for BAM. What it can pin is that a signal is threaded at all,
-// and that it is wired to this call's stop token, which is the part that was
+// and that it is wired to this call's signal, which is the part that was
 // missing and the part a refactor would silently drop again.
-test('getFeatures threads its stop token into the cram read as a signal', async () => {
+test('getFeatures threads its signal into the cram read as a signal', async () => {
   const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
   adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
 
-  // The read is held open so the token can be stopped while it is genuinely in
-  // flight. That is the only window in which the signal is live: withStopTokenSignal
-  // disposes its listener as soon as the call it wraps resolves, so a token
+  // The read is held open so the signal can be stopped while it is genuinely in
+  // flight. That is the only window in which the signal is live: the signal
+  // disposes its listener as soon as the call it wraps resolves, so a signal
   // stopped afterwards correctly aborts nothing.
   const seen: (AbortSignal | undefined)[] = []
   let releaseRead = () => {}

@@ -76,7 +76,7 @@ describe('cachedSetup', () => {
     expect(seen).toEqual([])
   })
 
-  it('withholds the stop token, so one caller cannot abort the shared work', async () => {
+  it('withholds the signal, so one caller cannot abort the shared work', async () => {
     let received: unknown = 'unset'
     const setup = sharedSetup(async opts => {
       received = opts.signal

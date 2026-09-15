@@ -116,7 +116,7 @@ export default class RpcManager {
 
   /**
    * `args` carries the method's data and the caller's handles on the operation —
-   * the stop token and the status callback. Both handles are always accepted,
+   * the signal and the status callback. Both handles are always accepted,
    * for every method, because {@link RpcHandles} is part of `RpcCallArgs` rather
    * than of any registry entry.
    *
@@ -191,7 +191,7 @@ export default class RpcManager {
    * from the origin and reused if already present: when a track first loads,
    * many block RPC calls fail auth near-simultaneously, and a single shared
    * account collapses them into one credential prompt (BaseInternetAccountModel
-   * memoizes the token via a per-account promise). Returns false when the root
+   * memoizes the signal via a per-account promise). Returns false when the root
    * model can't hold accounts or no HTTPBasicInternetAccount type is registered
    * (authentication plugin not loaded), signaling the caller not to retry.
    */

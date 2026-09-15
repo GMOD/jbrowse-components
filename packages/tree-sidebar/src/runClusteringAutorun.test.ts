@@ -81,7 +81,7 @@ test('clears the trigger once the run finishes', async () => {
   expect(model.clusterRegion).toBeUndefined()
 })
 
-test('stops the in-flight token when the display is destroyed mid-run', async () => {
+test('aborts the in-flight signal when the display is destroyed mid-run', async () => {
   const g = gate()
   const seen: AbortSignal[] = []
   const wrote: string[] = []

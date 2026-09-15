@@ -237,7 +237,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
         // alike; what it buys is that the bar moves *within* a pair, which is
         // the whole of a single-region fetch and 1/325th of a whole-genome one.
         //
-        // No stop token on the reporter: it would only add a throttled check
+        // No signal on the reporter: it would only add a throttled check
         // beside the exact per-pair one below.
         const report = createProgressReporter({
           label: downloadPhase,

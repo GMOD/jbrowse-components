@@ -24,7 +24,7 @@ const useStyles = makeStyles()({
   },
 })
 
-// One state object rather than parallel isRunning/done/error/token flags: a run
+// One state object rather than parallel isRunning/done/error/signal flags: a run
 // is either not started, in flight (and therefore cancellable), finished with a
 // summary, or failed. Nothing else is representable, so no combination of
 // booleans has to be reasoned about.

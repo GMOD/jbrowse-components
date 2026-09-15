@@ -273,9 +273,9 @@ test('the error notification offers a Retry that re-queues the job', async () =>
 })
 
 test('a cancelled job reports as cancelled rather than as an error', async () => {
-  // the real RPC method checks the token before it does anything, so the fake
+  // the real RPC method checks the signal before it does anything, so the fake
   // has to as well or a cancel looks like a success here and nowhere else.
-  // Read inside the call, not after it: clear() stops the token on every path,
+  // Read inside the call, not after it: clear() aborts the signal on every path,
   // so an assertion made afterwards passes whether the cancel landed or not
   let stoppedAtCall: boolean | undefined
   const call = jest.fn((_sessionId: string, _method: string, args: RpcArgs) => {

@@ -38,7 +38,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   // Current display value (e.g. the view's visible locstring). If absent,
   // the input shows only what the user has typed.
   value?: string
-  // the stop token is stopped as soon as the next keystroke supersedes this
+  // the signal is stopped as soon as the next keystroke supersedes this
   // query, so a fetcher that forwards it drops the superseded work instead of
   // ranking and formatting an answer nobody will see
   fetchResults: (query: string, signal?: AbortSignal) => Promise<BaseResult[]>

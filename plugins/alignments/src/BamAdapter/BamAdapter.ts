@@ -58,7 +58,7 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
         end: region.end,
       },
       // The opts every other read on this path already carries, and the only
-      // one that was going without them. Without the stop token a pan that
+      // one that was going without them. Without the signal a pan that
       // lands mid-fetch still decodes and returns the whole region's residues
       // to a query nobody is waiting for; without the callback the reader sees
       // no phase at all for it.

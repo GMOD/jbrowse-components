@@ -138,7 +138,7 @@ export function parseLineByLine(
   const decoder = new TextDecoder('utf8')
   // Time-gated, not gated on a line counter: a file of few but very expensive
   // lines would never reach a count mask, freezing the bar at 0% for the whole
-  // parse (the failure createProgressReporter documents). The stop-token check
+  // parse (the failure createProgressReporter documents). The abort check
   // rides the same tick, so cancellation lands within one window.
   const report = createProgressReporter({
     label,

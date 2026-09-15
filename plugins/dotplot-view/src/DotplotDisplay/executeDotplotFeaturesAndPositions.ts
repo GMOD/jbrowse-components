@@ -191,7 +191,7 @@ export async function executeDotplotFeaturesAndPositions({
   let skippedFeatureCount = 0
   const skippedHRefNames = new Set<string>()
   const skippedVRefNames = new Set<string>()
-  // report() runs the throttled stop-token check as well as advancing the bar,
+  // report() runs the throttled abort check as well as advancing the bar,
   // so cancelling a whole-genome projection lands mid-loop instead of only at
   // the next phase boundary.
   const report = createProgressReporter({

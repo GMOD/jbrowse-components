@@ -103,7 +103,7 @@ describe('useClusterRun', () => {
     )
   })
 
-  it('stops the token the run is holding, and reports no error for it', async () => {
+  it('aborts the signal the run is holding, and reports no error for it', async () => {
     const g = gate()
     const { result } = setup(async ({ signal }) => {
       await g.opened
@@ -130,7 +130,7 @@ describe('useClusterRun', () => {
     expect(result.current.loading).toBe(false)
   })
 
-  it('stops the token when the dialog goes away mid-run', async () => {
+  it('aborts the signal when the dialog goes away mid-run', async () => {
     const g = gate()
     const seen: AbortSignal[] = []
     const { result, unmount } = setup(async ({ signal }) => {

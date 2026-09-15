@@ -25,7 +25,7 @@ type FetchingKey<Key> = Exclude<Key, null | undefined | false>
  * single argument (`useGenomesData`). Most fetchers close over what they need
  * and declare no parameters at all, which stays assignable either way.
  *
- * A stop token and a status callback follow the key arguments. The token is
+ * A signal and a status callback follow the key arguments. The signal is
  * created per fetch and stopped when the key changes or the component unmounts,
  * so a fetcher that forwards it to an RPC cancels the worker instead of leaving
  * it grinding on an answer nobody is waiting for. The callback is what the RPC's
@@ -182,7 +182,7 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
       setStatus(undefined)
       // The runtime counterpart of FetcherArgs: an array key becomes one
       // argument per element, anything else a single argument, then the stop
-      // token and the status callback. A conditional type over an unresolved
+      // signal and the status callback. A conditional type over an unresolved
       // `Key` can't be discharged
       // inside the function body, so the parameter list is erased for this one
       // call — callers still get the precise arity, and the looseness stops

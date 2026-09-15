@@ -47,7 +47,7 @@ export interface FetchEachRegionModel extends IStateTreeNode, GateCommitHost {
  * {@link fetchEachRegion} guards per region so an early result still commits,
  * while {@link fetchRegionsBatched} guards once around the whole batch. Its one
  * caller is MAF, which needs both the collected array (the sample set is a
- * cross-region pick) and a concurrent side-fetch under the same stop token.
+ * cross-region pick) and a concurrent side-fetch under the same signal.
  */
 export function callEachRegion<R>(
   needed: IndexedRegion[],

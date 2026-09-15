@@ -509,7 +509,7 @@ describe('the user cancel', () => {
 
     display.cancelFetchByUser()
 
-    // the worker's half: the token the RPC is holding is signalled, which is
+    // the worker's half: the signal the RPC is holding is signalled, which is
     // the only thing that stops the reads still in flight
     expect(signal!.aborted).toBe(true)
     expect(display.fetchCanceled).toBe(true)
@@ -520,7 +520,7 @@ describe('the user cancel', () => {
 
     // and the display's half: a fetch the user stopped watching must not
     // commit when it lands. Without the stop above it still would — nothing
-    // else rotates the token, so `isCurrent()` would stay true and the plot
+    // else rotates the signal, so `isCurrent()` would stay true and the plot
     // would appear over a cancelled load.
     gate.resolve('late')
     await settle()

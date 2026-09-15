@@ -82,7 +82,7 @@ export type FetchAutorunOutcome =
    * answers nothing either way — the same deferral `awaitingPrerequisite` gets,
    * reached from inside the foundation rather than declared by the display. The
    * per-region family's in-flight-fetch skip is the case: `reload()` signals the
-   * running fetch's stop token but `activeSignal` clears in `runFetch`'s
+   * running fetch's signal but `activeSignal` clears in `runFetch`'s
    * finally, so the very next run can still see `isLoading` — and that fetch
    * ending bumps `fetchGeneration`, which the autorun tracks. Consuming the bump
    * there would answer the retry with a run that predates it.

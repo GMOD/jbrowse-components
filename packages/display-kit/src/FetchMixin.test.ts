@@ -139,7 +139,7 @@ describe('FetchMixin: cancellation', () => {
     await tick()
   })
 
-  it('cancelFetch mid-flight clears stop token, bumps signal, isLoading=false', () => {
+  it('cancelFetch mid-flight clears signal, bumps signal, isLoading=false', () => {
     const m = makeModel()
     m.runFetch(() => new Promise<void>(() => {})) // never resolves
     expect(m.isLoading).toBe(true)
@@ -679,7 +679,7 @@ describe('FetchMixin: isStale contract for work callbacks', () => {
 // progress without reaching back into the model for it. It is a REQUIRED field
 // on FetchContext for that reason: `runFetch` is the only producer, and a
 // helper narrowing its parameter to a subset of the context is what dropped the
-// byte measurement's token and status in the first place.
+// byte measurement's signal and status in the first place.
 describe('FetchMixin: the context status callback', () => {
   it('writes the display status through the ctx callback', async () => {
     const m = makeModel()

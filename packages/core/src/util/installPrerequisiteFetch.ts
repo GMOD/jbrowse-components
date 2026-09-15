@@ -57,7 +57,7 @@ export interface PrerequisiteFetchHost extends FetchSkeletonHost {
  *   nothing; a header is not a load.
  *
  * `createAdapterMetadataFetch` keys on the same adapter config and is
- * deliberately NOT one of these: no trigger, no stop token and no status,
+ * deliberately NOT one of these: no trigger, no signal and no status,
  * because it is fetched lazily when a details widget opens and the widget opens
  * on the result. A prerequisite read is the one a display's own fetch waits on.
  *
@@ -74,7 +74,7 @@ export interface PrerequisiteFetchHost extends FetchSkeletonHost {
  * Everything the skeleton gives it is the point of going through the skeleton:
  * the latest-wins rotation (so a superseding read aborts the one it replaced,
  * and only a superseding read does — a user cancel of the primary fetch cannot
- * strand the display the way sharing its token would), the clear at the start,
+ * strand the display the way sharing its signal would), the clear at the start,
  * the currency-guarded error rule, the unconditional `reloadCounter` read that
  * makes the chrome's Retry re-run this, and the retired status slot that keeps a
  * failed read from leaving a progress chip up for good.

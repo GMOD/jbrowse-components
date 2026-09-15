@@ -152,7 +152,7 @@ test('a track with no export capability is never asked to export', async () => {
   expect(callsTo('CoreGetExportData')).toHaveLength(0)
 })
 
-test('the stop token and status callback reach every RPC', async () => {
+test('the signal and status callback reach every RPC', async () => {
   setup({ exportsData: true })
   respond({ CoreGetExportData: undefined, CoreGetFeatures: [] })
   const { signal } = new AbortController()
@@ -222,7 +222,7 @@ test('an adapter quoting no estimate does not gate', async () => {
 
 // GenBank fetches its ORIGIN sequence from inside the writer, so the pair has
 // to travel one hop further than the RPCs above
-test('the stop token and status callback reach the writer too', async () => {
+test('the signal and status callback reach the writer too', async () => {
   setup()
   respond({ CoreGetFeatures: [feature('gene1')] })
   const { signal } = new AbortController()

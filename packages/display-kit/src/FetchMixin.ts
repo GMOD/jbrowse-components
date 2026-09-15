@@ -99,7 +99,7 @@ export function fetchMixinLifecycle(self: FetchLifecycleHost) {
 
 // Cancel-safe fetch lifecycle for any display that loads data over RPC.
 //
-// The mixin owns the entire fetch state machine (stop-token rotation,
+// The mixin owns the entire fetch state machine (abort rotation,
 // staleness tracking, error capture, status reporting). Consumers see
 // only the high-level operations:
 //
@@ -127,7 +127,7 @@ export function fetchMixinLifecycle(self: FetchLifecycleHost) {
  * #category display
  *
  * Cancel-safe fetch lifecycle for any display that loads data over RPC. Owns
- * the entire fetch state machine (stop-token rotation, staleness tracking,
+ * the entire fetch state machine (abort rotation, staleness tracking,
  * error capture, status reporting); consumers see only `runFetch`,
  * `cancelFetch`, `isLoading`, `error`, `statusMessage`, and `fetchGeneration`.
  */
@@ -137,7 +137,7 @@ export default function FetchMixin() {
     .volatile(self => ({
       /**
        * #volatile
-       * stop token of the in-flight fetch, or undefined when idle
+       * signal of the in-flight fetch, or undefined when idle
        */
       activeSignal: undefined as AbortSignal | undefined,
       /**
@@ -213,7 +213,7 @@ export default function FetchMixin() {
       /**
        * #volatile
        * **The latest-wins machine this mixin is a wrapper around**, and not a
-       * second one: `createAbortRotation` owns token rotation, the
+       * second one: `createAbortRotation` owns abort rotation, the
        * `isCurrent` guard, the status slot and the supersede-versus-end rule
        * (ADR-080, ADR-081), for every fetch in the codebase that has one.
        * `runFetch` adds the observable bookkeeping a display needs on top —
@@ -222,7 +222,7 @@ export default function FetchMixin() {
        *
        * It was two implementations of that machine until 2026-08-20, which is
        * how they came to disagree about whether a completed fetch releases its
-       * token. A display's *primary* fetch is this wrapper; a second concurrent
+       * signal. A display's *primary* fetch is this wrapper; a second concurrent
        * fetch on the same node holds a rotation of its own, which is why the
        * primitive is the thing that exists and this is the thing built on it
        * (ADR-054 §1, the one section ADR-105 keeps).
@@ -410,7 +410,7 @@ export default function FetchMixin() {
        * they do to `fetchCanceled` / `fetchGeneration` afterward.
        */
       stopActiveFetch() {
-        // Unconditional, unlike the token check it replaced: `cancel` is
+        // Unconditional, unlike the signal check it replaced: `cancel` is
         // already a no-op with nothing in flight, and calling it anyway retires
         // a slot a torn-down fetch left voting.
         //
@@ -500,7 +500,7 @@ export default function FetchMixin() {
       },
       /**
        * #action
-       * Release an in-flight fetch's stop token on teardown. Without this, a
+       * Abort an in-flight fetch on teardown. Without this, a
        * display destroyed mid-fetch (track/view closed while loading) never
        * signals the worker to abort the now-useless work, and its in-flight HTTP
        * reads keep downloading. MST auto-chains lifecycle hooks, so a composing
@@ -523,7 +523,7 @@ export default function FetchMixin() {
       /**
        * #action
        * The `onBegin` half of a fetch's bookkeeping: publish the in-flight
-       * token (`isLoading`) and clear the durable user-cancel — a load starting
+       * signal (`isLoading`) and clear the durable user-cancel — a load starting
        * is the single clear point that covers every retrigger path (reload,
        * viewport change, settings invalidate). An action of its own for the
        * same reason `endFetch` is: `installFetch`'s lifecycle callbacks run
@@ -544,8 +544,7 @@ export default function FetchMixin() {
        * not own — a direct volatile write there is outside the action context,
        * which is the one thing hoisting the sequence into a shared function
        * costs. The stale branch is a superseded fetch, which must not clear the
-       * loading flag the run that replaced it just set. The stop token itself
-       * is released by the rotation's own `end()`, one layer down.
+       * loading flag the run that replaced it just set.
        */
       endFetch(current: boolean) {
         if (current) {
@@ -577,7 +576,7 @@ export default function FetchMixin() {
         // `reload()` wherever that reload reached it from, including a `reload()`
         // that fetches directly instead of leaving it to a fetch autorun.
         noteFetchStarted(self)
-        // Rotating IS the supersede: it stops the prior token and opens this
+        // Rotating IS the supersede: it stops the prior signal and opens this
         // fetch's slot before the run being replaced reaches its `finally`,
         // which is what keeps the label the overlay is showing alive across the
         // handover. The guard it hands back closes on a newer fetch, on

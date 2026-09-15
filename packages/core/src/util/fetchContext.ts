@@ -35,7 +35,7 @@ export interface FetchContext {
    * the status bar don't know about.
    *
    * Declared with a `this` parameter so it reads the *holding* context's
-   * token and callback — the fan-out copies rebind it to their own status
+   * signal and callback — the fan-out copies rebind it to their own status
    * slot by construction — and so destructuring it off the context is a type
    * error rather than a stale binding.
    */

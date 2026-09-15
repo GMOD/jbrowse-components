@@ -74,7 +74,7 @@ an `.actions(self => ({ ... }))` block:
 
 ```ts
 // called by the fetch autorun for the regions that need loading;
-// fetchEachRegion handles cancellation, stop tokens and staleness
+// fetchEachRegion handles cancellation and staleness
 fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
   // no `if (!adapterConfig)` guard: the `adapter` slot is a union of the
   // registered adapter schemas, all of which are creatable from an empty
@@ -83,7 +83,7 @@ fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
   const { adapterConfig } = self
   return fetchEachRegion(self, needed, {
     // `ctx.callRpc`, never `rpcManager.call`: the context injects this
-    // fetch's stop token and its status callback, and forgetting either
+    // fetch's signal and its status callback, and forgetting either
     // is silent — no cancellation for this display, or no progress. The
     // callback here is this region's own slot in the fan-out, so the N
     // parallel calls aggregate into one bar instead of overwriting each
@@ -141,7 +141,7 @@ guard around the whole batch:
 
 ```ts
 // The CDS-frame annotation overlay (when configured) fetches in the same
-// stop-token-guarded pass as the main data so the two share staleness
+// signal-guarded pass as the main data so the two share staleness
 // book-keeping; the two RPCs run concurrently.
 //
 // Concurrently, and each is itself a per-region fan-out, so they get a
@@ -161,9 +161,7 @@ const [results, frames] = await Promise.all([
     ...scope.ctx,
     statusCallback: slot(),
   }),
-]).finally(() => {
-  scope.dispose()
-})
+])
 // The batch's own byte number, whichever way it goes: the budget is what
 // one region may cost, so the largest is what was judged and what the
 // banner quotes.

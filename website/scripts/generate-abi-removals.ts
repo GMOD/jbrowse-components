@@ -151,6 +151,8 @@ const NAME_GROUPS: NameGroup[] = [
 
 /** Subpath (without the `@jbrowse/core` prefix) -> what to do instead. */
 const SUBPATH_NOTES: Record<string, string> = {
+  './util/stopToken':
+    'stop tokens are gone (ADR-122): a caller holds an `AbortController` and passes its `signal`; a worker checks with `checkAbortSignal` and yields through `createAbortBreakpoint`, both in `@jbrowse/core/util/aborting`',
   './pluggableElementTypes/GlyphType':
     'glyphs are drawn by the GPU displays, not registered',
   './pluggableElementTypes/renderers/RendererType':

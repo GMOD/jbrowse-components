@@ -115,8 +115,8 @@ export interface ActiveFetch {
    * other operation on the host is still reporting.
    *
    * Both together, because a caller doing it by hand gets a subset.
-   * `isCurrent` is `token === current && isAlive`, and a run that *completes*
-   * never rotates its own token — so without this the guard stays open past the
+   * `isCurrent` is `signal === current && isAlive`, and a run that *completes*
+   * never rotates its own signal — so without this the guard stays open past the
    * work and a trailing write lands on top of a hand-written
    * `setStatusMessage(undefined)` up to a window later.
    *

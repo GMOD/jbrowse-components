@@ -44,7 +44,7 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
   /**
    * Fetch features for a certain region.
    * @param region -
-   * @param opts - [signal] optional stopTokenling object for aborting the fetch
+   * @param opts - [signal] optional signalling object for aborting the fetch
    * @returns Observable of Feature objects in the region
    */
   getFeatures(region: Region, opts: BaseOptions = {}) {

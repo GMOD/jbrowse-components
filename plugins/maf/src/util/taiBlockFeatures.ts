@@ -22,7 +22,7 @@ import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
 export interface TaiBlockFeature {
   uniqueId: string
   /**
-   * The reference row's unresolved source token (`hg38.chr1`). Carried so the
+   * The reference row's unresolved source signal (`hg38.chr1`). Carried so the
    * caller can drop a block belonging to another chromosome — the read reaches
    * past the queried contig's end by design, see `makeRefChrFilter`.
    */
@@ -113,7 +113,7 @@ export function taiBlockFeatures<SETUP extends TaiIndex>({
     resolver.reportUnmatched()
     statusCallback?.('')
     observer.complete()
-    // The stop token, like the tabix and bigMaf adapters pass: without it a
+    // The signal, like the tabix and bigMaf adapters pass: without it a
     // cancelled fetch (any pan or zoom) kept delivering into a subscriber whose
     // result was already discarded, and the abort never reached the rxjs chain
     // at all. The body's own errors need no try/catch either — ObservableCreate

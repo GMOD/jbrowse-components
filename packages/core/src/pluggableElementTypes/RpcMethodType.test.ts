@@ -176,7 +176,7 @@ test('augmentLocationObject tolerates non-cloneable args (functions) while ownin
   }
 })
 
-// Structured-clone natives (typed arrays, the stop-token SharedArrayBuffer...)
+// Structured-clone natives (typed arrays, a SharedArrayBuffer...)
 // must survive owning by reference, not collapse to {} (Object.entries yields []).
 test('augmentLocationObject passes structured-clone-native values through by reference', async () => {
   const mockFile = new File(['x'], 'a.bam')

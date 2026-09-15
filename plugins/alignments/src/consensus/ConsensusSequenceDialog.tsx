@@ -138,7 +138,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
   // dialog computing forever. Nested, they are just JSON.stringify'd.
   //
   // A consensus can be half a megabase of reads, so the fetch forwards
-  // useFetch's stop token: dismissing the dialog, or nudging a slider, stops
+  // useFetch's signal: dismissing the dialog, or nudging a slider, stops
   // the worker rather than leaving it grinding on a superseded answer.
   const { data, error, status } = useFetch(
     canFetch

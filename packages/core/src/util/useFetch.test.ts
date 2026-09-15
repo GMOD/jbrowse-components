@@ -11,7 +11,7 @@ import type { RpcStatus } from './progress.ts'
 // parameters; a single array-destructured parameter binds only the leading key
 // name and silently slices characters out of it. That mistake shipped in
 // MafSequenceWidget behind the hook's old `(...args: any[])` signature, so pin
-// the behavior here rather than only in the types. The stop token and the status
+// the behavior here rather than only in the types. The signal and the status
 // callback follow the key arguments, in that order, so they are always the last
 // two however long the key is.
 
@@ -188,10 +188,10 @@ test('a key change still clears the previous data', async () => {
   })
 })
 
-// What the token is for: a fetcher forwarding it to an RPC stops the worker
+// What the signal is for: a fetcher forwarding it to an RPC stops the worker
 // when the dialog closes or the key moves on, instead of leaving it computing
 // an answer nobody is waiting for.
-test('stops the fetch stop token on unmount', async () => {
+test('stops the fetch signal on unmount', async () => {
   let captured: AbortSignal | undefined
   const { result, unmount } = renderHook(() =>
     useFetch(['slow'] as const, async (_key, signal) => {
@@ -275,7 +275,7 @@ describe('the status channel', () => {
     const hook = renderHook(() =>
       useFetch(
         ['parked'] as const,
-        (_key, _stopToken, statusCallback) =>
+        (_key, _signal, statusCallback) =>
           new Promise<string>(resolve => {
             handles.push({ statusCallback, resolve })
           }),
@@ -353,7 +353,7 @@ describe('the status channel', () => {
       ({ on }: { on: boolean }) =>
         useFetch(
           on ? (['parked'] as const) : null,
-          (_key, _stopToken, statusCallback) =>
+          (_key, _signal, statusCallback) =>
             new Promise<string>(() => {
               handles.push(statusCallback)
             }),

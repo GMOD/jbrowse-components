@@ -5,7 +5,7 @@
   "source": {
     "kind": "bench",
     "repro": "node website/scripts/cancel-mechanism-bench.ts --runs=3",
-    "notes": "A real Chrome worker (linux) filling a 100k-cell Float32Array 4000 times, consulting its cancellation once per pass. Cancel rows abort from the main thread 333, 640 and 1100 ms in, three stops per run; overrun is how long the loop ran past the stop. Unit costs on the same page: one synchronous blob-URL probe 0.86 ms, one createObjectURL+revoke pair 99 µs."
+    "notes": "A real Chrome worker (linux) filling a 100k-cell Float32Array 4000 times, consulting its cancellation once per pass. Cancel rows abort from the main thread 333, 640 and 1100 ms in, three stops per run; overrun is how long the loop ran past the stop. Unit costs on the same page: one synchronous blob-URL probe 1.04 ms, one createObjectURL+revoke pair 117 µs."
   },
   "columns": [
     {
@@ -45,7 +45,7 @@
     {
       "values": {
         "mode": "none",
-        "fullMs": 4404,
+        "fullMs": 5091,
         "checks": 0,
         "cancelled": "n/a",
         "overrunMs": 0,
@@ -55,17 +55,17 @@
     {
       "values": {
         "mode": "set",
-        "fullMs": 4354,
-        "checks": 13,
+        "fullMs": 5466,
+        "checks": 16,
         "cancelled": "ran to completion",
-        "overrunMs": 3814,
-        "overrunMaxMs": 4461
+        "overrunMs": 4205,
+        "overrunMaxMs": 5856
       }
     },
     {
       "values": {
         "mode": "probe",
-        "fullMs": 4634,
+        "fullMs": 4610,
         "checks": 14,
         "cancelled": "mid-loop",
         "overrunMs": 172,
@@ -75,21 +75,21 @@
     {
       "values": {
         "mode": "yield",
-        "fullMs": 5711,
-        "checks": 16,
+        "fullMs": 5852,
+        "checks": 17,
         "cancelled": "mid-loop",
-        "overrunMs": 173,
-        "overrunMaxMs": 309
+        "overrunMs": 174,
+        "overrunMaxMs": 313
       }
     },
     {
       "values": {
         "mode": "yield-flat",
-        "fullMs": 5752,
-        "checks": 108,
+        "fullMs": 5403,
+        "checks": 84,
         "cancelled": "mid-loop",
-        "overrunMs": 21,
-        "overrunMaxMs": 24
+        "overrunMs": 23,
+        "overrunMaxMs": 31
       }
     }
   ]

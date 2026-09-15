@@ -170,7 +170,7 @@ export function regionAssemblyMismatchMessage({
  *   assembly-mismatch error. A minimized track has nothing on screen to click,
  *   so its run consumes the bump too and un-minimizing is judged on its own.
  * - **`deferred`** — a fetch is already running. `reload()` signals the running
- *   fetch's stop token but `activeSignal` clears in `runFetch`'s `finally`,
+ *   fetch's signal but `activeSignal` clears in `runFetch`'s `finally`,
  *   so the run right after a retry can still land here; that fetch ending bumps
  *   `fetchGeneration` and re-runs the body. Consuming would answer the retry
  *   with a run that predates it.

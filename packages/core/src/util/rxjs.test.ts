@@ -39,7 +39,7 @@ describe('ObservableCreate', () => {
     ).rejects.toThrow('async boom')
   })
 
-  // the stop token used to be accepted and discarded, so every adapter passing
+  // the signal used to be accepted and discarded, so every adapter passing
   // opts.signal looked cancellable and was not
   it('errors with an abort error when the token is stopped mid-flight', async () => {
     const signalController = new AbortController()

@@ -16,7 +16,7 @@ import type { FetchContext } from '@jbrowse/display-kit/FetchMixin'
 // that does not exist. See `RegionFetchContext`.
 //
 // Against the real model, not a transcription of it: the rule is about
-// `runFetch`'s stop-token rotation and `loadedRegions`, so a stand-in with its
+// `runFetch`'s abort rotation and `loadedRegions`, so a stand-in with its
 // own generation counter tests its own arithmetic.
 
 jest.setTimeout(30_000)

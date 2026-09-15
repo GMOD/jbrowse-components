@@ -16,7 +16,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  *
  * Keyed on the adapter config rather than memoized for the display's life, so
  * a track re-pointed in the config editor stops serving the old header's
- * descriptions. Cleared on failure so a later click retries. No stop token and
+ * descriptions. Cleared on failure so a later click retries. No signal and
  * no status: nothing to narrate, and nothing a cancel could save — the widget
  * opens on the result.
  */

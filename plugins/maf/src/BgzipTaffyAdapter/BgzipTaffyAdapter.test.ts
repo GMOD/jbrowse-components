@@ -370,7 +370,7 @@ describe('BgzipTaffyAdapter methods', () => {
     expect(() => parseBases('A 2 GG 3', true)).toThrow(
       /Malformed run-length-encoded TAF column/,
     )
-    // an odd token count leaves the last base with no count
+    // an odd signal count leaves the last base with no count
     expect(() => parseBases('A 2 T', true)).toThrow(
       /Malformed run-length-encoded TAF column/,
     )
@@ -541,7 +541,7 @@ describe('BgzipTaffyAdapter methods', () => {
 })
 
 describe('blockToFeature', () => {
-  // No sample set: tokens split on the dot heuristic (`makeSourceResolver`'s
+  // No sample set: signals split on the dot heuristic (`makeSourceResolver`'s
   // other half), which is the discovery path all three adapters share.
   const splitResolve = makeSourceResolver().resolve
 
@@ -628,7 +628,7 @@ describe('blockToFeature', () => {
 
   // A pangenome TAF names its rows PanSN (`sample#haplotype#contig`) — what
   // cactus/taffy emit, and what this repo's own E. coli pangenome build writes.
-  // Discovery used to take the whole token as the sample and leave `chr` empty,
+  // Discovery used to take the whole signal as the sample and leave `chr` empty,
   // so every contig became its own row and both the features that key on `chr`
   // (color-by-source-chromosome, the inversion consensus) had nothing to key on.
   test('PanSN rows discover per haplotype, with the contig as chr', () => {
@@ -984,10 +984,10 @@ describe('BgzipTaffyAdapter integration tests', () => {
 
 // Every other MAF adapter passes `opts.signal` into `ObservableCreate`, which
 // is what wires a cancel through to the rxjs chain. TAF's didn't, so a pan or
-// zoom that rotated the stop token left this fetch delivering into a subscriber
+// zoom that rotated the signal left this fetch delivering into a subscriber
 // whose result had already been discarded — no error, no cancellation, just work
 // nobody was waiting for on the one adapter whose reads are whole bgzf blocks.
-describe('BgzipTaffyAdapter honors the stop token', () => {
+describe('BgzipTaffyAdapter honors the signal', () => {
   function tafAdapter() {
     return new BgzipTaffyAdapter(
       configSchema.create({
@@ -1010,7 +1010,7 @@ describe('BgzipTaffyAdapter honors the stop token', () => {
     end: 50_000,
   }
 
-  test('a token stopped before subscribe errors instead of delivering', async () => {
+  test('a signal stopped before subscribe errors instead of delivering', async () => {
     const signalController = new AbortController()
     const signal = signalController.signal
     signalController.abort()
@@ -1021,7 +1021,7 @@ describe('BgzipTaffyAdapter honors the stop token', () => {
     ).rejects.toThrow()
   })
 
-  test('a live token delivers as before', async () => {
+  test('a live signal delivers as before', async () => {
     const signalController = new AbortController()
     const signal = signalController.signal
     const out = await firstValueFrom(
@@ -1196,7 +1196,7 @@ describe('blockToFeature places a minus-strand reference row forward', () => {
     })
   })
 
-  test('carries the reference row source token for the chromosome filter', () => {
+  test('carries the reference row source signal for the chromosome filter', () => {
     expect(blockToFeature(block, splitResolve)!.refSrc).toBe('hg38.chr1')
   })
 })

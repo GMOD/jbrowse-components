@@ -86,7 +86,7 @@ const ClusterManualTab = observer(function ClusterManualTab({
     view.initialized && matrixKey
       ? (['clusterMatrix', [...matrixKey, regionKey]] as const)
       : null,
-    // The token makes Cancel — and a pan that re-keys the fetch — stop the
+    // The signal makes Cancel — and a pan that re-keys the fetch — stop the
     // worker; the status sink drives the determinate row below.
     (_name, _key, signal, statusCallback) =>
       fetchMatrix(resolveClusterRunArgs(model, { signal, statusCallback })),

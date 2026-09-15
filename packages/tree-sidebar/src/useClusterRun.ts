@@ -13,15 +13,15 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  * this run is button-triggered, reports progress, and is stoppable mid-flight
  * from a Cancel button rather than only when the component goes away.
  *
- * `run` does the display-specific RPC with the token and status sink it's
+ * `run` does the display-specific RPC with the signal and status sink it's
  * handed. It should **throw** for preconditions (an uninitialized view, too few
  * rows to cluster) so they land in the same error state as an RPC failure
  * instead of needing their own branch here.
  *
  * The effect is why this is a hook and not a plain object: aborting an in-flight
  * worker call when the component goes away is cleanup of something outside
- * React. Re-subscribing per token keeps the cleanup holding the live one; the
- * cleanup that fires when a run ends and clears the token stops something
+ * React. Re-subscribing per signal keeps the cleanup holding the live one; the
+ * cleanup that fires when a run ends and clears the signal stops something
  * already finished, which is a no-op. Dialogs still call `stop()` from their
  * Cancel button — that's the direct expression of the user's intent, and this
  * covers every other way the dialog can disappear (title-bar X, Escape, the

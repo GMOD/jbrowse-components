@@ -62,7 +62,7 @@ function extractType(line: string) {
  * label, capturing each line's byte offset, indexed start/end, and feature type
  * into a {@link TabixLine}. Shared by the GFF3 and GTF tabix adapters.
  *
- * The stop token becomes the read's `AbortSignal`, so a cancelled fetch drops
+ * The signal becomes the read's `AbortSignal`, so a cancelled fetch drops
  * its block reads at the socket instead of downloading them and discarding the
  * lines. @gmod/tabix aborts a block shared between callers only once every
  * joined caller has aborted (`AggregateAbortController`), so this can't cancel a

@@ -65,7 +65,7 @@ export default class GetScoreData extends RpcMethodType<'GetScoreData'> {
       adapterConfig,
       region,
       scoreColumn,
-      stopToken,
+      signal,
       statusCallback,
     } = args
     const dataAdapter = await getFeatureAdapterOrThrow({
@@ -79,7 +79,7 @@ export default class GetScoreData extends RpcMethodType<'GetScoreData'> {
     // bracketing that work, so the message tracks the download.
     statusCallback?.('Fetching features')
     const features = await dataAdapter.getFeaturesArray(region, {
-      stopToken,
+      signal,
       statusCallback,
     })
     // The encoder is the packer: one walk reads `scoreColumn` as `y`, skips a
@@ -224,7 +224,7 @@ place to put each result:
 
 ```ts
 // called by the fetch autorun for the regions that need loading;
-// fetchEachRegion handles cancellation, stop tokens and staleness
+// fetchEachRegion handles cancellation and staleness
 fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
   // no `if (!adapterConfig)` guard: the `adapter` slot is a union of the
   // registered adapter schemas, all of which are creatable from an empty
@@ -233,7 +233,7 @@ fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
   const { adapterConfig } = self
   return fetchEachRegion(self, needed, {
     // `ctx.callRpc`, never `rpcManager.call`: the context injects this
-    // fetch's stop token and its status callback, and forgetting either
+    // fetch's signal and its status callback, and forgetting either
     // is silent — no cancellation for this display, or no progress. The
     // callback here is this region's own slot in the fan-out, so the N
     // parallel calls aggregate into one bar instead of overwriting each

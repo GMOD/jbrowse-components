@@ -97,7 +97,7 @@ test('a hover over a loaded cell names its pair of SNPs', async () => {
 // `isLoadingOrCanceled`, never a bare `isLoading` — the same rule arc's
 // `shared/displayPhase.test.ts` pins for its phase.
 //
-// `cancelFetchByUser` drops the stop token synchronously, so `isLoading` goes
+// `cancelFetchByUser` drops the signal synchronously, so `isLoading` goes
 // false the instant the user clicks Cancel while `fetchCanceled` stays true and
 // nothing restarts the fetch. Gated on `isLoading` alone the hover therefore
 // reads as a settled display: the "Loading canceled / Retry" overlay is up

@@ -416,7 +416,7 @@ const perItem = {
   },
   columns: [
     { key: 'check', label: 'per-item check' },
-    { key: 'ns', label: 'cost per item', format: 'int', align: 'right' },
+    { key: 'ns', label: 'cost per item, ns', format: 'int', align: 'right' },
   ],
   rows: [
     {

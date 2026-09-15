@@ -1,0 +1,54 @@
+{
+  "id": "abort-check-per-item",
+  "measured": "2026-09-15",
+  "published": false,
+  "source": {
+    "kind": "bench",
+    "repro": "node website/scripts/cancel-mechanism-bench.ts --runs=3",
+    "notes": "What one loop iteration pays for each way of consulting its cancellation, in the same Chrome worker, over 10M iterations of a trivial body. The last row is why createAbortBreakpoint splits due() from yield(): an await on a non-promise still costs a microtask."
+  },
+  "columns": [
+    {
+      "key": "check",
+      "label": "per-item check"
+    },
+    {
+      "key": "ns",
+      "label": "cost per item, ns",
+      "format": "int",
+      "align": "right"
+    }
+  ],
+  "rows": [
+    {
+      "values": {
+        "check": "none (loop body alone)",
+        "ns": 2
+      }
+    },
+    {
+      "values": {
+        "check": "`signal.aborted`",
+        "ns": 11
+      }
+    },
+    {
+      "values": {
+        "check": "`Map.has` (the retired stopped-id set)",
+        "ns": 7
+      }
+    },
+    {
+      "values": {
+        "check": "`if (breakpoint.due())` (a counter bump)",
+        "ns": 2
+      }
+    },
+    {
+      "values": {
+        "check": "`await` of a non-promise",
+        "ns": 43
+      }
+    }
+  ]
+}

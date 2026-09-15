@@ -62,7 +62,7 @@ export interface TrackDataResult {
  *
  * This reads every feature in the visible region, which on a deep track is the
  * same work the display itself does — worth cancelling when the dialog closes,
- * and worth naming while it runs, hence the stop token and status callback.
+ * and worth naming while it runs, hence the signal and status callback.
  */
 export async function fetchTrackData({
   model,

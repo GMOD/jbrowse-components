@@ -80,7 +80,7 @@ const NEEDED = [
 ]
 
 // Duck-typed stand-in for the display: `fetchRegions` normally comes from
-// MultiRegionDisplayMixin and owns stop-token rotation + staleness, none of
+// MultiRegionDisplayMixin and owns abort rotation + staleness, none of
 // which this test exercises — it just runs the work callback with a fresh ctx.
 function makeSelf() {
   const reported: RpcStatus[] = []
@@ -271,9 +271,9 @@ describe('the byte gate rides in the tier fetch', () => {
     expect(committedBytes).toEqual([[9e9]])
   })
 
-  // The refusal stops the batch's own token, so a sibling still downloading
+  // The refusal stops the batch's own signal, so a sibling still downloading
   // aborts at the socket and is simply absent from what the gate is handed; the
-  // fetch's token, which the display's cancel owns, is left alone.
+  // fetch's signal, which the display's cancel owns, is left alone.
   test('the first refusal aborts the siblings still in flight', async () => {
     const { self, loadedIndices, committedBytes } = makeSelf()
     const siblingTokens: AbortSignal[] = []

@@ -82,7 +82,7 @@ export async function executeRenderHicData({
   // Its own phase: the adapter's download phase has closed by here, and packing
   // a whole-genome matrix is not free — at 4.5M contacts this loop is a chunk of
   // time that used to run under a blank status field, with the display saying
-  // only "Loading". `report` carries the throttled stop-token check too, which
+  // only "Loading". `report` carries the throttled abort check too, which
   // is what makes the pack interruptible at all: the only cancel point before it
   // was the one above, so a navigation during the pack was answered after the
   // whole buffer had been written.

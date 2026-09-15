@@ -750,18 +750,13 @@ describe('withProgress', () => {
     expect(seen.at(-1)).toEqual({ message: '', failed: true })
   })
 
-  // The kickoff `report(0)` checks the stop token before it emits, so a token
-  // already stopped throws there rather than out of the work — and outside the
-  // try that threw straight past the close, leaving the phase open on the
-  // channel. Its cost is not the missing `''`: a slot whose last word is a
-  // label is one aggregateStatus counts as in flight for the rest of the batch,
-  // so one cancelled region pinned the shared bar to a phase nothing was in.
-  //
-  // A string token because that is the path every deployment takes, and the
-  // only one whose check fires on the first call — a SharedArrayBuffer token
-  // reads its atomic once every 10, which is what hid this bug until
-  // `hasSharedArrayBuffer` started asking about cross-origin isolation.
-  it('closes its phase when the token was stopped before it started', async () => {
+  // The kickoff `report(0)` checks the signal before it emits, so one already
+  // aborted throws there rather than out of the work — and outside the try
+  // that threw straight past the close, leaving the phase open on the channel.
+  // Its cost is not the missing `''`: a slot whose last word is a label is one
+  // aggregateStatus counts as in flight for the rest of the batch, so one
+  // cancelled region pinned the shared bar to a phase nothing was in.
+  it('closes its phase when the signal was aborted before it started', async () => {
     const seen: RpcStatus[] = []
     const cb = (s: RpcStatus) => {
       seen.push(s)

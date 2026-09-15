@@ -54,7 +54,7 @@ const VisibleFeatures = observer(function VisibleFeatures({
           void rpcManager
             // No handles here on purpose: this page's whole subject is the
             // generation check below, and the source is published verbatim as a
-            // `?raw` block, so a stop token and a status sink would be two more
+            // `?raw` block, so a signal and a status sink would be two more
             // mechanisms to read past before reaching the one it teaches. A real
             // display gets both off `ctx` — see FetchMixin.
             // eslint-disable-next-line no-restricted-syntax

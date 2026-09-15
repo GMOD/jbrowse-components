@@ -101,11 +101,10 @@ await withHarness(
       Worker.prototype.postMessage = patched as Worker['postMessage']
     })
 
-    // Count and time every synchronous XHR the RPC worker makes — that is the
-    // stop-token fallback probe (checkAbortSignal), and a thread blocked in one is
-    // reported as *idle* by the sampling profiler, so it is invisible in a CPU
-    // profile. Also record whether the worker got SharedArrayBuffer (the cheap
-    // atomic path) at all.
+    // Count and time every synchronous XHR the RPC worker makes: a thread
+    // blocked in one is reported as *idle* by the sampling profiler, so it is
+    // invisible in a CPU profile. Nothing of ours makes one since ADR-122, so a
+    // nonzero count is a finding.
     const workerSessions: { url: string; session: CDPSession }[] = []
     page.on('workercreated', worker => {
       const session = worker.client

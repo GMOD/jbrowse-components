@@ -14,7 +14,7 @@ import type {
 // written out here as well as in `RpcManager`, and a structural slice that
 // restates the shape it is a slice OF is a copy: when the handles became part of
 // every call this was the one that did not follow, so the three clustering
-// helpers could no longer pass a stop token to the RPC they exist to drive.
+// helpers could no longer pass a signal to the RPC they exist to drive.
 export interface RpcMethodCaller<M extends RpcMethodName> {
   call: (
     sessionId: string,

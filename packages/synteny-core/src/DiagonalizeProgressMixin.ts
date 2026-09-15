@@ -7,10 +7,10 @@ import { types } from '@jbrowse/mobx-state-tree'
  *
  * The auto-diagonalize lifecycle state shared by the comparative views
  * (LinearSyntenyView, DotplotView, CircularView): the in-flight wait, its live RPC status and
- * stop token, and the flag that gates `settled` so a screenshot or browser test
+ * signal, and the flag that gates `settled` so a screenshot or browser test
  * can't capture a pre-reorder hairball.
  *
- * `withDiagonalizeProgress` drives the wait and the status/token pair; the gate
+ * `withDiagonalizeProgress` drives the wait and the status/signal pair; the gate
  * is raised and lowered by the view's own init autorun, which is the only thing
  * that knows a reorder was asked for. Composed rather than duplicated so both
  * views report progress, cancel, and gate identically.

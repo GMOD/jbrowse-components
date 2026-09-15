@@ -35,7 +35,7 @@ describe('ClusterProgress', () => {
   })
 
   // The manual tab drives this off `useFetch`, which exposes no stop handle —
-  // its token is tied to the key and the mount, so the dialog's own Cancel IS
+  // its signal is tied to the key and the mount, so the dialog's own Cancel IS
   // the stop and a second button here would claim an affordance that does
   // nothing. It still gets the label and the bar, which is the point: the two
   // tabs do the same work and now report it the same way.

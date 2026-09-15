@@ -155,7 +155,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
       running: false,
       /**
        * #volatile
-       * stop token for the currently running RPC indexing job, used to cancel
+       * signal for the currently running RPC indexing job, used to cancel
        */
       controller: undefined as AbortController | undefined,
       /**

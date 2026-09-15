@@ -14,7 +14,7 @@ import type { Region, StatusCallback } from '@jbrowse/core/util'
 /**
  * Resolve the data adapter, attach the sequence adapter (if any), fetch all
  * features for the region, and return them alongside the adapter and the
- * stop-token checker. Both pileup and chain executors begin with this exact
+ * abort checker. Both pileup and chain executors begin with this exact
  * sequence; centralising it prevents drift in the adapter wiring contract.
  */
 export async function fetchFeaturesFromAdapter({

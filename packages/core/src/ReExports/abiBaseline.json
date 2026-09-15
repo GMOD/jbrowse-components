@@ -212,6 +212,7 @@
     "bytesForRegions",
     "calculateRedispatchRange",
     "capitalizeFirst",
+    "checkAbortSignal",
     "clamp",
     "clearFileFromCache",
     "cmpStr",
@@ -221,6 +222,8 @@
     "compareLocs",
     "complement",
     "complementTable",
+    "createAbortBreakpoint",
+    "createAbortRotation",
     "createProgressReporter",
     "createScrollLatch",
     "createSharedSetup",
@@ -409,6 +412,7 @@
     "verifyPermission",
     "wheelFrameElapsedMs",
     "wheelZoomAccum",
+    "withAbortCheck",
     "withProgress"
   ],
   "@jbrowse/core/util/color": [

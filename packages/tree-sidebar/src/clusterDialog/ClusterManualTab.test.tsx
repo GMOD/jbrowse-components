@@ -77,16 +77,16 @@ function setup(
 // fetcher is assignable and never sees them). Both plugins complied and both
 // lost cancel and progress on this tab alone.
 describe('ClusterManualTab forwards the fetch handles it is given', () => {
-  // Closing the dialog is the cancel — `useFetch` stops the token it created on
-  // unmount, so the assertion is on the token going stopped rather than merely
-  // being handed over. A placeholder token forwarded from the tab (or none at
+  // Closing the dialog is the cancel — `useFetch` aborts the signal it created on
+  // unmount, so the assertion is on the signal going aborted rather than merely
+  // being handed over. A placeholder signal forwarded from the tab (or none at
   // all) leaves the worker building a matrix nobody is waiting for, which is the
   // state this shipped in.
-  it('gives the fetch a token the dialog closing actually stops', async () => {
+  it('gives the fetch a signal the dialog closing actually stops', async () => {
     let seen: AbortSignal | undefined
     const { unmount } = setup(({ signal }) => {
       seen = signal
-      // never settles, so the token is still live at unmount
+      // never settles, so the signal is still live at unmount
       return new Promise<ClusterMatrix>(() => {})
     })
 

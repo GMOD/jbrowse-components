@@ -309,7 +309,7 @@ describe('WebWorkerRpcDriver pool Core-extendWorker', () => {
     expect(fired()).toBe(2)
   })
 
-  // `WorkerHandle` makes onError/notifyStopToken optional, so a wrapper that
+  // `WorkerHandle` makes onError/the abort frame optional, so a wrapper that
   // spreads the handle and forwards `call` — the obvious way to write one, and
   // what countingPluginManager builds — carries neither. The pool therefore
   // drives the worker's life on the handle it booted rather than on whatever

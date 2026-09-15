@@ -43,7 +43,7 @@ export type SearchType = 'full' | 'prefix' | 'exact'
 export interface BaseTextSearchArgs {
   queryString: string
   searchType?: SearchType
-  stopToken?: StopToken
+  signal?: AbortSignal
 }
 ```
 

@@ -60,8 +60,7 @@ const BAM = 'volvox-ultradeep.bam'
 const isBamRead = (url: string) => new URL(url).pathname.endsWith(`/${BAM}`)
 
 interface CancelProbe {
-  blobUrls: number
-  stopFrames: number
+  abortFrames: number
 }
 
 interface RequestRecord {
@@ -69,18 +68,12 @@ interface RequestRecord {
   errorText?: string
 }
 
-// Counts the two observable signs of the machinery: blob-URL stop tokens minted
-// on the main thread, and stop-token frames posted into a worker. Installed
-// before any app code runs.
+// Counts the observable sign of the machinery: abort frames posted into a
+// worker. Installed before any app code runs.
 async function installProbe(page: Page) {
   await page.evaluateOnNewDocument(() => {
-    const probe: CancelProbe = { blobUrls: 0, stopFrames: 0 }
+    const probe: CancelProbe = { abortFrames: 0 }
     ;(window as unknown as { __cancelProbe: CancelProbe }).__cancelProbe = probe
-    const createObjectURL = URL.createObjectURL
-    URL.createObjectURL = function (obj: Blob | MediaSource) {
-      probe.blobUrls++
-      return createObjectURL.call(URL, obj)
-    }
     const post = Worker.prototype.postMessage
     Worker.prototype.postMessage = function (
       this: Worker,
@@ -90,9 +83,9 @@ async function installProbe(page: Page) {
       if (
         message !== null &&
         typeof message === 'object' &&
-        typeof (message as { signal?: unknown }).signal === 'string'
+        typeof (message as { abort?: unknown }).abort === 'string'
       ) {
-        probe.stopFrames++
+        probe.abortFrames++
       }
       post.apply(this, [message, ...rest] as Parameters<typeof post>)
     } as typeof post
@@ -301,40 +294,18 @@ const suite: TestSuite = {
       },
     },
     {
-      name: 'a superseded fetch notifies the worker it was stopped',
+      name: 'a superseded fetch posts an abort frame to the worker',
       fn: async page => {
         await loadUltradeep(page)
         const before = await readProbe(page)
         await cancelMidFetch(page)
         const after = await readProbe(page)
-        // The frame is what lets an already-running worker call see the stop at
-        // its next await boundary; zero of them means cancellation is silently
-        // doing nothing on the message path.
-        if (after.stopFrames <= before.stopFrames) {
+        // The frame is what aborts the signal an already-running worker call
+        // holds; zero of them means cancellation is silently doing nothing on
+        // the worker side.
+        if (after.abortFrames <= before.abortFrames) {
           throw new Error(
-            `expected stop-token frames to be posted to the worker, went from ${before.stopFrames} to ${after.stopFrames}`,
-          )
-        }
-      },
-    },
-    {
-      name: 'string stop tokens are blob URLs, so a sync loop stays cancellable',
-      fn: async page => {
-        await loadUltradeep(page)
-        const isolated = await page.evaluate(() => self.crossOriginIsolated)
-        // Without cross-origin isolation there is no SharedArrayBuffer, so the
-        // revocable blob URL is the ONLY thing that can interrupt an await-free
-        // worker loop (getLDMatrix's O(n^2) fill is the case). If this ever runs
-        // isolated the assertion is vacuous, so fail rather than pass quietly.
-        if (isolated) {
-          throw new Error(
-            'expected a non-isolated page; SharedArrayBuffer would mask the blob-token path this asserts',
-          )
-        }
-        const { blobUrls } = await readProbe(page)
-        if (blobUrls === 0) {
-          throw new Error(
-            'no blob-URL stop tokens were minted, so nothing can interrupt a synchronous worker loop',
+            `expected abort frames to be posted to the worker, went from ${before.abortFrames} to ${after.abortFrames}`,
           )
         }
       },

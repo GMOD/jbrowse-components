@@ -158,7 +158,7 @@ const TestDisplay = types
     // `FetchMixin`'s begin/end/error bookkeeping, cut down to what the skeleton
     // calls of it. Cancellation and loading-flag mechanics are that mixin's own
     // tests' business, not this file's.
-    beginFetch(_stopToken: AbortSignal) {
+    beginFetch(_signal: AbortSignal) {
       // a load starting clears the durable user-cancel, as the real one does
       self.fetchCanceled = false
     },
@@ -324,7 +324,7 @@ describe('the phases', () => {
       release = resolve
     })
     const { display, committed } = await setupPhases({ run: () => inFlight })
-    // what a newer fetch or a user cancel does: drop the rotation's token, so
+    // what a newer fetch or a user cancel does: drop the rotation's signal, so
     // the in-flight run stops being the answer
     display.fetchRotation.cancel()
     release('data')

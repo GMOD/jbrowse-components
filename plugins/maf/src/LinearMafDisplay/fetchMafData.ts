@@ -83,7 +83,7 @@ export function unionSampleSets(
 }
 
 /**
- * A stop token for one fan-out under `ctx`, stopped by the parent's or by the
+ * A signal for one fan-out under `ctx`, stopped by the parent's or by the
  * first refusal it sees. `fetchRegionsBatched` holds the whole payload until
  * every region lands, so without this a refusal at chr1 would let every sibling
  * download in full and then be discarded; with it the siblings abort at the
@@ -167,7 +167,7 @@ async function callMafRegions<R extends SampleSet>(
 ): Promise<MafBatch<R> | RegionTooLargeResult> {
   // #region rawFetchRegions
   // The CDS-frame annotation overlay (when configured) fetches in the same
-  // stop-token-guarded pass as the main data so the two share staleness
+  // signal-guarded pass as the main data so the two share staleness
   // book-keeping; the two RPCs run concurrently.
   //
   // Concurrently, and each is itself a per-region fan-out, so they get a
@@ -228,7 +228,7 @@ function publishBatch(self: MafFetchSelf, batch: MafBatch<SampleSet>) {
 /**
  * Fetch per-species CDS frame rows (UCSC `mafFrames`) for the buffered regions
  * from the MAF adapter's `annotationAdapter` sub-adapter, in parallel with the
- * main alignment/summary fetch and under its stop token. Empty when no adapter
+ * main alignment/summary fetch and under its signal. Empty when no adapter
  * is configured or neither the frame strip nor the codon view is on, so tracks
  * without frames pay nothing. The frames ride the tier's own payload, so they
  * land under the same commit and the same staleness guard as the rows.

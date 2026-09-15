@@ -3,7 +3,7 @@ import { readTabixLines, readTabixLinesRedispatched } from './tabix.ts'
 // A stand-in for @gmod/tabix's TabixIndexedFile that records the opts it was
 // handed and emits two lines. The point of these tests is the cancellation
 // contract at the boundary — that a live AbortSignal reaches the reader and
-// tracks the stop token — since a signal that is threaded but never wired is
+// carries the signal — since a signal that is threaded but never wired is
 // indistinguishable from no signal at all until a real download is cancelled.
 function fakeSource() {
   const seen: { signal?: AbortSignal }[] = []
@@ -81,14 +81,9 @@ describe('readTabixLines', () => {
     expect(lines[0]!.type).toBe(type)
   })
 
-  // Asserted from inside the read, because withStopTokenSignal releases the
-  // signal once the read settles — which is the point of the helper, and would
-  // make an after-the-fact check pass for a signal that was never wired. A
-  // literal token rather than new AbortController().signal so the test names the id it
-  // stops; either way it is a string, whose abort is observable synchronously
-  // where a SharedArrayBuffer's routes through Atomics.waitAsync and lands a
-  // turn later.
-  it('hands the reader a signal that is live and tracks the token', async () => {
+  // Asserted from inside the read: the signal has to be live while the read
+  // runs, and an after-the-fact check would pass for one that was never wired
+  it('hands the reader a live signal that aborts with its caller', async () => {
     const signalController = new AbortController()
     const signal = signalController.signal
     let abortedDuringRead: boolean | undefined

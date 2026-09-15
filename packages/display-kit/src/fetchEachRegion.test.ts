@@ -39,7 +39,7 @@ const ISSUED: GateFetchState = {
   tierKey: undefined,
 }
 
-// `self` supplies `fetchRegions`, which normally rotates the stop token, and
+// `self` supplies `fetchRegions`, which normally rotates the signal, and
 // the gate's two commit members, which the helper calls for every display.
 // Running `work` directly with a ctx the test controls isolates the guards from
 // that machinery.
@@ -345,7 +345,7 @@ test('the gate state handed to onComplete is the one captured at issue', async (
   expect(seen).toEqual([ISSUED])
 })
 
-// The ctx `call` receives is this region's, not the fetch's: same stop token
+// The ctx `call` receives is this region's, not the fetch's: same signal
 // (one cancel takes the fan-out down) but its own `statusCallback` slot, so
 // `statusCallback: ctx.statusCallback` at the call site aggregates the parallel
 // regions into one bar instead of clobbering. The index is still the third
