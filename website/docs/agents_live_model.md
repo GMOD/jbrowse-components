@@ -324,9 +324,8 @@ return {
   screen as a track.
 
 For a read of your own, `jb.require('@jbrowse/core/util')` has `parseLocString`,
-`renameRegionsIfNeeded` and `getRpcSessionId`, which is what an
-`rpcManager.call` needs; pass an `AbortController`'s `signal` in the args to
-cancel it.
+`renameRegionsIfNeeded` and the `getRpcSessionId` an `rpcManager.call` needs;
+pass an `AbortController`'s `signal` in the args to cancel it.
 
 **To find out what a remote file holds before adding it as a track, build its
 adapter and ask.** The adapter cache is a registry module, and `getAdapter` is
