@@ -48,7 +48,8 @@ far cheaper. Verify data claims with `jb.getFeatures`, never from the picture.
 - Conformance check: `pnpm --filter @jbrowse/desktop test:mcp` (launches the
   built app and exercises every tool against volvox). It needs
   `pnpm build && pnpm build:electron-main` first, and it takes the per-user
-  socket — with another Desktop instance running it attaches to that one.
+  socket — with another Desktop instance running it refuses, and `--attach`
+  drives that one deliberately.
 - Agent eval: `pnpm --filter @jbrowse/desktop eval:mcp` (same build, `claude` on
   PATH) runs a real `claude -p` session per task in
   `scripts/agent-evals/tasks.ts` and grades the session state over the bridge.

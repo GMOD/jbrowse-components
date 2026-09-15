@@ -7,8 +7,9 @@
 // navigation, and open waiting for the new session identity.
 //
 // Prereqs: `pnpm build && pnpm build:electron-main`. With another JBrowse
-// Desktop instance running, the single-instance lock forwards the launch there
-// and the checks run against it instead. `--attach` skips launching entirely.
+// Desktop instance running, the single-instance lock would forward the launch
+// there and the checks would silently run against it, so the harness refuses;
+// `--attach` drives that instance deliberately, skipping the launch.
 //
 // Usage: node test/mcpConformance.ts [--attach]
 import fs from 'node:fs'
