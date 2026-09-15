@@ -1,5 +1,3 @@
-import { createStopToken } from '@jbrowse/core/util/stopToken'
-
 import { runGenotypeClustering } from '../shared/runGenotypeClustering.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
@@ -41,7 +39,7 @@ async function clusterPhased() {
     },
     sessionId: 'session-1',
     regions,
-    stopToken: createStopToken(),
+    signal: new AbortController().signal,
     statusCallback: () => {},
   })
   return display

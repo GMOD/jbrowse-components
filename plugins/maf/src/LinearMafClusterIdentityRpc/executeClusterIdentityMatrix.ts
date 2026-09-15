@@ -1,4 +1,3 @@
-import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 import { clusterMatrix } from '@jbrowse/tree-sidebar'
 
 import { buildIdentityMatrix } from './buildIdentityMatrix.ts'
@@ -13,10 +12,9 @@ export async function executeClusterIdentityMatrix({
   pluginManager: PluginManager
   args: RpcExecuteArgs<'LinearMafClusterIdentityMatrix'>
 }) {
-  const stopTokenCheck = createStopTokenChecker(args.stopToken)
   const data = await buildIdentityMatrix({
     pluginManager,
-    args: { ...args, stopTokenCheck },
+    args,
   })
   // No imputation step, unlike the genotype path: every cell here is a ratio of
   // two counts and an uncovered bin resolves to 0 rather than to a no-call, so
@@ -24,6 +22,6 @@ export async function executeClusterIdentityMatrix({
   return clusterMatrix({
     data,
     statusCallback: args.statusCallback,
-    stopTokenCheck,
+    signal: args.signal,
   })
 }

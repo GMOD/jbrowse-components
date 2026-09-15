@@ -5,7 +5,6 @@ import {
 
 import type { MafSource } from './stateModel.ts'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { ClusterRunModel, RpcMethodCaller } from '@jbrowse/tree-sidebar'
 
@@ -36,14 +35,14 @@ export async function runMafClustering({
   rpcManager,
   sessionId,
   regions,
-  stopToken,
+  signal,
   statusCallback,
 }: {
   model: MafClusterSelf
   rpcManager: ClusterIdentityMatrixCaller
   sessionId: string
   regions: Region[]
-  stopToken: StopToken
+  signal: AbortSignal
   statusCallback: (status: RpcStatus) => void
 }) {
   const { sources, adapterConfig } = model
@@ -60,7 +59,7 @@ export async function runMafClustering({
         regions,
         sources: sources.map(s => s.name),
         adapterConfig,
-        stopToken,
+        signal,
         statusCallback,
       }),
   })

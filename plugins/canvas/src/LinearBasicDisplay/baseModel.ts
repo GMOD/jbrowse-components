@@ -139,7 +139,6 @@ import type {
   Region,
   StatusCallback,
 } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
@@ -1222,7 +1221,7 @@ export default function baseStateModelFactory(
         featureId: string,
         displayedRegionIndex: number,
         opts: {
-          stopToken?: StopToken
+          signal?: AbortSignal
           statusCallback?: StatusCallback
         } = {},
       ) {

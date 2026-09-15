@@ -51,7 +51,7 @@ export function useFeatureSequence({
           _end,
           _upDown,
           _force,
-          stopToken,
+          signal,
           statusCallback,
         ) => {
           const { session: s, assemblyName: asmName } = guard
@@ -70,7 +70,7 @@ export function useFeatureSequence({
               refName,
               assemblyName: asmName,
               session: s,
-              stopToken,
+              signal,
               statusCallback: slot(),
             }),
             upDownBp > 0
@@ -80,7 +80,7 @@ export function useFeatureSequence({
                   refName,
                   assemblyName: asmName,
                   session: s,
-                  stopToken,
+                  signal,
                   statusCallback: slot(),
                 })
               : Promise.resolve(''),
@@ -91,7 +91,7 @@ export function useFeatureSequence({
                   refName,
                   assemblyName: asmName,
                   session: s,
-                  stopToken,
+                  signal,
                   statusCallback: slot(),
                 })
               : Promise.resolve(''),

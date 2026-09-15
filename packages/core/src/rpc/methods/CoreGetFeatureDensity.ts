@@ -13,7 +13,7 @@ export default class CoreGetFeatureDensity extends RpcMethodTypeWithRenameRegion
   name = 'CoreGetFeatureDensity' as const
 
   async execute(args: RpcExecuteArgs<'CoreGetFeatureDensity'>) {
-    const { adapterConfig, sessionId, regions, bpPerPx, stopToken } = args
+    const { adapterConfig, sessionId, regions, bpPerPx, signal } = args
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
       sessionId,
@@ -22,7 +22,7 @@ export default class CoreGetFeatureDensity extends RpcMethodTypeWithRenameRegion
     return isFeatureAdapter(dataAdapter)
       ? dataAdapter.getFeatureDensity(regions, {
           bpPerPx,
-          stopToken,
+          signal,
           statusCallback: args.statusCallback,
         })
       : undefined

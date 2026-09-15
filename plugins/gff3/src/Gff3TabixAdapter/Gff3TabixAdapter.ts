@@ -115,6 +115,6 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
       } catch (e) {
         observer.error(e)
       }
-    }, opts.stopToken)
+    }, opts.signal)
   }
 }

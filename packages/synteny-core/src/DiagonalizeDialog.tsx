@@ -6,7 +6,6 @@ import {
   statusFraction,
   statusProgressLabel,
 } from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 
@@ -15,7 +14,6 @@ import type {
   DiagonalizeStats,
 } from './diagonalizeTypes.ts'
 import type { RpcStatus } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 const useStyles = makeStyles()({
   content: {
@@ -32,7 +30,11 @@ const useStyles = makeStyles()({
 // booleans has to be reasoned about.
 type RunState =
   | { phase: 'idle' }
-  | { phase: 'running'; stopToken: StopToken; status: RpcStatus | undefined }
+  | {
+      phase: 'running'
+      controller: AbortController
+      status: RpcStatus | undefined
+    }
   | { phase: 'done'; summary: string }
   | { phase: 'failed'; error: unknown }
 
@@ -88,9 +90,9 @@ export default function DiagonalizeDialog({
   const runRef = useRef({ stopped: false, applied: EMPTY_STATS })
 
   async function start() {
-    const stopToken = createStopToken()
+    const controller = new AbortController()
     runRef.current = { stopped: false, applied: EMPTY_STATS }
-    setState({ phase: 'running', stopToken, status: 'Preparing' })
+    setState({ phase: 'running', controller, status: 'Preparing' })
     // One window per run, so the RPC's ~40/s download ticks don't drive a
     // React render each. Local to the run rather than a hook: its lifetime is
     // exactly this dialog run.
@@ -109,7 +111,7 @@ export default function DiagonalizeDialog({
     })
     try {
       const stats = await run({
-        stopToken,
+        signal: controller.signal,
         onProgress: applied => {
           runRef.current.applied = applied
         },
@@ -132,10 +134,6 @@ export default function DiagonalizeDialog({
         setState({ phase: 'failed', error })
       }
     } finally {
-      // the Stop button covers only the cancelled run; a run that finished or
-      // failed owns a token nobody else will ever stop, and an unstopped string
-      // token retains a blob URL and every AbortController taken against it
-      stopStopToken(stopToken)
       // and the stream ends with the run that owns it, like every other owner
       // of one. The write itself is already inert — the branches above have all
       // left `phase` terminal, and `write` only touches a running state — but
@@ -184,7 +182,7 @@ export default function DiagonalizeDialog({
               // stays open rather than closing: the cascade commits level by
               // level, so the run has to settle and say what it left applied
               runRef.current.stopped = true
-              stopStopToken(state.stopToken)
+              state.controller.abort()
               setState(prev =>
                 prev.phase === 'running'
                   ? { ...prev, status: 'Stopping' }

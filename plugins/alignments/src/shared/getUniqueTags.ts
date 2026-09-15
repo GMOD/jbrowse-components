@@ -4,7 +4,6 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import type { FilterBy } from './types.ts'
 import type { StatusCallback } from '@jbrowse/core/util'
 import type { BlockSet } from '@jbrowse/core/util/blockTypes'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 // The distinct values a tag takes over the visible blocks, under the display's
 // own read filter — `filterBy` comes off `self` beside `adapterConfig` because
@@ -29,7 +28,7 @@ export async function getUniqueTags({
   tag: string
   blocks: BlockSet
   opts?: {
-    stopToken?: StopToken
+    signal?: AbortSignal
     statusCallback?: StatusCallback
   }
 }) {

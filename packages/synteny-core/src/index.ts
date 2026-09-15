@@ -75,7 +75,7 @@ export { installClearHoverOnSurfaceMove } from '@jbrowse/core/util/installClearH
 export { installAssemblySwapCheck } from './detectSwappedAssemblies.ts'
 // Promoted to core (depends only on core); re-exported here so the
 // comparative-view consumers keep importing it from @jbrowse/synteny-core.
-export { type ActiveFetch, createStopTokenRotation } from '@jbrowse/core/util'
+export { type ActiveFetch, createAbortRotation } from '@jbrowse/core/util'
 export {
   getAdapterToCanonicalRefNameMap,
   renameRegionsForAdapter,

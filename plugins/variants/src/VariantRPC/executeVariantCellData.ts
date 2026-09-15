@@ -144,7 +144,7 @@ export async function executeVariantCellData({
     adapterConfig,
     sessionId,
     statusCallback,
-    stopToken,
+    signal,
     displayedRegionIndices,
     byteLimit,
   } = args
@@ -175,7 +175,7 @@ export async function executeVariantCellData({
     dataAdapter: adapter,
     regions,
     byteLimit,
-    stopToken,
+    signal,
     statusCallback,
   })
   if (tooLarge) {
@@ -196,7 +196,7 @@ export async function executeVariantCellData({
 
   const progressOpts = {
     statusCallback,
-    stopToken,
+    signal,
   }
 
   let filteredVariants: FilteredVariant[]

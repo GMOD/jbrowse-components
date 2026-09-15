@@ -1,11 +1,9 @@
 import { useEffect, useState } from 'react'
 
 import { createStatusWindow, isAbortException } from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { RpcStatus } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -39,20 +37,20 @@ export function useClusterRun({
   model: IStateTreeNode
   onSuccess: () => void
   run: (args: {
-    stopToken: StopToken
+    signal: AbortSignal
     statusCallback: (arg: RpcStatus) => void
   }) => Promise<void>
 }) {
   const [status, setStatus] = useState<RpcStatus>()
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState(false)
-  const [stopToken, setStopToken] = useState<StopToken>()
+  const [controller, setController] = useState<AbortController>()
 
   useEffect(
     () => () => {
-      stopStopToken(stopToken)
+      controller?.abort()
     },
-    [stopToken],
+    [controller],
   )
 
   return {
@@ -60,16 +58,16 @@ export function useClusterRun({
     error,
     loading,
     stop: () => {
-      stopStopToken(stopToken)
+      controller?.abort()
     },
     run: async () => {
-      const token = createStopToken()
+      const controller = new AbortController()
       setError(undefined)
       setStatus('Initializing')
       setLoading(true)
-      // registered before the await, so an unmount mid-run has a live token to
+      // registered before the await, so an unmount mid-run has a controller to
       // abort
-      setStopToken(token)
+      setController(controller)
       // Owned like every other progress stream, which this one was not: the
       // clustering RPC reports at download granularity and `setStatus` went
       // straight to React, so every one of those ~40 a second re-rendered the
@@ -83,7 +81,7 @@ export function useClusterRun({
         isCurrent: () => running && isAlive(model),
       })
       try {
-        await run({ stopToken: token, statusCallback })
+        await run({ signal: controller.signal, statusCallback })
         onSuccess()
       } catch (e) {
         if (!isAbortException(e) && isAlive(model)) {
@@ -100,7 +98,7 @@ export function useClusterRun({
         running = false
         setLoading(false)
         clear()
-        setStopToken(undefined)
+        setController(undefined)
       }
     },
   }

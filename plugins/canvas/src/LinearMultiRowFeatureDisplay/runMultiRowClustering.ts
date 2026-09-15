@@ -5,7 +5,6 @@ import {
 
 import type { MultiRowSource } from './rowSources.ts'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
   ClusterRunModel,
@@ -56,14 +55,14 @@ export async function runMultiRowClustering({
   regions,
   rpcManager,
   sessionId,
-  stopToken,
+  signal,
   statusCallback,
 }: {
   model: MultiRowClusterModel
   regions: Region[]
   rpcManager: MultiRowClusterCaller
   sessionId: string
-  stopToken: StopToken
+  signal: AbortSignal
   statusCallback: (status: RpcStatus) => void
 }) {
   const {
@@ -88,7 +87,7 @@ export async function runMultiRowClustering({
         adapterConfig,
         partitionField: effectivePartitionField,
         clusterField: effectiveClusterField,
-        stopToken,
+        signal,
         statusCallback,
       }),
   })

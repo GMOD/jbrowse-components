@@ -1,8 +1,7 @@
+import { checkAbortSignal } from '../util/aborting.ts'
 import { updateStatus } from '../util/progress.ts'
-import { checkStopTokenThrottled } from '../util/stopToken.ts'
 
 import type { StatusCallback } from '../util/progress.ts'
-import type { StopToken, StopTokenChecker } from '../util/stopToken.ts'
 import type { AugmentedRegion } from '../util/types/data.ts'
 
 /**
@@ -24,7 +23,7 @@ export interface GatedFetchArgs {
 export interface ByteMeasurableAdapter {
   getRegionByteSize: (
     regions: AugmentedRegion[],
-    opts?: { stopToken?: StopToken; statusCallback?: StatusCallback },
+    opts?: { signal?: AbortSignal; statusCallback?: StatusCallback },
   ) => Promise<number | undefined>
 }
 
@@ -90,16 +89,14 @@ export async function measureRegionBytes({
   dataAdapter,
   regions,
   byteLimit,
-  stopToken,
+  signal,
   statusCallback,
-  stopTokenCheck,
 }: {
   dataAdapter: ByteMeasurableAdapter
   regions: AugmentedRegion[]
   byteLimit: number | undefined
-  stopToken?: StopToken
+  signal?: AbortSignal
   statusCallback?: StatusCallback
-  stopTokenCheck?: StopTokenChecker
 }): Promise<{ bytes?: number; tooLarge?: RegionTooLargeResult }> {
   if (byteLimit === undefined) {
     return {}
@@ -109,14 +106,14 @@ export async function measureRegionBytes({
       Promise.all(
         regions.map(region =>
           dataAdapter.getRegionByteSize([region], {
-            stopToken,
+            signal,
             statusCallback,
           }),
         ),
       ),
     ),
   )
-  checkStopTokenThrottled(stopTokenCheck)
+  checkAbortSignal(signal)
   return overByteBudget(bytes, byteLimit)
     ? { bytes, tooLarge: { regionTooLarge: true, bytes } }
     : { bytes }

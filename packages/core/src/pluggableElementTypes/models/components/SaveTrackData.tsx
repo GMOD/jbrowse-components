@@ -87,22 +87,14 @@ function useTrackDataExport({
           force ? 'forced' : 'gated',
         ] as const)
       : null,
-    async (
-      _name,
-      _trackId,
-      _regions,
-      fileType,
-      mode,
-      stopToken,
-      statusCallback,
-    ) =>
+    async (_name, _trackId, _regions, fileType, mode, signal, statusCallback) =>
       fetchTrackData({
         model,
         regions,
         type: fileType,
         options,
         force: mode === 'forced',
-        stopToken,
+        signal,
         statusCallback,
       }),
   )

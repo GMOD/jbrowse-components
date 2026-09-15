@@ -90,7 +90,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig>
         }
       }
       observer.complete()
-    }, opts.stopToken)
+    }, opts.signal)
   }
 
   public async getExportData(

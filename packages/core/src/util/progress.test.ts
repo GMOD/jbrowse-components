@@ -14,7 +14,6 @@ import {
   updateStatus,
   withProgress,
 } from './progress.ts'
-import { markStopTokenStopped } from './stopToken.ts'
 
 import type { RpcStatus, StatusCallback } from './progress.ts'
 
@@ -767,8 +766,9 @@ describe('withProgress', () => {
     const cb = (s: RpcStatus) => {
       seen.push(s)
     }
-    const stopToken = 'blob:stopped-before-withProgress'
-    markStopTokenStopped(stopToken)
+    const signalController = new AbortController()
+    const signal = signalController.signal
+    signalController.abort()
     await updateStatus('Downloading features', cb, async () => {
       await expect(
         withProgress(
@@ -776,7 +776,7 @@ describe('withProgress', () => {
             label: 'Computing layout',
             total: 2,
             statusCallback: cb,
-            stopToken,
+            signal,
           },
           () => {},
         ),
@@ -1335,16 +1335,17 @@ describe('createStatusFanOut', () => {
     const slot = createStatusFanOut(s => {
       seen.push(s)
     })
-    const stopToken = 'blob:one-region-cancelled'
-    markStopTokenStopped(stopToken)
-    const region = async (cb: StatusCallback, token?: string) => {
+    const signalController = new AbortController()
+    const signal = signalController.signal
+    signalController.abort()
+    const region = async (cb: StatusCallback, token?: AbortSignal) => {
       await updateStatus('Downloading features', cb, () =>
         withProgress(
           {
             label: 'Computing layout',
             total: 2,
             statusCallback: cb,
-            stopToken: token,
+            signal: token,
           },
           async report => {
             await Promise.resolve()
@@ -1358,7 +1359,7 @@ describe('createStatusFanOut', () => {
       region(slot()),
       // its token is stopped before it starts, so the layout phase throws on
       // the stop check its opening `report(0)` makes
-      region(slot(), stopToken).catch(() => {}),
+      region(slot(), signal).catch(() => {}),
       region(slot()),
     ])
     const messages = seen.map(statusMessageText)

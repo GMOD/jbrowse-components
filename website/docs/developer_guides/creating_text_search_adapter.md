@@ -162,7 +162,7 @@ The three constructor arguments are `BaseAdapter`'s, so pass them straight to
 of a file changes only `searchIndex`'s body — `fetch` the endpoint you read out
 of the config and map each hit to a `BaseResult`.
 
-A `searchIndex` that can be slow should honor `args.stopToken`: every keystroke
+A `searchIndex` that can be slow should honor `args.signal`: every keystroke
 supersedes the previous query, and `TextSearchManager` treats an abort as a
 normal outcome.
 

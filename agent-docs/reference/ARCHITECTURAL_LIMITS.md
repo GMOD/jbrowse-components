@@ -610,7 +610,7 @@ smooth scrolling) and nothing orders the resulting calls, so visible does not
 outrank buffered and near does not outrank far. Ten tracks on a whole-genome open
 dispatch hundreds of concurrent RPCs against at most five workers and six
 connections per host, and the region the user is looking at is no likelier to
-resolve first than one off-screen. Cancellation is per-display (stop-token
+resolve first than one off-screen. Cancellation is per-display (signal
 rotation in `FetchMixin`), not a scheduler.
 
 **The other axis is volume, and nothing bounds that either.** `fetchSizeLimit`

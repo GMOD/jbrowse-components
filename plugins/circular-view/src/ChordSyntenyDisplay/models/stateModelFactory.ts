@@ -366,7 +366,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
                       adapterConfig,
                       name,
                       {
-                        stopToken: mapCtx!.stopToken,
+                        signal: mapCtx!.signal,
                         sessionId,
                         statusCallback: mapCtx!.statusCallback,
                       },

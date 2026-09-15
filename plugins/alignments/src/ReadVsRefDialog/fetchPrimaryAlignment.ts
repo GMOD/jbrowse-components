@@ -15,7 +15,6 @@ import type {
   Feature,
   StatusCallback,
 } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 const PAIR_ROLE = SAM_FLAG_FIRST_IN_PAIR | SAM_FLAG_SECOND_IN_PAIR
 
@@ -124,7 +123,7 @@ export async function resolvePrimaryAlignment(
 export async function fetchPrimaryAlignment(
   track: AbstractTrackModel,
   preFeature: Feature,
-  opts: { stopToken?: StopToken; statusCallback?: StatusCallback } = {},
+  opts: { signal?: AbortSignal; statusCallback?: StatusCallback } = {},
 ) {
   return resolvePrimaryAlignment(preFeature, async loci => {
     const { rpcManager, assemblyManager } = getSession(track)

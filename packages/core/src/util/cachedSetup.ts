@@ -22,7 +22,7 @@ type OnProgress = (current: number, total?: number) => void
  *   moment that fetch was superseded — the display's latest-wins guard gates the
  *   old callback off — so the fetch replacing it awaited a multi-GB parse behind
  *   a blank loading overlay.
- * - **`stopToken` is withheld from the shared work.** Honoring one caller's
+ * - **`signal` is withheld from the shared work.** Honoring one caller's
  *   cancel would abort a parse the caller replacing it is already waiting on,
  *   and reject them both. A superseded fetch just stops listening. Cancellation
  *   stays with the per-call work (indexed range queries), which no one else is
@@ -54,7 +54,7 @@ export function cachedSetup<T>({
     cached ??= setup(
       {
         ...opts,
-        stopToken: undefined,
+        signal: undefined,
         statusCallback: status => {
           for (const cb of waiting) {
             cb(status)

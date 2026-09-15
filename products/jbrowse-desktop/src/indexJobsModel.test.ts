@@ -1,4 +1,4 @@
-import { checkStopToken, isStopped } from '@jbrowse/core/util/stopToken'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import jobsModelFactory from './indexJobsModel.ts'
@@ -7,12 +7,11 @@ import type { JobState } from '../../../plugins/jobs-management/src/JobsListWidg
 import type { JobInput } from '../../../plugins/jobs-management/src/JobsListWidget/model.ts'
 import type { TextJobsEntry } from './indexJobsModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { JobsListModel } from '@jbrowse/plugin-jobs-management'
 import type { Track } from '@jbrowse/text-indexing-core'
 
 interface RpcArgs {
-  stopToken: StopToken
+  signal: AbortSignal
 }
 
 // invokeIpc reaches the main process for the userData directory, and the model
@@ -280,8 +279,8 @@ test('a cancelled job reports as cancelled rather than as an error', async () =>
   // so an assertion made afterwards passes whether the cancel landed or not
   let stoppedAtCall: boolean | undefined
   const call = jest.fn((_sessionId: string, _method: string, args: RpcArgs) => {
-    stoppedAtCall = isStopped(args.stopToken)
-    checkStopToken(args.stopToken)
+    stoppedAtCall = args.signal.aborted
+    checkAbortSignal(args.signal)
     return Promise.resolve()
   })
   const { jobsManager, widget, session } = setup({ call })

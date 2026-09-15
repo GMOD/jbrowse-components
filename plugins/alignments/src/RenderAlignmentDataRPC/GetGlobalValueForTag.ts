@@ -49,7 +49,7 @@ export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFilters
       tag,
       filterBy,
       byteLimit,
-      stopToken,
+      signal,
       statusCallback,
     } = args
 
@@ -66,7 +66,7 @@ export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFilters
       dataAdapter,
       regions,
       byteLimit,
-      stopToken,
+      signal,
       statusCallback,
     })
     if (tooLarge) {
@@ -77,7 +77,7 @@ export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFilters
     // concept the BAM/CRAM adapters read off the options bag, not a BaseOptions
     // field.
     const fetchOpts: BaseOptions & { filterBy?: FilterBy } = {
-      stopToken,
+      signal,
       statusCallback,
       filterBy,
     }

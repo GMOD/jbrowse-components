@@ -1,5 +1,3 @@
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
-
 import { createFollowAnswerCache } from './followAnswerCache.ts'
 
 import type {
@@ -10,7 +8,6 @@ import type { SyntenyCigarMapResult } from '../LinearSyntenyRPC/SyntenyGetCigarM
 import type { FollowAnswerCache } from './followAnswerCache.ts'
 import type { FollowTransform } from './followTransform.ts'
 import type { SpreadDecision } from './spreadDecision.ts'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 // What one settle decided: which block places this level, which axis it was
 // picked on, and the affine shortcut the frame pass may take until the next
@@ -104,9 +101,9 @@ export function createFollowLevelStates<Level extends object>() {
   // inside the same block still wants the map already in flight for it — so
   // rotating would stop one level's still-wanted map the moment another level
   // asked. What makes an in-flight map stale is the store being dropped
-  // underneath it, which is what `generation` says, so the token's lifetime is
+  // underneath it, which is what `generation` says, so the signal's lifetime is
   // exactly one generation.
-  let stopToken: StopToken | undefined
+  let controller: AbortController | undefined
   return {
     // Which reset of the store an answer was planned under. `seq` cannot say
     // it: dropping the map leaves an in-flight `execute` holding a state object
@@ -144,12 +141,11 @@ export function createFollowLevelStates<Level extends object>() {
       const map = states.get(level)?.map
       return map?.featureId === featureId ? map.value : undefined
     },
-    // The token every request planned under this generation carries, so that
+    // The signal every request planned under this generation carries, so that
     // dropping the store stops the work as well as the answer.
-    get stopToken(): StopToken {
-      const token = stopToken ?? createStopToken()
-      stopToken = token
-      return token
+    get signal(): AbortSignal {
+      controller ??= new AbortController()
+      return controller.signal
     },
     // switching the mode off drops every pick, cached transform, in-flight
     // answer and reported error at once — and now stops the requests behind
@@ -159,10 +155,8 @@ export function createFollowLevelStates<Level extends object>() {
     clear() {
       states = new WeakMap()
       generation++
-      if (stopToken) {
-        stopStopToken(stopToken)
-        stopToken = undefined
-      }
+      controller?.abort()
+      controller = undefined
     },
   }
 }

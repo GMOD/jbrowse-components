@@ -102,7 +102,7 @@ await withHarness(
     })
 
     // Count and time every synchronous XHR the RPC worker makes — that is the
-    // stop-token fallback probe (checkStopToken), and a thread blocked in one is
+    // stop-token fallback probe (checkAbortSignal), and a thread blocked in one is
     // reported as *idle* by the sampling profiler, so it is invisible in a CPU
     // profile. Also record whether the worker got SharedArrayBuffer (the cheap
     // atomic path) at all.

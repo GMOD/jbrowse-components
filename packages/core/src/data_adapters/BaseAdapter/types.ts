@@ -1,17 +1,12 @@
 import type { StatusCallback } from '../../util/progress.ts'
-import type { StopToken } from '../../util/stopToken.ts'
 
 export type LodTier = 'fine' | 'coarse'
 
 // #region baseOptions
 export interface BaseOptions {
-  stopToken?: StopToken
+  signal?: AbortSignal
   bpPerPx?: number
   sessionId?: string
-  // unused in-tree but kept so BaseOptions is structurally assignable to the
-  // `Options { signal? }` interfaces in @gmod/tabix, @gmod/bbi-js, etc. that
-  // adapters forward opts to
-  signal?: AbortSignal
   // The single out-of-band status transport. A plain string is an indeterminate
   // phase label; a StatusWithProgress object adds a determinate fraction
   // (`current`/`total` are units-agnostic — bytes for a download, blocks for an
@@ -55,6 +50,6 @@ export type SearchType = 'full' | 'prefix' | 'exact'
 export interface BaseTextSearchArgs {
   queryString: string
   searchType?: SearchType
-  stopToken?: StopToken
+  signal?: AbortSignal
 }
 // #endregion

@@ -20,7 +20,7 @@ export async function executeArcGetFeatures({
     sequenceAdapter,
     regions,
     byteLimit,
-    stopToken,
+    signal,
     statusCallback,
   } = args
 
@@ -35,7 +35,7 @@ export async function executeArcGetFeatures({
     dataAdapter,
     regions,
     byteLimit,
-    stopToken,
+    signal,
     statusCallback,
   })
   if (tooLarge) {
@@ -48,7 +48,7 @@ export async function executeArcGetFeatures({
     () =>
       firstValueFrom(
         dataAdapter
-          .getFeaturesInMultipleRegions(regions, { statusCallback, stopToken })
+          .getFeaturesInMultipleRegions(regions, { statusCallback, signal })
           .pipe(toArray()),
       ),
   )

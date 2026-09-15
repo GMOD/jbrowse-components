@@ -2,7 +2,6 @@ import { TabixIndexedFile } from '@gmod/tabix'
 import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
-import { withStopTokenSignal } from '@jbrowse/core/util/stopToken'
 import { readTabixHeaderLines } from '@jbrowse/core/util/tabix'
 import {
   DEFAULT_PLINK_LD_HEADER,
@@ -75,18 +74,15 @@ export default class PlinkLDTabixAdapter extends PlinkLDAdapterBase<Config> {
 
     const records: PlinkLDRecord[] = []
 
-    await withStopTokenSignal(opts.stopToken, signal =>
-      ld.getLines(refName, start, end, {
-        lineCallback: (line: string) => {
-          const record = parsePlinkLDLine(line, header)
-          if (record) {
-            records.push(record)
-          }
-        },
-        ...opts,
-        signal,
-      }),
-    )
+    await ld.getLines(refName, start, end, {
+      lineCallback: (line: string) => {
+        const record = parsePlinkLDLine(line, header)
+        if (record) {
+          records.push(record)
+        }
+      },
+      ...opts,
+    })
 
     return records
   }

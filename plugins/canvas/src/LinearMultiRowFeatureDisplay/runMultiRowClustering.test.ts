@@ -1,5 +1,3 @@
-import { createStopToken } from '@jbrowse/core/util/stopToken'
-
 import {
   featureMatrixKey,
   runMultiRowClustering,
@@ -37,7 +35,7 @@ test('calls the registry RPC and applies the clustered order + tree', async () =
     regions,
     rpcManager: { call },
     sessionId: 'sess1',
-    stopToken: createStopToken(),
+    signal: new AbortController().signal,
     statusCallback: () => {},
   })
 
@@ -77,7 +75,7 @@ test('clusters the focused clade and keeps the hidden rows', async () => {
     regions,
     rpcManager: { call },
     sessionId: 'sess1',
-    stopToken: createStopToken(),
+    signal: new AbortController().signal,
     statusCallback: () => {},
   })
 

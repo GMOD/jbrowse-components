@@ -110,7 +110,7 @@ export abstract class BaseFeatureDataAdapter<
   /**
    * Convenience wrapper that collects {@link getFeatures} for a region into an
    * array — the common shape across RPC methods (RenderFeatureData, Manhattan,
-   * Wiggle, etc.). Pass `opts` so `statusCallback`/`stopToken` reach the
+   * Wiggle, etc.). Pass `opts` so `statusCallback`/`signal` reach the
    * adapter; omitting them means no download progress and a fetch that can't be
    * interrupted mid-flight.
    */

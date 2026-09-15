@@ -13,7 +13,6 @@
 // (so its reads are the dependency set), `run` owns every await, and `commit`
 // is synchronous and unreachable unless the fetch is still current.
 
-import { isStopped } from '@jbrowse/core/util'
 import { adapterConfigKey } from '@jbrowse/core/util/adapterConfigKey'
 import { types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -23,7 +22,6 @@ import { comparativeDisplayPhase } from './comparativeReadiness.ts'
 import { installComparativeFetchAutorun } from './installComparativeFetchAutorun.ts'
 
 import type { ComparativeFetchContext } from './installComparativeFetchAutorun.ts'
-import type { StopToken } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const DELAY = 10
@@ -499,11 +497,11 @@ test('a reload the gate does not clear is reported as a dead button', async () =
 // the work, it survives the next input change, and it is not a one-way door.
 describe('the user cancel', () => {
   it('stops the in-flight RPC and drops its result', async () => {
-    let stopToken: StopToken | undefined
+    let signal: AbortSignal | undefined
     const gate = deferred<string>()
     const { display, committed } = await setup({
       run: (_args, ctx) => {
-        stopToken = ctx.stopToken
+        signal = ctx.signal
         return gate.promise
       },
     })
@@ -513,7 +511,7 @@ describe('the user cancel', () => {
 
     // the worker's half: the token the RPC is holding is signalled, which is
     // the only thing that stops the reads still in flight
-    expect(isStopped(stopToken)).toBe(true)
+    expect(signal!.aborted).toBe(true)
     expect(display.fetchCanceled).toBe(true)
     // the run's `finally` writes `isLoading` only while its own guard is
     // open, and the cancel closed it — so nothing but the cancel itself ever

@@ -17,7 +17,7 @@ export function intervalTreeFeatures(
       observer.next(f)
     }
     observer.complete()
-  }, opts.stopToken)
+  }, opts.signal)
 }
 
 // Build one interval tree for a refName from paired-feature buckets, inserting

@@ -49,6 +49,37 @@ describe('RpcClient.call()', () => {
     })
   })
 
+  test('a signal marks the call abortable and posts an abort frame on abort', async () => {
+    const { worker, client } = makeClient()
+    const controller = new AbortController()
+    const p = client.call('m', {}, controller.signal)
+    expect(worker.sent[0]).toMatchObject({ uid: '1', abortable: true })
+    controller.abort()
+    expect(worker.sent[1]).toEqual({ abort: '1', libRpc: true })
+    replyError(worker, '1', 'aborted')
+    await expect(p).rejects.toThrow('aborted')
+  })
+
+  test('an abort after the call settled posts nothing', async () => {
+    const { worker, client } = makeClient()
+    const controller = new AbortController()
+    const p = client.call('m', {}, controller.signal)
+    reply(worker, '1', 'done')
+    await expect(p).resolves.toBe('done')
+    controller.abort()
+    expect(worker.sent).toHaveLength(1)
+  })
+
+  test('an already-aborted signal rejects without posting', async () => {
+    const { worker, client } = makeClient()
+    const controller = new AbortController()
+    controller.abort()
+    await expect(client.call('m', {}, controller.signal)).rejects.toThrow(
+      /aborted/,
+    )
+    expect(worker.sent).toHaveLength(0)
+  })
+
   test('uids increment per call', () => {
     const { worker, client } = makeClient()
     // eslint-disable-next-line @typescript-eslint/no-floating-promises

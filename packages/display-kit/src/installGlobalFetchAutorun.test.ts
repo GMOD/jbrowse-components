@@ -17,14 +17,13 @@
 // on how often it fetched: re-running the body is the thing the tracked reads
 // buy, and a gate that stays shut is allowed to keep declining.
 
-import { createStopTokenRotation } from '@jbrowse/core/util/createStopTokenRotation'
+import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import { isDataCurrent } from '@jbrowse/core/util/isDataCurrent'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import { installGlobalFetchAutorun } from './installGlobalFetchAutorun.ts'
 import { serializeRpcProps } from './rpcPropsCacheKey.ts'
 
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 const DELAY = 10
@@ -111,7 +110,7 @@ const TestDisplay = types
   .volatile(self => ({
     // `FetchMixin`'s rotation, lent to the skeleton — which is also what a test
     // superseding an in-flight fetch reaches (`fetchRotation.cancel()`)
-    fetchRotation: createStopTokenRotation(self, {
+    fetchRotation: createAbortRotation(self, {
       setStatusMessage: () => {},
     }),
   }))
@@ -159,7 +158,7 @@ const TestDisplay = types
     // `FetchMixin`'s begin/end/error bookkeeping, cut down to what the skeleton
     // calls of it. Cancellation and loading-flag mechanics are that mixin's own
     // tests' business, not this file's.
-    beginFetch(_stopToken: StopToken) {
+    beginFetch(_stopToken: AbortSignal) {
       // a load starting clears the durable user-cancel, as the real one does
       self.fetchCanceled = false
     },

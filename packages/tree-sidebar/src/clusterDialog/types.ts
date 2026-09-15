@@ -1,6 +1,5 @@
 import type { ClusterMatrix } from '../clusterMatrix.ts'
 import type { Region, RpcCaller, RpcStatus } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { DialogProps } from '@mui/material'
 
@@ -20,7 +19,7 @@ export interface ClusterRunArgs {
   rpcManager: RpcCaller
   sessionId: string
   regions: Region[]
-  stopToken: StopToken
+  signal: AbortSignal
   statusCallback: (arg: RpcStatus) => void
 }
 

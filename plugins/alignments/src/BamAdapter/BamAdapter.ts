@@ -1,14 +1,11 @@
 import { BamFile, packReference } from '@gmod/bam'
 import { numericCigarHasSkip } from '@jbrowse/cigar-utils'
 import { downloadStatus, withProgress } from '@jbrowse/core/util'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import {
-  checkStopToken,
-  withStopTokenSignal,
-} from '@jbrowse/core/util/stopToken'
 
 import { BaseSamAdapter } from '../shared/BaseSamAdapter.ts'
 import { seqFetchSpan } from '../shared/seqFetchSpan.ts'
@@ -65,7 +62,7 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
       // lands mid-fetch still decodes and returns the whole region's residues
       // to a query nobody is waiting for; without the callback the reader sees
       // no phase at all for it.
-      { stopToken: opts?.stopToken, statusCallback: opts?.statusCallback },
+      { signal: opts?.signal, statusCallback: opts?.statusCallback },
     )
   }
 
@@ -128,11 +125,11 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
     // originalRefName is not read here — fetchRegionSeq resolves it, since the
     // reference read is the only consumer of the assembly-side name
     const { refName, start, end } = region
-    const { stopToken, filterBy, statusCallback } = opts ?? {}
+    const { signal, filterBy, statusCallback } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
       await this.setup(opts)
       const { bam } = this.configure()
-      checkStopToken(stopToken)
+      checkAbortSignal(signal)
 
       // Started BEFORE the alignment fetch is awaited, so the two round trips
       // overlap. Only once this file is known to hold MD-less reads — see
@@ -160,12 +157,13 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
       // The signal is what makes cancellation reach the socket: without it a
       // canceled navigation stops *processing* the reads but downloads every
       // byte of the range to completion first.
-      const records = await withStopTokenSignal(stopToken, signal =>
-        downloadStatus('Downloading alignments', statusCallback, onProgress =>
+      const records = await downloadStatus(
+        'Downloading alignments',
+        statusCallback,
+        onProgress =>
           bam.getRecordsForRange(refName, start, end, { onProgress, signal }),
-        ),
       )
-      checkStopToken(stopToken)
+      checkAbortSignal(signal)
 
       const {
         readName,
@@ -211,7 +209,7 @@ export default class BamAdapter extends BaseSamAdapter<BamAdapterConfig> {
           label: 'Processing alignments',
           total: records.length,
           statusCallback,
-          stopToken,
+          signal,
         },
         report => {
           for (const record of records) {

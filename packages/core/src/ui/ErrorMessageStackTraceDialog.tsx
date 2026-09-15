@@ -1,7 +1,6 @@
 import { effectiveRenderer } from '@jbrowse/render-core/graphicsCapabilities'
 import { useGraphicsCapabilities } from '@jbrowse/render-core/useGraphicsCapabilities'
 
-import { hasSharedArrayBuffer } from '../util/stopToken.ts'
 import { useFetch } from '../util/useFetch.ts'
 import CopyToClipboardButton from './CopyToClipboardButton.tsx'
 import ErrorMessageStackTraceContents from './ErrorMessageStackTraceContents.tsx'
@@ -55,9 +54,6 @@ export default function ErrorMessageStackTraceDialog({
   const glRendererInfo = graphicsCapabilities?.glRenderer
     ? `GL renderer: ${graphicsCapabilities.glRenderer}${graphicsCapabilities.softwareWebgl ? ' (SOFTWARE RASTERIZER)' : ''}`
     : ''
-  // Both paths cancel at await boundaries by posted message; SharedArrayBuffer
-  // additionally interrupts a synchronous worker loop mid-run.
-  const sabInfo = `Worker abort: postMessage${hasSharedArrayBuffer ? ' + SharedArrayBuffer' : ''}`
 
   const session = (window as unknown as { JBrowseSession?: SessionGlobal })
     .JBrowseSession
@@ -75,7 +71,6 @@ export default function ErrorMessageStackTraceDialog({
     gpuInfo,
     glRendererInfo,
     rpcInfo,
-    sabInfo,
     `Cross-origin isolated: ${crossOriginIsolated}`,
     `CPU cores: ${navigator.hardwareConcurrency}`,
     `Device pixel ratio: ${window.devicePixelRatio}`,

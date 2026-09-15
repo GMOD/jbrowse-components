@@ -136,6 +136,10 @@ something that must keep working anyway.
   realm on the SAB branch, and the gate change alters no shipped configuration.
   The free-rider clause above is unaffected: an isolated host reports isolated
   and gets the fast path.
+- **2026-09-15: ADR-122 retired both mechanisms this ADR weighed.** The
+  SharedArrayBuffer path and the blob probe are gone; a loop that never awaits
+  yields a task instead. The decision above stands with nothing left to buy:
+  isolation would speed up no code path.
 - Nothing here is a code change. If someone wants the empirical blast radius
   rather than this analysis, `Cross-Origin-Embedder-Policy-Report-Only` on the
   distribution costs nothing and touches no source.

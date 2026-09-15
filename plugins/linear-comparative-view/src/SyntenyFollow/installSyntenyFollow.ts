@@ -479,7 +479,7 @@ export function installSyntenyFollow(self: SyntenyFollowHost) {
     requestCigarMap({
       model: step.display,
       feat: step.feat,
-      stopToken: levelStates.stopToken,
+      signal: levelStates.signal,
     })
       .then(value => {
         // The map is a property of the BLOCK, so `seq` is the wrong guard —

@@ -1,5 +1,6 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
+import { createAbortBreakpoint } from '@jbrowse/core/util/aborting'
 
 import { resolveSampleName } from '../shared/getSources.ts'
 import { hasProcessGenotypes } from '../shared/hasProcessGenotypes.ts'
@@ -10,11 +11,7 @@ import { MISSING, readAltDosages } from './genotypeMatrixEncoding.ts'
 import type { Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import type {
-  LastStopTokenCheck,
-  Region,
-  StatusCallback,
-} from '@jbrowse/core/util'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
 
 export async function getGenotypeMatrix({
   pluginManager,
@@ -23,7 +20,7 @@ export async function getGenotypeMatrix({
   pluginManager: PluginManager
   args: {
     adapterConfig: Record<string, unknown>
-    stopTokenCheck?: LastStopTokenCheck
+    signal?: AbortSignal
     sessionId: string
     headers?: Record<string, string>
     regions: Region[]
@@ -43,7 +40,7 @@ export async function getGenotypeMatrix({
     regions,
     adapterConfig,
     sessionId,
-    stopTokenCheck,
+    signal,
     statusCallback,
   } = args
   const dataAdapter = await getFeatureAdapterOrThrow({
@@ -74,7 +71,7 @@ export async function getGenotypeMatrix({
       label: 'Filtering variants',
       total: rawFeatures.length,
       statusCallback,
-      stopTokenCheck,
+      signal,
     }),
   })
 
@@ -160,8 +157,9 @@ export async function getGenotypeMatrix({
     label: 'Building genotype matrix',
     total: numFeatures,
     statusCallback,
-    stopTokenCheck,
+    signal,
   })
+  const breakpoint = createAbortBreakpoint(signal)
   for (let f = 0; f < numFeatures; f++) {
     const feature = filteredVariants[f]!.feature
     const numAlts = altCounts[f]!
@@ -213,6 +211,9 @@ export async function getGenotypeMatrix({
       }
     }
     report(f)
+    if (breakpoint.due()) {
+      await breakpoint.yield()
+    }
   }
   return rows
 }

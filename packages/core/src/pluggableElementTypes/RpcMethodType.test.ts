@@ -48,7 +48,7 @@ test('augmentLocationObject walks and serializes URIs when internet accounts exi
         testLocation: locationInAdapter,
       },
       filters: [],
-      stopToken: 'teststring',
+      signal: new AbortController().signal,
       randomProperty: 'randomstring',
       parentObject: {
         nestedObject: {

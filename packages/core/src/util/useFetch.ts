@@ -1,10 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { createStatusWindow } from './progress.ts'
-import { createStopToken, stopStopToken } from './stopToken.ts'
 
 import type { RpcStatus, StatusCallback } from './progress.ts'
-import type { StopToken } from './stopToken.ts'
 
 // Minimal data-fetching hook, replacing SWR. JBrowse only ever used the
 // {data, error, isLoading, mutate} subset with background revalidation off
@@ -38,8 +36,8 @@ type FetchingKey<Key> = Exclude<Key, null | undefined | false>
  */
 type FetcherArgs<Key> =
   FetchingKey<Key> extends readonly unknown[]
-    ? [...FetchingKey<Key>, StopToken, StatusCallback]
-    : [FetchingKey<Key>, StopToken, StatusCallback]
+    ? [...FetchingKey<Key>, AbortSignal, StatusCallback]
+    : [FetchingKey<Key>, AbortSignal, StatusCallback]
 
 interface FetchState<Data> {
   data: Data | undefined
@@ -162,7 +160,7 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
       // fetch resolved is a different case, and the stream's own `clear` drops
       // that one.)
       let settled = false
-      const stopToken = createStopToken()
+      const controller = new AbortController()
       // A refetch under the same key — mutate(), or the cross-component
       // mutate(key) — is the same question asked again, so what is on screen is
       // a stale answer to it rather than an answer to something else: leave it
@@ -204,7 +202,7 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
       const { statusCallback, clear: clearStatus } = statusWindow.open({
         isCurrent: () => alive && !settled,
       })
-      const args = [...keyArgs, stopToken, statusCallback]
+      const args = [...keyArgs, controller.signal, statusCallback]
       const call = fetcher as (...args: unknown[]) => Promise<Data>
       Promise.resolve()
         .then(() => call(...args))
@@ -228,9 +226,9 @@ export function useFetch<Data = unknown, Key extends FetchKey = FetchKey>(
         })
       return () => {
         alive = false
-        // the token's lifetime is this fetch's. An abort rejection lands in the
+        // the signal's lifetime is this fetch's. An abort rejection lands in the
         // catch above with alive already false, so it never surfaces as an error
-        stopStopToken(stopToken)
+        controller.abort()
         // and the window's lifetime is too: `alive` already makes a queued
         // trailing write a no-op, but the timer behind it would otherwise stand
         // for up to a window past unmount

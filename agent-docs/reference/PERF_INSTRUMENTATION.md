@@ -380,89 +380,16 @@ wash (3430 vs 3534 ms to settled): the boots overlap, so they are not on the
 wall-clock critical path, and heavy datasets are where the pool earns its keep.
 The live lever is bundle *content* — see below.
 
-## The SharedArrayBuffer stop-token path does work — it just never runs
+## Cancellation is an AbortSignal, and the two old mechanisms are gone
 
-`stopToken.ts` cancels at await boundaries by posting the stopped token's id to
-every worker, and a `SharedArrayBuffer` token additionally carries an atomic flag
-that a *synchronous* loop can read without yielding. Only the message path ever
-runs in practice, because SAB needs `crossOriginIsolated` and nothing sets
-COOP/COEP (see [NETWORK_ABORT.md](NETWORK_ABORT.md) for why that is deliberate
-and not fixable for an embeddable library). `hasSharedArrayBuffer` asks
-`crossOriginIsolated` directly — it used to ask only whether one could be
-constructed, which is the same question in a browser and a different one in a
-V8 embedder, so jest and Electron both took a path no deployment takes. ADR-056's
-consequences carry what that cost.
-
-`node website/scripts/coi-probe.ts [--coi]` serves the build with and without
-`Cross-Origin-Opener-Policy: same-origin` + `Cross-Origin-Embedder-Policy:
-require-corp` and checks the observable consequences. Verified July 2026 — with
-isolation on, the fast path engages correctly end to end:
-
-| | no COOP/COEP | with COOP/COEP |
-| --- | --- | --- |
-| `crossOriginIsolated` | false | true |
-| blob URLs created (fallback tokens) | 3 | **0** |
-| SharedArrayBuffers reaching workers | 0 | **3** |
-| `blob:` sync-XHR probes in workers | 0 | 0 |
-| displays painted / page errors | 5 / 0 | 5 / 0 |
-
-The SAB survives the RPC argument serialization intact (it arrives as a real
-`SharedArrayBuffer`, not a mangled object), which is the part most likely to
-have rotted silently. The blob-URL row reads the other way round now: a
-non-isolated page **must** mint them, because the blob is what the synchronous
-probe fails against, and `fetch-cancellation.ts` fails if it ever sees zero.
-
-On a **light** load it buys nothing: 5 runs each, time-to-settled medians
-1933 ms without isolation vs 1917 ms with. That measurement is misleading on its
-own, though, and it is the wrong workload — a volvox LGV has almost nothing to
-cancel, and cancellation is the entire point of a stop token.
-
-`node website/scripts/cancel-bench.ts [--coi] [--credentialless]` measures the
-case that matters: the ultra-deep (~2000x) BAM in `extra_test_data/`, driven
-through six navigations 350 ms apart so each one cancels a fetch still in
-flight.
-
-### The sync-XHR fallback measured at zero here, and that was the wrong workload
-
-The blob-URL/sync-XHR probe used to be how a non-isolated deployment interrupted
-a synchronous worker loop, and this bench once credited it with a real gap
-(median 1016 ms settle on the XHR path vs 692 ms on SAB, 6 runs each). **That
-comparison predated cancellation-by-message.** Once await boundaries cancel for
-free on every deployment, the probe's only remaining job was intra-loop
-interruption, and re-running the same bench with it on and off gave nothing
-(5 runs each, back to back, no isolation):
-
-| | probe on | probe off |
-| --- | --- | --- |
-| settle after last of 6 hops | median **513 ms** (477–564) | median **513 ms** (428–594) |
-| whole 6-hop burst | median **2670 ms** | median **2675 ms** |
-| blob URLs created | 4 | **0** |
-
-The reason is that *alignments* loops are already chunked by awaits at region
-granularity, so there was little to interrupt inside one. **That conclusion did
-not generalise and the probe was restored.** `getLDMatrix.ts` fills an O(n²)
-Float32Array with no await anywhere — millions of pair computations where the
-probe is the only possible interruption — and this bench never touches it. The
-lesson for anyone re-running this: a cancel benchmark measures the loops the
-workload happens to run, so pick the workload for its loop shape, not its data
-volume. An await-free LD or multi-sample-variant computation is the missing arm.
-
-The SAB path also stays: ~40 lines, verified working, and cheaper than the probe
-wherever isolation happens to exist.
-
-Both mechanisms now have regression cover that does not depend on this bench —
-`products/jbrowse-web/browser-tests/suites/fetch-cancellation.ts` asserts the
-socket abort, the worker notification, and blob-token minting in a real browser,
-and `stopToken.test.ts` asserts the probe seam is consulted inside an await-free
-loop. The probe was deletable in the first place because nothing tested it: it is
-inert under jsdom, so its removal passed all 6000+ unit tests.
-
-Note `Cross-Origin-Embedder-Policy: credentialless` also produces
-`crossOriginIsolated` (verified: same SAB counts, 686 ms settle) and, unlike
-`require-corp`, does **not** require CORP headers on cross-origin subresources —
-so it is the variant that could make this live without breaking fetching public
-data from arbitrary hosts. [NETWORK_ABORT.md](NETWORK_ABORT.md) only considered
-`require-corp` when it concluded isolation was unusable.
+Until 2026-09 a worker loop that never yielded was interrupted by a
+`SharedArrayBuffer` flag where the page was cross-origin isolated (never, on any
+deployment of ours — ADR-056) and otherwise by a synchronous XHR against a
+revoked blob URL, throttled from 50 ms out to 500 ms. ADR-122 measured both
+against a plain task yield in a real Chrome worker and retired them; the table
+there is the record. `coi-probe.ts`, `coi-server.ts` and `cancel-bench.ts`
+went with them. `website/scripts/cancel-mechanism-bench.ts` is what remains,
+and it is the bench to re-run before touching `createAbortBreakpoint`.
 
 ## Getting UI code out of the RPC workers
 

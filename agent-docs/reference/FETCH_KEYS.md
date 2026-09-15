@@ -62,7 +62,7 @@ Two other facts the census turned up, neither a bug:
 ## Structural args stay out of `rpcProps()`
 
 `rpcProps()` returns **user-controlled settings only**. Structural args
-(`adapterConfig`, `sequenceAdapter`, `region(s)`, `bpPerPx`, `stopToken`) are
+(`adapterConfig`, `sequenceAdapter`, `region(s)`, `bpPerPx`, `signal`) are
 spread in at the RPC call site, keeping `rpcProps()` focused on its purpose:
 cache keys for `SettingsInvalidate`. Every display follows the same call shape:
 
@@ -71,7 +71,7 @@ rpcManager.call(sessionId, 'RenderXxxData', {
   adapterConfig: self.adapterConfig,  // inherited from BaseDisplayModel
   regions, bpPerPx,                    // per-call values
   ...self.rpcProps(),                  // user settings (cache keys)
-  stopToken, statusCallback,
+  signal, statusCallback,
 })
 ```
 

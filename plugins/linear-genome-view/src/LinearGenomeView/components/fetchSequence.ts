@@ -2,14 +2,13 @@ import { getSequenceAdapterConfig } from '@jbrowse/core/assemblyManager/assembly
 import { getSession } from '@jbrowse/core/util'
 
 import type { StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Region } from '@jbrowse/core/util/types'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export async function fetchSequence(
   model: IAnyStateTreeNode,
   regions: Region[],
-  opts: { stopToken?: StopToken; statusCallback?: StatusCallback } = {},
+  opts: { signal?: AbortSignal; statusCallback?: StatusCallback } = {},
 ) {
   const session = getSession(model)
   const assemblyNames = new Set(regions.map(r => r.assemblyName))

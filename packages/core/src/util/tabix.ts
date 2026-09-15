@@ -1,9 +1,7 @@
 import { createStatusFanOut, downloadStatus } from './progress.ts'
 import { calculateRedispatchRange } from './range.ts'
-import { withStopTokenSignal } from './stopToken.ts'
 
 import type { StatusCallback } from './progress.ts'
-import type { StopToken } from './stopToken.ts'
 
 /**
  * A raw tabix line paired with the metadata the GFF3/GTF adapters need before
@@ -76,25 +74,23 @@ export function readTabixLines(
   start: number,
   end: number,
   statusCallback?: StatusCallback,
-  stopToken?: StopToken,
+  signal?: AbortSignal,
 ): Promise<TabixLine[]> {
   const lines: TabixLine[] = []
-  return withStopTokenSignal(stopToken, signal =>
-    downloadStatus('Downloading features', statusCallback, onProgress =>
-      gff.getLines(refName, start, end, {
-        lineCallback: (line, offset, s, e) => {
-          lines.push({
-            line,
-            offset,
-            start: s,
-            end: e,
-            type: extractType(line),
-          })
-        },
-        onProgress,
-        signal,
-      }),
-    ),
+  return downloadStatus('Downloading features', statusCallback, onProgress =>
+    gff.getLines(refName, start, end, {
+      lineCallback: (line, offset, s, e) => {
+        lines.push({
+          line,
+          offset,
+          start: s,
+          end: e,
+          type: extractType(line),
+        })
+      },
+      onProgress,
+      signal,
+    }),
   ).then(() => lines)
 }
 
@@ -141,13 +137,13 @@ export async function readTabixLinesRedispatched(
   // this module stays free of the `types` barrel and its MST models
   query: { refName: string; start: number; end: number },
   expands: (line: TabixLine) => boolean,
-  opts: { statusCallback?: StatusCallback; stopToken?: StopToken } = {},
+  opts: { statusCallback?: StatusCallback; signal?: AbortSignal } = {},
 ): Promise<TabixLine[]> {
-  const { statusCallback, stopToken } = opts
+  const { statusCallback, signal } = opts
   // `cb` is not optional: each read decides where it reports, and the flanks
   // report somewhere the first read does not
   const read = (start: number, end: number, cb: StatusCallback | undefined) =>
-    readTabixLines(file, query.refName, start, end, cb, stopToken)
+    readTabixLines(file, query.refName, start, end, cb, signal)
 
   const lines = await read(query.start, query.end, statusCallback)
   const redispatch = calculateRedispatchRange(

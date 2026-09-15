@@ -118,5 +118,5 @@ export function taiBlockFeatures<SETUP extends TaiIndex>({
     // result was already discarded, and the abort never reached the rxjs chain
     // at all. The body's own errors need no try/catch either — ObservableCreate
     // forwards a rejected promise to `observer.error`.
-  }, opts?.stopToken)
+  }, opts?.signal)
 }

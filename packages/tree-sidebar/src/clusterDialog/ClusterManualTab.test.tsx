@@ -1,4 +1,4 @@
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { types } from '@jbrowse/mobx-state-tree'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -7,7 +7,6 @@ import ClusterManualTab from './ClusterManualTab.tsx'
 
 import type { ClusterMatrix } from '../clusterMatrix.ts'
 import type { ClusterDialogProps } from './types.ts'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 // `isViewModel` duck-types on `width` + `setWidth`, so a containing view this
 // small is enough for `getContainingView` — the tab reads only the region key
@@ -74,7 +73,7 @@ function setup(
 // The manual tab does the SAME work as the auto tab — fetch the region, build
 // the matrix — and only the clustering step differs. `fetchMatrix` used to be
 // declared `() => Promise<ClusterMatrix>`, which `useFetch` accepts (its
-// trailing `stopToken`/`statusCallback` are positional, so a zero-parameter
+// trailing `signal`/`statusCallback` are positional, so a zero-parameter
 // fetcher is assignable and never sees them). Both plugins complied and both
 // lost cancel and progress on this tab alone.
 describe('ClusterManualTab forwards the fetch handles it is given', () => {
@@ -84,9 +83,9 @@ describe('ClusterManualTab forwards the fetch handles it is given', () => {
   // all) leaves the worker building a matrix nobody is waiting for, which is the
   // state this shipped in.
   it('gives the fetch a token the dialog closing actually stops', async () => {
-    let seen: StopToken | undefined
-    const { unmount } = setup(({ stopToken }) => {
-      seen = stopToken
+    let seen: AbortSignal | undefined
+    const { unmount } = setup(({ signal }) => {
+      seen = signal
       // never settles, so the token is still live at unmount
       return new Promise<ClusterMatrix>(() => {})
     })
@@ -95,12 +94,12 @@ describe('ClusterManualTab forwards the fetch handles it is given', () => {
       expect(seen).toBeDefined()
     })
     expect(() => {
-      checkStopToken(seen)
+      checkAbortSignal(seen)
     }).not.toThrow()
 
     unmount()
     expect(() => {
-      checkStopToken(seen)
+      checkAbortSignal(seen)
     }).toThrow()
   })
 

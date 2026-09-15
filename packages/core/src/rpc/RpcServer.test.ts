@@ -1,4 +1,3 @@
-import { isStopped } from '../util/stopToken.ts'
 import RpcClient from './RpcClient.ts'
 import RpcServer, { rpcResult, rpcResultWithArrayBuffers } from './RpcServer.ts'
 
@@ -209,27 +208,64 @@ describe('RpcServer.handler()', () => {
   })
 })
 
-describe('RpcServer stop-token notifications', () => {
-  test('applies a posted stopped id, so running calls see it', async () => {
+describe('RpcServer abort frames', () => {
+  test('an abortable call runs under a signal the abort frame aborts', async () => {
     const { sent, restore } = mockPostMessage()
-    const server = makeServer({})
-    const token = 'server-applied-token'
-    expect(isStopped(token)).toBe(false)
-    sendMessage(server, { stopToken: token, libRpc: true })
+    let seen: AbortSignal | undefined
+    let release!: () => void
+    const server = makeServer({
+      slow: async (data: unknown) => {
+        seen = (data as { signal?: AbortSignal }).signal
+        await new Promise<void>(resolve => {
+          release = resolve
+        })
+        return 'done'
+      },
+    })
+    sendMessage(server, {
+      method: 'slow',
+      uid: 'a1',
+      data: { x: 1 },
+      abortable: true,
+      libRpc: true,
+    })
     await flushPromises()
-    expect(isStopped(token)).toBe(true)
-    // it is not a call: nothing is replied, and in particular it must not land
-    // in the unknown-method branch with no uid to answer
+    expect(seen?.aborted).toBe(false)
+    sendMessage(server, { abort: 'a1', libRpc: true })
+    await flushPromises()
+    expect(seen?.aborted).toBe(true)
+    // the abort frame is not a call: nothing is replied to it, and it must
+    // not land in the unknown-method branch with no uid to answer
     expect(sent).toHaveLength(0)
+    release()
+    await flushPromises()
+    expect(sent).toHaveLength(1)
     restore()
   })
 
-  test('ignores a stop-token frame without the libRpc tag', async () => {
+  test('a call without abortable gets no signal', async () => {
     const { restore } = mockPostMessage()
-    const server = makeServer({})
-    sendMessage(server, { stopToken: 'untagged-token' })
+    let seen: unknown = 'unset'
+    const server = makeServer({
+      echo: async (data: unknown) => {
+        seen = (data as { signal?: unknown }).signal
+        return data
+      },
+    })
+    sendMessage(server, { method: 'echo', uid: 'a2', data: {}, libRpc: true })
     await flushPromises()
-    expect(isStopped('untagged-token')).toBe(false)
+    expect(seen).toBeUndefined()
+    restore()
+  })
+
+  test('an abort for a settled or unknown call is a no-op', async () => {
+    const { sent, restore } = mockPostMessage()
+    const server = makeServer({})
+    expect(() => {
+      sendMessage(server, { abort: 'nobody', libRpc: true })
+    }).not.toThrow()
+    await flushPromises()
+    expect(sent).toHaveLength(0)
     restore()
   })
 })

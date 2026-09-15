@@ -88,8 +88,8 @@ const ClusterManualTab = observer(function ClusterManualTab({
       : null,
     // The token makes Cancel — and a pan that re-keys the fetch — stop the
     // worker; the status sink drives the determinate row below.
-    (_name, _key, stopToken, statusCallback) =>
-      fetchMatrix(resolveClusterRunArgs(model, { stopToken, statusCallback })),
+    (_name, _key, signal, statusCallback) =>
+      fetchMatrix(resolveClusterRunArgs(model, { signal, statusCallback })),
   )
 
   const script = matrix ? generateClusterRScript(matrix, clusterMethod) : ''

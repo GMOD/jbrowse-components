@@ -1,9 +1,7 @@
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { destroy, types } from '@jbrowse/mobx-state-tree'
 
 import { setupRunClusteringAutorun } from './runClusteringAutorun.ts'
-
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 const mockNotifyError = jest.fn()
 
@@ -74,30 +72,23 @@ beforeEach(() => {
   mockNotifyError.mockClear()
 })
 
-test('clears the trigger once the run finishes, and releases its token', async () => {
-  const seen: StopToken[] = []
-  const model = setup(({ stopToken }) => {
-    seen.push(stopToken)
-    return Promise.resolve()
-  })
+test('clears the trigger once the run finishes', async () => {
+  const model = setup(() => Promise.resolve())
 
   await settle()
 
   expect(model.runClustering).toBeUndefined()
   expect(model.clusterRegion).toBeUndefined()
-  expect(() => {
-    checkStopToken(seen[0])
-  }).toThrow(/aborted/)
 })
 
 test('stops the in-flight token when the display is destroyed mid-run', async () => {
   const g = gate()
-  const seen: StopToken[] = []
+  const seen: AbortSignal[] = []
   const wrote: string[] = []
-  const model = setup(async ({ stopToken }) => {
-    seen.push(stopToken)
+  const model = setup(async ({ signal }) => {
+    seen.push(signal)
     await g.opened
-    checkStopToken(stopToken)
+    checkAbortSignal(signal)
     wrote.push('setLayoutAndClusterTree')
   })
 
@@ -106,7 +97,7 @@ test('stops the in-flight token when the display is destroyed mid-run', async ()
 
   destroy(model)
   expect(() => {
-    checkStopToken(seen[0])
+    checkAbortSignal(seen[0])
   }).toThrow(/aborted/)
 
   g.open()

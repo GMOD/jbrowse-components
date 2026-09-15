@@ -22,7 +22,6 @@ import {
   openViews,
   viewAndNested,
 } from '@jbrowse/core/util/openViews'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   allSessionTracks,
   getConfAssemblyNamesOrNone,
@@ -1070,11 +1069,12 @@ async function fetchFeatures(
     requestedByteLimit,
   )
   const { rpcManager } = session
-  const stopToken = createStopToken()
+  const controller = new AbortController()
+  const { signal } = controller
   // desktop's MCP relay gives up at 150s, so the read must not outlive it —
   // and an agent-triggered read of a dense region wants a ceiling either way
   const stopTimer = setTimeout(() => {
-    stopStopToken(stopToken)
+    controller.abort()
   }, 120_000)
   retainAdapterSession(rpcManager, sessionId)
   try {
@@ -1089,7 +1089,7 @@ async function fetchFeatures(
       sessionId,
       'CoreGetRegionByteEstimate',
       // eslint-disable-next-line no-restricted-syntax -- reports nothing: an agent awaits the returned features and no display or dialog exists to show a phase label or bar
-      { adapterConfig, regions, scope: 'largestRegion', stopToken },
+      { adapterConfig, regions, scope: 'largestRegion', signal },
     )
     if (bytes !== undefined && bytes > byteLimit) {
       throw new Error(
@@ -1100,7 +1100,7 @@ async function fetchFeatures(
     return await rpcManager.call(sessionId, 'CoreGetFeatures', {
       adapterConfig,
       regions,
-      stopToken,
+      signal,
     })
   } finally {
     clearTimeout(stopTimer)

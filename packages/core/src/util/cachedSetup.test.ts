@@ -79,10 +79,10 @@ describe('cachedSetup', () => {
   it('withholds the stop token, so one caller cannot abort the shared work', async () => {
     let received: unknown = 'unset'
     const setup = sharedSetup(async opts => {
-      received = opts.stopToken
+      received = opts.signal
       return 'records'
     })
-    await setup({ stopToken: 'token' })
+    await setup({ signal: new AbortController().signal })
     expect(received).toBeUndefined()
   })
 
@@ -174,12 +174,15 @@ describe('createSharedSetup', () => {
     let received: unknown = 'unset'
     const setup = createSharedSetup(async opts => {
       runs++
-      received = opts.stopToken
+      received = opts.signal
       return 'records'
     })
-    expect(await Promise.all([setup(), setup({ stopToken: 'token' })])).toEqual(
-      ['records', 'records'],
-    )
+    expect(
+      await Promise.all([
+        setup(),
+        setup({ signal: new AbortController().signal }),
+      ]),
+    ).toEqual(['records', 'records'])
     expect(runs).toBe(1)
     expect(received).toBeUndefined()
   })

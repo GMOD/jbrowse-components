@@ -5,7 +5,6 @@ import { scanPlotFields } from './plotFields.ts'
 
 import type { PlotFields } from './plotFields.ts'
 import type { Feature, StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { RegionHost } from '@jbrowse/display-kit/regionHost'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -41,7 +40,7 @@ export async function fetchPlotFields({
 }: {
   self: IStateTreeNode & { adapterConfig: Record<string, unknown> }
   regions: Region[]
-  opts?: { stopToken?: StopToken; statusCallback?: StatusCallback }
+  opts?: { signal?: AbortSignal; statusCallback?: StatusCallback }
 }): Promise<PlotFields> {
   if (regions.length === 0) {
     return { numeric: [], categorical: [] }

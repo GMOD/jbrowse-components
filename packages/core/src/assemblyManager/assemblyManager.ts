@@ -8,7 +8,6 @@ import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type RpcManager from '../rpc/RpcManager.ts'
 import type { StatusCallback } from '../util/progress.ts'
-import type { StopToken } from '../util/stopToken.ts'
 import type { Assembly } from './assembly.ts'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
@@ -30,7 +29,7 @@ interface AssemblyManagerParent {
 }
 
 export interface AssemblyBaseOpts {
-  stopToken?: StopToken
+  signal?: AbortSignal
   sessionId: string
   statusCallback?: StatusCallback
 }

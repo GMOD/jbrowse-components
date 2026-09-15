@@ -155,12 +155,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
           },
         ] as const)
       : false,
-    async (
-      _name,
-      params,
-      stopToken,
-      statusCallback,
-    ): Promise<ConsensusData> => {
+    async (_name, params, signal, statusCallback): Promise<ConsensusData> => {
       const sessionId = getRpcSessionId(display)
       // one status slot per region, so N concurrent consensus calls aggregate
       // into one bar instead of the last writer winning
@@ -178,7 +173,7 @@ const ConsensusSequenceDialog = observer(function ConsensusSequenceDialog({
               callFract: params.callFract,
               hetFract: params.hetFract,
               includeInsertions: params.includeInsertions,
-              stopToken,
+              signal,
               statusCallback: slot(),
             },
           )

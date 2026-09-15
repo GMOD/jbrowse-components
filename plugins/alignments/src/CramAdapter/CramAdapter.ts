@@ -1,13 +1,10 @@
 import { CraiIndex, IndexedCramFile } from '@gmod/cram'
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { downloadStatus, sum, withProgress } from '@jbrowse/core/util'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import {
-  checkStopToken,
-  withStopTokenSignal,
-} from '@jbrowse/core/util/stopToken'
 
 import { BaseSamAdapter } from '../shared/BaseSamAdapter.ts'
 import {
@@ -221,12 +218,12 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
       filterBy?: FilterBy
     },
   ) {
-    const { stopToken, filterBy, statusCallback } = opts ?? {}
+    const { signal, filterBy, statusCallback } = opts ?? {}
     const { refName, start, end, originalRefName } = region
 
     return ObservableCreate<Feature>(async observer => {
       const samHeader = await this.setup(opts)
-      checkStopToken(stopToken)
+      checkAbortSignal(signal)
       const { cram } = this.configure()
 
       const refId = this.refNameToId(refName)
@@ -247,21 +244,22 @@ export default class CramAdapter extends BaseSamAdapter<CramAdapterConfig> {
       // The signal is what makes cancellation reach the socket, as in
       // BamAdapter: without it a canceled navigation stops *processing* the
       // records but downloads every byte of the range to completion first.
-      const records = await withStopTokenSignal(stopToken, signal =>
-        downloadStatus('Downloading alignments', statusCallback, onProgress =>
+      const records = await downloadStatus(
+        'Downloading alignments',
+        statusCallback,
+        onProgress =>
           cram.getRecordsForRange(refId, start, end, {
             onProgress,
             signal,
           }),
-        ),
       )
-      checkStopToken(stopToken)
+      checkAbortSignal(signal)
       await withProgress(
         {
           label: 'Processing alignments',
           total: records.length,
           statusCallback,
-          stopToken,
+          signal,
         },
         report => {
           for (const record of records) {

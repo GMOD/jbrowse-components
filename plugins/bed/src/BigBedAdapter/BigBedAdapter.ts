@@ -14,7 +14,6 @@ import {
 } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { withStopTokenSignal } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom, toArray } from 'rxjs'
 
 import { featureData } from '../util.ts'
@@ -154,14 +153,15 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
     // (they come from the R-tree index) so this reports a determinate fraction
     // rather than an indeterminate spinner. Matters most here — BigBed is a
     // full-feature download, which is why getRegionByteSize gates it above.
-    const feats = await withStopTokenSignal(opts.stopToken, signal =>
-      downloadStatus('Downloading features', statusCallback, onProgress =>
+    const feats = await downloadStatus(
+      'Downloading features',
+      statusCallback,
+      onProgress =>
         bigbed.getFeatures(query.refName, query.start, query.end, {
           basesPerSpan: query.end - query.start,
           onProgress,
-          signal,
+          signal: opts.signal,
         }),
-      ),
     )
 
     await updateStatus('Processing features', statusCallback, async () => {
@@ -296,6 +296,6 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
       } catch (e) {
         observer.error(e)
       }
-    }, opts.stopToken)
+    }, opts.signal)
   }
 }

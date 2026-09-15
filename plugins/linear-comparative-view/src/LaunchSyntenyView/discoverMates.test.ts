@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { createStopToken } from '@jbrowse/core/util/stopToken'
 
 import { makeMateDiscovery } from './discoverMates.ts'
 
@@ -74,15 +73,16 @@ function setup({
 // `regions` is plural for refName renaming, which applies to that key alone.
 test('everything the worker-side reduction needs reaches the RPC', async () => {
   const { discover, calls } = setup()
-  const stopToken = createStopToken()
+  const signalController = new AbortController()
+  const signal = signalController.signal
   const statusCallback = jest.fn()
-  await discover(stopToken, statusCallback)
+  await discover(signal, statusCallback)
 
   expect(calls.length).toBe(1)
   const { sessionId, method, args } = calls[0]!
   expect(sessionId).toBe('t1')
   expect(method).toBe('SyntenyDiscoverMates')
-  expect(args.stopToken).toBe(stopToken)
+  expect(args.signal).toBe(signal)
   expect(args.statusCallback).toBe(statusCallback)
   expect(args.regions).toEqual([region])
   expect(args.adapterConfig).toEqual({ type: 'PAFAdapter', uri: 'x.paf' })
@@ -109,7 +109,7 @@ test("the anchor crosses to the worker in the track's spelling", async () => {
   const { discover, calls } = setup({
     anchorRegion: { ...region, assemblyName: 'vvx' },
   })
-  await discover(createStopToken(), jest.fn())
+  await discover(new AbortController().signal, jest.fn())
   expect(calls[0]!.args.anchorAssembly).toBe('volvox')
   expect(calls[0]!.args.regions).toEqual([region])
 })
@@ -123,7 +123,7 @@ test('a self-alignment track resolves the anchor to its declared name', async ()
     assemblyNames: ['volvox', 'volvox'],
     anchorRegion: { ...region, assemblyName: 'vvx' },
   })
-  await discover(createStopToken(), jest.fn())
+  await discover(new AbortController().signal, jest.fn())
   expect(calls[0]!.args.anchorAssembly).toBe('volvox')
 })
 
@@ -135,7 +135,7 @@ test('an anchor no declared name matches stays as the region spells it', async (
     assemblyNames: ['grape', 'peach'],
     anchorRegion: { ...region, assemblyName: 'vvx' },
   })
-  await discover(createStopToken(), jest.fn())
+  await discover(new AbortController().signal, jest.fn())
   expect(calls[0]!.args.anchorAssembly).toBe('vvx')
 })
 
@@ -149,7 +149,7 @@ test('the tier is the one auto picks at the zoom the panels open at', async () =
       adapter,
       anchorRegion: { ...region, start: 0, end },
     })
-    await discover(createStopToken(), jest.fn())
+    await discover(new AbortController().signal, jest.fn())
     return calls[0]!.args.lodTier
   }
   expect(await tierFor(1_000_000)).toBe('fine')
@@ -160,6 +160,6 @@ test('an adapter with no coarse tier is always asked for fine', async () => {
   const { discover, calls } = setup({
     anchorRegion: { ...region, start: 0, end: 20_000_000 },
   })
-  await discover(createStopToken(), jest.fn())
+  await discover(new AbortController().signal, jest.fn())
   expect(calls[0]!.args.lodTier).toBe('fine')
 })

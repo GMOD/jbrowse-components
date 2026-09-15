@@ -1,7 +1,7 @@
 import BaseRpcDriver from './BaseRpcDriver.ts'
 
 import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
-import type { StatusCallback } from '../util/progress.ts'
+import type { RpcHandles } from './RpcRegistry.ts'
 
 /**
  * RPC driver that runs RPC functions in-band on the main thread. It owns no
@@ -16,19 +16,22 @@ export default class MainThreadRpcDriver extends BaseRpcDriver {
     _sessionId: string,
     rpcMethod: RpcMethodType,
     serializedArgs: Record<string, unknown>,
-    statusCallback: StatusCallback | undefined,
+    { statusCallback, signal }: RpcHandles,
   ) {
-    // re-attach the out-of-band statusCallback that BaseRpcDriver.call split off,
-    // mirroring how the worker re-wires it on the far side of postMessage —
-    // including the case where there is none, which `wrapForRpc` answers by
-    // adding no key at all. Spreading `statusCallback: undefined` in would leave
-    // the two drivers handing `execute` bags that differ by a key, which is the
-    // kind of difference nothing tests and something eventually reads.
+    // re-attach the out-of-band handles that BaseRpcDriver.call split off,
+    // mirroring how the worker re-wires them on the far side of postMessage —
+    // including the case where there is none, which `wrapForRpc` and
+    // `RpcServer` answer by adding no key at all. Spreading `statusCallback:
+    // undefined` in would leave the two drivers handing `execute` bags that
+    // differ by a key, which is the kind of difference nothing tests and
+    // something eventually reads.
     //
     // `invoke`, not `execute` — it is the entry point that deserializes the
     // arguments first, and the worker binds the same one
-    return rpcMethod.invoke(
-      statusCallback ? { ...serializedArgs, statusCallback } : serializedArgs,
-    )
+    return rpcMethod.invoke({
+      ...serializedArgs,
+      ...(statusCallback ? { statusCallback } : {}),
+      ...(signal ? { signal } : {}),
+    })
   }
 }

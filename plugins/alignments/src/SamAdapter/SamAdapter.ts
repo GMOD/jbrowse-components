@@ -2,13 +2,13 @@ import { packReference } from '@gmod/bam'
 import { numericCigarHasSkip } from '@jbrowse/cigar-utils'
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { fetchAndMaybeUnzip } from '@jbrowse/core/util'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { openLocation } from '@jbrowse/core/util/io'
 import {
   makeFeatureIntervalTreeMap,
   parseLineByLine,
 } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { BaseAlignmentsAdapter } from '../shared/BaseAlignmentsAdapter.ts'
 import { seqFetchSpan } from '../shared/seqFetchSpan.ts'
@@ -79,7 +79,7 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
           return true
         },
         opts.statusCallback,
-        // no stopToken: cachedSetup drops it deliberately, since this parse is
+        // no signal: cachedSetup drops it deliberately, since this parse is
         // shared and one caller's cancel would reject the caller replacing it
         { label: 'Parsing SAM' },
       )
@@ -122,10 +122,10 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
     opts?: BaseOptions & { filterBy?: FilterBy },
   ) {
     const { refName, start, end, originalRefName } = region
-    const { stopToken, filterBy, statusCallback } = opts ?? {}
+    const { signal, filterBy, statusCallback } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
       const { intervalTreeMap } = await this.loadData(opts)
-      checkStopToken(stopToken)
+      checkAbortSignal(signal)
       const tree = intervalTreeMap[refName]
       const records = tree
         ? tree(statusCallback)
@@ -151,7 +151,7 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
         regionSeq !== undefined && span
           ? packReference(regionSeq, span.start)
           : undefined
-      checkStopToken(stopToken)
+      checkAbortSignal(signal)
 
       for (const record of records) {
         // A record carrying MD needs no reference and walks in full, so leave
@@ -173,7 +173,7 @@ export default class SamAdapter extends BaseAlignmentsAdapter<SamAdapterConfig> 
         )
       }
       observer.complete()
-    }, stopToken)
+    }, signal)
   }
 
   // Mirrors BamAdapter/CramAdapter: flags, read name and AND-ed tag filters are

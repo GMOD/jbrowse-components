@@ -1,30 +1,29 @@
 import {
-  createStopTokenRotation,
+  createAbortRotation,
   getNotificationSink,
   isAbortException,
 } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import type { StatusChannel, StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 interface DiagonalizeProgressModel extends IStateTreeNode {
   setAwaitingAutoDiagonalize: (arg: boolean) => void
-  setDiagonalizeStopToken: (arg?: StopToken) => void
+  setDiagonalizeCancel: (arg?: () => void) => void
   diagonalizeStatus: StatusChannel
 }
 
 /**
  * Drives the auto-diagonalize lifecycle shared by the comparative views: flips
- * the awaiting flag, mints a stop token (so the spinner's Cancel can abort),
- * pipes the RPC's statusCallback into the model for the progress bar, swallows
- * the resulting abort, and clears all three volatiles in `finally`. `run` does
- * the actual reorder with the supplied token + callback. Centralized so the
- * views report progress, failure and cancel identically.
+ * the awaiting flag, hands the model a cancel (so the spinner's Cancel can
+ * abort), pipes the RPC's statusCallback into the model for the progress bar,
+ * swallows the resulting abort, and clears all three volatiles in `finally`.
+ * `run` does the actual reorder with the supplied signal + callback.
+ * Centralized so the views report progress, failure and cancel identically.
  *
- * The token, the throttled+guarded status sink and the clear all come from
- * `createStopTokenRotation`, one per run rather than one per model — this is not
+ * The signal, the throttled+guarded status sink and the clear all come from
+ * `createAbortRotation`, one per run rather than one per model — this is not
  * latest-wins (`awaitingAutoDiagonalize` admits one run at a time), so `begin()`
  * has nothing to supersede and the value taken is `end()`: closing the guard
  * before the clear. Hand-written, the guard was `isAlive(model)` alone, which
@@ -35,16 +34,16 @@ interface DiagonalizeProgressModel extends IStateTreeNode {
 export async function withDiagonalizeProgress(
   model: DiagonalizeProgressModel,
   run: (opts: {
-    stopToken: StopToken
+    signal: AbortSignal
     statusCallback: StatusCallback
   }) => Promise<void>,
 ) {
   model.setAwaitingAutoDiagonalize(true)
-  const rotation = createStopTokenRotation(model, model.diagonalizeStatus)
-  const { stopToken, statusCallback, end } = rotation.begin()
-  model.setDiagonalizeStopToken(stopToken)
+  const rotation = createAbortRotation(model, model.diagonalizeStatus)
+  const { signal, statusCallback, end } = rotation.begin()
+  model.setDiagonalizeCancel(rotation.cancel)
   try {
-    await run({ stopToken, statusCallback })
+    await run({ signal, statusCallback })
   } catch (e) {
     if (!isAbortException(e)) {
       console.error(e)
@@ -57,14 +56,10 @@ export async function withDiagonalizeProgress(
     }
   } finally {
     end()
-    // `dispose` outside the isAlive guard, and unconditional: a run that
-    // *completed* owns a token nobody will ever stop otherwise, and an unstopped
-    // string token is a blob URL plus every AbortController taken against it,
-    // retained for the document's life
     rotation.dispose()
     if (isAlive(model)) {
       model.setAwaitingAutoDiagonalize(false)
-      model.setDiagonalizeStopToken(undefined)
+      model.setDiagonalizeCancel(undefined)
     }
   }
 }

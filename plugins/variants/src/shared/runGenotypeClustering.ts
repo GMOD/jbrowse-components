@@ -4,7 +4,6 @@ import { applyClusterOrder } from './applyClusterOrder.ts'
 
 import type { ReducedModel } from './clusterModelTypes.ts'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { RpcMethodCaller } from '@jbrowse/tree-sidebar'
 
 export type ClusterGenotypeMatrixCaller =
@@ -20,14 +19,14 @@ export async function runGenotypeClustering({
   rpcManager,
   sessionId,
   regions,
-  stopToken,
+  signal,
   statusCallback,
 }: {
   model: ReducedModel
   rpcManager: ClusterGenotypeMatrixCaller
   sessionId: string
   regions: Region[]
-  stopToken: StopToken
+  signal: AbortSignal
   statusCallback: (status: RpcStatus) => void
 }) {
   const {
@@ -54,7 +53,7 @@ export async function runGenotypeClustering({
         maxMissingnessFilter,
         filters,
         adapterConfig,
-        stopToken,
+        signal,
         renderingMode,
         sampleInfo,
         statusCallback,

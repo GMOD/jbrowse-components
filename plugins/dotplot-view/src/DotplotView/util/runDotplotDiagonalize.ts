@@ -55,7 +55,7 @@ export async function runDotplotDiagonalize(
       adapters,
       referenceRegions,
       currentRegions,
-      stopToken: opts.stopToken,
+      signal: opts.signal,
       statusCallback: opts.statusCallback,
     })
     if (result) {

@@ -2,10 +2,9 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import {
   createStatusChannel,
-  createStopTokenRotation,
-} from './createStopTokenRotation.ts'
+  createAbortRotation,
+} from './createAbortRotation.ts'
 import { createStatusWindow } from './progress.ts'
-import { isStopped } from './stopToken.ts'
 
 import type { RpcStatus } from './progress.ts'
 
@@ -35,31 +34,27 @@ function hostAndReporter() {
 }
 
 test('begin() stops the fetch it supersedes and un-currents its guard', () => {
-  const rotation = createStopTokenRotation(...hostAndReporter())
+  const rotation = createAbortRotation(...hostAndReporter())
   const first = rotation.begin()
   expect(first.isCurrent()).toBe(true)
   const second = rotation.begin()
-  expect(isStopped(first.stopToken)).toBe(true)
+  expect(first.signal.aborted).toBe(true)
   expect(first.isCurrent()).toBe(false)
   expect(second.isCurrent()).toBe(true)
   rotation.dispose()
 })
 
-// A fetch that *completed* owns a token nobody else will ever stop — every one
-// but the last is released by its successor — so without this the final fetch of
-// a display's life retains its blob URL and every AbortController taken against
-// it for the life of the document.
-test('dispose() stops the token the last fetch is still holding', () => {
-  const rotation = createStopTokenRotation(...hostAndReporter())
-  const { stopToken } = rotation.begin()
-  expect(isStopped(stopToken)).toBe(false)
+test('dispose() aborts the fetch still in flight', () => {
+  const rotation = createAbortRotation(...hostAndReporter())
+  const { signal } = rotation.begin()
+  expect(signal.aborted).toBe(false)
   rotation.dispose()
-  expect(isStopped(stopToken)).toBe(true)
+  expect(signal.aborted).toBe(true)
 })
 
 test('dispose() is safe when no fetch ever began', () => {
   expect(() => {
-    createStopTokenRotation(...hostAndReporter()).dispose()
+    createAbortRotation(...hostAndReporter()).dispose()
   }).not.toThrow()
 })
 
@@ -76,7 +71,7 @@ describe('the status window', () => {
 
   test('a superseded fetch cannot repaint the status', () => {
     const host = makeHost()
-    const rotation = createStopTokenRotation(host, host)
+    const rotation = createAbortRotation(host, host)
     const first = rotation.begin()
     rotation.begin()
     first.statusCallback('Downloading')
@@ -90,7 +85,7 @@ describe('the status window', () => {
   // few milliseconds is exactly the burst the throttle is for.
   test('a fetch starting after a lull reports its first status at once', () => {
     const host = makeHost()
-    const rotation = createStopTokenRotation(host, host)
+    const rotation = createAbortRotation(host, host)
     const first = rotation.begin()
     first.statusCallback('Downloading')
     expect(host.statusMessage).toBe('Downloading')
@@ -107,7 +102,7 @@ describe('the status window', () => {
   test('dispose() retires the open slot and drops a queued trailing write', () => {
     jest.useFakeTimers()
     const host = makeHost()
-    const rotation = createStopTokenRotation(host, host)
+    const rotation = createAbortRotation(host, host)
     const { statusCallback } = rotation.begin()
     statusCallback('Downloading')
     // same tick, so this one is queued on the trailing timer
@@ -127,7 +122,7 @@ describe('the status window', () => {
   test('end() clears, and drops the write queued behind the clear', () => {
     jest.useFakeTimers()
     const host = makeHost()
-    const rotation = createStopTokenRotation(host, host)
+    const rotation = createAbortRotation(host, host)
     const fetch = rotation.begin()
     fetch.statusCallback('Downloading')
     fetch.statusCallback({ message: 'Downloading', current: 9, total: 10 })
@@ -146,7 +141,7 @@ describe('the status window', () => {
   // fetch that replaced it.
   test('end() on a superseded fetch leaves the live one alone', () => {
     const host = makeHost()
-    const rotation = createStopTokenRotation(host, host)
+    const rotation = createAbortRotation(host, host)
     const first = rotation.begin()
     const second = rotation.begin()
     second.statusCallback('Downloading')
@@ -162,7 +157,7 @@ describe('the status window', () => {
   // the phase it is about to re-enter is the one already on screen. ADR-080.
   test('begin() keeps the superseded fetch label, and end() clears it', () => {
     const host = makeHost()
-    const rotation = createStopTokenRotation(host, host)
+    const rotation = createAbortRotation(host, host)
     const first = rotation.begin()
     first.statusCallback('Downloading')
     expect(host.statusMessage).toBe('Downloading')
@@ -182,7 +177,7 @@ describe('the status window', () => {
   test('begin() drops the write the superseded fetch left queued', () => {
     jest.useFakeTimers()
     const host = makeHost()
-    const rotation = createStopTokenRotation(host, host)
+    const rotation = createAbortRotation(host, host)
     const first = rotation.begin()
     first.statusCallback('Downloading')
     // same tick, so this one is queued on the trailing timer
@@ -203,7 +198,7 @@ describe('createStatusChannel', () => {
   test('is a reporter a model can hold in a single volatile', () => {
     const host = makeHost()
     const channel = createStatusChannel()
-    const rotation = createStopTokenRotation(host, channel)
+    const rotation = createAbortRotation(host, channel)
     const fetch = rotation.begin()
     fetch.statusCallback({ message: 'Downloading', current: 1, total: 4 })
     expect(channel.message).toBe('Downloading')
@@ -249,7 +244,7 @@ describe('a host that owns its own window', () => {
     // `StatusReporter` takes no `setStatusMessage`, because it never calls one
     return {
       host,
-      rotation: createStopTokenRotation(host, {
+      rotation: createAbortRotation(host, {
         statusWindow: host.statusWindow,
       }),
     }

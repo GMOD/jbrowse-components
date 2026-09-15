@@ -9,8 +9,8 @@ import {
   groupBy,
   updateStatus,
 } from '@jbrowse/core/util'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { rpcResult } from '@jbrowse/core/util/librpc'
-import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
 import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 
 import { computeReadBaseCounts } from '../features/modCoverage/readBaseCounts.ts'
@@ -59,7 +59,6 @@ import type { AlignmentGroup, WorkerPileupData } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
-import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 // A chain counts as a proper pair only when EVERY read in it is the ordinary
 // concordant case. The per-read rule is `isConcordantPairRead` — shared with the
@@ -266,7 +265,7 @@ interface GroupContext {
   // all stacked sections color long/short inserts on one comparable scale.
   insertSizeStats: InsertSizeBand | undefined
   statusCallback: StatusCallback | undefined
-  stopTokenCheck: StopTokenChecker
+  signal?: AbortSignal
 }
 
 // The distinct columns carrying a modification call, which is what the
@@ -323,7 +322,7 @@ async function buildGroupResult(
     detectedSimplexModifications,
     insertSizeStats,
     statusCallback,
-    stopTokenCheck,
+    signal,
   } = ctx
 
   // Layout (readYs/gapYs/mismatchYs/etc.) is computed on the main thread via
@@ -373,7 +372,7 @@ async function buildGroupResult(
     statusCallback,
   })
 
-  checkStopTokenThrottled(stopTokenCheck)
+  checkAbortSignal(signal)
 
   // IGV-style per-strand read-base pileup at the modified columns, computed from
   // the reads themselves — the modBAM mod-coverage denominator, no reference
@@ -403,7 +402,7 @@ async function buildGroupResult(
     bisulfite,
     junctionReference,
     statusCallback,
-    stopTokenCheck,
+    signal,
   })
 
   // Derived here where the mate-reference table and the region refName are both
@@ -488,7 +487,7 @@ export async function executeRenderAlignmentData({
     byteLimit,
     perBaseBinBp = 1,
     statusCallback,
-    stopToken,
+    signal,
   } = args
   const region = regions[0]!
 
@@ -505,7 +504,7 @@ export async function executeRenderAlignmentData({
     }),
     regions: [region],
     byteLimit,
-    stopToken,
+    signal,
     statusCallback,
   })
   if (tooLarge) {
@@ -517,7 +516,7 @@ export async function executeRenderAlignmentData({
   const effShowSoftClipping = isChain ? false : showSoftClipping
   const effectiveGroupBy = groupByForMode(groupByArg, isChain)
 
-  const { featuresArray, stopTokenCheck } = await fetchFeaturesFromAdapter({
+  const { featuresArray } = await fetchFeaturesFromAdapter({
     pluginManager,
     sessionId,
     adapterConfig,
@@ -526,7 +525,7 @@ export async function executeRenderAlignmentData({
     filterBy,
     lodMode,
     statusCallback,
-    stopToken,
+    signal,
   })
 
   // The singleton/proper-pair filter groups reads by name, so it applies in
@@ -579,7 +578,7 @@ export async function executeRenderAlignmentData({
     label: 'Processing alignments',
     total: inputFeatures.length,
     statusCallback,
-    stopTokenCheck,
+    signal,
   })
   const extractions = await updateStatus(
     'Processing alignments',
@@ -609,7 +608,7 @@ export async function executeRenderAlignmentData({
     extractions.map(e => e.features),
   )
 
-  checkStopTokenThrottled(stopTokenCheck)
+  checkAbortSignal(signal)
 
   // Modification color modes (pileup only) draw mod coverage + track per-base
   // strands; chain omits them so runCoveragePipeline skips mod-coverage.
@@ -652,7 +651,7 @@ export async function executeRenderAlignmentData({
     detectedSimplexModifications,
     insertSizeStats: sharedInsertSizeStats,
     statusCallback,
-    stopTokenCheck,
+    signal,
   }
 
   const groups: AlignmentGroup[] = []

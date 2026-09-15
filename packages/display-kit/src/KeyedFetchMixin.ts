@@ -4,7 +4,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import FetchMixin from './FetchMixin.ts'
 
 import type { FetchLifecycleHost } from './FetchMixin.ts'
-import type { StopTokenRotation } from '@jbrowse/core/util/createStopTokenRotation'
+import type { AbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -16,7 +16,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  * mixin composes.
  */
 export interface KeyedFetchHost extends IStateTreeNode, FetchLifecycleHost {
-  fetchRotation: StopTokenRotation
+  fetchRotation: AbortRotation
   currentFetchKey: string | undefined
   loadedFetchKey: string | undefined
   commitFetchResult: (commit: () => void, key: string) => void
@@ -36,7 +36,7 @@ export interface KeyedFetchHost extends IStateTreeNode, FetchLifecycleHost {
  * It was `GlobalFetchMixin`'s middle until 2026-09, while the comparative
  * displays carried a second spelling of every member here on
  * `SyntenyFetchStateMixin` — the same stamp, the same compare, a `fetching`
- * flag standing in for `activeStopToken`, and a `reload` that dropped the stamp
+ * flag standing in for `activeSignal`, and a `reload` that dropped the stamp
  * for the same reason. ADR-105.
  */
 export default function KeyedFetchMixin() {

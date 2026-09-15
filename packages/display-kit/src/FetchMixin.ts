@@ -1,5 +1,5 @@
 import { noteFetchStarted } from '@jbrowse/core/pluggableElementTypes/models/assertDisplayContract'
-import { createStopTokenRotation } from '@jbrowse/core/util/createStopTokenRotation'
+import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import { makeFetchContext } from '@jbrowse/core/util/fetchContext'
 import { runFetchOnce } from '@jbrowse/core/util/installFetch'
 import { localStorageGetBoolean } from '@jbrowse/core/util/localStorage'
@@ -18,7 +18,6 @@ import {
 
 import type { FetchContext } from '@jbrowse/core/util/fetchContext'
 import type { RpcStatus } from '@jbrowse/core/util/progress'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export { makeFetchContext }
@@ -70,7 +69,7 @@ function writeStatus(self: unknown) {
  * `Instance` type would be circular from inside a file the mixin composes.
  */
 export interface FetchLifecycleHost {
-  beginFetch: (stopToken: StopToken) => void
+  beginFetch: (signal: AbortSignal) => void
   endFetch: (current: boolean) => void
   setError: (error?: unknown) => void
 }
@@ -89,8 +88,8 @@ export function fetchMixinLifecycle(self: FetchLifecycleHost) {
     setError: (error?: unknown) => {
       self.setError(error)
     },
-    onBegin: (stopToken: StopToken) => {
-      self.beginFetch(stopToken)
+    onBegin: (signal: AbortSignal) => {
+      self.beginFetch(signal)
     },
     onEnd: (current: boolean) => {
       self.endFetch(current)
@@ -140,7 +139,7 @@ export default function FetchMixin() {
        * #volatile
        * stop token of the in-flight fetch, or undefined when idle
        */
-      activeStopToken: undefined as StopToken | undefined,
+      activeSignal: undefined as AbortSignal | undefined,
       /**
        * #volatile
        * bumps at every fetch end; autoruns read it to re-evaluate, and it
@@ -167,7 +166,7 @@ export default function FetchMixin() {
        * throttle window, one slot per concurrent operation, so N parallel
        * per-region fetches thin to one stream between them rather than N and a
        * second operation cannot end the first one's label (ADR-081). Lent whole
-       * to `createStopTokenRotation` by a display that also runs a bare-autorun
+       * to `createAbortRotation` by a display that also runs a bare-autorun
        * fetch — see `StatusReporter`.
        */
       statusWindow: createStatusWindow(writeStatus(self)),
@@ -214,7 +213,7 @@ export default function FetchMixin() {
       /**
        * #volatile
        * **The latest-wins machine this mixin is a wrapper around**, and not a
-       * second one: `createStopTokenRotation` owns token rotation, the
+       * second one: `createAbortRotation` owns token rotation, the
        * `isCurrent` guard, the status slot and the supersede-versus-end rule
        * (ADR-080, ADR-081), for every fetch in the codebase that has one.
        * `runFetch` adds the observable bookkeeping a display needs on top —
@@ -232,7 +231,7 @@ export default function FetchMixin() {
        * the one field rather than opening a second window over it — the whole
        * point of `StatusReporter`.
        */
-      fetchRotation: createStopTokenRotation(self, {
+      fetchRotation: createAbortRotation(self, {
         statusWindow: self.statusWindow,
       }),
     }))
@@ -242,7 +241,7 @@ export default function FetchMixin() {
        * true while a fetch is active
        */
       get isLoading() {
-        return self.activeStopToken !== undefined
+        return self.activeSignal !== undefined
       },
     }))
     .views(self => ({
@@ -424,7 +423,7 @@ export default function FetchMixin() {
         // move the field off the fetch's label and onto the sibling's, which is
         // the ADR-081 failure exactly.
         self.fetchRotation.cancel()
-        self.activeStopToken = undefined
+        self.activeSignal = undefined
       },
       /**
        * #action
@@ -437,7 +436,7 @@ export default function FetchMixin() {
        * **Every operation on the display opens one**, and the two come back
        * together because an operation that never retires keeps reporting status
        * for a phase that is over. The viewport fetch (`runFetch`), the clustering run
-       * and a lent `createStopTokenRotation` are three of them on one field;
+       * and a lent `createAbortRotation` are three of them on one field;
        * before ADR-081 each blanked the field outright and the last one to
        * finish overwrote the status of the other two.
        *
@@ -530,12 +529,12 @@ export default function FetchMixin() {
        * same reason `endFetch` is: `installFetch`'s lifecycle callbacks run
        * outside any MST flow this mixin owns.
        */
-      beginFetch(stopToken: StopToken) {
-        if (self.activeStopToken) {
+      beginFetch(signal: AbortSignal) {
+        if (self.activeSignal) {
           debugStatus(self.fetchGeneration, 'superseded')
         }
         debugStatus(self.fetchGeneration, 'fetch-start')
-        self.activeStopToken = stopToken
+        self.activeSignal = signal
         self.fetchCanceled = false
       },
       /**
@@ -550,7 +549,7 @@ export default function FetchMixin() {
        */
       endFetch(current: boolean) {
         if (current) {
-          self.activeStopToken = undefined
+          self.activeSignal = undefined
           self.fetchGeneration++
           debugStatus(self.fetchGeneration, 'fetch-end')
         }
@@ -560,7 +559,7 @@ export default function FetchMixin() {
       /**
        * #action
        * Run a cancel-safe fetch (cancels any prior). The work callback gets a
-       * FetchContext with a stopToken to forward to the RPC and an isStale()
+       * FetchContext with a signal to forward to the RPC and an isStale()
        * check to short-circuit commits once the user has moved on.
        *
        * **The MST-flow wrapper over the shared `runFetchOnce` sequence**, and
@@ -568,7 +567,7 @@ export default function FetchMixin() {
        * rules that keep a superseded run from writing back, are the same
        * function every other fetch in the tree runs. What this adds is the
        * observable bookkeeping a display needs — `isLoading` through
-       * `activeStopToken`, `fetchGeneration`, the user-cancel clear — and the
+       * `activeSignal`, `fetchGeneration`, the user-cancel clear — and the
        * flow itself, which is an action, so `work`'s synchronous prefix runs
        * untracked wherever a fetch autorun calls this.
        */

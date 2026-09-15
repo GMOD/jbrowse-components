@@ -148,12 +148,12 @@ const missingRpcHandle = handle =>
 const noUnreportedRpcCall = {
   selector: missingRpcHandle('statusCallback'),
   message:
-    "This rpcManager.call passes no `statusCallback`, so whatever it does is invisible — a spinner with no phase label and no bar. Pass `ctx.statusCallback` (FetchContext / createStopTokenRotation), useFetch's, or the display's `makeStatusCallback`. If it should genuinely report nothing, `// eslint-disable-next-line no-restricted-syntax` with the reason. See agent-docs/reference/PROGRESS_REPORTING.md.",
+    "This rpcManager.call passes no `statusCallback`, so whatever it does is invisible — a spinner with no phase label and no bar. Pass `ctx.statusCallback` (FetchContext / createAbortRotation), useFetch's, or the display's `makeStatusCallback`. If it should genuinely report nothing, `// eslint-disable-next-line no-restricted-syntax` with the reason. See agent-docs/reference/PROGRESS_REPORTING.md.",
 }
 const noUncancellableRpcCall = {
-  selector: missingRpcHandle('stopToken'),
+  selector: missingRpcHandle('signal'),
   message:
-    'This rpcManager.call passes no `stopToken`, so nothing can stop the worker once the user moves on or closes the dialog — it keeps its in-flight HTTP reads too. Pass `ctx.stopToken`, or the token useFetch hands the fetcher. If the work is genuinely uninterruptible or too short to matter, `// eslint-disable-next-line no-restricted-syntax` with the reason. See agent-docs/reference/PROGRESS_REPORTING.md.',
+    'This rpcManager.call passes no `signal`, so nothing can stop the worker once the user moves on or closes the dialog — it keeps its in-flight HTTP reads too. Pass `ctx.signal`, or the signal useFetch hands the fetcher. If the work is genuinely uninterruptible or too short to matter, `// eslint-disable-next-line no-restricted-syntax` with the reason. See agent-docs/reference/PROGRESS_REPORTING.md.',
 }
 
 // The other end of the two above: having decided a call reports nothing, don't

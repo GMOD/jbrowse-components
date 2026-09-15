@@ -112,7 +112,7 @@ export async function executeMafAlignmentData({
     sessionId,
     subtreeFilter,
     byteLimit,
-    stopToken,
+    signal,
     statusCallback,
   } = args
   const region = regions[0]!
@@ -131,7 +131,7 @@ export async function executeMafAlignmentData({
     dataAdapter: adapter,
     regions: [region],
     byteLimit,
-    stopToken,
+    signal,
     statusCallback,
   })
   if (tooLarge) {

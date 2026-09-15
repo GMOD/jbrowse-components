@@ -633,7 +633,7 @@ MST view methods (not getters), so subclasses extend them via super-capture:
 | `renderState` | `backend.render(state)` per frame | Render callback reads it — repaint |
 
 `rpcProps()` returns **user-controlled settings only**. Structural args
-(`adapterConfig`, `sequenceAdapter`, `region(s)`, `bpPerPx`, `stopToken`) are
+(`adapterConfig`, `sequenceAdapter`, `region(s)`, `bpPerPx`, `signal`) are
 spread in at the RPC call site, and `sessionId` belongs in the **first**
 argument only — `RpcManager.call` injects it into the payload, and
 `AssertNoCallLevelFields` fails a registry entry that declares it in its args.
@@ -643,7 +643,7 @@ rpcManager.call(sessionId, 'RenderXxxData', {
   adapterConfig: self.adapterConfig,  // inherited from BaseDisplayModel
   regions, bpPerPx,                    // per-call values
   ...self.rpcProps(),                  // user settings (cache keys)
-  stopToken, statusCallback,
+  signal, statusCallback,
 })
 ```
 

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 
 import { createStatusWindow, isAbortException } from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 
 import { toPanelRows } from './panelOrder.ts'
 
@@ -45,7 +44,7 @@ export function useMateDiscovery({
   const [status, setStatus] = useState<RpcStatus | undefined>()
   const [attempt, setAttempt] = useState(0)
   useEffect(() => {
-    const stopToken = createStopToken()
+    const controller = new AbortController()
     let alive = true
     setRows(undefined)
     setUnconfigured([])
@@ -64,7 +63,7 @@ export function useMateDiscovery({
     const { statusCallback, clear } = statusWindow.open({
       isCurrent: () => alive,
     })
-    discoverMatesFor(trackId)(stopToken, statusCallback)
+    discoverMatesFor(trackId)(controller.signal, statusCallback)
       .then(result => {
         if (alive) {
           setRows(toPanelRows(region.assemblyName, result.mates))
@@ -86,7 +85,7 @@ export function useMateDiscovery({
       })
     return () => {
       alive = false
-      stopStopToken(stopToken)
+      controller.abort()
       // the guard already makes a queued write a no-op; the timer behind it
       // would otherwise still stand for up to a window past unmount
       statusWindow.reset()

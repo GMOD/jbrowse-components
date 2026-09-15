@@ -1,5 +1,6 @@
 import { getFeatureAdapterOrThrow } from '../../data_adapters/getFeatureAdapter.ts'
 import RpcMethodTypeWithRenameRegion from '../../pluggableElementTypes/RpcMethodTypeWithRenameRegion.ts'
+import { checkAbortSignal } from '../../util/aborting.ts'
 import { facetRows, runTransforms } from '../../util/featureTransforms.ts'
 import { rpcResult } from '../../util/librpc.ts'
 import {
@@ -7,10 +8,6 @@ import {
   encodedChannelTransferables,
 } from '../../util/markEncoding.ts'
 import { createProgressReporter, updateStatus } from '../../util/progress.ts'
-import {
-  checkStopTokenThrottled,
-  createStopTokenChecker,
-} from '../../util/stopToken.ts'
 import { measureRegionBytes } from '../byteBudget.ts'
 
 import type { EncodedFeaturesResult } from '../../util/markEncoding.ts'
@@ -38,11 +35,10 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
       transform = [],
       filters = [],
       byteLimit,
-      stopToken,
+      signal,
       statusCallback,
     } = args
     const { pluginManager } = this
-    const stopTokenCheck = createStopTokenChecker(stopToken)
     const dataAdapter = await getFeatureAdapterOrThrow({
       pluginManager,
       sessionId,
@@ -54,9 +50,8 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
       dataAdapter,
       regions: [region],
       byteLimit,
-      stopToken,
+      signal,
       statusCallback,
-      stopTokenCheck,
     })
     if (tooLarge) {
       return tooLarge
@@ -65,9 +60,9 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
     const fetched = await updateStatus(
       'Downloading features',
       statusCallback,
-      () => dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
+      () => dataAdapter.getFeaturesArray(region, { statusCallback, signal }),
     )
-    checkStopTokenThrottled(stopTokenCheck)
+    checkAbortSignal(signal)
 
     const { jexl } = pluginManager
     const shared = runTransforms(
@@ -91,7 +86,7 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
               label: 'Encoding features',
               total: features.length,
               statusCallback,
-              stopTokenCheck,
+              signal,
             }),
           }),
           facet: faceted?.sections,

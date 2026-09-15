@@ -442,7 +442,8 @@ describe('GenBank export', () => {
   // The only writer that fetches anything. Dropping the pair left closing the
   // dialog with a whole-gene sequence read still running, and its download
   // unnamed while it ran.
-  it('carries the stop token and a status slot into the ORIGIN fetch', async () => {
+  it('carries the signal and a status slot into the ORIGIN fetch', async () => {
+    const { signal } = new AbortController()
     const statusCallback = jest.fn()
     await stringifyGBK({
       features: [
@@ -456,12 +457,12 @@ describe('GenBank export', () => {
       ],
       assemblyName: 'volvox',
       session: mockSession,
-      stopToken: 'token-1',
+      signal,
       statusCallback,
     })
 
     const [arg] = jest.mocked(fetchSeq).mock.calls[0]!
-    expect(arg.stopToken).toBe('token-1')
+    expect(arg.signal).toBe(signal)
     arg.statusCallback?.('Downloading sequence')
     expect(statusCallback).toHaveBeenCalledWith('Downloading sequence')
   })

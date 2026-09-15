@@ -2,7 +2,6 @@ import path from 'node:path'
 
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { isAbortException } from '@jbrowse/core/util/aborting'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 
 import Adapter, { snippetAround } from './TrixTextSearchAdapter.ts'
 import configSchema, { normalizeSnapshot } from './configSchema.ts'
@@ -144,10 +143,11 @@ describe('TrixTextSearchAdapter', () => {
   })
 
   it('drops a superseded query rather than formatting its hits', async () => {
-    const stopToken = createStopToken()
-    stopStopToken(stopToken)
+    const signalController = new AbortController()
+    const signal = signalController.signal
+    signalController.abort()
     const thrown = await adapter
-      .searchIndex({ queryString: 'apple', stopToken })
+      .searchIndex({ queryString: 'apple', signal })
       .catch((e: unknown) => e)
     expect(isAbortException(thrown)).toBe(true)
   })

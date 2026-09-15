@@ -4,7 +4,6 @@ import { featureSpanEndBp } from './featureSpanBp.ts'
 
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 // A zero-length feature is straddled rather than grown from its start edge:
 // adapters keep a feature on `end > queryStart && start < queryEnd`, and a
@@ -31,7 +30,7 @@ export async function fetchCanvasFeatureDetails(
   adapterConfig: Record<string, unknown>,
   featureId: string,
   region: Region,
-  opts: { stopToken?: StopToken; statusCallback?: StatusCallback } = {},
+  opts: { signal?: AbortSignal; statusCallback?: StatusCallback } = {},
 ) {
   const result = await session.rpcManager.call(
     sessionId,

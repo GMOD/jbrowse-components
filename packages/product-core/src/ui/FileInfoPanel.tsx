@@ -32,10 +32,10 @@ const FileInfoPanel = observer(function FileInfoPanel({
     // reading a header can mean walking a v8 .hic's norm-vector index or a
     // multi-megabyte VCF header, so it gets both handles: closing the About
     // dialog stops it, and the wait says what it is
-    async (_name, _trackId, stopToken, statusCallback) =>
+    async (_name, _trackId, signal, statusCallback) =>
       (await rpcManager.call(trackId, 'CoreGetInfo', {
         adapterConfig: readConfSlot<Record<string, unknown>>(config, 'adapter'),
-        stopToken,
+        signal,
         statusCallback,
       })) as FileInfo,
   )

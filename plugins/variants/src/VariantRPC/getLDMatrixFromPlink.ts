@@ -6,7 +6,6 @@ import { bandCellCount, bandPairIndex, resolveBand } from './ldBand.ts'
 import type { LDMatrixResult, LDMetric, LDSnp } from './ldTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { PlinkLDRecord } from '@jbrowse/ld-core'
 
 // Identity of a SNP is its (refName, position); PLINK LD records reference the
@@ -82,7 +81,7 @@ export async function getLDMatrixFromPlink({
   pluginManager: PluginManager
   args: {
     adapterConfig: Record<string, unknown>
-    stopToken?: StopToken
+    signal?: AbortSignal
     sessionId: string
     headers?: Record<string, string>
     regions: Region[]

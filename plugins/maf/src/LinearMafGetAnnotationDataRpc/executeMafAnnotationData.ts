@@ -50,7 +50,7 @@ export async function executeMafAnnotationData({
     adapterConfig,
     byteLimit,
     sessionId,
-    stopToken,
+    signal,
     statusCallback,
   } = args
   const region = regions[0]!
@@ -64,7 +64,7 @@ export async function executeMafAnnotationData({
     dataAdapter: adapter,
     regions: [region],
     byteLimit,
-    stopToken,
+    signal,
     statusCallback,
   })
   if (tooLarge) {
@@ -73,7 +73,7 @@ export async function executeMafAnnotationData({
 
   const records: MafFrameRecord[] = []
   await subscribeToObservable(
-    adapter.getFeatures(region, { stopToken, statusCallback }),
+    adapter.getFeatures(region, { signal, statusCallback }),
     f => {
       const src = f.get('src')
       // Only mafFrames-shaped features (those carrying a `src` species column)

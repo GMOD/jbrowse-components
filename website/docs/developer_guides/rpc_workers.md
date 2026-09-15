@@ -211,14 +211,14 @@ export default class ScoreExamplePlugin extends Plugin {
 repeated inside the args object — `call` injects it from its first parameter.
 
 Two fields work that way, and neither belongs in a registry entry: `sessionId`
-(`RpcSession`) and the `stopToken`/`statusCallback` pair (`RpcHandles`). They
-are properties of the _call_, so every method accepts them and no entry gets to
+(`RpcSession`) and the `signal`/`statusCallback` pair (`RpcHandles`). They are
+properties of the _call_, so every method accepts them and no entry gets to
 require or refuse one. `EntriesDeclaringCallLevelFields` in `RpcRegistry.ts`
 fails compilation, naming the entry, if one declares either.
 
 A per-region display does not `await` the call itself. `fetchEachRegion` owns
-cancellation, stop tokens and staleness, so `LinearScoreDisplay` hands it the
-call and a place to put each result:
+cancellation and staleness, so `LinearScoreDisplay` hands it the call and a
+place to put each result:
 
 <!-- include: example-plugins/score-example/src/LinearScoreDisplay/model.ts#fetchNeeded -->
 

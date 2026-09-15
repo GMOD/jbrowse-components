@@ -1,10 +1,9 @@
 import { calculateFeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/stats'
-import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 
 import type { RegionTooLargeResult, RenderFeatureDataArgs } from './rpcTypes.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, StatusCallback } from '@jbrowse/core/util'
-import type { StopToken, StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 type Region = RenderFeatureDataArgs['region']
 
@@ -120,9 +119,8 @@ export async function samplePreFetchDensity({
   maxFeatureDensity,
   bytes,
   admit,
-  stopToken,
+  signal,
   statusCallback,
-  stopTokenCheck,
 }: {
   dataAdapter: BaseFeatureDataAdapter
   region: Region
@@ -130,9 +128,8 @@ export async function samplePreFetchDensity({
   maxFeatureDensity: number
   bytes: number | undefined
   admit: (feature: Feature) => boolean
-  stopToken?: StopToken
+  signal?: AbortSignal
   statusCallback?: StatusCallback
-  stopTokenCheck?: StopTokenChecker
 }): Promise<RegionTooLargeResult | undefined> {
   const { featureDensity } = await calculateFeatureDensityStats(
     region,
@@ -141,13 +138,13 @@ export async function samplePreFetchDensity({
     // GFF3.
     (r, o) => dataAdapter.getFeatures(r, { ...o, topLevelOnly: true }),
     {
-      stopToken,
+      signal,
       statusCallback,
       admit,
       gate: densityProbeGate(bpPerPx, maxFeatureDensity),
     },
   )
-  checkStopTokenThrottled(stopTokenCheck)
+  checkAbortSignal(signal)
   return densityTooLargeResult(
     featureDensity,
     region,

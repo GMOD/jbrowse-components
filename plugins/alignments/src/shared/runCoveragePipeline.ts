@@ -4,7 +4,7 @@ import {
   computeSNPCoverage,
 } from '@jbrowse/alignments-core'
 import { updateStatus } from '@jbrowse/core/util'
-import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 
 import {
   computeBisulfiteCoverage,
@@ -29,7 +29,6 @@ import type {
   SoftclipData,
 } from './webglRpcTypes.ts'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
-import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 /**
  * Runs the full coverage-area computation pipeline as a single named operation.
@@ -63,7 +62,7 @@ export async function runCoveragePipeline({
   bisulfite,
   junctionReference,
   statusCallback,
-  stopTokenCheck,
+  signal,
 }: {
   features: FeatureData[]
   gaps: GapData[]
@@ -85,7 +84,7 @@ export async function runCoveragePipeline({
   // only when the region carries a skip gap, so DNA-seq never pays for it.
   junctionReference?: JunctionReference
   statusCallback: StatusCallback | undefined
-  stopTokenCheck: StopTokenChecker
+  signal?: AbortSignal
 }) {
   const { start: regionStart, end: regionEnd } = region
   // The per-strand depth sweep (fwd/revDepths) backs the coverage tooltip's
@@ -98,7 +97,7 @@ export async function runCoveragePipeline({
       computeCoverage(features, gaps, regionStart, regionEnd, showCoverage),
   )
 
-  checkStopTokenThrottled(stopTokenCheck)
+  checkAbortSignal(signal)
 
   // Frequencies read the full per-bp depth sweep at each event position and feed
   // the pileup's low-frequency mismatch/indel fade. They are computed BEFORE the

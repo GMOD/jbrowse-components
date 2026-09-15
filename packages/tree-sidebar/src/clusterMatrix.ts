@@ -1,13 +1,12 @@
 import { clusterData, toNewick } from '@gmod/hclust'
 import { isAbortException } from '@jbrowse/core/util'
-import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 
 import { clusterProgressStatus } from './clusterProgressStatus.ts'
 import { gpuDistanceMatrix } from './gpuDistanceMatrix.ts'
 
 import type { ClusterProgress } from '@gmod/hclust'
 import type { StatusCallback } from '@jbrowse/core/util'
-import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 // One matrix row. Both halves of the clustering path read it and they read it
 // differently — hclust indexes it, the R-script and TSV serializers iterate it —
@@ -65,11 +64,11 @@ export const MIN_CLUSTER_ROWS = 2
 export async function clusterMatrix({
   data,
   statusCallback,
-  stopTokenCheck,
+  signal,
 }: {
   data: ClusterMatrix
   statusCallback?: StatusCallback
-  stopTokenCheck?: StopTokenChecker
+  signal?: AbortSignal
 }) {
   if (data.size < MIN_CLUSTER_ROWS) {
     throw new Error(
@@ -87,7 +86,7 @@ export async function clusterMatrix({
   let distances: Float32Array | undefined
   try {
     statusCallback?.('Computing distance matrix')
-    distances = (await gpuDistanceMatrix(rows, stopTokenCheck)) ?? undefined
+    distances = (await gpuDistanceMatrix(rows, signal)) ?? undefined
   } catch (e) {
     if (isAbortException(e)) {
       throw e
@@ -100,7 +99,7 @@ export async function clusterMatrix({
       statusCallback?.(clusterProgressStatus(p))
     },
     checkCancellation: () => {
-      checkStopTokenThrottled(stopTokenCheck)
+      checkAbortSignal(signal)
     },
   }
   const result = await (distances

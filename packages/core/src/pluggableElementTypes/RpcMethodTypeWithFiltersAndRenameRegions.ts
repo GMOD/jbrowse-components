@@ -3,7 +3,6 @@ import SerializableFilterChain from './renderers/util/serializableFilterChain.ts
 
 import type { Region } from '../util/index.ts'
 import type { StatusCallback } from '../util/progress.ts'
-import type { StopToken } from '../util/stopToken.ts'
 import type { SerializedFilterChain } from './renderers/util/serializableFilterChain.ts'
 
 // the subset of fields serializeArguments needs: `filters` plus the region
@@ -46,7 +45,7 @@ export default abstract class RpcMethodTypeWithFiltersAndRenameRegions<
 
   async serializeArguments(
     args: FilterRenameArgs & {
-      stopToken?: StopToken
+      signal?: AbortSignal
       statusCallback?: StatusCallback
     },
   ) {

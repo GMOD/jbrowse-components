@@ -10,7 +10,7 @@ export default class CoreGetSequence extends RpcMethodType<'CoreGetSequence'> {
   name = 'CoreGetSequence' as const
 
   async execute(args: RpcExecuteArgs<'CoreGetSequence'>) {
-    const { stopToken, statusCallback, sessionId, adapterConfig, region } = args
+    const { signal, statusCallback, sessionId, adapterConfig, region } = args
 
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
@@ -20,6 +20,6 @@ export default class CoreGetSequence extends RpcMethodType<'CoreGetSequence'> {
     if (!isSequenceAdapter(dataAdapter)) {
       throw new Error('Adapter does not support retrieving sequences')
     }
-    return dataAdapter.getSequence(region, { stopToken, statusCallback })
+    return dataAdapter.getSequence(region, { signal, statusCallback })
   }
 }

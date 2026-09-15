@@ -1,4 +1,3 @@
-import { createStopToken, stopStopToken } from './stopToken.ts'
 import { readTabixLines, readTabixLinesRedispatched } from './tabix.ts'
 
 // A stand-in for @gmod/tabix's TabixIndexedFile that records the opts it was
@@ -85,12 +84,13 @@ describe('readTabixLines', () => {
   // Asserted from inside the read, because withStopTokenSignal releases the
   // signal once the read settles — which is the point of the helper, and would
   // make an after-the-fact check pass for a signal that was never wired. A
-  // literal token rather than createStopToken() so the test names the id it
+  // literal token rather than new AbortController().signal so the test names the id it
   // stops; either way it is a string, whose abort is observable synchronously
   // where a SharedArrayBuffer's routes through Atomics.waitAsync and lands a
   // turn later.
   it('hands the reader a signal that is live and tracks the token', async () => {
-    const stopToken = 'tabix-live-signal'
+    const signalController = new AbortController()
+    const signal = signalController.signal
     let abortedDuringRead: boolean | undefined
     const source = fakeSource()
     const stopMidRead = {
@@ -102,27 +102,28 @@ describe('readTabixLines', () => {
         opts: Parameters<typeof source.getLines>[3],
       ) => {
         expect(opts.signal?.aborted).toBe(false)
-        stopStopToken(stopToken)
+        signalController.abort()
         abortedDuringRead = opts.signal?.aborted
         return source.getLines(refName, start, end, opts)
       },
     }
-    await readTabixLines(stopMidRead, 'ctgA', 0, 100, undefined, stopToken)
+    await readTabixLines(stopMidRead, 'ctgA', 0, 100, undefined, signal)
     expect(abortedDuringRead).toBe(true)
   })
 
-  it('hands the reader an already-aborted signal for a stopped token', async () => {
+  it('hands the reader an already-aborted signal', async () => {
     const source = fakeSource()
-    const stopToken = createStopToken()
-    stopStopToken(stopToken)
-    await readTabixLines(source, 'ctgA', 0, 100, undefined, stopToken)
+    const signalController = new AbortController()
+    const signal = signalController.signal
+    signalController.abort()
+    await readTabixLines(source, 'ctgA', 0, 100, undefined, signal)
     expect(source.seen[0]!.signal?.aborted).toBe(true)
   })
 
-  it('still passes a signal with no stop token, and never aborts it', async () => {
+  it('passes no signal when the caller has none', async () => {
     const source = fakeSource()
     await readTabixLines(source, 'ctgA', 0, 100)
-    expect(source.seen[0]!.signal?.aborted).toBe(false)
+    expect(source.seen[0]!.signal).toBeUndefined()
   })
 })
 

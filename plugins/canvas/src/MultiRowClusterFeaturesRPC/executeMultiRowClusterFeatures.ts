@@ -1,4 +1,3 @@
-import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 import { clusterMatrix } from '@jbrowse/tree-sidebar'
 
 import { collectMultiRowMatrix } from './collectMultiRowMatrix.ts'
@@ -13,10 +12,9 @@ export async function executeMultiRowClusterFeatures({
   pluginManager: PluginManager
   args: RpcExecuteArgs<'MultiRowClusterFeatures'>
 }) {
-  const stopTokenCheck = createStopTokenChecker(args.stopToken)
   return clusterMatrix({
-    data: await collectMultiRowMatrix({ pluginManager, args, stopTokenCheck }),
+    data: await collectMultiRowMatrix({ pluginManager, args }),
     statusCallback: args.statusCallback,
-    stopTokenCheck,
+    signal: args.signal,
   })
 }

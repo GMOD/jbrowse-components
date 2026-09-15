@@ -1,5 +1,4 @@
 import { isRpcResult } from '../util/rpc.ts'
-import { markStopTokenStopped } from '../util/stopToken.ts'
 import {
   bufferPaths,
   containerEntries,
@@ -175,16 +174,16 @@ interface RpcMessageData {
   uid: string
   libRpc?: true
   data: unknown
-  // a stop-token notification rather than a call: the id of a token the main
-  // thread has stopped. Carries no method or uid — it is not scoped to one
-  // call, because a token can be in flight on several at once.
-  stopToken?: string
+  abortable?: boolean
+  abort?: string
 }
 
 export default class RpcServer {
   protected methods: Record<string, Procedure>
 
   private self: WorkerSelf
+
+  private aborters = new Map<string, AbortController>()
 
   constructor(methods: Record<string, Procedure>) {
     if (!workerSelf) {
@@ -204,30 +203,39 @@ export default class RpcServer {
   }
 
   handler(e: MessageEvent<RpcMessageData>) {
-    const { libRpc, method, uid, data, stopToken } = e.data
+    const { libRpc, method, uid, data, abort, abortable } = e.data
     if (!libRpc) {
       return
     }
-    if (stopToken !== undefined) {
-      // Every in-flight method holding this token now sees it as stopped at its
-      // next await boundary, and any AbortSignal taken against it aborts, so a
-      // canceled read drops off the socket. Handled ahead of the method lookup:
-      // this frame has no method name and would otherwise land in the unknown
-      // method branch with no uid to reply to.
-      markStopTokenStopped(stopToken)
+    if (abort !== undefined) {
+      // Handled ahead of the method lookup: this frame has no method name and
+      // would otherwise land in the unknown method branch with no uid to reply
+      // to. A call that already settled left no controller, so a late abort is
+      // a no-op.
+      this.aborters.get(abort)?.abort()
       return
     }
     const methodFn = Object.hasOwn(this.methods, method)
       ? this.methods[method]
       : undefined
     if (methodFn) {
+      const controller = abortable ? new AbortController() : undefined
+      if (controller) {
+        this.aborters.set(uid, controller)
+      }
+      const args = controller
+        ? { ...(data as Record<string, unknown>), signal: controller.signal }
+        : data
       // wrap so a synchronous throw inside methodFn still routes to .throw()
-      ;(async () => methodFn(data))()
+      ;(async () => methodFn(args))()
         .then(response => {
           this.reply(uid, response, method)
         })
         .catch((error: unknown) => {
           this.throw(uid, serializeError(error))
+        })
+        .finally(() => {
+          this.aborters.delete(uid)
         })
     } else {
       this.throw(uid, `Unknown RPC method "${method}"`)

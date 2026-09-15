@@ -466,8 +466,8 @@ export {
   type StatusChannel,
   type StatusReporter,
   createStatusChannel,
-  createStopTokenRotation,
-} from './createStopTokenRotation.ts'
+  createAbortRotation,
+} from './createAbortRotation.ts'
 // `installFetch` is deliberately NOT re-exported here: it reaches `getSession`
 // through `fetchContext.ts`, which imports this barrel, so exporting it makes
 // the barrel initialize itself. Import it from `@jbrowse/core/util/installFetch`.
@@ -496,24 +496,11 @@ export {
   stringify,
 } from './locString.ts'
 export {
-  type LastStopTokenCheck,
-  type StopToken,
-  type StopTokenChecker,
-  type StopTokenSignal,
-  checkStopToken,
-  checkStopTokenThrottled,
-  createStopToken,
-  createStopTokenChecker,
-  hasSharedArrayBuffer,
-  isStopToken,
-  isStopped,
-  markStopTokenStopped,
-  registerStopTokenBroadcaster,
-  stopStopToken,
-  stopTokenSignal,
-  withStopTokenCheck,
-  withStopTokenSignal,
-} from './stopToken.ts'
+  type AbortBreakpoint,
+  checkAbortSignal,
+  createAbortBreakpoint,
+  withAbortCheck,
+} from './aborting.ts'
 export {
   type AddTrackComponentModel,
   type AddTrackComponentProps,

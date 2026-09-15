@@ -6,7 +6,6 @@ import type {
   AbstractSessionModel,
   Feature,
   StatusCallback,
-  StopToken,
 } from '../../../util/index.ts'
 
 // name becomes the /label qualifier rather than one of its own
@@ -212,14 +211,14 @@ async function formatRecord({
   features,
   assemblyName,
   session,
-  stopToken,
+  signal,
   statusCallback,
 }: {
   refName: string
   features: Feature[]
   assemblyName: string
   session: AbstractSessionModel
-  stopToken?: StopToken
+  signal?: AbortSignal
   statusCallback?: StatusCallback
 }) {
   const minPos = min(features.map(f => f.get('start')))
@@ -233,7 +232,7 @@ async function formatRecord({
     start: minPos,
     end: maxPos,
     refName,
-    stopToken,
+    signal,
     statusCallback,
   })
 
@@ -248,13 +247,13 @@ export async function stringifyGBK({
   features,
   assemblyName,
   session,
-  stopToken,
+  signal,
   statusCallback,
 }: {
   assemblyName: string
   session: AbstractSessionModel
   features: Feature[]
-  stopToken?: StopToken
+  signal?: AbortSignal
   statusCallback?: StatusCallback
 }) {
   // A record per reference sequence, which is what GenBank is: a multi-region
@@ -274,7 +273,7 @@ export async function stringifyGBK({
         features: feats,
         assemblyName,
         session,
-        stopToken,
+        signal,
         statusCallback: slot(),
       }),
     ),

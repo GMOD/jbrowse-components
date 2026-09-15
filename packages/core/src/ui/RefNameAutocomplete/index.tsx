@@ -16,7 +16,6 @@ import {
 
 import type BaseResult from '../../TextSearch/BaseResults.ts'
 import type { AbstractSessionModel } from '../../util/index.ts'
-import type { StopToken } from '../../util/stopToken.ts'
 import type { CSSProperties, ReactNode } from 'react'
 
 const RefNameAutocomplete = observer(function RefNameAutocomplete({
@@ -42,7 +41,7 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
   // the stop token is stopped as soon as the next keystroke supersedes this
   // query, so a fetcher that forwards it drops the superseded work instead of
   // ranking and formatting an answer nobody will see
-  fetchResults: (query: string, stopToken?: StopToken) => Promise<BaseResult[]>
+  fetchResults: (query: string, signal?: AbortSignal) => Promise<BaseResult[]>
   onSelect?: (region: BaseResult) => void
   onChange?: (val: string) => void
   minWidth?: number
@@ -75,8 +74,8 @@ const RefNameAutocomplete = observer(function RefNameAutocomplete({
     shouldSearch
       ? (['refNameSearch', assemblyName, debouncedSearch] as const)
       : null,
-    async (_tag, _assembly, query, stopToken) =>
-      getDeduplicatedResult(await fetchResults(query, stopToken)),
+    async (_tag, _assembly, query, signal) =>
+      getDeduplicatedResult(await fetchResults(query, signal)),
     {
       onError: e => {
         session.notifyError(`${e}`, e)

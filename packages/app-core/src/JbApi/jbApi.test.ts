@@ -3,7 +3,7 @@ import * as configuration from '@jbrowse/core/configuration'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import * as getFeatureAdapter from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import * as util from '@jbrowse/core/util'
-import * as stopToken from '@jbrowse/core/util/stopToken'
+import * as aborting from '@jbrowse/core/util/aborting'
 import * as mst from '@jbrowse/mobx-state-tree'
 import * as mobx from 'mobx'
 
@@ -855,7 +855,7 @@ describe('the jb roster', () => {
   it('hands through no core export beyond the frozen re-exports', () => {
     const frozen = new Set(['getConf', 'mobx', 'mst', 'readConfObject'])
     const coreExports = new Set<unknown>(
-      [configuration, getFeatureAdapter, util, stopToken].flatMap(m =>
+      [configuration, getFeatureAdapter, util, aborting].flatMap(m =>
         Object.values(m),
       ),
     )

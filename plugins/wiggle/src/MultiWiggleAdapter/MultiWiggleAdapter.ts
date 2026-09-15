@@ -222,7 +222,7 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
           )
         }),
       ).subscribe(observer)
-    }, opts.stopToken)
+    }, opts.signal)
   }
 
   // Every visible region in one call per subtrack: each subadapter is its own

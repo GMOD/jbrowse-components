@@ -514,7 +514,7 @@ describe('the dependency set is the contract', () => {
   // observable someone thought to write. Every rule above is visible in it: the
   // two pure signals present in every state, the viewport present only while
   // the display can act on it, and the in-flight and coverage reads
-  // (`activeStopToken`, `loadedRegions`) tracked rather than guarded — a fetch
+  // (`activeSignal`, `loadedRegions`) tracked rather than guarded — a fetch
   // moving them re-runs the plan onto its in-flight or covered branch.
   const signals = [
     'PerRegionTestDisplay.fetchGeneration',
@@ -579,7 +579,7 @@ describe('the dependency set is the contract', () => {
         'PerRegionTestDisplay.fetchSuspended',
         ...signals,
         'PerRegionTestDisplay.gateEnabled',
-        'PerRegionTestDisplay.activeStopToken',
+        'PerRegionTestDisplay.activeSignal',
         'PerRegionTestDisplay.loadedRegions',
         'loadedRegions.0',
         'loadedRegions.0?',

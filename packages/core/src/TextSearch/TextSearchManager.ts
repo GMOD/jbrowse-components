@@ -2,8 +2,7 @@ import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { hydrateTrackConfig, readConfObject } from '../configuration/index.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
-import { isAbortException } from '../util/aborting.ts'
-import { checkStopToken } from '../util/stopToken.ts'
+import { checkAbortSignal, isAbortException } from '../util/aborting.ts'
 import { canonicalAssemblyNames } from '../util/tracks.ts'
 
 import type PluginManager from '../PluginManager.ts'
@@ -150,7 +149,7 @@ export default class TextSearchManager {
     // deliberately drops a failing adapter and carries on, so an abort thrown
     // by one of them would otherwise still land here as "no results from that
     // index" and rank the rest
-    checkStopToken(args.stopToken)
+    checkAbortSignal(args.signal)
     return await this.sortResults({ args, results: results.flat() })
   }
 

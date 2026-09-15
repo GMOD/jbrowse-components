@@ -1,12 +1,12 @@
 import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { indexTracks } from '@jbrowse/text-indexing'
 
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
 import type { indexType } from '@jbrowse/text-indexing'
 import type { Track } from '@jbrowse/text-indexing-core'
 
-// No `stopToken` and no `statusCallback`: both come from `RpcHandles`, which
+// No `signal` and no `statusCallback`: both come from `RpcHandles`, which
 // every method's args carry. Declaring the status one here narrowed it to
 // `(message: string) => void` — a channel that cannot carry a determinate
 // fraction, so the indexer could only ever say what it was doing and never how
@@ -40,11 +40,11 @@ export class TextIndexRpcMethod extends RpcMethodType<'TextIndexRpcMethod'> {
       attributes,
       assemblies,
       indexType,
-      stopToken,
+      signal,
       statusCallback,
     } = args
 
-    checkStopToken(stopToken)
+    checkAbortSignal(signal)
     await indexTracks({
       outDir: outLocation,
       tracks,
@@ -53,7 +53,7 @@ export class TextIndexRpcMethod extends RpcMethodType<'TextIndexRpcMethod'> {
       assemblyNames: assemblies,
       indexType,
       statusCallback,
-      stopToken,
+      signal,
     })
   }
 }

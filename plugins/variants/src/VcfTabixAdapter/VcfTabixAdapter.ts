@@ -105,7 +105,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
         opts,
         observer,
       )
-    }, opts.stopToken)
+    }, opts.signal)
   }
 
   // The sources plus whatever the samples metadata file disagreed with the VCF

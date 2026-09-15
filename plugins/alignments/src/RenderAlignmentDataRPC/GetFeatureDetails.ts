@@ -38,7 +38,7 @@ export default class GetFeatureDetails extends RpcMethodTypeWithFiltersAndRename
       regions,
       featureId,
       lodMode,
-      stopToken,
+      signal,
       statusCallback,
     } = args
 
@@ -58,7 +58,7 @@ export default class GetFeatureDetails extends RpcMethodTypeWithFiltersAndRename
     const features =
       (await dataAdapter?.getFeaturesArray(region, {
         lodMode,
-        stopToken,
+        signal,
         statusCallback,
       })) ?? []
 

@@ -155,7 +155,7 @@ test('a track with no export capability is never asked to export', async () => {
 test('the stop token and status callback reach every RPC', async () => {
   setup({ exportsData: true })
   respond({ CoreGetExportData: undefined, CoreGetFeatures: [] })
-  const stopToken = 'token-1'
+  const { signal } = new AbortController()
   const statusCallback = jest.fn()
 
   await fetchTrackData({
@@ -163,7 +163,7 @@ test('the stop token and status callback reach every RPC', async () => {
     regions,
     type: 'bed',
     options,
-    stopToken,
+    signal,
     statusCallback,
   })
 
@@ -172,7 +172,7 @@ test('the stop token and status callback reach every RPC', async () => {
     'CoreGetExportData',
     'CoreGetFeatures',
   ]) {
-    expect(callsTo(method)[0]![2]).toMatchObject({ stopToken, statusCallback })
+    expect(callsTo(method)[0]![2]).toMatchObject({ signal, statusCallback })
   }
 })
 
@@ -225,7 +225,7 @@ test('an adapter quoting no estimate does not gate', async () => {
 test('the stop token and status callback reach the writer too', async () => {
   setup()
   respond({ CoreGetFeatures: [feature('gene1')] })
-  const stopToken = 'token-1'
+  const { signal } = new AbortController()
   const statusCallback = jest.fn()
 
   await fetchTrackData({
@@ -233,12 +233,12 @@ test('the stop token and status callback reach the writer too', async () => {
     regions,
     type: 'bed',
     options,
-    stopToken,
+    signal,
     statusCallback,
   })
 
   expect(writer).toHaveBeenCalledWith(
-    expect.objectContaining({ stopToken, statusCallback }),
+    expect.objectContaining({ signal, statusCallback }),
   )
 })
 

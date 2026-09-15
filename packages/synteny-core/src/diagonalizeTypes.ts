@@ -1,5 +1,4 @@
 import type { StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 /** What a reorder pass changed, for the progress dialog's summary line. */
 export interface DiagonalizeStats {
@@ -12,7 +11,7 @@ export interface DiagonalizeStats {
  * dialog and the auto-diagonalize path can drive either view's runner.
  */
 export interface DiagonalizeRunOpts {
-  stopToken?: StopToken
+  signal?: AbortSignal
   statusCallback?: StatusCallback
   /**
    * Called with the running totals each time a reordering has been applied to

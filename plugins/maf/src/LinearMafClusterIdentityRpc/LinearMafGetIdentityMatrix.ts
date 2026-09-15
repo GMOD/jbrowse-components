@@ -24,11 +24,9 @@ export default class LinearMafGetIdentityMatrix extends RpcMethodTypeWithFilters
 
   async execute(args: RpcExecuteArgs<'LinearMafGetIdentityMatrix'>) {
     const { buildIdentityMatrix } = await import('./buildIdentityMatrix.ts')
-    const { createStopTokenChecker } =
-      await import('@jbrowse/core/util/stopToken')
     return buildIdentityMatrix({
       pluginManager: this.pluginManager,
-      args: { ...args, stopTokenCheck: createStopTokenChecker(args.stopToken) },
+      args,
     })
   }
 }

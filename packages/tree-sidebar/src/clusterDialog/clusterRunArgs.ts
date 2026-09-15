@@ -13,7 +13,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  */
 export function resolveClusterRunArgs(
   model: IStateTreeNode,
-  handles: Pick<ClusterRunArgs, 'stopToken' | 'statusCallback'>,
+  handles: Pick<ClusterRunArgs, 'signal' | 'statusCallback'>,
 ): ClusterRunArgs {
   const view = containingLgv(model)
   if (!view.initialized) {

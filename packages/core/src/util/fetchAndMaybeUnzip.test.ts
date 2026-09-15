@@ -3,7 +3,6 @@ import {
   fetchAndMaybeUnzipText,
 } from './fetchAndMaybeUnzip.ts'
 import { statusMessageText, statusSource } from './progress.ts'
-import { stopStopToken } from './stopToken.ts'
 
 import type { RpcStatus } from './progress.ts'
 import type { GenericFilehandle } from 'generic-filehandle2'
@@ -39,28 +38,25 @@ describe('fetchAndMaybeUnzip', () => {
     expect(seen[0]!.onProgress).toEqual(expect.any(Function))
   })
 
-  it('bridges the stop token to the read signal', async () => {
-    const stopToken = 'fetch-unzip-token'
+  it('hands the reader the signal', async () => {
+    const { signal } = new AbortController()
     const { seen, handle } = fakeFilehandle('hello')
-    await fetchAndMaybeUnzip(handle, { stopToken })
-    const { signal } = seen[0]!
-    expect(signal!.aborted).toBe(false)
-    stopStopToken(stopToken)
-    // released once the read settled, so stopping afterwards must not abort it
-    expect(signal!.aborted).toBe(false)
+    await fetchAndMaybeUnzip(handle, { signal })
+    expect(seen[0]!.signal).toBe(signal)
   })
 
-  it('aborts the read of a token stopped mid-flight', async () => {
-    const stopToken = 'fetch-unzip-midflight'
+  it('aborts the read of a signal aborted mid-flight', async () => {
+    const signalController = new AbortController()
+    const signal = signalController.signal
     let abortedDuringRead: boolean | undefined
     const handle = {
       readFile: async (opts?: { signal?: AbortSignal }) => {
-        stopStopToken(stopToken)
+        signalController.abort()
         abortedDuringRead = opts?.signal?.aborted
         return new TextEncoder().encode('hello')
       },
     } as unknown as GenericFilehandle
-    await fetchAndMaybeUnzip(handle, { stopToken })
+    await fetchAndMaybeUnzip(handle, { signal })
     expect(abortedDuringRead).toBe(true)
   })
 

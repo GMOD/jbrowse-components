@@ -5,7 +5,6 @@ import { pickMatesForRegion } from './pickMatesForRegion.ts'
 import type { MateDiscoveryResult } from './pickMatesForRegion.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LodTier } from '@jbrowse/synteny-core'
 
 /**
@@ -38,7 +37,7 @@ export async function executeDiscoverMates({
   trackAssemblyNames,
   anchorAssembly,
   lodTier,
-  stopToken,
+  signal,
   statusCallback,
 }: {
   pluginManager: PluginManager
@@ -50,7 +49,7 @@ export async function executeDiscoverMates({
   trackAssemblyNames: string[]
   anchorAssembly: string
   lodTier: LodTier
-  stopToken?: StopToken
+  signal?: AbortSignal
   statusCallback?: StatusCallback
 }): Promise<MateDiscoveryResult> {
   const region = regions[0]
@@ -66,7 +65,7 @@ export async function executeDiscoverMates({
     regions,
     {
       lodMode: lodTier,
-      stopToken,
+      signal,
       statusCallback,
     },
   )

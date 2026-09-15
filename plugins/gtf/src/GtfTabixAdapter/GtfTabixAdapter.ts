@@ -107,6 +107,6 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdap
       } catch (e) {
         observer.error(e)
       }
-    }, opts.stopToken)
+    }, opts.signal)
   }
 }

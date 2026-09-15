@@ -1,7 +1,6 @@
 import { getSequenceAdapterConfig } from '../assemblyManager/getSequenceAdapterConfig.ts'
 
 import type { StatusCallback } from './progress.ts'
-import type { StopToken } from './stopToken.ts'
 import type { AbstractSessionModel } from './types/index.ts'
 
 export async function fetchSeq({
@@ -10,7 +9,7 @@ export async function fetchSeq({
   refName,
   assemblyName,
   session,
-  stopToken,
+  signal,
   statusCallback,
 }: {
   start: number
@@ -18,7 +17,7 @@ export async function fetchSeq({
   refName: string
   assemblyName: string
   session: AbstractSessionModel
-  stopToken?: StopToken
+  signal?: AbortSignal
   statusCallback?: StatusCallback
 }) {
   const { rpcManager, assemblyManager } = session
@@ -54,7 +53,7 @@ export async function fetchSeq({
       refName: seqAdapterRefName,
       assemblyName,
     },
-    stopToken,
+    signal,
     statusCallback,
   })
 

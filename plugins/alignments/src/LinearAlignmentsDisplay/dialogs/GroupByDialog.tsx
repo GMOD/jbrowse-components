@@ -116,12 +116,12 @@ const GroupByDialog = observer(function GroupByDialog(props: {
     // this is a full scan of every visible block, re-issued on every settled
     // keystroke, so forwarding the token is what keeps a superseded tag's scan
     // from running to completion behind the one the user actually wants
-    (_name, _id, _tag, stopToken, statusCallback) =>
+    (_name, _id, _tag, signal, statusCallback) =>
       getUniqueTags({
         self: model,
         tag: debouncedTag,
         blocks: containingLgv(model).staticBlocks,
-        opts: { stopToken, statusCallback },
+        opts: { signal, statusCallback },
       }),
   )
 

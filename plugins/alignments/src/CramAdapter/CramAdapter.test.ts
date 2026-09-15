@@ -2,7 +2,6 @@ import { IndexedCramFile } from '@gmod/cram'
 import { getClip } from '@jbrowse/cigar-utils'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { statusMessageText } from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
@@ -146,7 +145,7 @@ test('clipLengthAtStartOfRead matches getClip(CIGAR) for every record', async ()
 // a superseded fetch stops *processing* records but downloads the whole range
 // first, which on a 2000x pileup is the entire cost of the navigation it was
 // meant to abandon. BamAdapter has done this since stopTokenSignal landed;
-// CramAdapter had the stopToken in hand and passed no signal.
+// CramAdapter had the signal in hand and passed no signal.
 //
 // jest cannot cover what the signal does to a socket — see the comment at the
 // top of products/jbrowse-web/browser-tests/suites/fetch-cancellation.ts, which
@@ -179,34 +178,32 @@ test('getFeatures threads its stop token into the cram read as a signal', async 
       })
   })
 
-  const stopToken = createStopToken()
+  const signalController = new AbortController()
+  const signal = signalController.signal
   const done = firstValueFrom(
     adapter
       .getFeatures(
         { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 20000 },
-        { stopToken },
+        { signal },
       )
       .pipe(toArray()),
   )
 
   await readReached
   expect(seen).toHaveLength(1)
-  const signal = seen[0]
-  expect(signal).toBeInstanceOf(AbortSignal)
-  expect(signal!.aborted).toBe(false)
+  const readSignal = seen[0]
+  expect(readSignal).toBeInstanceOf(AbortSignal)
+  expect(readSignal!.aborted).toBe(false)
 
-  // and it is this call's token driving it, not some unrelated signal. Awaited
-  // rather than asserted synchronously so the assertion holds for either token
-  // shape: a SharedArrayBuffer's abort routes through Atomics.waitAsync and
-  // resolves a tick after the store, where a string's is synchronous.
+  // and it is this call's signal driving it, not some unrelated one
   const aborted = new Promise<void>(resolve => {
-    signal!.addEventListener('abort', () => {
+    readSignal!.addEventListener('abort', () => {
       resolve()
     })
   })
-  stopStopToken(stopToken)
+  signalController.abort()
   await aborted
-  expect(signal!.aborted).toBe(true)
+  expect(readSignal!.aborted).toBe(true)
 
   // and the observable unwinds rather than delivering features from a read the
   // caller has already abandoned

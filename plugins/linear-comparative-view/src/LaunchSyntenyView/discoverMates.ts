@@ -13,10 +13,9 @@ import type {
   Region,
   StatusCallback,
 } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export type MateDiscovery = (
-  stopToken: StopToken,
+  signal: AbortSignal | undefined,
   statusCallback: StatusCallback,
 ) => Promise<MateDiscoveryResult>
 
@@ -58,7 +57,7 @@ export function makeMateDiscovery({
   // tier is resolved against
   widthPx: number
 }): MateDiscovery {
-  return async (stopToken, statusCallback) => {
+  return async (signal, statusCallback) => {
     const { rpcManager } = session
     const trackId = readConfObject(track, 'trackId') as string
     const trackAssemblyNames = readConfObject(
@@ -92,7 +91,7 @@ export function makeMateDiscovery({
         lodMode: 'auto',
         tierInfo: undefined,
       }),
-      stopToken,
+      signal,
       statusCallback,
     })
   }

@@ -2,7 +2,6 @@ import { Observable, firstValueFrom, lastValueFrom, of, toArray } from 'rxjs'
 
 import { isAbortException } from './aborting.ts'
 import { ObservableCreate, subscribeToObservable } from './rxjs.ts'
-import { stopStopToken } from './stopToken.ts'
 
 const rejection = (promise: Promise<unknown>) =>
   promise.then(
@@ -41,42 +40,43 @@ describe('ObservableCreate', () => {
   })
 
   // the stop token used to be accepted and discarded, so every adapter passing
-  // opts.stopToken looked cancellable and was not
+  // opts.signal looked cancellable and was not
   it('errors with an abort error when the token is stopped mid-flight', async () => {
-    const stopToken = 'rxjs-mid-flight'
+    const signalController = new AbortController()
+    const signal = signalController.signal
     const promise = lastValueFrom(
       ObservableCreate<number>(observer => {
         observer.next(1)
         // never completes on its own
-      }, stopToken).pipe(toArray()),
+      }, signal).pipe(toArray()),
     )
-    stopStopToken(stopToken)
+    signalController.abort()
     expect(isAbortException(await rejection(promise))).toBe(true)
   })
 
   it('errors immediately for an already-stopped token, without running func', async () => {
-    const stopToken = 'rxjs-already-stopped'
-    stopStopToken(stopToken)
+    const signalController = new AbortController()
+    const signal = signalController.signal
+    signalController.abort()
     const func = jest.fn()
     expect(
       isAbortException(
-        await rejection(
-          firstValueFrom(ObservableCreate<number>(func, stopToken)),
-        ),
+        await rejection(firstValueFrom(ObservableCreate<number>(func, signal))),
       ),
     ).toBe(true)
     expect(func).not.toHaveBeenCalled()
   })
 
   it('leaves a completed observable alone when the token stops afterwards', async () => {
-    const stopToken = 'rxjs-after-complete'
+    const signalController = new AbortController()
+    const signal = signalController.signal
     const values = await lastValueFrom(
       ObservableCreate<number>(observer => {
         observer.next(1)
         observer.complete()
-      }, stopToken).pipe(toArray()),
+      }, signal).pipe(toArray()),
     )
-    stopStopToken(stopToken)
+    signalController.abort()
     expect(values).toEqual([1])
   })
 })

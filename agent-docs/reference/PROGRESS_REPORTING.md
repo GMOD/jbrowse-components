@@ -133,7 +133,7 @@ caller reports nothing still runs `toBytesWithProgress`.
   field. The arithmetic is `aggregateStatus`, which is internal to the module —
   ADR-072 for what it sums and ADR-080 for how the phase is picked.
 
-`parseLineByLine` (flat-file adapters, `label` + `stopToken` opts) and
+`parseLineByLine` (flat-file adapters, `label` + `signal` opts) and
 `fetchAndMaybeUnzip` (bigwig/bigbed/hic/sequence) forward determinate progress
 through these.
 
@@ -147,7 +147,7 @@ Anything else — a *view* with one operation to narrate — holds a
 `createStatusChannel()` in one volatile instead. It is the same
 `statusMessageText` / `statusFraction` split done once, behind
 `{ message, fraction }`, and it is a plain function rather than a mixin for the
-reason ADR-041 gives. `createStopTokenRotation(self, report)` takes the reporter
+reason ADR-041 gives. `createAbortRotation(self, report)` takes the reporter
 as an argument for exactly this: where the status lands is the caller's
 decision, not a shape the rotation imposes. A display passes itself; the
 breakpoint split view passes `self.fetchStatus`.
@@ -256,7 +256,7 @@ same promise in silence, behind a blank overlay. `createSharedSetup(run)`
 (`packages/core/src/util/cachedSetup.ts`) fans progress out to the live
 waiter set instead, and clears the memo on failure so the next caller retries.
 
-It deliberately drops `stopToken`: the work is shared, so honoring one caller's
+It deliberately drops `signal`: the work is shared, so honoring one caller's
 cancel would abort a parse the caller replacing it is already waiting on, and
 reject them both. Cancellation belongs to per-call work (indexed range
 queries), which nobody else is waiting on.
@@ -271,7 +271,7 @@ of last-writer thrash.
 
 **The same answer one level up**, for the concurrent *operations* that share one
 owner's field rather than the regions of one fetch: the window aggregates too
-(ADR-081), so a display's viewport fetch, a lent `createStopTokenRotation` and a
+(ADR-081), so a display's viewport fetch, a lent `createAbortRotation` and a
 clustering run each take a slot and none of them can end another's label. Which
 one holds the label is ADR-072's rule unchanged — only a phase's own slots are
 summable, so the phase the owner reached first wins and the rest are charged
@@ -303,7 +303,7 @@ reach for `createStatusFanOut` yourself: `BaseFeatureDataAdapter`'s multi-region
 main-thread one is left: the circular view's chord fetch, whose two halves
 (features ‖ refName map) predate the shared helper. It should take
 `fanOutStatus`, and its features half should take `ctx.callRpc` with it — that
-half hand-threads the stop token into a bare `rpcManager.call` today, and chord
+half hand-threads the signal into a bare `rpcManager.call` today, and chord
 is a DISPLAY, so unlike the breakpoint view it has an `rpcSessionId` to resolve.
 The tell that a fan-out is missing: the first operation to finish writes the
 `''` that every phase helper clears with, and the label blanks while the rest are
@@ -351,7 +351,7 @@ retiring the last slot does; `window.reset()` is for teardown, where the trailin
 timer outlives everything that could make it a no-op. The owners, so progress
 cadence is uniform whichever path a status took:
 
-- `createStopTokenRotation` — every fetch with a latest-wins guard: the LGV
+- `createAbortRotation` — every fetch with a latest-wins guard: the LGV
   displays through `FetchMixin.runFetch`, which wraps one and lends it the
   display's window, and the bare-autorun fetches (dotplot, synteny,
   multi-sample-variant sources, breakpoint split view's overlay features) which
@@ -365,7 +365,7 @@ cadence is uniform whichever path a status took:
 
 The operations that take a *slot* on a display's window, rather than opening one
 of their own: `runFetch` (the viewport fetch, one per fetch),
-`setupRunClusteringAutorun` (one per run), and a `createStopTokenRotation` the
+`setupRunClusteringAutorun` (one per run), and a `createAbortRotation` the
 display lent its window to. All three used to blank the field when they finished
 — see ADR-081 for what that did to the other two.
 
@@ -403,7 +403,7 @@ plugin-facing argument may be added optional and never made required
 ([PLUGIN_ABI_STABILITY.md](PLUGIN_ABI_STABILITY.md)) — so the compiler cannot
 ask for these. Two `no-restricted-syntax` selectors in `eslint.config.mjs` do
 instead: an `rpcManager.call` whose payload is an object literal declaring no
-`statusCallback`, and the same for `stopToken`.
+`statusCallback`, and the same for `signal`.
 
 Plenty of calls should report nothing, and the rule is not an argument that they
 should. It makes that a **stated** decision: disable the line and say why. Grep
@@ -424,7 +424,7 @@ that declares both. Source only — a test builds its RPC args freely.
 
 ## A fetcher that declares no parameters is opted out, silently
 
-`useFetch` hands its fetcher the key elements and then a **stop token and a
+`useFetch` hands its fetcher the key elements and then a **signal and a
 status callback**, positionally. TypeScript accepts a function that declares
 fewer parameters, so `() => rpcManager.call(...)` is assignable and simply never
 sees either one — no error, and the only symptom is a bare spinner over an

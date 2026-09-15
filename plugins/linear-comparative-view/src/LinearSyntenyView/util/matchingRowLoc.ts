@@ -1,4 +1,3 @@
-import { createStopToken } from '@jbrowse/core/util/stopToken'
 import { isSameAssemblyName } from '@jbrowse/core/util/tracks'
 import { allSessionTracks } from '@jbrowse/synteny-core'
 
@@ -15,7 +14,6 @@ import type {
   RpcHost,
   TrackCatalog,
 } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
@@ -40,14 +38,14 @@ export async function matchingRowLoc({
   region,
   assembly,
   widthPx,
-  stopToken = createStopToken(),
+  signal,
 }: {
   session: AssemblyHost & RpcHost & TrackCatalog
   trackId: string
   region: Region
   assembly: string
   widthPx: number
-  stopToken?: StopToken
+  signal?: AbortSignal
 }) {
   const track = allSessionTracks(session).find(t => t.trackId === trackId)
   if (!track) {
@@ -58,7 +56,7 @@ export async function matchingRowLoc({
     track,
     region,
     widthPx,
-  })(stopToken, () => {})
+  })(signal, () => {})
   const panel = mates.find(m =>
     isSameAssemblyName(m.assemblyName, assembly, session.assemblyManager),
   )

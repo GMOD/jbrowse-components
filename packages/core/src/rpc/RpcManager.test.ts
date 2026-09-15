@@ -191,18 +191,18 @@ describe('RpcManager: the handles are args, and every method takes them', () => 
   test('forwards both handles to the driver, for a method whose registry entry declares neither', async () => {
     const { manager, callLog } = makeManager()
     const statusCallback = () => {}
-    const stopToken = 'tok'
+    const { signal } = new AbortController()
     // CoreGetRegions declares only `adapterConfig`. Passing the handles anyway
     // is the point: they are part of RpcCallArgs, not of the entry, so no
     // method can be uncancellable or silent by having omitted them.
     await manager.call('s', 'CoreGetRegions', {
       adapterConfig: {},
-      stopToken,
+      signal,
       statusCallback,
     })
     const [entry] = callLog
     expect(entry?.args.statusCallback).toBe(statusCallback)
-    expect(entry?.args.stopToken).toBe(stopToken)
+    expect(entry?.args.signal).toBe(signal)
     expect(entry?.args.sessionId).toBe('s')
   })
 })

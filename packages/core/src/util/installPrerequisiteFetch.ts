@@ -1,7 +1,7 @@
 import { adapterConfigKey } from './adapterConfigKey.ts'
 import { installFetch } from './installFetch.ts'
 
-import type { StatusReporter } from './createStopTokenRotation.ts'
+import type { StatusReporter } from './createAbortRotation.ts'
 import type { FetchContext } from './fetchContext.ts'
 import type { FetchSkeletonHost } from './installFetch.ts'
 

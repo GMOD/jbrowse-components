@@ -88,6 +88,6 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfi
         }
       }
       observer.complete()
-    }, opts.stopToken)
+    }, opts.signal)
   }
 }

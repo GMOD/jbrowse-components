@@ -80,7 +80,7 @@ function selfWith(
 
 function fresh(): FetchContext {
   return {
-    stopToken: 'tok',
+    signal: new AbortController().signal,
     isStale: () => false,
     statusCallback: () => {},
     // this suite hands `call` its own stub, so the envelope is never reached —
@@ -134,7 +134,7 @@ test('passes the fetch ctx straight through to call', async () => {
     onResult: () => STORED,
   })
   expect(seen).toHaveLength(1)
-  expect(seen[0]!.stopToken).toBe(ctx.stopToken)
+  expect(seen[0]!.signal).toBe(ctx.signal)
   expect(seen[0]!.statusCallback).toBe(ctx.statusCallback)
 })
 

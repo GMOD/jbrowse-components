@@ -545,7 +545,7 @@ author who lands on a behavior change can find the sentence that explains it.
   plain type, and `getConf` reads it. **Opt-out: none.**
 
 - **Loop callbacks no longer read the clock on every call** (`createTimeGate`,
-  `util/timeGate.ts`, used by `checkStopTokenThrottled` and `createProgressReporter`).
+  `util/timeGate.ts`, used by `createAbortBreakpoint` and `createProgressReporter`).
   Both used to call `Date.now()` per invocation; at a 666k-read pileup that
   measured ~28 ms per callsite. They now consult the clock on a stride learned
   from the observed call rate. A plugin's own worker loops inherit this through
@@ -555,7 +555,7 @@ author who lands on a behavior change can find the sentence that explains it.
   since the stride is an extrapolation. Cancellation correctness is unchanged —
   the check still fires, and a loop that is slow throughout measures a low rate
   and keeps a stride of 1, which is why a *fixed* stride was wrong here.
-  **Opt-out: none** — call `checkStopToken` (the one-shot form) directly at a
+  **Opt-out: none** — call `checkAbortSignal` (the one-shot form) directly at a
   point that must not be thinned.
 
 - **`RpcMethodType.deserializeArguments` is called by the base, so a plugin

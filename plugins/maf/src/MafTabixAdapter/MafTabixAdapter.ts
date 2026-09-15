@@ -122,7 +122,7 @@ export default class MafTabixAdapter extends MafAdapterBase<MafTabixAdapterConfi
 
       resolver.reportUnmatched()
       observer.complete()
-    }, opts?.stopToken)
+    }, opts?.signal)
   }
 
   // Byte budget for the fetch gate comes straight from the tabix index (the

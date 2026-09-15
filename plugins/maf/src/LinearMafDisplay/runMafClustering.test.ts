@@ -1,4 +1,3 @@
-import { createStopToken } from '@jbrowse/core/util/stopToken'
 import { clusteredCladeLayout } from '@jbrowse/tree-sidebar'
 
 import { runMafClustering } from './runMafClustering.ts'
@@ -57,7 +56,7 @@ async function run(
     rpcManager,
     sessionId: 'test',
     regions,
-    stopToken: createStopToken(),
+    signal: new AbortController().signal,
     statusCallback: jest.fn(),
   })
 }

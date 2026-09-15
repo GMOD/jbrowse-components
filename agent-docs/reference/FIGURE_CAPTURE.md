@@ -501,9 +501,8 @@ cost was in the GPU process with the renderer blocked in a sync IPC wait. Four
 plausible JS-level explanations were each measured and **refuted** before the
 right tool was used:
 
-- stop-token sync-XHR fallback (`checkStopToken`) — 0.3s, and forcing the
-  `SharedArrayBuffer` path changed nothing (cancellation now travels by posted
-  message; the sync probe remains, throttled, for loops that never yield)
+- stop-token sync-XHR fallback (`checkStopToken`, since retired by ADR-122) —
+  0.3s, and forcing the `SharedArrayBuffer` path changed nothing
 - structured clone of `featureNames` / `featureIds` (the two non-transferable
   string arrays in `packMultiRowFeatures`) — `postMessage` totals 0.15s
 - Chrome background/timer throttling and IPC flood protection — the anti-throttling
@@ -520,8 +519,7 @@ blocked-on-GPU.
 - `profile-spec.ts <spec>` — CPU-profiles any spec's cold load, main thread and
   every RPC worker, with a milestone timeline (domcontentloaded → view
   initialized → fetch+parse done → painted → readySelector) and per-file network
-  attribution. `--angle-gl` renders on the GPU, `--sab` force-enables
-  SharedArrayBuffer.
+  attribution. `--angle-gl` renders on the GPU.
 - `trace-rpc.ts <spec>` — wraps `Worker.postMessage` and the reply channel in the
   page (no app changes, runs the built bundle) for per-method RPC call counts and
   durations, plus worker-side accounting of sync XHR, `fetch`, `postMessage` and

@@ -291,7 +291,7 @@ the track and the assembly already agree. To read it, type the parameter
 exactly this.
 
 The options parameter is `BaseOptions` (from
-`@jbrowse/core/data_adapters/BaseAdapter`). `stopToken`, `signal`, `headers` and
+`@jbrowse/core/data_adapters/BaseAdapter`). `signal`, `headers` and
 `statusCallback` are the ones a typical adapter forwards; `topLevelOnly` and
 `lodMode` are requests an adapter may honour or ignore:
 

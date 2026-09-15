@@ -1,6 +1,5 @@
 import { readModCovSegments, readSnpSegments } from '@jbrowse/alignments-core'
 import { packAbgr } from '@jbrowse/core/util/colorBits'
-import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import { runCoveragePipeline } from './runCoveragePipeline.ts'
 
@@ -68,7 +67,7 @@ const baseArgs = {
   interbaseArrays,
   gapArrays,
   statusCallback: () => {},
-  stopTokenCheck: createStopTokenChecker(undefined),
+  signal: undefined,
 }
 
 describe('runCoveragePipeline coverage-band gate', () => {

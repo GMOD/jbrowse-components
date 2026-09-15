@@ -7,7 +7,6 @@ import {
   statusMessageText,
   statusReading,
 } from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { addDisposer, getParent, types } from '@jbrowse/mobx-state-tree'
 import { getOrCreateJobsListWidget } from '@jbrowse/plugin-jobs-management'
 import {
@@ -23,7 +22,6 @@ import type { DesktopRootModel } from './rootModel/rootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { RpcStatus, SessionWithDrawerWidgets } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { AssertExtends } from '@jbrowse/product-core'
 import type { Track } from '@jbrowse/text-indexing-core'
@@ -159,7 +157,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        * #volatile
        * stop token for the currently running RPC indexing job, used to cancel
        */
-      stopToken: undefined as StopToken | undefined,
+      controller: undefined as AbortController | undefined,
       /**
        * #volatile
        * set when the user cancels, so the catch block reports a cancellation
@@ -227,8 +225,8 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
       /**
        * #action
        */
-      setStopToken(token?: StopToken) {
-        self.stopToken = token
+      setController(controller?: AbortController) {
+        self.controller = controller
       },
       /**
        * #action
@@ -237,7 +235,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        */
       abortJob() {
         self.aborted = true
-        stopStopToken(self.stopToken)
+        self.controller?.abort()
       },
       /**
        * #action
@@ -274,13 +272,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
        */
       clear() {
         this.setRunning(false)
-        // stop before dropping the reference: this runs after every job, and a
-        // job that *succeeded* was never stopped by `abortJob`, so dropping it
-        // here leaks the blob URL and any AbortControllers taken against it —
-        // one per indexing run, for the life of the window. Idempotent on the
-        // cancelled path, where abortJob already stopped it.
-        stopStopToken(self.stopToken)
-        self.stopToken = undefined
+        self.controller = undefined
         self.aborted = false
       },
       /**
@@ -296,13 +288,13 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           indexType,
         } = toJS(entry.indexingParams)
         const rpcManager = self.rpcManager
-        const stopToken = createStopToken()
-        this.setStopToken(stopToken)
+        const controller = new AbortController()
+        this.setController(controller)
         // `aborted` is only cleared by clear(), so a flag standing here was set
         // against a queue this entry was already in. Without the stop the entry
         // ran the full index and was then merely *reported* as cancelled
         if (self.aborted) {
-          stopStopToken(stopToken)
+          controller.abort()
         }
         try {
           this.setRunning(true)
@@ -327,7 +319,7 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             assemblies,
             indexType,
             outLocation,
-            stopToken,
+            signal: controller.signal,
             statusCallback: status => {
               this.reportStatus(entry.name, status)
             },

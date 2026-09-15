@@ -1,5 +1,6 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
+import { createAbortBreakpoint } from '@jbrowse/core/util/aborting'
 
 import { expandSourcesToHaplotypes } from '../shared/getSources.ts'
 import { hasProcessGenotypes } from '../shared/hasProcessGenotypes.ts'
@@ -13,11 +14,7 @@ import {
 import type { SampleInfo, Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import type {
-  LastStopTokenCheck,
-  Region,
-  StatusCallback,
-} from '@jbrowse/core/util'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
 
 export async function getPhasedGenotypeMatrix({
   pluginManager,
@@ -26,7 +23,7 @@ export async function getPhasedGenotypeMatrix({
   pluginManager: PluginManager
   args: {
     adapterConfig: Record<string, unknown>
-    stopTokenCheck?: LastStopTokenCheck
+    signal?: AbortSignal
     sessionId: string
     headers?: Record<string, string>
     regions: Region[]
@@ -47,7 +44,7 @@ export async function getPhasedGenotypeMatrix({
     regions,
     adapterConfig,
     sessionId,
-    stopTokenCheck,
+    signal,
     sampleInfo,
     statusCallback,
   } = args
@@ -84,7 +81,7 @@ export async function getPhasedGenotypeMatrix({
       label: 'Filtering variants',
       total: rawFeatures.length,
       statusCallback,
-      stopTokenCheck,
+      signal,
     }),
   })
 
@@ -152,8 +149,9 @@ export async function getPhasedGenotypeMatrix({
     label: 'Building genotype matrix',
     total: numFeatures,
     statusCallback,
-    stopTokenCheck,
+    signal,
   })
+  const breakpoint = createAbortBreakpoint(signal)
   for (let f = 0; f < numFeatures; f++) {
     const feature = filteredVariants[f]!.feature
     if (hasProcessGenotypes(feature) && samplesLen > 0) {
@@ -213,6 +211,9 @@ export async function getPhasedGenotypeMatrix({
       }
     }
     report(f)
+    if (breakpoint.due()) {
+      await breakpoint.yield()
+    }
   }
   return rows
 }

@@ -1,5 +1,4 @@
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import { PairwiseAdapterBase } from '../PairwiseAdapterBase.ts'
 import { PifFile } from '../PifFile.ts'
@@ -58,7 +57,7 @@ export default class PairwiseIndexedPAFAdapter extends PairwiseAdapterBase<Pairw
   }
 
   getFeatures(query: Region, opts: ComparativeOptions = {}) {
-    const { statusCallback, stopToken } = opts
+    const { statusCallback, signal } = opts
     return ObservableCreate<Feature>(async observer => {
       const { assemblyName } = query
 
@@ -66,7 +65,6 @@ export default class PairwiseIndexedPAFAdapter extends PairwiseAdapterBase<Pairw
 
       const hasCoarseTier = await this.pif.hasCoarseTier(opts)
       const meta = await this.pif.meta(opts)
-      const stopTokenCheck = createStopTokenChecker(stopToken)
       const notYetEmitted = this.createSideDedupe(sides)
 
       // Both sides only for a self-alignment: PIF files the two perspectives of
@@ -90,7 +88,7 @@ export default class PairwiseIndexedPAFAdapter extends PairwiseAdapterBase<Pairw
           start: query.start,
           end: query.end,
           statusCallback,
-          stopTokenCheck,
+          signal,
           lineCallback: (parsed, fileOffset) => {
             if (
               notYetEmitted({

@@ -1,3 +1,5 @@
+import { createTimeGate } from './timeGate.ts'
+
 class AbortError extends Error {
   public code: string | undefined
 }
@@ -52,4 +54,109 @@ export function isAbortException(exception: unknown): boolean {
       (exception instanceof AbortError && exception.code === 'ERR_ABORTED') ||
       /\b(aborted|aborterror)\b/i.test(exception.message))
   )
+}
+
+/**
+ * Throw an AbortError if `signal` has aborted. A `signal.aborted` read, so it
+ * is cheap enough for the body of a loop; place it after any await and in any
+ * per-item callback a reader hands you.
+ */
+export function checkAbortSignal(signal?: AbortSignal) {
+  if (signal?.aborted) {
+    throw makeAbortError()
+  }
+}
+
+/**
+ * Run an awaited stage under `signal`: checked before it starts, and again
+ * once it settles. The check after is the one that gets left out when the two
+ * are placed by hand — a stop landing during a long await otherwise goes
+ * unseen until the next stage.
+ */
+export async function withAbortCheck<T>(
+  signal: AbortSignal | undefined,
+  fn: () => T | Promise<T>,
+): Promise<T> {
+  checkAbortSignal(signal)
+  const result = await fn()
+  checkAbortSignal(signal)
+  return result
+}
+
+const YIELD_INTERVAL_MS = 50
+
+/**
+ * Give the event loop one turn. A worker learns of an abort through a posted
+ * message, and a message is a task: an `await` on an already-settled promise
+ * drains only microtasks and delivers nothing. `scheduler.yield` where the
+ * runtime has it, else a MessageChannel task, which unlike `setTimeout` is not
+ * clamped. Node gets the timer: a MessagePort turn there runs no due timer,
+ * and under jest the abort is one.
+ */
+const yieldToEventLoop: () => Promise<void> = (() => {
+  const scheduler = (
+    globalThis as { scheduler?: { yield?: () => Promise<void> } }
+  ).scheduler
+  if (scheduler?.yield) {
+    return () => scheduler.yield!()
+  }
+  const isNode =
+    typeof (globalThis as { process?: { versions?: { node?: string } } })
+      .process?.versions?.node === 'string'
+  if (!isNode && typeof MessageChannel !== 'undefined') {
+    const channel = new MessageChannel()
+    let resolvers: (() => void)[] = []
+    channel.port1.onmessage = () => {
+      const pending = resolvers
+      resolvers = []
+      for (const resolve of pending) {
+        resolve()
+      }
+    }
+    return () =>
+      new Promise<void>(resolve => {
+        resolvers.push(resolve)
+        channel.port2.postMessage(0)
+      })
+  }
+  return () =>
+    new Promise<void>(resolve => {
+      setTimeout(resolve, 0)
+    })
+})()
+
+export interface AbortBreakpoint {
+  /** True once every ~50 ms of wall time, otherwise a counter bump. */
+  due(): boolean
+  /** Yield a task so a posted abort can land, then throw if it did. */
+  yield(): Promise<void>
+}
+
+/**
+ * Cancellation for a loop that never awaits. A loop that yields at region or
+ * chunk granularity sees an abort at its next `checkAbortSignal`; a matrix
+ * fill or a whole-file parse never reaches one, and the only way to interrupt
+ * it is to give the event loop a turn now and then:
+ *
+ *     const breakpoint = createAbortBreakpoint(signal)
+ *     for (const row of rows) {
+ *       if (breakpoint.due()) {
+ *         await breakpoint.yield()
+ *       }
+ *       …
+ *     }
+ *
+ * Two calls rather than one because an `await` on a non-promise still costs a
+ * microtask, about 60 ns against 2 ns for the `due()` read, and a loop over
+ * every read in a pileup notices the difference.
+ */
+export function createAbortBreakpoint(signal?: AbortSignal): AbortBreakpoint {
+  const gate = createTimeGate()
+  return {
+    due: () => gate(YIELD_INTERVAL_MS),
+    async yield() {
+      await yieldToEventLoop()
+      checkAbortSignal(signal)
+    },
+  }
 }

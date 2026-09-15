@@ -1,12 +1,11 @@
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { subscribeToObservable } from '@jbrowse/core/util/rxjs'
-import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
 
 import { loadMafSamplesAdapter } from '../util/loadMafSamplesAdapter.ts'
 
 import type { AlignmentRecord } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature, Region } from '@jbrowse/core/util'
-import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 import type { ClusterMatrix } from '@jbrowse/tree-sidebar'
 
 const GAP = 45 // '-'
@@ -127,10 +126,10 @@ export async function buildIdentityMatrix({
     regions: Region[]
     sessionId: string
     sources: string[]
-    stopTokenCheck?: StopTokenChecker
+    signal?: AbortSignal
   }
 }): Promise<ClusterMatrix> {
-  const { regions, adapterConfig, sessionId, sources, stopTokenCheck } = args
+  const { regions, adapterConfig, sessionId, sources, signal } = args
   const { adapter, samples: configSamples } = await loadMafSamplesAdapter(
     pluginManager,
     sessionId,
@@ -166,7 +165,7 @@ export async function buildIdentityMatrix({
     await subscribeToObservable(
       adapter.getFeatures(region, opts),
       (feature: Feature) => {
-        checkStopTokenThrottled(stopTokenCheck)
+        checkAbortSignal(signal)
         const refSeq = feature.get('seq') as string
         const alignments = feature.get('alignments') as Record<
           string,

@@ -62,13 +62,24 @@ const NAME_GROUPS: NameGroup[] = [
     ],
   },
   {
-    label: '`AbortSignal` cancellation, which became stop tokens',
+    label:
+      'the 2.x `AbortSignal` helpers; cancellation is an `AbortSignal` again, and `checkAbortSignal` is back',
+    names: ['abortBreakPoint', 'observeAbortSignal', 'makeAbortableReaction'],
+  },
+  {
+    label: 'stop tokens, replaced by the platform `AbortController`',
     names: [
-      'abortBreakPoint',
-      'checkAbortSignal',
-      'observeAbortSignal',
-      'makeAbortableReaction',
+      'createStopToken',
+      'stopStopToken',
+      'checkStopToken',
+      'createStopTokenChecker',
     ],
+    survivors: {
+      createStopToken: 'new AbortController()',
+      stopStopToken: 'controller.abort()',
+      checkStopToken: 'checkAbortSignal',
+      createStopTokenChecker: 'createAbortBreakpoint',
+    },
   },
   {
     label: "the renderer era's RPC retry and progress reporting",
@@ -104,7 +115,7 @@ const NAME_GROUPS: NameGroup[] = [
     ],
     survivors: {
       contrastingTextColor: 'makeContrasting',
-      checkStopToken2: 'checkStopToken',
+      checkStopToken2: 'checkAbortSignal',
       assembleLocStringFast: 'assembleLocString',
       findLast: 'Array.prototype.findLast',
       findLastIndex: 'Array.prototype.findLastIndex',

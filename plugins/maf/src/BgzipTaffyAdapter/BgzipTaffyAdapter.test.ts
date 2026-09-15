@@ -1,4 +1,3 @@
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -983,7 +982,7 @@ describe('BgzipTaffyAdapter integration tests', () => {
   })
 })
 
-// Every other MAF adapter passes `opts.stopToken` into `ObservableCreate`, which
+// Every other MAF adapter passes `opts.signal` into `ObservableCreate`, which
 // is what wires a cancel through to the rxjs chain. TAF's didn't, so a pan or
 // zoom that rotated the stop token left this fetch delivering into a subscriber
 // whose result had already been discarded — no error, no cancellation, just work
@@ -1012,19 +1011,21 @@ describe('BgzipTaffyAdapter honors the stop token', () => {
   }
 
   test('a token stopped before subscribe errors instead of delivering', async () => {
-    const stopToken = createStopToken()
-    stopStopToken(stopToken)
+    const signalController = new AbortController()
+    const signal = signalController.signal
+    signalController.abort()
     await expect(
       firstValueFrom(
-        tafAdapter().getFeatures(region, { stopToken }).pipe(toArray()),
+        tafAdapter().getFeatures(region, { signal }).pipe(toArray()),
       ),
     ).rejects.toThrow()
   })
 
   test('a live token delivers as before', async () => {
-    const stopToken = createStopToken()
+    const signalController = new AbortController()
+    const signal = signalController.signal
     const out = await firstValueFrom(
-      tafAdapter().getFeatures(region, { stopToken }).pipe(toArray()),
+      tafAdapter().getFeatures(region, { signal }).pipe(toArray()),
     )
     expect(out.length).toBeGreaterThan(0)
   })

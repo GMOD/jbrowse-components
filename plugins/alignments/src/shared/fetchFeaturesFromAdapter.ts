@@ -1,8 +1,5 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
-import {
-  checkStopTokenThrottled,
-  createStopTokenChecker,
-} from '@jbrowse/core/util/stopToken'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -13,7 +10,6 @@ import type {
   LodTier,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 /**
  * Resolve the data adapter, attach the sequence adapter (if any), fetch all
@@ -30,7 +26,7 @@ export async function fetchFeaturesFromAdapter({
   filterBy,
   lodMode,
   statusCallback,
-  stopToken,
+  signal,
 }: {
   pluginManager: PluginManager
   sessionId: string
@@ -51,10 +47,8 @@ export async function fetchFeaturesFromAdapter({
   // it selects is not a *fast* path, whatever this comment claimed before it was
   // measured — agent-docs/measurements/download-read-path.json.
   statusCallback: StatusCallback | undefined
-  stopToken?: StopToken
+  signal?: AbortSignal
 }) {
-  const stopTokenCheck = createStopTokenChecker(stopToken)
-
   const dataAdapter = await getFeatureAdapterOrThrow({
     pluginManager,
     sessionId,
@@ -63,7 +57,7 @@ export async function fetchFeaturesFromAdapter({
   })
 
   const fetchOpts: BaseOptions & { filterBy?: FilterBy } = {
-    stopToken,
+    signal,
     filterBy,
     lodMode,
     statusCallback,
@@ -72,11 +66,10 @@ export async function fetchFeaturesFromAdapter({
     dataAdapter.getFeatures(region, fetchOpts).pipe(toArray()),
   )
 
-  checkStopTokenThrottled(stopTokenCheck)
+  checkAbortSignal(signal)
 
   return {
     featuresArray,
     dataAdapter,
-    stopTokenCheck,
   }
 }

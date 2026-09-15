@@ -16,7 +16,7 @@ import {
   withFeatureDetails,
 } from '@jbrowse/core/util'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { createStopTokenRotation } from '@jbrowse/core/util/createStopTokenRotation'
+import { createAbortRotation } from '@jbrowse/core/util/createAbortRotation'
 import { runTransforms } from '@jbrowse/core/util/featureTransforms'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { groupKeySpaceOf } from '@jbrowse/core/util/groupKeys'
@@ -971,10 +971,10 @@ export function stateModelFactory(
       // The click-driven details fetch, lent the display's status window so
       // it reports through the same chip as the viewport fetch and a second
       // click supersedes the first.
-      detailsRotation: createStopTokenRotation(self, {
+      detailsRotation: createAbortRotation(self, {
         statusWindow: self.statusWindow,
       }),
-      plotScanRotation: createStopTokenRotation(self, {
+      plotScanRotation: createAbortRotation(self, {
         statusWindow: self.statusWindow,
       }),
     }))
@@ -1014,7 +1014,7 @@ export function stateModelFactory(
                       end: Math.max(hit.end, hit.start + 1),
                     },
                   ],
-                  stopToken: fetch.stopToken,
+                  signal: fetch.signal,
                   statusCallback: fetch.statusCallback,
                 },
               )
@@ -1120,7 +1120,7 @@ export function stateModelFactory(
               self,
               regions: plotScanRegions(self.host),
               opts: {
-                stopToken: scan.stopToken,
+                signal: scan.signal,
                 statusCallback: scan.statusCallback,
               },
             })

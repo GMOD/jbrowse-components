@@ -1,9 +1,8 @@
+import { checkAbortSignal } from './aborting.ts'
 import { cmpStr } from './cmpStr.ts'
 import { createProgressReporter } from './progress.ts'
-import { checkStopToken } from './stopToken.ts'
 
 import type { StatusCallback } from './progress.ts'
-import type { StopToken } from './stopToken.ts'
 import type { Region } from './types/data.ts'
 
 export interface AlignmentData {
@@ -110,9 +109,9 @@ export async function diagonalizeRegions(
   referenceRegions: Region[],
   currentRegions: Region[],
   {
-    stopToken,
+    signal,
     statusCallback,
-  }: { stopToken?: StopToken; statusCallback?: StatusCallback } = {},
+  }: { signal?: AbortSignal; statusCallback?: StatusCallback } = {},
 ): Promise<DiagonalizationResult> {
   // Both passes below are long enough to notice on a whole-genome alignment —
   // the grouping walks every alignment, and the ordering pass sorts each query
@@ -125,7 +124,7 @@ export async function diagonalizeRegions(
     label: 'Grouping alignments',
     total: alignments.length,
     statusCallback,
-    stopToken,
+    signal,
   })
   // first appearance wins: a refName can appear in more than one reference
   // region, and the ordering key is where that chromosome starts on the axis
@@ -178,7 +177,7 @@ export async function diagonalizeRegions(
     label: 'Ordering chromosomes',
     total: queryGroups.size,
     statusCallback,
-    stopToken,
+    signal,
   })
   for (const [verticalChrom, group] of queryGroups) {
     reportOrdering()
@@ -205,7 +204,7 @@ export async function diagonalizeRegions(
     }
   }
 
-  checkStopToken(stopToken)
+  checkAbortSignal(signal)
 
   queryOrdering.sort(
     (a, b) =>

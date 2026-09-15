@@ -1,4 +1,4 @@
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { DiagonalizeProgressMixin } from './DiagonalizeProgressMixin.ts'
@@ -30,9 +30,9 @@ test('a cancelled reorder lowers the gate, and reports no failure', async () => 
   const { self, errors } = viewWithGate()
   self.beginAutoDiagonalize(true)
 
-  const run = withDiagonalizeProgress(self, async ({ stopToken }) => {
+  const run = withDiagonalizeProgress(self, async ({ signal }) => {
     self.cancelAutoDiagonalize()
-    checkStopToken(stopToken)
+    checkAbortSignal(signal)
     self.finishAutoDiagonalize()
   })
   await run

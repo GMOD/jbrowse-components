@@ -3,13 +3,7 @@ import {
   largestRegionBytes,
   measuredBytes,
 } from '@jbrowse/core/rpc/byteBudget'
-import {
-  createStatusFanOut,
-  createStopToken,
-  isAbortException,
-  stopStopToken,
-  stopTokenSignal,
-} from '@jbrowse/core/util'
+import { createStatusFanOut, isAbortException } from '@jbrowse/core/util'
 import {
   callEachRegion,
   fetchRegionsBatched,
@@ -98,19 +92,13 @@ export function unionSampleSets(
  * A parent cancel still rejects.
  */
 function refusalScope(ctx: FetchContext) {
-  const stopToken = createStopToken()
-  const parent = stopTokenSignal(ctx.stopToken)
+  const controller = new AbortController()
   const stop = () => {
-    stopStopToken(stopToken)
-  }
-  if (parent.signal.aborted) {
-    stop()
-  } else {
-    parent.signal.addEventListener('abort', stop)
+    controller.abort()
   }
   let refused = false
   return {
-    ctx: { ...ctx, stopToken },
+    ctx: { ...ctx, signal: AbortSignal.any([ctx.signal, controller.signal]) },
     async guard<R>(call: () => Promise<R | RegionTooLargeResult>) {
       try {
         const result = await call()
@@ -127,7 +115,6 @@ function refusalScope(ctx: FetchContext) {
         }
       }
     },
-    dispose: parent.dispose,
   }
 }
 
@@ -200,9 +187,7 @@ async function callMafRegions<R extends SampleSet>(
       ...scope.ctx,
       statusCallback: slot(),
     }),
-  ]).finally(() => {
-    scope.dispose()
-  })
+  ])
   // The batch's own byte number, whichever way it goes: the budget is what
   // one region may cost, so the largest is what was judged and what the
   // banner quotes.
@@ -302,8 +287,6 @@ async function fetchAnnotationData(
     if (!ctx.isStale() && !isAbortException(e)) {
       console.error('MAF CDS-frame annotation fetch failed', e)
     }
-  } finally {
-    scope.dispose()
   }
   return { byIndex, refused: false }
 }

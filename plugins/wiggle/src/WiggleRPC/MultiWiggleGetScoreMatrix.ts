@@ -1,6 +1,5 @@
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
-import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import type { GetScoreMatrixArgs } from './types.ts'
 import type { RpcExecuteArgs } from '@jbrowse/core/rpc/RpcRegistry'
@@ -20,10 +19,9 @@ export class MultiWiggleGetScoreMatrix extends RpcMethodTypeWithFiltersAndRename
   name = 'MultiWiggleGetScoreMatrix' as const
 
   async execute(args: RpcExecuteArgs<'MultiWiggleGetScoreMatrix'>) {
-    const stopTokenCheck = createStopTokenChecker(args.stopToken)
     const { getScoreMatrix } = await import('./getScoreMatrix.ts')
     const matrix = await getScoreMatrix({
-      args: { ...args, stopTokenCheck },
+      args,
       pluginManager: this.pluginManager,
     })
     // derived, not the hand loop this replaced: that list was correct and

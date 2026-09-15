@@ -8,9 +8,9 @@ import {
   downloadStatus,
   updateStatus,
 } from '@jbrowse/core/util'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import type { ContactRecords, ProgressOpts } from '@gmod/hic'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -123,7 +123,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
   }
 
   public async getHeader(opts?: BaseOptions) {
-    const { statusCallback, stopToken } = opts ?? {}
+    const { statusCallback, signal } = opts ?? {}
     const { resolutions } = await this.setup(opts)
     // Its own phase, and not folded into `setup`'s: on a v8 file with no
     // recorded index position this walks the whole normalized-expected-values
@@ -138,7 +138,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       'Reading normalization index',
       statusCallback,
       onProgress => this.hic.getNormalizationOptions({ onProgress }),
-      stopToken,
+      signal,
     )
     return { norms, resolutions }
   }
@@ -167,7 +167,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
       resolution: res,
       normalization = 'KR',
       statusCallback,
-      stopToken,
+      signal,
     } = opts
 
     const metadata = await this.setup(opts)
@@ -261,7 +261,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
             // Cancel point per pair, as before. In flight work still finishes,
             // but nothing new is started — the same granularity the serial loop
             // had, since a pair's own reads were never interruptible either.
-            checkStopToken(stopToken)
+            checkAbortSignal(signal)
             fetched[at] = await this.fetchRegionPairRecords({
               region1: regions[i]!,
               region2: regions[j]!,
@@ -284,7 +284,7 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
           ),
         )
       },
-      stopToken,
+      signal,
     )
 
     // Collected in (i, j) order regardless of the order they completed in, so

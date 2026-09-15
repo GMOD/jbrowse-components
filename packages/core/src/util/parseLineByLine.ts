@@ -2,7 +2,6 @@ import { IntervalTree } from './IntervalTree.ts'
 import { createProgressReporter } from './progress.ts'
 
 import type { StatusCallback } from './progress.ts'
-import type { StopToken } from './stopToken.ts'
 
 // Re-exported rather than redeclared: it was a structurally identical copy, so
 // it type-checked against the real one right up until one of them changed.
@@ -126,16 +125,16 @@ function chunkBoundary(buffer: Uint8Array, start: number) {
  *   default to `() => {}`, which says the opposite.
  * @param opts - `label` names the phase on the progress bar (a multi-phase
  *   adapter wants "Parsing PAF", not another "Loading" indistinguishable from
- *   the download that preceded it); `stopToken` makes a multi-GB parse
+ *   the download that preceded it); `signal` makes a multi-GB parse
  *   interruptible instead of running to completion after a cancel.
  */
 export function parseLineByLine(
   buffer: Uint8Array,
   lineCallback: LineCallback,
   statusCallback: StatusCallback | undefined,
-  opts: { label?: string; stopToken?: StopToken } = {},
+  opts: { label?: string; signal?: AbortSignal } = {},
 ) {
-  const { label = 'Loading', stopToken } = opts
+  const { label = 'Loading', signal } = opts
   const decoder = new TextDecoder('utf8')
   // Time-gated, not gated on a line counter: a file of few but very expensive
   // lines would never reach a count mask, freezing the bar at 0% for the whole
@@ -145,7 +144,7 @@ export function parseLineByLine(
     label,
     total: buffer.length,
     statusCallback,
-    stopToken,
+    signal,
   })
   let chunkStart = 0
   let i = 0

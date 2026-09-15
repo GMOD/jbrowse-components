@@ -46,7 +46,7 @@ export default class MafGetSequences extends RpcMethodTypeWithFiltersAndRenameRe
       showAllLetters,
       includeInsertions,
       byteLimit,
-      stopToken,
+      signal,
       statusCallback,
     } = args
     const dataAdapter = await getFeatureAdapterOrThrow({
@@ -59,7 +59,7 @@ export default class MafGetSequences extends RpcMethodTypeWithFiltersAndRenameRe
       dataAdapter,
       regions,
       byteLimit,
-      stopToken,
+      signal,
       statusCallback,
     })
     if (tooLarge) {

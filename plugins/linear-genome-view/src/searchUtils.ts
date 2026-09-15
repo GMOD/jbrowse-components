@@ -24,7 +24,6 @@ import type {
   NotificationSink,
   TrackCatalog,
 } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
@@ -480,7 +479,7 @@ export async function fetchResults({
   assemblyName,
   textSearchManager,
   assembly,
-  stopToken,
+  signal,
 }: {
   queryString: string
   assemblyName: string
@@ -490,13 +489,13 @@ export async function fetchResults({
   // supplied by the autocomplete's per-fetch token, so a keystroke that
   // supersedes this one drops the ranking and formatting rather than finishing
   // an answer that is already stale
-  stopToken?: StopToken
+  signal?: AbortSignal
 }) {
   const textSearchResults = await textSearchManager?.search(
     {
       queryString,
       searchType,
-      stopToken,
+      signal,
     },
     assemblyName,
   )

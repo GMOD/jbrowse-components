@@ -8,7 +8,6 @@ import { parseSamplesPerPixel } from './components/parseSamplesPerPixel.ts'
 
 import type { ReducedModel } from './clusterModelTypes.ts'
 import type { Region, RpcStatus } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { RpcMethodCaller } from '@jbrowse/tree-sidebar'
 
 type ClusterScoreMatrixCaller = RpcMethodCaller<'MultiWiggleClusterScoreMatrix'>
@@ -23,7 +22,7 @@ export async function runWiggleClustering({
   sessionId,
   samplesPerPixel,
   regions,
-  stopToken,
+  signal,
   statusCallback,
 }: {
   model: ReducedModel
@@ -33,7 +32,7 @@ export async function runWiggleClustering({
   // The `clusterRegion` locus when a session named one, the visible blocks when
   // the dialog ran it — resolved by whichever entry point called, never here
   regions: Region[]
-  stopToken: StopToken
+  signal: AbortSignal
   statusCallback: (status: RpcStatus) => void
 }) {
   const args = clusterScoreMatrixArgs(model, samplesPerPixel, regions)
@@ -55,7 +54,7 @@ export async function runWiggleClustering({
     matrix: () =>
       rpcManager.call(sessionId, 'MultiWiggleClusterScoreMatrix', {
         ...args,
-        stopToken,
+        signal,
         statusCallback,
       }),
   })

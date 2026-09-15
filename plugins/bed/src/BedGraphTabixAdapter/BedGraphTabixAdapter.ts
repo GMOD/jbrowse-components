@@ -8,7 +8,6 @@ import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { withStopTokenSignal } from '@jbrowse/core/util/stopToken'
 import { readTabixHeaderLines } from '@jbrowse/core/util/tabix'
 
 import { makeBedGraphFeature } from '../bedGraphUtil.ts'
@@ -81,63 +80,60 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
       const colEnd = columnNumbers.end - 1
       const same = colStart === colEnd
       const names = (await this.getNames())?.slice(same ? 2 : 3) ?? []
-      await withStopTokenSignal(opts.stopToken, signal =>
-        downloadStatus(
-          'Downloading features',
-          opts.statusCallback,
-          onProgress =>
-            // `same` is a single-coordinate file — a GWAS-style txt with only a
-            // start column, indexed `-b N -e N`. The widening is not slop: the
-            // column value is used below as an interbase start (point p is
-            // drawn at [p, p+1)), while the index reads that same column as a
-            // 1-based position and places the record at [p-1, p). getLines
-            // filters on the index's view, so the point at exactly query.start
-            // — visible at the left edge of the view — is one the query would
-            // otherwise not ask for. Widening by a base is what asks for it.
-            //
-            // For a file indexed `-0`, the two views agree and this instead
-            // pulls in one extra point just left of the view, which is
-            // harmless.
-            bedGraph.getLines(
-              query.refName,
-              query.start + (same ? -1 : 0),
-              query.end,
-              {
-                lineCallback: (line, fileOffset) => {
-                  const cols = line.split('\t')
-                  const refName = cols[colRef]!
-                  const start = +cols[colStart]!
-                  const end = +(same ? start + 1 : cols[colEnd]!)
-                  const rest = cols.slice(colEnd + 1)
-                  if (Number.isNaN(start) || Number.isNaN(end)) {
-                    throw new Error(
-                      `start/end NaN on line "${line}", with colStart:${colStart} and colEnd:${colEnd}. run "tabix -p bed" to ensure bed preset`,
-                    )
-                  }
+      await downloadStatus(
+        'Downloading features',
+        opts.statusCallback,
+        onProgress =>
+          // `same` is a single-coordinate file — a GWAS-style txt with only a
+          // start column, indexed `-b N -e N`. The widening is not slop: the
+          // column value is used below as an interbase start (point p is
+          // drawn at [p, p+1)), while the index reads that same column as a
+          // 1-based position and places the record at [p-1, p). getLines
+          // filters on the index's view, so the point at exactly query.start
+          // — visible at the left edge of the view — is one the query would
+          // otherwise not ask for. Widening by a base is what asks for it.
+          //
+          // For a file indexed `-0`, the two views agree and this instead
+          // pulls in one extra point just left of the view, which is
+          // harmless.
+          bedGraph.getLines(
+            query.refName,
+            query.start + (same ? -1 : 0),
+            query.end,
+            {
+              lineCallback: (line, fileOffset) => {
+                const cols = line.split('\t')
+                const refName = cols[colRef]!
+                const start = +cols[colStart]!
+                const end = +(same ? start + 1 : cols[colEnd]!)
+                const rest = cols.slice(colEnd + 1)
+                if (Number.isNaN(start) || Number.isNaN(end)) {
+                  throw new Error(
+                    `start/end NaN on line "${line}", with colStart:${colStart} and colEnd:${colEnd}. run "tabix -p bed" to ensure bed preset`,
+                  )
+                }
 
-                  for (let j = 0; j < rest.length; j++) {
-                    const feat = makeBedGraphFeature({
-                      uniqueId: `${this.id}-${fileOffset}-${j}`,
-                      refName,
-                      start,
-                      end,
-                      names,
-                      j,
-                      value: rest[j]!,
-                    })
-                    if (feat) {
-                      observer.next(feat)
-                    }
+                for (let j = 0; j < rest.length; j++) {
+                  const feat = makeBedGraphFeature({
+                    uniqueId: `${this.id}-${fileOffset}-${j}`,
+                    refName,
+                    start,
+                    end,
+                    names,
+                    j,
+                    value: rest[j]!,
+                  })
+                  if (feat) {
+                    observer.next(feat)
                   }
-                },
-                ...opts,
-                onProgress,
-                signal,
+                }
               },
-            ),
-        ),
+              ...opts,
+              onProgress,
+            },
+          ),
       )
       observer.complete()
-    }, opts.stopToken)
+    }, opts.signal)
   }
 }

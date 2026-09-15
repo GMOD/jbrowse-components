@@ -93,5 +93,5 @@ export function mafSummaryFeatures(
       })
     }
     observer.complete()
-  }, opts?.stopToken)
+  }, opts?.signal)
 }

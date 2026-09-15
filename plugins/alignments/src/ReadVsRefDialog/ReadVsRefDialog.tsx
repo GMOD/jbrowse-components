@@ -65,8 +65,8 @@ export default function ReadVsRefDialog({
     status,
   } = useFetch(
     ['primaryAlignment', preFeature.id()] as const,
-    (_name, _id, stopToken, statusCallback) =>
-      fetchPrimaryAlignment(track, preFeature, { stopToken, statusCallback }),
+    (_name, _id, signal, statusCallback) =>
+      fetchPrimaryAlignment(track, preFeature, { signal, statusCallback }),
   )
   const error = submitError ?? fetchError
 

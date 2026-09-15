@@ -22,7 +22,6 @@ import { cigarWorthParsing } from './dotplotCigarDetail.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type {
   AttributeRange,
   BpIndexViewSnap,
@@ -105,7 +104,7 @@ export async function executeDotplotFeaturesAndPositions({
   regions,
   hViewSnap,
   vViewSnap,
-  stopToken,
+  signal,
   lodMode,
   statusCallback,
 }: {
@@ -115,7 +114,7 @@ export async function executeDotplotFeaturesAndPositions({
   regions: Region[]
   hViewSnap: BpIndexViewSnap
   vViewSnap: BpIndexViewSnap
-  stopToken?: StopToken
+  signal?: AbortSignal
   lodMode?: LodTier
   statusCallback?: StatusCallback
 }) {
@@ -126,7 +125,7 @@ export async function executeDotplotFeaturesAndPositions({
   })
 
   const fetchOpts: ComparativeOptions = {
-    stopToken,
+    signal,
     bpPerPx: hViewSnap.bpPerPx,
     lodMode,
     statusCallback,
@@ -199,7 +198,7 @@ export async function executeDotplotFeaturesAndPositions({
     label: 'Computing dotplot positions',
     total: count,
     statusCallback,
-    stopToken,
+    signal,
   })
   for (const f of features) {
     report()

@@ -3,7 +3,6 @@ import '@testing-library/jest-dom'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import { RefNameAutocomplete, useRecentLocations } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
-import { isStopped } from '@jbrowse/core/util/stopToken'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import {
   act,
@@ -19,7 +18,6 @@ import { navigateToSelectedOption } from '../../searchUtils.ts'
 import SearchBox from './SearchBox.tsx'
 
 import type { LinearGenomeViewModel } from '../model.ts'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
@@ -179,13 +177,13 @@ describe('RefNameAutocomplete', () => {
     }, patience)
   })
 
-  it('stops the previous query token when a keystroke supersedes it', async () => {
+  it('aborts the previous query when a keystroke supersedes it', async () => {
     const user = userEvent.setup()
     const { session } = setup()
-    const tokens: StopToken[] = []
-    const fetchResults = jest.fn(async (_q: string, stopToken?: StopToken) => {
-      if (stopToken) {
-        tokens.push(stopToken)
+    const tokens: AbortSignal[] = []
+    const fetchResults = jest.fn(async (_q: string, signal?: AbortSignal) => {
+      if (signal) {
+        tokens.push(signal)
       }
       return []
     })
@@ -204,15 +202,15 @@ describe('RefNameAutocomplete', () => {
     await waitFor(() => {
       expect(tokens).toHaveLength(1)
     }, patience)
-    expect(isStopped(tokens[0])).toBe(false)
+    expect(tokens[0]!.aborted).toBe(false)
 
     await user.type(input, 'A')
     await waitFor(() => {
       expect(tokens).toHaveLength(2)
     }, patience)
-    // the superseded query's token is stopped; the live one is not
-    expect(isStopped(tokens[0])).toBe(true)
-    expect(isStopped(tokens[1])).toBe(false)
+    // the superseded query's signal is aborted; the live one is not
+    expect(tokens[0]!.aborted).toBe(true)
+    expect(tokens[1]!.aborted).toBe(false)
   })
 
   it('displays results returned by fetchResults', async () => {

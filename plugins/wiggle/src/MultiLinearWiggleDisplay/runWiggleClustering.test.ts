@@ -53,7 +53,7 @@ async function clusterAt(samplesPerPixel: string) {
     sessionId: 'sid',
     samplesPerPixel,
     regions,
-    stopToken: 'token',
+    signal: new AbortController().signal,
     statusCallback: () => {},
   })
   return {

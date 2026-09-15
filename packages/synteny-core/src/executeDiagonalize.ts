@@ -1,7 +1,7 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { dedupe } from '@jbrowse/core/util'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { diagonalizeRegions } from '@jbrowse/core/util/diagonalizeRegions'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import { extractAlignmentData } from './extractAlignmentData.ts'
 
@@ -88,14 +88,14 @@ export async function executeDiagonalize(
     referenceRegions,
     currentRegions,
     bpPerPx,
-    stopToken,
+    signal,
     statusCallback,
   }: DiagonalizeExecuteArgs,
 ): Promise<DiagonalizationResult | null> {
   if (!sessionId) {
     throw new Error('must pass a unique session id')
   }
-  checkStopToken(stopToken)
+  checkAbortSignal(signal)
 
   // Which of its N-1 pairs a multi-genome adapter (MCScanBlocksAdapter,
   // MultiGenomePAFAdapter) should return: the assembly being reordered. Derived
@@ -123,7 +123,7 @@ export async function executeDiagonalize(
     })
     const fetchOpts: ComparativeOptions = {
       sessionId,
-      stopToken,
+      signal,
       bpPerPx,
       statusCallback,
       targetAssemblyName,
@@ -165,7 +165,7 @@ export async function executeDiagonalize(
     alignments,
     referenceRegions,
     currentRegions,
-    { stopToken, statusCallback },
+    { signal, statusCallback },
   )
 
   statusCallback?.('Diagonalization complete!')

@@ -329,8 +329,7 @@ is frame pacing, not throughput, and the remaining budget is roughly:
   the largest identified block of real compute left.
 - **Stop tokens without cross-origin isolation**: `Blob` + `createObjectURL`
   94ms, plus `notifyStopToken` broadcasting to every worker in the pool, 79ms of
-  `postMessage`. The section below already records why the cheap branch is out of
-  reach.
+  `postMessage`. Gone since ADR-122; a trace from before it still shows them.
 - **React commit**: `react-dom` self time 651ms, `setAttribute` 81ms. Still the
   largest single block, and still the same answer — fewer components per frame.
 
@@ -546,21 +545,9 @@ only if something else is not eating the trace. `profile-zoom.ts` reads
 
 ## The stop-token probe, for whoever finds it in a trace next
 
-`probeBlobUrl` (`packages/core/src/util/stopToken.ts`) is a **synchronous XHR**
-per throttled check, and it was 408 ms across six tracks' cold load. It looks
-like an obvious target and is not one: the cheap path is the `SharedArrayBuffer`
-branch, which needs COOP/COEP cross-origin isolation — which a browser fetching
-arbitrary remote BAMs over CORS probably cannot require of its host page.
-
-`stopToken.ts`'s own header records that the probe was deleted once and had to be
-restored. Recorded here so the next person who sees it in a profile recognises it
-and moves on.
-
-**The ~100ms `createObjectURL` frame beside it is not the mints either**, counted
-2026-08-30: a 20-frame zoom over four tracks mints **8** tokens
-(`ZoomStopTokenMints.test.tsx`, which has to install a `URL.createObjectURL`
-because jsdom has none and every token under jest is otherwise a `nanoid`). The
-rate is per fetch round rather than per frame, so jsdom's round count is not a
-browser's — but nothing in the plausible range rescues it, since even a few
-hundred mints a gesture would put a registry insert at 0.3ms a call. Whatever
-that frame contains, attribute it before designing against it.
+A trace taken before 2026-09-15 shows `probeBlobUrl` (a synchronous XHR per
+throttled check, 408 ms across six tracks' cold load) and a `createObjectURL`
+frame beside it. Neither exists any more: cancellation is an `AbortSignal` and a
+loop that never awaits yields a task instead (ADR-122). The mint count that
+was chased here — 8 tokens across a 20-frame zoom — was never the frame, and
+the frame itself was never attributed.

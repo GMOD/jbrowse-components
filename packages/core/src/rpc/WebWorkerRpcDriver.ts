@@ -1,6 +1,5 @@
 import { readConfObject } from '../configuration/index.ts'
 import { clamp } from '../util/index.ts'
-import { registerStopTokenBroadcaster } from '../util/stopToken.ts'
 import BaseRpcDriver, { CORE_FREE_RESOURCES } from './BaseRpcDriver.ts'
 import RpcClient from './RpcClient.ts'
 import { deserializeError } from './serializeError/index.ts'
@@ -10,16 +9,13 @@ import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
 import type { PluginDefinition } from '../pluginDefinitions.ts'
 import type { RpcStatus, StatusCallback } from '../util/progress.ts'
+import type { RpcHandles } from './RpcRegistry.ts'
 
 export interface WorkerHandle {
   destroy(): void
   // fires when the worker dies, so the pool can drop and re-boot the slot;
   // drivers with no such failure mode omit it
   onError?(callback: () => void): void
-  // forwards a stopped stop-token id so calls running there can abort; a
-  // transport with no out-of-band channel omits it and keeps whatever
-  // cancellation its calls already have
-  notifyStopToken?(id: string): void
   // Hear a named event this worker emits out of band (`RpcServer.emit`), and
   // send it something outside the RPC framing. The pair is what a
   // `Core-extendWorker` plugin needs to run a request/response of its own
@@ -36,6 +32,7 @@ export interface WorkerHandle {
       // out-of-band progress handle; carries a determinate StatusWithProgress
       // object as readily as a plain string label (see WebWorkerHandle.call)
       statusCallback?: StatusCallback
+      signal?: AbortSignal
     },
   ): Promise<unknown>
 }
@@ -92,10 +89,6 @@ class WebWorkerHandle {
     this.client.on('error', callback)
   }
 
-  notifyStopToken(id: string) {
-    this.client.notifyStopToken(id)
-  }
-
   // the two halves of {@link WorkerHandle}'s plugin-facing pair
   on(eventName: string, listener: (data: unknown) => void) {
     this.client.on(eventName, listener)
@@ -133,11 +126,11 @@ class WebWorkerHandle {
     // defaulted, not required: {@link WorkerHandle} declares it optional, and a
     // `Core-extendWorker` wrapper written against that interface may well call
     // `worker.call(name, args)` — which destructured `undefined` and threw
-    opts: { statusCallback?: StatusCallback } = {},
+    opts: { statusCallback?: StatusCallback; signal?: AbortSignal } = {},
   ) {
-    const { statusCallback } = opts
+    const { statusCallback, signal } = opts
     if (!statusCallback) {
-      return this.client.call(funcName, args)
+      return this.client.call(funcName, args, signal)
     }
     const channel = `message-${++this.channelCount}`
     // RpcClient is a generic event emitter (it also carries 'error' events), so
@@ -149,8 +142,7 @@ class WebWorkerHandle {
     }
     this.client.on(channel, listener)
     try {
-      const result = await this.client.call(funcName, { ...args, channel })
-      return result
+      return await this.client.call(funcName, { ...args, channel }, signal)
     } finally {
       this.client.off(channel, listener)
     }
@@ -215,25 +207,9 @@ class LazyWorker {
   }
 
   /**
-   * Forward a stopped token id, but never boot a worker to do it: an unbooted
-   * slot is running nothing to cancel. Routed through the same promise the
-   * dispatching call awaits, so a stop issued while this slot is still booting
-   * still lands after the call it means to cancel rather than ahead of the
-   * worker's message listener existing.
-   */
-  notifyStopToken(id: string) {
-    this.bootP
-      ?.then(worker => {
-        worker.notifyStopToken?.(id)
-      })
-      .catch(() => {})
-  }
-
-  /**
-   * Drop a session's cached adapters on this slot's worker — and, like
-   * {@link notifyStopToken}, never boot one to do it. A slot that never booted
-   * has no cache to free, and booting one there costs a whole worker bundle and
-   * every runtime plugin to say so.
+   * Drop a session's cached adapters on this slot's worker, and never boot one
+   * to do it. A slot that never booted has no cache to free, and booting one
+   * there costs a whole worker bundle and every runtime plugin to say so.
    *
    * Through the extended handle, because it is a `call`: a plugin that wraps
    * calls should see this one.
@@ -266,18 +242,6 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
 
   private workerPool?: LazyWorker[]
 
-  // a stopped token has to reach the thread actually running the work, and this
-  // is the seam that carries it. Broadcast rather than routed per call: one
-  // token is commonly in flight on several calls at once, and a worker holding
-  // nothing under that id ignores the frame.
-  //
-  // Registered with the POOL, not in the constructor, so that a driver which
-  // never boots a worker stays out of the module-global broadcaster set — and
-  // registered only once the pool exists to receive the broadcast, since a
-  // `createWorkerPool` that threw after registering left an entry no `destroy`
-  // could ever reach.
-  private unregisterBroadcaster: () => void = () => {}
-
   // `destroy` is terminal: `getWorkerPool` refuses rather than letting its `??=`
   // build a second pool for a driver whose teardown already ran. ADR-086.
   private destroyed = false
@@ -309,7 +273,6 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
   // discarding the driver so its worker threads don't outlive it
   override destroy() {
     this.destroyed = true
-    this.unregisterBroadcaster()
     for (const worker of this.workerPool ?? []) {
       worker.destroy()
     }
@@ -324,13 +287,7 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
       readConfObject(this.config, 'workerCount') ||
       clamp(detectHardwareConcurrency() - 1, 1, 5)
 
-    const pool = Array.from({ length: workerCount }, () => new LazyWorker(this))
-    this.unregisterBroadcaster = registerStopTokenBroadcaster(id => {
-      for (const worker of pool) {
-        worker.notifyStopToken(id)
-      }
-    })
-    return pool
+    return Array.from({ length: workerCount }, () => new LazyWorker(this))
   }
 
   private getWorkerPool() {
@@ -375,10 +332,10 @@ export default class WebWorkerRpcDriver extends BaseRpcDriver {
     sessionId: string,
     rpcMethod: RpcMethodType,
     serializedArgs: Record<string, unknown>,
-    statusCallback: StatusCallback | undefined,
+    handles: RpcHandles,
   ) {
     const worker = await this.getWorker(sessionId)
-    return worker.call(rpcMethod.name, serializedArgs, { statusCallback })
+    return worker.call(rpcMethod.name, serializedArgs, handles)
   }
 
   /**

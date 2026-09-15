@@ -1,11 +1,10 @@
 import PluginManagerCtor from '../PluginManager.ts'
-import { createStopToken, stopStopToken } from '../util/stopToken.ts'
 import BaseRpcDriver from './BaseRpcDriver.ts'
 import rpcConfigSchema from './configSchema.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
-import type { StatusCallback } from '../util/progress.ts'
+import type { RpcHandles } from './RpcRegistry.ts'
 
 // captures exactly what the call() envelope hands to a driver's transport, so
 // we can assert the serialize/statusCallback/deserialize behavior without any
@@ -15,7 +14,7 @@ class CapturingDriver extends BaseRpcDriver {
   transportCalls: {
     rpcMethod: RpcMethodType
     serializedArgs: Record<string, unknown>
-    statusCallback: StatusCallback | undefined
+    handles: RpcHandles
   }[] = []
 
   constructor(pm: PluginManager = pluginManager) {
@@ -26,9 +25,9 @@ class CapturingDriver extends BaseRpcDriver {
     _sessionId: string,
     rpcMethod: RpcMethodType,
     serializedArgs: Record<string, unknown>,
-    statusCallback: StatusCallback | undefined,
+    handles: RpcHandles,
   ) {
-    this.transportCalls.push({ rpcMethod, serializedArgs, statusCallback })
+    this.transportCalls.push({ rpcMethod, serializedArgs, handles })
     return { raw: serializedArgs }
   }
 }
@@ -54,7 +53,8 @@ describe('BaseRpcDriver.call envelope', () => {
       data: 1,
       statusCallback,
     })
-    const { serializedArgs, statusCallback: cb } = driver.transportCalls[0]!
+    const { serializedArgs, handles } = driver.transportCalls[0]!
+    const cb = handles.statusCallback
     // statusCallback travels out-of-band, the rest is run through serialize
     expect(serializedArgs).toEqual({
       sessionId: 'sid',
@@ -99,14 +99,15 @@ describe('BaseRpcDriver.call envelope', () => {
     )
   })
 
-  test('refuses to dispatch a call whose stop token is already stopped', async () => {
+  test('refuses to dispatch a call whose signal is already aborted', async () => {
     const driver = new CapturingDriver()
-    const stopToken = createStopToken()
-    stopStopToken(stopToken)
+    const signalController = new AbortController()
+    const signal = signalController.signal
+    signalController.abort()
     await expect(
       driver.call('sid', 'SomeMethod', {
         sessionId: 'sid',
-        stopToken,
+        signal,
       }),
     ).rejects.toThrow('aborted')
     // nothing serialized, no worker woken, and no stop notification racing the
@@ -114,14 +115,15 @@ describe('BaseRpcDriver.call envelope', () => {
     expect(driver.transportCalls).toHaveLength(0)
   })
 
-  test('refuses to dispatch when the stop lands during serialization', async () => {
-    const stopToken = createStopToken()
+  test('refuses to dispatch when the abort lands during serialization', async () => {
+    const signalController = new AbortController()
+    const signal = signalController.signal
     // serializeArguments is where the refName map is resolved, so it is the one
     // long await in call(); a stop arriving here used to wake a worker anyway
     const slowMethod = {
       ...rpcMethod,
       serializeArguments: async (args: Record<string, unknown>) => {
-        stopStopToken(stopToken)
+        signalController.abort()
         return { ...args, serialized: true }
       },
     }
@@ -129,16 +131,16 @@ describe('BaseRpcDriver.call envelope', () => {
       getRpcMethodType: () => slowMethod,
     } as unknown as PluginManager)
     await expect(
-      driver.call('sid', 'SomeMethod', { sessionId: 'sid', stopToken }),
+      driver.call('sid', 'SomeMethod', { sessionId: 'sid', signal }),
     ).rejects.toThrow('aborted')
     expect(driver.transportCalls).toHaveLength(0)
   })
 
-  test('dispatches normally for a live stop token', async () => {
+  test('dispatches normally for a live signal', async () => {
     const driver = new CapturingDriver()
     await driver.call('sid', 'SomeMethod', {
       sessionId: 'sid',
-      stopToken: createStopToken(),
+      signal: new AbortController().signal,
     })
     expect(driver.transportCalls).toHaveLength(1)
   })

@@ -99,7 +99,7 @@ should pass X" against.
 | `cacheBudget` | bam | yes | `decompressedBytesBudget`, ADR-064 |
 | `bgzfWorkerPool` | bam | yes | `sharedBgzfWorkerPool()` |
 | `onProgress` (index + chunks) | bam | yes | `downloadStatus` on both phases |
-| `signal` | bam | yes | `withStopTokenSignal` |
+| `signal` | bam | yes | forwarded as is |
 | `estimatedBytesForRegions` | bam | yes | `getRegionByteSize`, byte gate |
 | `packReference` | bam | yes | once per fetch, not per read |
 | `forEachMismatchNumeric` | bam | yes | both feature classes |
@@ -951,7 +951,7 @@ Stated so the next audit does not re-derive them.
   the agent-docs/architecture-decision-records/ entry. What is left is sharing the one decoded string
   between the two consumers, which is a worker-pipeline change rather than a
   library one: they are in different phases of `executeRenderAlignmentData`.
-- **Cancellation reaches the socket.** `withStopTokenSignal` on the chunk reads,
+- **Cancellation reaches the socket.** The signal on the chunk reads,
   refcounted aborts in `RemoteFileWithRangeCache` so one reader giving up does
   not cancel a fetch another still wants, and shared-read semantics on the
   header and index parses so an owner's abort is not reported to bystanders.

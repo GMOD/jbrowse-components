@@ -5,16 +5,11 @@ import {
   cachedSetup,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, downloadStatus } from '@jbrowse/core/util'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import {
-  checkStopTokenThrottled,
-  checkStopToken,
-  createStopTokenChecker,
-  withStopTokenSignal,
-} from '@jbrowse/core/util/stopToken'
 import { readTabixHeaderLines } from '@jbrowse/core/util/tabix'
 
 import { featureData, makeParser, parseNamesFromHeader } from '../util.ts'
@@ -112,7 +107,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
   }
 
   public getFeatures(query: Region, opts?: BaseOptions) {
-    const { stopToken, statusCallback } = opts ?? {}
+    const { signal, statusCallback } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
       // warms the index under its own status label — getLines would otherwise
       // download it under "Downloading features"
@@ -124,42 +119,39 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
         this.config,
         'disableGeneHeuristic',
       )
-      const stopTokenCheck = createStopTokenChecker(stopToken)
-      checkStopToken(stopToken)
-      await withStopTokenSignal(stopToken, signal =>
-        downloadStatus('Downloading features', statusCallback, onProgress =>
-          // start/end come from @gmod/tabix rather than being re-derived from
-          // the line: it located the coordinate columns to find these lines at
-          // all, and already applied the index's coordinate offset (-1 for a
-          // 1-based-closed preset) and its no-end-column convention (a single
-          // position becomes start..start+1). refName is likewise the query's
-          // — getLines only calls back for lines whose ref column matches it.
-          this.bed.getLines(query.refName, query.start, query.end, {
-            lineCallback: (line, fileOffset, start, end) => {
-              checkStopTokenThrottled(stopTokenCheck)
-              const splitLine = line.split('\t')
-              observer.next(
-                new SimpleFeature(
-                  featureData({
-                    splitLine,
-                    refName: query.refName,
-                    start,
-                    end,
-                    scoreColumn,
-                    parser,
-                    uniqueId: `${this.id}-${fileOffset}`,
-                    names,
-                    disableGeneHeuristic,
-                  }),
-                ),
-              )
-            },
-            onProgress,
-            signal,
-          }),
-        ),
+      checkAbortSignal(signal)
+      await downloadStatus('Downloading features', statusCallback, onProgress =>
+        // start/end come from @gmod/tabix rather than being re-derived from
+        // the line: it located the coordinate columns to find these lines at
+        // all, and already applied the index's coordinate offset (-1 for a
+        // 1-based-closed preset) and its no-end-column convention (a single
+        // position becomes start..start+1). refName is likewise the query's
+        // — getLines only calls back for lines whose ref column matches it.
+        this.bed.getLines(query.refName, query.start, query.end, {
+          lineCallback: (line, fileOffset, start, end) => {
+            checkAbortSignal(signal)
+            const splitLine = line.split('\t')
+            observer.next(
+              new SimpleFeature(
+                featureData({
+                  splitLine,
+                  refName: query.refName,
+                  start,
+                  end,
+                  scoreColumn,
+                  parser,
+                  uniqueId: `${this.id}-${fileOffset}`,
+                  names,
+                  disableGeneHeuristic,
+                }),
+              ),
+            )
+          },
+          onProgress,
+          signal,
+        }),
       )
       observer.complete()
-    }, stopToken)
+    }, signal)
   }
 }

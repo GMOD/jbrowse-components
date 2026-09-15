@@ -142,7 +142,7 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
         opts,
         observer,
       )
-    }, opts.stopToken)
+    }, opts.signal)
   }
 
   public async getExportData(

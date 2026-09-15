@@ -184,7 +184,7 @@ are name-shaped and these are body-shaped:
   doc rows are the point. **Do not merge them**; a mixin would preserve the API
   but move the docs off the pages that should carry them.
 - **Residue of already-shared helpers.** Three RPC executors share their
-  preamble — destructure args, `createStopTokenChecker`, `getFeatureAdapterOrThrow`.
+  preamble — destructure args, `getFeatureAdapterOrThrow`.
   The substance is already extracted; what repeats is the call sequence.
 
 **This scan is MORE prone to the eager-bundle trap than the name scan.** Its

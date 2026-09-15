@@ -5,11 +5,9 @@
 //
 // The count is taken by wrapping `rpcManager.call` in the page, so nothing in
 // the shipped bundle changes. Each call records when it was issued, when its
-// stop token was stopped (`stopStopToken` revokes the token's blob URL, so a
-// wrapped `URL.revokeObjectURL` sees the exact moment), how it settled, and
-// the last status message the worker posted for it — the gap between the stop
-// and that last message is how long extract work kept running behind a
-// cancelled RPC.
+// signal aborted, how it settled, and the last status message the worker
+// posted for it — the gap between the abort and that last message is how long
+// extract work kept running behind a cancelled RPC.
 //
 //     pnpm --filter @jbrowse/web build
 //     node browser-tests/probe-per-base-refetch.ts --fixture=trio
@@ -182,21 +180,11 @@ async function installHook(page: Page) {
       }
       __rpcCalls: CallRecord[]
       __rpcAny: number
-      __tokens: Map<string, CallRecord>
     }
     const rm = w.JBrowseRootModel.rpcManager
     const orig = rm.call.bind(rm)
     w.__rpcCalls = []
     w.__rpcAny = 0
-    w.__tokens = new Map()
-    const revoke = URL.revokeObjectURL.bind(URL)
-    URL.revokeObjectURL = (url: string) => {
-      const rec = w.__tokens.get(url)
-      if (rec && rec.stoppedAt === undefined) {
-        rec.stoppedAt = performance.now()
-      }
-      revoke(url)
-    }
     rm.call = (sessionId, name, args) => {
       w.__rpcAny++
       if (name !== 'RenderAlignmentData') {
@@ -214,10 +202,10 @@ async function installHook(page: Page) {
         statusAfterStop: 0,
       }
       w.__rpcCalls.push(rec)
-      const token = args.stopToken
-      if (typeof token === 'string') {
-        w.__tokens.set(token, rec)
-      }
+      const signal = args.signal as AbortSignal | undefined
+      signal?.addEventListener('abort', () => {
+        rec.stoppedAt ??= performance.now()
+      })
       const statusCallback = args.statusCallback as
         | ((s: unknown) => void)
         | undefined

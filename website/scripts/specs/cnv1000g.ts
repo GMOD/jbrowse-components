@@ -126,7 +126,7 @@ export const CNV_CONFIG = 'test_data/1000g_cnv/config.json'
 // and on WebGPU, and only this harness cannot capture it -- the capture runs
 // headless on swiftshader, and 2504 rows x ~3100 bins is ~7.8M quads into a
 // 1400x420 box, which a software rasterizer will not finish (34 minutes, then
-// puppeteer's protocolTimeout). Check `--use-angle=gl` (cancel-bench.ts does)
+// puppeteer's protocolTimeout). Check `--use-angle=gl`
 // before believing any "too much data to draw" story told by a capture.
 //
 // And `displayedRegionNames` here is UNPREFIXED, which this config's filename

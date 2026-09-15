@@ -102,7 +102,7 @@ fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
 ```
 
 `call` reaches the worker through **`ctx.callRpc`**, not `rpcManager.call`. The
-context injects this fetch's stop token and its status callback, so every RPC a
+context injects this fetch's signal and its status callback, so every RPC a
 fetch issues is known to the cancel and the progress bar. If you pass them by
 hand and forget one, nothing reports it: the display loses cancellation or
 progress. The envelope keeps the literal method name at the call site, so the
@@ -133,7 +133,7 @@ region:
   has no meaning there.
 
 MAF shows the second helper in use. Its per-region call, shared with its summary
-tier, runs a second RPC concurrently under the same stop token, and refuses the
+tier, runs a second RPC concurrently under the same signal, and refuses the
 batch on the first refusal. `fetchRegionsBatched` then applies one staleness
 guard around the whole batch:
 
@@ -320,18 +320,18 @@ outlives. An exhaustive truth table over states cannot express those rules.
 ## FetchMixin: cancellation and staleness
 
 `MultiRegionDisplayMixin` composes [`FetchMixin`](/docs/models/fetchmixin),
-which owns the stop-token lifecycle. Each `fetchRegions()` mints a fresh
-`stopToken`, signals the previous one to stop so in-flight adapter calls abort,
-and captures `fetchGeneration` as its staleness epoch.
+which owns the abort lifecycle. Each `fetchRegions()` mints a fresh
+`AbortController`, aborts the previous one so in-flight adapter calls abort, and
+captures `fetchGeneration` as its staleness epoch.
 
 `fetchGeneration` bumps when a **current** fetch ends, on success or error. A
 superseded run does not bump it on behalf of the run that replaced it. It also
 bumps on the internal `cancelFetch` reset. The user-facing `cancelFetchByUser`
 does not bump it, so a user's cancel stays in effect. `FetchVisibleRegions`
 reads the counter to re-evaluate once the fetch is over. Staleness itself comes
-from the token rotation's `isCurrent`, not from this counter.
+from the abort rotation's `isCurrent`, not from this counter.
 
-`isLoading` is `true` while `activeStopToken` is set. The fetch autorun reads it
+`isLoading` is `true` while `activeSignal` is set. The fetch autorun reads it
 through `untracked(() => self.isLoading)`, so guarding on it doesn't make it a
 trigger.
 

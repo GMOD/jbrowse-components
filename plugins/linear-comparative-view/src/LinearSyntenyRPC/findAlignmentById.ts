@@ -52,7 +52,7 @@ export async function findAlignmentById(
     regions,
     featureId,
     lodMode,
-    stopToken,
+    signal,
     statusCallback,
   } = args
   const region = regions[0]
@@ -67,7 +67,7 @@ export async function findAlignmentById(
   const features =
     (await dataAdapter?.getFeaturesArray(region, {
       lodMode,
-      stopToken,
+      signal,
       statusCallback,
     })) ?? []
   return features.find(f => f.id() === featureId)

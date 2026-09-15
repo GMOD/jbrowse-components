@@ -1,16 +1,13 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   colorEvaluator,
   encodeFeatures,
   encodedChannelTransferables,
 } from '@jbrowse/core/util/markEncoding'
-import {
-  checkStopTokenThrottled,
-  createStopTokenChecker,
-} from '@jbrowse/core/util/stopToken'
 import { isLDRecordSource } from '@jbrowse/ld-core'
 
 import { buildLdToIndex } from './ldToIndex.ts'
@@ -35,7 +32,6 @@ import type {
   ChannelReader,
   ColorEncoding,
 } from '@jbrowse/core/util/markEncoding'
-import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 // The channels a coloring mode reads off each feature — the colour as a
 // declared encoding in field mode, a reader otherwise — and what LD mode ships
@@ -66,7 +62,7 @@ async function makeReaders(
   > & {
     pluginManager: PluginManager
     statusCallback: StatusCallback | undefined
-    stopTokenCheck: StopTokenChecker
+    signal?: AbortSignal
   },
 ): Promise<ManhattanReaders> {
   const { pluginManager, sessionId, region, color, statusCallback } = args
@@ -75,7 +71,7 @@ async function makeReaders(
   // this side said yes where that side said no, the LD read would run with no
   // `ldRefName` and query the PLINK file under the GWAS file's name.
   if (ldColoringRequested(args)) {
-    const { indexSnp, ldAdapterConfig, ldRefName, stopTokenCheck } = args
+    const { indexSnp, ldAdapterConfig, ldRefName, signal } = args
     const { dataAdapter: ldAdapter } = await getAdapter(
       pluginManager,
       sessionId,
@@ -89,7 +85,7 @@ async function makeReaders(
     const ld = await updateStatus('Downloading LD data', statusCallback, () =>
       buildLdToIndex({ adapter: ldAdapter, region, ldRefName, indexSnp }),
     )
-    checkStopTokenThrottled(stopTokenCheck)
+    checkAbortSignal(signal)
     return {
       ...makeLdEvaluator(ld, indexSnp, region.refName),
       indexFound: ld.indexFound,
@@ -167,11 +163,9 @@ export async function executeGetManhattanData({
     indexSnp,
     ldAdapterConfig,
     ldRefName,
-    stopToken,
+    signal,
     statusCallback,
   } = args
-
-  const stopTokenCheck = createStopTokenChecker(stopToken)
 
   const dataAdapter = await getFeatureAdapterOrThrow({
     pluginManager,
@@ -182,10 +176,10 @@ export async function executeGetManhattanData({
   const features = await updateStatus(
     'Downloading GWAS data',
     statusCallback,
-    () => dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
+    () => dataAdapter.getFeaturesArray(region, { statusCallback, signal }),
   )
 
-  checkStopTokenThrottled(stopTokenCheck)
+  checkAbortSignal(signal)
 
   const readers = await makeReaders({
     pluginManager,
@@ -198,7 +192,7 @@ export async function executeGetManhattanData({
     ldAdapterConfig,
     ldRefName,
     statusCallback,
-    stopTokenCheck,
+    signal,
   })
 
   const { result, transferables } = buildManhattanResult(
@@ -211,7 +205,7 @@ export async function executeGetManhattanData({
         label: 'Processing GWAS features',
         total: features.length,
         statusCallback,
-        stopTokenCheck,
+        signal,
       }),
     },
   )

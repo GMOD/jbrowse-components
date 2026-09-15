@@ -1,6 +1,6 @@
 /// <reference types="@webgpu/types" />
 
-import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { makeComputePipelineCache } from '@jbrowse/render-core/computePipeline'
 import { getGpuDevice } from '@jbrowse/render-core/gpuDevice'
 
@@ -9,7 +9,6 @@ import { findDistanceSpotCheckMismatch } from './distanceSpotCheck.ts'
 import * as kernel from './shaders/sampleDistance.generated.ts'
 
 import type { NumericRow } from './clusterMatrix.ts'
-import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 // Pair-elements (n(n-1)/2 * v) below which the wasm wins. The dispatch has
 // ~50 ms of fixed cost: at 464 rows x 512 columns (55M) the kernel loses
@@ -49,7 +48,7 @@ function packSlab(
  */
 export async function gpuDistanceMatrix(
   rows: NumericRow[],
-  stopTokenCheck?: StopTokenChecker,
+  signal?: AbortSignal,
 ): Promise<Float32Array | null> {
   const n = rows.length
   const v = rows[0]?.length ?? 0
@@ -87,7 +86,7 @@ export async function gpuDistanceMatrix(
   let values: Float32Array
   try {
     for (let v0 = 0; v0 < v; v0 += plan.slabColumns) {
-      checkStopTokenThrottled(stopTokenCheck)
+      checkAbortSignal(signal)
       const vc = Math.min(plan.slabColumns, v - v0)
       const last = v0 + vc >= v
       packSlab(rows, v0, vc, slab)

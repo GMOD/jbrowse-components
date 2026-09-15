@@ -18,7 +18,7 @@ export default class CoreGetFeatures extends RpcMethodTypeWithRenameRegions<'Cor
 
   async execute(args: RpcExecuteArgs<'CoreGetFeatures'>) {
     const {
-      stopToken,
+      signal,
       statusCallback,
       sessionId,
       adapterConfig,
@@ -39,7 +39,7 @@ export default class CoreGetFeatures extends RpcMethodTypeWithRenameRegions<'Cor
         .getFeaturesInMultipleRegions(regions, {
           ...opts,
           statusCallback,
-          stopToken,
+          signal,
         })
         .pipe(toArray()),
     )

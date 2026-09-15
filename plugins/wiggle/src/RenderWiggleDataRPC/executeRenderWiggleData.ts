@@ -1,10 +1,7 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { updateStatus } from '@jbrowse/core/util'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { rpcResult } from '@jbrowse/core/util/librpc'
-import {
-  checkStopTokenThrottled,
-  createStopTokenChecker,
-} from '@jbrowse/core/util/stopToken'
 import { collectWiggleTransferables } from '@jbrowse/wiggle-core'
 
 import { fetchRegionRaws } from '../fetchRegionRaws.ts'
@@ -15,7 +12,6 @@ import {
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
 interface ExecuteParams {
@@ -26,7 +22,7 @@ interface ExecuteParams {
     regions: Region[]
     useBicolor?: boolean
     bicolorPivot?: number
-    stopToken?: StopToken
+    signal?: AbortSignal
     bpPerPx?: number
     resolution?: number
     scoreField?: string
@@ -44,14 +40,12 @@ export async function executeRenderWiggleData({
     regions,
     useBicolor = true,
     bicolorPivot = 0,
-    stopToken,
+    signal,
     bpPerPx = 0,
     resolution = 1,
     scoreField,
     statusCallback,
   } = args
-
-  const stopTokenCheck = createStopTokenChecker(stopToken)
 
   const dataAdapter = await getFeatureAdapterOrThrow({
     pluginManager,
@@ -59,14 +53,14 @@ export async function executeRenderWiggleData({
     adapterConfig,
   })
 
-  // statusCallback/stopToken let the adapter report determinate download progress
+  // statusCallback/signal let the adapter report determinate download progress
   // (e.g. BigWig block fetches) and stay interruptible mid-fetch
   const fetchOpts = {
     bpPerPx,
     resolution,
     scoreField,
     statusCallback,
-    stopToken,
+    signal,
   }
   const raws = await updateStatus(
     'Downloading wiggle data',
@@ -74,7 +68,7 @@ export async function executeRenderWiggleData({
     () => fetchRegionRaws(dataAdapter, regions, fetchOpts),
   )
 
-  checkStopTokenThrottled(stopTokenCheck)
+  checkAbortSignal(signal)
 
   const results: WiggleDataResult[] = raws.map(raw => ({
     sources: [

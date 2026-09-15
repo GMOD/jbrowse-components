@@ -218,8 +218,8 @@ The saving is `range size − (rate × time-to-cancel)`, so a fast link saves le
 the range is large whatever the link speed, so any connection slow enough for a
 user to out-pace a read saves something.
 [NETWORK_ABORT.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/NETWORK_ABORT.md)
-records which adapters are wired to a stop token, the two that cannot be, and
-what goes wrong when the read being cancelled is one
+records which adapters forward the signal, the two that cannot, and what goes
+wrong when the read being cancelled is one
 [two callers are sharing](https://github.com/GMOD/range-cache-filehandle/blob/main/docs/sharing.md#giving-up).
 
 ### Genotype codes in a multi-sample VCF

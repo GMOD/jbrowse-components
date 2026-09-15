@@ -1,6 +1,5 @@
 import { redactSource } from './getLocationUri.ts'
 import { downloadStatus, phaseOf, updateStatus } from './progress.ts'
-import { withStopTokenSignal } from './stopToken.ts'
 
 import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
 import type { StatusPhase } from './progress.ts'
@@ -46,16 +45,14 @@ export async function fetchAndMaybeUnzip(
     loc.source === undefined
       ? label
       : { message: phaseOf(label), source: redactSource(loc.source) }
-  const { statusCallback, stopToken } = opts
-  // the stop token becomes the read's signal, so a cancelled whole-file load
-  // drops at the socket rather than downloading a multi-GB body to completion
-  const buf = await withStopTokenSignal(stopToken, signal =>
-    downloadStatus(
-      phase,
-      statusCallback,
-      onProgress =>
-        loc.readFile({ ...opts, onProgress, signal }) as Promise<Uint8Array>,
-    ),
+  const { statusCallback, signal } = opts
+  // the signal reaches the read, so a cancelled whole-file load drops at the
+  // socket rather than downloading a multi-GB body to completion
+  const buf = await downloadStatus(
+    phase,
+    statusCallback,
+    onProgress =>
+      loc.readFile({ ...opts, onProgress, signal }) as Promise<Uint8Array>,
   )
   // the inflater is imported dynamically because this module is reachable from
   // the core/util barrel, so a static import put bgzf-filehandle + pako
@@ -71,7 +68,7 @@ export async function fetchAndMaybeUnzip(
         },
         // a cancel landing here is otherwise discovered only by whatever parses
         // the result, after a whole-file inflate has run to completion
-        stopToken,
+        signal,
       )
     : buf
 }

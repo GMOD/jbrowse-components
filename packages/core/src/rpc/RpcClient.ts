@@ -1,3 +1,4 @@
+import { makeAbortError } from '../util/aborting.ts'
 import { deserializeError } from './serializeError/index.ts'
 
 import type { ErrorObject } from './serializeError/index.ts'
@@ -156,28 +157,60 @@ export default class RpcClient {
   }
 
   /**
-   * Tell this worker that a stop token has been stopped, so the calls running
-   * there see it at their next await boundary and drop their in-flight reads.
-   * Fire-and-forget: it settles no pending call, and a worker holding nothing
-   * under that id ignores it.
+   * Abort the call `uid`, so the signal it runs under in the worker aborts.
+   * Fire-and-forget: it settles no pending call, and a worker no longer running
+   * that call ignores it.
    */
-  notifyStopToken(id: string) {
-    this.worker.postMessage({ stopToken: id, libRpc: true })
+  abort(uid: string) {
+    this.worker.postMessage({ abort: uid, libRpc: true })
   }
 
-  // No transfer list: transferables flow only worker → main, in a reply's
-  // rpcResult wrapper. Transferring an argument would neuter the main thread's
-  // own buffer — this took an option for one and nothing ever passed it.
-  call(method: string, data: unknown) {
+  /**
+   * No transfer list: transferables flow only worker → main, in a reply's
+   * rpcResult wrapper. Transferring an argument would neuter the main thread's
+   * own buffer — this took an option for one and nothing ever passed it.
+   *
+   * With a `signal`, the worker runs the method under a signal of its own and
+   * aborts it when this one aborts. The uid is the call's identity on both
+   * sides, so the abort frame needs nothing else; the listener is attached
+   * before the call frame is posted and removed when the call settles, so an
+   * abort in between reaches a worker still running the call, and one after
+   * reaches nothing.
+   */
+  call(method: string, data: unknown, signal?: AbortSignal) {
     const uid = String(++this.counter)
     return new Promise((resolve, reject) => {
-      this.pending.set(uid, { resolve, reject })
+      if (signal?.aborted) {
+        reject(makeAbortError())
+        return
+      }
+      const onAbort = () => {
+        this.abort(uid)
+      }
+      signal?.addEventListener('abort', onAbort, { once: true })
+      const detach = () => {
+        signal?.removeEventListener('abort', onAbort)
+      }
+      this.pending.set(uid, {
+        resolve: value => {
+          detach()
+          resolve(value)
+        },
+        reject: error => {
+          detach()
+          reject(error)
+        },
+      })
       try {
-        this.worker.postMessage({ method, uid, data, libRpc: true }, [])
+        this.worker.postMessage(
+          { method, uid, data, libRpc: true, abortable: signal !== undefined },
+          [],
+        )
       } catch (e) {
         // a non-cloneable payload throws here, which rejects this promise; drop
         // the entry that is now waiting on a reply the worker never received
         this.pending.delete(uid)
+        detach()
         throw e
       }
     })

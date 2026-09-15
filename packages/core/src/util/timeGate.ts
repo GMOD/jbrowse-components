@@ -27,8 +27,8 @@ const STRIDE_GROWTH_LIMIT = 8
  *
  * `Date.now()` costs ~40ns, invisible until the loop is a 666k-read pileup —
  * there it measured ~28ms per gated callsite, and the alignments worker has two
- * of them (the progress emit in `createProgressReporter` and the stop-token
- * check in `checkStopTokenThrottled`). Both previously read the clock per call, on the
+ * of them (the progress emit in `createProgressReporter` and the yield in
+ * `createAbortBreakpoint`). Both previously read the clock per call, on the
  * documented reasoning that it was negligible next to the per-item work; at
  * this item count it measurably isn't.
  *
@@ -40,9 +40,8 @@ const STRIDE_GROWTH_LIMIT = 8
  * measure a low rate and hold a stride of 1, gating on time alone as before,
  * while a millions-of-calls loop thins itself out.
  *
- * `intervalMs` is per call rather than fixed at construction: it was added for
- * `checkStopTokenThrottled`, whose (since-deleted) sync-XHR probe backed off
- * linearly over a long loop. Both current callers pass a constant.
+ * `intervalMs` is per call rather than fixed at construction; both current
+ * callers pass a constant.
  */
 export function createTimeGate() {
   let stride = 1

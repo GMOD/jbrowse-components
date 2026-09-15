@@ -1,7 +1,7 @@
 import NCListStore from '@gmod/nclist'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { RemoteFile } from 'generic-filehandle2'
 
 import NCListFeature from './NCListFeature.ts'
@@ -44,14 +44,14 @@ export default class NCListAdapter extends BaseFeatureDataAdapter {
   /**
    * Fetch features for a certain region.
    * @param region -
-   * @param opts - [stopToken] optional stopTokenling object for aborting the fetch
+   * @param opts - [signal] optional stopTokenling object for aborting the fetch
    * @returns Observable of Feature objects in the region
    */
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { stopToken } = opts
+      const { signal } = opts
       for await (const feature of this.nclist.getFeatures(region)) {
-        checkStopToken(stopToken)
+        checkAbortSignal(signal)
         observer.next(this.wrapFeature(feature))
       }
       observer.complete()

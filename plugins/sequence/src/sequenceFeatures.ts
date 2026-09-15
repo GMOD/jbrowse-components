@@ -1,6 +1,6 @@
 import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
@@ -40,7 +40,7 @@ export function sequenceFeatures(
   opts: BaseOptions | undefined,
   setup: () => Promise<SequenceSource>,
 ) {
-  const { statusCallback, stopToken } = opts ?? {}
+  const { statusCallback, signal } = opts ?? {}
   return ObservableCreate<Feature>(async observer => {
     // outside the updateStatus below because setup owns its own phase labels —
     // an unindexed FASTA downloads and parses the whole file here — and a
@@ -53,7 +53,7 @@ export function sequenceFeatures(
         const size = await source.getSequenceSize(refName)
         const regionEnd = size === undefined ? end : Math.min(size, end)
         const seq = await source.getSequence(refName, start, regionEnd)
-        checkStopToken(stopToken)
+        checkAbortSignal(signal)
         if (seq) {
           observer.next(
             new SimpleFeature({
@@ -63,7 +63,7 @@ export function sequenceFeatures(
           )
         }
       },
-      stopToken,
+      signal,
     )
     observer.complete()
   })

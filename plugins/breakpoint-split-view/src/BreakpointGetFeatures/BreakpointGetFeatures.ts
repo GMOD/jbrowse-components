@@ -87,14 +87,8 @@ export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegion
   }
 
   async execute(args: RpcExecuteArgs<'BreakpointGetFeatures'>) {
-    const {
-      stopToken,
-      statusCallback,
-      sessionId,
-      adapterConfig,
-      regions,
-      opts,
-    } = args
+    const { signal, statusCallback, sessionId, adapterConfig, regions, opts } =
+      args
 
     const dataAdapter = await getFeatureAdapterOrThrow({
       pluginManager: this.pluginManager,
@@ -107,7 +101,7 @@ export default class BreakpointGetFeatures extends RpcMethodTypeWithRenameRegion
       {
         ...opts,
         statusCallback,
-        stopToken,
+        signal,
       },
     )
 

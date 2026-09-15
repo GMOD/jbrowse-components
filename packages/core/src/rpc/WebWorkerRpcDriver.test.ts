@@ -1,4 +1,3 @@
-import { stopStopToken } from '../util/stopToken.ts'
 import WebWorkerRpcDriver from './WebWorkerRpcDriver.ts'
 import rpcConfigSchema from './configSchema.ts'
 
@@ -24,15 +23,10 @@ const fakePluginManager = {
 class FakeHandle implements WorkerHandle {
   destroyed = false
   calls: { fn: string; args: unknown; opts?: unknown }[] = []
-  stopped: string[] = []
   private errorCallbacks: (() => void)[] = []
 
   destroy() {
     this.destroyed = true
-  }
-
-  notifyStopToken(id: string) {
-    this.stopped.push(id)
   }
 
   onError(callback: () => void) {
@@ -218,27 +212,13 @@ describe('WebWorkerRpcDriver pool destroy', () => {
     expect(driver.workers).toHaveLength(1)
   })
 
-  test('a booted pool hears a stopped token, and stops hearing on destroy', async () => {
+  test('the signal reaches the worker handle with the call', async () => {
     const driver = new TestDriver(makeConfig({ workerCount: 1 }))
-    await driver.getWorker('s')
-    // the boot promise the notify routes through has to settle first
-    await Promise.resolve()
-
-    // A literal token so the assertion below can name the id it expects to see
-    // broadcast. It is the string path either way now — `createStopToken()`
-    // answers with one wherever the page is not cross-origin isolated, which is
-    // every deployment of ours — and only the string path has a broadcast to
-    // make: a SAB token cancels through shared memory.
-    stopStopToken('stop-1')
-    await Promise.resolve()
-    expect(driver.workers[0]!.stopped).toEqual(['stop-1'])
-
-    driver.destroy()
-    stopStopToken('stop-2')
-    await Promise.resolve()
-    // the registration goes with the pool, so a destroyed driver leaves nothing
-    // behind in the module-global broadcaster set
-    expect(driver.workers[0]!.stopped).toEqual(['stop-1'])
+    const { signal } = new AbortController()
+    await driver.call('s', 'SomeMethod', { sessionId: 's', signal })
+    const [call] = driver.workers[0]!.calls
+    expect((call?.opts as { signal?: AbortSignal }).signal).toBe(signal)
+    expect(call?.args).not.toHaveProperty('signal')
   })
 })
 

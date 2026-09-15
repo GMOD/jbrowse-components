@@ -1,4 +1,3 @@
-import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 import { clusterMatrix } from '@jbrowse/tree-sidebar'
 
 import { buildGenotypeMatrix } from './buildGenotypeMatrix.ts'
@@ -14,10 +13,9 @@ export async function executeClusterGenotypeMatrix({
   pluginManager: PluginManager
   args: RpcExecuteArgs<'MultiSampleVariantClusterGenotypeMatrix'>
 }) {
-  const stopTokenCheck = createStopTokenChecker(args.stopToken)
   const matrix = await buildGenotypeMatrix({
     pluginManager,
-    args: { ...args, stopTokenCheck },
+    args,
   })
   return clusterMatrix({
     // hclust rejects non-finite input outright, so the no-calls the builders
@@ -25,6 +23,6 @@ export async function executeClusterGenotypeMatrix({
     // them contribute nothing to the distance rather than dominating it.
     data: imputeMissingToSiteMean(matrix),
     statusCallback: args.statusCallback,
-    stopTokenCheck,
+    signal: args.signal,
   })
 }

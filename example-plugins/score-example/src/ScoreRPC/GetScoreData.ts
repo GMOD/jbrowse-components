@@ -33,7 +33,7 @@ export default class GetScoreData extends RpcMethodType<'GetScoreData'> {
       adapterConfig,
       region,
       scoreColumn,
-      stopToken,
+      signal,
       statusCallback,
     } = args
     const dataAdapter = await getFeatureAdapterOrThrow({
@@ -47,7 +47,7 @@ export default class GetScoreData extends RpcMethodType<'GetScoreData'> {
     // bracketing that work, so the message tracks the download.
     statusCallback?.('Fetching features')
     const features = await dataAdapter.getFeaturesArray(region, {
-      stopToken,
+      signal,
       statusCallback,
     })
     // The encoder is the packer: one walk reads `scoreColumn` as `y`, skips a

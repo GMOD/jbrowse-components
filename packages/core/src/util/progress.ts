@@ -1,11 +1,5 @@
-import {
-  checkStopTokenThrottled,
-  createStopTokenChecker,
-  withStopTokenCheck,
-} from './stopToken.ts'
+import { checkAbortSignal, withAbortCheck } from './aborting.ts'
 import { createTimeGate } from './timeGate.ts'
-
-import type { StopToken, StopTokenChecker } from './stopToken.ts'
 
 // This ESM package builds without @types/node, but consuming bundlers
 // (webpack/vite) still string-replace `process.env.NODE_ENV`, so keep the
@@ -84,9 +78,9 @@ function openPhase(
 
 /**
  * Indeterminate phase: set `label` on the status channel, run `fn`, then restore
- * whatever phase encloses it — `''` when there is none. Pass `stopToken` and the
+ * whatever phase encloses it — `''` when there is none. Pass `signal` and the
  * phase becomes a cancellation boundary too: this is the labelled form of
- * {@link withStopTokenCheck}, so `fn` is checked on both sides of its await and
+ * {@link withAbortCheck}, so `fn` is checked on both sides of its await and
  * neither check has to be remembered at the call site. The determinate
  * counterpart is {@link withProgress}.
  *
@@ -102,7 +96,7 @@ export async function updateStatus<U>(
   msg: string | StatusPhase,
   cb: StatusCallback | undefined,
   fn: () => U | Promise<U>,
-  stopToken?: StopToken,
+  signal?: AbortSignal,
 ) {
   const endPhase = openPhase(cb, msg)
   // pessimistic, so anything leaving this scope other than a value — a throw, a
@@ -113,7 +107,7 @@ export async function updateStatus<U>(
   // forever — the error surfaces under a stale "Downloading file"
   try {
     cb?.(msg)
-    const result = await withStopTokenCheck(stopToken, fn)
+    const result = await withAbortCheck(signal, fn)
     outcome = 'completed'
     return result
   } finally {
@@ -550,7 +544,7 @@ export function throttleStatusEmits(emit: StatusCallback) {
  * of a burst, not each one in turn.
  *
  * Both fetch families own one: `FetchMixin` for the LGV displays, and
- * `createStopTokenRotation` for the bare-autorun fetches (dotplot, synteny)
+ * `createAbortRotation` for the bare-autorun fetches (dotplot, synteny)
  * that compose no fetch mixin — and a display that has both lends the mixin's
  * to the rotation rather than opening a second on one field. A plain function
  * rather than shared model state because the two families declare their status
@@ -756,7 +750,7 @@ function downloadStatusReporter(
  * which: bytes for the index readers, blocks and expected-value chunks for
  * `@gmod/hic`. All of them report `(current, total?)`.
  *
- * `stopToken` makes the phase a cancellation boundary, exactly as it does on
+ * `signal` makes the phase a cancellation boundary, exactly as it does on
  * {@link updateStatus} — `fn` is checked on both sides of its await.
  *
  * A {@link StatusPhase} `label` carries its source onto the readings too, so a
@@ -766,13 +760,13 @@ export async function downloadStatus<T>(
   label: string | StatusPhase,
   statusCallback: StatusCallback | undefined,
   fn: (onProgress: ReturnType<typeof downloadStatusReporter>) => T | Promise<T>,
-  stopToken?: StopToken,
+  signal?: AbortSignal,
 ): Promise<T> {
   return updateStatus(
     label,
     statusCallback,
     () => fn(downloadStatusReporter(statusCallback, label)),
-    stopToken,
+    signal,
   )
 }
 
@@ -1044,20 +1038,22 @@ function continuesPhase(previous: StatusWithProgress, status: RpcStatus) {
 export type ProgressReporter = (current?: number) => void
 
 /**
- * The single per-iteration callback for long synchronous worker loops. The
- * returned `report(current)` is called once per outer-loop iteration and does
- * two throttled jobs on each call:
+ * The single per-iteration callback for long worker loops. The returned
+ * `report(current)` is called once per outer-loop iteration and does two jobs
+ * on each call:
  *
- * - checks the stop token via the existing throttled {@link checkStopTokenThrottled}
- *   machinery, so cancellation interrupts the loop within milliseconds instead
- *   of only at phase boundaries, and
+ * - checks `signal`, so an abort that landed at the loop's last yield stops it
+ *   here rather than at the next phase boundary, and
  * - emits a {@link StatusWithProgress} through `statusCallback` at most once per
  *   `throttleMs`, so the main thread gets a live percentage without flooding
  *   the postMessage channel.
  *
+ * A loop that never yields never receives the abort; pair this with
+ * `createAbortBreakpoint` there.
+ *
  * Both jobs are optional: with no `statusCallback`/`total` this is purely a
- * throttled cancellation tick, so a loop has exactly one inner callback whether
- * or not it drives the progress UI.
+ * cancellation tick, so a loop has exactly one inner callback whether or not
+ * it drives the progress UI.
  *
  * Emission is gated on wall-clock time (`throttleMs`) through {@link
  * createTimeGate}, which thins the `Date.now()` reads as well as the emits —
@@ -1069,23 +1065,20 @@ export function createProgressReporter({
   label = '',
   total,
   statusCallback,
-  stopToken,
-  stopTokenCheck,
+  signal,
   throttleMs = 100,
 }: {
   label?: string
   total?: number
   statusCallback?: (status: RpcStatus) => void
-  stopToken?: StopToken
-  stopTokenCheck?: StopTokenChecker
+  signal?: AbortSignal
   throttleMs?: number
 }): ProgressReporter {
-  const checker = stopTokenCheck ?? createStopTokenChecker(stopToken)
   const emitDue = createTimeGate()
   let count = 0
   return (current = count) => {
     count = current + 1
-    checkStopTokenThrottled(checker)
+    checkAbortSignal(signal)
     if (
       statusCallback !== undefined &&
       total !== undefined &&
@@ -1098,7 +1091,7 @@ export function createProgressReporter({
 
 /**
  * Run a measurable phase: shows `label` at 0%, hands `fn` a {@link
- * ProgressReporter} to drive during the work, then checks the stop token once
+ * ProgressReporter} to drive during the work, then checks the signal once
  * more and restores the enclosing phase. The determinate counterpart to
  * `updateStatus`, and it nests the same way — see {@link openPhase}.
  */
@@ -1107,12 +1100,12 @@ export async function withProgress<T>(
     label,
     total,
     statusCallback,
-    stopToken,
+    signal,
   }: {
     label: string
     total: number
     statusCallback?: (status: RpcStatus) => void
-    stopToken?: StopToken
+    signal?: AbortSignal
   },
   fn: (report: ProgressReporter) => T | Promise<T>,
 ): Promise<T> {
@@ -1120,20 +1113,20 @@ export async function withProgress<T>(
     label,
     total,
     statusCallback,
-    stopToken,
+    signal,
   })
   const endPhase = openPhase(statusCallback, label)
   // pessimistic for the same reason as `updateStatus`: a phase that leaves this
   // scope any way other than returning did not finish its work
   let outcome: PhaseOutcome = 'failed'
   try {
-    // inside the try, because `report` checks the stop token before it emits and
-    // so throws here on a token already stopped. Outside, that threw past the
+    // inside the try, because `report` checks the signal before it emits and
+    // so throws here on one already aborted. Outside, that threw past the
     // close and left the phase open on the channel — a slot whose last word is a
     // label is one `aggregateStatus` counts as in flight for the rest of the
     // batch.
     report(0)
-    const result = await withStopTokenCheck(stopToken, () => fn(report))
+    const result = await withAbortCheck(signal, () => fn(report))
     outcome = 'completed'
     return result
   } finally {

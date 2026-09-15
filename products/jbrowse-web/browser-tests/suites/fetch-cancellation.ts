@@ -14,7 +14,7 @@ import type { CDPSession, HTTPRequest, Page } from 'puppeteer'
 // worker global, and an AbortSignal whose entire purpose is what it does to a
 // socket. All three are inert or absent under jsdom — which is how a deletion of
 // the synchronous-probe path once passed every unit test in the repo. See
-// packages/core/src/util/stopToken.ts.
+// packages/core/src/util/signal.ts.
 //
 // EVERY TEST HERE ASSERTS ITS OWN PRECONDITION, and that is not ceremony: the
 // first version of this file passed 3 of 4 while the app under test had not
@@ -90,7 +90,7 @@ async function installProbe(page: Page) {
       if (
         message !== null &&
         typeof message === 'object' &&
-        typeof (message as { stopToken?: unknown }).stopToken === 'string'
+        typeof (message as { signal?: unknown }).signal === 'string'
       ) {
         probe.stopFrames++
       }
@@ -285,8 +285,8 @@ const suite: TestSuite = {
         const aborted = failures.filter(f =>
           f.errorText?.includes('ERR_ABORTED'),
         )
-        // The assertion that the AbortSignal reaches the socket. Before
-        // stopTokenSignal existed a superseded fetch discarded its result but
+        // The assertion that the AbortSignal reaches the socket. Before the
+        // signal reached the reader a superseded fetch discarded its result but
         // downloaded every byte first, and this list was empty.
         if (aborted.length === 0) {
           throw new Error(

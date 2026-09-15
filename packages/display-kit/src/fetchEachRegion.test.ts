@@ -90,7 +90,7 @@ test('commits every region and completes when nothing went stale', async () => {
   let completed = 0
   await fetchEachRegion(
     selfWith({
-      stopToken: 'tok',
+      signal: new AbortController().signal,
       isStale: () => false,
       statusCallback: () => {},
       callRpc() {
@@ -118,7 +118,7 @@ test('a viewport that moved before any result lands commits nothing', async () =
   let completed = 0
   await fetchEachRegion(
     selfWith({
-      stopToken: 'tok',
+      signal: new AbortController().signal,
       isStale: () => true,
       statusCallback: () => {},
       callRpc() {
@@ -150,7 +150,7 @@ test('a region that arrived before the move still commits; a later one does not'
   let stale = false
   await fetchEachRegion(
     selfWith({
-      stopToken: 'tok',
+      signal: new AbortController().signal,
       isStale: () => stale,
       statusCallback: () => {},
       callRpc() {
@@ -196,7 +196,7 @@ test('a region the worker refused is neither stored nor marked loaded, and its b
   await fetchEachRegion(
     selfWith(
       {
-        stopToken: 'tok',
+        signal: new AbortController().signal,
         isStale: () => false,
         statusCallback: () => {},
         callRpc() {
@@ -241,7 +241,7 @@ test('the first refusal commits the verdict, then cancels the rest of the batch'
   await fetchEachRegion(
     selfWith(
       {
-        stopToken: 'tok',
+        signal: new AbortController().signal,
         isStale: () => false,
         statusCallback: () => {},
         callRpc() {
@@ -293,7 +293,7 @@ test('a batch where several regions refuse commits and cancels exactly once', as
   await fetchEachRegion(
     selfWith(
       {
-        stopToken: 'tok',
+        signal: new AbortController().signal,
         isStale: () => false,
         statusCallback: () => {},
         callRpc() {
@@ -326,7 +326,7 @@ test('the gate state handed to onComplete is the one captured at issue', async (
   const seen: GateFetchState[] = []
   await fetchEachRegion(
     selfWith({
-      stopToken: 'tok',
+      signal: new AbortController().signal,
       isStale: () => false,
       statusCallback: () => {},
       callRpc() {
@@ -352,7 +352,7 @@ test('the gate state handed to onComplete is the one captured at issue', async (
 // argument for the displays that key their own bookkeeping off it.
 test('call receives the region, its own ctx and the displayed region index', async () => {
   const ctx: FetchContext = {
-    stopToken: 'tok',
+    signal: new AbortController().signal,
     isStale: () => false,
     statusCallback: () => {},
     callRpc() {
@@ -364,7 +364,7 @@ test('call receives the region, its own ctx and the displayed region index', asy
     call: (region, callCtx, displayedRegionIndex) => {
       seen.push([
         region.refName,
-        callCtx.stopToken === ctx.stopToken,
+        callCtx.signal === ctx.signal,
         callCtx.statusCallback === ctx.statusCallback,
         displayedRegionIndex,
       ])
@@ -401,7 +401,7 @@ test('commits once even if cancelFetch leaves the batch running', async () => {
       work: (ctx: RegionFetchContext) => Promise<void>,
     ) =>
       work({
-        stopToken: 'tok',
+        signal: new AbortController().signal,
         isStale: () => false,
         statusCallback: () => {},
         callRpc() {
@@ -435,7 +435,7 @@ test('a refusal is only partial when a region never reported', async () => {
     await fetchEachRegion(
       selfWith(
         {
-          stopToken: 'tok',
+          signal: new AbortController().signal,
           isStale: () => false,
           statusCallback: () => {},
           callRpc() {

@@ -4,11 +4,7 @@ import { getPhasedGenotypeMatrix } from './getPhasedGenotypeMatrix.ts'
 import type { SampleInfo, Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import type {
-  LastStopTokenCheck,
-  Region,
-  StatusCallback,
-} from '@jbrowse/core/util'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
 
 // The one place that decides which matrix a rendering mode wants: one row per
 // haplotype in phased mode, one row per sample otherwise. Both the auto
@@ -24,7 +20,7 @@ export async function buildGenotypeMatrix({
   pluginManager: PluginManager
   args: {
     adapterConfig: Record<string, unknown>
-    stopTokenCheck?: LastStopTokenCheck
+    signal?: AbortSignal
     sessionId: string
     headers?: Record<string, string>
     regions: Region[]

@@ -83,7 +83,7 @@ export default class BigMafAdapter extends MafAdapterBase<BigMafAdapterConfig> {
 
       resolver.reportUnmatched()
       observer.complete()
-    }, opts?.stopToken)
+    }, opts?.signal)
   }
 
   // Compressed download-size estimate from the bigMaf.bb R-tree index, delegated

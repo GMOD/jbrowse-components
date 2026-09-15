@@ -53,7 +53,7 @@ about.
 | `useSliceWorkerPool` | yes | config slot |
 | `numSliceWorkers` | yes | `sliceWorkerCount()`, halved from the library default because the pool is per JS context and tracks spread over up to five RPC workers |
 | `onProgress` (index + records) | yes | `downloadStatus` on both phases |
-| `signal` | yes | `withStopTokenSignal` |
+| `signal` | yes | forwarded as is |
 | `index.getEntriesForRange` | yes | `bytesForRegions`, deduping slices before summing |
 | `CramRecord.getTag` | yes | one column probe instead of building `tags` |
 | `forEachMismatch` | yes | `CramSlightlyLazyFeature`, with a reused options object |

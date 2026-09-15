@@ -55,19 +55,19 @@ function makeSelf() {
       fetchRegions: (_needed: unknown, work: (ctx: unknown) => unknown) =>
         Promise.resolve(
           work({
-            stopToken: 'tok',
+            signal: new AbortController().signal,
             isStale: () => canceled,
             statusCallback: (s: RpcStatus) => reported.push(s),
             // The real envelope over this file's mocked rpcManager, so the
             // fetch exercises the same injection production does.
             callRpc(
-              this: { stopToken: string; statusCallback: unknown },
+              this: { signal: string; statusCallback: unknown },
               method: string,
               args: Record<string, unknown>,
             ) {
               return mockRpcCall('session-1', method, {
                 ...args,
-                stopToken: this.stopToken,
+                signal: this.signal,
                 statusCallback: this.statusCallback,
               })
             },

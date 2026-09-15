@@ -1,11 +1,10 @@
 import { act, renderHook, waitFor } from '@testing-library/react'
 
+import { checkAbortSignal } from './aborting.ts'
 import { statusProgressLabel } from './progress.ts'
-import { checkStopToken } from './stopToken.ts'
 import { useFetch } from './useFetch.ts'
 
 import type { RpcStatus } from './progress.ts'
-import type { StopToken } from './stopToken.ts'
 
 // The key→fetcher-argument contract. An array key is *spread* across the
 // fetcher's parameters, so a fetcher reading its key must declare positional
@@ -193,10 +192,10 @@ test('a key change still clears the previous data', async () => {
 // when the dialog closes or the key moves on, instead of leaving it computing
 // an answer nobody is waiting for.
 test('stops the fetch stop token on unmount', async () => {
-  let captured: StopToken | undefined
+  let captured: AbortSignal | undefined
   const { result, unmount } = renderHook(() =>
-    useFetch(['slow'] as const, async (_key, stopToken) => {
-      captured = stopToken
+    useFetch(['slow'] as const, async (_key, signal) => {
+      captured = signal
       return 'done'
     }),
   )
@@ -205,12 +204,12 @@ test('stops the fetch stop token on unmount', async () => {
     expect(result.current.data).toBe('done')
   })
   expect(() => {
-    checkStopToken(captured)
+    checkAbortSignal(captured)
   }).not.toThrow()
 
   unmount()
   expect(() => {
-    checkStopToken(captured)
+    checkAbortSignal(captured)
   }).toThrow(/abort/i)
 })
 

@@ -8,11 +8,6 @@ import {
   isAbortException,
   isSessionWithAddSessionTrack,
 } from '@jbrowse/core/util'
-import {
-  createStopToken,
-  isStopped,
-  stopStopToken,
-} from '@jbrowse/core/util/stopToken'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import {
   ImportSyntenyOpenCustomTrack,
@@ -34,7 +29,6 @@ import { getAddRowOptions } from '../util/syntenyTracks.ts'
 
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
 
 type UserOpened = Extract<ImportFormSyntenyTrack, { type: 'userOpened' }>
@@ -104,10 +98,10 @@ const AddRowDialog = observer(function AddRowDialog({
   const [customTrack, setCustomTrack] = useState<UserOpened['value']>()
   const [error, setError] = useState<unknown>()
   const [isLocating, setLocating] = useState(false)
-  const locating = useRef<StopToken>(undefined)
+  const locating = useRef<AbortController>(undefined)
   useEffect(
     () => () => {
-      stopStopToken(locating.current)
+      locating.current?.abort()
     },
     [],
   )
@@ -127,8 +121,8 @@ const AddRowDialog = observer(function AddRowDialog({
   async function add(assembly: string, syntenyTrackId: string) {
     const row = views.at(-1)!
     const region = zoomedInWindow(row)
-    const stopToken = createStopToken()
-    locating.current = stopToken
+    const controller = new AbortController()
+    locating.current = controller
     setLocating(true)
     try {
       const loc = region
@@ -138,7 +132,7 @@ const AddRowDialog = observer(function AddRowDialog({
             region,
             assembly,
             widthPx: row.width,
-            stopToken,
+            signal: controller.signal,
           }).catch((e: unknown) => {
             if (isAbortException(e)) {
               throw e
@@ -147,7 +141,7 @@ const AddRowDialog = observer(function AddRowDialog({
             return undefined
           })
         : undefined
-      if (isStopped(stopToken) || !isAlive(model)) {
+      if (controller.signal.aborted || !isAlive(model)) {
         return
       }
       void model.appendRow({ assembly, loc, syntenyTrackId })
@@ -157,7 +151,7 @@ const AddRowDialog = observer(function AddRowDialog({
         throw e
       }
     } finally {
-      if (locating.current === stopToken) {
+      if (locating.current === controller) {
         locating.current = undefined
         setLocating(false)
       }
@@ -165,7 +159,7 @@ const AddRowDialog = observer(function AddRowDialog({
   }
 
   function cancel() {
-    stopStopToken(locating.current)
+    locating.current?.abort()
     handleClose()
   }
 

@@ -1,6 +1,5 @@
 import { NO_DATA_FOR_RESOLUTION } from '@gmod/hic'
 import { isAbortException } from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 
 import HicAdapter from './HicAdapter.ts'
 import configSchema from './configSchema.ts'
@@ -236,20 +235,21 @@ test('a pair that reads no blocks still completes', async () => {
   })
 })
 
-test('an already-stopped stopToken aborts the multi-region fetch', async () => {
+test('an already-stopped signal aborts the multi-region fetch', async () => {
   const adapter = makeAdapter(makeMockParser())
   const regions: Region[] = [
     { assemblyName: 'test', refName: '1', start: 0, end: 1000000 },
     { assemblyName: 'test', refName: '2', start: 0, end: 1000000 },
   ]
-  const stopToken = createStopToken()
-  stopStopToken(stopToken)
+  const signalController = new AbortController()
+  const signal = signalController.signal
+  signalController.abort()
 
   const err = await adapter
     .getMultiRegionContactRecords(regions, {
       resolution: 100000,
       normalization: 'NONE',
-      stopToken,
+      signal,
     })
     .then(() => undefined)
     .catch((e: unknown) => e)

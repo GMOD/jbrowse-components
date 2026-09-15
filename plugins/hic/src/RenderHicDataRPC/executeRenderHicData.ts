@@ -1,7 +1,7 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { withProgress } from '@jbrowse/core/util'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { rpcResult } from '@jbrowse/core/util/librpc'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
 
 import {
   INSTANCE_STRIDE_WORDS,
@@ -32,7 +32,7 @@ export async function executeRenderHicData({
     originBp,
     resolution,
     normalization,
-    stopToken,
+    signal,
     statusCallback,
   } = args
 
@@ -54,13 +54,13 @@ export async function executeRenderHicData({
   } = await adapter.getMultiRegionContactRecords(regions, {
     resolution,
     normalization,
-    stopToken,
+    signal,
     statusCallback,
   })
 
   // the fetch may have completed after the user navigated away; bail before
   // the O(numContacts) buffer build + sort rather than doing throwaway work
-  checkStopToken(stopToken)
+  checkAbortSignal(signal)
 
   const w = res / Math.SQRT2
   // The regions arrive split in two — the framework's renamed `regions` and the
@@ -91,7 +91,7 @@ export async function executeRenderHicData({
       label: 'Building contact matrix',
       total: numContacts,
       statusCallback,
-      stopToken,
+      signal,
     },
     report => {
       for (const { region1Idx, region2Idx, start, end } of pairs) {

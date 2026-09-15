@@ -58,7 +58,7 @@ export async function executeMafSummaryData({
     regions,
     adapterConfig,
     sessionId,
-    stopToken,
+    signal,
     statusCallback,
     subtreeFilter,
     byteLimit,
@@ -83,7 +83,7 @@ export async function executeMafSummaryData({
         dataAdapter: summaryAdapter,
         regions: [region],
         byteLimit,
-        stopToken,
+        signal,
         statusCallback,
       })
     : {}
@@ -106,7 +106,7 @@ export async function executeMafSummaryData({
   // yields no rows, and it yields them from inside — the `?.` here guarded
   // against an adapter that cannot exist.
   await subscribeToObservable(
-    adapter.getSummaryFeatures(region, { stopToken, statusCallback }),
+    adapter.getSummaryFeatures(region, { signal, statusCallback }),
     record => {
       if (!hasConfiguredSamples) {
         discovered.add(record.src)

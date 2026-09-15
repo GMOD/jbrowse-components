@@ -38,11 +38,6 @@ const PORT = 3342
 const specName = process.argv[2]
 const outDir = flagArg('out', path.join(repoRoot, 'perf-out'))
 const timeout = Number(flagArg('timeout', '900000'))
-// Run with SharedArrayBuffer force-enabled, i.e. what the app gets on a
-// cross-origin-isolated (COOP/COEP) deployment. Stop tokens then use the atomic
-// fast path instead of the synchronous-XHR fallback — pass this to measure how
-// much of a spec's wall clock that fallback is costing.
-const sab = process.argv.includes('--sab')
 // Render through the hardware GL stack instead of SwiftShader's software
 // rasterizer. The screenshot generator uses swiftshader for reproducibility, but
 // it makes GPU-heavy figures pay software raster cost — the tcga cohort figure
@@ -168,7 +163,6 @@ await withHarness(
     viewport: specViewport(spec),
     chromeArgs: [
       ...(angleGl ? ['--use-angle=gl'] : ['--enable-unsafe-swiftshader']),
-      ...(sab ? ['--enable-features=SharedArrayBuffer'] : []),
     ],
   },
   async ({ page }) => {

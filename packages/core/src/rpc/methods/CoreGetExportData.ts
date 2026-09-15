@@ -13,7 +13,7 @@ export default class CoreGetExportData extends RpcMethodTypeWithRenameRegions<'C
       regions,
       formatType,
       opts,
-      stopToken,
+      signal,
       statusCallback,
     } = args
 
@@ -36,7 +36,7 @@ export default class CoreGetExportData extends RpcMethodTypeWithRenameRegions<'C
     // empty file instead.
     return dataAdapter.getExportData(regions, formatType, {
       ...opts,
-      stopToken,
+      signal,
       statusCallback,
     })
   }

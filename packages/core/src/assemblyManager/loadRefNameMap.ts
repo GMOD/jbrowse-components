@@ -56,10 +56,10 @@ export async function loadRefNameMap(
       adapterConfig: adapterConfig as Record<string, unknown>,
       assemblyName: assembly.name,
       sequenceAdapter,
-      // stopToken intentionally not passed, fixes issues like #2221.
+      // signal intentionally not passed, fixes issues like #2221.
       // alternative fix #2540 was proposed but non-working currently
-      stopToken: undefined,
-      // Forwarded rather than dropped (unlike stopToken above), because the
+      signal: undefined,
+      // Forwarded rather than dropped (unlike signal above), because the
       // adapter's index download happens here during refname mapping
       // (getRefNames -> setup) and this is the only place its "Downloading
       // index" progress can surface. For an in-memory adapter it is not an

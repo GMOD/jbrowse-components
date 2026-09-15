@@ -6,10 +6,8 @@ import {
   statusFraction,
   statusMessageText,
 } from './progress.ts'
-import { createStopToken, stopStopToken } from './stopToken.ts'
 
 import type { RpcStatus, StatusStream, StatusWindow } from './progress.ts'
-import type { StopToken } from './stopToken.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -96,8 +94,7 @@ export function createStatusChannel(): StatusChannel {
 }
 
 export interface ActiveFetch {
-  /** stop token to forward to the RPC call */
-  stopToken: StopToken
+  signal: AbortSignal
   /**
    * True only while this is still the most recent fetch AND `self` is alive.
    * Gate every post-await write — result commit, error set — on it so a
@@ -131,19 +128,18 @@ export interface ActiveFetch {
 }
 
 /**
- * Latest-wins stop-token rotation for a fetch that runs in a bare `autorun`
+ * Latest-wins abort rotation for a fetch that runs in a bare `autorun`
  * rather than through `FetchMixin.runFetch` (which welds the same mechanics to
  * `fetchGeneration`, so it's only for viewport-driven LGV fetches). Each
- * `begin()` aborts the prior fetch's token and returns a fresh one plus an
- * `isCurrent()` guard that captures this run's token — gate every post-await
- * write on it and a superseded or torn-down fetch can never clobber fresher
- * data. The guard is the return value, so a caller can't forget to compare a
- * token by hand.
+ * `begin()` aborts the prior fetch and returns a fresh signal plus an
+ * `isCurrent()` guard that captures this run — gate every post-await write on
+ * it and a superseded or torn-down fetch can never clobber fresher data. The
+ * guard is the return value, so a caller can't forget to compare by hand.
  *
  * `end()` in the run's `finally` is the other half, and for the same reason —
  * see {@link ActiveFetch.end} for the two things it does together.
  *
- * Owns the token mechanics and the status channel; the caller keeps its own
+ * Owns the controller and the status channel; the caller keeps its own
  * loading/error/commit side-effects. Three holders: `FetchMixin` as a member
  * (so `cancelFetch` can reach it), `installFetch` one per installation (every
  * other fetch in the tree runs on that skeleton), and the synteny diagonalize
@@ -157,13 +153,13 @@ export interface ActiveFetch {
  * passes a {@link createStatusChannel}, which is one volatile instead of two
  * fields and an action.
  */
-export type StopTokenRotation = ReturnType<typeof createStopTokenRotation>
+export type AbortRotation = ReturnType<typeof createAbortRotation>
 
-export function createStopTokenRotation(
+export function createAbortRotation(
   self: IStateTreeNode,
   report: StatusReporter,
 ) {
-  let currentStopToken: StopToken | undefined
+  let current: AbortController | undefined
   // The host's window when it has one, so a display composing `FetchMixin` has
   // one window rather than two writing one field; our own otherwise. Lent means
   // this fetch is one slot beside the host's others rather than a second writer
@@ -183,8 +179,8 @@ export function createStopTokenRotation(
   /**
    * Stop the in-flight fetch without starting one, and retire its slot.
    *
-   * Dropping `currentStopToken` rather than only stopping it is what closes
-   * every outstanding guard: `isCurrent` compares against this field, so one
+   * Dropping `current` rather than only aborting it is what closes every
+   * outstanding guard: `isCurrent` compares against this field, so one
    * assignment makes a fetch already past its await stale, whether it is the one
    * being cancelled or a superseded predecessor still unwinding.
    *
@@ -195,10 +191,8 @@ export function createStopTokenRotation(
    * works: `addDisposer(self, rotation.dispose)` is a shape callers reach for.
    */
   const cancel = () => {
-    if (currentStopToken) {
-      stopStopToken(currentStopToken)
-      currentStopToken = undefined
-    }
+    current?.abort()
+    current = undefined
     // a fetch in flight when this is called never reaches its `finally`, and a
     // slot nobody retires goes on voting
     openStream?.clear()
@@ -206,18 +200,15 @@ export function createStopTokenRotation(
   }
   return {
     begin(): ActiveFetch {
-      if (currentStopToken) {
-        stopStopToken(currentStopToken)
-      }
-      const stopToken = createStopToken()
-      currentStopToken = stopToken
+      current?.abort()
+      const controller = new AbortController()
+      current = controller
       // `ended` is the term a completed fetch has no other way to express: the
-      // token comparison catches a SUPERSEDED one, but a fetch that simply
-      // finished still holds the current token. The stream reads it as well as
+      // controller comparison catches a SUPERSEDED one, but a fetch that simply
+      // finished still holds the current one. The stream reads it as well as
       // the caller's commit guard, which is why both go through this closure.
       let ended = false
-      const isCurrent = () =>
-        !ended && stopToken === currentStopToken && isAlive(self)
+      const isCurrent = () => !ended && controller === current && isAlive(self)
       // Opened BEFORE the superseded run reaches its `finally`, which is what
       // keeps the label the user is looking at from blanking between the two:
       // the run being replaced is suspended at an await and resumes a microtask
@@ -227,18 +218,11 @@ export function createStopTokenRotation(
       const stream = statusWindow.open({ isCurrent })
       openStream = stream
       return {
-        stopToken,
+        signal: controller.signal,
         isCurrent,
         statusCallback: stream.statusCallback,
         end() {
           ended = true
-          // A completed fetch's token is released here, not only on supersede
-          // or cancel — otherwise it pins its AbortSignal controllers (and blob
-          // URL) until the next `begin()`, forever for a one-shot fetch that
-          // succeeds and never reruns. `stopStopToken` is guarded, so the
-          // superseded and cancelled runs that arrive here already-stopped cost
-          // nothing.
-          stopStopToken(stopToken)
           if (openStream === stream) {
             openStream = undefined
           }
@@ -249,7 +233,7 @@ export function createStopTokenRotation(
     cancel,
     dispose() {
       cancel()
-      // the window outlives the token: a trailing write is queued on a timer,
+      // the window outlives the fetch: a trailing write is queued on a timer,
       // and while the sink's `isCurrent` makes it a no-op rather than a write to
       // a dead node, the timer itself still stands for up to a window past
       // teardown. Only ours — resetting a lent one drops a write the host's

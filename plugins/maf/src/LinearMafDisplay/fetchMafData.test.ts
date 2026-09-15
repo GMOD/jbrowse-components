@@ -1,5 +1,3 @@
-import { isStopped, stopTokenSignal } from '@jbrowse/core/util'
-
 import {
   fetchMafAlignmentData,
   fetchMafSummaryData,
@@ -139,13 +137,16 @@ function makeSelf() {
 
 // The context either tier's read runs under: the per-region path's from
 // `fetchRegions`, the summary tier's from `CoarseTierMixin`'s skeleton.
+let lastCtxSignal: AbortSignal
+
 function makeCtx(
   reported: RpcStatus[],
   loadedIndices: number[],
   stored = new Map<number, { data: unknown; frames: unknown }>(),
 ): RegionFetchContext {
+  lastCtxSignal = new AbortController().signal
   return {
-    stopToken: 'tok',
+    signal: lastCtxSignal,
     isStale: () => false,
     statusCallback: (s: RpcStatus) => reported.push(s),
     // the real envelope, over this file's mocked rpcManager, so the
@@ -153,7 +154,7 @@ function makeCtx(
     callRpc(method, args) {
       return mockRpcCall('session-1', method, {
         ...args,
-        stopToken: this.stopToken,
+        signal: this.signal,
         statusCallback: this.statusCallback,
       })
     },
@@ -275,14 +276,14 @@ describe('the byte gate rides in the tier fetch', () => {
   // fetch's token, which the display's cancel owns, is left alone.
   test('the first refusal aborts the siblings still in flight', async () => {
     const { self, loadedIndices, committedBytes } = makeSelf()
-    const siblingTokens: string[] = []
+    const siblingTokens: AbortSignal[] = []
     mockRpcCall.mockImplementation((_s: string, _m: string, args: any) => {
       if (args.regions[0].refName === 'ctgA') {
         return Promise.resolve({ regionTooLarge: true, bytes: 9e9 })
       }
-      siblingTokens.push(args.stopToken)
+      siblingTokens.push(args.signal)
       return new Promise((_resolve, reject) => {
-        stopTokenSignal(args.stopToken).signal.addEventListener('abort', () => {
+        args.signal.addEventListener('abort', () => {
           reject(new Error('aborted'))
         })
       })
@@ -293,9 +294,9 @@ describe('the byte gate rides in the tier fetch', () => {
     expect(loadedIndices).toEqual([])
     expect(committedBytes).toEqual([[9e9]])
     expect(siblingTokens).toHaveLength(1)
-    expect(siblingTokens[0]).not.toBe('tok')
-    expect(isStopped(siblingTokens[0])).toBe(true)
-    expect(isStopped('tok')).toBe(false)
+    expect(siblingTokens[0]).not.toBe(lastCtxSignal)
+    expect(siblingTokens[0]!.aborted).toBe(true)
+    expect(lastCtxSignal.aborted).toBe(false)
   })
 })
 

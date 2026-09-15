@@ -72,12 +72,12 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
     // a selection this dialog will happily take is a whole chromosome of
     // sequence, so both handles are forwarded: closing the dialog stops the
     // read rather than leaving the worker on it, and the wait is named
-    async (_name, _locs, stopToken, statusCallback) => {
+    async (_name, _locs, signal, statusCallback) => {
       if (regions.length === 0) {
         throw new Error('Selected region is out of bounds')
       }
       const chunks = await fetchSequence(model, regions, {
-        stopToken,
+        signal,
         statusCallback,
       })
       // validate here (in the async path) so a length mismatch surfaces via the

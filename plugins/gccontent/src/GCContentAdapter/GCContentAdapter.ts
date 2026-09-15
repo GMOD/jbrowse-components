@@ -1,11 +1,8 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { getSequenceSubAdapter } from '@jbrowse/core/data_adapters/getSequenceSubAdapter'
 import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
+import { createAbortBreakpoint } from '@jbrowse/core/util/aborting'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import {
-  checkStopTokenThrottled,
-  createStopTokenChecker,
-} from '@jbrowse/core/util/stopToken'
 
 import type { GCContentAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -34,7 +31,7 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
     query: Region,
     opts?: BaseOptions,
   ): Promise<RawFeatureArrays> {
-    const { statusCallback, stopToken } = opts ?? {}
+    const { statusCallback, signal } = opts ?? {}
     const sequenceAdapter = await this.configure()
     const windowSize = this.getConf('windowSize')
     const windowDelta = this.getConf('windowDelta')
@@ -68,7 +65,7 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
         opts,
       )) ?? ''
 
-    return updateStatus('Calculating GC', statusCallback, () => {
+    return updateStatus('Calculating GC', statusCallback, async () => {
       const count = Math.max(
         0,
         Math.floor((residues.length - leftHalf - rightHalf) / windowDelta) + 1,
@@ -77,7 +74,6 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
       const ends = new Int32Array(count)
       const scores = new Float32Array(count)
       let n = 0
-      const stopTokenCheck = createStopTokenChecker(stopToken)
 
       // Monotonic two-pointer sliding window: lo/hi only advance, so each base
       // is added once as it enters the window and removed once as it leaves,
@@ -87,6 +83,7 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
       let len = 0
       let lo = 0
       let hi = 0
+      const breakpoint = createAbortBreakpoint(signal)
       // The bound is exactly "the window [i - leftHalf, i + rightHalf) fits in
       // what we fetched", spelled with the two halves rather than
       // halfWindowSize. Written with halfWindowSize on both sides it dropped
@@ -98,7 +95,9 @@ export default class GCContentAdapter extends BaseFeatureDataAdapter<GCContentAd
         i + rightHalf <= residues.length;
         i += windowDelta
       ) {
-        checkStopTokenThrottled(stopTokenCheck)
+        if (breakpoint.due()) {
+          await breakpoint.yield()
+        }
 
         const winEnd = i + rightHalf
         while (hi < winEnd) {

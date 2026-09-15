@@ -39,7 +39,7 @@ describe('FetchMixin: lifecycle state', () => {
     expect(m.error).toBeUndefined()
     expect(m.statusMessage).toBeUndefined()
     expect(m.fetchGeneration).toBe(0)
-    expect(m.activeStopToken).toBeUndefined()
+    expect(m.activeSignal).toBeUndefined()
   })
 
   it('isLoading flips true while runFetch is in flight, false after', async () => {
@@ -147,14 +147,14 @@ describe('FetchMixin: cancellation', () => {
     m.cancelFetch()
     expect(m.isLoading).toBe(false)
     expect(m.fetchGeneration).toBe(before + 1)
-    expect(m.activeStopToken).toBeUndefined()
+    expect(m.activeSignal).toBeUndefined()
   })
 
   it('starting a new runFetch cancels the prior in-flight one', async () => {
     const m = makeModel()
     let firstRejected = false
     m.runFetch(ctx => {
-      // Detect cancellation via stopToken aborted state. We can also
+      // Detect cancellation via signal aborted state. We can also
       // observe staleness — easier: simply yield an unresolved promise
       // and assert that the second fetch took over.
       return new Promise<void>((_resolve, reject) => {
@@ -167,9 +167,9 @@ describe('FetchMixin: cancellation', () => {
         })
       })
     })
-    const firstToken = m.activeStopToken
+    const firstToken = m.activeSignal
     m.runFetch(async () => {})
-    expect(m.activeStopToken).not.toBe(firstToken)
+    expect(m.activeSignal).not.toBe(firstToken)
     await tick()
     await tick()
     await tick()
@@ -186,7 +186,7 @@ describe('FetchMixin: user cancel + retry', () => {
     m.cancelFetchByUser()
     expect(m.isLoading).toBe(false)
     expect(m.fetchCanceled).toBe(true)
-    expect(m.activeStopToken).toBeUndefined()
+    expect(m.activeSignal).toBeUndefined()
   })
 
   it('cancelFetchByUser does NOT bump fetchGeneration (so autoruns do not restart)', () => {
@@ -536,7 +536,7 @@ describe('FetchMixin: status callback throttle', () => {
 })
 
 // A display runs more than one operation at a time — the viewport fetch, a
-// bare-autorun fetch through a lent `createStopTokenRotation`, a clustering run
+// bare-autorun fetch through a lent `createAbortRotation`, a clustering run
 // — and all of them report into this one field. Before ADR-081 each of them
 // blanked it outright when it finished, so whichever finished first wiped the
 // label the others were still producing, and the loading overlay renders a

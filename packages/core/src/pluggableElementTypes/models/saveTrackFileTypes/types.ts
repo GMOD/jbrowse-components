@@ -2,7 +2,6 @@ import type {
   AbstractSessionModel,
   Feature,
   StatusCallback,
-  StopToken,
 } from '@jbrowse/core/util'
 
 export interface FileTypeExporter {
@@ -19,7 +18,7 @@ export interface FileTypeExporter {
     features: Feature[]
     session: AbstractSessionModel
     assemblyName: string
-    stopToken?: StopToken
+    signal?: AbortSignal
     statusCallback?: StatusCallback
   }) => Promise<string> | string
 }

@@ -72,7 +72,7 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
       showAllLetters,
       includeInsertions,
       byteLimit,
-      stopToken,
+      signal,
       statusCallback,
     ) =>
       session.rpcManager.call('MafSequenceWidget', 'MafGetSequences', {
@@ -82,7 +82,7 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
         includeInsertions,
         regions,
         byteLimit,
-        stopToken,
+        signal,
         statusCallback,
       }),
   )

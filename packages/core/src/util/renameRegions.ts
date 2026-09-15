@@ -3,7 +3,6 @@ import { getSnapshot, isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { getSequenceAdapterConfig } from '../assemblyManager/getSequenceAdapterConfig.ts'
 
 import type { StatusCallback } from './progress.ts'
-import type { StopToken } from './stopToken.ts'
 import type { AssemblyManager, Region } from './types/index.ts'
 import type { Region as MUIRegion } from './types/mst.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -86,7 +85,7 @@ export async function renameRegionsIfNeeded<
   ARGTYPE extends {
     assemblyName?: string
     regions?: Region[]
-    stopToken?: StopToken
+    signal?: AbortSignal
     adapterConfig: Record<string, unknown>
     sessionId: string
     statusCallback?: StatusCallback

@@ -1,6 +1,6 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createStatusFanOut, updateStatus } from '@jbrowse/core/util'
-import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 
 import { makeFeatureValueResolver } from '../MultiRowGetFeaturesRPC/packMultiRowFeatures.ts'
 import { dedupeFeaturesById } from '../RenderFeatureDataRPC/dedupeFeatures.ts'
@@ -10,16 +10,13 @@ import type { MatrixFeature } from './buildMultiRowMatrix.ts'
 import type { MultiRowClusterFeaturesArgs } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { RpcCallContext } from '@jbrowse/core/rpc/RpcRegistry'
-import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 export async function collectMultiRowMatrix({
   pluginManager,
   args,
-  stopTokenCheck,
 }: {
   pluginManager: PluginManager
   args: MultiRowClusterFeaturesArgs & RpcCallContext
-  stopTokenCheck: StopTokenChecker
 }) {
   const {
     sessionId,
@@ -28,7 +25,7 @@ export async function collectMultiRowMatrix({
     sources,
     partitionField,
     clusterField,
-    stopToken,
+    signal,
     statusCallback,
   } = args
   const dataAdapter = await getFeatureAdapterOrThrow({
@@ -55,14 +52,14 @@ export async function collectMultiRowMatrix({
         regions.map(region =>
           dataAdapter.getFeaturesArray(region, {
             statusCallback: slot(),
-            stopToken,
+            signal,
           }),
         ),
       ),
   )
   const features: MatrixFeature[] = []
   for (const [regionIndex, feats] of featuresPerRegion.entries()) {
-    checkStopTokenThrottled(stopTokenCheck)
+    checkAbortSignal(signal)
     // Dedup per region, not across the fetch: a feature appearing in two
     // clustered regions covers bins in both.
     for (const f of dedupeFeaturesById(feats).values()) {

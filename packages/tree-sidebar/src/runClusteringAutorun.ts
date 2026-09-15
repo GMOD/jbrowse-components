@@ -5,7 +5,6 @@ import {
   locStringsToRegions,
 } from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
@@ -17,7 +16,6 @@ import type {
   RpcStatus,
   StatusStream,
 } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -29,7 +27,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // session never re-triggers it. Shared by the multi-sample variant, multi-wiggle
 // and multi-row feature displays: each supplies its own `ready` gate and `run`
 // (the actual RPC), while this owns the re-entrancy guard, the view.initialized
-// gate, the stopToken lifecycle, and the status channel. `ready` and `run`'s
+// gate, the signal lifecycle, and the status channel. `ready` and `run`'s
 // dependency reads happen synchronously before the first await, so MobX tracks
 // them and the autorun re-fires when sources arrive or the view initializes.
 //
@@ -78,7 +76,7 @@ export function setupRunClusteringAutorun(
       rpcManager: RpcCaller
       sessionId: string
       regions: Region[]
-      stopToken: StopToken
+      signal: AbortSignal
       statusCallback: (status: RpcStatus) => void
     }) => Promise<void>
   },
@@ -87,14 +85,14 @@ export function setupRunClusteringAutorun(
   // in flight, the same trick setupInitAutorun uses for `init`.
   let applying = false
   // Disposing the reaction says nothing about the RPC a run already has in a
-  // worker, and the token is otherwise reachable only from inside the run that
-  // made it. Untick the track mid-run without this and hclust builds the whole
+  // worker, and the controller is otherwise reachable only from inside the run
+  // that made it. Untick the track mid-run without this and hclust builds the whole
   // cohort dendrogram for nobody, then commits it to a dead node — where the
   // `isAlive` gate in the catch below swallows the throw. `useClusterRun`'s
   // effect cleanup is the dialog flavor's version of the same abort.
-  let inFlightStopToken: StopToken | undefined
+  let inFlight: AbortController | undefined
   addDisposer(self, () => {
-    stopStopToken(inFlightStopToken)
+    inFlight?.abort()
   })
   addDisposer(
     self,
@@ -108,8 +106,8 @@ export function setupRunClusteringAutorun(
           return
         }
         applying = true
-        const stopToken = createStopToken()
-        inFlightStopToken = stopToken
+        const controller = new AbortController()
+        inFlight = controller
         // narrowed to this run rather than merely to the node being alive, so a
         // status arriving after the run settles can't repaint the chip.
         // Wrapping a callback in a second guarded sink said the same thing and
@@ -122,7 +120,7 @@ export function setupRunClusteringAutorun(
             rpcManager: getRpcHost(self).rpcManager,
             sessionId: getRpcSessionId(self),
             regions,
-            stopToken,
+            signal: controller.signal,
             statusCallback: stream.statusCallback,
           })
         } catch (e) {
@@ -136,8 +134,7 @@ export function setupRunClusteringAutorun(
             getNotificationSink(self).notifyError(`${e}`, e)
           }
         } finally {
-          stopStopToken(stopToken)
-          inFlightStopToken = undefined
+          inFlight = undefined
           // this run's slot, retired: the display's viewport fetch may be
           // running beside it, and blanking the field outright took its label
           // with it (ADR-081)

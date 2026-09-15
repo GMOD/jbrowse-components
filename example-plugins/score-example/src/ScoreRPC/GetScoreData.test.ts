@@ -9,7 +9,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { StatusCallback } from '@jbrowse/core/util'
 
-// The RPC guide tells plugin authors to pass `statusCallback` and `stopToken`
+// The RPC guide tells plugin authors to pass `statusCallback` and `signal`
 // down to whatever does the slow work rather than consuming them in the method,
 // because the adapter is what knows when it is downloading and what can stop
 // mid-fetch. Both are optional args, so dropping either compiles and looks
@@ -23,6 +23,7 @@ jest
 
 const region = { refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' }
 const pluginManager = { jexl: createJexlInstance() } as unknown as PluginManager
+const { signal } = new AbortController()
 
 function args(statusCallback?: StatusCallback) {
   return {
@@ -30,7 +31,7 @@ function args(statusCallback?: StatusCallback) {
     adapterConfig: {},
     region,
     scoreColumn: 'score',
-    stopToken: 'token-1',
+    signal,
     statusCallback,
   }
 }
@@ -48,14 +49,14 @@ beforeEach(() => {
   ])
 })
 
-test('the status callback and stop token reach the adapter', async () => {
+test('the status callback and signal reach the adapter', async () => {
   const statusCallback = jest.fn()
   const rpc = new GetScoreData(pluginManager)
   await rpc.invoke(args(statusCallback))
 
   const opts = getFeaturesArray.mock.calls[0]![1] as BaseOptions
   expect(opts.statusCallback).toBe(statusCallback)
-  expect(opts.stopToken).toBe('token-1')
+  expect(opts.signal).toBe(signal)
   // and the method's own message goes out before the adapter is asked, so the
   // UI is not blank for the length of the fetch
   expect(statusCallback).toHaveBeenCalledWith('Fetching features')

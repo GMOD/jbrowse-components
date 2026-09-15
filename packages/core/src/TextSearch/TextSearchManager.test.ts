@@ -1,5 +1,4 @@
 import { isAbortException } from '../util/aborting.ts'
-import { createStopToken, stopStopToken } from '../util/stopToken.ts'
 import BaseResult from './BaseResults.ts'
 import TextSearchManager from './TextSearchManager.ts'
 
@@ -73,11 +72,12 @@ describe('search resilience', () => {
       fakeAdapter(async () => [new BaseResult({ label: 'BRCA1' })]),
     ]
     const sortSpy = jest.spyOn(m, 'sortResults')
-    const stopToken = createStopToken()
-    stopStopToken(stopToken)
+    const signalController = new AbortController()
+    const signal = signalController.signal
+    signalController.abort()
 
     const thrown = await m
-      .search({ queryString: 'BRCA1', stopToken }, 'hg38')
+      .search({ queryString: 'BRCA1', signal }, 'hg38')
       .catch((e: unknown) => e)
 
     expect(isAbortException(thrown)).toBe(true)
@@ -90,7 +90,7 @@ describe('search resilience', () => {
       fakeAdapter(async () => [new BaseResult({ label: 'BRCA1' })]),
     ]
     const results = await m.search(
-      { queryString: 'BRCA1', stopToken: createStopToken() },
+      { queryString: 'BRCA1', signal: new AbortController().signal },
       'hg38',
     )
     expect(results.map(r => r.getLabel())).toEqual(['BRCA1'])

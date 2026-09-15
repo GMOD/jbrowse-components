@@ -1,11 +1,8 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { updateStatus, withProgress } from '@jbrowse/core/util'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
-import {
-  checkStopTokenThrottled,
-  createStopTokenChecker,
-} from '@jbrowse/core/util/stopToken'
 
 import { buildFeatureRenderData } from './buildFeatureRenderData.ts'
 import { dedupeFeaturesById } from './dedupeFeatures.ts'
@@ -45,11 +42,9 @@ export async function executeRenderFeatureData({
     expandedGeneIds,
     maxFeatureDensity,
     byteLimit,
-    stopToken,
+    signal,
     statusCallback,
   } = args
-
-  const stopTokenCheck = createStopTokenChecker(stopToken)
 
   const dataAdapter = await getFeatureAdapterOrThrow({
     pluginManager,
@@ -64,9 +59,8 @@ export async function executeRenderFeatureData({
     dataAdapter,
     regions: [region],
     byteLimit,
-    stopToken,
+    signal,
     statusCallback,
-    stopTokenCheck,
   })
   if (tooManyBytes) {
     return tooManyBytes
@@ -93,23 +87,22 @@ export async function executeRenderFeatureData({
       maxFeatureDensity,
       bytes,
       admit,
-      stopToken,
+      signal,
       statusCallback,
-      stopTokenCheck,
     })
     if (tooLarge) {
       return tooLarge
     }
   }
 
-  // The adapter's own statusCallback + stopToken make a long fetch
-  // interruptible mid-flight, not just at the checkStopTokenThrottled below.
+  // The adapter's own statusCallback + signal make a long fetch
+  // interruptible mid-flight, not just at the check below.
   const featuresArray = await updateStatus(
     'Downloading features',
     statusCallback,
-    () => dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
+    () => dataAdapter.getFeaturesArray(region, { statusCallback, signal }),
   )
-  checkStopTokenThrottled(stopTokenCheck)
+  checkAbortSignal(signal)
 
   // Admission runs inside the dedup, ahead of density-gating, so filtered-out
   // features neither count toward density nor reach layout.
@@ -154,7 +147,7 @@ export async function executeRenderFeatureData({
     )
   }
 
-  checkStopTokenThrottled(stopTokenCheck)
+  checkAbortSignal(signal)
 
   // One `withProgress` over the whole layout+collect pass: the collect is the
   // same walk again, so a second bar would make the first lie about finishing.
@@ -163,7 +156,7 @@ export async function executeRenderFeatureData({
       label: 'Computing layout',
       total: features.size,
       statusCallback,
-      stopToken,
+      signal,
     },
     report =>
       buildFeatureRenderData({
@@ -180,7 +173,7 @@ export async function executeRenderFeatureData({
       }),
   )
 
-  checkStopTokenThrottled(stopTokenCheck)
+  checkAbortSignal(signal)
 
   const result: FeatureDataResult = { ...packed, bytes }
 

@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs'
 import path from 'node:path'
 
 // A hand-written arg type on `execute` drops the handles — 18 of 32 named
-// neither stopToken nor statusCallback, and four methods really did lose them.
+// neither signal nor statusCallback, and four methods really did lose them.
 //
 // A source scan because TypeScript cannot express the rule: narrowing an object
 // parameter to a SUBSET of its properties is contravariantly SOUND, so moving

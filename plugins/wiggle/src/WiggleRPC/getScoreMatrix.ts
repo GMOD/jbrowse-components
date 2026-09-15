@@ -1,6 +1,6 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createStatusFanOut } from '@jbrowse/core/util'
-import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
+import { createAbortBreakpoint } from '@jbrowse/core/util/aborting'
 
 import { isMultiSource } from '../multiSourceAdapter.ts'
 import { groupFeaturesBySource } from '../util.ts'
@@ -171,14 +171,7 @@ export async function getScoreMatrix({
   args: GetScoreMatrixArgs & RpcCallContext
   pluginManager: PluginManager
 }) {
-  const {
-    sources,
-    regions,
-    adapterConfig,
-    sessionId,
-    bpPerPx,
-    stopTokenCheck,
-  } = args
+  const { sources, regions, adapterConfig, sessionId, bpPerPx, signal } = args
   const dataAdapter = await getFeatureAdapterOrThrow({
     pluginManager,
     sessionId,
@@ -221,6 +214,7 @@ export async function getScoreMatrix({
   // tree. measurements/wiggle-bin-accumulator-width.json.
   const sums = new Float64Array(totalWidth)
   const counts = new Int32Array(totalWidth)
+  const breakpoint = createAbortBreakpoint(signal)
   for (const { name } of sources) {
     const row = rows.get(name)!
     const perRegion = valuesBySource.get(name)
@@ -237,7 +231,9 @@ export async function getScoreMatrix({
       const n = counts[x]!
       row[x] = n > 1 ? sums[x]! / n : sums[x]!
     }
-    checkStopTokenThrottled(stopTokenCheck)
+    if (breakpoint.due()) {
+      await breakpoint.yield()
+    }
   }
 
   return rows

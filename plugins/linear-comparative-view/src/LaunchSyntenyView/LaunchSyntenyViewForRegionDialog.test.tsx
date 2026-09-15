@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom'
 
 import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { ThemeProvider } from '@mui/material'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 
@@ -15,7 +15,6 @@ import type {
   RpcStatus,
   StatusCallback,
 } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 const region: Region = {
   assemblyName: 'volvox',
@@ -61,7 +60,9 @@ function invertedMate(): MateDiscoveryResult {
 }
 
 function renderDialog(
-  discoverMates: (stopToken: StopToken) => Promise<MateDiscoveryResult>,
+  discoverMates: (
+    signal: AbortSignal | undefined,
+  ) => Promise<MateDiscoveryResult>,
 ) {
   return renderDialogFor(
     [{ trackId: 't1', name: 'all vs all' }],
@@ -90,7 +91,7 @@ function renderDialogFor(
   discoverMatesFor: (
     trackId: string,
   ) => (
-    stopToken: StopToken,
+    signal: AbortSignal | undefined,
     statusCallback: StatusCallback,
   ) => Promise<MateDiscoveryResult>,
   {
@@ -133,21 +134,21 @@ function replaceableSession(views: unknown[]) {
 // discovery is what honors the token — so dismissing the dialog has to stop it
 // rather than leave a worker parsing for a view nobody is waiting for.
 test('dismissing the dialog stops the discovery it started', () => {
-  let captured: StopToken | undefined
-  const { unmount } = renderDialog(stopToken => {
-    captured = stopToken
+  let captured: AbortSignal | undefined
+  const { unmount } = renderDialog(signal => {
+    captured = signal
     // never settles: the fetch is still in flight when the dialog closes
     return new Promise<MateDiscoveryResult>(() => {})
   })
 
   expect(captured).toBeDefined()
   expect(() => {
-    checkStopToken(captured)
+    checkAbortSignal(captured)
   }).not.toThrow()
 
   unmount()
   expect(() => {
-    checkStopToken(captured)
+    checkAbortSignal(captured)
   }).toThrow(/aborted/i)
 })
 
@@ -491,14 +492,14 @@ test('picking another dataset refetches its panels and drops the old ones', asyn
 // switching away is the same abandonment as closing: the discovery it started
 // is a whole-chromosome fetch nobody is waiting for any more
 test('switching dataset stops the discovery in flight', async () => {
-  const tokens: Record<string, StopToken> = {}
+  const tokens: Record<string, AbortSignal> = {}
   renderDialogFor(
     [
       { trackId: 't1', name: 'all vs all' },
       { trackId: 't2', name: 'mcscan' },
     ],
-    trackId => stopToken => {
-      tokens[trackId] = stopToken
+    trackId => signal => {
+      tokens[trackId] = signal!
       return trackId === 't1'
         ? new Promise<MateDiscoveryResult>(() => {})
         : Promise.resolve(mates('volvox_del'))
@@ -510,9 +511,9 @@ test('switching dataset stops the discovery in flight', async () => {
   expect(await screen.findByLabelText('volvox_del')).toBeTruthy()
 
   expect(() => {
-    checkStopToken(tokens.t1)
+    checkAbortSignal(tokens.t1)
   }).toThrow(/aborted/i)
   expect(() => {
-    checkStopToken(tokens.t2)
+    checkAbortSignal(tokens.t2)
   }).not.toThrow()
 })

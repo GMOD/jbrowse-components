@@ -5,7 +5,6 @@ import { getRpcSessionId } from '../../../util/tracks.ts'
 import type { AnyConfigurationModel } from '../../../configuration/index.ts'
 import type { Region } from '../../../util/index.ts'
 import type { StatusCallback } from '../../../util/progress.ts'
-import type { StopToken } from '../../../util/stopToken.ts'
 import type { FileTypeExporter } from '../saveTrackFileTypes/types.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -71,7 +70,7 @@ export async function fetchTrackData({
   type,
   options,
   force,
-  stopToken,
+  signal,
   statusCallback,
 }: {
   model: ExportableTrack
@@ -80,13 +79,13 @@ export async function fetchTrackData({
   options: Record<string, FileTypeExporter>
   /** skip the size pre-flight — the user has seen the estimate and said yes */
   force?: boolean
-  stopToken?: StopToken
+  signal?: AbortSignal
   statusCallback?: StatusCallback
 }): Promise<TrackDataResult> {
   const session = getSession(model)
   const sessionId = getRpcSessionId(model)
   const adapterConfig = getConf(model, ['adapter'])
-  const opts = { stopToken, statusCallback }
+  const opts = { signal, statusCallback }
   const { exportsDataViaAdapter } = model
 
   // The same index lookup the display's gate takes before it fetches, for the

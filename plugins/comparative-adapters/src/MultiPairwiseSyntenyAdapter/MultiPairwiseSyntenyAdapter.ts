@@ -230,6 +230,6 @@ export default class MultiPairwiseSyntenyAdapter extends ComparativeAdapterBase<
             .pipe(map(feature => rekey(child.index, feature))),
         ),
       ).subscribe(observer)
-    }, opts.stopToken)
+    }, opts.signal)
   }
 }

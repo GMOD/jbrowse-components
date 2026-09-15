@@ -256,7 +256,7 @@ and it is what runs:
   dispatch raises no error and leaves zeros, which hclust would merge first at
   height 0, so `distanceSpotCheck.ts` recomputes a handful of pairs in f64
   and a mismatch throws. Both throws fall back with a `console.warn` saying
-  why; a stop-token abort propagates instead.
+  why; an abort propagates instead.
 
 The kernel writes the upper triangle, which is the half hclust reads, and
 sums squares in blocks of 16 with Kahan compensation so fractional rows

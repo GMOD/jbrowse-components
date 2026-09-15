@@ -4,11 +4,10 @@ import { getRpcHost } from './sessionServices.ts'
 
 import type { RpcCallArgs, RpcCallReturn } from '../rpc/RpcRegistry.ts'
 import type { StatusCallback } from './progress.ts'
-import type { StopToken } from './stopToken.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 export interface FetchContext {
-  stopToken: StopToken
+  signal: AbortSignal
   isStale: () => boolean
   /**
    * The RPC `statusCallback` for the work this context describes: guarded to
@@ -29,7 +28,7 @@ export interface FetchContext {
   /**
    * The one way a fetch calls an RPC: the registry-typed
    * `rpcManager.call(rpcSessionId, method, args)` with this context's
-   * `stopToken` and `statusCallback` injected. Both used to be hand-threaded
+   * `signal` and `statusCallback` injected. Both used to be hand-threaded
    * at every fetch site, and forgetting either was silent — no cancellation
    * for that display, or no progress — which is exactly the failure class the
    * envelope makes inexpressible: a fetch cannot issue an RPC the cancel and
@@ -43,7 +42,7 @@ export interface FetchContext {
   callRpc: <M extends string>(
     this: FetchContext,
     method: M,
-    args: Omit<RpcCallArgs<M>, 'stopToken' | 'statusCallback'>,
+    args: Omit<RpcCallArgs<M>, 'signal' | 'statusCallback'>,
   ) => Promise<RpcCallReturn<M>>
 }
 
@@ -64,7 +63,7 @@ export interface FetchContext {
 export function makeFetchContext(
   self: IStateTreeNode,
   base: {
-    stopToken: StopToken
+    signal: AbortSignal
     isStale: () => boolean
     statusCallback: StatusCallback
   },
@@ -74,7 +73,7 @@ export function makeFetchContext(
     callRpc(method, args) {
       return getRpcHost(self).rpcManager.call(getRpcSessionId(self), method, {
         ...args,
-        stopToken: this.stopToken,
+        signal: this.signal,
         statusCallback: this.statusCallback,
       } as RpcCallArgs<typeof method>)
     },

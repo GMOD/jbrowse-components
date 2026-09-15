@@ -1,14 +1,13 @@
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { destroy, types } from '@jbrowse/mobx-state-tree'
 import { act, renderHook } from '@testing-library/react'
 
 import { useClusterRun } from './useClusterRun.ts'
 
 import type { RpcStatus } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 type Run = (args: {
-  stopToken: StopToken
+  signal: AbortSignal
   statusCallback: (arg: RpcStatus) => void
 }) => Promise<void>
 
@@ -106,9 +105,9 @@ describe('useClusterRun', () => {
 
   it('stops the token the run is holding, and reports no error for it', async () => {
     const g = gate()
-    const { result } = setup(async ({ stopToken }) => {
+    const { result } = setup(async ({ signal }) => {
       await g.opened
-      checkStopToken(stopToken)
+      checkAbortSignal(signal)
     })
 
     let running: Promise<void> | undefined
@@ -133,11 +132,11 @@ describe('useClusterRun', () => {
 
   it('stops the token when the dialog goes away mid-run', async () => {
     const g = gate()
-    const seen: StopToken[] = []
-    const { result, unmount } = setup(async ({ stopToken }) => {
-      seen.push(stopToken)
+    const seen: AbortSignal[] = []
+    const { result, unmount } = setup(async ({ signal }) => {
+      seen.push(signal)
       await g.opened
-      checkStopToken(stopToken)
+      checkAbortSignal(signal)
     })
 
     let running: Promise<void> | undefined
@@ -149,7 +148,7 @@ describe('useClusterRun', () => {
 
     await expect(running).resolves.toBeUndefined()
     expect(() => {
-      checkStopToken(seen[0])
+      checkAbortSignal(seen[0])
     }).toThrow(/aborted/)
   })
 

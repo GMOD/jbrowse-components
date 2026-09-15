@@ -1,8 +1,5 @@
 import { createStatusChannel } from '@jbrowse/core/util'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { types } from '@jbrowse/mobx-state-tree'
-
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 /**
  * #stateModel DiagonalizeProgressMixin
@@ -56,10 +53,10 @@ export function DiagonalizeProgressMixin() {
       diagonalizeStatus: createStatusChannel(),
       /**
        * #volatile
-       * Stop token for the in-flight auto-diagonalize, so the spinner's Cancel
-       * can abort it; undefined when none is running.
+       * Aborts the in-flight auto-diagonalize, so the spinner's Cancel can
+       * reach it; undefined when none is running.
        */
-      diagonalizeStopToken: undefined as StopToken | undefined,
+      diagonalizeCancel: undefined as (() => void) | undefined,
     }))
     .actions(self => ({
       /**
@@ -90,8 +87,8 @@ export function DiagonalizeProgressMixin() {
       /**
        * #action
        */
-      setDiagonalizeStopToken(arg?: StopToken) {
-        self.diagonalizeStopToken = arg
+      setDiagonalizeCancel(arg?: () => void) {
+        self.diagonalizeCancel = arg
       },
       /**
        * #action
@@ -106,7 +103,7 @@ export function DiagonalizeProgressMixin() {
        * leaves `settled` false forever.
        */
       cancelAutoDiagonalize() {
-        stopStopToken(self.diagonalizeStopToken)
+        self.diagonalizeCancel?.()
         self.pendingAutoDiagonalize = false
       },
     }))

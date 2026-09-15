@@ -86,6 +86,6 @@ export default class GtfAdapter extends BaseFeatureDataAdapter<GtfAdapterConfig>
       } catch (e) {
         observer.error(e)
       }
-    }, opts.stopToken)
+    }, opts.signal)
   }
 }

@@ -6,7 +6,7 @@ import {
   makeRetryContractCheck,
 } from '../pluggableElementTypes/models/assertDisplayContract.ts'
 import { handleFetchError } from './aborting.ts'
-import { createStopTokenRotation } from './createStopTokenRotation.ts'
+import { createAbortRotation } from './createAbortRotation.ts'
 import { makeFetchContext } from './fetchContext.ts'
 import { isDataCurrent } from './isDataCurrent.ts'
 import { leadingEdgeAutorun } from './leadingEdgeAutorun.ts'
@@ -14,11 +14,10 @@ import { leadingEdgeAutorun } from './leadingEdgeAutorun.ts'
 import type {
   ActiveFetch,
   StatusReporter,
-  StopTokenRotation,
-} from './createStopTokenRotation.ts'
+  AbortRotation,
+} from './createAbortRotation.ts'
 import type { FetchContext } from './fetchContext.ts'
 import type { FetchPhases } from './fetchPhases.ts'
-import type { StopToken } from './stopToken.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -42,7 +41,7 @@ export interface FetchLifecycle {
   setError: (error?: unknown) => void
   /**
    * Runs synchronously as the fetch starts, after the rotation has superseded
-   * whatever it replaced: the loading flag (`FetchMixin`'s `activeStopToken`,
+   * whatever it replaced: the loading flag (`FetchMixin`'s `activeSignal`,
    * through `fetchMixinLifecycle`), and anything a display blanks
    * because it has no freshness signature to keep stale data honest with
    * (chord's refName map).
@@ -52,7 +51,7 @@ export interface FetchLifecycle {
    * the status slot are the skeleton's to hand out — through `ctx`, where a
    * `run` gets them pre-wired.
    */
-  onBegin?: (stopToken: StopToken) => void
+  onBegin?: (signal: AbortSignal) => void
   /**
    * Runs in the `finally`, before the rotation's `end()`. `current` is this
    * run's own guard, already evaluated: a **superseded** run must not clear the
@@ -75,7 +74,7 @@ export interface FetchLifecycle {
  * the loading flag on an abort. The rules only pay for themselves by being the
  * same everywhere, so they live here and the differences are parameters.
  *
- * `active` comes from a {@link createStopTokenRotation} `begin()` the caller
+ * `active` comes from a {@link createAbortRotation} `begin()` the caller
  * already made, because who owns the rotation is one of the real differences: a
  * display's *primary* fetch rotates through `FetchMixin`, so `cancelFetch` can
  * reach it, while every other fetch's rotation lives in its installer's closure
@@ -99,15 +98,15 @@ export async function runFetchOnce<TArgs, TResult>(
   }: Pick<FetchPhases<TArgs, TResult, FetchContext>, 'run' | 'commit'> &
     FetchLifecycle,
 ) {
-  const { stopToken, isCurrent, statusCallback, end } = active
+  const { signal, isCurrent, statusCallback, end } = active
   // synchronous, so it lands while this run is by construction the current one
   setError(undefined)
-  onBegin?.(stopToken)
+  onBegin?.(signal)
   try {
     const result = await run(
       args,
       makeFetchContext(self, {
-        stopToken,
+        signal,
         isStale: () => !isCurrent(),
         statusCallback,
       }),
@@ -279,7 +278,7 @@ export type InstallFetchOptions<TArgs, TResult> = InstallFetchOptionsBase<
       }
     | {
         /** the host's own latest-wins rotation, lent whole — see above */
-        rotation: StopTokenRotation
+        rotation: AbortRotation
         report?: never
       }
   )
@@ -300,7 +299,7 @@ function installContractChecks(self: FetchSkeletonHost, contract: string) {
  * would drop a write the host's other operations are still owed.
  */
 function ownRotation(self: IStateTreeNode, report: StatusReporter) {
-  const rotation = createStopTokenRotation(self, report)
+  const rotation = createAbortRotation(self, report)
   addDisposer(self, () => {
     rotation.dispose()
   })

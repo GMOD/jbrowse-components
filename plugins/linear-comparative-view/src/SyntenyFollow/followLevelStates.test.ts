@@ -1,4 +1,4 @@
-import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 
 import { createFollowLevelStates } from './followLevelStates.ts'
 
@@ -6,7 +6,7 @@ const level = () => ({})
 
 test('one token per epoch, handed to every request planned under it', () => {
   const states = createFollowLevelStates<object>()
-  expect(states.stopToken).toBe(states.stopToken)
+  expect(states.signal).toBe(states.signal)
 })
 
 // `clear()`'s own sentence claims it drops "every pick, cached transform,
@@ -16,15 +16,15 @@ test('one token per epoch, handed to every request planned under it', () => {
 // drag, so switching the follow off left one grinding per block crossed.
 test('dropping the store stops the requests behind it, not just their answers', () => {
   const states = createFollowLevelStates<object>()
-  const token = states.stopToken
+  const token = states.signal
 
   expect(() => {
-    checkStopToken(token)
+    checkAbortSignal(token)
   }).not.toThrow()
 
   states.clear()
   expect(() => {
-    checkStopToken(token)
+    checkAbortSignal(token)
   }).toThrow(/aborted/i)
 })
 
@@ -32,13 +32,13 @@ test('dropping the store stops the requests behind it, not just their answers', 
 // abort them on arrival.
 test('the next epoch mints its own token', () => {
   const states = createFollowLevelStates<object>()
-  const first = states.stopToken
+  const first = states.signal
   states.clear()
-  const second = states.stopToken
+  const second = states.signal
 
   expect(second).not.toBe(first)
   expect(() => {
-    checkStopToken(second)
+    checkAbortSignal(second)
   }).not.toThrow()
 })
 
@@ -52,7 +52,7 @@ test('every level of one epoch shares the token', () => {
   states.get(a)
   states.get(b)
 
-  expect(states.stopToken).toBe(states.stopToken)
+  expect(states.signal).toBe(states.signal)
   states.clear()
   expect(states.get(a).seq).toBe(0)
 })

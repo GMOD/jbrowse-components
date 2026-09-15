@@ -3,6 +3,7 @@ import RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
 import BaseRpcDriver from './BaseRpcDriver.ts'
 
 import type { StatusCallback } from '../util/progress.ts'
+import type { RpcHandles } from './RpcRegistry.ts'
 
 // `serializeArguments` is where the refName map is resolved, and resolving one
 // downloads the adapter's index — for an in-memory adapter, the whole file. So
@@ -39,7 +40,7 @@ class CapturingDriver extends BaseRpcDriver {
     _sessionId: string,
     _rpcMethod: RpcMethodType,
     serializedArgs: Record<string, unknown>,
-    statusCallback: StatusCallback | undefined,
+    { statusCallback }: RpcHandles,
   ) {
     this.transported = serializedArgs
     this.transportedStatusCallback = statusCallback

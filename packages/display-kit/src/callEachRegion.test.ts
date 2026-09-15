@@ -16,7 +16,7 @@ const NEEDED = [
 
 function makeCtx(): FetchContext {
   return {
-    stopToken: 'tok',
+    signal: new AbortController().signal,
     isStale: () => false,
     statusCallback: () => {},
     callRpc() {
@@ -58,7 +58,7 @@ test('passes the region, ctx and index through to call', async () => {
       refName: region.refName,
       // the caller's stop token reaches every call, so one cancel takes the
       // whole fan-out down
-      sameToken: c.stopToken === ctx.stopToken,
+      sameToken: c.signal === ctx.signal,
       index: displayedRegionIndex,
     })
     return Promise.resolve(null)

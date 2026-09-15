@@ -2,11 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { Readable } from 'node:stream'
 
-import {
-  checkStopTokenThrottled,
-  checkStopToken,
-  createStopTokenChecker,
-} from '@jbrowse/core/util/stopToken'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import {
   TRIX_DIR,
   defaultAttributesToIndex,
@@ -20,13 +16,12 @@ import { ixIxxStream } from 'ixixx'
 
 import type { indexType } from './util.ts'
 import type { StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Track } from '@jbrowse/text-indexing-core'
 
 export async function indexTracks(args: {
   tracks: Track[]
   outDir: string
-  stopToken?: StopToken
+  signal?: AbortSignal
   attributesToIndex?: string[]
   assemblyNames?: string[]
   featureTypesToExclude?: string[]
@@ -41,10 +36,10 @@ export async function indexTracks(args: {
     assemblyNames,
     indexType,
     statusCallback,
-    stopToken,
+    signal,
   } = args
   const idxType = indexType || 'perTrack'
-  checkStopToken(stopToken)
+  checkAbortSignal(signal)
   await (idxType === 'perTrack'
     ? perTrackIndex({
         tracks,
@@ -52,7 +47,7 @@ export async function indexTracks(args: {
         outDir,
         attributesToIndex,
         featureTypesToExclude,
-        stopToken,
+        signal,
       })
     : aggregateIndex({
         tracks,
@@ -61,9 +56,9 @@ export async function indexTracks(args: {
         attributesToIndex,
         assemblyNames,
         featureTypesToExclude,
-        stopToken,
+        signal,
       }))
-  checkStopToken(stopToken)
+  checkAbortSignal(signal)
 }
 
 function ensureTrixDir(outDir: string) {
@@ -76,14 +71,14 @@ async function perTrackIndex({
   outDir,
   attributesToIndex = defaultAttributesToIndex,
   featureTypesToExclude = defaultFeatureTypesToExclude,
-  stopToken,
+  signal,
 }: {
   tracks: Track[]
   statusCallback: StatusCallback | undefined
   outDir: string
   attributesToIndex?: string[]
   featureTypesToExclude?: string[]
-  stopToken?: StopToken
+  signal?: AbortSignal
 }) {
   ensureTrixDir(outDir)
   const supportedTracks = tracks.filter(track =>
@@ -99,7 +94,7 @@ async function perTrackIndex({
       featureTypesToExclude,
       assemblyNames,
       statusCallback,
-      stopToken,
+      signal,
     })
   }
 }
@@ -110,7 +105,7 @@ async function aggregateIndex({
   outDir,
   attributesToIndex = defaultAttributesToIndex,
   featureTypesToExclude = defaultFeatureTypesToExclude,
-  stopToken,
+  signal,
   assemblyNames,
 }: {
   tracks: Track[]
@@ -119,7 +114,7 @@ async function aggregateIndex({
   attributesToIndex?: string[]
   assemblyNames?: string[]
   featureTypesToExclude?: string[]
-  stopToken?: StopToken
+  signal?: AbortSignal
 }) {
   if (!assemblyNames) {
     throw new Error(
@@ -140,7 +135,7 @@ async function aggregateIndex({
       featureTypesToExclude,
       assemblyNames: [asm],
       statusCallback,
-      stopToken,
+      signal,
     })
   }
 }
@@ -153,7 +148,7 @@ async function indexDriver({
   featureTypesToExclude,
   assemblyNames,
   statusCallback,
-  stopToken,
+  signal,
 }: {
   tracks: Track[]
   outDir: string
@@ -162,9 +157,8 @@ async function indexDriver({
   featureTypesToExclude: string[]
   assemblyNames: string[]
   statusCallback: StatusCallback | undefined
-  stopToken?: StopToken
+  signal?: AbortSignal
 }) {
-  const checker = createStopTokenChecker(stopToken)
   // accumulate across tracks so an aggregate index reports monotonic progress
   // rather than resetting to zero at each track. The denominator grows as each
   // track's size is discovered (we don't stat every file up front), but the
@@ -178,7 +172,7 @@ async function indexDriver({
       outDir,
       featureTypesToExclude,
       checkAbort: () => {
-        checkStopTokenThrottled(checker)
+        checkAbortSignal(signal)
       },
       makeProgress: () => {
         let trackTotal = 0
@@ -208,7 +202,7 @@ async function indexDriver({
   })
   statusCallback?.('Indexing files')
   await runIxIxx(readable, outDir, name)
-  checkStopToken(stopToken)
+  checkAbortSignal(signal)
   generateMeta({
     configs: tracks,
     attributesToIndex,
@@ -217,7 +211,7 @@ async function indexDriver({
     featureTypesToExclude,
     assemblyNames,
   })
-  checkStopToken(stopToken)
+  checkAbortSignal(signal)
 }
 
 function runIxIxx(readStream: Readable, idxLocation: string, name: string) {

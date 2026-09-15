@@ -130,8 +130,9 @@ The foundations under them:
   names (`'@jbrowse/core/util'`, `'@jbrowse/core/configuration'`, `'react'`). In
   a browser, `await jb.ensureRequire()` once first. Everything lower level than
   the helpers above is there rather than on `jb`: `parseLocString`,
-  `renameRegionsIfNeeded`, `getRpcSessionId` and the stop tokens for an
-  `rpcManager.call` of your own are `jb.require('@jbrowse/core/util')`, and the
+  `renameRegionsIfNeeded` and `getRpcSessionId` for an `rpcManager.call` of
+  your own are `jb.require('@jbrowse/core/util')` (pass an `AbortController`'s
+  `signal` in the args to cancel it), and the
   adapter cache a file probe needs is under
   [Reading data directly](#reading-data-directly-fast-path).
 - `jb.mst` and `jb.mobx` are the whole mobx-state-tree and mobx APIs.

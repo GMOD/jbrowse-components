@@ -1,62 +1,62 @@
 ---
 name: network-abort
-description: How cancellation reaches the socket — the two mechanisms behind one stop token, which adapters are wired and which two readers cannot be, and the shared-fetch coalescing trap. Read before touching stopToken or an adapter's read path.
+description: How cancellation reaches the socket — one AbortSignal from the caller to the reader, how it crosses the worker boundary, which adapters forward it and which two readers cannot take it, and the shared-fetch coalescing trap. Read before touching an adapter's read path.
 kind: spec
 ---
 
 # Aborting in-flight network requests
 
-**Mechanism landed; rollout partial.**
+Cancellation is an `AbortSignal`. The caller holds an `AbortController`, passes
+its `signal` in the RPC args, and the adapter hands the same shape to its
+reader, so a cancelled navigation drops the read at the socket rather than
+downloading a range to completion and discarding it. ADR-122 has the history
+and the measurements.
 
-Cancel used to interrupt **processing**, not the **socket**: the `stopToken` was
-checked at await boundaries and inside sync worker loops, so on cancel we
-stopped computing and discarded the result while any HTTP read already on the
-wire downloaded to completion. `BaseOptions.signal` existed but was dead —
-present only for structural assignability to the gmod `Options { signal? }`
-interfaces.
+## How the signal crosses the worker boundary
 
-## What landed
+An `AbortSignal` is not structured-cloneable, so `BaseRpcDriver.call` strips it
+from the args with the `statusCallback` and hands both to the transport:
 
-Cancellation is now two mechanisms behind one token, split by what a worker can
-actually observe (`packages/core/src/util/stopToken.ts` header has the full
-statement):
+- `MainThreadRpcDriver` puts the caller's own signal back into the args.
+- `WebWorkerRpcDriver` posts the call with `abortable: true`; `RpcServer` runs
+  the method under an `AbortController` of its own keyed by the call's uid, and
+  `RpcClient` listens on the caller's signal and posts `{ abort: uid }` to the
+  worker that took the call. The listener goes when the call settles, so an
+  abort after that posts nothing.
 
-- **Await boundaries** — `stopStopToken` records the token's id locally and
-  posts it to every booted worker; `RpcServer` applies it via
-  `markStopTokenStopped`, and `checkStopToken` is a set lookup. Free, exact, and
-  independent of the deployment. This replaced a synchronous XHR at all ~25
-  one-shot check sites, and it gives `MainThreadRpcDriver` working cancellation
-  for the first time (its work shares the module instance, so it needs no
-  message at all; the old string path was gated on `isWebWorker()` and was a
-  silent no-op there).
-- **Synchronous loops** — a loop that never yields can never be told anything,
-  so this needs a *synchronous* read: the SAB atomic flag where the page is
-  isolated, else the throttled blob-URL sync-XHR probe. **Both retained.** The
-  blob probe was briefly deleted after `cancel-bench` measured it at zero (median
-  513 ms settle either way on the 2000x BAM burst) and then restored: that
-  measurement was sound but scoped to the alignments path, where every loop is
-  already chunked by awaits at region granularity. `getLDMatrix.ts`'s O(n²)
-  Float32Array fill is the counter-example — millions of pair computations with no
-  await anywhere, where the probe is the only thing that can stop the work, and
-  which that bench never exercises. Re-deleting it needs a cancel measurement on
-  an await-free workload.
+Routing per call rather than broadcasting per token is what a signal's identity
+buys: the abort goes to the one worker running the call, and a worker holding no
+controller under that uid ignores the frame.
 
-`stopTokenSignal(stopToken)` bridges a token to an `AbortSignal` — string tokens
-off the same posted id, SAB tokens off `Atomics.waitAsync` (woken by an
-`Atomics.notify` added to `stopStopToken`), no polling either way. `BaseRpcDriver.call`
-also now refuses to dispatch a call whose token is already stopped, which closes
-the race between a stop notification and the call it means to cancel.
+`BaseRpcDriver.call` refuses a call whose signal is already aborted, and checks
+again after `serializeArguments` (the one long await on the way out, where the
+refName map is resolved), so an abort landing during serialization never wakes
+a worker.
 
-`withStopTokenSignal(stopToken, signal => …)` is the shape to use at a read call
-— it releases the signal however the read settles. Wired through every adapter
-whose reader accepts a signal:
+## Where a worker sees the abort
+
+- **After any await, and in any per-item callback**: `checkAbortSignal(signal)`,
+  a `signal.aborted` read. `updateStatus`, `downloadStatus` and `withProgress`
+  take the signal and check on both sides of their await; `createProgressReporter`
+  checks it on every `report()`.
+- **A loop that never awaits** never receives the abort — a posted message is a
+  task, and an `await` on a settled promise only drains microtasks. Such a loop
+  takes `createAbortBreakpoint(signal)` and yields a task every ~50 ms of wall
+  time (`if (breakpoint.due()) await breakpoint.yield()`). The genotype matrix
+  fills, the score matrix and the GC window are the loops of that shape.
+- **A synchronous library callback** can only check: `@gmod/hclust` invokes
+  `checkCancellation` from inside one WASM call, so a clustering run finishes
+  its call and the main thread discards the result.
+
+## Which readers take the signal
 
 **The signal `fetch` receives is not the one the caller passed.**
 `RemoteFileWithRangeCache.fetchRange` composes it with a response deadline
 (`@gmod/range-cache-filehandle`'s `RESPONSE_TIMEOUT_MS`, the thing that makes a
-stalled connection an error instead of a permanent spinner), so identity with the caller's signal is not an
-invariant on that path. Composing is the whole point: a deadline that *replaced*
-the signal would take cancellation back off the socket, undoing everything below.
+stalled connection an error instead of a permanent spinner), so identity with
+the caller's signal is not an invariant on that path. Composing is the whole
+point: a deadline that *replaced* the signal would take cancellation back off
+the socket.
 
 | Reader | Adapters |
 | --- | --- |
@@ -82,17 +82,6 @@ The shared-fetch hazard is handled at every layer, and mostly not by us:
 **every** joined consumer has aborted — ref-counted by construction. `@gmod/bam`
 retries its chunk joins on a foreign abort. Only `RemoteFileWithRangeCache`
 needed the fix described below.
-
-## Why the uid-keyed abort protocol was not needed
-
-An earlier version of this proposal specified a `Map<uid, AbortController>` in
-`RpcServer`, an `{abort: uid}` frame, `RpcClient.abort(uid)`, and driver-side
-`stopToken → uid[]` bookkeeping. Broadcasting the stopped **token id** instead
-of routing per call is strictly simpler and handles more: one token is commonly
-in flight on several calls at once, a worker holding nothing under that id
-ignores the frame, and there is no "route the abort to the same worker the call
-landed on" problem to solve. `WebWorkerRpcDriver` registers a broadcaster and
-never boots a worker just to notify it.
 
 ## The coalescing trap, and where it is handled
 

@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { createStopToken } from '@jbrowse/core/util/stopToken'
 
 import { runGenotypeClustering } from './runGenotypeClustering.ts'
 
@@ -71,7 +70,7 @@ describe('runGenotypeClustering', () => {
       rpcManager,
       sessionId: 'session-1',
       regions,
-      stopToken: createStopToken(),
+      signal: new AbortController().signal,
       statusCallback: jest.fn(),
     })
 
@@ -113,7 +112,7 @@ describe('runGenotypeClustering', () => {
       rpcManager,
       sessionId: 'session-1',
       regions,
-      stopToken: createStopToken(),
+      signal: new AbortController().signal,
       statusCallback: jest.fn(),
     })
 
@@ -136,7 +135,7 @@ describe('runGenotypeClustering', () => {
       rpcManager,
       sessionId: 'session-1',
       regions,
-      stopToken: createStopToken(),
+      signal: new AbortController().signal,
       statusCallback: jest.fn(),
     })
 
@@ -166,7 +165,7 @@ describe('runGenotypeClustering', () => {
       rpcManager,
       sessionId: 'session-1',
       regions,
-      stopToken: createStopToken(),
+      signal: new AbortController().signal,
       statusCallback: jest.fn(),
     })
 
@@ -210,7 +209,7 @@ describe('runGenotypeClustering', () => {
       rpcManager,
       sessionId: 'session-1',
       regions,
-      stopToken: createStopToken(),
+      signal: new AbortController().signal,
       statusCallback: jest.fn(),
     })
 

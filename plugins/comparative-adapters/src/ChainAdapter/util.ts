@@ -80,7 +80,7 @@ function generateRecord(
 }
 
 export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
-  const { statusCallback, stopToken } = opts ?? {}
+  const { statusCallback, signal } = opts ?? {}
   const decoder = new TextDecoder('utf8')
   // Time-gated rather than the old every-500kB byte gate, and it carries the
   // stop-token check, so a multi-GB chain is both labelled and interruptible.
@@ -88,7 +88,7 @@ export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
     label: 'Parsing chain',
     total: buffer.length,
     statusCallback,
-    stopToken,
+    signal,
   })
   const records: ReturnType<typeof generateRecord>[] = []
 

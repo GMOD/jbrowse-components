@@ -1,11 +1,8 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { measureRegionBytes } from '@jbrowse/core/rpc/byteBudget'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
-import {
-  checkStopTokenThrottled,
-  createStopTokenChecker,
-} from '@jbrowse/core/util/stopToken'
 
 import { dedupeFeaturesById } from '../RenderFeatureDataRPC/dedupeFeatures.ts'
 import { packMultiRowFeatures } from './packMultiRowFeatures.ts'
@@ -28,11 +25,10 @@ export async function executeMultiRowGetFeatures({
     partitionField,
     lengthField,
     colorConfig,
-    stopToken,
+    signal,
     statusCallback,
   } = args
 
-  const stopTokenCheck = createStopTokenChecker(stopToken)
   const dataAdapter = await getFeatureAdapterOrThrow({
     pluginManager,
     sessionId,
@@ -43,9 +39,8 @@ export async function executeMultiRowGetFeatures({
     dataAdapter,
     regions: [region],
     byteLimit,
-    stopToken,
+    signal,
     statusCallback,
-    stopTokenCheck,
   })
   if (tooManyBytes) {
     return tooManyBytes
@@ -54,9 +49,9 @@ export async function executeMultiRowGetFeatures({
   const featuresArray = await updateStatus(
     'Downloading features',
     statusCallback,
-    () => dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
+    () => dataAdapter.getFeaturesArray(region, { statusCallback, signal }),
   )
-  checkStopTokenThrottled(stopTokenCheck)
+  checkAbortSignal(signal)
 
   const features = [...dedupeFeaturesById(featuresArray).values()]
 
@@ -70,7 +65,7 @@ export async function executeMultiRowGetFeatures({
       label: 'Processing features',
       total: features.length,
       statusCallback,
-      stopTokenCheck,
+      signal,
     }),
   })
   return rpcResultWithArrayBuffers({

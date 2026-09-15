@@ -88,11 +88,11 @@ test('a finished run offers only Close', async () => {
 test('a stop reports what the cascade had already committed', async () => {
   let stop = () => {}
   renderDialog(
-    ({ stopToken, onProgress }) =>
+    ({ signal, onProgress }) =>
       new Promise<DiagonalizeStats>((_resolve, reject) => {
         onProgress?.({ totalReordered: 7, totalReversed: 2 })
         stop = () => {
-          reject(new Error(`aborted ${String(stopToken)}`))
+          reject(new Error(`aborted ${String(signal)}`))
         }
       }),
     () => {

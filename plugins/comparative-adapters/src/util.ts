@@ -464,7 +464,7 @@ export function collectLines<T>({
       return true
     },
     opts?.statusCallback,
-    { label, stopToken: opts?.stopToken },
+    { label, signal: opts?.signal },
   )
   return records
 }

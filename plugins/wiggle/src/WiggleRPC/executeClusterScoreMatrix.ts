@@ -1,4 +1,3 @@
-import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 import { clusterMatrix } from '@jbrowse/tree-sidebar'
 
 import { getScoreMatrix } from './getScoreMatrix.ts'
@@ -13,17 +12,16 @@ export async function executeClusterScoreMatrix({
   pluginManager: PluginManager
   args: RpcExecuteArgs<'MultiWiggleClusterScoreMatrix'>
 }) {
-  const stopTokenCheck = createStopTokenChecker(args.stopToken)
   const matrix = await getScoreMatrix({
     pluginManager,
     args: {
       ...args,
-      stopTokenCheck,
+      signal: args.signal,
     },
   })
   return clusterMatrix({
     data: matrix,
     statusCallback: args.statusCallback,
-    stopTokenCheck,
+    signal: args.signal,
   })
 }

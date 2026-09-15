@@ -8,7 +8,6 @@ import { findSubfeatureById } from '../baseModelHelpers.ts'
 
 import type { SequenceHoverPosition } from '@jbrowse/core/BaseFeatureWidget'
 import type { Feature } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 // The painting ships only slim render arrays, so the dialog re-fetches the full
@@ -26,7 +25,7 @@ const FeatureSequenceDialog = observer(function FeatureSequenceDialog({
     fetchFullFeature: (
       featureId: string,
       displayedRegionIndex: number,
-      opts?: { stopToken?: StopToken },
+      opts?: { signal?: AbortSignal },
     ) => Promise<Feature | undefined>
   }
   parentFeatureId: string
@@ -42,11 +41,11 @@ const FeatureSequenceDialog = observer(function FeatureSequenceDialog({
       featureId,
       displayedRegionIndex,
     ] as const,
-    async (_name, _parentId, _featId, _regionIndex, stopToken) => {
+    async (_name, _parentId, _featId, _regionIndex, signal) => {
       const parentFeature = await model.fetchFullFeature(
         parentFeatureId,
         displayedRegionIndex,
-        { stopToken },
+        { signal },
       )
       if (!parentFeature) {
         throw new Error('Could not fetch feature details')

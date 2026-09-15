@@ -95,7 +95,7 @@ export async function runDiagonalize(
         referenceRegions,
         currentRegions,
         bpPerPx: model.views[i]!.bpPerPx,
-        stopToken: opts.stopToken,
+        signal: opts.signal,
         statusCallback: levelStatusCallback(
           opts.statusCallback,
           i,

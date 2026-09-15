@@ -4,7 +4,7 @@ import {
   computeConsensusVariants,
 } from '@jbrowse/alignments-core'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
-import { checkStopTokenThrottled } from '@jbrowse/core/util/stopToken'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 
 import { isMismatchFeature } from '../shared/extractCigarFeatures.ts'
 import { fetchFeaturesFromAdapter } from '../shared/fetchFeaturesFromAdapter.ts'
@@ -56,7 +56,7 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
       callFract,
       hetFract,
       includeInsertions,
-      stopToken,
+      signal,
       statusCallback,
     } = args
 
@@ -68,7 +68,7 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
       )
     }
 
-    const { featuresArray, stopTokenCheck } = await fetchFeaturesFromAdapter({
+    const { featuresArray } = await fetchFeaturesFromAdapter({
       pluginManager: this.pluginManager,
       sessionId,
       adapterConfig,
@@ -76,7 +76,7 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
       region,
       filterBy,
       statusCallback,
-      stopToken,
+      signal,
     })
 
     const { regionSequence, regionSequenceStart } =
@@ -94,7 +94,7 @@ export default class GetConsensusSequence extends RpcMethodTypeWithFiltersAndRen
 
     // Last chance to bail before the tally and the two walks, which are
     // synchronous over the whole region and can't be interrupted once started.
-    checkStopTokenThrottled(stopTokenCheck)
+    checkAbortSignal(signal)
 
     const reference = regionSequence.slice(region.start - regionSequenceStart)
 

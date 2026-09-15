@@ -73,7 +73,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
 
   const { data, error, isLoading, status } = useFetch(
     ['CoreGetRefNames', trackId] as const,
-    (_name, _trackId, stopToken, statusCallback) => {
+    (_name, _trackId, signal, statusCallback) => {
       // one status slot per assembly, so N concurrent reads aggregate into one
       // bar instead of the last writer winning
       const slot = createStatusFanOut(statusCallback)
@@ -88,7 +88,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
                   'adapter',
                 ),
                 assemblyName,
-                stopToken,
+                signal,
                 statusCallback: slot(),
               }),
             ] as const,

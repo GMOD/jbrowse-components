@@ -425,7 +425,7 @@ to (the loaded signature, the full per-region reset). Two shapes have failed it:
   an autorun tracking `reloadCounter`, which is what makes the button real.
   Pinned by `LinearHicDisplay/infoFetchFailure.test.ts`.
 - **A phase that unmounts the affordance.** The loading overlay carries Retry
-  after a user cancel. `cancelFetchByUser` drops the stop token synchronously,
+  after a user cancel. `cancelFetchByUser` aborts the fetch synchronously,
   so a phase reading bare `isLoading` falls to `ready`, the overlay unmounts,
   and the display sits stopped and empty with nothing to click. Both families
   had a version of this hole. `computeActivityPhase` reads `fetchCanceled` and
@@ -492,7 +492,7 @@ in every family starts, and all nine `fetchNeeded` overrides reach it in their
 synchronous prefix. An override that awaited before fetching would get a false
 report rather than silence, which is the right way round. It also has a fourth
 outcome, `deferred`, for the in-flight skip — `reload()` signals the running
-fetch's stop token but `activeStopToken` clears in `runFetch`'s finally, so the
+fetch's signal but `activeSignal` clears in `runFetch`'s finally, so the
 next run can still see `isLoading`, and consuming there would answer the retry
 with a run that predates it.
 

@@ -1,6 +1,6 @@
 ---
 name: zoom-perf-followups
-description: What survives after the render-count instrument this file asked for was built (2026-08-30) and pointed at the list. The instrument found two PaddingBlocks bugs nothing here predicted — the bigger one an overlay every track re-renders per frame to draw nothing, since paddingSpans is empty mid-contig — made the legendRightEdgePx item three times bigger than it was sold as, killed the stop-token blob URL item outright by counting the mints, and then found the only per-FEATURE per-frame cost in the app, in plugins/arc, whose fix moved that cost to a canvas whose own price is timed here. Two live items are left — worker-side wiggle packing, blocked on a retention decision, and the arc labels.
+description: What survives after the render-count instrument this file asked for was built (2026-08-30) and pointed at the list. The instrument found two PaddingBlocks bugs nothing here predicted — the bigger one an overlay every track re-renders per frame to draw nothing, since paddingSpans is empty mid-contig — made the legendRightEdgePx item three times bigger than it was sold as, and then found the only per-FEATURE per-frame cost in the app, in plugins/arc, whose fix moved that cost to a canvas whose own price is timed here. Two live items are left — worker-side wiggle packing, blocked on a retention decision, and the arc labels.
 ---
 
 # Scroll-zoom: what is left
@@ -160,29 +160,6 @@ rebuild whole lists; it does not change a feature's id, so `FloatingLabelsLayer`
 already pools across a zoom and only culling churns it. Positional keys there
 would trade a handful of mounts for repainting every surviving label's text.
 Pool where the gesture changes every key.
-
-## Retire the stop-token blob URL — dead, and the count is why
-
-**Declined 2026-08-30.** This section ended with "do first, before any of the work: count
-the mints", and that was the right instinct: a 20-frame zoom over four tracks
-mints **8**. Even extrapolated generously to a few hundred a gesture, the ~100ms
-frame would put `URL.createObjectURL` at 0.3ms a call, and a registry insert is
-not that. The frame is something else — plausibly the revoke or the GC of the
-revoked entries, as this section already suspected — and the `syncProbe` opt-in
-designed below buys none of it.
-
-`products/jbrowse-web/src/tests/ZoomStopTokenMints.test.tsx` is the count, and
-it needs no browser: the rotation that mints is model-side. The one thing it has
-to do is install a `URL.createObjectURL`, because jsdom has none and every token
-under jest is otherwise a `nanoid` — the browser branch never runs, and a naive
-count reads zero.
-
-Everything the old section established about the *shape* of the fix stands and
-is now unused: ~27 probe-dependent sites rather than six, `clusterMatrix`
-un-chunkable because its callback is invoked from inside one synchronous WASM
-call, and the header's "deleted once and had to be restored" being a misreading
-of a development-time revert. If the frame is ever attributed to something real,
-that is the design to start from.
 
 ## Wiggle instance packing could move to the worker
 

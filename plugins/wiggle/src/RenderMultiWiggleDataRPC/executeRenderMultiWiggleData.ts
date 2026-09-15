@@ -1,10 +1,7 @@
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createStatusFanOut, updateStatus } from '@jbrowse/core/util'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { rpcResult } from '@jbrowse/core/util/librpc'
-import {
-  checkStopTokenThrottled,
-  createStopTokenChecker,
-} from '@jbrowse/core/util/stopToken'
 import { collectWiggleTransferables } from '@jbrowse/wiggle-core'
 
 import { isMultiSource } from '../multiSourceAdapter.ts'
@@ -18,7 +15,6 @@ import type { RawFeatureArrays } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { SourceInfo, WiggleDataResult } from '@jbrowse/wiggle-core'
 
 interface FetchOpts {
@@ -26,7 +22,7 @@ interface FetchOpts {
   resolution: number
   sources?: SourceInfo[]
   scoreField?: string
-  stopToken?: StopToken
+  signal?: AbortSignal
   // Reaches the per-subtrack adapters so a multiwiggle gets the same
   // determinate byte progress a single-source wiggle does. The fan-out that
   // keeps N concurrent subtracks from clobbering each other lives in the
@@ -87,7 +83,7 @@ interface ExecuteParams {
     regions: Region[]
     sources?: SourceInfo[]
     bicolorPivot?: number
-    stopToken?: StopToken
+    signal?: AbortSignal
     bpPerPx?: number
     resolution?: number
     // The summary presentation the display resolved to, forwarded to the
@@ -125,15 +121,13 @@ export async function executeRenderMultiWiggleData({
     regions,
     sources: sourcesArg,
     bicolorPivot = 0,
-    stopToken,
+    signal,
     bpPerPx = 0,
     resolution = 1,
     summaryScoreMode,
     scoreField,
     statusCallback,
   } = args
-
-  const stopTokenCheck = createStopTokenChecker(stopToken)
 
   const dataAdapter = await getFeatureAdapterOrThrow({
     pluginManager,
@@ -156,7 +150,7 @@ export async function executeRenderMultiWiggleData({
         sources: sourcesArg,
         summaryScoreMode,
         scoreField,
-        stopToken,
+        signal,
         statusCallback,
       }
       return isMulti
@@ -164,7 +158,7 @@ export async function executeRenderMultiWiggleData({
         : getFallbackSourceArrays(dataAdapter, regions, opts)
     },
   )
-  checkStopTokenThrottled(stopTokenCheck)
+  checkAbortSignal(signal)
 
   const rawsBySource = new Map(perSource.map(p => [p.source, p.raws]))
   // A multi-source adapter's getSources is authoritative and static, so the

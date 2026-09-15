@@ -316,7 +316,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
                 adapterConfig,
                 assemblyName,
                 {
-                  stopToken: mapCtx!.stopToken,
+                  signal: mapCtx!.signal,
                   sessionId,
                   statusCallback: mapCtx!.statusCallback,
                 },

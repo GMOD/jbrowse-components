@@ -6,7 +6,6 @@ import {
   updateStatus,
 } from '@jbrowse/core/util'
 import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
-import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 import {
   PRESET_ATTRIBUTES,
   buildBpRegionIndex,
@@ -45,7 +44,6 @@ import type { DrawOrderKey } from './syntenyDrawOrder.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { LodTier } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { ComparativeOptions } from '@jbrowse/synteny-core'
 
 const EMPTY_CIGAR = new Uint32Array(0)
@@ -108,7 +106,7 @@ export async function executeSyntenyFeaturesAndPositions({
   adapterConfig,
   queryView,
   targetView,
-  stopToken,
+  signal,
   drawCIGAR = true,
   drawCIGARMatchesOnly = false,
   lodMode,
@@ -123,7 +121,7 @@ export async function executeSyntenyFeaturesAndPositions({
   // the feature refNames line up directly. See LinearSyntenyDisplay/afterAttach.
   queryView: SyntenyQueryViewSnap
   targetView: SyntenyTargetViewSnap
-  stopToken?: StopToken
+  signal?: AbortSignal
   drawCIGAR?: boolean
   drawCIGARMatchesOnly?: boolean
   lodMode?: LodTier
@@ -157,7 +155,7 @@ export async function executeSyntenyFeaturesAndPositions({
   // adapters they share one `cachedSetup` download anyway, so the second
   // is a walk over records the first already parsed.
   const queryFetchOpts: ComparativeOptions = {
-    stopToken,
+    signal,
     bpPerPx: v1.bpPerPx,
     lodMode,
     statusCallback,
@@ -166,7 +164,7 @@ export async function executeSyntenyFeaturesAndPositions({
     targetAssemblyName: v2.displayedRegions[0]?.assemblyName,
   }
   const targetFetchOpts: ComparativeOptions = {
-    stopToken,
+    signal,
     bpPerPx: v2.bpPerPx,
     lodMode,
     targetAssemblyName: v1.displayedRegions[0]?.assemblyName,
@@ -406,15 +404,14 @@ export async function executeSyntenyFeaturesAndPositions({
   const windowSpan = winCumHi - winCumLo
 
   const channelList = channels.list
-  const stopTokenChecker = createStopTokenChecker(stopToken)
-  // report() runs the throttled stop-token check itself, so it replaces the
-  // per-feature checkStopTokenThrottled while also advancing the bar over whole-genome
-  // PAF (potentially millions of features).
+  // report() checks the signal itself, so it replaces a per-feature check
+  // while also advancing the bar over whole-genome PAF (potentially millions
+  // of features).
   const report = createProgressReporter({
     label: 'Computing synteny positions',
     total: count,
     statusCallback,
-    stopTokenCheck: stopTokenChecker,
+    signal,
   })
   let validCount = 0
   for (const d of decorated) {

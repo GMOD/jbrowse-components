@@ -1,7 +1,6 @@
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { createStatusFanOut } from '@jbrowse/core/util'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
-import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 
 import { ComparativeAdapterBase } from '../ComparativeAdapterBase.ts'
 import { PifFile } from '../PifFile.ts'
@@ -96,7 +95,7 @@ export default class MultiGenomeIndexedPAFAdapter extends ComparativeAdapterBase
   }
 
   getFeatures(query: Region, opts: ComparativeOptions = {}) {
-    const { statusCallback, stopToken } = opts
+    const { statusCallback, signal } = opts
     return ObservableCreate<Feature>(async observer => {
       const { start, end, refName: qref, assemblyName } = query
       const asmByPrefix = assemblyByPanSNPrefix(this)
@@ -136,7 +135,6 @@ export default class MultiGenomeIndexedPAFAdapter extends ComparativeAdapterBase
       // bar would jump between seqids and blank as soon as the first finished.
       // Aggregated, a multi-haplotype anchor reads as one Σbytes bar.
       const slot = createStatusFanOut(statusCallback)
-      const stopTokenCheck = createStopTokenChecker(stopToken)
       // Collected rather than emitted from the read callbacks so the whole
       // result can be deduped in one pass, and so emission order is the file's
       // rather than the network's: the reads are a Promise.all over every
@@ -154,7 +152,7 @@ export default class MultiGenomeIndexedPAFAdapter extends ComparativeAdapterBase
                 start: from,
                 end: to,
                 statusCallback: slot(),
-                stopTokenCheck,
+                signal,
                 lineCallback: (parsed, fileOffset) => {
                   // One-vs-all draws every mate, including same-sample
                   // paralogy: make-pif's double-emit already keys each locus on

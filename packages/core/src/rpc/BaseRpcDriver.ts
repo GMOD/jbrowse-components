@@ -1,9 +1,8 @@
-import { isStopToken, withStopTokenCheck } from '../util/stopToken.ts'
+import { checkAbortSignal, withAbortCheck } from '../util/aborting.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
-import type { StatusCallback } from '../util/progress.ts'
 import type { RpcHandles } from './RpcRegistry.ts'
 
 /**
@@ -61,49 +60,35 @@ export default abstract class BaseRpcDriver {
     // was added and lint called it dead, correctly.
     const rpcMethod = this.pluginManager.getRpcMethodType(functionName)
 
-    // statusCallback is an out-of-band progress handle, not data: each transport
-    // wires up its own channel for it, so it must not reach the serialized
-    // payload. Everything that does must be structured-cloneable; the worker
-    // postMessage clones it and throws on anything that isn't, surfacing bad data
+    // The two handles are out of band, not data: each transport wires its own
+    // channel for them, and neither survives structured clone. The worker
+    // postMessage throws on anything that isn't cloneable, surfacing bad data
     // at the boundary instead of silently dropping it.
     //
-    // Stripped on the way OUT rather than on the way in, so `serializeArguments`
-    // can see it. That is not cosmetic: serialization is where the refName map
-    // is resolved, and resolving one downloads the adapter's index (and for an
-    // in-memory adapter, the whole file). Destructuring the callback off first
-    // left that download with nothing to report through — `loadRefNameMap`
-    // forwards a `statusCallback` for exactly this and, for every RPC, was
-    // handed undefined. The wire payload is identical either way.
+    // The callback is stripped on the way OUT rather than on the way in, so
+    // `serializeArguments` can see it. That is not cosmetic: serialization is
+    // where the refName map is resolved, and resolving one downloads the
+    // adapter's index (and for an in-memory adapter, the whole file).
+    // Destructuring the callback off first left that download with nothing to
+    // report through — `loadRefNameMap` forwards a `statusCallback` for exactly
+    // this and, for every RPC, was handed undefined.
     //
     // Serialization is the one long await here, and it is wrapped rather than
     // fenced by hand-placed checks so the check on the FAR side comes with the
-    // near one — that is the whole point of `withStopTokenCheck`, and the far
-    // one is what was missing. A call whose token was already stopped has
-    // nothing to deliver to, so refuse it rather than serializing args, waking a
-    // worker and racing a stop notification against the call it means to cancel;
-    // and a stop landing DURING serialization had nowhere to be seen at all,
-    // because the broadcast it fires reaches only *booted* workers and on a
-    // driver's first call `LazyWorker.workerP` is undefined until `transport`
-    // reaches `getWorker`. The worker never learned the token was stopped and
-    // ground the fetch to completion. SharedArrayBuffer tokens see the stop
-    // through shared memory regardless; this is the string-token path, which is
-    // every deployment we ship — `stopToken.ts`, "Which path runs where".
-    //
-    // Callers already treat an abort as the ordinary outcome of a superseded
-    // fetch.
-    const stopToken = isStopToken(args.stopToken) ? args.stopToken : undefined
-    const { statusCallback } = args
+    // near one. A call already aborted has nothing to deliver to, so refuse it
+    // rather than serializing args and waking a worker; an abort landing DURING
+    // serialization used to go unseen and the worker ground the fetch to
+    // completion. Callers already treat an abort as the ordinary outcome of a
+    // superseded fetch.
+    const { signal, ...rest } = args
+    checkAbortSignal(signal)
     const { statusCallback: _outOfBand, ...serializedArgs } =
-      await withStopTokenCheck(stopToken, () =>
-        rpcMethod.serializeArguments(args),
-      )
+      await withAbortCheck(signal, () => rpcMethod.serializeArguments(rest))
 
-    const result = await this.transport(
-      sessionId,
-      rpcMethod,
-      serializedArgs,
-      statusCallback,
-    )
+    const result = await this.transport(sessionId, rpcMethod, serializedArgs, {
+      statusCallback: rest.statusCallback,
+      signal,
+    })
 
     return rpcMethod.deserializeReturn(result, args)
   }
@@ -115,6 +100,6 @@ export default abstract class BaseRpcDriver {
     sessionId: string,
     rpcMethod: RpcMethodType,
     serializedArgs: Record<string, unknown>,
-    statusCallback: StatusCallback | undefined,
+    handles: RpcHandles,
   ): Promise<unknown>
 }

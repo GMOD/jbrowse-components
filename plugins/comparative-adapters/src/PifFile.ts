@@ -1,13 +1,10 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import { cachedSetup } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { downloadStatus, updateStatus } from '@jbrowse/core/util'
+import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 import { sharedBgzfWorkerPool } from '@jbrowse/core/util/bgzfWorkerPool'
 import { decompressedBytesBudget } from '@jbrowse/core/util/cacheBudgets'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
-import {
-  checkStopTokenThrottled,
-  withStopTokenSignal,
-} from '@jbrowse/core/util/stopToken'
 
 import { parsePifHeader, parsePifLine } from './util.ts'
 
@@ -17,7 +14,6 @@ import type {
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { StatusCallback } from '@jbrowse/core/util'
-import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 import type { LodTierInfo } from '@jbrowse/synteny-core'
 
 /**
@@ -104,7 +100,7 @@ export class PifFile {
 
   /**
    * Read one PIF range under a determinate download bar, parsing each line and
-   * checking the stop token as it goes. Both adapters previously wrapped the
+   * checking the signal as it goes. Both adapters previously wrapped the
    * scan in a bare `updateStatus` — the only tabix adapters left showing a
    * spinner where the rest show bytes, and the only ones that ran a cancelled
    * query to completion.
@@ -114,29 +110,25 @@ export class PifFile {
     start,
     end,
     statusCallback,
-    stopTokenCheck,
+    signal,
     lineCallback,
   }: {
     seqid: string
     start: number
     end: number
     statusCallback: StatusCallback | undefined
-    stopTokenCheck: StopTokenChecker
+    signal?: AbortSignal
     lineCallback: (line: PifLine, fileOffset: number) => void
   }) {
-    // the signal comes off the checker's own token, so the caller passes one
-    // cancellation handle rather than two that could disagree
-    return withStopTokenSignal(stopTokenCheck.stopToken, signal =>
-      downloadStatus('Downloading features', statusCallback, onProgress =>
-        this.tabix.getLines(seqid, start, end, {
-          onProgress,
-          lineCallback: (line, fileOffset) => {
-            checkStopTokenThrottled(stopTokenCheck)
-            lineCallback(parsePifLine(line), fileOffset)
-          },
-          signal,
-        }),
-      ),
+    return downloadStatus('Downloading features', statusCallback, onProgress =>
+      this.tabix.getLines(seqid, start, end, {
+        onProgress,
+        lineCallback: (line, fileOffset) => {
+          checkAbortSignal(signal)
+          lineCallback(parsePifLine(line), fileOffset)
+        },
+        signal,
+      }),
     )
   }
 }
