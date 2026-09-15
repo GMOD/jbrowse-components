@@ -69,6 +69,10 @@ describe('the documentation names only jb members that exist', () => {
 // reads before any doc are deliberately partial — jb.help is a paragraph and
 // the tool description is paid on every turn — so they pin the members whose
 // absence is what produces a silently wrong answer, and nothing more.
+// `setSession` earns its place the way the rest do: a review proposed cutting
+// jb.help down to "the load-bearing members and the guide URL", which would
+// have left a browser agent — the reader with no guide to follow — unable to
+// edit a session as a document at all.
 const LOAD_BEARING = [
   'addTrack',
   'describeSlots',
@@ -77,6 +81,7 @@ const LOAD_BEARING = [
   'listTracks',
   'loadSessionSpec',
   'sessionSummary',
+  'setSession',
   'trackModel',
   'view',
   'waitReady',

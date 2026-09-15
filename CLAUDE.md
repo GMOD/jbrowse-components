@@ -66,6 +66,25 @@ Gate on the matching `isSessionWithAddSessionTrack` /
 `session.addTrackConf` and `isSessionWithAddTracks` mean the session now and
 survive only for prebuilt plugin bundles; `no-restricted-syntax` fails a call.
 
+## The agent surface
+
+`jb` (`packages/app-core/src/JbApi/jbApi.ts`) is one library with two clients:
+Desktop's MCP server — `run_javascript`, `docs`, `open`, `screenshot` — and
+`window.jb` on JBrowse Web. The briefing differs, and that is what gets missed.
+
+- **A browser agent has no `docs` tool.** `jb.help` is its entire contract, so a
+  route missing from that string is a route it never takes. Trim inside it, not
+  the routes. `docsRoster.test.ts` pins the load-bearing members in the copies
+  read before any doc, and every `jb.X` any copy names.
+- **The client cuts the server instructions and each tool description at 2048
+  characters**, so an addition displaces a sentence someone chose.
+  `pnpm check-mcp-text-caps` gates it, `--probe` re-measures the installed
+  client.
+- **Before cutting a helper, drive the route you would name instead.**
+  `view.launchTrack` drops settings written in its second slot and checks no
+  assembly; `jb.setSession` is `applySnapshot`, so it runs no view launcher. Two
+  reviews proposed cuts onto both without driving either.
+
 ## Names
 
 - **Main thread**: user-supplied refName text goes through
