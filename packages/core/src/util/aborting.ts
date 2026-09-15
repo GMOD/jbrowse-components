@@ -1,3 +1,4 @@
+import { isElectron, isNode } from './environment.ts'
 import { createTimeGate } from './timeGate.ts'
 
 class AbortError extends Error {
@@ -88,22 +89,15 @@ const YIELD_INTERVAL_MS = 50
 /**
  * Give the event loop one turn. A worker learns of an abort through a posted
  * message, and a message is a task: an `await` on an already-settled promise
- * drains only microtasks and delivers nothing. `scheduler.yield` where the
- * runtime has it, else a MessageChannel task, which unlike `setTimeout` is not
- * clamped. Node gets the timer: a MessagePort turn there runs no due timer,
- * and under jest the abort is one.
+ * drains only microtasks and delivers nothing. A browser realm, Electron's
+ * included, gets a MessageChannel task, which unlike `setTimeout` is not
+ * clamped. Not `scheduler.yield`: Chromium runs its continuation ahead of a
+ * posted message, so a worker loop yielding that way never sees the abort.
+ * Plain Node and jsdom get the timer: a MessagePort turn there runs no due
+ * timer, and under jest the abort is one.
  */
 const yieldToEventLoop: () => Promise<void> = (() => {
-  const scheduler = (
-    globalThis as { scheduler?: { yield?: () => Promise<void> } }
-  ).scheduler
-  if (scheduler?.yield) {
-    return () => scheduler.yield!()
-  }
-  const isNode =
-    typeof (globalThis as { process?: { versions?: { node?: string } } })
-      .process?.versions?.node === 'string'
-  if (!isNode && typeof MessageChannel !== 'undefined') {
+  if ((isElectron || !isNode) && typeof MessageChannel !== 'undefined') {
     const channel = new MessageChannel()
     let resolvers: (() => void)[] = []
     channel.port1.onmessage = () => {
