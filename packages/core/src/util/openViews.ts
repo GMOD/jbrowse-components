@@ -31,7 +31,7 @@ interface Declared {
  * getter holds annotation rows that are not tracks.
  */
 export function openViews(session: AbstractSessionModel): AbstractViewModel[] {
-  return session.views.flatMap(withNested)
+  return session.views.flatMap(viewAndNested)
 }
 
 /** Every track on every open view. */
@@ -41,6 +41,7 @@ export function openTracks(
   return openViews(session).flatMap(v => (v as Declared).ownTracks ?? [])
 }
 
-function withNested(view: AbstractViewModel): AbstractViewModel[] {
-  return [view, ...((view as Declared).ownViews ?? []).flatMap(withNested)]
+/** The view, then every view nested in it at any depth. */
+export function viewAndNested(view: AbstractViewModel): AbstractViewModel[] {
+  return [view, ...((view as Declared).ownViews ?? []).flatMap(viewAndNested)]
 }

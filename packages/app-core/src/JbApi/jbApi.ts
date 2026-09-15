@@ -17,7 +17,11 @@ import {
   objectHash,
   parseLocString,
 } from '@jbrowse/core/util'
-import { openTracks, openViews } from '@jbrowse/core/util/openViews'
+import {
+  openTracks,
+  openViews,
+  viewAndNested,
+} from '@jbrowse/core/util/openViews'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   allSessionTracks,
@@ -768,26 +772,16 @@ function pickView(
     pluginManager?: PluginManager
   },
 ) {
-  const viewId = typeof args.viewId === 'string' ? args.viewId : ''
-  const candidates = openViews(session)
-  if (viewId) {
-    const named = candidates.find(v => v.id === viewId)
-    if (!named) {
-      throw new Error(
-        `No view with id "${viewId}". Open views: ${candidates.map(v => `${v.id} (${v.type})`).join(', ')}`,
-      )
-    }
-    if (typeof viewSelf(named)[capability] !== 'function') {
-      throw new Error(`View ${named.id} (${named.type}) does not support this`)
-    }
-    return named
-  }
+  const viewId = typeof args.viewId === 'string' ? args.viewId : undefined
+  const candidates = viewScope(session, viewId)
   const able = candidates.filter(
     v => typeof viewSelf(v)[capability] === 'function',
   )
   if (!able.length) {
     throw new Error(
-      `No open view supports this. Open views: ${candidates.map(v => v.type).join(', ') || 'none'} — jb.loadSessionSpec can open one.`,
+      viewId === undefined
+        ? `No open view supports this. Open views: ${candidates.map(v => v.type).join(', ') || 'none'} — jb.loadSessionSpec can open one.`
+        : `View ${describeView(session, candidates[0]!)} does not support this`,
     )
   }
   // A view on another assembly would show the track and render nothing, with a
@@ -820,7 +814,7 @@ function pickView(
       `No open view can display a ${wants!.trackType} (open views: ${onAssembly.map(v => v.type).join(', ')})`,
     )
   }
-  return onlyView(session, canDisplay, 'could take this')
+  return onlyView(session, canDisplay, 'could take this', viewId)
 }
 
 // A synteny view's rows count as open views (they are what shows a region and
@@ -848,7 +842,12 @@ function onlyView(
   session: AbstractSessionModel,
   candidates: AbstractViewModel[],
   relation: string,
+  viewId?: string,
 ) {
+  const named = candidates.find(v => v.id === viewId)
+  if (named) {
+    return named
+  }
   const [first, ...rest] = candidates
   if (!first) {
     throw new Error('No open view')
@@ -878,6 +877,15 @@ function viewById(session: AbstractSessionModel, viewId?: string) {
   return onlyView(session, candidates, 'are open')
 }
 
+// A synteny or breakpoint view's id names a container whose rows show the
+// regions and tracks, so the named view answers when it can and its rows
+// otherwise
+function viewScope(session: AbstractSessionModel, viewId?: string) {
+  return viewId === undefined
+    ? openViews(session)
+    : viewAndNested(viewById(session, viewId))
+}
+
 interface JbRegion {
   refName: string
   start: number
@@ -890,31 +898,20 @@ function shownTrackModel(
   trackId: string,
   viewId?: string,
 ) {
-  const pool =
-    viewId === undefined
-      ? allTracks(session)
-      : viewTracks(viewById(session, viewId))
-  const shown = pool.filter(t => t.configuration.trackId === trackId)
-  if (shown.length > 1) {
-    const where = openViews(session)
-      .filter(v => viewTracks(v).some(t => t.configuration.trackId === trackId))
-      .map(v => describeView(session, v))
-    throw new Error(
-      `"${trackId}" is shown in ${shown.length} views: ${where.join('; ')} — pass viewId to say which`,
-    )
-  }
-  const [track] = shown
+  const trackOf = (v: AbstractViewModel) =>
+    viewTracks(v).find(t => t.configuration.trackId === trackId)
+  const showing = viewScope(session, viewId).filter(v => trackOf(v))
   // undefined here was followed by ".activeDisplay" on the next line of every
   // agent's code, and a TypeError says nothing about which of the two causes
   // it was
-  if (!track) {
+  if (!showing.length) {
     throw new Error(
       session.getTrackById(trackId)
         ? `"${trackId}" is not shown in ${viewId === undefined ? 'any open view' : `view ${viewId}`} — await view.launchTrack("${trackId}") first; jb.sessionSummary() lists what each view shows`
         : `No track with trackId "${trackId}" — jb.listTracks() shows what is available`,
     )
   }
-  return track
+  return trackOf(onlyView(session, showing, `show "${trackId}"`, viewId))!
 }
 
 async function locToRegion(
@@ -971,23 +968,13 @@ async function visibleRegionsOf(
   // freshly spec-loaded view stays in that state briefly even after the
   // app-phase marker reads ready, since a view with no width has no display
   // fetching anything.
-  const regionBearing = openViews(session).filter(
-    v => (!viewId || v.id === viewId) && 'visibleRegions' in v,
-  )
+  const scope = viewScope(session, viewId)
+  const regionBearing = scope.filter(v => 'visibleRegions' in v)
   if (!regionBearing.length) {
-    // the id of a synteny or breakpoint view names a container: its rows are
-    // what show a region, and "no view shows a region" over a view plainly on
-    // screen sent an agent guessing which id to try next
-    const named = viewId
-      ? openViews(session).find(v => v.id === viewId)
-      : undefined
-    const rows = named?.ownViews.filter(v => 'visibleRegions' in v) ?? []
     throw new Error(
-      named
-        ? rows.length
-          ? `View ${describeView(session, named)} shows no region of its own; its rows do: ${rows.map(v => describeView(session, v)).join('; ')} — pass one of those as viewId, or pass loc`
-          : `View ${describeView(session, named)} shows no region — pass loc`
-        : 'No view that shows a region — pass loc, or open a linear view first',
+      viewId === undefined
+        ? 'No view that shows a region — pass loc, or open a linear view first'
+        : `View ${describeView(session, scope[0]!)} shows no region — pass loc`,
     )
   }
   // a view on another assembly than the track would hand its region to a file
@@ -1018,6 +1005,7 @@ async function visibleRegionsOf(
     session,
     showing.length ? showing : candidates,
     showing.length ? `show "${preferTrackId}"` : 'show a region',
+    viewId,
   )
   const view = viewSelf(chosen)
   const deadline = Date.now() + 10_000
@@ -1250,7 +1238,7 @@ Orient first: jb.sessionSummary(). Introspect, never guess: jb.listTracks(search
 
 The model is mobx-state-tree: mutate only through actions (raw assignment throws), and write display settings with track.applyDisplaySettings(settings). Build views declaratively with jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly, loc, tracks: [...] }] }), which replaces the session; jb.addView(oneViewSpec) opens one more view beside what is open; jb.setSession(document) rewrites the session as a document — what jb.mst.getSnapshot(jb.session) answers, edited: a view keeps its id and is patched in place, loc on it navigates, a { trackId } entry in its tracks opens that track. Arrange open views into panels with session.layoutViews({ direction: 'horizontal', children: [{ views: [viewId] }, ...] }) — leaves name view ids or indexes into session.views; await jb.fitToWindow() shrinks what is open until the session fits the window; add data with jb.addTrack({ location }) (an absolute path or a URL); read data with await jb.getFeatures({ trackId, loc?, assembly?, viewId?, regions?, byteLimit? }) (or jb.getFeatures(trackId, loc?, opts?)), which renames refNames ("chr1" vs "1") so the file answers and reads on the worker the track's display uses. Anything lower level is jb.require('@jbrowse/core/util') and friends, the module registry plugins link against. After changing anything, await jb.waitReady(ms) and read its notifications and notReady lists before trusting the screen.
 
-Views nest and several can be open. jb.view(viewId?) is the open view, and jb.view(), jb.trackModel(trackId), jb.visibleRegions(), jb.addTrack and jb.getFeatures over a visible region throw naming the candidates rather than picking one when more than one view could answer — pass viewId (from jb.sessionSummary()) to say which.
+Views nest and several can be open. jb.view(viewId?) is the open view, and jb.view(), jb.trackModel(trackId), jb.visibleRegions(), jb.addTrack and jb.getFeatures over a visible region throw naming the candidates rather than picking one when more than one view could answer — pass viewId (from jb.sessionSummary()) to say which. A synteny or breakpoint view's viewId also covers its rows: the named view answers when it can, and otherwise its rows do.
 
 Full guide: https://jbrowse.org/jb2/docs/agents_live_model (JBrowse Desktop serves the same guide offline through its MCP docs tool — Help menu, "Connect an AI agent...").`
 

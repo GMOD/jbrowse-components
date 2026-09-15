@@ -538,7 +538,7 @@ describe('a name that several views could answer', () => {
       lgv('v2', 'ctgA:5000-5100', ['genes']),
     ])
     expect(() => jb.trackModel('genes')).toThrow(
-      /shown in 2 views: v1 \(LinearGenomeView on volvox at ctgA:1-100\); v2 .*pass viewId/,
+      /2 views show "genes": v1 \(LinearGenomeView on volvox at ctgA:1-100\); v2 .*pass viewId/,
     )
     expect(jb.trackModel('genes', 'v2')).toBe(jb.view('v2').ownTracks[0])
     expect(() => jb.trackModel('genes', 'nope')).toThrow(/No view with id/)
@@ -877,33 +877,54 @@ describe('the jb roster', () => {
 // synteny view's own id answered "no view shows a region" over a view plainly
 // on screen.
 describe('rows of a nested view', () => {
-  const row = (id: string, loc: string) => ({
+  const launched: string[] = []
+  const row = (id: string, assembly: string, loc: string) => ({
     id,
     type: 'LinearGenomeView',
-    assemblyNames: ['volvox'],
+    assemblyNames: [assembly],
     coarseVisibleLocStrings: loc,
     initialized: true,
     visibleRegions: [
-      { refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' },
+      { refName: 'ctgA', start: 0, end: 100, assemblyName: assembly },
     ],
     ownViews: [],
-    ownTracks: [],
+    ownTracks: [{ configuration: { trackId: `genes_${assembly}` } }],
+    launchTrack: async () => {
+      launched.push(id)
+    },
   })
   const jb = createJbApi({
     rootModel: {
       session: {
+        rpcManager: {},
+        configuration: {},
+        addSessionTrackConf: () => {},
         views: [
           {
             id: 'syn',
             type: 'LinearSyntenyView',
             assemblyNames: ['volvox', 'volvox2'],
-            ownViews: [row('r1', 'ctgA:1-100'), row('r2', 'ctgB:1-100')],
+            ownViews: [
+              row('r1', 'volvox', 'ctgA:1-100'),
+              row('r2', 'volvox2', 'ctgB:1-100'),
+            ],
             ownTracks: [],
+            launchTrack: async () => {
+              launched.push('syn')
+            },
           },
         ],
-        assemblyNames: ['volvox'],
+        assemblyNames: ['volvox', 'volvox2'],
+        assemblyManager: { getCanonicalAssemblyName: () => undefined },
       },
     },
+    trackTypes: new Map([['MultiQuantitativeTrack', {}]]),
+    getTrackType: () => ({ displayTypes: [{ name: 'LinearD' }] }),
+    getViewType: (type: string) => ({
+      displayTypes: [
+        { name: type === 'LinearGenomeView' ? 'LinearD' : 'SyntenyD' },
+      ],
+    }),
   } as unknown as PluginManager)
 
   it('names each row as a row of its parent', () => {
@@ -912,11 +933,25 @@ describe('rows of a nested view', () => {
     )
   })
 
-  it('sends a region read addressed to the parent to its rows', async () => {
+  it('searches the rows when the parent cannot answer', async () => {
     await expect(jb.visibleRegions('syn')).rejects.toThrow(
-      /View syn \(LinearSyntenyView on volvox, volvox2\) shows no region of its own; its rows do: r1 .*; r2 .*— pass one of those as viewId/,
+      /2 views show a region: r1 .*a row of syn\); r2 .*a row of syn\) — pass viewId/,
     )
     expect(await jb.visibleRegions('r2')).toHaveLength(1)
+    expect(jb.trackModel('genes_volvox2', 'syn')).toBe(
+      jb.view('r2').ownTracks[0],
+    )
+  })
+
+  it('adds a track to the row on its assembly, not the parent', async () => {
+    const result = await jb.addTrack({
+      location: ['https://x.org/a.bw'],
+      assembly: 'volvox2',
+      viewId: 'syn',
+      settleMs: 0,
+    })
+    expect(result).toMatchObject({ shownInView: 'r2' })
+    expect(launched).toEqual(['r2'])
   })
 })
 
