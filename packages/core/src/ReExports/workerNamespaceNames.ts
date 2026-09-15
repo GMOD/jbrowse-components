@@ -6,6 +6,7 @@ import { MUI_COMPONENT_NAMES } from './muiComponentNames.ts'
 
 export const REACT_DOM_NAMES = [
   '__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE',
+  'browser',
   'createPortal',
   'default',
   'flushSync',
