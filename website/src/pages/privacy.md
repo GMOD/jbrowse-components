@@ -16,9 +16,10 @@ JBrowse never sends file URLs, track names or your data. The browser reads your
 data files directly, and they never pass through a JBrowse server. Embedded
 JBrowse components collect nothing.
 
-This website (jbrowse.org/jb2) uses Google Analytics to count page visits.
-Google Analytics sets cookies and records the pages you view, your approximate
-location, browser and device type, and the site that referred you.
+This website (jbrowse.org/jb2) uses Google Analytics to count page visits, but
+only after you click OK on its banner. Google Analytics sets cookies and records
+the pages you view, your approximate location, browser and device type, and the
+site that referred you. Clearing this site's data brings the banner back.
 
 We use this data only to understand how people use JBrowse, and we do not sell
 or share it. Google handles its copy under the

@@ -106,23 +106,6 @@ const analytics = import.meta.env.PROD && baseUrl === '/jb2'
       href={`${baseUrl}/rss.xml`}
     />
     <link rel="icon" href={`${baseUrl}/img/favicon.ico`} />
-    {analytics && (
-      <>
-        <script
-          is:inline
-          async
-          src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
-        ></script>
-        <script is:inline define:vars={{ gaMeasurementId }}>
-          window.dataLayer = window.dataLayer || []
-          function gtag(..._args) {
-            dataLayer.push(arguments)
-          }
-          gtag('js', new Date())
-          gtag('config', gaMeasurementId)
-        </script>
-      </>
-    )}
     <Font cssVariable="--font-roboto" preload />
     <style is:global>
       /* Reset, design tokens and bare element defaults. Layered so the
@@ -368,6 +351,72 @@ const analytics = import.meta.env.PROD && baseUrl === '/jb2'
     <Lightbox />
     <SpecDialog />
     <VideoOverlay />
+
+    {analytics && (
+      <>
+        <div id="analytics-consent" class={styles.consent} hidden>
+          <span>
+            This site uses Google Analytics to understand usage.{' '}
+            <a href={`${baseUrl}/privacy/`}>Privacy policy</a>
+          </span>
+          <div class={styles.consentButtons}>
+            <button id="analytics-consent-yes" type="button">
+              OK
+            </button>
+            <button id="analytics-consent-no" type="button">
+              No thanks
+            </button>
+          </div>
+        </div>
+        <script is:inline define:vars={{ gaMeasurementId }}>
+          const key = 'analytics-consent'
+          function readConsent() {
+            try {
+              return localStorage.getItem(key)
+            } catch {
+              return null
+            }
+          }
+          function saveConsent(value) {
+            try {
+              localStorage.setItem(key, value)
+            } catch {}
+          }
+          function loadAnalytics() {
+            const script = document.createElement('script')
+            script.async = true
+            script.src = `https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`
+            document.head.append(script)
+            window.dataLayer = window.dataLayer || []
+            function gtag(..._args) {
+              dataLayer.push(arguments)
+            }
+            gtag('js', new Date())
+            gtag('config', gaMeasurementId)
+          }
+          const consent = readConsent()
+          if (consent === 'yes') {
+            loadAnalytics()
+          } else if (consent !== 'no') {
+            const banner = document.getElementById(key)
+            banner.hidden = false
+            document
+              .getElementById(`${key}-yes`)
+              .addEventListener('click', () => {
+                saveConsent('yes')
+                banner.remove()
+                loadAnalytics()
+              })
+            document
+              .getElementById(`${key}-no`)
+              .addEventListener('click', () => {
+                saveConsent('no')
+                banner.remove()
+              })
+          }
+        </script>
+      </>
+    )}
 
     <script>
       const toggle = document.getElementById('nav-toggle')
