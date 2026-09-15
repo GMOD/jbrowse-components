@@ -237,8 +237,8 @@ gets a second, separated run of entries.
   what the demo and its source cannot show. When an example is too long to read
   at a glance, publish a helper (a function or a component) that shortens it,
   rather than explaining it — `@jbrowse/display-ui/embed` is the pattern.
-  `pnpm check-links` caps a doc at 300 words and a description at 160
-  characters, and reports an orphan doc whose section was renamed.
+  `pnpm check-links` caps a doc, and a page's own prose, at 60 words and a
+  description at 80 characters, and reports an orphan doc whose section was renamed.
 - A single-section page's **section-level `description` renders nowhere** — the
   "On this page" card is only drawn for multi-section pages — so don't write
   one. Three sites had accumulated exact duplicates of the page description
