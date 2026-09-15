@@ -452,7 +452,7 @@ export async function loadSessionSpec(
     )
     if (unknownKeys.length) {
       session?.notifyError(
-        `Session spec ignored unknown key(s): ${unknownKeys.join(', ')} — it takes ${SPEC_KEYS.join(', ')}`,
+        `${unknownKeysMessage('Session spec', unknownKeys)} — it takes ${SPEC_KEYS.join(', ')}`,
       )
     }
     // Assemblies first: sessionTracks and the views below reference them by

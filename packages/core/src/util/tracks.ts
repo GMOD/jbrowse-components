@@ -33,6 +33,7 @@ import {
   objectHash,
 } from './mstUtils.ts'
 import { isViewModel } from './types/index.ts'
+import { unknownKeysMessage } from './unknownSnapshotKeys.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
@@ -786,6 +787,18 @@ interface SettingsReport {
   failed: { key: string; error: string }[]
 }
 
+// `unapplied` holds three kinds of entry and only one of them means the key
+// reached nothing at all: applyDisplaySettings annotates `type` and the "a
+// setter exists, pass allowSetters" case in parentheses, and the display node
+// settles the rest — on a first show the snapshot spread may already have
+// landed the key as a prop or a volatile (`resolution` on the wiggle displays).
+function reachedNothing(unapplied: string[], display: unknown) {
+  const node = display as Record<string, unknown> | undefined
+  return node
+    ? unapplied.filter(entry => !entry.includes(' (') && !(entry in node))
+    : []
+}
+
 function notifySettingsReport(
   session: { notifyError: (message: string) => void },
   trackId: string,
@@ -795,7 +808,7 @@ function notifySettingsReport(
 ) {
   if (ignored.length) {
     session.notifyError(
-      `Track "${trackId}" ignored ${ignored.join(', ')}: not a setting the ${displayType} accepts`,
+      unknownKeysMessage(`${displayType} for track "${trackId}"`, ignored),
     )
   }
   if (failed.length) {
@@ -805,9 +818,7 @@ function notifySettingsReport(
   }
 }
 
-// A shown track keeps its display, so no snapshot spread lands a key here and
-// every unapplied entry reached nothing. `type` picks a display for a new track
-// and means nothing to a shown one.
+// `type` picks a display for a new track and means nothing to a shown one.
 function restyleShown<T>(
   self: GenericView,
   trackId: string,
@@ -824,7 +835,7 @@ function restyleShown<T>(
       getSession(self),
       trackId,
       track.activeDisplay.type,
-      report.unapplied,
+      reachedNothing(report.unapplied, track.activeDisplay),
       report.failed,
     )
   }
@@ -1224,20 +1235,12 @@ export function showTrackGeneric(
         ) => SettingsReport
       }
     ).applyDisplaySettings(displaySettings)
-    // `unapplied` also holds keys the snapshot spread above already landed as a
-    // prop or volatile (`resolution` on the GC content display), and annotates
-    // the setter case in parentheses; only a bare key the node lacks reached
-    // nothing
     const drawn = (track as { displays: Record<string, unknown>[] }).displays[0]
     notifySettingsReport(
       session,
       trackId,
       displayType,
-      drawn
-        ? report.unapplied.filter(
-            entry => !entry.includes(' (') && !(entry in drawn),
-          )
-        : [],
+      reachedNothing(report.unapplied, drawn),
       report.failed,
     )
     // if this track came from a connection, persist its config so it survives

@@ -2309,7 +2309,7 @@ describe('TrackInit with display configuration', () => {
     )
     model.setWidth(800)
     const ignored =
-      'Track "track1" ignored hieght: not a setting the LinearBareDisplay accepts'
+      'LinearBareDisplay for track "track1" ignored unknown key(s): hieght'
 
     await model.launchTrack('track1', {}, { hieght: 55 })
     expect(console.warn).toHaveBeenCalledWith(ignored)
@@ -2317,6 +2317,29 @@ describe('TrackInit with display configuration', () => {
 
     await model.launchTrack('track1', {}, { hieght: 55 })
     expect(console.warn).toHaveBeenCalledWith(ignored)
+  })
+
+  // The two paths report the same list or they contradict each other: a key
+  // with a setter reads "a setScrollTop action exists" and would have been
+  // reported as one the display does not take.
+  test('a key the display has reaches no notification on either path', async () => {
+    const { Session, LinearGenomeModel, pluginManager } = initializeWithTracks()
+    const session = Session.create({ configuration: {} }, { pluginManager })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        assembly: 'volvox',
+        loc: 'ctgA:1-1000',
+        tracks: [],
+      }),
+    )
+    model.setWidth(800)
+
+    await model.launchTrack('track1', {}, { scrollTop: 10 })
+    await model.launchTrack('track1', {}, { scrollTop: 20 })
+    expect(jest.mocked(console.warn).mock.calls.flat().join('\n')).not.toMatch(
+      /scrollTop/,
+    )
   })
 
   // The eval's agent wrote view.moveTrackToTop('volvox_test_vcf') and read

@@ -30,6 +30,7 @@ import {
   viewCanDisplayTrack,
   viewDisplayNames,
 } from '@jbrowse/core/util/tracks'
+import { unknownKeysMessage } from '@jbrowse/core/util/withLaunchInput'
 import * as mst from '@jbrowse/mobx-state-tree'
 import {
   applySnapshot,
@@ -1713,36 +1714,56 @@ interface SnapshotTarget {
  * destroys what the target lacks in place, under components still mounted
  * over it, which is what undo had to route around.
  */
-// A key no view type declares, per entry. MST drops one silently, and the
-// partition that warns about it runs at attach — which a view the document
-// KEEPS never reaches, so the common edit is the quiet one. A type declaring no
-// launch keys (a plugin's own view) is checked against its properties instead:
-// its launcher's vocabulary lives only in the launcher, so a document carrying
-// it loses it with nothing said.
-function unknownViewKeys(pluginManager: PluginManager, entry: unknown) {
+// A key nothing on the far side takes, per view entry. MST drops one silently,
+// and the partition that names it runs at attach — which a view the document
+// KEEPS never reaches, so the commonest edit was the quiet one.
+//
+// Reported, not refused, like the same mistake on a session spec: a legacy key
+// a view's own preProcessSnapshot converts (LinearSyntenyView's
+// fadeThinAlignments) is outside the accepted set and still works, and one of
+// those must not cost the document. The live node settles what the declared
+// keys cannot — the same question `showTrackGeneric` asks of a display node.
+function unknownViewKeys(
+  pluginManager: PluginManager,
+  entry: unknown,
+  open: Map<string, Record<string, unknown>>,
+): string[] {
   if (
     typeof entry !== 'object' ||
     entry === null ||
     typeof (entry as { type?: unknown }).type !== 'string'
   ) {
-    return undefined
+    return []
   }
-  const { type, ...keyed } = entry as Record<string, unknown>
-  if (!pluginManager.getElementTypeRecord('view').has(type as string)) {
-    return undefined
+  const { type, views, ...keyed } = entry as Record<string, unknown> & {
+    type: string
   }
-  const viewType = pluginManager.getViewType(type as string)
+  const nested = Array.isArray(views)
+    ? views.flatMap(view => unknownViewKeys(pluginManager, view, open))
+    : []
+  if (!pluginManager.getElementTypeRecord('view').has(type)) {
+    return nested
+  }
+  const viewType = pluginManager.getViewType(type)
   const accepted =
     viewType.acceptedKeys ??
     Object.keys(viewType.stateModel.properties as Record<string, unknown>)
-  const unknown = Object.keys(keyed).filter(key => !accepted.includes(key))
-  return unknown.length
-    ? `${type as string} does not take ${unknown.join(', ')}${
-        viewType.launchKeys
-          ? ''
-          : ` — a ${type as string} takes its launch keys through jb.addView, which runs its launcher`
-      }`
-    : undefined
+  const node = open.get(keyed.id as string)
+  const unknown = Object.keys(keyed).filter(
+    key => !accepted.includes(key) && !(node && key in node),
+  )
+  return [
+    ...(unknown.length
+      ? [
+          `${unknownKeysMessage(type, unknown)}${
+            viewType.launchKeys
+              ? ''
+              : ' — a document runs no launcher, so its launch keys go through jb.addView'
+          }`,
+        ]
+      : []),
+    ...nested,
+  ]
 }
 
 async function setSession(
@@ -1767,13 +1788,16 @@ async function setSession(
   // a lazily registered view or display type is not in the session's type union
   // until its model loads, and applySnapshot is synchronous
   await pluginManager.preloadSessionTypes(next)
-  const problems = (Array.isArray(next.views) ? next.views : [])
-    .map(entry => unknownViewKeys(pluginManager, entry))
-    .filter(problem => problem !== undefined)
-  if (problems.length) {
-    throw new Error(
-      `jb.setSession refused the document: ${problems.join('; ')}`,
-    )
+  const open = new Map(
+    session.views.map(view => [
+      view.id,
+      view as unknown as Record<string, unknown>,
+    ]),
+  )
+  for (const problem of (Array.isArray(next.views) ? next.views : []).flatMap(
+    entry => unknownViewKeys(pluginManager, entry, open),
+  )) {
+    session.notifyError(problem)
   }
   try {
     ;(session as unknown as SnapshotTarget).takeOutViewsMissingFrom?.(next)
