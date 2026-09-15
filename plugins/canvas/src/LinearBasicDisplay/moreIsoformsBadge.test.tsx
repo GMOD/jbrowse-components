@@ -411,12 +411,7 @@ function renderLabelLayer(
     featureItemMap: new Map<string, FeatureItemEntry>([
       [
         'gene1',
-        {
-          kind: 'feature',
-          item: BADGE_DATA.flatbushItems[0]!,
-          source: VR,
-          data: BADGE_DATA,
-        },
+        { kind: 'feature', item: BADGE_DATA.flatbushItems[0]!, source: VR },
       ],
     ]),
     renderDataMap: new Map([[0, BADGE_DATA]]),

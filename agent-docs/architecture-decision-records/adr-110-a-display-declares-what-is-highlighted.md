@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "A shape declares its ink — the box each instance paints — and render-core derives the hit test from it; a display declares WHICH instances are hovered or selected, as `hoverInk` / `selectionInk` walked through its mark list, and `DisplayChrome` lights them as positioned divs, so a display places no highlight and recomputes no rect. Five overlays that re-derived the painted rect from their own payloads are deleted; the highlight stays a div, not render state, on the Canvas2D measurement; what is not a per-instance box keeps its own cue"
+summary: "A shape declares its ink — the box each instance paints — and render-core derives the hit test from it; a display declares WHICH instances are lit, as `hoverInk` / `selectionInk` / `pinnedInk` / `soloInk` walked through its mark list, and `DisplayChrome` lights them as positioned divs, so a display places no highlight and recomputes no rect. Six overlays that re-derived the painted rect from their own payloads are deleted, canvas's last among them; the pinned list is the third exported guide, the other three are live-session UI; the highlight stays a div, not render state, on the Canvas2D measurement; what is not a per-instance box keeps its own cue"
 ---
 
 # ADR-110: A display declares what is highlighted
@@ -64,16 +64,16 @@ which re-rasterizes every base. That measurement stands.
   ink-without-painting is a violation. The sweep then runs its hit clauses
   against whichever hit test the shape resolves to.
 - **A display declares which instances are lit.** `highlightHost.ts` in
-  display-kit is the structural host `{ hoverInk, selectionInk?,
-  highlightStyle? }`: rects in the chrome's px with a `strong` flag, derived
+  display-kit is the structural host `{ hoverInk, selectionInk?, pinnedInk?,
+  soloInk?, highlightStyle? }`: rects in the chrome's px with a `strong` flag, derived
   by walking the mark list with `inkOfInstances(marks, blocks, regionOf,
   state, instancesOf)` for the instance set the display names — a read id to
   its exon segments, a chain to its members, a cell to its index, a hit to
   its `(mark, region, instance)`. `ChromeHighlight` places one positioned div
   per rect off the palette's `featureHover` / `featureHoverStrong` /
   `featureSelected`, and `DisplayChromeBase` mounts it beside the axis and
-  the legend for any `isHighlightHost`. Nothing reaches `renderDisplaySvg`: a
-  hover is never exported.
+  the legend for any `isHighlightHost`. Only `pinnedInk` reaches
+  `renderDisplaySvg`, and see "Kept, and why" for why that one does.
 - **The guide is a div.** The Canvas2D measurement above is the reason, and
   it now lives on `ChromeHighlight` rather than in a comment on one
   display's overlay.
@@ -125,7 +125,11 @@ grown to the ring's radius). The example plugin's `score` shape declares
   their two files), plus the three hand-written hit walks. Added:
   `readHighlightInk.ts` (the alignments walk, with the section tiers) and
   its test, `hitInstance` in multi-row's hit testing, `markInk.ts`,
-  `highlightHost.ts`, `ChromeHighlight.tsx`.
+  `highlightHost.ts`, `ChromeHighlight.tsx`. Then, on 2026-09-15: canvas's
+  `HighlightLayer`, `highlightUtils.ts` and its test, `highlightBoxes.ts`,
+  `morphOffsetViews` / `morphOffsetFor` and its test, and the `data` slot on
+  `FeatureItemEntry` that only the layer read. Added: `featureHighlightInk.ts`
+  and `SvgPinnedHighlight`.
 - Two visual changes, both toward the painting: multi-row's box is the
   span's own width rather than one px wider (the border sits outside the div
   already), and a read's box includes the arrowhead it caps.
@@ -138,21 +142,31 @@ grown to the ring's radius). The example plugin's `score` shape declares
 
 ## Kept, and why
 
-- **Canvas's `HighlightLayer`** — **solo and the search highlight only, since
-  2026-09-15.** The hover and the selection moved onto the guide that day. The
-  reason recorded here for keeping them, that the payload carried no
+- **Nothing of canvas's `HighlightLayer`** — it was deleted on 2026-09-15, and
+  the four boxes it drew are the host's four lists. `hoverInk` and
+  `selectionInk` light one feature each; `pinnedInk` lights the set the reader
+  pinned, from a search hit, a right-click highlight or the `highlight=` URL
+  param, and `soloInk` the set collected for a solo, dashed, and empty once the
+  solo applies because the view then shows those features and nothing else. The
+  reason once recorded here for keeping the layer, that the payload carried no
   feature-to-primitive index, was already wrong when it was written:
   `FeatureDataResult` ships `rectFeatureIndices` / `lineFeatureIndices` /
   `arrowFeatureIndices` beside `rectChildOrdinals` / `lineChildOrdinals` /
   `arrowChildOrdinals`, so the missing half was only the inverse, and
   `buildRegionInstanceIndex` builds it on the main thread the first time
-  something is lit. The box is the union of the glyph's ink and the rects its
-  labels drew (`mergeBounds`, `placeFeatureLabels`), so it loses the hit pad
-  and the hand-measured label overhang and gains the morph for free — it walks
-  `renderDataMap`, the interpolated map, rather than the settled layout.
-  Solo and search stay behind, waiting on a `pinnedInk` / `soloInk` member on
-  the host: both light a SET of features rather than one, and the search box is
-  exported, which `hoverInk` never is.
+  something is lit. Each box is the union of the glyph's ink and the rects its
+  labels drew (`mergeBounds`, `placeFeatureLabels`), so it loses the hit pad and
+  the hand-measured label overhang and gains the morph for free — it walks
+  `renderDataMap`, the interpolated map, rather than the settled layout, which
+  is what retired `morphOffsetFor`.
+- **`pinnedInk` is the third exported guide**, and the one exception to "nothing
+  reaches `renderDisplaySvg`": a hover and a selection say where the reader's
+  pointer was, a pin is what the figure is about. `renderDisplaySvg` draws it
+  inside the body's clip and after the body, so it sits over the glyphs, the
+  labels and the peptides — the stacking `ChromeHighlight` gets on screen by
+  being mounted after the body. `drawHighlightBoxes` and the export's own box
+  pass are gone with it, and `highlightBoxColors` moved to core beside
+  `hoverBoxStyle`, where the chrome and the export both reach it.
 - **Dotplot's restroke, the arc restroke, LD's crosshairs, MAF's connected
   range, the LGV position highlight, `VariantLaneOverlay`'s band**: none is
   a per-instance box.

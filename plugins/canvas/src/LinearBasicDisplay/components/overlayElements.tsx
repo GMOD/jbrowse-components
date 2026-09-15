@@ -1,5 +1,4 @@
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
-import { alpha } from '@jbrowse/core/ui/palette'
 import { pluralize } from '@jbrowse/core/util'
 import { eventPoint } from '@jbrowse/core/util/eventPoint'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -10,15 +9,10 @@ import {
   MORE_ISOFORMS_FONT_SCALE,
 } from '../../RenderFeatureDataRPC/constants.ts'
 import PeptideCanvas from './PeptideCanvas.tsx'
-import { computeOverlayRect, overlayItemRect } from './highlightUtils.ts'
 import { labelHit } from './hitTesting.ts'
 import { htmlToPlainText } from './hoverReadout.ts'
 import { labelColors } from './labelColors.ts'
-import {
-  computeLabelExtraWidth,
-  forEachDisplayLabel,
-  labelCullBand,
-} from './labelPositioning.ts'
+import { forEachDisplayLabel, labelCullBand } from './labelPositioning.ts'
 import { LABEL_OVERLAY_BACKGROUND } from './sharedRendererConstants.ts'
 
 import type {
@@ -37,15 +31,13 @@ import type {
   MoreResolvedLabel,
   PlainResolvedLabel,
 } from './labelPositioning.ts'
-import type { JBrowsePalette } from '@jbrowse/core/ui/palette'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { CSSProperties } from 'react'
 
 type LGV = LinearGenomeViewModel
 
-// Each layer takes a narrow structural slice of the display, so a unit test can
-// render it against a plain object; the guards below make a renamed model field a
-// compile error here rather than a silent undefined at runtime.
+// The layer takes a narrow structural slice of the display, so a unit test can
+// render it against a plain object; the guard below makes a renamed model field
+// a compile error here rather than a silent undefined at runtime.
 type AssignableTo<A extends B, B> = A
 
 interface FloatingLabelsModel {
@@ -69,28 +61,10 @@ interface FloatingLabelsModel {
   toggleExpandedGene: (featureId: string) => void
 }
 
-interface HighlightBoxesModel {
-  renderedShowLabels: boolean
-  renderedShowDescriptions: boolean
-  canvasWidthPx: number
-  renderedLabelFontSize: number
-  featureItemMap: Map<string, FeatureItemEntry>
-  // featureItemMap holds the destination rows, so a box adds this to keep
-  // framing a glyph still easing toward one; 0 whenever nothing is easing.
-  morphOffsetFor: (featureId: string) => number
-  soloFeatureIdSet: ReadonlySet<string>
-  soloApplied: boolean
-}
-
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type _ModelSatisfiesFloatingLabels = AssignableTo<
   LinearCanvasBaseDisplayModel,
   FloatingLabelsModel
->
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-type _ModelSatisfiesHighlightBoxes = AssignableTo<
-  LinearCanvasBaseDisplayModel,
-  HighlightBoxesModel
 >
 
 // The badge draws smaller than the name beside it and both divs position by their
@@ -192,15 +166,6 @@ function FloatingLabel({
   )
 }
 
-// Assembly and refName together name a sequence here: the pair is the key the
-// layout groups rows by, and the overlay resolves region identity the same way.
-function sameRefSeq(
-  a: { assemblyName: string; refName: string },
-  b: { assemblyName: string; refName: string },
-) {
-  return a.assemblyName === b.assemblyName && a.refName === b.refName
-}
-
 function overlaysReady(
   viewInitialized: boolean,
   width: number | undefined,
@@ -210,31 +175,8 @@ function overlaysReady(
   return viewInitialized && !!width && !!bpPerPx && visibleRegions.length > 0
 }
 
-/**
- * The overlay boxes' colors as inline styles, kept out of the stylesheet because
- * they come from JBrowse's palette rather than a Material UI theme — which is
- * what lets this display render under a `PaletteProvider` and no `ThemeProvider`.
- */
-function overlayBoxStyles(palette: JBrowsePalette) {
-  return {
-    solo: {
-      border: `2px dashed ${palette.primary.main}`,
-      borderRadius: 3,
-      backgroundColor: alpha(palette.primary.main, 0.15),
-    },
-  }
-}
-
 const useStyles = makeStyles()(() => {
   return {
-    overlay: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      width: '100%',
-      height: '100%',
-      pointerEvents: 'none',
-    },
     // pointerEvents:none lets mouse events fall through to the canvas everywhere
     // but over a clickable label, which re-enables them and bubbles up to this
     // layer's delegated handlers.
@@ -268,10 +210,6 @@ const useStyles = makeStyles()(() => {
     },
     floatingLabelOverlay: {
       background: LABEL_OVERLAY_BACKGROUND,
-    },
-    overlayBase: {
-      position: 'absolute',
-      pointerEvents: 'none',
     },
   }
 })
@@ -496,143 +434,4 @@ export const FloatingLabelsLayer = observer(function FloatingLabelsLayer({
       {peptides}
     </div>
   )
-})
-
-// Its own observer, split from the labels because it reads the hover observables:
-// a mouse move re-renders these few boxes rather than every label.
-export const HighlightLayer = observer(function HighlightLayer({
-  model,
-  view,
-}: {
-  model: HighlightBoxesModel
-  view: LGV
-}) {
-  const {
-    soloFeatureIdSet,
-    soloApplied,
-    renderedShowLabels,
-    renderedShowDescriptions,
-    renderedLabelFontSize,
-    featureItemMap,
-    morphOffsetFor,
-  } = model
-  const { classes, cx } = useStyles()
-  const boxStyles = overlayBoxStyles(usePalette())
-  const viewInitialized = view.initialized
-  const width = viewInitialized ? model.canvasWidthPx : undefined
-  const bpPerPx = view.bpPerPx
-  const visibleRegions = view.visibleRegions
-
-  if (!overlaysReady(viewInitialized, width, bpPerPx, visibleRegions)) {
-    return null
-  }
-
-  const overlays: React.ReactElement[] = []
-
-  const addOverlay = ({
-    item,
-    source,
-    className,
-    key,
-    extraWidth = 0,
-    xPadding = 0,
-    yPadding = 0,
-    yOffset = 0,
-    testId,
-    boxStyle,
-  }: {
-    item: { startBp: number; endBp: number; topPx: number; bottomPx: number }
-    source: { assemblyName: string; refName: string }
-    className?: string
-    key: string
-    extraWidth?: number
-    xPadding?: number
-    yPadding?: number
-    yOffset?: number
-    testId?: string
-    boxStyle?: CSSProperties
-  }) => {
-    for (const vr of visibleRegions) {
-      if (!sameRefSeq(vr, source)) {
-        continue
-      }
-      const rect = overlayItemRect(item, vr)
-      if (rect) {
-        overlays.push(
-          <div
-            key={`${key}-${vr.displayedRegionIndex}`}
-            data-testid={testId}
-            className={cx(classes.overlayBase, className)}
-            style={{
-              ...computeOverlayRect(
-                yOffset === 0 ? rect : { ...rect, topPx: rect.topPx + yOffset },
-                extraWidth,
-                xPadding,
-                yPadding,
-              ),
-              ...boxStyle,
-            }}
-          />,
-        )
-      }
-    }
-  }
-
-  const computeExtraWidth = (entry: FeatureItemEntry) => {
-    if (entry.kind !== 'feature') {
-      return 0
-    }
-    const labelData = entry.data.floatingLabelsData.get(entry.item.featureId)
-    if (!labelData) {
-      return 0
-    }
-    const featureWidthPx = (entry.item.endBp - entry.item.startBp) / bpPerPx
-    return computeLabelExtraWidth(
-      labelData,
-      featureWidthPx,
-      renderedShowLabels,
-      renderedShowDescriptions,
-      renderedLabelFontSize,
-    )
-  }
-
-  const addFeatureBox = (
-    featureId: string,
-    boxStyle: CSSProperties,
-    key: string,
-    testId?: string,
-  ) => {
-    const entry = featureItemMap.get(featureId)
-    if (entry) {
-      addOverlay({
-        item: entry.item,
-        source: entry.source,
-        boxStyle,
-        key,
-        extraWidth: computeExtraWidth(entry),
-        xPadding: 2,
-        yPadding: 2,
-        yOffset: morphOffsetFor(featureId),
-        testId,
-      })
-    }
-  }
-
-  // Skipped once applied, since the view then shows only these features.
-  if (!soloApplied) {
-    for (const featureId of soloFeatureIdSet) {
-      addFeatureBox(
-        featureId,
-        boxStyles.solo,
-        `solo-select-${featureId}`,
-        'feature-solo-select',
-      )
-    }
-  }
-
-  // The layer is emitted here rather than by the caller, so an empty box set
-  // renders nothing instead of an empty full-size div.
-  return overlays.length > 0 ? (
-    <div className={classes.overlay}>{overlays}</div>
-  ) : null
 })

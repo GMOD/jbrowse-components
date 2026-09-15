@@ -126,10 +126,10 @@ captured at". Re-capture that figure before taking the 7.5x.
 Take it in the same pass as the SoA conversion; it is the same shape of problem.
 `baseModel.ts`'s `featureItemMap` allocates one entry object per feature AND per
 subfeature across every visible region, on every layout change, pan or zoom. Its
-consumers ask very little of it: `HighlightLayer` does a handful of `.get()`s
-(and genuinely needs `entry.vr` / `entry.data`), while `FloatingLabelsLayer` asks
-twice — the `?.kind === 'feature'` check at `components/overlayElements.tsx`,
-which decides whether a label is clickable, and `resolveTarget`.
+consumers ask very little of it: since the highlight boxes became the chrome's
+guide (ADR-110) `FloatingLabelsLayer` is the only one, and it asks twice — the
+`?.kind === 'feature'` check at `components/overlayElements.tsx`, which decides
+whether a label is clickable, and `resolveTarget`.
 
 Only the first of the two is removable. `emitSubfeatureLabel` always sets
 `parentFeatureId` and `processFeatureRecord` never does, so

@@ -25,14 +25,13 @@ canvas paints through, which would collapse every region into one group.
 A label here is not an overlay on top of the layout — it is _part of_ it.
 Because a name is left-aligned to its glyph and spills rightward, the packer
 widens each feature's box by its widest visible label (`renderedLabelWidths` in
-`labelReservation.ts`) and pushes a colliding neighbour onto another row. Four
-other things then re-derive that width from `computeLabelExtraWidth`: the
-feature hit box, the highlight and selection overlays, and the SVG export's
-highlight boxes. Those four take their size from `renderedLabelFontSize`, not
-the display mode's `labelFontSize`, because the two differ on the `bare` rung:
-`labelFontPx: 0` is how the pack spends the below-label rows at no height, so a
-consumer measuring at the mode's size overhangs a neighbour by an ungated
-subfeature label the rung reserved nothing for.
+`labelReservation.ts`) and pushes a colliding neighbour onto another row. The
+feature hit box then re-derives that width from `computeLabelExtraWidth`. It
+takes its size from `renderedLabelFontSize`, not the display mode's
+`labelFontSize`, because the two differ on the `bare` rung: `labelFontPx: 0` is
+how the pack spends the below-label rows at no height, so a consumer measuring
+at the mode's size overhangs a neighbour by an ungated subfeature label the rung
+reserved nothing for.
 
 So "which of this feature's labels render" has to be **one** predicate —
 `renderedLabelSet` in `components/labelPositioning.ts` — read by the reservation

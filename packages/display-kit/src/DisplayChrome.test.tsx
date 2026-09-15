@@ -921,6 +921,12 @@ describe('the highlight', () => {
     get selectionInk() {
       return self.lit ? [{ left: 90, top: 0, width: 4, height: 4 }] : []
     },
+    get pinnedInk() {
+      return self.lit ? [{ left: 120, top: 0, width: 8, height: 4 }] : []
+    },
+    get soloInk() {
+      return self.lit ? [{ left: 140, top: 0, width: 8, height: 4 }] : []
+    },
     get highlightStyle() {
       return self.style
     },
@@ -936,6 +942,24 @@ describe('the highlight', () => {
     expect(weak!.style.width).toBe('30px')
     expect(strong!.style.background).not.toBe(weak!.style.background)
     expect(queryAllByTestId('chrome-selection')).toHaveLength(1)
+  })
+
+  // A pin persists until the reader clears it and the export carries it; a solo
+  // collection is a pending gesture, drawn dashed and never exported.
+  test('the pinned and solo lists get their own boxes, under the hover', async () => {
+    const { findByTestId, findAllByTestId } = renderChrome(
+      HighlightModel.create({}),
+    )
+    await findByTestId('probe-canvas')
+    const [pinned] = await findAllByTestId('chrome-pinned')
+    const [solo] = await findAllByTestId('chrome-solo')
+    expect(pinned!.style.left).toBe('120px')
+    expect(pinned!.style.border).toContain('1px solid')
+    expect(solo!.style.left).toBe('140px')
+    expect(solo!.style.border).toContain('2px dashed')
+    expect(solo!.compareDocumentPosition(pinned!)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
   })
 
   test('the box style is a wash with a border, and nothing lit draws nothing', async () => {

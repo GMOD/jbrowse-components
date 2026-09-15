@@ -106,7 +106,6 @@ import {
 } from './trackMenus.ts'
 import {
   installYMorphAutorun,
-  morphOffsetViews,
   yMorphActions,
   yMorphViews,
   yMorphVolatiles,
@@ -182,6 +181,7 @@ export type { Region } from '@jbrowse/core/util'
 // Views return these, and a subclass in another package needs a path to them to
 // emit its own declarations.
 export type { LabelReservation } from './fitLadder.ts'
+export type { RegionInstanceIndex } from './featureHighlightInk.ts'
 export type { FeatureGroupBy, FeatureGroupSection } from './groupBy.ts'
 // Off this subpath rather than the barrel, so a subclass composing its own
 // "Color by..." presets holds no value edge into the eager entry.
@@ -203,1366 +203,1364 @@ const JexlFilterDialog = lazy(() => import('@jbrowse/core/ui/JexlFilterDialog'))
 export default function baseStateModelFactory(
   configSchema: LinearCanvasBaseDisplayConfigModel,
 ) {
-  return (
-    types
-      .compose(
-        'LinearCanvasBaseDisplay',
-        types.compose(
-          BaseDisplay,
-          TrackHeightMixin(),
-          HeightModeMixin(),
-          MultiRegionDisplayMixin(),
+  return types
+    .compose(
+      'LinearCanvasBaseDisplay',
+      types.compose(
+        BaseDisplay,
+        TrackHeightMixin(),
+        HeightModeMixin(),
+        MultiRegionDisplayMixin(),
+      ),
+      LegendMixin(),
+      CanvasFeatureGateMixin(),
+      // After both gate mixins, since it keys off their verdict.
+      DensityBandMixin(),
+      ContextMenuMixin<FeatureContextMenuInfo>(),
+      HiddenGroupsMixin(),
+      types.model({
+        /**
+         * #property
+         */
+        configuration: ConfigurationReference(configSchema),
+        /**
+         * #property
+         * Runtime "Filter by..." override.
+         */
+        jexlFiltersSetting: types.maybe(types.array(types.string)),
+        /**
+         * #property
+         * Feature ids the user pinned to the top of the layout via the
+         * feature right-click menu.
+         */
+        pinnedFeatureIds: types.stripDefault(types.array(types.string), []),
+        /**
+         * #property
+         * "Show only these features": the collected set the user builds by
+         * ctrl+clicking features (or via the right-click menu).
+         */
+        soloFeatureIds: types.stripDefault(types.array(types.string), []),
+        /**
+         * #property
+         * Whether the collected soloFeatureIds set is actually isolating
+         * the view (worker drops non-members).
+         */
+        soloApplied: types.stripDefault(types.boolean, false),
+        /**
+         * #property
+         * "Hide this feature" exclusion set (inverse of solo): the worker
+         * drops these from layout/drawing.
+         */
+        hiddenFeatureIds: types.stripDefault(types.array(types.string), []),
+        /**
+         * #property
+         * Genes the user opened from the isoform badge on their own label:
+         * these draw every isoform whatever `geneGlyphMode` or the fit
+         * ladder's isoform rung would otherwise collapse them to.
+         */
+        expandedGeneIds: types.stripDefault(types.array(types.string), []),
+        /**
+         * #property
+         * Declarative feature highlights, typically seeded by a text search
+         * (highlight the gene you searched for).
+         */
+        featureHighlights: types.stripDefault(
+          types.array(FeatureHighlightModel),
+          [],
         ),
-        LegendMixin(),
-        CanvasFeatureGateMixin(),
-        // After both gate mixins, since it keys off their verdict.
-        DensityBandMixin(),
-        ContextMenuMixin<FeatureContextMenuInfo>(),
-        HiddenGroupsMixin(),
-        types.model({
-          /**
-           * #property
-           */
-          configuration: ConfigurationReference(configSchema),
-          /**
-           * #property
-           * Runtime "Filter by..." override.
-           */
-          jexlFiltersSetting: types.maybe(types.array(types.string)),
-          /**
-           * #property
-           * Feature ids the user pinned to the top of the layout via the
-           * feature right-click menu.
-           */
-          pinnedFeatureIds: types.stripDefault(types.array(types.string), []),
-          /**
-           * #property
-           * "Show only these features": the collected set the user builds by
-           * ctrl+clicking features (or via the right-click menu).
-           */
-          soloFeatureIds: types.stripDefault(types.array(types.string), []),
-          /**
-           * #property
-           * Whether the collected soloFeatureIds set is actually isolating
-           * the view (worker drops non-members).
-           */
-          soloApplied: types.stripDefault(types.boolean, false),
-          /**
-           * #property
-           * "Hide this feature" exclusion set (inverse of solo): the worker
-           * drops these from layout/drawing.
-           */
-          hiddenFeatureIds: types.stripDefault(types.array(types.string), []),
-          /**
-           * #property
-           * Genes the user opened from the isoform badge on their own label:
-           * these draw every isoform whatever `geneGlyphMode` or the fit
-           * ladder's isoform rung would otherwise collapse them to.
-           */
-          expandedGeneIds: types.stripDefault(types.array(types.string), []),
-          /**
-           * #property
-           * Declarative feature highlights, typically seeded by a text search
-           * (highlight the gene you searched for).
-           */
-          featureHighlights: types.stripDefault(
-            types.array(FeatureHighlightModel),
-            [],
-          ),
-        }),
-      )
-      .volatile(() => ({
-        // #region volatile
-        /**
-         * #volatile
-         */
-        featureIdUnderMouse: undefined as string | undefined,
-        /**
-         * #volatile
-         */
-        subfeatureIdUnderMouse: undefined as string | undefined,
-        /**
-         * #volatile
-         * the hover tooltip's rows, each rendered as its own element — see
-         * hoverTooltipRows for why this is a list and not one HTML string
-         */
-        mouseoverExtraInformation: undefined as string[] | undefined,
-        /**
-         * #volatile
-         * genomic base currently hovered in a feature sequence dialog opened
-         * from this display, read by the LGV crosshair overlay
-         */
-        sequenceHoverPosition: undefined as SequenceHoverPosition | undefined,
-        // #endregion
-      }))
-      .volatile(fitLadderVolatiles)
-      .volatile(yMorphVolatiles)
-      .views(self => ({
-        /**
-         * #getter
-         * The fetched features, keyed by displayedRegionIndex — the
-         * foundation's per-region store, narrowed.
-         */
-        get rpcDataMap(): ReadonlyMap<number, LoadedFeatureData> {
-          return self.regionPayloads as ReadonlyMap<number, LoadedFeatureData>
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * the config typed off the concrete schema; `ConfigurationReference`
-         * erases `self.configuration` to `any`, so direct reads route through
-         * this to stay typed (same move as `BaseAdapter<CONF>`).
-         */
-        get conf(): Instance<LinearCanvasBaseDisplayConfigModel> {
-          return self.configuration
-        },
+      }),
+    )
+    .volatile(() => ({
+      // #region volatile
+      /**
+       * #volatile
+       */
+      featureIdUnderMouse: undefined as string | undefined,
+      /**
+       * #volatile
+       */
+      subfeatureIdUnderMouse: undefined as string | undefined,
+      /**
+       * #volatile
+       * the hover tooltip's rows, each rendered as its own element — see
+       * hoverTooltipRows for why this is a list and not one HTML string
+       */
+      mouseoverExtraInformation: undefined as string[] | undefined,
+      /**
+       * #volatile
+       * genomic base currently hovered in a feature sequence dialog opened
+       * from this display, read by the LGV crosshair overlay
+       */
+      sequenceHoverPosition: undefined as SequenceHoverPosition | undefined,
+      // #endregion
+    }))
+    .volatile(fitLadderVolatiles)
+    .volatile(yMorphVolatiles)
+    .views(self => ({
+      /**
+       * #getter
+       * The fetched features, keyed by displayedRegionIndex — the
+       * foundation's per-region store, narrowed.
+       */
+      get rpcDataMap(): ReadonlyMap<number, LoadedFeatureData> {
+        return self.regionPayloads as ReadonlyMap<number, LoadedFeatureData>
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * the config typed off the concrete schema; `ConfigurationReference`
+       * erases `self.configuration` to `any`, so direct reads route through
+       * this to stay typed (same move as `BaseAdapter<CONF>`).
+       */
+      get conf(): Instance<LinearCanvasBaseDisplayConfigModel> {
+        return self.configuration
+      },
 
-        /**
-         * #method
-         * What the `jexlFilters` config slot alone declares,
-         * `jexl:`-prefixed.
-         */
-        configuredFilters(): string[] {
-          return configuredJexlFilters(self)
-        },
-      }))
-      .views(colorViews)
-      .views(() => ({
-        /**
-         * #getter
-         * Overridable hook (default absent): the isoform-collapse control the
-         * shared canvas body draws in its bottom-right chip stack, or nothing
-         * when the display has no gene glyphs.
-         */
-        get geneGlyphNotice(): GeneGlyphNotice | undefined {
+      /**
+       * #method
+       * What the `jexlFilters` config slot alone declares,
+       * `jexl:`-prefixed.
+       */
+      configuredFilters(): string[] {
+        return configuredJexlFilters(self)
+      },
+    }))
+    .views(colorViews)
+    .views(() => ({
+      /**
+       * #getter
+       * Overridable hook (default absent): the isoform-collapse control the
+       * shared canvas body draws in its bottom-right chip stack, or nothing
+       * when the display has no gene glyphs.
+       */
+      get geneGlyphNotice(): GeneGlyphNotice | undefined {
+        return undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Whether features can be laid out: data is fetched, in-bounds, and
+       * the view is measured.
+       */
+      get layoutReady() {
+        return (
+          !self.regionTooLarge &&
+          containingLgv(self).initialized &&
+          self.rpcDataMap.size > 0
+        )
+      },
+      /**
+       * #getter
+       * The features whose bp span touches the viewport.
+       */
+      get onScreenFeatureIds(): ReadonlySet<string> | undefined {
+        if (!self.layoutReady) {
           return undefined
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Whether features can be laid out: data is fetched, in-bounds, and
-         * the view is measured.
-         */
-        get layoutReady() {
-          return (
-            !self.regionTooLarge &&
-            containingLgv(self).initialized &&
-            self.rpcDataMap.size > 0
-          )
-        },
-        /**
-         * #getter
-         * The features whose bp span touches the viewport.
-         */
-        get onScreenFeatureIds(): ReadonlySet<string> | undefined {
-          if (!self.layoutReady) {
-            return undefined
+        }
+        const blocks = containingLgv(self).coarseDynamicBlocks
+        return blocks.length === 0
+          ? undefined
+          : featureIdsTouchingBlocks(self.rpcDataMap.values(), blocks)
+      },
+      /**
+       * #getter
+       * Features per pixel of what is actually ON SCREEN — the density the
+       * `auto` label modes gate on (ADR-093).
+       */
+      get labelDensityPerPx() {
+        const ids = this.onScreenFeatureIds
+        if (!ids) {
+          return self.visibleFeatureDensityPerPx
+        }
+        let widthPx = 0
+        for (const block of containingLgv(self).coarseDynamicBlocks) {
+          widthPx += block.widthPx
+        }
+        return widthPx > 0
+          ? ids.size / widthPx
+          : self.visibleFeatureDensityPerPx
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get renderState() {
+        return {
+          scrollY: self.scrollTop,
+          canvasWidth: self.canvasWidthPx,
+          canvasHeight: self.height,
+          outlineColor: resolveOutlineColor(
+            self.outlineColorSlot,
+            getPaletteHost(self).palette,
+          ),
+        }
+      },
+
+      /**
+       * #getter
+       */
+      // A coarse bucket, not raw scrollTop, so the label overlay only
+      // rebuilds once the user scrolls a full bucket.
+      get labelScrollBucket() {
+        return labelScrollBucket(self.scrollTop)
+      },
+
+      /**
+       * #getter
+       */
+      get displayMode(): DisplayMode {
+        return getConf(self, 'displayMode')
+      },
+
+      /**
+       * #getter
+       * The in-track grouping, or undefined when ungrouped. The slot is
+       * `frozen`, so this is the chokepoint an unrecognized type stops at.
+       */
+      get groupBy(): FeatureGroupBy | undefined {
+        return normalizeFeatureGroupBy(getConf(self, 'groupBy'))
+      },
+
+      /**
+       * #getter
+       * Identity of the key space the grouping hands out keys in; the
+       * hidden sections are dropped when it moves.
+       */
+      get groupKeySpace() {
+        return groupKeySpaceOf(this.groupBy)
+      },
+
+      /**
+       * #getter
+       * The subfeature-label mode the worker bakes.
+       */
+      get effectiveSubfeatureLabels() {
+        return this.displayMode === 'collapsed'
+          ? 'none'
+          : getConf(self, 'subfeatureLabels')
+      },
+
+      /**
+       * #getter
+       */
+      get labelFontSize() {
+        return labelFontSize(this.displayMode)
+      },
+
+      /**
+       * #getter
+       */
+      get showLabelsMode() {
+        return getConf(self, 'showLabels')
+      },
+
+      /**
+       * #getter
+       */
+      // Gated here rather than only at `renderedShowLabels`, so layout, hit
+      // testing, the DOM overlay and the SVG export agree; otherwise rows
+      // reserve label height nothing uses.
+      get showLabels() {
+        const mode = this.showLabelsMode
+        return (
+          this.displayMode !== 'collapsed' &&
+          modeCanShowName(mode) &&
+          (mode !== 'auto' ||
+            self.labelDensityPerPx <= getConf(self, 'maxLabelFeatureDensity'))
+        )
+      },
+
+      /**
+       * #getter
+       */
+      // The persisted intent, before the density gate and collapsed mode
+      // have a say, so the track menu's radio reflects the user's choice.
+      get showDescriptions() {
+        return modeCanShowDescription(this.showLabelsMode)
+      },
+
+      /**
+       * #getter
+       */
+      get effectiveShowDescriptions() {
+        // Anded with `showLabels` so a config that inverts the two
+        // thresholds cannot leave descriptions painting after names are
+        // gone; the pinned modes skip the density gate, `description`
+        // included.
+        return (
+          this.displayMode !== 'collapsed' &&
+          this.showDescriptions &&
+          (this.showLabelsMode !== 'auto' ||
+            (this.showLabels &&
+              self.labelDensityPerPx <=
+                getConf(self, 'maxDescriptionFeatureDensity')))
+        )
+      },
+
+      /**
+       * #getter
+       */
+      get selectedFeatureId() {
+        const selection = isAlive(self) ? getSession(self).selection : undefined
+        return isFeature(selection) ? selection.id() : undefined
+      },
+
+      /**
+       * #getter
+       */
+      get colorByCDS() {
+        const view = containingLgv(self)
+        return view.colorByCDS
+      },
+
+      /**
+       * #getter
+       */
+      get showAminoAcids() {
+        const view = containingLgv(self)
+        return view.showAminoAcids
+      },
+
+      /**
+       * #method
+       * The filters actually applied, as `jexl:`-prefixed expressions — see
+       * `activeJexlFilters`, which is the shared two-tier resolution.
+       */
+      activeFilters(): string[] {
+        return activeJexlFilters(self)
+      },
+
+      /**
+       * #getter
+       */
+      get reversedRegions() {
+        const set = new Set<number>()
+        for (const [num, data] of self.rpcDataMap) {
+          if (data.reversed) {
+            set.add(num)
           }
-          const blocks = containingLgv(self).coarseDynamicBlocks
-          return blocks.length === 0
-            ? undefined
-            : featureIdsTouchingBlocks(self.rpcDataMap.values(), blocks)
-        },
-        /**
-         * #getter
-         * Features per pixel of what is actually ON SCREEN — the density the
-         * `auto` label modes gate on (ADR-093).
-         */
-        get labelDensityPerPx() {
-          const ids = this.onScreenFeatureIds
-          if (!ids) {
-            return self.visibleFeatureDensityPerPx
-          }
-          let widthPx = 0
-          for (const block of containingLgv(self).coarseDynamicBlocks) {
-            widthPx += block.widthPx
-          }
-          return widthPx > 0
-            ? ids.size / widthPx
-            : self.visibleFeatureDensityPerPx
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         */
-        get renderState() {
-          return {
-            scrollY: self.scrollTop,
-            canvasWidth: self.canvasWidthPx,
-            canvasHeight: self.height,
-            outlineColor: resolveOutlineColor(
-              self.outlineColorSlot,
-              getPaletteHost(self).palette,
-            ),
-          }
-        },
-
-        /**
-         * #getter
-         */
-        // A coarse bucket, not raw scrollTop, so the label overlay only
-        // rebuilds once the user scrolls a full bucket.
-        get labelScrollBucket() {
-          return labelScrollBucket(self.scrollTop)
-        },
-
-        /**
-         * #getter
-         */
-        get displayMode(): DisplayMode {
-          return getConf(self, 'displayMode')
-        },
-
-        /**
-         * #getter
-         * The in-track grouping, or undefined when ungrouped. The slot is
-         * `frozen`, so this is the chokepoint an unrecognized type stops at.
-         */
-        get groupBy(): FeatureGroupBy | undefined {
-          return normalizeFeatureGroupBy(getConf(self, 'groupBy'))
-        },
-
-        /**
-         * #getter
-         * Identity of the key space the grouping hands out keys in; the
-         * hidden sections are dropped when it moves.
-         */
-        get groupKeySpace() {
-          return groupKeySpaceOf(this.groupBy)
-        },
-
-        /**
-         * #getter
-         * The subfeature-label mode the worker bakes.
-         */
-        get effectiveSubfeatureLabels() {
-          return this.displayMode === 'collapsed'
-            ? 'none'
-            : getConf(self, 'subfeatureLabels')
-        },
-
-        /**
-         * #getter
-         */
-        get labelFontSize() {
-          return labelFontSize(this.displayMode)
-        },
-
-        /**
-         * #getter
-         */
-        get showLabelsMode() {
-          return getConf(self, 'showLabels')
-        },
-
-        /**
-         * #getter
-         */
-        // Gated here rather than only at `renderedShowLabels`, so layout, hit
-        // testing, the DOM overlay and the SVG export agree; otherwise rows
-        // reserve label height nothing uses.
-        get showLabels() {
-          const mode = this.showLabelsMode
-          return (
-            this.displayMode !== 'collapsed' &&
-            modeCanShowName(mode) &&
-            (mode !== 'auto' ||
-              self.labelDensityPerPx <= getConf(self, 'maxLabelFeatureDensity'))
-          )
-        },
-
-        /**
-         * #getter
-         */
-        // The persisted intent, before the density gate and collapsed mode
-        // have a say, so the track menu's radio reflects the user's choice.
-        get showDescriptions() {
-          return modeCanShowDescription(this.showLabelsMode)
-        },
-
-        /**
-         * #getter
-         */
-        get effectiveShowDescriptions() {
-          // Anded with `showLabels` so a config that inverts the two
-          // thresholds cannot leave descriptions painting after names are
-          // gone; the pinned modes skip the density gate, `description`
-          // included.
-          return (
-            this.displayMode !== 'collapsed' &&
-            this.showDescriptions &&
-            (this.showLabelsMode !== 'auto' ||
-              (this.showLabels &&
-                self.labelDensityPerPx <=
-                  getConf(self, 'maxDescriptionFeatureDensity')))
-          )
-        },
-
-        /**
-         * #getter
-         */
-        get selectedFeatureId() {
-          const selection = isAlive(self)
-            ? getSession(self).selection
-            : undefined
-          return isFeature(selection) ? selection.id() : undefined
-        },
-
-        /**
-         * #getter
-         */
-        get colorByCDS() {
-          const view = containingLgv(self)
-          return view.colorByCDS
-        },
-
-        /**
-         * #getter
-         */
-        get showAminoAcids() {
-          const view = containingLgv(self)
-          return view.showAminoAcids
-        },
-
-        /**
-         * #method
-         * The filters actually applied, as `jexl:`-prefixed expressions — see
-         * `activeJexlFilters`, which is the shared two-tier resolution.
-         */
-        activeFilters(): string[] {
-          return activeJexlFilters(self)
-        },
-
-        /**
-         * #getter
-         */
-        get reversedRegions() {
-          const set = new Set<number>()
-          for (const [num, data] of self.rpcDataMap) {
-            if (data.reversed) {
-              set.add(num)
-            }
-          }
-          return set
-        },
-      }))
-      .views(featureSetViews)
-      .views(featureHighlightViews)
-      .views(self => ({
-        /**
-         * #method
-         */
-        // Every field read here is an RPC cache key: the settings autorun
-        // clears data when any of them changes.
-        rpcProps() {
-          // Picked rather than filtered: the snapshot carries every slot the
-          // schema and its bases declare, and the subtractive spelling made
-          // every slot nobody excluded a silent refetch trigger. The gate
-          // budgets are not cache keys; as one, `maxFeatureDensity` made
-          // zooming across the 20 kb floor a full clear and refetch, and a
-          // raised budget already reaches the verdict through the tracked
-          // `regionTooLarge`.
-          const snapshot = fullConfSnapshot(self.configuration)
-          const workerConfig = pickDisplayConfig(snapshot)
-          return {
-            // Reading `activeFilters()` here makes it a cache key, so
-            // toggling filters refetches.
-            displayConfig: {
-              ...workerConfig,
-              subfeatureLabels: self.effectiveSubfeatureLabels,
-              jexlFilters: self.activeFilters(),
-              // Only the attribute dimension needs a stamp per feature, so
-              // only it joins the cache key, and only while set: strand
-              // grouping never refetches.
-              ...(self.groupBy?.attribute === undefined
-                ? {}
-                : { groupByAttribute: self.groupBy.attribute }),
-            },
-            colorByCDS: self.colorByCDS,
-            showAminoAcids: self.showAminoAcids,
-            // Undefined while collecting, so building the set neither
-            // refetches nor hides anything.
-            soloFeatureIds:
-              self.soloApplied && self.soloFeatureIds.length > 0
-                ? toJS(self.soloFeatureIds)
-                : undefined,
-            hiddenFeatureIds:
-              self.hiddenFeatureIds.length > 0
-                ? toJS(self.hiddenFeatureIds)
-                : undefined,
-          }
-        },
-
-        /**
-         * #method
-         * What the main-thread encode needs beyond a region's own data: the
-         * packed color for every theme class the worker emitted, off
-         * `session.palette` so a theme toggle re-encodes what is loaded
-         * instead of refetching it.
-         */
-        gpuProps() {
-          return { colorTable: themedColorTable(getPaletteHost(self).palette) }
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Layout inputs shared by the base layout and every fit rung,
-         * `expandedGeneIds` included: a rung inheriting them without the
-         * exemption re-collapses the gene the user just opened.
-         */
-        get layoutInputs() {
-          const view = containingLgv(self)
-          return {
-            bpPerPx: view.coarseBpPerPx,
-            reversedRegions: self.reversedRegions,
-            displayMode: self.displayMode,
-            pinnedFeatureIds: self.layoutPinnedFeatureIdSet,
-            expandedGeneIds: self.expandedGeneIdSet,
-            groupBy: self.groupBy,
-            hiddenGroupKeys: self.hiddenGroupKeys,
-          }
-        },
-        /**
-         * #getter
-         * The features the ladder measures its rungs and its isoform solve
-         * against: the on-screen set in `fit` and `fixed`, undefined in
-         * `grow` (which measures the whole stack).
-         */
-        get fitMeasureFeatureIds(): ReadonlySet<string> | undefined {
-          return self.autoHeight ? undefined : self.onScreenFeatureIds
-        },
-        /**
-         * #getter
-         * Overridable hook (default false): the display's transcript setting
-         * names every isoform, so the fit ladder's `isoforms` rung may not
-         * trim — the surplus scrolls instead.
-         */
-        get showsEveryIsoform() {
-          return false
-        },
-        /**
-         * #getter
-         * Overridable hook: the gene-glyph mode the worker collapses under.
-         */
-        get effectiveGeneGlyphMode(): GeneGlyphMode {
-          return getConf(self, 'geneGlyphMode')
-        },
-        /**
-         * #getter
-         * Whether the settings reserve `below` subfeature-label rows, which
-         * is what earns the fit ladder its `bare` rung — with nothing
-         * reserved the rung would repack an identical stack.
-         */
-        get reservesBelowLabelRows() {
-          return self.effectiveSubfeatureLabels === 'below'
-        },
-      }))
-      .views(fitLadderViews)
-      .views(self => ({
-        /**
-         * #getter
-         * Uniform vertical scale for fit mode; 1 unless the resolved stack is
-         * being grown to fill the track (> 1) or the bodies stack squeezed to
-         * fit (< 1).
-         */
-        get fitScale() {
-          return self.fitStage.scale
-        },
-        /**
-         * #getter
-         * What every consumer (hit test, GPU upload, React render) reads: the
-         * resolved fit layout, cloned and scaled only when grown or squeezed.
-         */
-        get laidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
-          const { layout, scale } = self.fitStage
-          const { groupBy } = self
-          return self.coarseTierStandsIn
-            ? EMPTY_LAID_OUT_DATA
-            : scale === 1
-              ? layout
-              : scaleLaidOutData(
-                  layout,
-                  scale,
-                  groupBy && { groupBy, chipPx: GROUP_LABEL_HEIGHT },
-                )
-        },
-        /**
-         * #getter
-         * The stacked sections in stacking order, each with the chip row
-         * the packer reserved above it, read off the same rows the glyphs
-         * paint; empty while ungrouped.
-         */
-        get groupSections(): FeatureGroupSection[] {
-          const { groupBy } = self
-          return groupBy
-            ? featureGroupSections(
-                this.laidOutDataMap,
-                groupBy,
-                GROUP_LABEL_HEIGHT,
-              )
-            : []
-        },
-        /**
-         * #getter
-         * The features of the sections the user hid, which sit unplaced by
-         * choice and so count as nothing the track failed to show.
-         */
-        get hiddenGroupFeatureIds(): ReadonlySet<string> | undefined {
-          const { groupBy, hiddenGroupKeys } = self
-          if (!groupBy || hiddenGroupKeys.size === 0) {
-            return undefined
-          }
-          const sectionOf = sectionIdsOf(this.laidOutDataMap, groupBy)
-          const ids = new Set<string>()
-          for (const data of this.laidOutDataMap.values()) {
-            for (const item of data.flatbushItems) {
-              if (hiddenGroupKeys.has(sectionOf(item).key)) {
-                ids.add(item.featureId)
-              }
-            }
-          }
-          return ids
-        },
-        /**
-         * #getter
-         * Whether the section chips and dividers draw: a grouping is set and
-         * the layout produced a section for it.
-         */
-        get showsGroupLabels() {
-          return this.groupSections.length > 0
-        },
-        /**
-         * #getter
-         * A grouped track puts its track label above the plot, where it
-         * cannot cover the first section's chip. Reads the setting, not the
-         * sections, so the label does not jump when data lands.
-         */
-        get prefersOffset() {
-          return self.groupBy !== undefined
-        },
-        /**
-         * #getter
-         * Descriptions are painted where the kept rung reserved room for
-         * them.
-         */
-        get renderedShowDescriptions() {
-          return self.fitStage.showDescriptions
-        },
-        /**
-         * #getter
-         * Names are painted where the kept rung reserved row height +
-         * overhang for them.
-         */
-        get renderedShowLabels() {
-          return self.fitStage.showLabels
-        },
-        /**
-         * #getter
-         * A subfeature label (a transcript name under its gene) is
-         * worker-baked and its row is reserved in the pack, so it survives
-         * every rung that kept those rows and goes only where the kept rung
-         * spent them at zero.
-         */
-        get renderedShowSubfeatureLabels() {
-          const { scale, dropBelowLabelRows } = self.fitStage
-          return scale >= 1 && !dropBelowLabelRows
-        },
-        /**
-         * #getter
-         * The size the kept rung priced its labels at, and so the size they
-         * draw at.
-         */
-        // Zero at the `bare` rung, which spends the below-label rows at no
-        // height and so reserves no label width; a hit box or highlight
-        // measuring at the mode's size overhangs its neighbour by an ungated
-        // subfeature label nothing drew.
-        get renderedLabelFontSize() {
-          return self.fitStage.dropBelowLabelRows ? 0 : self.labelFontSize
-        },
-        /**
-         * #getter
-         * What the ladder took from the labels the settings reserved, and how
-         * far it squeezed — the one derivation both user-facing notes read.
-         */
-        get fitDrops() {
-          return fitDrops(
-            self.fitStage,
-            self.showLabels,
-            self.effectiveShowDescriptions,
-            // Solving for one costs a bisection, and only this rung reports
-            // it.
-            self.fitStage.level === 'decimated'
-              ? self.fitDecimatedFactor
+        }
+        return set
+      },
+    }))
+    .views(featureSetViews)
+    .views(featureHighlightViews)
+    .views(self => ({
+      /**
+       * #method
+       */
+      // Every field read here is an RPC cache key: the settings autorun
+      // clears data when any of them changes.
+      rpcProps() {
+        // Picked rather than filtered: the snapshot carries every slot the
+        // schema and its bases declare, and the subtractive spelling made
+        // every slot nobody excluded a silent refetch trigger. The gate
+        // budgets are not cache keys; as one, `maxFeatureDensity` made
+        // zooming across the 20 kb floor a full clear and refetch, and a
+        // raised budget already reaches the verdict through the tracked
+        // `regionTooLarge`.
+        const snapshot = fullConfSnapshot(self.configuration)
+        const workerConfig = pickDisplayConfig(snapshot)
+        return {
+          // Reading `activeFilters()` here makes it a cache key, so
+          // toggling filters refetches.
+          displayConfig: {
+            ...workerConfig,
+            subfeatureLabels: self.effectiveSubfeatureLabels,
+            jexlFilters: self.activeFilters(),
+            // Only the attribute dimension needs a stamp per feature, so
+            // only it joins the cache key, and only while set: strand
+            // grouping never refetches.
+            ...(self.groupBy?.attribute === undefined
+              ? {}
+              : { groupByAttribute: self.groupBy.attribute }),
+          },
+          colorByCDS: self.colorByCDS,
+          showAminoAcids: self.showAminoAcids,
+          // Undefined while collecting, so building the set neither
+          // refetches nor hides anything.
+          soloFeatureIds:
+            self.soloApplied && self.soloFeatureIds.length > 0
+              ? toJS(self.soloFeatureIds)
               : undefined,
-          )
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * The track-sizing control's account of what fit mode gave up, or
-         * undefined when nothing.
-         */
-        get fitNote() {
-          return fitLadderNote(self.fitDrops)
-        },
-        /**
-         * #getter
-         * The note on the selected "Labels" radio while the ladder is not
-         * honouring it (see `inertLabelHint`).
-         */
-        get labelsFitHint() {
-          return labelsFitHint(self.fitDrops)
-        },
-      }))
-      .views(yMorphViews)
-      .actions(yMorphActions)
-      .views(heightViews)
-      .views(self => ({
-        /**
-         * #getter
-         */
-        get featureIdIndex() {
-          return indexById(self.laidOutDataMap, d => d.flatbushItems)
-        },
+          hiddenFeatureIds:
+            self.hiddenFeatureIds.length > 0
+              ? toJS(self.hiddenFeatureIds)
+              : undefined,
+        }
+      },
 
-        /**
-         * #getter
-         */
-        get subfeatureIdIndex() {
-          return indexById(self.laidOutDataMap, d => d.subfeatureInfos)
-        },
-      }))
-      // Its own block so `morphOffsetFor` reads these off `self`:
-      // `overlayElements.tsx` destructures it off the model and calls it with
-      // no receiver, which under `this` threw.
-      .views(morphOffsetViews)
-      .views(self => ({
-        /**
-         * #getter
-         */
-        get hoveredFeature() {
-          const id = self.featureIdUnderMouse
-          return id === undefined ? undefined : self.featureIdIndex.get(id)
-        },
-
-        /**
-         * #getter
-         */
-        get hoveredSubfeature() {
-          const id = self.subfeatureIdUnderMouse
-          return id === undefined ? undefined : self.subfeatureIdIndex.get(id)
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * The feature the hover box frames: the open context menu's target
-         * while one is open, so the box always agrees with what the menu acts
-         * on, else the feature under the cursor.
-         */
-        get hoverBoxFeature() {
-          const info = self.contextMenuInfo
-          return info ? info.item : self.hoveredFeature
-        },
-        /**
-         * #getter
-         * The transcript the hover box frames instead of its gene, by the
-         * rule of `hoverBoxFeature`.
-         */
-        get hoverBoxSubfeature() {
-          const info = self.contextMenuInfo
-          return info ? info.subfeature : self.hoveredSubfeature
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * Feature and subfeature ids to the primitives they painted, per
-         * laid-out region. Deliberately held by no autorun: nothing builds it
-         * until a hover or a selection asks which instances to light.
-         */
-        get regionInstanceIndexes(): ReadonlyMap<number, RegionInstanceIndex> {
-          const map = new Map<number, RegionInstanceIndex>()
-          for (const [idx, data] of self.laidOutDataMap) {
-            map.set(idx, buildRegionInstanceIndex(data))
-          }
-          return map
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         * What the chrome lights under the pointer: the open context menu's
-         * target while one is open, else the hovered subfeature, else the
-         * hovered feature — one box per region over its glyph and its labels.
-         */
-        get hoverInk(): HighlightRect[] {
-          const item = self.hoverBoxSubfeature ?? self.hoverBoxFeature
-          return featureHighlightInk(self, item ? [item.featureId] : [])
-        },
-        /**
-         * #getter
-         * The session's selected feature, boxed the same way.
-         */
-        get selectionInk(): HighlightRect[] {
-          const id = self.selectedFeatureId
-          return featureHighlightInk(self, id === undefined ? [] : [id])
-        },
-        /**
-         * #getter
-         * Every feature the user pinned — a search hit, a right-click
-         * highlight, the `highlight=` URL param — boxed the same way. The one
-         * highlight list the SVG export draws.
-         */
-        get pinnedInk(): HighlightRect[] {
-          return featureHighlightInk(self, self.highlightedFeatureIdSet)
-        },
-      }))
-      .views(self => ({
-        /**
-         * #method
-         */
-        searchFeatureByID(id: string) {
-          const item = self.featureIdIndex.get(id)
-          if (!item) {
-            return undefined
-          }
-          return [item.startBp, item.topPx, item.endBp, item.bottomPx] as const
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         */
-        // Keyed off the loaded payloads rather than `visibleRegions`, which
-        // is a fresh array every pan frame: the two overlays that read this
-        // would otherwise rebuild it per frame of every gesture. Feature wins
-        // over subfeature on id collision, so the feature `set` is
-        // unconditional; a spanning feature resolves to the last region's
-        // copy here and the first in `indexById`, which is harmless because
-        // the copies are interchangeable.
-        get featureItemMap(): Map<string, FeatureItemEntry> {
-          const map = new Map<string, FeatureItemEntry>()
-          for (const [idx, { assemblyName, refName }] of self.rpcDataMap) {
-            const data = self.laidOutDataMap.get(idx)
-            if (!data) {
-              continue
-            }
-            const source = { assemblyName, refName }
-            for (const f of data.flatbushItems) {
-              map.set(f.featureId, { kind: 'feature', item: f, source, data })
-            }
-            for (const s of data.subfeatureInfos) {
-              if (!map.has(s.featureId)) {
-                map.set(s.featureId, { kind: 'subfeature', item: s, source })
-              }
+      /**
+       * #method
+       * What the main-thread encode needs beyond a region's own data: the
+       * packed color for every theme class the worker emitted, off
+       * `session.palette` so a theme toggle re-encodes what is loaded
+       * instead of refetching it.
+       */
+      gpuProps() {
+        return { colorTable: themedColorTable(getPaletteHost(self).palette) }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Layout inputs shared by the base layout and every fit rung,
+       * `expandedGeneIds` included: a rung inheriting them without the
+       * exemption re-collapses the gene the user just opened.
+       */
+      get layoutInputs() {
+        const view = containingLgv(self)
+        return {
+          bpPerPx: view.coarseBpPerPx,
+          reversedRegions: self.reversedRegions,
+          displayMode: self.displayMode,
+          pinnedFeatureIds: self.layoutPinnedFeatureIdSet,
+          expandedGeneIds: self.expandedGeneIdSet,
+          groupBy: self.groupBy,
+          hiddenGroupKeys: self.hiddenGroupKeys,
+        }
+      },
+      /**
+       * #getter
+       * The features the ladder measures its rungs and its isoform solve
+       * against: the on-screen set in `fit` and `fixed`, undefined in
+       * `grow` (which measures the whole stack).
+       */
+      get fitMeasureFeatureIds(): ReadonlySet<string> | undefined {
+        return self.autoHeight ? undefined : self.onScreenFeatureIds
+      },
+      /**
+       * #getter
+       * Overridable hook (default false): the display's transcript setting
+       * names every isoform, so the fit ladder's `isoforms` rung may not
+       * trim — the surplus scrolls instead.
+       */
+      get showsEveryIsoform() {
+        return false
+      },
+      /**
+       * #getter
+       * Overridable hook: the gene-glyph mode the worker collapses under.
+       */
+      get effectiveGeneGlyphMode(): GeneGlyphMode {
+        return getConf(self, 'geneGlyphMode')
+      },
+      /**
+       * #getter
+       * Whether the settings reserve `below` subfeature-label rows, which
+       * is what earns the fit ladder its `bare` rung — with nothing
+       * reserved the rung would repack an identical stack.
+       */
+      get reservesBelowLabelRows() {
+        return self.effectiveSubfeatureLabels === 'below'
+      },
+    }))
+    .views(fitLadderViews)
+    .views(self => ({
+      /**
+       * #getter
+       * Uniform vertical scale for fit mode; 1 unless the resolved stack is
+       * being grown to fill the track (> 1) or the bodies stack squeezed to
+       * fit (< 1).
+       */
+      get fitScale() {
+        return self.fitStage.scale
+      },
+      /**
+       * #getter
+       * What every consumer (hit test, GPU upload, React render) reads: the
+       * resolved fit layout, cloned and scaled only when grown or squeezed.
+       */
+      get laidOutDataMap(): ReadonlyMap<number, FeatureDataResult> {
+        const { layout, scale } = self.fitStage
+        const { groupBy } = self
+        return self.coarseTierStandsIn
+          ? EMPTY_LAID_OUT_DATA
+          : scale === 1
+            ? layout
+            : scaleLaidOutData(
+                layout,
+                scale,
+                groupBy && { groupBy, chipPx: GROUP_LABEL_HEIGHT },
+              )
+      },
+      /**
+       * #getter
+       * The stacked sections in stacking order, each with the chip row
+       * the packer reserved above it, read off the same rows the glyphs
+       * paint; empty while ungrouped.
+       */
+      get groupSections(): FeatureGroupSection[] {
+        const { groupBy } = self
+        return groupBy
+          ? featureGroupSections(
+              this.laidOutDataMap,
+              groupBy,
+              GROUP_LABEL_HEIGHT,
+            )
+          : []
+      },
+      /**
+       * #getter
+       * The features of the sections the user hid, which sit unplaced by
+       * choice and so count as nothing the track failed to show.
+       */
+      get hiddenGroupFeatureIds(): ReadonlySet<string> | undefined {
+        const { groupBy, hiddenGroupKeys } = self
+        if (!groupBy || hiddenGroupKeys.size === 0) {
+          return undefined
+        }
+        const sectionOf = sectionIdsOf(this.laidOutDataMap, groupBy)
+        const ids = new Set<string>()
+        for (const data of this.laidOutDataMap.values()) {
+          for (const item of data.flatbushItems) {
+            if (hiddenGroupKeys.has(sectionOf(item).key)) {
+              ids.add(item.featureId)
             }
           }
-          return map
-        },
+        }
+        return ids
+      },
+      /**
+       * #getter
+       * Whether the section chips and dividers draw: a grouping is set and
+       * the layout produced a section for it.
+       */
+      get showsGroupLabels() {
+        return this.groupSections.length > 0
+      },
+      /**
+       * #getter
+       * A grouped track puts its track label above the plot, where it
+       * cannot cover the first section's chip. Reads the setting, not the
+       * sections, so the label does not jump when data lands.
+       */
+      get prefersOffset() {
+        return self.groupBy !== undefined
+      },
+      /**
+       * #getter
+       * Descriptions are painted where the kept rung reserved room for
+       * them.
+       */
+      get renderedShowDescriptions() {
+        return self.fitStage.showDescriptions
+      },
+      /**
+       * #getter
+       * Names are painted where the kept rung reserved row height +
+       * overhang for them.
+       */
+      get renderedShowLabels() {
+        return self.fitStage.showLabels
+      },
+      /**
+       * #getter
+       * A subfeature label (a transcript name under its gene) is
+       * worker-baked and its row is reserved in the pack, so it survives
+       * every rung that kept those rows and goes only where the kept rung
+       * spent them at zero.
+       */
+      get renderedShowSubfeatureLabels() {
+        const { scale, dropBelowLabelRows } = self.fitStage
+        return scale >= 1 && !dropBelowLabelRows
+      },
+      /**
+       * #getter
+       * The size the kept rung priced its labels at, and so the size they
+       * draw at.
+       */
+      // Zero at the `bare` rung, which spends the below-label rows at no
+      // height and so reserves no label width; a hit box or highlight
+      // measuring at the mode's size overhangs its neighbour by an ungated
+      // subfeature label nothing drew.
+      get renderedLabelFontSize() {
+        return self.fitStage.dropBelowLabelRows ? 0 : self.labelFontSize
+      },
+      /**
+       * #getter
+       * What the ladder took from the labels the settings reserved, and how
+       * far it squeezed — the one derivation both user-facing notes read.
+       */
+      get fitDrops() {
+        return fitDrops(
+          self.fitStage,
+          self.showLabels,
+          self.effectiveShowDescriptions,
+          // Solving for one costs a bisection, and only this rung reports
+          // it.
+          self.fitStage.level === 'decimated'
+            ? self.fitDecimatedFactor
+            : undefined,
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The track-sizing control's account of what fit mode gave up, or
+       * undefined when nothing.
+       */
+      get fitNote() {
+        return fitLadderNote(self.fitDrops)
+      },
+      /**
+       * #getter
+       * The note on the selected "Labels" radio while the ladder is not
+       * honouring it (see `inertLabelHint`).
+       */
+      get labelsFitHint() {
+        return labelsFitHint(self.fitDrops)
+      },
+    }))
+    .views(yMorphViews)
+    .actions(yMorphActions)
+    .views(heightViews)
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get featureIdIndex() {
+        return indexById(self.laidOutDataMap, d => d.flatbushItems)
+      },
 
-        /**
-         * #getter
-         */
-        // MobX caches this only because afterAttach keeps an autorun
-        // subscribed: an unobserved computed is suspended and re-evaluates on
-        // every read, which rebuilt a Hilbert-sorted index per mousemove.
-        // `coarseBpPerPx`, not live `bpPerPx`, matching the geometry the rows
-        // were packed at.
-        get flatbushIndexes() {
-          const bpPerPx = containingLgv(self).coarseBpPerPx
-          const labels = {
-            showLabels: self.renderedShowLabels,
-            showDescriptions: self.renderedShowDescriptions,
-            fontSize: self.renderedLabelFontSize,
+      /**
+       * #getter
+       */
+      get subfeatureIdIndex() {
+        return indexById(self.laidOutDataMap, d => d.subfeatureInfos)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get hoveredFeature() {
+        const id = self.featureIdUnderMouse
+        return id === undefined ? undefined : self.featureIdIndex.get(id)
+      },
+
+      /**
+       * #getter
+       */
+      get hoveredSubfeature() {
+        const id = self.subfeatureIdUnderMouse
+        return id === undefined ? undefined : self.subfeatureIdIndex.get(id)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The feature the hover box frames: the open context menu's target
+       * while one is open, so the box always agrees with what the menu acts
+       * on, else the feature under the cursor.
+       */
+      get hoverBoxFeature() {
+        const info = self.contextMenuInfo
+        return info ? info.item : self.hoveredFeature
+      },
+      /**
+       * #getter
+       * The transcript the hover box frames instead of its gene, by the
+       * rule of `hoverBoxFeature`.
+       */
+      get hoverBoxSubfeature() {
+        const info = self.contextMenuInfo
+        return info ? info.subfeature : self.hoveredSubfeature
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Feature and subfeature ids to the primitives they painted, per
+       * laid-out region. Deliberately held by no autorun: nothing builds it
+       * until a hover or a selection asks which instances to light.
+       */
+      get regionInstanceIndexes(): ReadonlyMap<number, RegionInstanceIndex> {
+        const map = new Map<number, RegionInstanceIndex>()
+        for (const [idx, data] of self.laidOutDataMap) {
+          map.set(idx, buildRegionInstanceIndex(data))
+        }
+        return map
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * What the chrome lights under the pointer: the open context menu's
+       * target while one is open, else the hovered subfeature, else the
+       * hovered feature — one box per region over its glyph and its labels.
+       */
+      get hoverInk(): HighlightRect[] {
+        const item = self.hoverBoxSubfeature ?? self.hoverBoxFeature
+        return featureHighlightInk(self, item ? [item.featureId] : [])
+      },
+      /**
+       * #getter
+       * The session's selected feature, boxed the same way.
+       */
+      get selectionInk(): HighlightRect[] {
+        const id = self.selectedFeatureId
+        return featureHighlightInk(self, id === undefined ? [] : [id])
+      },
+      /**
+       * #getter
+       * Every feature the user pinned — a search hit, a right-click
+       * highlight, the `highlight=` URL param — boxed the same way. The one
+       * highlight list the SVG export draws.
+       */
+      get pinnedInk(): HighlightRect[] {
+        return featureHighlightInk(self, self.highlightedFeatureIdSet)
+      },
+      /**
+       * #getter
+       * The features collected for a solo, boxed the same way, while the
+       * solo is still pending. Empty once it applies, since the view then
+       * shows only these.
+       */
+      get soloInk(): HighlightRect[] {
+        return self.soloApplied
+          ? []
+          : featureHighlightInk(self, self.soloFeatureIdSet)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       */
+      searchFeatureByID(id: string) {
+        const item = self.featureIdIndex.get(id)
+        if (!item) {
+          return undefined
+        }
+        return [item.startBp, item.topPx, item.endBp, item.bottomPx] as const
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      // Keyed off the loaded payloads rather than `visibleRegions`, which
+      // is a fresh array every pan frame: the two overlays that read this
+      // would otherwise rebuild it per frame of every gesture. Feature wins
+      // over subfeature on id collision, so the feature `set` is
+      // unconditional; a spanning feature resolves to the last region's
+      // copy here and the first in `indexById`, which is harmless because
+      // the copies are interchangeable.
+      get featureItemMap(): Map<string, FeatureItemEntry> {
+        const map = new Map<string, FeatureItemEntry>()
+        for (const [idx, { assemblyName, refName }] of self.rpcDataMap) {
+          const data = self.laidOutDataMap.get(idx)
+          if (!data) {
+            continue
           }
-          const result = new Map<number, FlatbushRegionIndexes>()
-          for (const [idx, data] of self.laidOutDataMap) {
-            result.set(idx, {
-              feature: buildFeatureFlatbushIndex(
-                data.flatbushItems,
-                data.floatingLabelsData,
-                bpPerPx,
-                self.reversedRegions.has(idx),
-                labels,
-              ),
-              subfeature: buildSubfeatureFlatbushIndex(data.subfeatureInfos),
-            })
+          const source = { assemblyName, refName }
+          for (const f of data.flatbushItems) {
+            map.set(f.featureId, { kind: 'feature', item: f, source })
           }
-          return result
-        },
-        /**
-         * #method
-         */
-        async renderSvg(opts?: ExportSvgDisplayOptions) {
-          const { renderSvg } = await import('./renderSvg.tsx')
-          return renderSvg(self, opts)
-        },
-      }))
-      .actions(self => ({
+          for (const s of data.subfeatureInfos) {
+            if (!map.has(s.featureId)) {
+              map.set(s.featureId, { kind: 'subfeature', item: s, source })
+            }
+          }
+        }
+        return map
+      },
+
+      /**
+       * #getter
+       */
+      // MobX caches this only because afterAttach keeps an autorun
+      // subscribed: an unobserved computed is suspended and re-evaluates on
+      // every read, which rebuilt a Hilbert-sorted index per mousemove.
+      // `coarseBpPerPx`, not live `bpPerPx`, matching the geometry the rows
+      // were packed at.
+      get flatbushIndexes() {
+        const bpPerPx = containingLgv(self).coarseBpPerPx
+        const labels = {
+          showLabels: self.renderedShowLabels,
+          showDescriptions: self.renderedShowDescriptions,
+          fontSize: self.renderedLabelFontSize,
+        }
+        const result = new Map<number, FlatbushRegionIndexes>()
+        for (const [idx, data] of self.laidOutDataMap) {
+          result.set(idx, {
+            feature: buildFeatureFlatbushIndex(
+              data.flatbushItems,
+              data.floatingLabelsData,
+              bpPerPx,
+              self.reversedRegions.has(idx),
+              labels,
+            ),
+            subfeature: buildSubfeatureFlatbushIndex(data.subfeatureInfos),
+          })
+        }
+        return result
+      },
+      /**
+       * #method
+       */
+      async renderSvg(opts?: ExportSvgDisplayOptions) {
+        const { renderSvg } = await import('./renderSvg.tsx')
+        return renderSvg(self, opts)
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Stage a region as fetched — the store's raw write with this
+       * display's payload shape, so a test stands up a loaded display in
+       * one call.
+       */
+      setRpcData(
+        displayedRegionIndex: number,
+        data: FeatureDataResult,
+        region: Region,
+      ) {
+        self.setLoadedRegion(
+          displayedRegionIndex,
+          region,
+          loadedFeatureData(data, region),
+        )
+      },
+
+      // Deliberately no `clearDisplaySpecificData` override:
+      // `clearAllRpcData` fires on same-region refetches, and zeroing
+      // scroll or the gate's density stats there yanks the viewport and
+      // flickers the banner on every zoom.
+      /**
+       * #action
+       * The gate's own measurements, which are keyed by region and are not
+       * fetch payloads, so the store's bound does not reach them.
+       */
+      pruneDensityStatsToVisible(visibleDisplayedRegionIndices: Set<number>) {
+        for (const key of self.densityStatsPerRegion.keys()) {
+          if (!visibleDisplayedRegionIndices.has(key)) {
+            self.densityStatsPerRegion.delete(key)
+          }
+        }
+      },
+
+      /**
+       * #action
+       */
+      startRenderingBackend(backend: CanvasFeatureRenderingBackend) {
+        // `renderDataMap` is `laidOutDataMap` by reference when idle and
+        // fresh per-frame objects during a Y morph, so only changed regions
+        // re-upload.
+        installUpload(self, backend, {
+          cells: () => self.renderDataMap,
+          inputs: () => self.gpuProps(),
+          encode: (data, { colorTable }) =>
+            resolveRegionColors(data, colorTable),
+          render: (b, encoded) =>
+            b.renderBlocks(self.renderBlocks, encoded, self.renderState),
+        })
+      },
+    }))
+    .actions(featureSetActions)
+    .actions(featureHighlightActions)
+    .actions(self => {
+      const superOpenContextMenu = self.openContextMenu
+      return {
         /**
          * #action
-         * Stage a region as fetched — the store's raw write with this
-         * display's payload shape, so a test stands up a loaded display in
-         * one call.
+         * Drops the hover first, so its tooltip does not sit under the
+         * menu; the highlight box stays on the target through
+         * `hoverBoxFeature`.
          */
-        setRpcData(
-          displayedRegionIndex: number,
-          data: FeatureDataResult,
-          region: Region,
+        openContextMenu(info: FeatureContextMenuInfo) {
+          self.clearHover()
+          superOpenContextMenu(info)
+        },
+      }
+    })
+    .actions(self => {
+      const openDetails = createCanvasFeatureDetailsOpener(self)
+      return {
+        /**
+         * #action
+         * Open the feature-details widget on what `fetch` resolves to, with
+         * the adapter's header metadata beside it; a lookup that resolves
+         * to nothing is reported as a miss.
+         */
+        openFeatureDetails(
+          fetch: () => Promise<Feature | undefined>,
+          parentFeature?: ParentFeatureSummary,
         ) {
-          self.setLoadedRegion(
-            displayedRegionIndex,
-            region,
-            loadedFeatureData(data, region),
-          )
+          void openDetails(fetch, parentFeature)
         },
 
-        // Deliberately no `clearDisplaySpecificData` override:
-        // `clearAllRpcData` fires on same-region refetches, and zeroing
-        // scroll or the gate's density stats there yanks the viewport and
-        // flickers the banner on every zoom.
         /**
          * #action
-         * The gate's own measurements, which are keyed by region and are not
-         * fetch payloads, so the store's bound does not reach them.
+         * Open the feature-details widget on a feature already in hand.
          */
-        pruneDensityStatsToVisible(visibleDisplayedRegionIndices: Set<number>) {
-          for (const key of self.densityStatsPerRegion.keys()) {
-            if (!visibleDisplayedRegionIndices.has(key)) {
-              self.densityStatsPerRegion.delete(key)
-            }
+        selectFeature(feature: Feature) {
+          void openDetails(async () => feature)
+        },
+
+        /**
+         * #action
+         */
+        clearSelection() {
+          getSession(self).clearSelection()
+        },
+
+        /**
+         * #action
+         */
+        setShowLabels(value: ShowLabelsMode) {
+          setConf(self, 'showLabels', value)
+        },
+
+        /**
+         * #action
+         * Sets the runtime filter override (already-`jexl:`-prefixed
+         * expressions).
+         */
+        setJexlFilters(filters?: string[]) {
+          self.jexlFiltersSetting = cast(filters)
+        },
+
+        /**
+         * #action
+         */
+        setShowOutline(value: boolean) {
+          setConf(self, 'outlineColor', value ? THEME_DERIVED_COLOR : '')
+        },
+
+        /**
+         * #action
+         */
+        setFeatureColor(color?: string) {
+          setConf(self, 'color', color)
+        },
+
+        /**
+         * #action
+         */
+        setUtrColor(color?: string) {
+          setConf(self, 'utrColor', color)
+        },
+
+        /**
+         * #action
+         */
+        // Skips no-op updates: mousemove fires per pixel but the base under
+        // the cursor changes far less often.
+        setSequenceHoverPosition(pos: SequenceHoverPosition | undefined) {
+          const prev = self.sequenceHoverPosition
+          const same =
+            prev === pos ||
+            (prev?.refName === pos?.refName &&
+              prev?.start === pos?.start &&
+              prev?.end === pos?.end)
+          if (!same) {
+            self.sequenceHoverPosition = pos
+          }
+        },
+      }
+    })
+    .actions(self => ({
+      /**
+       * #action
+       */
+      setDisplayMode(value: DisplayMode) {
+        setConf(self, 'displayMode', value)
+      },
+
+      /**
+       * #action
+       * The stack starts over from the top when its sections change.
+       */
+      setGroupBy(groupBy?: FeatureGroupBy) {
+        setConf(self, 'groupBy', groupBy ?? null)
+        self.setScrollTop(0)
+      },
+
+      /**
+       * #action
+       */
+      openSetColorDialog(showUtrColor = true) {
+        getDialogHost(self).queueDialog(handleClose => [
+          SetColorDialog,
+          { model: self, handleClose, showUtrColor },
+        ])
+      },
+
+      /**
+       * #action
+       */
+      openColorByAttributeDialog() {
+        getDialogHost(self).queueDialog(handleClose => [
+          ColorByAttributeDialog,
+          {
+            model: self,
+            handleClose,
+            initialAttribute: self.colorByAttribute,
+          },
+        ])
+      },
+
+      /**
+       * #action
+       */
+      openFilterDialog() {
+        getDialogHost(self).queueDialog(handleClose => [
+          JexlFilterDialog,
+          { model: self, handleClose },
+        ])
+      },
+
+      /**
+       * #action
+       */
+      async fetchFullFeature(
+        featureId: string,
+        displayedRegionIndex: number,
+        opts: {
+          stopToken?: StopToken
+          statusCallback?: StatusCallback
+        } = {},
+      ) {
+        const region = self.loadedRegions.get(displayedRegionIndex)
+        if (!region) {
+          return undefined
+        }
+        // The feature's own span, not the buffered region: the whole region
+        // is a second download of everything on screen.
+        const item = self.featureIdIndex.get(featureId)
+        return fetchCanvasFeatureDetails(
+          getSession(self),
+          getRpcSessionId(self),
+          self.adapterConfig,
+          featureId,
+          item ? featureSpanRegion(region, item.startBp, item.endBp) : region,
+          opts,
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Everything this display is doing to narrow what the user sees, each
+       * declared once, so the "Filter by... (n)" count, its undo rows and
+       * "Clear all filters" cannot disagree; a method, not a getter,
+       * because a getter cannot be super-captured.
+       */
+      featureNarrowings(): Reversibles {
+        return {
+          jexlFilters: jexlFilterNarrowing(self),
+          solo: {
+            count: self.soloApplied ? 1 : 0,
+            clear: () => {
+              self.clearSolo()
+            },
+          },
+          hiddenFeatures: {
+            count: self.hiddenFeatureIds.length > 0 ? 1 : 0,
+            label: () =>
+              `Show ${self.hiddenFeatureCount} hidden ${pluralize(self.hiddenFeatureCount, self.featureNoun)}`,
+            icon: VisibilityIcon,
+            clear: () => {
+              self.showAllHidden()
+            },
+          },
+        }
+      },
+
+      /**
+       * #method
+       * Reversible state that MARKS features rather than hiding them — the
+       * highlight boxes and the pins holding features at the top of the
+       * layout.
+       */
+      featureMarks(): Reversibles {
+        return {
+          highlights: {
+            count: self.featureHighlightCount,
+            label: n => `Clear ${n} ${pluralize(n, 'highlight')}`,
+            icon: Highlighter,
+            clear: () => {
+              self.clearFeatureHighlights()
+            },
+          },
+          pinned: {
+            count: self.pinnedFeatureCount,
+            label: n => `Unpin ${n} ${pluralize(n, self.featureNoun)}`,
+            icon: VerticalAlignTopIcon,
+            clear: () => {
+              self.clearPinnedFeatures()
+            },
+          },
+        }
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      // Only the two bpPerPx-dependent worker decisions, so a track with
+      // the overlay off and a fixed mode never refetches on zoom; a getter,
+      // not an action, because an action would untrack the `bpPerPx` read.
+      get zoomFetchKey(): string {
+        const peptides =
+          self.showAminoAcids &&
+          shouldRenderPeptideBackground(containingLgv(self).bpPerPx)
+        const mode = self.effectiveGeneGlyphMode
+        const expanded =
+          mode === 'longestCoding' && self.expandedGeneIds.length > 0
+            ? `|${self.expandedGeneIds.join(',')}`
+            : ''
+        return `${peptides}|${mode}${expanded}`
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      // Always fetches `featureId`, the top-level id, not
+      // `subfeatureInfo.parentFeatureId`: GetCanvasFeatureDetails searches
+      // top-level features only, and `findSubfeatureById` recurses from the
+      // root.
+      selectFeatureById(
+        featureId: string,
+        subfeatureInfo: SubfeatureInfo | undefined,
+        displayedRegionIndex: number,
+      ) {
+        // The name comes off the item the display drew, since the track's
+        // `labels.name` expression decides what names a feature on screen.
+        const drawn = subfeatureInfo
+          ? self.featureIdIndex.get(featureId)
+          : undefined
+        self.openFeatureDetails(
+          async () => {
+            const parentFeature = await self.fetchFullFeature(
+              featureId,
+              displayedRegionIndex,
+            )
+            return parentFeature && subfeatureInfo
+              ? (findSubfeatureById(parentFeature, subfeatureInfo.featureId) ??
+                  parentFeature)
+              : parentFeature
+          },
+          drawn?.name ? { name: drawn.name, type: drawn.type } : undefined,
+        )
+      },
+    }))
+    .actions(self => {
+      const superReload = self.reload
+      return {
+        // `superReload()` is what bumps `reloadCounter`, the arming
+        // mechanism of the dead-Retry check; skipping it turns that check
+        // off with no symptom.
+        /**
+         * #action
+         * Clears the loaded regions and fetches straight away, rather than
+         * waiting out `FetchVisibleRegions`' 600ms debounce as the rest of
+         * the family does — Retry and Force load are both clicks, and this
+         * is the display the user is most often clicking on.
+         */
+        reload() {
+          superReload()
+          const view = containingLgv(self)
+          if (view.initialized) {
+            self.fetchNeeded(view.bufferedVisibleRegions)
           }
         },
 
         /**
          * #action
          */
-        startRenderingBackend(backend: CanvasFeatureRenderingBackend) {
-          // `renderDataMap` is `laidOutDataMap` by reference when idle and
-          // fresh per-frame objects during a Y morph, so only changed regions
-          // re-upload.
-          installUpload(self, backend, {
-            cells: () => self.renderDataMap,
-            inputs: () => self.gpuProps(),
-            encode: (data, { colorTable }) =>
-              resolveRegionColors(data, colorTable),
-            render: (b, encoded) =>
-              b.renderBlocks(self.renderBlocks, encoded, self.renderState),
+        fetchNeeded(needed: IndexedRegion[]) {
+          const view = containingLgv(self)
+          const bpPerPx = view.bpPerPx
+          // Not in `rpcProps()`, so a budget change is not a cache-key
+          // invalidation.
+          const maxFeatureDensity = self.maxFeatureDensity
+          const args = rpcArgs(self)
+          self.pruneDensityStatsToVisible(
+            new Set(
+              view.bufferedVisibleRegions.map(b => b.displayedRegionIndex),
+            ),
+          )
+          void fetchGatedRegions(self, needed, {
+            call: (region, ctx) => {
+              // The assembly's genetic code, so the worker can translate
+              // peptides on contigs whose features carry no transl_table.
+              const assembly = getSession(self).assemblyManager.get(
+                region.assemblyName,
+              )
+              return ctx.callRpc('RenderFeatureData', {
+                ...args,
+                displayConfig: {
+                  ...args.displayConfig,
+                  geneGlyphMode: self.effectiveGeneGlyphMode,
+                },
+                expandedGeneIds:
+                  self.expandedGeneIds.length > 0
+                    ? toJS(self.expandedGeneIds)
+                    : undefined,
+                geneticCodeId: assembly?.getGeneticCodeId(region.refName),
+                region,
+                bpPerPx,
+                maxFeatureDensity,
+              })
+            },
+            onResult: (_idx, result, region) =>
+              loadedFeatureData(result, region),
           })
         },
-      }))
-      .actions(featureSetActions)
-      .actions(featureHighlightActions)
-      .actions(self => {
-        const superOpenContextMenu = self.openContextMenu
-        return {
-          /**
-           * #action
-           * Drops the hover first, so its tooltip does not sit under the
-           * menu; the highlight box stays on the target through
-           * `hoverBoxFeature`.
-           */
-          openContextMenu(info: FeatureContextMenuInfo) {
-            self.clearHover()
-            superOpenContextMenu(info)
-          },
+      }
+    })
+    .actions(self => ({
+      /**
+       * #action
+       * What the Group by dialog applies: the grouping, and the color that
+       * goes with it. Unticked, only a color that was a grouping's own goes
+       * back to the default; a color picked by hand is left alone.
+       */
+      applyGroupBy(groupBy: FeatureGroupBy | undefined, colorByGroup: boolean) {
+        const { color } = self.conf
+        const nextJexl = groupColorJexl(groupBy)
+        const wasGroupColor =
+          color !== undefined &&
+          (color === groupColorJexl(self.groupBy) || color === nextJexl)
+        self.setGroupBy(groupBy)
+        if (colorByGroup && nextJexl) {
+          self.setFeatureColor(nextJexl)
+        } else if (wasGroupColor) {
+          self.setFeatureColor(undefined)
         }
-      })
-      .actions(self => {
-        const openDetails = createCanvasFeatureDetailsOpener(self)
-        return {
-          /**
-           * #action
-           * Open the feature-details widget on what `fetch` resolves to, with
-           * the adapter's header metadata beside it; a lookup that resolves
-           * to nothing is reported as a miss.
-           */
-          openFeatureDetails(
-            fetch: () => Promise<Feature | undefined>,
-            parentFeature?: ParentFeatureSummary,
-          ) {
-            void openDetails(fetch, parentFeature)
-          },
-
-          /**
-           * #action
-           * Open the feature-details widget on a feature already in hand.
-           */
-          selectFeature(feature: Feature) {
-            void openDetails(async () => feature)
-          },
-
-          /**
-           * #action
-           */
-          clearSelection() {
-            getSession(self).clearSelection()
-          },
-
-          /**
-           * #action
-           */
-          setShowLabels(value: ShowLabelsMode) {
-            setConf(self, 'showLabels', value)
-          },
-
-          /**
-           * #action
-           * Sets the runtime filter override (already-`jexl:`-prefixed
-           * expressions).
-           */
-          setJexlFilters(filters?: string[]) {
-            self.jexlFiltersSetting = cast(filters)
-          },
-
-          /**
-           * #action
-           */
-          setShowOutline(value: boolean) {
-            setConf(self, 'outlineColor', value ? THEME_DERIVED_COLOR : '')
-          },
-
-          /**
-           * #action
-           */
-          setFeatureColor(color?: string) {
-            setConf(self, 'color', color)
-          },
-
-          /**
-           * #action
-           */
-          setUtrColor(color?: string) {
-            setConf(self, 'utrColor', color)
-          },
-
-          /**
-           * #action
-           */
-          // Skips no-op updates: mousemove fires per pixel but the base under
-          // the cursor changes far less often.
-          setSequenceHoverPosition(pos: SequenceHoverPosition | undefined) {
-            const prev = self.sequenceHoverPosition
-            const same =
-              prev === pos ||
-              (prev?.refName === pos?.refName &&
-                prev?.start === pos?.start &&
-                prev?.end === pos?.end)
-            if (!same) {
-              self.sequenceHoverPosition = pos
-            }
-          },
-        }
-      })
-      .actions(self => ({
+      },
+    }))
+    .actions(self => {
+      return {
         /**
          * #action
+         * Fills `BaseDisplay`'s hover-clear hook, which the fetch
+         * foundation's reaction calls on every viewport change.
          */
-        setDisplayMode(value: DisplayMode) {
-          setConf(self, 'displayMode', value)
-        },
-
-        /**
-         * #action
-         * The stack starts over from the top when its sections change.
-         */
-        setGroupBy(groupBy?: FeatureGroupBy) {
-          setConf(self, 'groupBy', groupBy ?? null)
-          self.setScrollTop(0)
+        clearHoveredFeature() {
+          self.clearHover()
         },
 
         /**
          * #action
          */
-        openSetColorDialog(showUtrColor = true) {
+        openGroupByDialog() {
           getDialogHost(self).queueDialog(handleClose => [
-            SetColorDialog,
-            { model: self, handleClose, showUtrColor },
+            GroupByDialog,
+            { model: self, handleClose, color: self.conf.color },
           ])
         },
 
-        /**
-         * #action
-         */
-        openColorByAttributeDialog() {
-          getDialogHost(self).queueDialog(handleClose => [
-            ColorByAttributeDialog,
-            {
-              model: self,
-              handleClose,
-              initialAttribute: self.colorByAttribute,
+        afterAttach() {
+          // Reset scroll on a region-list change only; a same-region zoom
+          // or pan keeps the user's scroll position.
+          onDisplayedRegionsChange(
+            self,
+            () => {
+              self.setScrollTop(0)
             },
-          ])
-        },
-
-        /**
-         * #action
-         */
-        openFilterDialog() {
-          getDialogHost(self).queueDialog(handleClose => [
-            JexlFilterDialog,
-            { model: self, handleClose },
-          ])
-        },
-
-        /**
-         * #action
-         */
-        async fetchFullFeature(
-          featureId: string,
-          displayedRegionIndex: number,
-          opts: {
-            stopToken?: StopToken
-            statusCallback?: StatusCallback
-          } = {},
-        ) {
-          const region = self.loadedRegions.get(displayedRegionIndex)
-          if (!region) {
-            return undefined
-          }
-          // The feature's own span, not the buffered region: the whole region
-          // is a second download of everything on screen.
-          const item = self.featureIdIndex.get(featureId)
-          return fetchCanvasFeatureDetails(
-            getSession(self),
-            getRpcSessionId(self),
-            self.adapterConfig,
-            featureId,
-            item ? featureSpanRegion(region, item.startBp, item.endBp) : region,
-            opts,
+            'CanvasResetScrollOnDisplayedRegions',
           )
-        },
-      }))
-      .views(self => ({
-        /**
-         * #method
-         * Everything this display is doing to narrow what the user sees, each
-         * declared once, so the "Filter by... (n)" count, its undo rows and
-         * "Clear all filters" cannot disagree; a method, not a getter,
-         * because a getter cannot be super-captured.
-         */
-        featureNarrowings(): Reversibles {
-          return {
-            jexlFilters: jexlFilterNarrowing(self),
-            solo: {
-              count: self.soloApplied ? 1 : 0,
-              clear: () => {
-                self.clearSolo()
-              },
-            },
-            hiddenFeatures: {
-              count: self.hiddenFeatureIds.length > 0 ? 1 : 0,
-              label: () =>
-                `Show ${self.hiddenFeatureCount} hidden ${pluralize(self.hiddenFeatureCount, self.featureNoun)}`,
-              icon: VisibilityIcon,
-              clear: () => {
-                self.showAllHidden()
-              },
-            },
-          }
-        },
 
-        /**
-         * #method
-         * Reversible state that MARKS features rather than hiding them — the
-         * highlight boxes and the pins holding features at the top of the
-         * layout.
-         */
-        featureMarks(): Reversibles {
-          return {
-            highlights: {
-              count: self.featureHighlightCount,
-              label: n => `Clear ${n} ${pluralize(n, 'highlight')}`,
-              icon: Highlighter,
-              clear: () => {
-                self.clearFeatureHighlights()
-              },
+          // Holding the hit-test indexes observed is the only reason MobX
+          // caches them: MobX suspends an unobserved computed, and every
+          // mousemove rebuilt a Flatbush per region. Safe to hold because
+          // `flatbushIndexes` keys off the debounced `coarseBpPerPx`; a
+          // getter reading live `visibleRegions` must not be held this way.
+          autorunOnReadyView(
+            self,
+            () => {
+              void self.flatbushIndexes
+              void self.featureIdIndex
+              void self.subfeatureIdIndex
             },
-            pinned: {
-              count: self.pinnedFeatureCount,
-              label: n => `Unpin ${n} ${pluralize(n, self.featureNoun)}`,
-              icon: VerticalAlignTopIcon,
-              clear: () => {
-                self.clearPinnedFeatures()
-              },
-            },
-          }
-        },
-      }))
-      .views(self => ({
-        /**
-         * #getter
-         */
-        // Only the two bpPerPx-dependent worker decisions, so a track with
-        // the overlay off and a fixed mode never refetches on zoom; a getter,
-        // not an action, because an action would untrack the `bpPerPx` read.
-        get zoomFetchKey(): string {
-          const peptides =
-            self.showAminoAcids &&
-            shouldRenderPeptideBackground(containingLgv(self).bpPerPx)
-          const mode = self.effectiveGeneGlyphMode
-          const expanded =
-            mode === 'longestCoding' && self.expandedGeneIds.length > 0
-              ? `|${self.expandedGeneIds.join(',')}`
-              : ''
-          return `${peptides}|${mode}${expanded}`
-        },
-      }))
-      .actions(self => ({
-        /**
-         * #action
-         */
-        // Always fetches `featureId`, the top-level id, not
-        // `subfeatureInfo.parentFeatureId`: GetCanvasFeatureDetails searches
-        // top-level features only, and `findSubfeatureById` recurses from the
-        // root.
-        selectFeatureById(
-          featureId: string,
-          subfeatureInfo: SubfeatureInfo | undefined,
-          displayedRegionIndex: number,
-        ) {
-          // The name comes off the item the display drew, since the track's
-          // `labels.name` expression decides what names a feature on screen.
-          const drawn = subfeatureInfo
-            ? self.featureIdIndex.get(featureId)
-            : undefined
-          self.openFeatureDetails(
-            async () => {
-              const parentFeature = await self.fetchFullFeature(
-                featureId,
-                displayedRegionIndex,
-              )
-              return parentFeature && subfeatureInfo
-                ? (findSubfeatureById(
-                    parentFeature,
-                    subfeatureInfo.featureId,
-                  ) ?? parentFeature)
-                : parentFeature
-            },
-            drawn?.name ? { name: drawn.name, type: drawn.type } : undefined,
+            { name: 'CanvasHitIndexes' },
           )
-        },
-      }))
-      .actions(self => {
-        const superReload = self.reload
-        return {
-          // `superReload()` is what bumps `reloadCounter`, the arming
-          // mechanism of the dead-Retry check; skipping it turns that check
-          // off with no symptom.
-          /**
-           * #action
-           * Clears the loaded regions and fetches straight away, rather than
-           * waiting out `FetchVisibleRegions`' 600ms debounce as the rest of
-           * the family does — Retry and Force load are both clicks, and this
-           * is the display the user is most often clicking on.
-           */
-          reload() {
-            superReload()
-            const view = containingLgv(self)
-            if (view.initialized) {
-              self.fetchNeeded(view.bufferedVisibleRegions)
-            }
-          },
 
-          /**
-           * #action
-           */
-          fetchNeeded(needed: IndexedRegion[]) {
-            const view = containingLgv(self)
-            const bpPerPx = view.bpPerPx
-            // Not in `rpcProps()`, so a budget change is not a cache-key
-            // invalidation.
-            const maxFeatureDensity = self.maxFeatureDensity
-            const args = rpcArgs(self)
-            self.pruneDensityStatsToVisible(
-              new Set(
-                view.bufferedVisibleRegions.map(b => b.displayedRegionIndex),
-              ),
-            )
-            void fetchGatedRegions(self, needed, {
-              call: (region, ctx) => {
-                // The assembly's genetic code, so the worker can translate
-                // peptides on contigs whose features carry no transl_table.
-                const assembly = getSession(self).assemblyManager.get(
-                  region.assemblyName,
-                )
-                return ctx.callRpc('RenderFeatureData', {
-                  ...args,
-                  displayConfig: {
-                    ...args.displayConfig,
-                    geneGlyphMode: self.effectiveGeneGlyphMode,
-                  },
-                  expandedGeneIds:
-                    self.expandedGeneIds.length > 0
-                      ? toJS(self.expandedGeneIds)
-                      : undefined,
-                  geneticCodeId: assembly?.getGeneticCodeId(region.refName),
-                  region,
-                  bpPerPx,
-                  maxFeatureDensity,
-                })
-              },
-              onResult: (_idx, result, region) =>
-                loadedFeatureData(result, region),
-            })
-          },
-        }
-      })
-      .actions(self => ({
-        /**
-         * #action
-         * What the Group by dialog applies: the grouping, and the color that
-         * goes with it. Unticked, only a color that was a grouping's own goes
-         * back to the default; a color picked by hand is left alone.
-         */
-        applyGroupBy(
-          groupBy: FeatureGroupBy | undefined,
-          colorByGroup: boolean,
-        ) {
-          const { color } = self.conf
-          const nextJexl = groupColorJexl(groupBy)
-          const wasGroupColor =
-            color !== undefined &&
-            (color === groupColorJexl(self.groupBy) || color === nextJexl)
-          self.setGroupBy(groupBy)
-          if (colorByGroup && nextJexl) {
-            self.setFeatureColor(nextJexl)
-          } else if (wasGroupColor) {
-            self.setFeatureColor(undefined)
-          }
+          installYMorphAutorun(self)
         },
-      }))
-      .actions(self => {
-        return {
-          /**
-           * #action
-           * Fills `BaseDisplay`'s hover-clear hook, which the fetch
-           * foundation's reaction calls on every viewport change.
-           */
-          clearHoveredFeature() {
-            self.clearHover()
-          },
+      }
+    })
+    .views(self => ({
+      /**
+       * #method
+       */
+      showSubmenuCheckboxItems(): MenuItem[] {
+        return showSubmenuCheckboxItems(self)
+      },
+      /**
+       * #method
+       */
+      showSubmenuRadioGroups(): MenuItem[] {
+        return showSubmenuRadioGroups(self)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Flattened "Show..." submenu: all checkbox toggles first, then the
+       * radio groups (each under its own subHeader).
+       */
+      showSubmenuMenuItems(): MenuItem[] {
+        return [
+          ...self.showSubmenuCheckboxItems(),
+          ...self.showSubmenuRadioGroups(),
+        ]
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * The feature right-click menu (open details, zoom to, get sequence,
+       * highlight scopes, pin/solo/hide, copy).
+       */
+      contextMenuItems(): MenuItem[] {
+        return featureContextMenuItems(self)
+      },
 
-          /**
-           * #action
-           */
-          openGroupByDialog() {
-            getDialogHost(self).queueDialog(handleClose => [
-              GroupByDialog,
-              { model: self, handleClose, color: self.conf.color },
-            ])
-          },
+      /**
+       * #method
+       * The "Color by..." radio choices (solid/strand/attribute).
+       */
+      colorBySubMenuItems(): MenuItem[] {
+        return colorBySubMenuItems(self)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       * Color-related track menu entries: a single "Color by..." entry
+       * whose "Solid color..." choice opens the solid+UTR color picker.
+       */
+      colorMenuItems(): MenuItem[] {
+        return colorMenuItems(self)
+      },
 
-          afterAttach() {
-            // Reset scroll on a region-list change only; a same-region zoom
-            // or pan keeps the user's scroll position.
-            onDisplayedRegionsChange(
-              self,
-              () => {
-                self.setScrollTop(0)
-              },
-              'CanvasResetScrollOnDisplayedRegions',
-            )
-
-            // Holding the hit-test indexes observed is the only reason MobX
-            // caches them: MobX suspends an unobserved computed, and every
-            // mousemove rebuilt a Flatbush per region. Safe to hold because
-            // `flatbushIndexes` keys off the debounced `coarseBpPerPx`; a
-            // getter reading live `visibleRegions` must not be held this way.
-            autorunOnReadyView(
-              self,
-              () => {
-                void self.flatbushIndexes
-                void self.featureIdIndex
-                void self.subfeatureIdIndex
-              },
-              { name: 'CanvasHitIndexes' },
-            )
-
-            installYMorphAutorun(self)
-          },
-        }
-      })
-      .views(self => ({
-        /**
-         * #method
-         */
-        showSubmenuCheckboxItems(): MenuItem[] {
-          return showSubmenuCheckboxItems(self)
-        },
-        /**
-         * #method
-         */
-        showSubmenuRadioGroups(): MenuItem[] {
-          return showSubmenuRadioGroups(self)
-        },
-      }))
-      .views(self => ({
-        /**
-         * #method
-         * Flattened "Show..." submenu: all checkbox toggles first, then the
-         * radio groups (each under its own subHeader).
-         */
-        showSubmenuMenuItems(): MenuItem[] {
-          return [
-            ...self.showSubmenuCheckboxItems(),
-            ...self.showSubmenuRadioGroups(),
-          ]
-        },
-      }))
-      .views(self => ({
-        /**
-         * #method
-         * The feature right-click menu (open details, zoom to, get sequence,
-         * highlight scopes, pin/solo/hide, copy).
-         */
-        contextMenuItems(): MenuItem[] {
-          return featureContextMenuItems(self)
-        },
-
-        /**
-         * #method
-         * The "Color by..." radio choices (solid/strand/attribute).
-         */
-        colorBySubMenuItems(): MenuItem[] {
-          return colorBySubMenuItems(self)
-        },
-      }))
-      .views(self => ({
-        /**
-         * #method
-         * Color-related track menu entries: a single "Color by..." entry
-         * whose "Solid color..." choice opens the solid+UTR color picker.
-         */
-        colorMenuItems(): MenuItem[] {
-          return colorMenuItems(self)
-        },
-
-        /**
-         * #method
-         * One "Feature height" menu with two independent radio groups: the
-         * size presets and, under a "Track sizing" subheader, how the track
-         * responds when there are more features than fit.
-         */
-        featureHeightMenuItems(): MenuItem[] {
-          return featureHeightMenuItems(self)
-        },
-      }))
-      .views(self => ({
-        /**
-         * #method
-         */
-        trackMenuItems(): MenuItem[] {
-          return [...canvasTrackMenuItems(self), ...densityTierMenuItems(self)]
-        },
-      }))
-  )
+      /**
+       * #method
+       * One "Feature height" menu with two independent radio groups: the
+       * size presets and, under a "Track sizing" subheader, how the track
+       * responds when there are more features than fit.
+       */
+      featureHeightMenuItems(): MenuItem[] {
+        return featureHeightMenuItems(self)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #method
+       */
+      trackMenuItems(): MenuItem[] {
+        return [...canvasTrackMenuItems(self), ...densityTierMenuItems(self)]
+      },
+    }))
 }
 
 type LinearCanvasBaseDisplayStateModel = ReturnType<

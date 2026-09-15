@@ -9,7 +9,6 @@ import {
   easeInOutCubic,
   interpolateYData,
   morphClockMs,
-  morphOffset,
   rowGeometrySignature,
 } from './yMorph.ts'
 
@@ -27,12 +26,6 @@ export interface YMorphState {
 
 export interface YMorphHost extends YMorphState {
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>
-}
-
-export interface MorphOffsetHost extends YMorphState {
-  morphEased: number
-  featureIdIndex: ReadonlyMap<string, { topPx: number }>
-  subfeatureIdIndex: ReadonlyMap<string, { parentFeatureId: string }>
 }
 
 export interface YMorphAutorunHost extends YMorphState, IStateTreeNode {
@@ -120,30 +113,6 @@ export function yMorphActions(self: YMorphState) {
       // hold with a plain `Math.max`, which is only right if a settled
       // display holds no height.
       self.morphFromMaxY = 0
-    },
-  }
-}
-
-export function morphOffsetViews(self: MorphOffsetHost) {
-  return {
-    /**
-     * #method
-     */
-    // Overlay boxes take geometry from the settled `laidOutDataMap`, so
-    // without this a hover box sits on the destination row while the glyph is
-    // still travelling; a subfeature rides its parent's row.
-    morphOffsetFor(featureId: string) {
-      const from = self.morphFromTops
-      if (from === undefined) {
-        return 0
-      }
-      const topLevelId = self.featureIdIndex.has(featureId)
-        ? featureId
-        : (self.subfeatureIdIndex.get(featureId)?.parentFeatureId ?? featureId)
-      const item = self.featureIdIndex.get(topLevelId)
-      return item === undefined
-        ? 0
-        : morphOffset(from, topLevelId, item.topPx, self.morphEased)
     },
   }
 }

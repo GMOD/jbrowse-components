@@ -30,6 +30,13 @@ export interface HighlightHost extends IStateTreeNode {
    * is what the figure is about.
    */
   pinnedInk?: HighlightRect[]
+  /**
+   * What the user has collected for a solo but not yet applied, drawn dashed
+   * because it is a pending gesture rather than a state. Never exported: once
+   * the solo applies, the view shows these features and nothing else, so the
+   * figure says it without a box.
+   */
+  soloInk?: HighlightRect[]
   highlightStyle?: HighlightStyle
 }
 

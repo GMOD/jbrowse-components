@@ -164,9 +164,8 @@ export default function stateModelFactory(
       // through `self`. This is a documented extension seam, and a subclass
       // super-captures a seam by destructuring it — at which point `this` is
       // undefined and the method throws. Same rule and same reason as
-      // `isGeneLike`'s (pluginFacingDisplayApi.test.ts) and the base's
-      // morphOffsetFor block; a getter is safe with `this` because it is always
-      // read through a receiver, a method is not.
+      // `isGeneLike`'s (pluginFacingDisplayApi.test.ts); a getter is safe with
+      // `this` because it is always read through a receiver, a method is not.
       colorBySubMenuItems() {
         return [
           defaultColorItem(self),

@@ -212,19 +212,52 @@ export interface LabelRenderContext extends LabelPlacementContext {
   colors: LabelColors
 }
 
+function plainLabelColor(
+  label: PlainPlacedLabel['label'],
+  kind: PlainPlacedLabel['kind'],
+  colors: LabelColors,
+) {
+  return kind === 'sub'
+    ? label.isOverlay
+      ? colors.subfeatureOverlay
+      : colors.subfeature
+    : kind === 'desc'
+      ? colors.description
+      : colors.name
+}
+
 /**
- * Where each of one feature's rendered labels sits, with no colour: a highlight
- * box wants the geometry alone, and one placement walk keeps its rects on the
- * text the painter draws.
+ * Where each of one feature's rendered labels sits, coloured when the caller
+ * supplies a palette: the overlay and the painter want the colour, a highlight
+ * box wants the geometry alone, and one walk serves both — the colour is folded
+ * into the placement rather than mapped over it, since this runs per label per
+ * frame.
  */
 export function placeFeatureLabels(
   labelData: FeatureLabelData,
   toScreen: (bp: number) => number,
   vr: BpRegionBounds,
+  context: LabelRenderContext,
+): ResolvedLabel[]
+export function placeFeatureLabels(
+  labelData: FeatureLabelData,
+  toScreen: (bp: number) => number,
+  vr: BpRegionBounds,
   context: LabelPlacementContext,
+): PlacedLabel[]
+export function placeFeatureLabels(
+  labelData: FeatureLabelData,
+  toScreen: (bp: number) => number,
+  vr: BpRegionBounds,
+  context: LabelPlacementContext & { colors?: LabelColors },
 ): PlacedLabel[] {
-  const { showLabels, showDescriptions, showSubfeatureLabels, fontSize } =
-    context
+  const {
+    showLabels,
+    showDescriptions,
+    showSubfeatureLabels,
+    fontSize,
+    colors,
+  } = context
   const px1 = toScreen(labelData.minX)
   const px2 = toScreen(labelData.maxX)
   const featureLeftPx = Math.min(px1, px2)
@@ -242,7 +275,7 @@ export function placeFeatureLabels(
       showDescriptions,
       showSubfeatureLabels,
     )
-  const out: PlacedLabel[] = []
+  const out: (PlacedLabel & { color?: string })[] = []
   const add = (
     label: PlainPlacedLabel['label'],
     padding: number,
@@ -252,6 +285,7 @@ export function placeFeatureLabels(
       label,
       ...computeLabelPosition(label, padding, bounds, fontSize),
       kind,
+      color: colors && plainLabelColor(label, kind, colors),
     }
     out.push(placed)
     return placed
@@ -270,6 +304,7 @@ export function placeFeatureLabels(
           LABEL_PADDING_PX,
         labelY: name.labelY,
         kind: 'more',
+        color: colors?.more,
       })
     }
   }
@@ -286,33 +321,6 @@ export function placeFeatureLabels(
     add(subfeatureLabel, 0, 'sub')
   }
   return out
-}
-
-function plainLabelColor(
-  { label, kind }: PlainPlacedLabel,
-  colors: LabelColors,
-) {
-  return kind === 'sub'
-    ? label.isOverlay
-      ? colors.subfeatureOverlay
-      : colors.subfeature
-    : kind === 'desc'
-      ? colors.description
-      : colors.name
-}
-
-function resolveFeatureLabels(
-  labelData: FeatureLabelData,
-  toScreen: (bp: number) => number,
-  vr: BpRegionBounds,
-  context: LabelRenderContext,
-): ResolvedLabel[] {
-  const { colors } = context
-  return placeFeatureLabels(labelData, toScreen, vr, context).map(placed =>
-    placed.kind === 'more'
-      ? { ...placed, color: colors.more }
-      : { ...placed, color: plainLabelColor(placed, colors) },
-  )
 }
 
 export function forEachRenderedLabel(
@@ -348,7 +356,7 @@ export function forEachRenderedLabel(
       }
     }
     // Asked early only so the bp→px mapper below stays lazy; both this and
-    // `resolveFeatureLabels` read `renderedLabelSet`.
+    // `placeFeatureLabels` read `renderedLabelSet`.
     const want = renderedLabelSet(
       labelData,
       showLabels,
@@ -360,7 +368,7 @@ export function forEachRenderedLabel(
       continue
     }
     toScreen ??= makeBpMapper(vr)
-    emit(featureId, resolveFeatureLabels(labelData, toScreen, vr, context))
+    emit(featureId, placeFeatureLabels(labelData, toScreen, vr, context))
   }
 }
 

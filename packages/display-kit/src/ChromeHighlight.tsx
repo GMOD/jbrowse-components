@@ -3,6 +3,7 @@ import {
   highlightBoxColors,
   hoverBoxStyle,
 } from '@jbrowse/core/ui/hoverBoxStyle'
+import { alpha } from '@jbrowse/core/ui/palette'
 import { observer } from 'mobx-react'
 
 import type { HighlightHost, HighlightRect } from './highlightHost.ts'
@@ -54,9 +55,9 @@ function Boxes({
 }
 
 /**
- * The on-screen hover, selection and pinned boxes of a display answering
- * `hoverInk`, drawn by the chrome so no display places its own, pinned under
- * selection under hover. A DOM element rather than
+ * The on-screen boxes of a display answering `hoverInk`, drawn by the chrome so
+ * no display places its own: the solo collection under the pinned boxes, those
+ * under the selection, that under the hover. A DOM element rather than
  * render state on purpose: the hovered instance moves on nearly every
  * mousemove, and a hover in the canvas's state repaints the whole display on
  * the Canvas2D fallback per move, re-rasterizing every base of a pileup
@@ -69,10 +70,25 @@ const ChromeHighlight = observer(function ChromeHighlight({
   model: HighlightHost
 }) {
   const palette = usePalette()
-  const { hoverInk, selectionInk = [], pinnedInk = [], highlightStyle } = model
+  const {
+    hoverInk,
+    selectionInk = [],
+    pinnedInk = [],
+    soloInk = [],
+    highlightStyle,
+  } = model
   const pinned = highlightBoxColors(palette.highlight.main)
   return (
     <>
+      <Boxes
+        rects={soloInk}
+        testid="chrome-solo"
+        styleOf={() => ({
+          border: `2px dashed ${palette.primary.main}`,
+          borderRadius: 3,
+          backgroundColor: alpha(palette.primary.main, 0.15),
+        })}
+      />
       <Boxes
         rects={pinnedInk}
         testid="chrome-pinned"

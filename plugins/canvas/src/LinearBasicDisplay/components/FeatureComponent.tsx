@@ -33,7 +33,7 @@ import {
   hoverTooltipRows,
   hoverTooltipText,
 } from './hoverReadout.ts'
-import { FloatingLabelsLayer, HighlightLayer } from './overlayElements.tsx'
+import { FloatingLabelsLayer } from './overlayElements.tsx'
 
 import type { LinearCanvasBaseDisplayModel } from '../baseModel.ts'
 import type { HitFeatureResult } from './hitTesting.ts'
@@ -342,7 +342,6 @@ const FeatureBody = observer(function FeatureBody({
         <DensityBandOverlay model={model} />
 
         <OverlayScrollLayer model={model}>
-          <HighlightLayer model={model} view={view} />
           <FloatingLabelsLayer
             model={model}
             view={view}

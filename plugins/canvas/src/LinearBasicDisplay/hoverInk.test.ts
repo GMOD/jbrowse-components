@@ -234,6 +234,28 @@ test('a pinned feature on another reference sequence lights nothing', () => {
   expect(display.pinnedInk).toEqual([])
 })
 
+// The dashed box says which features an unapplied solo has collected. Applying
+// it leaves only those features on screen, which says it without a box.
+test('soloInk lights the collection while the solo is pending, and drops it once applied', () => {
+  const { display, view } = setUp()
+  expect(display.soloInk).toEqual([])
+
+  display.toggleSoloFeature('g1')
+
+  expect(display.soloInk).toEqual([
+    { left: 100, top: 0, width: 200, height: 38 },
+  ])
+
+  display.applySolo()
+  // The solo is a fetch input, so the applied view is what the refetch brings
+  // back: the box has to be gone once those features are all that is drawn.
+  display.setRpcData(0, geneData(), ctgA)
+  view.settleCoarseBlocks()
+
+  expect(display.soloApplied).toBe(true)
+  expect(display.soloInk).toEqual([])
+})
+
 test("selectionInk boxes the session's selected feature", () => {
   const { display, session } = setUp()
   expect(display.selectionInk).toEqual([])

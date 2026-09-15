@@ -35,12 +35,7 @@ export interface FeatureItemSource {
 // A feature entry carries its region's render data so overlay code reads label
 // widths without re-walking the data map.
 export type FeatureItemEntry =
-  | {
-      kind: 'feature'
-      item: FlatbushItem
-      source: FeatureItemSource
-      data: FeatureDataResult
-    }
+  | { kind: 'feature'; item: FlatbushItem; source: FeatureItemSource }
   | { kind: 'subfeature'; item: SubfeatureInfo; source: FeatureItemSource }
 
 // Always positive: LGV emits start < end and carries the flip in `reversed`, so
