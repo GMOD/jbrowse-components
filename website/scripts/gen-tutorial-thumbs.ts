@@ -64,6 +64,14 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0, 0.5],
     position: 'center',
   },
+  agent_synteny: {
+    // The X region: two reverse blocks crossing, forward alignment red on both
+    // sides. The 2R figure of the same event is a fan of short blocks, which at
+    // card size reads as noise.
+    src: 'agent_synteny/inversion_x.png',
+    band: [0.1, 1],
+    position: 'center',
+  },
   alphagenome: {
     // The claim the page is built on, and the only figure on it that reads at
     // card size: two predicted RNA-seq rows on one axis with the gene model
