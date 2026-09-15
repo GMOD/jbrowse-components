@@ -82,12 +82,22 @@ jobs:
       # The blog post is committed in the tag, so the body no longer needs
       # pasting in by hand. Best-effort: a tag without a post still gets a
       # draft to collect binaries, just an empty body.
+      #
+      # The signing footer goes on either body: this page is where the desktop
+      # binaries are downloaded from, and SignPath's terms ask for the
+      # attribution and the term "Code signing policy" on every such page.
       - name: Generate release notes
         run: |
           if ! node scripts/releasenotes.ts --tag "${RELEASE_VERSION}" > /tmp/notes.md; then
             echo "_Release notes pending._" > /tmp/notes.md
             echo "::warning::No blog post for ${RELEASE_VERSION}; release body left empty. Expected for a prerelease."
           fi
+          cat >> /tmp/notes.md <<'FOOTER'
+
+          ---
+
+          Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org) — see our [Code signing policy](https://jbrowse.org/jb2/code-signing-policy/).
+          FOOTER
       # The flag, not just the '-', is what the desktop auto-updater,
       # `jbrowse create`/`upgrade`, and announce.yml gate on.
       #
