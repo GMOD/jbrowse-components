@@ -113,6 +113,25 @@ try {
     'docs live-model carries the renaming contract',
     Boolean(guide?.text?.includes('renameRegionsIfNeeded')),
   )
+  // the bare read is the contract plus a contents of the deep dives; the
+  // browser-agent section is not served from a server running inside Desktop
+  check(
+    'docs live-model answers with the contract and a deep-dive contents',
+    Boolean(
+      guide?.text?.includes('## Deep dives') &&
+      /- The model, oriented \(\d+ chars\)/.test(guide.text) &&
+      !guide.text.includes('In a browser'),
+    ),
+    guide?.text?.length,
+  )
+  const dive = await client.call('docs', {
+    topic: 'live-model',
+    section: 'The model, oriented',
+  })
+  check(
+    'a deep dive reads by section',
+    Boolean(dive?.text?.includes('view.hideTrack')),
+  )
 
   // the corpus was reachable by type name only, so a question phrased as what
   // the setting is called had nowhere to go
