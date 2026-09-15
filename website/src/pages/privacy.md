@@ -1,7 +1,8 @@
 ---
 layout: '../layouts/MarkdownLayout.astro'
 title: Privacy policy
-description: What usage data JBrowse collects and how to turn it off.
+description:
+  What usage data JBrowse and this website collect, and how to turn it off.
 ---
 
 # Privacy policy
@@ -15,12 +16,18 @@ JBrowse never sends file URLs, track names or your data. The browser reads your
 data files directly, and they never pass through a JBrowse server. Embedded
 JBrowse components collect nothing.
 
+This website (jbrowse.org/jb2) uses Google Analytics to count page visits.
+Google Analytics sets cookies and records the pages you view, your approximate
+location, browser and device type, and the site that referred you.
+
 We use this data only to understand how people use JBrowse, and we do not sell
 or share it. Google handles its copy under the
 [Google privacy policy](https://policies.google.com/privacy).
 
-To opt out, set `disableAnalytics: true` in your config
-([details](/docs/config_guides/disable_analytics)), or block
-`google-analytics.com` and `analytics.jbrowse.org`.
+To opt out in the apps, set `disableAnalytics: true` in your config
+([details](/docs/config_guides/disable_analytics)). Anywhere, you can block
+`google-analytics.com`, `googletagmanager.com` and `analytics.jbrowse.org`, or
+install the
+[Google Analytics opt-out add-on](https://tools.google.com/dlpage/gaoptout).
 
 Questions: [contact us](/contact/).

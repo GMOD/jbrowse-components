@@ -67,6 +67,8 @@ const nav = navHrefs.map(link => ({
 // CSS module access is always defined; ! silences noUncheckedIndexedAccess
 const navActive = styles.navActive!
 const year = new Date().getFullYear()
+const gaMeasurementId = 'G-TRMBQZRJW7'
+const analytics = import.meta.env.PROD && baseUrl === '/jb2'
 ---
 
 <!doctype html>
@@ -104,6 +106,23 @@ const year = new Date().getFullYear()
       href={`${baseUrl}/rss.xml`}
     />
     <link rel="icon" href={`${baseUrl}/img/favicon.ico`} />
+    {analytics && (
+      <>
+        <script
+          is:inline
+          async
+          src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
+        ></script>
+        <script is:inline define:vars={{ gaMeasurementId }}>
+          window.dataLayer = window.dataLayer || []
+          function gtag(..._args) {
+            dataLayer.push(arguments)
+          }
+          gtag('js', new Date())
+          gtag('config', gaMeasurementId)
+        </script>
+      </>
+    )}
     <Font cssVariable="--font-roboto" preload />
     <style is:global>
       /* Reset, design tokens and bare element defaults. Layered so the
