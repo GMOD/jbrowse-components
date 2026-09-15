@@ -925,39 +925,76 @@ function shownTrackModel(
   return trackOf(onlyView(session, showing, `show "${trackId}"`, viewId))!
 }
 
-async function locToRegion(
+/**
+ * A region as `loc` takes it: a locstring, or the object shape every other
+ * region on this surface has — `jb.visibleRegions`' answer, a feature's own
+ * coordinates — which used to reach `parseLocString` and die there with
+ * "endsWith is not a function".
+ */
+export type JbLoc =
+  | string
+  | { refName: string; start?: number; end?: number; assemblyName?: string }
+
+function isRegionLoc(loc: unknown): loc is Exclude<JbLoc, string> {
+  return (
+    !!loc &&
+    typeof loc === 'object' &&
+    typeof (loc as { refName?: unknown }).refName === 'string'
+  )
+}
+
+async function trackAssembly(
   session: AbstractSessionModel,
   conf: AnyConfigurationModel,
-  loc: string,
-  assemblyArg: string | undefined,
-): Promise<JbRegion> {
+  requested: string | undefined,
+) {
   // getConfAssemblyNamesOrNone, not the assemblyNames slot: an assembly's own
   // sequence track has no such slot and answers through its parent assembly
   const trackAssemblies = getConfAssemblyNamesOrNone(conf)
-  const assemblyName = assemblyArg ?? trackAssemblies[0]
+  const assemblyName = requested ?? trackAssemblies[0]
   if (assemblyName === undefined) {
     throw new Error('The track names no assembly; pass assembly explicitly')
   }
   // a named assembly the track is not on renames the region against the wrong
   // alias set and answers with the wrong assembly's coordinates, or nothing
   if (
-    assemblyArg !== undefined &&
+    requested !== undefined &&
     trackAssemblies.length &&
     !trackAssemblies.some(name =>
-      isSameAssemblyName(name, assemblyArg, session.assemblyManager),
+      isSameAssemblyName(name, requested, session.assemblyManager),
     )
   ) {
     throw new Error(
-      `Track "${conf.trackId}" is on ${trackAssemblies.join(', ')}, not "${assemblyArg}"`,
+      `Track "${conf.trackId}" is on ${trackAssemblies.join(', ')}, not "${requested}"`,
     )
   }
   const assembly = await session.assemblyManager.waitForAssembly(assemblyName)
   if (!assembly) {
     throw new Error(`Assembly "${assemblyName}" could not be loaded`)
   }
-  const parsed = parseLocString(loc, refName =>
-    assembly.isValidRefName(refName),
+  return { assembly, assemblyName }
+}
+
+async function locToRegion(
+  session: AbstractSessionModel,
+  conf: AnyConfigurationModel,
+  loc: unknown,
+  assemblyArg: string | undefined,
+): Promise<JbRegion> {
+  if (typeof loc !== 'string' && !isRegionLoc(loc)) {
+    throw new Error(
+      `jb.getFeatures takes loc as a locstring ("ctgA:1-100") or a region object ({ refName, start, end }), and got ${JSON.stringify(loc)}`,
+    )
+  }
+  const { assembly, assemblyName } = await trackAssembly(
+    session,
+    conf,
+    assemblyArg ?? (typeof loc === 'string' ? undefined : loc.assemblyName),
   )
+  const parsed =
+    typeof loc === 'string'
+      ? parseLocString(loc, refName => assembly.isValidRefName(refName))
+      : loc
   const refName = assembly.getCanonicalRefName(parsed.refName) ?? parsed.refName
   const bounds = assembly.regions?.find(r => r.refName === refName)
   return {
@@ -966,6 +1003,18 @@ async function locToRegion(
     start: parsed.start ?? bounds?.start ?? 0,
     end: parsed.end ?? bounds?.end ?? Number.MAX_SAFE_INTEGER,
   }
+}
+
+async function locRegions(
+  session: AbstractSessionModel,
+  conf: AnyConfigurationModel,
+  loc: JbLoc | JbLoc[],
+  assemblyArg: string | undefined,
+) {
+  const entries = Array.isArray(loc) ? loc : [loc]
+  return Promise.all(
+    entries.map(entry => locToRegion(session, conf, entry, assemblyArg)),
+  )
 }
 
 async function visibleRegionsOf(
@@ -1373,14 +1422,15 @@ export function createJbApi(
         | string
         | {
             trackId: string
-            loc?: string
+            // a locstring, a region object, or a list of either
+            loc?: JbLoc | JbLoc[]
             assembly?: string
             regions?: JbRegion[]
             viewId?: string
             // raises the region-too-large refusal for a read you mean to be big
             byteLimit?: number
           },
-      positionalLoc?: string,
+      positionalLoc?: JbLoc | JbLoc[],
       positionalOpts?: {
         assembly?: string
         viewId?: string
@@ -1401,14 +1451,7 @@ export function createJbApi(
       const regions =
         fetchArgs.regions ??
         (fetchArgs.loc !== undefined
-          ? [
-              await locToRegion(
-                session,
-                conf,
-                fetchArgs.loc,
-                fetchArgs.assembly,
-              ),
-            ]
+          ? await locRegions(session, conf, fetchArgs.loc, fetchArgs.assembly)
           : await visibleRegionsOf(
               session,
               fetchArgs.viewId,

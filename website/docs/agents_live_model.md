@@ -308,6 +308,8 @@ return {
 }
 ```
 
+- `loc` takes a locstring, a region object (`{ refName, start, end }`, what
+  `jb.visibleRegions` answers), or a list of either.
 - `assembly` is for a track that names none. A wrong one, or a visible region
   from a view on another assembly, throws rather than reading the wrong
   coordinates.

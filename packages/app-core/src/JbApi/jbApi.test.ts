@@ -928,6 +928,42 @@ describe('getFeatures reads through the RPC', () => {
     })
   })
 
+  // A region in hand — jb.visibleRegions' answer, a feature's coordinates —
+  // written as loc used to reach parseLocString and die there with
+  // "endsWith is not a function".
+  it('takes a region object as loc, and a list of them', async () => {
+    await jb.getFeatures({
+      trackId: 'genes',
+      loc: { refName: 'ctgA', start: 10, end: 20 },
+    })
+    expect(calls[0]?.[2]).toMatchObject({
+      regions: [
+        { refName: 'ctgA', start: 10, end: 20, assemblyName: 'volvox' },
+      ],
+    })
+    calls.length = 0
+    await jb.getFeatures('genes', [
+      { refName: 'ctgA', start: 10, end: 20 },
+      'ctgA:31-40',
+    ])
+    expect(calls[0]?.[2]).toMatchObject({
+      regions: [
+        { refName: 'ctgA', start: 10, end: 20, assemblyName: 'volvox' },
+        { refName: 'ctgA', start: 30, end: 40, assemblyName: 'volvox' },
+      ],
+    })
+  })
+
+  it('names both forms for a loc that is neither', async () => {
+    await expect(
+      // @ts-expect-error the shape being refused
+      jb.getFeatures({ trackId: 'genes', loc: { start: 10, end: 20 } }),
+    ).rejects.toThrow(
+      /loc as a locstring \("ctgA:1-100"\) or a region object \(\{ refName, start, end \}\)/,
+    )
+    expect(calls).toHaveLength(0)
+  })
+
   // the wrong assembly renames the region against the wrong alias set and the
   // file answers with the wrong coordinates, or nothing; an alias of the right
   // one is the right one
