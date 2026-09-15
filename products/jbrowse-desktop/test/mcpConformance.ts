@@ -467,7 +467,7 @@ try {
   )
 
   const required = await run(`
-    const util = jb.require('@jbrowse/core/util')
+    const util = jb.require('@jbrowse/core/configuration')
     return {
       sameParse: util.readConfObject === jb.readConfObject,
       catalog: jb.listTracks().total,

@@ -291,19 +291,19 @@ return {
 
 A `LinearMarkDisplay` is a grammar of graphics over any feature, alignments or
 variant track: each mark names a shape, the fields feeding its channels and the
-transforms run before it. Reuse the open track's adapter under a new session
+transforms run before it. Reuse a catalog track's adapter under a new session
 track whose display declares the plot, and the axis, legend and hover follow.
 Each pair's insert size as a point over the coverage as bars:
 
 ```js
-const source = jb.trackModel('volvox_alignments').configuration
+const source = session.getTrackById('volvox_alignments')
 const trackId = `insert-size-${Date.now()}`
 session.addSessionTrackConf({
   type: 'AlignmentsTrack',
   trackId,
   name: 'insert size over coverage',
   assemblyNames: jb.readConfObject(source, 'assemblyNames'),
-  adapter: jb.mst.getSnapshot(source.adapter),
+  adapter: jb.readConfObject(source, 'adapter'),
   displays: [
     {
       type: 'LinearMarkDisplay',
