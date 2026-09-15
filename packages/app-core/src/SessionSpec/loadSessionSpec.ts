@@ -404,24 +404,36 @@ export async function launchSpecView(
 
 // use extension point named e.g. LaunchView-LinearGenomeView to initialize an
 // LGV session
+export interface SessionSpec {
+  views: ViewSpec[]
+  sessionAssemblies?: Record<string, unknown>[]
+  sessionConnections?: Record<string, unknown>[]
+  sessionTracks?: Record<string, unknown>[]
+  layout?: LayoutNode
+  sessionName?: string
+}
+
+const SPEC_KEYS = [
+  'views',
+  'sessionAssemblies',
+  'sessionConnections',
+  'sessionTracks',
+  'layout',
+  'sessionName',
+]
+
 export async function loadSessionSpec(
-  {
+  spec: SessionSpec,
+  pluginManager: PluginManager,
+) {
+  const {
     views,
     sessionAssemblies = [],
     sessionConnections = [],
     sessionTracks = [],
     layout,
     sessionName,
-  }: {
-    views: ViewSpec[]
-    sessionAssemblies?: Record<string, unknown>[]
-    sessionConnections?: Record<string, unknown>[]
-    sessionTracks?: Record<string, unknown>[]
-    layout?: LayoutNode
-    sessionName?: string
-  },
-  pluginManager: PluginManager,
-) {
+  } = spec
   const rootModel = pluginManager.rootModel!
 
   try {
@@ -430,6 +442,19 @@ export async function loadSessionSpec(
     })
 
     const { session } = rootModel
+    // `tracks` for sessionTracks, `assemblies` for sessionAssemblies, `name`
+    // for sessionName: a top-level key this spec does not define used to be
+    // dropped by the destructure above with nothing said, on the one door every
+    // agent-facing text names first. Reported like the misplaced keys below,
+    // rather than thrown, so the rest of the spec still loads.
+    const unknownKeys = Object.keys(spec).filter(
+      key => !SPEC_KEYS.includes(key),
+    )
+    if (unknownKeys.length) {
+      session?.notifyError(
+        `Session spec ignored unknown key(s): ${unknownKeys.join(', ')} — it takes ${SPEC_KEYS.join(', ')}`,
+      )
+    }
     // Assemblies first: sessionTracks and the views below reference them by
     // name, so a self-contained spec (novel assemblies + their tracks, no
     // hosted config) resolves only if the assemblies exist before either runs.

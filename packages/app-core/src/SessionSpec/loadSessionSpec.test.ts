@@ -672,6 +672,24 @@ describe('an unknown key on a spec view', () => {
     )
   })
 
+  // The spec's own keys were never classified: `tracks` written for
+  // sessionTracks was dropped by the destructure with nothing said.
+  test('a top-level key the spec does not define is named too', async () => {
+    const { session, pluginManager } = setup(lgv.handlers, lgv.options)
+
+    await loadSessionSpec(
+      {
+        views: [{ type: 'LinearGenomeView', assembly: 'volvox' }],
+        tracks: [{ trackId: 'genes' }],
+      } as unknown as Parameters<typeof loadSessionSpec>[0],
+      pluginManager,
+    )
+
+    expect(session.notifyError).toHaveBeenCalledWith(
+      expect.stringContaining('Session spec ignored unknown key(s): tracks'),
+    )
+  })
+
   test('says nothing when every key is one the view takes', async () => {
     const { session, pluginManager } = setup(lgv.handlers, lgv.options)
 

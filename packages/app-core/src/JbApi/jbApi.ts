@@ -1406,7 +1406,8 @@ export function createJbApi(
             // one place: a locstring or a region object
             loc?: JbLoc
             assembly?: string
-            regions?: JbRegion[]
+            // each entry as `loc` takes one: locToRegion fills the assembly
+            regions?: Exclude<JbLoc, string>[]
             viewId?: string
             // raises the region-too-large refusal for a read you mean to be big
             byteLimit?: number
