@@ -185,7 +185,9 @@ function toolCallContent(outcome: BridgeToolResult) {
   // and the image, and dropping either silently contradicts what the tool
   // description promises. Text first, so a client that truncates long content
   // keeps the part the agent has to act on.
-  const text = outcome.text ?? JSON.stringify(outcome.result ?? {}, null, 2)
+  // Compact: the model reads JSON the same either way, and indenting a
+  // three-track session summary spends 384 of its 906 characters on whitespace.
+  const text = outcome.text ?? JSON.stringify(outcome.result ?? {})
   const image = outcome.image
   return {
     content: [

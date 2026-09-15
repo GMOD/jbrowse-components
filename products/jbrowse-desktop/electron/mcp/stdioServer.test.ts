@@ -279,6 +279,23 @@ describe('a session is briefed once, in its first run_javascript result', () => 
   })
 })
 
+// Every result an agent reads is paid for in tokens, and an indented one spends
+// two fifths of itself on whitespace the model does not read.
+test('a result is compact JSON, not pretty-printed', async () => {
+  const bridge = await startFakeBridge(() => ({
+    result: { views: [{ id: 'v1', tracks: ['a', 'b'] }] },
+  }))
+  const server = startServer(bridge.socketPath)
+  server.send({
+    id: 1,
+    method: 'tools/call',
+    params: { name: 'screenshot', arguments: {} },
+  })
+  const text = (await server.next()).result?.content?.[0]?.text
+  expect(text).toBe('{"views":[{"id":"v1","tracks":["a","b"]}]}')
+  bridge.close()
+})
+
 // The settle result and the image BOTH have to survive: screenshot is the tool
 // whose docs promise the session's error notifications, and returning only the
 // image meant an agent screenshotting an errored track was told nothing.
