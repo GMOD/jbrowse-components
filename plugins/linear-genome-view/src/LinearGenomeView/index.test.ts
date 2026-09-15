@@ -2296,6 +2296,38 @@ describe('TrackInit with display configuration', () => {
     expect(shown.displays[0]!.height).toBe(55)
   })
 
+  // The eval's agent wrote view.moveTrackToTop('volvox_test_vcf') and read
+  // "Track ID not found": the menu passes a model id, an agent the trackId it
+  // knows the track by, and both name one shown track.
+  test('the move actions take a trackId as well as a model id', async () => {
+    const { Session, LinearGenomeModel, pluginManager } = initializeWithTracks()
+    const session = Session.create({ configuration: {} }, { pluginManager })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        assembly: 'volvox',
+        loc: 'ctgA:1-1000',
+        tracks: ['track1', 'track2'],
+      }),
+    )
+    model.setWidth(800)
+    await waitFor(() => {
+      expect(model.tracks.length).toBe(2)
+    })
+    const order = () => model.tracks.map(t => t.configuration.trackId)
+    model.moveTrackToTop('track2')
+    expect(order()).toEqual(['track2', 'track1'])
+    model.moveTrackToBottom('track2')
+    expect(order()).toEqual(['track1', 'track2'])
+    model.moveTrack('track2', model.tracks[0]!.id)
+    expect(order()).toEqual(['track2', 'track1'])
+    expect(() => {
+      model.moveTrackToTop('nope')
+    }).toThrow(
+      /No shown track has id or trackId "nope" — the view's tracks are track2, track1/,
+    )
+  })
+
   test('init with object trackIds allows specifying display type via displaySnapshot', async () => {
     const { Session, LinearGenomeModel, pluginManager } = initializeWithTracks()
     const session = Session.create({ configuration: {} }, { pluginManager })

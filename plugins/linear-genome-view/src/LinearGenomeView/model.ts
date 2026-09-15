@@ -1580,11 +1580,29 @@ export function stateModelFactory(pluginManager: PluginManager) {
         )
       },
     }))
+    .views(self => ({
+      /**
+       * #method
+       * The shown track a move action means: the menu passes a track model's
+       * own `id`, an agent passes the `trackId` it knows the track by, and
+       * both name one shown track. Answers the model id, or the argument
+       * unchanged when nothing shown matches, so the move reports it.
+       */
+      trackModelId(idOrTrackId: string) {
+        return (
+          (
+            self.tracks.find(t => t.id === idOrTrackId) ??
+            self.tracks.find(t => t.configuration.trackId === idOrTrackId)
+          )?.id ?? idOrTrackId
+        )
+      },
+    }))
     .actions(self => ({
       /**
        * #action
        */
-      moveTrackDown(id: string) {
+      moveTrackDown(idOrTrackId: string) {
+        const id = self.trackModelId(idOrTrackId)
         const section = self.trackSection(id)
         const idx = section.findIndex(t => t.id === id)
         if (idx !== -1 && idx < section.length - 1) {
@@ -1594,7 +1612,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      moveTrackUp(id: string) {
+      moveTrackUp(idOrTrackId: string) {
+        const id = self.trackModelId(idOrTrackId)
         const section = self.trackSection(id)
         const idx = section.findIndex(t => t.id === id)
         if (idx > 0) {
@@ -1604,7 +1623,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      moveTrackToTop(id: string) {
+      moveTrackToTop(idOrTrackId: string) {
+        const id = self.trackModelId(idOrTrackId)
         const section = self.trackSection(id)
         if (section.length && section[0]!.id !== id) {
           this.moveTrack(id, section[0]!.id)
@@ -1613,7 +1633,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      moveTrackToBottom(id: string) {
+      moveTrackToBottom(idOrTrackId: string) {
+        const id = self.trackModelId(idOrTrackId)
         const section = self.trackSection(id)
         const last = section[section.length - 1]
         if (last && last.id !== id) {
@@ -1622,15 +1643,23 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
+       * Move one shown track to another's position; each is a track model id
+       * or a trackId.
        */
-      moveTrack(movingId: string, targetId: string) {
+      moveTrack(moving: string, target: string) {
+        const movingId = self.trackModelId(moving)
+        const targetId = self.trackModelId(target)
         const oldIndex = self.tracks.findIndex(track => track.id === movingId)
         if (oldIndex === -1) {
-          throw new Error(`Track ID ${movingId} not found`)
+          throw new Error(
+            `No shown track has id or trackId "${moving}" — the view's tracks are ${self.tracks.map(t => t.configuration.trackId).join(', ') || 'none'}`,
+          )
         }
         const newIndex = self.tracks.findIndex(track => track.id === targetId)
         if (newIndex === -1) {
-          throw new Error(`Track ID ${targetId} not found`)
+          throw new Error(
+            `No shown track has id or trackId "${target}" — the view's tracks are ${self.tracks.map(t => t.configuration.trackId).join(', ') || 'none'}`,
+          )
         }
 
         // direction-aware placement: filtering out oldIndex shifts the target

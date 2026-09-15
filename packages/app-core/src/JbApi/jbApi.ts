@@ -1407,8 +1407,14 @@ async function addTrack(
   }
   const location = locationsOf(args.location)
   if (!location.length) {
+    // the eval's first finding: an agent asked to show a catalog track reached
+    // for addTrack with a trackId, and "needs a location" sent it looking for
+    // the file
+    const trackId = typeof args.trackId === 'string' ? args.trackId : undefined
     throw new Error(
-      'jb.addTrack needs a location (an absolute local path or a URL)',
+      trackId
+        ? `jb.addTrack adds a FILE (an absolute local path or a URL) to the catalog; "${trackId}" is already in it. To show it: await jb.view().launchTrack("${trackId}"), or name it in a jb.setSession document's tracks.`
+        : 'jb.addTrack needs a location (an absolute local path or a URL). A track already in the catalog is shown with await jb.view().launchTrack(trackId).',
     )
   }
   const requested =
@@ -1468,7 +1474,7 @@ async function addTrack(
 
 /**
  * One view from one spec entry, into the open session, through the same
- * `LaunchView-<type>` door `jb.loadSessionSpec` takes for each of its views —
+ * launcher extension point `jb.loadSessionSpec` takes for each of its views —
  * so the entry means the same thing in both places, a ProteinView's
  * `connectedView` included. `session.launchView` is the other route and does
  * not: it is `addView` with a snapshot, so it never runs a view's launcher.

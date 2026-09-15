@@ -392,14 +392,11 @@ return {
 
 MST attaches actions as non-enumerable properties, so `Object.keys(view)` shows
 none of them and `jb.inspect` is how to see what a view can do. The move actions
-take the track model's own `id`, not its `trackId`:
+take a shown track's `trackId` or its model's own `id`:
 
 ```js
 const view = jb.view()
-const track = view.tracks.find(
-  t => t.configuration.trackId === 'volvox_test_vcf',
-)
-view.moveTrackToTop(track.id)
+view.moveTrackToTop('volvox_test_vcf')
 return {
   moves: jb.inspect('views.0').actions.filter(a => a.startsWith('moveTrack')),
   order: view.tracks.map(t => t.configuration.trackId),
