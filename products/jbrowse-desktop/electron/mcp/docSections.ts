@@ -53,9 +53,15 @@ function normalized(text: string) {
 
 function findSection(sections: DocSection[], heading: string) {
   const wanted = normalized(heading)
-  const headings = sections.map(s => normalized(s.heading))
-  const exact = headings.indexOf(wanted)
-  return exact !== -1 ? exact : headings.findIndex(h => h.includes(wanted))
+  const exact = sections.findIndex(s => normalized(s.heading) === wanted)
+  if (exact !== -1) {
+    return exact
+  }
+  // the loose pass keeps the separators: stripping them for a substring test
+  // joins words and matches across them, so "Views" landed inside "Linear
+  // genome view (simple)" rather than on "Tiled views / Workspaces"
+  const loose = heading.trim().toLowerCase()
+  return sections.findIndex(s => s.heading.toLowerCase().includes(loose))
 }
 
 function withoutSections(markdown: string, omit: readonly string[]) {

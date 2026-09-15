@@ -100,6 +100,13 @@ Synteny body.
     it('still finds a heading only a substring names', () => {
       expect(readDocSection(spec, 'simple').text).toContain('Simple body.')
     })
+
+    // the loose pass keeps the separators: without them "views" is a substring
+    // of "lineargenomeviewsimple", so a real request landed two sections away
+    it('does not match across the words of another heading', () => {
+      const doc = `${spec}\n## Tiled views / Workspaces\n\nTiled body.\n`
+      expect(readDocSection(doc, 'Views').text).toContain('Tiled body.')
+    })
   })
 
   it('names the sections when the requested one is missing', () => {
