@@ -34,11 +34,13 @@ around between your calls. Introspect rather than guess (`jb.listTracks()` for
 trackIds, `jb.describeSlots(...)` for settings keys, `jb.inspect(path)` for what
 a live node can answer). Build with `jb.loadSessionSpec`, then change what is
 open as a document: `jb.setSession` takes the snapshot back edited, `jb.addView`
-adds one view, `jb.fitToWindow()` answers the settle's `offscreen`. After
-changing anything, `screenshot` and actually read the image, and read `notReady`
-in the settle result — a wrong trackId, an empty region or a dropped settings
-key all render as a plausible browser with something quietly missing. Verify
-data claims with `jb.getFeatures`, never from the picture.
+adds one view, `jb.fitToWindow()` answers the settle's `offscreen`. Read
+`notReady` in the settle result after every change — a wrong trackId, an empty
+region or a dropped settings key all render as a plausible browser with
+something quietly missing. `screenshot` when the change is visual or the settle
+reports `notReady` or `offscreen`, and actually read the image; for
+show/hide/reorder/navigate/fit the settle plus `jb.sessionSummary()` verifies it
+far cheaper. Verify data claims with `jb.getFeatures`, never from the picture.
 
 ## Repo-only
 
