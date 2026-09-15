@@ -54,5 +54,10 @@ Frank list, so nobody rediscovers these by being surprised.
   bundle was built against.
 - **Two config keys the repo's validator rejects** are declared by the plugin at
   runtime: `configuration.ApolloPlugin` and the `apollo_track_hg38` the session
-  opens. That is why this directory commits with `SKIP_CONFIG_CHECK=1`. Teaching
-  the manifest about plugin-declared slots would remove the override.
+  opens. So this directory commits with `SKIP_CONFIG_CHECK=1`, and
+  `PLUGIN_CONFIGS` in `scripts/check-docs.ts` holds it out of the demo-config
+  gate, which otherwise blocks every push from the repo. Both were checked in a
+  browser instead: the ontology loads from the pinned URL rather than from
+  GitHub, and the track opens from the session spec, with nothing logged.
+  Teaching the manifest what a declared plugin serves would retire the
+  exemption.
