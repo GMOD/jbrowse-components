@@ -169,12 +169,16 @@ export const TASKS: EvalTask[] = [
     // what is open is per view; a display's config slots are not, so the two
     // views cannot be styled apart — closing a track is the view-local change
     grade: `
-      const views = session.views.map(v => ({
-        loc: String(v.coarseVisibleLocStrings),
-        tracks: v.tracks.map(t => t.configuration.trackId),
-      }))
-      const ctgB = views.find(v => v.loc.startsWith('ctgB'))
-      const ctgA = views.find(v => v.loc.startsWith('ctgA'))
+      // visibleRegions, not coarseVisibleLocStrings: that one is '' until the
+      // view has rendered blocks
+      const views = await Promise.all(
+        session.views.map(async v => ({
+          refName: (await jb.visibleRegions(v.id))[0]?.refName,
+          tracks: v.tracks.map(t => t.configuration.trackId),
+        })),
+      )
+      const ctgB = views.find(v => v.refName === 'ctgB')
+      const ctgA = views.find(v => v.refName === 'ctgA')
       return {
         pass:
           views.length === 2 &&
@@ -191,10 +195,12 @@ export const TASKS: EvalTask[] = [
       const v = session.views.find(v => v.type === 'LinearGenomeView')
       const regions = v ? await jb.visibleRegions(v.id) : []
       const r = regions[0]
-      const overlaps = !!r && r.refName === 'ctgA' && r.start < 15000 && r.end > 5000
+      // bounded, not merely overlapping: loc 'ctgA' opens the whole 50 kb
+      // contig, which overlaps the asked-for window and shows none of it
+      const atRegion = !!r && r.refName === 'ctgA' && r.start >= 4000 && r.end <= 16000
       const tracks = v ? v.tracks.map(t => t.configuration.trackId) : []
       return {
-        pass: overlaps && tracks.includes('gff3tabix_genes'),
+        pass: atRegion && tracks.includes('gff3tabix_genes'),
         detail: { region: r, tracks },
       }`,
   },
@@ -202,8 +208,9 @@ export const TASKS: EvalTask[] = [
     name: 'count-region',
     prompt:
       'How many variants does volvox_test_vcf have in ctgA:20,000-30,000? Reply with just the number.',
-    // the truth here is zero, so the prompt rewards a read over a guess from
-    // the picture: nothing is drawn in that region to count
+    // ctgA:20,000-30,000 holds none — the VCF's records stop at 12,738. What
+    // this grades is an empty region answered plainly: a hallucinated number
+    // and a hedge both fail, and count-variants grades a non-trivial count.
     grade: `
       const feats = await jb.getFeatures({ trackId: 'volvox_test_vcf', loc: 'ctgA:20,000-30,000' })
       const truth = feats.length
@@ -231,7 +238,12 @@ export const TASKS: EvalTask[] = [
           .sort((a, b) => a.start - b.start)
           .map(f => f.score),
       )
-      const match = scored.find(s => s.join() === truth.join())
+      // trailing empty bins are a formatting choice, not an answer: binning
+      // from jb.visibleRegions' ceil(end) gives 7 bins where the loc gives 6,
+      // and a track carrying only the bins that hold variants gives 3
+      const trim = a => { const b = [...a]; while (b.length && b.at(-1) === 0) { b.pop() } return b }
+      const want = trim(truth).join()
+      const match = scored.find(s => trim(s).join() === want)
       return { pass: !!match, detail: { truth, scored } }`,
   },
   {

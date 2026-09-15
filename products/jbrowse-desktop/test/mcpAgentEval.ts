@@ -318,6 +318,7 @@ try {
   for (const task of tasks) {
     for (let run = 1; run <= runs; run++) {
       let events: StreamEvent[] = []
+      let counted = count(events)
       // one task whose staging times out costs its own row, not the half hour
       // of runs behind it
       let verdict: { pass: boolean; detail: unknown } = {
@@ -337,11 +338,11 @@ try {
         }
         const prompt = task.prompt.replaceAll('DATA', repoRoot)
         events = await runAgent(prompt, cwd, mcpConfig)
-        verdict = await grade(session.client, task.grade, count(events).answer)
+        counted = count(events)
+        verdict = await grade(session.client, task.grade, counted.answer)
       } catch (e) {
         verdict = { pass: false, detail: { harnessError: `${e}` } }
       }
-      const counted = count(events)
       const row: RunMetrics = {
         task: task.name,
         run,
