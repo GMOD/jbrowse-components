@@ -370,46 +370,32 @@ function memberNames(node: object) {
   return { getters: getters.sort(), methods: methods.sort() }
 }
 
-// `views[0]`, `views[0].tracks[1]` and `views["id"]` beside the dot form: the
-// bracket spelling is what the surrounding JavaScript uses, and it threw.
-function pathSegments(path: string) {
-  return path
-    .replaceAll(
-      /\[\s*(?:"([^"]*)"|'([^']*)'|([^\]]*?))\s*\]/g,
-      (_all, doubleQuoted, singleQuoted, bare) =>
-        `.${doubleQuoted ?? singleQuoted ?? bare}`,
+// The node itself. An agent writing `run_javascript` holds it already —
+// jb.view(), session.views[0], track.activeDisplay — so there is nothing to
+// learn here. A dot-path string used to be the only way to ask, which had
+// agents reconstructing a path to a node in hand, in a grammar ("views.0")
+// that is not JavaScript.
+function inspectTarget(session: AbstractSessionModel, target: unknown) {
+  if (typeof target === 'string') {
+    throw new Error(
+      `jb.inspect takes the node itself, not the name "${target}" — jb.inspect(jb.view()), jb.inspect(jb.trackModel('someTrackId')), jb.inspect(session.views[0].tracks[0]). Bare jb.inspect() is the session.`,
     )
-    .split('.')
-    .filter(Boolean)
+  }
+  return target ?? session
 }
 
 function inspectSession(
   session: AbstractSessionModel,
   args: Record<string, unknown>,
 ) {
-  const path = typeof args.path === 'string' ? args.path : ''
   const maxBytes = typeof args.maxBytes === 'number' ? args.maxBytes : 20_000
-  let node: unknown = session
-  const walked: string[] = []
-  for (const segment of pathSegments(path)) {
-    node =
-      node !== null && typeof node === 'object'
-        ? (node as Record<string, unknown>)[segment]
-        : undefined
-    if (node === undefined) {
-      throw new Error(
-        `Nothing at "${path}" (undefined after "${walked.join('.') || '(root)'}"). Inspect the parent path to see its keys and getters.`,
-      )
-    }
-    walked.push(segment)
-  }
+  const node = inspectTarget(session, args.target)
   const members =
-    node !== null && typeof node === 'object' && !Array.isArray(node)
+    typeof node === 'object' && !Array.isArray(node)
       ? memberNames(node)
       : { getters: [], methods: [] }
   const json = safeJson(node)
   const base = {
-    path: path || '(session root)',
     // the name the docs tool files a type under: docs topic "model:<modelType>"
     ...(isStateTreeNode(node) ? { modelType: getType(node).name } : {}),
     bytes: json.length,
@@ -423,12 +409,12 @@ function inspectSession(
   return Array.isArray(plain)
     ? {
         ...base,
-        note: `too large to return whole — ${plain.length} items; index in with .N or raise maxBytes`,
+        note: `too large to return whole — ${plain.length} items; inspect one of them or raise maxBytes`,
         items: plain.slice(0, 20).map(item => describeBrief(item)),
       }
     : {
         ...base,
-        note: 'too large to return whole — drill down by path or raise maxBytes',
+        note: 'too large to return whole — inspect a child of it or raise maxBytes',
         keys: Object.fromEntries(
           Object.entries(plain as Record<string, unknown>).map(([k, v]) => [
             k,
@@ -725,20 +711,22 @@ async function fitToWindow(
   }
 }
 
-// The catalog is the largest result of nearly every agent run — 100 volvox
-// rows is 16 KB — so a row carries what picks a track out of the list and
-// nothing that repeats down it. The adapter type is `jb.inspect`'s or
-// `jb.describeSlots`' to answer for the one track an agent went on to use.
-function trackEntry(conf: BaseTrackConfig, withAssemblies: boolean) {
+// The catalog is the largest result of nearly every agent run — the 129 volvox
+// rows were 20 KB — so a row carries what picks a track out of the list and
+// nothing more. The adapter type is `jb.inspect`'s or `jb.describeSlots`' to
+// answer for the one track an agent went on to use.
+//
+// Dropping assemblyNames wherever the session has a single assembly saved
+// nothing and made the row shape vary by session: a config declares far more
+// assemblies than it opens, and volvox — every eval run's config — declares 10.
+function trackEntry(conf: BaseTrackConfig) {
   return {
     trackId: conf.trackId,
     name: readConfObject(conf, 'name'),
     type: conf.type,
     // getConfAssemblyNamesOrNone, not the slot: an assembly's sequence track
     // has no assemblyNames slot and answers through its parent assembly
-    ...(withAssemblies
-      ? { assemblyNames: getConfAssemblyNamesOrNone(conf) }
-      : {}),
+    assemblyNames: getConfAssemblyNamesOrNone(conf),
   }
 }
 
@@ -756,14 +744,11 @@ function listTracks(
 ) {
   const search = searchArg?.toLowerCase() ?? ''
   const limit = limitArg ?? 100
-  // on one assembly every row names the same one; on several it is what tells
-  // a track apart from its mate
-  const withAssemblies = session.assemblyManager.assemblyList.length > 1
   // allSessionTracks, not session.tracks: connection-supplied tracks (hubs,
   // registries) are absent from the session lists but fully showable — a
   // hand-rolled union here hid them from agents entirely
   const matches = [...allSessionTracks(session), ...sequenceTracks(session)]
-    .map(c => trackEntry(c, withAssemblies))
+    .map(c => trackEntry(c))
     .filter(
       t =>
         !search ||
@@ -926,10 +911,10 @@ function shownTrackModel(
 }
 
 /**
- * A region as `loc` takes it: a locstring, or the object shape every other
+ * One place, as `loc` takes it: a locstring, or the object shape every other
  * region on this surface has — `jb.visibleRegions`' answer, a feature's own
  * coordinates — which used to reach `parseLocString` and die there with
- * "endsWith is not a function".
+ * "endsWith is not a function". Several places are `regions`.
  */
 export type JbLoc =
   | string
@@ -983,7 +968,7 @@ async function locToRegion(
 ): Promise<JbRegion> {
   if (typeof loc !== 'string' && !isRegionLoc(loc)) {
     throw new Error(
-      `jb.getFeatures takes loc as a locstring ("ctgA:1-100") or a region object ({ refName, start, end }), and got ${JSON.stringify(loc)}`,
+      `jb.getFeatures takes loc as ONE place — a locstring ("ctgA:1-100") or a region object ({ refName, start, end }) — and got ${JSON.stringify(loc)}${Array.isArray(loc) ? '; several regions go in regions: [...]' : ''}`,
     )
   }
   const { assembly, assemblyName } = await trackAssembly(
@@ -996,6 +981,14 @@ async function locToRegion(
       ? parseLocString(loc, refName => assembly.isValidRefName(refName))
       : loc
   const refName = assembly.getCanonicalRefName(parsed.refName) ?? parsed.refName
+  // parseLocString asks this for the string form. A region object skipping it
+  // read empty on a name the assembly does not have, which is the answer this
+  // surface exists to turn into an error.
+  if (!assembly.isValidRefName(refName)) {
+    throw new Error(
+      `"${parsed.refName}" is not a sequence in ${assemblyName} — jb.visibleRegions() and jb.sessionSummary() name what is there`,
+    )
+  }
   const bounds = assembly.regions?.find(r => r.refName === refName)
   return {
     assemblyName,
@@ -1003,18 +996,6 @@ async function locToRegion(
     start: parsed.start ?? bounds?.start ?? 0,
     end: parsed.end ?? bounds?.end ?? Number.MAX_SAFE_INTEGER,
   }
-}
-
-async function locRegions(
-  session: AbstractSessionModel,
-  conf: AnyConfigurationModel,
-  loc: JbLoc | JbLoc[],
-  assemblyArg: string | undefined,
-) {
-  const entries = Array.isArray(loc) ? loc : [loc]
-  return Promise.all(
-    entries.map(entry => locToRegion(session, conf, entry, assemblyArg)),
-  )
 }
 
 async function visibleRegionsOf(
@@ -1301,7 +1282,7 @@ export async function ensureReExports() {
 // contract from.
 const JB_HELP = `jb drives this JBrowse app programmatically (window.jb in a browser; the same object is the "jb" argument of JBrowse Desktop's run_javascript MCP tool).
 
-Orient first: jb.sessionSummary(). Introspect, never guess: jb.listTracks(search?, limit?) answers { total, tracks } with the trackIds; jb.describeSlots(jb.trackModel('someTrackId').activeDisplay.configuration) for the settings keys a display accepts — an unknown settings key is not an error, it lands in applyDisplaySettings' "unapplied" list, so read the report; jb.inspect('views.0') for a live node's getters, actions and modelType.
+Orient first: jb.sessionSummary(). Introspect, never guess: jb.listTracks(search?, limit?) answers { total, tracks } with the trackIds; jb.describeSlots(jb.trackModel('someTrackId').activeDisplay.configuration) for the settings keys a display accepts — an unknown settings key is not an error, it lands in applyDisplaySettings' "unapplied" list, so read the report; jb.inspect(node) — jb.view(), jb.trackModel('someTrackId'), session.views[0] — for its getters, actions and modelType.
 
 The model is mobx-state-tree: mutate only through actions (raw assignment throws), and write display settings with track.applyDisplaySettings(settings). Build views declaratively with jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly, loc, tracks: [...] }] }), which replaces the session; jb.addView(oneViewSpec) opens one more view beside what is open; jb.setSession(document) rewrites the session as a document — what jb.mst.getSnapshot(jb.session) answers, edited: a view keeps its id and is patched in place, loc on it navigates, a { trackId } entry in its tracks opens that track. Act on a view with await view.navToLocString('BRCA1' or 'chr1:1-1000'), which also SHOWS the track whose search index answered a gene name unless a 4th arg { showHitTrack: false } says not to; await view.launchTrack(trackId, {}, settings) shows a track with settings, view.hideTrack(trackId) hides it. Arrange open views into panels with session.layoutViews({ direction: 'horizontal', children: [{ views: [viewId] }, ...] }) — leaves name view ids or indexes into session.views; await jb.fitToWindow() shrinks what is open until the session fits the window; add data with jb.addTrack({ location }) (an absolute path or a URL), or show a track the catalog already holds with jb.addTrack({ trackId, settings? }); read data with await jb.getFeatures({ trackId, loc?, assembly?, viewId?, regions?, byteLimit? }) (or jb.getFeatures(trackId, loc?, opts?)), which renames refNames ("chr1" vs "1") so the file answers and reads on the worker the track's display uses. Anything lower level is jb.require('@jbrowse/core/util') and friends, the module registry plugins link against. After changing anything, await jb.waitReady(ms) and read its notifications and notReady lists before trusting the screen.
 
@@ -1381,8 +1362,8 @@ export function createJbApi(
     waitReady: async (timeoutMs = 30_000) =>
       reported(await waitReady(timeoutMs, live())),
     sessionSummary: () => sessionSummary(live()),
-    inspect: (path?: string, maxInspectBytes?: number) =>
-      inspectSession(live(), { path, maxBytes: maxInspectBytes }),
+    inspect: (target?: unknown, maxInspectBytes?: number) =>
+      inspectSession(live(), { target, maxBytes: maxInspectBytes }),
     listTracks: (search?: string, limit?: number) =>
       listTracks(live(), search, limit),
     view: (viewId?: string) => viewById(live(), viewId),
@@ -1422,15 +1403,15 @@ export function createJbApi(
         | string
         | {
             trackId: string
-            // a locstring, a region object, or a list of either
-            loc?: JbLoc | JbLoc[]
+            // one place: a locstring or a region object
+            loc?: JbLoc
             assembly?: string
             regions?: JbRegion[]
             viewId?: string
             // raises the region-too-large refusal for a read you mean to be big
             byteLimit?: number
           },
-      positionalLoc?: JbLoc | JbLoc[],
+      positionalLoc?: JbLoc,
       positionalOpts?: {
         assembly?: string
         viewId?: string
@@ -1451,7 +1432,14 @@ export function createJbApi(
       const regions =
         fetchArgs.regions ??
         (fetchArgs.loc !== undefined
-          ? await locRegions(session, conf, fetchArgs.loc, fetchArgs.assembly)
+          ? [
+              await locToRegion(
+                session,
+                conf,
+                fetchArgs.loc,
+                fetchArgs.assembly,
+              ),
+            ]
           : await visibleRegionsOf(
               session,
               fetchArgs.viewId,
@@ -1475,17 +1463,28 @@ export type JbApi = ReturnType<typeof createJbApi>
 // views that were fine; the wait exits the moment they are ready
 const ADD_TRACK_SETTLE_MS = 60_000
 
+function namesAFile(value: unknown) {
+  return Array.isArray(value)
+    ? value.some(l => typeof l === 'string' && isFileLocationText(l))
+    : typeof value === 'string' && isFileLocationText(value)
+}
+
 // The name an agent meant as a catalog trackId: `trackId`, or a `location`
 // that is neither a URL nor a path. Agent runs reached for jb.addTrack to SHOW
 // a track already in the catalog in both spellings, and each paid a round trip
 // for a refusal that only named another helper.
+//
+// A location that names a file is the file route whatever else came with it:
+// `trackId` beside `location` is how a track CONFIG spells this, and taking it
+// as the catalog route would refuse the file the caller asked to add.
 function catalogName(args: Record<string, unknown>) {
+  if (namesAFile(args.location)) {
+    return undefined
+  }
   if (typeof args.trackId === 'string') {
     return args.trackId
   }
-  return typeof args.location === 'string' && !isFileLocationText(args.location)
-    ? args.location
-    : undefined
+  return typeof args.location === 'string' ? args.location : undefined
 }
 
 async function addTrack(
@@ -1493,19 +1492,21 @@ async function addTrack(
   session: AbstractSessionModel,
   args: Record<string, unknown>,
 ) {
-  if (!isSessionWithAddSessionTrack(session)) {
-    throw new Error('This session cannot add tracks')
-  }
   const named = catalogName(args)
   const inCatalog =
     named === undefined ? undefined : session.getTrackById(named)
+  // before the add-rights check: showing a track the catalog already holds
+  // adds nothing to it
   if (inCatalog) {
     return showCatalogTrack(pluginManager, session, inCatalog, args)
   }
-  if (typeof args.trackId === 'string') {
+  if (named !== undefined && typeof args.trackId === 'string') {
     throw new Error(
       `No track with trackId "${args.trackId}" — jb.listTracks() shows what the catalog holds, and jb.addTrack({ location }) adds a file to it.`,
     )
+  }
+  if (!isSessionWithAddSessionTrack(session)) {
+    throw new Error('This session cannot add tracks')
   }
   const location = locationsOf(args.location)
   if (!location.length) {
@@ -1567,12 +1568,25 @@ async function showCatalogTrack(
   conf: BaseTrackConfig,
   args: Record<string, unknown>,
 ) {
+  // index, assembly and name describe the file being added, and the catalog's
+  // copy already has all three — taking them here would drop them in silence
+  const fileArgs = ['index', 'assembly', 'name'].filter(
+    key => args[key] !== undefined,
+  )
+  if (fileArgs.length) {
+    throw new Error(
+      `"${conf.trackId}" is in the catalog already, so ${fileArgs.join(' and ')} would be ignored — drop ${fileArgs.length > 1 ? 'them' : 'it'}, or pass a location to add a new file.`,
+    )
+  }
   const track = {
     trackId: conf.trackId,
     trackType: conf.type,
     assembly: getConfAssemblyNamesOrNone(conf)[0],
   }
-  const summary = { trackId: track.trackId, trackType: track.trackType }
+  const adapterType = readConfObject(conf, ['adapter', 'type']) as
+    | string
+    | undefined
+  const summary = { ...track, ...(adapterType ? { adapterType } : {}) }
   // show:false over a catalog trackId asks for nothing — there is no file to
   // add — and showing it anyway would contradict the flag
   return args.show === false

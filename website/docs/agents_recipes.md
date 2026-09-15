@@ -19,18 +19,21 @@ description:
 ## Find the tracks you can use
 
 `jb.listTracks` answers `{ total, tracks }`, not an array. A row carries
-`trackId`, `name` and `type`:
+`trackId`, `name`, `type` and `assemblyNames`, so a config with several
+assemblies is filtered in code:
 
 ```js
 const { total, tracks } = jb.listTracks('vcf')
-return { total, ids: tracks.map(t => `${t.trackId} (${t.type})`) }
+return {
+  total,
+  onVolvox: tracks
+    .filter(t => t.assemblyNames.includes('volvox'))
+    .map(t => `${t.trackId} (${t.type})`),
+}
 ```
 
 The search matches `trackId` and `name`, case-insensitively. Connection and hub
 tracks are included, which is why this and not `session.tracks` is the catalog.
-A session with several assemblies loaded carries `assemblyNames` on each row
-too; filter on it to tell a track from its mate on the other genome:
-`tracks.filter(t => t.assemblyNames.includes('hg38'))`.
 
 ## Open a hosted genome at a gene
 
@@ -383,7 +386,7 @@ return {
   not set.
 - Anything a slot does not cover is an action on the display itself, listed by
   `docs topic:"model:<modelType>" section:"Actions"` with the type name from
-  `jb.inspect('views.0.tracks.0.displays.0').modelType`.
+  `jb.inspect(track.activeDisplay).modelType`.
 
 ## Reorder tracks with an action `inspect` found
 
@@ -395,7 +398,7 @@ take a shown track's `trackId` or its model's own `id`:
 const view = jb.view()
 view.moveTrackToTop('volvox_test_vcf')
 return {
-  moves: jb.inspect('views.0').actions.filter(a => a.startsWith('moveTrack')),
+  moves: jb.inspect(view).actions.filter(a => a.startsWith('moveTrack')),
   order: view.tracks.map(t => t.configuration.trackId),
 }
 ```

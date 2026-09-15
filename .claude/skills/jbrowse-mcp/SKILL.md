@@ -31,7 +31,7 @@ agent three ways:
 The short version, because it is what gets skipped: orient with
 `jb.sessionSummary()` and never assume state carried over — the user can click
 around between your calls. Introspect rather than guess (`jb.listTracks()` for
-trackIds, `jb.describeSlots(...)` for settings keys, `jb.inspect(path)` for what
+trackIds, `jb.describeSlots(...)` for settings keys, `jb.inspect(node)` for what
 a live node can answer). Build with `jb.loadSessionSpec`, then change what is
 open as a document: `jb.setSession` takes the snapshot back edited, `jb.addView`
 adds one view, `jb.fitToWindow()` answers the settle's `offscreen`. Read

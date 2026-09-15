@@ -522,6 +522,7 @@ describe('addTrack with a trackId the catalog already holds', () => {
     trackId: 'volvox_alignments',
     type: 'AlignmentsTrack',
     assemblyNames: ['volvox'],
+    adapter: { type: 'BamAdapter' },
   }
   const session = {
     rpcManager: {},
@@ -543,6 +544,7 @@ describe('addTrack with a trackId the catalog already holds', () => {
     shown.length = 0
   })
 
+  // the same report the file route answers with, so one call has one shape
   it('shows it, with the settings it was given', async () => {
     expect(
       await jb.addTrack({
@@ -553,6 +555,8 @@ describe('addTrack with a trackId the catalog already holds', () => {
     ).toEqual({
       trackId: 'volvox_alignments',
       trackType: 'AlignmentsTrack',
+      assembly: 'volvox',
+      adapterType: 'BamAdapter',
       shownInView: 'v1',
     })
     expect(shown).toEqual([['volvox_alignments', { height: 300 }]])
@@ -566,7 +570,36 @@ describe('addTrack with a trackId the catalog already holds', () => {
   it('shows nothing under show:false, as the file route does not', async () => {
     expect(
       await jb.addTrack({ trackId: 'volvox_alignments', show: false }),
-    ).toEqual({ trackId: 'volvox_alignments', trackType: 'AlignmentsTrack' })
+    ).toMatchObject({ trackId: 'volvox_alignments' })
+    expect(shown).toEqual([])
+  })
+
+  // `trackId` beside `location` is how a track CONFIG spells this, and reading
+  // it as the catalog route refused the file the caller asked to add
+  it('adds the file when the location names one', async () => {
+    expect(
+      await jb.addTrack({
+        trackId: 'volvox_alignments',
+        location: ['https://x.org/a.bw', 'https://x.org/b.bw'],
+        show: false,
+      }),
+    ).toMatchObject({ adapterType: 'MultiWiggleAdapter' })
+    expect(shown).toEqual([])
+  })
+
+  // index, assembly and name describe the file; the catalog's copy has them
+  // already, so taking the call and dropping them is the silent answer
+  it('refuses the file keys over a catalog trackId', async () => {
+    await expect(
+      jb.addTrack({ trackId: 'volvox_alignments', assembly: 'volvox2' }),
+    ).rejects.toThrow(/is in the catalog already, so assembly would be ignored/)
+    await expect(
+      jb.addTrack({
+        trackId: 'volvox_alignments',
+        name: 'Renamed',
+        index: '/x.bai',
+      }),
+    ).rejects.toThrow(/so index and name would be ignored — drop them/)
     expect(shown).toEqual([])
   })
 
@@ -745,15 +778,23 @@ describe('listTracks', () => {
     rootModel: { session },
   } as unknown as PluginManager)
 
+  // the 129 volvox rows were 20 KB, the largest result in nearly every agent
+  // run; the adapter type is what goes, and every row keeps one shape
   it('lists each assembly sequence track beside the catalog', () => {
     expect(jb.listTracks()).toEqual({
       total: 2,
       tracks: [
-        { trackId: 'genes', name: 'genes', type: 'FeatureTrack' },
+        {
+          trackId: 'genes',
+          name: 'genes',
+          type: 'FeatureTrack',
+          assemblyNames: ['volvox'],
+        },
         {
           trackId: 'volvox_refseq',
           name: 'volvox sequence',
           type: 'ReferenceSequenceTrack',
+          assemblyNames: ['volvox'],
         },
       ],
     })
@@ -761,44 +802,11 @@ describe('listTracks', () => {
       'volvox_refseq',
     ])
   })
-
-  // 100 rows of the volvox catalog was 16 KB, the largest result in nearly
-  // every agent run: the adapter type goes, and the assembly names go with it
-  // wherever they would repeat the session's one assembly down every row.
-  it('names the assembly only when the session has more than one', () => {
-    const twoAssemblies = {
-      ...session,
-      assemblyManager: {
-        assemblyList: [
-          ...session.assemblyManager.assemblyList,
-          assembly.create(
-            {
-              name: 'volvox2',
-              sequence: {
-                type: 'ReferenceSequenceTrack',
-                trackId: 'volvox2_refseq',
-                adapter: { type: 'IndexedFastaAdapter' },
-              },
-            },
-            env,
-          ),
-        ],
-      },
-    } as unknown as AbstractSessionModel
-    const jbTwo = createJbApi({
-      rootModel: { session: twoAssemblies },
-    } as unknown as PluginManager)
-    expect(jbTwo.listTracks().tracks[0]).toEqual({
-      trackId: 'genes',
-      name: 'genes',
-      type: 'FeatureTrack',
-      assemblyNames: ['volvox'],
-    })
-  })
 })
 
-// Three of 32 eval runs wrote jb.inspect('views[0]'), the spelling the code
-// around the call uses, and it threw.
+// Three of 32 eval runs wrote jb.inspect('views[0]') against a surface that
+// took 'views.0'. The path grammar is gone: the node is the argument, and the
+// agent already holds one.
 describe('inspect', () => {
   const session = {
     views: [
@@ -818,25 +826,27 @@ describe('inspect', () => {
     rootModel: { session },
   } as unknown as PluginManager)
 
-  it('walks a bracket path, nested, and a quoted key', () => {
-    expect(jb.inspect('views[0]')).toMatchObject({
-      path: 'views[0]',
-      value: { id: 'v1' },
+  it('takes the node, and bare takes the session', () => {
+    expect(jb.inspect(session.views[0])).toMatchObject({ value: { id: 'v1' } })
+    expect(
+      jb.inspect(
+        (session.views[0] as unknown as { tracks: unknown[] }).tracks[1],
+      ),
+    ).toMatchObject({ value: { id: 't1' } })
+    expect(jb.inspect()).toMatchObject({
+      value: { views: [{ id: 'v1' }] },
     })
-    expect(jb.inspect('views[0].tracks[1]')).toMatchObject({
-      value: { id: 't1' },
-    })
-    expect(jb.inspect('views.0.tracks.1')).toMatchObject({
-      value: { id: 't1' },
-    })
-    expect(jb.inspect('widgets["hierarchical-track-selector"]')).toMatchObject({
-      value: { type: 'HierarchicalTrackSelectorWidget' },
-    })
+    expect(jb.inspect()).not.toHaveProperty('path')
   })
 
-  it('names the parent it got as far as', () => {
-    expect(() => jb.inspect('views[3].tracks')).toThrow(
-      /Nothing at "views\[3\].tracks" \(undefined after "views"\)/,
+  // the old spelling, and the one an agent invents for a trackId: both name the
+  // idiomatic call rather than walking a grammar of our own
+  it('refuses a string, naming the node form', () => {
+    expect(() => jb.inspect('views.0')).toThrow(
+      /jb.inspect takes the node itself, not the name "views.0" — jb.inspect\(jb.view\(\)\)/,
+    )
+    expect(() => jb.inspect('volvox_alignments')).toThrow(
+      /jb.inspect\(jb.trackModel\('someTrackId'\)\)/,
     )
   })
 })
@@ -938,7 +948,7 @@ describe('getFeatures reads through the RPC', () => {
   // A region in hand — jb.visibleRegions' answer, a feature's coordinates —
   // written as loc used to reach parseLocString and die there with
   // "endsWith is not a function".
-  it('takes a region object as loc, and a list of them', async () => {
+  it('takes a region object as loc', async () => {
     await jb.getFeatures({
       trackId: 'genes',
       loc: { refName: 'ctgA', start: 10, end: 20 },
@@ -948,26 +958,32 @@ describe('getFeatures reads through the RPC', () => {
         { refName: 'ctgA', start: 10, end: 20, assemblyName: 'volvox' },
       ],
     })
-    calls.length = 0
-    await jb.getFeatures('genes', [
-      { refName: 'ctgA', start: 10, end: 20 },
-      'ctgA:31-40',
-    ])
-    expect(calls[0]?.[2]).toMatchObject({
-      regions: [
-        { refName: 'ctgA', start: 10, end: 20, assemblyName: 'volvox' },
-        { refName: 'ctgA', start: 30, end: 40, assemblyName: 'volvox' },
-      ],
-    })
   })
 
-  it('names both forms for a loc that is neither', async () => {
+  // the string form asks parseLocString this; the object form skipping it read
+  // empty, which is the answer this surface exists to turn into an error
+  it('refuses a refName the assembly does not have', async () => {
+    await expect(
+      jb.getFeatures({
+        trackId: 'genes',
+        loc: { refName: 'chrA', start: 10, end: 20 },
+      }),
+    ).rejects.toThrow(/"chrA" is not a sequence in volvox/)
+    expect(calls).toHaveLength(0)
+  })
+
+  // one place is loc; several are regions, which already takes them
+  it('names the forms for a loc that is neither, and a list', async () => {
     await expect(
       // @ts-expect-error the shape being refused
       jb.getFeatures({ trackId: 'genes', loc: { start: 10, end: 20 } }),
     ).rejects.toThrow(
-      /loc as a locstring \("ctgA:1-100"\) or a region object \(\{ refName, start, end \}\)/,
+      /loc as ONE place — a locstring \("ctgA:1-100"\) or a region object/,
     )
+    await expect(
+      // @ts-expect-error a list of regions is what `regions` takes
+      jb.getFeatures('genes', [{ refName: 'ctgA', start: 10, end: 20 }]),
+    ).rejects.toThrow(/several regions go in regions: \[\.\.\.\]/)
     expect(calls).toHaveLength(0)
   })
 

@@ -35,12 +35,13 @@ Orientation and building:
 - `jb.sessionSummary()` is the orientation call: views, tracks with their
   display type and render phase, assemblies, visible regions, and the `drawer`
   and `dialog` over them.
-- `jb.inspect(path?, maxBytes?)` walks the live model by path (`'views[0]'` or
-  `'views.0'`) and answers the value, its getters, **the actions it takes** and
-  its `modelType`; MST actions are non-enumerable, so `Object.keys` lists none.
+- `jb.inspect(node?, maxBytes?)` answers a live node's value, its getters, **the
+  actions it takes** and its `modelType`; MST actions are non-enumerable, so
+  `Object.keys` lists none. Pass the node — `jb.inspect(jb.view())` — and bare
+  `jb.inspect()` is the session.
 - `jb.listTracks(search?, limit?)` is the track catalog, capped at 100 by
-  default: `{ total, tracks }`, a row `{ trackId, name, type }` plus
-  `assemblyNames` where the session has several assemblies.
+  default: `{ total, tracks }`, a row of
+  `{ trackId, name, type, assemblyNames }`.
 - `jb.loadSessionSpec(spec, settleMs?)` builds views declaratively from the spec
   on `docs topic:"session-spec"`, settles (default 30000) and answers the settle
   plus the summary. It **replaces the session**: the `session` argument you were
@@ -57,11 +58,12 @@ Orientation and building:
   summary.
 - `jb.fitToWindow(settleMs?)` shrinks what is open until the session fits the
   window, answering with each cut. The settle's `offscreen` is the cue.
-- `jb.addTrack({ location | trackId, index?, assembly?, name?, settings?, show?, viewId?, settleMs? })`
+- `jb.addTrack({ location, index?, assembly?, name?, show?, viewId?, settleMs? })`
   adds an absolute local path or a URL (a relative one is refused), infers the
   format from the extension, shows it and settles; an unreadable file reports in
-  `notReady`. A `trackId` the catalog already holds is shown instead, nothing
-  added.
+  `notReady`.
+- `jb.addTrack({ trackId, settings?, viewId?, settleMs? })` shows a track the
+  catalog holds; the file keys above are refused, not ignored.
 - `jb.view(viewId?)` is the open view. With several open and no `viewId` it
   throws naming each one, as do `jb.trackModel`, `jb.visibleRegions`,
   `jb.addTrack` and `jb.getFeatures`. `viewId` comes from `jb.sessionSummary()`.
@@ -308,8 +310,9 @@ return {
 }
 ```
 
-- `loc` takes a locstring, a region object (`{ refName, start, end }`, what
-  `jb.visibleRegions` answers), or a list of either.
+- `loc` is one place: a locstring, or a region object
+  (`{ refName, start, end }`, what `jb.visibleRegions` answers). Several places
+  go in `regions`.
 - `assembly` is for a track that names none. A wrong one, or a visible region
   from a view on another assembly, throws rather than reading the wrong
   coordinates.
@@ -366,7 +369,7 @@ the model materializes its defaults, inspect what it created, remove the view:
 ```js
 const probe = session.addView('ProteinView', {})
 probe.addStructure({})
-const shape = jb.inspect(`views.${session.views.length - 1}.structures.0`)
+const shape = jb.inspect(probe.structures[0])
 session.removeView(probe)
 return shape
 ```
