@@ -36,6 +36,10 @@ export interface JobsManagerParent {
     rpcManager: RpcManager
     tracks: Track[]
     aggregateTextSearchAdapters: { textSearchAdapterId: string }[]
+    updateTrackConf: (trackConf: {
+      trackId: string
+      [key: string]: unknown
+    }) => void
   }
   session: SessionWithDrawerWidgets
   textSearchManager: { clearCache: () => void }
@@ -80,33 +84,43 @@ export interface TextJobsEntry {
 // Both conf writers are plain functions rather than actions on the model: they
 // are called from inside `runIndexingJob`, and MST's action context is the call
 // stack, so the writes are still inside one.
-function addTrackTextSearchConf(
-  tracks: Track[],
+//
+// This one is a builder, not a writer: it hands back a new track conf, and the
+// caller writes it through `jbrowse.updateTrackConf` rather than a
+// `track.textSearching = ...` mutation of the existing one. `jbrowse.tracks`
+// holds `types.frozen` plain objects, and the hydration cache a live track's
+// config goes through (ADR-031) is keyed by that object's identity — a track
+// already on screen was hydrated before this job finished, so mutating its
+// conf object in place left the write invisible to anything reading the
+// hydrated node afterward, which is what a displayed track and (since it
+// started calling `hydrateTrackConfig`) `TextSearchManager` both do.
+// `addAggregateTextSearchConf` below has no such problem: `aggregateTextSearchAdapters`
+// is a live MST array, not frozen, so mutating it in place is fine.
+function indexedTrackConf(
+  track: Track,
   {
-    trackId,
     assemblies,
     attributes,
     exclude,
     outLocation,
   }: {
-    trackId: string
     assemblies: string[]
     attributes: string[]
     exclude: string[]
     outLocation: string
   },
 ) {
-  const track = tracks.find(t => trackId === t.trackId)
-  if (track) {
-    track.textSearching = {
+  return {
+    ...track,
+    textSearching: {
       textSearchAdapter: createTextSearchConf(
-        `${trackId}-index`,
+        `${track.trackId}-index`,
         assemblies,
         outLocation,
       ),
       indexingAttributes: attributes,
       indexingFeatureTypesToExclude: exclude,
-    }
+    },
   }
 }
 
@@ -330,13 +344,20 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             // adapter (or since-deleted) must not get a "success" notice and a
             // textSearchAdapter config pointing at an .ix that was never written
             for (const { trackId } of trackConfigs) {
-              addTrackTextSearchConf(self.tracks, {
-                trackId,
-                assemblies,
-                attributes,
-                exclude,
-                outLocation,
-              })
+              // re-found now, not the pre-RPC trackConfigs entry: indexing ran
+              // for minutes, and writing that stale copy back would revert any
+              // edit made to the track while it was indexing
+              const current = self.tracks.find(t => t.trackId === trackId)
+              if (current) {
+                self.root.jbrowse.updateTrackConf(
+                  indexedTrackConf(current, {
+                    assemblies,
+                    attributes,
+                    exclude,
+                    outLocation,
+                  }),
+                )
+              }
               session.notify(
                 `Successfully indexed track with trackId: ${trackId} `,
                 'success',

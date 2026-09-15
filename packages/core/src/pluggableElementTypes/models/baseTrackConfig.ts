@@ -271,8 +271,14 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
          * track's features are only findable through an assembly-wide search
          * adapter.
          */
-        textSearchAdapter: pluginManager.pluggableConfigSchemaType(
-          'text search adapter',
+        // Not `types.maybe(union)`: that unions the real type *before*
+        // `optional(undefined)`, and every member here is all-default, so an
+        // omitted key still resolved to the first registered one rather than
+        // to nothing (see textSearchAdapterSlotOmission.test.ts). Listing the
+        // undefined branch first is what actually wins the omitted-key default.
+        textSearchAdapter: types.union(
+          types.optional(types.undefined, undefined),
+          pluginManager.pluggableConfigSchemaType('text search adapter'),
         ),
       }),
 

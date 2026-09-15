@@ -4,6 +4,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { types } from '@jbrowse/mobx-state-tree'
 import { ThemeProvider } from '@mui/material'
 import { fireEvent, render } from '@testing-library/react'
 
@@ -385,3 +386,69 @@ test('filtering force-expands an otherwise-collapsed display sub-schema', () => 
 // Removed: PileupTrack schema test — Alignments plugin no longer registers
 // renderers (moved to GPU pipeline), so baseLinearDisplayConfigSchema
 // with only Alignments produces an empty renderer union.
+
+// baseTrackConfig.ts's `textSearching.textSearchAdapter` shape: a sub-schema
+// that can be genuinely absent (`types.union(types.optional(types.undefined,
+// undefined), realUnion)`), not just a union that always self-defaults. The
+// editor's `getTypeNamesFromExplicitlyTypedUnion` and the `slot`-is-undefined
+// paths in `Member`/`TypeSelector` have to handle that rather than assume a
+// sub-schema is always a live node.
+test('an optional sub-schema with no type picked yet renders without a node, and creates one on pick', () => {
+  const AdapterA = ConfigurationSchema(
+    'AdapterA',
+    { uri: { type: 'string', defaultValue: '' } },
+    { explicitlyTyped: true },
+  )
+  const AdapterB = ConfigurationSchema(
+    'AdapterB',
+    { uri: { type: 'string', defaultValue: '' } },
+    { explicitlyTyped: true },
+  )
+  const TestSchema = ConfigurationSchema('TestThing', {
+    maybeAdapter: types.union(
+      types.optional(types.undefined, undefined),
+      types.union(AdapterA, AdapterB),
+    ),
+  })
+  const target = TestSchema.create(undefined, { pluginManager })
+  expect(readConfObject(target, 'maybeAdapter')).toBeUndefined()
+
+  const { getByRole, getByText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <ConfigurationEditor model={{ target }} />
+    </ThemeProvider>,
+  )
+
+  // a MUI select renders its options only once opened
+  fireEvent.mouseDown(getByRole('combobox'))
+  fireEvent.click(getByText('AdapterB'))
+  expect(readConfObject(target, ['maybeAdapter', 'type'])).toBe('AdapterB')
+})
+
+test('filtering does not crash over an unset optional sub-schema', () => {
+  const AdapterA = ConfigurationSchema(
+    'AdapterA',
+    { uri: { type: 'string', defaultValue: '' } },
+    { explicitlyTyped: true },
+  )
+  const TestSchema = ConfigurationSchema('TestThing', {
+    maybeAdapter: types.union(
+      types.optional(types.undefined, undefined),
+      AdapterA,
+    ),
+  })
+
+  const { getByLabelText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <ConfigurationEditor
+        model={{ target: TestSchema.create(undefined, { pluginManager }) }}
+      />
+    </ThemeProvider>,
+  )
+
+  expect(() => {
+    fireEvent.change(getByLabelText('Filter options'), {
+      target: { value: 'adapter' },
+    })
+  }).not.toThrow()
+})

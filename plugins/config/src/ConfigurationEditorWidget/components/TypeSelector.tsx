@@ -12,7 +12,9 @@ const TypeSelector = observer(function TypeSelector({
   onChange,
 }: {
   typeNameChoices: string[]
-  slot: AnyConfigurationModel
+  // undefined for an optional sub-schema (e.g. textSearchAdapter) with no
+  // type picked yet
+  slot: AnyConfigurationModel | undefined
   slotName: string
   onChange: (event: React.ChangeEvent<HTMLInputElement>) => void
 }) {
@@ -21,7 +23,7 @@ const TypeSelector = observer(function TypeSelector({
     <Paper className={classes.paper}>
       <div className={classes.paperContent}>
         <TextField
-          value={slot.type}
+          value={slot?.type ?? ''}
           label="Type"
           select
           variant="outlined"

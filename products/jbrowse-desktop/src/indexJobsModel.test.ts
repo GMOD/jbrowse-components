@@ -115,10 +115,25 @@ function setup({
   const textSearchManager = { clearCache: jest.fn() }
   const aggregateTextSearchAdapters: { textSearchAdapterId: string }[] = []
 
+  // mirrors JBrowseModel.updateTrackConf: replace-by-index, not a mutation of
+  // the found entry, so this fake exercises the same identity change the real
+  // hydration cache (ADR-031) needs to see the write
+  const updateTrackConf = (trackConf: { trackId: string }) => {
+    const idx = tracks.findIndex(t => t.trackId === trackConf.trackId)
+    if (idx !== -1) {
+      tracks[idx] = trackConf as Track
+    }
+  }
+
   const Root = types
     .model('FakeDesktopRoot', { jobsManager: types.optional(JobsManager, {}) })
     .volatile(() => ({
-      jbrowse: { rpcManager: { call }, tracks, aggregateTextSearchAdapters },
+      jbrowse: {
+        rpcManager: { call },
+        tracks,
+        aggregateTextSearchAdapters,
+        updateTrackConf,
+      },
       session,
       textSearchManager,
     }))
@@ -184,6 +199,7 @@ test('a successful perTrack run indexes only the supported adapters', async () =
     makeTrack('t1', 'Gff3TabixAdapter'),
     makeTrack('t2', 'BamAdapter'),
   ]
+  const originalT1 = tracks[0]
   const { jobsManager, widget, session, textSearchManager, call } = setup({
     tracks,
   })
@@ -214,6 +230,8 @@ test('a successful perTrack run indexes only the supported adapters', async () =
   )
   expect(tracks[0]!.textSearching).toBeDefined()
   expect(tracks[1]!.textSearching).toBeUndefined()
+  // replaced, not mutated (ADR-031's hydration cache keys on object identity)
+  expect(tracks[0]).not.toBe(originalT1)
 
   expect(textSearchManager.clearCache).toHaveBeenCalled()
   expect(widget.inState('finished').map(j => j.name)).toEqual(['job1'])

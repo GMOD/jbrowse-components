@@ -1704,7 +1704,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -1809,7 +1809,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -1911,7 +1911,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -2070,7 +2070,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -2176,7 +2176,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -2277,7 +2277,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -2378,7 +2378,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -2479,7 +2479,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -2580,7 +2580,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -2681,7 +2681,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },
@@ -2782,7 +2782,7 @@ export const configManifest: ConfigManifest = {
             },
             {
               "name": "textSearchAdapter",
-              "type": "(JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema)"
+              "type": "(undefined | (JBrowse1TextSearchAdapterConfigurationSchema | TrixTextSearchAdapterConfigurationSchema))"
             }
           ]
         },

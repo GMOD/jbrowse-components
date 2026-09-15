@@ -1,3 +1,10 @@
+import { types } from '@jbrowse/mobx-state-tree'
+
+import PluginManager from '../PluginManager.ts'
+import { ConfigurationSchema } from '../configuration/index.ts'
+import TextSearchAdapterType from '../pluggableElementTypes/TextSearchAdapterType.ts'
+import TrackType from '../pluggableElementTypes/TrackType.ts'
+import { createBaseTrackConfig } from '../pluggableElementTypes/models/index.ts'
 import { isAbortException } from '../util/aborting.ts'
 import BaseResult from './BaseResults.ts'
 import TextSearchManager from './TextSearchManager.ts'
@@ -142,5 +149,78 @@ describe('relevantAdapters', () => {
   it('falls back to the raw name with no session to resolve against', () => {
     expect(managerWith(['hg19']).relevantAdapters('hg19')).toHaveLength(1)
     expect(managerWith(['hg19']).relevantAdapters('GRCh37')).toEqual([])
+  })
+})
+
+// getTrackAdaptersWithAssembly hydrates a frozen track conf
+// (hydrateTrackConfig) before reading textSearching.textSearchAdapter, so this
+// exercises the real schema-union resolution rather than a fake track shape —
+// closest unit analogue of the desktop E2E regression this pins.
+describe('getTrackAdaptersWithAssembly', () => {
+  function pluginManagerWithFeatureTrack(sessionTracks: unknown[]) {
+    const pluginManager = new PluginManager()
+    pluginManager.addTextSearchAdapterType(
+      () =>
+        new TextSearchAdapterType({
+          name: 'TrixTextSearchAdapter',
+          configSchema: ConfigurationSchema(
+            'TrixTextSearchAdapter',
+            { uri: { type: 'string', defaultValue: '' } },
+            { explicitlyTyped: true },
+          ),
+          getAdapterClass: () => Promise.reject(new Error('not instantiated')),
+        }),
+    )
+    pluginManager.addTrackType(() => {
+      const configSchema = ConfigurationSchema(
+        'FeatureTrack',
+        {},
+        {
+          baseConfiguration: createBaseTrackConfig(pluginManager),
+          explicitIdentifier: 'trackId',
+        },
+      )
+      return new TrackType({
+        name: 'FeatureTrack',
+        configSchema,
+        stateModel: types.model('FeatureTrack', {}),
+      })
+    })
+    pluginManager.createPluggableElements()
+    pluginManager.configure()
+    pluginManager.setRootModel({
+      jbrowse: { aggregateTextSearchAdapters: [] },
+      session: { tracks: sessionTracks },
+    } as never)
+    return pluginManager
+  }
+
+  it('contributes nothing for a track with no search index', () => {
+    const pluginManager = pluginManagerWithFeatureTrack([
+      { trackId: 't1', type: 'FeatureTrack', assemblyNames: ['volvox'] },
+    ])
+    expect(
+      new TextSearchManager(pluginManager).relevantAdapters('volvox'),
+    ).toEqual([])
+  })
+
+  it('finds a track that names its own search index', () => {
+    const pluginManager = pluginManagerWithFeatureTrack([
+      {
+        trackId: 't1',
+        type: 'FeatureTrack',
+        assemblyNames: ['volvox'],
+        textSearching: {
+          textSearchAdapter: {
+            type: 'TrixTextSearchAdapter',
+            uri: 'genes.ix',
+            assemblyNames: ['volvox'],
+          },
+        },
+      },
+    ])
+    expect(
+      new TextSearchManager(pluginManager).relevantAdapters('volvox'),
+    ).toHaveLength(1)
   })
 })

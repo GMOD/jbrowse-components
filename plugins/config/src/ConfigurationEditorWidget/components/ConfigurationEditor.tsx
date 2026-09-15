@@ -81,11 +81,12 @@ function memberMatches(
     const slot = schema[slotName] as
       | AnyConfigurationModel
       | AnyConfigurationModel[]
+      | undefined
     return (
       slotName.toLowerCase().includes(query) ||
       (Array.isArray(slot)
         ? slot.some(subslot => schemaMatches(subslot, query))
-        : schemaMatches(slot, query))
+        : slot !== undefined && schemaMatches(slot, query))
     )
   } else {
     return false
@@ -188,7 +189,7 @@ const Member = observer(function Member(props: {
               slotName={slotName}
               slot={slot}
               onChange={evt => {
-                if (evt.target.value !== slot.type) {
+                if (evt.target.value !== slot?.type) {
                   schema.setSubschema(slotName, {
                     type: evt.target.value,
                   })
@@ -196,14 +197,18 @@ const Member = observer(function Member(props: {
               }}
             />
           ) : null}
-          <div className={classes.noOverflow}>
-            <Schema
-              schema={slot}
-              path={[...path, slotName]}
-              filter={childFilter}
-              expandedDisplayId={expandedDisplayId}
-            />
-          </div>
+          {/* an optional sub-schema (e.g. textSearchAdapter) has no node to
+          show until the dropdown above picks a type */}
+          {slot ? (
+            <div className={classes.noOverflow}>
+              <Schema
+                schema={slot}
+                path={[...path, slotName]}
+                filter={childFilter}
+                expandedDisplayId={expandedDisplayId}
+              />
+            </div>
+          ) : null}
         </AccordionDetails>
       </Accordion>
     )

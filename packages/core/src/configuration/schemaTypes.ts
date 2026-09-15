@@ -44,6 +44,11 @@ export function getTypeNamesFromExplicitlyTypedUnion(maybeUnionType: unknown) {
     if (isUnionType(resolved)) {
       const typeNames: string[] = []
       for (const subType of getUnionSubTypes(resolved)) {
+        // the branch a `maybe`-like union adds so the slot can be absent, not
+        // a schema — `isConfigurationSchemaType` already skips it the same way
+        if (subType.name === 'undefined') {
+          continue
+        }
         const resolvedSub = resolveLateType(subType)
         // a nested union contributes its own names; otherwise the subtype is a
         // single explicitly-typed schema whose name is its default's `type`
