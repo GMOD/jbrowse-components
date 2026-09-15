@@ -543,8 +543,8 @@ export const uiSpecs: ScreenshotSpec[] = [
   // Selecting a gene from the search dropdown navigates to it AND boxes the
   // specific matched feature (not just the region). Types "EDEN" into the search
   // box, clicks the EDEN gene option, then waits for the highlight overlay
-  // (data-testid="feature-highlight") the canvas display draws once the searched
-  // feature resolves against the rendered features.
+  // (data-testid="chrome-pinned") the chrome draws off `pinnedInk` once the
+  // searched feature resolves against the rendered features.
   {
     mode: 'url',
     name: 'search_feature_highlight',
@@ -587,7 +587,7 @@ export const uiSpecs: ScreenshotSpec[] = [
       // wait for navigation to settle and the highlight overlay to resolve
       {
         type: 'waitForSelector',
-        selector: '[data-testid="feature-highlight"]',
+        selector: '[data-testid="chrome-pinned"]',
       },
       { type: 'delay', ms: 1200 },
     ],
