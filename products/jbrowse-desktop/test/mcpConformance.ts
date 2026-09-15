@@ -277,12 +277,23 @@ try {
     { first: added.value?.trackId, second: readded.value?.trackId },
   )
 
-  const inspected = await run(`return jb.inspect('views.0.visibleLocStrings')`)
+  const inspected = await run(`return jb.inspect(jb.view().visibleLocStrings)`)
   check(
     'inspect reads a live getter',
     typeof inspected.value?.value === 'string' &&
       inspected.value.value.includes(':'),
     inspected,
+  )
+
+  // a tool error throws here, so the refusal is caught rather than read
+  const byName = await run(`return jb.inspect('views.0')`).then(
+    value => `answered ${JSON.stringify(value)}`,
+    (e: unknown) => `${e}`,
+  )
+  check(
+    'inspect refuses a name, naming the node form',
+    byName.includes('takes the node itself'),
+    byName,
   )
 
   const summary = await run('return jb.sessionSummary()')
