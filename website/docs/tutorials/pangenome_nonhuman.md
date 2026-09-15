@@ -1,5 +1,5 @@
 ---
-title: Pangenomes beyond human, mouse and cattle
+title: Pangenome (mouse, cattle), what changes when the species does
 sidebar_label: Pangenome (mouse, cattle)
 description:
   Open a mouse strain pangenome and the bovine super-pangenome the same way the

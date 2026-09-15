@@ -13,8 +13,8 @@ varies and how much. A large bubble covers a whole region. The densest bubble in
 the mouse strain graph holds hundreds of segments inside one intron of _Dock2_.
 No index row describes the inside of a bubble, so we draw the bubble as a
 force-directed graph and open it to see its contents.
-[Pangenomes beyond human](/docs/tutorials/pangenome_nonhuman) builds this graph
-and finds the bubble.
+[Pangenome (mouse, cattle)](/docs/tutorials/pangenome_nonhuman) builds this
+graph and finds the bubble.
 
 :::caution Experimental
 
@@ -33,7 +33,7 @@ describes a current limit of the view. We welcome your [feedback](/contact).
 ## Where the data comes from
 
 The data is the mouse strain graph from
-[Pangenomes beyond human](/docs/tutorials/pangenome_nonhuman). One `minigraph`
+[Pangenome (mouse, cattle)](/docs/tutorials/pangenome_nonhuman). One `minigraph`
 call per chromosome built it from GRCm39 and eighteen strain assemblies, and we
 serve it as rGFA projections.
 
@@ -81,8 +81,8 @@ those values for any anchored graph.
 
 ## The control
 
-_Nnt_ is the window Pangenomes beyond human opens first. It holds one large
-allele that the other strains carry and the reference lacks. Type
+_Nnt_ is the window the mouse and cattle tutorial opens first. It holds one
+large allele that the other strains carry and the reference lacks. Type
 `chr13:119,440,000-119,600,000` and cut it the same way. Nnt should halo as a
 plain insertion with nothing to descend into.
 
