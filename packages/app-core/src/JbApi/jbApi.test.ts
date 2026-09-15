@@ -405,6 +405,7 @@ describe('addTrack in a browser', () => {
     rpcManager: {},
     configuration: {},
     addSessionTrackConf: () => {},
+    getTrackById: () => undefined,
     assemblyNames: ['volvox'],
   } as unknown as AbstractSessionModel
   const pluginManager = { rootModel: { session } } as unknown as PluginManager
@@ -499,6 +500,76 @@ describe('addTrack in a browser', () => {
     expect(result).toMatchObject({ shownInView: 'v1' })
     expect(result).not.toHaveProperty('settled')
     expect(shown).toEqual([result.trackId])
+  })
+})
+
+// Four of 32 eval runs called jb.addTrack with the trackId of a track already
+// in the catalog, meaning "show this", and one wrote that trackId where the
+// location goes. Both used to cost a round trip for a refusal.
+describe('addTrack with a trackId the catalog already holds', () => {
+  const shown: [string, unknown][] = []
+  const view = {
+    id: 'v1',
+    type: 'LinearGenomeView',
+    assemblyNames: ['volvox'],
+    ownViews: [],
+    ownTracks: [],
+    launchTrack: async (trackId: string, _snap: object, settings: unknown) => {
+      shown.push([trackId, settings])
+    },
+  }
+  const conf = {
+    trackId: 'volvox_alignments',
+    type: 'AlignmentsTrack',
+    assemblyNames: ['volvox'],
+  }
+  const session = {
+    rpcManager: {},
+    configuration: {},
+    addSessionTrackConf: () => {},
+    getTrackById: (id: string) => (id === conf.trackId ? conf : undefined),
+    views: [view],
+    assemblyNames: ['volvox'],
+    assemblyManager: { getCanonicalAssemblyName: () => undefined },
+  } as unknown as AbstractSessionModel
+  const jb = createJbApi({
+    rootModel: { session },
+    trackTypes: new Map([['AlignmentsTrack', {}]]),
+    getTrackType: () => ({ displayTypes: [{ name: 'LinearD' }] }),
+    getViewType: () => ({ displayTypes: [{ name: 'LinearD' }] }),
+  } as unknown as PluginManager)
+
+  beforeEach(() => {
+    shown.length = 0
+  })
+
+  it('shows it, with the settings it was given', async () => {
+    expect(
+      await jb.addTrack({
+        trackId: 'volvox_alignments',
+        settings: { height: 300 },
+        settleMs: 0,
+      }),
+    ).toEqual({
+      trackId: 'volvox_alignments',
+      trackType: 'AlignmentsTrack',
+      shownInView: 'v1',
+    })
+    expect(shown).toEqual([['volvox_alignments', { height: 300 }]])
+  })
+
+  it('takes the trackId written where a location goes', async () => {
+    await jb.addTrack({ location: 'volvox_alignments', settleMs: 0 })
+    expect(shown).toEqual([['volvox_alignments', undefined]])
+  })
+
+  it('names the catalog for a trackId in neither place', async () => {
+    await expect(jb.addTrack({ trackId: 'nope' })).rejects.toThrow(
+      /No track with trackId "nope" — jb.listTracks\(\)/,
+    )
+    await expect(jb.addTrack({})).rejects.toThrow(
+      /needs a location .* or the trackId of a track already in the catalog/,
+    )
   })
 })
 

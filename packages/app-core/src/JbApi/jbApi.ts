@@ -1119,14 +1119,21 @@ async function fetchFeatures(
 // throws "can't use local files in the browser" at the FIRST READ, not here, so
 // accepting one would report a track added and then fail inside the display
 // where the agent is least likely to connect it to what it asked for.
+const URL_TEXT = /^https?:\/\//
+const ABSOLUTE_PATH = /^(?:\/|[a-zA-Z]:[\\/]|\\\\)/
+
+function isFileLocationText(spec: string) {
+  return URL_TEXT.test(spec) || ABSOLUTE_PATH.test(spec)
+}
+
 function fileLocation(spec: string): FileLocation {
-  if (/^https?:\/\//.test(spec)) {
+  if (URL_TEXT.test(spec)) {
     return { uri: spec, locationType: 'UriLocation' }
   }
   // The app's working directory is not the agent's, and a relative path
   // resolves against the app's: under a packaged app that is "/", so the read
   // fails at the first fetch and reports through the display, not here.
-  if (!/^(?:\/|[a-zA-Z]:[\\/]|\\\\)/.test(spec)) {
+  if (!ABSOLUTE_PATH.test(spec)) {
     throw new Error(
       `jb.addTrack needs an absolute local path or a URL: "${spec}" is relative and would resolve against the app's working directory, not yours.`,
     )
@@ -1236,7 +1243,7 @@ const JB_HELP = `jb drives this JBrowse app programmatically (window.jb in a bro
 
 Orient first: jb.sessionSummary(). Introspect, never guess: jb.listTracks(search?, limit?) answers { total, tracks } with the trackIds; jb.describeSlots(jb.trackModel('someTrackId').activeDisplay.configuration) for the settings keys a display accepts — an unknown settings key is not an error, it lands in applyDisplaySettings' "unapplied" list, so read the report; jb.inspect('views.0') for a live node's getters, actions and modelType.
 
-The model is mobx-state-tree: mutate only through actions (raw assignment throws), and write display settings with track.applyDisplaySettings(settings). Build views declaratively with jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly, loc, tracks: [...] }] }), which replaces the session; jb.addView(oneViewSpec) opens one more view beside what is open; jb.setSession(document) rewrites the session as a document — what jb.mst.getSnapshot(jb.session) answers, edited: a view keeps its id and is patched in place, loc on it navigates, a { trackId } entry in its tracks opens that track. Act on a view with await view.navToLocString('BRCA1' or 'chr1:1-1000'), which also SHOWS the track whose search index answered a gene name unless a 4th arg { showHitTrack: false } says not to; await view.launchTrack(trackId, {}, settings) shows a track with settings, view.hideTrack(trackId) hides it. Arrange open views into panels with session.layoutViews({ direction: 'horizontal', children: [{ views: [viewId] }, ...] }) — leaves name view ids or indexes into session.views; await jb.fitToWindow() shrinks what is open until the session fits the window; add data with jb.addTrack({ location }) (an absolute path or a URL); read data with await jb.getFeatures({ trackId, loc?, assembly?, viewId?, regions?, byteLimit? }) (or jb.getFeatures(trackId, loc?, opts?)), which renames refNames ("chr1" vs "1") so the file answers and reads on the worker the track's display uses. Anything lower level is jb.require('@jbrowse/core/util') and friends, the module registry plugins link against. After changing anything, await jb.waitReady(ms) and read its notifications and notReady lists before trusting the screen.
+The model is mobx-state-tree: mutate only through actions (raw assignment throws), and write display settings with track.applyDisplaySettings(settings). Build views declaratively with jb.loadSessionSpec({ views: [{ type: 'LinearGenomeView', assembly, loc, tracks: [...] }] }), which replaces the session; jb.addView(oneViewSpec) opens one more view beside what is open; jb.setSession(document) rewrites the session as a document — what jb.mst.getSnapshot(jb.session) answers, edited: a view keeps its id and is patched in place, loc on it navigates, a { trackId } entry in its tracks opens that track. Act on a view with await view.navToLocString('BRCA1' or 'chr1:1-1000'), which also SHOWS the track whose search index answered a gene name unless a 4th arg { showHitTrack: false } says not to; await view.launchTrack(trackId, {}, settings) shows a track with settings, view.hideTrack(trackId) hides it. Arrange open views into panels with session.layoutViews({ direction: 'horizontal', children: [{ views: [viewId] }, ...] }) — leaves name view ids or indexes into session.views; await jb.fitToWindow() shrinks what is open until the session fits the window; add data with jb.addTrack({ location }) (an absolute path or a URL), or show a track the catalog already holds with jb.addTrack({ trackId, settings? }); read data with await jb.getFeatures({ trackId, loc?, assembly?, viewId?, regions?, byteLimit? }) (or jb.getFeatures(trackId, loc?, opts?)), which renames refNames ("chr1" vs "1") so the file answers and reads on the worker the track's display uses. Anything lower level is jb.require('@jbrowse/core/util') and friends, the module registry plugins link against. After changing anything, await jb.waitReady(ms) and read its notifications and notReady lists before trusting the screen.
 
 Views nest and several can be open. jb.view(viewId?) is the open view, and jb.view(), jb.trackModel(trackId), jb.visibleRegions(), jb.addTrack and jb.getFeatures over a visible region throw naming the candidates rather than picking one when more than one view could answer — pass viewId (from jb.sessionSummary()) to say which. A synteny or breakpoint view's viewId also covers its rows: the named view answers when it can, and otherwise its rows do.
 
@@ -1333,10 +1340,14 @@ export function createJbApi(
     fitToWindow: async (settleMs = 30_000) =>
       reported(await fitToWindow(live(), settleMs)),
     addTrack: (opts: {
-      location: string | string[]
+      // a file to add to the catalog and show, or the trackId of one the
+      // catalog already holds, to show it
+      location?: string | string[]
+      trackId?: string
       index?: string
       assembly?: string
       name?: string
+      settings?: Record<string, unknown>
       show?: boolean
       viewId?: string
       settleMs?: number
@@ -1410,6 +1421,19 @@ export type JbApi = ReturnType<typeof createJbApi>
 // views that were fine; the wait exits the moment they are ready
 const ADD_TRACK_SETTLE_MS = 60_000
 
+// The name an agent meant as a catalog trackId: `trackId`, or a `location`
+// that is neither a URL nor a path. Agent runs reached for jb.addTrack to SHOW
+// a track already in the catalog in both spellings, and each paid a round trip
+// for a refusal that only named another helper.
+function catalogName(args: Record<string, unknown>) {
+  if (typeof args.trackId === 'string') {
+    return args.trackId
+  }
+  return typeof args.location === 'string' && !isFileLocationText(args.location)
+    ? args.location
+    : undefined
+}
+
 async function addTrack(
   pluginManager: PluginManager,
   session: AbstractSessionModel,
@@ -1418,16 +1442,21 @@ async function addTrack(
   if (!isSessionWithAddSessionTrack(session)) {
     throw new Error('This session cannot add tracks')
   }
+  const named = catalogName(args)
+  const inCatalog =
+    named === undefined ? undefined : session.getTrackById(named)
+  if (inCatalog) {
+    return showCatalogTrack(pluginManager, session, inCatalog, args)
+  }
+  if (typeof args.trackId === 'string') {
+    throw new Error(
+      `No track with trackId "${args.trackId}" — jb.listTracks() shows what the catalog holds, and jb.addTrack({ location }) adds a file to it.`,
+    )
+  }
   const location = locationsOf(args.location)
   if (!location.length) {
-    // the eval's first finding: an agent asked to show a catalog track reached
-    // for addTrack with a trackId, and "needs a location" sent it looking for
-    // the file
-    const trackId = typeof args.trackId === 'string' ? args.trackId : undefined
     throw new Error(
-      trackId
-        ? `jb.addTrack adds a FILE (an absolute local path or a URL) to the catalog; "${trackId}" is already in it. To show it: await jb.view().launchTrack("${trackId}"), or name it in a jb.setSession document's tracks.`
-        : 'jb.addTrack needs a location (an absolute local path or a URL). A track already in the catalog is shown with await jb.view().launchTrack(trackId).',
+      'jb.addTrack needs a location (an absolute local path or a URL) to add a file, or the trackId of a track already in the catalog to show it — jb.listTracks() lists those.',
     )
   }
   const requested =
@@ -1463,26 +1492,70 @@ async function addTrack(
     adapterType: conf.adapter.type,
     assembly,
   }
-  if (args.show === false) {
-    return summary
-  }
-  const view = pickView(session, args, 'launchTrack', {
-    assembly,
+  return args.show === false
+    ? summary
+    : {
+        ...summary,
+        ...(await showTrack(
+          pluginManager,
+          session,
+          { trackId: conf.trackId, trackType: conf.type, assembly },
+          args,
+        )),
+      }
+}
+
+// A track already in the catalog, shown: the same view choice and the same
+// settle the file route ends in.
+async function showCatalogTrack(
+  pluginManager: PluginManager,
+  session: AbstractSessionModel,
+  conf: BaseTrackConfig,
+  args: Record<string, unknown>,
+) {
+  const track = {
+    trackId: conf.trackId,
     trackType: conf.type,
+    assembly: getConfAssemblyNamesOrNone(conf)[0],
+  }
+  return {
+    trackId: track.trackId,
+    trackType: track.trackType,
+    ...(await showTrack(pluginManager, session, track, args)),
+  }
+}
+
+function isSettings(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value)
+}
+
+async function showTrack(
+  pluginManager: PluginManager,
+  session: AbstractSessionModel,
+  track: { trackId: string; trackType: string; assembly?: string },
+  args: Record<string, unknown>,
+) {
+  const view = pickView(session, args, 'launchTrack', {
+    assembly: track.assembly,
+    trackType: track.trackType,
     pluginManager,
   })
   // awaited: a display state model is lazy in every plugin here, and the
   // synchronous showTrack answers before the chunk lands — so the settle below
   // would run against a session that does not hold the track yet, and report
   // ready over it
-  await viewSelf(view).launchTrack!(conf.trackId)
-  const shown = { ...summary, shownInView: view.id }
+  await viewSelf(view).launchTrack!(
+    track.trackId,
+    {},
+    isSettings(args.settings) ? args.settings : undefined,
+  )
   // 0 skips the settle, so several adds can share one jb.waitReady
   const settleMs =
     typeof args.settleMs === 'number' ? args.settleMs : ADD_TRACK_SETTLE_MS
-  return settleMs > 0
-    ? { ...shown, ...(await waitReady(settleMs, session)) }
-    : shown
+  return {
+    shownInView: view.id,
+    ...(settleMs > 0 ? await waitReady(settleMs, session) : {}),
+  }
 }
 
 /**

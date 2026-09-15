@@ -25,10 +25,10 @@ expression. In scope either way:
 
 ## The helper library
 
-A helper exists where the raw model answers wrong **without an error** — a
-refName the file spells differently, a display that replaced its subtree without
-a toast, a name several views could answer — and turns that into a throw or a
-report. Everything else is done with the model.
+A helper exists where the raw model answers wrong **without an error** — an
+unrenamed refName, a display that replaced its subtree without a toast, a name
+several views could answer — and turns that into a throw or a report. Everything
+else is done with the model.
 
 Orientation and building:
 
@@ -56,12 +56,12 @@ Orientation and building:
   value — so `{ views }` is a whole instruction. It answers the settle plus the
   summary.
 - `jb.fitToWindow(settleMs?)` shrinks what is open until the session fits the
-  window, answering with each cut and what it could not shrink. The settle's
-  `offscreen` is the cue.
-- `jb.addTrack({ location, index?, assembly?, name?, show?, viewId?, settleMs? })`
+  window, answering with each cut. The settle's `offscreen` is the cue.
+- `jb.addTrack({ location | trackId, index?, assembly?, name?, settings?, show?, viewId?, settleMs? })`
   adds an absolute local path or a URL (a relative one is refused), infers the
   format from the extension, shows it and settles; an unreadable file reports in
-  `notReady`.
+  `notReady`. A `trackId` the catalog already holds is shown instead, nothing
+  added.
 - `jb.view(viewId?)` is the open view. With several open and no `viewId` it
   throws naming each one, as do `jb.trackModel`, `jb.visibleRegions`,
   `jb.addTrack` and `jb.getFeatures`. `viewId` comes from `jb.sessionSummary()`.
@@ -125,8 +125,8 @@ Three things you may know from before v5 are wrong:
   own helpers on `globalThis`.
 - The `open` tool and `jb.loadSessionSpec` replace `session`, so re-read it per
   call and never cache it on `globalThis`.
-- `open` from the start screen loads a new page and `globalThis` starts empty;
-  with a session open it swaps in place and helpers survive.
+- `open` from the start screen loads a new page, emptying `globalThis`; with a
+  session open it swaps in place and helpers survive.
 
 Besides `value`, a call answers with:
 
@@ -138,9 +138,9 @@ Besides `value`, a call answers with:
   nobody awaited, a mobx reaction that died. Nothing else reports these, so a
   session that settles clean and screenshots right can still carry one.
 - a thrown error as its message plus `at code line L, column C`, counted in your
-  code, then the console output printed before it. A compile error has no line —
-  V8 gives none for a function body — so look for an unbalanced bracket or an
-  `await` in a non-async callback.
+  code, then the console output before it. A compile error has no line — V8
+  gives none for a function body — look for an unbalanced bracket or an `await`
+  in a non-async callback.
 - a call that outlives `timeoutMs` (default 120 s) answers with an error and the
   logs so far; the code keeps running with its `signal` aborted, so work that
   checks `signal.aborted` stops. For a long job, park the promise:
@@ -172,8 +172,8 @@ return 'started'
 - Screenshot when the change is visual — styling, layout, a figure someone will
   see — and whenever the settle reports `notReady` or `offscreen`. For show,
   hide, reorder, navigate and fit, the settle plus `jb.sessionSummary()` is the
-  verification, at a fraction of an image's cost. When you do take one, read it:
-  an unread image proves nothing.
+  verification, far cheaper than an image. When you do take one, read it: an
+  unread image proves nothing.
 - Whether it all fits is arithmetic, not a capture: `jb.sessionSummary()`
   reports each view's and each display's `height`. A window capture spends most
   of its pixels on chrome and cuts off a session taller than the window (the
