@@ -277,12 +277,17 @@ try {
     { first: added.value?.trackId, second: readded.value?.trackId },
   )
 
-  const inspected = await run(`return jb.inspect(jb.view().visibleLocStrings)`)
+  // a node's getters, which its snapshot does not carry. Reading one is plain
+  // JavaScript (jb.view().visibleLocStrings); finding out it exists is this.
+  const inspected = await run(`return jb.inspect(jb.view())`)
   check(
-    'inspect reads a live getter',
-    typeof inspected.value?.value === 'string' &&
-      inspected.value.value.includes(':'),
-    inspected,
+    'inspect lists a live getter and names the model type',
+    inspected.value?.getters?.includes('visibleLocStrings') === true &&
+      typeof inspected.value?.modelType === 'string',
+    {
+      getters: inspected.value?.getters,
+      modelType: inspected.value?.modelType,
+    },
   )
 
   // a tool error throws here, so the refusal is caught rather than read
