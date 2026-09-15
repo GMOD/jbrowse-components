@@ -354,10 +354,15 @@ function explain(
         }
         break
       }
+      case 'pattern':
+        emit(
+          where,
+          `expected a string matching /${String(parent.pattern)}/, got ${JSON.stringify(error.data)}`,
+        )
+        break
       case 'type':
       case 'enum':
       case 'const':
-      case 'pattern':
         emit(
           where,
           `expected ${describe(parent)}, got ${JSON.stringify(error.data)}`,

@@ -5,6 +5,7 @@ import {
   FormatAboutConfigSchemaFactory,
   FormatDetailsConfigSchemaFactory,
 } from '../../configuration/index.ts'
+import { expandLooseSearchIndex } from '../../util/expandLooseSearchIndex.ts'
 import { expandTrackConfigShorthand } from './expandTrackConfigShorthand.ts'
 import { liftLegacyRendererConfig } from './migrateTrackConfig.ts'
 
@@ -16,6 +17,8 @@ interface TrackConfigSnapshot {
   trackId: string
   name: string
   type: string
+  assemblyNames?: unknown
+  textSearching?: { textSearchAdapter?: unknown }
   displays?: LegacyDisplaySnapshot[]
 }
 
@@ -81,8 +84,20 @@ export function preprocessTrackConfigSnapshot(
   // are all aliases of one canonical type). First occurrence wins to preserve
   // the default (displays[0]).
   const seenTypes = new Set<string>()
+  const { textSearching } = snap
   return {
     ...snap,
+    ...(textSearching?.textSearchAdapter
+      ? {
+          textSearching: {
+            ...textSearching,
+            textSearchAdapter: expandLooseSearchIndex(
+              textSearching.textSearchAdapter,
+              snap.assemblyNames,
+            ),
+          },
+        }
+      : {}),
     displays: displays
       .map(d => {
         const canonical = displayAliasMap.get(d.type)
@@ -251,7 +266,8 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
         /**
          * #slot textSearching.textSearchAdapter
          * a per-track name search index, normally a `TrixTextSearchAdapter`
-         * over what `jbrowse text-index --tracks` built. Without one, this
+         * over what `jbrowse text-index --tracks` built; `{ uri: 'genes.ix' }`
+         * is enough, searching this track's assemblies. Without one, this
          * track's features are only findable through an assembly-wide search
          * adapter.
          */

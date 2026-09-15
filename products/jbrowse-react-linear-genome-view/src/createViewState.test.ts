@@ -1,4 +1,4 @@
-import { hydrateTrackConfig } from '@jbrowse/core/configuration'
+import { hydrateTrackConfig, readConfObject } from '@jbrowse/core/configuration'
 import { getEnv, getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import createViewState from './createViewState.ts'
@@ -353,4 +353,31 @@ test('the File menu is opt-in, and carries what an embed can honour', () => {
       disableAddTracks: true,
     }).menus(),
   ).toEqual([])
+})
+
+test("a search index written as just a uri is found for the embed's assembly", () => {
+  const state = createViewState({
+    assembly,
+    tracks: [
+      {
+        trackId: 'genes',
+        uri: 'https://example.com/genes.gff3.gz',
+        textSearching: {
+          textSearchAdapter: { uri: 'https://example.com/genes.ix' },
+        },
+      },
+    ],
+    aggregateTextSearchAdapters: [
+      { uri: 'https://example.com/volvox.ix' } as never,
+    ],
+  })
+
+  const indexes = state.textSearchManager.relevantAdapters('volvox')
+  expect(indexes.map(i => readConfObject(i, 'ixFilePath').uri).sort()).toEqual([
+    'https://example.com/genes.ix',
+    'https://example.com/volvox.ix',
+  ])
+  for (const index of indexes) {
+    expect(readConfObject(index, 'textSearchAdapterId')).toBeTruthy()
+  }
 })

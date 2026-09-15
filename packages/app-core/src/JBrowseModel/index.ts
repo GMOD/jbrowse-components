@@ -1,5 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { isPluginUrl, maybePluginUrl } from '@jbrowse/core/pluginDefinitions'
+import { expandLooseSearchIndex } from '@jbrowse/core/util/expandLooseSearchIndex'
 import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
 import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { migrateConfigSnapshot } from '@jbrowse/product-core'
@@ -36,27 +37,34 @@ interface JBrowseModelParent {
  * config models are MST trees themselves, which is why this state model is
  * allowed to build on one. Generally found on a property named rootModel.jbrowse
  */
-// A config with exactly one assembly is what every loose track is on, so
-// `assemblyNames` may be left off; with several, the track has to say.
+// A config with exactly one assembly is what every loose track and search index
+// is on, so `assemblyNames` may be left off; with several, each has to say.
 function expandLooseTracks(
   snapshot: Record<string, unknown>,
   pluginManager: PluginManager,
 ) {
-  const tracks = snapshot.tracks
-  if (!Array.isArray(tracks)) {
-    return snapshot
-  }
-  const assemblies = snapshot.assemblies
+  const { tracks, assemblies, aggregateTextSearchAdapters: indexes } = snapshot
   const only =
     Array.isArray(assemblies) && assemblies.length === 1
       ? (assemblies[0] as { name?: string }).name
       : undefined
-  const expanded = tracks.map(t =>
-    expandLooseTrackConfig(t, pluginManager, only),
-  )
-  return expanded.every((t, i) => t === tracks[i])
+  const expandedTracks = Array.isArray(tracks)
+    ? tracks.map(t => expandLooseTrackConfig(t, pluginManager, only))
+    : tracks
+  const expandedIndexes = Array.isArray(indexes)
+    ? indexes.map(i => expandLooseSearchIndex(i, only ? [only] : undefined))
+    : indexes
+  const same = (a: unknown, b: unknown) =>
+    !Array.isArray(a) || a.every((x, i) => x === (b as unknown[])[i])
+  return same(expandedTracks, tracks) && same(expandedIndexes, indexes)
     ? snapshot
-    : { ...snapshot, tracks: expanded }
+    : {
+        ...snapshot,
+        ...(expandedTracks ? { tracks: expandedTracks } : {}),
+        ...(expandedIndexes
+          ? { aggregateTextSearchAdapters: expandedIndexes }
+          : {}),
+      }
 }
 
 export function JBrowseModelF({

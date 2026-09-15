@@ -1,4 +1,6 @@
-import { readConfObject } from '../configuration/index.ts'
+import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+import { hydrateTrackConfig, readConfObject } from '../configuration/index.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
 import { isAbortException } from '../util/aborting.ts'
 import { checkStopToken } from '../util/stopToken.ts'
@@ -110,18 +112,30 @@ export default class TextSearchManager {
     confs: AnyConfigurationModel[],
   ) {
     return confs
-      .filter(conf =>
-        matches(
-          readConfObject(conf, [
-            'textSearching',
-            'textSearchAdapter',
-            'assemblyNames',
-          ]) as string[] | undefined,
-        ),
-      )
-      .map(
-        conf => conf.textSearching.textSearchAdapter as AnyConfigurationModel,
-      )
+      .filter(conf => {
+        const indexNames = readConfObject(conf, [
+          'textSearching',
+          'textSearchAdapter',
+          'assemblyNames',
+        ]) as string[] | undefined
+        return (
+          !!readConfObject(conf, ['textSearching', 'textSearchAdapter']) &&
+          matches(
+            indexNames?.length
+              ? indexNames
+              : (readConfObject(conf, 'assemblyNames') as string[] | undefined),
+          )
+        )
+      })
+      .map(conf => {
+        const live = isStateTreeNode(conf)
+          ? conf
+          : hydrateTrackConfig(this.pluginManager, conf)
+        return live?.textSearching.textSearchAdapter as
+          | AnyConfigurationModel
+          | undefined
+      })
+      .filter(conf => conf !== undefined)
   }
 
   async search(args: BaseTextSearchArgs, assemblyName: string) {

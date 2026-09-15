@@ -93,6 +93,30 @@ describe('validateConfig', () => {
     expect(errorsOf(config)).toEqual([])
   })
 
+  it('accepts a search index written as just a .ix uri, on a track and config-wide', () => {
+    const config = {
+      ...baseConfig(),
+      tracks: [
+        {
+          ...baseConfig().tracks[0]!,
+          textSearching: { textSearchAdapter: { uri: 'trix/sample.ix' } },
+        },
+      ],
+      aggregateTextSearchAdapters: [{ uri: 'trix/hg38.ix' }],
+    }
+    expect(errorsOf(config)).toEqual([])
+  })
+
+  it('reports an untyped search index whose uri is not a .ix', () => {
+    const config = {
+      ...baseConfig(),
+      aggregateTextSearchAdapters: [{ uri: 'names.txt' }],
+    }
+    expect(errorsOf(config).map(e => e.where)).toEqual([
+      'aggregateTextSearchAdapters[0].uri',
+    ])
+  })
+
   it('a loose track still has to name its assembly among several', () => {
     const config = baseConfig()
     config.assemblies.push({ ...config.assemblies[0]!, name: 'hg19' })

@@ -7767,6 +7767,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
       },
       "unevaluatedProperties": false
     },
+    "JBrowse1TextSearchAdapterSlots": {
+      "type": "object",
+      "properties": {
+        "namesIndexLocation": {
+          "description": "the location of the JBrowse1 names index data directory.",
+          "$ref": "#/$defs/FileLocationOrJexl",
+          "default": {
+            "uri": "/volvox/names",
+            "locationType": "UriLocation"
+          }
+        },
+        "tracks": {
+          "description": "List of tracks covered by text search adapter.",
+          "$ref": "#/$defs/StringArrayOrJexl"
+        },
+        "assemblyNames": {
+          "description": "List of assemblies covered by text search adapter.",
+          "$ref": "#/$defs/StringArrayOrJexl"
+        }
+      }
+    },
     "JBrowse1TextSearchAdapter": {
       "title": "JBrowse1TextSearchAdapter",
       "type": "object",
@@ -7790,6 +7811,37 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "^_+comment": {}
       },
       "unevaluatedProperties": false
+    },
+    "TrixTextSearchAdapterSlots": {
+      "type": "object",
+      "properties": {
+        "ixFilePath": {
+          "$ref": "#/$defs/FileLocationOrJexl",
+          "default": {
+            "uri": "out.ix",
+            "locationType": "UriLocation"
+          }
+        },
+        "ixxFilePath": {
+          "$ref": "#/$defs/FileLocationOrJexl",
+          "default": {
+            "uri": "out.ixx",
+            "locationType": "UriLocation"
+          }
+        },
+        "assemblyNames": {
+          "description": "List of assemblies covered by text search adapter.",
+          "$ref": "#/$defs/StringArrayOrJexl"
+        },
+        "uri": {
+          "type": "string",
+          "description": "Shorthand: the data file, from which the location slots (and the index location) are derived."
+        },
+        "baseUri": {
+          "type": "string",
+          "description": "Shorthand: a base URL \`uri\` resolves against."
+        }
+      }
     },
     "TrixTextSearchAdapter": {
       "title": "TrixTextSearchAdapter",
@@ -7841,14 +7893,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/StringArrayOrJexl"
         },
         "textSearchAdapter": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/JBrowse1TextSearchAdapter"
-            },
-            {
-              "$ref": "#/$defs/TrixTextSearchAdapter"
-            }
-          ]
+          "$ref": "#/$defs/TextSearchAdapter"
         }
       },
       "patternProperties": {
@@ -9201,58 +9246,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ]
         }
       ]
-    },
-    "JBrowse1TextSearchAdapterSlots": {
-      "type": "object",
-      "properties": {
-        "namesIndexLocation": {
-          "description": "the location of the JBrowse1 names index data directory.",
-          "$ref": "#/$defs/FileLocationOrJexl",
-          "default": {
-            "uri": "/volvox/names",
-            "locationType": "UriLocation"
-          }
-        },
-        "tracks": {
-          "description": "List of tracks covered by text search adapter.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        },
-        "assemblyNames": {
-          "description": "List of assemblies covered by text search adapter.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        }
-      }
-    },
-    "TrixTextSearchAdapterSlots": {
-      "type": "object",
-      "properties": {
-        "ixFilePath": {
-          "$ref": "#/$defs/FileLocationOrJexl",
-          "default": {
-            "uri": "out.ix",
-            "locationType": "UriLocation"
-          }
-        },
-        "ixxFilePath": {
-          "$ref": "#/$defs/FileLocationOrJexl",
-          "default": {
-            "uri": "out.ixx",
-            "locationType": "UriLocation"
-          }
-        },
-        "assemblyNames": {
-          "description": "List of assemblies covered by text search adapter.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        },
-        "uri": {
-          "type": "string",
-          "description": "Shorthand: the data file, from which the location slots (and the index location) are derived."
-        },
-        "baseUri": {
-          "type": "string",
-          "description": "Shorthand: a base URL \`uri\` resolves against."
-        }
-      }
     },
     "UCSCTrackHubConnectionSlots": {
       "type": "object",
@@ -11268,6 +11261,42 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         }
       ]
     },
+    "UntypedTextSearchAdapter": {
+      "title": "UntypedTextSearchAdapter",
+      "description": "A trix index named by its \`.ix\` alone: the type follows from the extension, and \`assemblyNames\` from the track it sits on or the config's one assembly.",
+      "type": "object",
+      "not": {
+        "required": [
+          "type"
+        ]
+      },
+      "properties": {
+        "uri": {
+          "type": "string",
+          "pattern": "\\\\.ix([?#].*)?$"
+        },
+        "baseUri": {
+          "type": "string",
+          "description": "Shorthand: a base URL \`uri\` resolves against."
+        },
+        "assemblyNames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "textSearchAdapterId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "uri"
+      ],
+      "patternProperties": {
+        "^_+comment": {}
+      },
+      "additionalProperties": false
+    },
     "TextSearchAdapter": {
       "type": "object",
       "description": "A name-search index, built by \`jbrowse text-index\`.",
@@ -11288,9 +11317,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           ]
         }
       },
-      "required": [
-        "type"
-      ],
+      "required": [],
       "allOf": [
         {
           "if": {
@@ -11322,6 +11349,19 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           },
           "then": {
             "$ref": "#/$defs/TrixTextSearchAdapter"
+          }
+        },
+        {
+          "if": {
+            "type": "object",
+            "not": {
+              "required": [
+                "type"
+              ]
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/UntypedTextSearchAdapter"
           }
         }
       ]

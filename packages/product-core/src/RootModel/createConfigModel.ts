@@ -5,6 +5,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
+import { expandLooseSearchIndex } from '@jbrowse/core/util/expandLooseSearchIndex'
 import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 
@@ -71,15 +72,29 @@ export function createConfigModel(
       // The one assembly is what every loose `{ trackId, uri }` track is on, so
       // a snapshot need not repeat its name per track.
       .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
-        const tracks = snap?.tracks
+        const { tracks, aggregateTextSearchAdapters: indexes } = snap ?? {}
         const assemblyName = (snap?.assembly as { name?: string } | undefined)
           ?.name
-        return Array.isArray(tracks)
+        return snap
           ? {
               ...snap,
-              tracks: tracks.map(t =>
-                expandLooseTrackConfig(t, pluginManager, assemblyName),
-              ),
+              ...(Array.isArray(tracks)
+                ? {
+                    tracks: tracks.map(t =>
+                      expandLooseTrackConfig(t, pluginManager, assemblyName),
+                    ),
+                  }
+                : {}),
+              ...(Array.isArray(indexes)
+                ? {
+                    aggregateTextSearchAdapters: indexes.map(i =>
+                      expandLooseSearchIndex(
+                        i,
+                        assemblyName ? [assemblyName] : undefined,
+                      ),
+                    ),
+                  }
+                : {}),
             }
           : snap
       })

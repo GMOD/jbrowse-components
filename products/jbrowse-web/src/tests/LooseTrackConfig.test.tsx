@@ -1,3 +1,4 @@
+import { readConfObject } from '@jbrowse/core/configuration'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
@@ -5,6 +6,7 @@ import configSnapshot from '../../test_data/volvox/config.json' with { type: 'js
 import { utilizeFetchMockForTest, volvoxGetFile } from './generateReadBuffer.ts'
 import { getPluginManager } from './util.tsx'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 jest.mock('../makeWorkerInstance', () => () => {})
@@ -162,4 +164,28 @@ test('an explicit trackId in the loose conf wins over the argument', async () =>
   expect(getSnapshot(track!.configuration)).toMatchObject({
     trackId: 'explicit_id',
   })
+})
+
+test('a search index written as just a uri is found for the one assembly', async () => {
+  const { rootModel } = await getPluginManager(
+    {
+      ...config,
+      tracks: [
+        {
+          trackId: 'loose_gff',
+          uri: 'volvox.sort.gff3.gz',
+          textSearching: { textSearchAdapter: { uri: 'genes.ix' } },
+        },
+      ],
+      aggregateTextSearchAdapters: [{ uri: 'volvox.ix' }],
+    },
+    false,
+  )
+  const indexes =
+    rootModel.session!.textSearchManager.relevantAdapters('volvox')
+  expect(
+    indexes
+      .map((i: AnyConfigurationModel) => readConfObject(i, 'ixFilePath').uri)
+      .sort(),
+  ).toEqual(['genes.ix', 'volvox.ix'])
 })

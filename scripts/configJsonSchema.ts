@@ -731,12 +731,14 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
 
   registerConfigDefs('adapter', deps.elements.adapters, 'Adapter')
   registerConfigDefs('display', deps.elements.displays, 'Display')
-  registerConfigDefs('track', deps.elements.tracks, 'Track')
+  // before tracks, whose `textSearching.textSearchAdapter` slot then resolves
+  // to the dispatching union rather than an inline anyOf
   registerConfigDefs(
     'text search adapter',
     deps.elements.textSearchAdapters,
     'TextSearchAdapter',
   )
+  registerConfigDefs('track', deps.elements.tracks, 'Track')
   registerConfigDefs('connection', deps.elements.connections, 'Connection')
   registerConfigDefs(
     'internet account',
@@ -772,9 +774,34 @@ export function buildConfigJsonSchema(deps: Deps): JsonSchema {
     deps.elements.displays,
     "How a track is drawn in one view type, with that display's own slots.",
   )
+  defs.UntypedTextSearchAdapter = {
+    title: 'UntypedTextSearchAdapter',
+    description:
+      "A trix index named by its `.ix` alone: the type follows from the extension, and `assemblyNames` from the track it sits on or the config's one assembly.",
+    ...closed(
+      {
+        uri: { type: 'string', pattern: '\\.ix([?#].*)?$' },
+        baseUri: shorthandSchema('baseUri'),
+        assemblyNames: { type: 'array', items: { type: 'string' } },
+        textSearchAdapterId: { type: 'string' },
+      },
+      ['uri'],
+      { not: { required: ['type'] } },
+    ),
+  }
   defs.TextSearchAdapter = union(
     deps.elements.textSearchAdapters,
     'A name-search index, built by `jbrowse text-index`.',
+    {
+      required: [],
+      allOf: [
+        ...dispatch(deps.elements.textSearchAdapters, e => e.name),
+        {
+          if: { type: 'object', not: { required: ['type'] } },
+          then: ref('UntypedTextSearchAdapter'),
+        },
+      ],
+    },
   )
   defs.Connection = union(
     deps.elements.connections,
