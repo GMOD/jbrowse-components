@@ -21,23 +21,11 @@ export default function WithDrawerWidget() {
         },
       },
     ],
-    // a drawer needs the view beside it to be tall against something, and
-    // `height` is that. Spelled out here because this is the page about the
-    // drawer; with no height at all the view is bounded to '100vh' while a
-    // drawer is open and content-height otherwise
     height: '100vh',
-    // the app-shaped File menu, off unless a host asks for it. Its two items
-    // open a track or a connection -- into the drawer, like every other widget
     menuBar: true,
     init: {
       loc: 'ctgA:1105..1221',
       tracks: ['volvox_gff3'],
-      // open the hierarchical track selector in the drawer on first paint.
-      // Declaring it rather than calling activateTrackSelector() on the built
-      // engine is what gets the ordering right: init opens the drawer and waits
-      // for the view to be resized around it *before* navigating, so the region
-      // is framed at the width it will actually be drawn at. Clicking a feature
-      // opens its details widget in the same drawer.
       tracklist: true,
     },
   })

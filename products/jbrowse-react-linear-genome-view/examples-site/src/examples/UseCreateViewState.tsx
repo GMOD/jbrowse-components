@@ -5,8 +5,6 @@ import {
   useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
-// This component renders the genome view. Because it uses useCreateViewState,
-// parent re-renders (e.g. from the counter above) do not reset the browser.
 function GenomeView() {
   const state = useCreateViewState({
     assembly: {

@@ -73,10 +73,7 @@ const ShadowComponent = () => {
         },
       },
     })
-    // eslint-disable-next-line @eslint-react/set-state-in-effect -- shadow DOM setup requires setState in effect
     setConfig(engine)
-    // the engine is not owned by React: unmounting the custom element leaves
-    // its RPC worker threads and its autoruns running unless it is torn down
     return () => {
       destroyViewState(engine)
     }
@@ -102,6 +99,5 @@ export default function ShadowDOMOneLinearGenomeView() {
   if (customElements.get('jbrowse-linear-view') === undefined) {
     customElements.define('jbrowse-linear-view', r2wc(JBrowseCustom))
   }
-  // @ts-expect-error
-  return <jbrowse-linear-view />
+  return createElement('jbrowse-linear-view')
 }

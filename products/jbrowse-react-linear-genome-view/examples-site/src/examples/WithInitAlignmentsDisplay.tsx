@@ -15,7 +15,6 @@ const tracks = [
   },
 ]
 
-// managed API: props are initial values, the component owns the engine
 export default function WithInitAlignmentsDisplay() {
   return (
     <LinearGenomeView

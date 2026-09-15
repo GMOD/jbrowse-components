@@ -8,9 +8,6 @@ import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
 const TRACK_ID = 'volvox_gff3'
 
-// `view.tracks` is observable, so an `observer` button knows whether the track
-// is open without subscribing to anything — no callback, no local copy of the
-// state that can fall out of step with the track selector's own checkbox.
 const ToggleTrack = observer(function ToggleTrack({
   viewState,
 }: {
@@ -21,7 +18,6 @@ const ToggleTrack = observer(function ToggleTrack({
   return (
     <button
       onClick={() => {
-        // launchTrack API: https://jbrowse.org/jb2/docs/models/lineargenomeview/#action-launchtrack
         if (open) {
           view.hideTrack(TRACK_ID)
         } else {
@@ -47,9 +43,6 @@ export default function WithShowTrack() {
         uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
       },
     ],
-    // the view opens with the track closed, since this page is about opening it
-    // from your own code. For a track that should be open on first paint, put
-    // its id in `init.tracks` instead of calling showTrack at construction
     init: { loc: 'ctgA:1105..1221' },
   })
   return state ? (

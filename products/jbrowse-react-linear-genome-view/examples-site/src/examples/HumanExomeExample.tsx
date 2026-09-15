@@ -1,6 +1,5 @@
 import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
-// managed API: props are initial values, the component owns the engine
 export default function HumanExomeExample() {
   return (
     <LinearGenomeView

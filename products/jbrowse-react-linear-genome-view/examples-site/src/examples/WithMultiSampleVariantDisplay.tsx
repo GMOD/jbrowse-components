@@ -1,6 +1,5 @@
 import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
-// managed API: props are initial values, the component owns the engine
 export default function WithMultiSampleVariantDisplay() {
   return (
     <LinearGenomeView
@@ -8,10 +7,6 @@ export default function WithMultiSampleVariantDisplay() {
         name: 'volvox',
         uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
       }}
-      // A multi-sample VCF (one genotype column per sample) plus a samples TSV
-      // that maps each sample to metadata. The TSV's first column is the sample
-      // name; the remaining columns (here "population") become
-      // groupable/colorable attributes.
       tracks={[
         {
           type: 'VariantTrack',
@@ -30,9 +25,6 @@ export default function WithMultiSampleVariantDisplay() {
               type: 'LinearMultiSampleVariantDisplay',
               displayId:
                 'volvox_multisample_sv-LinearMultiSampleVariantDisplay',
-              // colorBy names a samples-TSV column to group/color by. Swap
-              // `type` to 'LinearMultiSampleVariantMatrixDisplay' for the matrix
-              // view, or add renderingMode: 'phased' (phased VCFs) for haplotypes
               colorBy: 'population',
             },
           ],

@@ -19,7 +19,6 @@ export default function OneLinearGenomeView() {
           },
         },
       ]}
-      // loc is a 1-based locstring
       init={{ loc: 'ctgA:1105..1221', tracks: ['volvox_gff3'] }}
     />
   )

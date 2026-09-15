@@ -28,9 +28,6 @@ export default function ExportSvg() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<unknown>()
 
-  // exportSvg is an async action on the view model — it renders every track
-  // through the SVG code path and hands the result to FileSaver. format 'png'
-  // rasterizes the same markup. See #action-exportsvg in the docs below.
   async function download(format: 'svg' | 'png') {
     setBusy(true)
     setError(undefined)

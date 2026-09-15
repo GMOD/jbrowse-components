@@ -1,8 +1,5 @@
 ---
-import { Code } from 'astro:components'
-
 import Example from '../examples/WithInit.tsx'
-import code from '../examples/WithInit.tsx?raw'
 import { examples } from '../examples.ts'
 import Gallery from '../layouts/Gallery.astro'
 import Shell from '../layouts/Shell.astro'
@@ -13,17 +10,7 @@ import {
   mainMaxWidth,
 } from '../siteMeta.ts'
 
-// the landing demo is one of the examples, so it reserves that example's own
-// measured height rather than a second entry that could drift away from it
 const reserved = demoHeights[landingDemo]
-
-const pmCommands = {
-  yarn: 'yarn add @jbrowse/react-linear-genome-view2',
-  npm: 'npm install @jbrowse/react-linear-genome-view2 --legacy-peer-deps',
-  pnpm: 'pnpm add @jbrowse/react-linear-genome-view2',
-}
-// see ExampleSection for why the source block advertises its length
-const sourceLines = code.trimEnd().split('\n').length
 ---
 
 <Shell
@@ -33,143 +20,14 @@ const sourceLines = code.trimEnd().split('\n').length
   mainMaxWidth={mainMaxWidth}
 >
   <h1>JBrowse Linear Genome View</h1>
-  <p class="lead">
-    <code>@jbrowse/react-linear-genome-view2</code> is a React component that
-    embeds a full linear genome browser (tracks, search, zoom/pan, and track
-    selection) in your app. For the parts rather than the finished component,
-    the <a href="https://jbrowse.org/storybook/byo/">Build your own</a> examples
-    start from this same engine and add the chrome back one piece at a time.
-  </p>
+  <p class="lead">A genome browser as a React component.</p>
 
-  <div class="doc">
-    <h2>Live demo</h2>
-    <p>
-      Human genes on hg38, opened at the <em>SHH</em> locus. Everything below is
-      the source that produced it.
-    </p>
-    {/* held open at the height it settles at, so the install steps below don't
-    slide down the page when the island mounts. See `demoHeights`. */}
-    <div
-      class:list={['demo', { reserved: !!reserved }]}
-      style={reserved ? `min-height:${reserved}px` : undefined}
-    >
-      <Example client:only="react" />
-    </div>
-    <details class="source" open>
-      <summary>View source — {sourceLines} lines</summary>
-      <Code code={code} lang="tsx" />
-    </details>
-
-    <h2>Install</h2>
-    <div class="pm-tabs">
-      <input type="radio" name="pm" id="pm-yarn" class="pm-radio" checked />
-      <input type="radio" name="pm" id="pm-npm" class="pm-radio" />
-      <input type="radio" name="pm" id="pm-pnpm" class="pm-radio" />
-      <div class="pm-tabs-list">
-        <label for="pm-yarn">yarn</label>
-        <label for="pm-npm">npm</label>
-        <label for="pm-pnpm">pnpm</label>
-      </div>
-      <div class="pm-tabs-panels">
-        <div class="pm-panel pm-panel-yarn">
-          <Code code={pmCommands.yarn} lang="bash" />
-        </div>
-        <div class="pm-panel pm-panel-npm">
-          <Code code={pmCommands.npm} lang="bash" />
-        </div>
-        <div class="pm-panel pm-panel-pnpm">
-          <Code code={pmCommands.pnpm} lang="bash" />
-        </div>
-      </div>
-    </div>
-    <p>
-      <code>--legacy-peer-deps</code> silences npm's peer-dep warnings. yarn and
-      pnpm don't need it.
-    </p>
-
-    <h2>Two things that cost people an hour</h2>
-    <p>
-      <strong>It renders on the client only.</strong> The view needs a real DOM;
-      server-rendering and hydrating it are not supported. Vite, rsbuild and
-      plain script tags just work. In an SSR framework, mount it client-side —
-      our Next.js demo wraps it in a <code>'use client'</code> component loaded
-      through{' '}
-      <a href="https://nextjs.org/docs/app/guides/lazy-loading">
-        <code>next/dynamic</code>
-      </a>{' '}
-      with <code>{'{ ssr: false }'}</code>.
-    </p>
-    <p>
-      <strong>It wants Roboto.</strong> Add{' '}
-      <a href="https://www.npmjs.com/package/@fontsource/roboto">
-        <code>@fontsource/roboto</code>
-      </a>{' '}
-      or the chrome falls back to the host page's font.
-    </p>
-    <p>
-      A step-by-step build is the{' '}
-      <a href="https://jbrowse.org/jb2/docs/tutorials/embed_linear_genome_view/">
-        embedding tutorial
-      </a>
-      ; the{' '}
-      <a href="https://jbrowse.org/jb2/docs/embedded_components/">
-        embedded components page
-      </a>{' '}
-      compares the packages and lists a deployed starter repo per bundler (Vite,
-      rsbuild, Next.js, vanilla JS). The full assembly and track config shape is
-      the <a href="https://jbrowse.org/jb2/docs/config_guide/">config guide</a>.
-    </p>
+  <div
+    class:list={['demo', { reserved: !!reserved }]}
+    style={reserved ? `min-height:${reserved}px` : undefined}
+  >
+    <Example client:only="react" />
   </div>
 
-  <h2>Browse the examples</h2>
-  <p class="intro">Each example renders live and shows its full source.</p>
   <Gallery examples={examples} />
 </Shell>
-
-<style>
-  .pm-tabs {
-    margin-bottom: 12px;
-  }
-  .pm-radio {
-    position: absolute;
-    opacity: 0;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-  }
-  .pm-tabs-list {
-    display: flex;
-    gap: 4px;
-    border-bottom: 1px solid var(--border);
-  }
-  .pm-tabs-list label {
-    padding: 6px 14px;
-    cursor: pointer;
-    font-size: 0.85em;
-    font-weight: 600;
-    color: var(--muted);
-    border-bottom: 2px solid transparent;
-    user-select: none;
-  }
-  .pm-panel {
-    display: none;
-    margin-top: 12px;
-  }
-  #pm-yarn:checked ~ .pm-tabs-panels .pm-panel-yarn,
-  #pm-npm:checked ~ .pm-tabs-panels .pm-panel-npm,
-  #pm-pnpm:checked ~ .pm-tabs-panels .pm-panel-pnpm {
-    display: block;
-  }
-  #pm-yarn:checked ~ .pm-tabs-list label[for='pm-yarn'],
-  #pm-npm:checked ~ .pm-tabs-list label[for='pm-npm'],
-  #pm-pnpm:checked ~ .pm-tabs-list label[for='pm-pnpm'] {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-  }
-  #pm-yarn:focus-visible ~ .pm-tabs-list label[for='pm-yarn'],
-  #pm-npm:focus-visible ~ .pm-tabs-list label[for='pm-npm'],
-  #pm-pnpm:focus-visible ~ .pm-tabs-list label[for='pm-pnpm'] {
-    outline: 2px solid var(--accent);
-    outline-offset: 2px;
-  }
-</style>

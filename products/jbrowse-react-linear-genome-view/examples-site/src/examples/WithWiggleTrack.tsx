@@ -17,9 +17,6 @@ export default function WithWiggleTrack() {
             type: 'BigWigAdapter',
             uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
           },
-          // the `displayDefaults` shorthand routes these settings to the track's
-          // LinearWiggleDisplay — pick the renderer, pin the score axis, set colors
-          // and height without naming the display
           displayDefaults: {
             defaultRendering: 'xyplot',
             height: 150,

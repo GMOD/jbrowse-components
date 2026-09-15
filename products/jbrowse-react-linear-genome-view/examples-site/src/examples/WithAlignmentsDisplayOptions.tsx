@@ -1,7 +1,5 @@
 import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
-// GRCh38 (hg38). The hosted alias file maps chr-prefixed names onto the fasta's
-// bare "1".."22" refNames, so navigating with `chr15` resolves.
 const assembly = {
   name: 'GRCh38',
   aliases: ['hg38'],
@@ -11,8 +9,6 @@ const assembly = {
   },
 }
 
-// HG002 nanopore reads at the imprinted SNRPN locus, basecalled with 5mC
-// modification tags (MM/ML) and haplotagged (HP tag).
 const tracks = [
   {
     type: 'AlignmentsTrack',
@@ -36,11 +32,6 @@ export default function WithAlignmentsDisplayOptions() {
         tracks: [
           {
             trackId: 'hg002_snrpn_5mc',
-            // Every key in displaySnapshot below is a LinearAlignmentsDisplay
-            // config slot. Coloring and grouping reads by their HP (haplotype)
-            // tag stacks the two alleles at the imprinted SNRPN locus into
-            // separate, distinctly-colored groups. See the config/model docs
-            // linked from the writeup for the full option set.
             displaySnapshot: {
               type: 'LinearAlignmentsDisplay',
               height: 500,

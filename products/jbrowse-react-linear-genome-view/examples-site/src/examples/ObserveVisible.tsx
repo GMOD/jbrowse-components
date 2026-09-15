@@ -12,10 +12,6 @@ import { observer } from 'mobx-react'
 import type { Feature } from '@jbrowse/core/util'
 import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
-// reading the visible regions is synchronous observable state.
-// coarseVisibleLocStrings is the debounced twin of visibleLocStrings, and it
-// already assembles the locstring for you — including the [rev] marker on a
-// flipped region and the assembly prefix when several are on screen
 const VisibleRegions = observer(function VisibleRegions({
   viewState,
 }: {
@@ -27,8 +23,6 @@ const VisibleRegions = observer(function VisibleRegions({
   ) : null
 })
 
-// reading actual feature data needs an RPC round-trip, keyed off the debounced
-// coarseDynamicBlocks so a drag doesn't fire a fetch per frame
 const VisibleFeatures = observer(function VisibleFeatures({
   viewState,
 }: {
@@ -39,10 +33,6 @@ const VisibleFeatures = observer(function VisibleFeatures({
   const { rpcManager, view } = viewState.session
 
   useEffect(() => {
-    // each run supersedes the one before it. Two pans in quick succession leave
-    // two calls in flight, and they can come back in either order — without the
-    // generation check the slower, older one lands last and the table shows the
-    // region you already left
     let latest = 0
     return autorun(() => {
       if (view.initialized) {
@@ -52,11 +42,6 @@ const VisibleFeatures = observer(function VisibleFeatures({
           const sessionId = getRpcSessionId(track)
           const generation = ++latest
           void rpcManager
-            // No handles here on purpose: this page's whole subject is the
-            // generation check below, and the source is published verbatim as a
-            // `?raw` block, so a signal and a status sink would be two more
-            // mechanisms to read past before reaching the one it teaches. A real
-            // display gets both off `ctx` — see FetchMixin.
             // eslint-disable-next-line no-restricted-syntax
             .call(sessionId, 'CoreGetFeatures', {
               adapterConfig,
@@ -121,8 +106,6 @@ export default function ObserveVisible() {
         },
       },
     ],
-    // open the track (via a default session) so it appears in view.tracks — the
-    // feature table below reads its adapter to fetch the visible features
     defaultSession: {
       name: 'Observe visible',
       view: {

@@ -11,13 +11,6 @@ import { observer } from 'mobx-react'
 import type { MultiWiggleDisplayModel } from '@jbrowse/plugin-wiggle'
 import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
-// ---------------------------------------------------------------------------
-// The UMAP panel. It is plain canvas with no JBrowse in it at all, and it lives
-// here rather than in a shared module so this page's source stays one complete
-// file you can copy. `Cells` is also the shape of the cells.json the demo
-// fetches below.
-// ---------------------------------------------------------------------------
-
 interface CellType {
   name: string
   group: string
@@ -27,16 +20,12 @@ interface CellType {
 interface Cells {
   dataset: string
   cellTypes: CellType[]
-  // coordinates are pre-normalized to 0..1, so the page never needs to know
-  // the embedding's units
   x: number[]
   y: number[]
   type: number[]
   genes: string[]
   geneLoc: string[]
-  // the subset of `genes` whose windows the per-cell Zarr matrix covers
   perCellGenes: string[]
-  // [record offset, record count, the expression value a byte of 255 means]
   exprIndex: [number, number, number][]
   exprUrl: string
   perCellUrl: string
@@ -48,8 +37,6 @@ const PAD = 14
 const DOT = 2.6
 const GREY = '#d8dbe0'
 
-// Values for one gene, unpacked from the sparse blob: three bytes per
-// expressing cell, a uint16 cell index and a byte of expression.
 function geneValues(cells: Cells, expr: Uint8Array, gene: string) {
   const g = cells.genes.indexOf(gene)
   const out = new Uint8Array(cells.x.length)
@@ -63,8 +50,6 @@ function geneValues(cells: Cells, expr: Uint8Array, gene: string) {
   return out
 }
 
-// Light to dark single hue, so a bright point reads as more expression without
-// competing with the categorical cell-type colors.
 function ramp(v: number) {
   const t = v / 255
   const r = Math.round(232 + (8 - 232) * t)
@@ -88,7 +73,6 @@ function UmapScatter({
 }) {
   const ref = useRef<HTMLCanvasElement>(null)
 
-  // an imperative canvas repaint whenever the inputs change
   useEffect(() => {
     const ctx = ref.current?.getContext('2d')
     if (ctx) {
@@ -100,8 +84,6 @@ function UmapScatter({
       const values = gene ? geneValues(cells, expr, gene) : undefined
       const active = new Set(selected)
 
-      // draw the de-emphasized cells first so the ones being asked about are
-      // never hidden underneath them
       const order = [...cells.x.keys()].sort((a, b) =>
         values
           ? values[a]! - values[b]!
@@ -177,8 +159,6 @@ function UmapScatter({
               gap: 5,
               padding: '2px 7px',
               cursor: 'pointer',
-              // CanvasText, not a hex grey: the selected outline has to stay
-              // visible whichever scheme the host page is in
               border: selected.includes(type.name)
                 ? '2px solid CanvasText'
                 : '2px solid transparent',
@@ -203,16 +183,9 @@ function UmapScatter({
   )
 }
 
-// --- end of the UMAP panel; the genome view starts here ---
-
-// 10x Genomics 5k PBMC v3, clustered and labeled with scanpy, then pseudobulked
-// into one coverage BigWig per cell type. The UMAP coordinates, the cell-type
-// palette, and the BigWigs all come out of the same build script, so a cluster
-// and its coverage row are the same color by construction.
 const BASE = 'https://jbrowse.org/demos/scrna_pbmc5k'
 const TRACK_ID = 'pbmc5k_scrna_pseudobulk'
 const PER_CELL_TRACK_ID = 'pbmc5k_scrna_percell'
-// The per-cell rows come from a Zarr signal matrix, which is an external plugin
 const ZARR_PLUGIN =
   'https://jbrowse.org/demos/zarr/jbrowse-plugin-zarr.umd.production.min.js'
 
@@ -235,7 +208,6 @@ const assembly = {
   },
 }
 
-// One subadapter per cell type, built from the same list that colors the UMAP.
 function tracks(cells: Cells) {
   return [
     {
@@ -246,7 +218,6 @@ function tracks(cells: Cells) {
       adapter: {
         type: 'Gff3TabixAdapter',
         uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeqCurated.gff.gz',
-        // this one is indexed with a .csi, not a .tbi
         csi: true,
       },
       displayDefaults: { height: 90 },
@@ -269,9 +240,6 @@ function tracks(cells: Cells) {
       displayDefaults: { defaultRendering: 'multirowxy', height: 330 },
     },
     {
-      // One row per cell instead of one per cell type, read out of a
-      // cells-by-bins Zarr matrix. It covers the marker windows in
-      // cells.perCellGenes and is empty everywhere else.
       type: 'MultiQuantitativeTrack',
       trackId: PER_CELL_TRACK_ID,
       name: 'Per-cell coverage (marker loci)',
@@ -280,11 +248,6 @@ function tracks(cells: Cells) {
         type: 'MultiWiggleZarrAdapter',
         uri: `${BASE}/percell.zarr`,
       },
-      // The scale is pinned deliberately. Autoscaling puts the maximum at
-      // whatever the home cell type reached (hundreds of UMIs in a monocyte at
-      // LYZ), which renders every single-UMI cell as white and hides the thing
-      // per-cell rows are here to show: the "flat" cell types are not empty,
-      // they carry one ambient UMI each.
       displayDefaults: {
         defaultRendering: 'multirowdensity',
         height: 420,
@@ -306,7 +269,6 @@ function Demo() {
       view: {
         type: 'LinearGenomeView',
         assembly: 'GRCh38',
-        // MS4A1, the B-cell marker: one row carries the coverage
         loc: '11:60,453,846-60,472,752',
         tracks: ['hg38_refseq_curated', TRACK_ID, PER_CELL_TRACK_ID],
       },
@@ -330,8 +292,6 @@ const UmapAndGenomeView = observer(function UmapAndGenomeView({
   const [selected, setSelected] = useState<string[]>([])
   const { session } = state
   const { selection, view } = session
-  // A feature clicked in the gene track wins over the dropdown, which clears
-  // the selection when it is used, so the two never disagree.
   const clicked = isFeature(selection)
     ? String(selection.get('name'))
     : undefined
@@ -342,7 +302,6 @@ const UmapAndGenomeView = observer(function UmapAndGenomeView({
       ? selected.filter(t => t !== name)
       : [...selected, name]
     setSelected(next)
-    // the display's own row filter, the same one the sidebar tree drives
     const display = view.getTrack(TRACK_ID)?.activeDisplay as
       | MultiWiggleDisplayModel
       | undefined

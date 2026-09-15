@@ -26,11 +26,6 @@ const tracks = [
   },
 ]
 
-// imperative toggle via the view's horizontallyFlip() action. The engine is
-// built by the hook and passed down as a plain value once it exists, so this
-// takes a ViewModel rather than a ref to one: `<LinearGenomeView ref>` would
-// hand over a RefObject to thread through and a `?.` at every use for a value
-// that is never actually absent here.
 function FlipButton({ viewState }: { viewState: ViewModel }) {
   const [error, setError] = useState<unknown>()
   return (
@@ -60,8 +55,6 @@ export default function HorizontallyFlip() {
   const flipped = useCreateViewState({
     assembly,
     tracks,
-    // the same view, opened already reversed: [rev] is part of the locstring,
-    // so it travels through a saved session or a shared URL like any other
     init: { loc: 'ctgA:1-50000[rev]' },
   })
   return (

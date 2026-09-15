@@ -7,9 +7,6 @@ import { observer } from 'mobx-react'
 
 import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
-// session.selection is set to a Feature whenever the user clicks one (the same
-// path that opens the feature-details widget). An observer re-renders when it
-// changes, so a companion panel stays in sync with no click handler wiring.
 const SelectedFeature = observer(function SelectedFeature({
   viewState,
 }: {

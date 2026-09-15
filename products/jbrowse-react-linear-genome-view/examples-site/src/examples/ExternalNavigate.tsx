@@ -9,14 +9,12 @@ const assembly = {
   uri: 'https://jbrowse.org/genomes/volvox/volvox.2bit',
 }
 
-// navigate with a JBrowse locstring
 const bookmarks = [
   { label: 'ctgA — region A', loc: 'ctgA:1,000..5,000' },
   { label: 'ctgA — region B', loc: 'ctgA:20,000..25,000' },
   { label: 'ctgB — region C', loc: 'ctgB:1..2,000' },
 ]
 
-// navigate with parsed {refName, start, end} coordinates you already have
 const hits = [
   { label: 'gene1', refName: 'ctgA', start: 1050, end: 9000 },
   { label: 'gene2', refName: 'ctgA', start: 20000, end: 23000 },

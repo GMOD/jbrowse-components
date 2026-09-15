@@ -1,6 +1,5 @@
 import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
-// managed API: props are initial values, the component owns the engine
 export default function WithFeatureHighlights() {
   return (
     <LinearGenomeView
@@ -28,10 +27,6 @@ export default function WithFeatureHighlights() {
         tracks: [
           {
             trackId: 'ncbi-refseq-genes',
-            // `featureHighlights` is display STATE, not a config slot, so it
-            // goes here rather than in the track's `displayDefaults` — a state
-            // prop written onto a config is dropped in silence. Each entry
-            // boxes one feature and holds it in a top row of the track.
             displaySnapshot: {
               height: 220,
               featureHighlights: [{ refName: 'chr12', name: 'KRAS' }],

@@ -1,10 +1,5 @@
 import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
-// LocusZoom-style demo: genome-wide GIANT BMI summary stats colored by LD r² to
-// the lead SNP. The GWAS and PLINK `--r2` files are served from
-// jbrowse.org/demos/gwas/. The index SNP auto-tracks the top genome-wide hit
-// (rs1121980, FTO locus) — inside the LD window, so FTO shows the colored peak.
-// Right-click any SNP to re-anchor LD to it.
 const BASE = 'https://jbrowse.org/demos/gwas'
 const FTO_LOC = 'chr16:53,700,000..53,900,000'
 
@@ -26,7 +21,6 @@ const GIANT_BMI_TRACK = {
     type: 'GWASAdapter',
     scoreColumn: 'neg_log_pvalue',
     uri: `${BASE}/gwas_giant-bmi_meta_women-only.gz`,
-    // LD source is a sub-adapter on the GWASAdapter; `colorBy: 'ld'` reads its r²
     ldAdapter: {
       type: 'PlinkLDTabixAdapter',
       uri: `${BASE}/plink.ld.tab.gz`,
@@ -45,7 +39,6 @@ const NCBI_REFSEQ_TRACK = {
   assemblyNames: ['hg19'],
   adapter: {
     type: 'Gff3TabixAdapter',
-    // `csi: true` resolves a `.csi` index instead of `.tbi`
     uri: 'https://jbrowse.org/ucsc/hg19/ncbiRefSeq.gff.gz',
     csi: true,
   },

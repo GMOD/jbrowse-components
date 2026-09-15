@@ -30,8 +30,6 @@ export default function WithMultipleDisplayedRegionsFlipped() {
       name: 'Multi-region flipped example',
       view: {
         type: 'LinearGenomeView',
-        // two displayed regions, the second reverse-complemented via its own
-        // [rev] suffix — orientation is per-region, so they can differ
         loc: 'chr1:113073119..113073695 chr1:113091267..113091433[rev]',
         assembly: 'GRCh38',
         tracks: ['ncbi-refseq-genes'],
@@ -40,11 +38,6 @@ export default function WithMultipleDisplayedRegionsFlipped() {
   })
   return state ? (
     <div>
-      {/* horizontallyFlip() reverses the *arrangement*: the regions swap
-          places and each one's own `reversed` flips with them. So there is no
-          "is the view flipped" bit to read back — with these two regions,
-          region 0 is forward-facing both before and after. The scalebar is
-          what shows it */}
       <button
         onClick={() => {
           state.session.view.horizontallyFlip()

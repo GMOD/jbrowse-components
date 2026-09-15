@@ -1,8 +1,5 @@
 import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
-// managed API: the `init` blob is the component's whole declarative input —
-// loc, which tracks to open (with per-display snapshots), tracklist/nav
-// visibility, and highlights
 export default function WithInitAdvanced() {
   return (
     <LinearGenomeView

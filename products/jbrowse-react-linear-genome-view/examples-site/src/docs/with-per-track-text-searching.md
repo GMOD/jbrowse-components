@@ -1,11 +1,5 @@
-A **per-track** index lives in a `textSearching` block on the track config
-rather than at the top level, and is opened only when that track loads — the
-right shape when tracks come and go dynamically.
+```bash
+jbrowse text-index --file myfile.gff3.gz --fileId my_track
+```
 
-Build it with `jbrowse text-index --file myfile.gff3.gz --fileId my_track`,
-where `--fileId` matches the runtime `trackId`. A `uri` naming the `.ix` is
-enough: the adapter type comes from the extension, the `.ixx` sits beside it,
-and the index searches the track's own assembly. Slots are documented in
-[TrixTextSearchAdapter](https://jbrowse.org/jb2/docs/config/trixtextsearchadapter/).
-For one index spanning many tracks, see
-[aggregate text searching](../text-searching/#with-aggregate-text-searching).
+`--fileId` must match the runtime `trackId`.

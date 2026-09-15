@@ -31,7 +31,6 @@ const tracks = [
   },
 ]
 
-// what opens when the URL carries no session
 const freshSession = {
   name: 'Session in URL',
   view: {
@@ -42,9 +41,6 @@ const freshSession = {
   },
 }
 
-// The session goes in the hash fragment rather than the query string. The
-// fragment is never sent to the server, so a long session can't overflow the
-// request line (HTTP 414) — the same reason JBrowse Web keeps its own there.
 function readSessionParam() {
   return (
     new URLSearchParams(window.location.hash.slice(1)).get('session') ??
@@ -58,42 +54,24 @@ function writeSessionParam(value: string) {
   window.history.replaceState(null, '', `#${params.toString()}`)
 }
 
-// `createViewStateAsync`, because a session decoded from the URL carries
-// whatever displays were open when it was saved, and a display's state model is
-// a dynamic import until something asks for it. The synchronous
-// `createViewState` says so rather than loading it.
 function build(session?: SessionSnapshot) {
   return createViewStateAsync({
     assembly,
     tracks,
-    // `session` is the slot for a snapshot whose shape is only known at
-    // runtime; `defaultSession` is for one you author and want checked
     session,
     defaultSession: session ? undefined : freshSession,
   })
 }
 
 export default function SessionInUrl() {
-  // undefined until the engine is built, which is now a wait either way:
-  // `createViewStateAsync` resolves the state models the session names before
-  // it builds anything.
   const [state, setState] = useState<ViewModel | undefined>(undefined)
   const [status, setStatus] = useState('')
 
   useEffect(() => {
-    // The engine is not owned by React, so unmounting alone leaves its RPC
-    // worker threads and its autoruns running — and a build can land after this
-    // effect was torn down (in StrictMode it usually does), which would leave
-    // one that nothing ever destroys. One box rather than two `let`s, because
-    // the compiler's narrowing doesn't see through the cleanup.
     const mount = {
       unmounted: false,
       engine: undefined as ViewModel | undefined,
     }
-    // the rejection handler is part of `open` rather than left to each caller:
-    // both call sites below discard the promise, and a build that fails with no
-    // handler on it is an unhandled rejection with nothing on screen to explain
-    // it
     const open = (session?: SessionSnapshot) =>
       build(session).then(
         engine => {
@@ -118,8 +96,6 @@ export default function SessionInUrl() {
           }),
         )
         .catch((e: unknown) => {
-          // a truncated or hand-edited link shouldn't strand the user on a
-          // blank view: fall back to the normal starting state and say so
           console.error(e)
           void open()
           setStatus(`could not restore the session in the URL: ${e}`)

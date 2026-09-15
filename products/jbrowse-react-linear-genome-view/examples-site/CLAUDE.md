@@ -11,6 +11,5 @@ The bulk-data exception in use here is `src/examples/nextstrain_*.json`.
 
 `SingleCellUmap.tsx` is the worked example of the no-shared-helpers rule: its
 UMAP canvas panel is 185 lines that used to live in `src/components/`, and it is
-inlined under a banner comment because the page's single `?raw` block has to be
-the whole thing. There is no `src/components/` directory any more, and there
-should not be one.
+inlined because the page's single `?raw` block has to be the whole thing. There
+is no `src/components/` directory any more, and there should not be one.

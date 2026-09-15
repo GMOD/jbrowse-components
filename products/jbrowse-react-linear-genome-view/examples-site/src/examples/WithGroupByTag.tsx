@@ -1,6 +1,5 @@
 import { LinearGenomeView } from '@jbrowse/react-linear-genome-view2'
 
-// managed API: props are initial values, the component owns the engine
 export default function WithGroupByTag() {
   return (
     <LinearGenomeView
@@ -25,9 +24,6 @@ export default function WithGroupByTag() {
         tracks: [
           {
             trackId: 'volvox_bam',
-            // colorBy + groupBy are alignments config slots. pairing them on the
-            // same tag colors each haplotype distinctly within its group.
-            // increase height so all groups (HP:0, HP:1, unassigned) are visible
             displaySnapshot: {
               type: 'LinearAlignmentsDisplay',
               height: 400,

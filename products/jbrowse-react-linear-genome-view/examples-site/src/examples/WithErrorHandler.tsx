@@ -9,8 +9,6 @@ import {
 import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
 export default function WithErrorHandler() {
-  // createViewState builds the whole model synchronously, so it either hands
-  // back an engine or throws — there is no third, still-loading state
   const [result] = useState<{ viewState: ViewModel } | { error: unknown }>(
     () => {
       try {

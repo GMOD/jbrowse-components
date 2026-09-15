@@ -5,16 +5,11 @@ import type { ExamplePage } from './exampleModel.ts'
 export type { ExamplePage, ExampleSection } from './exampleModel.ts'
 export { section } from './exampleModel.ts'
 
-// Five groups on purpose. Every one-page group is a sidebar heading that costs a
-// line and earns nothing, so text search sits under Navigation and theming under
-// Tracks rather than each holding a heading of its own.
 export const pages: ExamplePage[] = [
-  // --- Getting started ---
   {
     slug: 'setting-up-the-view',
     title: 'View setup',
-    description:
-      'Render the component and give it a starting state, declaratively, in shorthand, or through the useCreateViewState hook.',
+    description: 'Render the component and give it a starting state.',
     group: 'Getting started',
     sections: [
       {
@@ -43,7 +38,7 @@ export const pages: ExamplePage[] = [
     slug: 'default-session',
     title: 'Session & drawer',
     description:
-      'Open on a session snapshot, hide the editing UI, or move widgets into a side drawer.',
+      'Session snapshots, a locked-down UI, a drawer and a fixed height.',
     group: 'Getting started',
     sections: [
       {
@@ -64,18 +59,15 @@ export const pages: ExamplePage[] = [
       {
         slug: 'fixed-height',
         title: 'Fitting the view in a fixed-height box',
-        description:
-          'Bound the view with the height prop, or with a host box of your own.',
+        description: 'The height prop, or a host box of your own.',
       },
     ],
   },
 
-  // --- Navigation & search ---
   {
     slug: 'navigate-to-location',
     title: 'Navigate & control',
-    description:
-      'Navigate to a region, lock down zoom and pan, and toggle tracks from your own code.',
+    description: 'Drive the view from your own code.',
     group: 'Navigation & search',
     sections: [
       {
@@ -92,15 +84,14 @@ export const pages: ExamplePage[] = [
       {
         slug: 'with-show-track',
         title: 'Show a track programmatically',
-        description: 'Turn a track on from code via showTrack.',
+        description: 'Show and hide a track from your own button.',
       },
     ],
   },
   {
     slug: 'flipping-regions',
     title: 'Flip regions',
-    description:
-      'Reverse-complement the whole view, or mix orientations across multiple displayed regions.',
+    description: 'Reverse the whole view, or some of its regions.',
     group: 'Navigation & search',
     sections: [
       {
@@ -118,8 +109,7 @@ export const pages: ExamplePage[] = [
   {
     slug: 'text-searching',
     title: 'Text search',
-    description:
-      'Search by gene name or ID, across all tracks with an aggregate adapter, or per-track.',
+    description: 'Search by feature name, across every track or per track.',
     group: 'Navigation & search',
     sections: [
       {
@@ -135,12 +125,10 @@ export const pages: ExamplePage[] = [
     ],
   },
 
-  // --- Tracks & styling ---
   {
     slug: 'feature-colors-and-labels',
     title: 'Colors, labels & sizing',
-    description:
-      'How a feature track looks: color and label per feature with jexl, what it does when rows overflow, and marking one feature.',
+    description: 'Color, label, size and highlight a feature track.',
     group: 'Tracks & styling',
     sections: [
       {
@@ -168,13 +156,8 @@ export const pages: ExamplePage[] = [
   {
     slug: 'alignments-tracks',
     title: 'Alignments',
-    description:
-      'Open a BAM/CRAM track with a chosen display, group reads by SAM tag, and set the display options up front.',
+    description: 'BAM/CRAM tracks with their display options set up front.',
     group: 'Tracks & styling',
-    // the display-options section uses real HG002 nanopore reads (long,
-    // modification-tagged), a heavy remote fetch, and modification rendering is
-    // a GPU path CI's headless software-WebGL can choke on. Ships in a real
-    // browser
     skipSmoke: true,
     sections: [
       {
@@ -197,8 +180,7 @@ export const pages: ExamplePage[] = [
   {
     slug: 'specialized-track-types',
     title: 'Signal, gene, variant',
-    description:
-      'Quantitative signal from a BigWig, gene models from a GTF, and a multi-sample VCF as a matrix.',
+    description: 'BigWig signal, GTF gene models and a multi-sample VCF.',
     group: 'Tracks & styling',
     sections: [
       {
@@ -221,8 +203,7 @@ export const pages: ExamplePage[] = [
   {
     slug: 'theming',
     title: 'Theming & styling',
-    description:
-      'A custom or dark Material UI theme, styling from the host page, or Shadow DOM isolation.',
+    description: 'Material UI themes, host page CSS and Shadow DOM.',
     group: 'Tracks & styling',
     sections: [
       {
@@ -248,19 +229,17 @@ export const pages: ExamplePage[] = [
     ],
   },
 
-  // --- Sessions & integration ---
   {
     slug: 'session-setup',
     title: 'Init & persistence',
-    description:
-      'A richer initial view with advanced init and highlights, then persisting or sharing the live session.',
+    description: 'A richer initial view, then saving or sharing the session.',
     group: 'Sessions & integration',
     sections: [
       {
         slug: 'with-init-advanced',
         title: 'Advanced init',
         description:
-          'displaySnapshot, trackSnapshot, tracklist, nav, highlight.',
+          'displaySnapshot, trackSnapshot, tracklist, nav and highlight.',
       },
       {
         slug: 'with-session-highlights',
@@ -283,7 +262,7 @@ export const pages: ExamplePage[] = [
     slug: 'multiple-views',
     title: 'Multiple views',
     description:
-      'React to the view from your own companion panels, and render several independent views on one page.',
+      'Companion panels that follow the view, and two views on one page.',
     group: 'Sessions & integration',
     sections: [
       {
@@ -307,10 +286,8 @@ export const pages: ExamplePage[] = [
     slug: 'export-and-errors',
     title: 'Export & errors',
     description:
-      'Render the whole view to a vector SVG (or rasterized PNG), and catch and render view errors with your own UI.',
+      'Export the view to SVG or PNG, and render its errors yourself.',
     group: 'Sessions & integration',
-    // exportSvg re-renders every track's GPU layer through the SVG path, which
-    // crashes CI's headless software-WebGL
     skipSmoke: true,
     sections: [
       {
@@ -329,8 +306,7 @@ export const pages: ExamplePage[] = [
   {
     slug: 'plugins',
     title: 'Plugins & accounts',
-    description:
-      'Plugins loaded at runtime or defined inline, authenticated data via internet accounts, and the web worker RPC.',
+    description: 'Plugins, authenticated data and the web worker.',
     group: 'Sessions & integration',
     sections: [
       {
@@ -360,7 +336,7 @@ export const pages: ExamplePage[] = [
     slug: 'local-files',
     title: 'Files from your host process',
     description:
-      'Open a track on bytes your host already holds — a notebook kernel, an R session — with no web server and no CORS.',
+      'Open a track on bytes your host process holds, with no web server.',
     group: 'Sessions & integration',
     sections: [
       {
@@ -370,7 +346,6 @@ export const pages: ExamplePage[] = [
     ],
   },
 
-  // --- Real-world demos ---
   {
     slug: 'human-exome-example',
     title: 'Human exome',
@@ -386,10 +361,8 @@ export const pages: ExamplePage[] = [
   {
     slug: 'nextstrain-pathogens',
     title: 'Nextstrain pathogens',
-    description:
-      'Genes, diversity, and a per-sample genotype matrix for SARS-CoV-2, Zika, Ebola, measles, and RSV-A.',
+    description: 'Genes, diversity and genotypes for five viral genomes.',
     group: 'Real-world demos',
-    // the genotype-matrix GPU render crashes CI's headless software-WebGL
     skipSmoke: true,
     sections: [
       {
@@ -401,8 +374,7 @@ export const pages: ExamplePage[] = [
   {
     slug: 'locus-zoom-ld',
     title: 'LocusZoom-style LD',
-    description:
-      'GWAS summary stats colored by LD r² to the lead SNP, LocusZoom-style.',
+    description: 'GWAS summary statistics colored by LD to the lead SNP.',
     group: 'Real-world demos',
     sections: [
       {
@@ -415,7 +387,7 @@ export const pages: ExamplePage[] = [
     slug: 'single-cell-umap',
     title: 'Single-cell UMAP',
     description:
-      'A UMAP of 5k PBMCs beside per-cell-type coverage: select clusters to filter rows, click a gene to color cells.',
+      'Select clusters to filter coverage rows; click a gene to color cells.',
     group: 'Real-world demos',
     sections: [
       {
@@ -427,8 +399,7 @@ export const pages: ExamplePage[] = [
   {
     slug: 'pan-ukb-gwas',
     title: 'Pan-UKB GWAS',
-    description:
-      'Browse Pan-UK Biobank GWAS summary statistics across phenotypes.',
+    description: 'Pan-UK Biobank GWAS summary statistics across phenotypes.',
     group: 'Real-world demos',
     sections: [
       {
@@ -441,5 +412,4 @@ export const pages: ExamplePage[] = [
 
 export const examples = flattenExamples(pages)
 
-// bound to this site's `pages` so page files call getPage('slug') directly
 export const getPage = (slug: string) => findPage(pages, slug)

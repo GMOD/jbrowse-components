@@ -29,9 +29,6 @@ export default function WithSessionHighlights() {
       name: 'Session highlights',
       view: {
         type: 'LinearGenomeView',
-        // highlights authored on the view snapshot carry per-highlight color
-        // and label, and round-trip through saved sessions. compare with
-        // init.highlight, which only accepts plain loc-strings
         highlight: [
           {
             assemblyName: 'hg38',
