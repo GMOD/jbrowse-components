@@ -145,16 +145,7 @@ test('an abort during the WASM run rejects it', async () => {
       Array.from({ length: 800 }, random),
     ]),
   )
-  const controller = new AbortController()
   await expect(
-    clusterMatrix({
-      data,
-      signal: controller.signal,
-      statusCallback: status => {
-        if (typeof status === 'object') {
-          controller.abort()
-        }
-      },
-    }),
-  ).rejects.toMatchObject({ name: 'AbortError' })
+    clusterMatrix({ data, signal: AbortSignal.timeout(20) }),
+  ).rejects.toMatchObject({ name: 'TimeoutError' })
 })
