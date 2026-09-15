@@ -3,7 +3,6 @@ import { isSequenceUri, makeAssembly } from '@jbrowse/core/util/makeAssembly'
 
 import { withHostOverrides } from './controllerTracks.ts'
 
-import type { TrackConf } from './controllerTracks.ts'
 import type { HubConfig } from '@jbrowse/core/util/fetchHub'
 
 export type AssemblyConfig = Record<string, unknown>
@@ -13,6 +12,11 @@ export interface TextSearchAdapterConfig {
   [key: string]: unknown
 }
 type SearchAdapters = TextSearchAdapterConfig[] | undefined
+
+export interface HubTrackConfig {
+  trackId: string
+  [key: string]: unknown
+}
 
 // A hub's config arrives off the network, so its search adapters are untyped
 // there. Keep the ones that carry the id everything downstream references,
@@ -26,8 +30,10 @@ function searchAdaptersOf(hub: HubConfig): SearchAdapters {
   return found.length ? found : undefined
 }
 
-function tracksOf(hub: HubConfig): TrackConf[] | undefined {
-  const found = (hub.tracks ?? []).filter(t => typeof t.trackId === 'string')
+function tracksOf(hub: HubConfig): HubTrackConfig[] | undefined {
+  const found = (hub.tracks ?? []).filter(
+    (t): t is HubTrackConfig => typeof t.trackId === 'string',
+  )
   return found.length ? found : undefined
 }
 
@@ -48,15 +54,18 @@ export interface ResolvedAssembly {
    * the hub's track catalog, which its search index names its hits against, so
    * a host keeping the index keeps these too
    */
-  tracks?: TrackConf[]
+  tracks?: HubTrackConfig[]
 }
 
-export interface ResolvedAssemblies {
+export interface ResolvedAssemblies<
+  Track extends object = HubTrackConfig,
+  Index extends object = TextSearchAdapterConfig,
+> {
   assemblies: AssemblyConfig[]
   /** the hubs' search adapters, then the host's own */
-  aggregateTextSearchAdapters?: TextSearchAdapterConfig[]
+  aggregateTextSearchAdapters?: (TextSearchAdapterConfig | Index)[]
   /** the hubs' track catalogs, then the host's own tracks */
-  tracks?: TrackConf[]
+  tracks?: (HubTrackConfig | Track)[]
 }
 
 /** What a host already has, to merge with what its hubs bring. */
@@ -116,23 +125,23 @@ export async function resolveAssembly(
  * asynchronously already (runtime plugins), so this belongs in that step.
  */
 export async function resolveAssemblies<
-  Track extends object = TrackConf,
+  Track extends object = HubTrackConfig,
   Index extends object = TextSearchAdapterConfig,
 >(
   inputs: AssemblyInput[],
   host: HostCatalog<Track, Index> = {},
-): Promise<ResolvedAssemblies> {
+): Promise<ResolvedAssemblies<Track, Index>> {
   const resolved = await Promise.all(inputs.map(resolveAssembly))
-  const tracks = withHostOverrides<object>(
+  const tracks = withHostOverrides<HubTrackConfig | Track>(
     resolved.flatMap(r => r.tracks ?? []),
     host.tracks,
     'trackId',
-  ) as TrackConf[]
-  const adapters = withHostOverrides<object>(
+  )
+  const adapters = withHostOverrides<TextSearchAdapterConfig | Index>(
     resolved.flatMap(r => r.aggregateTextSearchAdapters ?? []),
     host.aggregateTextSearchAdapters,
     'textSearchAdapterId',
-  ) as TextSearchAdapterConfig[]
+  )
   return {
     assemblies: resolved.map(r => r.assembly),
     ...(tracks.length ? { tracks } : {}),

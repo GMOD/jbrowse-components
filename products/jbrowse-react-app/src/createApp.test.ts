@@ -2,6 +2,9 @@ import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
 import { createApp } from './createApp.ts'
+import { resolveAssemblies } from './index.ts'
+
+import type { CreateAppOptions } from './createApp.ts'
 
 jest.mock('./makeWorkerInstance', () => () => {})
 
@@ -295,5 +298,27 @@ test('removeView closes a view, and ignores an unknown id', async () => {
   }).not.toThrow()
   expect(controller.viewState.session.views).toHaveLength(1)
 
+  controller.destroy()
+})
+
+test("spreading resolveAssemblies over a host's options keeps the host's tracks", async () => {
+  const options: CreateAppOptions = {
+    assemblies,
+    tracks: [
+      {
+        type: 'FeatureTrack',
+        trackId: 'mine',
+        assemblyNames: ['volvox'],
+        adapter: { type: 'FromConfigAdapter', features: [] },
+      },
+    ],
+    views: [{ type: 'LinearGenomeView', assembly: 'volvox', tracks: ['mine'] }],
+  }
+  const controller = await createApp(mount(), {
+    ...options,
+    ...(await resolveAssemblies(assemblies, options)),
+  })
+
+  expect(controller.viewState.session.getTrackById('mine')).toBeTruthy()
   controller.destroy()
 })
