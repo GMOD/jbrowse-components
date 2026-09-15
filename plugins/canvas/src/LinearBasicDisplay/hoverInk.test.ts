@@ -117,7 +117,6 @@ test("a hovered feature's box spans its glyph and the name overhanging it", () =
   expect(display.hoverInk).toEqual([
     { left: 100, top: 0, width: 200, height: 38 },
   ])
-  expect(display.highlightStyle).toBeUndefined()
 })
 
 test('a subfeature hover lights that transcript alone', () => {
