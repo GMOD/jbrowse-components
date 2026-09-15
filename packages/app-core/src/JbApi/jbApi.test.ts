@@ -668,26 +668,54 @@ describe('listTracks', () => {
   } as unknown as PluginManager)
 
   it('lists each assembly sequence track beside the catalog', () => {
-    expect(jb.listTracks()).toMatchObject({
+    expect(jb.listTracks()).toEqual({
       total: 2,
       tracks: [
-        {
-          trackId: 'genes',
-          type: 'FeatureTrack',
-          adapterType: 'BigBedAdapter',
-          assemblyNames: ['volvox'],
-        },
+        { trackId: 'genes', name: 'genes', type: 'FeatureTrack' },
         {
           trackId: 'volvox_refseq',
+          name: 'volvox sequence',
           type: 'ReferenceSequenceTrack',
-          adapterType: 'IndexedFastaAdapter',
-          assemblyNames: ['volvox'],
         },
       ],
     })
     expect(jb.listTracks('refseq').tracks.map(t => t.trackId)).toEqual([
       'volvox_refseq',
     ])
+  })
+
+  // 100 rows of the volvox catalog was 16 KB, the largest result in nearly
+  // every agent run: the adapter type goes, and the assembly names go with it
+  // wherever they would repeat the session's one assembly down every row.
+  it('names the assembly only when the session has more than one', () => {
+    const twoAssemblies = {
+      ...session,
+      assemblyManager: {
+        assemblyList: [
+          ...session.assemblyManager.assemblyList,
+          assembly.create(
+            {
+              name: 'volvox2',
+              sequence: {
+                type: 'ReferenceSequenceTrack',
+                trackId: 'volvox2_refseq',
+                adapter: { type: 'IndexedFastaAdapter' },
+              },
+            },
+            env,
+          ),
+        ],
+      },
+    } as unknown as AbstractSessionModel
+    const jbTwo = createJbApi({
+      rootModel: { session: twoAssemblies },
+    } as unknown as PluginManager)
+    expect(jbTwo.listTracks().tracks[0]).toEqual({
+      trackId: 'genes',
+      name: 'genes',
+      type: 'FeatureTrack',
+      assemblyNames: ['volvox'],
+    })
   })
 })
 

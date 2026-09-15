@@ -35,11 +35,12 @@ Orientation and building:
 - `jb.sessionSummary()` is the orientation call: views, tracks with their
   display type and render phase, assemblies, visible regions, and the `drawer`
   and `dialog` over them.
-- `jb.inspect(path?, maxBytes?)` walks the live model by dot path (`'views.0'`)
-  and answers the value, its getters, **the actions it takes** and its
-  `modelType`; MST actions are non-enumerable, so `Object.keys` lists none.
+- `jb.inspect(path?, maxBytes?)` walks the live model by path (`'views[0]'` or
+  `'views.0'`) and answers the value, its getters, **the actions it takes** and
+  its `modelType`; MST actions are non-enumerable, so `Object.keys` lists none.
 - `jb.listTracks(search?, limit?)` is the track catalog, capped at 100 by
-  default, answering `{ total, tracks }`.
+  default: `{ total, tracks }`, a row `{ trackId, name, type }` plus
+  `assemblyNames` where the session has several assemblies.
 - `jb.loadSessionSpec(spec, settleMs?)` builds views declaratively from the spec
   on `docs topic:"session-spec"`, settles (default 30000) and answers the settle
   plus the summary. It **replaces the session**: the `session` argument you were
@@ -50,10 +51,10 @@ Orientation and building:
   before anything opens. It answers `{ viewId }` plus the settle.
 - `jb.setSession(document, settleMs?)` rewrites the session as a document:
   `jb.mst.getSnapshot(jb.session)`, edited and handed back. A view, track or
-  display whose `id` the document keeps is patched in place and stays mounted,
-  one it drops is closed, an entry with no `id` is new, and a top-level key left
-  out keeps its value — so `{ views }` is a whole instruction. It answers the
-  settle plus the summary.
+  display whose `id` the document keeps is patched in place, one it drops is
+  closed, an entry with no `id` is new, and a top-level key left out keeps its
+  value — so `{ views }` is a whole instruction. It answers the settle plus the
+  summary.
 - `jb.fitToWindow(settleMs?)` shrinks what is open until the session fits the
   window, answering with each cut and what it could not shrink. The settle's
   `offscreen` is the cue.
@@ -174,12 +175,10 @@ return 'started'
   verification, at a fraction of an image's cost. When you do take one, read it:
   an unread image proves nothing.
 - Whether it all fits is arithmetic, not a capture: `jb.sessionSummary()`
-  reports each view's and each display's `height`. A whole-window capture spends
-  most of its pixels on chrome and cuts off a session taller than the window
-  (the settle's `offscreen`); `screenshot` takes `fullPage: true` for the whole
-  laid-out document, `selector` to crop to one element
-  (`[data-testid="view-container-<view.id>"]`), or `rect` with a box you
-  measured.
+  reports each view's and each display's `height`. A window capture spends most
+  of its pixels on chrome and cuts off a session taller than the window (the
+  settle's `offscreen`); `screenshot` takes `fullPage: true`, `selector`
+  (`[data-testid="view-container-<view.id>"]`) or a measured `rect`.
 
 ## Deep dives
 

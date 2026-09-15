@@ -714,16 +714,20 @@ async function fitToWindow(
   }
 }
 
-function trackEntry(conf: BaseTrackConfig) {
-  const adapter = readConfObject(conf, 'adapter')
+// The catalog is the largest result of nearly every agent run — 100 volvox
+// rows is 16 KB — so a row carries what picks a track out of the list and
+// nothing that repeats down it. The adapter type is `jb.inspect`'s or
+// `jb.describeSlots`' to answer for the one track an agent went on to use.
+function trackEntry(conf: BaseTrackConfig, withAssemblies: boolean) {
   return {
     trackId: conf.trackId,
     name: readConfObject(conf, 'name'),
     type: conf.type,
-    ...(adapter.type ? { adapterType: adapter.type } : {}),
     // getConfAssemblyNamesOrNone, not the slot: an assembly's sequence track
     // has no assemblyNames slot and answers through its parent assembly
-    assemblyNames: getConfAssemblyNamesOrNone(conf),
+    ...(withAssemblies
+      ? { assemblyNames: getConfAssemblyNamesOrNone(conf) }
+      : {}),
   }
 }
 
@@ -741,11 +745,14 @@ function listTracks(
 ) {
   const search = searchArg?.toLowerCase() ?? ''
   const limit = limitArg ?? 100
+  // on one assembly every row names the same one; on several it is what tells
+  // a track apart from its mate
+  const withAssemblies = session.assemblyManager.assemblyList.length > 1
   // allSessionTracks, not session.tracks: connection-supplied tracks (hubs,
   // registries) are absent from the session lists but fully showable — a
   // hand-rolled union here hid them from agents entirely
   const matches = [...allSessionTracks(session), ...sequenceTracks(session)]
-    .map(c => trackEntry(c))
+    .map(c => trackEntry(c, withAssemblies))
     .filter(
       t =>
         !search ||

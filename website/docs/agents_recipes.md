@@ -19,8 +19,8 @@ description:
 ## Find the tracks you can use
 
 `jb.listTracks` answers `{ total, tracks }`, not an array. Each entry carries
-`trackId`, `name`, `type`, `adapterType` and `assemblyNames`, so a config with
-several assemblies is filtered in code:
+`trackId`, `name` and `type`, plus `assemblyNames` where the session has more
+than one assembly, so a multi-assembly config is filtered in code:
 
 ```js
 const { total, tracks } = jb.listTracks('vcf')
@@ -28,7 +28,7 @@ return {
   total,
   onVolvox: tracks
     .filter(t => t.assemblyNames.includes('volvox'))
-    .map(t => `${t.trackId} (${t.type} / ${t.adapterType})`),
+    .map(t => `${t.trackId} (${t.type})`),
 }
 ```
 
