@@ -790,6 +790,50 @@ describe('listTracks', () => {
   })
 })
 
+// Three of 32 eval runs wrote jb.inspect('views[0]'), the spelling the code
+// around the call uses, and it threw.
+describe('inspect', () => {
+  const session = {
+    views: [
+      {
+        id: 'v1',
+        type: 'LinearGenomeView',
+        tracks: [{ id: 't0' }, { id: 't1' }],
+      },
+    ],
+    widgets: {
+      'hierarchical-track-selector': {
+        type: 'HierarchicalTrackSelectorWidget',
+      },
+    },
+  } as unknown as AbstractSessionModel
+  const jb = createJbApi({
+    rootModel: { session },
+  } as unknown as PluginManager)
+
+  it('walks a bracket path, nested, and a quoted key', () => {
+    expect(jb.inspect('views[0]')).toMatchObject({
+      path: 'views[0]',
+      value: { id: 'v1' },
+    })
+    expect(jb.inspect('views[0].tracks[1]')).toMatchObject({
+      value: { id: 't1' },
+    })
+    expect(jb.inspect('views.0.tracks.1')).toMatchObject({
+      value: { id: 't1' },
+    })
+    expect(jb.inspect('widgets["hierarchical-track-selector"]')).toMatchObject({
+      value: { type: 'HierarchicalTrackSelectorWidget' },
+    })
+  })
+
+  it('names the parent it got as far as', () => {
+    expect(() => jb.inspect('views[3].tracks')).toThrow(
+      /Nothing at "views\[3\].tracks" \(undefined after "views"\)/,
+    )
+  })
+})
+
 describe('getFeatures', () => {
   const session = {
     getTrackById: () => undefined,

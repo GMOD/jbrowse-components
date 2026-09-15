@@ -372,6 +372,19 @@ function memberNames(node: object) {
   return { getters: getters.sort(), methods: methods.sort() }
 }
 
+// `views[0]`, `views[0].tracks[1]` and `views["id"]` beside the dot form: the
+// bracket spelling is what the surrounding JavaScript uses, and it threw.
+function pathSegments(path: string) {
+  return path
+    .replaceAll(
+      /\[\s*(?:"([^"]*)"|'([^']*)'|([^\]]*?))\s*\]/g,
+      (_all, doubleQuoted, singleQuoted, bare) =>
+        `.${doubleQuoted ?? singleQuoted ?? bare}`,
+    )
+    .split('.')
+    .filter(Boolean)
+}
+
 function inspectSession(
   session: AbstractSessionModel,
   args: Record<string, unknown>,
@@ -380,7 +393,7 @@ function inspectSession(
   const maxBytes = typeof args.maxBytes === 'number' ? args.maxBytes : 20_000
   let node: unknown = session
   const walked: string[] = []
-  for (const segment of path.split('.').filter(Boolean)) {
+  for (const segment of pathSegments(path)) {
     node =
       node !== null && typeof node === 'object'
         ? (node as Record<string, unknown>)[segment]
