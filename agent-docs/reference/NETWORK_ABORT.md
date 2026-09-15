@@ -104,12 +104,11 @@ Ref-counting was not needed: a single bounded retry makes the pathological case
 one duplicate 256 KiB fetch rather than a recursion whose depth depends on how
 the aborts interleave.
 
-**Don't:** make SAB / `crossOriginIsolated` a requirement (can't guarantee
-COOP/COEP from a client-side/embedded library); try to send an `AbortSignal`
-across `postMessage` (doesn't clone); add a synchronous probe at an *await*
-boundary (pointless — the message is already there); or remove the
-`stopToken` (it is still the only thing that
-interrupts *synchronous* worker loops).
+**Don't:** try to send an `AbortSignal` across `postMessage` (it does not
+clone — the uid-keyed abort frame is how it crosses); make a loop that never
+awaits rely on `checkAbortSignal` alone (the abort is a task, and only a yield
+delivers it); or make cross-origin isolation a requirement of anything (an
+embeddable library cannot ask that of its host page, ADR-056).
 
 ## How much the socket abort is actually worth (measured)
 

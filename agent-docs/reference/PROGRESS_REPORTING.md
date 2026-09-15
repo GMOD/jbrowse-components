@@ -435,7 +435,7 @@ Two rules, both from the cluster dialog, where one tab reported a determinate ba
 with a Stop and the other a bare spinner with no cancel — for the same fetch:
 
 - **Declare the argument in the contract a display fills in.**
-  `ClusterDialogProps.fetchMatrix` takes `{ stopToken, statusCallback }` exactly
+  `ClusterDialogProps.fetchMatrix` takes `{ signal, statusCallback }` exactly
   as its sibling `run` does. Both plugins had complied with the signature that
   dropped them, so neither was wrong; the interface was.
 - **A variable-length `useFetch` key makes the trailing arguments unnameable.**
