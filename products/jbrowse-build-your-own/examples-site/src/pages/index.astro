@@ -7,17 +7,8 @@ import {
   componentLabel,
   demoHeights,
   landingDemo,
-  landingDemoHref,
   mainMaxWidth,
 } from '../siteMeta.ts'
-// Measured, not asserted. `pnpm measure-chrome-bundle` bundles both chrome
-// entry points for real and writes this file; CI re-checks it, so the figures
-// below cannot drift from what the code costs. `~repo` is the repo root, see
-// astro.config.mjs -- and because it is a typed JSON import, a renamed field
-// fails `astro check` instead of rendering "undefined KB".
-import bundle from '~repo/scripts/chromeBundleSizes.json'
-
-const base = import.meta.env.BASE_URL
 ---
 
 <Shell
@@ -27,67 +18,11 @@ const base = import.meta.env.BASE_URL
   mainMaxWidth={mainMaxWidth}
 >
   <h1>Build your own genome browser</h1>
-  <p class="lead">
-    JBrowse's engine — assemblies, adapters, workers, coordinates — with your
-    own UI around it. Drag to pan, wheel to zoom, drag the scalebar to zoom to a
-    range.
-  </p>
+  <p class="lead">JBrowse's engine, your own UI.</p>
 
-  {/*
-    `scrollZoom` on, the same default every other page takes -- the first
-    browser a reader touches shouldn't be the one exception. A wheel over the
-    demo zooms; shift + wheel scrolls inside a display. Pan and zoom explains
-    the choice and has the checkbox that flips it.
-
-    Its box is held open at the height it settles at, because everything below
-    it would otherwise drop when the island mounts. See `demoHeights`.
-  */}
   <div class="demo reserved" style={`min-height:${demoHeights[landingDemo]}px`}>
     <Scalebar client:only="react" />
   </div>
 
-  <p class="note">
-    That is the <a href={`${base}${landingDemoHref}`}>scalebar</a> example,
-    running its own source. Every page below is one file like it.
-  </p>
-  <p class="note">
-    Only one of them renders any Material UI:{' '}
-    <a href={`${base}multiple-tracks/`}>Multiple tracks</a> is left stock, so
-    you can see a display before you swap anything. Everywhere else a track's
-    chrome — its loading, error and too-large states, the controls in its corner
-    — comes from <code>@jbrowse/display-ui</code>, which is{' '}
-    <strong>{bundle.seamGzipKb} KB gzipped</strong> and depends on no UI toolkit
-    at all.
-  </p>
-  <p class="note">
-    That <em>redirects</em> what JBrowse's own displays draw; it does not unship
-    what they import, so Material UI is still in the bundle on every page here —
-    {bundle.muiGzipKb} KB of chrome that no longer renders. Writing your own
-    display component over <code>DisplayChromeBase</code> is what removes it:{' '}
-    {bundle.plainGzipKb} KB gzipped for the same five states. The pages below
-    take the first route, which is the one that needs no display of your own.
-  </p>
-  <p class="note">
-    Most examples import three published packages, all on the same version:
-    <code>@jbrowse/react-linear-genome-view2</code> for the engine,{' '}
-    <code>@jbrowse/core</code> for the hooks and the palette, and{' '}
-    <code>@jbrowse/display-ui</code> for the display seams. The three that reach
-    further say why they do:
-    <a href={`${base}track-settings/`}>Track settings</a> takes its
-    colour-scheme labels from <code>@jbrowse/plugin-alignments</code>,{' '}
-    <a href={`${base}search-by-name/`}>Search by name</a> calls the search
-    helpers in <code>@jbrowse/plugin-linear-genome-view</code>, and{' '}
-    <a href={`${base}synteny/`}>Comparing two genomes</a> needs a session whose
-    views are an array, which is <code>@jbrowse/react-app2</code>.
-  </p>
-
   <Gallery examples={examples} />
 </Shell>
-
-<style>
-  .note {
-    color: var(--muted);
-    max-width: 75ch;
-    margin: 12px 0 0;
-  }
-</style>

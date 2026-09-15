@@ -86,13 +86,32 @@ function darkSchemeQuery() {
 function subscribeToColorScheme(onChange: () => void) {
   const media = darkSchemeQuery()
   media?.addEventListener('change', onChange)
+  const observer =
+    typeof MutationObserver === 'function'
+      ? new MutationObserver(onChange)
+      : undefined
+  observer?.observe(document.documentElement, { attributes: true })
   return () => {
     media?.removeEventListener('change', onChange)
+    observer?.disconnect()
   }
 }
 
+// The page's declared `color-scheme`, as the browser resolves it for form
+// controls: a page that declares only one of light or dark gets that one, and
+// one that declares both, or neither, gets the OS preference.
 function readColorScheme(): 'light' | 'dark' {
-  return darkSchemeQuery()?.matches ? 'dark' : 'light'
+  const declared = getComputedStyle(document.documentElement)
+    .getPropertyValue('color-scheme')
+    .split(/\s+/)
+    .filter((word): word is 'light' | 'dark' =>
+      ['light', 'dark'].includes(word),
+    )
+  return declared.length === 1
+    ? declared[0]!
+    : darkSchemeQuery()?.matches
+      ? 'dark'
+      : 'light'
 }
 
 const alwaysLight = () => 'light' as const
@@ -120,10 +139,9 @@ export interface ThemeModeSession {
  * follow its dark mode mounts {@link SessionPaletteProvider}, which is this
  * hook and the provider in one.
  *
- * How the host knows its own mode is the host's business — an attribute on
- * `<html>`, a design-system context, a toggle in its own state. Pass no mode
- * and JBrowse follows `prefers-color-scheme` instead, tracking OS changes; a
- * host whose mode is only ever the OS preference has nothing to write.
+ * Pass no mode and JBrowse follows the page: its declared CSS `color-scheme`
+ * when that names one of light or dark, the OS preference otherwise, tracking
+ * both. A host whose mode lives somewhere a stylesheet cannot see passes it.
  *
  * **Both halves are load-bearing, which is why the pairing is published as a
  * component.** The palette is what *React* draws with; the config `theme` slot
@@ -159,11 +177,10 @@ export function useSessionPalette(
  * </SessionPaletteProvider>
  * ```
  *
- * `mode` is optional. Left out, JBrowse follows `prefers-color-scheme` and
- * re-themes when the OS preference changes, through the same session write an
- * explicit mode takes — so a host whose dark mode *is* the OS preference mounts
- * this with a session and nothing else. Pass a mode as soon as the host has a
- * toggle of its own, since the media query cannot see it.
+ * `mode` is optional. Left out, JBrowse follows the page's declared
+ * `color-scheme` — so a host whose dark-mode toggle sets it, as most do, mounts
+ * this with a session and nothing else — and the OS preference where the page
+ * declares none.
  *
  * A component rather than a documented pair of calls because the pair has a
  * half that can be left out with nothing to show for it. `PaletteProvider` is

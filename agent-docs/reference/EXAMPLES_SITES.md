@@ -86,6 +86,8 @@ copies did not:
 | sticky refName labels, ×2         | the same-refName run dedup, the whole-name fit test        | `view.scalebarRefNameLabels`            |
 | a rubberband's pointer-capture drag, ×1 | a primary-button guard, so a right-press started a drag under its own context menu and released capture it never took; and one-pointer ownership, so a second finger re-anchored a drag in progress | `usePointerDrag`      |
 | `useSessionPalette(session, mode)` + `<PaletteProvider palette={…}>`, ×17 | nothing — every copy was right | `SessionPaletteProvider` |
+| the display mount, the status box and the measured pan/zoom column, ×18 | the mount's overlay slot, which fourteen copies dropped | `Track`, `ViewStatus`, `TrackStack` in `@jbrowse/display-ui/embed` |
+| a site-mode watcher on `data-theme` and the media query, ×18 | nothing | `SessionPaletteProvider` following the page's declared `color-scheme` |
 
 That is the argument for treating "the examples all write X" as a missing export
 rather than a duplication problem: the reader is not merely repeating himself,
@@ -229,29 +231,17 @@ gets a second, separated run of entries.
 - **Never restate a measurable number.** If a page needs one, generate it and
   register the generator in `pnpm autogen`, so CI re-checks it and the prose
   cannot drift.
-- **Prose is capped, and `pnpm check-links` enforces it.** A `src/docs/*.md`
-  over 300 words (fenced code excluded, since a page whose length is a config
-  example is doing its job) or a page/section `description` over 160 characters
-  fails; over 200 words prints as advisory so the trend shows first. These pages
-  are a live demo plus its own source — the prose names the API and flags the
-  gotchas that cost an hour, and nothing more.
-
-  The cap was 500/350, and every doc on all four sites was rewritten against
-  300/200, because a doc allowed 500 words reliably spends them: on a demo the
-  reader can just look at, on a paragraph restating the source directly below
-  it, and on a closing pile of reference links. 300 words is roughly a screen,
-  which is the right budget for an annotation. A page that needs more than that
-  is a tutorial on `website/docs` with a link to it from here, not a longer doc.
+- **The code and the demo do the talking.** An example file carries no
+  comments, and a section's `src/docs/<slug>.md` is optional: write one only for
+  what the demo and its source cannot show. When an example is too long to read
+  at a glance, publish a helper (a function or a component) that shortens it,
+  rather than explaining it — `@jbrowse/display-ui/embed` is the pattern.
+  `pnpm check-links` caps a doc at 300 words and a description at 160
+  characters, and reports an orphan doc whose section was renamed.
 - A single-section page's **section-level `description` renders nowhere** — the
   "On this page" card is only drawn for multi-section pages — so don't write
   one. Three sites had accumulated exact duplicates of the page description
   there.
-- **Every section needs its `src/docs/<slug>.md`.** `ExampleSection` renders
-  nothing when the file is absent, so a page can ship as a title, a one-line
-  lead and 400 lines of source with no explanation. `pnpm check-links` fails on
-  a missing doc and on an orphan one (prose whose section was renamed out from
-  under it).
-
 ## Contrast is measured, in both themes
 
 `checkTextContrast` (`@jbrowse/browser-test-utils`, wired into all four

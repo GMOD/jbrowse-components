@@ -33,32 +33,9 @@ export const pages: ExamplePage[] = [
   {
     slug: 'ultraminimal',
     title: 'Ultraminimal',
-    description:
-      'A measured div, one track, and the hook that turns a wheel and a drag into the two calls that move it.',
+    description: 'One track. Drag to pan, wheel to zoom.',
     group: 'Basics',
-    // Not "Getting started": the landing page already is that, and it runs a
-    // demo above the fold rather than describing one. A second entry by the same
-    // name asked a reader arriving at the site to pick between two front doors.
-    // What this page actually is, is the floor -- the least code that is still a
-    // genome browser -- so it says so.
-    //
-    // Pan and zoom leads, not the bare view: panning is the point of a genome
-    // browser, so the first thing on the site should move. The bare view
-    // follows as the same file with the gesture hook taken back out.
-    sections: [
-      {
-        slug: 'pan-and-zoom',
-        title: 'Pan and zoom',
-        description:
-          'The gesture layer JBrowse itself runs, and the two view calls it makes.',
-      },
-      {
-        slug: 'one-track',
-        title: 'One track, no gestures',
-        description:
-          'A measured div and one track. This is the whole of what createViewState needs to draw.',
-      },
-    ],
+    sections: [{ slug: 'one-track', title: 'One track' }],
   },
   {
     slug: 'multiple-tracks',

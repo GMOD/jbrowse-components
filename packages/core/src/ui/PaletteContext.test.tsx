@@ -116,6 +116,26 @@ test('no mode follows prefers-color-scheme, and its changes', () => {
   expect(screen.getByTestId('bg').textContent).not.toBe(dark)
 })
 
+test("no mode follows the page's declared color-scheme over the OS preference", async () => {
+  installMatchMedia(false)
+  const { session, modes } = fakeSession()
+  const root = document.documentElement
+  root.style.setProperty('color-scheme', 'dark')
+  render(
+    <SessionPaletteProvider session={session}>
+      <ReadsPalette />
+    </SessionPaletteProvider>,
+  )
+  expect(modes).toEqual(['dark'])
+
+  await act(async () => {
+    root.style.setProperty('color-scheme', 'light dark')
+    await Promise.resolve()
+  })
+  expect(modes).toEqual(['dark', 'light'])
+  root.style.removeProperty('color-scheme')
+})
+
 test('an explicit mode ignores the media query and subscribes to nothing', () => {
   const media = installMatchMedia(true)
   const { session, modes } = fakeSession()

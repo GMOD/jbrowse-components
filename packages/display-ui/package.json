@@ -20,6 +20,7 @@
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./embed": "./src/embed/index.tsx",
     "./yAxisConstants": "./src/yAxisConstants.ts"
   },
   "files": [
@@ -48,6 +49,7 @@
     "types": "esm/index.d.ts",
     "exports": {
       ".": "./esm/index.js",
+      "./embed": "./esm/embed/index.js",
       "./yAxisConstants": "./esm/yAxisConstants.js"
     }
   },

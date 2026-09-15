@@ -5,11 +5,8 @@ export const componentLabel = 'Build Your Own'
 export const mainMaxWidth = '1400px'
 export const demoFillHeight = false
 
-// The example the landing page runs live, above the fold, rather than
-// describing. A section slug (that is what `demoHeights` is keyed by), so it
-// does not name the page it now shares — hence `landingDemoHref` alongside it.
+// the section the landing page runs, by the slug `demoHeights` is keyed on
 export const landingDemo = 'scalebar'
-export const landingDemoHref = 'scalebar-and-labels/#scalebar'
 
 // What each demo settles at, in px. Every demo here is `client:only`, so the
 // server sends an empty `<div class="demo">` — `astro-island` is

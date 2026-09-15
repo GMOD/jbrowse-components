@@ -193,44 +193,20 @@ export function findBrokenCrossLinks({
   return broken
 }
 
-export interface MissingDoc {
-  // the section slug with no prose file
-  slug: string
-  // the page that holds it, for the error message
-  page: string
-  // the src/docs/<slug>.md path that should exist
-  expected: string
-}
-
-// Every section renders `src/docs/<section-slug>.md` above its demo, and
-// ExampleSection renders nothing at all when the file is absent. So a page can
-// ship with a title, a one-line lead and several hundred lines of source and no
-// explanation, and nothing says so — which is how the build-your-own site's own
-// lead page went out with no prose. Cheap to check, invisible otherwise.
-//
-// Orphans are reported too: a doc whose section was renamed stops being
-// rendered and silently becomes dead prose.
-export function findMissingDocs({
+// A section's `src/docs/<section-slug>.md` is optional: the demo and its source
+// are the page, and a doc exists only for what they cannot show. An orphan, a
+// doc whose section was renamed, stops rendering and is reported.
+export function findOrphanDocs({
   docsDir,
   pages,
 }: {
   docsDir: string
   pages: { slug: string; sections: { slug: string }[] }[]
-}): { missing: MissingDoc[]; orphans: string[] } {
-  const present = new Set(
-    listMarkdown(docsDir).map(f => f.replace(/\.md$/, '')),
-  )
-  const missing = pages.flatMap(p =>
-    p.sections
-      .filter(s => !present.has(s.slug))
-      .map(s => ({
-        slug: s.slug,
-        page: p.slug,
-        expected: path.join(docsDir, `${s.slug}.md`),
-      })),
-  )
+}): string[] {
   const sections = new Set(pages.flatMap(p => p.sections.map(s => s.slug)))
-  return { missing, orphans: [...present].filter(d => !sections.has(d)) }
+  return listMarkdown(docsDir)
+    .map(f => f.replace(/\.md$/, ''))
+    .filter(d => !sections.has(d))
 }
 
 // An examples-site page is a live demo plus its own source; the prose exists to
@@ -497,13 +473,7 @@ export function runExamplesSiteChecks({
     log(`BROKEN ${b.url}  (${b.reason})\n       in ${rel(b.file)}`)
   }
 
-  const { missing, orphans } = findMissingDocs({ docsDir, pages })
-  for (const m of missing) {
-    log(
-      `NO DOC ${m.slug}  (section of page "${m.page}")\n` +
-        `       expected ${rel(m.expected)}`,
-    )
-  }
+  const orphans = findOrphanDocs({ docsDir, pages })
   for (const o of orphans) {
     log(`ORPHAN src/docs/${o}.md  (no section with that slug renders it)`)
   }
@@ -571,14 +541,14 @@ export function runExamplesSiteChecks({
   const tooLong = longDocs.length + longPages.length + longDescriptions.length
   log(
     `\n${broken.length + brokenCross.length} broken link(s), ` +
-      `${missing.length} missing doc(s), ${orphans.length} orphan(s), ` +
+      `${orphans.length} orphan(s), ` +
       `${tooLong} over-long prose, ${engines.length} engine(s) in an ` +
       `initializer, ${suggestions.length} suggestion(s)`,
   )
   return (
     broken.length +
     brokenCross.length +
-    missing.length +
+    orphans.length +
     tooLong +
     engines.length
   )

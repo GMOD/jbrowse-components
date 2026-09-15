@@ -775,11 +775,9 @@ Make JBrowse follow the host's light/dark state — the whole of it, in one moun
 </SessionPaletteProvider>
 ```
 
-`mode` is optional. Left out, JBrowse follows `prefers-color-scheme` and
-re-themes when the OS preference changes, through the same session write an
-explicit mode takes — so a host whose dark mode _is_ the OS preference mounts
-this with a session and nothing else. Pass a mode as soon as the host has a
-toggle of its own, since the media query cannot see it.
+`mode` is optional. Left out, JBrowse follows the page's declared `color-scheme`
+— so a host whose dark-mode toggle sets it, as most do, mounts this with a
+session and nothing else — and the OS preference where the page declares none.
 
 A component rather than a documented pair of calls because the pair has a half
 that can be left out with nothing to show for it. `PaletteProvider` is the name

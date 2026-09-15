@@ -56,7 +56,7 @@ export {
   findLongDescriptions,
   findLongDocs,
   findLongPages,
-  findMissingDocs,
+  findOrphanDocs,
   runExamplesSiteChecks,
   suggestDocLinks,
 } from './docLinks.ts'
@@ -89,7 +89,6 @@ export type {
   DocPage,
   DocSuggestion,
   LongProse,
-  MissingDoc,
 } from './docLinks.ts'
 export type { Verdict } from './reviewVerdicts.ts'
 export type { VerdictRouteOptions } from './reviewServer.ts'
