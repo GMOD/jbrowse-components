@@ -127,10 +127,11 @@ export interface AbortBreakpoint {
 }
 
 /**
- * Cancellation for a loop that never awaits. A loop that yields at region or
- * chunk granularity sees an abort at its next `checkAbortSignal`; a matrix
- * fill or a whole-file parse never reaches one, and the only way to interrupt
- * it is to give the event loop a turn now and then:
+ * Cancellation for a loop that can run for seconds without awaiting — a
+ * whole-genome projection, a matrix fill. A `signal.aborted` read inside such a
+ * loop never changes, because the abort is a posted message; the loop has to
+ * give the event loop a turn now and then. A loop bounded by the byte gate or
+ * one region's features finishes before this would matter and only checks.
  *
  *     const breakpoint = createAbortBreakpoint(signal)
  *     for (const row of rows) {

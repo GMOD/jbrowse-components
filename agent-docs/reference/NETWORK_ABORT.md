@@ -40,10 +40,23 @@ a worker.
   take the signal and check on both sides of their await; `createProgressReporter`
   checks it on every `report()`.
 - **A loop that never awaits** never receives the abort — a posted message is a
-  task, and an `await` on a settled promise only drains microtasks. Such a loop
-  takes `createAbortBreakpoint(signal)` and yields a task every ~50 ms of wall
-  time (`if (breakpoint.due()) await breakpoint.yield()`). The genotype matrix
-  fills, the score matrix and the GC window are the loops of that shape.
+  task, and an `await` on a settled promise only drains microtasks.
+  `createProgressReporter`'s `report()` reads the signal but does not yield, so
+  it does not change that.
+- **A loop that can run for seconds** takes `createAbortBreakpoint(signal)` and
+  yields a task every ~50 ms of wall time
+  (`if (breakpoint.due()) await breakpoint.yield()`): the genotype and
+  phased-genotype matrix fills, the wiggle score matrix, the GC window, and the
+  dotplot and synteny position loops, whose feature count is the whole
+  alignment file at whole-genome zoom.
+- **A loop bounded by the byte gate or by one region's features** only checks.
+  It finishes in milliseconds to a few hundred, well inside the fetch it
+  follows: canvas layout, multi-row packing, alignments processing, variant
+  cells, `encodeFeatures` (1M features in ~250–475 ms,
+  `measurements/mark-encoding-jexl-channel.json`), the Hi-C contact pack
+  (auto-resolution bounds bins to the view width) and the diagonalize passes.
+  Whole-file parses (`parseLineByLine`, `paf_chain2paf`) run under
+  `cachedSetup`, which withholds the signal from shared work.
 - **`@gmod/hclust` takes the signal itself.** It runs its WASM work in 50 ms
   slices, yields a task between them, and frees the run on abort.
 

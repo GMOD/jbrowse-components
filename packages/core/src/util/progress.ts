@@ -1042,14 +1042,14 @@ export type ProgressReporter = (current?: number) => void
  * `report(current)` is called once per outer-loop iteration and does two jobs
  * on each call:
  *
- * - checks `signal`, so an abort that landed at the loop's last yield stops it
- *   here rather than at the next phase boundary, and
+ * - checks `signal`, which sees only an abort that landed at the loop's last
+ *   await, and
  * - emits a {@link StatusWithProgress} through `statusCallback` at most once per
  *   `throttleMs`, so the main thread gets a live percentage without flooding
  *   the postMessage channel.
  *
- * A loop that never yields never receives the abort; pair this with
- * `createAbortBreakpoint` there.
+ * `report()` never yields, so it does not make a loop interruptible. A loop
+ * that can run for seconds takes `createAbortBreakpoint` beside it.
  *
  * Both jobs are optional: with no `statusCallback`/`total` this is purely a
  * cancellation tick, so a loop has exactly one inner callback whether or not

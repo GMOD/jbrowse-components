@@ -114,8 +114,11 @@ caller reports nothing still runs `toBytesWithProgress`.
   Reach for this, not `updateStatus`, whenever the reader accepts `onProgress`
   — that is what turns a spinner into a byte bar.
 - `createProgressReporter` / `withProgress` for determinate worker CPU loops.
-  `report()` auto-increments; the cancel-check and emit are counter-gated, so
-  calling it every iteration is cheap.
+  `report()` auto-increments, reads the signal and time-gates the emit, so
+  calling it every iteration is cheap. It never yields, so the signal it reads
+  does not change mid-loop: a loop that can run for seconds takes
+  `createAbortBreakpoint` beside it (NETWORK_ABORT.md §"Where a worker sees the
+  abort").
 - `updateStatus` for indeterminate phases.
 - Both phase helpers **nest**: an inner phase restores its caller's label rather
   than blanking it, and `''` still closes the outermost. They used to not, and

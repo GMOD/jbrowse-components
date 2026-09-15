@@ -125,8 +125,8 @@ function chunkBoundary(buffer: Uint8Array, start: number) {
  *   default to `() => {}`, which says the opposite.
  * @param opts - `label` names the phase on the progress bar (a multi-phase
  *   adapter wants "Parsing PAF", not another "Loading" indistinguishable from
- *   the download that preceded it); `signal` makes a multi-GB parse
- *   interruptible instead of running to completion after a cancel.
+ *   the download that preceded it); `signal` is read on every line, but the
+ *   parse never yields, so it sees only an abort that landed before it began.
  */
 export function parseLineByLine(
   buffer: Uint8Array,
@@ -136,10 +136,6 @@ export function parseLineByLine(
 ) {
   const { label = 'Loading', signal } = opts
   const decoder = new TextDecoder('utf8')
-  // Time-gated, not gated on a line counter: a file of few but very expensive
-  // lines would never reach a count mask, freezing the bar at 0% for the whole
-  // parse (the failure createProgressReporter documents). The abort check
-  // rides the same tick, so cancellation lands within one window.
   const report = createProgressReporter({
     label,
     total: buffer.length,
@@ -177,11 +173,9 @@ export function parseLineByLine(
         }
 
         i++
-        // Chunk-granular position, not line-granular: `report` is called every
-        // line so cancellation still lands within one throttle window, but the
-        // byte offset it publishes only advances per chunk. Interpolating
-        // within the chunk would mean converting a UTF-16 offset back to a byte
-        // offset, and at 64KB the bar already moves in sub-percent steps.
+        // Chunk-granular position: interpolating within the chunk would mean
+        // converting a UTF-16 offset back to a byte offset, and at 64KB the bar
+        // already moves in sub-percent steps.
         report(chunkStart)
 
         p = lineEnd + 1

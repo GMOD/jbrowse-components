@@ -82,8 +82,6 @@ function generateRecord(
 export function paf_chain2paf(buffer: Uint8Array, opts?: BaseOptions) {
   const { statusCallback, signal } = opts ?? {}
   const decoder = new TextDecoder('utf8')
-  // Time-gated rather than the old every-500kB byte gate, and it carries the
-  // abort check, so a multi-GB chain is both labelled and interruptible.
   const report = createProgressReporter({
     label: 'Parsing chain',
     total: buffer.length,

@@ -1,6 +1,7 @@
 import { parseCigar2Typed, parseCoarseCigar } from '@jbrowse/cigar-utils'
 import { getFeatureAdapterOrThrow } from '@jbrowse/core/data_adapters/getFeatureAdapter'
 import { createProgressReporter, dedupe } from '@jbrowse/core/util'
+import { createAbortBreakpoint } from '@jbrowse/core/util/aborting'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   PRESET_ATTRIBUTES,
@@ -191,17 +192,18 @@ export async function executeDotplotFeaturesAndPositions({
   let skippedFeatureCount = 0
   const skippedHRefNames = new Set<string>()
   const skippedVRefNames = new Set<string>()
-  // report() runs the throttled abort check as well as advancing the bar,
-  // so cancelling a whole-genome projection lands mid-loop instead of only at
-  // the next phase boundary.
   const report = createProgressReporter({
     label: 'Computing dotplot positions',
     total: count,
     statusCallback,
     signal,
   })
+  const breakpoint = createAbortBreakpoint(signal)
   for (const f of features) {
     report()
+    if (breakpoint.due()) {
+      await breakpoint.yield()
+    }
     // A comparative feature without a mate has no vertical-axis location to
     // plot, so skip it — mirrors extractAlignmentData's contract, and avoids
     // dereferencing an undefined mate below.

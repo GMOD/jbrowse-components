@@ -5,6 +5,7 @@ import {
   dedupe,
   updateStatus,
 } from '@jbrowse/core/util'
+import { createAbortBreakpoint } from '@jbrowse/core/util/aborting'
 import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 import {
   PRESET_ATTRIBUTES,
@@ -404,18 +405,19 @@ export async function executeSyntenyFeaturesAndPositions({
   const windowSpan = winCumHi - winCumLo
 
   const channelList = channels.list
-  // report() checks the signal itself, so it replaces a per-feature check
-  // while also advancing the bar over whole-genome PAF (potentially millions
-  // of features).
   const report = createProgressReporter({
     label: 'Computing synteny positions',
     total: count,
     statusCallback,
     signal,
   })
+  const breakpoint = createAbortBreakpoint(signal)
   let validCount = 0
   for (const d of decorated) {
     report()
+    if (breakpoint.due()) {
+      await breakpoint.yield()
+    }
     const { f, id, refName, start, end, strand, mate, mateRefName } = d
     // Off-refName features (whole-genome PAF at low zoom) were already dropped
     // during decorate, so every record here projects into both views.

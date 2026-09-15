@@ -67,7 +67,8 @@ was:
   reader's per-item callback — a `signal.aborted` read, which the second table
   shows costs what the set lookup did. `updateStatus`, `withProgress` and
   `createProgressReporter` take the signal and check for their callers.
-- **A loop that never awaits** takes `createAbortBreakpoint(signal)` and writes
+- **A loop that can run for seconds without awaiting** takes
+  `createAbortBreakpoint(signal)` and writes
   `if (breakpoint.due()) await breakpoint.yield()`, which gives the event loop a
   task every 50 ms so the posted abort can land. Two calls rather than one
   because a per-item `await` of a non-promise costs a microtask (the last row
@@ -76,9 +77,14 @@ was:
   included, and a zero timer in plain Node and jsdom, where a port turn runs
   no due timer. Not `scheduler.yield`: in Chrome and Electron workers its
   continuation outranks the posted abort, and the loop runs to completion.
-  The genotype and phased-genotype matrix fills, the wiggle score matrix and
-  the GC window are the loops of that shape; the alignments loops are already
-  chunked by awaits at region granularity and need only the check.
+  The genotype and phased-genotype matrix fills, the wiggle score matrix, the
+  GC window and the dotplot and synteny position loops are the loops of that
+  shape. `report()` reads the signal but never yields, so it does not make a
+  loop interruptible; the old probe did, and every report()-driven loop lost
+  mid-loop cancel with it. What stops short of a breakpoint is a loop bounded
+  by the byte gate or by one region's features — alignments processing, canvas
+  layout, variant cells, `encodeFeatures`, the Hi-C pack — which finishes in
+  well under a second and only checks.
 - **`@gmod/hclust` takes the signal** (6.0). Its `checkCancellation` callback
   ran inside one synchronous WASM call, where only the probe could interrupt
   it, and a throw from there unwound past the C cleanup and leaked the n²

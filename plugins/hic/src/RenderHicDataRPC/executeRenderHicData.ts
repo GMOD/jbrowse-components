@@ -79,13 +79,9 @@ export async function executeRenderHicData({
   // `HicDataResult.instances`.
   const instances = new Float32Array(numContacts * INSTANCE_STRIDE_WORDS)
 
-  // Its own phase: the adapter's download phase has closed by here, and packing
-  // a whole-genome matrix is not free — at 4.5M contacts this loop is a chunk of
-  // time that used to run under a blank status field, with the display saying
-  // only "Loading". `report` carries the throttled abort check too, which
-  // is what makes the pack interruptible at all: the only cancel point before it
-  // was the one above, so a navigation during the pack was answered after the
-  // whole buffer had been written.
+  // Its own phase, so the pack does not run under a blank status field. No
+  // breakpoint: auto-resolution holds a view to ~0.5 bins per pixel, and a
+  // linear pass over 4.5M contacts measured ~30ms (see countStats.ts).
   await withProgress(
     {
       label: 'Building contact matrix',
