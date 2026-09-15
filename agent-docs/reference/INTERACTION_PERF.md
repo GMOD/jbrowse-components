@@ -328,7 +328,7 @@ is frame pacing, not throughput, and the remaining budget is roughly:
   `autoscale` 111ms. These are
   the largest identified block of real compute left.
 - **Stop tokens without cross-origin isolation**: `Blob` + `createObjectURL`
-  94ms, plus `notifyStopToken` broadcasting to every worker in the pool, 79ms of
+  94ms, plus the stop broadcast to every worker in the pool, 79ms of
   `postMessage`. Gone since ADR-122; a trace from before it still shows them.
 - **React commit**: `react-dom` self time 651ms, `setAttribute` 81ms. Still the
   largest single block, and still the same answer — fewer components per frame.
@@ -545,7 +545,7 @@ only if something else is not eating the trace. `profile-zoom.ts` reads
 
 ## The stop-token probe, for whoever finds it in a trace next
 
-A trace taken before 2026-09-15 shows `probeBlobUrl` (a synchronous XHR per
+A trace taken before 2026-09-15 shows the blob-URL probe (a synchronous XHR per
 throttled check, 408 ms across six tracks' cold load) and a `createObjectURL`
 frame beside it. Neither exists any more: cancellation is an `AbortSignal` and a
 loop that never awaits yields a task instead (ADR-122). The mint count that
