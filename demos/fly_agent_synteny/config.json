@@ -1,0 +1,224 @@
+{
+  "$schema": "https://jbrowse.org/jb2/schema/v5/config.json",
+  "assemblies": [
+    {
+      "name": "GCF_016746395.2",
+      "displayName": "fly D.simulans (w501 v3.1 2021)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "metadata": {
+          "blatDb": "GCF_016746395.2",
+          "ucsc": {
+            "genome": "GCF_016746395.2",
+            "taxId": "7240",
+            "groups": "groups.txt",
+            "description": "fly D.simulans (w501 v3.1 2021)",
+            "twoBitPath": "GCF_016746395.2.2bit",
+            "twoBitBptUrl": "GCF_016746395.2.2bit.bpt",
+            "chromSizes": "GCF_016746395.2.chrom.sizes.txt",
+            "chromAliasBb": "GCF_016746395.2.chromAlias.bb",
+            "chromAuthority": "ucsc",
+            "organism": "Prin_Dsim_3.1 Oct. 2021",
+            "defaultPos": "NC_052523.2:9383195-9393195",
+            "scientificName": "Drosophila simulans",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/016/746/395/GCF_016746395.2/html/GCF_016746395.2_Prin_Dsim_3.1.description.html\">html/GCF_016746395.2_Prin_Dsim_3.1.description.html</a>",
+            "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/016/746/395/GCF_016746395.2",
+            "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/016/746/395/GCF_016746395.2",
+            "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/016/746/395/GCF_016746395.2",
+            "liftOver.dm6": "liftOver/GCF_016746395.2ToDm6.over.chain.gz"
+          }
+        },
+        "trackId": "GCF_016746395.2-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/016/746/395/GCF_016746395.2/GCF_016746395.2.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/016/746/395/GCF_016746395.2/GCF_016746395.2.chrom.sizes.txt"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "refNameColumnHeaderName": "ucsc",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/016/746/395/GCF_016746395.2/GCF_016746395.2.chromAlias.txt"
+        }
+      }
+    },
+    {
+      "name": "GCF_004382145.1",
+      "displayName": "fly D.mauritiana",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "metadata": {
+          "blatDb": "GCF_004382145.1",
+          "ucsc": {
+            "genome": "GCF_004382145.1",
+            "taxId": "7226",
+            "groups": "groups.txt",
+            "description": "fly D.mauritiana",
+            "twoBitPath": "GCF_004382145.1.2bit",
+            "twoBitBptUrl": "GCF_004382145.1.2bit.bpt",
+            "chromSizes": "GCF_004382145.1.chrom.sizes.txt",
+            "chromAliasBb": "GCF_004382145.1.chromAlias.bb",
+            "chromAuthority": "ucsc",
+            "organism": "ASM438214v1 Apr. 2019",
+            "defaultPos": "NC_046670.1:9624287-9634287",
+            "scientificName": "Drosophila mauritiana",
+            "htmlPath": "<a href=\"https://hgdownload.soe.ucsc.edu/hubs/GCF/004/382/145/GCF_004382145.1/html/GCF_004382145.1_ASM438214v1.description.html\">html/GCF_004382145.1_ASM438214v1.description.html</a>",
+            "blat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/004/382/145/GCF_004382145.1",
+            "transBlat": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/004/382/145/GCF_004382145.1",
+            "isPcr": "dynablat-01.soe.ucsc.edu 4040 dynamic GCF/004/382/145/GCF_004382145.1",
+            "liftOver.dm6": "liftOver/GCF_004382145.1ToDm6.over.chain.gz"
+          }
+        },
+        "trackId": "GCF_004382145.1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/004/382/145/GCF_004382145.1/GCF_004382145.1.2bit",
+          "chromSizes": "https://hgdownload.soe.ucsc.edu/hubs/GCF/004/382/145/GCF_004382145.1/GCF_004382145.1.chrom.sizes.txt"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "refNameColumnHeaderName": "ucsc",
+          "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/004/382/145/GCF_004382145.1/GCF_004382145.1.chromAlias.txt"
+        }
+      },
+      "geneticCodes": {
+        "NC_005779.1": 5
+      }
+    }
+  ],
+  "aggregateTextSearchAdapters": [
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "GCF_016746395.2-index",
+      "ixFilePath": {
+        "uri": "https://jbrowse.org/hubs/genark/GCF/016/746/395/GCF_016746395.2/trix/GCF_016746395.2.ix",
+        "locationType": "UriLocation"
+      },
+      "ixxFilePath": {
+        "uri": "https://jbrowse.org/hubs/genark/GCF/016/746/395/GCF_016746395.2/trix/GCF_016746395.2.ixx",
+        "locationType": "UriLocation"
+      },
+      "assemblyNames": ["GCF_016746395.2"]
+    },
+    {
+      "type": "TrixTextSearchAdapter",
+      "textSearchAdapterId": "GCF_004382145.1-index",
+      "ixFilePath": {
+        "uri": "https://jbrowse.org/hubs/genark/GCF/004/382/145/GCF_004382145.1/trix/GCF_004382145.1.ix",
+        "locationType": "UriLocation"
+      },
+      "ixxFilePath": {
+        "uri": "https://jbrowse.org/hubs/genark/GCF/004/382/145/GCF_004382145.1/trix/GCF_004382145.1.ixx",
+        "locationType": "UriLocation"
+      },
+      "assemblyNames": ["GCF_004382145.1"]
+    }
+  ],
+  "tracks": [
+    {
+      "metadata": {
+        "ucsc": {
+          "track": "ncbiRefSeq",
+          "parent": "refSeqComposite on",
+          "color": "12,12,120",
+          "shortLabel": "RefSeq All",
+          "type": "bigGenePred",
+          "urls": "name2=\"https://www.ncbi.nlm.nih.gov/gene/?term=$$\" geneName=\"https://www.ncbi.nlm.nih.gov/gene/$$\" geneName2=\"https://www.ncbi.nlm.nih.gov/nuccore/$$\"",
+          "labelFields": "name2,geneName,geneName2",
+          "defaultLabelFields": "name2",
+          "searchIndex": "name",
+          "searchTrix": "ixIxx/GCF_016746395.2_Prin_Dsim_3.1.ncbiRefSeq.ix",
+          "bigDataUrl": "bbi/GCF_016746395.2_Prin_Dsim_3.1.ncbiRefSeq.bb",
+          "longLabel": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "baseColorUseCds": "given",
+          "baseColorDefault": "genomicCodons",
+          "priority": "1"
+        }
+      },
+      "category": ["Genes and Gene Predictions"],
+      "trackId": "GCF_016746395.2-ncbiRefSeq",
+      "description": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+      "assemblyNames": ["GCF_016746395.2"],
+      "name": "NCBI RefSeq - RefSeq All",
+      "type": "FeatureTrack",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/016/746/395/GCF_016746395.2/bbi/GCF_016746395.2_Prin_Dsim_3.1.ncbiRefSeq.bb",
+        "aggregateField": "name2"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "GCF_016746395.2-ncbiRefSeq-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:get(feature,'name')"
+          }
+        }
+      ]
+    },
+    {
+      "metadata": {
+        "ucsc": {
+          "track": "ncbiRefSeq",
+          "parent": "refSeqComposite on",
+          "color": "12,12,120",
+          "shortLabel": "RefSeq All",
+          "type": "bigGenePred",
+          "urls": "name2=\"https://www.ncbi.nlm.nih.gov/gene/?term=$$\" geneName=\"https://www.ncbi.nlm.nih.gov/gene/$$\" geneName2=\"https://www.ncbi.nlm.nih.gov/nuccore/$$\"",
+          "labelFields": "name2,geneName,geneName2",
+          "defaultLabelFields": "name2",
+          "searchIndex": "name",
+          "searchTrix": "ixIxx/GCF_004382145.1_ASM438214v1.ncbiRefSeq.ix",
+          "bigDataUrl": "bbi/GCF_004382145.1_ASM438214v1.ncbiRefSeq.bb",
+          "longLabel": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+          "idXref": "ncbiRefSeqLink mrnaAcc name",
+          "baseColorUseCds": "given",
+          "baseColorDefault": "genomicCodons",
+          "priority": "1"
+        }
+      },
+      "category": ["Genes and Gene Predictions"],
+      "trackId": "GCF_004382145.1-ncbiRefSeq",
+      "description": "NCBI RefSeq genes, curated and predicted sets (NM_*, XM_*, NR_*, XR_*, NP_* or YP_*)",
+      "assemblyNames": ["GCF_004382145.1"],
+      "name": "NCBI RefSeq - RefSeq All",
+      "type": "FeatureTrack",
+      "adapter": {
+        "type": "BigBedAdapter",
+        "uri": "https://hgdownload.soe.ucsc.edu/hubs/GCF/004/382/145/GCF_004382145.1/bbi/GCF_004382145.1_ASM438214v1.ncbiRefSeq.bb",
+        "aggregateField": "name2"
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "GCF_004382145.1-ncbiRefSeq-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:get(feature,'name')"
+          }
+        }
+      ]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "sim_vs_mau",
+      "name": "D. simulans vs D. mauritiana (minimap2 asm20)",
+      "assemblyNames": ["GCF_016746395.2", "GCF_004382145.1"],
+      "adapter": {
+        "type": "PairwiseIndexedPAFAdapter",
+        "pifGzLocation": {
+          "uri": "https://jbrowse.org/demos/fly_agent_synteny/sim_vs_mau.pif.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/fly_agent_synteny/sim_vs_mau.pif.gz.tbi"
+          }
+        },
+        "assemblyNames": ["GCF_016746395.2", "GCF_004382145.1"]
+      }
+    }
+  ]
+}

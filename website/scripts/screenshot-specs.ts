@@ -14,6 +14,7 @@ export type {
 } from './screenshot-spec-types.ts'
 
 import { liveHref } from '../src/lib/code-base.ts'
+import { agentSyntenySpecs } from './specs/agent_synteny.ts'
 import { alignmentsSpecs } from './specs/alignments.ts'
 import { alphagenomeSpecs } from './specs/alphagenome.ts'
 import { annotationSpecs } from './specs/annotation.ts'
@@ -69,6 +70,7 @@ import type { ScreenshotSpec, SessionUrlSpec } from './screenshot-spec-types.ts'
 
 export const specs: ScreenshotSpec[] = [
   ...syntenySpecs,
+  ...agentSyntenySpecs,
   ...alignmentsSpecs,
   ...alphagenomeSpecs,
   ...annotationSpecs,

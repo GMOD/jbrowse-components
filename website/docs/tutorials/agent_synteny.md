@@ -41,6 +41,9 @@ index, so neither assembly has to be described by hand.
   https://hgdownload.soe.ucsc.edu/hubs/GCF/004/382/145/GCF_004382145.1/GCF_004382145.1.fa.gz
 - _D. mauritiana_ hosted config:
   https://jbrowse.org/hubs/genark/GCF/004/382/145/GCF_004382145.1/config.json
+- the alignment the figures below open, indexed and rehosted:
+  https://jbrowse.org/demos/fly_agent_synteny/sim_vs_mau.pif.gz beside the
+  merged config at https://jbrowse.org/demos/fly_agent_synteny/config.json
 
 ## Why this needs a shell
 
@@ -62,7 +65,10 @@ helper library called `jb` as its standard library. `open`, `screenshot` and
 the agent writing code against the session you are watching.
 
 The setup is in [](/docs/agents). Once the client lists your recent sessions,
-the path works.
+the path works. Open the client beside the app and the whole run below looks
+like this:
+
+<Video src="/media/mcp/agent_synteny_take1.mp4" caption="The four requests below, typed at Claude Code with JBrowse Desktop beside it. The agent aligns the two genomes, merges the two hosted configs, builds the comparison and the dotplot, totals the alignment file and navigates to what it found." />
 
 ## Ask for the comparison
 
@@ -128,6 +134,8 @@ Query first, target second, matching the `minimap2` argument order. Reversed, no
 chromosome name resolves and the synteny band draws empty, which at whole-genome
 zoom looks much like a genome pair with little in common.
 
+<Figure caption="Thirty kilobases of chr3R on both genomes: NCBI RefSeq on each row, the minimap2 alignment between them, colored red where the two run in the same direction. One block spans the window, and each gene meets its counterpart exon for exon." src="/img/agent_synteny/comparison_built.png" />
+
 ## Ask for the dotplot
 
 ```
@@ -144,7 +152,10 @@ Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX.
 
 The alias names work because the merged config kept each assembly's chromAlias
 file. Ask it to quantify what restricting the axes drops, not just apply the
-change.
+change. Set the coloring to strand while you are there, so a block that runs
+backwards is a different color rather than a bend in a black line:
+
+<Figure caption="The alignment as a dotplot, both axes cut to the six chromosome arms. One forward diagonal in red, and a short reverse segment in blue where chr2R begins." src="/img/agent_synteny/dotplot_arms.png" />
 
 ## Ask where they disagree
 
@@ -219,6 +230,13 @@ Take the synteny view to the 2R region, with the gene tracks on.
 The two rows navigate separately, to `chr2R:1-2,400,000` on simulans over
 `chr2R:500,000-3,800,000` on mauritiana. The ribbons cross in the middle of the
 band, and the genes on the two rows run in opposite directions through it.
+
+<Figure caption="The 2R region on both rows with the gene tracks on. Reverse-strand blocks in blue cross the band, short and many, because the sequence at this end of the arm is repeat-rich." src="/img/agent_synteny/inversion_2r.png" />
+
+Then take it to the first of the two X regions, `chrX:8,100,000-8,950,000` over
+`chrX:8,330,000-9,180,000`, which is where the same event reads cleanly:
+
+<Figure caption="The X region at the same settings. Two reverse blocks cross in the middle of the band, with forward alignment in red on both sides of them." src="/img/agent_synteny/inversion_x.png" />
 
 ## What you had to tell it
 
