@@ -1304,6 +1304,30 @@ describe('addView', () => {
     expect(session.views).toHaveLength(0)
   })
 
+  // Two eval runs wrote the assemblyNames they had read off the live view's
+  // snapshot, and the entry was refused as a typo.
+  it('reads a one-element assemblyNames as the assembly it names', async () => {
+    const { session, jb } = harness(lgv)
+    await jb.addView(
+      { type: 'LinearGenomeView', assemblyNames: ['volvox'], loc: 'ctgA' },
+      0,
+    )
+    expect(session.views[0]!.args).toEqual({ assembly: 'volvox', loc: 'ctgA' })
+  })
+
+  it('refuses several assembly names, naming assembly', async () => {
+    const { session, jb } = harness(lgv)
+    await expect(
+      jb.addView(
+        { type: 'LinearGenomeView', assemblyNames: ['volvox', 'volvox2'] },
+        0,
+      ),
+    ).rejects.toThrow(
+      /LinearGenomeView takes one "assembly", and assemblyNames names 2 \(volvox, volvox2\) — pass assembly/,
+    )
+    expect(session.views).toHaveLength(0)
+  })
+
   it('names an unknown type, and a type nothing here can launch', async () => {
     const { jb } = harness(lgv, ['LinearGenomeView', 'GraphGenomeView'])
     await expect(jb.addView({ type: 'Nope' }, 0)).rejects.toThrow(

@@ -281,7 +281,7 @@ export function viewTypeProblem(pluginManager: PluginManager, type: string) {
 // v4 nested a view's settings under `init`. A spec never becomes a snapshot, so
 // `withLaunchInput`'s unwrap never runs on one and this surface does it itself,
 // in the same order: the flat spelling wins.
-export function flattenSpecView(spec: ViewSpec): ViewSpec {
+function flattenSpecView(spec: ViewSpec): ViewSpec {
   const { init, ...view } = spec
   if (init) {
     console.warn(legacyInitMessage(view.type))
@@ -290,7 +290,7 @@ export function flattenSpecView(spec: ViewSpec): ViewSpec {
 }
 
 /**
- * The keys a spec view names that its type does not take.
+ * A spec view entry as its launcher takes it, and what its type does not take.
  *
  * The same classification a view snapshot gets, run here because a spec never
  * becomes one: `LaunchView-<type>` takes these keys as arguments, so
@@ -304,20 +304,51 @@ export function flattenSpecView(spec: ViewSpec): ViewSpec {
  * registered type declares its properties on a state model that is not loaded
  * yet, so it is loaded first — the launch would have loaded it anyway.
  */
-export async function unknownSpecKeys(
+export async function launchableSpecView(
   pluginManager: PluginManager,
   spec: ViewSpec,
-) {
-  const { type, ...view } = spec
-  if (!pluginManager.getElementTypeRecord('view').has(type)) {
-    return []
+): Promise<{ view: ViewSpec; problem?: string }> {
+  const flat = flattenSpecView(spec)
+  if (!pluginManager.getElementTypeRecord('view').has(flat.type)) {
+    return { view: flat }
   }
-  const viewType = pluginManager.getViewType(type)
+  const viewType = pluginManager.getViewType(flat.type)
   await viewType.loadStateModel()
   const accepted = viewType.acceptedKeys
-  return accepted
-    ? Object.keys(view).filter(key => !accepted.includes(key))
-    : []
+  if (!accepted) {
+    return { view: flat }
+  }
+  const { view, problem } = readAssemblyNames(flat, accepted)
+  const { type, ...keyed } = view
+  const unknown = Object.keys(keyed).filter(key => !accepted.includes(key))
+  const problems = [
+    ...(unknown.length ? [unknownKeysMessage(type, unknown)] : []),
+    ...(problem ? [problem] : []),
+  ]
+  return { view, problem: problems.join('; ') || undefined }
+}
+
+// An agent reads `assemblyNames` off the live view and writes it back into a
+// spec, where the key the entry takes is `assembly`. One name is that assembly;
+// several are a question one view cannot answer.
+function readAssemblyNames(
+  view: ViewSpec,
+  accepted: string[],
+): { view: ViewSpec; problem?: string } {
+  const { assemblyNames, ...rest } = view
+  if (
+    !assemblyNames?.length ||
+    !accepted.includes('assembly') ||
+    accepted.includes('assemblyNames')
+  ) {
+    return { view }
+  }
+  return assemblyNames.length === 1
+    ? { view: { ...rest, assembly: rest.assembly ?? assemblyNames[0] } }
+    : {
+        view: rest,
+        problem: `${view.type} takes one "assembly", and assemblyNames names ${assemblyNames.length} (${assemblyNames.join(', ')}) — pass assembly, one view per assembly`,
+      }
 }
 
 /**
@@ -479,8 +510,6 @@ export async function loadSessionSpec(
       session?.notifyError(noLauncherMessage(noLauncher))
     }
 
-    const specViews = views.map(view => flattenSpecView(view))
-
     // Let any connection this spec registered finish before the views that
     // reference what it supplies are launched (see whenConnectionsSettle). Gated
     // on there being views: with none, nothing is waiting on the connection, and
@@ -511,15 +540,15 @@ export async function loadSessionSpec(
     // lesser of the two, when it is the cause. Per view, so one bad view
     // doesn't cost the rest.
     const createdViewIds: string[][] = []
-    for (const spec of specViews) {
-      const unknownKeys = await unknownSpecKeys(pluginManager, spec)
-      if (unknownKeys.length) {
-        session?.notifyError(unknownKeysMessage(spec.type, unknownKeys))
+    for (const spec of views) {
+      const { view, problem } = await launchableSpecView(pluginManager, spec)
+      if (problem) {
+        session?.notifyError(problem)
       }
       const { created, failure } = await launchSpecView(
         session,
         pluginManager,
-        spec,
+        view,
       )
       if (failure) {
         session?.notifyError(failure.message, failure.cause)

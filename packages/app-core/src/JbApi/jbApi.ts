@@ -30,7 +30,6 @@ import {
   viewCanDisplayTrack,
   viewDisplayNames,
 } from '@jbrowse/core/util/tracks'
-import { unknownKeysMessage } from '@jbrowse/core/util/withLaunchInput'
 import * as mst from '@jbrowse/mobx-state-tree'
 import {
   applySnapshot,
@@ -43,10 +42,9 @@ import * as mobx from 'mobx'
 // relative, not '@jbrowse/app-core': a package self-import would make this
 // module depend on the barrel that exports it
 import {
-  flattenSpecView,
   launchSpecView,
+  launchableSpecView,
   loadSessionSpec,
-  unknownSpecKeys,
   viewTypeProblem,
 } from '../SessionSpec/index.ts'
 
@@ -1594,27 +1592,26 @@ async function addView(
       'jb.addView takes one view spec — an entry of a session spec\'s "views" array, e.g. { type: "LinearGenomeView", assembly, loc, tracks } (docs topic "session-spec")',
     )
   }
-  const flat = flattenSpecView(spec)
-  const problem = viewTypeProblem(pluginManager, flat.type)
-  if (problem) {
-    throw new Error(problem)
+  const unlaunchable = viewTypeProblem(pluginManager, spec.type)
+  if (unlaunchable) {
+    throw new Error(unlaunchable)
   }
-  const unknown = await unknownSpecKeys(pluginManager, flat)
-  if (unknown.length) {
+  const { view: entry, problem } = await launchableSpecView(pluginManager, spec)
+  if (problem) {
     throw new Error(
-      `${unknownKeysMessage(flat.type, unknown)} — nothing was opened. docs topic "session-spec" lists the keys ${flat.type} takes`,
+      `${problem} — nothing was opened. docs topic "session-spec" lists the keys ${entry.type} takes`,
     )
   }
   const { created, view, failure } = await launchSpecView(
     session,
     pluginManager,
-    flat,
+    entry,
   )
   if (failure) {
     throw new Error(failure.message, { cause: failure.cause })
   }
   if (!view) {
-    throw new Error(`${flat.type} opened no view`)
+    throw new Error(`${entry.type} opened no view`)
   }
   const summary = {
     viewId: view.id,

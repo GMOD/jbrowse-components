@@ -692,6 +692,49 @@ describe('an unknown key on a spec view', () => {
     expect(session.notifyError).not.toHaveBeenCalled()
   })
 
+  // An agent reads assemblyNames off the live view and writes it back into a
+  // spec; the key the entry takes is `assembly`.
+  test('a one-element assemblyNames is the assembly it names', async () => {
+    const launched: Record<string, unknown>[] = []
+    const { session, pluginManager } = setup(
+      {
+        'LaunchView-LinearGenomeView': async (s, args) => {
+          launched.push(args)
+          s.views.push(stubView('lgv'))
+        },
+      },
+      lgv.options,
+    )
+
+    await loadSessionSpec(
+      { views: [{ type: 'LinearGenomeView', assemblyNames: ['volvox'] }] },
+      pluginManager,
+    )
+
+    expect(launched[0]).toMatchObject({ assembly: 'volvox' })
+    expect(launched[0]).not.toHaveProperty('assemblyNames')
+    expect(session.notifyError).not.toHaveBeenCalled()
+  })
+
+  test('several assembly names are refused, naming assembly', async () => {
+    const { session, pluginManager } = setup(lgv.handlers, lgv.options)
+
+    await loadSessionSpec(
+      {
+        views: [
+          { type: 'LinearGenomeView', assemblyNames: ['volvox', 'volvox2'] },
+        ],
+      },
+      pluginManager,
+    )
+
+    expect(session.notifyError).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'LinearGenomeView takes one "assembly", and assemblyNames names 2',
+      ),
+    )
+  })
+
   // A view type that registers no launch keys publishes no vocabulary, so its
   // launcher's arguments are unclassifiable and every one of them would read as
   // a typo.

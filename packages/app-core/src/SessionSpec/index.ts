@@ -10,10 +10,9 @@ export {
 } from './lgvUrlInit.ts'
 export {
   addSessionTracks,
-  flattenSpecView,
   launchSpecView,
+  launchableSpecView,
   loadSessionSpec,
-  unknownSpecKeys,
   viewTypeProblem,
 } from './loadSessionSpec.ts'
 export { parseSessionSpecUrl } from './parseSessionSpecUrl.ts'

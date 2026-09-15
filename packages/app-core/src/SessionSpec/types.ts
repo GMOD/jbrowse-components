@@ -15,6 +15,12 @@ export interface ViewSpec {
   // business — each reports its own missing-assembly error (naming the view type)
   // rather than being pre-validated into a generic one here
   assembly?: string
+  /**
+   * The live view's spelling of the key above, accepted because that is where
+   * a spec gets written from: one name is the `assembly`, and several are
+   * refused naming it.
+   */
+  assemblyNames?: string[]
   loc?: string
   /**
    * @deprecated v4's nesting. Write every setting directly on the view object;
