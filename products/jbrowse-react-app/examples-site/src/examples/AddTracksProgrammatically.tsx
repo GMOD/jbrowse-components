@@ -8,8 +8,6 @@ const base = 'https://jbrowse.org/code/jb2/main/test_data/volvox'
 
 const assemblies = [{ name: 'volvox', uri: `${base}/volvox.2bit` }]
 
-// a track config you want to add at runtime instead of up front — it could be
-// any track config object, e.g. one a user built or fetched
 const genesTrackConf = {
   type: 'FeatureTrack',
   trackId: 'volvox_genes',
@@ -19,7 +17,6 @@ const genesTrackConf = {
 }
 
 export default function AddTracksProgrammatically() {
-  // ref to the live engine, for imperative control after launch
   const ref = useRef<ViewModel>(null)
   const [added, setAdded] = useState(false)
 
@@ -27,7 +24,6 @@ export default function AddTracksProgrammatically() {
     const state = ref.current
     if (state) {
       state.jbrowse.addTrackConf(genesTrackConf)
-      // async because the display's code may still need loading
       await state.session.views[0]?.launchTrack('volvox_genes')
       setAdded(true)
     }

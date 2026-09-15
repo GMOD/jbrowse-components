@@ -4,7 +4,6 @@ const base = 'https://jbrowse.org/code/jb2/main/test_data/volvox'
 
 const assemblies = [{ name: 'volvox', uri: `${base}/volvox.2bit` }]
 
-// a fake self-vs-self PAF, so both dotplot axes are the same assembly
 const tracks = [
   {
     type: 'SyntenyTrack',

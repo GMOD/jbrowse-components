@@ -1,7 +1,4 @@
 import { JBrowse } from '@jbrowse/react-app2'
-// Vite/Astro apps construct the RPC worker with Vite's `?worker` suffix. (With
-// a webpack/CRA setup you'd instead import the package's prebuilt
-// `@jbrowse/react-app2/esm/makeWorkerInstance`.)
 import RpcWorker from '@jbrowse/react-app2/esm/rpcWorker?worker'
 
 const assemblies = [
@@ -39,9 +36,6 @@ const tracks = [
   },
 ]
 
-// Supplying makeWorkerInstance is the whole switch: RPC then defaults to the
-// WebWorkerRpcDriver. (A config `rpc.defaultDriver` still overrides it, e.g. to
-// force everything back onto the main thread while debugging.)
 export default function WithWebWorker() {
   return (
     <JBrowse

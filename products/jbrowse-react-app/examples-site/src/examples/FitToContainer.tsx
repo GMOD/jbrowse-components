@@ -36,11 +36,6 @@ const tracks = [
   },
 ]
 
-// The app root defaults to height:100vh (full window). Setting the
-// --jbrowse-app-height variable on an ancestor with a definite height makes the
-// app fit that box instead — here the flex child below a header bar. It's set
-// in a stylesheet rule because a CSS custom property can't go in a typed React
-// inline-style object without a cast.
 export default function FitToContainer() {
   return (
     <>
@@ -50,12 +45,6 @@ export default function FitToContainer() {
           style={{
             padding: '8px 12px',
             fontSize: 14,
-            // CSS system colours rather than the two fixed light tints this
-            // used to carry: the text in here inherits the host page's colour,
-            // so a hardcoded near-white bar met near-white text at 1.12:1 the
-            // moment the page was in dark mode. Yours would be whatever your
-            // app's header already is; the point of the demo is the height, not
-            // the paint.
             background: 'color-mix(in srgb, CanvasText 8%, Canvas)',
             borderBottom:
               '1px solid color-mix(in srgb, CanvasText 20%, Canvas)',

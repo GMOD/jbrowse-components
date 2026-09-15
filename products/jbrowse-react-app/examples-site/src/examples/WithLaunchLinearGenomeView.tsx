@@ -15,14 +15,8 @@ export default function WithLaunchLinearGenomeView() {
   const [error, setError] = useState<unknown>()
 
   useEffect(() => {
-    // The engine is not owned by React, so unmounting alone leaves its RPC
-    // worker threads and its autoruns running — see the external-plugin example
-    // for why an engine built in an effect has to be destroyed by that effect.
-    // One box rather than a `let`, because the cleanup below assigns from a
-    // separate call and the compiler's narrowing doesn't see through that.
     const mount = { engine: undefined as ViewState | undefined }
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ;(async () => {
+    void (async () => {
       try {
         const state = createViewState({
           config: {
@@ -55,8 +49,6 @@ export default function WithLaunchLinearGenomeView() {
 
         mount.engine = state
         setViewState(state)
-        // Strict so a bad assembly/loc reaches the catch below and renders the
-        // error, instead of being swallowed into a silently blank view
         await pluginManager.evaluateAsyncExtensionPointStrict(
           'LaunchView-LinearGenomeView',
           {

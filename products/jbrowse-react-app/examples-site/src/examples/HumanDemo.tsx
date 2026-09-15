@@ -1,7 +1,5 @@
 import { JBrowse } from '@jbrowse/react-app2'
 
-// { name, uri } shorthand + a refNameAliases file so tracks using `1`/`chr1`
-// both resolve. Core infers BgzipFastaAdapter from the .fa.gz extension.
 const assemblies = [
   {
     name: 'GRCh38',

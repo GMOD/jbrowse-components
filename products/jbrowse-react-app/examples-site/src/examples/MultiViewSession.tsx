@@ -23,10 +23,6 @@ const tracks = [
   },
 ]
 
-// The react-app manages many views at once — the thing the single-view
-// react-linear-genome-view component can't do. Pass more than one entry in
-// `views` and the app stacks them, each with its own toolbar and track
-// selector: here a whole-genome circular SV overview above a linear detail view.
 export default function MultiViewSession() {
   return (
     <JBrowse

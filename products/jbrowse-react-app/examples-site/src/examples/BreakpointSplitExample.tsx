@@ -4,7 +4,6 @@ const base = 'https://jbrowse.org/code/jb2/main/test_data/volvox'
 
 const assemblies = [{ name: 'volvox', uri: `${base}/volvox.2bit` }]
 
-// a CRAM of reads spanning a structural variant between ctgA and ctgB
 const tracks = [
   {
     type: 'AlignmentsTrack',

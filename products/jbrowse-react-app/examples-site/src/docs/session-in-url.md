@@ -1,24 +1,4 @@
-`encodeSession` serializes the live session — where the user navigated, which
-tracks they opened, how each display is configured — into a compact URL-safe
-string, and `decodeSession` turns one back into a snapshot for the `session`
-prop.
-
-- **Use the hash fragment**, not the query string. It never reaches the server,
-  so a long session can't come back as an HTTP 414.
-- **Only the session travels.** The receiving page supplies `assemblies` and
-  `tracks`; a session naming a `trackId` the config lacks is dropped with a
-  notification rather than failing the restore.
-- **`views` still describes the starting state.** `session` only decides what
-  opens now, so File → New session returns to `views`.
-- **`encodeSession` does more than `getSnapshot`**: a workspace arrangement
-  turned on by your preference is not in the snapshot, and it stamps that in
-  first — otherwise the link renders as a classic stack for whoever opens it.
-
-The encoding is JBrowse Web's own, so links open in either. The save button has
-to be yours — only your app knows the URL its page is served at; pass it as
-`headerButtons` to land it where JBrowse Web puts Share.
-
-To keep a session rather than share it, send the same snapshot to
-`localStorage`. What tells you it changed is
-[observing the session](../customizing-the-app/#observe-session), not a
-callback.
+The hash fragment never reaches the server, so a long session cannot fail with
+HTTP 414. Only the session travels: the receiving page supplies its own
+`assemblies` and `tracks`, and File → New session still returns to
+`defaultSession`.

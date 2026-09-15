@@ -1,7 +1,5 @@
 import { JBrowse } from '@jbrowse/react-app2'
 
-// The flattest assembly form: a name and a sequence-file URL. JBrowse picks the
-// adapter (TwoBit/BgzipFasta/IndexedFasta) from the file extension.
 const assemblies = [
   {
     name: 'volvox',

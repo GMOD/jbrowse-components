@@ -58,8 +58,6 @@ export default function EmbeddedPlugin() {
     <JBrowse
       assemblies={assemblies}
       tracks={tracks}
-      // the class itself, not a definition to fetch — an embedded app has no
-      // config.json to list plugins in
       plugins={[HighlightRegionPlugin]}
       views={[
         {
