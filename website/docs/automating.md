@@ -34,7 +34,8 @@ The genome, a track, and the view to open on:
   "assemblies": [
     {
       "name": "hg38",
-      "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+      "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
+      "geneticCodes": { "M": 2 }
     }
   ],
   "tracks": [

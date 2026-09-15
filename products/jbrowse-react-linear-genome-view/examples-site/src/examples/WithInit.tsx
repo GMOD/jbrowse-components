@@ -12,6 +12,7 @@ export default function WithInit() {
         cytobands: {
           uri: 'https://jbrowse.org/genomes/GRCh38/cytoBand.txt',
         },
+        geneticCodes: { chrM: 2 },
       }}
       tracks={[
         {

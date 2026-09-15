@@ -23,6 +23,9 @@
           "type": "RefNameAliasAdapter",
           "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.txt"
         }
+      },
+      "geneticCodes": {
+        "chrM": 2
       }
     },
     {

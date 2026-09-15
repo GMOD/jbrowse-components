@@ -7,6 +7,7 @@ const assembly = {
   refNameAliases: {
     uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
   },
+  geneticCodes: { MT: 2 },
 }
 
 const tracks = [

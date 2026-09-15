@@ -12,6 +12,9 @@
       "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz",
       "refNameAliases": {
         "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+      },
+      "geneticCodes": {
+        "chrM": 2
       }
     },
     {

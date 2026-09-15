@@ -146,7 +146,8 @@ assembly and the gene track every figure on this page draws:
   },
   "cytobands": {
     "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt"
-  }
+  },
+  "geneticCodes": { "chrM": 2 }
 }
 ```
 

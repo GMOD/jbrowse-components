@@ -23,6 +23,7 @@ export const embeddedSpecs: ScreenshotSpec[] = [
         cytobands: {
           uri: 'https://jbrowse.org/genomes/GRCh38/cytoBand.txt',
         },
+        geneticCodes: { chrM: 2 },
       },
       tracks: [
         {

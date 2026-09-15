@@ -56,7 +56,8 @@ browser, `@jbrowse/capture` drives a real one and knows when it has finished.
         "type": "ReferenceSequenceTrack",
         "trackId": "hg38-ref",
         "adapter": { "type": "BgzipFastaAdapter", "uri": "hg38.fa.gz" }
-      }
+      },
+      "geneticCodes": { "chrM": 2 }
     }
   ],
   "tracks": [

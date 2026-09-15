@@ -28,6 +28,7 @@ export default function WithLaunchLinearGenomeView() {
                 refNameAliases: {
                   uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
                 },
+                geneticCodes: { chrM: 2 },
               },
             ],
             tracks: [

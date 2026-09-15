@@ -11,7 +11,8 @@
           "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit",
           "chromSizes": "https://jbrowse.org/demos/gene_density/hg38.chrom.sizes"
         }
-      }
+      },
+      "geneticCodes": { "chrM": 2 }
     }
   ],
   "tracks": [

@@ -49,7 +49,8 @@ can still be omitted:
         "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
       }
     }
-  }
+  },
+  "geneticCodes": { "chrM": 2 }
 }
 ```
 
@@ -93,8 +94,9 @@ table 11 (the full list is on the
 }
 ```
 
-Keys match through refname aliasing, so `chrM` applies when the FASTA says `MT`.
-A sidecar TSV
+Keys match through refname aliasing, so `chrM` applies when the FASTA says `MT`
+only if the alias file lists `MT` in the chrM row. With no alias file, key the
+map by the FASTA's own name. A sidecar TSV
 ([`geneticCodesLocation`](/docs/config/baseassembly/#slot-geneticcodeslocation),
 `refName<TAB>geneticCodeId`) supplies the same map; the inline entry wins if
 both are present.

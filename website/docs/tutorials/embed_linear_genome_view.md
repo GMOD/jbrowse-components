@@ -52,6 +52,7 @@ Save as `index.html`:
         refNameAliases: {
           uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
         },
+        geneticCodes: { chrM: 2 },
       }
 
       const tracks = [
@@ -140,6 +141,7 @@ const assembly = {
   cytobands: {
     uri: 'https://jbrowse.org/genomes/GRCh38/cytoBand.txt',
   },
+  geneticCodes: { chrM: 2 },
 }
 
 const tracks = [

@@ -30,6 +30,9 @@
             "locationType": "UriLocation"
           }
         }
+      },
+      "geneticCodes": {
+        "chrM": 2
       }
     },
     {

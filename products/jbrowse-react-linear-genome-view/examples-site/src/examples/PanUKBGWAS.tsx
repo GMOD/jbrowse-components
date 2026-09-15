@@ -62,6 +62,7 @@ const assembly = {
   cytobands: {
     uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt',
   },
+  geneticCodes: { chrM: 2 },
 }
 
 const NCBI_REFSEQ_TRACK = {

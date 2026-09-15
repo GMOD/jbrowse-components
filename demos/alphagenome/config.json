@@ -29,6 +29,9 @@
           "type": "CytobandAdapter",
           "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/cytoBandIdeo.txt.gz"
         }
+      },
+      "geneticCodes": {
+        "chrM": 2
       }
     }
   ],
