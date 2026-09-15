@@ -1429,9 +1429,17 @@ export function createJbApi(
           `No track with trackId "${fetchArgs.trackId}" — jb.listTracks() shows what is available`,
         )
       }
-      const regions =
-        fetchArgs.regions ??
-        (fetchArgs.loc !== undefined
+      // `regions` entries go through locToRegion as `loc` does. Passed
+      // straight to the fetch they skipped the canonical rename, and an entry
+      // carrying no assemblyName reached renameRegionsIfNeeded with nothing to
+      // rename against — an alias spelling then read empty and said nothing.
+      const regions = fetchArgs.regions
+        ? await Promise.all(
+            fetchArgs.regions.map(region =>
+              locToRegion(session, conf, region, fetchArgs.assembly),
+            ),
+          )
+        : fetchArgs.loc !== undefined
           ? [
               await locToRegion(
                 session,
@@ -1445,7 +1453,7 @@ export function createJbApi(
               fetchArgs.viewId,
               fetchArgs.trackId,
               getConfAssemblyNamesOrNone(conf),
-            ))
+            )
       return fetchFeatures(
         session,
         fetchArgs.trackId,

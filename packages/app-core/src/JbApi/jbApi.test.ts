@@ -960,6 +960,30 @@ describe('getFeatures reads through the RPC', () => {
     })
   })
 
+  // A regions entry used to go straight to the fetch: no canonical rename, and
+  // with no assemblyName the worker had nothing to rename against, so an alias
+  // spelling read empty and said nothing.
+  it('canonicalizes a regions entry the way it does loc', async () => {
+    await jb.getFeatures({
+      trackId: 'genes',
+      regions: [{ refName: 'ctgA', start: 0, end: 100 }],
+    })
+    expect(calls[0]?.[2]).toMatchObject({
+      regions: [
+        { refName: 'ctgA', start: 0, end: 100, assemblyName: 'volvox' },
+      ],
+    })
+  })
+
+  it('refuses a refName the assembly lacks in regions, not only in loc', async () => {
+    await expect(
+      jb.getFeatures({
+        trackId: 'genes',
+        regions: [{ refName: 'chrA', start: 0, end: 100 }],
+      }),
+    ).rejects.toThrow(/"chrA" is not a sequence in volvox/)
+  })
+
   // the string form asks parseLocString this; the object form skipping it read
   // empty, which is the answer this surface exists to turn into an error
   it('refuses a refName the assembly does not have', async () => {
