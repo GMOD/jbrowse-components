@@ -9,12 +9,12 @@ import { navigateWithSessionSpec } from '../helpers.ts'
 import type { TestSuite } from '../types.ts'
 import type { CDPSession, HTTPRequest, Page } from 'puppeteer'
 
-// End-to-end cover for cancellation, which is close to untestable in jest: the
-// mechanisms are a worker postMessage, a synchronous XHR that only runs in a
-// worker global, and an AbortSignal whose entire purpose is what it does to a
-// socket. All three are inert or absent under jsdom — which is how a deletion of
-// the synchronous-probe path once passed every unit test in the repo. See
-// packages/core/src/util/signal.ts.
+// End-to-end cover for cancellation, which jest cannot see: an abort reaches the
+// worker as a posted `{ abort }` frame, and what the worker's AbortSignal then
+// does is close a socket, and jsdom has neither. The suite asserts that a
+// superseded fetch posts that frame and aborts its in-flight range request, and
+// that the display loads again afterwards. See ADR-122 and
+// packages/core/src/util/aborting.ts.
 //
 // EVERY TEST HERE ASSERTS ITS OWN PRECONDITION, and that is not ceremony: the
 // first version of this file passed 3 of 4 while the app under test had not

@@ -24,7 +24,7 @@ export function ObservableCreate<T>(
       observer.error(signal?.reason)
     }
     if (signal?.aborted) {
-      // stopped before subscribe: no 'abort' event is coming
+      // aborted before subscribe: no 'abort' event is coming
       stop()
     } else {
       signal?.addEventListener('abort', stop)

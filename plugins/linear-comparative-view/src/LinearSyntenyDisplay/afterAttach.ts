@@ -17,7 +17,7 @@ import type { LinearSyntenyDisplayModel } from './model.ts'
 
 const RPC_DEBOUNCE_MS = 500
 
-// The fetch skeleton — token rotation, leading-edge debounce, loading/error
+// The fetch skeleton — abort rotation, leading-edge debounce, loading/error
 // flags, refName reconciliation and the latest-wins staleness discipline — is
 // `installComparativeFetchAutorun` (shared with dotplot-view's fetch); only the
 // synteny-specific gate, tracked deps, RPC args and result handling live here.

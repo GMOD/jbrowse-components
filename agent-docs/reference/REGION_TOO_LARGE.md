@@ -75,7 +75,7 @@ region; lowering one re-banners from the stored measurement with no RPC.
 **A refusal refuses what the fetch is granular in.** Per-region runners store
 nothing for the refused region and keep what its neighbours already stored; a
 batched fetch (variants, MAF, LD, arc) refuses the whole payload. MAF's batch is
-itself a per-region fan-out, so its first refusal stops a token scoped to that
+itself a per-region fan-out, so its first refusal aborts a signal scoped to that
 batch (`refusalScope` in `fetchMafData.ts`) and the siblings still downloading
 abort rather than land into a payload about to be discarded. The banner
 quotes the largest region's bytes labelled with the whole visible span — a

@@ -254,7 +254,7 @@ describe('SettingsInvalidate keeps the held data drawn', () => {
     expect(display.isLoading).toBe(true)
 
     track.configuration.adapter.setSlot('flavor', 'b')
-    // the cancel drops the token synchronously; the plan is free to reissue
+    // the cancel ends the fetch synchronously; the plan is free to reissue
     expect(display.isLoading).toBe(false)
     control.fetchDelayMs = 0
     expect(await quiet(display)).toBe(3)

@@ -1010,7 +1010,7 @@ describe('BgzipTaffyAdapter honors the signal', () => {
     end: 50_000,
   }
 
-  test('a signal stopped before subscribe errors instead of delivering', async () => {
+  test('a signal aborted before subscribe errors instead of delivering', async () => {
     const signalController = new AbortController()
     const signal = signalController.signal
     signalController.abort()

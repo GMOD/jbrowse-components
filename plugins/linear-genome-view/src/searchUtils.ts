@@ -486,9 +486,8 @@ export async function fetchResults({
   searchType?: SearchType
   textSearchManager?: TextSearchManager
   assembly?: Assembly
-  // supplied by the autocomplete's per-fetch token, so a keystroke that
-  // supersedes this one drops the ranking and formatting rather than finishing
-  // an answer that is already stale
+  // the autocomplete aborts it when a keystroke supersedes this one, dropping
+  // the ranking and formatting of an answer that is already stale
   signal?: AbortSignal
 }) {
   const textSearchResults = await textSearchManager?.search(

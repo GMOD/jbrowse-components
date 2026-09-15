@@ -820,9 +820,8 @@ describe('the jb roster', () => {
 
   // Every member is either a helper that turns a silent wrong answer into a
   // throw or a report, or one of four foundations (the two libraries and the
-  // two config readers). The internals that used to ride beside them — stop
-  // tokens, RPC session ids, region renaming, locstring parsing, the adapter
-  // builder — reach an agent through jb.require('@jbrowse/core/util'), the
+  // two config readers). Internals — abort checks, RPC session ids, region
+  // renaming, locstring parsing, the adapter builder — reach an agent through jb.require('@jbrowse/core/util'), the
   // registry plugins link against, rather than as fixtures of this surface.
   it('is the documented 23 members', () => {
     expect(Object.keys(jb).sort()).toEqual([

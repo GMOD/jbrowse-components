@@ -94,7 +94,7 @@ export interface FollowLevelState {
 export function createFollowLevelStates<Level extends object>() {
   let states = new WeakMap<Level, FollowLevelState>()
   let generation = 0
-  // The epoch's own signal, minted on first use and stopped by `clear()`.
+  // The epoch's own signal, created on first use and aborted by `clear()`.
   //
   // AN EPOCH, NOT A ROTATION. A rotation is for a fetch with a latest-wins
   // guard, and the CIGAR map explicitly rejects latest-wins — a later window
@@ -148,10 +148,9 @@ export function createFollowLevelStates<Level extends object>() {
       return controller.signal
     },
     // switching the mode off drops every pick, cached transform, in-flight
-    // answer and reported error at once — and now stops the requests behind
-    // them, which the sentence above claimed before it was true: bumping
-    // `generation` discarded the RESULT while the worker went on reading the
-    // whole region out of the file for it.
+    // answer and reported error at once, and aborts the requests behind them:
+    // bumping `generation` alone discards the RESULT while the worker goes on
+    // reading the whole region out of the file for it.
     clear() {
       states = new WeakMap()
       generation++

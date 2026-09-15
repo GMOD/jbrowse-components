@@ -39,9 +39,7 @@ describe('ObservableCreate', () => {
     ).rejects.toThrow('async boom')
   })
 
-  // the signal used to be accepted and discarded, so every adapter passing
-  // opts.signal looked cancellable and was not
-  it('errors with an abort error when the token is stopped mid-flight', async () => {
+  it('errors with an abort error when the signal aborts mid-flight', async () => {
     const signalController = new AbortController()
     const signal = signalController.signal
     const promise = lastValueFrom(
@@ -54,7 +52,7 @@ describe('ObservableCreate', () => {
     expect(isAbortException(await rejection(promise))).toBe(true)
   })
 
-  it('errors immediately for an already-stopped token, without running func', async () => {
+  it('errors immediately for an already-aborted signal, without running func', async () => {
     const signalController = new AbortController()
     const signal = signalController.signal
     signalController.abort()
@@ -67,7 +65,7 @@ describe('ObservableCreate', () => {
     expect(func).not.toHaveBeenCalled()
   })
 
-  it('leaves a completed observable alone when the token stops afterwards', async () => {
+  it('leaves a completed observable alone when the signal aborts afterwards', async () => {
     const signalController = new AbortController()
     const signal = signalController.signal
     const values = await lastValueFrom(

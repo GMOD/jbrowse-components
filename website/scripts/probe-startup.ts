@@ -1,5 +1,5 @@
 // Throwaway: count and time the specific startup costs the CPU profile pointed
-// at — WebGL program/shader compiles, GL contexts, workers, blob signals —
+// at — WebGL program/shader compiles, GL contexts, workers, blob URLs —
 // by wrapping the platform APIs before any app code runs.
 //
 //   node scripts/probe-startup.ts [--headed] [--tracks=a,b] [--loc=...]

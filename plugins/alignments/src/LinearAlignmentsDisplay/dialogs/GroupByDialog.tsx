@@ -114,7 +114,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   } = useFetch(
     debouncedTag ? (['getUniqueTags', model.id, debouncedTag] as const) : null,
     // this is a full scan of every visible block, re-issued on every settled
-    // keystroke, so forwarding the token is what keeps a superseded tag's scan
+    // keystroke, so forwarding the signal is what keeps a superseded tag's scan
     // from running to completion behind the one the user actually wants
     (_name, _id, _tag, signal, statusCallback) =>
       getUniqueTags({

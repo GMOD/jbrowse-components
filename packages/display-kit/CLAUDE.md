@@ -7,9 +7,10 @@ genome view (`perRegionTestEnv.ts` and its six suites) live in
 `plugins/linear-genome-view/src/displayKitTests/`, since this package sits below
 that plugin.
 
-`FetchMixin` (stop tokens, staleness, `isLoading`) + `MultiRegionDisplayMixin`
-(autoruns, `fetchRegions`, `loadedRegions`, overridable hooks). Status chrome is
-`DisplayChrome.tsx` — `agent-docs/reference/DISPLAYCHROME.md`, adr-026.
+`FetchMixin` (abort rotation, staleness, `isLoading`) +
+`MultiRegionDisplayMixin` (autoruns, `fetchRegions`, `loadedRegions`,
+overridable hooks). Status chrome is `DisplayChrome.tsx` —
+`agent-docs/reference/DISPLAYCHROME.md`, adr-026.
 
 **Two LGV foundations, not three.** `GlobalFetchMixin` is the whole global
 family now; `GlobalDataDisplayMixin` was deleted on 2026-08-23 and the reason it

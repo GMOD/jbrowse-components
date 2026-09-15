@@ -31,10 +31,9 @@ export async function requestCigarMap({
 }: {
   model: LinearSyntenyDisplayModel
   feat: FeatPos
-  // The follow store's epoch token. Locating one alignment by id re-reads the
-  // whole region out of the PAF/chain file — the PIF adapter checks the token
-  // inside `getFeatures` — so a map nobody will keep is work nobody should be
-  // doing. `createFollowLevelStates` stops it.
+  // The follow store's epoch signal, which `createFollowLevelStates` aborts.
+  // Locating one alignment by id re-reads the whole region out of the PAF/chain
+  // file, so a map nobody will keep is work nobody should be doing.
   signal: AbortSignal
 }) {
   const { rpcManager } = getSession(model)

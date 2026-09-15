@@ -354,7 +354,7 @@ with no source changes:
   report; `profile-resolve.ts` attributes self time to real source files through
   the build sourcemaps.
 - `probe-startup.ts` — API-level counters (programs linked, shader-status time,
-  GL contexts, workers, blob stop-tokens, sync XHRs) by wrapping the platform
+  GL contexts, workers, blob URLs, sync XHRs) by wrapping the platform
   APIs in `evaluateOnNewDocument`.
 - `ab-compare.ts` — interleaved A/B of two prebuilt `build/` trees: startup
   timings, program counts, and an ImageMagick pixel diff of the settled view.

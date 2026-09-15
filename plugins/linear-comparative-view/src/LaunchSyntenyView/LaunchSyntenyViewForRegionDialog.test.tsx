@@ -131,7 +131,7 @@ function replaceableSession(views: unknown[]) {
 }
 
 // A selection can be a whole chromosome, and the download+parse behind the
-// discovery is what honors the token — so dismissing the dialog has to stop it
+// discovery is what honors the signal — so dismissing the dialog has to stop it
 // rather than leave a worker parsing for a view nobody is waiting for.
 test('dismissing the dialog stops the discovery it started', () => {
   let captured: AbortSignal | undefined
@@ -492,14 +492,14 @@ test('picking another dataset refetches its panels and drops the old ones', asyn
 // switching away is the same abandonment as closing: the discovery it started
 // is a whole-chromosome fetch nobody is waiting for any more
 test('switching dataset stops the discovery in flight', async () => {
-  const tokens: Record<string, AbortSignal> = {}
+  const signals: Record<string, AbortSignal> = {}
   renderDialogFor(
     [
       { trackId: 't1', name: 'all vs all' },
       { trackId: 't2', name: 'mcscan' },
     ],
     trackId => signal => {
-      tokens[trackId] = signal!
+      signals[trackId] = signal!
       return trackId === 't1'
         ? new Promise<MateDiscoveryResult>(() => {})
         : Promise.resolve(mates('volvox_del'))
@@ -511,9 +511,9 @@ test('switching dataset stops the discovery in flight', async () => {
   expect(await screen.findByLabelText('volvox_del')).toBeTruthy()
 
   expect(() => {
-    checkAbortSignal(tokens.t1)
+    checkAbortSignal(signals.t1)
   }).toThrow(/aborted/i)
   expect(() => {
-    checkAbortSignal(tokens.t2)
+    checkAbortSignal(signals.t2)
   }).not.toThrow()
 })

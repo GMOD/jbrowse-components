@@ -362,7 +362,7 @@ describe('MAF measures the tier it is about to fetch', () => {
   // measurement was issued against the detail tier, and committing it after
   // the swap would re-instate the very number ClearByteEstimateOnNavOrTierSwap just
   // dropped — the fetch autoruns skip while a fetch is in flight, so nothing
-  // rotates the token at the crossing. The commit is judged by the tier
+  // aborts it at the crossing. The commit is judged by the tier
   // captured at issue (`GateFetchState.tierKey`), the same rule the viewport
   // capture already applies on the region axis.
   it('drops an in-flight detail measurement that lands after the swap', () => {

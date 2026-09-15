@@ -83,11 +83,11 @@ export function unionSampleSets(
 }
 
 /**
- * A signal for one fan-out under `ctx`, stopped by the parent's or by the
+ * A signal for one fan-out under `ctx`, aborted by the parent's or by the
  * first refusal it sees. `fetchRegionsBatched` holds the whole payload until
  * every region lands, so without this a refusal at chr1 would let every sibling
  * download in full and then be discarded; with it the siblings abort at the
- * socket. `guard` wraps each region's call: a refusal stops the scope, and an
+ * socket. `guard` wraps each region's call: a refusal aborts the scope, and an
  * abort the scope itself caused reads as "did not land" rather than an error.
  * A parent cancel still rejects.
  */

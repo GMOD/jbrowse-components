@@ -84,7 +84,7 @@ describe('search resilience', () => {
     expect(sortSpy).not.toHaveBeenCalled()
   })
 
-  it('still ranks a query whose token is live', async () => {
+  it('still ranks a query whose signal is not aborted', async () => {
     const m = new TextSearchManager({} as never)
     m.loadTextSearchAdapters = async () => [
       fakeAdapter(async () => [new BaseResult({ label: 'BRCA1' })]),

@@ -27,7 +27,7 @@ digraph maf_tier {
   framesOn -> framesBudget [label=" yes"]
   framesBudget -> framesFetch [label=" under"]
   framesBudget -> framesOff   [label=" over"]
-  framesFetch [label="concurrent, same stop token"]
+  framesFetch [label="concurrent, same abort signal"]
   framesOff [label="the overlay alone goes missing,\nand says so"]
 
   swap [label="both tiers cached side by side,\ncleared one way only", style=bold]

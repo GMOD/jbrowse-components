@@ -34,7 +34,7 @@
 //
 //   collect into `needed`    -> the check's "no" branch, which also carries
 //                               fetchNeeded(needed), the call it makes
-//   rotate stop token /      -> "cancels whatever was still in flight" in the
+//   rotate abort signal /    -> "cancels whatever was still in flight" in the
 //     capture fetchGeneration   cluster's own label, since that is what entering
 //                               fetchRegions does
 //   FetchVisibleRegions      -> the edge from the view moving to the check. It
@@ -93,7 +93,7 @@ digraph fetch_chain {
       fillcolor="#ffffff"
     ]
     work [
-      label=<request the data from a worker<br/><font point-size="9" face="Courier" color="#6b6b6b">rpcManager.call(…, rpcProps(), stopToken)</font>>
+      label=<request the data from a worker<br/><font point-size="9" face="Courier" color="#6b6b6b">rpcManager.call(…, { ...rpcProps(), signal })</font>>
     ]
     stale [
       shape=box, style="filled,rounded"

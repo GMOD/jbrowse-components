@@ -218,11 +218,11 @@ export async function resolveMatchingSpan({
     'SyntenyResolveMatchingRegion',
     // The two callers want opposite things, so neither handle can be a constant
     // here. `SyntenyFollow` fires this every settle and its latest-wins is
-    // `seq`, not a token — an answer it discards is one it deliberately let
+    // `seq`, not a signal — an answer it discards is one it deliberately let
     // finish, because the per-level promise is shared by key and three
     // re-entrant passes ride one call, which its integration suite asserts. The
     // click-driven move below would take both, and has nowhere to put either: no
-    // lifecycle owns the click, so a token would never be stopped, and the
+    // lifecycle owns the click, so a signal would never be aborted, and the
     // display's status field belongs to its fetch autorun, whose `fetching` flag
     // is what raises the chip. Both are answered by giving the click a surface
     // of its own, not by picking a default here.

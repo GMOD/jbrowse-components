@@ -6,8 +6,9 @@ Both enforcement halves and the full workflow:
 ## Clustering lifecycle lives here, not per plugin
 
 A dialog flavor renders `ClusterDialog`; a `runClustering: true` flag flavor
-uses `setupRunClusteringAutorun` (re-entrancy guard, init gate, stop token,
-one-shot clear, status channel). Both plugins used to carry drifting copies.
+uses `setupRunClusteringAutorun` (re-entrancy guard, init gate, abort
+controller, one-shot clear, status channel). Both plugins used to carry drifting
+copies.
 
 `run` and `applyOrder` should **throw** rather than drop a row silently, so both
 land in the dialog's error state. `validateClusterOrder` guards the R-paste

@@ -1330,17 +1330,16 @@ describe('createStatusFanOut', () => {
     const slot = createStatusFanOut(s => {
       seen.push(s)
     })
-    const signalController = new AbortController()
-    const signal = signalController.signal
-    signalController.abort()
-    const region = async (cb: StatusCallback, token?: AbortSignal) => {
+    const controller = new AbortController()
+    controller.abort()
+    const region = async (cb: StatusCallback, signal?: AbortSignal) => {
       await updateStatus('Downloading features', cb, () =>
         withProgress(
           {
             label: 'Computing layout',
             total: 2,
             statusCallback: cb,
-            signal: token,
+            signal,
           },
           async report => {
             await Promise.resolve()
@@ -1352,9 +1351,9 @@ describe('createStatusFanOut', () => {
     }
     await Promise.all([
       region(slot()),
-      // its token is stopped before it starts, so the layout phase throws on
-      // the stop check its opening `report(0)` makes
-      region(slot(), signal).catch(() => {}),
+      // its signal is aborted before it starts, so the layout phase throws on
+      // the abort check its opening `report(0)` makes
+      region(slot(), controller.signal).catch(() => {}),
       region(slot()),
     ])
     const messages = seen.map(statusMessageText)

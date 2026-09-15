@@ -237,8 +237,8 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
         // alike; what it buys is that the bar moves *within* a pair, which is
         // the whole of a single-region fetch and 1/325th of a whole-genome one.
         //
-        // No signal on the reporter: it would only add a throttled check
-        // beside the exact per-pair one below.
+        // No signal on the reporter: the per-pair check below is the cancel
+        // point.
         const report = createProgressReporter({
           label: downloadPhase,
           total: pairIndices.length,
@@ -258,9 +258,8 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
           while (next < pairIndices.length) {
             const at = next++
             const [i, j] = pairIndices[at]!
-            // Cancel point per pair, as before. In flight work still finishes,
-            // but nothing new is started — the same granularity the serial loop
-            // had, since a pair's own reads were never interruptible either.
+            // In-flight pairs finish; an abort only keeps new ones from
+            // starting, since a pair's own reads are not interruptible.
             checkAbortSignal(signal)
             fetched[at] = await this.fetchRegionPairRecords({
               region1: regions[i]!,

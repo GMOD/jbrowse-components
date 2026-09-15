@@ -26,7 +26,7 @@ type FetchingKey<Key> = Exclude<Key, null | undefined | false>
  * and declare no parameters at all, which stays assignable either way.
  *
  * A signal and a status callback follow the key arguments. The signal is
- * created per fetch and stopped when the key changes or the component unmounts,
+ * created per fetch and aborted when the key changes or the component unmounts,
  * so a fetcher that forwards it to an RPC cancels the worker instead of leaving
  * it grinding on an answer nobody is waiting for. The callback is what the RPC's
  * own progress comes back through, and it surfaces on the hook's `status` — a

@@ -283,7 +283,7 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
         // resolved promise.
         //
         // The shared skeleton owns the rest — the latest-wins rotation and the
-        // disposer that stops the LAST token (which a rotation written by hand
+        // disposer that aborts the LAST fetch (which a rotation written by hand
         // always misses), the unconditional `reloadCounter` read, the
         // currency-guarded error rule, the retired status slot, the leading
         // edge, and the two display-contract checks this fetch went without.

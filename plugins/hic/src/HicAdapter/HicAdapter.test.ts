@@ -235,7 +235,7 @@ test('a pair that reads no blocks still completes', async () => {
   })
 })
 
-test('an already-stopped signal aborts the multi-region fetch', async () => {
+test('an already-aborted signal aborts the multi-region fetch', async () => {
   const adapter = makeAdapter(makeMockParser())
   const regions: Region[] = [
     { assemblyName: 'test', refName: '1', start: 0, end: 1000000 },

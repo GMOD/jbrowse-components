@@ -46,7 +46,7 @@ export interface FetchLifecycle {
    * because it has no freshness signature to keep stale data honest with
    * (chord's refName map).
    *
-   * Takes the token rather than the whole {@link ActiveFetch}: publishing it is
+   * Takes the signal rather than the whole {@link ActiveFetch}: publishing it is
    * the only thing any implementation does with the fetch, and the guard and
    * the status slot are the skeleton's to hand out — through `ctx`, where a
    * `run` gets them pre-wired.
@@ -121,8 +121,8 @@ export async function runFetchOnce<TArgs, TResult>(
   } finally {
     // Both `onEnd` implementations are MST actions on `self`, and a display
     // destroyed mid-fetch — a track closed, a display type switched out from
-    // under a load — still resumes here. `beforeDestroy` already stopped the
-    // token, so the bookkeeping is moot on a dead node; calling the action
+    // under a load — still resumes here. `beforeDestroy` already aborted the
+    // signal, so the bookkeeping is moot on a dead node; calling the action
     // anyway only warns.
     if (isAlive(self)) {
       onEnd?.(isCurrent())

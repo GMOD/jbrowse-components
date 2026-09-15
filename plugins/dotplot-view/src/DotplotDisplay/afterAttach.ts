@@ -58,7 +58,7 @@ async function hasUnknownRefNames({
   return false
 }
 
-// The fetch skeleton — token rotation, leading-edge debounce, loading/error
+// The fetch skeleton — abort rotation, leading-edge debounce, loading/error
 // flags, refName reconciliation and the latest-wins staleness discipline — is
 // `installComparativeFetchAutorun` (shared with linear-comparative-view's
 // synteny fetch); only the dotplot-specific gate, RPC args and result handling

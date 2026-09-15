@@ -31,13 +31,8 @@ export interface KeyedFetchHost extends IStateTreeNode, FetchLifecycleHost {
  * against the key the held data was committed under (`loadedFetchKey`). The
  * LGV global family composes it under `GlobalFetchMixin` and the comparative
  * family under `ComparativeFetchMixin`; the per-region family answers the same
- * question per region through `isCacheValid`, so it stays on `FetchMixin`.
- *
- * It was `GlobalFetchMixin`'s middle until 2026-09, while the comparative
- * displays carried a second spelling of every member here on
- * `SyntenyFetchStateMixin` — the same stamp, the same compare, a `fetching`
- * flag standing in for `activeSignal`, and a `reload` that dropped the stamp
- * for the same reason. ADR-105.
+ * question per region through `isCacheValid`, so it stays on `FetchMixin`
+ * (ADR-105).
  */
 export default function KeyedFetchMixin() {
   return types

@@ -22,7 +22,7 @@ import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
 export interface TaiBlockFeature {
   uniqueId: string
   /**
-   * The reference row's unresolved source signal (`hg38.chr1`). Carried so the
+   * The reference row's unresolved source name (`hg38.chr1`). Carried so the
    * caller can drop a block belonging to another chromosome — the read reaches
    * past the queried contig's end by design, see `makeRefChrFilter`.
    */

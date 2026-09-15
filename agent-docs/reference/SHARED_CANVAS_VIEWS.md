@@ -35,7 +35,7 @@ shared mixins, and what stays its own:
 
 - `FetchMixin`'s: the rotation `cancelFetchByUser` stops (lent to the skeleton
   at install, so the stop and the flag are one action — a flag alone is not a
-  cancel, since nothing else rotates the token and the cancelled RPC would
+  cancel, since nothing else aborts the fetch and the cancelled RPC would
   commit its plot over the load the user stopped), `isLoading`, `error`, the
   status window, `reloadCounter` + `reload()` behind Retry, `fetchCanceled` +
   `cancelFetchByUser()` behind Cancel, and the overridable `fetchInert` hook

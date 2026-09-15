@@ -16,14 +16,14 @@ import type { Region, RpcStatus } from '@jbrowse/core/util'
  * rows and uncheck them, so this can't be re-derived from `data` every render.
  * `discoverMatesFor` is stable (queueDialog resolves the dialog's props once, at
  * the point the menu item was clicked), so this re-runs on the dataset the user
- * picks and nothing else, and the cleanup stops the discovery for the dataset
+ * picks and nothing else, and the cleanup aborts the discovery for the dataset
  * they picked away from. A selection can be a whole chromosome, so that cleanup
- * matters: the token is created and stopped by the same effect, giving it the
+ * matters: the same effect creates and aborts the controller, giving it the
  * fetch's lifetime.
  *
  * `rows` is `undefined` while in flight, and the caller draws a spinner for it.
- * A dataset that reached nothing gives the anchor row alone. `status` is the RPC's own phase, for the caller to say more than
- * "waiting".
+ * A dataset that reached nothing gives the anchor row alone. `status` is the
+ * RPC's own phase, for the caller to say more than "waiting".
  *
  * `retry` re-runs it. What fails here is a fetch over the network, and without
  * one the only way past a blip was to cancel the dialog and find the menu entry

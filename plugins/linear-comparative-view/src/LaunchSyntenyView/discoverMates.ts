@@ -33,7 +33,7 @@ export type MateDiscovery = (
 // Both of the caller's handles travel with the RPC, and both for the same
 // reason: a selection can be a whole chromosome, so the download+parse behind
 // this is long enough to want stopping and long enough to want narrating. The
-// token is what makes closing the dialog abort the work rather than leave a
+// signal is what makes closing the dialog abort the work rather than leave a
 // worker grinding on a view nobody is waiting for; the callback is what turns
 // the dialog's hardcoded "Finding assemblies that align to this region" into
 // the phase actually running, with a bar where the adapter reports bytes.

@@ -191,7 +191,7 @@ test('a key change still clears the previous data', async () => {
 // What the signal is for: a fetcher forwarding it to an RPC stops the worker
 // when the dialog closes or the key moves on, instead of leaving it computing
 // an answer nobody is waiting for.
-test('stops the fetch signal on unmount', async () => {
+test('aborts the fetch signal on unmount', async () => {
   let captured: AbortSignal | undefined
   const { result, unmount } = renderHook(() =>
     useFetch(['slow'] as const, async (_key, signal) => {

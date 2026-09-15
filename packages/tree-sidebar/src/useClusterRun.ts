@@ -20,9 +20,9 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
  *
  * The effect is why this is a hook and not a plain object: aborting an in-flight
  * worker call when the component goes away is cleanup of something outside
- * React. Re-subscribing per signal keeps the cleanup holding the live one; the
- * cleanup that fires when a run ends and clears the signal stops something
- * already finished, which is a no-op. Dialogs still call `stop()` from their
+ * React. Re-subscribing per controller keeps the cleanup holding the live one;
+ * the cleanup that fires when a run ends and clears the controller aborts
+ * something already finished, which is a no-op. Dialogs still call `stop()` from their
  * Cancel button — that's the direct expression of the user's intent, and this
  * covers every other way the dialog can disappear (title-bar X, Escape, the
  * display being removed mid-run).

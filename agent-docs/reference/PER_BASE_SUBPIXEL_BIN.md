@@ -214,7 +214,7 @@ every mode, and the single row that took two took both at the same bin.
 aborted: `planRegionFetch` answers `idle / inFlight` while `isLoading`, so an
 octave crossed mid-fetch waits for the running fetch, lets it commit under its
 now-stale `regionFetchKey`, and issues the next off `fetchGeneration`. The
-`livePerBaseBinBp` JSDoc's "latest-wins cancels the RPC" describes the token
+`livePerBaseBinBp` JSDoc's "latest-wins cancels the RPC" describes the abort
 rotation, and the rotation is never reached from a zoom.
 
 The cancel that does exist — `DisplayedRegionsChange` or `SettingsInvalidate`,
