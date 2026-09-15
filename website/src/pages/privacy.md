@@ -7,6 +7,8 @@ description:
 
 # Privacy policy
 
+<!-- installer notice start -->
+
 When jbrowse-web or jbrowse-desktop loads, it sends an anonymous usage report to
 Google Analytics and to a JBrowse analytics endpoint. The report holds the
 JBrowse version, load time, screen size, the renderer in use, counts of tracks,
@@ -20,14 +22,16 @@ jbrowse-desktop also asks GitHub for the newest release so it can offer an
 update. That request reaches GitHub, which handles it under the
 [GitHub privacy statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement).
 
+We use this data only to understand how people use JBrowse, and we do not sell
+or share it. Google handles its copy under the
+[Google privacy policy](https://policies.google.com/privacy).
+
+<!-- installer notice end -->
+
 This website (jbrowse.org/jb2) uses Google Analytics to count page visits, but
 only after you click OK on its banner. Google Analytics sets cookies and records
 the pages you view, your approximate location, browser and device type, and the
 site that referred you. Clearing this site's data brings the banner back.
-
-We use this data only to understand how people use JBrowse, and we do not sell
-or share it. Google handles its copy under the
-[Google privacy policy](https://policies.google.com/privacy).
 
 To opt out in the apps, set `disableAnalytics: true` in your config
 ([details](/docs/config_guides/disable_analytics)). On Windows, the JBrowse

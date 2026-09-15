@@ -71,6 +71,7 @@ export const PRIVACY_POLICY_MD = path.resolve(
   '../../website/src/pages/privacy.md',
 )
 export const JBROWSE_SITE_URL = 'https://jbrowse.org/jb2'
+export const PRIVACY_POLICY_URL = `${JBROWSE_SITE_URL}/privacy/`
 
 // The certificate CNs app-update.yml tells a client to accept on an installer
 // it downloaded — absent, NsisUpdater skips that check entirely. Not a secret:

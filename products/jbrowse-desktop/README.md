@@ -192,9 +192,11 @@ pnpm package:win:finalize       # checks both signatures, writes latest.yml
 ```
 
 The installer shows the privacy policy and a usage-reporting checkbox, which
-SignPath's terms require. It is generated from `website/src/pages/privacy.md` at
-package time, so there is one copy; `pnpm check:nsis` compiles the installer
-script and is what catches a policy that moved.
+SignPath's terms require. The notice is generated at package time from the
+region `website/src/pages/privacy.md` marks with
+`<!-- installer notice start -->`, so there is one copy of the policy and an
+installer window gets the part of it that is about the app. `pnpm check:nsis`
+compiles the installer script and is what catches a policy that moved.
 
 Both requests need a human to approve them in SignPath. The release job reads
 `SIGNPATH_API_TOKEN` (a secret) and `SIGNPATH_ORGANIZATION_ID` (a repository

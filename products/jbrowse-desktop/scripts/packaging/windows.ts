@@ -13,6 +13,7 @@ import {
   DIST,
   JBROWSE_SITE_URL,
   PRIVACY_POLICY_MD,
+  PRIVACY_POLICY_URL,
   PRODUCT_NAME,
   VERSION,
   packagedApp,
@@ -43,15 +44,16 @@ function escapePath(p: string, useWine: boolean) {
 // The privacy policy the installer shows, written into `dir` as plain text.
 //
 // makensis embeds it at compile time, so it has to be on disk before the script
-// is compiled — and it is generated from website/src/pages/privacy.md, so a
-// missing or empty policy fails the build rather than shipping an installer
-// that discloses nothing.
+// is compiled — and it is generated from the marked region of
+// website/src/pages/privacy.md, so a missing or empty policy fails the build
+// rather than shipping an installer that discloses nothing.
 export function writePrivacyNotice(dir: string) {
   const file = path.join(dir, 'privacy-notice.txt')
   fs.writeFileSync(
     file,
     privacyNoticeText(fs.readFileSync(PRIVACY_POLICY_MD, 'utf8'), {
       siteUrl: JBROWSE_SITE_URL,
+      policyUrl: PRIVACY_POLICY_URL,
     }),
   )
   return file
