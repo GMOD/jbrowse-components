@@ -317,20 +317,31 @@ const session = await openVolvox(attach)
 try {
   for (const task of tasks) {
     for (let run = 1; run <= runs; run++) {
-      await session.client.callJson('run_javascript', {
-        code: BASELINE_SPEC,
-        timeoutMs: 120_000,
-      })
-      if (task.setup) {
-        await session.client.callJson('run_javascript', {
-          code: task.setup,
-          timeoutMs: 60_000,
-        })
+      let events: StreamEvent[] = []
+      // one task whose staging times out costs its own row, not the half hour
+      // of runs behind it
+      let verdict: { pass: boolean; detail: unknown } = {
+        pass: false,
+        detail: undefined,
       }
-      const prompt = task.prompt.replaceAll('DATA', repoRoot)
-      const events = await runAgent(prompt, cwd, mcpConfig)
+      try {
+        await session.client.callJson('run_javascript', {
+          code: BASELINE_SPEC,
+          timeoutMs: 120_000,
+        })
+        if (task.setup) {
+          await session.client.callJson('run_javascript', {
+            code: task.setup,
+            timeoutMs: 120_000,
+          })
+        }
+        const prompt = task.prompt.replaceAll('DATA', repoRoot)
+        events = await runAgent(prompt, cwd, mcpConfig)
+        verdict = await grade(session.client, task.grade, count(events).answer)
+      } catch (e) {
+        verdict = { pass: false, detail: { harnessError: `${e}` } }
+      }
       const counted = count(events)
-      const verdict = await grade(session.client, task.grade, counted.answer)
       const row: RunMetrics = {
         task: task.name,
         run,
