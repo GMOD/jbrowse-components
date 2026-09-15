@@ -253,13 +253,28 @@ function count(events: StreamEvent[]) {
   }
 }
 
+// An agent that finished on the `open` tool leaves the renderer navigating,
+// and the bridge answers the next call with "still loading" rather than
+// waiting. That is the agent's state to be graded, so the grader waits for it.
 async function grade(mcp: McpClient, code: string, answer: string) {
-  const graded = await mcp.callJson('run_javascript', {
-    code: `const answer = ${JSON.stringify(answer)}\n${code}`,
-    timeoutMs: 60_000,
-  })
-  const value = graded.value as { pass?: boolean; detail?: unknown } | undefined
-  return { pass: value?.pass === true, detail: value?.detail ?? graded }
+  const deadline = Date.now() + 120_000
+  for (;;) {
+    try {
+      const graded = await mcp.callJson('run_javascript', {
+        code: `const answer = ${JSON.stringify(answer)}\n${code}`,
+        timeoutMs: 60_000,
+      })
+      const value = graded.value as
+        | { pass?: boolean; detail?: unknown }
+        | undefined
+      return { pass: value?.pass === true, detail: value?.detail ?? graded }
+    } catch (e) {
+      if (!`${e}`.includes('still loading') || Date.now() > deadline) {
+        throw e
+      }
+      await new Promise(resolve => setTimeout(resolve, 2000))
+    }
+  }
 }
 
 const charsLine = (chars: Record<string, number>) =>

@@ -2,7 +2,7 @@
 // the conformance suite and the agent eval: the renderer served from build/,
 // the electron main from build/electron.js, and a stdio client on the bridge
 // socket that answers each call by id.
-import { spawn } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import fs from 'node:fs'
 import http from 'node:http'
 import { createRequire } from 'node:module'
@@ -63,20 +63,35 @@ export function serveRendererBuild() {
   })
 }
 
+async function bridgeAnswers() {
+  const socketPath = defaultSocketPath()
+  return new Promise<boolean>(resolve => {
+    const s = net.createConnection(socketPath, () => {
+      s.destroy()
+      resolve(true)
+    })
+    s.on('error', () => {
+      resolve(false)
+    })
+  })
+}
+
+// best effort, for the refusal message: ss knows which process holds the socket
+function socketHolder() {
+  try {
+    const listing = execFileSync('ss', ['-xlp'], { encoding: 'utf8' })
+    const line = listing.split('\n').find(l => l.includes(defaultSocketPath()))
+    return /pid=(\d+)/.exec(line ?? '')?.[1]
+  } catch {
+    return undefined
+  }
+}
+
 export async function waitForBridge(timeoutMs: number) {
   const socketPath = defaultSocketPath()
   const deadline = Date.now() + timeoutMs
   for (;;) {
-    const connected = await new Promise<boolean>(resolve => {
-      const s = net.createConnection(socketPath, () => {
-        s.destroy()
-        resolve(true)
-      })
-      s.on('error', () => {
-        resolve(false)
-      })
-    })
-    if (connected) {
+    if (await bridgeAnswers()) {
       return
     }
     if (Date.now() > deadline) {
@@ -86,9 +101,27 @@ export async function waitForBridge(timeoutMs: number) {
   }
 }
 
+// The app that wins the single-instance lock is the one that serves the
+// socket, so a Desktop already running makes every later launch quit on the
+// spot and hands the harness that other app — whose renderer server may have
+// died with the run that started it, leaving `open` painting a white page.
+async function refuseIfBridgeIsTaken() {
+  if (!(await bridgeAnswers())) {
+    return
+  }
+  const pid = socketHolder()
+  throw new Error(
+    `a JBrowse Desktop${pid ? ` (pid ${pid})` : ''} is already serving ${defaultSocketPath()}. Close it, or pass --attach to drive that one instead of launching another.`,
+  )
+}
+
 // No config in argv: the app comes up on the start screen, so the first
 // `open` runs the cold path — a page load rather than an in-place session
 // swap, which is the route an agent's first call always takes.
+//
+// Its own process group, because electron spawns helpers: SIGTERM to the pid
+// leaves them, and a harness killed by `timeout` then leaks a whole app that
+// holds the socket against the next run.
 export function launchApp(rendererPort: number): ChildProcess {
   const require = createRequire(import.meta.url)
   return spawn(
@@ -96,6 +129,7 @@ export function launchApp(rendererPort: number): ChildProcess {
     ['.', '--no-sandbox'],
     {
       cwd: desktopRoot,
+      detached: true,
       stdio: 'ignore',
       env: {
         ...process.env,
@@ -103,6 +137,17 @@ export function launchApp(rendererPort: number): ChildProcess {
       },
     },
   )
+}
+
+export function killGroup(app?: ChildProcess) {
+  if (!app?.pid) {
+    return
+  }
+  try {
+    process.kill(-app.pid, 'SIGKILL')
+  } catch {
+    app.kill('SIGKILL')
+  }
 }
 
 export interface ToolContent {
@@ -186,6 +231,9 @@ export type McpClient = ReturnType<typeof startMcpClient>
  * already serving the socket.
  */
 export async function openVolvox(attach: boolean) {
+  if (!attach) {
+    await refuseIfBridgeIsTaken()
+  }
   const rendererServer = attach ? undefined : await serveRendererBuild()
   const app = rendererServer ? launchApp(rendererServer.port) : undefined
   await waitForBridge(attach ? 5000 : 90_000)
@@ -206,13 +254,24 @@ export async function openVolvox(attach: boolean) {
       await new Promise(resolve => setTimeout(resolve, 2000))
     }
   }
-  return {
-    client,
-    cold,
-    stop: () => {
-      client.stop()
-      app?.kill()
-      rendererServer?.close()
-    },
+  let stopped = false
+  const stop = () => {
+    if (stopped) {
+      return
+    }
+    stopped = true
+    client.stop()
+    killGroup(app)
+    rendererServer?.close()
   }
+  // a `timeout`-killed or crashed harness still takes its app down: an orphan
+  // holds the socket and the next run attaches to it
+  process.on('exit', stop)
+  for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP'] as const) {
+    process.on(signal, () => {
+      stop()
+      process.exit(1)
+    })
+  }
+  return { client, cold, stop }
 }
