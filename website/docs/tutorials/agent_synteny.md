@@ -65,10 +65,10 @@ helper library called `jb` as its standard library. `open`, `screenshot` and
 the agent writing code against the session you are watching.
 
 The setup is in [](/docs/agents). Once the client lists your recent sessions,
-the path works. Open the client beside the app and the whole run below looks
-like this:
+the path works. Run the four requests below and the app moves under you like
+this, the captions being what the agent said as it went:
 
-<Video src="/media/mcp/agent_synteny_take1.mp4" caption="The four requests below, typed at Claude Code with JBrowse Desktop beside it. The agent aligns the two genomes, merges the two hosted configs, builds the comparison and the dotplot, totals the alignment file and navigates to what it found." />
+<Video src="/media/mcp/agent_synteny_take1.mp4" caption="A Claude Code session driving JBrowse Desktop, filmed against the app window. The agent aligns the two genomes, merges the two hosted configs, builds the comparison and the dotplot, totals the alignment file and navigates to what it found." />
 
 ## Ask for the comparison
 
