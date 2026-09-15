@@ -9,7 +9,7 @@ export const pages: ExamplePage[] = [
   {
     slug: 'ultraminimal',
     title: 'Ultraminimal',
-    description: 'One track. Drag to pan, wheel to zoom.',
+    description: 'One track. Drag to pan, ctrl or cmd + wheel to zoom.',
     group: 'Basics',
     sections: [{ slug: 'one-track', title: 'One track' }],
   },
