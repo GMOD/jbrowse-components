@@ -63,7 +63,7 @@ The embedded
 shows this r² coloring running live in a React app.
 
 The LD triangle is a separate feature: it draws r² between every pair of nearby
-variants as a heatmap, and can compute it live from phased genotypes. See the
+variants as a heatmap, read from a PLINK LD file. See the
 [linkage disequilibrium tutorial](/docs/tutorials/ld_human).
 
 LD data must be in PLINK LD table format, either 1.9's `.ld` or 2.0's `.vcor`,

@@ -457,14 +457,15 @@ See [](/docs/developer_guides/extension_points) for the current API.
 
 ## A state model is a lazy loader, so extending one is asynchronous
 
-View and display state models are registered as loaders now, fetched when a
+Most view and display state models are registered as loaders now, fetched when a
 session first names the type rather than at plugin install. The model is
-therefore **not there yet** when your extension runs, and the `stateModel`
-getter on a `ViewType` or `DisplayType` reads `undefined` until the loader
-resolves. The v4 idiom breaks on it:
+therefore **not there yet** at install or configure time, and the `stateModel`
+getter on a lazy `ViewType` or `DisplayType` throws until the loader resolves,
+naming the `loadStateModel()` call to await. The v4 idiom run from `install` or
+`configure` breaks on it:
 
 ```js
-// v4 — throws, or silently extends nothing, depending on the element
+// v4 — throws for a lazy element when run before its model loads
 pluggableElement.stateModel = pluggableElement.stateModel.extend(self => ({
   views: {
     menuItems() {
@@ -491,16 +492,16 @@ pluggableElement.extendStateModel(stateModel =>
 )
 ```
 
-This is the quietest breakage in this guide. Not every type is lazy — a plugin
-extending an eagerly registered one keeps working — so a bundle can pass its own
-tests and lose only the menu items it contributes to a lazy display, with no
-error anywhere. `extendViewType` / `extendDisplayType` do this for you, and are
-the better road if you are touching the code anyway.
+Not every type is lazy — `LinearGenomeView` is registered eagerly — so a bundle
+tested only against eager types can pass and still throw on a lazy one.
+`extendViewType` / `extendDisplayType` do this for you, and are the better road
+if you are touching the code anyway.
 
 `Core-extendPluggableElement` fires when the loader resolves rather than at
-install, so a callback that only extends a state model still sees a loaded one.
-A callback that changes something the host reads before any model loads — a
-display's `configSchema` — runs too late for a lazy element.
+install, so the v4 idiom inside that callback still sees a loaded model and
+works. The one quiet case is a callback that changes something the host reads
+before any model loads — a display's `configSchema` — which runs too late for a
+lazy element and contributes nothing, with no error.
 
 ### Opening a view or a track is asynchronous too
 
@@ -513,8 +514,8 @@ what it does when the model is not loaded is the second column:
 | `session.addView('DotplotView', snap)` | throws, naming the type | `await session.launchView('DotplotView', snap)` |
 | `view.showTrack(trackId)` | starts the load and returns `undefined`, so the track lands a tick later and a synchronous caller gets nothing back | `await view.launchTrack(trackId)` |
 | `view.toggleTrack(trackId)` | same | `await view.launchToggleTrack(trackId)` |
-| `pluginManager.getViewType(name).stateModel` | `undefined` | `await pluginManager.getViewType(name).loadStateModel()` |
-| `pluginManager.getDisplayType(name).stateModel` | `undefined` | `await pluginManager.getDisplayType(name).loadStateModel()` |
+| `pluginManager.getViewType(name).stateModel` | throws, naming the loader | `await pluginManager.getViewType(name).loadStateModel()` |
+| `pluginManager.getDisplayType(name).stateModel` | throws, naming the loader | `await pluginManager.getDisplayType(name).loadStateModel()` |
 
 `isStateModelLoaded` is the question to ask when you cannot await: it is what
 `addView` checks before throwing.
@@ -545,8 +546,12 @@ without error and every view survives — only the arrangement does not.
 between adjacent SNPs and called it a recombination rate, which restated the
 triangle's own first off-diagonal on an axis of allele frequency.
 
-**The `lollipop` plugin was removed.** A `LinearLollipopDisplay` track in a v4
-config no longer resolves.
+**The `lollipop` plugin was removed.** A `LinearLollipopDisplay` in a v4 config
+is dropped with a console warning, and its track opens on its default display.
+
+**`SNPCoverageAdapter`, `LinearComparativeDisplay`, `BasicTrack` and
+`LinearBareDisplay` are no longer registered**, and no migration maps them to a
+replacement.
 
 **`gff-nostream`'s record parser** now returns `{ feature, record }` pairs — the
 tabix adapter reads it as `parseRecordsLazy` — and the opaque `_lineHash` that
@@ -557,11 +562,11 @@ per-feature id from the byte offset on its own record. Plugin code reading
 ## What to check in your own plugin
 
 Four surfaces fail quietly rather than loudly — the re-export ABI, the session,
-the accumulating extension points, and a lazily loaded state model you extended
-the v4 way. A plugin that hits any of them keeps loading and just stops doing
-part of its job, so run your bundle against a v5 build rather than trusting that
-it still loads, and click the menus you contribute to rather than only the ones
-your own tests build.
+the accumulating extension points, and a `configSchema` change made from
+`Core-extendPluggableElement` on a lazily loaded type. A plugin that hits any of
+them keeps loading and just stops doing part of its job, so run your bundle
+against a v5 build rather than trusting that it still loads, and click the menus
+you contribute to rather than only the ones your own tests build.
 
 A few things were built during development and removed before release, worth
 knowing about if you saw them in branch history: an in-tree pangenome/GFA
