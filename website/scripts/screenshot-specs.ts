@@ -16,6 +16,7 @@ export type {
 import { liveHref } from '../src/lib/code-base.ts'
 import { alignmentsSpecs } from './specs/alignments.ts'
 import { alphagenomeSpecs } from './specs/alphagenome.ts'
+import { annotationSpecs } from './specs/annotation.ts'
 import { bigwigSpecs } from './specs/bigwig.ts'
 import { cancerSvSpecs } from './specs/cancer_sv.ts'
 import { circularSpecs } from './specs/circular.ts'
@@ -70,6 +71,7 @@ export const specs: ScreenshotSpec[] = [
   ...syntenySpecs,
   ...alignmentsSpecs,
   ...alphagenomeSpecs,
+  ...annotationSpecs,
   ...variantsSpecs,
   ...dtuSpecs,
   ...bigwigSpecs,
