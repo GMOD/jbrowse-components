@@ -4,8 +4,11 @@ import { Fragment } from 'react'
 import { SvgChrome, SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { svgNodeId } from '@jbrowse/core/svg/svgId'
 import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
+import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import SvgColorLegend from '@jbrowse/core/ui/SvgColorLegend'
+import { highlightBoxColors } from '@jbrowse/core/ui/hoverBoxStyle'
 import { legendEntries } from '@jbrowse/core/ui/legendSpec'
+import { splitPaintAlpha } from '@jbrowse/core/util/svgColorProps'
 import {
   AXIS_RIGHT_INSET_PX,
   AxisGutter,
@@ -24,10 +27,12 @@ import {
   isAxisHost,
 } from './axisHost.ts'
 import { containingHost } from './foundationView.ts'
+import { isPinnedInkHost } from './highlightHost.ts'
 import { isLegendHost } from './legendHost.ts'
 import { svgLegendAreaReserved } from './types.ts'
 
 import type { AxisHost } from './axisHost.ts'
+import type { HighlightRect } from './highlightHost.ts'
 import type { LegendHost } from './legendHost.ts'
 import type { RegionHost } from './regionHost.ts'
 import type { ExportSvgDisplayOptions } from './types.ts'
@@ -134,6 +139,36 @@ export function SvgLegend({
 }
 
 /**
+ * The exported pinned highlight of a display answering `pinnedInk`, in the same
+ * colors `ChromeHighlight` draws on screen. The third exported guide, after the
+ * legend and the axis, and the only one of the three highlight lists a figure
+ * carries: a hover and a selection say where the reader's pointer was.
+ */
+export function SvgPinnedHighlight({ rects }: { rects: HighlightRect[] }) {
+  const { border, fill } = highlightBoxColors(usePalette().highlight.main)
+  // Split into color plus opacity: Illustrator drops an element whose fill is
+  // an `rgba()`.
+  const box = splitPaintAlpha(fill)
+  const edge = splitPaintAlpha(border)
+  return rects.map((r, i) => (
+    <rect
+      // eslint-disable-next-line @eslint-react/no-array-index-key -- geometry with no identity
+      key={i}
+      x={r.left}
+      y={r.top}
+      width={r.width}
+      height={r.height}
+      rx={3}
+      fill={box?.color ?? fill}
+      fillOpacity={box?.opacity}
+      stroke={edge?.color ?? border}
+      strokeOpacity={edge?.opacity}
+      strokeWidth={1}
+    />
+  ))
+}
+
+/**
  * The exported y axes of a display declaring value scales, drawn by the shell
  * off the same ticks the chrome draws on screen: for each scale, once per band
  * it rules, the cross-hatch guide lines across the band when the display
@@ -209,8 +244,9 @@ export function SvgYAxis({
 /**
  * The async shell every LGV display's `renderSvg` opens with: await readiness,
  * resolve the view geometry once, mount the single terminal-state gate around
- * the display's own body, clip the body to its box under a model-scoped id, and
- * append the axes and legend of a display that has them, outside that clip.
+ * the display's own body, clip the body to its box under a model-scoped id,
+ * draw the pinned highlight of a display that has one over the body inside that
+ * clip, and append the axes and legend of a display that has them outside it.
  *
  * A display that failed to load fails the whole export, in `awaitSvgReady`
  * itself. `regionTooLarge` is the other terminal and stays drawn: see
@@ -262,6 +298,12 @@ export async function renderDisplaySvg<M extends LgvSvgExportable>(
           overlays={overlays}
           opts={opts}
         />
+        {/* Inside the body's clip and after it, so a pinned box is bounded by
+            the display's box and sits over everything the body drew — the order
+            `ChromeHighlight` gets on screen by being mounted after the body. */}
+        {isPinnedInkHost(model) && overlays ? (
+          <SvgPinnedHighlight rects={model.pinnedInk} />
+        ) : null}
       </SvgClipRect>
       {isAxisHost(model) && overlays ? (
         <SvgYAxis model={model} view={view} width={view.width} />

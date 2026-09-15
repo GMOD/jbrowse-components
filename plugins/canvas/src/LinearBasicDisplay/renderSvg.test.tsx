@@ -109,7 +109,7 @@ function makeModel(overrides: Partial<LegendModel> = {}): LegendModel {
     densityPeakReadout: '',
     svgReady: true,
     laidOutDataMap: new Map([[0, makeData([{ startBp: 1100, endBp: 1200 }])]]),
-    highlightedFeatureIdSet: new Set<string>(),
+    pinnedInk: [],
     renderedShowLabels: true,
     renderedShowSubfeatureLabels: true,
     renderedShowDescriptions: true,
@@ -207,7 +207,9 @@ describe('renderSvg', () => {
     expect(html).toMatchSnapshot()
   })
 
-  it('bakes a highlight box (highlight.main tint + border) around a highlighted feature', async () => {
+  // The shell draws the pinned guide off `pinnedInk`, over the body, so the
+  // display bakes no box of its own and the geometry is the model's.
+  it('bakes the pinned highlight box the model declares, in the highlight hue', async () => {
     const data = makeData([
       { startBp: 1100, endBp: 1200 },
       { startBp: 1400, endBp: 1600 },
@@ -215,7 +217,7 @@ describe('renderSvg', () => {
     const result = await renderSvg(
       makeModel({
         laidOutDataMap: new Map([[0, data]]),
-        highlightedFeatureIdSet: new Set(['f1']),
+        pinnedInk: [{ left: 318, top: 0, width: 204, height: 14 }],
       }),
     )
     const html = renderResult(result)
@@ -225,80 +227,12 @@ describe('renderSvg', () => {
     expect(html).toContain('x="318"')
   })
 
-  it('reserves the floating-label width so the highlight box wraps the label like on-screen', async () => {
-    const data = makeFeatureData({
-      ...packFixtureRects([{ startBp: 1400, endBp: 1600 }]),
-      flatbushItems: [
-        makeFlatbushItem({ featureId: 'f0', startBp: 1400, endBp: 1600 }),
-      ],
-      floatingLabelsData: labelsMap({
-        f0: {
-          featureId: 'f0',
-          minX: 400,
-          maxX: 600,
-          topY: 0,
-          featureHeight: 10,
-          nameLabel: {
-            text: 'a-very-long-gene-name',
-            relativeY: 0,
-            textWidth: 500,
-          },
-        },
-      }),
-      featureCount: 1,
-    })
-    const result = await renderSvg(
-      makeModel({
-        laidOutDataMap: new Map([[0, data]]),
-        highlightedFeatureIdSet: new Set(['f0']),
-      }),
-    )
-    const html = renderResult(result)
-    expect(html).toContain('x="318"')
-    expect(html).toContain('width="504"')
-  })
-
-  it('scales the reserved label width to a compact mode font size', async () => {
-    const data = makeFeatureData({
-      ...packFixtureRects([{ startBp: 1400, endBp: 1600 }]),
-      flatbushItems: [
-        makeFlatbushItem({ featureId: 'f0', startBp: 1400, endBp: 1600 }),
-      ],
-      floatingLabelsData: labelsMap({
-        f0: {
-          featureId: 'f0',
-          minX: 400,
-          maxX: 600,
-          topY: 0,
-          featureHeight: 10,
-          nameLabel: {
-            text: 'a-very-long-gene-name',
-            relativeY: 0,
-            textWidth: 500,
-          },
-        },
-      }),
-      featureCount: 1,
-    })
-    const result = await renderSvg(
-      makeModel({
-        laidOutDataMap: new Map([[0, data]]),
-        highlightedFeatureIdSet: new Set(['f0']),
-        renderedLabelFontSize: LABEL_FONT_SIZE * 0.7,
-      }),
-    )
-    const html = renderResult(result)
-    expect(html).toContain('x="318"')
-    expect(html).toContain('width="354"')
-  })
-
-  it('emits no highlight box when the highlight set is empty', async () => {
+  it('emits no highlight box when nothing is pinned', async () => {
     const data = makeData([{ startBp: 1100, endBp: 1200 }])
     const result = await renderSvg(
       makeModel({ laidOutDataMap: new Map([[0, data]]) }),
     )
-    const html = renderResult(result)
-    expect(html).not.toContain('rgb(255,177,29)')
+    expect(renderResult(result)).not.toContain('rgb(255,177,29)')
   })
 
   // The shell draws the key off `legendSpec`, so a display places none of its
@@ -422,39 +356,6 @@ describe('renderSvg', () => {
     const expanded = await withBadge(true)
     expect(expanded).toContain('GENE1')
     expect(expanded).not.toContain('show fewer')
-  })
-
-  it('draws no highlight box for a feature that only touches the region edge', async () => {
-    const data = makeFeatureData({
-      ...packFixtureRects([{ startBp: 800, endBp: 1000 }]),
-      flatbushItems: [
-        makeFlatbushItem({ featureId: 'f0', startBp: 800, endBp: 1000 }),
-      ],
-      floatingLabelsData: labelsMap({
-        f0: {
-          featureId: 'f0',
-          minX: 800,
-          maxX: 1000,
-          topY: 0,
-          featureHeight: 10,
-          nameLabel: {
-            text: 'a-very-long-gene-name',
-            relativeY: 0,
-            textWidth: 500,
-          },
-        },
-      }),
-      featureCount: 1,
-    })
-    const html = renderResult(
-      await renderSvg(
-        makeModel({
-          laidOutDataMap: new Map([[0, data]]),
-          highlightedFeatureIdSet: new Set(['f0']),
-        }),
-      ),
-    )
-    expect(html).not.toContain('rgb(255,177,29)')
   })
 
   it('omits labels whose feature is scrolled far outside the exported viewport', async () => {

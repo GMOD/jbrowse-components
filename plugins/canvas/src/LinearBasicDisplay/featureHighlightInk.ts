@@ -157,51 +157,64 @@ function labelRects(
 }
 
 /**
- * The one box per region that a feature — or a single subfeature of one —
- * covers: every primitive it painted through the marks' own `ink`, plus the
- * rows its labels drew, merged. Reads the morphed `renderDataMap`, so the box
- * travels with a glyph still easing toward its row, and a feature scrolled off
- * the canvas inks nothing because each shape culls its own row.
+ * One box per region per feature — or per single subfeature of one — covering
+ * every primitive it painted through the marks' own `ink` plus the rows its
+ * labels drew, merged. Reads the morphed `renderDataMap`, so a box travels with
+ * a glyph still easing toward its row, and a feature scrolled off the canvas
+ * inks nothing because each shape culls its own row.
+ *
+ * Takes a set because three of the four lists it answers light a set: one
+ * hovered feature, one selected feature, every pinned one and every one
+ * collected for a solo. An empty set returns before touching
+ * `regionInstanceIndexes`, which nothing else builds.
  */
 export function featureHighlightInk(
   self: FeatureInkHost,
-  featureId: string | undefined,
+  featureIds: Iterable<string>,
 ): HighlightRect[] {
-  if (featureId === undefined) {
+  const ids = [...featureIds]
+  if (ids.length === 0) {
     return []
   }
   const out: HighlightRect[] = []
-  let labelled = false
+  const labelled = new Set<string>()
   for (const idx of regionIndices(self.renderBlocks)) {
     const index = self.regionInstanceIndexes.get(idx)
     const data = self.renderDataMap.get(idx)
-    const instances =
-      index?.byFeatureId.get(featureId) ?? index?.bySubfeatureId.get(featureId)
-    if (!data || !instances) {
+    if (!data || !index) {
       continue
     }
     const blocks = self.renderBlocks.filter(b => b.displayedRegionIndex === idx)
-    const rects = inkOfInstances(
-      CANVAS_FEATURE_MARKS,
-      blocks,
-      () => data,
-      self.renderState,
-      () => instances,
-    )
-    if (rects.length === 0) {
-      continue
-    }
-    // A feature spanning two regions draws its labels once, where the overlay
-    // draws them.
-    if (!labelled) {
-      const labels = labelRects(self, data, featureId, blocks)
-      labelled = labels.length > 0
-      rects.push(...labels)
-    }
-    const merged = mergeBounds(rects)
-    const box = merged && clipToCanvas(merged, self.renderState)
-    if (box) {
-      out.push(box)
+    for (const featureId of ids) {
+      const instances =
+        index.byFeatureId.get(featureId) ?? index.bySubfeatureId.get(featureId)
+      if (!instances) {
+        continue
+      }
+      const rects = inkOfInstances(
+        CANVAS_FEATURE_MARKS,
+        blocks,
+        () => data,
+        self.renderState,
+        () => instances,
+      )
+      if (rects.length === 0) {
+        continue
+      }
+      // A feature spanning two regions draws its labels once, where the overlay
+      // draws them.
+      if (!labelled.has(featureId)) {
+        const labels = labelRects(self, data, featureId, blocks)
+        if (labels.length > 0) {
+          labelled.add(featureId)
+        }
+        rects.push(...labels)
+      }
+      const merged = mergeBounds(rects)
+      const box = merged && clipToCanvas(merged, self.renderState)
+      if (box) {
+        out.push(box)
+      }
     }
   }
   return out

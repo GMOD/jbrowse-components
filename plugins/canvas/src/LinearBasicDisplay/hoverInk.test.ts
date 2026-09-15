@@ -185,6 +185,55 @@ test("the open context menu's target stays lit with the hover cleared", () => {
   ])
 })
 
+test('pinnedInk lights one box per pinned feature', () => {
+  const { display } = setUp()
+  expect(display.pinnedInk).toEqual([])
+
+  display.setFeatureHighlights([
+    { refName: 'ctgA', featureId: 'g1' },
+    { refName: 'ctgA', featureId: 'spacer' },
+  ])
+
+  expect(display.pinnedInk).toEqual([
+    { left: 100, top: 0, width: 200, height: 38 },
+    { left: 300, top: 50, width: 20, height: 50 },
+  ])
+})
+
+// A pin resolves off the fetched data, which reaches further than the regions
+// the view shows; only the shown ones are walked for ink.
+test('a pinned feature on another reference sequence lights nothing', () => {
+  const { display } = setUp()
+  display.setRpcData(
+    1,
+    makeFeatureData({
+      ...packRenderArrays(
+        [rect({ start: 1000, end: 2000, y: 0, height: 10 })],
+        [],
+        [],
+        0,
+        Number.MAX_SAFE_INTEGER,
+      ),
+      flatbushItems: [
+        makeFlatbushItem({
+          featureId: 'gB',
+          startBp: 1000,
+          endBp: 2000,
+          topPx: 0,
+          bottomPx: 10,
+        }),
+      ],
+      featureCount: 1,
+    }),
+    { ...ctgA, refName: 'ctgB' },
+  )
+
+  display.setFeatureHighlights([{ refName: 'ctgB', featureId: 'gB' }])
+
+  expect(display.highlightedFeatureIdSet.has('gB')).toBe(true)
+  expect(display.pinnedInk).toEqual([])
+})
+
 test("selectionInk boxes the session's selected feature", () => {
   const { display, session } = setUp()
   expect(display.selectionInk).toEqual([])

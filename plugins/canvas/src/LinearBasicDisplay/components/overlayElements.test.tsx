@@ -7,7 +7,7 @@ import {
   makeFeatureData,
   makeFlatbushItem,
 } from '../../RenderFeatureDataRPC/testUtils.ts'
-import { FloatingLabelsLayer, HighlightLayer } from './overlayElements.tsx'
+import { FloatingLabelsLayer } from './overlayElements.tsx'
 
 import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -181,62 +181,4 @@ test('the label layer drops a subfeature label the fit squeeze has shrunk', () =
     renderedShowSubfeatureLabels: false,
   })
   expect(queryByText('TX1')).toBeNull()
-})
-
-const HIGHLIGHT_MODEL = {
-  renderedShowLabels: true,
-  renderedShowSubfeatureLabels: true,
-  renderedShowDescriptions: false,
-  canvasWidthPx: 1000,
-  renderedLabelFontSize: 11,
-  featureItemMap: MODEL.featureItemMap,
-  morphOffsetFor: () => 0,
-  highlightedFeatureIdSet: new Set(['f1']),
-  soloFeatureIdSet: new Set<string>(),
-  soloApplied: false,
-}
-
-// A box draws once per visible region on the feature's own reference sequence,
-// which is how a feature spanning a displayed-region boundary gets boxed
-// piecewise. Same sequence means assembly and refName, not refName alone.
-test('highlight boxes are scoped to the reference sequence, not the refName', () => {
-  const otherAssembly: VisibleRegion = {
-    ...VR,
-    assemblyName: 'volvox2',
-    displayedRegionIndex: 1,
-  }
-  const view = {
-    initialized: true,
-    trackWidthPx: 1000,
-    bpPerPx: 1,
-    visibleRegions: [VR, otherAssembly],
-  } as unknown as LinearGenomeViewModel
-
-  const { getAllByTestId } = render(
-    <HighlightLayer model={HIGHLIGHT_MODEL} view={view} />,
-  )
-  expect(getAllByTestId('feature-highlight')).toHaveLength(1)
-})
-
-// `featureItemMap` holds the settled rows, so hit targets are the destination;
-// mid-morph the glyph is drawn `morphOffsetFor` px off that row, and a box that
-// ignored it would snap ahead and wait there for the feature.
-test('a highlight box follows its feature through a Y morph', () => {
-  const at = (morphOffsetFor: () => number) => {
-    const { getByTestId, unmount } = render(
-      <HighlightLayer
-        model={{ ...HIGHLIGHT_MODEL, morphOffsetFor }}
-        view={VIEW}
-      />,
-    )
-    const { top } = getByTestId('feature-highlight').style
-    unmount()
-    return top
-  }
-
-  // The feature is laid out at topPx 0 and the box outset 2px above it, which
-  // clamps to the content edge.
-  expect(at(() => 0)).toBe('0px')
-  // Eased 25px down from its row: 25 less the 2px outset.
-  expect(at(() => 25)).toBe('23px')
 })

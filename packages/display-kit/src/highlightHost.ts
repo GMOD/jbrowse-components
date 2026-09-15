@@ -18,16 +18,35 @@ export type HighlightStyle = 'shade' | 'box' | 'ring'
  * selected: the boxes those instances painted, which the display derives by
  * walking its mark list (`inkOfInstances`) with the instance set it names.
  * Structural, so a display gets the guide by answering `hoverInk` and nothing
- * else; the export never reads it — a hover is never exported.
+ * else.
  */
 export interface HighlightHost extends IStateTreeNode {
   hoverInk: HighlightRect[]
   selectionInk?: HighlightRect[]
+  /**
+   * What the user pinned — a search hit, a right-click highlight, the
+   * `highlight=` URL param — and which stays lit until they clear it. The one
+   * list the export draws: a hover and a selection are live-session UI, a pin
+   * is what the figure is about.
+   */
+  pinnedInk?: HighlightRect[]
   highlightStyle?: HighlightStyle
 }
 
 export function isHighlightHost(model: object): model is HighlightHost {
   return 'hoverInk' in model
+}
+
+/**
+ * What `renderDisplaySvg` reads, which is `pinnedInk` alone — no `IStateTreeNode`
+ * and no hover, so an export test's plain model answers it.
+ */
+export interface PinnedInkHost {
+  pinnedInk: HighlightRect[]
+}
+
+export function isPinnedInkHost(model: object): model is PinnedInkHost {
+  return 'pinnedInk' in model
 }
 
 /**

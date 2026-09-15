@@ -903,14 +903,24 @@ export default function baseStateModelFactory(
          */
         get hoverInk(): HighlightRect[] {
           const item = self.hoverBoxSubfeature ?? self.hoverBoxFeature
-          return featureHighlightInk(self, item?.featureId)
+          return featureHighlightInk(self, item ? [item.featureId] : [])
         },
         /**
          * #getter
          * The session's selected feature, boxed the same way.
          */
         get selectionInk(): HighlightRect[] {
-          return featureHighlightInk(self, self.selectedFeatureId)
+          const id = self.selectedFeatureId
+          return featureHighlightInk(self, id === undefined ? [] : [id])
+        },
+        /**
+         * #getter
+         * Every feature the user pinned — a search hit, a right-click
+         * highlight, the `highlight=` URL param — boxed the same way. The one
+         * highlight list the SVG export draws.
+         */
+        get pinnedInk(): HighlightRect[] {
+          return featureHighlightInk(self, self.highlightedFeatureIdSet)
         },
       }))
       .views(self => ({

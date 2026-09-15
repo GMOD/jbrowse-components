@@ -10,11 +10,7 @@ import {
   MORE_ISOFORMS_FONT_SCALE,
 } from '../../RenderFeatureDataRPC/constants.ts'
 import PeptideCanvas from './PeptideCanvas.tsx'
-import {
-  computeOverlayRect,
-  highlightBoxColors,
-  overlayItemRect,
-} from './highlightUtils.ts'
+import { computeOverlayRect, overlayItemRect } from './highlightUtils.ts'
 import { labelHit } from './hitTesting.ts'
 import { htmlToPlainText } from './hoverReadout.ts'
 import { labelColors } from './labelColors.ts'
@@ -82,7 +78,6 @@ interface HighlightBoxesModel {
   // featureItemMap holds the destination rows, so a box adds this to keep
   // framing a glyph still easing toward one; 0 whenever nothing is easing.
   morphOffsetFor: (featureId: string) => number
-  highlightedFeatureIdSet: ReadonlySet<string>
   soloFeatureIdSet: ReadonlySet<string>
   soloApplied: boolean
 }
@@ -221,17 +216,11 @@ function overlaysReady(
  * what lets this display render under a `PaletteProvider` and no `ThemeProvider`.
  */
 function overlayBoxStyles(palette: JBrowsePalette) {
-  const highlightBox = highlightBoxColors(palette.highlight.main)
   return {
     solo: {
       border: `2px dashed ${palette.primary.main}`,
       borderRadius: 3,
       backgroundColor: alpha(palette.primary.main, 0.15),
-    },
-    searchHighlight: {
-      border: `1px solid ${highlightBox.border}`,
-      borderRadius: 3,
-      backgroundColor: highlightBox.fill,
     },
   }
 }
@@ -280,8 +269,6 @@ const useStyles = makeStyles()(() => {
     floatingLabelOverlay: {
       background: LABEL_OVERLAY_BACKGROUND,
     },
-    // Weight ranks the states: selection is the strongest at 2px solid, and the
-    // search highlight is lighter on purpose so it reads as transient.
     overlayBase: {
       position: 'absolute',
       pointerEvents: 'none',
@@ -521,7 +508,6 @@ export const HighlightLayer = observer(function HighlightLayer({
   view: LGV
 }) {
   const {
-    highlightedFeatureIdSet,
     soloFeatureIdSet,
     soloApplied,
     renderedShowLabels,
@@ -642,16 +628,6 @@ export const HighlightLayer = observer(function HighlightLayer({
         'feature-solo-select',
       )
     }
-  }
-
-  // Drawn before selection, so a click's selection border reads on top.
-  for (const featureId of highlightedFeatureIdSet) {
-    addFeatureBox(
-      featureId,
-      boxStyles.searchHighlight,
-      `search-highlight-${featureId}`,
-      'feature-highlight',
-    )
   }
 
   // The layer is emitted here rather than by the caller, so an empty box set

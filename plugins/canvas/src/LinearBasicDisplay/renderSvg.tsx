@@ -8,8 +8,6 @@ import { paintMarkBlocks } from '@jbrowse/render-core/marks'
 
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 import { drawDensityBand } from '../shared/densityBand.ts'
-import { drawHighlightBoxes } from './components/highlightBoxes.ts'
-import { highlightBoxColors } from './components/highlightUtils.ts'
 import { labelColors } from './components/labelColors.ts'
 import {
   forEachDisplayLabel,
@@ -28,6 +26,7 @@ import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { DensityBandLayer } from '../shared/densityBand.ts'
 import type { FeatureGroupSection } from './groupBy.ts'
 import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
+import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { LgvSvgBodyProps } from '@jbrowse/display-kit/renderDisplaySvg'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 
@@ -44,7 +43,9 @@ export interface RenderSvgModel extends SvgExportable {
   densityPeakReadout: string
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>
   outlineColorSlot: string
-  highlightedFeatureIdSet: ReadonlySet<string>
+  // Drawn by the shell, over this body — not here. Declared so the export's
+  // model still names every guide the figure carries.
+  pinnedInk: HighlightRect[]
   renderedShowLabels: boolean
   renderedShowDescriptions: boolean
   renderedShowSubfeatureLabels: boolean
@@ -84,8 +85,6 @@ function CanvasFeaturesSvgBody({
   // The export honours `scrollTop`, so a scrolled track exports what is on
   // screen.
   const scrollY = model.scrollTop
-  // Shared by the geometry pass and the highlight pass, so the boxes are
-  // scissored against the same canvas as the glyphs.
   const renderState = {
     scrollY,
     canvasWidth,
@@ -139,28 +138,19 @@ function CanvasFeaturesSvgBody({
           )
         }}
       />
-      {/* The three overlays the app canvas never paints — on-screen they are the
-        highlight boxes (a DOM layer), the floating labels (another) and the
-        peptide letters (their own canvas) — baked in here in the on-screen
-        stacking order: boxes over the glyphs, labels over the boxes, peptides
-        over both. One layer rather than three because the order within a
-        layer already gives that, and because `opts` is deliberately withheld:
-        all three stay vector even when `rasterizeLayers` is on, so exported
-        text and box edges remain crisp. */}
+      {/* The two overlays the app canvas never paints — the floating labels (a
+        DOM layer on screen) and the peptide letters (their own canvas) — baked
+        in here in the on-screen stacking order, peptides over labels. One layer
+        rather than two because the order within a layer already gives that, and
+        because `opts` is deliberately withheld: both stay vector even when
+        `rasterizeLayers` is on, so exported text stays crisp. The pinned
+        highlight is no longer here: `renderDisplaySvg` draws it off `pinnedInk`,
+        over this layer, as the chrome draws it over the labels on screen. */}
       {overlays ? (
         <PaintLayer
           width={canvasWidth}
           height={height}
           paint={ctx => {
-            drawHighlightBoxes(
-              ctx,
-              model.laidOutDataMap,
-              renderBlocks,
-              model.highlightedFeatureIdSet,
-              renderState,
-              highlightBoxColors(palette.highlight.main),
-              labelContext,
-            )
             // Labels and peptides are laid out in absolute track px, so the
             // layer shifts up by scrollY.
             ctx.translate(0, -scrollY)
