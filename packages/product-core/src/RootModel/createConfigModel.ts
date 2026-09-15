@@ -56,7 +56,7 @@ export function createConfigModel(
       .model('Configuration', {
         configuration: rootConfigurationSchema(),
         assembly: assemblyConfigSchemasType,
-        tracks: types.array(pluginManager.pluggableConfigSchemaType('track')),
+        tracks: types.frozen([] as Record<string, unknown>[]),
         internetAccounts: types.array(
           pluginManager.pluggableConfigSchemaType('internet account'),
         ),

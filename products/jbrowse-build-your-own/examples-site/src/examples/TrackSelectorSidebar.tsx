@@ -247,20 +247,21 @@ interface CatalogueEntry {
  * The catalogue, read out of the session instead of written beside the UI.
  *
  * `session.tracks` is every track config the session knows: the ones you passed
- * to `createViewState`, plus anything added since. It is a list of *config
- * models*, not of instantiated tracks -- `view.tracks` is that, and it holds
- * only what is currently on screen. Confusing the two is the one mistake worth
- * naming here, because both are arrays of things called tracks and only one of
- * them answers "what could I show".
+ * to `createViewState`, plus anything added since. It is a list of *configs*,
+ * not of instantiated tracks -- `view.tracks` is that, and it holds only what is
+ * currently on screen. Confusing the two is the one mistake worth naming here,
+ * because both are arrays of things called tracks and only one of them answers
+ * "what could I show".
  *
- * `readConfObject(conf, slot)`, not `getConf`: these are raw configuration
- * models with no `.configuration` of their own, and `getConf` exists for models
- * that *contain* one. `name` falls back to the id, which is what the config
- * schema itself does when a track declares no name.
+ * `readConfObject(conf, slot)`, not `getConf`: these are plain configs as
+ * written, with no `.configuration` of their own. A slot the config omits reads
+ * `undefined` rather than the schema default, hence the `?? []`, and `name`
+ * falls back to the id, which is what the schema does when a track declares no
+ * name.
  */
 function catalogueEntries(session: BrowserSession): CatalogueEntry[] {
   return session.tracks.map(conf => {
-    const path: string[] = readConfObject(conf, 'category')
+    const path: string[] = readConfObject(conf, 'category') ?? []
     const trackId: string = readConfObject(conf, 'trackId')
     const name: string = readConfObject(conf, 'name')
     return {

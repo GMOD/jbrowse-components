@@ -86,9 +86,12 @@ gymnastics. The mechanism:
   next edit re-diffed the stale copy and reinstated the undone change.
 - **Reset reverts the working copy in place** (`applySnapshot(node, base)`),
   keeping node identity so open views just re-render.
-- **Admin/embedded are unchanged.** `getEditableTrackConfig` returns undefined in
-  admin mode, so the resolver falls through to the frozen hydration cache
-  (ADR-031); admin edits the frozen entry in place, replacing its identity.
+- **Admin is unchanged.** `getEditableTrackConfig` returns undefined in admin
+  mode, so the resolver falls through to the frozen hydration cache (ADR-031);
+  admin edits the frozen entry in place, replacing its identity. The embedded
+  single-view products held their catalog as MST nodes, edited in place and
+  never persisted to the session, until their catalog went frozen too; they are
+  non-admin, so they take the working-copy path above.
 
 Because the base is never dirtied, `PluginManager.invalidateTrackConfigHydration`
 and the `writeDelta` re-pin were **deleted**, and the outer

@@ -305,6 +305,17 @@ Config slots were also renamed. End-user JSON migrates automatically, but plugin
 code that reads a renamed slot directly — `getConf(self, 'color1')` — needs
 updating.
 
+## An embedded view's track catalog is plain configs
+
+`session.tracks` in `@jbrowse/react-linear-genome-view2` and
+`@jbrowse/react-circular-genome-view2` holds the configs as written, the way
+JBrowse Web's always has, rather than config models. `readConfObject` on an
+entry returns `undefined` for a slot the config omits instead of its default,
+and cannot evaluate a `jexl:` callback. `hydrateTrackConfig` from
+`@jbrowse/core/configuration` returns the resolved model when a host needs
+defaults. An edit to a shown track's settings is kept in the session's
+`trackConfigDeltas`, so it now survives a session snapshot.
+
 ## The LGV viewport is a stored bp window
 
 `LinearGenomeView` persisted its viewport as `offsetPx` and `bpPerPx`. Both are

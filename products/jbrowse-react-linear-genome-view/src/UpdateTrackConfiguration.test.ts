@@ -1,18 +1,26 @@
-import { readConfObject } from '@jbrowse/core/configuration'
-import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import {
+  hydrateTrackConfig,
+  readConfObject,
+  setConf,
+} from '@jbrowse/core/configuration'
+import { getEnv, getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { waitFor } from '@testing-library/react'
 
 import { createViewState } from './index.ts'
 
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+function hydratedSnapshot(state: IStateTreeNode, conf: unknown) {
+  const { pluginManager } = getEnv<{ pluginManager: PluginManager }>(state)
+  return getSnapshot(
+    hydrateTrackConfig(pluginManager, conf as Record<string, unknown>)!,
+  )
+}
 
 jest.mock('./makeWorkerInstance', () => () => {})
 
-// Unlike jbrowse-web (app-core config, `tracks` = types.frozen plain objects),
-// this embedded product uses product-core's config where `tracks` is a
-// types.array of live MST config nodes. The delta merge must snapshot a node
-// base before layering the delta; otherwise `{...node}` leaks the node's live
-// child config nodes (e.g. `adapter`) into the merged config that then gets
-// hydrated — see toPlainConfig in SessionTracks.ts.
 const TRACK_ID = 'testtrack'
 
 const assembly = {
@@ -61,13 +69,13 @@ interface DisplaysHolder {
   displays: { displayId: string; height?: number }[]
 }
 
-test('a non-admin edit over an MST-node config base merges cleanly (no leaked live nodes)', () => {
+test('a non-admin edit over a frozen config base merges cleanly (no leaked live nodes)', () => {
   const state = createViewState({ assembly, tracks: [track] })
   const session = state.session as unknown as DeltaSession
 
   const base = session.tracks.find(t => t.trackId === TRACK_ID)!
   session.updateTrackConfiguration({
-    ...(getSnapshot(base) as { trackId: string }),
+    ...(hydratedSnapshot(state, base) as { trackId: string }),
     name: 'Edited name',
   })
 
@@ -101,7 +109,10 @@ test('re-persisting a hydrated config with only injected display stubs stores no
   const session = state.session as unknown as DeltaSession
 
   const base = session.tracks.find(t => t.trackId === 'nodisplays')!
-  const hydrated = getSnapshot(base) as { trackId: string; displays: unknown[] }
+  const hydrated = hydratedSnapshot(state, base) as {
+    trackId: string
+    displays: unknown[]
+  }
   expect(hydrated.displays.length).toBeGreaterThan(0)
 
   session.updateTrackConfiguration(hydrated)
@@ -114,13 +125,13 @@ test('a display-slot edit is a per-display delta, merges by displayId, no leaked
   const session = state.session as unknown as DeltaSession
 
   const base = session.tracks.find(t => t.trackId === TRACK_ID)!
-  const baseSnap = getSnapshot(base) as unknown as DisplaysHolder
+  const baseSnap = hydratedSnapshot(state, base) as unknown as DisplaysHolder
   const baseDisplayCount = baseSnap.displays.length
 
   // edit only the configured display's height; the FeatureTrack also
   // auto-materializes other displays which must stay untouched
   session.updateTrackConfiguration({
-    ...(getSnapshot(base) as { trackId: string }),
+    ...(hydratedSnapshot(state, base) as { trackId: string }),
     displays: baseSnap.displays.map(d =>
       d.displayId === DISPLAY_ID ? { ...d, height: 321 } : d,
     ),
@@ -145,4 +156,21 @@ test('a display-slot edit is a per-display delta, merges by displayId, no leaked
   for (const d of merged.displays) {
     expect(isStateTreeNode(d)).toBe(false)
   }
+})
+
+test('an edit to a shown catalog track reaches the session snapshot', async () => {
+  const state = createViewState({ assembly, tracks: [track] })
+  const { view } = state.session
+  await view.launchTrack(TRACK_ID)
+  await waitFor(() => {
+    expect(view.getTrack(TRACK_ID)).toBeTruthy()
+  })
+  setConf(view.getTrack(TRACK_ID), 'name', 'Edited name')
+
+  await waitFor(() => {
+    expect(
+      (getSnapshot(state.session) as { trackConfigDeltas?: unknown })
+        .trackConfigDeltas,
+    ).toEqual({ [TRACK_ID]: expect.objectContaining({ name: 'Edited name' }) })
+  })
 })

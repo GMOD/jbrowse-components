@@ -1,6 +1,17 @@
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { hydrateTrackConfig } from '@jbrowse/core/configuration'
+import { getEnv, getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import createViewState from './createViewState.ts'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+function hydratedSnapshot(state: IStateTreeNode, conf: unknown) {
+  const { pluginManager } = getEnv<{ pluginManager: PluginManager }>(state)
+  return getSnapshot(
+    hydrateTrackConfig(pluginManager, conf as Record<string, unknown>)!,
+  )
+}
 
 const assembly = {
   name: 'volvox',
@@ -114,7 +125,7 @@ test('localFiles reach the built config, index sibling and all', () => {
     ],
   })
 
-  const { adapter } = getSnapshot(state.config.tracks[0]) as {
+  const { adapter } = hydratedSnapshot(state, state.config.tracks[0]!) as {
     adapter: {
       type: string
       uri?: string
@@ -234,7 +245,7 @@ test('localFiles reach an adapter whose shorthand is only on its config schema',
     ],
   })
 
-  const { adapter } = getSnapshot(state.config.tracks[0]) as {
+  const { adapter } = hydratedSnapshot(state, state.config.tracks[0]!) as {
     adapter: {
       uri?: string
       bedGzLocation: { locationType: string; name: string }
@@ -259,7 +270,7 @@ test('a remote track alongside a local one is untouched', () => {
     tracks,
   })
 
-  const { adapter } = getSnapshot(state.config.tracks[0]) as {
+  const { adapter } = hydratedSnapshot(state, state.config.tracks[0]!) as {
     adapter: { gffGzLocation: { locationType: string; uri: string } }
   }
   expect(adapter.gffGzLocation).toMatchObject({

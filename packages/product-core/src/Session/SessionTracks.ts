@@ -5,12 +5,7 @@ import {
   mergeTrackConfig,
 } from '@jbrowse/core/util'
 import { expandLooseTrackConfig } from '@jbrowse/core/util/tracks'
-import {
-  applySnapshot,
-  getSnapshot,
-  isStateTreeNode,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { applySnapshot, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { compareStructural } from 'mobx'
 
 import { TracksManagerSessionMixin } from './Tracks.ts'
@@ -44,10 +39,8 @@ export interface EditableTrackConfig {
   delta: PlainTrackConfig | undefined
 }
 
-// jbrowse.tracks holds frozen plain objects (app-core, web/desktop) or MST
-// config nodes (product-core, embedded react views); the delta math reads both
-// as plain track configs. Single site for that documented cast — per-node
-// normalization still happens in toPlainConfig.
+// jbrowse.tracks holds frozen plain objects in every product; single site for
+// the cast from its loose frozen type.
 function baseTracks(self: {
   jbrowse: { tracks: unknown }
 }): PlainTrackConfig[] {
@@ -113,9 +106,9 @@ function withoutDelta(
  */
 export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
   // A jbrowse.tracks base entry and a shown track's persisted snapshot are in
-  // two different config "normal forms". A base (app-core web/desktop) is the
-  // raw config-file object: shorthand `uri`, no injected display stubs. But a
-  // shown track's snapshot comes from a live hydrated config node, so it is
+  // two different config "normal forms". A base is the raw config-file object:
+  // shorthand `uri`, no injected display stubs. But a shown track's snapshot
+  // comes from a live hydrated config node, so it is
   // post-preProcessSnapshot: the `uri` shorthand is expanded to
   // bamLocation/index, `baseUri` is propagated into those locations, and a
   // {type, displayId} stub is injected per compatible display type. Diffing or
@@ -125,26 +118,15 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
   // would then be masked by the pinned copy). Normalize a base to the hydrated
   // form by running it through the same track schema, so diff/merge compare
   // like with like and cancel everything untouched. Memoized per frozen-base
-  // identity (stable until a jbrowse.tracks write). A base that is already an
-  // MST config node (product-core embedded views) is snapshotted directly — it
-  // is already in the hydrated form.
-  //
-  // The isStateTreeNode/getSnapshot casts are load-bearing, don't "simplify"
-  // them: our MST fork types `isStateTreeNode`'s parameter as a state-tree node
-  // (not `unknown`), so `base` (a plain interface) must widen through `unknown`
-  // to be passed, and `getSnapshot` of that returns `unknown`.
+  // identity (stable until a jbrowse.tracks write).
   const canonicalBaseCache = new WeakMap<object, PlainTrackConfig>()
   function toPlainConfig(base: PlainTrackConfig): PlainTrackConfig {
-    const node = base as unknown
-    if (isStateTreeNode(node)) {
-      return getSnapshot(node) as PlainTrackConfig
-    }
     const cached = canonicalBaseCache.get(base)
     if (cached) {
       return cached
     }
     const schema = pluginManager.pluggableConfigSchemaType('track')
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- tsc7 sees getSnapshot here as unknown (eslint's TS6 service disagrees; see header note)
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- tsc7 sees getSnapshot here as unknown (eslint's TS6 service disagrees)
     /* oxlint-disable typescript/no-unnecessary-type-assertion */
     const hydrated = getSnapshot(
       schema.create(base, { pluginManager }),
@@ -215,10 +197,9 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       // Both keys have stable identity until they actually change: a track's
       // delta only when that track is edited, and the base only on a
       // jbrowse.tracks write. This relies on a base config never mutating in
-      // place: app-core's frozen array replaces the entry (new identity) on
-      // updateTrackConf, and product-core's MST-node bases have no edit path at
-      // all (no updateTrackConf; embedded sessions are adminMode:false). If an
-      // in-place base edit is ever added, key this cache on base content too.
+      // place: the frozen array replaces the entry (new identity) on
+      // updateTrackConf. If an in-place base edit is ever added, key this cache
+      // on base content too.
       const mergeCache = new WeakMap<
         object,
         { delta: PlainTrackConfig; merged: AnyConfigurationModel }
@@ -352,13 +333,10 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       // the node identity (existing observers just update); no-op in admin mode
       // or for a track that was never edited (no working copy).
       //
-      // Through toPlainConfig like every other read of a base in this file, not
-      // the raw entry: in product-core's embedded sessions a base IS a live MST
-      // config node, and applySnapshot wants a snapshot — handing it a node
-      // reads nested nodes back out where plain objects belong. (For a frozen
-      // base the two agree, since applySnapshot re-runs the same
-      // preProcessSnapshot that toPlainConfig hydrates through, so this only
-      // makes that reliance explicit.)
+      // Through toPlainConfig like every other read of a base in this file. The
+      // raw entry would do the same, since applySnapshot re-runs the
+      // preProcessSnapshot toPlainConfig hydrates through; this makes that
+      // reliance explicit.
       function revertEditableTrackConfig(trackId: string) {
         const entry = self.editableTrackConfigs.get(trackId)
         const base = baseTracks(self).find(t => t.trackId === trackId)

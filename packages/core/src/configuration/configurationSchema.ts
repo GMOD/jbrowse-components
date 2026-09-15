@@ -481,8 +481,8 @@ function hydrateInto(
  * fall back to using the plain object.
  *
  * Shares `TrackConfigurationReference`'s per-PluginManager cache, so hydrating
- * the same entry twice returns the same node, and in admin/embedded sessions a
- * track opened later resolves to that same node. A non-admin's open track
+ * the same entry twice returns the same node, and in an admin session a track
+ * opened later resolves to that same node. A non-admin's open track
  * resolves to the session's private working copy (ADR-032), and this function
  * returns the pristine mirror beside it. The two have the same content;
  * `CopyConfigEntryPoints.test.ts` tests both cases.
@@ -566,8 +566,8 @@ function TrackConfigurationReference(schemaType: IAnyType) {
       if (!isStateTreeNode(ret)) {
         // A non-admin session hands back a private, per-track working copy so a
         // shown track's in-place quick-edits (setSlot) mutate that copy and
-        // never the shared frozen base node (see agent-docs/ADR-032). Admin and
-        // embedded sessions return undefined here and fall through to the frozen
+        // never the shared frozen base node (see agent-docs/ADR-032). An admin
+        // session returns undefined here and falls through to the frozen
         // hydration cache (ADR-031) — admin edits the frozen entry in place.
         const editable = (
           session as {

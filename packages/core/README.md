@@ -555,11 +555,11 @@ validated, so the dialog opening over it should not throw. Callers fall back to
 using the plain object.
 
 Shares `TrackConfigurationReference`'s per-PluginManager cache, so hydrating the
-same entry twice returns the same node, and in admin/embedded sessions a track
-opened later resolves to that same node. A non-admin's open track resolves to
-the session's private working copy (ADR-032), and this function returns the
-pristine mirror beside it. The two have the same content;
-`CopyConfigEntryPoints.test.ts` tests both cases.
+same entry twice returns the same node, and in an admin session a track opened
+later resolves to that same node. A non-admin's open track resolves to the
+session's private working copy (ADR-032), and this function returns the pristine
+mirror beside it. The two have the same content; `CopyConfigEntryPoints.test.ts`
+tests both cases.
 
 ```js
 // type signature
