@@ -42,6 +42,10 @@ interface VisibleRegion {
 // Snapping is what makes this safe to key a fetch signature off: within a grid
 // cell the output is byte-identical across pans, so a staleness key built from
 // it doesn't flicker on every pointer move.
+//
+// The grid's pitch scales with bpPerPx, so a row under SyntenyFollow, whose
+// scale wobbles by design, refetches on every settle. Accepted: quantizing
+// bpPerPx up a ladder would cost 10-25% more emitted geometry per level.
 export function syntenyFetchRegions({
   visibleRegions,
   displayedRegions,
