@@ -30,3 +30,29 @@ To rebuild the bundle: check out PR #823, add `nodeLinker: node-modules` to
 `length`/`map`, which is a PnP resolution failure rather than a real type
 error), then
 `yarn workspace @apollo-annotation/jbrowse-plugin-apollo run build`.
+
+## Known limitations
+
+Frank list, so nobody rediscovers these by being surprised.
+
+- **The bundle is built from an unmerged branch.** PR #823 is open, unreviewed
+  and conflicting with Apollo's main. If it is reworked before it lands, this
+  bundle needs rebuilding against whatever replaced it, and the demo can break
+  without anything here changing. Retire the local build once Apollo publishes a
+  release that peer-depends `@jbrowse/core@^5`.
+- **Edits live in one browser and are not backed up.** IndexedDB, scoped to the
+  origin, so clearing site data for jbrowse.org loses them and nothing syncs
+  between machines or people. Download GFF3 is the only durable output. A review
+  that needs more than one annotator wants the collaboration server, which is
+  what this demo is deliberately doing without.
+- **No text search over the annotations.** `LocalDriver.searchFeatures` returns
+  an empty list, so the location box finds nothing in the Apollo track and the
+  `LinearGenomeView-searchResultSelected` hook for `apollo_track_*` never fires.
+- **The demo pins `code/jb2/v5.0.0-beta.8/`**, which is what the plugin
+  peer-depends on. The pin has to move with the plugin rather than with our
+  releases; pointing it at `main` breaks the day core drifts from what the
+  bundle was built against.
+- **Two config keys the repo's validator rejects** are declared by the plugin at
+  runtime: `configuration.ApolloPlugin` and the `apollo_track_hg38` the session
+  opens. That is why this directory commits with `SKIP_CONFIG_CHECK=1`. Teaching
+  the manifest about plugin-declared slots would remove the override.
