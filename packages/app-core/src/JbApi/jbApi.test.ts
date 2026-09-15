@@ -579,7 +579,7 @@ describe('a name that several views could answer', () => {
       /"variants" is not shown in any open view — await view.launchTrack\("variants"\)/,
     )
     expect(() => jb.trackModel('variants', 'v1')).toThrow(
-      /not shown in view v1/,
+      /not shown in any view in v1/,
     )
   })
 
@@ -908,7 +908,7 @@ describe('rows of a nested view', () => {
               row('r1', 'volvox', 'ctgA:1-100'),
               row('r2', 'volvox2', 'ctgB:1-100'),
             ],
-            ownTracks: [],
+            ownTracks: [{ configuration: { trackId: 'genes_volvox' } }],
             launchTrack: async () => {
               launched.push('syn')
             },
@@ -940,6 +940,9 @@ describe('rows of a nested view', () => {
     expect(await jb.visibleRegions('r2')).toHaveLength(1)
     expect(jb.trackModel('genes_volvox2', 'syn')).toBe(
       jb.view('r2').ownTracks[0],
+    )
+    expect(jb.trackModel('genes_volvox', 'syn')).toBe(
+      jb.view('syn').ownTracks[0],
     )
   })
 

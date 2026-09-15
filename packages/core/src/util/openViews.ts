@@ -41,7 +41,6 @@ export function openTracks(
   return openViews(session).flatMap(v => (v as Declared).ownTracks ?? [])
 }
 
-/** The view, then every view nested in it at any depth. */
 export function viewAndNested(view: AbstractViewModel): AbstractViewModel[] {
   return [view, ...((view as Declared).ownViews ?? []).flatMap(viewAndNested)]
 }

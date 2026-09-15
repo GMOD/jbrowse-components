@@ -779,9 +779,7 @@ function pickView(
   )
   if (!able.length) {
     throw new Error(
-      viewId === undefined
-        ? `No open view supports this. Open views: ${candidates.map(v => v.type).join(', ') || 'none'} — jb.loadSessionSpec can open one.`
-        : `View ${describeView(session, candidates[0]!)} does not support this`,
+      `No ${inScope(viewId)} supports this (${candidates.map(v => v.type).join(', ') || 'none open'}) — jb.loadSessionSpec can open one.`,
     )
   }
   // A view on another assembly would show the track and render nothing, with a
@@ -833,11 +831,6 @@ function describeView(session: AbstractSessionModel, view: AbstractViewModel) {
   return `${v.id} (${v.type}${on}${at}${row})`
 }
 
-// A name that matches several views has no right first answer: two linear
-// views of one assembly at two loci both "show the track", and taking the
-// first restyles one row or reads one region while the settle reports both.
-// The named-but-missing case already throws and lists the open views, so the
-// unnamed-and-plural case does the same.
 function onlyView(
   session: AbstractSessionModel,
   candidates: AbstractViewModel[],
@@ -877,9 +870,10 @@ function viewById(session: AbstractSessionModel, viewId?: string) {
   return onlyView(session, candidates, 'are open')
 }
 
-// A synteny or breakpoint view's id names a container whose rows show the
-// regions and tracks, so the named view answers when it can and its rows
-// otherwise
+function inScope(viewId?: string) {
+  return viewId === undefined ? 'open view' : `view in ${viewId}`
+}
+
 function viewScope(session: AbstractSessionModel, viewId?: string) {
   return viewId === undefined
     ? openViews(session)
@@ -907,7 +901,7 @@ function shownTrackModel(
   if (!showing.length) {
     throw new Error(
       session.getTrackById(trackId)
-        ? `"${trackId}" is not shown in ${viewId === undefined ? 'any open view' : `view ${viewId}`} — await view.launchTrack("${trackId}") first; jb.sessionSummary() lists what each view shows`
+        ? `"${trackId}" is not shown in any ${inScope(viewId)} — await view.launchTrack("${trackId}") first; jb.sessionSummary() lists what each view shows`
         : `No track with trackId "${trackId}" — jb.listTracks() shows what is available`,
     )
   }
@@ -968,13 +962,12 @@ async function visibleRegionsOf(
   // freshly spec-loaded view stays in that state briefly even after the
   // app-phase marker reads ready, since a view with no width has no display
   // fetching anything.
-  const scope = viewScope(session, viewId)
-  const regionBearing = scope.filter(v => 'visibleRegions' in v)
+  const regionBearing = viewScope(session, viewId).filter(
+    v => 'visibleRegions' in v,
+  )
   if (!regionBearing.length) {
     throw new Error(
-      viewId === undefined
-        ? 'No view that shows a region — pass loc, or open a linear view first'
-        : `View ${describeView(session, scope[0]!)} shows no region — pass loc`,
+      `No ${inScope(viewId)} shows a region — pass loc, or open a linear view`,
     )
   }
   // a view on another assembly than the track would hand its region to a file

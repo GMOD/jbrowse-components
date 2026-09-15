@@ -90,7 +90,8 @@ Orientation and building:
   throws naming each one, as do `jb.trackModel`, `jb.visibleRegions`,
   `jb.addTrack` and `jb.getFeatures` reading a visible region, when more than
   one view could answer. `viewId` comes from `jb.sessionSummary()`; nested
-  synteny and breakpoint views count as open.
+  synteny and breakpoint rows count as open, and a container's `viewId` covers
+  its rows when the container itself cannot answer.
 - `jb.trackModel(trackId, viewId?)` is the shown track's live model. It throws
   when no view shows the track, saying whether the id is unknown or the track is
   not shown.
