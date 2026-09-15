@@ -143,20 +143,18 @@ export async function reconcileTracks(
   }
 }
 
-/** A hub's track catalog plus the host's own full configs, the host's winning an id. */
-export function withHubCatalog(
-  hubTracks: TrackConf[] = [],
-  hostTracks: TrackConf[],
-) {
-  const hostIds = new Set(hostTracks.map(t => t.trackId))
-  return [...hubTracks.filter(t => !hostIds.has(t.trackId)), ...hostTracks]
-}
-
-/** Merge a hub's own search adapters with the ones the caller supplied. */
-export function mergeSearchAdapters<T>(
-  a: readonly T[] | undefined,
-  b: readonly T[] | undefined,
-) {
-  const merged = [...(a ?? []), ...(b ?? [])]
-  return merged.length ? merged : undefined
+/**
+ * A hub's entries followed by the host's own, the host's winning where both
+ * carry the same `idKey`.
+ */
+export function withHostOverrides<T extends object>(
+  hub: readonly T[] = [],
+  host: readonly T[] = [],
+  idKey: string,
+): T[] {
+  const idOf = (entry: T) => (entry as Record<string, unknown>)[idKey]
+  const hostIds = new Set<unknown>(
+    host.map(idOf).filter(id => id !== undefined),
+  )
+  return [...hub.filter(entry => !hostIds.has(idOf(entry))), ...host]
 }

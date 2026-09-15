@@ -1,6 +1,8 @@
 import { fetchHub } from '@jbrowse/core/util/fetchHub'
 import { isSequenceUri, makeAssembly } from '@jbrowse/core/util/makeAssembly'
 
+import { withHostOverrides } from './controllerTracks.ts'
+
 import type { TrackConf } from './controllerTracks.ts'
 import type { HubConfig } from '@jbrowse/core/util/fetchHub'
 
@@ -51,10 +53,16 @@ export interface ResolvedAssembly {
 
 export interface ResolvedAssemblies {
   assemblies: AssemblyConfig[]
-  /** whatever search adapters the resolved hubs carried, merged */
-  aggregateTextSearchAdapters?: SearchAdapters
-  /** whatever track catalogs the resolved hubs carried, merged */
+  /** the hubs' search adapters, then the host's own */
+  aggregateTextSearchAdapters?: TextSearchAdapterConfig[]
+  /** the hubs' track catalogs, then the host's own tracks */
   tracks?: TrackConf[]
+}
+
+/** What a host already has, to merge with what its hubs bring. */
+export interface HostCatalog<Track extends object, Index extends object> {
+  tracks?: readonly Track[]
+  aggregateTextSearchAdapters?: readonly Index[]
 }
 
 function fromHubConfig(hub: HubConfig): ResolvedAssembly {
@@ -89,26 +97,45 @@ export async function resolveAssembly(
  * the same vocabulary the single-view one does — `['hg38', 'mm39']` as readily
  * as two hand-written configs.
  *
+ * A hub brings a track catalog and a search index that names hits by those
+ * tracks' ids, so both come back beside the assemblies. Pass the host's own
+ * `tracks` and `aggregateTextSearchAdapters` as `host` and they come back merged
+ * in, the host's winning an id, which makes spreading the result into
+ * `createApp`'s options correct:
+ *
+ * ```ts
+ * createApp(el, { ...options, ...(await resolveAssemblies(names, options)) })
+ * ```
+ *
+ * A key neither the hubs nor the host supplied is left out rather than set to
+ * `undefined`, so a spread never clears one.
+ *
  * Exported because the resolution is async and `createApp` is not: an engine
  * that resolved its own genomes would have to hand back a controller whose
- * `viewState` is undefined until the fetches land, which is most of what makes
- * the single-view controller four times the size. A host builds its options
+ * `viewState` is undefined until the fetches land. A host builds its options
  * asynchronously already (runtime plugins), so this belongs in that step.
- *
- * Without it every host reimplements it — jbrowse-anywidget carried a
- * line-for-line Python translation of core's hubUrl/fetchHub/addRelativeUris,
- * GenArk regex and all, purely because the multi-view product could not take a
- * hub name.
  */
-export async function resolveAssemblies(
+export async function resolveAssemblies<
+  Track extends object = TrackConf,
+  Index extends object = TextSearchAdapterConfig,
+>(
   inputs: AssemblyInput[],
+  host: HostCatalog<Track, Index> = {},
 ): Promise<ResolvedAssemblies> {
   const resolved = await Promise.all(inputs.map(resolveAssembly))
-  const adapters = resolved.flatMap(r => r.aggregateTextSearchAdapters ?? [])
-  const tracks = resolved.flatMap(r => r.tracks ?? [])
+  const tracks = withHostOverrides<object>(
+    resolved.flatMap(r => r.tracks ?? []),
+    host.tracks,
+    'trackId',
+  ) as TrackConf[]
+  const adapters = withHostOverrides<object>(
+    resolved.flatMap(r => r.aggregateTextSearchAdapters ?? []),
+    host.aggregateTextSearchAdapters,
+    'textSearchAdapterId',
+  ) as TextSearchAdapterConfig[]
   return {
     assemblies: resolved.map(r => r.assembly),
-    aggregateTextSearchAdapters: adapters.length ? adapters : undefined,
-    tracks: tracks.length ? tracks : undefined,
+    ...(tracks.length ? { tracks } : {}),
+    ...(adapters.length ? { aggregateTextSearchAdapters: adapters } : {}),
   }
 }

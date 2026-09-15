@@ -3,7 +3,6 @@ import { createElement } from 'react'
 import {
   isLooseTrack,
   mergeLocalFiles,
-  mergeSearchAdapters,
   observeSession,
   reconcileTracks,
   registerLocalFiles,
@@ -11,7 +10,7 @@ import {
   resolveLocalFileUris,
   resolveTracks,
   withAssemblyName,
-  withHubCatalog,
+  withHostOverrides,
 } from '@jbrowse/product-core'
 import { createRoot } from 'react-dom/client'
 
@@ -223,17 +222,19 @@ export function createLinearGenomeView(
       // loose specs need the pluginManager the build creates, so they are
       // resolved just below. The hub's are kept because its search index names
       // hits by their trackIds, and the host's win a collision.
-      tracks: withHubCatalog(
+      tracks: withHostOverrides(
         resolved.tracks,
         tracks
           .filter((track): track is TrackConf => !isLooseTrack(track))
           .map(track =>
             resolveLocalFileUris(withAssemblyName(track, name), localFiles),
           ),
+        'trackId',
       ),
-      aggregateTextSearchAdapters: mergeSearchAdapters(
+      aggregateTextSearchAdapters: withHostOverrides(
         resolved.aggregateTextSearchAdapters,
         opts.aggregateTextSearchAdapters,
+        'textSearchAdapterId',
       ),
       internetAccounts: opts.internetAccounts,
       plugins: opts.plugins,

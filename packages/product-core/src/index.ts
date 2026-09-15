@@ -125,12 +125,11 @@ export type { LocalFileInput } from './localFiles.ts'
 // opening exactly the wanted set
 export {
   isLooseTrack,
-  mergeSearchAdapters,
   openTracks,
   reconcileTracks,
   resolveTracks,
   withAssemblyName,
-  withHubCatalog,
+  withHostOverrides,
 } from './controllerTracks.ts'
 export type {
   ControllerSession,
