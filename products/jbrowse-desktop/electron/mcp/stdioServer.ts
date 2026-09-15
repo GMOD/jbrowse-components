@@ -7,6 +7,7 @@ import {
   MCP_TOOLS,
   SERVER_INSTRUCTIONS,
   SESSION_GAP_MS,
+  clientShowsInstructions,
 } from './toolDefinitions.ts'
 
 // An MCP server over stdio (newline-delimited JSON-RPC 2.0), relaying every
@@ -217,6 +218,10 @@ export function runMcpStdioServer({
   // by the guidance the first run_javascript result carried. Decided when the
   // call starts, so two calls in flight at once do not both carry it.
   let briefed = false
+  // Set from the initialize request: a client that shows the model the server
+  // instructions has already delivered them, so the repeat below is dropped
+  // for the whole connection rather than per session.
+  let instructionsAlreadyShown = false
   let lastCallAt: number | undefined
   function startSessionIfIdle() {
     const t = now()
@@ -312,6 +317,7 @@ export function runMcpStdioServer({
     openRequests.add(id)
     switch (method) {
       case 'initialize': {
+        instructionsAlreadyShown = clientShowsInstructions(params)
         // always PROTOCOL_VERSION: echoing an arbitrary requested revision
         // claims semantics (e.g. JSON-RPC batching) this server does not
         // implement; per spec the client then decides whether to proceed
@@ -369,7 +375,8 @@ export function runMcpStdioServer({
             ),
           })
         } else if (MCP_TOOLS.some(t => t.name === name)) {
-          const needsBrief = name === 'run_javascript' && !briefed
+          const needsBrief =
+            name === 'run_javascript' && !briefed && !instructionsAlreadyShown
           briefed ||= needsBrief
           const outcome = await callBridge(name, args, bridgeCall => {
             bridgeCallOf.set(id, bridgeCall)

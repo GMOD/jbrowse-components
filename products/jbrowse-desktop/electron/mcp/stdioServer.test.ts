@@ -229,6 +229,36 @@ describe('a session is briefed once, in its first run_javascript result', () => 
     bridge.close()
   })
 
+  // Claude Code delivers the instructions itself, so the repeat is a second
+  // copy of the same 1.8 KB on every session's first call.
+  it('skips it for a client that initialized as one showing the instructions', async () => {
+    const bridge = await startFakeBridge(() => ({ result: { ok: true } }))
+    const server = startServer(bridge.socketPath)
+    server.send({
+      id: 1,
+      method: 'initialize',
+      params: { clientInfo: { name: 'claude-code', version: '2.1.272' } },
+    })
+    await server.next()
+    server.send(runJs(2))
+    expect(guidanceIn(await server.next())).toBe(0)
+    bridge.close()
+  })
+
+  it('keeps it for a client that does not show them', async () => {
+    const bridge = await startFakeBridge(() => ({ result: { ok: true } }))
+    const server = startServer(bridge.socketPath)
+    server.send({
+      id: 1,
+      method: 'initialize',
+      params: { clientInfo: { name: 'claude-ai', version: '1.0.0' } },
+    })
+    await server.next()
+    server.send(runJs(2))
+    expect(guidanceIn(await server.next())).toBe(1)
+    bridge.close()
+  })
+
   it('briefs again after a pause long enough to be a new chat', async () => {
     let clock = 0
     const bridge = await startFakeBridge(() => ({ result: { ok: true } }))

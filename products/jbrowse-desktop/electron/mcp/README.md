@@ -178,3 +178,11 @@ appends the instructions to the first `run_javascript` result of a session that
 has not read `docs topic:"live-model"`, after the value so `content[0]` stays
 the value every caller parses. It cannot see chat boundaries, so a pause of
 `SESSION_GAP_MS` since the previous call counts as a new session.
+
+That repeat is for the clients that drop the instructions, and a client that
+shows them pays for it twice. The `initialize` request names the client in
+`params.clientInfo.name`, so the server records it and skips the repeat for the
+names in `CLIENTS_SHOWING_INSTRUCTIONS` — today just `claude-code`, which is
+what Claude Code 2.1.272 sends (measured by pointing `claude -p --mcp-config` at
+a stdio script that logs the request). An unknown or absent name keeps the
+repeat: a client nobody has measured is assumed to drop them.
