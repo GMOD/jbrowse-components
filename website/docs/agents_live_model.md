@@ -88,18 +88,18 @@ Reading:
   default.
 - `jb.waitReady(timeoutMs?)` resolves when views and tracks finish loading and
   drawing (default 30000). Its result carries `notifications` (the session's
-  error toasts), `notReady` (views that failed to initialize or are still
-  `initializing`, and tracks whose display settled without drawing, each with a
-  `phase`), `offscreen` (views taller than the window) and the `drawer` and
-  `dialog` above. None raises a toast and all look plausible in a screenshot, so
-  check this report instead.
+  error toasts), `notReady` (views that failed or are still `initializing`, and
+  tracks whose display settled without drawing, each with a `phase`),
+  `offscreen` (views taller than the window) and the `drawer` and `dialog`
+  above. None raises a toast and all look plausible in a screenshot, so check
+  this report instead.
 
 The foundations:
 
 - `jb.require(name)` is the module registry plugins link against, by the same
-  names (`'@jbrowse/core/util'`, `'@jbrowse/core/configuration'`, `'react'`);
-  everything lower level than the helpers above is there rather than on `jb`. In
-  a browser, `await jb.ensureRequire()` once first.
+  names (`'@jbrowse/core/util'`, `'react'`); everything lower level than the
+  helpers above is there rather than on `jb`; a browser needs
+  `await jb.ensureRequire()` once first.
 - `jb.mst` and `jb.mobx` are the whole mobx-state-tree and mobx APIs.
 - `jb.readConfObject(conf, 'slot')` and `jb.getConf(model, 'slot')` read config
   slots, which are not plain properties.
@@ -115,8 +115,8 @@ Three things you may know from before v5 are wrong:
   `LinearReadCloudDisplay` are aliases of it, not types to `replaceDisplay` to.
 - A view's launch keys go directly on the view object in a spec or a snapshot;
   the v4 `init: { ... }` nesting is unwrapped with a warning.
-- Synteny and dotplot rows take `loc` and `displayedRegionNames` each, in a spec
-  and in `jb.setSession`, so an axis is navigated declaratively rather than with
+- Synteny and dotplot rows each take `loc` and `displayedRegionNames`, in a spec
+  and in `jb.setSession`, so an axis is navigated declaratively, not with
   `setDisplayedRegions`.
 
 ## Calls and what they answer with
