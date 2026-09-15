@@ -469,7 +469,7 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'pangenome/graph_kiv2_halos.png',
     band: [0.62, 1],
   },
-  pangenome_graph_nested: {
+  pangenome_mouse: {
     // The Dock2 bubble as one haloed superbubble, the graph pane only.
     src: 'pangenome/graph_mouse_dock2_halos.png',
     band: [0.5, 1],
@@ -501,7 +501,7 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
   // which is what [0.4, 0.98] did: three gene bars over a lot of white filled
   // half the card, and the alignment rows the card is about were a thin strip at
   // the bottom.
-  pangenome_nonhuman: {
+  pangenome_cattle: {
     // The BoLA window from the gene lane down: the genotype matrix is the one
     // row on the page that names which assembly carries an allele rather than
     // just where the graph varies, and it reads as a matrix only with the

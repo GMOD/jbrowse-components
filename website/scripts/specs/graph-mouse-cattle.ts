@@ -1,4 +1,5 @@
-// The two non-human pangenome graphs, for the pangenome_nonhuman tutorial:
+// The mouse and cattle pangenome graphs, for the pangenome_mouse and
+// pangenome_cattle tutorials:
 // a mouse strain graph built from published assemblies, and the bovine
 // super-pangenome projected from Leonard et al. 2023.
 //
@@ -200,7 +201,7 @@ const dock2Spec: ScreenshotSpec = {
 // like the human one, and it is invisible in the graph lanes.
 const BOLA_LOC = 'chr23:25,844,769-25,968,809'
 
-export const nonHumanGraphSpecs: ScreenshotSpec[] = [
+export const mouseCattleGraphSpecs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'pangenome/mouse_nnt',

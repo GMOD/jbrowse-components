@@ -149,7 +149,7 @@ through the rGFA here.
 
 - [](/docs/tutorials/pangenome_hprc)
 - [](/docs/tutorials/pangenome_hprc_part3)
-- [](/docs/tutorials/pangenome_graph_nested)
+- [](/docs/tutorials/pangenome_mouse)
 
 ## References
 

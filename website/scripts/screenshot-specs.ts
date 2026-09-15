@@ -32,7 +32,7 @@ import { genomesBasicsSpecs } from './specs/genomes_basics.ts'
 // the pangenome graph figures, split by organism — see specs/graph-fixtures.ts
 import { ecoliGraphSpecs } from './specs/graph-ecoli.ts'
 import { hprcGraphSpecs } from './specs/graph-hprc.ts'
-import { nonHumanGraphSpecs } from './specs/graph-nonhuman.ts'
+import { mouseCattleGraphSpecs } from './specs/graph-mouse-cattle.ts'
 import { graphReadingSpecs } from './specs/graph-reading.ts'
 import { gwasSpecs } from './specs/gwas.ts'
 import { hg002HaplotypeSpecs } from './specs/hg002_haplotypes.ts'
@@ -111,7 +111,7 @@ export const specs: ScreenshotSpec[] = [
   ...paperCohortSpecs,
   ...ecoliGraphSpecs,
   ...hprcGraphSpecs,
-  ...nonHumanGraphSpecs,
+  ...mouseCattleGraphSpecs,
   ...graphReadingSpecs,
   ...cookbookSpecs,
   ...embeddedSpecs,

@@ -639,7 +639,7 @@ per-strain route when you have the assemblies.
 - [](/docs/tutorials/pangenome_hprc_part2)
 - [](/docs/tutorials/pangenome_hprc_part3)
 - [](/docs/tutorials/pangenome_graph_reading)
-- [](/docs/tutorials/pangenome_graph_nested)
+- [](/docs/tutorials/pangenome_mouse)
 - [](/docs/tutorials/pangenome_cactus)
 - [Configuring plugins](/docs/config_guides/plugins)
 - [PANGENOME_GRAPHS.md](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/reference/PANGENOME_GRAPHS.md)

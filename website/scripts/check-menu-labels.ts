@@ -101,7 +101,7 @@ const EXTERNAL_PLUGIN_PAGES = new Map([
   ['tutorials/pangenome_hprc_part3.md', [PLUGIN_SRC('graphgenomeviewer')]],
   ['tutorials/pangenome_cactus.md', [PLUGIN_SRC('graphgenomeviewer')]],
   ['tutorials/pangenome_graph_reading.md', [PLUGIN_SRC('graphgenomeviewer')]],
-  ['tutorials/pangenome_graph_nested.md', [PLUGIN_SRC('graphgenomeviewer')]],
+  ['tutorials/pangenome_mouse.md', [PLUGIN_SRC('graphgenomeviewer')]],
   [
     'tutorials/genomes_proteins.md',
     [

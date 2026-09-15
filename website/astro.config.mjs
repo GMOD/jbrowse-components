@@ -90,6 +90,8 @@ export default defineConfig({
     '/docs/config_and_session_json/': `${BASE}/docs/automating/`,
     '/docs/agents_mcp/': `${BASE}/docs/agents/`,
     '/docs/agents_web/': `${BASE}/docs/agents/`,
+    '/docs/tutorials/pangenome_nonhuman/': `${BASE}/docs/tutorials/pangenome_cattle/`,
+    '/docs/tutorials/pangenome_graph_nested/': `${BASE}/docs/tutorials/pangenome_mouse/`,
   },
   // Astro's default HTML minifier strips whitespace-only text nodes between
   // elements, so `<strong>a</strong>\n<strong>b</strong>` renders as "ab" and

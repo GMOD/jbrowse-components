@@ -1,11 +1,11 @@
 // The graph drawn as a graph, for the two "reading the shape" tutorials: HPRC
 // KIV-2 in pangenome_graph_reading and the mouse Dock2 bubble in
-// pangenome_graph_nested. Every figure here is the force-directed layout,
+// pangenome_mouse. Every figure here is the force-directed layout,
 // because that is what the pages are about: the graph view showing what a line
 // cannot.
 //
-// Kept apart from graph-hprc.ts and graph-nonhuman.ts for the reason those two
-// are apart: this module's subject is one plugin device across two species,
+// Kept apart from graph-hprc.ts and graph-mouse-cattle.ts for the reason those
+// two are apart: this module's subject is one plugin device across two species,
 // not one species' loci.
 import { sessionSpec } from '../screenshot-spec-helpers.ts'
 import {
@@ -232,7 +232,7 @@ const kiv2WalksSpec: ScreenshotSpec = {
 // ---------------------------------------------------------------------------
 
 // The densest bubble in the mouse graph that fits one cut
-// (pangenome/mouse_dock2, pangenome_nonhuman): one index row of 524 segments
+// (pangenome/mouse_dock2, pangenome_mouse): one index row of 524 segments
 // inside a Dock2 intron.
 const DOCK2_WINDOW = 'chr11:34,516,044-34,560,497'
 const DOCK2_REGION = {
