@@ -45,12 +45,17 @@ function sectionWithChildren(sections: DocSection[], index: number) {
     .join('')
 }
 
+// A heading is prose ("Linear genome view") and an agent asks for the type name
+// ("LinearGenomeView"), so both sides collapse to lowercase alphanumerics.
+function normalized(text: string) {
+  return text.toLowerCase().replaceAll(/[^a-z0-9]/g, '')
+}
+
 function findSection(sections: DocSection[], heading: string) {
-  const wanted = heading.trim().toLowerCase()
-  const exact = sections.findIndex(s => s.heading.toLowerCase() === wanted)
-  return exact !== -1
-    ? exact
-    : sections.findIndex(s => s.heading.toLowerCase().includes(wanted))
+  const wanted = normalized(heading)
+  const headings = sections.map(s => normalized(s.heading))
+  const exact = headings.indexOf(wanted)
+  return exact !== -1 ? exact : headings.findIndex(h => h.includes(wanted))
 }
 
 function withoutSections(markdown: string, omit: readonly string[]) {

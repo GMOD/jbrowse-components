@@ -66,6 +66,42 @@ describe('readDocSection', () => {
     expect(text).not.toContain('Alpha body.')
   })
 
+  // Two eval runs asked for section "LinearGenomeView" while the heading reads
+  // "Linear genome view", and got an error.
+  describe('a type name against a prose heading', () => {
+    const spec = `# Session spec
+
+Intro.
+
+## Linear genome view (simple)
+
+Simple body.
+
+## Linear genome view
+
+View body.
+
+## Linear synteny view
+
+Synteny body.
+`
+    it('matches once both sides are lowercase alphanumerics', () => {
+      expect(readDocSection(spec, 'LinearSyntenyView').text).toContain(
+        'Synteny body.',
+      )
+    })
+
+    it('prefers the heading that matches whole over one it is a prefix of', () => {
+      const { text } = readDocSection(spec, 'LinearGenomeView')
+      expect(text).toContain('View body.')
+      expect(text).not.toContain('Simple body.')
+    })
+
+    it('still finds a heading only a substring names', () => {
+      expect(readDocSection(spec, 'simple').text).toContain('Simple body.')
+    })
+  })
+
   it('names the sections when the requested one is missing', () => {
     const { error } = readDocSection(doc, 'gamma')
     expect(error).toContain('No section "gamma"')
