@@ -36,7 +36,7 @@ function geneData() {
   const rects = [
     rect({ start: 1000, end: 1500, y: 0, height: 10, childOrdinal: 0 }),
     rect({ start: 1600, end: 2000, y: 15, height: 10, childOrdinal: 1 }),
-    rect({ start: 3000, end: 3200, y: 0, height: 900, flatbushIdx: 1 }),
+    rect({ start: 3000, end: 3200, y: 0, height: 300, flatbushIdx: 1 }),
   ]
   return makeFeatureData({
     ...packRenderArrays(rects, [], [], 0, Number.MAX_SAFE_INTEGER),
@@ -55,8 +55,8 @@ function geneData() {
         startBp: 3000,
         endBp: 3200,
         topPx: 0,
-        bottomPx: 900,
-        featureHeightPx: 900,
+        bottomPx: 300,
+        featureHeightPx: 300,
       }),
     ],
     subfeatureInfos: [
@@ -129,6 +129,21 @@ test('a subfeature hover lights that transcript alone', () => {
   ])
 })
 
+// The chrome clips nothing, so a box taller than the canvas would paint over
+// the track below; the scroll-locked layer this replaces clipped it.
+test('a box taller than the canvas stops at its bottom edge', () => {
+  const { display } = setUp()
+
+  display.setHover('spacer', undefined, ['spacer'])
+
+  // The packer puts the spacer's row under the gene's, at y 50, and its 300px
+  // box runs well past the canvas.
+  expect(display.renderState.canvasHeight).toBe(100)
+  expect(display.hoverInk).toEqual([
+    { left: 300, top: 50, width: 20, height: 50 },
+  ])
+})
+
 test('a hovered feature scrolled off the canvas lights nothing', () => {
   const { display } = setUp()
   display.setHover('g1', undefined, ['GENE1'])
@@ -147,11 +162,11 @@ test('the box follows the rows a Y morph is still moving', () => {
   const { display } = setUp()
   display.setHover('g1', undefined, ['GENE1'])
 
-  display.beginYMorph(new Map([['g1', 100]]), 0)
+  display.beginYMorph(new Map([['g1', 40]]), 0)
   display.setMorphProgress(0)
 
   expect(display.hoverInk).toEqual([
-    { left: 100, top: 100, width: 200, height: 38 },
+    { left: 100, top: 40, width: 200, height: 38 },
   ])
 
   display.setMorphProgress(1)

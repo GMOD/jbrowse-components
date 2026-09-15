@@ -103,6 +103,19 @@ function regionIndices(blocks: readonly RenderBlock[]) {
   return [...new Set(blocks.map(b => b.displayedRegionIndex))]
 }
 
+// The canvas is what the box annotates, and the chrome clips nothing: a label
+// row hanging below the last drawn row, or a name overhanging the right edge,
+// would otherwise paint over the track below or beside this one.
+function clipToCanvas(box: HighlightRect, state: RenderState) {
+  const left = Math.max(box.left, 0)
+  const top = Math.max(box.top, 0)
+  const right = Math.min(box.left + box.width, state.canvasWidth)
+  const bottom = Math.min(box.top + box.height, state.canvasHeight)
+  return right > left && bottom > top
+    ? { left, top, width: right - left, height: bottom - top }
+    : undefined
+}
+
 // The label rows a feature painted, in the same content px the ink is in less
 // the scroll. A label wider than its feature overhangs it, and nothing clips
 // that back: the box is meant to cover the text as drawn.
@@ -185,7 +198,8 @@ export function featureHighlightInk(
       labelled = labels.length > 0
       rects.push(...labels)
     }
-    const box = mergeBounds(rects)
+    const merged = mergeBounds(rects)
+    const box = merged && clipToCanvas(merged, self.renderState)
     if (box) {
       out.push(box)
     }
