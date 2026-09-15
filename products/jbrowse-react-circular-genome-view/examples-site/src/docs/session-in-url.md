@@ -1,25 +1,4 @@
-`encodeSession` serializes the live session — open tracks, rotation, everything
-the user changed — into a compact URL-safe string, and `decodeSession` turns one
-back into a snapshot for the `session` option:
-
-```js
-const param = new URLSearchParams(location.hash.slice(1)).get('session')
-const state = createViewState({
-  assembly,
-  tracks,
-  session: param ? await decodeSession(param) : undefined,
-})
-```
-
-- **`session` vs `defaultSession`** fill the same slot but are checked
-  differently. `defaultSession` is validated against the session model's shape,
-  which suits one you wrote; a decoded session's shape is only known at runtime,
-  so it goes in `session` and is checked as it is applied.
-- **Use the hash fragment**, not the query string. It never reaches the server,
-  so a long session can't come back as an HTTP 414.
-- **Only the session travels.** The receiving page supplies its own `assembly`
-  and `tracks`; the snapshot names them. The encoding is JBrowse Web's own, so
-  the `encoded-…` value its `?session=` accepts is the same one.
-
-To keep a session for one browser rather than share it, write the same snapshot
-to `localStorage`; `onSnapshot(state.session, …)` tells you when it changed.
+A decoded session goes in `session`, not `defaultSession`, which validates
+against a shape you wrote. The hash fragment never reaches the server, so a long
+session cannot fail with HTTP 414. Only the session travels: the receiving page
+supplies its own `assembly` and `tracks`.

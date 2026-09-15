@@ -32,9 +32,6 @@ const tracks = [
   },
 ]
 
-// The session goes in the hash fragment rather than the query string. The
-// fragment is never sent to the server, so a long session can't overflow the
-// request line (HTTP 414) — the same reason JBrowse Web keeps its own there.
 function readSessionParam() {
   return (
     new URLSearchParams(window.location.hash.slice(1)).get('session') ??
@@ -48,23 +45,15 @@ function writeSessionParam(value: string) {
   window.history.replaceState(null, '', `#${params.toString()}`)
 }
 
-// One factory, run once, because whether there is a session to restore depends
-// on the URL: the decode and the build are the same async step. `createViewState`
-// is itself async — the circular view's state model is loaded on demand — so
-// there is nothing to gain by splitting them.
 async function build() {
   const param = readSessionParam()
   let session: Awaited<ReturnType<typeof decodeSession>> | undefined
   let status = ''
   if (param) {
     try {
-      // `session` is the slot for a snapshot whose shape is only known at
-      // runtime; `defaultSession` is for one you author and want checked
       session = await decodeSession(param)
       status = `restored "${session.name}" from the URL`
     } catch (e) {
-      // a truncated or hand-edited link shouldn't strand the user on a
-      // blank view: fall back to the normal starting state and say so
       console.error(e)
       status = `could not restore the session in the URL: ${e}`
     }
@@ -73,13 +62,6 @@ async function build() {
 }
 
 export default function SessionInUrl() {
-  // `useCreateOnceAsync`, not a `useState` initializer, and this is the one
-  // page on the site where the difference has teeth: React double-invokes an
-  // initializer under StrictMode and throws the SECOND result away, so an
-  // engine built in one is orphaned per mount — alive, fetching, and with
-  // nothing left holding it. The sibling examples get this from
-  // `useCreateViewState`; this one cannot, because whether there is an engine
-  // to build at all depends on the URL.
   const built = useCreateOnceAsync(build)
   const [saved, setSaved] = useState('')
   const state = built?.state
@@ -91,8 +73,7 @@ export default function SessionInUrl() {
         <button
           type="button"
           onClick={() => {
-            // eslint-disable-next-line @typescript-eslint/no-floating-promises
-            ;(async () => {
+            void (async () => {
               const encoded = await encodeSession(state)
               writeSessionParam(encoded)
               setSaved(

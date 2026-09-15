@@ -9,8 +9,7 @@ export const pages: ExamplePage[] = [
   {
     slug: 'volvox',
     title: 'Volvox structural variants',
-    description:
-      'A structural-variant VCF on the volvox assembly, via the managed CircularGenomeView component.',
+    description: 'A structural-variant VCF on the volvox assembly.',
     group: 'Getting started',
     sections: [
       {
@@ -28,24 +27,21 @@ export const pages: ExamplePage[] = [
   {
     slug: 'show-track',
     title: 'Show a track programmatically',
-    description:
-      'Open a track imperatively via showTrack instead of through the init prop.',
+    description: 'Open a track from code rather than the init prop.',
     group: 'Getting started',
     sections: [{ slug: 'show-track', title: 'Show a track programmatically' }],
   },
   {
     slug: 'session-in-url',
     title: 'Put the session in the URL',
-    description:
-      'Serialize the session with encodeSession and restore it with decodeSession, for a sharable link.',
+    description: 'encodeSession and decodeSession, for a sharable link.',
     group: 'Getting started',
     sections: [{ slug: 'session-in-url', title: 'Put the session in the URL' }],
   },
   {
     slug: 'human',
     title: 'Human structural variants (hg19)',
-    description:
-      'Browse HG002 PacBio breakend structural variants on hg19, LocusZoom-style circular layout.',
+    description: 'HG002 PacBio breakend structural variants on hg19.',
     group: 'Real-world demos',
     sections: [{ slug: 'human', title: 'Human structural variants (hg19)' }],
   },
