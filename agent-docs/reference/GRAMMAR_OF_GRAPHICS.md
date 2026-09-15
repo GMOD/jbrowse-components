@@ -104,7 +104,14 @@ classes, label rows, child ordinals — not channels of a grammar. The same
 primitives through `flatten` and `encodeFeatures` measured 3.11x the packer
 with five lanes filled, and the packer is 11% of the worker's per-region
 compute against the glyph emitters' 58%. The fan-out did land as a transform:
-`flatten` is a step kind, and the packer is not its consumer.
+`flatten` is a step kind, and the packer is not its consumer. The multi-row
+display's worker walk
+(`plugins/canvas/src/MultiRowGetFeaturesRPC/packMultiRowFeatures.ts`) is not
+a packer in this sense: it ships each feature's start, end, colour and
+partition value, and the display encodes its span channels on the main thread
+over those arrays (`buildMultiRowChannels`), so a reorder, a recolour or a
+hidden category re-encodes with no RPC. An encode over typed arrays has
+nothing for `encodeFeatures` to read.
 
 **The layout steps went the same way, and the audit is the record.** Every
 place a format-typed display assigns a row to an interval, bins a position or
@@ -173,8 +180,11 @@ The seams, named honestly:
   (`plugins/variants/src/LinearMultiSampleVariantDisplay/components/cellMark.ts`)
   says `startEnd` and `row`; canvas's rect
   (`plugins/canvas/src/LinearBasicDisplay/marks/featureGlyphShapes.ts`) says
-  `startEnd`, `y`, `height`. ADR-106 §Consequences books converging them as a
-  lens change per display, still open. The alignments pileup
+  `startEnd`, `y`, `height`; the variant matrix's cell
+  (`plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/components/matrixCellMark.ts`)
+  says `featureIndex`, `row`, `color`, its x a column index over equal
+  columns rather than a bp. ADR-106 §Consequences books converging the first
+  two as a lens change per display, still open; the third is a different x. The alignments pileup
   (`plugins/alignments/src/features/pileupShape.ts`) is on the mark list but
   keeps its rule codes as data, for a measured reason.
 - **The config rung covers one class, less the two it reaches now.** A `marks`
