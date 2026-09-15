@@ -79,9 +79,13 @@ was:
   The genotype and phased-genotype matrix fills, the wiggle score matrix and
   the GC window are the loops of that shape; the alignments loops are already
   chunked by awaits at region granularity and need only the check.
-- **`@gmod/hclust` keeps its `checkCancellation` callback**, called from inside
-  one synchronous WASM call, so a clustering run finishes that call and the
-  main thread discards its result. The probe could not interrupt it either.
+- **`@gmod/hclust` takes the signal** (6.0). Its `checkCancellation` callback
+  ran inside one synchronous WASM call, where only the probe could interrupt
+  it, and a throw from there unwound past the C cleanup and leaked the n²
+  distance matrix: at 10,000 samples the sixth run after five cancels ran out
+  of memory. 6.0 slices every O(n²) phase into 50 ms steps, yields a task
+  between them, and frees the run on abort; a Chrome worker cancels a
+  4000-sample run 20–50 ms after the abort is posted.
 
 The `SharedArrayBuffer` arm goes with the probe. It sped up a check no shipped
 page took, and ADR-056's reason not to isolate jbrowse.org stands with nothing

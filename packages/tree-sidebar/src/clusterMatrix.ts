@@ -1,6 +1,5 @@
 import { clusterData, toNewick } from '@gmod/hclust'
 import { isAbortException } from '@jbrowse/core/util'
-import { checkAbortSignal } from '@jbrowse/core/util/aborting'
 
 import { clusterProgressStatus } from './clusterProgressStatus.ts'
 import { gpuDistanceMatrix } from './gpuDistanceMatrix.ts'
@@ -98,9 +97,7 @@ export async function clusterMatrix({
     onProgress: (p: ClusterProgress) => {
       statusCallback?.(clusterProgressStatus(p))
     },
-    checkCancellation: () => {
-      checkAbortSignal(signal)
-    },
+    signal,
   }
   const result = await (distances
     ? clusterData({ distances, ...common })

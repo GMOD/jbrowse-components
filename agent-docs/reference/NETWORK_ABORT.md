@@ -44,9 +44,8 @@ a worker.
   takes `createAbortBreakpoint(signal)` and yields a task every ~50 ms of wall
   time (`if (breakpoint.due()) await breakpoint.yield()`). The genotype matrix
   fills, the score matrix and the GC window are the loops of that shape.
-- **A synchronous library callback** can only check: `@gmod/hclust` invokes
-  `checkCancellation` from inside one WASM call, so a clustering run finishes
-  its call and the main thread discards the result.
+- **`@gmod/hclust` takes the signal itself.** It runs its WASM work in 50 ms
+  slices, yields a task between them, and frees the run on abort.
 
 ## Which readers take the signal
 

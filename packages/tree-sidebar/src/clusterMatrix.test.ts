@@ -135,3 +135,26 @@ test('a cancellation during the GPU build is not a fallback', async () => {
   jest.mocked(gpuDistanceMatrix).mockRejectedValueOnce(new Error('aborted'))
   await expect(clusterMatrix({ data: rowsNearAB })).rejects.toThrow('aborted')
 })
+
+test('an abort during the WASM run rejects it', async () => {
+  let seed = 7
+  const random = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 2 ** 32
+  const data = new Map(
+    Array.from({ length: 1500 }, (_, i) => [
+      `row${i}`,
+      Array.from({ length: 800 }, random),
+    ]),
+  )
+  const controller = new AbortController()
+  await expect(
+    clusterMatrix({
+      data,
+      signal: controller.signal,
+      statusCallback: status => {
+        if (typeof status === 'object') {
+          controller.abort()
+        }
+      },
+    }),
+  ).rejects.toMatchObject({ name: 'AbortError' })
+})
