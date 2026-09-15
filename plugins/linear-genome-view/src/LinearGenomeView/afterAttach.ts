@@ -128,7 +128,7 @@ async function navigateInit(
       // a spec that listed its tracks gets those tracks; one that only named
       // a gene gets the track the gene was found in, as the search box would
       await self.navToLocString(init.loc, init.assembly, init.grow, {
-        showHitTrack: asArray(init.tracks).length === 0,
+        showHitTrack: init.showHitTrack ?? asArray(init.tracks).length === 0,
       })
     } else if (init.displayedRegionNames?.length) {
       // an explicit region list is a navigation request just like `loc`, so it

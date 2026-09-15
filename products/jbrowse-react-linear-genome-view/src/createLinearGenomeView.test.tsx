@@ -1,8 +1,16 @@
+import Plugin from '@jbrowse/core/Plugin'
+import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import TextSearchAdapterType from '@jbrowse/core/pluggableElementTypes/TextSearchAdapterType'
 import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
 import { createLinearGenomeView } from './index.ts'
+
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { AnyAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { TrackInput } from '@jbrowse/product-core'
 
 jest.mock('./makeWorkerInstance', () => () => {})
 // Every assembly below is a config, so nothing here resolves a hub — this keeps
@@ -206,6 +214,145 @@ test('assemblyNames is stamped onto full configs arriving after mount', async ()
   })
   expect(assemblyNamesOf(session, 't2')).toEqual(['volvox'])
   expect(shownIds(session.view)).toEqual(['t1', 't2'])
+  controller.destroy()
+})
+
+class GeneIndexPlugin extends Plugin {
+  name = 'GeneIndexPlugin'
+
+  install(pluginManager: PluginManager) {
+    pluginManager.addTextSearchAdapterType(
+      () =>
+        new TextSearchAdapterType({
+          name: 'GeneIndex',
+          configSchema: ConfigurationSchema(
+            'GeneIndex',
+            { assemblyNames: { type: 'stringArray', defaultValue: [] } },
+            {
+              explicitlyTyped: true,
+              explicitIdentifier: 'textSearchAdapterId',
+            },
+          ),
+          AdapterClass: class {
+            async searchIndex() {
+              return [
+                new BaseResult({
+                  label: 'geneA',
+                  locString: 'ctgA:100..300',
+                  trackId: 'hub_genes',
+                }),
+              ]
+            }
+          } as unknown as AnyAdapter,
+        }),
+    )
+  }
+}
+
+const hub = {
+  assemblies: [
+    {
+      ...assembly,
+      sequence: {
+        ...assembly.sequence,
+        adapter: {
+          type: 'FromConfigSequenceAdapter',
+          features: [
+            {
+              refName: 'ctgA',
+              uniqueId: 'firstId',
+              start: 0,
+              end: 4000,
+              seq: 'a'.repeat(4000),
+            },
+          ],
+        },
+      },
+    },
+  ],
+  tracks: [
+    {
+      ...featureTrack('hub_genes'),
+      adapter: {
+        type: 'FromConfigAdapter',
+        features: [
+          {
+            refName: 'ctgA',
+            uniqueId: 'g',
+            start: 99,
+            end: 300,
+            name: 'geneA',
+          },
+        ],
+      },
+    },
+    featureTrack('hub_other'),
+    {
+      type: 'SyntenyTrack',
+      trackId: 'hub_liftover',
+      assemblyNames: ['volvox', 'otherGenome'],
+      adapter: { type: 'PairwiseIndexedPAFAdapter', uri: 'x.pif.gz' },
+    },
+  ],
+  aggregateTextSearchAdapters: [
+    {
+      type: 'GeneIndex',
+      textSearchAdapterId: 'hub_index',
+      assemblyNames: ['volvox'],
+    },
+  ],
+}
+
+async function launchAtGene(tracks: TrackInput[]) {
+  const controller = createLinearGenomeView(document.createElement('div'), {
+    assembly: hub,
+    location: 'geneA',
+    tracks,
+    plugins: [GeneIndexPlugin],
+  })
+  const state = await controller.whenReady()
+  const { view } = state.session
+  view.setWidth(800)
+  await waitFor(() => {
+    expect(view.visibleLocStrings).toContain('ctgA:')
+  })
+  return { controller, session: state.session }
+}
+
+test("a hub's tracks seed the catalog, and a string naming one opens it", async () => {
+  const controller = createLinearGenomeView(document.createElement('div'), {
+    assembly: hub,
+    tracks: ['hub_other'],
+    plugins: [GeneIndexPlugin],
+  })
+  const state = await controller.whenReady()
+
+  expect(state.session.getTrackById('hub_genes')).toBeTruthy()
+  expect(shownIds(state.session.view)).toEqual(['hub_other'])
+  expect(state.session.sessionTracks).toHaveLength(0)
+  controller.destroy()
+})
+
+test("a gene-name location with no tracks of the host's opens the hub track the hit names", async () => {
+  const { controller, session } = await launchAtGene([])
+
+  await waitFor(() => {
+    expect(shownIds(session.view)).toEqual(['hub_genes'])
+  })
+  expect(session.snackbarMessages).toHaveLength(0)
+  controller.destroy()
+})
+
+test('a gene-name location leaves a host that lists its own tracks with only those', async () => {
+  const { controller, session } = await launchAtGene([featureTrack('t1')])
+
+  expect(shownIds(session.view)).toEqual(['t1'])
+  await controller.update({ location: 'geneA' })
+  await waitFor(() => {
+    expect(session.view.launch).toBeUndefined()
+  })
+  expect(shownIds(session.view)).toEqual(['t1'])
+  expect(session.snackbarMessages).toHaveLength(0)
   controller.destroy()
 })
 

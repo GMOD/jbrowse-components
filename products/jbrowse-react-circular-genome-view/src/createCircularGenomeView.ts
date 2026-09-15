@@ -11,6 +11,7 @@ import {
   resolveLocalFileUris,
   resolveTracks,
   withAssemblyName,
+  withHubCatalog,
 } from '@jbrowse/product-core'
 import { createRoot } from 'react-dom/client'
 
@@ -50,8 +51,9 @@ type SessionSnapshot = ViewStateOptions['session']
  */
 export interface CircularGenomeViewState {
   /**
-   * The tracks to have open (full configs, bare data-file URLs, or
-   * `{ uri, index? }`). The complete wanted set, not an addition: a track the
+   * The tracks to have open (full configs, bare data-file URLs,
+   * `{ uri, index? }`, or the trackId of one in the hub's catalog when
+   * `assembly` is a hub). The complete wanted set, not an addition: a track the
    * view has open and this list omits gets closed.
    *
    * The circular view draws chord tracks, and a VCF is what the bundled plugin
@@ -222,13 +224,17 @@ export function createCircularGenomeView(
       // Registration is keyed on the bytes, so registering the same input in
       // both places mints one blob rather than two.
       localFiles: opts.localFiles,
-      // only full configs seed the config catalog; loose specs need the
-      // pluginManager the build creates, so they are resolved just below
-      tracks: tracks
-        .filter((track): track is TrackConf => !isLooseTrack(track))
-        .map(track =>
-          resolveLocalFileUris(withAssemblyName(track, name), localFiles),
-        ),
+      // the hub's catalog and the host's full configs seed the config catalog;
+      // loose specs need the pluginManager the build creates, so they are
+      // resolved just below
+      tracks: withHubCatalog(
+        resolved.tracks,
+        tracks
+          .filter((track): track is TrackConf => !isLooseTrack(track))
+          .map(track =>
+            resolveLocalFileUris(withAssemblyName(track, name), localFiles),
+          ),
+      ),
       aggregateTextSearchAdapters: mergeSearchAdapters(
         resolved.aggregateTextSearchAdapters,
         opts.aggregateTextSearchAdapters,
@@ -257,7 +263,7 @@ export function createCircularGenomeView(
     if (!hasSession) {
       await reconcileTracks(
         viewState.session,
-        resolveTracks(tracks, viewState, assemblyName, localFiles),
+        resolveTracks(tracks, viewState.session, assemblyName, localFiles),
       )
     }
     disposers.push(
@@ -281,7 +287,7 @@ export function createCircularGenomeView(
     if (state.tracks) {
       await reconcileTracks(
         current.session,
-        resolveTracks(tracks, current, assemblyName, localFiles),
+        resolveTracks(tracks, current.session, assemblyName, localFiles),
       )
     }
     if (state.displayedRegionNames && assemblyName) {

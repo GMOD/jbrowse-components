@@ -18,6 +18,7 @@ export const lgvLaunchKeys = defineLaunchKeys<InitState>()(
   {
     loc: { kind: 'launch' },
     grow: { kind: 'launch' },
+    showHitTrack: { kind: 'launch' },
     assembly: { kind: 'launch' },
     displayedRegionNames: { kind: 'launch' },
     tracklist: { kind: 'launch' },

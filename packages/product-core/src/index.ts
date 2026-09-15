@@ -130,6 +130,7 @@ export {
   reconcileTracks,
   resolveTracks,
   withAssemblyName,
+  withHubCatalog,
 } from './controllerTracks.ts'
 export type {
   ControllerSession,

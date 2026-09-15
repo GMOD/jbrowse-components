@@ -1,6 +1,7 @@
 import { fetchHub } from '@jbrowse/core/util/fetchHub'
 import { isSequenceUri, makeAssembly } from '@jbrowse/core/util/makeAssembly'
 
+import type { TrackConf } from './controllerTracks.ts'
 import type { HubConfig } from '@jbrowse/core/util/fetchHub'
 
 export type AssemblyConfig = Record<string, unknown>
@@ -23,6 +24,11 @@ function searchAdaptersOf(hub: HubConfig): SearchAdapters {
   return found.length ? found : undefined
 }
 
+function tracksOf(hub: HubConfig): TrackConf[] | undefined {
+  const found = (hub.tracks ?? []).filter(t => typeof t.trackId === 'string')
+  return found.length ? found : undefined
+}
+
 /**
  * The shapes an assembly can take, discriminated at resolve time: a sequence
  * file URL (`'.../hg38.fa.gz'`, `.2bit`, ...) built into an assembly via
@@ -36,12 +42,19 @@ export interface ResolvedAssembly {
   assembly: AssemblyConfig
   /** whatever search adapters the hub this came from carried */
   aggregateTextSearchAdapters?: SearchAdapters
+  /**
+   * the hub's track catalog, which its search index names its hits against, so
+   * a host keeping the index keeps these too
+   */
+  tracks?: TrackConf[]
 }
 
 export interface ResolvedAssemblies {
   assemblies: AssemblyConfig[]
   /** whatever search adapters the resolved hubs carried, merged */
   aggregateTextSearchAdapters?: SearchAdapters
+  /** whatever track catalogs the resolved hubs carried, merged */
+  tracks?: TrackConf[]
 }
 
 function fromHubConfig(hub: HubConfig): ResolvedAssembly {
@@ -49,7 +62,11 @@ function fromHubConfig(hub: HubConfig): ResolvedAssembly {
   if (!assembly) {
     throw new Error('hub config has no assemblies')
   }
-  return { assembly, aggregateTextSearchAdapters: searchAdaptersOf(hub) }
+  return {
+    assembly,
+    aggregateTextSearchAdapters: searchAdaptersOf(hub),
+    tracks: tracksOf(hub),
+  }
 }
 
 /** One assembly in any of the four accepted shapes. */
@@ -88,8 +105,10 @@ export async function resolveAssemblies(
 ): Promise<ResolvedAssemblies> {
   const resolved = await Promise.all(inputs.map(resolveAssembly))
   const adapters = resolved.flatMap(r => r.aggregateTextSearchAdapters ?? [])
+  const tracks = resolved.flatMap(r => r.tracks ?? [])
   return {
     assemblies: resolved.map(r => r.assembly),
     aggregateTextSearchAdapters: adapters.length ? adapters : undefined,
+    tracks: tracks.length ? tracks : undefined,
   }
 }

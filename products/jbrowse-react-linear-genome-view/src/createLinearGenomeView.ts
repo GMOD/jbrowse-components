@@ -11,6 +11,7 @@ import {
   resolveLocalFileUris,
   resolveTracks,
   withAssemblyName,
+  withHubCatalog,
 } from '@jbrowse/product-core'
 import { createRoot } from 'react-dom/client'
 
@@ -48,8 +49,9 @@ type SessionSnapshot = ViewStateOptions['session']
  */
 export interface LinearGenomeViewState {
   /**
-   * The tracks to have open (full configs, bare data-file URLs, or
-   * `{ uri, index? }`). The complete wanted set, not an addition: a track the
+   * The tracks to have open (full configs, bare data-file URLs,
+   * `{ uri, index? }`, or the trackId of one in the hub's catalog when
+   * `assembly` is a hub). The complete wanted set, not an addition: a track the
    * view has open and this list omits gets closed.
    */
   tracks?: TrackInput[]
@@ -217,13 +219,18 @@ export function createLinearGenomeView(
       // Registration is keyed on the bytes, so registering the same input in
       // both places mints one blob rather than two.
       localFiles: opts.localFiles,
-      // only full configs seed the config catalog; loose specs need the
-      // pluginManager the build creates, so they are resolved just below
-      tracks: tracks
-        .filter((track): track is TrackConf => !isLooseTrack(track))
-        .map(track =>
-          resolveLocalFileUris(withAssemblyName(track, name), localFiles),
-        ),
+      // the hub's catalog and the host's full configs seed the config catalog;
+      // loose specs need the pluginManager the build creates, so they are
+      // resolved just below. The hub's are kept because its search index names
+      // hits by their trackIds, and the host's win a collision.
+      tracks: withHubCatalog(
+        resolved.tracks,
+        tracks
+          .filter((track): track is TrackConf => !isLooseTrack(track))
+          .map(track =>
+            resolveLocalFileUris(withAssemblyName(track, name), localFiles),
+          ),
+      ),
       aggregateTextSearchAdapters: mergeSearchAdapters(
         resolved.aggregateTextSearchAdapters,
         opts.aggregateTextSearchAdapters,
@@ -236,6 +243,12 @@ export function createLinearGenomeView(
       // a session already positions the view; only route location
       // through createViewState's init flow (spinner while loading) otherwise
       location: hasSession ? undefined : location,
+      // a host with its own tracks opens them below, so a gene-name location
+      // must not add the track its name was found in beside them
+      init:
+        hasSession || location === undefined
+          ? undefined
+          : { showHitTrack: tracks.length === 0 },
     })
     // Nothing will ever reach this engine, so it dies here rather than leaking
     // a worker pool. `destroyed` is reachable from React StrictMode, which runs
@@ -252,7 +265,7 @@ export function createLinearGenomeView(
     if (!hasSession) {
       await reconcileTracks(
         viewState.session,
-        resolveTracks(tracks, viewState, assemblyName, localFiles),
+        resolveTracks(tracks, viewState.session, assemblyName, localFiles),
       )
     }
     // The read-backs are product-core's, the same ones createApp wires, rather
@@ -292,7 +305,7 @@ export function createLinearGenomeView(
     if (state.tracks) {
       await reconcileTracks(
         current.session,
-        resolveTracks(tracks, current, assemblyName, localFiles),
+        resolveTracks(tracks, current.session, assemblyName, localFiles),
       )
     }
     if (state.location !== undefined && location && assemblyName) {
@@ -304,7 +317,11 @@ export function createLinearGenomeView(
       // unhandled rejection. The init autorun waits for `initialized` and runs
       // the same navToLocString, gene-name search included, then reports a
       // locstring that matched nothing as a snackbar rather than a throw.
-      current.session.view.setLaunch({ assembly: assemblyName, loc: location })
+      current.session.view.setLaunch({
+        assembly: assemblyName,
+        loc: location,
+        showHitTrack: tracks.length === 0,
+      })
     }
   }
 

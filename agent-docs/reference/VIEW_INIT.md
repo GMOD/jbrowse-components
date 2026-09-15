@@ -157,7 +157,7 @@ prop list found nothing else.
 
 | view | launch keys | notes |
 | --- | --- | --- |
-| LGV | `loc`, `grow`, `assembly`, `displayedRegionNames`, `tracklist`, `nav`, `tracks`, `highlight` | `bpPerPx`/`offsetPx` are `passThrough` — no longer declared properties, still converted by the model's own preprocessor |
+| LGV | `loc`, `grow`, `showHitTrack`, `assembly`, `displayedRegionNames`, `tracklist`, `nav`, `tracks`, `highlight` | `bpPerPx`/`offsetPx` are `passThrough` — no longer declared properties, still converted by the model's own preprocessor |
 | dotplot | `views`, `tracks`, `highlight`, `autoDiagonalize` | `views` is unconditional: the model declares `hview`/`vview` and derives `views` as a getter |
 | synteny | `views`, `tracks`, `levelHeights`, `autoDiagonalize`, `collapseEmptyRows`, `sameScale` | `tracks` is unconditional: the levels between the rows hold theirs, so the view declares no top-level `tracks` |
 | circular | `assembly`, `displayedRegionNames`, `tracks` | `displayedRegions` is the resolved form of the second |

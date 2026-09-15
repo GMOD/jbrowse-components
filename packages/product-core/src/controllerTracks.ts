@@ -17,9 +17,10 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 export type TrackConf = Record<string, unknown>
 
 /**
- * What a controller accepts per track: a full config, a bare data-file URL, or
- * `{ uri, index?, ...extra }`. The loose forms expand through core's
- * `guessTrackConf`, the same inference the "Add track" flow runs.
+ * What a controller accepts per track: a full config, the trackId of one the
+ * catalog already holds (a hub's, when the assembly came from one), a bare
+ * data-file URL, or `{ uri, index?, ...extra }`. The loose forms expand through
+ * core's `guessTrackConf`, the same inference the "Add track" flow runs.
  */
 export type TrackInput = string | TrackConf
 
@@ -61,17 +62,21 @@ export function withAssemblyName(track: TrackConf, assemblyName?: string) {
 
 /**
  * Expand every loose entry into a full track config; stamp the assembly name
- * onto the ones already written out. `node` is any node of the live tree — the
- * pluginManager whose format plugins drive the guess comes off its env.
+ * onto the ones already written out. A string the catalog already resolves is
+ * that track, and is tried before the file guess: "not URL-shaped" cannot tell
+ * an id from a relative path like `data/reads.bam`.
  */
 export function resolveTracks(
   tracks: TrackInput[],
-  node: IStateTreeNode,
+  session: ControllerSession,
   assemblyName?: string,
   localFiles?: Record<string, BlobLocation>,
 ): TrackConf[] {
-  const { pluginManager } = getEnv(node)
+  const { pluginManager } = getEnv(session)
   return tracks.map(track => {
+    if (typeof track === 'string' && session.getTrackById(track)) {
+      return { trackId: track }
+    }
     const conf = isLooseTrack(track)
       ? guessTrackConf(track, pluginManager, assemblyName)
       : // full configs are stamped here too, not just in the build() catalog
@@ -136,6 +141,15 @@ export async function reconcileTracks(
   for (const trackId of unwanted) {
     view.hideTrack(trackId)
   }
+}
+
+/** A hub's track catalog plus the host's own full configs, the host's winning an id. */
+export function withHubCatalog(
+  hubTracks: TrackConf[] = [],
+  hostTracks: TrackConf[],
+) {
+  const hostIds = new Set(hostTracks.map(t => t.trackId))
+  return [...hubTracks.filter(t => !hostIds.has(t.trackId)), ...hostTracks]
 }
 
 /** Merge a hub's own search adapters with the ones the caller supplied. */

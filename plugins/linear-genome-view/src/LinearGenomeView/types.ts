@@ -57,6 +57,10 @@ export interface InitState {
   // navToLocString's `grow`), e.g. 0.2 pads a region by 20% on each side.
   // Ignored without `loc`.
   grow?: number
+  // whether a `loc` that is a searched name also opens the track the name was
+  // found in. Defaults to true only when `tracks` is empty; a host that opens
+  // its own tracks outside the launch says false here.
+  showHitTrack?: boolean
   assembly: string
   // restrict a whole-genome view to these assembly refNames (whole
   // chromosomes), in the order given — e.g. the main chromosomes without the

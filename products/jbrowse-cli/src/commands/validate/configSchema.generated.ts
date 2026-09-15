@@ -15378,6 +15378,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "grow": {
           "description": "Launch key, resolved by the LinearGenomeView launcher on open."
         },
+        "showHitTrack": {
+          "description": "Launch key, resolved by the LinearGenomeView launcher on open."
+        },
         "assembly": {
           "description": "The assembly to open; a view that lays several out (the circular view) takes a list.",
           "anyOf": [

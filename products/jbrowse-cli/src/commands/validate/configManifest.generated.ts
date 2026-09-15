@@ -5878,6 +5878,7 @@ export const configManifest: ConfigManifest = {
         "highlight",
         "loc",
         "nav",
+        "showHitTrack",
         "tracklist",
         "tracks"
       ],

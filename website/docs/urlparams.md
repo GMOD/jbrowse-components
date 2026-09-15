@@ -430,8 +430,10 @@ state:
 
 A `LinearGenomeView` object takes the
 [simple params](#linear-genome-view-simple) plus `grow`, which pads `loc` by
-that fraction on each side (`0.2` pads 20%), and beyond those any property the
-state model declares.
+that fraction on each side (`0.2` pads 20%), and `showHitTrack`, which says
+whether a `loc` that is a gene name also opens the track the name was found in
+(by default, only when the view lists no `tracks`). Beyond those it takes any
+property the state model declares.
 
 #### Linear genome view properties
 
@@ -439,9 +441,10 @@ state model declares.
 
 **Launch keys**, resolved once on attach and then discarded, because they have
 no direct representation in the view's state — `assembly`,
-`displayedRegionNames`, `grow`, `highlight`, `loc`, `nav`, `tracklist`. There
-are no others; a key outside this set and the table below is a typo, and the
-launcher names it in a console warning rather than dropping it silently.
+`displayedRegionNames`, `grow`, `highlight`, `loc`, `nav`, `showHitTrack`,
+`tracklist`. There are no others; a key outside this set and the table below is
+a typo, and the launcher names it in a console warning rather than dropping it
+silently.
 
 **Properties**, which are whatever the state model declares and the view
 restores natively:
