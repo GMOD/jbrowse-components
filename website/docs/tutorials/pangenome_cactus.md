@@ -4,7 +4,7 @@ description:
   Build a Minigraph-Cactus pangenome graph and load its linear projections in
   JBrowse
 guide_category: Tutorials
-tutorial_category: Synteny & comparative genomics
+tutorial_category: Pangenomes
 ---
 
 One `cactus-pangenome` run over five _E. coli_ strains emits the graph, a VCF,

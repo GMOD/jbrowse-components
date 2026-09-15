@@ -6,7 +6,7 @@ description:
   on it, open the array, and lift one haplotype's walk out to read how many
   copies it carries
 guide_category: Tutorials
-tutorial_category: Synteny & comparative genomics
+tutorial_category: Pangenomes
 ---
 
 A pangenome graph holds shapes a linear track cannot draw: a repeat array is a

@@ -74,16 +74,7 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/multiway_synteny_grape_peach_cacao)
 - [](/docs/tutorials/allvsall_synteny)
 - [](/docs/tutorials/hg002_haplotypes)
-- [](/docs/tutorials/pangenome_ecoli)
-- [](/docs/tutorials/pangenome_cactus)
-- [](/docs/tutorials/pangenome_hprc)
-- [](/docs/tutorials/pangenome_graph_reading)
-- [](/docs/tutorials/pangenome_graph_nested)
-- [](/docs/tutorials/pangenome_prepare_graph)
 - [](/docs/tutorials/agent_synteny)
-- [](/docs/tutorials/pangenome_hprc_part2)
-- [](/docs/tutorials/pangenome_hprc_part3)
-- [](/docs/tutorials/pangenome_nonhuman)
 - [](/docs/tutorials/selection_pressure)
 - [](/docs/tutorials/odp_linkage_groups_synteny)
 - [](/docs/tutorials/hprc_multiway_synteny)
@@ -94,6 +85,18 @@ How to drive JBrowse once it is running. New here? Start with the
 - [](/docs/tutorials/circular_synteny)
 - [](/docs/tutorials/homoeolog_synteny)
 - [](/docs/tutorials/orthofinder_synteny)
+
+### Pangenomes
+
+- [](/docs/tutorials/pangenome_ecoli)
+- [](/docs/tutorials/pangenome_cactus)
+- [](/docs/tutorials/pangenome_hprc)
+- [](/docs/tutorials/pangenome_hprc_part2)
+- [](/docs/tutorials/pangenome_hprc_part3)
+- [](/docs/tutorials/pangenome_graph_reading)
+- [](/docs/tutorials/pangenome_graph_nested)
+- [](/docs/tutorials/pangenome_nonhuman)
+- [](/docs/tutorials/pangenome_prepare_graph)
 
 ### Structural variation
 

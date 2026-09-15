@@ -9,6 +9,7 @@ import {
   TUTORIAL_FALLBACK,
   TUTORIAL_NO_THUMB,
   TUTORIAL_ORDER,
+  TUTORIAL_SERIES,
 } from '../../../lib/guide-categories.ts'
 
 // Section order for the landing page. A tutorial declares its section via the
@@ -72,15 +73,53 @@ const EXTERNAL_CARDS = [
   },
 ]
 
+// A multi-part walkthrough draws as one card with a link per part; see
+// TUTORIAL_SERIES. The first part supplies the card's position and thumbnail,
+// and the later parts are dropped from the grid.
+const partOf = new Map(
+  TUTORIAL_SERIES.flatMap(series =>
+    series.parts.map((part, i) => [part.slug, { series, i }] as const),
+  ),
+)
+
+const seriesCard = (entry: (typeof docs)[number], category: string) => {
+  const { series } = partOf.get(key(entry.id))!
+  return {
+    ...cardFrom(entry, category),
+    title: series.title,
+    description: series.description,
+    parts: series.parts.map((part, i) => ({
+      label: `${i + 1}. ${part.label}`,
+      href: `${baseUrl}/docs/tutorials/${part.slug}/`,
+    })),
+  }
+}
+
 const tutorials = [
   ...docs
     .filter(entry => EXTRA_DOCS.has(entry.id))
     .map(entry => cardFrom(entry, EXTRA_DOCS.get(entry.id)!)),
   ...docs
     .filter(entry => entry.id.startsWith('tutorials/'))
-    .map(entry => cardFrom(entry, entry.data.tutorial_category ?? FALLBACK)),
+    .filter(entry => (partOf.get(key(entry.id))?.i ?? 0) === 0)
+    .map(entry => {
+      const category = entry.data.tutorial_category ?? FALLBACK
+      return partOf.has(key(entry.id))
+        ? seriesCard(entry, category)
+        : cardFrom(entry, category)
+    }),
   ...EXTERNAL_CARDS,
 ].sort((a, b) => rank(a.key) - rank(b.key) || a.title.localeCompare(b.title))
+
+// A series part slug that names no page would silently shrink the series rather
+// than show up as a missing card.
+const slugs = new Set(docs.map(entry => key(entry.id)))
+const missingParts = [...partOf.keys()].filter(slug => !slugs.has(slug))
+if (missingParts.length > 0) {
+  throw new Error(
+    `TUTORIAL_SERIES names pages that do not exist: ${missingParts.join(', ')}`,
+  )
+}
 
 // A mistyped tutorial_category isn't a visible typo — it silently drops the page
 // into the FALLBACK bucket. Fail the build instead so the frontmatter and
@@ -138,35 +177,46 @@ const HAS_THUMB = new Set(
       <h2 class="tut-heading">{group.category}</h2>
       <div class="tut-grid">
         {group.items.map(tutorial => (
-          <a
-            class="tut-card"
-            href={tutorial.href}
-            target={tutorial.external ? '_blank' : undefined}
-            rel={tutorial.external ? 'noopener' : undefined}
-          >
-            {HAS_THUMB.has(tutorial.key) ? (
-              <img
-                class="tut-thumb"
-                src={`${baseUrl}/img/tutorial-thumbs/${tutorial.key}.webp`}
-                loading="lazy"
-                decoding="async"
-                alt={`Preview of ${tutorial.title}`}
-              />
-            ) : (
-              <span class="tut-thumb tut-thumb-empty">
-                {tutorial.key === 'cli_desktop' ? '$ jbrowse' : 'JBrowse 2'}
-              </span>
-            )}
-            <span class="tut-card-body">
-              <span class="tut-card-title">
-                {tutorial.title}
-                {tutorial.external && <span class="tut-ext"> ↗</span>}
-              </span>
-              {tutorial.description && (
-                <span class="tut-card-desc">{tutorial.description}</span>
+          <div class="tut-card">
+            <a
+              class="tut-card-head"
+              href={tutorial.href}
+              target={tutorial.external ? '_blank' : undefined}
+              rel={tutorial.external ? 'noopener' : undefined}
+            >
+              {HAS_THUMB.has(tutorial.key) ? (
+                <img
+                  class="tut-thumb"
+                  src={`${baseUrl}/img/tutorial-thumbs/${tutorial.key}.webp`}
+                  loading="lazy"
+                  decoding="async"
+                  alt={`Preview of ${tutorial.title}`}
+                />
+              ) : (
+                <span class="tut-thumb tut-thumb-empty">
+                  {tutorial.key === 'cli_desktop' ? '$ jbrowse' : 'JBrowse 2'}
+                </span>
               )}
-            </span>
-          </a>
+              <span class="tut-card-body">
+                <span class="tut-card-title">
+                  {tutorial.title}
+                  {tutorial.external && <span class="tut-ext"> ↗</span>}
+                </span>
+                {tutorial.description && (
+                  <span class="tut-card-desc">{tutorial.description}</span>
+                )}
+              </span>
+            </a>
+            {'parts' in tutorial && (
+              <div class="tut-parts">
+                {tutorial.parts.map(part => (
+                  <a class="tut-part" href={part.href}>
+                    {part.label}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
         ))}
       </div>
     </section>
@@ -204,7 +254,7 @@ const HAS_THUMB = new Set(
     color: inherit;
   }
   .tut-card:hover,
-  .tut-card:focus-visible {
+  .tut-card:focus-within {
     border-color: var(--card-hover-border);
     box-shadow: var(--card-hover-shadow);
   }
@@ -214,7 +264,7 @@ const HAS_THUMB = new Set(
       transition-property: border-color, box-shadow, transform;
     }
     .tut-card:hover,
-    .tut-card:focus-visible {
+    .tut-card:focus-within {
       transform: translateY(-2px);
     }
   }
@@ -234,6 +284,32 @@ const HAS_THUMB = new Set(
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 1.1rem;
     color: var(--color-text-muted);
+    background: var(--color-blockquote-bg);
+  }
+  .tut-card-head {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    text-decoration: none;
+    color: inherit;
+  }
+  .tut-parts {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--color-border);
+  }
+  .tut-part {
+    padding: 0.35rem 0.8rem;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+  .tut-part + .tut-part {
+    border-top: 1px solid var(--color-border);
+  }
+  .tut-part:hover,
+  .tut-part:focus-visible {
+    color: var(--color-text);
     background: var(--color-blockquote-bg);
   }
   .tut-card-body {

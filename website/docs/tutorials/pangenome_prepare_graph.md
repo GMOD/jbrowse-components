@@ -4,7 +4,7 @@ description:
   Turn a pangenome graph you already have into the small indexed files JBrowse
   opens by locus, and the database that holds every haplotype's walk
 guide_category: Tutorials
-tutorial_category: Synteny & comparative genomics
+tutorial_category: Pangenomes
 ---
 
 You have a pangenome graph of your own and want to look at it a locus at a time.

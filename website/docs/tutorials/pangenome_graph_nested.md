@@ -5,7 +5,7 @@ description:
   Open the densest bubble in the mouse strain graph as a force-directed graph,
   and descend into it level by level with bubbles the graph derives for itself
 guide_category: Tutorials
-tutorial_category: Synteny & comparative genomics
+tutorial_category: Pangenomes
 ---
 
 A bubble index has one row per bubble, and each row reports where the graph

@@ -4,7 +4,7 @@ description:
   Build a five-strain pggb pangenome graph and load its linear projections plus
   the graph itself in JBrowse
 guide_category: Tutorials
-tutorial_category: Synteny & comparative genomics
+tutorial_category: Pangenomes
 ---
 
 Build a five-strain _E. coli_ graph with pggb, then load its linear projections

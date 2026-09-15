@@ -70,6 +70,13 @@ export const DEVELOPER_CATEGORIES = [
 // straddles, fix the cross-links, not the schema. Revisit only if the corpus
 // roughly doubles or a section stops describing its contents.
 //
+// 'Pangenomes' is its own heading rather than part of 'Synteny & comparative
+// genomics'. Nine of that section's pages were pangenome pages, a third of it,
+// and they are the ones that need a graph — pggb, Minigraph-Cactus, odgi — where
+// the rest need a pairwise aligner and a dotplot. Under one heading the reader
+// after a whole-genome alignment scrolled past the graph series and the reader
+// after a graph had no run to follow.
+//
 // 'genomes.jbrowse.org' leads, and is the second heading here that names
 // something other than a biology domain. It holds the pages that are about the
 // hosted site rather than about a dataset: each opens on a genome that is
@@ -88,6 +95,7 @@ export const TUTORIAL_CATEGORIES = [
   'genomes.jbrowse.org',
   'Getting started',
   'Synteny & comparative genomics',
+  'Pangenomes',
   'Structural variation',
   'Cancer genomics',
   'Population genomics',
@@ -127,8 +135,11 @@ export const TUTORIAL_ORDER = [
   'pangenome_ecoli',
   'pangenome_cactus',
   'pangenome_hprc',
+  'pangenome_hprc_part2',
+  'pangenome_hprc_part3',
   'pangenome_graph_reading',
   'pangenome_graph_nested',
+  'pangenome_nonhuman',
   'pangenome_prepare_graph',
   'sv_visualization_cgiab',
   'sv_multisamples',
@@ -149,6 +160,36 @@ export const TUTORIAL_ORDER = [
   'embed_linear_genome_view',
   'embedding_examples',
   'cli_desktop',
+]
+
+// Tutorials that are one walkthrough split across pages. The landing page draws
+// the whole run as a single card — part 1's thumbnail and the series title, with
+// a numbered link per part — instead of four near-identical cards that push the
+// rest of the section off the screen. The parts stay separate pages, keep their
+// own sidebar entries, and are listed individually in the user guide index; only
+// the card grid collapses them.
+//
+// The first part fixes where the card sorts (TUTORIAL_ORDER) and which thumbnail
+// it shows, so list the parts in reading order. A part slug that names no page
+// fails the landing-page build.
+export interface TutorialSeries {
+  title: string
+  description: string
+  parts: { slug: string; label: string }[]
+}
+
+export const TUTORIAL_SERIES: TutorialSeries[] = [
+  {
+    title: 'Pangenome (HPRC)',
+    description:
+      'Read the HPRC release 2 graph at a locus, find every haplotype carrying an allele, put each haplotype back in its own coordinates, and draw the graph itself.',
+    parts: [
+      { slug: 'pangenome_hprc', label: 'Reading the graph' },
+      { slug: 'pangenome_hprc_part2', label: 'Who carries what' },
+      { slug: 'pangenome_hprc_part3', label: 'Haplotype coordinates' },
+      { slug: 'pangenome_graph_reading', label: 'The graph as the picture' },
+    ],
+  },
 ]
 
 // Tutorial cards that deliberately render the compact chromeless card instead

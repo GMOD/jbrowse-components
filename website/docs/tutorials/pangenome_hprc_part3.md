@@ -5,7 +5,7 @@ description:
   The multiple alignment HPRC release 2's graph and callset both come from, then
   the same haplotypes off GRCh38's axis and on their own contigs
 guide_category: Tutorials
-tutorial_category: Synteny & comparative genomics
+tutorial_category: Pangenomes
 ---
 
 Parts [1](/docs/tutorials/pangenome_hprc) and

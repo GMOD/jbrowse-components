@@ -5,7 +5,7 @@ description:
   Where HPRC release 2's graph varies and by how much, what each alternative is,
   and which of the 464 haplotypes carry it
 guide_category: Tutorials
-tutorial_category: Synteny & comparative genomics
+tutorial_category: Pangenomes
 ---
 
 [Part 1](/docs/tutorials/pangenome_hprc) ends with one allele and the single

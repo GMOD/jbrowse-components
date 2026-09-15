@@ -5,7 +5,7 @@ description:
   Open HPRC release 2's Minigraph-Cactus graph as a graph in the browser, cut a
   locus out of it, and follow one allele back to the haplotype that carries it
 guide_category: Tutorials
-tutorial_category: Synteny & comparative genomics
+tutorial_category: Pangenomes
 ---
 
 A pangenome graph records what a set of genomes share and where they diverge.

@@ -5,7 +5,7 @@ description:
   Open a mouse strain pangenome and the bovine super-pangenome the same way the
   HPRC graph opens, and see what changes when the species does
 guide_category: Tutorials
-tutorial_category: Synteny & comparative genomics
+tutorial_category: Pangenomes
 ---
 
 The tracks and adapters on the
