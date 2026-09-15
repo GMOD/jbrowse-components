@@ -716,6 +716,27 @@ describe('an unknown key on a spec view', () => {
     expect(session.notifyError).not.toHaveBeenCalled()
   })
 
+  // a string has a length too, and reached .join — one throw inside the outer
+  // catch costs every remaining view and the layout
+  test('a string assemblyNames is a typo, not a crash', async () => {
+    const { session, pluginManager } = setup(lgv.handlers, lgv.options)
+
+    await loadSessionSpec(
+      {
+        views: [
+          { type: 'LinearGenomeView', assemblyNames: 'volvox', loc: 'ctgA' },
+          { type: 'LinearGenomeView', assembly: 'volvox', loc: 'ctgB' },
+        ],
+      } as unknown as Parameters<typeof loadSessionSpec>[0],
+      pluginManager,
+    )
+
+    expect(session.notifyError).toHaveBeenCalledWith(
+      expect.stringContaining('assemblyNames'),
+    )
+    expect(session.views).toHaveLength(2)
+  })
+
   test('several assembly names are refused, naming assembly', async () => {
     const { session, pluginManager } = setup(lgv.handlers, lgv.options)
 

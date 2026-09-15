@@ -336,8 +336,12 @@ function readAssemblyNames(
   accepted: string[],
 ): { view: ViewSpec; problem?: string } {
   const { assemblyNames, ...rest } = view
+  // Array.isArray, not a length check: a hand-written `assemblyNames: 'volvox'`
+  // has a length too, and reached .join below — a throw, which this one outer
+  // catch turns into every remaining view and the layout being lost
   if (
-    !assemblyNames?.length ||
+    !Array.isArray(assemblyNames) ||
+    !assemblyNames.length ||
     !accepted.includes('assembly') ||
     accepted.includes('assemblyNames')
   ) {
