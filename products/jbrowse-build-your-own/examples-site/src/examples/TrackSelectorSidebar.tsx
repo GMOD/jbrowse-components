@@ -117,7 +117,7 @@ const TrackSelectorSidebar = observer(function TrackSelectorSidebar() {
         trackId: 'hg38_phylop',
         name: 'phyloP conservation',
         category: ['Signal'],
-        uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
+        uri: 'https://jbrowse.org/demos/phylop/hg38.phyloP100way.brca1.bw',
         displayDefaults: { height: 80, color: '#3a7ca5' },
       },
       {

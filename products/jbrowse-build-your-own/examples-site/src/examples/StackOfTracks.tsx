@@ -16,7 +16,7 @@ const StackOfTracks = observer(function StackOfTracks() {
       {
         trackId: 'hg38_phylop',
         name: 'phyloP 100-way conservation',
-        uri: 'https://hgdownload.soe.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
+        uri: 'https://jbrowse.org/demos/phylop/hg38.phyloP100way.brca1.bw',
         displayDefaults: { height: 100, color: '#3a7ca5' },
       },
       {
