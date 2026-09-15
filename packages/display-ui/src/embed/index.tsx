@@ -11,6 +11,9 @@ import type { ViewStatus as ViewStatusValue } from '@jbrowse/core/util/viewStatu
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
 
+export { LocationBox, useLocationBox } from './location.tsx'
+export { RegionSeams, Scalebar } from './regions.tsx'
+
 export interface EmbedDisplay {
   height: number
   RenderingComponent: React.ComponentType<{
@@ -56,7 +59,7 @@ export const ViewStatus = observer(function ViewStatus({
   view,
   style,
 }: {
-  view: EmbedView
+  view: { status: ViewStatusValue }
   style?: React.CSSProperties
 }) {
   const { status } = view
@@ -105,11 +108,15 @@ export const TrackStack = observer(function TrackStack({
       }}
     >
       {view.status.type === 'ready' ? (
-        ids.map(id => <Track key={id} view={view} trackId={id} />)
+        <>
+          {children}
+          {ids.map(id => (
+            <Track key={id} view={view} trackId={id} />
+          ))}
+        </>
       ) : (
         <ViewStatus view={view} />
       )}
-      {children}
     </div>
   )
 })

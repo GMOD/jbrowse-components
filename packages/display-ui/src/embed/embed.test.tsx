@@ -79,6 +79,25 @@ test('trackIds picks and orders the tracks a stack shows', () => {
   expect(screen.getByTestId('drawn-reads')).toBeTruthy()
 })
 
+test('children draw only once the view is ready, ahead of the tracks', () => {
+  const view = fakeView({ type: 'noRegions' })
+  const { container } = render(
+    <TrackStack view={view}>
+      <div data-testid="overlay" />
+    </TrackStack>,
+  )
+  expect(screen.queryByTestId('overlay')).toBeNull()
+  expect(screen.getByRole('status').textContent).toBe('Nothing to show yet')
+
+  act(() => {
+    view.setStatus({ type: 'ready' })
+  })
+
+  const stack = container.firstElementChild!
+  expect(stack.firstElementChild).toBe(screen.getByTestId('overlay'))
+  expect(stack.children).toHaveLength(3)
+})
+
 test('an error is an alert naming what failed', () => {
   const view = fakeView({ type: 'error', error: new Error('no such genome') })
   render(<TrackStack view={view} />)

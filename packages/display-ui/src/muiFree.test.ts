@@ -37,6 +37,7 @@ function muiReach(entry: string) {
 
 test('nothing in the package reaches Material UI', () => {
   expect(muiReach(path.join(__dirname, 'index.ts'))).toEqual([])
+  expect(muiReach(path.join(__dirname, 'embed/index.tsx'))).toEqual([])
 })
 
 // Entry points outside this package that owe the same guarantee.
