@@ -44,23 +44,21 @@ function readChain(pkcs7: Buffer): Certificate[] {
 }
 
 /**
- * Fails the build if what was just signed is not what app-update.yml tells
- * clients to expect.
+ * Fails the build if what came back from signing is not what app-update.yml
+ * tells clients to expect.
  *
  * verifyMacCodesign exists after an expired identity shipped three releases of
- * an unsigned app without saying so; Windows had only CodeSignTool's exit code.
- * The publisher name is compared on the user's machine and nowhere else, so a
- * certificate reissued under a different subject would refuse every Windows
+ * an unsigned app without saying so; Windows had only CodeSignTool's exit code,
+ * and now has a signing request whose artifact the runner unpacks over the file
+ * it sent. The publisher name is compared on the user's machine and nowhere
+ * else, so a certificate under an unlisted subject would refuse every Windows
  * update, and the first report would be a user who cannot upgrade.
  *
- * Runs only where signing did, so a local `package:win` is unaffected.
+ * buildWindows calls this only in the phases that resume after a signing
+ * request, so a local `package:win` is unaffected.
  */
 export function verifyWindowsSignature(filePath: string) {
   const name = path.basename(filePath)
-  if (!process.env.WINDOWS_SIGN_CREDENTIAL_ID) {
-    log(`Skipping signature verify for ${name} (unsigned build)`)
-    return
-  }
   const blob = signatureBlob(fs.readFileSync(filePath))
   const signer = blob && signerCertificate(readChain(blob))
   log(

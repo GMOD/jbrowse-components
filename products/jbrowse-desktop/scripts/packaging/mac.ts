@@ -7,7 +7,9 @@ import { packageApp } from './packager.ts'
 import { notarizeMac, stapleMac, verifyMacCodesign } from './signing.ts'
 import { fileSizeMB, generateLatestYml, log, run } from './utils.ts'
 
-export async function buildMac({ noInstaller = false } = {}) {
+import type { Phase } from './config.ts'
+
+export async function buildMac({ phase }: { phase: Phase }) {
   log('Building macOS package...')
 
   if (process.platform !== 'darwin') {
@@ -18,8 +20,7 @@ export async function buildMac({ noInstaller = false } = {}) {
 
   verifyMacCodesign(appPath)
 
-  // For --no-installer mode (e.g., E2E tests), just return the unpacked app dir
-  if (noInstaller) {
+  if (phase === 'app') {
     log(`Unpacked app at: ${electronAppDir}`)
     return electronAppDir
   }

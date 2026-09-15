@@ -24,13 +24,14 @@ import {
   sha256Hex,
 } from './utils.ts'
 
-export async function buildLinux({ noInstaller = false } = {}) {
+import type { Phase } from './config.ts'
+
+export async function buildLinux({ phase }: { phase: Phase }) {
   log('Building Linux package...')
 
   const { dir: electronAppDir } = await packageApp('linux')
 
-  // For --no-installer mode (e.g., E2E tests), just return the unpacked app dir
-  if (noInstaller) {
+  if (phase === 'app') {
     log(`Unpacked app at: ${electronAppDir}`)
     return electronAppDir
   }

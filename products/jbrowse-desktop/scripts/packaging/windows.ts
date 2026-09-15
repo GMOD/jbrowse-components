@@ -6,12 +6,20 @@ import {
   SESSION_EXTENSION,
 } from '../../electron/launchTarget.ts'
 import { winArtifacts } from './artifacts.ts'
-import { APP_NAME, ASSETS, DIST, PRODUCT_NAME, VERSION } from './config.ts'
+import {
+  APP_NAME,
+  ASSETS,
+  DIST,
+  PRODUCT_NAME,
+  VERSION,
+  packagedApp,
+} from './config.ts'
 import { createNsisScript } from './nsisScript.ts'
 import { packageApp } from './packager.ts'
-import { signWindowsFile } from './signing.ts'
 import { generateLatestYml, log, run, runQuiet } from './utils.ts'
 import { verifyWindowsSignature } from './verifyWindows.ts'
+
+import type { Phase } from './config.ts'
 
 // Convert Unix path to Windows path for Wine (e.g., /home/user -> Z:\home\user)
 function toWinePath(unixPath: string) {
@@ -76,12 +84,24 @@ function getNsisCommand(): { cmd: string; useWine: boolean } {
   }
 }
 
-async function createWindowsInstaller(electronAppDir: string) {
-  const { exe: exeName } = winArtifacts({
+// dist/jbrowse-desktop-v<version>-win.exe, the one file this platform
+// publishes besides its manifest.
+function installerPath() {
+  const { exe } = winArtifacts({ appName: APP_NAME, version: VERSION })
+  return path.join(DIST, exe)
+}
+
+function writeUpdateManifest() {
+  const { exe, manifest } = winArtifacts({
     appName: APP_NAME,
     version: VERSION,
   })
-  const exePath = path.join(DIST, exeName)
+  fs.writeFileSync(path.join(DIST, manifest), generateLatestYml([exe]))
+  log(`Created: ${manifest}`)
+}
+
+async function createWindowsInstaller(electronAppDir: string) {
+  const exePath = installerPath()
   const nsis = getNsisCommand()
 
   log('Creating NSIS installer...')
@@ -100,34 +120,46 @@ async function createWindowsInstaller(electronAppDir: string) {
     fs.rmSync(scriptPath, { force: true })
   }
 
-  signWindowsFile(exePath)
-  verifyWindowsSignature(exePath)
-  log(`Created: ${exeName}`)
+  log(`Created: ${path.basename(exePath)}`)
   return exePath
 }
 
-export async function buildWindows({ noInstaller = false } = {}) {
+/**
+ * A Windows build, in whole or in the part this phase covers (see `Phase`).
+ *
+ * The release signs twice: the app exe, so what Windows runs carries a
+ * publisher, and the installer NSIS wraps it in, which is what electron-updater
+ * checks before applying an update. `installer` and `finalize` therefore only
+ * ever run just downstream of a signing request, so they verify — an unsigned
+ * file at either point is a signing step that did nothing, and nothing else
+ * would notice until a user's update was refused.
+ */
+export async function buildWindows({ phase }: { phase: Phase }) {
+  if (phase === 'finalize') {
+    const exePath = installerPath()
+    verifyWindowsSignature(exePath)
+    writeUpdateManifest()
+    return exePath
+  }
+
+  if (phase === 'installer') {
+    const { dir, executable } = packagedApp('win')
+    verifyWindowsSignature(executable)
+    const exePath = await createWindowsInstaller(dir)
+    fs.rmSync(dir, { recursive: true })
+    return exePath
+  }
+
   log('Building Windows package...')
+  const { dir: electronAppDir } = await packageApp('win')
 
-  const { dir: electronAppDir, executable: mainExe } = await packageApp('win')
-
-  if (noInstaller) {
+  if (phase === 'app') {
     log(`Unpacked app at: ${electronAppDir}`)
     return electronAppDir
   }
 
-  signWindowsFile(mainExe)
-  verifyWindowsSignature(mainExe)
-
-  const installerPath = await createWindowsInstaller(electronAppDir)
+  const exePath = await createWindowsInstaller(electronAppDir)
   fs.rmSync(electronAppDir, { recursive: true })
-
-  const { manifest } = winArtifacts({ appName: APP_NAME, version: VERSION })
-  fs.writeFileSync(
-    path.join(DIST, manifest),
-    generateLatestYml([path.basename(installerPath)]),
-  )
-  log(`Created: ${manifest}`)
-
-  return installerPath
+  writeUpdateManifest()
+  return exePath
 }

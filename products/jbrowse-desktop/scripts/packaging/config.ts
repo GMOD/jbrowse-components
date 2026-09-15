@@ -6,6 +6,26 @@ import { unpackedApp } from './artifacts.ts'
 
 export type Platform = 'linux' | 'mac' | 'win'
 
+// How much of a platform's build to run. `all` is the whole thing, and is what
+// a local build does; `app` stops at the unpacked tree, which is what the E2E
+// and screenshot harnesses want.
+//
+// `installer` and `finalize` resume a Windows build that has been away being
+// signed. SignPath signs an uploaded GitHub Actions artifact rather than a file
+// on the runner, so release.yml packages, sends the app exe away, comes back
+// for `installer` to wrap what returned, sends that away, and comes back for
+// `finalize` to measure it into latest.yml.
+const PHASES = ['all', 'app', 'installer', 'finalize'] as const
+export type Phase = (typeof PHASES)[number]
+
+function parsePhase(value: string | undefined): Phase {
+  const phase = value === undefined ? 'all' : PHASES.find(p => p === value)
+  if (!phase) {
+    throw new Error(`--phase ${value} is not one of ${PHASES.join(', ')}`)
+  }
+  return phase
+}
+
 export function parsePackagingArgs() {
   const { values } = parseArgs({
     options: {
@@ -13,14 +33,14 @@ export function parsePackagingArgs() {
       mac: { type: 'boolean' },
       win: { type: 'boolean' },
       all: { type: 'boolean' },
-      'no-installer': { type: 'boolean' },
+      phase: { type: 'string' },
       publish: { type: 'boolean' },
     },
   })
   const all: Platform[] = ['linux', 'mac', 'win']
   return {
     platforms: values.all ? all : all.filter(p => values[p]),
-    noInstaller: Boolean(values['no-installer']),
+    phase: parsePhase(values.phase),
     publish: Boolean(values.publish),
   }
 }
@@ -52,8 +72,13 @@ export const GITHUB_REPO = 'jbrowse-components'
 // *installed* app's copy of app-update.yml, so a client only accepts a new
 // publisher if the build it installed from already named it: a new name has to
 // ship here, in a release signed under the old one, before anything is signed
-// under it. The ssl.com certificate runs to 2027-07-10.
-export const WINDOWS_PUBLISHER_NAMES = ['Evolutionary Software Foundation']
+// under it. SignPath Foundation owns the certificate the release signs with;
+// the ssl.com name it replaces stays listed until no supported install predates
+// the first build that named both.
+export const WINDOWS_PUBLISHER_NAMES = [
+  'SignPath Foundation',
+  'Evolutionary Software Foundation',
+]
 
 // Where a packaged target lands on disk, from `unpackedApp`'s naming rule.
 export function packagedApp(target: Platform) {
