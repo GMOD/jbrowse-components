@@ -18,22 +18,19 @@ description:
 
 ## Find the tracks you can use
 
-`jb.listTracks` answers `{ total, tracks }`, not an array. Each entry carries
-`trackId`, `name` and `type`, plus `assemblyNames` where the session has more
-than one assembly, so a multi-assembly config is filtered in code:
+`jb.listTracks` answers `{ total, tracks }`, not an array. A row carries
+`trackId`, `name` and `type`:
 
 ```js
 const { total, tracks } = jb.listTracks('vcf')
-return {
-  total,
-  onVolvox: tracks
-    .filter(t => t.assemblyNames.includes('volvox'))
-    .map(t => `${t.trackId} (${t.type})`),
-}
+return { total, ids: tracks.map(t => `${t.trackId} (${t.type})`) }
 ```
 
 The search matches `trackId` and `name`, case-insensitively. Connection and hub
 tracks are included, which is why this and not `session.tracks` is the catalog.
+A session with several assemblies loaded carries `assemblyNames` on each row
+too; filter on it to tell a track from its mate on the other genome:
+`tracks.filter(t => t.assemblyNames.includes('hg38'))`.
 
 ## Open a hosted genome at a gene
 
