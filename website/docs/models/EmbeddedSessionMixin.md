@@ -61,6 +61,7 @@ Members a composed model contributes are listed here too, so these tables are th
 <!-- prettier-ignore -->
 | Member | Description | Defined by |
 | --- | --- | --- |
+| <span id="getter-viewtitlebars">**viewTitleBars**</span><br><code>boolean</code> | An embedded view is drawn with no title bar above it, so its menu lives in the view's own controls. | EmbeddedSessionMixin |
 | <span id="getter-version">**version**</span><br><code>string</code> |  | EmbeddedSessionMixin |
 | <span id="getter-assemblynames">**assemblyNames**</span><br><code>string[]</code> |  | EmbeddedSessionMixin |
 | <span id="getter-assemblymanager">**assemblyManager**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp;…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>ModelInstanceTypeProps&lt;…&gt; &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; {…} &amp; IStateTreeNode&lt;…&gt;</code></pre></dialog></span> |  | EmbeddedSessionMixin |
