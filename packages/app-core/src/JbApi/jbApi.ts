@@ -1377,7 +1377,7 @@ export function createJbApi(
     setSession: async (
       document: Record<string, unknown>,
       settleMs = SPEC_SETTLE_DEFAULT_MS,
-    ) => reported(await setSession(live(), document, settleMs)),
+    ) => reported(await setSession(pluginManager, live(), document, settleMs)),
     fitToWindow: async (settleMs = 30_000) =>
       reported(await fitToWindow(live(), settleMs)),
     addTrack: (opts: {
@@ -1712,7 +1712,40 @@ interface SnapshotTarget {
  * destroys what the target lacks in place, under components still mounted
  * over it, which is what undo had to route around.
  */
+// A key no view type declares, per entry. MST drops one silently, and the
+// partition that warns about it runs at attach — which a view the document
+// KEEPS never reaches, so the common edit is the quiet one. A type declaring no
+// launch keys (a plugin's own view) is checked against its properties instead:
+// its launcher's vocabulary lives only in the launcher, so a document carrying
+// it loses it with nothing said.
+function unknownViewKeys(pluginManager: PluginManager, entry: unknown) {
+  if (
+    typeof entry !== 'object' ||
+    entry === null ||
+    typeof (entry as { type?: unknown }).type !== 'string'
+  ) {
+    return undefined
+  }
+  const { type, ...keyed } = entry as Record<string, unknown>
+  if (!pluginManager.getElementTypeRecord('view').has(type as string)) {
+    return undefined
+  }
+  const viewType = pluginManager.getViewType(type as string)
+  const accepted =
+    viewType.acceptedKeys ??
+    Object.keys(viewType.stateModel.properties as Record<string, unknown>)
+  const unknown = Object.keys(keyed).filter(key => !accepted.includes(key))
+  return unknown.length
+    ? `${type as string} does not take ${unknown.join(', ')}${
+        viewType.launchKeys
+          ? ''
+          : ` — a ${type as string} takes its launch keys through jb.addView, which runs its launcher`
+      }`
+    : undefined
+}
+
 async function setSession(
+  pluginManager: PluginManager,
   session: AbstractSessionModel,
   document: unknown,
   settleMs: number,
@@ -1729,6 +1762,17 @@ async function setSession(
   const next = {
     ...(getSnapshot(session) as Record<string, unknown>),
     ...document,
+  }
+  // a lazily registered view or display type is not in the session's type union
+  // until its model loads, and applySnapshot is synchronous
+  await pluginManager.preloadSessionTypes(next)
+  const problems = (Array.isArray(next.views) ? next.views : [])
+    .map(entry => unknownViewKeys(pluginManager, entry))
+    .filter(problem => problem !== undefined)
+  if (problems.length) {
+    throw new Error(
+      `jb.setSession refused the document: ${problems.join('; ')}`,
+    )
   }
   try {
     ;(session as unknown as SnapshotTarget).takeOutViewsMissingFrom?.(next)

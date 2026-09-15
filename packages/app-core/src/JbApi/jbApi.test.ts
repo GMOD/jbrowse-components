@@ -1468,8 +1468,28 @@ describe('setSession', () => {
         takenOut.push(snapshot)
       },
     }))
+  const preloaded: unknown[] = []
+  // StubView declares launch keys, so its accepted set is published;
+  // PluginView declares none, standing in for a view whose launcher holds the
+  // vocabulary (ProteinView's uniprotId), where the properties are the set
+  const stubViewType = {
+    acceptedKeys: ['id', 'type', 'label'],
+    launchKeys: { keys: {}, passThrough: [] },
+    stateModel: View,
+  }
+  const pluginViewType = { stateModel: View }
   const jbOver = (session: unknown) =>
-    createJbApi({ rootModel: { session } } as unknown as PluginManager)
+    createJbApi({
+      rootModel: { session },
+      preloadSessionTypes: async (snapshot: unknown) => {
+        preloaded.push(snapshot)
+      },
+      getElementTypeRecord: () => ({
+        has: (name: string) => name === 'StubView' || name === 'PluginView',
+      }),
+      getViewType: (name: string) =>
+        name === 'PluginView' ? pluginViewType : stubViewType,
+    } as unknown as PluginManager)
 
   it('patches a kept view in place, opens a new one, and closes what the document drops', async () => {
     document.body.innerHTML = '<div data-app-phase="ready"></div>'
@@ -1500,6 +1520,46 @@ describe('setSession', () => {
     expect(session.views.map(v => v.id)).toEqual(['b'])
     // views leave through the session's own detach first, ADR-069
     expect(takenOut).toHaveLength(2)
+  })
+
+  // The document's common edit is a view already open, and MST reconciles it by
+  // id without ever re-running the partition that names a typo — so this was
+  // the quiet path: the key vanished, the view stayed, the settle read clean.
+  it('refuses a key no view type takes, on a kept entry as on a new one', async () => {
+    const session = Session.create({
+      views: [{ id: 'a', type: 'StubView', label: 'one' }],
+    })
+    const jb = jbOver(session)
+    await expect(
+      jb.setSession(
+        { views: [{ id: 'a', type: 'StubView', labl: 'two' }] },
+        100,
+      ),
+    ).rejects.toThrow(/StubView does not take labl/)
+    expect(session.views[0]!.label).toBe('one')
+    await expect(
+      jb.setSession({ views: [{ type: 'StubView', labl: 'two' }] }, 100),
+    ).rejects.toThrow(/StubView does not take labl/)
+  })
+
+  // A view type whose launch keys live only in its launcher (the out-of-tree
+  // ProteinView's uniprotId) loses them to MST with nothing said
+  it('sends a launcher-only key to jb.addView instead of dropping it', async () => {
+    const jb = jbOver(Session.create({}))
+    await expect(
+      jb.setSession(
+        { views: [{ type: 'PluginView', uniprotId: 'P04637' }] },
+        100,
+      ),
+    ).rejects.toThrow(/PluginView does not take uniprotId.*jb\.addView/)
+  })
+
+  it('loads lazily registered types before the snapshot is applied', async () => {
+    preloaded.length = 0
+    document.body.innerHTML = '<div data-app-phase="ready"></div>'
+    const jb = jbOver(Session.create({}))
+    await jb.setSession({ views: [{ id: 'a', type: 'StubView' }] }, 5000)
+    expect(preloaded).toMatchObject([{ views: [{ type: 'StubView' }] }])
   })
 
   it('refuses what is not a document, and a document the model rejects, by name', async () => {
