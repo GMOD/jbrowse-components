@@ -10,7 +10,7 @@ import {
   GITHUB_REPO,
   ROOT,
   VERSION,
-  WINDOWS_PUBLISHER_NAME,
+  WINDOWS_PUBLISHER_NAMES,
 } from './config.ts'
 import { appUpdateYml, latestYml } from './updateFeed.ts'
 
@@ -65,7 +65,7 @@ export function generateAppUpdateYml() {
     owner: GITHUB_OWNER,
     repo: GITHUB_REPO,
     cacheDirName: `${APP_NAME}-updater`,
-    publisherName: WINDOWS_PUBLISHER_NAME,
+    publisherNames: WINDOWS_PUBLISHER_NAMES,
   })
 }
 

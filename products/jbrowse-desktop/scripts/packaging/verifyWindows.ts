@@ -7,7 +7,7 @@ import {
   signatureBlob,
   signerCertificate,
 } from './authenticode.ts'
-import { WINDOWS_PUBLISHER_NAME } from './config.ts'
+import { WINDOWS_PUBLISHER_NAMES } from './config.ts'
 import { log } from './utils.ts'
 
 import type { Certificate } from './authenticode.ts'
@@ -61,15 +61,19 @@ export function verifyWindowsSignature(filePath: string) {
     log(`Skipping signature verify for ${name} (unsigned build)`)
     return
   }
-  log(`Verifying the signature on ${name}...`)
   const blob = signatureBlob(fs.readFileSync(filePath))
+  const signer = blob && signerCertificate(readChain(blob))
+  log(
+    signer
+      ? `${name} is signed by ${signer.commonName}`
+      : `${name} is unsigned`,
+  )
   const problems = auditSignature({
-    signer: blob && signerCertificate(readChain(blob)),
-    publisherName: WINDOWS_PUBLISHER_NAME,
+    signer,
+    publisherNames: WINDOWS_PUBLISHER_NAMES,
     now: new Date(),
   })
   if (problems.length > 0) {
     throw new Error(`${name} cannot ship: ${problems.join('; ')}`)
   }
-  log(`Signed by ${WINDOWS_PUBLISHER_NAME}`)
 }

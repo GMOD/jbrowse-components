@@ -63,10 +63,23 @@ test('app-update.yml points at the releases the packagers upload to', () => {
 // NsisUpdater checks the downloaded installer's Authenticode publisher only
 // when this field is present — absent, verifySignature returns null and the
 // check does not happen at all. It has to be the certificate's exact CN, so
-// nothing invents one, and an unset environment leaves the file as it was.
+// nothing invents one, and an empty list leaves the file as it was.
 test('publisherName appears only when it was supplied', () => {
   expect(appUpdateYml(feed)).not.toContain('publisherName')
-  expect(appUpdateYml({ ...feed, publisherName: 'Some Org Inc.' })).toContain(
-    "publisherName: 'Some Org Inc.'",
+  expect(appUpdateYml({ ...feed, publisherNames: [] })).not.toContain(
+    'publisherName',
   )
+  expect(
+    appUpdateYml({ ...feed, publisherNames: ['Some Org Inc.'] }),
+  ).toContain("publisherName:\n  - 'Some Org Inc.'")
+})
+
+// A YAML sequence, not a comma-joined string: NsisUpdater accepts either one
+// name or a list, and a single string holding both matches neither certificate.
+// The list is how a publisher change reaches clients before the first build
+// signed under the new name does.
+test('several publishers are a list every one of which is its own entry', () => {
+  expect(
+    appUpdateYml({ ...feed, publisherNames: ['New Org', 'Old Org'] }),
+  ).toContain("publisherName:\n  - 'New Org'\n  - 'Old Org'\n")
 })

@@ -42,14 +42,18 @@ export const APPLE_TEAM_ID = '9KR53J86Q2'
 export const GITHUB_OWNER = 'GMOD'
 export const GITHUB_REPO = 'jbrowse-components'
 
-// The CN of the ssl.com certificate signWindowsFile signs with, which
-// app-update.yml carries so a client can check the installer it downloaded came
-// from us — absent, NsisUpdater skips that check entirely. Not a secret: it is
-// printed inside every signed exe we publish, and an unset environment variable
-// would silently mean no check. verifyWindowsSignature reads it back out of
-// what was just signed, so a reissue under another name fails the build rather
-// than every user's next update. The current certificate runs to 2027-07-10.
-export const WINDOWS_PUBLISHER_NAME = 'Evolutionary Software Foundation'
+// The certificate CNs app-update.yml tells a client to accept on an installer
+// it downloaded — absent, NsisUpdater skips that check entirely. Not a secret:
+// each is printed inside every signed exe we publish. verifyWindowsSignature
+// reads the CN back out of what was just signed, so a certificate under an
+// unlisted name fails the build rather than every user's next update.
+//
+// A list because the publisher can change. NsisUpdater reads it out of the
+// *installed* app's copy of app-update.yml, so a client only accepts a new
+// publisher if the build it installed from already named it: a new name has to
+// ship here, in a release signed under the old one, before anything is signed
+// under it. The ssl.com certificate runs to 2027-07-10.
+export const WINDOWS_PUBLISHER_NAMES = ['Evolutionary Software Foundation']
 
 // Where a packaged target lands on disk, from `unpackedApp`'s naming rule.
 export function packagedApp(target: Platform) {

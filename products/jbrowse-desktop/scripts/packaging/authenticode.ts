@@ -85,20 +85,21 @@ export function signerCertificate(certificates: Certificate[]): Signer {
  */
 export function auditSignature({
   signer,
-  publisherName,
+  publisherNames,
   now,
 }: {
   signer: Signer | undefined
-  publisherName: string
+  publisherNames: string[]
   now: Date
 }) {
   if (!signer) {
     return ['it carries no Authenticode signature at all']
   }
   const problems: string[] = []
-  if (signer.commonName !== publisherName) {
+  if (!publisherNames.includes(signer.commonName)) {
+    const expected = publisherNames.map(name => `"${name}"`).join(' or ')
     problems.push(
-      `it is signed by "${signer.commonName}", but app-update.yml tells every client to expect "${publisherName}", so Windows updates would be refused`,
+      `it is signed by "${signer.commonName}", but app-update.yml tells every client to expect ${expected}, so Windows updates would be refused`,
     )
   }
   if (signer.expires <= now) {
