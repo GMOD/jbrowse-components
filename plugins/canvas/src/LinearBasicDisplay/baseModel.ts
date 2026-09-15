@@ -72,6 +72,10 @@ import {
 import { featureContextMenuItems } from './featureContextMenu.ts'
 import { FeatureHighlightModel } from './featureHighlight.ts'
 import {
+  buildRegionInstanceIndex,
+  featureHighlightInk,
+} from './featureHighlightInk.ts'
+import {
   featureHighlightActions,
   featureHighlightViews,
 } from './featureHighlightViews.ts'
@@ -123,6 +127,7 @@ import type {
   FlatbushRegionIndexes,
 } from './components/hitTesting.ts'
 import type { FeatureContextMenuInfo } from './featureContextMenu.ts'
+import type { RegionInstanceIndex } from './featureHighlightInk.ts'
 import type { GeneGlyphMode } from './geneGlyphMode.ts'
 import type { FeatureGroupBy, FeatureGroupSection } from './groupBy.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
@@ -136,6 +141,7 @@ import type {
   StatusCallback,
 } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { HighlightRect } from '@jbrowse/display-kit/highlightHost'
 import type { IndexedRegion } from '@jbrowse/display-kit/planRegionFetch'
 import type { ExportSvgDisplayOptions } from '@jbrowse/display-kit/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -871,6 +877,40 @@ export default function baseStateModelFactory(
         get hoverBoxSubfeature() {
           const info = self.contextMenuInfo
           return info ? info.subfeature : self.hoveredSubfeature
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * Feature and subfeature ids to the primitives they painted, per
+         * laid-out region. Deliberately held by no autorun: nothing builds it
+         * until a hover or a selection asks which instances to light.
+         */
+        get regionInstanceIndexes(): ReadonlyMap<number, RegionInstanceIndex> {
+          const map = new Map<number, RegionInstanceIndex>()
+          for (const [idx, data] of self.laidOutDataMap) {
+            map.set(idx, buildRegionInstanceIndex(data))
+          }
+          return map
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * What the chrome lights under the pointer: the open context menu's
+         * target while one is open, else the hovered subfeature, else the
+         * hovered feature — one box per region over its glyph and its labels.
+         */
+        get hoverInk(): HighlightRect[] {
+          const item = self.hoverBoxSubfeature ?? self.hoverBoxFeature
+          return featureHighlightInk(self, item?.featureId)
+        },
+        /**
+         * #getter
+         * The session's selected feature, boxed the same way.
+         */
+        get selectionInk(): HighlightRect[] {
+          return featureHighlightInk(self, self.selectedFeatureId)
         },
       }))
       .views(self => ({

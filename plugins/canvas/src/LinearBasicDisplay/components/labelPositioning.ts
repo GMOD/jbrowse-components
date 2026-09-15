@@ -178,44 +178,53 @@ export function computeLabelPosition(
 // A union on `kind` rather than one shape with optional badge fields, so a
 // consumer that has checked `kind` reads `hidden` without a fallback for a case
 // the worker never emits.
-export interface PlainResolvedLabel {
+export interface PlainPlacedLabel {
   label: LabelItem & { isOverlay?: boolean }
   labelX: number
   labelY: number
-  color: string
   kind: 'name' | 'desc' | 'sub'
 }
 
-export interface MoreResolvedLabel {
+export interface MorePlacedLabel {
   label: MoreIsoformsLabel
   labelX: number
   labelY: number
-  color: string
   kind: 'more'
 }
 
+export type PlacedLabel = PlainPlacedLabel | MorePlacedLabel
+
+export type PlainResolvedLabel = PlainPlacedLabel & { color: string }
+export type MoreResolvedLabel = MorePlacedLabel & { color: string }
 export type ResolvedLabel = PlainResolvedLabel | MoreResolvedLabel
 
 // `fontSize` is the single knob keeping the reserved row height, the
 // name-to-description gap and the drawn text in agreement as compact modes shrink
 // the text.
-export interface LabelRenderContext {
+export interface LabelPlacementContext {
   showLabels: boolean
   showDescriptions: boolean
   showSubfeatureLabels: boolean
   fontSize: number
+}
+
+export interface LabelRenderContext extends LabelPlacementContext {
   colors: LabelColors
 }
 
-function resolveFeatureLabels(
+/**
+ * Where each of one feature's rendered labels sits, with no colour: a highlight
+ * box wants the geometry alone, and one placement walk keeps its rects on the
+ * text the painter draws.
+ */
+export function placeFeatureLabels(
   labelData: FeatureLabelData,
   toScreen: (bp: number) => number,
   vr: BpRegionBounds,
-  context: LabelRenderContext,
-): ResolvedLabel[] {
+  context: LabelPlacementContext,
+): PlacedLabel[] {
   const { showLabels, showDescriptions, showSubfeatureLabels, fontSize } =
     context
-  const { colors } = context
   const px1 = toScreen(labelData.minX)
   const px2 = toScreen(labelData.maxX)
   const featureLeftPx = Math.min(px1, px2)
@@ -233,27 +242,19 @@ function resolveFeatureLabels(
       showDescriptions,
       showSubfeatureLabels,
     )
-  const out: ResolvedLabel[] = []
+  const out: PlacedLabel[] = []
   const add = (
-    label: PlainResolvedLabel['label'],
+    label: PlainPlacedLabel['label'],
     padding: number,
-    kind: PlainResolvedLabel['kind'],
+    kind: PlainPlacedLabel['kind'],
   ) => {
-    const resolved = {
+    const placed = {
       label,
       ...computeLabelPosition(label, padding, bounds, fontSize),
-      color:
-        kind === 'sub'
-          ? label.isOverlay
-            ? colors.subfeatureOverlay
-            : colors.subfeature
-          : kind === 'desc'
-            ? colors.description
-            : colors.name,
       kind,
     }
-    out.push(resolved)
-    return resolved
+    out.push(placed)
+    return placed
   }
   if (nameLabel) {
     const name = add(nameLabel, LABEL_TOP_GAP_PX, 'name')
@@ -268,7 +269,6 @@ function resolveFeatureLabels(
           renderedTextWidth(nameLabel.textWidth, fontSize) +
           LABEL_PADDING_PX,
         labelY: name.labelY,
-        color: colors.more,
         kind: 'more',
       })
     }
@@ -286,6 +286,33 @@ function resolveFeatureLabels(
     add(subfeatureLabel, 0, 'sub')
   }
   return out
+}
+
+function plainLabelColor(
+  { label, kind }: PlainPlacedLabel,
+  colors: LabelColors,
+) {
+  return kind === 'sub'
+    ? label.isOverlay
+      ? colors.subfeatureOverlay
+      : colors.subfeature
+    : kind === 'desc'
+      ? colors.description
+      : colors.name
+}
+
+function resolveFeatureLabels(
+  labelData: FeatureLabelData,
+  toScreen: (bp: number) => number,
+  vr: BpRegionBounds,
+  context: LabelRenderContext,
+): ResolvedLabel[] {
+  const { colors } = context
+  return placeFeatureLabels(labelData, toScreen, vr, context).map(placed =>
+    placed.kind === 'more'
+      ? { ...placed, color: colors.more }
+      : { ...placed, color: plainLabelColor(placed, colors) },
+  )
 }
 
 export function forEachRenderedLabel(

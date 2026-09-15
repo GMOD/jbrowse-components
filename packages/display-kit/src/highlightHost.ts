@@ -29,3 +29,26 @@ export interface HighlightHost extends IStateTreeNode {
 export function isHighlightHost(model: object): model is HighlightHost {
   return 'hoverInk' in model
 }
+
+/**
+ * The single box covering every rect given, or undefined for none. A feature's
+ * glyph is many primitives and its labels sit beside them; what the eye reads
+ * as one feature is their union, not a box per exon.
+ */
+export function mergeBounds(
+  rects: readonly HighlightRect[],
+): HighlightRect | undefined {
+  let left = Number.POSITIVE_INFINITY
+  let top = Number.POSITIVE_INFINITY
+  let right = Number.NEGATIVE_INFINITY
+  let bottom = Number.NEGATIVE_INFINITY
+  for (const r of rects) {
+    left = Math.min(left, r.left)
+    top = Math.min(top, r.top)
+    right = Math.max(right, r.left + r.width)
+    bottom = Math.max(bottom, r.top + r.height)
+  }
+  return rects.length === 0
+    ? undefined
+    : { left, top, width: right - left, height: bottom - top }
+}

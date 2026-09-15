@@ -15,7 +15,7 @@ import {
   highlightBoxColors,
   overlayItemRect,
 } from './highlightUtils.ts'
-import { HIT_PAD_PX, labelHit } from './hitTesting.ts'
+import { labelHit } from './hitTesting.ts'
 import { htmlToPlainText } from './hoverReadout.ts'
 import { labelColors } from './labelColors.ts'
 import {
@@ -27,7 +27,6 @@ import { LABEL_OVERLAY_BACKGROUND } from './sharedRendererConstants.ts'
 
 import type {
   FeatureDataResult,
-  FlatbushItem,
   MoreIsoformsLabel,
   SubfeatureInfo,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
@@ -79,9 +78,6 @@ interface HighlightBoxesModel {
   renderedShowDescriptions: boolean
   canvasWidthPx: number
   renderedLabelFontSize: number
-  selectedFeatureId: string | undefined
-  hoverBoxFeature: FlatbushItem | undefined
-  hoverBoxSubfeature: SubfeatureInfo | undefined
   featureItemMap: Map<string, FeatureItemEntry>
   // featureItemMap holds the destination rows, so a box adds this to keep
   // framing a glyph still easing toward one; 0 whenever nothing is easing.
@@ -227,7 +223,6 @@ function overlaysReady(
 function overlayBoxStyles(palette: JBrowsePalette) {
   const highlightBox = highlightBoxColors(palette.highlight.main)
   return {
-    hover: { backgroundColor: palette.featureHover },
     solo: {
       border: `2px dashed ${palette.primary.main}`,
       borderRadius: 3,
@@ -237,10 +232,6 @@ function overlayBoxStyles(palette: JBrowsePalette) {
       border: `1px solid ${highlightBox.border}`,
       borderRadius: 3,
       backgroundColor: highlightBox.fill,
-    },
-    selected: {
-      border: `2px solid ${palette.featureSelected}`,
-      borderRadius: 3,
     },
   }
 }
@@ -530,9 +521,6 @@ export const HighlightLayer = observer(function HighlightLayer({
   view: LGV
 }) {
   const {
-    hoverBoxFeature,
-    hoverBoxSubfeature,
-    selectedFeatureId,
     highlightedFeatureIdSet,
     soloFeatureIdSet,
     soloApplied,
@@ -644,25 +632,6 @@ export const HighlightLayer = observer(function HighlightLayer({
     }
   }
 
-  const hoverItem = hoverBoxSubfeature ?? hoverBoxFeature
-  if (hoverItem) {
-    const entry = featureItemMap.get(hoverItem.featureId)
-    if (entry) {
-      // A subfeature's hit box takes neither the pad nor the label width a
-      // feature's does, so its shading has to mirror that exact box.
-      const subfeatureHover = !!hoverBoxSubfeature
-      addOverlay({
-        item: hoverItem,
-        source: entry.source,
-        boxStyle: boxStyles.hover,
-        key: 'hover',
-        extraWidth: subfeatureHover ? 0 : computeExtraWidth(entry),
-        xPadding: subfeatureHover ? 0 : HIT_PAD_PX,
-        yOffset: morphOffsetFor(hoverItem.featureId),
-      })
-    }
-  }
-
   // Skipped once applied, since the view then shows only these features.
   if (!soloApplied) {
     for (const featureId of soloFeatureIdSet) {
@@ -683,10 +652,6 @@ export const HighlightLayer = observer(function HighlightLayer({
       `search-highlight-${featureId}`,
       'feature-highlight',
     )
-  }
-
-  if (selectedFeatureId) {
-    addFeatureBox(selectedFeatureId, boxStyles.selected, 'selected')
   }
 
   // The layer is emitted here rather than by the caller, so an empty box set

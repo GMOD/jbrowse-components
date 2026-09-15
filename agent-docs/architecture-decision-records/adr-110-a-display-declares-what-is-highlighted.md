@@ -138,12 +138,21 @@ grown to the ring's radius). The example plugin's `score` shape declares
 
 ## Kept, and why
 
-- **Canvas's `HighlightLayer`** (hover, solo, search, selection): its box
-  wraps a layout item with its label rows and the hit pad, the payload has no
-  feature-to-primitive index, the search box is exported, and all four share
-  one scroll-locked layer. Moving hover and selection would split that layer
-  across two places for a box that is not an instance's ink. The first move,
-  if wanted, is a per-feature primitive range in `FeatureDataResult`.
+- **Canvas's `HighlightLayer`** — **solo and the search highlight only, since
+  2026-09-15.** The hover and the selection moved onto the guide that day. The
+  reason recorded here for keeping them, that the payload carried no
+  feature-to-primitive index, was already wrong when it was written:
+  `FeatureDataResult` ships `rectFeatureIndices` / `lineFeatureIndices` /
+  `arrowFeatureIndices` beside `rectChildOrdinals` / `lineChildOrdinals` /
+  `arrowChildOrdinals`, so the missing half was only the inverse, and
+  `buildRegionInstanceIndex` builds it on the main thread the first time
+  something is lit. The box is the union of the glyph's ink and the rects its
+  labels drew (`mergeBounds`, `placeFeatureLabels`), so it loses the hit pad
+  and the hand-measured label overhang and gains the morph for free — it walks
+  `renderDataMap`, the interpolated map, rather than the settled layout.
+  Solo and search stay behind, waiting on a `pinnedInk` / `soloInk` member on
+  the host: both light a SET of features rather than one, and the search box is
+  exported, which `hoverInk` never is.
 - **Dotplot's restroke, the arc restroke, LD's crosshairs, MAF's connected
   range, the LGV position highlight, `VariantLaneOverlay`'s band**: none is
   a per-instance box.
