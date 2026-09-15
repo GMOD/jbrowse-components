@@ -967,6 +967,28 @@ describe('fitToWindow', () => {
       },
     } as unknown as PluginManager)
 
+  // Neither app scrolls the document: a column inside it does, so the
+  // document read as fitting while a view ran 700 px past the window and
+  // both the fit and its grader passed vacuously.
+  it('measures the column the app scrolls, not the document', async () => {
+    document.body.innerHTML =
+      '<div data-app-phase="ready"></div><div id="column" style="overflow-y: auto"><div data-testid="view-container-v"></div></div>'
+    const tall = sized(400)
+    const column = document.getElementById('column')!
+    Object.defineProperties(column, {
+      scrollHeight: { configurable: true, get: () => 500 + tall.height },
+      clientHeight: { configurable: true, value: 700 },
+    })
+    page(100, [])
+    expect(await jbOver([tall]).fitToWindow(5000)).toEqual({
+      fits: true,
+      overflowBefore: 200,
+      overflowAfter: 0,
+      shrunk: [{ what: 't0', from: 400, to: 200 }],
+      settled: true,
+    })
+  })
+
   it('answers plainly when the session already fits', async () => {
     page(100, [])
     expect(await jbOver([]).fitToWindow(100)).toEqual({

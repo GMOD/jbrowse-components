@@ -69,8 +69,16 @@ export const TASKS: EvalTask[] = [
     setup: `
       for (const t of jb.view().tracks) { t.applyDisplaySettings({ height: 600 }) }
       return jb.waitReady(30000)`,
+    // the app scrolls a column, not the document: measure the scrolling
+    // ancestor of the view, the way jb.fitToWindow does
     grade: `
-      const overflow = document.documentElement.scrollHeight - window.innerHeight
+      const container = document.querySelector('[data-testid^="view-container-"]')
+      let scroller
+      for (let el = container?.parentElement; el; el = el.parentElement) {
+        const { overflowY } = getComputedStyle(el)
+        if ((overflowY === 'auto' || overflowY === 'scroll') && el.scrollHeight > el.clientHeight) { scroller = el; break }
+      }
+      const overflow = scroller ? scroller.scrollHeight - scroller.clientHeight : document.documentElement.scrollHeight - window.innerHeight
       const tracks = jb.view().tracks.map(t => t.configuration.trackId)
       return { pass: overflow <= 0 && tracks.length === 2, detail: { overflow, tracks } }`,
   },
@@ -98,7 +106,7 @@ export const TASKS: EvalTask[] = [
   {
     name: 'add-bigwig',
     prompt:
-      'Add the bigWig file at REPO/test_data/volvox/volvox.bw as a track named "Coverage" and show it in the view.',
+      'Add the bigWig file at DATA/test_data/volvox/volvox.bw as a track named "Coverage" and show it in the view.',
     grade: `
       const t = jb.view().tracks.find(t => jb.readConfObject(t.configuration, 'name') === 'Coverage')
       const phase = t?.activeDisplay?.displayPhase

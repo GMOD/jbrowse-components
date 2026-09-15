@@ -1,4 +1,4 @@
-// Agent eval: launches the built app, and for each task in agentEvalTasks.ts
+// Agent eval: launches the built app, and for each task in scripts/agent-evals/tasks.ts
 // resets the volvox baseline, runs a real `claude -p` session against the MCP
 // server, then grades the SESSION STATE over the bridge. The transcript is
 // counted, never graded: run_javascript calls, errored calls, docs reads,
@@ -19,7 +19,7 @@ import os from 'node:os'
 import path from 'node:path'
 import readline from 'node:readline'
 
-import { BASELINE_SPEC, TASKS } from './agentEvalTasks.ts'
+import { BASELINE_SPEC, TASKS } from '../../../scripts/agent-evals/tasks.ts'
 import { desktopRoot, openVolvox, repoRoot } from './mcpHarness.ts'
 
 import type { McpClient } from './mcpHarness.ts'
@@ -203,7 +203,7 @@ try {
           timeoutMs: 60_000,
         })
       }
-      const prompt = task.prompt.replaceAll('REPO', repoRoot)
+      const prompt = task.prompt.replaceAll('DATA', repoRoot)
       const events = await runAgent(prompt, cwd, mcpConfig)
       const counted = count(events)
       const verdict = await grade(session.client, task.grade, counted.answer)

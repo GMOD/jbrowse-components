@@ -535,7 +535,7 @@ export async function waitReady(
 function offscreenViews(session: AbstractSessionModel, root: ParentNode) {
   const win = root.ownerDocument?.defaultView ?? window
   const windowHeight = win.innerHeight
-  const pageHeight = win.document.documentElement.scrollHeight
+  const measured = overflow(root)
   const containers = new Map(
     [
       ...root.querySelectorAll<HTMLElement>('[data-testid^="view-container-"]'),
@@ -553,10 +553,10 @@ function offscreenViews(session: AbstractSessionModel, root: ParentNode) {
         ]
       : []
   })
-  return pageHeight > windowHeight || views.length
+  return measured.pageHeight > measured.windowHeight || views.length
     ? {
-        pageHeight,
-        windowHeight,
+        pageHeight: measured.pageHeight,
+        windowHeight: measured.windowHeight,
         scrollY: Math.round(win.scrollY),
         views,
         note: 'the session is taller than the window; a viewport screenshot cuts these views off — await jb.fitToWindow() to shrink what is open until it fits, or screenshot with fullPage: true. A view with a negative top is scrolled out above the viewport (scrollY says by how much), not missing',
@@ -564,7 +564,32 @@ function offscreenViews(session: AbstractSessionModel, root: ParentNode) {
     : undefined
 }
 
+// Neither app scrolls the document: a column inside the app scrolls, so the
+// document's scrollHeight equals the window's height with a view running 700
+// px past it. The overflow is the scrolling ancestor's, when one exists.
+function scrollerOf(root: ParentNode) {
+  const container = root.querySelector('[data-testid^="view-container-"]')
+  const win = root.ownerDocument?.defaultView ?? window
+  for (let el = container?.parentElement; el; el = el.parentElement) {
+    const { overflowY } = win.getComputedStyle(el)
+    if (
+      (overflowY === 'auto' || overflowY === 'scroll') &&
+      el.scrollHeight > el.clientHeight
+    ) {
+      return el
+    }
+  }
+  return undefined
+}
+
 function overflow(root: ParentNode) {
+  const scroller = scrollerOf(root)
+  if (scroller) {
+    return {
+      pageHeight: scroller.scrollHeight,
+      windowHeight: scroller.clientHeight,
+    }
+  }
   const win = root.ownerDocument?.defaultView ?? window
   return {
     pageHeight: win.document.documentElement.scrollHeight,

@@ -46,11 +46,18 @@ data claims with `jb.getFeatures`, never from the picture.
   `pnpm build && pnpm build:electron-main` first, and it takes the per-user
   socket — with another Desktop instance running it attaches to that one.
 - Agent eval: `pnpm --filter @jbrowse/desktop eval:mcp` (same build, `claude` on
-  PATH) runs a real `claude -p` session per task in `test/agentEvalTasks.ts` and
-  grades the session state over the bridge, reporting calls, errors, docs reads,
-  screenshots, seconds and dollars per task. `--model opus`, `--filter <name>`,
-  `--runs N`. Judge a change to the instructions, the docs or `jb` by its
-  numbers, and add a task for each stumble a filmed take shows.
+  PATH) runs a real `claude -p` session per task in
+  `scripts/agent-evals/tasks.ts` and grades the session state over the bridge,
+  reporting calls, errors, docs reads, screenshots, seconds and dollars per
+  task. `--model opus`, `--filter <name>`, `--runs N`. Judge a change to the
+  instructions, the docs or `jb` by its numbers, and add a task for each stumble
+  a filmed take shows.
+- Browser-agent eval: `node scripts/agent-evals/webAgentEval.ts` runs the same
+  tasks against a served `products/jbrowse-web/build` through the Claude in
+  Chrome extension (`claude -p --chrome`), grading through a bridge the harness
+  injects into the served page. Needs Chrome on a display with the extension
+  signed in; `--guide` hands the agent the live-model guide, the bare default
+  hands it one line saying `window.jb` exists.
 - The discipline above lives in `website/docs/agents_live_model.md` and
   `SERVER_INSTRUCTIONS` (`electron/mcp/toolDefinitions.ts`). Edit it there;
   `products/jbrowse-desktop/src/mcp/docsRoster.test.ts` checks the copies agree,

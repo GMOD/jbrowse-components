@@ -138,12 +138,15 @@ volvox; agent-side working discipline lives in `.claude/skills/jbrowse-mcp/`
 and, condensed, in the initialize response's `instructions`.
 
 `pnpm eval:mcp` is the agent eval over the same build: for each task in
-`test/agentEvalTasks.ts` it resets the volvox baseline, runs a real `claude -p`
-session against this server, and grades the session state over the bridge. The
-transcript is counted, never graded — run_javascript calls, errored calls, docs
-reads, screenshots, turns, seconds, dollars — so a change to the instructions, a
-tool description or `jb` is judged by calls-to-success rather than by a filmed
-take. `test/mcpHarness.ts` is what both share.
+`scripts/agent-evals/tasks.ts` it resets the volvox baseline, runs a real
+`claude -p` session against this server, and grades the session state over the
+bridge. The transcript is counted, never graded — run_javascript calls, errored
+calls, docs reads, screenshots, turns, seconds, dollars — so a change to the
+instructions, a tool description or `jb` is judged by calls-to-success rather
+than by a filmed take. `test/mcpHarness.ts` is what both share.
+`scripts/agent-evals/webAgentEval.ts` runs the same tasks against jbrowse-web
+through the Claude in Chrome extension, so the two clients of `jb` are measured
+on one task set.
 
 ## What each client shows the model
 
