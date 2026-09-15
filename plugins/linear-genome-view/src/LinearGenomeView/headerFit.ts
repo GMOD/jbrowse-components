@@ -12,6 +12,10 @@ const ROW_WITHOUT_SEARCH_PX = 591
 // rather than left for the search box to absorb.
 const CLEAR_HIGHLIGHT_PX = 35
 
+// An embedded view has no title bar, so its menu button leads this row: a
+// 40px icon button and its flex gap.
+const VIEW_MENU_PX = 44
+
 // What the header gives up as its window narrows, cheapest first, with the
 // pixels each one frees. Whitespace goes before words, words before a redundant
 // control, and that before a readout. The search box is not on the list: it is
@@ -50,16 +54,21 @@ export function headerFit({
   width,
   searchBoxPx,
   clearHighlight = false,
+  viewMenu = false,
 }: {
   width: number | undefined
   searchBoxPx: number
   clearHighlight?: boolean
+  viewMenu?: boolean
 }): HeaderFit {
   const fit = Object.fromEntries(SHEDDABLE.map(([k]) => [k, true])) as HeaderFit
   if (width === undefined) {
     return fit
   }
-  const room = width - (clearHighlight ? CLEAR_HIGHLIGHT_PX : 0)
+  const room =
+    width -
+    (clearHighlight ? CLEAR_HIGHLIGHT_PX : 0) -
+    (viewMenu ? VIEW_MENU_PX : 0)
   let need = ROW_WITHOUT_SEARCH_PX + searchBoxPx
   for (const [key, saves] of SHEDDABLE) {
     if (need <= room) {

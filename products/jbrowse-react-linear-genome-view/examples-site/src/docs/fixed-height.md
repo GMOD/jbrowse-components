@@ -4,10 +4,10 @@ view draws at content height and the page grows as tracks are added — right fo
 a document, wrong for a panel.
 
 Bounded, the view keeps its chrome in place and scrolls only the tracks: the
-title bar, the navigation bar, the overview scalebar and the coordinate ruler
-pin to the top of the box, the way JBrowse Web pins them and the way JBrowse 1
-always did. Put the track selector in a drawer on the left and that is the whole
-JBrowse 1 arrangement — sidebar, header, scrolling tracks.
+navigation bar, the overview scalebar and the coordinate ruler pin to the top of
+the box, the way JBrowse Web pins them and the way JBrowse 1 always did. Put the
+track selector in a drawer on the left and that is the whole JBrowse 1
+arrangement — sidebar, header, scrolling tracks.
 
 A host box with a height of its own still bounds the view, and this is where it
 differs: the box scrolls the whole component, chrome included, so the ruler

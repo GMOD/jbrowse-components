@@ -152,6 +152,9 @@ export interface AbstractSessionModel
   // shell's ViewHeader — both want "false when the session has no such notion",
   // which is what a plain `=== true` read of an absent member already gives
   stickyViewHeaders?: boolean
+  // false when the session draws no title bar above its views, so a view puts
+  // its own menu in its own controls; absent reads as a title bar being there
+  viewTitleBars?: boolean
   configuration: AnyConfigurationModel
   rpcManager: RpcManager
   assemblyNames: string[]

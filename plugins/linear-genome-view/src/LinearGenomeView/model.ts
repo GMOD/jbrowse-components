@@ -1042,15 +1042,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #getter
        * Where the scalebar pins when the view's chrome is sticky: everything
-       * stacked above it, which is the view's own title bar plus this view's
-       * header. Expressed from `headerHeight` rather than re-summing its
-       * constants — the two are the same box, and a second spelling of the sum
-       * is free to drift from the first while both typecheck.
+       * stacked above it, which is the view's own title bar, where the session
+       * draws one, plus this view's header. Expressed from `headerHeight`
+       * rather than re-summing its constants — the two are the same box, and a
+       * second spelling of the sum is free to drift from the first while both
+       * typecheck.
        */
       get rubberbandTop() {
-        return self.stickyViewHeaders
-          ? VIEW_HEADER_HEIGHT + this.headerHeight
-          : 0
+        const titleBar =
+          getSession(self).viewTitleBars === false ? 0 : VIEW_HEADER_HEIGHT
+        return self.stickyViewHeaders ? titleBar + this.headerHeight : 0
       },
 
       /**

@@ -59,6 +59,14 @@ export function EmbeddedSessionMixin(pluginManager: PluginManager) {
     .views(self => ({
       /**
        * #getter
+       * An embedded view is drawn with no title bar above it, so its menu lives
+       * in the view's own controls.
+       */
+      get viewTitleBars() {
+        return false
+      },
+      /**
+       * #getter
        */
       get version() {
         return getParent<EmbeddedSessionParent>(self).version

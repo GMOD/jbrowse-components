@@ -1,6 +1,9 @@
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import ScrollZoomToggle from '@jbrowse/core/ui/ScrollZoomToggle'
+import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import useMeasure from '@jbrowse/core/util/useMeasure'
+import MenuIcon from '@mui/icons-material/Menu'
 import { observer } from 'mobx-react'
 
 import { HEADER_BAR_HEIGHT } from '../consts.ts'
@@ -45,13 +48,23 @@ const Controls = observer(function Controls({
   // row
   const [ref, { width }] = useMeasure('width')
   const highlighted = highlightedDisplays(model)
+  const viewMenu = getSession(model).viewTitleBars === false
   const fit = headerFit({
     width,
     searchBoxPx: searchBoxWidth(model.coarseVisibleLocStrings),
     clearHighlight: highlighted.length > 0,
+    viewMenu,
   })
   return (
     <div className={classes.headerBar} ref={ref}>
+      {viewMenu ? (
+        <CascadingMenuButton
+          menuItems={() => model.menuItems()}
+          data-testid="view_menu_icon"
+        >
+          <MenuIcon />
+        </CascadingMenuButton>
+      ) : null}
       <HeaderTrackSelectorButton
         model={model}
         indent={fit.trackSelectorIndent}

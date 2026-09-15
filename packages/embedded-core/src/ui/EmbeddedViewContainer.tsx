@@ -1,12 +1,12 @@
 import { Suspense } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
-import { useWidthSetter } from '@jbrowse/core/util/hooks'
+import {
+  VIEW_HEADER_HEIGHT_VAR,
+  useWidthSetter,
+} from '@jbrowse/core/util/hooks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
-
-import ViewTitle from './ViewTitle.tsx'
 
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 
@@ -14,11 +14,13 @@ const useStyles = makeStyles()(theme => ({
   viewContainer: {
     width: '100%',
     // clip (not hidden) so sticky descendant headers keep working
-    // xref https://stackoverflow.com/questions/43909940/why-does-overflowhidden-prevent-positionsticky-from-working
     overflow: 'clip',
-    background: theme.palette.secondary.main,
-    margin: theme.spacing(0.5),
-    padding: `0 ${theme.spacing(1)} ${theme.spacing(1)}`,
+    background: theme.palette.background.paper,
+    border: `1px solid ${theme.palette.divider}`,
+    borderRadius: theme.shape.borderRadius,
+    // no title bar above the view, so the sticky chrome that clears one pins
+    // at the top edge
+    [VIEW_HEADER_HEIGHT_VAR]: '0px',
   },
 }))
 
@@ -34,15 +36,14 @@ const ViewContainer = observer(function ViewContainer({
   const ref = useWidthSetter(view)
 
   return (
-    <Paper elevation={12} ref={ref} className={classes.viewContainer}>
+    <div ref={ref} className={classes.viewContainer}>
       {session.DialogComponent ? (
         <Suspense fallback={null}>
           <session.DialogComponent {...session.DialogProps} />
         </Suspense>
       ) : null}
-      <ViewTitle view={view} />
-      <Paper>{children}</Paper>
-    </Paper>
+      {children}
+    </div>
   )
 })
 

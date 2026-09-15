@@ -1,6 +1,9 @@
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
+import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
+import MenuIcon from '@mui/icons-material/Menu'
 import PhotoCamera from '@mui/icons-material/PhotoCamera'
 import RotateLeftIcon from '@mui/icons-material/RotateLeft'
 import RotateRightIcon from '@mui/icons-material/RotateRight'
@@ -30,6 +33,14 @@ const Controls = observer(function Controls({
   const { classes } = useStyles()
   return (
     <div className={classes.controls}>
+      {getSession(model).viewTitleBars === false ? (
+        <CascadingMenuButton
+          menuItems={() => model.menuItems()}
+          data-testid="view_menu_icon"
+        >
+          <MenuIcon />
+        </CascadingMenuButton>
+      ) : null}
       <IconButton
         onClick={() => {
           model.zoomOutButton()

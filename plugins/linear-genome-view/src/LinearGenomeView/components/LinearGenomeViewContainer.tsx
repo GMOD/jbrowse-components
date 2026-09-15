@@ -153,6 +153,7 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
         <NavigationAnnouncer model={model} />
         <div
           ref={headerRef}
+          data-testid={`lgv-header-${model.id}`}
           className={classes.header}
           style={{ position: stickyViewHeaders ? 'sticky' : undefined }}
         >

@@ -316,6 +316,16 @@ and cannot evaluate a `jexl:` callback. `hydrateTrackConfig` from
 defaults. An edit to a shown track's settings is kept in the session's
 `trackConfigDeltas`, so it now survives a session snapshot.
 
+## An embedded view has no title bar
+
+The single-view components draw their view in a plain bordered box, with no
+shaded panel around it and no title bar above it. The view menu moved into the
+view's own controls: the first button in the linear view's header, and the first
+in the circular view's control strip. It keeps `data-testid="view_menu_icon"`.
+The About dialog the title bar opened is gone. Session code can read
+`session.viewTitleBars`, which is `false` in these products, to tell whether a
+view hosts its own menu.
+
 ## The LGV viewport is a stored bp window
 
 `LinearGenomeView` persisted its viewport as `offsetPx` and `bpPerPx`. Both are

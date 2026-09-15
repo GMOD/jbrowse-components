@@ -14,8 +14,11 @@ const ASK = 194
 
 const shed = (
   width: number | undefined,
-  { searchBoxPx = ASK, clearHighlight = false } = {},
-) => ORDER.filter(k => !headerFit({ width, searchBoxPx, clearHighlight })[k])
+  { searchBoxPx = ASK, clearHighlight = false, viewMenu = false } = {},
+) =>
+  ORDER.filter(
+    k => !headerFit({ width, searchBoxPx, clearHighlight, viewMenu })[k],
+  )
 
 test('an unmeasured header keeps everything', () => {
   expect(shed(undefined)).toEqual([])
@@ -103,4 +106,10 @@ test('shedding only ever grows as the header narrows', () => {
       previous = count
     }
   }
+})
+
+test("an embedded view's menu button sheds the row 44px earlier", () => {
+  expect(shed(785)).toEqual([])
+  expect(shed(813, { viewMenu: true })).toEqual(['trackSelectorIndent'])
+  expect(shed(829, { viewMenu: true })).toEqual([])
 })
