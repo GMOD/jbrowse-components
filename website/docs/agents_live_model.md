@@ -271,9 +271,11 @@ a field.
   (`view.setWidth(800)` works, `view.width = 800` throws).
 - Snapshots (`jb.mst.getSnapshot(node)`) omit computed getters, so read getters
   off the live node.
-- `launchTrack` on an already shown track applies nothing.
-  `track.applyDisplaySettings(settings)` is the update path, and it routes each
-  key through the same slot machinery a session spec's inline keys get.
+- `launchTrack` on an already shown track applies the inline settings it was
+  given through `track.applyDisplaySettings(settings)`, so a spec entry or a
+  `jb.setSession` document naming `{ trackId, height }` restyles a shown track
+  as well as opening a new one. Both routes put each key through the same slot
+  machinery.
 - `docs topic:"model:<modelType>"` documents a display's own actions for
   anything a slot does not cover.
 - A track too tall for the window wants a height strategy, not `displayMode`: a

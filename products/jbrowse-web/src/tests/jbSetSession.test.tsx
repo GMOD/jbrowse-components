@@ -48,6 +48,17 @@ test('jb.setSession rewrites the live session as a document', async () => {
   expect(view.tracks[0]!.activeDisplay.height).toBe(77)
   await findAnyDisplayPainted(delay)
 
+  // an entry for a track already shown restyles it rather than doing nothing
+  const restyle = JSON.parse(JSON.stringify(getSnapshot(session))) as {
+    views: { tracks: unknown[] }[]
+  }
+  restyle.views[0]!.tracks.push({ trackId: 'volvox_test_vcf', height: 55 })
+  await jb.setSession(restyle, 5000)
+  await waitFor(() => {
+    expect(view.tracks[0]!.activeDisplay.height).toBe(55)
+  }, delay)
+  expect(view.tracks).toHaveLength(1)
+
   const again = JSON.parse(JSON.stringify(getSnapshot(session))) as {
     views: { tracks: unknown[] }[]
   }

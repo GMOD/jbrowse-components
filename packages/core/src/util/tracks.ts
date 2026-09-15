@@ -785,6 +785,24 @@ interface MinimalTrack extends IAnyType {
 // context only for its synchronous prologue, so the show after the await must
 // re-enter the tree through an action. Optional only because `self` inside the
 // actions block that defines showTrack does not carry it yet.
+// A track already shown keeps its display, and used to keep its settings too:
+// showing it again applied nothing, so a spec entry or a session document
+// naming `{ trackId, height }` for a shown track restyled it only when it was
+// the one to open it. The inline keys go through the same routing a fresh
+// track's get; `type` picks a display for a new track and means nothing here.
+function restyleShown<T>(
+  found: T,
+  { type: _type, ...settings }: DisplayInitialSnapshot,
+): T {
+  const track = found as unknown as {
+    applyDisplaySettings?: (settings: Record<string, unknown>) => unknown
+  }
+  if (Object.keys(settings).length && track.applyDisplaySettings) {
+    track.applyDisplaySettings(settings)
+  }
+  return found
+}
+
 interface GenericView {
   type: string
   tracks: MSTArray<MinimalTrack>
@@ -1098,7 +1116,7 @@ export function showTrackGeneric(
 
   const found = self.tracks.find(t => t.configuration.trackId === trackId)
   if (found) {
-    return found
+    return restyleShown(found, displayInitialSnapshot)
   }
 
   // Single choke point for all "open a track" paths — errors surface as
@@ -1285,7 +1303,7 @@ export async function launchTrackGeneric(
   const session = getSession(self)
   const found = self.tracks.find(t => t.configuration.trackId === trackId)
   if (found) {
-    return found
+    return restyleShown(found, displayInitialSnapshot)
   }
   try {
     const { picked } = resolveTrackDisplayChoice(

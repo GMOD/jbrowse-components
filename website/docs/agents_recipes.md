@@ -691,9 +691,9 @@ return jb.setSession(doc)
   whole instruction. Views the document does not list are closed.
 - A document the model refuses throws naming the path and the value, and nothing
   is applied.
-- Config slots (`displayMode`, `color`) live in the config, not the session:
-  restyle a shown track with `track.applyDisplaySettings`, or put the setting on
-  a `{ trackId }` entry.
+- Config slots (`displayMode`, `color`) live in the config, not the session's
+  built track, so put the setting on a `{ trackId }` entry: it restyles a track
+  already shown and opens one that is not.
 
 ## Fit everything in the window
 

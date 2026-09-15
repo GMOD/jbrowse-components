@@ -45,6 +45,12 @@ data claims with `jb.getFeatures`, never from the picture.
   built app and exercises every tool against volvox). It needs
   `pnpm build && pnpm build:electron-main` first, and it takes the per-user
   socket — with another Desktop instance running it attaches to that one.
+- Agent eval: `pnpm --filter @jbrowse/desktop eval:mcp` (same build, `claude` on
+  PATH) runs a real `claude -p` session per task in `test/agentEvalTasks.ts` and
+  grades the session state over the bridge, reporting calls, errors, docs reads,
+  screenshots, seconds and dollars per task. `--model opus`, `--filter <name>`,
+  `--runs N`. Judge a change to the instructions, the docs or `jb` by its
+  numbers, and add a task for each stumble a filmed take shows.
 - The discipline above lives in `website/docs/agents_live_model.md` and
   `SERVER_INSTRUCTIONS` (`electron/mcp/toolDefinitions.ts`). Edit it there;
   `products/jbrowse-desktop/src/mcp/docsRoster.test.ts` checks the copies agree,

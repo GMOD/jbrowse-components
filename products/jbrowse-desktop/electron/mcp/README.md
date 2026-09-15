@@ -137,6 +137,14 @@ built app and runs the conformance suite in `test/mcpConformance.ts` against
 volvox; agent-side working discipline lives in `.claude/skills/jbrowse-mcp/`
 and, condensed, in the initialize response's `instructions`.
 
+`pnpm eval:mcp` is the agent eval over the same build: for each task in
+`test/agentEvalTasks.ts` it resets the volvox baseline, runs a real `claude -p`
+session against this server, and grades the session state over the bridge. The
+transcript is counted, never graded — run_javascript calls, errored calls, docs
+reads, screenshots, turns, seconds, dollars — so a change to the instructions, a
+tool description or `jb` is judged by calls-to-success rather than by a filmed
+take. `test/mcpHarness.ts` is what both share.
+
 ## What each client shows the model
 
 Claude Code cuts the server `instructions` and each tool description at 2048

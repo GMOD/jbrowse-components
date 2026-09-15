@@ -2269,6 +2269,33 @@ describe('TrackInit with display configuration', () => {
     expect(model.height).toBe(height)
   })
 
+  // A track already shown used to keep its settings: launching it again with
+  // an inline height applied nothing, so a spec entry or a session document
+  // could restyle a track only by being the one to open it.
+  test('launching a shown track with inline settings restyles it', async () => {
+    const { Session, LinearGenomeModel, pluginManager } = initializeWithTracks()
+    const session = Session.create({ configuration: {} }, { pluginManager })
+    const model = session.setView(
+      LinearGenomeModel.create({
+        type: 'LinearGenomeView',
+        assembly: 'volvox',
+        loc: 'ctgA:1-1000',
+        tracks: ['track1'],
+      }),
+    )
+    model.setWidth(800)
+    await waitFor(() => {
+      expect(model.tracks.length).toBe(1)
+    })
+    const shown = model.tracks[0]!
+    expect(shown.displays[0]!.height).toBe(100)
+
+    const again = await model.launchTrack('track1', {}, { height: 55 })
+    expect(again).toBe(shown)
+    expect(model.tracks.length).toBe(1)
+    expect(shown.displays[0]!.height).toBe(55)
+  })
+
   test('init with object trackIds allows specifying display type via displaySnapshot', async () => {
     const { Session, LinearGenomeModel, pluginManager } = initializeWithTracks()
     const session = Session.create({ configuration: {} }, { pluginManager })
