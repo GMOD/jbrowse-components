@@ -243,18 +243,23 @@ const CircularImportForm = observer(function CircularImportForm({
             </div>
           ))}
           {paired ? (
-            <Tooltip describeChild title="Swap which genome starts the circle">
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<SwapVertIcon />}
-                onClick={() => {
-                  form.applyRows([rows[1]!, rows[0]!], 0)
-                }}
+            rows[0] === rows[1] ? null : (
+              <Tooltip
+                describeChild
+                title="Swap which genome starts the circle"
               >
-                Swap assemblies
-              </Button>
-            </Tooltip>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<SwapVertIcon />}
+                  onClick={() => {
+                    form.applyRows([rows[1]!, rows[0]!], 0)
+                  }}
+                >
+                  Swap assemblies
+                </Button>
+              </Tooltip>
+            )
           ) : (
             <Tooltip
               describeChild
