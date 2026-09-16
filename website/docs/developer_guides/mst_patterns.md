@@ -387,11 +387,18 @@ get colorScales(): ColorScale[] {
         kind: 'categorical',
         id: 'consequenceImpact',
         title: 'Consequence impact',
-        entries: IMPACT_TIERS.map(t => ({
-          value: t.tier,
-          label: t.tier,
-          color: t.color,
-        })),
+        entries: [
+          ...IMPACT_TIERS.map(t => ({
+            value: t.tier,
+            label: t.tier,
+            color: t.color,
+          })),
+          {
+            value: UNANNOTATED_IMPACT,
+            label: UNANNOTATED_IMPACT,
+            color: getImpactColor(UNANNOTATED_IMPACT),
+          },
+        ],
       },
     ]
   }

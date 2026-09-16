@@ -132,9 +132,6 @@ export default function stateModelFactory(
                   label: t.tier,
                   color: t.color,
                 })),
-                // The cells paint it through the shared `getVariantImpactColor`,
-                // so leaving it off listed a scale narrower than the one on the
-                // screen — and "nobody looked" read as MODIFIER's grey.
                 {
                   value: UNANNOTATED_IMPACT,
                   label: UNANNOTATED_IMPACT,
