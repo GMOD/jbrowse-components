@@ -10,7 +10,11 @@ import {
   getSampleGroupEntries,
   getVariantColorScales,
 } from './variantLegend.ts'
-import { NON_SV_TYPE, SV_TYPE_COLOR } from './variantSvType.ts'
+import {
+  NON_SV_TYPE,
+  SV_TYPE_COLOR,
+  assignSvTypeColors,
+} from './variantSvType.ts'
 
 import type { Source } from './types.ts'
 import type { VariantLegendInputs } from './variantLegend.ts'
@@ -227,7 +231,7 @@ describe('getVariantColorScales', () => {
     const [section] = getVariantColorScales({
       ...inputs({ paintedDomain: ['DEL', NON_SV_TYPE] }),
       featureColor: SV_TYPE_COLOR,
-      svTypeColors: { DEL: '#e41a1c', [NON_SV_TYPE]: '#808080' },
+      svTypeColors: assignSvTypeColors(['DEL', NON_SV_TYPE]),
       colorBy: '',
       sources,
     })

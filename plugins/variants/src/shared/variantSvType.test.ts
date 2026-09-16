@@ -1,6 +1,9 @@
+import { set1 } from '@jbrowse/core/ui/colors'
 import { SimpleFeature } from '@jbrowse/core/util'
 
+import { ALT_HUE } from './cellFill.ts'
 import {
+  NON_SV_TYPE,
   assignSvTypeColors,
   getVariantSvType,
   getVariantSvTypeColor,
@@ -146,6 +149,15 @@ describe('assignSvTypeColors', () => {
 
   it('is empty for no types', () => {
     expect(assignSvTypeColors([])).toEqual({})
+  })
+
+  it('paints the non-structural member the default alt hue, last', () => {
+    const colors = assignSvTypeColors(['CPX', NON_SV_TYPE, 'DEL'])
+    expect(colors[NON_SV_TYPE]).toBe(ALT_HUE)
+    expect(Object.keys(colors).at(-1)).toBe(NON_SV_TYPE)
+    // excluded from the set1 auto-assignment, so a real token still gets set1
+    expect(colors.CPX).not.toBe(ALT_HUE)
+    expect(set1).toContain(colors.CPX)
   })
 })
 

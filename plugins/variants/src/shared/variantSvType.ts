@@ -1,6 +1,7 @@
 import { set1 } from '@jbrowse/core/ui/colors'
 
 import { isBreakend } from '../VcfFeature/util.ts'
+import { ALT_HUE } from './cellFill.ts'
 
 import type { Feature } from '@jbrowse/core/util'
 
@@ -249,10 +250,12 @@ export function assignSvTypeColors(types: string[]): Record<string, string> {
   other.forEach((type, i) => {
     result[type] = free.length ? free[i % free.length]! : set1[i % set1.length]!
   })
-  // Last, and neutral: it is the scale's "no structural class" member, so it
-  // reads as the absence of one rather than as another class.
+  // Last, and the default scale's alt hue: it is the scale's "no structural
+  // class" member, which is what an alt cell means with no further meaning on
+  // it. A grey put its het and triploid shades on the reference grey's own
+  // ramp.
   if (types.includes(NON_SV_TYPE)) {
-    result[NON_SV_TYPE] = OTHER_SV_COLOR
+    result[NON_SV_TYPE] = ALT_HUE
   }
   return result
 }
