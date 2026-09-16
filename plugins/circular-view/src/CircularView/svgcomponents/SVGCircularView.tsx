@@ -8,6 +8,7 @@ import { notifySkippedSvgTracks } from '@jbrowse/core/svg/trackNames'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession, radToDeg } from '@jbrowse/core/util'
 
+import { RingAxes } from '../../rings/RingAxes.tsx'
 import {
   canRasterizeRings,
   paintRingsSvg,
@@ -118,6 +119,7 @@ export async function renderToSvg(
           transform={`translate(${center},${center}) rotate(${radToDeg(offsetRadians)})`}
         >
           <Rulers model={model} />
+          <RingAxes model={model} />
           {displayResults.map(({ id, result }) => (
             <Fragment key={id}>{result}</Fragment>
           ))}

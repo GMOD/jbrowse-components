@@ -10,6 +10,7 @@ import {
 import { DiagonalizeLoadingScreen } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
+import { RingAxes } from '../../rings/RingAxes.tsx'
 import { RingCanvases, RingStrips } from '../../rings/RingLayer.tsx'
 import { RingPointer } from '../../rings/ringPointer.ts'
 import Controls from './Controls.tsx'
@@ -92,6 +93,7 @@ const Slices = observer(function Slices({
   return (
     <>
       <Rulers model={model} />
+      <RingAxes model={model} />
       {model.tracks.map(track => {
         const display = track.displays[0]
         return model.ringHost.ringDisplays.includes(display) ? null : (

@@ -148,6 +148,40 @@ export function layoutRings(
   return rings
 }
 
+/** The radial distance two labelled ticks of a ring's axis keep apart. */
+export const RING_AXIS_LABEL_GAP_PX = 11
+
+/** The y axis a ring display declares, as the chrome's `YAxis` shapes it. */
+interface RingAxis {
+  bandTops?: number[]
+  ticks: { items: { value: number; y: number; label?: string }[] }
+}
+
+/**
+ * A ring display's y axis as radii: each tick of its first single-band scale
+ * at the radius its strip row is warped to, labelled where the label clears
+ * the one before it. A stacked scale (a multi-wiggle's rows) has no one axis
+ * and draws none.
+ */
+export function ringAxisTicks(ring: Ring) {
+  const axis = (ring.display as { axes?: RingAxis[] }).axes?.find(
+    a => (a.bandTops ?? [0]).length === 1,
+  )
+  const scale = stripPerRingPx(ring)
+  let lastLabelled = -Infinity
+  return (axis?.ticks.items ?? []).flatMap(({ value, y, label }) => {
+    const radius = ring.outerPx - y / scale
+    if (radius < ring.innerPx - 0.5 || radius > ring.outerPx + 0.5) {
+      return []
+    }
+    const labelled = Math.abs(radius - lastLabelled) >= RING_AXIS_LABEL_GAP_PX
+    if (labelled) {
+      lastLabelled = radius
+    }
+    return [{ radius, label: labelled ? (label ?? `${value}`) : undefined }]
+  })
+}
+
 /** Strip px per ring px, above 1 on a ring that `layoutRings` shrank. */
 function stripPerRingPx({ display, innerPx, outerPx }: Ring) {
   const band = outerPx - innerPx

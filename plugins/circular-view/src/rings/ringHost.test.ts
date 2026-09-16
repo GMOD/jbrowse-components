@@ -3,7 +3,14 @@ import { GpuMarkBackend } from '@jbrowse/render-core/marks/backend'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 
 import { calculateStaticSlices } from '../CircularView/slices.ts'
-import { RING_GAP_PX, layoutRings, ringHit, stripBlocks } from './ringHost.ts'
+import {
+  RING_AXIS_LABEL_GAP_PX,
+  RING_GAP_PX,
+  layoutRings,
+  ringAxisTicks,
+  ringHit,
+  stripBlocks,
+} from './ringHost.ts'
 import { RING_PASSES, ringMarks } from './ringMarks.ts'
 import { SLICE_ARC_PX, ringShape } from './ringShape.ts'
 
@@ -326,4 +333,38 @@ test('the ring pass writes the frame it samples in', () => {
   const [u] = hal.getUniformWritesF32()
   expect([...u!.slice(0, 6)]).toEqual([500, 500, 1000, 1000, 1.25, 1])
   expect(RING_PASSES).toBe(ringMarks.length)
+})
+
+// the axis is the strip's, warped the way the ring is: a tick's strip row lands
+// at the radius that row is drawn at, and crowded labels drop out
+test("a ring's axis ticks sit at the radii their strip rows are warped to", () => {
+  const axes = [
+    {
+      ticks: {
+        items: [
+          { value: 10, y: 0 },
+          { value: 9, y: 10 },
+          { value: 5, y: 150 },
+          { value: 0, y: 300 },
+        ],
+      },
+    },
+  ]
+  const [ring] = layoutRings([{ ...display('a', 300), axes } as never], 200)
+  const band = ring!.outerPx - ring!.innerPx
+  const ticks = ringAxisTicks(ring!)
+  expect(ticks.map(t => t.radius)).toEqual([
+    ring!.outerPx,
+    ring!.outerPx - (10 * band) / 300,
+    ring!.outerPx - band / 2,
+    ring!.innerPx,
+  ])
+  expect((10 * band) / 300).toBeLessThan(RING_AXIS_LABEL_GAP_PX)
+  expect(ticks.map(t => t.label)).toEqual(['10', undefined, '5', '0'])
+})
+
+test('a stacked scale draws no ring axis', () => {
+  const axes = [{ bandTops: [0, 50], ticks: { items: [{ value: 1, y: 0 }] } }]
+  const [ring] = layoutRings([{ ...display('a', 100), axes } as never], 500)
+  expect(ringAxisTicks(ring!)).toEqual([])
 })
