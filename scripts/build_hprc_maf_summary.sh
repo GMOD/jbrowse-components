@@ -29,8 +29,8 @@
 #
 # THIS REPLACED A PER-CONTIG `taffy view -r` ROUTE, and retires two of its three
 # failure modes rather than re-clearing them (they are written up in
-# agent-docs/reference/HPRC_RELEASE2.md § "Three things the build has to get
-# right"): a region past a contig's end silently emitting an empty MAF, and a
+# agent-docs/reference/HPRC_RELEASE2.md §"What the build has to get right"):
+# a region past a contig's end silently emitting an empty MAF, and a
 # contig with a single `.tai` entry being unextractable at all, which left 43
 # `chrUn_*` scaffolds out of the v2.0 file. A sequential read asks the index for
 # nothing and so can miss nothing. What survives is the third, below.
