@@ -4,6 +4,15 @@ import { ALT_HUE, cellFill, shadeByDosage } from './cellFill.ts'
 import { NO_CALL_COLOR, REFERENCE_COLOR } from './constants.ts'
 import { getAlleleColor } from './drawAlleleCount.ts'
 
+import type * as ColordModuleNs from '@jbrowse/core/util/colord'
+
+type ColordModule = typeof ColordModuleNs
+
+jest.mock('@jbrowse/core/util/colord', () => {
+  const actual: ColordModule = jest.requireActual('@jbrowse/core/util/colord')
+  return { ...actual, colord: jest.fn(actual.colord) }
+})
+
 const hex = (css: string) => colord(css).toHex()
 
 describe('shadeByDosage', () => {
@@ -40,6 +49,20 @@ describe('shadeByDosage', () => {
     expect(hex(shadeByDosage('hsl(200,50%,90%)', 0))).toBe(
       hex('hsl(200,50%,90%)'),
     )
+  })
+
+  it('parses a hue once: the repeat is the memo, not a second parse', () => {
+    const parse = jest.mocked(colord)
+    const hue = '#123456'
+    const first = shadeByDosage(hue, 0.5)
+    parse.mockClear()
+    expect(shadeByDosage(hue, 0.5)).toBe(first)
+    expect(parse).not.toHaveBeenCalled()
+  })
+
+  it('keeps the default hom and het hexes', () => {
+    expect(hex(shadeByDosage(ALT_HUE, 1))).toBe('#265973')
+    expect(shadeByDosage(ALT_HUE, 0.5)).toBe('#539fc6')
   })
 })
 

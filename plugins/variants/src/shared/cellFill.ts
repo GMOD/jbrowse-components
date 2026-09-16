@@ -21,6 +21,13 @@ export const ALT_HUE = 'hsl(200,50%,30%)'
 // bound.
 const PALE_LIGHTNESS = 80
 
+// (hue, dosage) -> the shaded fill. A parse and a re-format cost ~3 microseconds,
+// and the cell loops' per-site memo resets per feature, so every het site paid
+// it again. The key is the exact dosage rather than a quantized one, so the
+// memo cannot move a color: a dosage is a ratio of small allele counts, which
+// is a handful of distinct values per hue.
+const shadedByHue = new Map<string, string>()
+
 /**
  * One ramp for every mode: full dosage is the hue itself, and a lower dosage
  * lifts its lightness toward {@link PALE_LIGHTNESS} in proportion. A diploid het
@@ -31,9 +38,15 @@ export function shadeByDosage(hue: string, dosage: number) {
   if (dosage >= 1) {
     return hue
   }
-  const { h, s, l } = colord(hue).toHsl()
-  const lifted = l + (1 - dosage) * Math.max(0, PALE_LIGHTNESS - l)
-  return colord({ h, s, l: lifted }).toHex()
+  const key = `${hue}|${dosage}`
+  let fill = shadedByHue.get(key)
+  if (fill === undefined) {
+    const { h, s, l } = colord(hue).toHsl()
+    const lifted = l + (1 - dosage) * Math.max(0, PALE_LIGHTNESS - l)
+    fill = colord({ h, s, l: lifted }).toHex()
+    shadedByHue.set(key, fill)
+  }
+  return fill
 }
 
 /** `shade(hue, dosage)`, or the bare hue where the display turns shading off. */
