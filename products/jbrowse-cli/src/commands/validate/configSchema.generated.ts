@@ -5331,6 +5331,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/StringOrJexl",
           "default": ""
         },
+        "shadeByDosage": {
+          "description": "shade each alt cell by the fraction of its called alleles that are non-reference, so a homozygote is darker than a heterozygote; off paints every alt cell the mode's flat hue.",
+          "$ref": "#/$defs/BooleanOrJexl",
+          "default": true
+        },
         "minorAlleleFrequencyFilter": {
           "description": "Hide variants whose minor allele frequency is below this threshold.",
           "$ref": "#/$defs/NumberOrJexl",
@@ -5511,6 +5516,11 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "featureColor": {
           "$ref": "#/$defs/StringOrJexl",
           "default": ""
+        },
+        "shadeByDosage": {
+          "description": "shade each alt cell by the fraction of its called alleles that are non-reference, so a homozygote is darker than a heterozygote; off paints every alt cell the mode's flat hue.",
+          "$ref": "#/$defs/BooleanOrJexl",
+          "default": true
         },
         "minorAlleleFrequencyFilter": {
           "description": "Hide variants whose minor allele frequency is below this threshold.",

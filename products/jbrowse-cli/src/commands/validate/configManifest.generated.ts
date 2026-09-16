@@ -4088,6 +4088,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
+          "name": "shadeByDosage",
+          "type": "(JexlString | boolean)"
+        },
+        {
           "name": "minorAlleleFrequencyFilter",
           "type": "(JexlString | number)"
         },
@@ -4211,6 +4215,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "featureColor",
           "type": "(JexlString | string)"
+        },
+        {
+          "name": "shadeByDosage",
+          "type": "(JexlString | boolean)"
         },
         {
           "name": "minorAlleleFrequencyFilter",

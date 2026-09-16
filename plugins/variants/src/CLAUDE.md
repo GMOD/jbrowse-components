@@ -44,6 +44,47 @@ elsewhere.
   is its shape and width. A purple marker made a variant read as an insertion
   only at the zooms where the marker outgrew its cell.
 
+## One composition rule: `fill = shade(hue(variant, cell), dosage)`
+
+`shared/cellFill.ts` is that rule, and every cell in every mode goes through it.
+Each channel carries one variable through one scale.
+
+- **`hue` is the mode's per-variant nominal** — the constant alt hue by default,
+  an impact tier, an SV class, a phase-set hue, a plain CSS colour, or, in
+  phased mode, the per-haplotype allele identity. Which alt a sample carries is
+  not on it in allele-count mode; the matrix's per-alt columns and phased mode
+  carry that.
+- **`dosage` is over CALLED alleles**, so `1/2` is a hom and `0/2` a het, and
+  `./1` is a full dose on the one haplotype that was called. A wholly uncalled
+  genotype is the no-call category, never a blend into it. `altDosageByte` is
+  the same number for the insertion marker.
+- **One ramp for every mode**, bounded by a fixed pale ceiling so a het in a
+  class colour still reads as that class. Full dosage is the hue itself, which
+  is also what makes a legend swatch and a hom cell the same colour. The
+  `shadeByDosage` slot turns it off; it is a fetch input, since the worker
+  colours the cells.
+- **A scale's domain has no gaps**: a record with no structural class is
+  `NON_SV_TYPE`, an unannotated record is `UNANNOTATED_IMPACT`. Without those
+  the mode was class colours beside the default blue, i.e. two scales at once.
+- **The absent-data colours are off every wheel.** The phase-set hue band is
+  saturation/lightness the no-call yellow is not on, or a phase set paints a
+  called haplotype the "missing" colour.
+- **Cross-mode identity**: INS takes `palette.insertion`, and the phased allele
+  colours come from a palette the SV scale does not touch — red cannot mean
+  "deletion" in one mode and "secondary alt" in another.
+- **The lane's record colour is `hue(variant)`**, not a constant of its own. A
+  goldenrod mark over blue cells was a hue standing for nothing.
+
+## The legend lists what was painted
+
+`shared/variantLegend.ts` builds from the scale in use plus the absent-data
+categories present, and its swatches come from the same functions the cells do.
+`hasSecondaryAlt`, `hasUnphased`, `hasNoCall` and `paintedDomain` are the cell
+loops' own record of what they emitted (`paintedCategories`, one bit per
+`CELL_*`), merged across regions in `paintedLegendFlags`. "The site is
+multiallelic" is not the same claim as "a secondary-alt cell is on screen", and
+the legend makes the second one.
+
 ## Mixed ploidy: five consumers, one contract
 
 Mixed-ploidy files are routine (1000G chrX non-PAR). Both cell loops,
