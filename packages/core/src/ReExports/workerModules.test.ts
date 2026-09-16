@@ -77,3 +77,37 @@ test('every value in a stubbed namespace is the stub', () => {
     }
   }
 })
+
+// What an adapter or RPC plugin reads in the worker. A module whose graph
+// reaches react-dom, a Material UI component, the data grid or floating-ui is
+// stubbed there, so one such import under `util/index.ts` would stub every
+// module below and break those plugins in the worker.
+test('the modules a worker-side plugin reads are served for real', () => {
+  const modules: Record<string, { worker: string; uiVia?: string[] }> =
+    manifest.modules
+  const workerSide = [
+    '@jbrowse/core/Plugin',
+    '@jbrowse/core/configuration',
+    '@jbrowse/core/data_adapters/BaseAdapter',
+    '@jbrowse/core/data_adapters/dataAdapterCache',
+    '@jbrowse/core/pluggableElementTypes',
+    '@jbrowse/core/pluggableElementTypes/AdapterType',
+    '@jbrowse/core/pluggableElementTypes/models',
+    '@jbrowse/core/ui/palette',
+    '@jbrowse/core/ui/theme',
+    '@jbrowse/core/util',
+    '@jbrowse/core/util/Base1DViewModel',
+    '@jbrowse/core/util/color',
+    '@jbrowse/core/util/io',
+    '@jbrowse/core/util/layouts',
+    '@jbrowse/core/util/mst-reflection',
+    '@jbrowse/core/util/rxjs',
+    '@jbrowse/core/util/tracks',
+    '@jbrowse/core/util/types/mst',
+  ]
+  expect(
+    workerSide
+      .filter(key => modules[key]?.worker !== 'real')
+      .map(key => ({ key, uiVia: modules[key]?.uiVia })),
+  ).toEqual([])
+})

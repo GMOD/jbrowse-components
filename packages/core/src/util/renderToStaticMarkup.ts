@@ -16,8 +16,10 @@ import { createRoot } from 'react-dom/client'
 // (packages/lib/src/renderToStaticMarkup.ts there) -- because a rendering
 // library asking its host for a renderer was the coupling worth removing, and
 // because react-dom is a host external for a plugin anyway, so it costs them a
-// few hundred bytes rather than a duplicate react. sharedModules.purity.test.ts
-// is what keeps this file off the worker's graph now.
+// few hundred bytes rather than a duplicate react. Re-exporting it from the
+// barrel would also stub `@jbrowse/core/util` in the worker, since the
+// generator stubs a module whose graph reaches react-dom; workerModules.test.ts
+// fails on that.
 //
 // https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
 export function renderToStaticMarkup(node: React.ReactElement) {
