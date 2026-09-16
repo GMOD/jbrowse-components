@@ -340,6 +340,30 @@ test('a facet orders digit keys by magnitude and files a missing value under its
   ])
 })
 
+test('a facet stacks its domain first and the rest sorted behind it', () => {
+  const { features, sections } = facetRows(
+    stacked(
+      [
+        feature(0, 10, { sample: 'a' }),
+        feature(0, 10, { sample: 'b' }),
+        feature(0, 10, { sample: 'c' }),
+      ],
+      'sample',
+    ),
+    { field: 'sample', domain: ['c', 'absent', 'b'] },
+  )
+  expect(sections.map(s => [s.key, s.firstRow])).toEqual([
+    ['c', 0],
+    ['b', 1],
+    ['a', 2],
+  ])
+  expect(rows(features, 'sample', 'row')).toEqual([
+    ['a', 2],
+    ['b', 1],
+    ['c', 0],
+  ])
+})
+
 test('a facet merges the tail past the cap into one section', () => {
   const many = Array.from({ length: MAX_GROUPS + 5 }, (_, i) =>
     feature(0, 10, { sample: `s${String(i).padStart(3, '0')}` }),

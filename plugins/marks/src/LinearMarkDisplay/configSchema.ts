@@ -251,15 +251,26 @@ const markFacetSchema = ConfigurationSchema(
      * rows, one section per value, named by a chip. The rows themselves come
      * from a `stack` step grouped by the same field — the facet is the offset
      * between one group's rows and the next, so a section stacks under the
-     * ones above it rather than over them. Sections order the way every
-     * in-track grouping orders, digits by magnitude, and the tail past 40
-     * merges into one. Empty for a display with no facet. Writing
-     * `facet: 'type'` directly on the mark lands here.
+     * ones above it rather than over them. Sections order by `domain`, then
+     * the way every in-track grouping orders, digits by magnitude, and the
+     * tail past 40 merges into one. Empty for a display with no facet.
+     * Writing `facet: 'type'` directly on the mark lands here.
      */
     field: {
       type: 'string',
       defaultValue: '',
       description: 'field whose values take their own rows',
+    },
+    /**
+     * #slot marks.facet.domain
+     * The section order: the values listed stack first, in this order, and
+     * the rest follow sorted. A listed value the data lacks takes no
+     * section.
+     */
+    domain: {
+      type: 'stringArray',
+      defaultValue: [],
+      description: 'section order; listed values first, the rest sorted',
     },
   },
   { preProcessSnapshot: liftField },

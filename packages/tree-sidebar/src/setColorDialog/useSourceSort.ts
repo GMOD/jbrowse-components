@@ -28,16 +28,11 @@ export function nextSortState(
 }
 
 /**
- * Compare two row values: numerically when both parse as finite numbers (so a
+ * Compare two cells: numerically when both parse as finite numbers (so a
  * numeric column like a score sorts 2 < 10, not "10" < "2"), else by locale
  * string order.
- *
- * Exported because a row value written as a number is not this dialog's
- * situation, it is the row axis's: a partition field naming chromHMM states
- * gives rows "1" through "25", and plain string order files state 10 between 1
- * and 2 there exactly as it would in this grid.
  */
-export function compareRowValues(a: string, b: string) {
+function compareRowValues(a: string, b: string) {
   const na = Number(a)
   const nb = Number(b)
   const bothNumeric =

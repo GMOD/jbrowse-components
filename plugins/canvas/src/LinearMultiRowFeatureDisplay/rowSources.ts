@@ -1,5 +1,5 @@
 import { categoricalPalette } from '@jbrowse/core/ui/colors'
-import { compareRowValues } from '@jbrowse/tree-sidebar'
+import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 
 // `labelColor` tints the sidebar swatch only, never the blocks.
 export interface MultiRowSource {
@@ -82,21 +82,14 @@ export function resolveRowColorStrings(
 }
 
 /**
- * Values named in `rowOrder` come first, the rest sorted through
- * `compareRowValues`, which compares numerically when both sides are numbers —
- * a bare `sort()` files a chromHMM run's 25 states as 1, 10, 11, 2, 20. The
- * `''` row, the features carrying no value, goes last, where every other
- * grouping in the tree files its catch-all.
+ * The row axis is a facet with one row per value, so its order is the facet
+ * order: `rowOrder` is the domain, listed values first, the rest sorted the
+ * way every in-track grouping sorts, digits by magnitude and the `''` row
+ * last.
  */
 export function orderPartitionValues(
   values: Set<string>,
   rowOrder: readonly string[],
 ): string[] {
-  const listed = [...new Set(rowOrder)].filter(v => values.has(v))
-  const seen = new Set(listed)
-  const rest = [...values]
-    .filter(v => !seen.has(v) && v !== '')
-    .sort(compareRowValues)
-  const unanswered = values.has('') && !seen.has('') ? [''] : []
-  return [...listed, ...rest, ...unanswered]
+  return [...values].sort(groupKeyComparator(rowOrder))
 }

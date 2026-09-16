@@ -1,4 +1,4 @@
-import { compareGroupKeys } from '@jbrowse/core/util/groupKeys'
+import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 
 import {
@@ -55,6 +55,10 @@ function effectiveGroupBy(
 // chips; ungrouped is the one-section case at 0.
 function sectionChipPx(inputs: Pick<LayoutInputs, 'groupBy' | 'flattenRows'>) {
   return effectiveGroupBy(inputs) ? GROUP_LABEL_HEIGHT : 0
+}
+
+function sectionOrder(inputs: Pick<LayoutInputs, 'groupBy' | 'flattenRows'>) {
+  return groupKeyComparator(effectiveGroupBy(inputs)?.domain)
 }
 
 // Which section every item stacks into, capped over the whole display, or
@@ -116,9 +120,10 @@ function prepareRefSections(
       member.ids.add(item.featureId)
     }
   }
+  const compare = sectionOrder(inputs)
   return {
     sections: [...members.values()]
-      .sort((a, b) => compareGroupKeys(a.id.key, b.id.key))
+      .sort((a, b) => compare(a.id.key, b.id.key))
       .map(({ id, ids }) => ({
         id,
         prep: prepareRefPack(regions, inputs, metrics, ids),
@@ -135,7 +140,11 @@ interface PackedSection extends SectionPrep {
 // Section tops are display-wide: two refs side by side put a strand's section
 // at one y, or the chip row could name neither. Each section is as tall as
 // its tallest ref group, and the chip row sits above its first row.
-function stackSections(refs: readonly PackedSection[][], chipPx: number) {
+function stackSections(
+  refs: readonly PackedSection[][],
+  inputs: Pick<LayoutInputs, 'groupBy' | 'flattenRows'>,
+) {
+  const chipPx = sectionChipPx(inputs)
   const heights = new Map<string, number>()
   for (const sections of refs) {
     for (const { id, pack } of sections) {
@@ -150,7 +159,7 @@ function stackSections(refs: readonly PackedSection[][], chipPx: number) {
   }
   const tops = new Map<string, number>()
   let y = 0
-  for (const key of [...heights.keys()].sort(compareGroupKeys)) {
+  for (const key of [...heights.keys()].sort(sectionOrder(inputs))) {
     tops.set(key, y + chipPx)
     y += chipPx + heights.get(key)!
   }
@@ -261,7 +270,6 @@ function layoutRefGroups(
   prevYByFeatureId?: ReadonlyMap<string, number>,
 ) {
   const metrics = displayModeMetrics(inputs)
-  const chipPx = sectionChipPx(inputs)
   const sectionOf = sectionAssignment(rpcDataMap, inputs)
   const out = new Map<number, FeatureDataResult>()
   const collapsedIds = new Set<string>()
@@ -276,7 +284,7 @@ function layoutRefGroups(
   }))
   const tops = stackSections(
     refs.map(r => r.sections),
-    chipPx,
+    inputs,
   )
   for (const ref of refs) {
     const merged = mergeSections(ref, tops, metrics.heightMultiplier)
@@ -330,7 +338,6 @@ function createPackProbe(
   measureIds: ReadonlySet<string> | undefined,
 ) {
   const metrics = displayModeMetrics(inputs)
-  const chipPx = sectionChipPx(inputs)
   const sectionOf = sectionAssignment(rpcDataMap, inputs)
   const preps = [...groupRawByRef(rpcDataMap).values()].map(regions =>
     prepareRefSections(regions, inputs, metrics, sectionOf),
@@ -342,7 +349,7 @@ function createPackProbe(
       const refs = preps.map(
         ref => packRefSections(ref, packInputs, metrics).sections,
       )
-      const tops = stackSections(refs, chipPx)
+      const tops = stackSections(refs, inputs)
       let max = 0
       for (const sections of refs) {
         for (const { id, pack } of sections) {

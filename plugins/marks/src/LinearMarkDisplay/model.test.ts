@@ -1095,6 +1095,29 @@ test('a faceted mark declares the facet to the worker and bands the plot by its 
   expect(rowsOf(display)).toEqual([0, 1, 2])
 })
 
+test('a facet domain reaches the worker and orders the folded sections', () => {
+  const { createDisplay } = createTestEnvironment([
+    {
+      ...FACET_MARKS[0],
+      facet: { field: 'sample', domain: ['b'] },
+    },
+  ])
+  const { display } = createDisplay()
+  expect(display.rpcProps().layers[0]!.facet).toEqual({
+    field: 'sample',
+    domain: ['b'],
+  })
+  display.setRpcData(0, facetResult([0, 1, 2]), REGION)
+  expect(display.facetLayout).toEqual({
+    sections: [
+      { key: 'b', label: 'sample: b', firstRow: 0, rowCount: 2 },
+      { key: 'a', label: 'sample: a', firstRow: 2, rowCount: 1 },
+    ],
+    rowCount: 3,
+  })
+  expect(rowsOf(display)).toEqual([2, 0, 1])
+})
+
 test('two regions fold into one row space, the deeper pack setting each band', () => {
   const { createDisplay } = createTestEnvironment(FACET_MARKS)
   const { display } = createDisplay()

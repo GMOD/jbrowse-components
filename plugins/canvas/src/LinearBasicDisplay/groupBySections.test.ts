@@ -1,3 +1,4 @@
+import { setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { GROUP_LABEL_HEIGHT } from '@jbrowse/display-kit/groupLabelStyle'
 
@@ -129,8 +130,39 @@ test('a color picked by hand survives regrouping without the color', () => {
   expect(display.featureColor).toBe('purple')
 })
 
+test('reordering the sections keeps the hidden ones hidden', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  display.setRpcData(0, strandedRegionData(), ctgA)
+  display.setGroupBy({ type: 'attribute', attribute: 'biotype' })
+  display.hideGroup('lncRNA')
+  display.setGroupBy({
+    type: 'attribute',
+    attribute: 'biotype',
+    domain: ['protein_coding'],
+  })
+  expect(display.hiddenGroups.size).toBe(1)
+  expect(display.groupSections.map(s => s.key)).toEqual(['protein_coding'])
+})
+
+test('a domain in the slot survives normalization, its entries as strings', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  setConf(display, 'groupBy', {
+    type: 'attribute',
+    attribute: 'bin',
+    domain: [10, 2],
+  })
+  expect(display.groupBy).toEqual({
+    type: 'attribute',
+    attribute: 'bin',
+    domain: ['10', '2'],
+  })
+})
+
 test('an unrecognized grouping in the slot reads as ungrouped', () => {
   const { createDisplay } = createTestEnvironment()
-  const { display } = createDisplay({ groupBy: { type: 'flavour' } })
+  const { display } = createDisplay()
+  setConf(display, 'groupBy', { type: 'flavour' })
   expect(display.groupBy).toBeUndefined()
 })

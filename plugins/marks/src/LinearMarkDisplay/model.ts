@@ -106,6 +106,7 @@ import type {
   ColorEncoding,
   EncodedFeaturesResult,
   FacetSection,
+  FacetSpec,
   GlyphEncoding,
   GlyphName,
   LayerRequest,
@@ -183,6 +184,16 @@ export function declaredDomain(
 
 // The config's raw slot values as the worker's encoding: a `jexl:` string
 // crosses untouched, which is why nothing here reads through `getConf`.
+interface MarkFacetConfig {
+  field: string
+  domain: readonly string[]
+}
+
+function facetSpecOf(facet: MarkFacetConfig): FacetSpec {
+  const domain = [...facet.domain]
+  return { field: facet.field, ...(domain.length ? { domain } : {}) }
+}
+
 function encodingOf(mark: MarkConfig): MarkEncoding {
   const { x, x2, y, row, glyph, color } = mark.encoding
   const scaled: ColorEncoding =
@@ -422,10 +433,22 @@ export function stateModelFactory(
        * own band of rows, off the first mark declaring one, or `''`.
        */
       get facetField(): string {
-        const faceted = self.conf.marks.find(
-          (m: MarkConfig) => m.facet.field !== '',
-        )
-        return faceted?.facet.field ?? ''
+        return this.facetConfig?.field ?? ''
+      },
+      /**
+       * #getter
+       * The facet's declared section order, off the same mark as the field.
+       */
+      get facetDomain(): string[] {
+        return this.facetConfig?.domain ?? []
+      },
+      /**
+       * #getter
+       * The first mark's facet declaring a field, or undefined.
+       */
+      get facetConfig(): MarkFacetConfig | undefined {
+        return self.conf.marks.find((m: MarkConfig) => m.facet.field !== '')
+          ?.facet
       },
       /**
        * #getter
@@ -530,7 +553,7 @@ export function stateModelFactory(
             encoding: encodingOf(m),
             lanes: [...SHAPE_LANES[shape]],
             ...(transform.length > 0 ? { transform } : {}),
-            ...(m.facet.field ? { facet: { field: m.facet.field } } : {}),
+            ...(m.facet.field ? { facet: facetSpecOf(m.facet) } : {}),
           }
         })
       },
@@ -617,7 +640,9 @@ export function stateModelFactory(
        * The facet's sections over every loaded region, in key order.
        */
       get facetSections(): FacetSection[] {
-        return self.facetField ? foldFacetSections(self.featurePayloads) : []
+        return self.facetField
+          ? foldFacetSections(self.featurePayloads, self.facetDomain)
+          : []
       },
     }))
     .views(self => ({

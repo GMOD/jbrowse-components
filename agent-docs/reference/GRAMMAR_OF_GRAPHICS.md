@@ -250,7 +250,11 @@ tables into one layout and re-offsets every region onto it
 layout — the stack transform with an offset over it, not a fourth partition.
 
 The shared pieces are the key order and the `MAX_GROUPS` cap
-(`packages/core/src/util/groupKeys.ts`, in core so a worker can reach them),
+(`packages/core/src/util/groupKeys.ts`, in core so a worker can reach them):
+a facet channel's `domain` lists the sections that stack first, the rest
+follow sorted, and the cap counts in that order, so the multi-row `rowOrder`,
+the feature display's `groupBy.domain` and the mark's `facet.domain` are one
+rule (`groupKeyComparator`),
 the radio submenu (`groupByMenu.ts`), the chips and dividers
 (`GroupLabelChips.tsx`), and the hidden sections with their key-space reset
 (`HiddenGroupsMixin.ts`). The multi-row display's `partitionField` is the same

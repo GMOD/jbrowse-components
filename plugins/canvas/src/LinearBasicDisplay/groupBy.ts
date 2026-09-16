@@ -1,7 +1,7 @@
 import {
   OVERFLOW_GROUP_KEY,
   capGroupKeys,
-  compareGroupKeys,
+  groupKeyComparator,
   overflowLabel,
 } from '@jbrowse/core/util/groupKeys'
 
@@ -20,10 +20,11 @@ import type { GroupId } from '@jbrowse/core/util/groupKeys'
 export type FeatureGroupByType = 'strand' | 'attribute'
 
 // `attribute` is the one dimension that takes a parameter, so it is the one
-// with a dialog behind it and the one the worker stamps a key for.
+// with a dialog behind it and the one the worker stamps a key for. `domain`
+// is the section order, the keys it lists first; the rest follow sorted.
 export type FeatureGroupBy =
-  | { type: 'strand'; attribute?: undefined }
-  | { type: 'attribute'; attribute: string }
+  | { type: 'strand'; attribute?: undefined; domain?: string[] }
+  | { type: 'attribute'; attribute: string; domain?: string[] }
 
 type FeatureGroupByOf<K extends FeatureGroupByType> = Extract<
   FeatureGroupBy,
@@ -97,13 +98,17 @@ export function normalizeFeatureGroupBy(
 ): FeatureGroupBy | undefined {
   const obj = typeof value === 'object' && value !== null ? value : undefined
   const type = obj === undefined ? undefined : Reflect.get(obj, 'type')
+  const rawDomain = obj === undefined ? undefined : Reflect.get(obj, 'domain')
+  const domain = Array.isArray(rawDomain)
+    ? { domain: rawDomain.map(String) }
+    : {}
   if (type === 'strand') {
-    return { type }
+    return { type, ...domain }
   }
   if (type === 'attribute') {
     const attribute = Reflect.get(obj!, 'attribute')
     return typeof attribute === 'string' && attribute.trim()
-      ? { type, attribute: attribute.trim() }
+      ? { type, attribute: attribute.trim(), ...domain }
       : undefined
   }
   return undefined
@@ -130,7 +135,7 @@ export function sectionIdsOf(
       }
     }
   }
-  const { sectionOf, mergedCount } = capGroupKeys(ids.keys())
+  const { sectionOf, mergedCount } = capGroupKeys(ids.keys(), groupBy.domain)
   const merged: GroupId = {
     key: OVERFLOW_GROUP_KEY,
     label: overflowLabel(mergedCount),
@@ -170,7 +175,8 @@ export function featureGroupSections(
       }
     }
   }
-  const ordered = [...bounds].sort(([a], [b]) => compareGroupKeys(a, b))
+  const compare = groupKeyComparator(groupBy.domain)
+  const ordered = [...bounds].sort(([a], [b]) => compare(a, b))
   return ordered.map(([key, b], i) => {
     const top = b.top - chipPx
     const next = ordered[i + 1]?.[1]

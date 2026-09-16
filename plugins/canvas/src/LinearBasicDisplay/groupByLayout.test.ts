@@ -122,6 +122,33 @@ test('an attribute grouping sections by the stamped key, unvalued last', () => {
   ).toEqual(['biotype: lncRNA', 'biotype: protein_coding', 'biotype: none'])
 })
 
+test('a domain stacks the sections it lists first, the rest sorted behind', () => {
+  const groupBy = {
+    type: 'attribute' as const,
+    attribute: 'subtrack',
+    domain: ['key5', 'key2', 'absent'],
+  }
+  const raw = new Map([
+    [
+      0,
+      regionData([
+        { featureId: 'a', groupKey: 'key1' },
+        { featureId: 'b', groupKey: 'key2' },
+        { featureId: 'c', groupKey: 'key3' },
+        { featureId: 'd', groupKey: 'key5' },
+        { featureId: 'e', groupKey: '' },
+      ]),
+    ],
+  ])
+  const out = computeLaidOutData(raw, { ...base, groupBy })
+  expect(
+    featureGroupSections(out, groupBy, GROUP_LABEL_HEIGHT).map(s => s.key),
+  ).toEqual(['key5', 'key2', 'key1', 'key3', ''])
+  const tops = topsOf(out)
+  expect(tops.get('d')).toBeLessThan(tops.get('b')!)
+  expect(tops.get('b')).toBeLessThan(tops.get('a')!)
+})
+
 test('past the cap the tail of values merges into one overflow section', () => {
   const groupBy = { type: 'attribute' as const, attribute: 'id' }
   const n = MAX_GROUPS + 5

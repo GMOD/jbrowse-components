@@ -43,6 +43,30 @@ export function compareGroupKeys(a: string, b: string) {
 }
 
 /**
+ * The order a facet stacks its sections in. `domain` is the channel's
+ * declared order: the keys it lists come first, in that order, and the rest
+ * follow under `compareGroupKeys`. Every categorical channel in the tree
+ * reads its domain this way, so a listed value is a placement and an
+ * unlisted one is not an error.
+ */
+export function groupKeyComparator(domain?: readonly string[]) {
+  if (!domain?.length) {
+    return compareGroupKeys
+  }
+  const rank = new Map<string, number>()
+  domain.forEach((key, i) => {
+    if (!rank.has(key)) {
+      rank.set(key, i)
+    }
+  })
+  return (a: string, b: string) => {
+    const ra = rank.get(a) ?? Infinity
+    const rb = rank.get(b) ?? Infinity
+    return ra !== rb ? (ra < rb ? -1 : 1) : compareGroupKeys(a, b)
+  }
+}
+
+/**
  * The overflow bucket's chip. Says MERGED because that lane is the one entry
  * in a stack that is not a value, and this label is the only place a reader
  * is told the cap fired at all.
@@ -53,17 +77,21 @@ export function overflowLabel(count: number) {
 
 /**
  * Which section each key stacks into once the cap applies: the first
- * `MAX_GROUPS` keys in order keep their own, the rest fold into the overflow
- * section. The catch-all `''` is held out of the merge and re-pinned ahead of
- * the overflow bucket, since "lacking the value" is a distinct answer users
- * look for and it sorts into the very tail this merges. Two callers with the
- * same key set get the same answer, so a layout and a reading of that layout
- * agree on the sections without sharing state.
+ * `MAX_GROUPS` keys in `domain` order keep their own, the rest fold into the
+ * overflow section, so a key the domain places never merges behind one it
+ * does not. The catch-all `''` is held out of the merge, since "lacking the
+ * value" is a distinct answer users look for and it sorts into the very tail
+ * this merges. Two callers with the same key set get the same answer, so a
+ * layout and a reading of that layout agree on the sections without sharing
+ * state.
  */
-export function capGroupKeys(keys: Iterable<string>) {
-  const ordered = [...new Set(keys)].sort(compareGroupKeys)
-  const hasUntagged = ordered.at(-1) === ''
-  const named = hasUntagged ? ordered.slice(0, -1) : ordered
+export function capGroupKeys(
+  keys: Iterable<string>,
+  domain?: readonly string[],
+) {
+  const ordered = [...new Set(keys)].sort(groupKeyComparator(domain))
+  const hasUntagged = ordered.includes('')
+  const named = ordered.filter(key => key !== '')
   // > not >=, so the cap only fires when it genuinely merges 2+ groups.
   const merged =
     ordered.length > MAX_GROUPS
@@ -88,17 +116,23 @@ export interface GroupId {
  * Identity of the key space a grouping hands out keys in: the dimension plus
  * whatever parameter it takes (a tag, an attribute). A key means nothing on
  * its own, since `''` is both the ungrouped section and every dimension's
- * catch-all, so anything keyed by group key is dropped when this moves. Takes
- * the normalized grouping, whose only fields are `type` and the parameter.
+ * catch-all, so anything keyed by group key is dropped when this moves. The
+ * `domain` only orders the keys and is no part of the space, so a reorder
+ * keeps what a reader hid.
  */
 export function groupKeySpaceOf(
-  groupBy: { type: string; [param: string]: string | undefined } | undefined,
+  groupBy:
+    | { type: string; domain?: readonly string[]; [param: string]: unknown }
+    | undefined,
 ) {
   if (groupBy === undefined) {
     return ''
   }
   const { type, ...params } = groupBy
-  return [type, ...Object.values(params).filter(v => v !== undefined)].join(
-    '\0',
-  )
+  return [
+    type,
+    ...Object.entries(params)
+      .filter(([k, v]) => k !== 'domain' && typeof v === 'string')
+      .map(([, v]) => v),
+  ].join('\0')
 }
