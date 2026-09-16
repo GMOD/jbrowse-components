@@ -455,6 +455,18 @@ describe('runtime re-export ABI', () => {
     )
   })
 
+  it('names a module the host does not serve at the first read', async () => {
+    const target = {} as WindowOrWorkerGlobalScope & {
+      JBrowseExports: Record<string, unknown>
+    }
+    await new PluginLoader([]).installGlobalReExports(target).load()
+    expect(() => target.JBrowseExports['@material-ui/core']).toThrow(
+      /does not serve '@material-ui\/core'/,
+    )
+    expect('@material-ui/core' in target.JBrowseExports).toBe(false)
+    expect(target.JBrowseExports.toJSON).toBeUndefined()
+  })
+
   it('leaves the target alone until a load actually happens', () => {
     const target = {} as WindowOrWorkerGlobalScope & { JBrowseExports?: object }
     new PluginLoader([]).installGlobalReExports(target)

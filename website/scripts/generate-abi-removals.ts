@@ -112,6 +112,7 @@ const NAME_GROUPS: NameGroup[] = [
       'assembleLocStringFast',
       'findLast',
       'findLastIndex',
+      'bpToPxMap',
     ],
     survivors: {
       contrastingTextColor: 'makeContrasting',
@@ -119,11 +120,12 @@ const NAME_GROUPS: NameGroup[] = [
       assembleLocStringFast: 'assembleLocString',
       findLast: 'Array.prototype.findLast',
       findLastIndex: 'Array.prototype.findLastIndex',
+      bpToPxMap: 'bpToPx',
     },
   },
   {
     label:
-      'react-dom, which a rendering library should not ask its host for — react-msaview owns its copy from 71e835ae, so published `jbrowse-plugin-msaview` 3.4.0 and `-tview` 2.2.1 break until they ship a build carrying it',
+      'react-dom, which a rendering library should not ask its host for — react-msaview owns its copy from 71e835ae, which `jbrowse-plugin-msaview` 3.6.0 and `-tview` 2.2.3 carry',
     names: ['renderToStaticMarkup'],
   },
   {
@@ -141,6 +143,73 @@ const NAME_GROUPS: NameGroup[] = [
       'getUriLink',
       'defaultStops',
       'useDebouncedCallback',
+      'sampleFeaturesForInterval',
+      'customAlphabet',
+      'customRandom',
+      'random',
+      'urlAlphabet',
+      'createCanvas',
+      'createImageBitmap',
+      'isImageBitmap',
+      'collectTransferables',
+      'isDetachedBuffer',
+      'matchCSSObject',
+    ],
+  },
+  {
+    label:
+      'plugin-definition helpers, now in `@jbrowse/core/pluginDefinitions`, so reading a definition does not load the re-export registry',
+    names: [
+      'isCJSPluginDefinition',
+      'isESMPluginDefinition',
+      'isUMDPluginDefinition',
+      'pluginDescriptionString',
+      'pluginUrl',
+    ],
+  },
+  {
+    label:
+      'the track and display configuration references, which `ConfigurationReference` picks between',
+    names: ['TrackConfigurationReference', 'DisplayConfigurationReference'],
+    survivors: {
+      TrackConfigurationReference: 'ConfigurationReference',
+      DisplayConfigurationReference: 'ConfigurationReference',
+    },
+  },
+  {
+    label:
+      'the color pickers, one default export per subpath: `@jbrowse/core/ui/PopoverPicker` is the popover, and the default of `@jbrowse/core/ui/ColorPicker`, the popover in 4.3.0, is now the inline panel',
+    names: ['PopoverPicker', 'ColorPicker'],
+  },
+  {
+    label: 'palettes, still served as members of `paletteColors`',
+    names: [
+      'dark2',
+      'ggplot2Colors3',
+      'ggplot2Colors4',
+      'ggplot2Colors5',
+      'ggplot2Colors6',
+      'set2',
+      'tableau10',
+    ],
+    survivors: {
+      dark2: 'paletteColors.dark2',
+      ggplot2Colors3: 'paletteColors.ggplot2Colors3',
+      ggplot2Colors4: 'paletteColors.ggplot2Colors4',
+      ggplot2Colors5: 'paletteColors.ggplot2Colors5',
+      ggplot2Colors6: 'paletteColors.ggplot2Colors6',
+      set2: 'paletteColors.set2',
+      tableau10: 'paletteColors.tableau10',
+    },
+  },
+  {
+    label:
+      'block classes, now interfaces discriminated by `type`, so a block is an object literal',
+    names: [
+      'BaseBlock',
+      'ContentBlock',
+      'ElidedBlock',
+      'InterRegionPaddingBlock',
     ],
   },
   {
@@ -194,7 +263,10 @@ interface Previous {
 const read = (file: string) =>
   JSON.parse(readFileSync(join(repoRoot, file), 'utf8'))
 
-/** Removed name -> the modules 4.3.0 served it from. */
+/**
+ * Removed name -> the modules 4.3.0 served it from. A module this build does
+ * not publish at all is the subpath table's row, not a name per export.
+ */
 function removedNames() {
   const previous = read(
     'packages/core/src/ReExports/abiPreviousRelease.json',
@@ -204,7 +276,11 @@ function removedNames() {
   ) as { modules: Record<string, { names: string[] }> }
   const out = new Map<string, string[]>()
   for (const [mod, names] of Object.entries(previous.modules)) {
-    const served = new Set(current.modules[mod]?.names ?? [])
+    const entry = current.modules[mod]
+    if (!entry) {
+      continue
+    }
+    const served = new Set(entry.names)
     for (const name of names.filter(n => !served.has(n))) {
       out.set(name, [...(out.get(name) ?? []), mod])
     }

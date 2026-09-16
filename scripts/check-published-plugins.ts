@@ -52,9 +52,9 @@
 // just becomes `undefined` inside a build nobody is going to make again. So the
 // only honest check is what the shipped bytes actually reach for.
 //
-// Reading is half of it. Each bundle is also *evaluated* against the RPC
-// worker's export map (`ReExports/workerModules.ts`, built here with esbuild),
-// since a plugin loads in the worker too and a UI stub of the wrong shape --
+// Reading is half of it. Each bundle is also *evaluated* against jbrowse-web's
+// RPC worker export map (`workerReExports.generated.ts`, built here with
+// esbuild, behind the same missing-module error PluginLoader raises), since a plugin loads in the worker too and a UI stub of the wrong shape --
 // `Vs.makeStyles is not a function` -- or a module-scope `document` read is a
 // NetworkError in the browser and error-pages every session naming the plugin.
 //
@@ -75,6 +75,7 @@ import vm from 'node:vm'
 import { build } from 'esbuild'
 
 import reExportsList from '../packages/core/src/ReExports/list.ts'
+import { loudOnMissingModule } from '../packages/core/src/ReExports/registry.ts'
 
 const STORE = 'https://jbrowse.org/plugin-store/v2/plugins.json'
 
@@ -89,7 +90,9 @@ interface StorePlugin {
 const read = (f: string) =>
   JSON.parse(fs.readFileSync(`packages/core/src/ReExports/${f}`, 'utf8'))
 
-// Names the previous release served that this build does not, per module.
+// Names the previous release served that this build does not, per module. A
+// module this build does not serve at all is reported as `module <key>` below
+// instead.
 function removedNames() {
   const previous = read('abiPreviousRelease.json') as {
     modules: Record<string, string[]>
@@ -99,7 +102,11 @@ function removedNames() {
   }
   const out: Record<string, Set<string>> = {}
   for (const [mod, names] of Object.entries(previous.modules)) {
-    const served = new Set(current.modules[mod]?.names ?? [])
+    const entry = current.modules[mod]
+    if (!entry) {
+      continue
+    }
+    const served = new Set(entry.names)
     const gone = names.filter(n => !served.has(n))
     if (gone.length > 0) {
       out[mod] = new Set(gone)
@@ -151,7 +158,7 @@ async function workerExports() {
     'workerModules.mjs',
   )
   await build({
-    entryPoints: ['packages/core/src/ReExports/workerModules.ts'],
+    entryPoints: ['products/jbrowse-web/src/workerReExports.generated.ts'],
     bundle: true,
     platform: 'node',
     format: 'esm',
@@ -159,7 +166,7 @@ async function workerExports() {
     logLevel: 'warning',
   })
   const mod = (await import(outfile)) as { default: Record<string, unknown> }
-  return mod.default
+  return loudOnMissingModule({ ...mod.default })
 }
 
 // What the worker's `importScripts` does to the bundle, in a fresh realm with
@@ -233,12 +240,11 @@ for (const p of plugins) {
   const src = await r.text()
   const breaks: string[] = []
 
-  // a module the host does not serve at all: the lookup is undefined, and the
-  // plugin's `class X extends Y.default` throws while PluginLoader is awaiting
-  // it, which error-pages the whole app rather than just dropping the plugin
+  // a module the host does not serve at all: the lookup throws naming it, so
+  // the plugin fails to load
   for (const mod of new Set(src.match(/JBrowseExports\[\s*"[^"]+"/g) ?? [])) {
     const name = /"([^"]+)/.exec(mod)![1]!
-    if (name.startsWith('@jbrowse/core/') && !served.has(name)) {
+    if (!served.has(name)) {
       breaks.push(`module ${name}`)
     }
   }

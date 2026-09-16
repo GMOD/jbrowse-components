@@ -100,27 +100,33 @@ Two things follow for a plugin author:
 
 - **A rebuild raises the plugin's host floor.** The template externalizes
   whatever the installed `@jbrowse/core`'s list names, so a plugin rebuilt
-  against v5 reads those keys off the host and needs a v5 host. A plugin built
-  earlier keeps working: the keys it reads are still served.
+  against v5 reads those keys off the host and needs a host at least as new as
+  the core it was built against: a name added later is `undefined` on an older
+  host, since only a missing module throws. A plugin built earlier keeps working
+  wherever the keys it reads are still served; the tables below list the names
+  that are not.
 - **A key the host lacks throws at the first read, naming the key.** A plugin
-  built against a newer core, or against a package the host does not bundle,
-  used to fail as `Cannot read properties of undefined` somewhere inside its own
-  module scope. jbrowse-web reports it as one notification and opens the session
-  without the plugin.
+  built against an older or newer core, or against a package the host does not
+  bundle, used to fail as `Cannot read properties of undefined` somewhere inside
+  its own module scope. jbrowse-web reports it as one notification and opens the
+  session without the plugin.
 
 The plugin `exports` objects went in the same change, since what they held is a
 named export of the plugin package — see the next section.
 
 ## Names removed from the re-export ABI
 
-Names left the `@jbrowse/core/*` re-export ABI — the modules an external plugin
-resolves through `jbrequire`. A removed name is `undefined` inside a bundle
-nobody is going to rebuild, which is the quietest failure on this page. The
-table is what the 4.3.0 package served and this build does not:
+Names the 4.3.0 `@jbrowse/core` exported from a subpath this build still
+publishes, and this build does not. Where 4.3.0 served that subpath to runtime
+plugins — `util`, `configuration`, `pluggableElementTypes` and the rest of its
+re-export list — a removed name is `undefined` inside a bundle nobody is going
+to rebuild, which is the quietest failure on this page. From any other subpath a
+4.3.0 bundle carries its own copy, so the removal breaks the plugin's next build
+instead:
 
 <!-- BEGIN GENERATED ABI_REMOVED_NAMES -->
 
-51 names over 58 entries, since 7 of them were served from two modules each.
+83 names over 98 entries, since 15 of them were served from two modules each.
 
 <!-- prettier-ignore -->
 | What went | Names |
@@ -131,9 +137,14 @@ table is what the 4.3.0 package served and this build does not:
 | stop tokens, replaced by the platform `AbortController` | `createStopToken` → `new AbortController()`, `stopStopToken` → `controller.abort()`, `checkStopToken` → `checkAbortSignal`, `createStopTokenChecker` → `createAbortBreakpoint` |
 | the renderer era's RPC retry and progress reporting | `RetryError`, `isRetryException`, `updateStatus2`, `getProgressDisplayStr`, `getStatsId` |
 | desktop file handles, which the desktop package now owns | `getFileHandleCache`, `setFileHandleCache`, `removeFileHandle`, `cleanupStaleHandles`, `getPendingFileHandleIds`, `setPendingFileHandleIds`, `clearPendingFileHandleIds`, `restorePendingFileHandles` |
-| renames with a survivor | `contrastingTextColor` → `makeContrasting`, `checkStopToken2` → `checkAbortSignal`, `assembleLocStringFast` → `assembleLocString`, `findLast` → `Array.prototype.findLast`, `findLastIndex` → `Array.prototype.findLastIndex` |
-| react-dom, which a rendering library should not ask its host for — react-msaview owns its copy from 71e835ae, so published `jbrowse-plugin-msaview` 3.4.0 and `-tview` 2.2.1 break until they ship a build carrying it | `renderToStaticMarkup` |
-| names with no caller left in core, which the last callers inlined or folded away | `forEachWithStopTokenCheck`, `TextSearchManager`, `isContainedWithin`, `iterMap`, `when`, `blobToDataURL`, `cartesianToPolar`, `degToRad`, `getUriLink`, `defaultStops`, `useDebouncedCallback` |
+| renames with a survivor | `contrastingTextColor` → `makeContrasting`, `checkStopToken2` → `checkAbortSignal`, `assembleLocStringFast` → `assembleLocString`, `findLast` → `Array.prototype.findLast`, `findLastIndex` → `Array.prototype.findLastIndex`, `bpToPxMap` → `bpToPx` |
+| react-dom, which a rendering library should not ask its host for — react-msaview owns its copy from 71e835ae, which `jbrowse-plugin-msaview` 3.6.0 and `-tview` 2.2.3 carry | `renderToStaticMarkup` |
+| names with no caller left in core, which the last callers inlined or folded away | `forEachWithStopTokenCheck`, `TextSearchManager`, `isContainedWithin`, `iterMap`, `when`, `blobToDataURL`, `cartesianToPolar`, `degToRad`, `getUriLink`, `defaultStops`, `useDebouncedCallback`, `sampleFeaturesForInterval`, `customAlphabet`, `customRandom`, `random`, `urlAlphabet`, `createCanvas`, `createImageBitmap`, `isImageBitmap`, `collectTransferables`, `isDetachedBuffer`, `matchCSSObject` |
+| plugin-definition helpers, now in `@jbrowse/core/pluginDefinitions`, so reading a definition does not load the re-export registry | `isCJSPluginDefinition`, `isESMPluginDefinition`, `isUMDPluginDefinition`, `pluginDescriptionString`, `pluginUrl` |
+| the track and display configuration references, which `ConfigurationReference` picks between | `TrackConfigurationReference` → `ConfigurationReference`, `DisplayConfigurationReference` → `ConfigurationReference` |
+| the color pickers, one default export per subpath: `@jbrowse/core/ui/PopoverPicker` is the popover, and the default of `@jbrowse/core/ui/ColorPicker`, the popover in 4.3.0, is now the inline panel | `PopoverPicker`, `ColorPicker` |
+| palettes, still served as members of `paletteColors` | `dark2` → `paletteColors.dark2`, `ggplot2Colors3` → `paletteColors.ggplot2Colors3`, `ggplot2Colors4` → `paletteColors.ggplot2Colors4`, `ggplot2Colors5` → `paletteColors.ggplot2Colors5`, `ggplot2Colors6` → `paletteColors.ggplot2Colors6`, `set2` → `paletteColors.set2`, `tableau10` → `paletteColors.tableau10` |
+| block classes, now interfaces discriminated by `type`, so a block is an object literal | `BaseBlock`, `ContentBlock`, `ElidedBlock`, `InterRegionPaddingBlock` |
 | the config models that were flattened | `isConfigurationSlotType` |
 
 <!-- END GENERATED ABI_REMOVED_NAMES -->
@@ -152,13 +163,14 @@ v5 user as compatible whatever its state here.
 | --- | --- |
 | Apollo | `@jbrowse/core/util#isContainedWithin`<br />`@jbrowse/core/util/tracks#getParentRenderProps`<br />`worker eval: TypeError: Cannot read properties of undefined (reading 'createElement')` |
 | Ideogram | `worker eval: ReferenceError: window is not defined` |
-| Reactome | `worker eval: TypeError: Cannot read properties of undefined (reading 'createSvgIcon')` |
+| Reactome | `module @material-ui/core`<br />`module @material-ui/core/utils`<br />`module @material-ui/lab`<br />`worker eval: This JBrowse does not serve '@material-ui/core' to plugins: the plugin was built against an older or newer @jbrowse/core, or against a package this host does not bundle` |
 
 <!-- END GENERATED ABI_PLUGIN_BREAKS -->
 
-A `worker eval:` line is a different failure from the rest of this page, and not
-one an ABI change can reach: the bundle threw while the RPC worker evaluated it,
-reading the DOM at module scope. Only the plugin can fix that.
+A `worker eval:` line means the bundle threw while the RPC worker evaluated it.
+A missing global (`window`, `document`) is the plugin reading the DOM at module
+scope, which only the plugin can fix; `does not serve` is a module this build
+stopped serving, the same break as a `module` line.
 
 ## The `@material-ui/*` aliases are gone
 
@@ -289,14 +301,14 @@ and calling it throws inside the reaching plugin's own `install`.
     (`minX`/`minY`/`maxX`/`maxY`/`name`), declared in the same file and never
     exported past it or read anywhere
 
-Neither surface is checked against a published bundle: `abi.test.ts` pins
-`@jbrowse/core/*` module names and `scripts/check-published-plugins.ts` filters
-its findings on that same prefix, so neither reaches a plugin `exports` object
-or the session. `pluginFacingSessionApi.test.ts` pins the fifteen session
-members published bundles actually call, and performs the call rather than just
-asserting the member exists, which is why `getReferring`'s changed signature is
-on this list rather than caught by a presence check. For everything else,
-reading them here is the record.
+Neither surface is checked against a published bundle: the removals table and
+`scripts/check-published-plugins.ts` both work from module exports, so neither
+reaches a plugin `exports` object or the session.
+`pluginFacingSessionApi.test.ts` pins the fifteen session members published
+bundles actually call, and performs the call rather than just asserting the
+member exists, which is why `getReferring`'s changed signature is on this list
+rather than caught by a presence check. For everything else, reading them here
+is the record.
 
 ## Display types collapsed
 

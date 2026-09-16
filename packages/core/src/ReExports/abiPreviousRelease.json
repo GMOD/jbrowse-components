@@ -1,18 +1,5 @@
 {
   "version": "4.3.0",
-  "addedSinceModules": ["@jbrowse/core/ui/palette"],
-  "shapeMismatchModules": [
-    "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail",
-    "@jbrowse/core/Plugin",
-    "@jbrowse/core/data_adapters/dataAdapterCache",
-    "@jbrowse/core/pluggableElementTypes/AdapterType",
-    "@jbrowse/core/pluggableElementTypes/DisplayType",
-    "@jbrowse/core/pluggableElementTypes/TrackType",
-    "@jbrowse/core/pluggableElementTypes/ViewType",
-    "@jbrowse/core/pluggableElementTypes/WidgetType",
-    "@jbrowse/core/ui/BaseTooltip",
-    "@jbrowse/core/util/Base1DViewModel"
-  ],
   "subpaths": [
     "./BaseFeatureWidget",
     "./BaseFeatureWidget/BaseFeatureDetail",
@@ -128,6 +115,37 @@
     "./util/useMeasure"
   ],
   "modules": {
+    "@jbrowse/core/BaseFeatureWidget": ["configSchema", "stateModelFactory"],
+    "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail": [
+      "BaseAttributes",
+      "BaseCard",
+      "BaseCoreDetails",
+      "FeatureDetails",
+      "default"
+    ],
+    "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes": ["default"],
+    "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard": ["default"],
+    "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails": [
+      "default"
+    ],
+    "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/SimpleField": [
+      "default"
+    ],
+    "@jbrowse/core/Plugin": ["default"],
+    "@jbrowse/core/PluginLoader": [
+      "default",
+      "isCJSPluginDefinition",
+      "isESMPluginDefinition",
+      "isUMDPluginDefinition",
+      "pluginDescriptionString",
+      "pluginUrl"
+    ],
+    "@jbrowse/core/PluginManager": ["default"],
+    "@jbrowse/core/TextSearch/BaseResults": ["RefSequenceResult", "default"],
+    "@jbrowse/core/TextSearch/TextSearchManager": ["default"],
+    "@jbrowse/core/assemblyManager": ["assemblyConfigSchemaFactory", "default"],
+    "@jbrowse/core/assemblyManager/assembly": ["default"],
+    "@jbrowse/core/assemblyManager/assemblyConfigSchema": ["default"],
     "@jbrowse/core/configuration": [
       "ConfigurationReference",
       "ConfigurationSchema",
@@ -139,6 +157,12 @@
       "isConfigurationSlotType",
       "readConfObject"
     ],
+    "@jbrowse/core/configuration/configurationSchema": [
+      "ConfigurationReference",
+      "ConfigurationSchema",
+      "DisplayConfigurationReference",
+      "TrackConfigurationReference"
+    ],
     "@jbrowse/core/data_adapters/BaseAdapter": [
       "BaseAdapter",
       "BaseFeatureDataAdapter",
@@ -148,6 +172,18 @@
       "isRegionsAdapter",
       "isSequenceAdapter",
       "isTextSearchAdapter"
+    ],
+    "@jbrowse/core/data_adapters/BaseAdapter/BaseOptions": [],
+    "@jbrowse/core/data_adapters/BaseAdapter/stats": [
+      "aggregateQuantitativeStats",
+      "blankStats",
+      "calculateFeatureDensityStats",
+      "sampleFeaturesForInterval"
+    ],
+    "@jbrowse/core/data_adapters/dataAdapterCache": [
+      "clearAdapterCache",
+      "freeAdapterResources",
+      "getAdapter"
     ],
     "@jbrowse/core/pluggableElementTypes": [
       "AdapterType",
@@ -175,6 +211,22 @@
       "createBaseTrackConfig",
       "createBaseTrackModel"
     ],
+    "@jbrowse/core/pluggableElementTypes/AdapterType": ["default"],
+    "@jbrowse/core/pluggableElementTypes/ConnectionType": ["default"],
+    "@jbrowse/core/pluggableElementTypes/DisplayType": ["default"],
+    "@jbrowse/core/pluggableElementTypes/GlyphType": ["default"],
+    "@jbrowse/core/pluggableElementTypes/InternetAccountType": ["default"],
+    "@jbrowse/core/pluggableElementTypes/RpcMethodType": [
+      "convertFileHandleLocations",
+      "default"
+    ],
+    "@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions": [
+      "default"
+    ],
+    "@jbrowse/core/pluggableElementTypes/TextSearchAdapterType": ["default"],
+    "@jbrowse/core/pluggableElementTypes/TrackType": ["default"],
+    "@jbrowse/core/pluggableElementTypes/ViewType": ["default"],
+    "@jbrowse/core/pluggableElementTypes/WidgetType": ["default"],
     "@jbrowse/core/pluggableElementTypes/models": [
       "BaseConnectionModelFactory",
       "BaseDisplay",
@@ -185,6 +237,51 @@
       "createBaseTrackConfig",
       "createBaseTrackModel"
     ],
+    "@jbrowse/core/pluggableElementTypes/models/BaseViewModel": [
+      "BaseViewModelWithDisplayedRegions",
+      "default"
+    ],
+    "@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig": [
+      "default"
+    ],
+    "@jbrowse/core/pluggableElementTypes/renderers/BoxRendererType": [
+      "default"
+    ],
+    "@jbrowse/core/pluggableElementTypes/renderers/CircularChordRendererType": [
+      "default"
+    ],
+    "@jbrowse/core/pluggableElementTypes/renderers/FeatureRendererType": [
+      "default"
+    ],
+    "@jbrowse/core/pluggableElementTypes/renderers/LayoutSession": [
+      "LayoutSession"
+    ],
+    "@jbrowse/core/pluggableElementTypes/renderers/RendererType": ["default"],
+    "@jbrowse/core/pluggableElementTypes/renderers/ServerSideRendererType": [
+      "default"
+    ],
+    "@jbrowse/core/pluggableElementTypes/renderers/util": [
+      "expandRegion",
+      "normalizeRegion"
+    ],
+    "@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain": [
+      "default"
+    ],
+    "@jbrowse/core/rpc/RpcManager": ["default"],
+    "@jbrowse/core/rpc/coreRpcMethods": [
+      "CoreFreeResources",
+      "CoreGetExportData",
+      "CoreGetFeatureDensityStats",
+      "CoreGetFeatureDetails",
+      "CoreGetFeatures",
+      "CoreGetFileInfo",
+      "CoreGetMetadata",
+      "CoreGetRefNames",
+      "CoreGetRegions",
+      "CoreGetSequence",
+      "CoreRender"
+    ],
+    "@jbrowse/core/rpc/methods/util": ["validateRendererType"],
     "@jbrowse/core/ui": [
       "AssemblySelector",
       "BaseTooltip",
@@ -207,6 +304,44 @@
       "createJBrowseBaseTheme",
       "createJBrowseTheme",
       "defaultThemes"
+    ],
+    "@jbrowse/core/ui/AppLogo": ["default"],
+    "@jbrowse/core/ui/BaseTooltip": ["default"],
+    "@jbrowse/core/ui/CascadingMenuButton": ["default"],
+    "@jbrowse/core/ui/ColorPicker": [
+      "ColorPicker",
+      "ColorPopover",
+      "PopoverPicker",
+      "default"
+    ],
+    "@jbrowse/core/ui/ConfirmDialog": ["default"],
+    "@jbrowse/core/ui/DataGridFlexContainer": ["default"],
+    "@jbrowse/core/ui/Dialog": ["default"],
+    "@jbrowse/core/ui/DraggableDialog": ["default"],
+    "@jbrowse/core/ui/DropDownMenu": ["default"],
+    "@jbrowse/core/ui/EditableTypography": ["default"],
+    "@jbrowse/core/ui/ErrorBoundary": ["ErrorBoundary"],
+    "@jbrowse/core/ui/ErrorMessage": ["default"],
+    "@jbrowse/core/ui/ErrorMessageStackTraceDialog": ["default"],
+    "@jbrowse/core/ui/Icons": ["Cable", "DNA", "Indexing", "TrackSelector"],
+    "@jbrowse/core/ui/LoadingEllipses": ["default"],
+    "@jbrowse/core/ui/Logo": ["LogoFull", "Logomark"],
+    "@jbrowse/core/ui/Menu": ["default"],
+    "@jbrowse/core/ui/ResizeHandle": ["default"],
+    "@jbrowse/core/ui/ReturnToImportFormDialog": ["default"],
+    "@jbrowse/core/ui/SanitizedHTML": ["default"],
+    "@jbrowse/core/ui/Snackbar": ["default"],
+    "@jbrowse/core/ui/SnackbarModel": ["default"],
+    "@jbrowse/core/ui/colors": [
+      "category10",
+      "dark2",
+      "ggplot2Colors3",
+      "ggplot2Colors4",
+      "ggplot2Colors5",
+      "ggplot2Colors6",
+      "set1",
+      "set2",
+      "tableau10"
     ],
     "@jbrowse/core/ui/theme": [
       "createJBrowseBaseTheme",
@@ -399,6 +534,36 @@
       "verifyPermission",
       "when"
     ],
+    "@jbrowse/core/util/Base1DUtils": [
+      "bpToPx",
+      "bpToPxMap",
+      "moveTo",
+      "pxToBp"
+    ],
+    "@jbrowse/core/util/Base1DViewModel": ["default"],
+    "@jbrowse/core/util/QuickLRU": ["default"],
+    "@jbrowse/core/util/TimeTraveller": ["default"],
+    "@jbrowse/core/util/aborting": [
+      "abortBreakPoint",
+      "checkAbortSignal",
+      "isAbortException",
+      "makeAbortError",
+      "observeAbortSignal"
+    ],
+    "@jbrowse/core/util/analytics": [
+      "doAnalytics",
+      "writeAWSAnalytics",
+      "writeGAAnalytics"
+    ],
+    "@jbrowse/core/util/blockTypes": [
+      "BaseBlock",
+      "BlockSet",
+      "ContentBlock",
+      "ElidedBlock",
+      "InterRegionPaddingBlock"
+    ],
+    "@jbrowse/core/util/calculateDynamicBlocks": ["default"],
+    "@jbrowse/core/util/calculateStaticBlocks": ["default"],
     "@jbrowse/core/util/color": [
       "contrastingTextColor",
       "emphasize",
@@ -407,18 +572,50 @@
       "namedColorToHex",
       "randomColor"
     ],
+    "@jbrowse/core/util/colord": ["colord"],
+    "@jbrowse/core/util/compositeMap": ["default"],
+    "@jbrowse/core/util/convertCodingSequenceToPeptides": [
+      "convertCodingSequenceToPeptides"
+    ],
+    "@jbrowse/core/util/fileHandleStore": [
+      "cleanupStaleHandles",
+      "getFileHandle",
+      "isFileSystemAccessSupported",
+      "removeFileHandle",
+      "storeFileHandle",
+      "verifyPermission"
+    ],
+    "@jbrowse/core/util/flatbush": ["default"],
+    "@jbrowse/core/util/formatFastaStrings": [
+      "formatFastaLines",
+      "formatSeqFasta"
+    ],
     "@jbrowse/core/util/io": [
       "RemoteFileWithRangeCache",
       "getFetcher",
       "openLocation",
       "resolveUriLocation"
     ],
+    "@jbrowse/core/util/io/RemoteFileWithRangeCache": [
+      "RemoteFileWithRangeCache",
+      "clearCache"
+    ],
+    "@jbrowse/core/util/jexlStrings": ["stringToJexlExpression"],
     "@jbrowse/core/util/layouts": [
       "GranularRectLayout",
       "MultiLayout",
       "PileupLayout",
       "PrecomputedLayout",
       "SceneGraph"
+    ],
+    "@jbrowse/core/util/layouts/BaseLayout": [],
+    "@jbrowse/core/util/layouts/GranularRectLayout": ["default"],
+    "@jbrowse/core/util/librpc": [
+      "RpcClient",
+      "RpcServer",
+      "deserializeError",
+      "rpcResult",
+      "serializeError"
     ],
     "@jbrowse/core/util/mst-reflection": [
       "getDefaultValue",
@@ -428,7 +625,49 @@
       "getUnionSubTypes",
       "resolveLateType"
     ],
+    "@jbrowse/core/util/nanoid": [
+      "customAlphabet",
+      "customRandom",
+      "nanoid",
+      "random",
+      "urlAlphabet"
+    ],
+    "@jbrowse/core/util/offscreenCanvasPonyfill": [
+      "collectTransferables",
+      "createCanvas",
+      "createImageBitmap",
+      "drawImageOntoCanvasContext",
+      "isDetachedBuffer",
+      "isImageBitmap"
+    ],
+    "@jbrowse/core/util/offscreenCanvasUtils": [
+      "ReactRendering",
+      "getSerializedSvg",
+      "renderToAbstractCanvas",
+      "renderingToSvg"
+    ],
+    "@jbrowse/core/util/parseLineByLine": ["parseLineByLine"],
+    "@jbrowse/core/util/range": [
+      "doesIntersect2",
+      "intersection2",
+      "isContainedWithin"
+    ],
     "@jbrowse/core/util/rxjs": ["ObservableCreate"],
+    "@jbrowse/core/util/simpleFeature": ["default", "isFeature"],
+    "@jbrowse/core/util/stats": [
+      "blankStats",
+      "calcStdFromSums",
+      "rectifyStats",
+      "scoresToStats"
+    ],
+    "@jbrowse/core/util/stopToken": [
+      "checkStopToken",
+      "checkStopToken2",
+      "createStopToken",
+      "createStopTokenChecker",
+      "forEachWithStopTokenCheck",
+      "stopStopToken"
+    ],
     "@jbrowse/core/util/tracks": [
       "UNKNOWN",
       "UNSUPPORTED",
@@ -466,6 +705,36 @@
       "storeFileHandleLocation",
       "toggleTrackGeneric"
     ],
+    "@jbrowse/core/util/tss-react": ["cx", "keyframes", "makeStyles"],
+    "@jbrowse/core/util/tss-react/types": ["matchCSSObject"],
+    "@jbrowse/core/util/types": [
+      "AuthNeededError",
+      "RetryError",
+      "TextSearchManager",
+      "isAbstractMenuManager",
+      "isAppRootModel",
+      "isAuthNeededException",
+      "isBlobLocation",
+      "isDisplayModel",
+      "isFileHandleLocation",
+      "isLocalPathLocation",
+      "isRetryException",
+      "isRootModelWithInternetAccounts",
+      "isSelectionContainer",
+      "isSessionModel",
+      "isSessionModelWithConfigEditing",
+      "isSessionModelWithConnectionEditing",
+      "isSessionModelWithConnections",
+      "isSessionModelWithWidgets",
+      "isSessionWithAddTracks",
+      "isSessionWithSessionPlugins",
+      "isSessionWithShareURL",
+      "isTrackModel",
+      "isTrackViewModel",
+      "isUriLocation",
+      "isViewContainer",
+      "isViewModel"
+    ],
     "@jbrowse/core/util/types/mst": [
       "BlobLocation",
       "ElementId",
@@ -477,6 +746,7 @@
       "UriLocation",
       "UriLocationRaw",
       "createElementId"
-    ]
+    ],
+    "@jbrowse/core/util/useMeasure": ["default"]
   }
 }

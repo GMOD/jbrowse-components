@@ -1,6 +1,9 @@
 import { enableContractReports } from '@jbrowse/render-core/contractReports'
 
-import { setReExportRegistry } from './ReExports/registry.ts'
+import {
+  loudOnMissingModule,
+  setReExportRegistry,
+} from './ReExports/registry.ts'
 import {
   isCJSPluginDefinition,
   isESMPluginDefinition,
@@ -53,29 +56,6 @@ export interface PluginRecord {
 export type ReExportRegistryLoader = () => Promise<{
   default: Record<string, unknown>
 }>
-
-// A bundle built against a newer core, or against a package this host does
-// not bundle, reads a key the map lacks — at module scope, so what it then
-// throws is `Cannot read properties of undefined` with no module named. A
-// plugin's own build tool only ever externalizes a key `ReExports/list.ts`
-// names, so every scoped-or-slashed read that misses is that case, and this
-// names it. Anything else missing reads `undefined` as it always did.
-function loudOnMissingModule(libs: Record<string, unknown>) {
-  return new Proxy(libs, {
-    get(target, key, receiver) {
-      if (
-        typeof key === 'string' &&
-        !(key in target) &&
-        (key.startsWith('@') || key.includes('/'))
-      ) {
-        throw new Error(
-          `This JBrowse does not serve '${key}' to plugins: the plugin was built against a newer @jbrowse/core, or against a package this host does not bundle`,
-        )
-      }
-      return Reflect.get(target, key, receiver)
-    },
-  })
-}
 
 export interface LoadedPlugin {
   default: PluginConstructor
