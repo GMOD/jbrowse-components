@@ -1,5 +1,8 @@
-import { getSnapshot } from '@jbrowse/mobx-state-tree'
+import { getMembers, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
+
+import { LEVEL_NAVIGATIONS, LEVEL_OWN, LEVEL_PANS } from './contextLevels.ts'
+import { renderToSvg } from './svgcomponents/SVGLinearGenomeView.tsx'
 
 import type { LinearGenomeViewModel } from './index.ts'
 import type { Region } from '@jbrowse/core/util/types'
@@ -138,4 +141,61 @@ test('removing a level leaves the rest in place', () => {
   const [widest, narrower] = levels(view)
   view.removeContextLevel(widest!)
   expect(levels(view)).toEqual([narrower])
+})
+
+test('an arrow-key slide on a level moves the host by a fraction of the level', () => {
+  const { view } = setup()
+  view.addContextLevel()
+  const [level] = levels(view)
+  const slide = jest.spyOn(view, 'slide')
+  level!.slide(0.5)
+  expect(slide).toHaveBeenCalledWith(5)
+  expect(centerBp(level!)).toBe(centerBp(view))
+})
+
+test('every navigation-shaped action of a level is classified', () => {
+  const { view } = setup()
+  const notNavigation = new Set([
+    'setScrollZoom',
+    'setShowCenterLine',
+    'getSelectedRegions',
+    'setOffsets',
+    'cancelZoomAnimation',
+  ])
+  const shape =
+    /scroll|zoom|^nav|moveTo|center|^fly|slide|fit|regions|window|offsets|newView|flip/i
+  const actions = [...getMembers(view).actions]
+  expect(actions.length).toBeGreaterThan(50)
+  expect(
+    actions.filter(
+      name =>
+        shape.test(name) &&
+        !LEVEL_PANS.has(name) &&
+        !LEVEL_NAVIGATIONS.has(name) &&
+        !LEVEL_OWN.has(name) &&
+        !notNavigation.has(name),
+    ),
+  ).toEqual([])
+  for (const set of [LEVEL_PANS, LEVEL_NAVIGATIONS, LEVEL_OWN]) {
+    expect([...set].filter(name => !actions.includes(name))).toEqual([])
+  }
+})
+
+test('the SVG export stacks each level and its connector above the view', async () => {
+  const { view } = setup()
+  const polygons = (svg: string) => svg.split('<polygon').length - 1
+  // no cytobands in this assembly, so the header draws no overview trapezoid
+  expect(polygons(await renderToSvg(view, {}))).toBe(0)
+  view.addContextLevel()
+  view.addContextLevel()
+  expect(polygons(await renderToSvg(view, {}))).toBe(2)
+})
+
+test('centring a level on a coordinate centres the host there', () => {
+  const { view } = setup()
+  view.addContextLevel()
+  const [level] = levels(view)
+  level!.centerAt(100_000, 'ctgA')
+  expect(centerBp(view)).toBeCloseTo(100_000, -2)
+  expect(centerBp(level!)).toBe(centerBp(view))
 })

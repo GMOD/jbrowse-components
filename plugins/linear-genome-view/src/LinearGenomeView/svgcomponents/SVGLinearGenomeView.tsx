@@ -1,15 +1,21 @@
 import { exportMargin } from '@jbrowse/core/svg/constants'
-import { awaitViewInitialized } from '@jbrowse/core/svg/svgReady'
+import {
+  awaitSvgRenders,
+  awaitViewInitialized,
+} from '@jbrowse/core/svg/svgReady'
 import { notifySkippedSvgTracks } from '@jbrowse/core/svg/trackNames'
 import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
 import { getSession } from '@jbrowse/core/util'
 
+import OverviewScalebarPolygon from '../components/OverviewScalebarPolygon.tsx'
 import SVGHeader from './SVGHeader.tsx'
+import SVGRowHeader from './SVGRowHeader.tsx'
 import SVGView from './SVGView.tsx'
 import { renderViewTracks } from './renderViewTracks.ts'
 import {
   defaultTextHeight,
   getHeaderLayout,
+  labelBaselineFromTop,
   trackLabelLeftOffset,
 } from './util.ts'
 
@@ -51,8 +57,12 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   // own readiness wait — an LGV display through `renderDisplaySvg`'s
   // `awaitSvgReady`, a non-LGV one (dotplot, synteny, circular) by calling that
   // itself.
-  const { tracks, displayResults, tracksHeight, legendWidth, skippedTracks } =
-    await renderViewTracks({
+  const levels = model.contextLevelViews as LGV[]
+  const [
+    { tracks, displayResults, tracksHeight, legendWidth, skippedTracks },
+    levelTracks,
+  ] = await awaitSvgRenders([
+    renderViewTracks({
       view: model,
       opts,
       theme,
@@ -61,8 +71,18 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
       // the standalone export is the one with room to give: it widens its
       // canvas below so a legend sits beside the plot rather than over it
       reserveLegendWidth: true,
-    })
-  notifySkippedSvgTracks(session, skippedTracks)
+    }),
+    // a level is a stacked row, like a synteny row: no room for a legend
+    awaitSvgRenders(
+      levels.map(level =>
+        renderViewTracks({ view: level, opts, theme, textHeight, trackLabels }),
+      ),
+    ),
+  ])
+  notifySkippedSvgTracks(session, [
+    ...skippedTracks,
+    ...levelTracks.flatMap(r => r.skippedTracks),
+  ])
 
   // The view geometry is read *after* the displays' waits, never before —
   // SVGHeader re-reads both of these when it renders (later still, inside
@@ -76,10 +96,10 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     showCytobands: effectiveShowCytobands,
     rulerHeight,
   })
-  const height = tracksHeight + tracksTop + exportMargin
-
+  // one gutter for the whole export, wide enough for the widest label in any
+  // level, so the levels stay aligned with the view
   const trackLabelOffset = trackLabelLeftOffset({
-    tracks,
+    tracks: [...tracks, ...levelTracks.flatMap(r => r.tracks)],
     trackLabels,
     fontSize,
     fontFamily,
@@ -87,14 +107,64 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   })
   const w = width + trackLabelOffset + legendWidth
 
-  // the xlink namespace is used for rendering <image> tag
-  return wrapSvgExport({
-    theme,
-    width: w,
-    height,
-    fontFamily,
-    Wrapper,
-    children: (
+  // As on screen: each context level, widest first, then the trapezoid joining
+  // it to the level below, then the view itself under its full header
+  const rowTopGap = 6
+  const connectorHeight = 16
+  const rows = levels.flatMap((level, i) => {
+    const labelBaselineY = labelBaselineFromTop(
+      i === 0 ? 0 : rowTopGap,
+      fontSize,
+    )
+    return [
+      {
+        key: level.id,
+        height: labelBaselineY + rulerHeight + levelTracks[i]!.tracksHeight,
+        node: (
+          <g transform={`translate(${exportMargin} ${labelBaselineY})`}>
+            <SVGView
+              view={level}
+              displayResults={levelTracks[i]!.displayResults}
+              header={
+                <SVGRowHeader
+                  view={level}
+                  fontSize={fontSize}
+                  rulerHeight={rulerHeight}
+                />
+              }
+              fontSize={fontSize}
+              textHeight={textHeight}
+              trackLabels={trackLabels}
+              trackLabelOffset={trackLabelOffset}
+              contentTop={rulerHeight}
+              tracksHeight={levelTracks[i]!.tracksHeight}
+              showGridlines={showGridlines}
+              leftBuffer={exportMargin}
+            />
+          </g>
+        ),
+      },
+      {
+        key: `connector-${level.id}`,
+        height: connectorHeight,
+        node: (
+          <g transform={`translate(${exportMargin + trackLabelOffset} 0)`}>
+            <OverviewScalebarPolygon
+              model={levels[i + 1] ?? model}
+              overview={level}
+              overviewOffsetPx={-level.offsetPx}
+              height={connectorHeight}
+              exportSvg
+            />
+          </g>
+        ),
+      },
+    ]
+  })
+  rows.push({
+    key: model.id,
+    height: tracksTop + tracksHeight,
+    node: (
       <g transform={`translate(${exportMargin} 0)`}>
         <SVGView
           view={model}
@@ -122,5 +192,26 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
         />
       </g>
     ),
+  })
+
+  let y = 0
+  const children = rows.map(row => {
+    const top = y
+    y += row.height
+    return (
+      <g key={row.key} transform={`translate(0 ${top})`}>
+        {row.node}
+      </g>
+    )
+  })
+
+  // the xlink namespace is used for rendering <image> tag
+  return wrapSvgExport({
+    theme,
+    width: w,
+    height: y + exportMargin,
+    fontFamily,
+    Wrapper,
+    children,
   })
 }

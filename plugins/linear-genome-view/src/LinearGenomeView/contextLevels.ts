@@ -73,24 +73,48 @@ export function contextLevelHost(
     : undefined
 }
 
+// The three sets below classify every navigation-shaped action of the view,
+// and `contextLevels.test.ts` holds them against the view's real action list:
+// a navigation in none of them lands on the level and quietly walks it off the
+// host's centre.
+
 // A gesture on a level that means "move": replayed on the host in the host's
-// own units, and swallowed on the level, whose left edge is derived. Zoom is
-// not among them: a level's width is the one thing it owns.
-const LEVEL_PANS = new Set(['horizontalScroll', 'scrollTo'])
+// own units, and swallowed on the level, whose left edge is derived.
+export const LEVEL_PANS = new Set(['horizontalScroll', 'scrollTo', 'slide'])
 
 // A navigation on a level that names a place. The level and its host lay out
 // the same regions, so the arguments mean the same thing on either, and the
-// host is where they belong.
-const LEVEL_NAVIGATIONS = new Set([
+// host is where they belong. `centerAt` is not an action but a method over
+// `scrollTo`, so the pan above already lands it.
+export const LEVEL_NAVIGATIONS = new Set([
   'moveTo',
-  'centerAt',
   'flyToCenter',
   'navTo',
+  'navToLocation',
   'navToMultiple',
   'navToLocString',
   'navToLocations',
+  'navigateNewestBookmark',
   'showRegions',
   'showAllRegionsInAssembly',
+])
+
+// What stays the level's own: its zoom, which is its one piece of state, and
+// the primitives the sync writes through. `zoomTo` from a wheel anchors under
+// the cursor, and the sync puts the centre back on the same frame.
+export const LEVEL_OWN = new Set([
+  'zoomTo',
+  'zoom',
+  'flyTo',
+  'showAllRegions',
+  'fitAllRegions',
+  'clampZoomToCeiling',
+  'setWindow',
+  'setWindowFrame',
+  'setNewView',
+  'scrollToBp',
+  'setDisplayedRegions',
+  'horizontallyFlip',
 ])
 
 /**
@@ -145,14 +169,19 @@ export function installContextLevels(self: LinearGenomeViewModel) {
       if (!level || level.pendingLaunch) {
         next(call)
       } else if (LEVEL_PANS.has(call.name)) {
-        const px = call.args[0] as number
+        const arg = call.args[0] as number
         const ratio = level.bpPerPx / self.bpPerPx
         if (call.name === 'horizontalScroll') {
-          abort(self.horizontalScroll(px * ratio) / ratio)
+          abort(self.horizontalScroll(arg * ratio) / ratio)
+        } else if (call.name === 'slide') {
+          // a fraction of the level's window is that many of its bases, which
+          // is `ratio` widths of the host
+          self.slide(arg * ratio)
+          abort(undefined)
         } else {
-          const centerBp = px * level.bpPerPx + level.windowWidthBp / 2
+          const centerBp = arg * level.bpPerPx + level.windowWidthBp / 2
           self.scrollToBp(centerBp - self.windowWidthBp / 2)
-          abort(px)
+          abort(arg)
         }
       } else if (LEVEL_NAVIGATIONS.has(call.name)) {
         const host = self as unknown as Record<
