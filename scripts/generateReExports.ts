@@ -32,7 +32,13 @@
 // EAGER_BUNDLE.md §"3. The runtime re-export registry" is the measurement
 // behind the split.
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdtempSync, readFileSync, statSync } from 'node:fs'
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  statSync,
+} from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -413,10 +419,8 @@ interface FrameworkModule {
 }
 
 async function evaluateFramework(): Promise<FrameworkModule[]> {
-  const outfile = path.join(
-    mkdtempSync(path.join(tmpdir(), 'jbrowse-framework-reexports-')),
-    'frameworkModules.mjs',
-  )
+  const dir = mkdtempSync(path.join(tmpdir(), 'jbrowse-framework-reexports-'))
+  const outfile = path.join(dir, 'frameworkModules.mjs')
   await esbuild.build({
     entryPoints: [path.join(CORE_REEXPORTS, 'frameworkModules.ts')],
     bundle: true,
@@ -428,6 +432,7 @@ async function evaluateFramework(): Promise<FrameworkModule[]> {
   const mod = (await import(pathToFileURL(outfile).href)) as {
     default: Record<string, unknown>
   }
+  rmSync(dir, { recursive: true, force: true })
   return Object.entries(mod.default)
     .map(([key, value]) => ({
       key,
