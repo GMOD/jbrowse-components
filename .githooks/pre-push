@@ -258,6 +258,23 @@ changed_since() {
 
 status=0
 
+# --- read-only gates, started first and left to run ------------------------
+
+# Both read the tree and write nothing, so they start before the fixers rather
+# than after them, and the fixers' ~7s runs underneath. That is speculative:
+# check-docs reads what autogen writes, so a run started this early is only
+# valid if autogen wrote nothing — which is the ordinary push. When autogen (or
+# a ratchet writer) does write, the result is thrown away and the check re-runs
+# below, paying the sequential cost only on the push that earned it.
+#
+# diagrams:check needs no such retry. The lock is generated from the `.dot`
+# sources by a rewrite that needs graphviz, so no fixer here can move either
+# side of what it compares.
+eval "$cmd_check_docs" >"$tmp/docs.log" 2>&1 &
+docs_pid=$!
+eval "$cmd_diagrams_check" >"$tmp/diagrams.log" 2>&1 &
+diagrams_pid=$!
+
 # --- fixers, in sequence: each writes files the next one reads ---------------
 
 # autogen only answers CI's question when this checkout's figures are the ones
@@ -386,10 +403,15 @@ for ratchet in \
   fi
 done
 
-# check-docs has no fixer and reads only what autogen has now finished writing,
-# so it is the one thing that can overlap the linters.
-eval "$cmd_check_docs" >"$tmp/docs.log" 2>&1 &
-docs_pid=$!
+# The fixers wrote something, so the speculative check-docs above read a tree
+# that no longer exists. Discard it and ask again, now in the order the old
+# sequence always used. The linters below still overlap it.
+if [ -n "$(changed_since "$tmp/before")" ]; then
+  kill "$docs_pid" 2>/dev/null || true
+  wait "$docs_pid" 2>/dev/null || true
+  eval "$cmd_check_docs" >"$tmp/docs.log" 2>&1 &
+  docs_pid=$!
+fi
 
 # Both linters, because they catch different things and CI runs both: oxlint is
 # the fast pass, `lint:eslint` the backstop for the react-compiler and
@@ -473,11 +495,11 @@ if [ "$dstatus" != 0 ]; then
   status=$dstatus
 fi
 
-# The diagram lock is the one generated artifact autogen does not own (its
-# rewrite half needs graphviz), and CI runs this check first in the generated
-# job, so a stale lock hides every autogen answer behind it. Reads two files.
+# The diagram lock is the one generated artifact autogen does not own, and CI
+# runs this check first in the generated job, so a stale lock hides every
+# autogen answer behind it. Started above; this is where its answer is read.
 gstatus=0
-eval "$cmd_diagrams_check" >"$tmp/diagrams.log" 2>&1 || gstatus=$?
+wait "$diagrams_pid" || gstatus=$?
 if [ "$gstatus" != 0 ]; then
   echo >&2
   echo "pre-push: pnpm diagrams:check failed" >&2
