@@ -1677,12 +1677,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
     .preProcessSnapshot<
       ({ fadeThinAlignments?: boolean } & Record<string, unknown>) | undefined
     >(snap => {
-      // Legacy: fadeThinAlignments was a boolean (stripDefault true, so only an
-      // explicit `false` reached the snapshot). Map it onto the tri-state mode
-      // so pre-'auto' sessions that had the fade turned off stay off.
+      // Legacy: fadeThinAlignments was a boolean. stripDefault meant only an
+      // explicit `false` ever persisted, so that is the case a pre-'auto'
+      // session hits — but a hand-written document or spec reaches for `true`
+      // to turn the fade ON, and dropping it would leave the key looking
+      // accepted while it wrote nothing.
       const { fadeThinAlignments, ...rest } = snap || {}
-      return fadeThinAlignments === false
-        ? { ...rest, fadeThinAlignmentsMode: 'off' }
+      return typeof fadeThinAlignments === 'boolean'
+        ? {
+            ...rest,
+            fadeThinAlignmentsMode: fadeThinAlignments ? 'on' : 'off',
+          }
         : rest
     })
     .postProcessSnapshot(snap => {

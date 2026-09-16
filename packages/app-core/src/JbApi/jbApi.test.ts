@@ -1454,11 +1454,6 @@ describe('setSession', () => {
       get ownTracks() {
         return []
       },
-      // stands in for a getter a view keeps for a legacy key its own
-      // preProcessSnapshot converts
-      get legacyFlag() {
-        return true
-      },
     }))
   // a view whose type registers no launch keys, as an out-of-tree plugin's does
   const PluginViewModel = mst.types
@@ -1498,9 +1493,12 @@ describe('setSession', () => {
   // StubView declares launch keys, so its accepted set is published;
   // PluginView declares none, standing in for a view whose launcher holds the
   // vocabulary (ProteinView's uniprotId), where the properties are the set
+  // `legacyFlag` stands in for LinearSyntenyView's `fadeThinAlignments`: a
+  // legacy spelling the view's own preProcessSnapshot converts, declared in
+  // `passThrough` so `acceptedKeys` answers for it
   const stubViewType = {
-    acceptedKeys: ['id', 'type', 'label'],
-    launchKeys: { keys: {}, passThrough: [] },
+    acceptedKeys: ['id', 'type', 'label', 'legacyFlag'],
+    launchKeys: { keys: {}, passThrough: ['legacyFlag'] },
     stateModel: View,
   }
   const pluginViewType = { stateModel: PluginViewModel }
@@ -1572,11 +1570,12 @@ describe('setSession', () => {
     expect(notified).toEqual(['StubView ignored unknown key(s): labl'])
   })
 
-  // A legacy key a view's own preProcessSnapshot converts (LinearSyntenyView's
-  // fadeThinAlignments) is outside the accepted set and still works: the live
-  // node answers for it, and refusing the document over one was the cost of
-  // asking the declared keys alone.
-  it('says nothing about a key the live view holds', async () => {
+  // A legacy key a view's own preProcessSnapshot converts works, so a document
+  // naming one must not cost the call. What makes it known is the view type
+  // declaring it, not whatever members the live node happens to have — a
+  // getter, a volatile or an action of the same name answers to `in` while
+  // writing nothing.
+  it('says nothing about a legacy key the view type declares', async () => {
     document.body.innerHTML = '<div data-app-phase="ready"></div>'
     notified.length = 0
     const session = Session.create({
@@ -1587,6 +1586,22 @@ describe('setSession', () => {
       5000,
     )
     expect(notified).toEqual([])
+  })
+
+  // The undeclared converse: `ownViews` is a getter on the live node, so the
+  // heuristic this replaced called it known and said nothing while MST dropped
+  // it.
+  it('names an undeclared key the live view has a getter for', async () => {
+    document.body.innerHTML = '<div data-app-phase="ready"></div>'
+    notified.length = 0
+    const session = Session.create({
+      views: [{ id: 'a', type: 'StubView', label: 'one' }],
+    })
+    await jbOver(session).setSession(
+      { views: [{ id: 'a', type: 'StubView', ownViews: [] }] },
+      5000,
+    )
+    expect(notified).toEqual(['StubView ignored unknown key(s): ownViews'])
   })
 
   // A view type whose launch keys live only in its launcher (the out-of-tree

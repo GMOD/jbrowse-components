@@ -1718,15 +1718,14 @@ interface SnapshotTarget {
 // and the partition that names it runs at attach — which a view the document
 // KEEPS never reaches, so the commonest edit was the quiet one.
 //
-// Reported, not refused, like the same mistake on a session spec: a legacy key
-// a view's own preProcessSnapshot converts (LinearSyntenyView's
-// fadeThinAlignments) is outside the accepted set and still works, and one of
-// those must not cost the document. The live node settles what the declared
-// keys cannot — the same question `showTrackGeneric` asks of a display node.
+// Reported, not refused, like the same mistake on a session spec: a document
+// that works today must not cost the whole call. `acceptedKeys` answers for a
+// legacy spelling too — a view's `passThrough` declares the ones its own
+// preProcessSnapshot converts, which is what makes this a question about the
+// view type rather than about whatever members the live node happens to have.
 function unknownViewKeys(
   pluginManager: PluginManager,
   entry: unknown,
-  open: Map<string, Record<string, unknown>>,
 ): string[] {
   if (
     typeof entry !== 'object' ||
@@ -1739,7 +1738,7 @@ function unknownViewKeys(
     type: string
   }
   const nested = Array.isArray(views)
-    ? views.flatMap(view => unknownViewKeys(pluginManager, view, open))
+    ? views.flatMap(view => unknownViewKeys(pluginManager, view))
     : []
   if (!pluginManager.getElementTypeRecord('view').has(type)) {
     return nested
@@ -1748,10 +1747,7 @@ function unknownViewKeys(
   const accepted =
     viewType.acceptedKeys ??
     Object.keys(viewType.stateModel.properties as Record<string, unknown>)
-  const node = open.get(keyed.id as string)
-  const unknown = Object.keys(keyed).filter(
-    key => !accepted.includes(key) && !(node && key in node),
-  )
+  const unknown = Object.keys(keyed).filter(key => !accepted.includes(key))
   return [
     ...(unknown.length
       ? [
@@ -1788,14 +1784,8 @@ async function setSession(
   // a lazily registered view or display type is not in the session's type union
   // until its model loads, and applySnapshot is synchronous
   await pluginManager.preloadSessionTypes(next)
-  const open = new Map(
-    session.views.map(view => [
-      view.id,
-      view as unknown as Record<string, unknown>,
-    ]),
-  )
   for (const problem of (Array.isArray(next.views) ? next.views : []).flatMap(
-    entry => unknownViewKeys(pluginManager, entry, open),
+    entry => unknownViewKeys(pluginManager, entry),
   )) {
     session.notifyError(problem)
   }

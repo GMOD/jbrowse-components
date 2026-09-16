@@ -18,12 +18,21 @@ import type { LinearSyntenyViewCommands } from './types.ts'
 // rewritten and re-centred them. `colorBy`, `alpha`,
 // `minAlignmentLength` and the rest are plain properties — writing them is the
 // whole job, so none of them is a launch key.
+//
+// `fadeThinAlignments` is the boolean the fade was before the tri-state
+// `fadeThinAlignmentsMode`. It is no longer a declared property, so the
+// partition would read it as a typo; the model's own preProcessSnapshot
+// converts it, so a saved session or a hand-written document naming it keeps
+// working.
 export const linearSyntenyLaunchKeys =
-  defineLaunchKeys<LinearSyntenyViewCommands>()({
-    views: { kind: 'rows' },
-    tracks: { kind: 'launch' },
-    levelHeights: { kind: 'launch' },
-    autoDiagonalize: { kind: 'launch' },
-    collapseEmptyRows: { kind: 'launch' },
-    sameScale: { kind: 'replay' },
-  })
+  defineLaunchKeys<LinearSyntenyViewCommands>()(
+    {
+      views: { kind: 'rows' },
+      tracks: { kind: 'launch' },
+      levelHeights: { kind: 'launch' },
+      autoDiagonalize: { kind: 'launch' },
+      collapseEmptyRows: { kind: 'launch' },
+      sameScale: { kind: 'replay' },
+    },
+    { passThrough: ['fadeThinAlignments'] },
+  )
