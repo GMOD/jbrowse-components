@@ -464,7 +464,7 @@ to `haplotype` and it paints one row per parental copy.
 `0` row is the lost haplotype that makes an arm LOH. Wakhan emits fractional
 states for segments that are not clonal, which is why the color buckets ranges.
 `coverage` is Wakhan's median depth for the segment, so the per-copy depth scale
-can be read straight off it.
+comes directly from it.
 
 ### Depth per bin, and B-allele frequency
 
@@ -671,7 +671,7 @@ the circular overview), see the
 
 ### The same junction three ways
 
-The chord says where to look. Three things in this instance say what is there,
+The chord marks where to look. Three things in this instance show what is there,
 and none of them is derived from the others.
 
 **The caller.** `SV_20` and `SV_190` are one junction written twice, joining
@@ -679,7 +679,7 @@ chr3:139,976,414 to chr13:114,353,244. A BND record names one partner, so each
 describes a translocation. The `EVENT` field groups them: the benchmark files
 both under `cluster_3` alongside two further breakends and tags them
 `EVENTTYPE=CHROMOPLEXY`. A caller can group junctions into an event because it
-sees the whole callset at once. It cannot say which molecule carries them.
+sees the whole callset at once. It cannot show which molecule carries them.
 
 **The reads.** Put both breakpoint loci on screen and, from the tumor PacBio
 HiFi track's menu, choose **Launch → Reconstruct derivative allele...**. The
@@ -694,7 +694,7 @@ through it.
 
 <Video src="/media/sv/derivative_allele_route.mp4" caption="The same route end to end, on the COLO829 melanoma chain: the track menu, the ranked routes, and Draw as Breakpoint split view replacing the window with one panel per segment of the route the reads take." />
 
-**The assembly.** The synteny track loaded earlier says the same thing from no
+**The assembly.** The synteny track loaded earlier shows the same thing from no
 reads at all. The C-GIAB assembly resolves both loci onto a single tumor contig,
 and named that contig for the two chromosomes it fuses. Its chr13 arm ends at
 the chr13 breakend above and its chr3 arm begins at the chr3 one, abutting at a
@@ -795,17 +795,18 @@ samples' PacBio HiFi reads and sort each pileup at the call:
 <Figure caption="SV_223 at base level: the benchmark's deletion call over the tumor and matched normal PacBio HiFi pileups, both sorted at the deleted span. The tumor's reads carry a deletion where the normal's carry an insertion at the same repeat, and the called span is wider than the deletion under it." src="/img/sv_cgiab/vntr_tumor_normal.png" />
 
 `SVLEN` here is the span between the two samples' alleles rather than either
-one's distance from the reference. The record states itself in the normal
-assembly's coordinates as well, in `CHROM_HG8N6.3`, `POS_HG8N6.3`, `REF_HG8N6.3`
-and `ALT_HG8N6.3`, so clicking it shows the same variant on the yardstick it was
+one's distance from the reference. The record is given in the normal assembly's
+coordinates as well, in `CHROM_HG8N6.3`, `POS_HG8N6.3`, `REF_HG8N6.3` and
+`ALT_HG8N6.3`, so clicking it shows the same variant on the yardstick it was
 called against.
 
 Two more fields under it are worth the click. `SVVIZ_VAF_ALL` is the variant
 allele fraction svviz2 measured across the HG008-T datasets, and
 `SVVIZBYDATASET` breaks it into the sequencing runs behind it, which are worth
 reading against each other at a repeat. The field's own description in the VCF
-header says the estimate is biased there, and the pileup shows one reason why:
-reads crossing a repeat spread the same allele over several alignments of it.
+header records that the estimate is biased there, and the pileup shows one
+reason why: reads crossing a repeat spread the same allele over several
+alignments of it.
 
 ### Reading copy number
 
@@ -832,12 +833,12 @@ demo, as `HG008-N_indexcov.bw` and `HG008-T_indexcov.bw` under
 https://jbrowse.org/demos/cgiab/, and load as a multi-wiggle track by URL.
 
 Zoom to a region and open the benchmark CNV BED to check the coverage changes
-against the called intervals. Coverage says a level changed; the BAF track in
-the same window says what changed.
+against the called intervals. Coverage marks that a level changed; the BAF track
+in the same window shows what changed.
 
 <Video src="/media/sv_cgiab/copy_number_layout.mp4" caption="Both menu routes on the coverage track, over chr5: Set min/max score pinning the axis, then Plot type to Overlapping Scatter, which redraws the two stacked rows as one band of points with the normal flat under the tumor's steps." />
 
-<Figure caption="Chromosome 5: the segmented copy ratio, tumor and normal indexcov coverage as overlapping scatter, B-allele frequency, and the benchmark CNV calls. The normal stays flat while the tumor steps, and the BAF lane says what each step is." src="/img/sv_cgiab/cnv_with_bed_track.png" />
+<Figure caption="Chromosome 5: the segmented copy ratio, tumor and normal indexcov coverage as overlapping scatter, B-allele frequency, and the benchmark CNV calls. The normal stays flat while the tumor steps, and the BAF lane shows what each step is." src="/img/sv_cgiab/cnv_with_bed_track.png" />
 
 Four loci in HG008-T sit in four different copy-number states, and the depth,
 BAF and copy-number lanes built above tell them apart:

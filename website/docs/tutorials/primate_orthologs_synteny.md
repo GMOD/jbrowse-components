@@ -249,7 +249,7 @@ and a session or a config authors the same thing as `rowOrder`.
 }
 ```
 
-<Figure caption="The TP53 neighbourhood on human chr17 over seven primate lanes from one gene-symbol ortholog track, each lane drawing its own RefSeq gene models on its own chromosome. Every lane keeps the block in order; the siamang lane reads it backwards, so its header says [rev] and its ribbons are the reversed-strand ones, drawn straight because the lane is mirrored." src="/img/multiway_synteny/primate_tp53_lanes.png" />
+<Figure caption="The TP53 neighbourhood on human chr17 over seven primate lanes from one gene-symbol ortholog track, each lane drawing its own RefSeq gene models on its own chromosome. Every lane keeps the block in order; the siamang lane reads it backwards, so its header reads [rev] and its ribbons are the reversed-strand ones, drawn straight because the lane is mirrored." src="/img/multiway_synteny/primate_tp53_lanes.png" />
 
 Zoomed out to four megabases the same track reads as a synteny painting, and
 color separates the two things it draws. A bundle painted as reversed is a block

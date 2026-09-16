@@ -224,8 +224,8 @@ boundaries fall within the window, so its extent reads against the gene track
 above it. The two panels differ here by a shift in allele frequency, so the
 block is a run of columns where one class is enriched.
 
-The lane between them says which columns are doing the work: the same Hudson Fst
-as the genome scan, between the same two panels, computed one site at a time
+The lane between them shows which columns are doing the work: the same Hudson
+Fst as the genome scan, between the same two panels, computed one site at a time
 over this VCF. Every point is one column of the matrix, though not the column
 directly beneath it, since the matrix gives each record equal width and the Fst
 lane keeps genomic spacing; the sloped lines between the two tie each column

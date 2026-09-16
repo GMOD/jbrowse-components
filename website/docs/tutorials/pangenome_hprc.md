@@ -395,10 +395,10 @@ The segments track also draws on the haplotype once `assemblyNames` lists the
 haplotype and `assemblyNameToPanSN` names the graph haplotype that the entry
 stands for. The view needs no other link between the two. A graph cut from the
 track reads the same map to open a node contributed by `NA20809#2` on
-`NA20809.2`, so the assembly can have any name the session likes. `hg38` stays
-first, because the view cuts a graph on the first assembly its track names. The
-config below replaces the track [above](#add-the-graph-track), with the same
-`trackId` and one more assembly:
+`NA20809.2`, so the assembly can be given any name. `hg38` stays first, because
+the view cuts a graph on the first assembly its track names. The config below
+replaces the track [above](#add-the-graph-track), with the same `trackId` and
+one more assembly:
 
 ```json addtrack
 {

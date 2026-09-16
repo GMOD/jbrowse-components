@@ -9,7 +9,7 @@ tutorial_category: Synteny & comparative genomics
 ---
 
 An [OrthoFinder](https://github.com/davidemms/OrthoFinder) run groups genes by
-protein homology and says nothing about position. `Orthogroups.tsv` converts to
+protein homology, with no positional information. `Orthogroups.tsv` converts to
 the `.blocks` table `MCScanBlocksAdapter` reads, with one BED of gene positions
 per genome, and a duplicated gene becomes several rows.
 
@@ -69,7 +69,7 @@ proteins, alongside the alignment-based tracks of the
 [minimap2](/docs/tutorials/synteny_visualization) and
 [MCScan](/docs/tutorials/mcscan_synteny_grape_peach) tutorials. OrthoFinder
 clusters proteins into orthogroups without reference to position, so nothing in
-an orthogroup asserts synteny, and any collinearity in the ribbons is a property
+an orthogroup implies synteny, and any collinearity in the ribbons is a property
 of the genomes.
 
 Five sets follow, a section each; the second half of the page builds `wheat`
@@ -342,9 +342,9 @@ A lane carries one refName, so the maize lane shows one of the two copies.
 
 <Figure caption="A rice window over sorghum, brachypodium, setaria and maize lanes from one OrthoFinder orthogroups track, each lane carrying that grass's own gene models. The block is syntenic in all four, and the maize lane shows whichever of maize's two duplicated copies places more of the window." src="/img/multiway_synteny/grasses_rice_lanes.png" />
 
-Both maize copies at once is the stacked view's job. **Launch → Linear synteny
-view (visible region)** in the lane track's menu offers a full row per grass
-over the visible window.
+The stacked view shows both maize copies at once. **Launch → Linear synteny view
+(visible region)** in the lane track's menu offers a full row per grass over the
+visible window.
 
 <Video src="/media/synteny/multiway_launch_stack.mp4" caption="The handoff from the grasses lane track: the track menu's launch entry, the dialog printing where each grass's row would open and offering a checkbox per row, and Replace current view swapping the lane view for the stack." />
 
@@ -501,7 +501,7 @@ bash build_orthofinder_synteny.sh wheat   # or: vertebrates, grasses, drosophila
 npx --yes serve orthofinder_wheat_build/jbrowse2  # then open the printed URL
 ```
 
-The sets it knows, and what each costs to build:
+The sets the script accepts, and what each costs to build:
 
 <!-- ORTHOFINDER_SETS START -->
 

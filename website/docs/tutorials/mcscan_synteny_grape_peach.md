@@ -98,8 +98,8 @@ Column 1 must use the same reference sequence names as the JBrowse assembly.
 
 Some mismatches raise an error and others load without one; the
 [synteny track guide](/docs/config_guides/synteny_track#gene-ids-are-the-join-in-the-mcscan-adapters)
-says which. The one that bites here is jcvi stripping isoform suffixes unless
-run with `--no_strip_names`, which the [script](#reproduce-it-end-to-end)
+says which. The one that causes trouble here is jcvi stripping isoform suffixes
+unless run with `--no_strip_names`, which the [script](#reproduce-it-end-to-end)
 passes.
 
 ## Producing the data

@@ -309,7 +309,7 @@ tabix https://jbrowse.org/demos/circular_synteny/hg38ToMm39.blocks.pif.gz tchrX:
 tabix https://jbrowse.org/ucsc/hg38/liftOver/hg38ToMm39.over.pif.gz tchrX:10447551-10447552
 ```
 
-The row's strand column says `-`, and its query span on mouse chrX is the other
+The row's strand column reads `-`, and its query span on mouse chrX is the other
 end of the ribbon. The ring reads back the same way: `bigWigToBedGraph` prints
 the bins under any stretch of either arc, addressed by the prefixed contig name
 the bigWig carries.

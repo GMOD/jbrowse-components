@@ -210,7 +210,7 @@ as opaque.
 
 [`odgi untangle`](https://odgi.readthedocs.io/en/latest/rst/commands/odgi_untangle.html)
 walks each query path and reports which stretch of the reference path it
-traverses, so it states homology as the graph resolved it. Sequence that
+traverses, so it encodes homology as the graph resolved it. Sequence that
 collapsed into one set of nodes comes back as several query segments pointing at
 the same reference span. `-p` asks for PAF:
 
@@ -227,7 +227,7 @@ jbrowse make-pif ecoli_pggb_untangle.paf
 
 `-m` merges runs shorter than it into the previous segment, since otherwise
 every SNP node starts a new one, and `-j` keeps mappings at or above a jaccard.
-untangle writes no CIGAR and states its identity in an `id:f:` tag, which a
+untangle writes no CIGAR and records its identity in an `id:f:` tag, which a
 synteny track reads on a record with no `de:f:`.
 
 On a near-colinear bacterial pangenome untangle finds few boundaries, so `-e`
@@ -267,8 +267,8 @@ gzip -dc ecoli_pggb_untangle.pif.gz | awk -F'\t' 'substr($1,1,1)=="q"' \
 
 Two K12 spans come back, `chr:3,941,447-3,944,255` and
 `chr:4,169,192-4,171,723`, and Sakai, NCTC86 and IAI39 each reach both from two
-places; CFT073 reaches neither twice. A pairwise PAF cannot say this, since a
-collapsed repeat is either dropped or assigned to one copy.
+places; CFT073 reaches neither twice. A pairwise PAF cannot express this, since
+a collapsed repeat is either dropped or assigned to one copy.
 
 A [dotplot](/docs/user_guides/dotplot_view) reads the same PIF. A stretch the
 strain traverses backwards descends, so every inversion is visible at once.
@@ -403,8 +403,8 @@ in_pggb bash -c "bcftools annotate --rename-chrs /data/rename_chrs.tsv \
   | bcftools sort -Oz -o /data/ecoli_pggb_snarls.vcf.gz && tabix -p vcf /data/ecoli_pggb_snarls.vcf.gz"
 ```
 
-`LV`/`PS` give the snarl tree, and `AT` states each allele as the segment ids it
-traverses (`AT=>2>4>5,>2>3>5`), the ids the graph view labels its nodes with.
+`LV`/`PS` give the snarl tree, and `AT` encodes each allele as the segment ids
+it traverses (`AT=>2>4>5,>2>3>5`), the ids the graph view labels its nodes with.
 Filter on `LV` in **Edit filters** to pick one level. The coarse tier below is
 built from the `LV=0` records.
 
@@ -838,9 +838,9 @@ Switching **Layout** to **Sample rows** gives each strain its own row. On this
 graph a row means carriage, since it names a path that walks the segment; on an
 rGFA it means build order, from minigraph's `SR`.
 
-Rows want a narrower window, a few hundred bp, since each segment is read
-individually. A row's bar is drawn over the **reference it replaces**, never
-over its own sequence length, so an insertion's length lives in the tooltip.
+This layout needs a narrower window, a few hundred bp, since each segment is
+read individually. A row's bar is drawn over the **reference it replaces**,
+never over its own sequence length, so the tooltip gives an insertion's length.
 That is why CFT073's row carries one long bar labelled `7 kb deletion` running
 off the left edge: its segment is 75 bp on CFT073's own contig, and its two
 links land on `K12:1,004,667` inside the window and on `K12:997,574` 7.1 kb
@@ -869,7 +869,7 @@ panel is the field an rGFA has to use, and there `SR` is build order.
 #### Carriage as a linear lane
 
 The same tag reaches the segments track as feature attributes: `samples` is the
-haplotype list and `carriers` its length, which a color expression wants:
+haplotype list and `carriers` its length, which a color expression reads:
 
 ```json addtrack
 {

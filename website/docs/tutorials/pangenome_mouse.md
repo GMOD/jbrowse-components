@@ -8,7 +8,7 @@ guide_category: Tutorials
 tutorial_category: Pangenomes
 ---
 
-A pangenome graph of nineteen mouse genomes says where the strains differ from
+A pangenome graph of nineteen mouse genomes shows where the strains differ from
 one another and by how much. This one is the GRCm39 reference plus eighteen
 inbred and wild-derived strains from the Mouse Genomes Project, aligned together
 with `minigraph`. Two things make it worth reading. The reference is itself one
@@ -61,7 +61,7 @@ The projections are hosted beside the graph:
 what each of those files holds and how a graph produces them.
 
 `minigraph` writes no path lines, so this graph records no carriage: nothing in
-it says which strain carries a given allele, and `firstSeenIn` in the allele
+it records which strain carries a given allele, and `firstSeenIn` in the allele
 file is construction order. [](/docs/tutorials/pangenome_cattle) is the panel
 where path lines recover it.
 

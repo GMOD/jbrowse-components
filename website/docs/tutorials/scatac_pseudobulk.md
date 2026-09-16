@@ -235,7 +235,7 @@ The script's own work:
 - `export_coverage(groupby="cell_type", bin_size=25, normalization="RPKM")`, one
   BigWig per cell type into `bw/`
 - a `sources.json` of subadapters, taking each row's color from the same object
-  and its `group` and position from a lineage map the script states outright.
+  and its `group` and position from a lineage map hardcoded in the script.
   Running it on your own experiment means replacing that map
 - `jbrowse create` plus `add-assembly` for hg38 and a RefSeq gene track, then
   the one `MultiQuantitativeTrack`

@@ -468,9 +468,9 @@ The same thing as a `defaultSession`:
 
 <Figure caption="The grape gene track over the same locus as a multi-way lane stack, one lane per genome from a single MCScan blocks track. The peach and cacao lanes carry their own gene models from those genomes' gene tracks, the lanes without one carry the table's gene spans as boxes, and a chain bridges past a lane that places nothing to end at the last lane that does." src="/img/multiway_synteny/lgv_track_lanes.png" />
 
-### What a lane header says
+### What a lane header shows
 
-Each lane has its own scale, so each lane states it:
+Each lane has its own scale, and its header shows it:
 
 - **Left**: where the lane starts, with `[rev]` where its gene order runs
   against grape's
@@ -482,8 +482,8 @@ Each lane has its own scale, so each lane states it:
 - **The view's gridlines stop at the grape lane**, the only lane they are true
   for
 - **A lane with no gene track the session can read** (GFF3, GTF, BigBed or BED)
-  outlines the table's gene spans and says `no annotation`, which is the four
-  `BLOCKS_ONLY_SPECIES` lanes here
+  outlines the table's gene spans and labels them `no annotation`, which is the
+  four `BLOCKS_ONLY_SPECIES` lanes here
 
 ### Ordering the lanes
 

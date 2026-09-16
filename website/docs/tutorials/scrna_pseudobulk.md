@@ -37,7 +37,7 @@ experiment, streamed and pooled by cell type without landing on disk.
 
 ## Where in the gene the reads land
 
-Putting the cells on genomic coordinates says where in the gene the reads
+Putting the cells on genomic coordinates shows where in the gene the reads
 landed: which end, which exons, which annotated transcript. 10x 3' kits sequence
 the 3' end of each transcript, so their coverage is a spike near the
 polyadenylation site. Full-length chemistries (Smart-seq, and 5' kits to a
@@ -253,7 +253,7 @@ A relative `uri` resolves against the config that holds it, and nothing runs on
 the server.
 
 The store's bin axis lays each window end to end keyed by refName, one window
-per chromosome. Per-cell coverage says something only where the cells have
+per chromosome. Per-cell coverage is informative only where the cells have
 reads, so the store covers marker windows and stays under a megabyte.
 
 An RNA set and an ATAC set stack in one view: the demo config carries a

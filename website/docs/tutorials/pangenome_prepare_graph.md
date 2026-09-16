@@ -81,7 +81,7 @@ S  s3  TTGCAA  LN:i:6  SN:Z:GRCh38#0#chr1  SO:i:10621  SR:i:0
 ```
 
 `SN` is the stable sequence the segment sits on, `SO` its offset there, and `SR`
-its rank, `0` on the reference backbone. A plain GFA states the same three
+its rank, `0` on the reference backbone. A plain GFA encodes the same three
 things in path order instead: walking a P or W line assigns every segment it
 visits an interval on that path's own sequence.
 
@@ -101,7 +101,7 @@ at the end.
 JBrowse reads a graph as two tabix-indexed BED projections of it,
 `<prefix>.segs.bed.gz` for the segments and `<prefix>.links.bed.gz` for the
 links between them. Both builders emit that identical pair, so the format
-question is settled once and nothing downstream knows which route the file took.
+question is settled once and nothing downstream distinguishes the two routes.
 
 For an rGFA the tags are already coordinates, so the build is a projection:
 
@@ -239,7 +239,7 @@ Bubbles are indexed under the graph's PanSN names, which is why this config
 carries `assemblyNameToPanSN` where the allele inventory below does not.
 
 `gfatools bubble` reads rGFA tags to place a bubble on a reference, so it
-returns nothing at all on a plain GFA that states the same thing in its paths.
+returns nothing at all on a plain GFA that encodes the same thing in its paths.
 There, run `snarls_to_bubble_bed.py` over the snarl VCF `pggb -V` or
 `vg deconstruct` already produced, which writes this same BED from that
 decomposition:
@@ -316,7 +316,7 @@ bash build_rgfa_alleles.sh out
 
 Each row carries a `CIGAR` against the reference span it replaces
 (`2062M63348I`), which makes the lane legible: an insertion consumes no
-reference, so its start and end cannot state its size, and a plain feature track
+reference, so its start and end cannot give its size, and a plain feature track
 would draw a 63 kb allele one pixel wide. An `AlignmentsTrack` walks the CIGAR
 instead and draws the insertion at its real magnitude, with the same glyph it
 draws for a read:
@@ -335,7 +335,7 @@ draws for a read:
 ```
 
 The magnitude is measured and the position inside the span is not. A bubble
-states what sequence replaces a reference interval, never where inside that
+encodes what sequence replaces a reference interval, never where inside that
 interval it sits, so the CIGAR puts the indel at the end of the span by
 convention.
 

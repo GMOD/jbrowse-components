@@ -96,8 +96,8 @@ read crossing a junction.
 
 The arc colors above cover only spliced reads. A _strand-specific_ library
 records the transcript strand in which mate of the pair a read is, so every read
-carries it. That is what tells apart genes sitting close together or overlapping
-on opposite strands.
+carries it, which distinguishes genes sitting close together or overlapping on
+opposite strands.
 
 The surfeit locus packs genes tightly and alternates their strands (_RPL7A_,
 _SURF1_, _SURF2_, _SURF4_), so the coloring, which comes from the reads alone,

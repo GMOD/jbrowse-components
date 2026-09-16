@@ -137,7 +137,7 @@ captures and in the links both. That settles a novel locus that no reference
 gene supports: exons with reads across them are a candidate gene, and exons
 without them are a candidate false positive. Repeat the flag for more than one,
 and name each with `--rnaseq-name`. Two unlabelled tracks are "RNA-seq 1" and
-"RNA-seq 2", which says nothing about which tissue is which.
+"RNA-seq 2", which does not identify the tissue.
 
 The example portal carries two, both from the
 [Griffith lab's RNA-seq course data](https://genomedata.org/rnaseq-tutorial/results/alignments/hisat/):
@@ -184,7 +184,7 @@ spreadsheet of links.
 ## Which junction is the one in dispute
 
 A picture of a structure conflict is a plausible-looking model drawn over a
-stack of reference isoforms, and nothing in it says where the two disagree. So
+stack of reference isoforms, and nothing in it marks where the two disagree. So
 the classifier writes down where it looked. Every capture and every live link
 carries a **Disagreements** track directly under the prediction, one short box
 per junction that differs, labelled with what moved:

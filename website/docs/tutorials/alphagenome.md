@@ -7,7 +7,7 @@ guide_category: Tutorials
 tutorial_category: Epigenomics & single cell
 ---
 
-AlphaGenome reads a megabase of DNA and says what it does: where it is
+AlphaGenome reads a megabase of DNA and predicts what it does: where it is
 transcribed, where the chromatin is open, how it splices, and how it folds. We
 ask it about _TAL1_ in two cell lines, stack the answers that share units on one
 axis, and then score an oncogenic insertion against the reference to see the
@@ -227,7 +227,7 @@ call rather than a stored answer.
 
 Before running one yourself:
 
-- **the variant has to be inside the window.** The panel says when it is not,
+- **the variant has to be inside the window.** The panel warns when it is not,
   and offers to navigate there
 - **splice junctions go sparse in variant mode.** AlphaGenome reports only
   junctions the variant could plausibly affect, which for a variant nowhere near

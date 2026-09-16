@@ -39,7 +39,7 @@ or a data-access agreement.
   https://ngs.sanger.ac.uk/production/ag1000g/phase2/AR1/samples/samples.meta.txt
 - the AgamP4 reference and its gene models, which the gene lane reads:
   https://ngs.sanger.ac.uk/production/ag1000g/phase3/genome/
-- the 2La tag SNPs, the ~200 positions whose allele says which arrangement a
+- the 2La tag SNPs, the ~200 positions whose allele marks which arrangement a
   chromosome carries, which each mosquito's karyotype is scored from
   ([Love et al. 2019](https://doi.org/10.1534/g3.119.400445)):
   https://raw.githubusercontent.com/rrlove/compkaryo/master/compkaryo/targets/2La_targets.txt

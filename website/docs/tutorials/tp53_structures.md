@@ -36,7 +36,7 @@ arrives per structure from the services beside it.
   https://files.rcsb.org/download/1YCR.cif
 - UniProt's feature annotation of p53, the domain and variant tracks:
   https://rest.uniprot.org/uniprotkb/P04637.gff
-- SIFTS, which says where each crystal's residues sit in the UniProt sequence:
+- SIFTS, which maps where each crystal's residues sit in the UniProt sequence:
   https://www.ebi.ac.uk/pdbe/api/mappings/uniprot/1tup
 
 ## Three structures of one protein
@@ -70,7 +70,7 @@ falls away at both ends of the protein. The crystal panels leave the same region
 as a gap: the tails missing from both crystals are the tails the model is least
 sure of.
 
-## The crystal keeps its annotations
+## Annotations mapped onto the crystal
 
 The feature tracks under each panel come from UniProt, whose coordinates are the
 full-length sequence. For the AlphaFold model that is the structure's own

@@ -223,8 +223,8 @@ below leave it off.
 
 ## Two methylation regimes
 
-Plants run two unrelated methylation programs, and the three contexts tell them
-apart:
+Plants run two unrelated methylation programs, and the three contexts
+distinguish them:
 
 | Program                         | CpG | CHG | CHH | Effect on the locus                                                                             |
 | ------------------------------- | --- | --- | --- | ----------------------------------------------------------------------------------------------- |

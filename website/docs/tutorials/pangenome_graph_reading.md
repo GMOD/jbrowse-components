@@ -87,7 +87,7 @@ so the popped graph derives its own bubbles from the way its nodes layer along
 the reference, and a bubble inside a bubble gets a label of its own to click in
 turn.
 
-<Figure caption="The array's segments popped out of the window and drawn on their own. Each loop is a run of kringle copies a haplotype walks and the reference misses, and the popped graph's own label states how many routes it holds." src="/img/pangenome/graph_kiv2_popped.png" />
+<Figure caption="The array's segments popped out of the window and drawn on their own. Each loop is a run of kringle copies a haplotype walks and the reference misses, and the popped graph's label gives the number of routes it holds." src="/img/pangenome/graph_kiv2_popped.png" />
 
 Every loop here is a different number of copies. The drawing shows that much and
 nothing more: the rGFA records which segments exist and how they link, and no

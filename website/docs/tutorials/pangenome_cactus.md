@@ -348,7 +348,7 @@ A collapsed repeat is where to look for variation _within_ an array; a
 reference-anchored copy keeps each at its own coordinate, so the depth curve
 here is a strain tally.
 
-Under the aggregate curve, the pav rows say which strain accounts for each dip,
+Under the aggregate curve, the pav rows show which strain accounts for each dip,
 as in the pggb tutorial's
 [per-strain presence](/docs/tutorials/pangenome_ecoli#per-strain-presence).
 

@@ -63,7 +63,7 @@ coordinates like `chr17:7,668,400-7,687,550` work too.
 
 RefSeq All draws each transcript on its own row, and TP53 has more than the
 track's height holds. The gene name reads **TP53 +20 more**, and the circled
-chip at the bottom right says `Isoforms trimmed`. Two ways to see more:
+chip at the bottom right reads `Isoforms trimmed`. Two ways to see more:
 
 - Click **+20 more** to open that one gene
 - Click the chip for **Auto / All transcripts / Representative transcript**. The
@@ -190,7 +190,7 @@ A few that come up often:
 
 - **Conserved Elements - 100 Vert. El** (Comparative Genomics) is the interval
   companion to phyloP: phyloP scores each base, phastCons calls the runs.
-- **RepeatMasker** (Repeats) says which parts of a window are repeat elements.
+- **RepeatMasker** (Repeats) marks which parts of a window are repeat elements.
 - **GTEx cis-eQTLs - GTEx DAP-G eQTLs** (Regulation) names the variants
   associated with expression of nearby genes.
 - **Long-read SVs - CoLoRSdb 1427 SVs** (Variation and Repeats) covers the size

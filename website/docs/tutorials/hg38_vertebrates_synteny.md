@@ -95,7 +95,7 @@ tabix -l https://jbrowse.org/ucsc/hg38/liftOver/hg38ToPanTro6.over.pif.gz | grep
 One `SyntenyTrack` names hg38 and every genome it stacks, and its adapter is a
 `MultiPairwiseSyntenyAdapter` holding one child per chain. Each child is an
 ordinary `PairwiseIndexedPAFAdapter` with its own pair of assembly names, in the
-order the file states them, and the anchor is never written: it is the one
+order the file lists them, and the anchor is never written: it is the one
 assembly every child names. The list below is cut to three genomes for the page;
 the hosted config carries all eight. The assemblies and their gene tracks come
 from each genome's hub config unchanged, and a lane finds its gene models

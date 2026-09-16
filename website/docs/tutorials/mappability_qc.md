@@ -67,7 +67,8 @@ to put it.
 An aligner reports that as MAPQ 0. The read is still aligned and still drawn
 where it aligned; MAPQ is `-10 log10 Pr{mapping position is wrong}`
 ([SAM specification](https://samtools.github.io/hts-specs/SAMv1.pdf)), so 0 is
-the aligner saying the position it chose is about as likely wrong as right.
+MAPQ 0 means the aligner found the position it chose about as likely wrong as
+right.
 
 ## The block, and the reads inside it
 
@@ -146,9 +147,9 @@ The lanes are independent of each other:
   data, averaged over tens of thousands of sequenced genomes. gnomAD drops
   non-uniquely-placed reads before computing it, so wherever the lane above is
   blank this one falls.
-- **Mapping quality on the reads** is the aligner's own account, one read at a
-  time, in the sample on screen. Red is MAPQ 0, meaning the aligner found
-  another place the read fits equally well; yellow is MAPQ 60 and above.
+- **Mapping quality on the reads** is the aligner's per-read confidence, in the
+  sample on screen. Red is MAPQ 0, meaning the aligner found another place the
+  read fits equally well; yellow is MAPQ 60 and above.
 - The **GIAB low-mappability + segdup lane** in the wide panel is a published
   opinion of the same sequence, drawn by a project that had to decide where its
   benchmark regions stop.

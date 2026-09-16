@@ -67,7 +67,7 @@ thread.
 
 <Figure caption="The HPRC section's Draw the graph form: a region box preloaded with the MHC class II window, the note on what the launch will cut, an Open in PangyPlot link for the same coordinates, and the catalog loci and chromosomes as presets." src="/img/pangenome/genomes_hprc_launcher.png" />
 
-Type any region and press **Draw as a graph**. The note under the box says what
+Type any region and press **Draw as a graph**. The note under the box shows what
 the launch will cut.
 
 The session is two panels. Above, a linear view with the RefSeq genes, the
@@ -92,8 +92,8 @@ view. The HPRC tutorial walks
 Past 150 kb the launch swaps the segment-level lanes for the bubble tier the
 HPRC tutorial builds with `build_bubble_tier.sh`, one node per top-level bubble,
 and a curve of segments per bubble. A chromosome preset is the widest case of
-the same rule. At that scale the linear lanes carry the reading: the curve says
-where the graph varies, and the tier lane places each bubble.
+the same rule. At that scale the curve shows where the graph varies, and the
+tier lane places each bubble.
 
 ## Beyond 5 Mb at segment resolution
 

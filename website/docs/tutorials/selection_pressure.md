@@ -156,8 +156,9 @@ fermenters.
 Clicking the orange link shows a handful of synonymous differences and a Fisher
 p nowhere near significant. One pairwise comparison has little power; the
 published result rests on codon models across many primate lineages. Blue is the
-colour that tests strongly: a conserved gene accumulates measurable synonymous
-change while holding non-synonymous change near zero.
+low end of the ramp, where the Fisher test does reach significance: a conserved
+gene accumulates measurable synonymous change while holding non-synonymous
+change near zero.
 
 ## Checking the rates against the raw data
 

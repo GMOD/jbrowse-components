@@ -141,7 +141,7 @@ its `score`, so only the track type changes:
 
 With both showing, type `chr1` into the location box. The fine segments lane
 goes blank at that width, and these two lanes carry the chromosome instead: the
-curve says where the graph varies, and the tier lane places each bubble as one
+curve shows where the graph varies, and the tier lane places each bubble as one
 block.
 
 <Figure caption="All 249 Mb of GRCh38 chr1 with the cytogenetic bands on the same axis, then the three chr1 loci this page opens, then two lanes from two files. The bubble file draws as a blue curve of segments per bubble, which measures how much the haplotypes disagree at each locus. The tier's segments lane draws the same bubbles, one gold block per bubble. The blank column is 1q12, where nothing aligns." src="/img/pangenome/hprc_whole_chromosome.png" />
@@ -344,11 +344,10 @@ jexl:feature.inversion
 
 Type `chr1:144,260,000-144,610,000`, the 1q21.1 locus. The lane holds one block
 there, a bubble whose paths disagree about orientation, and clicking it opens
-the flag in its details. The flag says the paths disagree; it cannot say whether
-that is a polymorphic inversion or an inverted paralog inside a segmental
-duplication, and the graph cut from the bubble draws its breakpoints as two
-deletion arcs, because the view's edges carry no orientation. The alignments
-settle it.
+the flag in its details. The flag marks that the paths disagree, and cannot
+distinguish a polymorphic inversion from an inverted paralog inside a segmental
+duplication. The graph cut from the bubble draws its breakpoints as two deletion
+arcs, because the view's edges carry no orientation. The alignments settle it.
 
 The figure below is the same bubble as an alignment, and it takes one build
 script to make, because nothing in the session so far carries the haplotypes'

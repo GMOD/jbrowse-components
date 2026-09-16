@@ -127,8 +127,8 @@ attached to the rows afterwards:
 ```
 
 The display draws one row per sample, and the rows keep the Dog10K IDs, which
-say nothing to a reader. Two mechanisms relabel them without touching the VCF: a
-`layout` array for named animals ([](/docs/tutorials/dog10k_svs)), or a
+mean nothing to a reader. Two mechanisms relabel them without touching the VCF:
+a `layout` array for named animals ([](/docs/tutorials/dog10k_svs)), or a
 `samplesTsvLocation` for a panel too large to write one entry each for
 ([Selected haplotype (Dog10K)](/docs/tutorials/dog10k_selection)).
 

@@ -258,7 +258,7 @@ Shiga-toxin genes, and CFT073's are its pathogenicity islands.
 
 ## Adding gene tracks
 
-The annotations downloaded alongside each genome say what a gap holds. Each GFF
+The annotations downloaded alongside each genome show what a gap holds. Each GFF
 gets the same two adjustments as the FASTA, in the
 [script](#reproduce-it-end-to-end): seqid renamed to `chr`, plasmid features
 dropped.
@@ -287,7 +287,7 @@ track does not list still draws, labelled by its PanSN prefix, as does a
 strain's own paralogy. Clicking a feature offers to launch a synteny view
 against its mate, for the mates the track lists.
 
-Every alignment lands in one pileup, so three track-menu items say which strain
+Every alignment lands in one pileup, so three track-menu items name which strain
 a block came from:
 
 1. **Group by... → Mate assembly** gives one labelled lane per sample, shading
