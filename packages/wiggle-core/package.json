@@ -24,7 +24,8 @@
     "./ScorePlotChrome": "./src/ScorePlotChrome.tsx",
     "./ScorePlotSvgFrame": "./src/ScorePlotSvgFrame.tsx",
     "./constants": "./src/constants.ts",
-    "./normalize": "./src/normalize.ts"
+    "./normalize": "./src/normalize.ts",
+    "./renderingBackendTypes": "./src/renderingBackendTypes.ts"
   },
   "files": [
     "esm"
@@ -59,7 +60,8 @@
       "./ScorePlotChrome": "./esm/ScorePlotChrome.js",
       "./ScorePlotSvgFrame": "./esm/ScorePlotSvgFrame.js",
       "./constants": "./esm/constants.js",
-      "./normalize": "./esm/normalize.js"
+      "./normalize": "./esm/normalize.js",
+      "./renderingBackendTypes": "./esm/renderingBackendTypes.js"
     }
   },
   "sideEffects": false

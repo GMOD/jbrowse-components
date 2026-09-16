@@ -1,5 +1,5 @@
 import { encodeFeatures } from '@jbrowse/core/util/markEncoding'
-import { MIN_FILL_WIDTH_PX } from '@jbrowse/wiggle-core'
+import { MIN_FILL_WIDTH_PX } from '@jbrowse/wiggle-core/renderingBackendTypes'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { SourceInfo, WiggleFeatureArrays } from '@jbrowse/wiggle-core'
@@ -340,4 +340,4 @@ export function getFilename(uriOrName: string) {
   return dotIdx !== -1 ? filename.slice(0, dotIdx) : filename
 }
 
-export { formatScore } from '@jbrowse/display-ui'
+export { formatScore } from '@jbrowse/core/util/numericUtils'
