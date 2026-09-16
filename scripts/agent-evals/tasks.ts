@@ -154,19 +154,21 @@ export const TASKS: EvalTask[] = [
         },
       }`,
   },
-  // The defect class a green suite cannot see: a settings key that writes
-  // nothing. `resolution` on a wiggle display is a model property with a
-  // `setResolution` action and no config slot, so applyDisplaySettings applies
-  // nothing and reports it `setter-only`. The setup shows the track first on
-  // purpose — on a FIRST show the snapshot spread lands a declared property, so
-  // only restyling one already on screen reaches the report at all.
+  // Every other task here targets a config SLOT. `resolution` on a wiggle
+  // display is a model property with a `setResolution` action and no slot, so
+  // passing it to applyDisplaySettings writes nothing: the agent has to tell
+  // the two apart and reach for the action.
   //
-  // Graded on state, so the agent has to act on the report rather than describe
-  // it: reading the report, or jb.inspect, is how it learns the key needs an
-  // action. Three defects in this path shipped while every other grader here
-  // stayed green, because each of them asserts a key that worked.
+  // It does NOT cover the settings report, which is what it was added for.
+  // Driven on sonnet, the agent never called applyDisplaySettings at all —
+  // describeSlots showed resolution missing from the slots, then
+  // model:LinearWiggleDisplay Properties and Actions named setResolution, and
+  // it called that. Which is the briefing working ("Introspect, never guess"),
+  // and it means the report is the net under an agent that SKIPS
+  // introspection. No "set a setting" prompt reaches it, because the
+  // documented path routes around it.
   {
-    name: 'setter-only-setting',
+    name: 'action-not-slot',
     prompt: 'Set the resolution of the volvox_microarray track to 5.',
     setup: `return jb.addTrack({ trackId: 'volvox_microarray' })`,
     grade: `
