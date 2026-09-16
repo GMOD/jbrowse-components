@@ -2,10 +2,11 @@ import { InternetAccount } from './InternetAccountModel.ts'
 
 // The members of the internet account model that plugins outside this repo
 // reach for, pinned the way `pluginFacingSessionApi.test.ts` pins the session
-// and `ReExports/abi.test.ts` pins the module exports.
+// and the ABI removals table (`website/scripts/generate-abi-removals.ts`) pins
+// the module exports.
 //
-// Neither of those guards this surface. `abi.test.ts` is name-level over module
-// exports, so it notices if `InternetAccount` itself stops being exported and
+// Neither of those guards this surface. The removals table is name-level over
+// module exports, so it notices if `InternetAccount` itself stops being exported and
 // nothing else; a plugin that extends the model reaches its MEMBERS at runtime,
 // through MST composition, and no test looked at that at all.
 //

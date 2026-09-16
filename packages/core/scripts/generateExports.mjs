@@ -9,9 +9,11 @@ const repoRoot = join(packageRoot, '../..')
 const srcDir = join(packageRoot, 'src')
 
 // Exports to keep even if not used internally (for backwards compatibility).
-// Nothing gates this list any more, so a name that drops out with no
-// importer just un-publishes silently unless it is added here. Entries here
-// were each added after something broke.
+// A subpath whose last `@jbrowse/core/...` importer goes un-publishes silently
+// unless it is added here, and scripts/generateReExports.ts builds the runtime
+// plugin ABI from this map, so the host stops serving it too. The removals
+// table in website/scripts/generate-abi-removals.ts catches that only for a
+// subpath 4.3.0 published. Entries here were each added after something broke.
 const preservedExports = [
   '@jbrowse/core/util/nanoid',
   '@jbrowse/core/ReExports/list',
@@ -19,15 +21,10 @@ const preservedExports = [
   '@jbrowse/core/util/fileHandleStore',
   '@jbrowse/core/util/tss-react/types',
   '@jbrowse/core/configuration/configurationSchema',
-  // Referenced as string literals in ReExports runtime module registry
+  // Served to plugins since 4.x and reached in-repo only by relative path, so
+  // the scan never sees either. mst-reflection left `exports` that way once,
+  // and every plugin's import of it failed to resolve.
   '@jbrowse/core/util/layouts',
-  // Same shape, found the hard way: this is in ReExports/list.ts and served by
-  // modules.ts, but sharedModules.ts is its only reader and reaches it by
-  // relative path, so the scan below never saw it and it left `exports`. The
-  // host went on serving it while `import ... from
-  // '@jbrowse/core/util/mst-reflection'` failed to resolve for every plugin.
-  // exportsSurface.test.ts now fails on that gap rather than waiting for it to
-  // be noticed.
   '@jbrowse/core/util/mst-reflection',
   // Published and still in src, with their in-repo importers moved behind a
   // module that reaches them by relative path: `svg/serializeSvg` and
@@ -35,12 +32,10 @@ const preservedExports = [
   // second subpath for a lazy import.
   '@jbrowse/core/util/renderToStaticMarkup',
   '@jbrowse/core/svg/saveSvgAsImage',
-  // The registry a plugin's jbrequire resolves against, and the module bag it
-  // is filled from. In-repo only handleMcpRequest.ts names either by subpath —
-  // PluginManager and PluginLoader reach the registry by relative path, which
-  // this scan does not count — so both would un-publish the moment that one
-  // importer moves or stops spelling them this way, taking the ABI a runtime
-  // plugin links against with them.
+  // The registry a plugin's jbrequire resolves against, and core's module bag.
+  // PluginManager and PluginLoader reach both by relative path, which this scan
+  // does not count, so these stay published whichever subpath importers come
+  // and go.
   '@jbrowse/core/ReExports/registry',
   '@jbrowse/core/ReExports/modules',
   // jest.mock target for stable adapter ids in tests

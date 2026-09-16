@@ -42,9 +42,9 @@ export function pushIntoSubMenu(
 // `rubberBandLaunchMenuItems()` on the linear genome view — because there the
 // grouping is the model's, not each contributor's, to do.
 //
-// Keeps its name while the label loses a word: this one is pinned by
-// `abiBaseline.json`, so a published plugin bundle reads it off the host at
-// module scope and a rename is `undefined` inside an already-shipped UMD.
+// Keeps its name while the label loses a word: `@jbrowse/core/ui` serves it, so
+// a published plugin bundle reads it off the host at module scope and a rename
+// is `undefined` inside an already-shipped UMD.
 export function pushLaunchViewMenuItem(items: MenuItem[], item: MenuItem) {
   pushIntoSubMenu(items, LAUNCH_LABEL, item)
 }

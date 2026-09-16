@@ -6,15 +6,10 @@ import { join } from 'node:path'
 // under semver. The follow-up it named — "add an export-surface guard test in
 // render-core" — is this file.
 //
-// It is deliberately not the `@jbrowse/core` ABI doctrine next door
-// (ReExports/abi.test.ts, where removals fail and additions pass silently).
-// That asymmetry exists because a runtime re-export binds an already-published
-// plugin bundle to the host's live copy, so a removal is an `undefined is not a
-// function` in a build nobody will make again. render-core is static-import
-// only: a consumer pins a version and rebuilds on its own schedule, so a
-// removal breaks a *compile*, not a deployment. What is worth guarding here is
-// different — that the surface only changes when someone means it to. Hence a
-// symmetric snapshot: additions show up too.
+// Since ADR-128 the host serves render-core to runtime plugins, so a removal
+// here is `undefined` inside an already-published bundle, not just a broken
+// compile. The snapshot is symmetric, additions included, so the surface only
+// changes when someone means it to.
 //
 // There was a fifth case here, pinning the names re-exported from a `src/index.ts`
 // barrel. The barrel is gone (see the package CLAUDE.md): it duplicated 88 of

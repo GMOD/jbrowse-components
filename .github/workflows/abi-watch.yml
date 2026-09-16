@@ -1,8 +1,9 @@
 # Weekly watch on what the published plugins actually take off the `@jbrowse/core/*`
 # re-export ABI.
 #
-# `abi.test.ts` pins the `@jbrowse/core/*` re-export surface going forward, but
-# that can't see the half that matters most — a removed name is `undefined`
+# `pnpm autogen --check` fails on a name 4.3.0 served that this build does not
+# (the removals table in website/scripts/generate-abi-removals.ts), but that
+# can't see the half that matters most — a removed name is `undefined`
 # inside a plugin bundle nobody is going to rebuild, so whether it hurts depends
 # on bundles hosted somewhere else.
 #

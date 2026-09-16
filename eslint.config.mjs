@@ -814,13 +814,12 @@ export default defineConfig(
       ],
     },
   },
-  // The deprecated `isSessionWithAddTracks` alias, plus the two barrels that
-  // have to keep re-exporting it for the prebuilt bundles that link it.
+  // The deprecated `isSessionWithAddTracks` alias, plus the barrel that has to
+  // keep re-exporting it for the prebuilt bundles that link it.
   {
     files: [
       'packages/core/src/util/types/index.ts',
       'packages/core/src/util/index.ts',
-      'packages/core/src/ReExports/publicUtil.ts',
     ],
     ignores: ['**/*.test.{ts,tsx}', '**/tests/**', '**/browser-tests/**'],
     rules: {

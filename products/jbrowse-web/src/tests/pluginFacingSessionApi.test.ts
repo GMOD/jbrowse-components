@@ -3,12 +3,14 @@ import { createTestSession } from '@jbrowse/web/testUtils'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
-// The session members published plugins call, pinned the way
-// `ReExports/abi.test.ts` pins the module exports they import.
+// The session members published plugins call, pinned the way the ABI removals
+// table (`website/scripts/generate-abi-removals.ts`) pins the module exports
+// they import.
 //
-// That test guards the wrong half for this failure. A plugin links `@jbrowse/*`
+// That table guards the wrong half for this failure. A plugin links `@jbrowse/*`
 // module exports at import time, so dropping one turns into `undefined` at
-// module scope and error-pages the app — loud, and abi.test.ts catches it. But a
+// module scope and fails the plugin's load — loud, and `pnpm autogen --check`
+// fails on it. But a
 // plugin reaches the SESSION at runtime, through a member lookup on an object
 // this repo composes from mixins, and nothing checked that surface at all.
 //

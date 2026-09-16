@@ -209,7 +209,7 @@ jobs:
       # A ratchet, not a generated artifact, so it is deliberately NOT a
       # scripts/autogen.ts generator: autogen would quietly write a new gated
       # adapter into the baseline, which is exactly the decision this exists to
-      # force. Same doctrine as abiBaseline.json. Source-only and instant, so it
+      # force. Source-only and instant, so it
       # rides lint's checkout rather than earning a job.
       - name: Check gated adapters declare a byte budget
         run: pnpm check-gated-adapter-budgets

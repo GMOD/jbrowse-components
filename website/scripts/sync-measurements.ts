@@ -42,7 +42,7 @@
 //
 // A block naming a measurement nothing defines is the obvious one. A tagged
 // table nothing consumes is checked too, on the same reasoning as the workspace
-// layering test and `ReExports/abi.test.ts`: the tag exists only to be
+// layering test and the ABI removals table's `assertCovers`: the tag exists only to be
 // published, so one left behind after a page drops its block is a claim that
 // something is being kept in step when nothing is.
 //
