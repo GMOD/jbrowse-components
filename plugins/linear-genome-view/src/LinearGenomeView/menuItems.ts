@@ -15,6 +15,8 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import LaunchIcon from '@mui/icons-material/Launch'
+import LayersIcon from '@mui/icons-material/Layers'
+import LayersClearIcon from '@mui/icons-material/LayersClear'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
@@ -23,6 +25,7 @@ import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
 
+import { contextLevelHost } from './contextLevels.ts'
 import {
   ExportSvgDialog,
   GetSequenceDialog,
@@ -63,6 +66,33 @@ export function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
 }
 
 /**
+ * A view offers to grow a context level above itself; a level offers to go.
+ * Adding stops once the widest level is already zoomed all the way out, since
+ * a level wider than that would show the same thing.
+ */
+function contextLevelMenuItem(self: LinearGenomeViewModel): MenuItem {
+  const host = contextLevelHost(self)
+  if (host) {
+    return {
+      label: 'Remove context level',
+      icon: LayersClearIcon,
+      onClick: () => {
+        host.removeContextLevel(self)
+      },
+    }
+  }
+  const widest = self.contextLevelViews[0]
+  return {
+    label: 'Add context level',
+    icon: LayersIcon,
+    disabled: !!widest && widest.bpPerPx >= widest.maxBpPerPx,
+    onClick: () => {
+      self.addContextLevel()
+    },
+  }
+}
+
+/**
  * Build the main view menu items. A row stacked in another view has no import
  * form of its own, so only a top-level view offers the way back to one.
  */
@@ -79,6 +109,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
         self.setScalebarOnly(!self.scalebarOnly)
       },
     },
+    contextLevelMenuItem(self),
     ...(self.isTopLevelView
       ? [
           {

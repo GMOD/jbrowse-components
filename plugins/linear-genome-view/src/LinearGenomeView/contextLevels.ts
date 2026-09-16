@@ -1,0 +1,165 @@
+import {
+  addDisposer,
+  addMiddleware,
+  getParent,
+  hasParent,
+  types,
+} from '@jbrowse/mobx-state-tree'
+import { autorun } from 'mobx'
+
+import type { LinearGenomeViewModel } from './model.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
+import type { Region } from '@jbrowse/core/util/types'
+import type { IAnyModelType, IStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+/**
+ * A context level is a LinearGenomeView nested under another one, showing a
+ * wider window of the same locus above the host's tracks. Its only state of
+ * its own is `windowWidthBp` and `tracks`: the host writes its regions, width
+ * and left edge, so the level always shares the host's centre.
+ *
+ * Declared by hand rather than as the view model's own instance type: the
+ * level array is a `types.late` back onto the registered LinearGenomeView, and
+ * naming the model's instance type inside its own factory is a circular
+ * reference tsc refuses (TS7022). Components outside the factory cast a level
+ * to `LinearGenomeViewModel`.
+ */
+export interface ContextLevel extends IStateTreeNode {
+  id: string
+  bpPerPx: number
+  maxBpPerPx: number
+  windowWidthBp: number
+  windowStartBp: number
+  displayedRegions: Region[]
+  setWidth(width: number): void
+  setDisplayedRegions(regions: Region[]): void
+  setWindowFrame(windowWidthBp: number, windowStartBp: number): void
+}
+
+/**
+ * The registered view, read at first instantiation rather than the factory's
+ * own return value, so a level is the LinearGenomeView every `extendViewType`
+ * caller has already extended. The name goes through a `string` so the typed
+ * `getViewType` overload, whose result names this model's own instance type,
+ * is not what tsc resolves here.
+ */
+export function contextLevelType(pluginManager: PluginManager) {
+  const name: string = 'LinearGenomeView'
+  return types.late(
+    (): IAnyModelType => pluginManager.getViewType(name).stateModel,
+  )
+}
+
+/**
+ * What a level reaches on the view holding it. Not `LinearGenomeViewModel`:
+ * the model's own factory calls this, and a return type naming the model there
+ * is the same circular reference as above, which tsc resolves by quietly
+ * widening the whole model.
+ */
+export interface ContextLevelHost extends IStateTreeNode {
+  contextLevelViews: ContextLevel[]
+  removeContextLevel(level: ContextLevel): void
+}
+
+export function contextLevelHost(
+  node: IStateTreeNode,
+): ContextLevelHost | undefined {
+  const host = hasParent(node, 2)
+    ? getParent<Record<string, unknown>>(node, 2)
+    : undefined
+  return host && 'contextLevels' in host
+    ? (host as unknown as ContextLevelHost)
+    : undefined
+}
+
+// A gesture on a level that means "move": replayed on the host in the host's
+// own units, and swallowed on the level, whose left edge is derived. Zoom is
+// not among them: a level's width is the one thing it owns.
+const LEVEL_PANS = new Set(['horizontalScroll', 'scrollTo'])
+
+// A navigation on a level that names a place. The level and its host lay out
+// the same regions, so the arguments mean the same thing on either, and the
+// host is where they belong.
+const LEVEL_NAVIGATIONS = new Set([
+  'moveTo',
+  'centerAt',
+  'flyToCenter',
+  'navTo',
+  'navToMultiple',
+  'navToLocString',
+  'navToLocations',
+  'showRegions',
+  'showAllRegionsInAssembly',
+])
+
+/**
+ * Keep every level a derived view of its host: same regions, same width, same
+ * centre, and never narrower than the level below it, so the stack reads
+ * widest at the top down to the host. A level zoomed in past its floor is
+ * pushed back out; a host zoomed out past a level pushes the level out with
+ * it.
+ */
+function syncContextLevels(self: LinearGenomeViewModel) {
+  const { volatileWidth, displayedRegions, windowStartBp, windowWidthBp } = self
+  const levels = self.contextLevelViews
+  if (
+    volatileWidth === undefined ||
+    !displayedRegions.length ||
+    !levels.length
+  ) {
+    return
+  }
+  const centerBp = windowStartBp + windowWidthBp / 2
+  let floor = windowWidthBp
+  for (const level of [...levels].reverse()) {
+    level.setWidth(volatileWidth)
+    if (level.displayedRegions !== displayedRegions) {
+      level.setDisplayedRegions(displayedRegions)
+    }
+    const width = Math.max(level.windowWidthBp, floor)
+    level.setWindowFrame(width, centerBp - width / 2)
+    floor = level.windowWidthBp
+  }
+}
+
+export function installContextLevels(self: LinearGenomeViewModel) {
+  addDisposer(
+    self,
+    autorun(
+      function contextLevelsAutorun() {
+        syncContextLevels(self)
+      },
+      { name: 'LGVContextLevels' },
+    ),
+  )
+  addDisposer(
+    self,
+    addMiddleware(self, (call, next, abort) => {
+      const level =
+        call.type === 'action' && call.id === call.rootId
+          ? self.contextLevelViews.find(l => l === call.context)
+          : undefined
+      if (!level) {
+        next(call)
+      } else if (LEVEL_PANS.has(call.name)) {
+        const px = call.args[0] as number
+        const ratio = level.bpPerPx / self.bpPerPx
+        if (call.name === 'horizontalScroll') {
+          abort(self.horizontalScroll(px * ratio) / ratio)
+        } else {
+          const centerBp = px * level.bpPerPx + level.windowWidthBp / 2
+          self.scrollToBp(centerBp - self.windowWidthBp / 2)
+          abort(px)
+        }
+      } else if (LEVEL_NAVIGATIONS.has(call.name)) {
+        const host = self as unknown as Record<
+          string,
+          (...args: unknown[]) => unknown
+        >
+        abort(host[call.name]!(...call.args))
+      } else {
+        next(call)
+      }
+    }),
+  )
+}

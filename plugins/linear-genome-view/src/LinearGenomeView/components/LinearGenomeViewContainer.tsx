@@ -16,6 +16,7 @@ import { observer } from 'mobx-react'
 
 import { SCALE_BAR_HEIGHT } from '../consts.ts'
 import { stickyChromeTops } from '../stickyChrome.ts'
+import ContextLevels from './ContextLevels.tsx'
 import Header from './Header.tsx'
 import MiniControls from './MiniControls.tsx'
 import NavigationAnnouncer from './NavigationAnnouncer.tsx'
@@ -160,6 +161,7 @@ const LinearGenomeViewContainer = observer(function LinearGenomeViewContainer({
           <Header model={model} />
           {hideHeader ? <MiniControls model={model} /> : null}
         </div>
+        <ContextLevels model={model} />
         {/* Everything the wheel may zoom, in both modes — see tracksRef. */}
         <div ref={tracksRef}>
           {model.scalebarOnly ? (

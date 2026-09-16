@@ -17,6 +17,7 @@ import {
   isSessionModelWithWidgets,
   localStorageGetBoolean,
   localStorageGetItem,
+  scheduleDetachedDestroy,
   springAnimate,
   sum,
 } from '@jbrowse/core/util'
@@ -53,6 +54,7 @@ import {
 import { contentRightEdgePx } from '@jbrowse/display-kit/regionHost'
 import {
   cast,
+  detach,
   getParent,
   hasParent,
   isAlive,
@@ -74,6 +76,7 @@ import {
   TRACK_OUTLINE_BORDER,
   TRACK_TOP_GAP,
 } from './consts.ts'
+import { contextLevelHost, contextLevelType } from './contextLevels.ts'
 import { planFlight } from './flyTo.ts'
 import { setupKeyboardHandler } from './keyboardHandler.ts'
 import { lgvLaunchKeys } from './launchKeys.ts'
@@ -98,6 +101,7 @@ import {
   tickLabelWidth,
 } from './util.ts'
 
+import type { ContextLevel } from './contextLevels.ts'
 import type { FlightViewport } from './flyTo.ts'
 import type {
   BpOffset,
@@ -429,6 +433,18 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
+         * Wider views of the same locus stacked above the tracks, widest
+         * first. Each is a LinearGenomeView with tracks of its own whose
+         * regions, width and centre this view drives; its window width is the
+         * one thing it keeps. See `contextLevels.ts`.
+         */
+        contextLevels: types.stripDefault(
+          types.array(contextLevelType(pluginManager)),
+          [],
+        ),
+
+        /**
+         * #property
          * suppress the "No tracks active" placeholder, for an embed that opens
          * with no tracks on purpose
          */
@@ -738,6 +754,29 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get ownTracks() {
         return [...self.tracks]
+      },
+      /**
+       * #getter
+       * The census entry for this view's context levels, which are views in
+       * their own right.
+       */
+      get ownViews() {
+        return [...self.contextLevels]
+      },
+      /**
+       * #getter
+       * The context levels as what the host reads off them. The array element
+       * is a late type back onto this view, so this is where it gets a shape.
+       */
+      get contextLevelViews(): ContextLevel[] {
+        return self.contextLevels
+      },
+      /**
+       * #getter
+       * Whether this view is itself a context level of another
+       */
+      get isContextLevel() {
+        return !!contextLevelHost(self)
       },
       /**
        * #getter
@@ -1413,6 +1452,30 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       setHideHeaderOverview(b: boolean) {
         self.hideHeaderOverview = b
+      },
+      /**
+       * #action
+       * Add a context level at the top of the stack, ten times wider than the
+       * widest level there is, or than this view when there is none.
+       */
+      addContextLevel() {
+        const widest = self.contextLevelViews[0]
+        const windowWidthBp = (widest?.windowWidthBp ?? self.windowWidthBp) * 10
+        const centerBp = self.windowStartBp + self.windowWidthBp / 2
+        self.contextLevels.unshift({
+          type: 'LinearGenomeView',
+          hideHeader: true,
+          displayedRegions: self.displayedRegions,
+          windowWidthBp,
+          windowStartBp: centerBp - windowWidthBp / 2,
+        })
+      },
+      /**
+       * #action
+       */
+      removeContextLevel(level: ContextLevel) {
+        detach(level)
+        scheduleDetachedDestroy(level)
       },
       /**
        * #action

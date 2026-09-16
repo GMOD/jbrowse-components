@@ -56,11 +56,13 @@ const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
   model,
   overview,
   overviewOffsetPx = 0,
+  height = HEADER_BAR_HEIGHT,
   exportSvg = false,
 }: {
   model: LinearGenomeViewModel
   overview: ViewLayout
   overviewOffsetPx?: number
+  height?: number
   exportSvg?: boolean
 }) {
   const { classes, theme } = useStyles()
@@ -80,7 +82,7 @@ const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
     overviewOffsetPx,
   )
   const bottom = transformPxSpan(extent, 1, -offsetPx)
-  const points = trapezoidPoints(top, bottom, HEADER_BAR_HEIGHT)
+  const points = trapezoidPoints(top, bottom, height)
 
   return exportSvg ? (
     <polygon
