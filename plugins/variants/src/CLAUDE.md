@@ -39,7 +39,10 @@ elsewhere.
   skipped.
 - Cell arrays stay in the **worker's** row numbering; the hit test converts its
   one query row through `rowUnmap`.
-- **`featureColor` is the single cell-coloring axis.**
+- **`featureColor` is the single cell-coloring axis.** Colour never depends on
+  zoom: the insertion marker is the cell's own colour widened, and "insertion"
+  is its shape and width. A purple marker made a variant read as an insertion
+  only at the zooms where the marker outgrew its cell.
 
 ## Mixed ploidy: five consumers, one contract
 

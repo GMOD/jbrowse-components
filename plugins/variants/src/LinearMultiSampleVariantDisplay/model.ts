@@ -5,7 +5,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import { radioItems } from '@jbrowse/core/ui/menuItems'
-import { getPaletteHost } from '@jbrowse/core/util'
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { autorunOnReadyView } from '@jbrowse/display-kit/displayAutoruns'
@@ -468,38 +467,30 @@ export function stateModelFactory(
         },
         /**
          * #getter
-         * Overrides the base's `undefined`: this display draws the markers, so
-         * it is the one that puts them in the legend. `getPaletteHost(self).palette`
-         * rather than a React theme, because this is a model getter — and it is
-         * the same `palette.insertion` the on-screen overlay paints with (via
-         * `usePalette`), so the swatch cannot drift from the glyph there.
+         * Overrides the base's `false`: this display draws the markers, so it
+         * is the one that puts them in the legend.
          *
          * The condition is `anyMarkerPossibleForBlock`, on the painter's own
          * blocks, because the two cheaper approximations are wrong on real
-         * figures. "The window holds an insertion" puts a swatch on a callset of
-         * short indels, which can never draw a marker at any zoom. "The window
-         * holds a *long* insertion" puts one on any view zoomed out far enough
-         * that even a long bar falls under the 2px cell floor; that was three of
-         * the fourteen committed figures carrying this display, each gaining
-         * exactly one 576px swatch and no glyph.
+         * figures. "The window holds an insertion" puts the entry on a callset
+         * of short indels, which can never draw a marker at any zoom. "The
+         * window holds a *long* insertion" puts one on any view zoomed out far
+         * enough that even a long bar falls under the 2px cell floor; that was
+         * three of the fourteen committed figures carrying this display, each
+         * gaining one entry and no glyph.
          *
          * It asks whether a marker is drawn at ANY sub-pixel pan position, not
          * at the one on screen. The painter's own answer flips on the snap phase
          * — a cell of a given span measures `floor(spanPx)` or one more — so an
-         * exactly-painter-faithful swatch blinks on and off mid-drag on the
+         * exactly-painter-faithful entry blinks on and off mid-drag on the
          * long-REF-plus-longer-ALT shape, and a single-frame export would have
-         * to settle to be right. Neither is worth per-frame exactness here: the
-         * only divergence is a swatch shown while the glyph is under the cell
-         * floor at this particular phase, which is strictly narrower than either
-         * approximation above.
-         *
-         * The legend entry therefore comes and goes with zoom, unlike
-         * `hasSecondaryAlt` / `hasNoCall`, which is correct for a glyph whose
-         * visibility depends on zoom, but not with a half-pixel pan.
+         * to settle to be right. The only divergence is an entry shown while
+         * the glyph is under the cell floor at this particular phase, which is
+         * strictly narrower than either approximation above.
          */
-        get insertionLegendColor(): string | undefined {
+        get drawsInsertionMarkers(): boolean {
           if (!self.showInsertionGlyphs) {
-            return undefined
+            return false
           }
           // `effectiveRowHeight` read directly, never through `renderState`:
           // that object also carries `scrollTop`, so depending on it walked
@@ -513,10 +504,10 @@ export function stateModelFactory(
               region?.numCells &&
               anyMarkerPossibleForBlock(region, block, drawnRowHeight)
             ) {
-              return getPaletteHost(self).palette.insertion
+              return true
             }
           }
-          return undefined
+          return false
         },
         /**
          * #getter

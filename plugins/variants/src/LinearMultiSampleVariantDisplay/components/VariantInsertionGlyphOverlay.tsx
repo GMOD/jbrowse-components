@@ -1,4 +1,3 @@
-import { usePalette } from '@jbrowse/core/ui/PaletteContext'
 import OverlayCanvas from '@jbrowse/render-core/OverlayCanvas'
 import { observer } from 'mobx-react'
 
@@ -20,7 +19,6 @@ const VariantInsertionGlyphOverlay = observer(
   }: {
     model: LinearMultiSampleVariantDisplayModel
   }) {
-    const palette = usePalette()
     const { insertionGlyphRegions, renderBlocks, renderState, canvasWidthPx } =
       model
     return insertionGlyphRegions ? (
@@ -37,7 +35,6 @@ const VariantInsertionGlyphOverlay = observer(
             insertionGlyphRegions,
             renderBlocks,
             renderState,
-            palette.insertion,
           )
         }}
       />

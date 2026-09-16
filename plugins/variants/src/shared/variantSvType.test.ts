@@ -58,9 +58,28 @@ describe('getVariantSvType', () => {
     expect(getVariantSvType(feat({ ALT: ['<CN0>', '<CN3>'] }))).toBe('CNV')
   })
 
-  it('is empty for plain (non-symbolic) SNVs and indels', () => {
-    expect(getVariantSvType(feat({ ALT: ['A'] }))).toBe('')
-    expect(getVariantSvType(feat({ ALT: ['ACGT'] }))).toBe('')
+  it('is empty for plain SNVs and indels under SV size', () => {
+    expect(getVariantSvType(feat({ REF: 'G', ALT: ['A'] }))).toBe('')
+    expect(getVariantSvType(feat({ REF: 'G', ALT: ['ACGT'] }))).toBe('')
+    expect(
+      getVariantSvType(feat({ REF: 'G', ALT: [`G${'A'.repeat(49)}`] })),
+    ).toBe('')
+  })
+
+  // A decomposed pangenome callset spells its SVs as plain sequence alleles
+  // with no symbolic ALT and no SVTYPE, so the class has to come from length.
+  it('classes a sequence indel of SV size by its length', () => {
+    expect(
+      getVariantSvType(feat({ REF: 'G', ALT: [`G${'A'.repeat(50)}`] })),
+    ).toBe('INS')
+    expect(
+      getVariantSvType(feat({ REF: `G${'A'.repeat(71)}`, ALT: ['G'] })),
+    ).toBe('DEL')
+    expect(
+      getVariantSvType(
+        feat({ REF: 'G', ALT: [`G${'A'.repeat(60)}`, `G${'C'.repeat(60)}`] }),
+      ),
+    ).toBe('INS')
   })
 })
 

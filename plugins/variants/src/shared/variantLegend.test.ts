@@ -1,8 +1,4 @@
-import {
-  NO_CALL_COLOR,
-  REFERENCE_COLOR,
-  getInsertionColorForDosage,
-} from './constants.ts'
+import { NO_CALL_COLOR, REFERENCE_COLOR } from './constants.ts'
 import { PHASE_SET_COLOR } from './getPhasedColor.ts'
 import { CONSEQUENCE_IMPACT_JEXL } from './variantConsequence.ts'
 import {
@@ -318,48 +314,30 @@ describe('getVariantColorScales insertion marker', () => {
     sources: undefined,
   }
 
-  // The display resolves the color (palette.insertion) and answers undefined
-  // where no marker is drawn — the matrix display, the slot off, or nothing
-  // visible inserting bases. Absent means absent, not a colorless entry.
+  // The display answers whether a marker is drawn — the matrix never, the
+  // regular display only where one outgrows its cell. Absent means absent.
   test('no section when the display draws no markers', () => {
     expect(getVariantColorScales(base).map(s => s.id)).toEqual(['genotypes'])
   })
 
-  // Allele-count mode: one row is a whole sample, and the marker covers the
-  // dosage-shaded cell it widens, so the bar's shade is the only thing left
-  // saying how many copies the sample carries. Both swatches come from
-  // getInsertionColorForDosage, so the key cannot drift from the glyph.
-  test('allele-count mode keys both the hom and the het shade', () => {
+  // The marker is the cell's own color widened, so the section carries no
+  // swatch: what it explains is the number.
+  test('one colorless entry naming what the number means', () => {
     const sections = getVariantColorScales({
       ...base,
-      insertionColor: '#800080',
+      insertionMarkers: true,
     })
     expect(sections.map(s => s.id)).toEqual(['genotypes', 'insertions'])
     expect(entriesOf(sections.find(s => s.id === 'insertions'))!).toEqual([
-      { value: 'Homozygous', label: 'Homozygous', color: '#800080' },
       {
-        value: 'Heterozygous',
-        label: 'Heterozygous',
-        color: getInsertionColorForDosage('#800080', 128),
+        value: 'Widened cell, number = inserted bp',
+        label: 'Widened cell, number = inserted bp',
+        color: undefined,
       },
     ])
   })
 
-  // Phased mode needs one swatch: a row is a single haplotype, which either
-  // carries the allele or does not, so zygosity reads as the pattern down a
-  // sample's rows and every marker is full strength.
-  test('phased mode keys one shade, since rows carry the zygosity', () => {
-    const sections = getVariantColorScales({
-      ...base,
-      renderingMode: 'phased',
-      insertionColor: '#800080',
-    })
-    expect(entriesOf(sections.find(s => s.id === 'insertions'))!).toEqual([
-      { value: 'Insertion', label: 'Insertion', color: '#800080' },
-    ])
-  })
-
-  // The reason it is a section rather than a genotype swatch: coloring by SV
+  // The reason it is a section rather than a genotype entry: coloring by SV
   // type REPLACES the genotype items, and an entry appended to them would go
   // with them — in the mode an insertion is most likely to be the thing being
   // looked at. Same for consequence impact, and for a raw jexl expression,
@@ -372,7 +350,7 @@ describe('getVariantColorScales insertion marker', () => {
       ...base,
       featureColor: color,
       svTypeColors: { DEL: '#123456' },
-      insertionColor: '#800080',
+      insertionMarkers: true,
     })
     expect(sections.map(s => s.id)).toEqual([id, 'insertions'])
   })
@@ -381,7 +359,7 @@ describe('getVariantColorScales insertion marker', () => {
     const sections = getVariantColorScales({
       ...base,
       featureColor: 'jexl:someUserExpression(feature)',
-      insertionColor: '#800080',
+      insertionMarkers: true,
     })
     expect(sections.map(s => s.id)).toEqual(['insertions'])
   })

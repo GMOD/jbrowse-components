@@ -1,6 +1,5 @@
 import { LONG_INSERTION_MIN_LENGTH } from '@jbrowse/alignments-core'
 import { setConf } from '@jbrowse/core/configuration'
-import { resolvePalette } from '@jbrowse/core/ui/palette'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { createTestEnvironment } from './testEnv.ts'
@@ -118,11 +117,11 @@ test('the slot turned off suppresses it even where an insertion is present', () 
   expect(sectionIds(7833, false)).toEqual(['genotypes'])
 })
 
-// The swatch must be the color the overlay paints, or the legend teaches the
-// reader the wrong thing to look for. Both read palette.insertion.
-test('the swatch is the palette color the overlay paints with', () => {
+// The marker is the cell's own color widened, so there is no swatch to show:
+// the entry explains the number.
+test('the entry has no swatch and names what the number means', () => {
   const scale = setup(7833).colorScales.find(s => s.id === 'insertions')
   expect(scale?.kind === 'categorical' && scale.entries[0]!.color).toBe(
-    resolvePalette().insertion,
+    undefined,
   )
 })

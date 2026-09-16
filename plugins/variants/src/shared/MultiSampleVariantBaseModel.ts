@@ -1683,18 +1683,15 @@ export default function MultiSampleVariantBaseModelF(
 
         /**
          * #getter
-         * The insertion marker's color when this display is drawing insertion
-         * markers, else undefined, which keeps the marker out of the legend
-         * when it is not drawn.
+         * Whether this display is drawing insertion markers in the current
+         * window, which is what puts the marker's explanation in the legend.
          *
-         * Declared here, returning undefined, so `colorScales` below can be
+         * Declared here, returning false, so `colorScales` below can be
          * written once: the matrix display draws no markers at all, and the
-         * regular display overrides this with the theme color when its
-         * `showInsertionGlyphs` slot is on and something visible inserts
-         * bases.
+         * regular display overrides this with the painter's own answer.
          */
-        get insertionLegendColor(): string | undefined {
-          return undefined
+        get drawsInsertionMarkers(): boolean {
+          return false
         },
       }))
       .views(self => ({
@@ -1703,7 +1700,7 @@ export default function MultiSampleVariantBaseModelF(
          * `LegendMixin`'s hook: the cell coloring, the insertion marker where
          * one is drawn, and (when colorBy is set) the sample-grouping coloring
          * shown on the sidebar row labels. Whether the marker is keyed is
-         * `insertionLegendColor`'s answer, the painter's own test on the
+         * `drawsInsertionMarkers`' answer, the painter's own test on the
          * painter's own blocks.
          */
         get colorScales(): ColorScale[] {
@@ -1716,7 +1713,7 @@ export default function MultiSampleVariantBaseModelF(
             svTypeColors: self.svTypeColors,
             colorBy: self.colorBy,
             sources: self.sources,
-            insertionColor: self.insertionLegendColor,
+            insertionMarkers: self.drawsInsertionMarkers,
           })
         },
 

@@ -7,7 +7,6 @@ import {
   UNPHASED_COLOR,
   capitalizeFirst,
   getAltColorForDosage,
-  getInsertionColorForDosage,
 } from './constants.ts'
 import { PHASE_SET_COLOR } from './getPhasedColor.ts'
 import { CONSEQUENCE_IMPACT_JEXL, IMPACT_TIERS } from './variantConsequence.ts'
@@ -244,7 +243,7 @@ export function getVariantColorScales({
   svTypeColors,
   colorBy,
   sources,
-  insertionColor,
+  insertionMarkers = false,
 }: {
   renderingMode: string
   hasSecondaryAlt: boolean
@@ -262,12 +261,10 @@ export function getVariantColorScales({
   svTypeColors?: Record<string, string>
   colorBy: string
   sources: Source[] | undefined
-  // The insertion marker's color, or undefined where no marker is drawn (the
-  // matrix display, the slot turned off, or nothing visible inserting bases).
-  // Resolved by the display rather than imported, for the same reason
-  // `drawVariantInsertionGlyphs` takes it: this is `palette.insertion`, so a
-  // custom theme moves the swatch and the glyph together.
-  insertionColor?: string
+  // Whether the display is drawing insertion markers in this window (the
+  // matrix display never does, and the regular one only where a marker outgrows
+  // its cell).
+  insertionMarkers?: boolean
 }): ColorScale[] {
   const groupEntries = getSampleGroupEntries(colorBy, sources)
   // Phase-set coloring exists only on the phased path — the allele-count cell
@@ -289,42 +286,20 @@ export function getVariantColorScales({
   })
   return [
     ...(cellScale ? [cellScale] : []),
-    // A scale of its own rather than one more swatch on the genotype entries:
+    // A section of its own rather than one more entry on the genotype scale:
     // the marker is drawn in EVERY cell-color mode, while the genotype entries
     // are *replaced* wholesale by the consequence-impact, SV-type or phase-set
-    // section — so an entry appended to them would vanish exactly when the
-    // cells are colored by SV type. The label names what the number means, not
-    // just the color: the review that prompted this reported the marker as "the
-    // text like 5593", so the unexplained thing was the count, not the box.
-    //
-    // Two swatches in allele-count mode, where one row is a whole sample and the
-    // bar's shade is the only thing left saying how many copies it carries —
-    // the marker covers the dosage-shaded cell underneath. Phased mode needs
-    // one: a row there is a single haplotype, which either carries the allele or
-    // does not, so zygosity reads as the pattern down a sample's rows. Same
-    // split the genotype entries already make ("Reference" vs "Homozygous
-    // reference"), and both shades come from `getInsertionColorForDosage` so the key
-    // cannot drift from the glyph.
-    ...(insertionColor
+    // section. It has no swatch, because the marker has no color of its own —
+    // it is the cell's color, widened — and what a reader cannot decode is the
+    // number: the review that prompted this reported the marker as "the text
+    // like 5593".
+    ...(insertionMarkers
       ? [
           {
             kind: 'categorical' as const,
             id: 'insertions',
-            // The number's meaning rides on the title rather than on every
-            // item: as an item label it ran past the legend box and ellipsized
-            // to "Insertion, homozygous (label is l...", losing exactly the
-            // thing the entry exists to say.
-            title: 'Insertions (number = bp)',
-            entries:
-              renderingMode === 'phased'
-                ? [entry('Insertion', insertionColor)]
-                : [
-                    entry('Homozygous', insertionColor),
-                    entry(
-                      'Heterozygous',
-                      getInsertionColorForDosage(insertionColor, 128),
-                    ),
-                  ],
+            title: 'Insertions',
+            entries: [entry('Widened cell, number = inserted bp')],
           },
         ]
       : []),

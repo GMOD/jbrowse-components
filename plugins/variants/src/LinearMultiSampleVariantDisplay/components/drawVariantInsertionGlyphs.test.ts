@@ -1,7 +1,6 @@
 import { insertionBarWidth } from '@jbrowse/alignments-core'
-import { resolvePalette } from '@jbrowse/core/ui/palette'
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 
-import { getInsertionColorForDosage } from '../../shared/constants.ts'
 import {
   anyMarkerPossibleForBlock,
   drawVariantInsertionGlyphs,
@@ -40,6 +39,9 @@ function mockCtx() {
     fill() {},
     rect() {},
     clip() {},
+    strokeStyle: '',
+    lineWidth: 0,
+    strokeRect() {},
     fillRect(x: number, y: number, w: number, h: number) {
       calls.push({ x, y, w, h, fillStyle: this.fillStyle })
     },
@@ -75,11 +77,16 @@ const state: VariantRenderState = {
 // pass under test sees the ordering it (and the hit test) rely on rather than an
 // arrangement no payload can actually have.
 const INSERTED = 65481
+// packed ABGR: the reference grey, a hom-alt blue and a paler het-alt blue
+const REF_ABGR = 0xffcccccc
+const HOM_ABGR = 0xff8c5926
+const HET_ABGR = 0xffc6a273
 function data(
   overrides?: Partial<VariantInsertionGlyphData>,
 ): VariantInsertionGlyphData {
   return {
     cellRowIndices: Uint32Array.from([1, 0]),
+    cellColors: Uint32Array.from([REF_ABGR, HOM_ABGR]),
     cellAltDosage: Uint8Array.from([0, 255]),
     cellFeatureIndices: Uint32Array.from([0, 0]),
     featurePositions: Uint32Array.from([10, 11]),
@@ -90,27 +97,18 @@ function data(
   }
 }
 
-// The theme's insertion color, which is also what plugin-alignments' pileup and
-// plugin-maf paint their insertions with -- the point of passing it in rather
-// than hardcoding one here.
-const INSERTION_COLOR = resolvePalette().insertion
-const HET_COLOR = getInsertionColorForDosage(INSERTION_COLOR, 128)
+const HOM_COLOR = abgrToCssRgba(HOM_ABGR)
+const HET_COLOR = abgrToCssRgba(HET_ABGR)
 
 function draw(
   region: VariantInsertionGlyphData,
   overrides?: Partial<VariantRenderState>,
 ) {
   const { ctx, calls, texts } = mockCtx()
-  drawVariantInsertionGlyphs(
-    ctx,
-    new Map([[0, region]]),
-    [block],
-    {
-      ...state,
-      ...overrides,
-    },
-    INSERTION_COLOR,
-  )
+  drawVariantInsertionGlyphs(ctx, new Map([[0, region]]), [block], {
+    ...state,
+    ...overrides,
+  })
   return { calls, texts }
 }
 
@@ -126,7 +124,7 @@ test('widens the alt-carrying cell to a bar sized by the inserted bp', () => {
       y: 0,
       w: BAR,
       h: 20,
-      fillStyle: INSERTION_COLOR,
+      fillStyle: HOM_COLOR,
     },
   ])
 })
@@ -138,63 +136,29 @@ test('leaves reference and no-call cells alone', () => {
   expect(calls).toEqual([])
 })
 
-// The marker used to take the cell's own genotype color. The bar is
-// `insertionBarWidth` wide where its cell is the 2px floor, so it paints across
-// a row of OTHER records' cells -- which in genotype coloring are the same dark
-// blue, leaving the marker invisible and only its white label showing. It takes
-// the theme's insertion color instead, the same one the pileup and the MAF
-// display use.
-test('markers are the shared insertion purple, whatever the cells are colored', () => {
+// Hue keeps one meaning: the marker is the cell, widened. It used to take the
+// theme's insertion purple, so a variant read as an insertion only at the zooms
+// where the marker outgrew its cell.
+test("markers take the cell's own color", () => {
   const { calls } = draw(data())
-  expect(calls.map(c => c.fillStyle)).toEqual([INSERTION_COLOR])
+  expect(calls.map(c => c.fillStyle)).toEqual([HOM_COLOR])
 })
 
-// The fill is hoisted out of the per-cell loop now that every marker shares it,
-// so the label's `white` has to be put back. Two labelled markers in one row:
-// without the restore the second draws white.
-test('a labelled marker does not leave white behind for the next one', () => {
+// Each marker sets its fill from its own cell, so a labelled marker (whose
+// label changes the fill mid-loop) leaves nothing behind for the next one.
+test('a labelled marker does not leave its label color behind', () => {
   const { calls, texts } = draw(
     data({
       cellRowIndices: Uint32Array.from([2, 0, 1]),
-      cellAltDosage: Uint8Array.from([0, 255, 255]),
-      cellFeatureIndices: Uint32Array.from([0, 0, 0]),
-      numCells: 3,
-      refCellCount: 1,
-    }),
-  )
-  // both markers labelled, so the first one's fillStyle change is exercised
-  expect(texts).toHaveLength(2)
-  expect(calls.map(c => c.fillStyle)).toEqual([
-    INSERTION_COLOR,
-    INSERTION_COLOR,
-  ])
-})
-
-// The marker is by definition wider than the cell it belongs to, so it covers
-// the dosage-shaded cell underneath -- without this every insertion read as
-// homozygous. In phased mode a row is one haplotype and dosage is always 255,
-// so only allele-count mode ever draws the pale form.
-test('a het draws paler than a hom, and the hom is the theme color itself', () => {
-  const het = draw(data({ cellAltDosage: Uint8Array.from([0, 128]) }))
-  expect(het.calls.map(c => c.fillStyle)).toEqual([HET_COLOR])
-  expect(HET_COLOR).not.toBe(INSERTION_COLOR)
-  expect(draw(data()).calls.map(c => c.fillStyle)).toEqual([INSERTION_COLOR])
-})
-
-// Two markers at the same dosage must not each reassign fillStyle, and two at
-// different dosages must each get their own -- the loop tracks the dosage the
-// context reflects rather than recomputing per cell.
-test('mixed dosages in one row each get their own shade', () => {
-  const { calls } = draw(
-    data({
-      cellRowIndices: Uint32Array.from([2, 0, 1]),
+      cellColors: Uint32Array.from([REF_ABGR, HOM_ABGR, HET_ABGR]),
       cellAltDosage: Uint8Array.from([0, 255, 128]),
       cellFeatureIndices: Uint32Array.from([0, 0, 0]),
       numCells: 3,
       refCellCount: 1,
     }),
   )
-  expect(calls.map(c => c.fillStyle)).toEqual([INSERTION_COLOR, HET_COLOR])
+  expect(texts).toHaveLength(2)
+  expect(calls.map(c => c.fillStyle)).toEqual([HOM_COLOR, HET_COLOR])
 })
 
 test('draws nothing for a SNP or a deletion', () => {
@@ -219,16 +183,10 @@ test('labels the marker with the bp count when the row is tall enough', () => {
 test('widens without a label on rows too short for letters', () => {
   const wideBlock: VariantRenderBlock = { ...block, end: 200000 }
   const { ctx, calls, texts } = mockCtx()
-  drawVariantInsertionGlyphs(
-    ctx,
-    new Map([[0, data()]]),
-    [wideBlock],
-    {
-      ...state,
-      rowHeight: 2,
-    },
-    INSERTION_COLOR,
-  )
+  drawVariantInsertionGlyphs(ctx, new Map([[0, data()]]), [wideBlock], {
+    ...state,
+    rowHeight: 2,
+  })
   expect(calls).toHaveLength(1)
   expect(calls[0]!.w).toBeGreaterThan(2)
   expect(calls[0]!.w).toBe(insertionBarWidth(INSERTED, 1000 / 200000, 2))

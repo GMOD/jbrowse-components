@@ -113,6 +113,24 @@ export function svTypeFromAlt(alt: string) {
   return isBreakend(alt) ? 'BND' : ''
 }
 
+/** The conventional size floor for calling a sequence indel structural. */
+export const SV_MIN_LENGTH = 50
+
+// A plain sequence ALT is an insertion or deletion of SV size when it differs
+// from REF by at least SV_MIN_LENGTH bases. A decomposed pangenome callset
+// spells every SV this way, with no symbolic allele and no SVTYPE, so without
+// this the SV-type scale saw nothing structural in it.
+function sequenceSvType(alt: string, ref: string | undefined) {
+  if (!ref || alt.startsWith('<') || isBreakend(alt)) {
+    return ''
+  }
+  const diff = alt.length - ref.length
+  if (diff >= SV_MIN_LENGTH) {
+    return 'INS'
+  }
+  return diff <= -SV_MIN_LENGTH ? 'DEL' : ''
+}
+
 /**
  * The structural-variant class of a variant as a whole: a canonical bucket
  * (DEL/DUP/INS/INV/CNV/BND), a specific copy-number state (CN0/CN1/CN3/...),
@@ -125,9 +143,10 @@ export function svTypeFromAlt(alt: string) {
  */
 export function getVariantSvType(feature: Feature) {
   const alt = feature.get('ALT') as string[] | undefined
+  const ref = feature.get('REF') as string | undefined
   const classes = new Set<string>()
   for (const a of alt ?? []) {
-    const t = svTypeFromAlt(a)
+    const t = svTypeFromAlt(a) || sequenceSvType(a, ref)
     if (t) {
       classes.add(t)
     }

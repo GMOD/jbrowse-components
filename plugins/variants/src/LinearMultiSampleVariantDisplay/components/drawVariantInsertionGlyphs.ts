@@ -2,13 +2,14 @@ import {
   MIN_HEIGHT_FOR_TEXT,
   drawInsertionMarker,
   getInsertionType,
+  insertionBarWidth,
 } from '@jbrowse/alignments-core'
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import {
   forEachClippedBlock,
   pxPerBpOf,
 } from '@jbrowse/render-core/canvas2dUtils'
 
-import { getInsertionColorForDosage } from '../../shared/constants.ts'
 import { forEachFeatureSpan } from './forEachFeatureSpan.ts'
 import { drawnCellHeightPx } from './shaders/variant.js.generated.ts'
 import { cellCanDrawMarker } from './variantCellSpan.ts'
@@ -20,6 +21,7 @@ import type {
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 const FONT = '10px sans-serif'
+const MARKER_OUTLINE = 'rgba(0,0,0,0.6)'
 
 /**
  * The per-region fields this pass reads, declared structurally rather than as
@@ -29,6 +31,7 @@ const FONT = '10px sans-serif'
  */
 export interface VariantInsertionGlyphData {
   cellRowIndices: Uint32Array
+  cellColors: Uint32Array
   cellAltDosage: Uint8Array
   cellFeatureIndices: Uint32Array
   featurePositions: Uint32Array
@@ -146,21 +149,13 @@ export function anyMarkerPossibleForBlock(
  * (`cellAltDosage`), because widening a reference or no-call cell would claim
  * that haplotype has the sequence.
  *
- * Markers take one category color, `insertionColor` — the caller passes the
- * theme's `palette.insertion`, the color the pileup
- * (`alignmentComponentUtils`) and the MAF display (`drawMafInsertions`) paint
- * their insertions with, so the three agree and a custom theme moves all three
- * together.
- *
- * The marker does not use the cell's genotype color, because the bar is
- * `insertionBarWidth` wide where the cell under it is the 2px floor, so at 60
- * bp/px a 7.8kb insertion paints a 34px box across a row of OTHER records'
- * cells. In genotype coloring those neighbours are the same dark blue, so a
- * genotype-colored marker is invisible against them and only its white label
- * shows, a number floating in a solid field.
- *
- * The record's cell is still drawn at its reference span under the marker, so
- * its dosage color stays visible, and every mode reports the genotype on hover.
+ * The marker is the cell's own color, widened: hue and shade keep meaning
+ * exactly what they mean on the cell (the genotype, or the `featureColor`
+ * override), and "this is an insertion" is carried by the mark's shape and
+ * width alone. A 1px outline separates the bar from the neighbouring cells it
+ * reaches across, which are often the same color. It used to take the theme's
+ * insertion purple, which made a variant read as an insertion only at the zooms
+ * where the marker outgrew its cell.
  *
  * Shared by the on-screen overlay and the SVG export.
  */
@@ -169,7 +164,6 @@ export function drawVariantInsertionGlyphs(
   regions: ReadonlyMap<number, VariantInsertionGlyphData>,
   blocks: VariantRenderBlock[],
   state: VariantRenderState,
-  insertionColor: string,
 ) {
   const { canvasWidth, canvasHeight, rowHeight, scrollTop } = state
   // variant.slang's own 2px floor, generated into TS (adr-051), so a marker
@@ -179,6 +173,8 @@ export function drawVariantInsertionGlyphs(
   ctx.font = FONT
   ctx.textBaseline = 'middle'
   ctx.textAlign = 'center'
+  ctx.strokeStyle = MARKER_OUTLINE
+  ctx.lineWidth = 1
 
   forEachClippedBlock(
     ctx,
@@ -196,30 +192,18 @@ export function drawVariantInsertionGlyphs(
       // zoomed out past the point an insertion outgrows its cell — skips the
       // per-cell walk entirely instead of running it to draw nothing.
       if (anyMarker) {
-        // The dosage the context's fillStyle currently reflects, so a run of
-        // markers at the same dosage neither rebuilds the color string nor
-        // reassigns fillStyle. -1 is "not a marker color" — the label below
-        // sets it back to that. A real callset has two or three distinct
-        // dosages, so the recompute is skipped for nearly every marker.
-        let currentDosage = -1
         // Reference cells never carry the alt, so the scan starts at the
         // non-reference bucket (see VariantInsertionGlyphData.refCellCount).
         for (let i = region.refCellCount; i < region.numCells; i++) {
           const featureIdx = region.cellFeatureIndices[i]!
-          const dosage = region.cellAltDosage[i]!
-          if (dosage && drawsMarker[featureIdx]) {
+          if (region.cellAltDosage[i] && drawsMarker[featureIdx]) {
             // Y-cull as the block painter does
             const y = region.cellRowIndices[i]! * rowHeight - scrollTop
             if (y + drawnRowHeight >= 0 && y <= canvasHeight) {
               const xCenter = markerXCenter[featureIdx]!
               const inserted = region.featureInsertedBp[featureIdx]!
-              if (dosage !== currentDosage) {
-                ctx.fillStyle = getInsertionColorForDosage(
-                  insertionColor,
-                  dosage,
-                )
-                currentDosage = dosage
-              }
+              const abgr = region.cellColors[i]!
+              ctx.fillStyle = abgrToCssRgba(abgr)
               drawInsertionMarker(
                 ctx,
                 xCenter,
@@ -228,16 +212,19 @@ export function drawVariantInsertionGlyphs(
                 inserted,
                 pxPerBp,
               )
+              const w = insertionBarWidth(inserted, pxPerBp, drawnRowHeight)
+              ctx.strokeRect(
+                xCenter - w / 2 + 0.5,
+                y + 0.5,
+                w - 1,
+                drawnRowHeight - 1,
+              )
               if (
                 getInsertionType(inserted, pxPerBp) === 'large' &&
                 labelFits
               ) {
-                ctx.fillStyle = 'white'
+                ctx.fillStyle = labelColorOn(abgr)
                 ctx.fillText(String(inserted), xCenter, y + drawnRowHeight / 2)
-                // The label is the only thing that changes the fill mid-loop,
-                // so record that the context no longer holds a marker color
-                // rather than paying a restore the next marker may not need.
-                currentDosage = -1
               }
             }
           }
@@ -245,4 +232,13 @@ export function drawVariantInsertionGlyphs(
       }
     },
   )
+}
+
+// The count sits inside the bar, so it takes whichever of black and white
+// clears the bar's own luminance: a hom cell is dark, a het cell is not.
+function labelColorOn(abgr: number) {
+  const r = abgr & 255
+  const g = (abgr >>> 8) & 255
+  const b = (abgr >>> 16) & 255
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.5 ? 'black' : 'white'
 }

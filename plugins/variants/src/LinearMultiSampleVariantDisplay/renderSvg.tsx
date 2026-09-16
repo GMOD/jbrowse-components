@@ -76,7 +76,6 @@ function VariantSvgBody({
   // the live on-screen one, the same rule plugin-maf's export follows, so a
   // light export of a dark session still gets light-theme colors.
   const exportPalette = resolvePalette({ configTheme: opts?.theme })
-  const { insertion } = exportPalette
   return (
     <SvgVariantOverlay
       model={model}
@@ -98,7 +97,7 @@ function VariantSvgBody({
               // order the marks differently from what the reader saw. Each
               // record's fill is baked per record, but the label text and the
               // connector stroke are the theme's, so the band takes the EXPORT
-              // palette like the markers below do.
+              // palette.
               paintFeatureBand(
                 ctx,
                 laneLaidOutDataMap,
@@ -141,7 +140,6 @@ function VariantSvgBody({
               insertionGlyphRegions,
               renderBlocks,
               exportState,
-              insertion,
             )
           }
         }}
