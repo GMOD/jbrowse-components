@@ -40,35 +40,40 @@ output.enable_custom_widget_manager()
 
 ## The config the widget takes
 
-Assemblies, tracks, and sessions are the same
-[JSON-like config](/docs/config_guide) JBrowse uses everywhere, handed straight
-to the view, so every track type and adapter works with no Python wrapper to
-keep in sync.
+A widget's keyword arguments are the JBrowse
+[embedding options](/docs/embedded_components) as JSON, passed through
+unchanged: assemblies, tracks and sessions are the same
+[config objects](/docs/config_guide) JBrowse uses everywhere, so every track
+type, adapter and option works with no Python wrapper to keep in sync.
 
 ```python
-from jbrowse_anywidget import LinearGenomeView
+from jbrowse_anywidget import LinearGenomeView, features_track
 
 view = LinearGenomeView(
     assembly={"name": "mygenome", "uri": ".../mygenome.fa.gz"},
     location="chr1:1..20,000",
+    tracks=[
+        {
+            "type": "AlignmentsTrack",
+            "trackId": "reads",
+            "name": "reads",
+            "assemblyNames": ["mygenome"],
+            "adapter": {"type": "CramAdapter", "uri": ".../reads.cram"},
+        }
+    ],
 )
-view.add_track({
-    "type": "AlignmentsTrack",
-    "trackId": "reads",
-    "name": "reads",
-    "assemblyNames": ["mygenome"],
-    "adapter": {"type": "CramAdapter", "uri": ".../reads.cram"},
-})
 view            # display the widget
 view.location   # read back the current region after panning
+
+view.update(tracks=[*view.options["tracks"], features_track(df, name="peaks")])
 ```
 
 `assembly` also takes a hosted genome by name (`"hg38"`, `"mm39"`, or a GenArk
 `GCA_...`), which brings refName aliases, cytobands and gene-name search from
 [genomes.jbrowse.org](https://genomes.jbrowse.org), so your own tracks line up
-even when they name chromosomes differently (`chr17` vs `17`). `add_features`
-turns an in-memory pandas DataFrame into a track with no file written, which is
-the one thing plain JSON can't express.
+even when they name chromosomes differently (`chr17` vs `17`). `update` merges
+keys into the options, and `features_track` turns an in-memory DataFrame into a
+track with no file written.
 
 ## Example notebooks
 
@@ -87,7 +92,7 @@ Each opens in Colab and runs top-to-bottom.
 | [Interactive controls](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/09_interactive_controls.ipynb)              | An `ipywidgets` slider re-runs the analysis and repaints the track                                |
 | [Region-reactive](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/10_region_reactive.ipynb)                        | Recompute pysam coverage only over the window in view, adapting to zoom                           |
 | [Compare genomes (synteny)](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/11_synteny_ecoli.ipynb)                | Four _E. coli_ strains in a linear synteny view from one all-vs-all PAF                           |
-| [Large results](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/12_large_data.ipynb)                               | Where `add_features` stops being the right door, and writing a file starts                        |
+| [Large results](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/12_large_data.ipynb)                               | Where `features_track` stops being the right door, and writing a file starts                      |
 | [Large signal](https://colab.research.google.com/github/GMOD/jbrowse-anywidget/blob/main/examples/13_large_wiggle.ipynb)                              | Three routes for a quantitative track, the data type that gets big fastest                        |
 
 Notebooks 05–07 are the core loop: **run an analysis in Python, load the result
@@ -95,7 +100,7 @@ onto the genome**, using the tools scientists already reach for (pysam,
 bioframe, scipy/statsmodels) on real data. Notebooks 09–10 close the loop the
 other way: a widget control or a pan in the view drives Python to **recompute
 and repaint** live. Notebooks 12–13 are where a result outgrows that loop, since
-`add_features` carries every row in the widget's own state.
+`features_track` carries every row in the widget's own state.
 
 ## See also
 

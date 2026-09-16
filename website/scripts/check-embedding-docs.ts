@@ -11,7 +11,7 @@ import { join } from 'node:path'
 
 import { buildRecipe } from '../src/lib/spec-recipe/recipe.ts'
 import { docFiles, reportProblems } from './check-utils.ts'
-import { docRelative, docsDir, libraryCheckout } from './paths.ts'
+import { docRelative, docsDir, libraryCheckout, repoRoot } from './paths.ts'
 import { screenshotLiveUrls } from './screenshot-specs.ts'
 
 // What an R fence on these pages may call besides JBrowseR's own exports.
@@ -84,11 +84,39 @@ function keywords(args: string) {
   })
 }
 
+function unnamed(args: string) {
+  return topLevelParts(args).some(
+    part => part.trim() !== '' && !/^\s*(\*\*|[\w.]+\s*=(?!=))/.test(part),
+  )
+}
+
 function calls(code: string, name: string) {
   return [
     ...code.matchAll(new RegExp(String.raw`(?<![\w.])${name}\s*\(`, 'g')),
   ].map(m => parenthesized(code, m.index + m[0].length - 1))
 }
+
+// Both packages pass a widget's options through to the product untouched, so
+// the keys a call may use are the product's option interfaces.
+function optionKeys(file: string, interfaces: string[]) {
+  const src = readFileSync(join(repoRoot, 'products', file), 'utf8')
+  return interfaces.flatMap(name => {
+    const body =
+      new RegExp(
+        String.raw`^export interface ${name}\b[^{]*\{([\s\S]*?)^\}`,
+        'm',
+      ).exec(src)?.[1] ?? ''
+    return [...body.matchAll(/^ {2}(\w+)\??:/gm)].map(m => m[1]!)
+  })
+}
+
+const LGV_OPTIONS = optionKeys(
+  'jbrowse-react-linear-genome-view/src/createLinearGenomeView.ts',
+  ['LinearGenomeViewState', 'CreateLinearGenomeViewOptions'],
+)
+const APP_OPTIONS = optionKeys('jbrowse-react-app/src/JBrowse/JBrowse.tsx', [
+  'JBrowseProps',
+])
 
 interface PythonSurface {
   exports: Set<string>
@@ -96,9 +124,6 @@ interface PythonSurface {
   keywords: Map<string, Set<string>>
 }
 
-// `__all__`, every method any class defines, and per widget class the keywords
-// its constructor accepts: its own parameters plus every trait it or a base
-// declares, since `**kwargs` hands those to traitlets.
 function pythonSurface(root: string): PythonSurface | undefined {
   const file = join(root, 'jbrowse_anywidget', '__init__.py')
   if (!existsSync(file)) {
@@ -106,44 +131,13 @@ function pythonSurface(root: string): PythonSurface | undefined {
   }
   const src = readFileSync(file, 'utf8')
   const all = /__all__\s*=\s*\[([^\]]*)\]/.exec(src)?.[1] ?? ''
-  const classes = new Map(
-    [...src.matchAll(/^class (\w+)\(([^)]*)\):\n([\s\S]*?)(?=^\S)/gm)].map(
-      m => [m[1]!, { bases: m[2]!.split(','), body: m[3]! }],
-    ),
-  )
-  const accepted = (name: string): string[] => {
-    const cls = classes.get(name)
-    if (!cls) {
-      return []
-    }
-    const init = cls.body.indexOf('def __init__(')
-    const params =
-      init === -1
-        ? []
-        : topLevelParts(
-            parenthesized(cls.body, init + 'def __init__'.length),
-          ).flatMap(p => {
-            const match = /^\s*(\w+)/.exec(p)
-            return match ? [match[1]!] : []
-          })
-    const traits = [...cls.body.matchAll(/^ {4}(\w+) = traitlets\./gm)].map(
-      m => m[1]!,
-    )
-    return [
-      ...params,
-      ...traits,
-      ...cls.bases.flatMap(base => accepted(base.trim())),
-    ]
-  }
   return {
     exports: new Set([...all.matchAll(/"(\w+)"/g)].map(m => m[1]!)),
     methods: new Set([...src.matchAll(/^ {4}def (\w+)\(/gm)].map(m => m[1]!)),
-    keywords: new Map(
-      ['LinearGenomeView', 'JBrowseApp'].map(name => [
-        name,
-        new Set(accepted(name)),
-      ]),
-    ),
+    keywords: new Map([
+      ['LinearGenomeView', new Set(LGV_OPTIONS)],
+      ['JBrowseApp', new Set(APP_OPTIONS)],
+    ]),
   }
 }
 
@@ -179,6 +173,12 @@ function rSurface(root: string): RSurface | undefined {
       )
     }
   }
+  for (const [name, options] of [
+    ['JBrowseR', LGV_OPTIONS],
+    ['JBrowseRApp', APP_OPTIONS],
+  ] as const) {
+    formals.set(name, new Set([...(formals.get(name) ?? []), ...options]))
+  }
   return { exports, formals }
 }
 
@@ -200,9 +200,14 @@ function pythonProblems(fence: Fence, surface: PythonSurface) {
       for (const keyword of keywords(args)) {
         if (!accepted.has(keyword)) {
           problems.push(
-            `passes ${widget}(${keyword}=...), which it does not take`,
+            `passes ${widget}(${keyword}=...), which is not a JBrowse option`,
           )
         }
+      }
+      if (unnamed(args)) {
+        problems.push(
+          `passes ${widget}() an unnamed value; every option is named`,
+        )
       }
     }
   }
@@ -235,6 +240,11 @@ function rProblems(fence: Fence, surface: RSurface) {
             `passes ${name}(${keyword} = ...), which it does not take`,
           )
         }
+      }
+      if (formals.has('...') && unnamed(args)) {
+        problems.push(
+          `passes ${name}() an unnamed value; every option is named`,
+        )
       }
     }
   }
@@ -299,6 +309,12 @@ for (const [label, surface] of [
       `  ${libraryCheckout(label)} exists but yields no exports; the reader here no longer matches how the package declares them.`,
     )
   }
+}
+
+if (LGV_OPTIONS.length === 0 || APP_OPTIONS.length === 0) {
+  errorLines.push(
+    '  the linear genome view or app option interface no longer parses; point optionKeys at where they moved',
+  )
 }
 
 const seen = new Set<string>()

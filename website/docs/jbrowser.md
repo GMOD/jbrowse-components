@@ -16,19 +16,17 @@ the R console. It shares the same framework-agnostic view core as the
 ## Install
 
 ```r
-# released
-install.packages("JBrowseR")
-
-# development
-# install.packages("remotes")
-remotes::install_github("GMOD/JBrowseR")
+# install.packages("devtools")
+devtools::install_github("GMOD/JBrowseR")
 ```
 
 ## A declarative API
 
-Assemblies, tracks and views are JBrowse's own
-[config objects](/docs/config_guide), written as R lists, so any track or view
-type JBrowse has works with nothing added to the package.
+Every argument is a JBrowse [embedding option](/docs/embedded_components), named
+as JBrowse names it and passed through unchanged. Assemblies, tracks and views
+are JBrowse's own [config objects](/docs/config_guide) written as R lists, so
+any track type, view type or option works with nothing added to the package, and
+a whole config is `do.call(JBrowseRApp, config)`.
 
 Name a hosted genome and the assembly, reference-name aliases, cytobands, and
 gene-name search all come preconfigured, and `location` can be a gene symbol:
@@ -36,7 +34,7 @@ gene-name search all come preconfigured, and `location` can be a gene symbol:
 ```r
 library(JBrowseR)
 
-JBrowseR("hg38", location = "BRCA1")
+JBrowseR(assembly = "hg38", location = "BRCA1")
 ```
 
 Add tracks by URL. The track type and index files (`.bai`/`.crai`/`.tbi`) are
@@ -44,7 +42,7 @@ inferred from the extension:
 
 ```r
 JBrowseR(
-  "hg38",
+  assembly = "hg38",
   tracks = list(
     list(
       uri = "https://jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram",
@@ -107,7 +105,8 @@ data of the [all-vs-all synteny tutorial](/docs/tutorials/allvsall_synteny).
 Rendered inside Shiny, clicking a feature sets
 `input$<outputId>_selected_feature` to the feature's data, so tables, plots, and
 links can follow the current selection. Pair `JBrowseROutput()` with
-`renderJBrowseR()`, or `JBrowseRAppOutput()` with `renderJBrowseRApp()`.
+`renderJBrowseR()`, or `JBrowseRAppOutput()` with `renderJBrowseRApp()`, and
+`update_jbrowse()` changes options on a browser already on the page.
 
 ## Run in Colab
 
