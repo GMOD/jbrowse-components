@@ -1046,7 +1046,11 @@ describe('the jb roster', () => {
 
   // Every member is either a helper that turns a silent wrong answer into a
   // throw or a report, or one of four foundations (the two libraries and the
-  // two config readers). Internals — abort checks, RPC session ids, region
+  // two config readers). `getConf` looks like a fifth wheel beside
+  // `readConfObject` and is the first kind: handed a state model,
+  // readConfObject reads that MODEL's member, so it answers undefined for a
+  // real slot and answers a model property that is no slot at all. See
+  // core/configuration/getConf.test.ts. Internals — abort checks, RPC session ids, region
   // renaming, locstring parsing, the adapter builder — reach an agent through jb.require('@jbrowse/core/util'), the
   // registry plugins link against, rather than as fixtures of this surface.
   it('is the documented 23 members', () => {
