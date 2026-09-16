@@ -54,7 +54,7 @@ crosses between German Shepherd Dogs and captive gray wolves, bred back to dogs
 afterwards. Each should carry wolf-derived haplotype blocks on a dog background,
 and a German Shepherd essentially none.
 
-Two more breeds ride along, from the Dog10K paper's own discussion of wolf-like
+Two more breeds are here too, from the Dog10K paper's discussion of wolf-like
 dogs:
 
 - the **Shiloh Shepherd** shares more of its doubleton (F2) sites with wolves

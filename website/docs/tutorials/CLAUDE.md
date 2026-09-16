@@ -25,9 +25,9 @@ then makes the two disagree; `cli_desktop` builds one folder and opens it twice.
 Neither has a dataset in the sense the rest of this file means, and both are
 tutorials, because you cannot start at step three.
 
-Every dataset carries a built-in control, something in the same figure that
-ought to come out negative, and the page ends by checking the inference against
-the raw data.
+Every dataset has a built-in control, something in the same figure that ought to
+come out negative, and the page ends by checking the inference against the raw
+data.
 
 ## Typography
 
@@ -88,11 +88,11 @@ missing, and the same check pins that list against what the script calls.
 
 **Mark the fence `<!-- from: scripts/build_<topic>.sh -->`** and
 `check-script-commands` asserts every tool, subcommand and flag in it still runs
-in that script, those rather than text, since the page carries the general form
+in that script, those rather than text, since the page shows the general form
 and the script the pinned one. Leave the marker off a fence showing a route the
 script does not take, and off one whose command the script only approximates:
 `local_ancestry` shows `jbrowse sort-bed` where its script sorts inline to stay
-free of node, so that line stands in a fence of its own.
+free of node, so that line gets a fence to itself.
 
 **A page that shows no command at all is the other failure**, and
 `check-unshown-tools` ratchets it: hand a reader a build script without one
@@ -129,9 +129,8 @@ the reason.
 
 **`gzip -dc`, never `zcat`.** macOS `/usr/bin/zcat` only ever looks for a `.Z`,
 so `zcat foo.gz` fails there and writes an empty file, which a build script then
-carries forward as if nothing happened. `gzip -dc` is the same thing everywhere.
-This is a page rule as much as a script one, since the fences are what a reader
-copies.
+uses as if nothing happened. `gzip -dc` is the same thing everywhere. This is a
+page rule as much as a script one, since the fences are what a reader copies.
 
 **Assume a GNU userland is not what the reader has.** The same trap in a slower
 form: `grep -F -f` with many patterns against very long lines runs at 0.25 MB/s
@@ -145,7 +144,7 @@ too, not only in the script's config patch.
 
 A tutorial with real requirements puts `## Prerequisites` under the opening
 paragraph: a bulleted list, optionally one short paragraph on installing what
-apt does not carry. Nothing else. The intro goes under its own `##` heading.
+apt has no package for. Nothing else. The intro goes under its own `##` heading.
 
 **`## Where the data comes from` is a source list, one bullet per file**, and
 each bullet ends in the raw full URL rather than a link label, because the host
@@ -165,15 +164,15 @@ one. A Zarr store is a directory of chunks and 404s at its root, which is worth
 saying in the bullet since the string is still what an adapter takes.
 
 **A list past about ten bullets splits into labelled groups**, a bold lead line
-and its own bullets each, rather than running as one column. What produces one
-that long is usually a page carrying a dataset it cannot connect to its own:
-`cancer_sv` listed two cell lines out of two releases until the second became
-`k562_fusions`, and the wall went with it.
+and bullets under each, rather than running as one column. What produces one
+that long is usually a page with a second dataset it cannot connect to its
+first: `cancer_sv` listed two cell lines out of two releases until the second
+became `k562_fusions`, and the wall went with it.
 
-Frontmatter carries `data: hosted | download | pipeline`, what it takes to end
-up with what the page shows, **not** whether the figures can be read with
-nothing installed. A page whose cost is not about data leaves the field off. An
-unknown value fails the build; an absent one is silently no chip.
+Frontmatter sets `data: hosted | download | pipeline`, what it takes to end up
+with what the page shows, **not** whether the figures can be read with nothing
+installed. A page whose cost is not about data leaves the field off. An unknown
+value fails the build; an absent one is silently no chip.
 
 **A `sidebar_label` leads with the word its kin lead with.** The sidebar is one
 flat alphabetical list, so the first word is the only thing grouping it:
@@ -191,8 +190,7 @@ qualifiers grew into the sentences the relaxation was meant to exclude.
 Don't restate the prerequisite tool list inside Reproduce, point at
 `[Prerequisites](#prerequisites)`. Don't write a generic troubleshooting table:
 a failure worth documenting is one this dataset produces, and it goes in the
-prose where it happens. Don't sell the hosted data; the figures carry live
-links.
+prose where it happens. Don't sell the hosted data; the figures link to it live.
 
 Moving a figure off a page means moving its card's crop source in
 `gen-tutorial-thumbs.ts` too; nothing warns you.

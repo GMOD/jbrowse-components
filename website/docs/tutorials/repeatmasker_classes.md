@@ -48,8 +48,8 @@ The two hub pipelines store it differently:
   `repClass` among them. That is an attribute, so `partitionField` is just
   `"repClass"`.
 - A **GenArk** assembly ships a `bigRmskBed`, whose autoSql has no class column
-  at all. The class rides on the name as a suffix, `L1HS#LINE/L1`, so the value
-  has to be derived. That case is worked in
+  at all. The class is encoded in the name as a suffix, `L1HS#LINE/L1`, so the
+  value has to be derived. That case is worked in
   [](/docs/user_guides/multirow_feature_track#when-the-category-is-not-a-column).
 
 Either way the rows are discovered from the values the loaded region holds, so a

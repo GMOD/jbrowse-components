@@ -9,12 +9,12 @@ tutorial_category: Pangenomes
 ---
 
 [Part 1](/docs/tutorials/pangenome_hprc) ends with one allele and the single
-haplotype the graph credits it to. Here we use the rest of HPRC release 2 to
-find everyone who carries that sequence, on the same GRCh38 axis. Four tracks go
-in, one at a time, each answering one question about the window part 1 left
-open: where the graph varies and by how much, what each alternative is, and
-which of the 464 haplotypes walk it. Every track is a URL that JBrowse reads a
-window at a time.
+haplotype the graph records as contributing it. Here we use the rest of HPRC
+release 2 to find everyone who carries that sequence, on the same GRCh38 axis.
+Four tracks go in, one at a time, each answering one question about the window
+part 1 left open: where the graph varies and by how much, what each alternative
+is, and which of the 464 haplotypes walk it. Every track is a URL that JBrowse
+reads a window at a time.
 
 ## Prerequisites
 
@@ -305,8 +305,9 @@ did so. Click the record under the band and its details list `AT` with the rest
 of `INFO`.
 
 With this lane loaded, two compatible readings sit over one coordinate. The
-[allele inventory](#the-allele-inventory) gives the haplotype the graph credits
-an allele to. A genotype column here gives the haplotypes that walk the allele.
+[allele inventory](#the-allele-inventory) gives the haplotype the graph records
+as contributing an allele. A genotype column here gives the haplotypes that walk
+the allele.
 
 ## Comparing the graph with the callset
 

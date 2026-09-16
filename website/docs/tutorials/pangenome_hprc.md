@@ -394,11 +394,11 @@ tabix -p gff hprc_mhc_NA20809.2.genes.gff3.gz
 The segments track also draws on the haplotype once `assemblyNames` lists the
 haplotype and `assemblyNameToPanSN` names the graph haplotype that the entry
 stands for. The view needs no other link between the two. A graph cut from the
-track reads the same map to open a node credited to `NA20809#2` on `NA20809.2`,
-so the assembly can have any name the session likes. `hg38` stays first, because
-the view cuts a graph on the first assembly its track names. The config below
-replaces the track [above](#add-the-graph-track), with the same `trackId` and
-one more assembly:
+track reads the same map to open a node contributed by `NA20809#2` on
+`NA20809.2`, so the assembly can have any name the session likes. `hg38` stays
+first, because the view cuts a graph on the first assembly its track names. The
+config below replaces the track [above](#add-the-graph-track), with the same
+`trackId` and one more assembly:
 
 ```json addtrack
 {
@@ -420,8 +420,8 @@ one more assembly:
 Cut `chr6:32,500,000-32,560,000` as a graph again and right-click the same 1.8
 kb allele. The menu now carries **Open in NA20809.2**, which adds a linear view
 of that haplotype's chr6 framed on the allele, with its CAT genes and the
-segments the graph credits to it. Zoom that view out a few steps for the genes
-around it.
+segments the graph records as contributed by it. Zoom that view out a few steps
+for the genes around it.
 
 <Video src="/media/pangenome/hprc_out_to_haplotype.mp4" caption="The MHC class II cut with NA20809 haplotype 2 loaded: the allele hovered for its contributing assembly, its menu opened, the Open in NA20809.2 entry adding a view of that haplotype's chromosome 6, and that view zoomed out to the CAT genes around it." />
 

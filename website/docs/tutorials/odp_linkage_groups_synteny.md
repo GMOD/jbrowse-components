@@ -9,7 +9,7 @@ guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
 
-Certain sets of genes have ridden the same chromosome together since before
+Certain sets of genes have stayed on the same chromosome together since before
 animals existed, and those sets have names.
 [odp](https://github.com/conchoecia/odp) writes, for every pair of genomes it
 compares, a table of their orthologs with the set each one belongs to and a
@@ -48,7 +48,7 @@ The tables are the ones odp plotted for the paper's own dot plots, and a run of
 odp over any two genomes writes the same files, so everything from the
 conversion on works unchanged on your own species.
 
-## A label that rides in the ortholog table
+## The linkage-group label in the ortholog table
 
 Simakov et al. 2022 named a set of gene families the BCnS linkage groups, after
 the bilaterians, cnidarians and sponges whose chromosomes carry them, and gave

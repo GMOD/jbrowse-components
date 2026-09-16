@@ -273,7 +273,7 @@ for strain in K12 Sakai CFT073 NCTC86 IAI39; do
 done
 ```
 
-`-a "$strain"` adds each track to one strain's assembly, so it rides along with
+`-a "$strain"` adds each track to one strain's assembly, so the track stays with
 that row. Navigate Sakai's row to `chr:1,267,000-1,268,400` and the gap holds
 _stx2A_ and _stx2B_, the Shiga-toxin subunits, with no alignment to K-12.
 

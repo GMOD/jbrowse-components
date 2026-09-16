@@ -178,10 +178,10 @@ aligner's tree orders the rows, so the rows that have it sit together. The
 shared core is the control: NACHT, the winged helix, HD2, FIIND and CARD run
 across every row.
 
-The calls ride along on NCBI's own protein records. For a protein NCBI has no
-calls for, `react-msaview-cli interproscan` scans the alignment's sequences into
-a domain file, **File → Annotations → Open annotation file...** reads it in, and
-**File → Annotations → How to get a domain file...** opens the
+The calls come from NCBI's protein records. For a protein NCBI has no calls for,
+`react-msaview-cli interproscan` scans the alignment's sequences into a domain
+file, **File → Annotations → Open annotation file...** reads it in, and **File →
+Annotations → How to get a domain file...** opens the
 [walkthrough](https://gmod.org/JBrowseMSA/tutorials/protein_family), which also
 covers `interpro`, the instant path when the rows are UniProt accessions.
 
