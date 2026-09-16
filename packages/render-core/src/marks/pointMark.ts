@@ -48,6 +48,8 @@ export interface PointParams extends RowParams {
   insetPx?: number
 }
 
+const MAX_INSTANCES_PER_PATH = 10_000
+
 export const pointMark: MarkShape<PointChannels, PointParams> = {
   id: 'point',
   pass: {
@@ -93,19 +95,24 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     const st = scaleTypeCode(params.scaleType)
     const bpToPx = makeBpMapper(block)
 
-    // Batched by colour: a run of one colour is one fillStyle write and one
-    // fill() over a shared path, which is most of a painting.
+    // Batched by colour, each path capped: Chrome silently fills nothing for
+    // a path of about 180,000 discs
     let current = color[0]!
+    let inPath = 0
     ctx.fillStyle = abgrToCssRgba(current)
     ctx.beginPath()
     for (let i = 0; i < count; i++) {
       const abgr = color[i]!
-      if (abgr !== current) {
+      if (abgr !== current || inPath === MAX_INSTANCES_PER_PATH) {
         ctx.fill()
-        current = abgr
-        ctx.fillStyle = abgrToCssRgba(abgr)
+        if (abgr !== current) {
+          current = abgr
+          ctx.fillStyle = abgrToCssRgba(abgr)
+        }
         ctx.beginPath()
+        inPath = 0
       }
+      inPath++
       const xStart = bpToPx(x[i]!)
       const xEnd = bpToPx(x2[i]!)
       const yPx =
