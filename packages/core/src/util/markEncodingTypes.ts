@@ -6,6 +6,8 @@
 // every leaf that reaches the RPC registry. scripts/moduleClosure.test.ts
 // holds the ceiling.
 
+import type { ZoomRange } from '../data_adapters/BaseAdapter/types.ts'
+
 /**
  * #api
  * Where a channel's value comes from: a feature field name, read natively
@@ -236,6 +238,7 @@ export interface LayerRequest {
 export interface EncodedFeaturesResult {
   layers: EncodedChannels[]
   bytes?: number
+  zoomRange?: ZoomRange
 }
 
 /**

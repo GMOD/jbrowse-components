@@ -17,7 +17,10 @@ import { mapWithConcurrency } from './mapWithConcurrency.ts'
 
 import type { RawFeatureArrays } from '../util.ts'
 import type { WiggleAdapterOptions } from '../wiggleAdapterOptions.ts'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseOptions,
+  ZoomRange,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type {
   FileLocation,
@@ -191,6 +194,27 @@ export default class MultiWiggleAdapter extends BaseFeatureDataAdapter {
     }
     const sourceNames = new Set(sources.map(s => s.name))
     return adapters.filter(adp => sourceNames.has(adp.source))
+  }
+
+  public async getZoomRange(
+    opts: WiggleOptions = {},
+  ): Promise<ZoomRange | undefined> {
+    const adapters = await this.getFilteredAdapters(opts.sources)
+    const ranges = await Promise.all(
+      adapters.map(adp => adp.dataAdapter.getZoomRange(opts)),
+    )
+    let range: ZoomRange | undefined
+    for (const r of ranges) {
+      if (r) {
+        range = range
+          ? {
+              minBpPerPx: Math.max(range.minBpPerPx, r.minBpPerPx),
+              maxBpPerPx: Math.min(range.maxBpPerPx, r.maxBpPerPx),
+            }
+          : r
+      }
+    }
+    return range
   }
 
   public getFeatures(region: Region, opts: WiggleOptions = {}) {

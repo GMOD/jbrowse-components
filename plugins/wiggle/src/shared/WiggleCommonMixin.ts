@@ -94,19 +94,6 @@ export function WiggleCommonMixin() {
     .views(self => ({
       /**
        * #getter
-       * Strict zoom equality (adr-008): the worker bins scores to the requested
-       * bpPerPx, so data fetched at another zoom is the wrong summary, however
-       * well the viewport still sits inside it.
-       *
-       * Here rather than on `ScoreFieldConfigMixin`: the rule is about what a
-       * fetch returns, and `LinearManhattanDisplay` composes that mixin while
-       * fetching untransformed SNPs.
-       */
-      get zoomFetchKey(): string {
-        return String(regionHost(self).bpPerPx)
-      },
-      /**
-       * #getter
        * Raw `symlogConstant` slot; `0` means "derive from the domain". Resolve
        * it with `resolveSymlogConstant` once the domain is known.
        *

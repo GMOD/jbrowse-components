@@ -1,6 +1,6 @@
 ---
 name: zoom-fetch-keys
-description: How a per-region display says its cached data is stale under zoom — `zoomFetchKey` versus `regionHasData`, the four in-tree keys, a coarse tier as a second store, and `dataSuperseded`. Read before keying a fetch on zoom or adding a summary tier.
+description: How a per-region display says its cached data is stale under zoom — `zoomFetchKey` versus `regionHasData`, the adapter-declared `zoomRange` a payload carries, the three in-tree keys, a coarse tier, and `dataSuperseded`. Read before keying a fetch on zoom or adding a summary tier.
 kind: spec
 ---
 
@@ -25,13 +25,13 @@ display states its rule as two hooks, which are two different questions:
   *right now* would produce, as a string. `fetchRegions` reads the whole key in
   its synchronous prefix, before the RPC goes out, and stamps it beside the
   loaded region; a region whose stamp no longer matches is stale.
-- **`regionHasData(idx)`** (default `true`) — whether the last fetch stored
-  anything for this region, where "stored" and "marked loaded" can differ by
-  design. A byte-gate refusal stamps nothing (`fetchRegions` and the fan-out
-  helpers skip the commit for a refused result), so the fail-open default is
-  unreachable from the gate; what keeps the default `true` is sequence's
-  empty-result path, which stamps a legitimately empty region without storing —
-  a store-derived default would refetch it forever.
+- **`regionHasData(idx)`** — whether what the last fetch stored for this
+  region still answers at the view's `bpPerPx`. The default reads the store,
+  and the payload's `zoomRange` where the adapter declared one
+  (`BaseFeatureDataAdapter.getZoomRange`, ADR-125): a BigWig tier serves a band
+  of zooms, and the region is stale once the view leaves it. A payload with no
+  range answers at every zoom, so a display over an adapter that reads no zoom
+  never refetches for one.
 
 Keeping them apart is what lets a display say "the data is fine, it just isn't
 here" without inventing a key value for absence — a key that changed when data
@@ -65,16 +65,18 @@ reopening it. The `&&` short-circuits in front of it — a blocked byte gate, an
 uncovered block — drop `isCacheValid`'s observables only where the block reaches
 `fetchNeeded` regardless.
 
-**Four declarations key on zoom:**
+**Wiggle and the mark display declare no key: the adapter declares the
+range.** BigWig has discrete zoom levels and bbi picks one from
+`bpPerPx / resolution`, so the tier a fetch returns is a function of the zoom,
+and only the adapter can see where the tiers sit. `BigWigAdapter.getZoomRange`
+answers the bp/px interval its pick serves, the RPC writes it on the payload as
+`zoomRange`, and the displays send the view's `bpPerPx` at the call site and
+leave `zoomFetchArgs` alone. A zoom inside the tier refetches nothing; a zoom
+across one refetches every visible region together. See
+[ADR-125](../architecture-decision-records/adr-125-the-adapter-declares-the-zoom-range-its-answer-serves.md).
 
-- **Wiggle**: BigWig has discrete zoom levels; the worker picks one from
-  `bpPerPx / resolution`, so the key is `String(view.bpPerPx)` and any zoom
-  change refetches all visible regions together. See
-  [ADR-008](../architecture-decision-records/adr-008-wiggle-strict-bpperpx-equality.md).
-  It sits on `WiggleCommonMixin`, the wiggle-shaped-*fetch* mixin, rather than
-  on the `ScoreFieldConfigMixin` that mixin extends: the rule is about what a
-  fetch returns, and `LinearManhattanDisplay` composes the score config alone
-  while fetching untransformed SNPs.
+**Three declarations key on zoom:**
+
 - **Canvas** (`LinearBasicDisplay`): the amino-acid overlay is the only
   `bpPerPx`-dependent worker decision, so the key is that discrete threshold —
   `String(shouldRenderPeptideBackground(view.bpPerPx))` — and every other zoom

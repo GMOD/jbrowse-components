@@ -30,6 +30,7 @@ async function run(args: Partial<CoreEncodeFeaturesArgs>) {
     dataAdapter: {
       getFeatures: () => {},
       getFeaturesArray: async () => features,
+      getZoomRange: async () => undefined,
       setSequenceAdapterConfig: () => {},
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
@@ -73,17 +74,20 @@ test('the zoom reaches the adapter, so one with zoom levels answers at it', asyn
   const getFeaturesArray = jest.fn(
     async (_region: unknown, _opts: { bpPerPx?: number }) => features,
   )
+  const zoomRange = { minBpPerPx: 250, maxBpPerPx: 1000 }
+  const getZoomRange = jest.fn(async (_opts: { bpPerPx?: number }) => zoomRange)
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {
       getFeatures: () => {},
       getFeaturesArray,
+      getZoomRange,
       setSequenceAdapterConfig: () => {},
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)
   const method = new CoreEncodeFeatures({
     jexl: createJexlInstance(),
   } as PluginManager)
-  await method.invoke({
+  const result = await method.invoke({
     sessionId: 's',
     adapterConfig: { type: 'AnyAdapter' },
     region: { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
@@ -91,6 +95,10 @@ test('the zoom reaches the adapter, so one with zoom levels answers at it', asyn
     bpPerPx: 500,
   })
   expect(getFeaturesArray.mock.calls[0]![1]).toMatchObject({ bpPerPx: 500 })
+  expect(getZoomRange.mock.calls[0]![0]).toMatchObject({ bpPerPx: 500 })
+  expect((result as RpcResult<EncodedFeaturesResult>).value.zoomRange).toEqual(
+    zoomRange,
+  )
 })
 
 test("a layer's own transform runs after the shared one, and the other layer sees neither", async () => {
@@ -98,6 +106,7 @@ test("a layer's own transform runs after the shared one, and the other layer see
     dataAdapter: {
       getFeatures: () => {},
       getFeaturesArray: async () => features,
+      getZoomRange: async () => undefined,
       setSequenceAdapterConfig: () => {},
     },
   } as unknown as Awaited<ReturnType<typeof getAdapter>>)

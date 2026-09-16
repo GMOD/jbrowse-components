@@ -3,6 +3,7 @@ import { reportContractViolation } from '@jbrowse/render-core/contractReports'
 
 import type { FetchContext } from './FetchMixin.ts'
 import type { FetchInputs } from './fetchInputs.ts'
+import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
@@ -53,6 +54,33 @@ export interface LoadedRegion extends Region {
  * under each region it covered.
  */
 export type RegionPayload = NonNullable<unknown>
+
+function isZoomRange(value: unknown): value is ZoomRange {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'minBpPerPx' in value &&
+    typeof value.minBpPerPx === 'number' &&
+    'maxBpPerPx' in value &&
+    typeof value.maxBpPerPx === 'number'
+  )
+}
+
+/**
+ * Whether a stored payload still answers at `bpPerPx`: a payload carrying the
+ * `zoomRange` its adapter declared answers inside it, and one carrying none
+ * answers at every zoom.
+ */
+export function payloadServesZoom(payload: RegionPayload, bpPerPx: number) {
+  if (typeof payload !== 'object' || !('zoomRange' in payload)) {
+    return true
+  }
+  const { zoomRange } = payload
+  return (
+    !isZoomRange(zoomRange) ||
+    (zoomRange.minBpPerPx <= bpPerPx && bpPerPx < zoomRange.maxBpPerPx)
+  )
+}
 
 /**
  * A {@link FetchContext} plus the one thing a per-region fetch can do that a

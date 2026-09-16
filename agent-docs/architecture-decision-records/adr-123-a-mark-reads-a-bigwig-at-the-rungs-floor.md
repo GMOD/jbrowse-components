@@ -12,9 +12,11 @@ handoff, and the caveat on the data row of
 `reference/GRAMMAR_OF_GRAPHICS.md`. The value sent was the auto-bin rung's
 floor for part of that day; the arithmetic under Rejected alternatives
 replaced it with the raw view value before the day was out, and the file name
-keeps the first title. The successor for both this display and wiggle, an
-adapter-declared zoom range, is step 1 of
-`handoffs/grammar-layer-zoom-and-rows.md`.
+keeps the first title. The per-step refetch this ADR accepted closed the
+same day under [ADR-125](adr-125-the-adapter-declares-the-zoom-range-its-answer-serves.md):
+the adapter declares the zoom range its answer serves, `zoomFetchArgs()` left
+the display, and the fetch sends the view's `bpPerPx` to every adapter. What
+stands from this ADR is the value sent and what a tier's fields mean.
 
 ## Context
 

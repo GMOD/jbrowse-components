@@ -911,37 +911,53 @@ test('an auto bin resolves to the 1/2/5 rung above four pixels of bp', () => {
   expect(stepAt(1000)).toBe(5000)
 })
 
-test('a zoom sweep refetches once per rung, not once per step', () => {
-  const { createDisplay } = createTestEnvironment(AUTO_BIN_MARKS, WIDE_REGION)
+test('a zoom sweep over a BigWig refetches once per tier, not once per step', () => {
+  const { createDisplay } = createTestEnvironment(
+    [{ shape: 'bar', encoding: { y: 'score' } }],
+    WIDE_REGION,
+    'BigWigAdapter',
+  )
   const { display, view } = createDisplay()
-  const keys: string[] = []
+  // tiers 4x apart, as a BigWig writes them; bbi picks the finest whose
+  // reduction fits twice into a pixel
+  const levels = [4, 16, 64, 256, 1024, 4096]
+  const tierAt = (bpPerPx: number) =>
+    levels.filter(l => l <= 2 * bpPerPx).length
+  let fetches = 0
+  const tiers = new Set<number>()
   let bpPerPx = 1
   for (let i = 0; i < 64; i++) {
     view.zoomTo(bpPerPx)
-    const key = display.rpcPropsCacheKey
-    if (keys.at(-1) !== key) {
-      keys.push(key)
+    const tier = tierAt(view.bpPerPx)
+    tiers.add(tier)
+    if (!display.isCacheValid(0)) {
+      fetches++
+      display.setRpcData(
+        0,
+        {
+          ...result([{ y: [1, 2] }]),
+          zoomRange: {
+            minBpPerPx: tier === 0 ? 0 : levels[tier - 1]! / 2,
+            maxBpPerPx: tier === levels.length ? Infinity : levels[tier]! / 2,
+          },
+        },
+        WIDE_REGION,
+      )
     }
     bpPerPx *= 1.125
   }
-  // 64 steps of 1.125x — 1 to 1,600 bp/px — cross 11 rungs of the ladder, so
-  // 53 of the 64 zooms leave the fetch's inputs alone
-  expect(keys).toHaveLength(11)
+  // 64 steps of 1.125x, 1 to 1,600 bp/px, touch six tiers
+  expect(tiers.size).toBe(6)
+  expect(fetches).toBe(6)
 })
 
-test('an adapter with zoom levels is sent the view zoom, and one without sends no zoom', () => {
-  const bigwig = createTestEnvironment(
-    AUTO_BIN_MARKS,
-    WIDE_REGION,
-    'BigWigAdapter',
-  ).createDisplay()
-  const bed = createTestEnvironment(AUTO_BIN_MARKS, WIDE_REGION).createDisplay()
-  for (const bpPerPx of [3, 4.9, 1000]) {
-    bigwig.view.zoomTo(bpPerPx)
-    bed.view.zoomTo(bpPerPx)
-    expect(bed.display.zoomFetchArgs()).toEqual({})
-    expect(bigwig.display.zoomFetchArgs()).toEqual({ bpPerPx })
-  }
+test('a payload without a zoom range is never refetched for a zoom', () => {
+  const { createDisplay } = createTestEnvironment(AUTO_BIN_MARKS, WIDE_REGION)
+  const { display, view } = createDisplay()
+  view.zoomTo(1)
+  display.setRpcData(0, result([{ y: [1, 2] }]), WIDE_REGION)
+  view.zoomTo(1000)
+  expect(display.regionHasData(0)).toBe(true)
 })
 
 test('a fixed bin width ignores the zoom, and its fetch key with it', () => {

@@ -8,6 +8,7 @@ import {
 } from '@jbrowse/render-core/marks'
 
 import type { MarkShapeName } from './configSchema.ts'
+import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type Flatbush from '@jbrowse/core/util/flatbush'
 import type {
   Encoded,
@@ -73,6 +74,7 @@ function withLanes<L extends ChannelLane>(
 /** One region's payload: `layers[i]` is mark `i`'s channels. */
 export interface MarkRegionData {
   layers: StoredLayer[]
+  zoomRange?: ZoomRange
 }
 
 export interface MarkRenderState extends MarkFrame {

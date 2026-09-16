@@ -14,7 +14,7 @@ import { foundationSvgReady } from './foundationSvgReady.ts'
 import { containingHost, foundationCanRender } from './foundationView.ts'
 import { installPerRegionFetchAutoruns } from './installPerRegionFetchAutoruns.ts'
 import { isBlockCovered } from './planRegionFetch.ts'
-import { makeCommitChecks } from './regionCommit.ts'
+import { makeCommitChecks, payloadServesZoom } from './regionCommit.ts'
 import { subPixelBinBp } from './subPixelBinBp.ts'
 import { viewportEmpty } from './viewportEmpty.ts'
 
@@ -273,37 +273,30 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #method
-         * Overridable hook: whether the display can actually draw what this
-         * region is marked loaded over.
+         * Overridable hook: whether the display can draw what this region is
+         * marked loaded over, at the zoom the view has.
          *
          * The default answers off the store — an entry a fetch committed
-         * carries what it stored — so "marked loaded with nothing behind it"
-         * is a state only a hand-written `setLoadedRegion` reaches. It used to
-         * be `true`, and the base canvas display overrode it with
-         * `rpcDataMap.has(idx)` to get this answer back.
+         * carries what it stored — and off the payload's `zoomRange` where the
+         * adapter declared one (`BaseFeatureDataAdapter.getZoomRange`): a
+         * BigWig tier answers a band of zooms, and the region reads as stale
+         * when the view leaves it. A payload carrying no range answers at
+         * every zoom.
          *
          * What survives an override is the question the store cannot answer:
          * **which of several held payloads answers**. MAF caches a summary tier
          * and a detail tier side by side under one `displayedRegionIndex`, so
          * crossing the threshold inside an already-loaded region changes which
-         * map has to answer — something neither the coverage bounds nor one
-         * payload slot can see. A key would refetch the summary on every zoom
-         * back out, since both tiers are still held. The multi-row display's
-         * override survives for its second half, the auto-partition
-         * reconciliation (`regionHasPinnedData`).
-         *
-         * **What the old fail-open default was protecting is now explicit.** A
-         * byte-gate refusal never commits at all, so it is unreachable either
-         * way. The case that mattered is sequence's legitimately-empty region,
-         * which stamped without storing and which a store-derived default would
-         * have refetched forever — and a commit is a payload now, the empty
-         * record, so it stays terminal.
+         * map has to answer. The multi-row display's override survives for the
+         * auto-partition reconciliation (`regionHasPinnedData`).
          *
          * A view, not an action, for the reason `zoomFetchKey` is a getter.
          */
         regionHasData(displayedRegionIndex: number): boolean {
+          const payload = self.loadedRegions.get(displayedRegionIndex)?.payload
           return (
-            self.loadedRegions.get(displayedRegionIndex)?.payload !== undefined
+            payload !== undefined &&
+            payloadServesZoom(payload, containingHost(self).bpPerPx)
           )
         },
 

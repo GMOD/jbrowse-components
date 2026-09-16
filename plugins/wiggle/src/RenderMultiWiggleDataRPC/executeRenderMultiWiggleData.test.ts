@@ -62,11 +62,16 @@ describe('multi-source adapter (batched)', () => {
       .fn()
       .mockResolvedValue([{ name: 'a' }, { name: 'b' }])
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getZoomRange: async () => ({ minBpPerPx: 2, maxBpPerPx: 8 }),
       getMultiSourceFeatureArraysMulti,
       getSources,
     } as never)
 
     const results = await run({})
+    expect(results.map(r => r.zoomRange)).toEqual([
+      { minBpPerPx: 2, maxBpPerPx: 8 },
+      { minBpPerPx: 2, maxBpPerPx: 8 },
+    ])
 
     // one fan-out for the whole view, not one per region
     expect(getMultiSourceFeatureArraysMulti).toHaveBeenCalledTimes(1)
@@ -82,6 +87,7 @@ describe('multi-source adapter (batched)', () => {
 
   it('gives a source absent from the payload an empty entry in every region', async () => {
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getZoomRange: async () => undefined,
       getMultiSourceFeatureArraysMulti: jest
         .fn()
         .mockResolvedValue([{ source: 'a', raws: [raw([1]), raw([2])] }]),
@@ -102,6 +108,7 @@ describe('multi-source adapter (batched)', () => {
 
   it('splits pos/neg around bicolorPivot', async () => {
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getZoomRange: async () => undefined,
       getMultiSourceFeatureArraysMulti: jest
         .fn()
         .mockResolvedValue([{ source: 'a', raws: [raw([3, -2]), raw([1])] }]),
@@ -133,9 +140,10 @@ describe('plain feature adapter fallback', () => {
       // region 0 has only 'a'; 'b' first appears in region 1
       .mockResolvedValueOnce([feature('a', 0, 1)])
       .mockResolvedValueOnce([feature('a', 0, 2), feature('b', 10, 3)])
-    jest
-      .mocked(getFeatureAdapterOrThrow)
-      .mockResolvedValue({ getFeaturesArray } as never)
+    jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getFeaturesArray,
+      getZoomRange: async () => undefined,
+    } as never)
 
     const results = await run({})
 
@@ -165,6 +173,7 @@ describe('plain feature adapter fallback', () => {
         score,
       })
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getZoomRange: async () => undefined,
       getFeaturesArray: jest.fn().mockResolvedValue([anon(0, 5), anon(10, 6)]),
     } as never)
 
@@ -187,9 +196,10 @@ describe('plain feature adapter fallback', () => {
           return Promise.resolve([])
         },
       )
-    jest
-      .mocked(getFeatureAdapterOrThrow)
-      .mockResolvedValue({ getFeaturesArray } as never)
+    jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getFeaturesArray,
+      getZoomRange: async () => undefined,
+    } as never)
 
     const seen: unknown[] = []
     await run({
@@ -219,6 +229,7 @@ describe('plain feature adapter fallback', () => {
   // as inherited functions.
   it('discovers numeric-looking sources in file order, not numeric order', async () => {
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getZoomRange: async () => undefined,
       getFeaturesArray: jest
         .fn()
         .mockResolvedValue([
@@ -236,6 +247,7 @@ describe('plain feature adapter fallback', () => {
 
   it('handles a source named after an Object.prototype member', async () => {
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getZoomRange: async () => undefined,
       getFeaturesArray: jest
         .fn()
         .mockResolvedValue([feature('constructor', 0, 7)]),
@@ -249,6 +261,7 @@ describe('plain feature adapter fallback', () => {
 
   it("keeps the caller's source order ahead of newly-discovered ones", async () => {
     jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+      getZoomRange: async () => undefined,
       getFeaturesArray: jest
         .fn()
         .mockResolvedValue([feature('z', 0, 1), feature('m', 10, 2)]),

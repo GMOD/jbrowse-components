@@ -12,10 +12,15 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { calcStdFromSums } from '@jbrowse/core/util/stats'
 
+import { tierSpanRange } from './tierSpanRange.ts'
+
 import type { RawFeatureArrays } from '../util.ts'
 import type { WiggleAdapterOptions as WiggleOptions } from '../wiggleAdapterOptions.ts'
 import type { BigWigAdapterConfig } from './configSchema.ts'
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseOptions,
+  ZoomRange,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { RectifiedQuantitativeStats } from '@jbrowse/core/util/stats'
 import type { AugmentedRegion as Region } from '@jbrowse/core/util/types'
@@ -138,13 +143,30 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     }, signal)
   }
 
+  private basesPerSpan({ bpPerPx = 0, resolution = 1 }: WiggleOptions) {
+    return (bpPerPx / resolution) * this.getConf('resolutionMultiplier')
+  }
+
+  public async getZoomRange(opts: WiggleOptions = {}): Promise<ZoomRange> {
+    const { header } = await this.setup(opts)
+    const { resolution = 1 } = opts
+    const bpPerPxPerSpan = resolution / this.getConf('resolutionMultiplier')
+    const [lo, hi] = tierSpanRange(
+      header.zoomLevels.map(z => z.reductionLevel),
+      this.basesPerSpan(opts),
+    )
+    return {
+      minBpPerPx: lo * bpPerPxPerSpan,
+      maxBpPerPx: hi * bpPerPxPerSpan,
+    }
+  }
+
   private async getArrayFeatureView(
     region: Region,
     opts: WiggleOptions = {},
   ): Promise<ArrayFeatureView> {
     const { refName, start, end } = region
-    const { bpPerPx = 0, resolution = 1, statusCallback } = opts
-    const resolutionMultiplier = this.getConf('resolutionMultiplier')
+    const { statusCallback } = opts
     const source = this.getConf('source')
 
     const { bigwig } = await this.setup(opts)
@@ -155,7 +177,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
       onProgress =>
         bigwig.getFeaturesAsArrays(refName, start, end, {
           ...opts,
-          basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
+          basesPerSpan: this.basesPerSpan(opts),
           onProgress,
         }),
     )
@@ -192,8 +214,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     regions: Region[],
     opts: WiggleOptions = {},
   ): Promise<RawFeatureArrays[]> {
-    const { bpPerPx = 0, resolution = 1, statusCallback } = opts
-    const resolutionMultiplier = this.getConf('resolutionMultiplier')
+    const { statusCallback } = opts
     const { bigwig } = await this.setup(opts)
 
     const res = await downloadStatus(
@@ -208,7 +229,7 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
           })),
           {
             ...opts,
-            basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
+            basesPerSpan: this.basesPerSpan(opts),
             onProgress,
           },
         ),

@@ -6,10 +6,12 @@ import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import { processFeaturesFromArrays } from '../util.ts'
 import { createTestEnvironment } from './testEnv.ts'
 
+import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { WiggleDataResult } from '@jbrowse/wiggle-core'
 
-function makeEmptyWiggleData(): WiggleDataResult {
+function makeEmptyWiggleData(zoomRange?: ZoomRange): WiggleDataResult {
   return {
+    zoomRange,
     sources: [
       {
         name: 'default',
@@ -93,11 +95,51 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     })
   })
 
-  // adr-008: the worker bins scores to the requested bpPerPx, so a zoom that
-  // stays spatially inside the fetched region still holds the wrong summary.
-  // `viewportWithinLoadedData` is asserted first so the refetch can only be
-  // `zoomFetchKey` — coverage would explain it otherwise.
-  it('refetches after a zoom that stays inside the loaded region', async () => {
+  // The adapter declares the bp/px range its answer serves, and the payload
+  // carries it: a zoom inside the range holds the same tier and refetches
+  // nothing, a zoom past it refetches. `viewportWithinLoadedData` is asserted
+  // first so coverage cannot explain the refetch.
+  it('refetches after a zoom that leaves the payload zoom range, and not one inside it', async () => {
+    const { createDisplay, mockRpcCall } = createTestEnvironment()
+    mockRpcCall.mockImplementation(
+      async (_method: string, _sid: string, args: { bpPerPx: number }) => [
+        makeEmptyWiggleData({
+          minBpPerPx: args.bpPerPx / 2,
+          maxBpPerPx: args.bpPerPx * 2,
+        }),
+      ],
+    )
+    const { display, view } = createDisplay()
+
+    jest.advanceTimersByTime(400)
+    await waitFor(() => {
+      expect(display.loadedRegions.size).toBe(1)
+    })
+    const fetched = view.bpPerPx
+    expect(mockRpcCall.mock.calls[0]![2]).toMatchObject({ bpPerPx: fetched })
+
+    const callsBefore = mockRpcCall.mock.calls.length
+    view.zoomTo(fetched / 1.5)
+    expect(display.viewportWithinLoadedData).toBe(true)
+    expect(display.isCacheValid(0)).toBe(true)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
+
+    view.zoomTo(fetched / 4)
+    expect(display.viewportWithinLoadedData).toBe(true)
+    expect(display.isCacheValid(0)).toBe(false)
+    jest.advanceTimersByTime(800)
+    await jest.runAllTimersAsync()
+    await waitFor(() => {
+      expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
+    })
+    expect(mockRpcCall.mock.calls.at(-1)![2]).toMatchObject({
+      bpPerPx: fetched / 4,
+    })
+  })
+
+  it('never refetches for a zoom when the payload carries no zoom range', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
     mockRpcCall.mockResolvedValue([makeEmptyWiggleData()])
     const { display, view } = createDisplay()
@@ -108,14 +150,11 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    view.zoomTo(view.bpPerPx / 2)
+    view.zoomTo(view.bpPerPx / 4)
     expect(display.viewportWithinLoadedData).toBe(true)
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
-
-    await waitFor(() => {
-      expect(mockRpcCall.mock.calls.length).toBeGreaterThan(callsBefore)
-    })
+    expect(mockRpcCall.mock.calls.length).toBe(callsBefore)
   })
 
   // gpuProps fields (color, summaryScoreMode, renderingType, ...) re-fire the

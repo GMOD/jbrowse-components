@@ -18,6 +18,42 @@ import type { Feature, StatusCallback } from '@jbrowse/core/util'
 // casts.
 const stubDataAdapter = {} as BaseFeatureDataAdapter
 
+describe('MultiWiggleAdapter.getZoomRange', () => {
+  function adapterOver(
+    ranges: ({ minBpPerPx: number; maxBpPerPx: number } | undefined)[],
+  ) {
+    return new MultiWiggleAdapter(
+      configSchema.create({
+        bigWigs: ranges.map((_, i) => `https://x/${i}.bw`),
+      }),
+      jest.fn().mockImplementation(async (conf: { source: string }) => ({
+        dataAdapter: { getZoomRange: async () => ranges[Number(conf.source)] },
+      })),
+    )
+  }
+
+  it('intersects its sources ranges and skips a source with none', async () => {
+    const adapter = adapterOver([
+      { minBpPerPx: 10, maxBpPerPx: 40 },
+      undefined,
+      { minBpPerPx: 20, maxBpPerPx: 80 },
+    ])
+    expect(await adapter.getZoomRange({ bpPerPx: 30 })).toEqual({
+      minBpPerPx: 20,
+      maxBpPerPx: 40,
+    })
+    expect(
+      await adapter.getZoomRange({ bpPerPx: 30, sources: [{ name: '2' }] }),
+    ).toEqual({ minBpPerPx: 20, maxBpPerPx: 80 })
+  })
+
+  it('answers none when no source declares one', async () => {
+    expect(
+      await adapterOver([undefined, undefined]).getZoomRange({ bpPerPx: 30 }),
+    ).toBeUndefined()
+  })
+})
+
 describe('MultiWiggleAdapter.getAdapters with bigWigs config', () => {
   it('derives source names from URI filenames', async () => {
     const mockGetSubAdapter = jest

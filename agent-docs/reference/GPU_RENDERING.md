@@ -2031,8 +2031,8 @@ does the shared-shape version); keep them in step with any change here.
   `ScoreFieldConfigMixin`, which adds `scoreField` (`plugins/gwas` Manhattan);
   one naming a field per mark keeps the base (`plugins/marks`).
   Implement `WiggleRenderingBackend` (typed from `@jbrowse/wiggle-core`). A
-  zoom-independent display needs no cache override: the strict-`bpPerPx`
-  `zoomFetchKey` rides on `WiggleCommonMixin`, so composing the score config
-  alone inherits no rule about what a fetch returns.
+  zoom-independent display needs no cache override: the zoom rule is the
+  adapter's declared `zoomRange` on the payload (ADR-125), and an adapter that
+  reads no zoom declares none.
 - **Tests** — unit (`MockHal`); browser (Puppeteer,
   `--backend=webgl|webgpu|canvas2d`).

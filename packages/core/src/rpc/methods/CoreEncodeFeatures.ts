@@ -58,15 +58,15 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
       return tooLarge
     }
 
-    const fetched = await updateStatus(
+    const fetchOpts = { bpPerPx, statusCallback, signal }
+    const [fetched, zoomRange] = await updateStatus(
       'Downloading features',
       statusCallback,
       () =>
-        dataAdapter.getFeaturesArray(region, {
-          bpPerPx,
-          statusCallback,
-          signal,
-        }),
+        Promise.all([
+          dataAdapter.getFeaturesArray(region, fetchOpts),
+          dataAdapter.getZoomRange(fetchOpts),
+        ]),
     )
     checkAbortSignal(signal)
 
@@ -99,7 +99,7 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
         }
       },
     )
-    const result: EncodedFeaturesResult = { layers, bytes }
+    const result: EncodedFeaturesResult = { layers, bytes, zoomRange }
     return rpcResult(
       result,
       layers.flatMap(l => encodedChannelTransferables(l)),

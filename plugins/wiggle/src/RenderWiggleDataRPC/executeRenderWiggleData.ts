@@ -62,10 +62,14 @@ export async function executeRenderWiggleData({
     statusCallback,
     signal,
   }
-  const raws = await updateStatus(
+  const [raws, zoomRange] = await updateStatus(
     'Downloading wiggle data',
     statusCallback,
-    () => fetchRegionRaws(dataAdapter, regions, fetchOpts),
+    () =>
+      Promise.all([
+        fetchRegionRaws(dataAdapter, regions, fetchOpts),
+        dataAdapter.getZoomRange(fetchOpts),
+      ]),
   )
 
   checkAbortSignal(signal)
@@ -77,6 +81,7 @@ export async function executeRenderWiggleData({
         ...processFeaturesFromArrays(raw, bicolorPivot, useBicolor),
       },
     ],
+    zoomRange,
   }))
   return rpcResult(results, collectWiggleTransferables(results))
 }

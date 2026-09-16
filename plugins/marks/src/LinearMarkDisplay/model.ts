@@ -10,7 +10,6 @@ import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import {
   getDialogHost,
-  getEnv,
   getSession,
   openFeatureWidget,
   pluralize,
@@ -137,6 +136,7 @@ function storedRegionData(result: EncodedFeaturesResult): MarkRegionData {
         ? Flatbush.from(layer.flatbushData)
         : undefined,
     })),
+    zoomRange: result.zoomRange,
   }
 }
 
@@ -811,20 +811,6 @@ export function stateModelFactory(
         }
       },
       /**
-       * #method
-       * The zoom an adapter with zoom levels reads at, the view's own as the
-       * wiggle display sends it; empty for an adapter whose answer does not
-       * depend on the zoom, so a zoom never refetches those. Sent with the
-       * fetch and stamped on the region it loads. ADR-123.
-       */
-      zoomFetchArgs(): { bpPerPx?: number } {
-        const { type } = self.adapterConfig as { type: string }
-        const zoomed = getEnv(self)
-          .pluginManager.getAdapterType(type)
-          .adapterCapabilities.includes('hasResolution')
-        return zoomed ? { bpPerPx: self.host.bpPerPx } : {}
-      },
-      /**
        * #getter
        * bands a span stacks into: the highest `row` any loaded layer
        * carries, plus one
@@ -1253,12 +1239,12 @@ export function stateModelFactory(
        * #action
        */
       fetchNeeded(needed: IndexedRegion[]) {
-        const zoom = self.zoomFetchArgs()
+        const { bpPerPx } = self.host
         return fetchEachRegion(self, needed, {
           call: (region, ctx) =>
             ctx.callRpc('CoreEncodeFeatures', {
               ...rpcArgs(self),
-              ...zoom,
+              bpPerPx,
               region,
             }),
           onResult: (_idx, result) => storedRegionData(result),

@@ -1,13 +1,16 @@
 ---
-status: Accepted
-summary: "Strict-equality `bpPerPx` cache check for wiggle"
+status: Superseded
+summary: "Strict-equality `bpPerPx` cache check for wiggle — superseded by ADR-125, which adopted the adapter-declared range this ADR's Revisit-if named"
 ---
 
 # ADR-008: Strict-equality `bpPerPx` cache check for wiggle
 
 ## Status
 
-Accepted
+**Superseded by ADR-125** (2026-09-16). `BigWigAdapter` now declares the
+bp/px range its answer serves and the payload carries it, so a zoom inside a
+tier refetches nothing; `WiggleCommonMixin.zoomFetchKey` is gone. The drift
+case below cannot recur because every region is stamped and judged on its own.
 
 ## Context
 

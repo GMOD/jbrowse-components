@@ -12,7 +12,7 @@ import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { Feature } from '../../util/simpleFeature.ts'
 import type { AugmentedRegion as Region } from '../../util/types/index.ts'
 import type { FeatureDensity } from './featureDensity.ts'
-import type { BaseOptions } from './types.ts'
+import type { BaseOptions, ZoomRange } from './types.ts'
 import type { Observable } from 'rxjs'
 
 /**
@@ -185,6 +185,18 @@ export abstract class BaseFeatureDataAdapter<
     _regions: Region[],
     _opts?: BaseOptions,
   ): Promise<number | undefined> {
+    return undefined
+  }
+
+  /**
+   * The bp/px interval over which this adapter answers a fetch from the same
+   * zoom level it answers `opts.bpPerPx` from, so a display holding the answer
+   * refetches only when the view leaves it. The default, `undefined`, is an
+   * answer that does not depend on the zoom, which a display never refetches
+   * for a zoom. An adapter that reads `bpPerPx` declares its range here
+   * (`BigWigAdapter` from its header's zoom levels).
+   */
+  async getZoomRange(_opts?: BaseOptions): Promise<ZoomRange | undefined> {
     return undefined
   }
 

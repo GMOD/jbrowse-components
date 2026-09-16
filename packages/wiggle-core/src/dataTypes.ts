@@ -1,3 +1,5 @@
+import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter'
+
 export interface SourceInfo {
   name: string
   color?: string
@@ -28,4 +30,5 @@ export type WiggleSourceData = SourceInfo & WiggleFeatureArrays
 
 export interface WiggleDataResult {
   sources: WiggleSourceData[]
+  zoomRange?: ZoomRange
 }

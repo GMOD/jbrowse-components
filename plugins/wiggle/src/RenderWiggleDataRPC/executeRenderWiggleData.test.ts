@@ -18,6 +18,7 @@ jest.mock('@jbrowse/core/data_adapters/getFeatureAdapter', () => ({
 // wrong in both directions (see explainTransferError.ts's header).
 function mockAdapter(counts: number[]) {
   return {
+    getZoomRange: async () => ({ minBpPerPx: 1, maxBpPerPx: 4 }),
     getFeatureArrays: (region: Region) => {
       const count = counts[Number(region.refName)] ?? 0
       const starts = new Int32Array(count)
@@ -70,6 +71,14 @@ test('every buffer in the payload is in the transfer list', async () => {
 
 // several regions, and an empty one: an empty side aliases nothing and gets its
 // own zero-length allocation, which is still a buffer the list has to carry
+test('every region carries the range the adapter declared', async () => {
+  const { value } = await run([2, 0])
+  expect(value.map(r => r.zoomRange)).toEqual([
+    { minBpPerPx: 1, maxBpPerPx: 4 },
+    { minBpPerPx: 1, maxBpPerPx: 4 },
+  ])
+})
+
 test('several regions, one of them empty, still agree', async () => {
   const { value, transferables } = await run([3, 0, 7])
   expect(value).toHaveLength(3)
@@ -80,6 +89,7 @@ test('several regions, one of them empty, still agree', async () => {
 // postMessage rejects a transfer list carrying the same buffer twice
 test('a one-sided split lists each aliased buffer once', async () => {
   jest.mocked(getFeatureAdapterOrThrow).mockResolvedValue({
+    getZoomRange: async () => undefined,
     getFeatureArrays: () =>
       Promise.resolve({
         starts: new Int32Array([0, 10]),

@@ -16,6 +16,7 @@ export type {
   BaseTextSearchArgs,
   LodTier,
   SearchType,
+  ZoomRange,
 } from './types.ts'
 export { BaseAdapter } from './BaseAdapter.ts'
 export { cachedSetup } from '../../util/cachedSetup.ts'

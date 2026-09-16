@@ -74,8 +74,9 @@ inheritors in a composer table.
 
 What that inheritance *does* demand is checking what you got: the hooks come with
 it, and what you inherit may not be the mixin's default. GC-content inherits
-wiggle's strict-`bpPerPx` `zoomFetchKey`; whether that is right for a new
-subclass is a question the tag table can't answer for you (see "Per-region
+wiggle's fetch, whose zoom rule is whatever `zoomRange` the adapter puts on the
+payload (none, for its own adapter); whether that is right for a new subclass
+is a question the tag table can't answer for you (see "Per-region
 zoom-staleness").
 
 The arc classes draw **neither** GPU canvas nor Canvas2D: their components emit

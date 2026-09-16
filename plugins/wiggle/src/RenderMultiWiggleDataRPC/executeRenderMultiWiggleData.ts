@@ -136,27 +136,29 @@ export async function executeRenderMultiWiggleData({
   })
 
   const isMulti = isMultiSource(dataAdapter)
-  const perSource = await updateStatus(
+  // summaryScoreMode is passed through, not acted on here: an adapter that
+  // stores min/max separately can skip reading them when the rendering
+  // cannot show them, which is the default (`avg`). Adapters that get their
+  // summary for free, like a BigWig zoom record, ignore it.
+  const opts = {
+    bpPerPx,
+    resolution,
+    sources: sourcesArg,
+    summaryScoreMode,
+    scoreField,
+    signal,
+    statusCallback,
+  }
+  const [perSource, zoomRange] = await updateStatus(
     'Downloading wiggle data',
     statusCallback,
-    () => {
-      // summaryScoreMode is passed through, not acted on here: an adapter that
-      // stores min/max separately can skip reading them when the rendering
-      // cannot show them, which is the default (`avg`). Adapters that get their
-      // summary for free, like a BigWig zoom record, ignore it.
-      const opts = {
-        bpPerPx,
-        resolution,
-        sources: sourcesArg,
-        summaryScoreMode,
-        scoreField,
-        signal,
-        statusCallback,
-      }
-      return isMulti
-        ? dataAdapter.getMultiSourceFeatureArraysMulti(regions, opts)
-        : getFallbackSourceArrays(dataAdapter, regions, opts)
-    },
+    () =>
+      Promise.all([
+        isMulti
+          ? dataAdapter.getMultiSourceFeatureArraysMulti(regions, opts)
+          : getFallbackSourceArrays(dataAdapter, regions, opts),
+        dataAdapter.getZoomRange(opts),
+      ]),
   )
   checkAbortSignal(signal)
 
@@ -187,6 +189,7 @@ export async function executeRenderMultiWiggleData({
         bicolorPivot,
       ),
     })),
+    zoomRange,
   }))
   return rpcResult(results, collectWiggleTransferables(results))
 }

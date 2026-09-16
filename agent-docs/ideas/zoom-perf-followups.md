@@ -164,9 +164,9 @@ Pool where the gesture changes every key.
 ## Wiggle instance packing could move to the worker
 
 `wiggleInstanceBuffer.pack` is **measured ~98ms**, run synchronously inside the
-RPC message handler so it lands mid-frame. Wiggle's `zoomFetchKey` is
-`String(bpPerPx)`, so a zoom already refetches and a worker-side pack rides along
-free; `MafUploadPayload` is the payload shape to copy.
+RPC message handler so it lands mid-frame. A zoom across a BigWig tier
+already refetches (ADR-125), so a worker-side pack rides along free there;
+`MafUploadPayload` is the payload shape to copy.
 
 **"Move `pack`" understates the move, and `bicolorPivot` is how you see it.**
 `pack` takes `SourceRenderData[]`, which is what `buildSourceRenderData` returns
