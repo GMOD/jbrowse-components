@@ -298,7 +298,7 @@ export function getVariantColorScales({
             kind: 'categorical' as const,
             id: 'insertions',
             title: 'Insertions',
-            entries: [entry('Widened cell, number = inserted bp')],
+            entries: [entry('Widened to inserted bp')],
           },
         ]
       : []),

@@ -377,8 +377,8 @@ describe('getVariantColorScales insertion marker', () => {
     expect(sections.map(s => s.id)).toEqual(['genotypes', 'insertions'])
     expect(entriesOf(sections.find(s => s.id === 'insertions'))!).toEqual([
       {
-        value: 'Widened cell, number = inserted bp',
-        label: 'Widened cell, number = inserted bp',
+        value: 'Widened to inserted bp',
+        label: 'Widened to inserted bp',
         color: undefined,
       },
     ])
