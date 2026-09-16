@@ -336,5 +336,5 @@ test('the palette entry reaches no React, MUI or emotion', () => {
 // and brings `createTheme` with them, which is the whole reason worker code is
 // pointed at the other entry.
 test('the walk would catch it (theme.ts, which re-exports these, fails)', () => {
-  expect(toolkitReachedFrom('theme.ts')).toEqual(['@mui/material'])
+  expect(toolkitReachedFrom('theme.ts')).toEqual(['@mui/material/styles'])
 })
