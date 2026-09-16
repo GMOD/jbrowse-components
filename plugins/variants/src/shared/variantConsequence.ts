@@ -33,7 +33,14 @@ const IMPACT_COLOR: Record<string, string> = Object.fromEntries(
 // same one-click choice and detect it identically.
 export const CONSEQUENCE_IMPACT_JEXL = 'jexl:impactColor(feature)'
 
-const NO_IMPACT_COLOR = '#9e9e9e'
+/**
+ * The domain value a record with no SnpEff/VEP annotation takes. Its own member
+ * of the scale, and its own color: folded into MODIFIER, "we looked and it is
+ * harmless" and "nobody looked" painted the same grey.
+ */
+export const UNANNOTATED_IMPACT = 'Unannotated'
+
+const NO_IMPACT_COLOR = '#607d8b'
 
 function annotationStrings(feature: Feature) {
   const info = feature.get('INFO') as Record<string, unknown> | undefined
@@ -135,9 +142,22 @@ export function getVariantConsequences(feature: Feature) {
 }
 
 /**
+ * The impact scale's domain value for a variant: its most severe tier, or
+ * {@link UNANNOTATED_IMPACT}.
+ */
+export function getVariantImpactDomain(feature: Feature) {
+  return getVariantImpact(feature) || UNANNOTATED_IMPACT
+}
+
+/**
  * A CSS color for the variant's most severe impact tier, for use as a
  * per-feature `color` jexl.
  */
 export function getVariantImpactColor(feature: Feature) {
   return IMPACT_COLOR[getVariantImpact(feature)] ?? NO_IMPACT_COLOR
+}
+
+/** The swatch {@link getVariantImpactColor} paints one domain value with. */
+export function getImpactColor(tier: string) {
+  return IMPACT_COLOR[tier] ?? NO_IMPACT_COLOR
 }

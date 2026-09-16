@@ -22,7 +22,17 @@ export interface VariantCellStyle {
   // 0-255 alt dosage; 0 for ref and no-call. Gates the insertion marker and
   // shades it, so a het bar draws paler than a hom one (see `altDosageByte`).
   altDosage: number
+  // Which value of the cell-color scale this cell paints, as a `CELL_*` index.
+  // The cell loops OR `1 << category` into one mask as they emit, so the legend
+  // lists what is on screen rather than what the site could in principle carry.
+  category: number
 }
+
+export const CELL_REF = 0
+export const CELL_ALT = 1
+export const CELL_ALT_SECONDARY = 2
+export const CELL_NO_CALL = 3
+export const CELL_UNPHASED = 4
 
 // One haplotype's cell, classified from the ALLELE rather than from the color
 // that allele produced. Only alt-carrying cells take a per-variant override; ref
@@ -39,6 +49,7 @@ function styleForAllele(
   color: string,
   allele: string | undefined,
   overrideColor: string | undefined,
+  secondary = false,
 ): VariantCellStyle | null {
   if (!color) {
     return null
@@ -55,6 +66,13 @@ function styleForAllele(
     // or does not, and zygosity is already readable as the pattern across a
     // sample's rows. So a drawn marker is always full strength in this mode.
     altDosage: isAlt ? 255 : 0,
+    category: isRef
+      ? CELL_REF
+      : !isAlt
+        ? CELL_NO_CALL
+        : secondary && overrideColor === undefined
+          ? CELL_ALT_SECONDARY
+          : CELL_ALT,
   }
 }
 
@@ -94,39 +112,35 @@ export function cellCarriesAlt(genotype: string, HP: number | undefined) {
  * memo of its own for that job, keyed on a template literal; at this
  * granularity there is nothing left for it to save.
  *
- * `getAlleleColor` has already applied `overrideColor`, including to the
- * secondary-alt case, so nothing re-applies it here.
+ * `getAlleleColor` has already composed the mode's hue with the dosage, so
+ * nothing re-applies either here.
  *
  * `altDosage` (and so `isAlt`) comes from the genotype, not from the color: this
- * mode's dosage shades, its no-call blend and any override are all colord
- * output, so none of them is string-equal to a `NO_CALL_COLOR` /
- * `REFERENCE_COLOR` constant. `isRef` can stay on the color because "was this
- * painted with the reference fill" is exactly what decides the paint-order
- * bucket, and `getAlleleColor` returns that constant by identity for an
- * all-reference call.
+ * mode's dosage shades are colord output, so none of them is string-equal to a
+ * `NO_CALL_COLOR` / `REFERENCE_COLOR` constant. `isRef` can stay on the color
+ * because "was this painted with the reference fill" is exactly what decides
+ * the paint-order bucket, and `getAlleleColor` returns that constant by
+ * identity for an all-reference call.
  */
 export function buildAlleleCountStyle(
   genotype: string,
-  mostFrequentAlt: string,
   drawRef: boolean,
-  overrideColor: string | undefined,
+  altHue: string,
+  shade: boolean,
 ): VariantCellStyle | null {
-  const color = getAlleleColor(
-    genotype,
-    mostFrequentAlt,
-    drawRef,
-    overrideColor,
-  )
+  const color = getAlleleColor(genotype, drawRef, altHue, shade)
   if (!color) {
     return null
   }
   const isRef = color === REFERENCE_COLOR
   const altDosage = isRef ? 0 : altDosageByte(genotype)
+  const isAlt = altDosage > 0
   return {
     abgr: getCachedABGR(color),
     isRef,
-    isAlt: altDosage > 0,
+    isAlt,
     altDosage,
+    category: isRef ? CELL_REF : isAlt ? CELL_ALT : CELL_NO_CALL,
   }
 }
 
@@ -157,10 +171,12 @@ export function buildPhasedStyles(
   if (isPhasedOrHaploid(genotype)) {
     const alleles = splitPhasedAlleles(genotype)
     for (let hp = 0; hp < numHaplotypes; hp++) {
+      const allele = alleles[hp]
       out[hp] = styleForAllele(
         getPhasedColor(alleles, hp, mostFrequentAlt, undefined, drawRef),
-        alleles[hp],
+        allele,
         overrideColor,
+        allele !== mostFrequentAlt,
       )
     }
     return out
@@ -178,12 +194,14 @@ const NO_CALL_STYLE: VariantCellStyle = {
   isRef: false,
   isAlt: false,
   altDosage: 0,
+  category: CELL_NO_CALL,
 }
 const UNPHASED_STYLE: VariantCellStyle = {
   abgr: BLACK_ABGR,
   isRef: false,
   isAlt: false,
   altDosage: 0,
+  category: CELL_UNPHASED,
 }
 
 function uncalledStyle(genotype: string) {
@@ -215,6 +233,7 @@ export function makePhaseSetStyler() {
     isRef: false,
     isAlt: false,
     altDosage: 0,
+    category: CELL_REF,
   }
   return function phaseSetStyle(
     genotype: string,
@@ -252,6 +271,7 @@ export function makePhaseSetStyler() {
     // per haplotype in this mode, so a drawn marker is full strength; the rows
     // carry the zygosity
     scratch.altDosage = isAlt ? 255 : 0
+    scratch.category = isRef ? CELL_REF : isAlt ? CELL_ALT : CELL_NO_CALL
     return scratch
   }
 }

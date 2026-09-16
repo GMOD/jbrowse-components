@@ -3,6 +3,7 @@ import { featureHasPhaseSet } from '../shared/getPhasedColor.ts'
 import { hasProcessGenotypes } from '../shared/hasProcessGenotypes.ts'
 import { featureHasConsequence } from '../shared/variantConsequence.ts'
 import {
+  NON_SV_TYPE,
   assignSvTypeColors,
   getVariantSvType,
 } from '../shared/variantSvType.ts'
@@ -96,16 +97,18 @@ export interface AnalyzedVariants {
   //
   // The one place it is narrower than the per-genotype predicate is an uncalled
   // genotype: `.` and `.|.` carry no `/` but are no data, so they count toward
-  // neither this nor `hasUnphased` (which requires a called allele for the same
-  // reason). A bare `.` is how plenty of files spell a missing diploid call, and
-  // treating that as haploid evidence would offer the mode on any unphased
-  // callset with a hole in it.
+  // neither this nor the legend's "Unphased" entry, which the paint loops raise
+  // only for a cell they actually drew black. A bare `.` is how plenty of files
+  // spell a missing diploid call, and treating that as haploid evidence would
+  // offer the mode on any unphased callset with a hole in it.
   hasPhasedOrHaploid: boolean
-  hasSecondaryAlt: boolean
-  hasUnphased: boolean
-  hasNoCall: boolean
   hasConsequence: boolean
   hasPhaseSet: boolean
+  // Whether any visible record has a structural class, which gates the "Color
+  // by...→SV type" entry. Not `svTypeColors` being non-empty: that map now
+  // carries the scale's NON_SV_TYPE member too, so a callset of plain SNVs
+  // fills it.
+  hasSvType: boolean
   svTypeColors: Record<string, string>
   simplifiedFeatures: SimplifiedVariantFeature[]
   // The interned genotype payload, built here rather than in a later pass: per
@@ -219,11 +222,9 @@ export function computeSampleInfo(
   const sampleInfo: Record<string, SampleInfo> = {}
   let hasPhased = false
   let hasPhasedOrHaploid = false
-  let hasSecondaryAlt = false
-  let hasUnphased = false
-  let hasNoCall = false
   let hasConsequence = false
   let hasPhaseSet = false
+  let hasSvType = false
   const svTypes = new Set<string>()
 
   const genotypeDict: string[] = []
@@ -285,10 +286,6 @@ export function computeSampleInfo(
     report?.(featureIdx)
     const { feature } = filteredVariants[featureIdx]!
     const featureId = feature.id()
-    const alt = feature.get('ALT') as string[] | undefined
-    if (alt && alt.length > 1) {
-      hasSecondaryAlt = true
-    }
     if (!hasConsequence && featureHasConsequence(feature)) {
       hasConsequence = true
     }
@@ -299,9 +296,8 @@ export function computeSampleInfo(
       hasPhaseSet = true
     }
     const svType = getVariantSvType(feature)
-    if (svType) {
-      svTypes.add(svType)
-    }
+    svTypes.add(svType || NON_SV_TYPE)
+    hasSvType ||= !!svType
 
     if (hasProcessGenotypes(feature) && numSamples > 0) {
       const codes = new Uint32Array(numSamples)
@@ -370,7 +366,6 @@ export function computeSampleInfo(
 
         let ploidy = 1
         let called = false
-        let missing = false
         let phased = false
         let unphased = false
         for (let i = start; i < end; i++) {
@@ -381,22 +376,12 @@ export function computeSampleInfo(
           } else if (c === 47 /* / */) {
             ploidy++
             unphased = true
-          } else if (c === 46 /* . */) {
-            missing = true
-          } else {
+          } else if (c !== 46 /* . */) {
             called = true
           }
         }
         hasPhased ||= phased
         hasPhasedOrHaploid ||= called && !unphased
-        // A no-call carries a `/` separator but isn't unphased data, so only a
-        // genotype with an actual called allele counts toward "Unphased".
-        hasUnphased ||= unphased && called
-        // Mirror where the renderer actually draws a no-call cell: a phased
-        // genotype draws one per missing haplotype allele; an unphased genotype
-        // only when it's entirely missing (a partial `0/.` stays
-        // black/unphased).
-        hasNoCall ||= phased ? missing : !called
         if (ploidy > ploidyByColumn[column]!) {
           ploidyByColumn[column] = ploidy
         }
@@ -441,7 +426,6 @@ export function computeSampleInfo(
         const val = samp[key]!
         let ploidy = 1
         let called = false
-        let missing = false
         let phased = false
         let unphased = false
         for (let i = 0, l = val.length; i < l; i++) {
@@ -452,16 +436,12 @@ export function computeSampleInfo(
           } else if (c === 47 /* / */) {
             ploidy++
             unphased = true
-          } else if (c === 46 /* . */) {
-            missing = true
-          } else {
+          } else if (c !== 46 /* . */) {
             called = true
           }
         }
         hasPhased ||= phased
         hasPhasedOrHaploid ||= called && !unphased
-        hasUnphased ||= unphased && called
-        hasNoCall ||= phased ? missing : !called
         accumulateSampleInfo(sampleInfo, key, ploidy, phased)
       }
       // Interned below: an adapter with no header sample list gets its
@@ -525,11 +505,9 @@ export function computeSampleInfo(
     sampleInfo,
     hasPhased,
     hasPhasedOrHaploid,
-    hasSecondaryAlt,
-    hasUnphased,
-    hasNoCall,
     hasConsequence,
     hasPhaseSet,
+    hasSvType,
     svTypeColors: assignSvTypeColors([...svTypes]),
     simplifiedFeatures,
     featureGenotypeCodes,

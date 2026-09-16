@@ -48,6 +48,9 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs, GatedFetchArgs {
   // Optional per-feature cell color (jexl string or plain CSS color), evaluated
   // once per variant in the worker. Empty/undefined = default genotype coloring.
   featureColor?: string
+  // Compose the mode's hue with each genotype's alt dosage rather than painting
+  // it flat (`shared/cellFill.ts`). Defaults to true.
+  shadeByDosage?: boolean
   mode: 'regular' | 'matrix'
   displayedRegionIndices?: number[]
 }

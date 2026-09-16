@@ -271,6 +271,16 @@ export function variantTrackMenuItems(
           : []),
       ],
     },
+    {
+      label: 'Shade by dosage',
+      helpText:
+        "Compose the cell color with the genotype's alt dosage — the fraction of its called alleles that are non-reference — so a homozygote paints the hue itself and a heterozygote a lighter version of it. Off paints every alt-carrying cell the flat hue its color mode chose",
+      type: 'checkbox',
+      checked: self.shadeByDosage,
+      onClick: () => {
+        self.setShadeByDosage(!self.shadeByDosage)
+      },
+    },
     // The ordering half of the same metadata, beside the coloring half: both
     // are config slots a session can set, and only the coloring one had a way
     // in from the menu.

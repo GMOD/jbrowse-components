@@ -1,8 +1,9 @@
-import { featureDefaultColor } from '@jbrowse/core/ui/palette'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { buildSourceSampleIndices } from '../../VariantRPC/computeSampleInfo.ts'
 import { getInsertedBp } from '../../shared/alleleLength.ts'
+import { ALT_HUE } from '../../shared/cellFill.ts'
+import { PRIMARY_ALT_COLOR } from '../../shared/constants.ts'
 import { featureHasPhaseSet } from '../../shared/getPhasedColor.ts'
 import { makePhaseSetReader } from '../../shared/phaseSetReader.ts'
 import {
@@ -70,6 +71,12 @@ export interface VariantCellData {
   // fill is one array write per variant inside a loop that already resolved the
   // color.
   featureColors: Uint32Array
+  // `1 << CELL_*` for every cell-color category this pass actually painted, and
+  // the cell scale's domain values it painted an alt cell for. The legend is
+  // built from these, so an entry means "on screen" rather than "the site could
+  // carry one".
+  paintedCategories: number
+  paintedDomain: string[]
 }
 
 function getShapeType(featureType: string) {
@@ -92,6 +99,8 @@ export function computeVariantCells({
   renderingMode,
   referenceDrawingMode,
   featureColor,
+  featureDomain,
+  shadeDosage = true,
   colorByPhaseSet,
   featureGenotypeCodes,
   genotypeDict,
@@ -106,6 +115,12 @@ export function computeVariantCells({
   // per feature; alt-carrying cells take it, ref/no-call cells keep their normal
   // coloring. Undefined = default genotype coloring.
   featureColor?: (feature: Feature) => string | undefined
+  // The cell scale's domain value for a variant (an impact tier, an SV class),
+  // recorded for the features that painted an alt cell. Undefined for the modes
+  // whose scale has a single alt member.
+  featureDomain?: (feature: Feature) => string
+  // Compose the hue with the genotype's alt dosage (`shared/cellFill.ts`).
+  shadeDosage?: boolean
   // Color phased alt cells by their FORMAT PS (phase set) instead of by allele.
   // Explicit rather than inferred from the presence of PS: the implicit trigger
   // silently swapped the alt-allele colors the legend was describing, with no
@@ -151,11 +166,17 @@ export function computeVariantCells({
   const insertedBp = new Int32Array(filteredVariants.length)
   const featurePositions = new Uint32Array(filteredVariants.length * 2)
   const featureColors = new Uint32Array(filteredVariants.length)
-  // Packed once — a callset with no `featureColor` override reuses it for every
-  // record instead of re-packing the same string per variant.
-  const defaultFeatureAbgr = getCachedABGR(featureDefaultColor)
+  // The lane's hue where no override resolves: the same constant the alt cells
+  // under the mark take, so a record and its column stay one color. Packed once
+  // rather than per variant.
+  const defaultFeatureAbgr = getCachedABGR(
+    renderingMode === 'phased' ? PRIMARY_ALT_COLOR : ALT_HUE,
+  )
 
   const featureGenotypeMap: Record<string, VariantFeatureInfo> = {}
+  const paintedDomain = new Set<string>()
+  let paintedCategories = 0
+  let altPainted = false
   // Write cursors for the two buckets. `refEnd` grows up from 0, `nonRefStart`
   // shrinks down from maxCells, so they can never collide before the buffer is
   // full: every genotype contributes at most one cell.
@@ -262,6 +283,7 @@ export function computeVariantCells({
     // Per-variant override color, resolved once per feature (not per cell);
     // undefined when no override is set, so normal genotype coloring runs.
     const overrideColor = featureColor?.(feature)
+    altPainted = false
     for (let t = 0; t < touchedCodes.length; t++) {
       const c = touchedCodes[t]!
       alleleCountStyles[c] = undefined
@@ -299,6 +321,8 @@ export function computeVariantCells({
             overrideColor,
           )
           if (style) {
+            paintedCategories |= 1 << style.category
+            altPainted ||= style.isAlt
             addCell(
               start,
               end,
@@ -333,6 +357,8 @@ export function computeVariantCells({
           }
           const style = byHp[HP!]
           if (style) {
+            paintedCategories |= 1 << style.category
+            altPainted ||= style.isAlt
             addCell(
               start,
               end,
@@ -355,14 +381,16 @@ export function computeVariantCells({
           if (style === undefined) {
             style = buildAlleleCountStyle(
               genotypeDict[code - 1]!,
-              mostFrequentAlt,
               drawRef,
-              overrideColor,
+              overrideColor ?? ALT_HUE,
+              shadeDosage,
             )
             alleleCountStyles[code] = style
             touchedCodes.push(code)
           }
           if (style) {
+            paintedCategories |= 1 << style.category
+            altPainted ||= style.isAlt
             addCell(
               start,
               end,
@@ -376,6 +404,10 @@ export function computeVariantCells({
           }
         }
       }
+    }
+
+    if (altPainted && featureDomain) {
+      paintedDomain.add(featureDomain(feature))
     }
 
     const inserted = getInsertedBp(feature)
@@ -392,11 +424,10 @@ export function computeVariantCells({
     insertedBp[featureIdx] = inserted
     featurePositions[featureIdx * 2] = start
     featurePositions[featureIdx * 2 + 1] = end
-    // The lane's color for this record. `overrideColor` is the same value the
-    // alt cells of this variant took above, so the mark and its column agree;
-    // with no override set there is no per-genotype color that means anything
-    // for a whole record, so it falls to the default the single-variant display
-    // paints an uncolored feature with.
+    // The lane's color for this record: the same hue the alt cells of this
+    // variant took above, so the mark and its column agree in every mode. A
+    // constant of its own here made the lane goldenrod while the cells under it
+    // were blue, i.e. a hue that stood for nothing.
     featureColors[featureIdx] =
       overrideColor === undefined
         ? defaultFeatureAbgr
@@ -485,5 +516,7 @@ export function computeVariantCells({
     featureIndexData: featureIndex.data,
     featureInsertedBp: insertedBp,
     featureColors,
+    paintedCategories,
+    paintedDomain: [...paintedDomain],
   }
 }

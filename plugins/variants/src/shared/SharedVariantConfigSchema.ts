@@ -78,6 +78,21 @@ export default function sharedVariantConfigFactory() {
       },
       /**
        * #slot
+       * Compose the cell hue with the genotype's alt dosage — the fraction of
+       * its called alleles that are non-reference — so a homozygote paints the
+       * hue itself and a heterozygote a lighter version of it. On by default,
+       * and on in every color mode: turn it off to paint each alt-carrying cell
+       * its flat hue, which reads the class or impact tier at full strength at
+       * the cost of the zygosity.
+       */
+      shadeByDosage: {
+        type: 'boolean',
+        defaultValue: true,
+        description:
+          "shade each alt cell by the fraction of its called alleles that are non-reference, so a homozygote is darker than a heterozygote; off paints every alt cell the mode's flat hue",
+      },
+      /**
+       * #slot
        */
       minorAlleleFrequencyFilter: {
         type: 'number',

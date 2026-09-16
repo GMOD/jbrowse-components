@@ -1,4 +1,3 @@
-import { set1 } from '@jbrowse/core/ui/colors'
 import { clampBandHeight } from '@jbrowse/core/util/bandHeight'
 
 export const GENOTYPE_SPLITTER = /[/|]/
@@ -43,27 +42,14 @@ export const NO_CALL_COLOR = 'hsl(50,50%,50%)'
 export const UNPHASED_COLOR = 'black'
 
 // Phased-mode alt fills: the primary (most frequent) alt and everything else.
-// The legend swatches read these same two constants (see
-// variantLegend.getGenotypeEntries) so cell and key can't drift.
-export const PRIMARY_ALT_COLOR = set1[0]!
-export const SECONDARY_ALT_COLOR = set1[1]!
+// Drawn from a palette the SV-type scale does not touch, so red means
+// "deletion" in one mode and nothing at all in another.
+export const PRIMARY_ALT_COLOR = '#1b9e77'
+export const SECONDARY_ALT_COLOR = '#e7298a'
 
 // Pre-packed ABGR for the unphased "black" fill — lets the hot per-cell loop
 // skip the colord cache lookup.
 export const BLACK_ABGR = 0xff000000
-
-// Allele count mode colors (HSL values)
-const ALT_COLOR_HUE = 200
-const ALT_COLOR_SATURATION = 50
-export const OTHER_ALT_COLOR = 'hsl(0,100%,20%)'
-
-// Helper to get alt color based on dosage (0-1). Single source of truth for the
-// alt-dosage shade: the cell renderer (getColorAlleleCount) and the legend both
-// call this so their blues can't drift.
-export function getAltColorForDosage(dosage: number) {
-  const lightness = 80 - dosage * 50
-  return `hsl(${ALT_COLOR_HUE},${ALT_COLOR_SATURATION}%,${lightness}%)`
-}
 
 // Sample-metadata keys that are internal row plumbing (identity, haplotype
 // index, rendering color/label) rather than user-facing grouping attributes.

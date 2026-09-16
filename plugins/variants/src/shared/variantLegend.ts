@@ -1,15 +1,19 @@
+import { ALT_HUE, shadeByDosage } from './cellFill.ts'
 import {
   NO_CALL_COLOR,
-  OTHER_ALT_COLOR,
   PRIMARY_ALT_COLOR,
   REFERENCE_COLOR,
   SECONDARY_ALT_COLOR,
   UNPHASED_COLOR,
   capitalizeFirst,
-  getAltColorForDosage,
 } from './constants.ts'
 import { PHASE_SET_COLOR } from './getPhasedColor.ts'
-import { CONSEQUENCE_IMPACT_JEXL, IMPACT_TIERS } from './variantConsequence.ts'
+import {
+  CONSEQUENCE_IMPACT_JEXL,
+  IMPACT_TIERS,
+  UNANNOTATED_IMPACT,
+  getImpactColor,
+} from './variantConsequence.ts'
 import { SV_TYPE_COLOR, svTypeDisplayLabel } from './variantSvType.ts'
 
 import type { Source } from './types.ts'
@@ -22,61 +26,85 @@ import type {
 // Pure scale builders, split out of MultiSampleVariantBaseModel so they can be
 // unit-tested without instantiating the display model. The model's
 // `colorScales` feeds these its scalar getters.
+//
+// Every swatch comes from the same functions the cells do — `shadeByDosage` for
+// the ramp, the scale's own color table for the hue — and every gated entry
+// comes from what the worker painted, so the key cannot describe a scheme that
+// is not on the screen.
 
 // A fixed-vocabulary row: the value is its label.
 function entry(label: string, color?: string): CategoricalEntry {
   return { value: label, label, color }
 }
 
-// Genotype-color scale (the cell coloring): allele-dosage shades in
-// alleleCount mode, alt-allele colors in phased mode.
-export function getGenotypeEntries({
-  renderingMode,
-  hasSecondaryAlt,
-  hasUnphased,
-  hasNoCall,
-  altColorOverride,
-}: {
+export interface VariantLegendInputs {
   renderingMode: string
+  // Painted, not possible: each is true only where the cell loops emitted a
+  // cell of that category (see `paintedLegendFlags`).
   hasSecondaryAlt: boolean
   hasUnphased: boolean
   hasNoCall: boolean
-  // A plain CSS color from `featureColor`: every alt-carrying cell is painted
-  // with it, so the alt swatches collapse to one entry in that color. Dosage
-  // shading and the secondary-alt color are gone in that case, and saying
-  // otherwise would describe a scheme that isn't on screen. Ref, unphased and
-  // no-call keep their own colors (see computeVariantMatrixCells).
-  altColorOverride?: string
-}): CategoricalEntry[] {
-  if (altColorOverride) {
-    return [
-      entry(
-        renderingMode === 'phased' ? 'Reference' : 'Homozygous reference',
-        REFERENCE_COLOR,
-      ),
-      entry('Alt allele', altColorOverride),
-      ...(hasUnphased ? [entry('Unphased', UNPHASED_COLOR)] : []),
-      ...(hasNoCall ? [entry('No call', NO_CALL_COLOR)] : []),
-    ]
+  // The cell scale's domain values an alt cell was painted for — impact tiers
+  // or SV classes.
+  paintedDomain: readonly string[]
+  shadeByDosage: boolean
+}
+
+// The absent-data categories, which every cell scale paints and none of them
+// names: an alt hue applies only to alt-carrying cells, so a reference call
+// keeps the grey fill and a no-call keeps the no-call yellow. Ref is
+// unconditional because grey is the row background even under
+// `referenceDrawingMode: 'skip'`; the other two are gated on having been
+// painted.
+function absentDataEntries({
+  renderingMode,
+  hasUnphased,
+  hasNoCall,
+}: VariantLegendInputs): CategoricalEntry[] {
+  return [
+    entry(
+      renderingMode === 'phased' ? 'Reference' : 'Homozygous reference',
+      REFERENCE_COLOR,
+    ),
+    ...(hasUnphased ? [entry('Unphased', UNPHASED_COLOR)] : []),
+    ...(hasNoCall ? [entry('No call', NO_CALL_COLOR)] : []),
+  ]
+}
+
+// What a one-member alt domain spends its entries on. In allele-count mode
+// lightness carries the dosage, so the key shows the ramp's two readable stops
+// rather than one swatch a reader would have to infer them from; in phased mode
+// a row is a haplotype and there is no dosage to show.
+function altEntries(hue: string, inputs: VariantLegendInputs) {
+  if (inputs.renderingMode === 'phased' || !inputs.shadeByDosage) {
+    return [entry('Alt allele', hue)]
   }
-  if (renderingMode === 'phased') {
+  return [
+    entry('Heterozygous alt', shadeByDosage(hue, 0.5)),
+    entry('Homozygous alt', shadeByDosage(hue, 1)),
+  ]
+}
+
+// The genotype scale: the constant alt hue, a plain CSS color from
+// `featureColor`, or — in phased mode — the two allele identities.
+export function getGenotypeEntries(
+  inputs: VariantLegendInputs,
+  altColorOverride?: string,
+): CategoricalEntry[] {
+  const hue = altColorOverride || ALT_HUE
+  if (inputs.renderingMode === 'phased' && !altColorOverride) {
     return [
       entry('Reference', REFERENCE_COLOR),
       entry('Alt allele', PRIMARY_ALT_COLOR),
-      ...(hasSecondaryAlt
+      ...(inputs.hasSecondaryAlt
         ? [entry('Other alt allele', SECONDARY_ALT_COLOR)]
         : []),
-      ...(hasUnphased ? [entry('Unphased', UNPHASED_COLOR)] : []),
-      ...(hasNoCall ? [entry('No call', NO_CALL_COLOR)] : []),
+      ...(inputs.hasUnphased ? [entry('Unphased', UNPHASED_COLOR)] : []),
+      ...(inputs.hasNoCall ? [entry('No call', NO_CALL_COLOR)] : []),
     ]
   }
-  return [
-    entry('Homozygous reference', REFERENCE_COLOR),
-    entry('Heterozygous alt', getAltColorForDosage(0.5)),
-    entry('Homozygous alt', getAltColorForDosage(1)),
-    ...(hasSecondaryAlt ? [entry('Other alt allele', OTHER_ALT_COLOR)] : []),
-    entry('No call', NO_CALL_COLOR),
-  ]
+  const [reference, ...rest] = absentDataEntries(inputs)
+  return [reference!, ...altEntries(hue, inputs), ...rest]
 }
 
 // How the legend names the rows whose `colorBy` attribute is blank. The entry
@@ -120,74 +148,66 @@ export function getSampleGroupEntries(
     }))
 }
 
-// The two swatches every override-color mode still paints and none of them can
-// name: an override applies only to alt-carrying cells, so a reference call
-// keeps the grey fill and a no-call keeps the no-call yellow (see
-// `getColorAlleleCount`). Without these, an SV-type or consequence key describes
-// five colors while most of the picture is the two it left out — which is
-// exactly how a reviewer read the yellow no-call column in the RHD figure as
-// unexplained. Ref is unconditional because grey is the row background even
-// under `referenceDrawingMode: 'skip'`; no-call is gated on there being one.
-function getNonAltEntries({
-  renderingMode,
-  hasNoCall,
-}: {
-  renderingMode: string
-  hasNoCall: boolean
-}): CategoricalEntry[] {
-  return [
-    entry(
-      renderingMode === 'phased' ? 'Reference' : 'Homozygous reference',
-      REFERENCE_COLOR,
-    ),
-    ...(hasNoCall ? [entry('No call', NO_CALL_COLOR)] : []),
-  ]
+// One swatch per painted domain value, ordered by the scale's own vocabulary
+// and shaded at full dosage — which is the hue itself, so a class swatch and
+// the hom cells of that class are the same color.
+function domainEntries(
+  order: readonly string[],
+  painted: readonly string[],
+  color: (value: string) => string,
+  label: (value: string) => string,
+) {
+  const seen = new Set(painted)
+  const ranked = order.filter(value => seen.has(value))
+  const rest = painted.filter(value => !order.includes(value)).sort()
+  return [...ranked, ...rest].map(value => ({
+    value,
+    label: label(value),
+    color: color(value),
+  }))
 }
 
-// The cell-coloring scale for a resolved `featureColor` key: the impact-tier
-// key for the consequence preset, the present SV types for the SV-type preset,
-// the phasing rule for the phase-set preset, or the genotype key — which is also
-// where a plain CSS color lands, since "every alt cell is that color" is a
-// genotype key with one alt swatch. Undefined only for a real jexl expression,
-// whose output can't be enumerated into swatches.
-function getCellColorScale({
-  cellColorKey,
-  renderingMode,
-  hasSecondaryAlt,
-  hasUnphased,
-  hasNoCall,
-  svTypeColors,
-}: {
-  cellColorKey: string
-  renderingMode: string
-  hasSecondaryAlt: boolean
-  hasUnphased: boolean
-  hasNoCall: boolean
-  svTypeColors?: Record<string, string>
-}): CategoricalScale | undefined {
+// The cell-coloring scale for a resolved `featureColor` key: the impact tiers
+// painted for the consequence preset, the SV classes painted for the SV-type
+// preset, the phasing rule for the phase-set preset, or the genotype key —
+// which is also where a plain CSS color lands, since "every alt cell is that
+// color" is a genotype key with one alt hue. Undefined only for a real jexl
+// expression, whose output can't be enumerated into swatches.
+function getCellColorScale(
+  cellColorKey: string,
+  inputs: VariantLegendInputs,
+  svTypeColors?: Record<string, string>,
+): CategoricalScale | undefined {
   if (cellColorKey === CONSEQUENCE_IMPACT_JEXL) {
     return {
       kind: 'categorical',
       id: 'consequenceImpact',
       title: 'Consequence impact',
       entries: [
-        ...IMPACT_TIERS.map(t => entry(t.tier, t.color)),
-        ...getNonAltEntries({ renderingMode, hasNoCall }),
+        ...domainEntries(
+          [...IMPACT_TIERS.map(t => t.tier), UNANNOTATED_IMPACT],
+          inputs.paintedDomain,
+          getImpactColor,
+          tier => tier,
+        ),
+        ...absentDataEntries(inputs),
       ],
     }
   }
   if (cellColorKey === SV_TYPE_COLOR) {
+    const colors = svTypeColors ?? {}
     return {
       kind: 'categorical',
       id: 'svType',
       title: 'SV type',
       entries: [
-        ...Object.entries(svTypeColors ?? {}).map(([type, color]) => ({
-          value: type,
-          label: svTypeDisplayLabel(type),
-          color,
-        })),
-        ...getNonAltEntries({ renderingMode, hasNoCall }),
+        ...domainEntries(
+          Object.keys(colors),
+          inputs.paintedDomain,
+          type => colors[type]!,
+          svTypeDisplayLabel,
+        ),
+        ...absentDataEntries(inputs),
       ],
     }
   }
@@ -200,13 +220,12 @@ function getCellColorScale({
       // per-sample integer with unbounded cardinality in a viewport, so
       // enumerating them is noise that would also have to be truncated
       // arbitrarily. The rule is what a reader needs — equal hue down a row means
-      // one phasing block. Ref/no-call/unphased keep their own colors, so those
-      // swatches stay literal.
+      // one phasing block.
       entries: [
         entry('Reference', REFERENCE_COLOR),
         entry('Alt allele (hue identifies the phase set)'),
-        ...(hasUnphased ? [entry('Unphased', UNPHASED_COLOR)] : []),
-        ...(hasNoCall ? [entry('No call', NO_CALL_COLOR)] : []),
+        ...(inputs.hasUnphased ? [entry('Unphased', UNPHASED_COLOR)] : []),
+        ...(inputs.hasNoCall ? [entry('No call', NO_CALL_COLOR)] : []),
       ],
     }
   }
@@ -217,47 +236,31 @@ function getCellColorScale({
     kind: 'categorical',
     id: 'genotypes',
     title: 'Genotypes',
-    entries: getGenotypeEntries({
-      renderingMode,
-      hasSecondaryAlt,
-      hasUnphased,
-      hasNoCall,
-      // '' (the default genotype coloring) is falsy, so it reads as "no
-      // override" — the same meaning it has in the `featureColor` slot.
-      altColorOverride: cellColorKey,
-    }),
+    // '' (the default genotype coloring) is falsy, so it reads as "no
+    // override" — the same meaning it has in the `featureColor` slot.
+    entries: getGenotypeEntries(inputs, cellColorKey),
   }
 }
 
-// The display's color scales, each a section of the key the reader can close
-// on its own: the genotype/cell coloring, the insertion marker where one is
-// drawn, and (when colorBy is set) the sample-grouping coloring used for the
-// sidebar row labels — distinct color meanings that share one legend box. The
-// group scale is omitted when colorBy is unset or carries a single value.
+/**
+ * The display's color scales, each a section of the key the reader can close on
+ * its own: the genotype/cell coloring, the insertion marker where one is drawn,
+ * and (when colorBy is set) the sample-grouping coloring used for the sidebar
+ * row labels. The group scale is omitted when colorBy is unset or carries a
+ * single value.
+ */
 export function getVariantColorScales({
-  renderingMode,
-  hasSecondaryAlt,
-  hasUnphased,
-  hasNoCall,
   featureColor,
   svTypeColors,
   colorBy,
   sources,
   insertionMarkers = false,
-}: {
-  renderingMode: string
-  hasSecondaryAlt: boolean
-  hasUnphased: boolean
-  hasNoCall: boolean
-  // Per-variant cell color override; '' = default genotype coloring. When set,
-  // cells aren't genotype-colored, so the genotype legend is replaced — by the
-  // impact-tier key for the consequence preset, the present SV types for the SV-
-  // type preset, or dropped for an arbitrary custom expression we can't build a
-  // key for.
+  ...inputs
+}: VariantLegendInputs & {
+  // Per-variant cell hue; '' = the default genotype coloring.
   featureColor: string
-  // The worker-assigned color per present SV type; drives the SV-type legend so
-  // its swatches match the painted cells. Only read when the SV-type preset is
-  // selected.
+  // The worker-assigned color per present SV type, so the swatches match the
+  // painted cells. Only read when the SV-type preset is selected.
   svTypeColors?: Record<string, string>
   colorBy: string
   sources: Source[] | undefined
@@ -273,17 +276,10 @@ export function getVariantColorScales({
   // screen. Resolved here rather than by forbidding the combination, since
   // renderingMode can change after the color is chosen.
   const cellColorKey =
-    featureColor === PHASE_SET_COLOR && renderingMode !== 'phased'
+    featureColor === PHASE_SET_COLOR && inputs.renderingMode !== 'phased'
       ? ''
       : featureColor
-  const cellScale = getCellColorScale({
-    cellColorKey,
-    renderingMode,
-    hasSecondaryAlt,
-    hasUnphased,
-    hasNoCall,
-    svTypeColors,
-  })
+  const cellScale = getCellColorScale(cellColorKey, inputs, svTypeColors)
   return [
     ...(cellScale ? [cellScale] : []),
     // A section of its own rather than one more entry on the genotype scale:

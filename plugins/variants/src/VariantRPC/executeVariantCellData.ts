@@ -10,10 +10,20 @@ import { PHASE_SET_COLOR } from '../shared/getPhasedColor.ts'
 import { buildCanonicalRows } from '../shared/getSources.ts'
 import { getFilteredVariants } from '../shared/minorAlleleFrequencyUtils.ts'
 import {
+  CELL_ALT_SECONDARY,
+  CELL_NO_CALL,
+  CELL_UNPHASED,
+} from '../shared/variantCellStyles.ts'
+import {
   CONSEQUENCE_IMPACT_JEXL,
   getVariantImpactColor,
+  getVariantImpactDomain,
 } from '../shared/variantConsequence.ts'
-import { SV_TYPE_COLOR, getVariantSvType } from '../shared/variantSvType.ts'
+import {
+  NON_SV_TYPE,
+  SV_TYPE_COLOR,
+  getVariantSvType,
+} from '../shared/variantSvType.ts'
 import { computeSampleInfo } from './computeSampleInfo.ts'
 import { groupFeaturesByRegion } from './groupFeaturesByRegion.ts'
 import { orderByScreenPosition } from './orderByScreenPosition.ts'
@@ -46,7 +56,7 @@ function makeFeatureColor(
     return getVariantImpactColor
   }
   if (featureColor === SV_TYPE_COLOR) {
-    return feature => svTypeColors[getVariantSvType(feature)]
+    return feature => svTypeColors[svTypeDomain(feature)]
   }
   if (featureColor === PHASE_SET_COLOR) {
     // Per-(feature, sample), not per-feature — the cell loops read PS out of
@@ -61,6 +71,44 @@ function makeFeatureColor(
     } catch {
       return undefined
     }
+  }
+}
+
+// The SV-type scale's domain value: the record's class, or the scale's explicit
+// "no structural class" member.
+function svTypeDomain(feature: Feature) {
+  return getVariantSvType(feature) || NON_SV_TYPE
+}
+
+// The cell scale's domain value per variant, for the modes whose scale has more
+// than one alt member. The cell loops record it for the features that painted an
+// alt cell, and the legend lists exactly those.
+function makeFeatureDomain(featureColor: string | undefined) {
+  if (featureColor === CONSEQUENCE_IMPACT_JEXL) {
+    return getVariantImpactDomain
+  }
+  return featureColor === SV_TYPE_COLOR ? svTypeDomain : undefined
+}
+
+// What the paint loops reported, as the three legend booleans and the domain
+// list. One place for both modes, so the regular display's per-region merge and
+// the matrix's single pass cannot answer differently.
+function paintedLegendFlags(
+  passes: { paintedCategories: number; paintedDomain: string[] }[],
+) {
+  let mask = 0
+  const domain = new Set<string>()
+  for (const pass of passes) {
+    mask |= pass.paintedCategories
+    for (const value of pass.paintedDomain) {
+      domain.add(value)
+    }
+  }
+  return {
+    hasSecondaryAlt: (mask & (1 << CELL_ALT_SECONDARY)) !== 0,
+    hasUnphased: (mask & (1 << CELL_UNPHASED)) !== 0,
+    hasNoCall: (mask & (1 << CELL_NO_CALL)) !== 0,
+    paintedDomain: [...domain],
   }
 }
 
@@ -137,6 +185,7 @@ export async function executeVariantCellData({
     renderingMode,
     referenceDrawingMode,
     featureColor,
+    shadeByDosage,
     minorAlleleFrequencyFilter,
     maxMissingnessFilter,
     filters,
@@ -268,11 +317,9 @@ export async function executeVariantCellData({
     sampleInfo,
     hasPhased,
     hasPhasedOrHaploid,
-    hasSecondaryAlt,
-    hasUnphased,
-    hasNoCall,
     hasConsequence,
     hasPhaseSet,
+    hasSvType,
     svTypeColors,
     simplifiedFeatures,
     featureGenotypeCodes,
@@ -286,8 +333,6 @@ export async function executeVariantCellData({
     },
     report => computeSampleInfo(filteredVariants, genotypesCache, report),
   )
-  const hasSvType = Object.keys(svTypeColors).length > 0
-
   // Resolved after computeSampleInfo because the SV-type preset's color map is
   // built from the types actually present (see makeFeatureColor / svTypeColors).
   const featureColorFn = makeFeatureColor(
@@ -295,6 +340,7 @@ export async function executeVariantCellData({
     pluginManager.jexl,
     svTypeColors,
   )
+  const featureDomainFn = makeFeatureDomain(featureColor)
   // Explicit, not inferred from the data: PS coloring used to switch itself on
   // whenever a FORMAT carried PS, which silently replaced the alt-allele colors
   // the legend was still describing and gave no way back.
@@ -342,6 +388,8 @@ export async function executeVariantCellData({
               renderingMode,
               referenceDrawingMode: referenceDrawingMode ?? 'skip',
               featureColor: featureColorFn,
+              featureDomain: featureDomainFn,
+              shadeDosage: shadeByDosage ?? true,
               colorByPhaseSet,
               featureGenotypeCodes,
               genotypeDict,
@@ -358,6 +406,8 @@ export async function executeVariantCellData({
             renderingMode,
             referenceDrawingMode: referenceDrawingMode ?? 'skip',
             featureColor: featureColorFn,
+            featureDomain: featureDomainFn,
+            shadeDosage: shadeByDosage ?? true,
             colorByPhaseSet,
             featureGenotypeCodes,
             genotypeDict,
@@ -373,6 +423,7 @@ export async function executeVariantCellData({
     // `getFeaturesInMultipleRegions` merges its per-region queries without
     // deduping, so a variant spanning two of them arrives twice. Handing the
     // same buffer to postMessage twice is a structured-clone error.
+    const painted = paintedLegendFlags(Object.values(perRegionCellData))
     const transferables = new Set<ArrayBufferLike>()
     const shippedPerRegion: Record<number, ShippedRegionData> = {}
     for (const [k, data] of Object.entries(perRegionCellData)) {
@@ -399,9 +450,7 @@ export async function executeVariantCellData({
         rowNames,
         hasPhased,
         hasPhasedOrHaploid,
-        hasSecondaryAlt,
-        hasUnphased,
-        hasNoCall,
+        ...painted,
         hasConsequence,
         hasSvType,
         hasPhaseSet,
@@ -427,6 +476,8 @@ export async function executeVariantCellData({
           sources: effectiveSources,
           renderingMode,
           featureColor: featureColorFn,
+          featureDomain: featureDomainFn,
+          shadeDosage: shadeByDosage ?? true,
           colorByPhaseSet,
           featureGenotypeCodes,
           genotypeDict,
@@ -454,9 +505,7 @@ export async function executeVariantCellData({
         rowNames,
         hasPhased,
         hasPhasedOrHaploid,
-        hasSecondaryAlt,
-        hasUnphased,
-        hasNoCall,
+        ...paintedLegendFlags([cellData]),
         hasConsequence,
         hasSvType,
         hasPhaseSet,

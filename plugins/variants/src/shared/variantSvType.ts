@@ -22,6 +22,14 @@ export const SV_TYPE_COLOR_JEXL = 'jexl:svTypeColor(feature)'
 // an unrecognized token) when painting by SV type on the single-variant display.
 const OTHER_SV_COLOR = '#808080'
 
+/**
+ * The domain value a record with no structural class takes when the multi-sample
+ * displays paint by SV type. An explicit member of the scale, not a gap in it:
+ * without one, half a mixed callset painted the default alt blue beside the
+ * class colors and the mode read as two scales at once.
+ */
+export const NON_SV_TYPE = 'SNV/indel'
+
 // Bucket for a record whose ALT alleles span more than one SV class (e.g.
 // ALT=<DEL>,<DUP>): a distinct flag color rather than silently picking one.
 const MIXED_SV_TYPE = 'MIXED'
@@ -35,7 +43,9 @@ const MIXED_SV_TYPE = 'MIXED'
 export const PREDEFINED_SV_TYPES = [
   { type: 'DEL', label: 'Deletion', color: '#e41a1c' },
   { type: 'DUP', label: 'Duplication', color: '#377eb8' },
-  { type: 'INS', label: 'Insertion', color: '#4daf4a' },
+  // palette.insertion, so an insertion is one color across the pileup, the MAF
+  // display and this one
+  { type: 'INS', label: 'Insertion', color: '#800080' },
   { type: 'INV', label: 'Inversion', color: '#ff7f00' },
   { type: 'CNV', label: 'Copy number', color: '#984ea3' },
   { type: 'BND', label: 'Breakend', color: '#a65628' },
@@ -216,7 +226,9 @@ export function assignSvTypeColors(types: string[]): Record<string, string> {
     .filter(isCopyNumberType)
     .sort((a, b) => copyNumberValue(a) - copyNumberValue(b))
   const other = types
-    .filter(t => !(t in CANONICAL_ORDER) && !isCopyNumberType(t))
+    .filter(
+      t => !(t in CANONICAL_ORDER) && !isCopyNumberType(t) && t !== NON_SV_TYPE,
+    )
     .sort()
 
   const result: Record<string, string> = {}
@@ -237,5 +249,10 @@ export function assignSvTypeColors(types: string[]): Record<string, string> {
   other.forEach((type, i) => {
     result[type] = free.length ? free[i % free.length]! : set1[i % set1.length]!
   })
+  // Last, and neutral: it is the scale's "no structural class" member, so it
+  // reads as the absence of one rather than as another class.
+  if (types.includes(NON_SV_TYPE)) {
+    result[NON_SV_TYPE] = OTHER_SV_COLOR
+  }
   return result
 }

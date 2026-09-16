@@ -1,5 +1,6 @@
 import { buildSourceSampleIndices } from '../../VariantRPC/computeSampleInfo.ts'
 import { getInsertedBp } from '../../shared/alleleLength.ts'
+import { ALT_HUE } from '../../shared/cellFill.ts'
 import { featureHasPhaseSet } from '../../shared/getPhasedColor.ts'
 import { makePhaseSetReader } from '../../shared/phaseSetReader.ts'
 import {
@@ -48,6 +49,10 @@ export interface MatrixCellData {
   refCellCount: number
   numFeatures: number
   featureData: FeatureData[]
+  // `1 << CELL_*` for every cell-color category this pass painted, and the cell
+  // scale's domain values it painted an alt cell for. See computeVariantCells.
+  paintedCategories: number
+  paintedDomain: string[]
 }
 
 export function computeVariantMatrixCells({
@@ -55,6 +60,8 @@ export function computeVariantMatrixCells({
   sources,
   renderingMode,
   featureColor,
+  featureDomain,
+  shadeDosage = true,
   colorByPhaseSet,
   featureGenotypeCodes,
   genotypeDict,
@@ -66,6 +73,10 @@ export function computeVariantMatrixCells({
   renderingMode: string
   // Optional per-variant color override (see computeVariantCells).
   featureColor?: (feature: Feature) => string | undefined
+  // The cell scale's domain value per variant (see computeVariantCells).
+  featureDomain?: (feature: Feature) => string
+  // Compose the hue with the genotype's alt dosage (`shared/cellFill.ts`).
+  shadeDosage?: boolean
   // Color phased alt cells by FORMAT PS instead of by allele (see
   // computeVariantCells).
   colorByPhaseSet?: boolean
@@ -128,6 +139,9 @@ export function computeVariantMatrixCells({
   }
 
   const featureData: FeatureData[] = []
+  const paintedDomain = new Set<string>()
+  let paintedCategories = 0
+  let altPainted = false
 
   const isPhasedMode = renderingMode === 'phased'
   const numHaplotypes = countHaplotypes(sources)
@@ -157,6 +171,7 @@ export function computeVariantMatrixCells({
     const { feature, mostFrequentAlt } = filteredVariants[idx]!
     const featureId = feature.id()
     const overrideColor = featureColor?.(feature)
+    altPainted = false
     for (let t = 0; t < touchedCodes.length; t++) {
       const c = touchedCodes[t]!
       alleleCountStyles[c] = undefined
@@ -200,6 +215,8 @@ export function computeVariantMatrixCells({
             overrideColor,
           )
           if (style) {
+            paintedCategories |= 1 << style.category
+            altPainted ||= style.isAlt
             addCell(idx, j, style.abgr, style.isRef)
           }
         }
@@ -225,6 +242,8 @@ export function computeVariantMatrixCells({
           }
           const style = byHp[HP!]
           if (style) {
+            paintedCategories |= 1 << style.category
+            altPainted ||= style.isAlt
             addCell(idx, j, style.abgr, style.isRef)
           }
         }
@@ -238,18 +257,24 @@ export function computeVariantMatrixCells({
           if (style === undefined) {
             style = buildAlleleCountStyle(
               genotypeDict[code - 1]!,
-              mostFrequentAlt,
               true,
-              overrideColor,
+              overrideColor ?? ALT_HUE,
+              shadeDosage,
             )
             alleleCountStyles[code] = style
             touchedCodes.push(code)
           }
           if (style) {
+            paintedCategories |= 1 << style.category
+            altPainted ||= style.isAlt
             addCell(idx, j, style.abgr, style.isRef)
           }
         }
       }
+    }
+
+    if (altPainted && featureDomain) {
+      paintedDomain.add(featureDomain(feature))
     }
   }
 
@@ -287,5 +312,7 @@ export function computeVariantMatrixCells({
     refCellCount,
     numFeatures,
     featureData,
+    paintedCategories,
+    paintedDomain: [...paintedDomain],
   }
 }

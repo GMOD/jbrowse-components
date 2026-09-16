@@ -15,6 +15,13 @@ import {
 // and need a precedence rule to settle it.
 export const PHASE_SET_COLOR = 'phaseSet'
 
+// The band the phase-set wheel spins in. Off the band the absent-data colors
+// sit on: no-call is `hsl(50,50%,50%)`, which one turn of a 50%/50% wheel lands
+// on exactly, so phase set 0x1B4 painted a haplotype the color the key reserves
+// for a missing call.
+const PS_SATURATION = 65
+const PS_LIGHTNESS = 42
+
 const PIPE_CODE = 124 // '|'
 
 // Whether a variant declares a phase set, i.e. carries PS in FORMAT. Gates both
@@ -80,18 +87,20 @@ export function isNoCall(genotype: string) {
   return true
 }
 
-// What fraction of a genotype's alleles are non-reference, as a 0-255 byte.
+// What fraction of a genotype's CALLED alleles are non-reference, as a 0-255
+// byte — the `dosage` of the shared composition rule (`shared/cellFill.ts`),
+// so the marker and the cell under it read the same number.
 //
 // Two jobs in one number, which is why it is a byte rather than a flag. Zero is
 // "no alt here", the gate the insertion-glyph pass and the hit test already
 // keyed on; above zero it is the dosage that shades the marker, so a het draws
-// a paler bar than a hom — the same thing `getAltColorForDosage` does to the
-// cells underneath.
+// a paler bar than a hom.
 //
 // 255 for a haploid alt, matching `readAltDosages`' ploidy-invariance: one
-// allele out of one is full dosage, not half. A `.` allele counts toward the
-// denominator, so `./1` is half — the sample carries the sequence on the one
-// haplotype that was called.
+// allele out of one is full dosage, not half. A `.` allele leaves the
+// denominator, so `./1` is also full dosage — the sample carries the sequence
+// on the one haplotype that was called, and how many haplotypes went uncalled
+// is missingness, not a smaller dose.
 //
 // **This has to be answered from the genotype, never from the resolved cell
 // color.** The tempting `color !== NO_CALL_COLOR` test holds only for the
@@ -103,31 +112,31 @@ export function isNoCall(genotype: string) {
 // painted an insertion marker on a row the VCF calls `.` for.
 export function altDosageByte(genotype: string) {
   let alt = 0
-  let total = 0
+  let called = 0
   let alleleIsAlt = false
-  let inAllele = false
+  let alleleIsCalled = false
   for (let i = 0; i <= genotype.length; i++) {
     const c = i < genotype.length ? genotype.charCodeAt(i) : 47
     // '/' or '|' ends an allele; so does the end of the string
     if (c === 47 || c === 124) {
-      if (inAllele) {
-        total++
+      if (alleleIsCalled) {
+        called++
         if (alleleIsAlt) {
           alt++
         }
       }
       alleleIsAlt = false
-      inAllele = false
-    } else {
-      inAllele = true
+      alleleIsCalled = false
+    } else if (c >= 48 && c <= 57) {
+      alleleIsCalled = true
       // any digit 1-9 makes the allele non-reference: allele indices carry no
       // leading zeros, so "10" is alt and "0" is not
-      if (c >= 49 && c <= 57) {
+      if (c >= 49) {
         alleleIsAlt = true
       }
     }
   }
-  return total === 0 ? 0 : Math.round((255 * alt) / total)
+  return called === 0 ? 0 : Math.round((255 * alt) / called)
 }
 
 // '' means "draw no cell here" — the same sentinel getAlleleColor returns, so
@@ -179,7 +188,7 @@ export function getPhasedColor(
     // phase sets landing on one hue is already inherent to a 360-slot wheel.
     const ps = +PS
     const hue = Number.isFinite(ps) ? Math.round((ps * 137.508) % 360) : 0
-    return `hsl(${hue}, 50%, 50%)`
+    return `hsl(${hue}, ${PS_SATURATION}%, ${PS_LIGHTNESS}%)`
   }
   return allele === mostFrequentAlt ? PRIMARY_ALT_COLOR : SECONDARY_ALT_COLOR
 }

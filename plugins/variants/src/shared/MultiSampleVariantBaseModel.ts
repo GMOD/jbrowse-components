@@ -156,6 +156,7 @@ const PORTABLE_CONFIG_KEYS = [
   'showTree',
   'showBranchLength',
   'referenceDrawingMode',
+  'shadeByDosage',
   'colorBy',
   'groupBy',
 ] as const
@@ -576,28 +577,37 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
-         * Whether any visible site is multiallelic (drives the "Other alt
-         * allele" legend entry). Computed in the worker since the simplified
-         * features sent to the client don't carry ALT.
+         * Whether the worker painted a secondary-alt cell (drives the "Other
+         * alt allele" legend entry). Painted, not possible: a multiallelic site
+         * nobody in view carries the second alt at raised this when the color
+         * was nowhere on the screen.
          */
         get hasSecondaryAlt() {
           return self.cellData?.hasSecondaryAlt ?? false
         },
         /**
          * #getter
-         * Whether any genotype call is unphased (drives the "Unphased" legend
-         * entry in phased mode).
+         * Whether the worker painted a black unphased cell (drives the
+         * "Unphased" legend entry).
          */
         get hasUnphased() {
           return self.cellData?.hasUnphased ?? false
         },
         /**
          * #getter
-         * Whether any genotype is a no-call (drives the "No call" legend entry
-         * in phased mode; allele-count mode always shows it).
+         * Whether the worker painted a no-call cell (drives the "No call"
+         * legend entry).
          */
         get hasNoCall() {
           return self.cellData?.hasNoCall ?? false
+        },
+        /**
+         * #getter
+         * The cell scale's domain values an alt cell was painted for — the
+         * impact tiers or SV classes the legend lists.
+         */
+        get paintedDomain(): string[] {
+          return self.cellData?.paintedDomain ?? []
         },
         /**
          * #getter
@@ -755,6 +765,14 @@ export default function MultiSampleVariantBaseModelF(
          */
         get featureColor(): string {
           return self.configuration.featureColor
+        },
+        /**
+         * #getter
+         * Whether an alt cell's hue is composed with the genotype's alt dosage.
+         * A fetch input — the cells are colored in the worker.
+         */
+        get shadeByDosage(): boolean {
+          return getConf(self, 'shadeByDosage')
         },
 
         get featureWidgetType() {
@@ -923,6 +941,14 @@ export default function MultiSampleVariantBaseModelF(
            */
           setFeatureColor(arg: string) {
             setConf(self, 'featureColor', arg)
+          },
+          /**
+           * #action
+           * Turn dosage shading on or off. A fetch input — recomputes cells in
+           * the worker.
+           */
+          setShadeByDosage(arg: boolean) {
+            setConf(self, 'shadeByDosage', arg)
           },
         }
       })
@@ -1219,6 +1245,7 @@ export default function MultiSampleVariantBaseModelF(
             filters: self.filters,
             renderingMode: self.renderingMode,
             featureColor: self.featureColor,
+            shadeByDosage: self.shadeByDosage,
           }
         },
       }))
@@ -1709,6 +1736,8 @@ export default function MultiSampleVariantBaseModelF(
             hasSecondaryAlt: self.hasSecondaryAlt,
             hasUnphased: self.hasUnphased,
             hasNoCall: self.hasNoCall,
+            paintedDomain: self.paintedDomain,
+            shadeByDosage: self.shadeByDosage,
             featureColor: self.featureColor,
             svTypeColors: self.svTypeColors,
             colorBy: self.colorBy,
