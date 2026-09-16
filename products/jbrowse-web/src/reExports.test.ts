@@ -4,13 +4,27 @@ import { REACT_INTERNAL_KEYS, uiStub } from '@jbrowse/core/ReExports/uiStub'
 import modules from './reExports.generated.ts'
 import workerModules from './workerReExports.generated.ts'
 
-// jbrowse-web bundles every served package, so its generated maps are the
-// whole of list.ts. The names a stubbed module carries in the worker come
-// from the generator's read of the module's source; what the main thread
-// serves is the oracle.
-test('jbrowse-web serves every key in the list, in both realms', () => {
-  expect(Object.keys(modules).sort()).toEqual([...reExportsList].sort())
-  expect(Object.keys(workerModules).sort()).toEqual([...reExportsList].sort())
+// `list.ts` is the union over the products, so what jbrowse-web serves is a
+// subset of it: the keys it lacks have to be packages it does not bundle, and
+// nothing else. The names a stubbed module carries in the worker come from the
+// generator's read of the module's source; what the main thread serves is the
+// oracle.
+test('jbrowse-web serves the list minus the packages it does not bundle', () => {
+  const served = new Set(Object.keys(modules))
+  const list = new Set(reExportsList)
+  expect([...served].filter(key => !list.has(key))).toEqual([])
+
+  // the package a key belongs to; a missing key is only legitimate when the
+  // whole package is missing, which is what "web does not bundle it" looks like
+  const pkgOf = (key: string) => key.split('/').slice(0, 2).join('/')
+  const bundled = new Set([...served].map(pkgOf))
+  expect(
+    [...list].filter(key => !served.has(key) && bundled.has(pkgOf(key))),
+  ).toEqual([])
+})
+
+test('jbrowse-web serves the same keys in both realms', () => {
+  expect(Object.keys(workerModules).sort()).toEqual(Object.keys(modules).sort())
 })
 
 function isStub(value: unknown) {

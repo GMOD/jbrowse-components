@@ -18,7 +18,7 @@
 //   products/<p>/src/reExports.generated.ts             what that product serves beyond core
 //   products/<p>/src/workerReExports.generated.ts       the same in its worker
 //
-// A served package is one jbrowse-web bundles, and a served key is a subpath
+// A served package is one any product bundles, and a served key is a subpath
 // its `exports` map publishes (its `main` where it has no map). A product
 // serves the keys of the packages it bundles, and must name each of them as a
 // direct dependency so its generated file can resolve the import.
@@ -123,8 +123,17 @@ const isServable = (name: string) =>
   name !== '@jbrowse/mobx-state-tree' &&
   !workspace.get(name)!.manifest.private
 
+// The union over the products, not jbrowse-web's closure alone: a package only
+// Desktop or an embedded build bundles is one those hosts serve, and reading it
+// off web's closure left it out of `list.ts` with nothing to say so — the
+// `missing` check below cannot see it, since it only looks at packages already
+// in this set.
 const served = [
-  ...closure(Object.keys(readProduct('jbrowse-web').dependencies!)),
+  ...new Set(
+    PRODUCTS.flatMap(product => [
+      ...closure(Object.keys(readProduct(product).dependencies!)),
+    ]),
+  ),
 ]
   .filter(isServable)
   .sort()

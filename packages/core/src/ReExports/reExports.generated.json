@@ -4563,6 +4563,22 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/embedded-core": {
+      "package": "@jbrowse/embedded-core",
+      "names": [
+        "EmbeddedSessionMixin",
+        "EmbeddedSessionThemeMixin",
+        "EmbeddedViewContainer",
+        "createEmbeddedRootModel"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip"
+      ]
+    },
     "@jbrowse/ld-core": {
       "package": "@jbrowse/ld-core",
       "names": [
@@ -4683,6 +4699,18 @@
         "default"
       ],
       "worker": "real"
+    },
+    "@jbrowse/plugin-blat": {
+      "package": "@jbrowse/plugin-blat",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip"
+      ]
     },
     "@jbrowse/plugin-breakpoint-split-view": {
       "package": "@jbrowse/plugin-breakpoint-split-view",
@@ -5057,6 +5085,13 @@
         "@mui/material/IconButton",
         "@mui/material/Tooltip"
       ]
+    },
+    "@jbrowse/plugin-text-indexing": {
+      "package": "@jbrowse/plugin-text-indexing",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
     },
     "@jbrowse/plugin-trix": {
       "package": "@jbrowse/plugin-trix",
@@ -6141,6 +6176,50 @@
         "@mui/material/Tooltip",
         "react-dom"
       ]
+    },
+    "@jbrowse/text-indexing": {
+      "package": "@jbrowse/text-indexing",
+      "names": [
+        "createTextSearchConf",
+        "findTrackConfigsToIndex",
+        "indexTracks"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/text-indexing-core": {
+      "package": "@jbrowse/text-indexing-core",
+      "names": [
+        "TRIX_DIR",
+        "createReadlineInterface",
+        "decodeURIComponentNoThrow",
+        "defaultAttributesToIndex",
+        "defaultFeatureTypesToExclude",
+        "generateMeta",
+        "getLocalOrRemoteStream",
+        "guessAdapterFromFileName",
+        "indexFiles",
+        "indexGff3",
+        "indexGtf",
+        "indexVcf",
+        "indexableAdapters",
+        "isSupportedIndexingAdapter",
+        "isURL",
+        "makeLocation",
+        "parseAttributes",
+        "sanitizeForFilename",
+        "trixFileNames",
+        "trixFilePaths",
+        "trixFileUris"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/text-indexing/util": {
+      "package": "@jbrowse/text-indexing",
+      "names": [
+        "createTextSearchConf",
+        "findTrackConfigsToIndex"
+      ],
+      "worker": "real"
     },
     "@jbrowse/tree-sidebar": {
       "package": "@jbrowse/tree-sidebar",

@@ -78,10 +78,13 @@ test('every value in a stubbed namespace is the stub', () => {
   }
 })
 
-// What an adapter or RPC plugin reads in the worker. A module whose graph
-// reaches react-dom, a Material UI component, the data grid or floating-ui is
-// stubbed there, so one such import under `util/index.ts` would stub every
-// module below and break those plugins in the worker.
+// What an adapter, an RPC method, a config schema or a state-model mixin reads
+// in the worker. A module whose graph reaches react-dom, a Material UI
+// component, the data grid or floating-ui is stubbed there, and a stub answers
+// every read and call with itself — so a demotion costs a plugin silent zeros,
+// not an error. One `export … from` naming a package barrel is enough to do it:
+// `computeYTicks.ts` reaching the @jbrowse/display-ui barrel is what had the
+// whole of @jbrowse/wiggle-core stubbed, config mixins included.
 test('the modules a worker-side plugin reads are served for real', () => {
   const modules: Record<string, { worker: string; uiVia?: string[] }> =
     manifest.modules
@@ -90,9 +93,16 @@ test('the modules a worker-side plugin reads are served for real', () => {
     '@jbrowse/core/configuration',
     '@jbrowse/core/data_adapters/BaseAdapter',
     '@jbrowse/core/data_adapters/dataAdapterCache',
+    '@jbrowse/core/data_adapters/getFeatureAdapter',
     '@jbrowse/core/pluggableElementTypes',
     '@jbrowse/core/pluggableElementTypes/AdapterType',
+    '@jbrowse/core/pluggableElementTypes/DisplayType',
+    '@jbrowse/core/pluggableElementTypes/RpcMethodType',
+    '@jbrowse/core/pluggableElementTypes/TrackType',
+    '@jbrowse/core/pluggableElementTypes/ViewType',
+    '@jbrowse/core/pluggableElementTypes/WidgetType',
     '@jbrowse/core/pluggableElementTypes/models',
+    '@jbrowse/core/rpc/RpcRegistry',
     '@jbrowse/core/ui/palette',
     '@jbrowse/core/ui/theme',
     '@jbrowse/core/util',
@@ -100,10 +110,45 @@ test('the modules a worker-side plugin reads are served for real', () => {
     '@jbrowse/core/util/color',
     '@jbrowse/core/util/io',
     '@jbrowse/core/util/layouts',
+    '@jbrowse/core/util/librpc',
     '@jbrowse/core/util/mst-reflection',
     '@jbrowse/core/util/rxjs',
     '@jbrowse/core/util/tracks',
     '@jbrowse/core/util/types/mst',
+    // the display layer a v5 track type is built on
+    '@jbrowse/display-kit/MultiRegionDisplayMixin',
+    '@jbrowse/display-kit/StoredHoverMixin',
+    '@jbrowse/display-kit/TrackHeightMixin',
+    '@jbrowse/display-kit/configSchema',
+    '@jbrowse/display-kit/fetchEachRegion',
+    '@jbrowse/display-ui/axisPlacement',
+    '@jbrowse/display-ui/yAxisConstants',
+    '@jbrowse/display-ui/yScaleTicks',
+    '@jbrowse/render-core/marks',
+    '@jbrowse/render-core/marks/backend',
+    '@jbrowse/render-core/perRegionRenderingBackend',
+    '@jbrowse/render-core/renderBlock',
+    '@jbrowse/render-core/slangPass',
+    // score math and the config mixins a wiggle-derived display composes
+    '@jbrowse/wiggle-core',
+    '@jbrowse/wiggle-core/constants',
+    '@jbrowse/wiggle-core/normalize',
+    '@jbrowse/wiggle-core/renderingBackendTypes',
+    // cluster math an RPC method runs
+    '@jbrowse/tree-sidebar/clusterMatrix',
+    '@jbrowse/tree-sidebar/clusterProvenance',
+    '@jbrowse/tree-sidebar/clusterUtils',
+    '@jbrowse/tree-sidebar/hierarchy',
+    '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields',
+    '@jbrowse/tree-sidebar/rowSortColumn',
+    '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields',
+    '@jbrowse/tree-sidebar/treeSidebarGeometry',
+    // plugin entries whose config schemas and mixins a derived plugin composes
+    '@jbrowse/plugin-canvas',
+    '@jbrowse/plugin-gwas',
+    '@jbrowse/plugin-marks',
+    '@jbrowse/plugin-variants',
+    '@jbrowse/plugin-wiggle',
   ]
   expect(
     workerSide

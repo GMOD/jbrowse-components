@@ -57,9 +57,12 @@ A plugin's one bundle is evaluated on the main thread and again in the RPC
 worker, where nothing renders. The worker serves a module for real unless the
 module reaches react-dom, a Material UI component, the data grid or floating-ui,
 in which case it serves a stub that carries the module's export names, so your
-module-scope reads and calls succeed there. The last column says how much of
-each package the worker serves for real; an adapter, an RPC method or a
-state-model mixin is always real in both realms.
+bundle still evaluates there. The stub is inert — every read and call on it
+returns another stub, so a number taken off one is 0 and a list is empty — and
+it reports nothing when that happens. Anything the worker has to compute belongs
+on a subpath the worker serves for real. The last column says how much of each
+package that is; an adapter, an RPC method or a state-model mixin is always real
+in both realms.
 
 <!-- REEXPORT_MODULES START -->
 
@@ -73,12 +76,14 @@ state-model mixin is always real in both realms.
 | [`@jbrowse/core`](/docs/api/core) | JBrowse 2 core libraries used by plugins | 237 | 197 of 237 subpaths; the rest stubbed |
 | `@jbrowse/display-kit` | The display integration layer a track type is built on: the fetch foundations, the byte gate, the display chrome, SVG export, and the RegionHost view contract | 72 | 54 of 72 subpaths; the rest stubbed |
 | [`@jbrowse/display-ui`](/docs/api/display-ui) | The UI a display draws that is not data: the swappable chrome contract, its toolkit-free implementations, and the track overlay layer | 5 | 4 of 5 subpaths; the rest stubbed |
+| `@jbrowse/embedded-core` | JBrowse 2 code shared between embedded products | 1 | none; a stub with its names |
 | `@jbrowse/ld-core` | Pure linkage-disequilibrium parsers and math — PLINK .ld parsing and genotype r²/D' — no rendering or framework deps | 1 | all of it |
 | [`@jbrowse/modifications-utils`](/docs/api/modifications-utils) | Pure MM/ML base-modification tag parsers (methylation, etc.) | 1 | all of it |
 | `@jbrowse/plugin-alignments` | JBrowse 2 alignments adapters, tracks, etc. | 2 | none; a stub with its names |
 | `@jbrowse/plugin-arc` | JBrowse 2 arc adapters, tracks, etc. | 1 | none; a stub with its names |
 | `@jbrowse/plugin-authentication` | JBrowse 2 Authentication | 1 | none; a stub with its names |
 | `@jbrowse/plugin-bed` | JBrowse 2 bed adapters, tracks, etc. | 1 | all of it |
+| `@jbrowse/plugin-blat` | JBrowse 2 UCSC BLAT client | 1 | none; a stub with its names |
 | `@jbrowse/plugin-breakpoint-split-view` | JBrowse 2 breakpoint detail split view | 1 | none; a stub with its names |
 | `@jbrowse/plugin-canvas` | JBrowse 2 plugin for canvas features | 3 | 1 of 3 subpaths; the rest stubbed |
 | `@jbrowse/plugin-circular-view` | JBrowse 2 circular view | 1 | none; a stub with its names |
@@ -103,6 +108,7 @@ state-model mixin is always real in both realms.
 | `@jbrowse/plugin-sequence` | JBrowse 2 sequence adapters, tracks, etc. | 1 | all of it |
 | `@jbrowse/plugin-spreadsheet-view` | JBrowse 2 spreadsheet view | 1 | all of it |
 | `@jbrowse/plugin-sv-inspector` | JBrowse 2 SV inspector view | 1 | none; a stub with its names |
+| `@jbrowse/plugin-text-indexing` | JBrowse 2 text indexing rpc method | 1 | all of it |
 | `@jbrowse/plugin-trix` | JBrowse 2 trix text search adapter | 1 | all of it |
 | `@jbrowse/plugin-variants` | JBrowse 2 variant adapters, tracks, etc. | 1 | all of it |
 | `@jbrowse/plugin-wiggle` | JBrowse 2 wiggle adapters, tracks, etc. | 2 | 1 of 2 subpaths; the rest stubbed |
@@ -110,6 +116,8 @@ state-model mixin is always real in both realms.
 | `@jbrowse/render-core` | GPU/Canvas2D rendering primitives for JBrowse displays: the HAL, the draw-lifecycle mixin, per-region/global backend bases, and the React backend hooks | 57 | all of it |
 | [`@jbrowse/sv-core`](/docs/api/sv-core) | VCF breakend / structural-variant parsing and the shared SV launch helpers | 1 | none; a stub with its names |
 | [`@jbrowse/synteny-core`](/docs/api/synteny-core) | Shared utilities for synteny and dotplot rendering | 1 | none; a stub with its names |
+| `@jbrowse/text-indexing` | JBrowse 2 text indexing for desktop | 2 | all of it |
+| `@jbrowse/text-indexing-core` | JBrowse 2 core text indexing routines for parsing GFF3 and VCF files | 1 | all of it |
 | `@jbrowse/tree-sidebar` | Shared tree sidebar component for multi-sample displays | 9 | 8 of 9 subpaths; the rest stubbed |
 | `@jbrowse/web-core` | JBrowse 2 code shared between web-app type products | 1 | none; a stub with its names |
 | [`@jbrowse/wiggle-core`](/docs/api/wiggle-core) | Score-axis scale, autoscale, config mixins and plot chrome shared by wiggle, Manhattan, mark and coverage displays | 7 | 4 of 7 subpaths; the rest stubbed |
