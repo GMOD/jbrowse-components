@@ -41,7 +41,7 @@ a worker has no `window`.
 
 `fileToLocation` (`packages/core/src/util/index.ts`) wraps
 `webUtils.getPathForFile` as a plain function and is published at
-`@jbrowse/core/util` (`ReExports/publicUtil.ts`, alongside `isElectron`).
+`@jbrowse/core/util`, alongside `isElectron`.
 Every caller is a React drop zone.
 
 That is the pattern the other crossings want: **core exports a plain capability

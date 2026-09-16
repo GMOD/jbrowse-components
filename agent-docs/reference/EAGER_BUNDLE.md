@@ -742,9 +742,8 @@ suppress the fragments brings them back as duplicates inside the parents
 instead — 592 KB on the empty page and 1102 → 1144 KB on the four-track one.
 `products/jbrowse-web/CLAUDE.md` records `chunks: 'all'` failing the same way.
 
-**The lever that is left, and its price.** Give `@jbrowse/core/ui` the
-`publicUtil.ts` treatment — an explicit named ABI list — with the component half
-behind `lazy()` and **one shared `webpackChunkName`**, so the deferred
+**The lever that is left, and its price.** Put the component half of the
+`@jbrowse/core/ui` barrel behind `lazy()` with **one shared `webpackChunkName`**, so the deferred
 components land in a single chunk nobody fetches at boot rather than 16 that
 everybody does. Worth the ~10 KB above plus whatever Material UI only those
 components hold (`Table*` is the clear case, reached from nothing else once
@@ -824,10 +823,9 @@ Two things that looked like the fix and measured worse, both reverted:
   are downloaded by the page anyway, so the worker's marginal cost was never the
   UI in them.
 
-When a config does name a UMD plugin, the worker publishes
-`ReExports/workerModules.ts` instead of the full map: the same keys, with the
-non-UI entries (`sharedModules.ts`, which `modules.ts` also builds on) real. A
-UI entry that is a single value on the main thread (one component per
+When a config does name a UMD plugin, the worker publishes its product's
+`workerReExports.generated.ts` instead of the full map: the same keys, with every
+module whose source graph names no rendering library real. A UI entry that is a single value on the main thread (one component per
 `@mui/material/Name` path, `@jbrowse/core/ui/BaseTooltip`) is `uiStub`, a
 callable proxy whose every read and call is itself. A UI entry that is a
 namespace on the main thread (react-dom, mobx-react, Material UI, the core `ui`
@@ -874,7 +872,7 @@ that one bundler's algorithm work, by name. It did not make `for...in` +
 `uiNamespace` fixes the shape instead: a plain object's own keys are real for
 every one of those, because it does not answer through a trap at all.
 `workerModules.test.ts` compares each stub's own keys to the real module's
-(`workerNamespaceNames.ts` is the hand-written list in between; a load-time
+(`scripts/generateReExports.ts` writes the names in between; a load-time
 throw in `modules.ts` was tried and dropped, since a react-dom or MUI bump
 that adds an export would white-screen the app rather than fail a test). It
 also covers `esbuild`'s and Babel/webpack's interop shapes and a bare
@@ -920,11 +918,12 @@ and dropped anyway: the bytes were never the objection, the standing exception
 was, since `@jbrowse/core/util` would have become the one ABI module that is
 neither wholly shared nor wholly UI.
 
-**What core kept is the guard.** `sharedModules.purity.test.ts` walks the worker
-half's static graph and fails on react-dom, printing the import trail. The
-original cut had no such test, so the barrel re-export that put react-dom back
-would have been silent; now it names itself (`sharedModules.ts -> ... ->
-../../util/index.ts -> ./renderToStaticMarkup.ts -> react-dom`).
+**What core kept is the guard.** The generator stubs a module in the worker when
+its source graph names react-dom, so the barrel re-export that put react-dom
+back would stub `@jbrowse/core/util` and every module that imports it. The
+original cut had no test for that, so it would have been silent; now
+`workerModules.test.ts` fails, naming each module the worker would stub and the
+specifiers that did it.
 
 `scripts/eager-import-closure.ts` overstates a worker or app closure several
 times over: it walks a barrel whole, so one eager import of a constant from

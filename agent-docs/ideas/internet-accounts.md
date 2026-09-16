@@ -260,7 +260,7 @@ Landed 2026-08-19, both found re-reading the code rather than the doc:
   `state` that already minted a nonce per flow for the same reason.
 
 `SelectorComponent`'s removal is the one that had to be *verified* rather than
-argued, since it is an MST member and `ReExports/abi.test.ts` is name-level over
+argued, since it is an MST member and the ABI removals table is name-level over
 module exports. What was read, 2026-08-15:
 
 - every published bundle behind `website/plugins.json`, all 16 at `latest`, from
