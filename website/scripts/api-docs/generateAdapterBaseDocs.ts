@@ -30,6 +30,7 @@ const NOT_A_BASE = new Set([
   'stats.ts',
   'types.ts',
   'util.ts',
+  'zoomRange.ts',
 ])
 
 interface AdapterBase {

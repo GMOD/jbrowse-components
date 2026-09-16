@@ -1,4 +1,4 @@
-import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter/zoomRange'
 
 export interface SourceInfo {
   name: string

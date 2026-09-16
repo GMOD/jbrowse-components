@@ -3,7 +3,7 @@ import { reportContractViolation } from '@jbrowse/render-core/contractReports'
 
 import type { FetchContext } from './FetchMixin.ts'
 import type { FetchInputs } from './fetchInputs.ts'
-import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { ZoomRange } from '@jbrowse/core/data_adapters/BaseAdapter/zoomRange'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 

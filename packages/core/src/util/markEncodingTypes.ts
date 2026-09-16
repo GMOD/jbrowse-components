@@ -6,7 +6,7 @@
 // every leaf that reaches the RPC registry. scripts/moduleClosure.test.ts
 // holds the ceiling.
 
-import type { ZoomRange } from '../data_adapters/BaseAdapter/types.ts'
+import type { ZoomRange } from '../data_adapters/BaseAdapter/zoomRange.ts'
 
 /**
  * #api

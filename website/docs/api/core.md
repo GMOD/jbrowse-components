@@ -498,4 +498,4 @@ The bp/px interval, `[minBpPerPx, maxBpPerPx)`, over which an adapter with
 zoom levels answers a fetch from the same level it answered `opts.bpPerPx`
 from. A display holding the answer refetches when the view leaves it.
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/BaseAdapter/types.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/data_adapters/BaseAdapter/zoomRange.ts)

@@ -27,7 +27,7 @@ import { closure } from './moduleClosure.ts'
 const root = join(__dirname, '..')
 
 const CEILINGS = [
-  // 12 runtime / 51 type
+  // 10 runtime / 58 type
   {
     entry: 'packages/display-kit/src/fetchEachRegion.ts',
     runtime: 20,
@@ -70,7 +70,8 @@ const CEILINGS = [
   { entry: 'packages/core/src/ui/MenuTypes.ts', runtime: 5, types: 10 },
   // 7 runtime / 8 type
   { entry: 'packages/core/src/ui/menuItems.ts', runtime: 12, types: 15 },
-  // 1 runtime / 1 type
+  // 1 runtime / 5 type, and the ceiling is the cost: the file describes plain
+  // data, and each of the five is a type it names.
   { entry: 'packages/core/src/ui/legendSpec.ts', runtime: 5, types: 5 },
 ]
 
