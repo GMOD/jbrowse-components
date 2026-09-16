@@ -15,10 +15,10 @@ track dialog. For complex logic, register a jexl function in a small plugin.
 {
   "type": "FeatureTrack",
   "trackId": "genes",
-  "assemblyNames": ["hg19"],
+  "assemblyNames": ["volvox"],
   "name": "Genes",
   "formatDetails": {
-    "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',newfield:'Custom contents here: '+feature.name,type:undefined }"
+    "feature": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>',extrafield:'Field added with custom callback:' + feature.name,phase:undefined,type:undefined}"
   },
   "adapter": {
     "type": "Gff3TabixAdapter",
@@ -27,7 +27,7 @@ track dialog. For complex logic, register a jexl function in a small plugin.
 }
 ```
 
-<Figure src="/img/customized_feature_details.png" caption="A feature detail panel reshaped by the formatDetails callback above. The red callout marks the name field, which the callback rewrote into an HTML hyperlink (here, a Google search for the gene name); the callback also injects the extra 'newfield' row and drops the default 'type' row."/>
+<Figure src="/img/customized_feature_details.png" caption="A feature detail panel reshaped by the formatDetails callback above. The red callout marks the name field, which the callback rewrote into an HTML hyperlink (here, a Google search for the gene name); the callback also injects the extra 'extrafield' row and drops the default 'phase' and 'type' rows."/>
 
 The `<a>` markup is needed only because the link text differs from the URL; a
 value that is nothing but a URL is [linked for you](#bare-urls). The slots
@@ -73,7 +73,7 @@ every feature is written as a plain object. A GFF3 gene nests three levels deep
   "type": "FeatureTrack",
   "trackId": "genes_transcripts_only",
   "name": "Genes",
-  "assemblyNames": ["hg19"],
+  "assemblyNames": ["volvox"],
   "adapter": {
     "type": "Gff3TabixAdapter",
     "uri": "volvox.sort.gff3.gz"
@@ -138,7 +138,7 @@ callback's variable is `config`, the track's own configuration:
   "type": "FeatureTrack",
   "trackId": "genes",
   "name": "Genes",
-  "assemblyNames": ["hg19"],
+  "assemblyNames": ["volvox"],
   "adapter": {
     "type": "Gff3TabixAdapter",
     "uri": "volvox.sort.gff3.gz"
