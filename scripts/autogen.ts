@@ -99,9 +99,11 @@ const GENERATORS: Generator[] = [
     // The runtime plugin ABI — ReExports/list.ts, the generated module maps
     // in core and each product, and the manifest the checkers read — from the
     // served packages' exports maps.
+    // Not `independent`: the ABI removal tables and the marker tables read
+    // reExports.generated.json, so this holds its place in the ordered chain
+    // ahead of both.
     name: 'runtime re-exports',
     argv: rootScript('generateReExports.ts'),
-    independent: true,
     needs: ['core exports'],
   },
   {
