@@ -189,6 +189,10 @@ interface MarkFacetConfig {
   domain: readonly string[]
 }
 
+function facetConfigOf(marks: MarkConfig[]): MarkFacetConfig | undefined {
+  return marks.find(m => m.facet.field !== '')?.facet
+}
+
 function facetSpecOf(facet: MarkFacetConfig): FacetSpec {
   const domain = [...facet.domain]
   return { field: facet.field, ...(domain.length ? { domain } : {}) }
@@ -433,22 +437,14 @@ export function stateModelFactory(
        * own band of rows, off the first mark declaring one, or `''`.
        */
       get facetField(): string {
-        return this.facetConfig?.field ?? ''
+        return facetConfigOf(self.conf.marks)?.field ?? ''
       },
       /**
        * #getter
        * The facet's declared section order, off the same mark as the field.
        */
       get facetDomain(): string[] {
-        return this.facetConfig?.domain ?? []
-      },
-      /**
-       * #getter
-       * The first mark's facet declaring a field, or undefined.
-       */
-      get facetConfig(): MarkFacetConfig | undefined {
-        return self.conf.marks.find((m: MarkConfig) => m.facet.field !== '')
-          ?.facet
+        return [...(facetConfigOf(self.conf.marks)?.domain ?? [])]
       },
       /**
        * #getter

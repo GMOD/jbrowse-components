@@ -3557,7 +3557,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "normal"
         },
         "groupBy": {
-          "description": "In-track stacked grouping, e.g. \`{ type: \\"strand\\" }\` to pack each strand into its own labelled section (null = ungrouped). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "In-track stacked grouping, e.g. \`{ type: \\"strand\\" }\` to pack each strand into its own labelled section, or \`{ type: \\"attribute\\", attribute: \\"biotype\\", domain: [\\"protein_coding\\", \\"lncRNA\\"] }\` for one section per attribute value in the listed order (null = ungrouped). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "default": null
         },
         "geneGlyphMode": {
@@ -5106,7 +5106,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "normal"
         },
         "groupBy": {
-          "description": "In-track stacked grouping, e.g. \`{ type: \\"strand\\" }\` to pack each strand into its own labelled section (null = ungrouped). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "In-track stacked grouping, e.g. \`{ type: \\"strand\\" }\` to pack each strand into its own labelled section, or \`{ type: \\"attribute\\", attribute: \\"biotype\\", domain: [\\"protein_coding\\", \\"lncRNA\\"] }\` for one section per attribute value in the listed order (null = ungrouped). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "default": null
         },
         "geneGlyphMode": {
@@ -7504,6 +7504,27 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "description": "field whose values take their own rows.",
               "$ref": "#/$defs/StringOrJexl",
               "default": ""
+            },
+            "domain": {
+              "description": "section order; listed values first, the rest sorted.",
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "number"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "$ref": "#/$defs/JexlString"
+                }
+              ]
             }
           },
           "patternProperties": {

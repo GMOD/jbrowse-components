@@ -5396,6 +5396,10 @@ export const configManifest: ConfigManifest = {
                 {
                   "name": "field",
                   "type": "(JexlString | string)"
+                },
+                {
+                  "name": "domain",
+                  "type": "(JexlString | string[])"
                 }
               ]
             },

@@ -285,7 +285,7 @@ transferables.
 
 Stack the facet groups themselves: `stack`'s `groupby` numbers every group from
 0, so the sections overlap until each one's rows are offset by the rows of the
-groups above it. The order is `compareGroupKeys` and the tail past the cap
+groups above it. The order is the facet's `domain` and the tail past the cap
 merges into one overflow section, the same two rules the chip row reads, so a
 layout and a reading of it agree without sharing state.
 
@@ -295,7 +295,7 @@ spanning every row.
 
 ```js
 // type signature
-(features: readonly Feature[], { field, as }: FacetSpec) => { features: readonly Feature[]; sections: FacetSection[]; }
+(features: readonly Feature[], { field, domain, as }: FacetSpec) => { features: readonly Feature[]; sections: FacetSection[]; }
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/featureTransforms.ts)
