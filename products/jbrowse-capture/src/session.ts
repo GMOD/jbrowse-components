@@ -20,7 +20,8 @@ type TrackEntry = string | { trackId?: string }
 
 interface SpecShape {
   views?: {
-    assembly?: string
+    // a circular view takes a list, one arc per genome
+    assembly?: string | string[]
     // a synteny spec's `tracks` may be nested — one string[] per level (the
     // gap between adjacent rows), the shape normalizeTrackLevels accepts
     tracks?: (TrackEntry | string[])[]
@@ -42,7 +43,7 @@ interface SpecShape {
 export function assemblyFromSession(session: object): string | undefined {
   const find = (views: SpecShape['views']): string | undefined => {
     for (const view of views ?? []) {
-      const found = view.assembly ?? find(view.views)
+      const found = [view.assembly ?? []].flat()[0] ?? find(view.views)
       if (found) {
         return found
       }

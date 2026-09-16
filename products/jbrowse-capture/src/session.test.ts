@@ -109,6 +109,16 @@ test('a nested view supplies the assembly when the outer one does not', () => {
   ).toBe('hg38')
 })
 
+// the gate checks one name against the open assemblies, so a list joined into
+// one string never matched and a two-genome circle timed out
+test("a circle's assembly list supplies its first genome", () => {
+  expect(
+    assemblyFromSession({
+      views: [{ type: 'CircularView', assembly: ['hg38', 'mm39'] }],
+    }),
+  ).toBe('hg38')
+})
+
 test('a spec naming no assembly expects none', () => {
   expect(assemblyFromSession({ views: [{ type: 'SpreadsheetView' }] })).toBe(
     undefined,
