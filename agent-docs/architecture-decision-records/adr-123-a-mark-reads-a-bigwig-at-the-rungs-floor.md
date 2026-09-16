@@ -1,15 +1,20 @@
 ---
 status: Accepted
-summary: "The mark display's fetch tells an adapter with zoom levels the zoom to read at: the floor of the auto-bin rung, so a BigWig under a `marks` entry answers from its summary tiers at pixel resolution and a zoom inside a rung refetches nothing. The term goes through `zoomFetchArgs()`, the zoom tier, and only for an adapter declaring `hasResolution`, so a BAM or a VCF under the same display keeps refetching only when its bin width moves. What a tier returns is what wiggle draws: `score` is the tier's mean, `minScore` and `maxScore` its extremes, and a config names the field it wants. QuantitativeTrack joins the display's track types on that"
+summary: "The mark display's fetch tells an adapter with zoom levels the zoom to read at, the view's own `bpPerPx` as the wiggle display sends it, so a BigWig under a `marks` entry answers from the summary tier wiggle would read. The term goes through `zoomFetchArgs()`, the zoom tier, and only for an adapter declaring `hasResolution`, so a BAM or a VCF under the same display keeps refetching only when its bin width moves. The auto-bin rung's floor was the first value and was measured wrong the same day: below the first tier it reads the raw section. What a tier returns is what wiggle draws: `score` is the tier's mean, `minScore` and `maxScore` its extremes, and a config names the field it wants. QuantitativeTrack joins the display's track types on that"
 ---
 
-# ADR-123: A mark reads a BigWig at the rung's floor
+# ADR-123: A mark reads a BigWig at the zoom the view has
 
 ## Status
 
 Accepted (2026-09-16). Closes the first two items of the 2026-09-15 grammar
 handoff, and the caveat on the data row of
-`reference/GRAMMAR_OF_GRAPHICS.md`.
+`reference/GRAMMAR_OF_GRAPHICS.md`. The value sent was the auto-bin rung's
+floor for part of that day; the arithmetic under Rejected alternatives
+replaced it with the raw view value before the day was out, and the file name
+keeps the first title. The successor for both this display and wiggle, an
+adapter-declared zoom range, is step 1 of
+`handoffs/grammar-layer-zoom-and-rows.md`.
 
 ## Context
 
@@ -55,15 +60,14 @@ it into the `CoreEncodeFeatures` call, and the RPC hands it to
 each region it loads and compares it in `isCacheValid`, so the key and the
 argument are one fact, the way `fetchInputs.ts` asks.
 
-**The value is the floor of the auto-bin rung, not the view's `bpPerPx`.**
-`rungFloorBpPerPx` (`plugins/marks/src/LinearMarkDisplay/autoBin.ts`) takes
-the ladder rung ADR-117 resolves at this zoom, steps down one rung, and divides
-by the four-pixel target: the finest bp/px the rung serves. A fetch at that
-value answers every zoom inside the rung at pixel resolution, and the rung
-boundaries that already decide when a bin re-resolves decide when the tier
-refetches. Tier rows are at most two pixels wide on screen anywhere in the
-rung, the width wiggle draws them at, and a declared bin of the rung's width
-holds at least four of them.
+**The value is the view's `bpPerPx`, as wiggle sends it.** bbi then picks the
+finest tier whose reduction level fits twice into a pixel, so the mark display
+and the wiggle display read the same tier at the same zoom, and tier rows are
+at most two pixels wide. A zoom step refetches, under ADR-008, for the BigWig
+alone; a BAM under the same display sends nothing and refetches only where an
+`auto` bin crosses a rung. Refetching per step is the cost this ADR accepts
+until the adapter declares the zoom range its answer serves, which retires
+the per-step refetch for both displays at once.
 
 **A tier's fields are the adapter's, and a config names what it reads.** No
 summary mode. `score` off a tier is the mean, the reading every wiggle track
@@ -85,9 +89,9 @@ size the wiggle display already fetches.
 - A `marks` entry over a BigWig at chromosome scale reads a summary tier, not
   the raw section: the fetch is the wiggle display's size, and an `auto` bin
   aggregates a handful of rows per bar instead of thousands.
-- A zoom inside a rung refetches nothing on any adapter. A zoom across a rung
-  refetches a BigWig at the new floor, and a BAM only where a mark declares an
-  `auto` bin, exactly as before.
+- A zoom step refetches a BigWig, as it does under the wiggle display, and a
+  BAM only where a mark declares an `auto` bin and the step crosses a rung,
+  exactly as before.
 - The term lives in the zoom tier, so a rung crossing raises no
   `staleSettingsDrawn` scrim and supersedes nothing in flight, unlike the bin
   width in `rpcProps()` that ADR-117 accepted the scrim for.
@@ -99,18 +103,26 @@ size the wiggle display already fetches.
   the tier, and reverted: `check-gated-adapter-budgets` requires a budget
   decision for every estimating adapter, and a gate on a self-summarizing
   adapter is a budget row nobody wants to own.
-- `model.test.ts` pins the hook empty over a BED adapter and at the floor over
-  a BigWig, `autoBin.test.ts` pins the floor inside its rung across an
-  80-step sweep, and `CoreEncodeFeatures.test.ts` pins the term reaching the
-  adapter.
+- `model.test.ts` pins the hook empty over a BED adapter and at the view's
+  zoom over a BigWig, and `CoreEncodeFeatures.test.ts` pins the term reaching
+  the adapter.
 
 ## Rejected alternatives
 
-- **The view's raw `bpPerPx`, as wiggle sends it.** Refetches on every zoom
-  step. Wiggle accepts that under ADR-008 because a BigWig fetch is cheap and
-  the display draws nothing else; the mark display already resolved its bin
-  width to a ladder precisely so that a sweep of 64 steps costs 11 refetches,
-  and a second zoom term on a finer grid would have undone it.
+- **The floor of the auto-bin rung.** The first value this ADR shipped: the
+  rung ADR-117 resolves at this zoom, one rung down, over the four-pixel
+  target, so a zoom inside a rung refetches nothing. It is wrong because a
+  BigWig's tiers sit 4x apart and the ladder's rungs do not, so a value under
+  the view's `bpPerPx` picks a finer tier wherever twice the value drops
+  below a reduction level, and below the first tier it picks the raw section.
+  `volvox_microarray.bw` has tiers at 3,478, 13,912 and 55,648 bp; from 1,739
+  to 2,500 bp/px the floor is 1,250, twice that is under 3,478, and the mark
+  display read the raw section where wiggle read the 3,478 tier. Over a
+  140-step sweep the floor lands on a finer tier than the raw value on 27
+  steps, 1.44x the instances overall and 348x on the worst step. A snap-down
+  to doublings has the same hole on 13 of 140. Only a rule that knows the
+  tiers can bound refetches without over-reading, and that rule is the
+  adapter's to declare.
 - **A resolution derived from the declared bin steps alone.** The obvious
   reading of "pass the resolved rung": the smallest `bin` step across the
   layers over four pixels, raw where any layer declares no bin. It ties the

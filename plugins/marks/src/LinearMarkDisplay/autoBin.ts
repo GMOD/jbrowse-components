@@ -28,17 +28,3 @@ export function autoBinStep(bpPerPx: number) {
 export function binStepWidth(step: number | string, bpPerPx: number) {
   return step === AUTO_BIN ? autoBinStep(bpPerPx) : Number(step)
 }
-
-/**
- * The finest bp/px the rung at this zoom serves: the rung below, over the
- * target width. An adapter with zoom levels fetched at this value answers at
- * pixel resolution for every zoom inside the rung, so the same ladder that
- * keeps a zoom inside a rung from re-binning keeps it from refetching.
- */
-export function rungFloorBpPerPx(bpPerPx: number) {
-  const step = autoBinStep(bpPerPx)
-  const decade = 10 ** Math.floor(Math.log10(step))
-  const i = LADDER.indexOf(Math.round(step / decade))
-  const below = i > 0 ? LADDER[i - 1]! * decade : (decade / 10) * 5
-  return below / AUTO_BIN_TARGET_PX
-}

@@ -367,8 +367,7 @@ export type CoreEncodeFeaturesArgs = {
   filters?: string[]
   /**
    * The zoom the adapter reads at, for one with zoom levels (BigWig); absent
-   * is full resolution. The display resolves it to a rung so a zoom inside the
-   * rung refetches nothing.
+   * is full resolution.
    */
   bpPerPx?: number
   byteLimit?: number
