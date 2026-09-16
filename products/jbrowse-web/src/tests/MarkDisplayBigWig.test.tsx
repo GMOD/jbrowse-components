@@ -106,8 +106,8 @@ test('a mark display over a BigWig holds the rows the wiggle display holds, and 
     maxBpPerPx: 1739,
   })
 
-  // in, so the viewport stays inside the loaded regions and only the zoom
-  // rule could refetch
+  // A zoom in, so the viewport stays inside the loaded regions and only the
+  // zoom rule could refetch
   const call = jest.spyOn(session.rpcManager, 'call')
   view.zoomTo(2.5)
   expect(wiggle.viewportWithinLoadedData).toBe(true)

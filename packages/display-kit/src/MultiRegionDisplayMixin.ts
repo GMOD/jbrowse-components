@@ -441,9 +441,9 @@ export default function MultiRegionDisplayMixin() {
          * Whether the data held for a region still answers the current view.
          * Not a hook a display fills: a display states its rule as
          * `zoomFetchArgs` (the zoom-derived arguments a fetch now would send)
-         * and `regionHasData` (did the last one store anything), and this
-         * compares the whole input set against the one the region was fetched
-         * under.
+         * and `regionHasData` (does what the last one stored still answer),
+         * and this compares the whole input set against the one the region was
+         * fetched under.
          */
         isCacheValid(displayedRegionIndex: number): boolean {
           return (

@@ -79,18 +79,6 @@ export default function SharedModelF(
         return getConf(self, 'gcMode')
       },
       /**
-       * #method
-       * Overrides the wiggle base's strict-zoom arguments with none: the
-       * adapter computes GC from `windowSize`/`windowDelta`/`gcMode` alone and
-       * the worker does no per-zoom binning, so data fetched at one zoom is
-       * right at every other. This display sends no `bpPerPx` either, so no zoom
-       * value reaches the fetch, and the empty object says so instead of
-       * carrying a key whose value never changes.
-       */
-      zoomFetchArgs() {
-        return {}
-      },
-      /**
        * #getter
        * The parent track's adapter with the display's GC parameters applied,
        * wrapped in a `GCContentAdapter` where the track names a bare sequence
