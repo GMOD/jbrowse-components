@@ -9,7 +9,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 /**
  * Binds the shared ImportSyntenyOpenCustomTrack uploader to an import-form
  * view model + row: pulls the plugin manager from the model's env and reports
- * the chosen track into the row's model slot. Used by both the linear synteny
+ * the chosen track into the row's model slot. Used by the linear synteny
  * (per row pair), dotplot (row 0) and circular (row 0) import forms.
  */
 const ImportFormOpenCustomTrack = observer(function ImportFormOpenCustomTrack({

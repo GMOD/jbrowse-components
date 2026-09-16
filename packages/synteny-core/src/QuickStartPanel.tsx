@@ -41,9 +41,9 @@ const useStyles = makeStyles()(theme => ({
 /**
  * Quick start: launch straight from a pre-configured synteny track, which names
  * its own assemblies. The track Select, the empty state and Launch are shared by
- * the linear synteny and dotplot import forms; `children` is the view's summary
- * of the assemblies the chosen track implies (rows for synteny, X/Y for
- * dotplot), which is the only part that differs.
+ * the synteny import forms; `children` is the view's summary of the assemblies
+ * the chosen track implies (rows, X/Y axes, a circle's genomes), which is the
+ * only part that differs.
  *
  * Unlike the selector this replaced, the Select holds its value: the assemblies
  * it implies are shown here rather than written into a separate form below, so

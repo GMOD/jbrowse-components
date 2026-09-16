@@ -9,8 +9,8 @@ import {
 } from '@mui/material'
 
 /**
- * The None / Existing track / New track radio group shared by the linear
- * synteny and dotplot import forms, plus any extension-registered options.
+ * The None / Existing track / New track radio group shared by the synteny
+ * import forms, plus any extension-registered options.
  * Controlled: `choice`/`onChange` come from useImportFormSyntenyChoices.
  *
  * Three ways to name the group, in precedence order: `labelledBy` points at a

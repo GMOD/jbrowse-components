@@ -29,7 +29,7 @@ export type PairStatus =
 /**
  * One status per adjacent row pair. A dotplot passes its two assemblies and gets
  * a single entry, which is why this lives here rather than in the synteny form:
- * both import forms gate Launch on the same answer, and a dotplot that launched
+ * every synteny import form gates Launch on the same answer, and a dotplot that launched
  * an unfinished upload anyway is the same silent empty view the synteny form
  * already refuses.
  */

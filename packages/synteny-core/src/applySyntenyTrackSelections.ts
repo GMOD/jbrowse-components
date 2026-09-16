@@ -17,7 +17,7 @@ import type {
  * result on the level that draws between those two rows. A dotplot passes its
  * two assemblies and gets the single-pair case.
  *
- * Both import forms submit through here, because resolving and applying are two
+ * Every synteny import form submits through here, because resolving and applying are two
  * halves of one answer and splitting them across two files is how they drifted:
  * the dotplot's copy used to `toggleTrack` where the synteny form used
  * `showTrack`, which *hid* the track on a re-submit — `addTrackConf`

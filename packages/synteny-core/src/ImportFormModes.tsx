@@ -14,10 +14,10 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 /**
- * The Quick start / Manual split both comparative import forms are built
- * around: the mode toggle, the Quick start panel, and the handover between
- * them. Only the manual half differs between the views (a stack of assembly
- * rows for synteny, two axis selectors for a dotplot), so that is `children`.
+ * The Quick start / Manual split the synteny import forms are built around: the
+ * mode toggle, the Quick start panel, and the handover between them. Only the
+ * manual half differs between the views (a stack of assembly rows, two axis
+ * selectors, a circle's one or two genomes), so that is `children`.
  *
  * What this really owns is the handover. Switching to Manual copies over what
  * Quick start had set up — but only when Quick start actually has a track, or
