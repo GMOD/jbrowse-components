@@ -271,16 +271,25 @@ export function variantTrackMenuItems(
           : []),
       ],
     },
-    {
-      label: 'Shade by dosage',
-      helpText:
-        "Compose the cell color with the genotype's alt dosage — the fraction of its called alleles that are non-reference — so a homozygote paints the hue itself and a heterozygote a lighter version of it. Off paints every alt-carrying cell the flat hue its color mode chose",
-      type: 'checkbox',
-      checked: self.shadeByDosage,
-      onClick: () => {
-        self.setShadeByDosage(!self.shadeByDosage)
-      },
-    },
+    // Only in allele-count mode: a phased row is one haplotype, which either
+    // carries the allele or does not, so the ramp has nothing to express there
+    // — and the setting is a fetch input, so the checkbox would have refetched
+    // the same cells. Hidden rather than disabled, the way the variant lane's
+    // slider is.
+    ...(self.renderingMode === 'phased'
+      ? []
+      : [
+          {
+            label: 'Shade by dosage',
+            helpText:
+              "Compose the cell color with the genotype's alt dosage — the fraction of its called alleles that are non-reference — so a homozygote paints the hue itself and a heterozygote a lighter version of it. Off paints every alt-carrying cell the flat hue its color mode chose",
+            type: 'checkbox' as const,
+            checked: self.shadeByDosage,
+            onClick: () => {
+              self.setShadeByDosage(!self.shadeByDosage)
+            },
+          },
+        ]),
     // The ordering half of the same metadata, beside the coloring half: both
     // are config slots a session can set, and only the coloring one had a way
     // in from the menu.
