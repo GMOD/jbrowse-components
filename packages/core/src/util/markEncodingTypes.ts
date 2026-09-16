@@ -365,6 +365,12 @@ export type CoreEncodeFeaturesArgs = {
   transform?: TransformStep[]
   /** Sugar for leading `filter` steps: `jexl:`-prefixed expressions. */
   filters?: string[]
+  /**
+   * The zoom the adapter reads at, for one with zoom levels (BigWig); absent
+   * is full resolution. The display resolves it to a rung so a zoom inside the
+   * rung refetches nothing.
+   */
+  bpPerPx?: number
   byteLimit?: number
   sequenceAdapter?: Record<string, unknown>
 }

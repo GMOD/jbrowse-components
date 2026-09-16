@@ -2323,7 +2323,8 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "displayTypes": [
-        "LinearWiggleDisplay"
+        "LinearWiggleDisplay",
+        "LinearMarkDisplay"
       ]
     },
     "MultiQuantitativeTrack": {

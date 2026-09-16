@@ -39,6 +39,7 @@ memory, so prefer the BedGraphTabixAdapter for large files.
 ## Related links
 
 - **Track:** [QuantitativeTrack](../quantitativetrack)
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 - **Display:** [LinearWiggleDisplay](../linearwiggledisplay)
 
 ## Config slots

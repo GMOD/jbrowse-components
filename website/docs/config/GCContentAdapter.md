@@ -29,6 +29,7 @@ comes from the assembly the track is displayed against.
 ## Related links
 
 - **Track:** [QuantitativeTrack](../quantitativetrack)
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 - **Display:** [LinearWiggleDisplay](../linearwiggledisplay)
 
 ## Config slots

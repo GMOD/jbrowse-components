@@ -85,7 +85,7 @@ in full and of the format-typed displays only where it says so.
 
 | Stage | What the grammar means | Where the tree answers | How far |
 | --- | --- | --- | --- |
-| data | rows in memory | a feature adapter's `getFeaturesArray`, any format, and past the byte gate the adapter's `densityAdapter` sidecar as a mark's layer (ADR-117) | whole; the adapter is the format's, and the grammar has no lazy source of its own — nor does it pass `bpPerPx`, so an adapter holding a coarse tier answers at full resolution anyway |
+| data | rows in memory | a feature adapter's `getFeaturesArray`, any format, and past the byte gate the adapter's `densityAdapter` sidecar as a mark's layer (ADR-117) | whole; the adapter is the format's, and the grammar has no lazy source of its own. An adapter with zoom levels is read at the floor of the auto-bin rung ([ADR-123](../architecture-decision-records/adr-123-a-mark-reads-a-bigwig-at-the-rungs-floor.md)), so a BigWig answers from its summary tiers and a zoom inside a rung refetches nothing |
 | transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `stack` — run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreEncodeFeatures` request and then each layer's own; `filters: jexl[]` as sugar for leading filters | whole, layout included — `stack` is a pileup's packing as a step, and not the format-typed displays' ([ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)); a `bin`'s width may follow the zoom; `window` and `sample` are absent |
 | scale | domain → range, separate from the encoding | every channel on the encoding — `{ field, scale, domain, palette \| range \| ramp }` for colour and glyph, `{ field, scale, domain }` for y — read by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`) and resolved either in the worker (categorical) or on the main thread against a domain uniform (y, and a quantitative ramp), with `ScoreScaleMixin` resolving the declaration rather than owning it | whole, declared in one place |
 | mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`) | whole, for the shapes the library has |
@@ -257,8 +257,11 @@ display's lane budget rather than a facet's.
 
 ## Gaps against the grammar
 
-- **`window` and `sample` are absent**, and wiggle's binning is the adapter's
-  and stays so. The bin-width gap closed:
+- **`window` and `sample` are absent**, and a BigWig's summary tiers are the
+  adapter's: the mark display reads them at the rung's floor and a config
+  names `score`, `minScore` or `maxScore` off what comes back
+  ([ADR-123](../architecture-decision-records/adr-123-a-mark-reads-a-bigwig-at-the-rungs-floor.md)).
+  The bin-width gap closed:
   [ADR-117](../architecture-decision-records/adr-117-the-density-tier-is-a-mark-layer.md)
   gives `bin` a `step: "auto"` that follows the view's `bpPerPx`, resolved
   before the RPC and keyed into the fetch on a 1/2/5 ladder — four pixels of

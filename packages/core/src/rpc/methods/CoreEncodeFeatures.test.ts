@@ -69,6 +69,30 @@ test('no transform encodes every feature', async () => {
   expect((await run({})).count).toBe(4)
 })
 
+test('the zoom reaches the adapter, so one with zoom levels answers at it', async () => {
+  const getFeaturesArray = jest.fn(
+    async (_region: unknown, _opts: { bpPerPx?: number }) => features,
+  )
+  jest.mocked(getAdapter).mockResolvedValue({
+    dataAdapter: {
+      getFeatures: () => {},
+      getFeaturesArray,
+      setSequenceAdapterConfig: () => {},
+    },
+  } as unknown as Awaited<ReturnType<typeof getAdapter>>)
+  const method = new CoreEncodeFeatures({
+    jexl: createJexlInstance(),
+  } as PluginManager)
+  await method.invoke({
+    sessionId: 's',
+    adapterConfig: { type: 'AnyAdapter' },
+    region: { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
+    layers: [{ encoding: { y: 'score' }, lanes: ['y'] }],
+    bpPerPx: 500,
+  })
+  expect(getFeaturesArray.mock.calls[0]![1]).toMatchObject({ bpPerPx: 500 })
+})
+
 test("a layer's own transform runs after the shared one, and the other layer sees neither", async () => {
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {

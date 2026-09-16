@@ -40,6 +40,7 @@ used to load bgzip-compressed, tabix-indexed bedGraph signal files
 ## Related links
 
 - **Track:** [QuantitativeTrack](../quantitativetrack)
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 - **Display:** [LinearWiggleDisplay](../linearwiggledisplay)
 
 ## Config slots

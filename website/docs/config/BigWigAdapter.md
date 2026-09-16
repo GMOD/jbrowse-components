@@ -38,6 +38,7 @@ used to load BigWig quantitative signal files
 ## Related links
 
 - **Track:** [QuantitativeTrack](../quantitativetrack)
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay)
 - **Display:** [LinearWiggleDisplay](../linearwiggledisplay)
 
 ## Config slots

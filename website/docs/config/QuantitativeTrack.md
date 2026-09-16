@@ -57,6 +57,7 @@ a BigWig file and drawn as an XY plot or density
 
 ## Related links
 
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay) ([state model](../../models/linearmarkdisplay))
 - **Display:** [LinearWiggleDisplay](../linearwiggledisplay) ([state model](../../models/linearwiggledisplay))
 - **Adapter:** [BedGraphAdapter](../bedgraphadapter)
 - **Adapter:** [BedGraphTabixAdapter](../bedgraphtabixadapter)

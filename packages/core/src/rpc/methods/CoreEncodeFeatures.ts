@@ -34,6 +34,7 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
       layers: requested,
       transform = [],
       filters = [],
+      bpPerPx,
       byteLimit,
       signal,
       statusCallback,
@@ -60,7 +61,12 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
     const fetched = await updateStatus(
       'Downloading features',
       statusCallback,
-      () => dataAdapter.getFeaturesArray(region, { statusCallback, signal }),
+      () =>
+        dataAdapter.getFeaturesArray(region, {
+          bpPerPx,
+          statusCallback,
+          signal,
+        }),
     )
     checkAbortSignal(signal)
 

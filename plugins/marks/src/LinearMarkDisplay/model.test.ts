@@ -34,11 +34,15 @@ const WIDE_REGION = {
   assemblyName: 'volvox',
 }
 
-function createTestEnvironment(marks: unknown[], region = REGION) {
+function createTestEnvironment(
+  marks: unknown[],
+  region = REGION,
+  adapterType = 'BedAdapter',
+) {
   return createDisplayTestEnvironment<LinearMarkDisplayModel>({
     plugins: [new LinearGenomeViewPlugin(), new WigglePlugin()],
     trackType: 'FeatureTrack',
-    adapter: { name: 'BedAdapter', config: { type: 'BedAdapter' } },
+    adapter: { name: adapterType, config: { type: adapterType } },
     displayName: 'LinearMarkDisplay',
     configSchema: () => configSchemaFactory(),
     stateModel: (pm, schema) => stateModelFactory(pm, schema),
@@ -906,6 +910,30 @@ test('a zoom sweep refetches once per rung, not once per step', () => {
   // 64 steps of 1.125x — 1 to 1,600 bp/px — cross 11 rungs of the ladder, so
   // 53 of the 64 zooms leave the fetch's inputs alone
   expect(keys).toHaveLength(11)
+})
+
+test('an adapter with zoom levels is fetched at the floor of the rung, and one without sends no zoom', () => {
+  const bigwig = createTestEnvironment(
+    AUTO_BIN_MARKS,
+    WIDE_REGION,
+    'BigWigAdapter',
+  ).createDisplay()
+  const bed = createTestEnvironment(AUTO_BIN_MARKS, WIDE_REGION).createDisplay()
+  const zoomAt = (bpPerPx: number) => {
+    bigwig.view.zoomTo(bpPerPx)
+    bed.view.zoomTo(bpPerPx)
+    expect(bed.display.zoomFetchArgs()).toEqual({})
+    return bigwig.display.zoomFetchArgs().bpPerPx!
+  }
+  // rung 20 bp serves 2.5..5 bp/px; its floor is the rung below over 4 px
+  expect(zoomAt(3)).toBe(2.5)
+  expect(zoomAt(4.9)).toBe(2.5)
+  expect(zoomAt(5.1)).toBe(5)
+  expect(zoomAt(1000)).toBe(500)
+  bigwig.view.zoomTo(3)
+  const inside = bigwig.display.fetchInputs.zoom
+  bigwig.view.zoomTo(4.9)
+  expect(bigwig.display.fetchInputs.zoom).toEqual(inside)
 })
 
 test('a fixed bin width ignores the zoom, and its fetch key with it', () => {

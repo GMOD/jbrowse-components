@@ -8137,6 +8137,9 @@
           "allOf": [
             {
               "$ref": "#/$defs/LinearWiggleDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearMarkDisplaySlots"
             }
           ],
           "properties": {},

@@ -23,11 +23,18 @@ export default function LinearMarkDisplayF(pluginManager: PluginManager) {
         import('./model.ts').then(f =>
           f.stateModelFactory(pluginManager, configSchema),
         ),
-      // Every adapter behind these three answers `getFeaturesArray`, so a
+      // Every adapter behind these four answers `getFeaturesArray`, so a
       // `marks` entry over a BAM is a declared pileup and one over a VCF a
       // stacked variant strip. What differs is which fields answer: a read's
-      // `score` is its MAPQ, a variant's quality is `QUAL`.
-      trackType: ['FeatureTrack', 'AlignmentsTrack', 'VariantTrack'],
+      // `score` is its MAPQ, a variant's quality is `QUAL`, and a BigWig's
+      // `score` past its raw section is a zoom level's mean, with `minScore`
+      // and `maxScore` beside it.
+      trackType: [
+        'FeatureTrack',
+        'AlignmentsTrack',
+        'VariantTrack',
+        'QuantitativeTrack',
+      ],
       viewType: 'LinearGenomeView',
       ReactComponent,
     })

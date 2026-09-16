@@ -10,6 +10,7 @@ import { filterMenuItems } from '@jbrowse/core/ui/filterMenuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import {
   getDialogHost,
+  getEnv,
   getSession,
   openFeatureWidget,
   pluralize,
@@ -59,7 +60,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import { autorun } from 'mobx'
 
-import { binStepWidth } from './autoBin.ts'
+import { binStepWidth, rungFloorBpPerPx } from './autoBin.ts'
 import { densityRegionData } from './densityLayer.ts'
 import {
   foldFacetSections,
@@ -810,6 +811,21 @@ export function stateModelFactory(
         }
       },
       /**
+       * #method
+       * The zoom an adapter with zoom levels reads at, resolved to the floor
+       * of the auto-bin rung so a zoom inside the rung refetches nothing;
+       * empty for an adapter whose answer does not depend on the zoom, so
+       * a zoom never refetches those. Sent with the fetch and stamped on the
+       * region it loads. ADR-123.
+       */
+      zoomFetchArgs(): { bpPerPx?: number } {
+        const { type } = self.adapterConfig as { type: string }
+        const zoomed = getEnv(self)
+          .pluginManager.getAdapterType(type)
+          .adapterCapabilities.includes('hasResolution')
+        return zoomed ? { bpPerPx: rungFloorBpPerPx(self.host.bpPerPx) } : {}
+      },
+      /**
        * #getter
        * bands a span stacks into: the highest `row` any loaded layer
        * carries, plus one
@@ -1234,9 +1250,14 @@ export function stateModelFactory(
        * #action
        */
       fetchNeeded(needed: IndexedRegion[]) {
+        const zoom = self.zoomFetchArgs()
         return fetchEachRegion(self, needed, {
           call: (region, ctx) =>
-            ctx.callRpc('CoreEncodeFeatures', { ...rpcArgs(self), region }),
+            ctx.callRpc('CoreEncodeFeatures', {
+              ...rpcArgs(self),
+              ...zoom,
+              region,
+            }),
           onResult: (_idx, result) => storedRegionData(result),
         })
       },
