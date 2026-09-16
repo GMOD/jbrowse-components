@@ -1,16 +1,27 @@
 import Plugin from '@jbrowse/core/Plugin'
 import BaseResult from '@jbrowse/core/TextSearch/BaseResults'
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import {
+  ConfigurationSchema,
+  hydrateTrackConfig,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import TextSearchAdapterType from '@jbrowse/core/pluggableElementTypes/TextSearchAdapterType'
+import { resolveUriLocation } from '@jbrowse/core/util/io'
 import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
-import { isAlive } from '@jbrowse/mobx-state-tree'
+import {
+  getEnv,
+  getSnapshot,
+  isAlive,
+  isStateTreeNode,
+} from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
 import { createLinearGenomeView } from './index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { TrackInput } from '@jbrowse/product-core'
+import type { UriLocation } from '@jbrowse/core/util'
+import type { ControllerSession, TrackInput } from '@jbrowse/product-core'
 
 jest.mock('./makeWorkerInstance', () => () => {})
 // Every assembly below is a config, so nothing here resolves a hub — this keeps
@@ -214,6 +225,46 @@ test('assemblyNames is stamped onto full configs arriving after mount', async ()
   })
   expect(assemblyNamesOf(session, 't2')).toEqual(['volvox'])
   expect(shownIds(session.view)).toEqual(['t1', 't2'])
+  controller.destroy()
+})
+
+// A worker started from a blob: URL has no base to resolve a relative path
+// against, so the location has to arrive carrying the page's
+function resolvedUri(session: ControllerSession, trackId: string) {
+  const { pluginManager } = getEnv<{ pluginManager: PluginManager }>(session)
+  const conf = session.getTrackById(trackId)
+  const snapshot = isStateTreeNode(conf) ? getSnapshot(conf) : conf
+  const { bedGzLocation } = readConfObject(
+    hydrateTrackConfig(pluginManager, snapshot as Record<string, unknown>)!,
+    'adapter',
+  ) as { bedGzLocation: UriLocation }
+  return resolveUriLocation(bedGzLocation).uri
+}
+
+const pageUrl = (path: string) => new URL(path, document.baseURI).href
+
+test('relative uris in the options resolve against the page for the worker', async () => {
+  const el = document.createElement('div')
+  const controller = createLinearGenomeView(el, {
+    assembly,
+    makeWorkerInstance: () => ({}) as Worker,
+    tracks: [
+      {
+        ...featureTrack('full'),
+        adapter: { type: 'BedTabixAdapter', uri: 'data/full.bed.gz' },
+      },
+    ],
+  })
+  const { session } = await controller.whenReady()
+  await controller.update({
+    tracks: ['full', 'data/loose.bed.gz'],
+  })
+
+  expect(resolvedUri(session, 'full')).toBe(pageUrl('data/full.bed.gz'))
+  const loose = session.view.tracks
+    .map(t => t.configuration.trackId)
+    .find(id => id !== 'full')!
+  expect(resolvedUri(session, loose)).toBe(pageUrl('data/loose.bed.gz'))
   controller.destroy()
 })
 

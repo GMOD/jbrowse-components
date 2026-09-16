@@ -1,4 +1,5 @@
 import { getEnv } from '@jbrowse/core/util'
+import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
 import { guessTrackConf } from '@jbrowse/core/util/tracks'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
@@ -86,7 +87,9 @@ export function resolveTracks(
         withAssemblyName(track, assemblyName)
     // after the guess, so the adapter has already derived its index sibling
     // from the uri string and both get swapped for blobs together
-    return localFiles ? resolveLocalFileUris(conf, localFiles) : conf
+    return withPageBaseUri(
+      localFiles ? resolveLocalFileUris(conf, localFiles) : conf,
+    )
   })
 }
 

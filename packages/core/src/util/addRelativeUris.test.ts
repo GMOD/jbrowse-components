@@ -1,4 +1,8 @@
-import { addRelativeUris, stripBaseUris } from './addRelativeUris.ts'
+import {
+  addRelativeUris,
+  stripBaseUris,
+  withPageBaseUri,
+} from './addRelativeUris.ts'
 
 test('addRelativeUris stamps baseUri next to a uri key', () => {
   const config: Record<string, unknown> = { uri: 'data.bam' }
@@ -74,4 +78,17 @@ test('stripBaseUris leaves null values intact and returns the input', () => {
   const obj = { a: null, baseUri: 'x' }
   expect(stripBaseUris(obj)).toBe(obj)
   expect(obj).toEqual({ a: null })
+})
+
+test('withPageBaseUri stamps a copy against the page, keeping an existing baseUri', () => {
+  const config = {
+    tracks: [{ uri: 'a.bam' }, { uri: 'b.bam', baseUri: 'https://hub.org/' }],
+  }
+  expect(withPageBaseUri(config)).toEqual({
+    tracks: [
+      { uri: 'a.bam', baseUri: document.baseURI },
+      { uri: 'b.bam', baseUri: 'https://hub.org/' },
+    ],
+  })
+  expect(config.tracks[0]).toEqual({ uri: 'a.bam' })
 })

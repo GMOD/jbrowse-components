@@ -1,10 +1,13 @@
+import { hydrateTrackConfig, readConfObject } from '@jbrowse/core/configuration'
+import { resolveUriLocation } from '@jbrowse/core/util/io'
 import { suppressTeardownNoise } from '@jbrowse/display-test-utils'
-import { isAlive } from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import { createApp } from './createApp.ts'
 import { resolveAssemblies } from './index.ts'
 
 import type { CreateAppOptions } from './createApp.ts'
+import type { UriLocation } from '@jbrowse/core/util'
 
 jest.mock('./makeWorkerInstance', () => () => {})
 
@@ -320,5 +323,45 @@ test("spreading resolveAssemblies over a host's options keeps the host's tracks"
   })
 
   expect(controller.viewState.session.getTrackById('mine')).toBeTruthy()
+  controller.destroy()
+})
+
+// A worker started from a blob: URL has no base to resolve a relative path
+// against, so the location has to arrive carrying the page's
+test('relative uris in config and session resolve against the page for the worker', async () => {
+  const bedTrack = (trackId: string) => ({
+    type: 'FeatureTrack',
+    trackId,
+    name: trackId,
+    assemblyNames: ['volvox'],
+    adapter: { type: 'BedTabixAdapter', uri: `data/${trackId}.bed.gz` },
+  })
+  const controller = await createApp(mount(), {
+    assemblies,
+    tracks: [bedTrack('config')],
+    makeWorkerInstance: () => ({}) as Worker,
+  })
+  await controller.setSession({
+    name: 'restored',
+    sessionTracks: [bedTrack('session')],
+  })
+
+  const { session } = controller.viewState
+  for (const trackId of ['config', 'session']) {
+    const conf = session.getTrackById(trackId)
+    const { bedGzLocation } = readConfObject(
+      hydrateTrackConfig(
+        controller.viewState.pluginManager,
+        (isStateTreeNode(conf) ? getSnapshot(conf) : conf) as Record<
+          string,
+          unknown
+        >,
+      )!,
+      'adapter',
+    ) as { bedGzLocation: UriLocation }
+    expect(resolveUriLocation(bedGzLocation).uri).toBe(
+      new URL(`data/${trackId}.bed.gz`, document.baseURI).href,
+    )
+  }
   controller.destroy()
 })

@@ -1,5 +1,6 @@
 import { createElement } from 'react'
 
+import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
 import { observeSession } from '@jbrowse/product-core'
 import { createRoot } from 'react-dom/client'
 
@@ -84,7 +85,7 @@ export async function createApp(
     async setSession(session) {
       if (session) {
         await viewState.pluginManager.preloadSessionTypes(session)
-        viewState.setSession(session)
+        viewState.setSession(withPageBaseUri(session))
       } else {
         // back to the app's own starting state, which `views` defined —
         // preloaded when this app was created, so settable synchronously

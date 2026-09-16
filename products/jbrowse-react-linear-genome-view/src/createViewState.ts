@@ -1,5 +1,6 @@
 import { expandAssemblyShorthand } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import { assembleLocString } from '@jbrowse/core/util'
+import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
 import {
   normalizeAdapterSnapshots,
   registerLocalFiles,
@@ -192,12 +193,14 @@ function finishCreateViewState(
   // a declaration rather than a generic arrow: `<T>(x: T) => …` in a .ts file
   // is a JSX tag to babel, which is what jest parses these with
   function local<T>(node: T) {
-    return blobs
-      ? resolveLocalFileUris(
-          normalizeAdapterSnapshots(node, pluginManager),
-          blobs,
-        )
-      : node
+    return withPageBaseUri(
+      blobs
+        ? resolveLocalFileUris(
+            normalizeAdapterSnapshots(node, pluginManager),
+            blobs,
+          )
+        : node,
+    )
   }
   const stateTree = model.create(
     {
@@ -215,13 +218,15 @@ function finishCreateViewState(
         assembly: local(expandAssemblyShorthand(assembly, pluginManager)),
         tracks: tracks?.map(local),
         internetAccounts,
-        aggregateTextSearchAdapters,
+        aggregateTextSearchAdapters: withPageBaseUri(
+          aggregateTextSearchAdapters,
+        ),
       },
       disableAddTracks,
       menuBar,
       height,
       drawerViewHeight,
-      session: defaultSession ?? {
+      session: withPageBaseUri(defaultSession) ?? {
         name: `New session ${new Date().toLocaleString()}`,
         view: {
           id: 'linearGenomeView',
@@ -237,7 +242,7 @@ function finishCreateViewState(
     // applied after create rather than passed in: a restored session's shape is
     // only known at runtime, and restoreSession is the door for that (MST
     // validates it here and throws on a mismatch)
-    stateTree.restoreSession(session)
+    stateTree.restoreSession(withPageBaseUri(session))
   }
   if (init || location || highlight) {
     // Applied after create rather than folded into the default session above,

@@ -5,6 +5,7 @@ import {
   pluginLabel,
   pluginsNotIn,
 } from '@jbrowse/core/pluginDefinitions'
+import { withPageBaseUri } from '@jbrowse/core/util/addRelativeUris'
 import {
   normalizeAdapterSnapshots,
   registerLocalFiles,
@@ -106,12 +107,14 @@ function finishCreateViewState(
   // a declaration rather than a generic arrow: `<T>(x: T) => …` in a .ts file
   // is a JSX tag to babel, which is what jest parses these with
   function local<T>(node: T) {
-    return blobs
-      ? resolveLocalFileUris(
-          normalizeAdapterSnapshots(node, pluginManager),
-          blobs,
-        )
-      : node
+    return withPageBaseUri(
+      blobs
+        ? resolveLocalFileUris(
+            normalizeAdapterSnapshots(node, pluginManager),
+            blobs,
+          )
+        : node,
+    )
   }
   // annotated so the reads below are checked: `model` erases its session type
   // (see ViewModel), and a session is always passed here
@@ -120,6 +123,11 @@ function finishCreateViewState(
       jbrowse: {
         ...config,
         tracks: config.tracks?.map(local),
+        connections: withPageBaseUri(config.connections),
+        aggregateTextSearchAdapters: withPageBaseUri(
+          config.aggregateTextSearchAdapters,
+        ),
+        defaultSession: withPageBaseUri(config.defaultSession),
         // The assemblies too, not only the tracks: a sequence adapter is the
         // same shape, and a host whose genome is a file on disk rather than a
         // hub — a non-model organism, an in-house build — has nowhere to put it.
@@ -137,7 +145,7 @@ function finishCreateViewState(
         // at all, so for those this is the only place they are written down.
         plugins: dedupePlugins([...(config.plugins ?? []), ...loaded]),
       },
-      session: session ?? defaultSession,
+      session: withPageBaseUri(session ?? defaultSession),
     },
     { pluginManager },
   )

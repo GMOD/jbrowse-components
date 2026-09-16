@@ -27,6 +27,21 @@ export function addRelativeUris(
 }
 
 /**
+ * A copy of `config` with every relative URI stamped against the page, which
+ * is what the page itself would resolve it against. An RPC worker started from
+ * a `blob:` URL has no such base, so a location it receives without one fails
+ * to parse there.
+ */
+export function withPageBaseUri<T>(config: T): T {
+  if (typeof document === 'undefined' || config === undefined) {
+    return config
+  }
+  const copy = structuredClone(config)
+  addRelativeUris(copy as Record<string, unknown>, new URL(document.baseURI))
+  return copy
+}
+
+/**
  * Inverse of {@link addRelativeUris}: recursively delete every synthetic
  * `baseUri` key (mutates in place), e.g. before serializing a config snapshot
  * back out in the admin "Save config" flow or a "Copy config" button.
