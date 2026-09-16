@@ -1,6 +1,6 @@
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { FileLocation } from '@jbrowse/core/util/types'
-import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { IStateTreeNode, SnapshotIn } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
 
 type Conf = SnapshotIn<AnyConfigurationModel>
@@ -13,8 +13,8 @@ export type ImportFormSyntenyTrack =
   | { type: 'none' }
 
 /**
- * The subset of a synteny/dotplot import-form view model that the shared
- * import-form components read and write. Both concrete view models satisfy it.
+ * The part of a view model the shared synteny import-form components read and
+ * write; `ImportFormSyntenyMixin` supplies it.
  */
 export interface ImportFormSyntenyModel {
   importFormSyntenyTrackSelections: ImportFormSyntenyTrack[]
@@ -64,20 +64,36 @@ export interface SyntenyFileFormatOption {
 }
 // #endregion
 
-// The dotplot and linear synteny import forms each expose their own point, but
-// share one option shape — ImportSyntenyOpenCustomTrack takes the name as a prop
-// and fires whichever one it was handed, so both are declared together here.
-export type SyntenyFileFormatsExtensionPoint =
-  | 'DotplotView-SyntenyFileFormats'
-  | 'LinearSyntenyView-SyntenyFileFormats'
+export interface SyntenyImportFormOptionProps {
+  /** the view whose import form is open; `model.type` says which */
+  model: ImportFormSyntenyModel & IStateTreeNode & { type: string }
+  /** the pair of the form's rows the option configures; always 0 on a dotplot or circle */
+  rowIndex: number
+  /** the pair's first assembly: the upper row, the dotplot's y-axis, the circle's first genome */
+  assembly1: string
+  assembly2: string
+}
+
+// #region option
+export interface SyntenyImportFormOption {
+  /** unique identifier for the radio option */
+  value: string
+  /** display text for the radio option */
+  label: string
+  ReactComponent: React.FC<SyntenyImportFormOptionProps>
+}
+// #endregion
 
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
-    'DotplotView-SyntenyFileFormats': {
-      args: SyntenyFileFormatOption[]
-      result: SyntenyFileFormatOption[]
+    // #region registry
+    'SyntenyImportForm-Options': {
+      args: SyntenyImportFormOption[]
+      result: SyntenyImportFormOption[]
+      props: SyntenyImportFormOptionProps
     }
-    'LinearSyntenyView-SyntenyFileFormats': {
+    // #endregion
+    'SyntenyImportForm-FileFormats': {
       args: SyntenyFileFormatOption[]
       result: SyntenyFileFormatOption[]
     }

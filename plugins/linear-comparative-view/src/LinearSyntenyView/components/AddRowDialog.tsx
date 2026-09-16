@@ -9,10 +9,7 @@ import {
   isSessionWithAddSessionTrack,
 } from '@jbrowse/core/util'
 import { isAlive } from '@jbrowse/mobx-state-tree'
-import {
-  ImportSyntenyOpenCustomTrack,
-  defaultSyntenyFileFormats,
-} from '@jbrowse/synteny-core'
+import { ImportSyntenyOpenCustomTrack } from '@jbrowse/synteny-core'
 import {
   FormControlLabel,
   MenuItem,
@@ -304,8 +301,6 @@ const AddRowDialog = observer(function AddRowDialog({
             key={`${terminalAssembly}-${newAssembly}`}
             assembly1={terminalAssembly}
             assembly2={newAssembly}
-            extensionPoint="LinearSyntenyView-SyntenyFileFormats"
-            baseFormats={defaultSyntenyFileFormats}
             pluginManager={pluginManager}
             onSetTrack={val => {
               setCustomTrack(val.type === 'userOpened' ? val.value : undefined)

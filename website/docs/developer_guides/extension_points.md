@@ -501,10 +501,8 @@ plugin before you put there.
 | `Desktop-StartScreenLaunchPanel` | sync |  | Replace or wrap the "Launch new session" panel |
 | `Desktop-StartScreenMenuItems` | sync | list | Add items to the start screen menu |
 | `Desktop-StartScreenRecentSessionsPanel` | sync |  | Replace or wrap the recent sessions panel |
-| `DotplotView-ImportFormSyntenyOptions` | sync | list | Add options to the dotplot view import form |
 | `DotplotView-OverlayHTMLComponent` | sync |  | Add an HTML overlay component to the dotplot view |
 | `DotplotView-OverlaySVGComponent` | sync |  | Add an SVG overlay component to the dotplot view |
-| `DotplotView-SyntenyFileFormats` | sync | list | Add synteny file formats to the dotplot import form |
 | `LaunchView-BreakpointSplitView` | async | single | Programmatically launch a breakpoint split view |
 | `LaunchView-CircularView` | async | single | Programmatically launch a circular view |
 | `LaunchView-DotplotView` | async | single | Programmatically launch a dotplot view |
@@ -517,8 +515,8 @@ plugin before you put there.
 | `LinearGenomeView-ScalebarHighlightComponent` | sync |  | Add a highlight component to the scalebar |
 | `LinearGenomeView-searchResultSelected` | async | notify | Invoked when a search result is selected |
 | `LinearGenomeView-TracksContainerComponent` | sync |  | Add a component into the LGV tracks container |
-| `LinearSyntenyView-ImportFormSyntenyOptions` | sync | list | Add options to the linear synteny view import form |
-| `LinearSyntenyView-SyntenyFileFormats` | sync | list | Add synteny file formats to the linear synteny import form |
+| `SyntenyImportForm-FileFormats` | sync | list | Add synteny file formats to the "New track" panel of every synteny import form |
+| `SyntenyImportForm-Options` | sync | list | Add track options beside None / Existing track / New track in every synteny import form |
 | `TrackSelector-folderDialog` | sync |  | Replace the dialog shown when a folder category is clicked |
 | `TrackSelector-multiTrackMenuItems` | sync | list | Add items to the multi-track (shopping cart) menu |
 
@@ -1301,76 +1299,71 @@ later callbacks see, and every plugin registered on it runs. Register with
 `listenToExtensionPoint`; the canvas plugin's registration, which highlights the
 feature the result names, is the worked example in that section.
 
-### DotplotView-ImportFormSyntenyOptions
+### SyntenyImportForm-Options
 
 type: synchronous
 
 Registered contract:
 
-<!-- include: plugins/dotplot-view/src/DotplotView/components/ImportForm/TrackSelector.tsx#registry -->
+<!-- include: packages/synteny-core/src/SelectorTypes.ts#registry -->
 
 ```typescript
-'DotplotView-ImportFormSyntenyOptions': {
-  args: DotplotImportFormSyntenyOption[]
-  result: DotplotImportFormSyntenyOption[]
-  props: {
-    model: DotplotViewModel
-    /** name of the y-axis assembly */
-    assembly1: string
-    /** name of the x-axis assembly */
-    assembly2: string
-  }
+'SyntenyImportForm-Options': {
+  args: SyntenyImportFormOption[]
+  result: SyntenyImportFormOption[]
+  props: SyntenyImportFormOptionProps
 }
 ```
 
-Add custom radio options to the DotplotView import form; selecting one renders
-the plugin's React component. In-tree formats are listed in
-`defaultSyntenyFileFormats` rather than contributed here, so this point and its
-`LinearSyntenyView` twin exist for formats that live outside this repo. Each
-option:
+Add radio options beside None / Existing track / New track in the linear
+synteny, dotplot and circular import forms; selecting one renders the plugin's
+React component. `props.model.type` names the view, and `props.rowIndex` the row
+pair being configured, which is only ever above 0 in a linear synteny view. The
+component gets the same props and writes its track with
+`model.setImportFormSyntenyTrack(rowIndex, …)`. Each option:
 
-<!-- include: plugins/dotplot-view/src/DotplotView/components/ImportForm/TrackSelector.tsx#option -->
+<!-- include: packages/synteny-core/src/SelectorTypes.ts#option -->
 
 ```typescript
-export interface DotplotImportFormSyntenyOption {
+export interface SyntenyImportFormOption {
   /** unique identifier for the radio option */
   value: string
   /** display text for the radio option */
   label: string
-  ReactComponent: React.FC<{
-    model: DotplotViewModel
-    assembly1: string
-    assembly2: string
-  }>
+  ReactComponent: React.FC<SyntenyImportFormOptionProps>
 }
 ```
 
 Example: adding a custom synteny option that fetches data from a server
 
-<!-- include: plugins/dotplot-view/src/DotplotView/components/ImportForm/syntenyOptions.test.tsx#register -->
+<!-- include: packages/synteny-core/src/syntenyImportFormOptions.test.tsx#register -->
 
 ```typescript
 function addSyntenyOption(pluginManager: PluginManager) {
   pluginManager.contributeToExtensionPoint(
-    'DotplotView-ImportFormSyntenyOptions',
-    ({ assembly1, assembly2 }) => ({
+    'SyntenyImportForm-Options',
+    ({ model, assembly1, assembly2, rowIndex }) => ({
       value: `my-server-${assembly1}-${assembly2}`,
-      label: 'Load from my server',
+      label:
+        model.type === 'LinearSyntenyView'
+          ? `Load rows ${rowIndex + 1} and ${rowIndex + 2} from my server`
+          : 'Load from my server',
       ReactComponent: MySyntenyServerComponent,
     }),
   )
 }
 ```
 
-### DotplotView-SyntenyFileFormats
+### SyntenyImportForm-FileFormats
 
 type: synchronous
 
 - `args` - `SyntenyFileFormatOption[]` - array of file format options for the
-  "New track" panel in the dotplot import form
+  "New track" panel
 
-Add support for new synteny file formats in the DotplotView import form. The
-built-in formats (`.paf`, `.delta`, `.out`, `.chain`, `.anchors`,
+Add support for new synteny file formats to the "New track" panel of the linear
+synteny, dotplot and circular import forms and the synteny view's Add row
+dialog. The built-in formats (`.paf`, `.delta`, `.out`, `.chain`, `.anchors`,
 `.anchors.simple`, `.pif.gz`) are the point's initial value and are always kept;
 a contribution is added after them. Each option:
 
@@ -1466,79 +1459,7 @@ Two things to copy from it:
   plugin format gets the same file/swap UI as the built-ins.
 
 Register it with
-`pluginManager.contributeToExtensionPoint('DotplotView-SyntenyFileFormats', () => myFormat)`.
-
-### LinearSyntenyView-SyntenyFileFormats
-
-type: synchronous
-
-Same as `DotplotView-SyntenyFileFormats` but for the LinearSyntenyView import
-form: same `SyntenyFileFormatOption[]` in and out, and neither point declares
-props. One component (`ImportSyntenyOpenCustomTrack`) fires whichever of the two
-it was handed, which is why the shapes are declared together in
-`@jbrowse/synteny-core`.
-
-### LinearSyntenyView-ImportFormSyntenyOptions
-
-type: synchronous
-
-Registered contract:
-
-<!-- include: plugins/linear-comparative-view/src/LinearSyntenyView/components/ImportForm/ImportSyntenyTrackSelectorArea.tsx#registry -->
-
-```typescript
-'LinearSyntenyView-ImportFormSyntenyOptions': {
-  args: LinearSyntenyImportFormSyntenyOption[]
-  result: LinearSyntenyImportFormSyntenyOption[]
-  props: {
-    model: LinearSyntenyViewModel
-    /** name of the top assembly */
-    assembly1: string
-    /** name of the bottom assembly */
-    assembly2: string
-    /** which synteny row of the import form the option is rendering for */
-    selectedRow: number
-  }
-}
-```
-
-Add custom radio options to the LinearSyntenyView import form. Same pattern as
-`DotplotView-ImportFormSyntenyOptions`, with the extra `selectedRow` telling you
-which synteny row of the form you are rendering for. Each option:
-
-<!-- include: plugins/linear-comparative-view/src/LinearSyntenyView/components/ImportForm/ImportSyntenyTrackSelectorArea.tsx#option -->
-
-```typescript
-export interface LinearSyntenyImportFormSyntenyOption {
-  /** unique identifier for the radio option */
-  value: string
-  /** display text for the radio option */
-  label: string
-  ReactComponent: React.FC<{
-    model: LinearSyntenyViewModel
-    assembly1: string
-    assembly2: string
-    selectedRow: number
-  }>
-}
-```
-
-Example: the same server option, told which row pair it is rendering for
-
-<!-- include: plugins/linear-comparative-view/src/LinearSyntenyView/components/ImportForm/syntenyOptions.test.tsx#register -->
-
-```typescript
-function addSyntenyOption(pluginManager: PluginManager) {
-  pluginManager.contributeToExtensionPoint(
-    'LinearSyntenyView-ImportFormSyntenyOptions',
-    ({ assembly1, assembly2, selectedRow }) => ({
-      value: `my-server-${assembly1}-${assembly2}`,
-      label: `Load rows ${selectedRow + 1} and ${selectedRow + 2} from my server`,
-      ReactComponent: MySyntenyServerComponent,
-    }),
-  )
-}
-```
+`pluginManager.contributeToExtensionPoint('SyntenyImportForm-FileFormats', () => myFormat)`.
 
 ### Desktop-StartScreenMenuItems
 

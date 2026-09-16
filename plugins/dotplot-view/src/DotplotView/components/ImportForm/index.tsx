@@ -1,9 +1,11 @@
 import { AssemblySelector, ErrorBanner } from '@jbrowse/core/ui'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   ChromosomeFilter,
   ImportFormModes,
+  ImportFormSyntenyTrackPanel,
   allSessionTracks,
   applyQuickStartSelections,
   blockedByUnfinishedUpload,
@@ -23,7 +25,6 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import TrackSelector from './TrackSelector.tsx'
 import { doSubmit } from './doSubmit.ts'
 
 import type { DotplotViewModel } from '../../model.ts'
@@ -246,13 +247,22 @@ const DotplotImportForm = observer(function DotplotImportForm({
             </Button>
           </Tooltip>
         </div>
-        <TrackSelector
+        {/* assembly1/assembly2 are (y, x): see dotplotAxesFromRows */}
+        <ImportFormSyntenyTrackPanel
           key={`${assemblyX}-${assemblyY}`}
           model={model}
-          assemblyX={assemblyX}
-          assemblyY={assemblyY}
+          rowIndex={0}
+          assembly1={assemblyY}
+          assembly2={assemblyX}
           choices={form.choices}
-        />
+          label="(Optional) Select or add a synteny track"
+          emptyRemedy='Choose "New track" above to add one.'
+        >
+          <Typography variant="body2" color="text.secondary">
+            More synteny tracks can be toggled inside the dotplot from the track
+            selector <TrackSelectorIcon />; multiple can show at once.
+          </Typography>
+        </ImportFormSyntenyTrackPanel>
         <div className={classes.footer}>
           <Button
             disabled={launchBlocker !== undefined}

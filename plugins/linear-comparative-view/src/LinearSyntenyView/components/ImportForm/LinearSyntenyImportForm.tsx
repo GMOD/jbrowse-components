@@ -1,10 +1,12 @@
 import { useId } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
+import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   ImportFormModes,
+  ImportFormSyntenyTrackPanel,
   allSessionTracks,
   applyQuickStartSelections,
   blockedByUnfinishedUpload,
@@ -15,7 +17,6 @@ import {
 import { Button, Container, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ImportSyntenyTrackSelectorArea from './ImportSyntenyTrackSelectorArea.tsx'
 import LeftPanel from './LeftPanel.tsx'
 import { doSubmit } from './doSubmit.tsx'
 
@@ -191,15 +192,21 @@ const LinearSyntenyViewImportForm = observer(
                 configured changes. This key is the only thing resetting them —
                 and the radio choice is deliberately NOT among them, which is why
                 `choices` lives in this form. */}
-              <ImportSyntenyTrackSelectorArea
+              <ImportFormSyntenyTrackPanel
                 key={`${selectedPair}-${rows[selectedPair]}-${rows[selectedPair + 1]}`}
                 model={model}
-                selectedRow={selectedPair}
+                rowIndex={selectedPair}
                 labelledBy={pairHeadingId}
                 choices={form.choices}
                 assembly1={rows[selectedPair]!}
                 assembly2={rows[selectedPair + 1]!}
-              />
+                emptyRemedy='Choose "New track" above to add one, or launch anyway to stack these rows with no ribbons between them.'
+              >
+                <Typography variant="body2" color="text.secondary">
+                  More synteny tracks can be turned on per band from the track
+                  selector <TrackSelectorIcon /> once the view is open.
+                </Typography>
+              </ImportFormSyntenyTrackPanel>
             </div>
           </div>
           <div className={classes.footer}>

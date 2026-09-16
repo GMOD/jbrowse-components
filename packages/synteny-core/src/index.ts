@@ -217,6 +217,7 @@ export type {
 } from './diagonalizeTypes.ts'
 export { withDiagonalizeProgress } from './withDiagonalizeProgress.ts'
 export { DiagonalizeProgressMixin } from './DiagonalizeProgressMixin.ts'
+export { ImportFormSyntenyMixin } from './ImportFormSyntenyMixin.ts'
 export {
   ComparativeFetchMixin,
   swappedAssembliesWarning,
@@ -308,9 +309,12 @@ export { default as PifGzSelector } from './PifGzSelector.tsx'
 export { default as StandardFormatSelector } from './StandardFormatSelector.tsx'
 export { default as SwapAssemblies } from './SwapAssemblies.tsx'
 export type {
+  ImportFormSyntenyModel,
   ImportFormSyntenyTrack,
   SelectorProps,
   SyntenyFileFormatOption,
+  SyntenyImportFormOption,
+  SyntenyImportFormOptionProps,
 } from './SelectorTypes.ts'
 export { getMate } from './syntenyMate.ts'
 export type { SyntenyMate } from './syntenyMate.ts'

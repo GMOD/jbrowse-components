@@ -21,7 +21,6 @@ import SyntenyTrackF from './SyntenyTrack/index.tsx'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractViewContainer } from '@jbrowse/core/util'
 
-export type { LinearSyntenyImportFormSyntenyOption } from './LinearSyntenyView/components/ImportForm/ImportSyntenyTrackSelectorArea.tsx'
 export { renderToSvg } from './LinearSyntenyView/svgcomponents/SVGLinearSyntenyView.tsx'
 export type { LinearSyntenyViewModel } from './LinearSyntenyView/model.ts'
 export type { MultiWaySyntenyDisplayModel } from './MultiWaySyntenyDisplay/model.ts'

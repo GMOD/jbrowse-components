@@ -36,6 +36,7 @@ import { installUpload } from '@jbrowse/render-core/installUpload'
 import { canvasWideBlocks } from '@jbrowse/render-core/renderBlock'
 import {
   DiagonalizeProgressMixin,
+  ImportFormSyntenyMixin,
   TrackColorsMixin,
   collectTrackWarnings,
   comparativeSurfacePhase,
@@ -47,7 +48,6 @@ import {
 } from '@jbrowse/synteny-core'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
-import { observable } from 'mobx'
 
 import { pickDotplotFeature } from '../DotplotDisplay/dotplotPickEngine.ts'
 import { Dotplot1DView, DotplotHView, DotplotVView } from './1dview.ts'
@@ -74,11 +74,7 @@ import type {
 import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.tsx'
 import type { DotplotHoverHighlight } from '../DotplotDisplay/types.ts'
 import type { Dotplot1DViewModel } from './1dview.ts'
-import type {
-  Coord,
-  DotplotViewCommands,
-  ImportFormSyntenyTrack,
-} from './types.ts'
+import type { Coord, DotplotViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { ViewExportSvgOptions } from '@jbrowse/core/svg/exportViewSvg'
@@ -258,6 +254,7 @@ export default function stateModelFactory(pm: PluginManager) {
         RenderLifecycleMixin(),
         HighlightsMixin(),
         DiagonalizeProgressMixin(),
+        ImportFormSyntenyMixin(),
         TrackColorsMixin(),
         types.model({
           /**
@@ -400,30 +397,6 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         cursorMode:
           localStorageGetItem(LS_CURSOR_MODE) === 'move' ? 'move' : 'crosshair',
-        /**
-         * #volatile
-         */
-        importFormSyntenyTrackSelections:
-          observable.array<ImportFormSyntenyTrack>(),
-      }))
-      .actions(self => ({
-        /**
-         * #action
-         */
-        setImportFormSyntenyTrack(arg: number, val: ImportFormSyntenyTrack) {
-          self.importFormSyntenyTrackSelections[arg] = val
-        },
-        /**
-         * #action
-         * Drop the import form's pending selections once they have been applied.
-         * Left in place they outlive the form: "return to import form" would
-         * reopen on a finished upload from the previous launch, and a pair whose
-         * assemblies no longer match it reads as an unfinished upload and
-         * disables Launch for something this visit never started.
-         */
-        clearImportFormSyntenyTracks() {
-          self.importFormSyntenyTrackSelections.clear()
-        },
       }))
       .views(self => ({
         /**

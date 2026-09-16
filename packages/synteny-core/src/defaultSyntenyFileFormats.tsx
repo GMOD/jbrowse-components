@@ -24,7 +24,7 @@ function resolvedName(loc: FileLocation) {
   return getFileName(loc) || 'MyTrack'
 }
 
-// The shape every entry of a `*-SyntenyFileFormats` point has: a radio label
+// The shape every entry of `SyntenyImportForm-FileFormats` has: a radio label
 // and a component that reports a built adapter config through onAdapterChange
 // (or `undefined` when the user clears the selection).
 // #region simpleFormat

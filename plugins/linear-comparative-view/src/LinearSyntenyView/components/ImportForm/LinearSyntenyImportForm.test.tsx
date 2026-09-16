@@ -722,14 +722,11 @@ test('hiding the boxes clears what was typed in them', async () => {
 // radio the moment the user visited another pair, which is why the choice is
 // held by the form and keyed by the pair's assemblies.
 const contributeServerOption = (pluginManager: PluginManager) => {
-  pluginManager.contributeToExtensionPoint(
-    'LinearSyntenyView-ImportFormSyntenyOptions',
-    () => ({
-      value: 'my-server',
-      label: 'Load from my server',
-      ReactComponent: () => <div data-testid="my-server-panel" />,
-    }),
-  )
+  pluginManager.contributeToExtensionPoint('SyntenyImportForm-Options', () => ({
+    value: 'my-server',
+    label: 'Load from my server',
+    ReactComponent: () => <div data-testid="my-server-panel" />,
+  }))
 }
 
 const serverRadio = () =>

@@ -8,13 +8,14 @@ import type { ImportFormSyntenyModel } from './SelectorTypes.ts'
 
 /**
  * Two different assemblies where the session has two, so Manual does not open
- * on a same-assembly pair. Derived from the live list rather than snapshotted at
- * mount: a connection's assemblies arrive after the form is already showing,
- * and a row seeded from the empty list stayed blank for the session.
+ * on a same-assembly pair; one row for a form that opens on a single genome.
+ * Derived from the live list rather than snapshotted at mount: a connection's
+ * assemblies arrive after the form is already showing, and a row seeded from
+ * the empty list stayed blank for the session.
  */
-export function defaultImportFormRows(assemblyNames: string[]) {
+export function defaultImportFormRows(assemblyNames: string[], rowCount = 2) {
   const first = assemblyNames[0] ?? ''
-  return [first, assemblyNames[1] ?? first]
+  return rowCount === 1 ? [first] : [first, assemblyNames[1] ?? first]
 }
 
 /**
@@ -31,9 +32,11 @@ export function defaultImportFormRows(assemblyNames: string[]) {
 export function useImportFormRows(
   model: ImportFormSyntenyModel,
   assemblyNames: string[],
+  defaultRowCount = 2,
 ) {
   const [chosenRows, setChosenRows] = useState<string[]>()
-  const rows = chosenRows ?? defaultImportFormRows(assemblyNames)
+  const rows =
+    chosenRows ?? defaultImportFormRows(assemblyNames, defaultRowCount)
   const [selectedPair, setSelectedPair] = useState(0)
   const chromosomes = useChromosomeFilters()
   const choices = useImportFormSyntenyChoices(model)

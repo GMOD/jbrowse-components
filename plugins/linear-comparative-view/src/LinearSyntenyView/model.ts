@@ -20,6 +20,7 @@ import { addDisposer, cast, detach, types } from '@jbrowse/mobx-state-tree'
 import { installLinkedViewSync } from '@jbrowse/plugin-linear-genome-view'
 import {
   DiagonalizeProgressMixin,
+  ImportFormSyntenyMixin,
   TrackColorsMixin,
   collectTrackWarnings,
   colorableColumns,
@@ -31,7 +32,7 @@ import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
 import ViewStreamIcon from '@mui/icons-material/ViewStream'
-import { autorun, observable } from 'mobx'
+import { autorun } from 'mobx'
 
 import { linearSyntenyViewHelperModelFactory } from '../LinearSyntenyViewHelper/stateModelFactory.ts'
 import { followDirection } from '../SyntenyFollow/followDirection.ts'
@@ -62,7 +63,6 @@ import type {
   CigarMode,
   ExportSvgOptions,
   FadeThinMode,
-  ImportFormSyntenyTrack,
   LinearSyntenyViewCommands,
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -130,6 +130,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       'LinearSyntenyView',
       BaseViewModel,
       DiagonalizeProgressMixin(),
+      ImportFormSyntenyMixin(),
       TrackColorsMixin(),
       types.model({
         /**
@@ -333,11 +334,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * session.
        */
       followReport: EMPTY_FOLLOW_REPORT,
-      /**
-       * #volatile
-       */
-      importFormSyntenyTrackSelections:
-        observable.array<ImportFormSyntenyTrack>(),
       /**
        * #volatile
        * Whether the 'auto' thin-fade is latched on. State rather than a derived
@@ -1346,22 +1342,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       * Drop every pending pair-selection. The import form rewrites the whole
-       * list through this whenever its assembly rows change (a selection is
-       * about a pair of assemblies, not a row index — see
-       * `remapSelectionsToPairs`), and again once they have been applied.
-       */
-      clearImportFormSyntenyTracks() {
-        self.importFormSyntenyTrackSelections.clear()
-      },
-      /**
-       * #action
-       */
-      setImportFormSyntenyTrack(arg: number, val: ImportFormSyntenyTrack) {
-        self.importFormSyntenyTrackSelections[arg] = val
-      },
       /**
        * #action
        */

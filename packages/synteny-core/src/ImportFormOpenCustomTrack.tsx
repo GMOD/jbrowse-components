@@ -2,24 +2,19 @@ import { getEnv } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import ImportSyntenyOpenCustomTrack from './ImportSyntenyOpenCustomTrack.tsx'
-import { defaultSyntenyFileFormats } from './defaultSyntenyFileFormats.tsx'
 
-import type {
-  ImportFormSyntenyModel,
-  SyntenyFileFormatsExtensionPoint,
-} from './SelectorTypes.ts'
+import type { ImportFormSyntenyModel } from './SelectorTypes.ts'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
  * Binds the shared ImportSyntenyOpenCustomTrack uploader to an import-form
  * view model + row: pulls the plugin manager from the model's env and reports
  * the chosen track into the row's model slot. Used by both the linear synteny
- * (per row pair) and dotplot (row 0) import forms.
+ * (per row pair), dotplot (row 0) and circular (row 0) import forms.
  */
 const ImportFormOpenCustomTrack = observer(function ImportFormOpenCustomTrack({
   model,
   rowIndex,
-  extensionPoint,
   assembly1,
   assembly2,
 }: {
@@ -28,7 +23,6 @@ const ImportFormOpenCustomTrack = observer(function ImportFormOpenCustomTrack({
   // being checked at all
   model: ImportFormSyntenyModel & IStateTreeNode
   rowIndex: number
-  extensionPoint: SyntenyFileFormatsExtensionPoint
   assembly1: string
   assembly2: string
 }) {
@@ -37,8 +31,6 @@ const ImportFormOpenCustomTrack = observer(function ImportFormOpenCustomTrack({
     <ImportSyntenyOpenCustomTrack
       assembly1={assembly1}
       assembly2={assembly2}
-      extensionPoint={extensionPoint}
-      baseFormats={defaultSyntenyFileFormats}
       pluginManager={pluginManager}
       onSetTrack={val => {
         model.setImportFormSyntenyTrack(rowIndex, val)

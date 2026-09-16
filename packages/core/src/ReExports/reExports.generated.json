@@ -6013,6 +6013,7 @@
         "ImportFormModes",
         "ImportFormOpenCustomTrack",
         "ImportFormSyntenyChoiceRadioGroup",
+        "ImportFormSyntenyMixin",
         "ImportFormSyntenyTrackPanel",
         "ImportSyntenyOpenCustomTrack",
         "LodTierInfoMixin",

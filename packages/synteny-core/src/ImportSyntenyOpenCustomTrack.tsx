@@ -12,11 +12,9 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type {
-  ImportFormSyntenyTrack,
-  SyntenyFileFormatOption,
-  SyntenyFileFormatsExtensionPoint,
-} from './SelectorTypes.ts'
+import { defaultSyntenyFileFormats } from './defaultSyntenyFileFormats.tsx'
+
+import type { ImportFormSyntenyTrack } from './SelectorTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
 const useStyles = makeStyles()(theme => ({
@@ -39,15 +37,11 @@ const ImportSyntenyOpenCustomTrack = observer(
   function ImportSyntenyOpenCustomTrack({
     assembly1,
     assembly2,
-    extensionPoint,
-    baseFormats,
     pluginManager,
     onSetTrack,
   }: {
     assembly1: string
     assembly2: string
-    extensionPoint: SyntenyFileFormatsExtensionPoint
-    baseFormats: SyntenyFileFormatOption[]
     pluginManager: PluginManager
     onSetTrack: (val: ImportFormSyntenyTrack) => void
   }) {
@@ -58,8 +52,9 @@ const ImportSyntenyOpenCustomTrack = observer(
     const [radioOption, setRadioOption] = useState('')
 
     const formats = pluginManager.evaluateExtensionPoint(
-      extensionPoint,
-      baseFormats,
+      /** #extensionPoint SyntenyImportForm-FileFormats | sync | Add synteny file formats to the "New track" panel of every synteny import form */
+      'SyntenyImportForm-FileFormats',
+      defaultSyntenyFileFormats,
     )
 
     const selectedFormat = formats.find(f => f.extension === radioOption)
