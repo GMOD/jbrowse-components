@@ -13,6 +13,7 @@ import {
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import {
   hideTrackGeneric,
+  isSameAssemblyName,
   normalizeTrackInit,
   launchToggleTrackGeneric,
   launchTrackGeneric,
@@ -30,6 +31,7 @@ import {
 import { cast, destroy, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   DiagonalizeProgressMixin,
+  ImportFormSyntenyMixin,
   withDiagonalizeProgress,
 } from '@jbrowse/synteny-core'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
@@ -51,6 +53,7 @@ import type { CircularViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ViewExportSvgOptions } from '@jbrowse/core/svg/exportViewSvg'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
 import type { Region } from '@jbrowse/core/util/types'
 import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
 import type { LaunchInput } from '@jbrowse/core/util/withLaunchInput'
@@ -131,13 +134,23 @@ function launchAssemblyNames(init: LaunchInput<CircularViewCommands>) {
   return assembly === undefined ? [] : [assembly].flat()
 }
 
+function namesForAssembly(
+  names: CircularViewCommands['displayedRegionNames'],
+  assemblyName: string,
+  assemblyManager: AssemblyNameResolver,
+) {
+  return Array.isArray(names) || names === undefined
+    ? names
+    : Object.entries(names).find(([name]) =>
+        isSameAssemblyName(name, assemblyName, assemblyManager),
+      )?.[1]
+}
+
 /**
- * Apply one launch blob: the regions the circle is drawn from, then the chord
- * tracks. The only await is `launchTrack`'s dynamic import of a lazily
- * registered display model, which cannot park indefinitely, so
- * `installInitAutorun`'s supersede ceiling never comes up. It is still the
- * owner of the re-entry guard, the `isAlive` checks, the identity-checked
- * clear of `init`, and the failure policy.
+ * Apply one launch blob: the regions the circle is drawn from, each assembly's
+ * slices in the order it was named, then the tracks, then the reorder. A blob
+ * that draws nothing throws, which `installInitAutorun` lands on the import
+ * form's error banner.
  */
 async function applyInit(
   self: CircularViewInitSelf,
@@ -145,27 +158,20 @@ async function applyInit(
 ) {
   const session = getSession(self)
   const drawn: Region[] = []
-  // Each assembly contributes its slices in the order it was named, which is
-  // what puts one genome on one half of the circle and its partner on the
-  // other — the layout a synteny ribbon plot is read as.
+  const { assemblyManager } = session
   for (const assemblyName of launchAssemblyNames(init)) {
-    const assembly = session.assemblyManager.get(assemblyName)
+    const assembly = assemblyManager.get(assemblyName)
     const regions = assembly?.regions
     if (!assembly || !regions) {
       continue
     }
-    const names = init.displayedRegionNames
-    // A list that matches nothing draws the whole assembly rather than blanking
-    // the circle — the same fallback the synteny row takes, and it matters more
-    // here: an empty displayedRegions drops the view to its import form, and
-    // `init`, the only thing that could rebuild the figure, is consumed on the
-    // way out. So a typo'd refName used to lose the view outright with nothing
-    // said; resolveNamedRegions is what says it now. The list is resolved
-    // against each assembly separately, so a two-assembly circle names the
-    // contigs of both and each reports its own misses.
-    //
-    // `?.length`, not the bare key: an empty array is truthy, so `[]` used to
-    // resolve to nothing and report that no names had matched no regions.
+    const names = namesForAssembly(
+      init.displayedRegionNames,
+      assemblyName,
+      assemblyManager,
+    )
+    // A list that matches nothing in this assembly draws it whole, and says
+    // so, rather than blanking it. `?.length` because `[]` is truthy.
     const named = names?.length
       ? resolveNamedRegions({
           regions,
@@ -180,12 +186,15 @@ async function applyInit(
       : regions
     drawn.push(...(named ?? regions))
   }
+  if (!drawn.length) {
+    throw new Error(
+      `${launchAssemblyNames(init).join(' and ')} has no regions to display`,
+    )
+  }
   // declare the reorder gate up front, before any ribbon can paint: it outlives
   // this pass, since only the reorder itself lowers it
   self.beginAutoDiagonalize(!!init.autoDiagonalize)
-  if (drawn.length) {
-    self.setDisplayedRegions(drawn)
-  }
+  self.setDisplayedRegions(drawn)
   for (const t of init.tracks ?? []) {
     const { trackId, trackSnapshot, displaySnapshot } = normalizeTrackInit(t)
     await self.launchTrack(trackId, trackSnapshot, displaySnapshot)
@@ -216,13 +225,16 @@ async function applyInit(
  * `assembly` also takes a list, for a synteny ribbon plot: each
  * assembly lays its contigs out in turn, so the first genome takes one arc of
  * the circle and the second the next, and a `SyntenyTrack` covering both draws
- * a ribbon per alignment between them. The import form opens one assembly, so
- * a two-assembly circle is authored here or in a session spec:
+ * a ribbon per alignment between them. `displayedRegionNames` keyed by assembly
+ * restricts each genome separately, and `autoDiagonalize` reorders the second
+ * to follow the first:
  * ```js
  * {
  *   type: 'CircularView',
  *   assembly: ['hg38', 'mm39'],
+ *   displayedRegionNames: { hg38: ['chr1', 'chr2'] },
  *   tracks: ['hg38_vs_mm39'],
+ *   autoDiagonalize: true,
  * }
  * ```
  */
@@ -251,6 +263,7 @@ function stateModelFactory(pluginManager: PluginManager) {
       'CircularView',
       BaseViewModel,
       DiagonalizeProgressMixin(),
+      ImportFormSyntenyMixin(),
       types.model({
         /**
          * #property

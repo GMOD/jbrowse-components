@@ -35,7 +35,7 @@ test('open a circular view', async () => {
   })
   fireEvent.click(await findByText('File', ...opts))
   fireEvent.click(await findByText(/Open track/, ...opts))
-  fireEvent.click(await findByText('Open', ...opts))
+  fireEvent.click(await findByText('Launch', ...opts))
   fireEvent.click(await findByTestId('circular_track_select'))
   fireEvent.click(await findByTestId(hts('volvox_sv_test'), {}, delay))
   await findByTestId('structuralVariantChordRenderer', {}, delay)

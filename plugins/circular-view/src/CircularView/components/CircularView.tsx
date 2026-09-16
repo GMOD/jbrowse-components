@@ -20,7 +20,7 @@ import type { CircularViewModel } from '../model.ts'
 // lazies. Local Suspense at the use site rather than relying on the app's
 // ViewWrapper boundary: the sv-inspector renders this component directly inside
 // its own view, so suspending here would blank the whole SV inspector.
-const ImportForm = lazy(() => import('./ImportForm.tsx'))
+const ImportForm = lazy(() => import('./ImportForm/index.tsx'))
 
 // How far a press has to travel before it rotates the figure rather than
 // clicking what is under it. See handlePointerMove.

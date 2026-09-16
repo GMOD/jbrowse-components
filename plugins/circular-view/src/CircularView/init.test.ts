@@ -104,3 +104,40 @@ test('displayedRegionNames restricts each assembly it names', async () => {
     view.displayedRegions.map(r => `${r.assemblyName}:${r.refName}`),
   ).toEqual(['volvox:ctgB', 'volvox2:ctgB'])
 })
+
+test('displayedRegionNames keyed by assembly restricts only the ones it names', async () => {
+  const { session, view } = await setup(
+    {
+      assembly: ['volvox', 'volvox2'],
+      displayedRegionNames: { volvox2: ['ctgB'] },
+    },
+    ['volvox', 'volvox2'],
+  )
+  expect(
+    view.displayedRegions.map(r => `${r.assemblyName}:${r.refName}`),
+  ).toEqual(['volvox:ctgA', 'volvox:ctgB', 'volvox2:ctgB'])
+  expect(session.snackbarMessages).toEqual([])
+})
+
+// the launch is kept for a retry and the view lands on its import form, whose
+// banner says why
+test('an assembly with no regions reports it instead of dropping the launch', async () => {
+  const session = createTestSession()
+  session.addAssemblyConf({
+    name: 'empty',
+    sequence: {
+      trackId: 'empty_refseq',
+      type: 'ReferenceSequenceTrack',
+      adapter: { type: 'FromConfigSequenceAdapter', features: [] },
+    },
+  })
+  jest.spyOn(console, 'error').mockImplementation(() => {})
+  const view = (await session.launchView('CircularView', {
+    assembly: 'empty',
+  })) as CircularViewModel
+  view.setWidth(800)
+  await when(() => !!view.error)
+  expect(`${view.error}`).toMatch(/empty has no regions to display/)
+  expect(view.showImportForm).toBe(true)
+  expect(view.pendingAutoDiagonalize).toBe(false)
+})

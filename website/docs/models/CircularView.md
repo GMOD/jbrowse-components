@@ -25,14 +25,17 @@ alt/unplaced contigs off the circle:
 `assembly` also takes a list, for a synteny ribbon plot: each
 assembly lays its contigs out in turn, so the first genome takes one arc of
 the circle and the second the next, and a `SyntenyTrack` covering both draws
-a ribbon per alignment between them. The import form opens one assembly, so
-a two-assembly circle is authored here or in a session spec:
+a ribbon per alignment between them. `displayedRegionNames` keyed by assembly
+restricts each genome separately, and `autoDiagonalize` reorders the second
+to follow the first:
 
 ```js
 {
   type: 'CircularView',
   assembly: ['hg38', 'mm39'],
+  displayedRegionNames: { hg38: ['chr1', 'chr2'] },
   tracks: ['hg38_vs_mm39'],
+  autoDiagonalize: true,
 }
 ```
 
@@ -79,6 +82,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="volatile-pendingautodiagonalize">**pendingAutoDiagonalize**</span><br><code>pendingAutoDiagonalize: false</code> | <span data-pagefind-ignore>A reorder this init asked for that has not succeeded yet. Raised before any render can paint, and lowered only once the pass RESOLVES — a skipped or thrown reorder leaves it up, so the view's `settled` gate never reports done on an undiagonalized view and the capture fails loudly (times out) instead of committing a hairball.<br><br>One flag rather than a requested/complete pair: the two only ever moved together, and every state a pair can drift into either wedges the gate shut or opens it on the wrong pass.</span> | [DiagonalizeProgressMixin](../diagonalizeprogressmixin#volatile-pendingautodiagonalize) |
 | <span id="volatile-diagonalizestatus">**diagonalizeStatus**</span><br><code>diagonalizeStatus: createStatusChannel()</code> | <span data-pagefind-ignore>Live status from the auto-diagonalize RPC (download %, parse, algorithm phase) shown on the reordering spinner; blank outside that wait.<br><br>A `StatusChannel` rather than a status field plus a setter: there is one operation to narrate here, and the channel is that pair with the message/fraction split already done, so the spinner reads `{ message, fraction }` instead of calling `statusMessageText` / `statusFraction` at every render site.</span> | [DiagonalizeProgressMixin](../diagonalizeprogressmixin#volatile-diagonalizestatus) |
 | <span id="volatile-diagonalizecancel">**diagonalizeCancel**</span><br><code>diagonalizeCancel: undefined as (() =&gt; void) &#124; undefined</code> | <span data-pagefind-ignore>Aborts the in-flight auto-diagonalize, so the spinner's Cancel can reach it; undefined when none is running.</span> | [DiagonalizeProgressMixin](../diagonalizeprogressmixin#volatile-diagonalizecancel) |
+| <span id="volatile-importformsyntenytrackselections">**importFormSyntenyTrackSelections**</span><br><span class="cell-more"><button type="button" class="cell-more-trigger"><code>importFormSyntenyTrackSelections: observable.array&lt;ImportFormSy…</code></button><dialog class="cell-dialog"><form method="dialog"><button class="cell-dialog-close" aria-label="Close">✕</button></form><pre><code>importFormSyntenyTrackSelections:&#10;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;observable.array&lt;ImportFormSyntenyTrack&gt;()</code></pre></dialog></span> |  | [ImportFormSyntenyMixin](../importformsyntenymixin#volatile-importformsyntenytrackselections) |
 
 ## Getters
 
@@ -174,3 +178,5 @@ Members a composed model contributes are listed here too, so these tables are th
 | <span id="action-finishautodiagonalize">**finishAutoDiagonalize**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>A reorder resolved, the init's or a manual one, so the view on screen is the diagonalized one — open the gate.</span> | [DiagonalizeProgressMixin](../diagonalizeprogressmixin#action-finishautodiagonalize) |
 | <span id="action-setdiagonalizecancel">**setDiagonalizeCancel**</span><br><code>(arg?: (() =&gt; void) &#124; undefined) =&gt; void</code> |  | [DiagonalizeProgressMixin](../diagonalizeprogressmixin#action-setdiagonalizecancel) |
 | <span id="action-cancelautodiagonalize">**cancelAutoDiagonalize**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Abort an in-flight auto-diagonalize; `withDiagonalizeProgress`'s finally clears the wait flag, revealing the (undiagonalized) view.<br><br>Lowers the gate too. The abort reaches the caller as a throw, which skips its `finishAutoDiagonalize()` — right for a reorder that failed on its own (`settled` stays false and a capture times out loudly rather than committing a hairball), wrong for one the user stopped: cancelling IS the user settling for this view, and a gate nothing will lower again leaves `settled` false forever.</span> | [DiagonalizeProgressMixin](../diagonalizeprogressmixin#action-cancelautodiagonalize) |
+| <span id="action-setimportformsyntenytrack">**setImportFormSyntenyTrack**</span><br><code>(idx: number, val: ImportFormSyntenyTrack) =&gt; void</code> |  | [ImportFormSyntenyMixin](../importformsyntenymixin#action-setimportformsyntenytrack) |
+| <span id="action-clearimportformsyntenytracks">**clearImportFormSyntenyTracks**</span><br><code>() =&gt; void</code> | <span data-pagefind-ignore>Drop the pending selections once a launch has applied them. Left in place they outlive the form: "Return to import form" would reopen on a finished upload from the previous launch, and a pair whose assemblies no longer match it reads as an unfinished upload and disables Launch.</span> | [ImportFormSyntenyMixin](../importformsyntenymixin#action-clearimportformsyntenytracks) |

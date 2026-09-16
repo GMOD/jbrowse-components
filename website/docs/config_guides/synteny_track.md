@@ -235,10 +235,10 @@ prefix may name a whole sample (`grape`) or a single haplotype (`grape#1`):
 
 A `SyntenyTrack` opens in a [circular view](/docs/user_guides/circular_view)
 too, as [](/docs/config/chordsyntenydisplay): each alignment is a ribbon between
-the span it covers on one side and the span its mate covers on the other,
-coloured by strand, with the block's own extent on both arcs — a Circos-style
-picture of where a genome's blocks land. Clicking one opens the same synteny
-feature details panel the linear views open.
+the span it covers on one side and the span its mate covers on the other, with
+the block's own extent on both arcs and an inversion drawn as a twist — a
+Circos-style picture of where a genome's blocks land. Clicking one opens the
+same synteny feature details panel the linear views open.
 
 The circle has to carry both ends of the alignment, so what the view is opened
 on decides what can be drawn.
@@ -271,22 +271,23 @@ nothing special: open the circular view on that assembly and turn the track on.
 
 **Two assemblies** need both on the circle, which is a list in the view's
 `assembly`: each one lays its contigs out in turn, so hg38 takes one arc and
-mm39 the next and every ribbon crosses between them. The import form opens a
-single assembly, so this circle is authored in a `defaultSession` view or a
-session spec:
+mm39 the next and every ribbon crosses between them. The import form's Quick
+start opens that circle from the track, and as a view it is:
 
 ```json
 {
   "type": "CircularView",
   "assembly": ["hg38", "mm39"],
   "displayedRegionNames": ["chr1", "chr2", "chr3"],
-  "tracks": ["hg38_vs_mm39"]
+  "tracks": ["hg38_vs_mm39"],
+  "autoDiagonalize": true
 }
 ```
 
-`displayedRegionNames` is resolved against each assembly in turn, which keeps a
-few named chromosomes of both genomes on the circle instead of every unplaced
-contig of either.
+A `displayedRegionNames` list is resolved against each assembly in turn, which
+keeps a few named chromosomes of both genomes on the circle instead of every
+unplaced contig of either; `{ "mm39": ["chr1", "chr2"] }` restricts one genome
+and leaves the other whole.
 
 ## See also
 

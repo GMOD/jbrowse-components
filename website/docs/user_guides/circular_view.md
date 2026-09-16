@@ -19,8 +19,8 @@ Circos-style figure is the same tracks opened on this view.
 ## Opening a circular genome view
 
 - Launch **Circular view** from the **Add** menu in the main menu bar
-- Select an assembly in the import form and click **Open**. The ring appears
-  with one segment per chromosome
+- In the import form's **Manual** mode, select an assembly and click **Launch**.
+  The ring appears with one segment per chromosome
 - Add a variant track from the view's track selector; SV chords render
   automatically as a **Chord variant display**
 
@@ -73,8 +73,10 @@ A `SyntenyTrack` draws each alignment as a ribbon between the span it covers on
 one side and the span its mate covers on the other, so a block's extent is on
 the figure and an inversion reads as a twist. A track aligning two genomes needs
 both of them on the circle, set with `assembly: ['hg38', 'mm39']` — each
-assembly lays its chromosomes out in turn. The import form opens one assembly,
-so a two-genome circle is written as a session or a [URL spec](/docs/urlparams).
+assembly lays its chromosomes out in turn. The import form opens one the way the
+dotplot's does: **Quick start** picks a synteny track and opens its two genomes,
+and **Manual** takes **Add a second assembly** and a track for the pair, with a
+chromosome box per genome.
 
 Both arcs of a two-genome circle run the same way round, so a genome left in its
 own contig order puts every matching pair of chromosomes at opposite ends of a

@@ -39,7 +39,7 @@ test('export svg of circular', async () => {
   })
   fireEvent.click(await findByText('File', ...opts))
   fireEvent.click(await findByText(/Open track/, ...opts))
-  fireEvent.click(await findByText('Open', ...opts))
+  fireEvent.click(await findByText('Launch', ...opts))
 
   fireEvent.click(await findByTestId('circular_track_select', ...opts))
   fireEvent.click(await findByTestId(hts('volvox_sv_test'), ...opts))
@@ -68,7 +68,7 @@ test('export svg of circular fails when a track fails to load', async () => {
   })
   fireEvent.click(await findByText('File', ...opts))
   fireEvent.click(await findByText(/Open track/, ...opts))
-  fireEvent.click(await findByText('Open', ...opts))
+  fireEvent.click(await findByText('Launch', ...opts))
 
   fireEvent.click(await findByTestId('circular_track_select', ...opts))
   fireEvent.click(await findByTestId(hts('volvox_sv_test'), ...opts))

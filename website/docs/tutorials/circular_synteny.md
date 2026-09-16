@@ -15,8 +15,7 @@ each genome, so where the autosomes have been shuffled and where the X has not
 is one picture. `autoDiagonalize` orders the mouse arc to follow the human one,
 a gene density ring per genome sits inside the ideogram, and the page ends by
 reading one ribbon and one ring value back out of the PIF and bigWig they came
-from. The circle is a circular genome view opened on two assemblies at once,
-which a session spec does and the import form does not.
+from. The circle is a circular genome view opened on two assemblies at once.
 
 ## Prerequisites
 
@@ -117,8 +116,8 @@ chromosomes out in turn: hg38 takes the first arc of the circle and mm39 the
 next, and a ribbon crosses between them. `displayedRegionNames` is resolved
 against each assembly separately, so one list of chromosome names keeps both
 genomes' unplaced contigs off the circle. `autoDiagonalize` makes the result
-readable; the next section explains how. The import form opens a single
-assembly, so a two-assembly circle is written as a session:
+readable; the next section explains how. The import form's Quick start opens the
+same circle from the chain track; as a session it is:
 
 ```json session config=https://jbrowse.org/demos/circular_synteny/config.json
 {

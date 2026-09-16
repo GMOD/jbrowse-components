@@ -22,8 +22,10 @@ export interface CircularViewCommands {
   // input; without one the view opens on its import form
   assembly?: string | string[]
   // whole chromosomes to draw, in this order; the rest of the assembly's
-  // contigs are left off the circle
-  displayedRegionNames?: string[]
+  // contigs are left off the circle. A list applies to every assembly on the
+  // circle, and `{ hg38: ['chr1'], mm39: ['chr2'] }` restricts each one
+  // separately, leaving an assembly it does not name whole
+  displayedRegionNames?: string[] | Record<string, string[]>
   tracks?: TrackInit[]
   // On a circle of two genomes carrying a synteny track, reorder the second
   // genome's chromosomes to follow the first's and lay them out mirrored, so the

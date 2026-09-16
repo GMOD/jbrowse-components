@@ -1,11 +1,18 @@
 ---
 status: Accepted
-summary: "A SyntenyTrack draws on the circular view as ChordSyntenyDisplay, and an alignment is a RIBBON rather than a chord: a record has a span on both sides where a translocation has a point on both sides, and the span is what the figure is read for. The display lives beside ChordVariantDisplay in circular-view and takes @jbrowse/synteny-core behind the lazy state model, so a product with no synteny plugins pays for a config schema and nothing else. Both ends resolve against their own assembly through a slice index keyed by assembly AND refName, which is what let the view's `assembly` become a list — each assembly lays its contigs out in turn, and a two-assembly circle is authored rather than opened from the import form"
+summary: "A SyntenyTrack draws on the circular view as ChordSyntenyDisplay, and an alignment is a RIBBON rather than a chord: a record has a span on both sides where a translocation has a point on both sides, and the span is what the figure is read for. The display lives beside ChordVariantDisplay in circular-view and takes @jbrowse/synteny-core behind the lazy state model, so a product with no synteny plugins pays for a config schema and nothing else. Both ends resolve against their own assembly through a slice index keyed by assembly AND refName, which is what let the view's `assembly` become a list — each assembly lays its contigs out in turn. Amended 2026-09-16: the import form opens a two-assembly circle, dotplot-style"
 ---
 
 # ADR-116: A synteny alignment is a ribbon on the circle
 
 ## Status
+
+**Amended 2026-09-16**: the import form now opens a two-genome circle. It
+answers the rejected alternative's question the dotplot's way — two rows at
+most, the synteny track picked for the pair, and a Quick start from any track —
+so a circle of three is still authored. `displayedRegionNames` also takes a
+record keyed by assembly, which is what the form's per-row chromosome boxes
+write.
 
 Accepted (2026-09-10). Builds on the chord machinery
 [ADR-019](adr-019-synteny-cpu-picking.md) and the GPU synteny stack do not
@@ -135,5 +142,5 @@ list naming contigs of both restricts both and each reports its own misses.
   displays publish, including the `data-display-drawn` census attribute — so a
   third circular display gets it by composing the frame rather than by
   remembering the four attributes.
-- The two-assembly circle is reachable only from a `defaultSession` view, a
-  session spec or `LaunchView-CircularView`.
+- The two-assembly circle was reachable only from a `defaultSession` view, a
+  session spec or `LaunchView-CircularView`, until the 2026-09-16 amendment.
