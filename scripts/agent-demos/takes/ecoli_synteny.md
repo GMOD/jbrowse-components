@@ -123,7 +123,7 @@ ranking and should say which it ranked by.
 | The merged config validates                         | `products/jbrowse-cli/dist/bin.js validate`, once the text-search entries are dropped                                               |
 | Synteny, dotplot and the LEE zoom all draw          | captured against the repo `jbrowse-web` build through `products/jbrowse-capture`                                                    |
 | The islands are preset-robust                       | asm5/asm10/asm20 all put stx2, stx1 and LEE at the same coordinates ±50 bp                                                          |
-| The gene names are in the app, not just the GFF     | the bigBed's `geneName2` column, read straight off the hosted file                                                                  |
+| The gene names are in the app, not just the GFF     | the bigBed's `geneName2` column, read straight off the hosted file, and `BigBedAdapter` names each gene parent after it             |
 | Turn one's whole-genome frame reads                 | re-run from the FASTAs on 2026-09-09 and captured: one pink band of collinear ribbons with the islands standing out as white wedges |
 
 One thing that will mislead anyone checking this outside the repo: on the
@@ -141,10 +141,51 @@ checkbox is `collapseEmptyRows`; a session spec written by hand needs
 `scalebarOnly: true` on each inner view instead, and then the rows are their
 rulers and the ribbon band fills the view.
 
+## Take 1, 2026-09-16
+
+Shot on `recordDemoTui.mjs`, 5:45 at 1920x1080, all four turns through, nothing
+stalled: `~/agent-takes/ecoli_synteny/`. The analysis is right — 87 `asm20`
+blocks, a dotplot of the two chromosomes, 1.39 Mb Sakai-only against 530 kb
+K-12-only for a net 857,932 bp, and the Stx2 prophage on camera with stx2A at
+1,267,107-1,268,066. Four flaws, each with its cause found:
+
+- **The gene labels were locus tags.** The agent turned on `-ncbiGff`, whose
+  `Name` is `ECs_1205` wherever RefSeq has no symbol for a Sakai gene. The
+  symbol is in that GFF's `gene` attribute, which nothing draws, so `stx2A`
+  reached the agent's answer text and never the screen. `-ncbiGene` is the track
+  that draws it: `BigBedAdapter` aggregates a bigGenePred by `aggregateField`,
+  which defaults to `geneName2`, and names the gene parent after the key —
+  `stx2A`, `stx2B`, `ureD`. The SYSTEM now names the track.
+- **The Stx2 genes were under the fold.** 95 genes across the 67 kb island
+  packed more rows than the display's default 100 px, so the row holding stx2A
+  drew below its own bottom edge. Nothing reports this: `waitReady` reports
+  views cut off by the WINDOW (`offscreen`) and a display's own
+  `truncatedFeatureCount` / `hasOverflow` exist on the model, but no settle
+  report reads them, so an agent that screenshots sees a plausible track.
+- **The dotplot's diagonal was flatter than the sequence.** The plot came out
+  785x215, so the diagonal ran at 15 degrees, and the agent explained it as
+  "slope below 1 because Sakai carries ~0.9 Mb more sequence" — which accounts
+  for 0.84 of a 0.27 slope. The panel was that shape because `jb.fitToWindow`
+  counted ViewStack's 300 px overscroll spacer as session, cut 370 px where 70
+  was owed, and charged 288 of it to the dotplot, the biggest headroom on
+  screen. Fixed in `overflow` in jbApi.
+- **The app sat on an empty session twice**, once per `jb.open` — for about a
+  minute each time, while the agent read docs and then built the views. Both
+  opens were the take's own doing: the SYSTEM told it to merge the two hosted
+  configs into a local file, and the merge dropped the hub the `-ncbiGff` uris
+  are relative to, so turn four had to rewrite them and reopen. The one-spec
+  recipe (`sessionAssemblies` + `sessionTracks`, `jb.docs('recipes')`) writes no
+  config, opens nothing and leaves no empty session; the SYSTEM now points at
+  it.
+
 ## Open
 
-- Not yet shot. Everything above is from the CLI and from captures of the repo
-  web build; no take has been recorded.
-- Whether turn four is better asked as "name them" or as "take me to the most
-  interesting one" — the second gets the LEE shot on camera, the first risks
-  ending on a list.
+- **A square dotplot does not fit beside the synteny view.** The app's half of a
+  1920x1080 frame is 930x1008, so a plot as tall as it is wide wants ~785 px
+  plus ~90 of axis chrome, against ~256 for the synteny view and 48 for the app
+  bar: 1179 into 1008. With the spacer fix the dotplot gets its default 600 and
+  the plot reads about 1.5:1 — honest enough to describe, not square. Square
+  means the dotplot alone in the frame, or a differently shaped frame.
+- Whether the settle report should name a display whose features are clipped by
+  its own height, the way `offscreen` names a view clipped by the window. The
+  display model already answers it.

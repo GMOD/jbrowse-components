@@ -1261,6 +1261,33 @@ describe('fitToWindow', () => {
     })
   })
 
+  // The spacer below the last view is room to scroll into, not session. Charged
+  // to the views, its 300px came off whatever had the most headroom: the E.
+  // coli take's dotplot drew a 4:1 letterbox of a plot that had room to be 600
+  // px tall, and the agent then read a slope off it.
+  it('leaves the overscroll spacer out of the session height', async () => {
+    document.body.innerHTML =
+      '<div data-app-phase="ready"></div><div id="column" style="overflow-y: auto"><div data-testid="view-container-v"></div><div data-testid="view-stack-overscroll"></div></div>'
+    const tall = sized(400)
+    const column = document.getElementById('column')!
+    const spacer = document.querySelector<HTMLElement>(
+      '[data-testid="view-stack-overscroll"]',
+    )!
+    spacer.getBoundingClientRect = () => ({ height: 300 }) as DOMRect
+    Object.defineProperties(column, {
+      scrollHeight: { configurable: true, get: () => 800 + tall.height },
+      clientHeight: { configurable: true, value: 700 },
+    })
+    page(100, [])
+    expect(await jbOver([tall]).fitToWindow(5000)).toEqual({
+      fits: true,
+      overflowBefore: 200,
+      overflowAfter: 0,
+      shrunk: [{ what: 't0', from: 400, to: 200 }],
+      settled: true,
+    })
+  })
+
   it('answers plainly when the session already fits', async () => {
     page(100, [])
     expect(await jbOver([]).fitToWindow(100)).toEqual({

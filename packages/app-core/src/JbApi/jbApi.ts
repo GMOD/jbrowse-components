@@ -586,11 +586,21 @@ function scrollerOf(root: ParentNode) {
   return undefined
 }
 
+// The trailing overscroll ViewStack renders below the last view, which exists so
+// a newly-added view can scroll to the middle of the port. It is room, not
+// content, and it is up to 300px of a scrollHeight, so a shrink that charges it
+// to the views leaves them that much short of the window — the E. coli take's
+// dotplot was cut to 312px of the 600 that fit.
+function overscrollHeight(scroller: Element) {
+  const spacer = scroller.querySelector('[data-testid="view-stack-overscroll"]')
+  return spacer ? Math.round(spacer.getBoundingClientRect().height) : 0
+}
+
 function overflow(root: ParentNode) {
   const scroller = scrollerOf(root)
   if (scroller) {
     return {
-      pageHeight: scroller.scrollHeight,
+      pageHeight: scroller.scrollHeight - overscrollHeight(scroller),
       windowHeight: scroller.clientHeight,
     }
   }

@@ -599,6 +599,11 @@ return jb.loadSessionSpec({
   `chr2R` answers for the `NC_` names the FASTA used.
 - `sessionTracks` takes each config's gene track too; leave out any trackId the
   open session already has, which the notifications name.
+- Take the GenArk gene track as `<assembly>-ncbiGene`, a bigGenePred whose
+  labels are gene symbols. `-ncbiGff` labels a gene with its locus tag wherever
+  RefSeq has no symbol for it, and its `uri` is relative to the hub — lifted out
+  of a fetched config it resolves against whatever config is open instead, and
+  the track 404s.
 - A gene track at whole-chromosome zoom reports `tooLarge` in `notReady`. Add it
   to a row once the view is on a region.
 

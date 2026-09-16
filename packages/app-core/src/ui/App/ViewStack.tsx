@@ -20,6 +20,12 @@ import type {
 // the amount that makes that gesture reach, and any more is room to scroll the
 // content off its own surface.
 //
+// It is scrollable room rather than content, so anything measuring how tall the
+// session is discounts it by its `view-stack-overscroll` testid — `overflow` in
+// jbApi does, and a filmed take paid for that: counted as content, it told
+// `jb.fitToWindow` the session was 300px taller than it was, and the dotplot
+// absorbing the cut came out a third of the height that fit.
+//
 // Capped, because half a port stops being a courtesy on a tall screen. 300px is
 // the cap the classic stack has always had and it stays the answer there — a
 // full window is comfortably past twice it. What the cap was hiding is the
@@ -74,7 +80,9 @@ const ViewStack = observer(function ViewStack({
           />
         ))}
       </div>
-      {scrollable ? <div className={classes.spacer} /> : null}
+      {scrollable ? (
+        <div className={classes.spacer} data-testid="view-stack-overscroll" />
+      ) : null}
     </>
   )
 })
