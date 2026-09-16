@@ -1,18 +1,21 @@
 ---
 name: reshoot-agent-client-clips
-description: The agents page's clips are being reshot on the Linux TUI harness so every one shows the terminal beside the app — synteny, derivative and geo_ratio remain, none recorded yet; the protein take was dropped. Six app and guidance gaps the aborted takes exposed are fixed and landed. Blocked only on a quiet desktop, since the tiling keystroke needs focus. Read before filming any of them.
+description: The agents page's clips are being reshot on the Linux TUI harness so every one shows the terminal beside the app — the E. coli synteny take (replacing the fly synteny clip), derivative and geo_ratio remain, none recorded yet; the protein take was dropped. The E. coli take's inputs are staged and its last attempt reached turn four before an app bug, since fixed, stalled it. Blocked only on a quiet desktop, since the tiling keystroke needs focus. Read before filming any agent-client clip, and before reaching for the Claude-app harness, which was tried and judged not showcase material.
 ---
 
 # Reshoot the agent client clips
 
 `website/docs/agents.md` embeds `agent_geo_ratio_take1` (terminal beside the
 app) and two clips from the older `agentDemo.mjs` (the JBrowse window alone):
-`agent_synteny_take1` and `agent_derivative_take1`. The goal is all three
-reshot with `recordDemoTui.mjs`, so every clip shows the real Claude Code TUI
+`agent_synteny_take1` and `agent_derivative_take1`. The goal is three clips
+shot with `recordDemoTui.mjs`, so every one shows the real Claude Code TUI
 beside JBrowse. **Delete this file when the new clips are embedded.**
 
 The harness and its traps are `scripts/agent-demos/CLAUDE.md`; each take's plan
-is `scripts/agent-demos/takes/<take>.md`.
+is `scripts/agent-demos/takes/<take>.md`. The Claude desktop app harness
+(`recordDemoApp.mjs`) was tried on 2026-09-08 and judged not showcase material;
+[ideas/land-the-agent-client-demo-videos.md](../ideas/land-the-agent-client-demo-videos.md)
+says why.
 
 ## Running a take
 
@@ -25,8 +28,8 @@ YDOTOOL_SOCKET=/run/user/1001/.ydotool_socket \
 
 - `ydotoold` on this machine is the systemd user service, listening on
   `/run/user/1001/.ydotool_socket`, not the `/tmp` path the harness defaults to.
-- Pre-staged inputs are already in `~/agent-takes/synteny/cwd` (`sim.fa.gz`,
-  `mau.fa.gz`) and `~/agent-takes/derivative/cwd` (the COLO829 SV VCF and the
+- Pre-staged inputs are in `~/agent-takes/ecoli_synteny/cwd` (`k12.fa.gz`,
+  `sakai.fa.gz`) and `~/agent-takes/derivative/cwd` (the COLO829 SV VCF and the
   three-chromosome GRCh38 FASTA). Aborted attempts are under
   `~/agent-takes/old/`. Clear everything in a take's directory except `cwd/`
   before rerunning.
@@ -36,24 +39,55 @@ YDOTOOL_SOCKET=/run/user/1001/.ydotool_socket \
   "the terminal did not tile — it is still 80 columns wide". Two attempts on
   2026-09-14 died this way while the machine was in use.
 - Stop a take with `kill -INT $(pgrep -xf "node scripts/agent-demos/recordDemoTui.mjs")`.
-  `-x` matches the whole command line; a bare `pkill -f recordDemoTui.mjs` also matches the shell running it and kills
-  that shell first.
+  `-x` matches the whole command line; a bare `pkill -f recordDemoTui.mjs` also
+  matches the shell running it and kills that shell first.
+- Shoot `takes/smoke.mjs` first when the loop has not run for a while: one turn
+  against hosted hg38 proves the harness before a long take.
 
 ## Order and what to watch
 
-1. **synteny.** The next take to shoot. Watch for: whether the agent builds the
-   comparison with one `jb.loadSessionSpec` spec rather than guarded action
-   probes, and whether it measures divergence or copies the 2.4% the recipe
-   quotes for this very pair. Both recipes use sim/mau as their example, so a
-   copied number is likely. Swapping their example pair is the open question
-   for Colin, not yet decided.
+1. **ecoli_synteny.** Replaces the fly synteny clip, whose recipes quote the
+   2.4% divergence of that very pair, so an agent could copy the number rather
+   than measure it. Watch for the points below.
 2. **derivative.**
 3. **geo_ratio.** Reshoot so all three match the Linux harness's look.
 
 Then: new clips into the media store (`pnpm figures:push`, per
-`website/CLAUDE.md` § Videos), `video-specs.ts` sizes, and the sentence in
-`agents.md` before the shell clips, which still says they were "filmed against
-only the JBrowse window".
+`website/CLAUDE.md` § Videos), `externalClips` in `website/scripts/video-specs.ts`
+with `width`/`height` from the encode, and in `agents.md` the E. coli clip
+(`mcp/agent_ecoli_take1`) with its own caption in place of
+`agent_synteny_take1`, and the sentence before the shell clips, which still says
+they were "filmed against only the JBrowse window". Update the Open section of
+`takes/ecoli_synteny.md`, which says the take has never been shot.
+
+## The E. coli take
+
+The take's plan holds the pair, the staging commands and every verified number.
+What the plan does not hold:
+
+- **Check UCSC before shooting.** The take's own data is local, but its SYSTEM
+  tells the agent to merge the two hosted genark configs, and turn four reads
+  gene names off the Sakai track, which UCSC serves. `curl -o /dev/null -w
+  '%{time_total}'` against
+  `hgdownload.soe.ucsc.edu/hubs/GCF/000/008/865/GCF_000008865.2/GCF_000008865.2.chromAlias.txt`
+  answered in 0.58 s on 2026-09-16; on 2026-09-09 it took ~6 s and the agent
+  spent turn one diagnosing the network.
+- **The last attempt**, 2026-09-10, is `~/jbrowse-ecoli-take/demo.mp4`. The
+  agent aligned, merged, opened synteny and the dotplot, and answered turn three
+  from the PAF (83 blocks, 912,869 bp of Sakai unaligned). Turn four went to the
+  Stx1 prophage (`NC_002695v2:2,923,000-2,927,000`), not LEE, then stalled: the
+  agent had called `compactAllViews()`, and a collapsed row's gene track held
+  the ready marker at `loading`. `rendersDisplays` on `BaseViewModel` fixed the
+  stall; the recorder's 600-second cap, which also cut the take, now derives
+  from the turn cap.
+- **Turn four still needs `expandAllViews()`** to show a gene track after a
+  compact, and even expanded the Sakai row's track sits below the fold of the
+  synteny panel, so a screenshot needs the panel taller.
+- **Turn four's phrasing is open.** The module asks "take me to the most
+  interesting one" to put LEE on camera rather than end on a list, but the last
+  attempt picked Stx1, so that phrasing does not reliably reach LEE.
+- That attempt ran on Sonnet and reached 156k of 200k context by turn four. The
+  harness now launches Opus.
 
 ## Already landed from the aborted takes
 
@@ -64,7 +98,7 @@ only the JBrowse window".
   show a structure beside a gene.
 - A bare absolute path in a `uri` opens as a local file on Desktop; a session
   built over MCP 404'd on `uri: '/home/…/x.fa.gz'`. The harness also puts the
-  repo `jbrowse` CLI on PATH, as the synteny prompt promises.
+  repo `jbrowse` CLI on PATH, as the synteny prompts promise.
 - minimap2 presets: sim/mau measure 2.4% divergence, so `asm20`, not the `asm5`
   the agent chose or the `asm10` the fly tutorial used. A recipe now measures
   before choosing, and the tutorial's numbers were remeasured.
@@ -74,10 +108,6 @@ only the JBrowse window".
   genomes, their alignment, a synteny view and a dotplot in one spec. That
   recipe reaches the network, so `mcpConformance.ts` skips it; it was verified
   by hand against the built app.
-
-## Unchecked
-
-- `pnpm test-related` after the last two app commits (`3f46c43b70`,
-  `6774300bb4`) has not run; only the jb API and Desktop MCP suites did. An
-  earlier run showed `workerModules.test.ts` and `fetchAutorun.test.ts` red,
-  unrelated to these changes and not confirmed red on main.
+- A typed chunk starting with `-` no longer reaches tmux as a flag, and a turn
+  cap firing mid-turn no longer types over a working session (the cap is 40
+  minutes).

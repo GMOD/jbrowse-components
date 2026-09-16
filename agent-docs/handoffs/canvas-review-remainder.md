@@ -36,8 +36,8 @@ key" pins that `rpcProps()` does not move.
 
 ## 2. The attribute group-by dialog scans nothing
 
-`LinearBasicDisplay/components/GroupByAttributeDialog.tsx` is a text field.
-The alignments tag dialog (`GroupByDialog.tsx`) scans the loaded reads, shows
+Canvas's `LinearBasicDisplay/components/GroupByDialog.tsx` takes the attribute
+as a text field. The alignments tag dialog (its own `GroupByDialog.tsx`) scans the loaded reads, shows
 the distinct-value count and refuses a grouping past `MAX_GROUPS`; canvas
 relies on the cap firing after the fact and labels the tail "N merged values".
 The multi-row display already ships `partitionCandidates` (the attribute names

@@ -1,6 +1,6 @@
 ---
 name: land-the-agent-client-demo-videos
-description: two Claude Code shell takes are published and embedded on /docs/agents, so v5.0.0 ships with MCP shown running; what is parked is the visual verdict on those clips, the Chrome side-panel reshoot with its 90s turn threshold, and the Claude Desktop take that was never started — the harness and its operating notes are scripts/agent-demos/
+description: the Claude Code shell takes on /docs/agents are being reshot on the TUI harness (handoffs/reshoot-agent-client-clips.md), so v5.0.0 ships with MCP shown running; what is parked here is the Chrome side-panel reshoot with its 90s turn threshold and the Claude Desktop take, judged not showcase material — the harness and its operating notes are scripts/agent-demos/
 ---
 
 # Land the agent client demo videos
@@ -13,20 +13,16 @@ wait for.
 MCP ships in v5.0.0 and three clients were wanted showing it running:
 Claude Code, Claude Desktop, the Chrome extension.
 
-## Claude Code over desktop MCP — three takes published, awaiting a verdict
+## Claude Code over desktop MCP — being reshot
 
-The GEO ATAC take is published as `agent_geo_ratio_take1`. Beside it are two
-shell-capable takes, each a real `claude -p` session with Bash beside the MCP
-tools: two assemblies
-with no alignment (D. simulans against D. mauritiana), and the derivative allele
-(COLO829). Plans, verified numbers and rehearsal notes are
-`scripts/agent-demos/takes/*.md`; transcripts are beside them.
-
-The clips are in the media store (`website/media.lock`, `mcp/agent_*_take1`),
-registered in `externalClips`, and embedded at the top of
-`website/docs/agents.md`. What is left is the visual verdict. The ESMFold
-take was dropped on 2026-09-14: protein3d's AlphaFoldDB examples already show a
-structure beside a gene.
+Three takes are published as `mcp/agent_*_take1` and embedded at the top of
+`website/docs/agents.md`: GEO ATAC, two fly assemblies with no alignment, and
+the COLO829 derivative allele. The verdict on them was to reshoot all three on
+the TUI harness so each shows the terminal beside the app, with the E. coli
+take replacing the fly one;
+[handoffs/reshoot-agent-client-clips.md](../handoffs/reshoot-agent-client-clips.md)
+holds that thread. The ESMFold take was dropped on 2026-09-14: protein3d's
+AlphaFoldDB examples already show a structure beside a gene.
 
 ## The Chrome side panel take — ready to re-shoot
 
