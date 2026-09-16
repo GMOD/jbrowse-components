@@ -57,6 +57,12 @@ export function DiagonalizeProgressMixin() {
        * reach it; undefined when none is running.
        */
       diagonalizeCancel: undefined as (() => void) | undefined,
+      /**
+       * #volatile
+       * Why the last reorder failed, while its gate is still up; cleared by
+       * the next run, a finish or a cancel
+       */
+      diagonalizeError: undefined as unknown,
     }))
     .actions(self => ({
       /**
@@ -83,6 +89,13 @@ export function DiagonalizeProgressMixin() {
        */
       finishAutoDiagonalize() {
         self.pendingAutoDiagonalize = false
+        self.diagonalizeError = undefined
+      },
+      /**
+       * #action
+       */
+      setDiagonalizeError(error: unknown) {
+        self.diagonalizeError = error
       },
       /**
        * #action
@@ -105,6 +118,7 @@ export function DiagonalizeProgressMixin() {
       cancelAutoDiagonalize() {
         self.diagonalizeCancel?.()
         self.pendingAutoDiagonalize = false
+        self.diagonalizeError = undefined
       },
     }))
 }

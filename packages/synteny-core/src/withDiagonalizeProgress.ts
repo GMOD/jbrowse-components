@@ -11,6 +11,7 @@ import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 interface DiagonalizeProgressModel extends IStateTreeNode {
   setAwaitingAutoDiagonalize: (arg: boolean) => void
   setDiagonalizeCancel: (arg?: () => void) => void
+  setDiagonalizeError: (error: unknown) => void
   diagonalizeStatus: StatusChannel
 }
 
@@ -39,6 +40,7 @@ export async function withDiagonalizeProgress(
   }) => Promise<void>,
 ) {
   model.setAwaitingAutoDiagonalize(true)
+  model.setDiagonalizeError(undefined)
   const rotation = createAbortRotation(model, model.diagonalizeStatus)
   const { signal, statusCallback, end } = rotation.begin()
   model.setDiagonalizeCancel(rotation.cancel)
@@ -48,6 +50,7 @@ export async function withDiagonalizeProgress(
     if (!isAbortException(e)) {
       console.error(e)
       if (isAlive(model)) {
+        model.setDiagonalizeError(e)
         getNotificationSink(model).notifyError(
           `Reordering chromosomes failed: ${e}`,
           e,

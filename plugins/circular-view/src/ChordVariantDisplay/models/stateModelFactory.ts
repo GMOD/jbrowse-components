@@ -136,6 +136,14 @@ const stateModelFactory = (configSchema: ChordVariantDisplayConfigModel) => {
       get ready() {
         return self.features !== undefined && self.refNameMap !== undefined
       },
+      /**
+       * #getter
+       * what the error ring shows; the fetch's error, since this display
+       * waits on nothing else
+       */
+      get displayError(): unknown {
+        return self.error
+      },
 
       /**
        * #getter

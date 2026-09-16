@@ -4770,10 +4770,7 @@
       ],
       "worker": "stub",
       "uiVia": [
-        "@floating-ui/react",
         "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/Tooltip",
         "react-dom",
         "react-dom/client"
       ]

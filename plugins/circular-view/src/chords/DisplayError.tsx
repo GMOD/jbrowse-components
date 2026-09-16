@@ -13,12 +13,16 @@ const DisplayError = observer(function DisplayError({
   onClick,
   onRetry,
 }: {
-  model: { error: unknown; radiusPx: number; view: { offsetRadians: number } }
+  model: {
+    displayError: unknown
+    radiusPx: number
+    view: { offsetRadians: number }
+  }
   onClick?: () => void
   onRetry?: () => void
 }) {
   const theme = useTheme()
-  const text = truncate(String(model.error), 80)
+  const text = truncate(String(model.displayError), 80)
   return (
     <g
       style={onClick ? { cursor: 'pointer' } : undefined}

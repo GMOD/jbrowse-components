@@ -118,10 +118,10 @@ test('reload() rewakes the fetch after an error', async () => {
   display.setError(new Error('adapter fell over'))
   expect(display.displayPhase).toBe('error')
   display.reload()
+  expect(display.displayPhase).not.toBe('error')
 
-  await when(() => display.error === undefined)
-  expect(display.features).toBeUndefined()
-
+  // the fetch key is unchanged, so only the reload gets past it
+  await when(() => display.features === undefined)
   await when(() => display.ready)
   expect(display.features).toHaveLength(1)
 }, 20000)

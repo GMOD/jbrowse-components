@@ -10,6 +10,7 @@ import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 // hand these components a plain object
 export interface ChordDisplayFrameModel {
   error: unknown
+  displayError: unknown
   view: { offsetRadians: number }
   ready: boolean
   displayPhase: DisplayStatusPhase

@@ -17,6 +17,7 @@ import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { computeDisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import {
   adapterAssemblyNames,
+  getMate,
   regionsInAssemblyNamespace,
   renameRegionsForAdapter,
 } from '@jbrowse/synteny-core'
@@ -30,6 +31,7 @@ import type {
 import type { Slice } from '../../CircularView/slices.ts'
 import type { ChordSyntenyDisplayConfigModel } from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
+import type { AlignmentData } from '@jbrowse/core/util/diagonalizeRegions'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import type { ThemeOptions } from '@mui/material'
 
@@ -44,6 +46,10 @@ const ErrorMessageStackTraceDialog = lazy(
 interface AdapterNames {
   assemblyName: string
   refNameMap: Record<string, string>
+}
+
+function invert(map: Record<string, string>) {
+  return Object.fromEntries(Object.entries(map).map(([k, v]) => [v, k]))
 }
 
 function sliceKey(assemblyName: string | undefined, refName: string) {
@@ -139,21 +145,32 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
-       * both halves of a ribbon render: the alignments, and the per-assembly
-       * name tables that place each of their two ends
+       * both halves of a ribbon's input have arrived: the alignments, and the
+       * per-assembly name tables that place each of their two ends. What the
+       * view's reorder waits on
+       */
+      get loaded() {
+        return self.features !== undefined && self.adapterNames !== undefined
+      },
+      /**
+       * #getter
+       * `loaded`, and no reorder this launch asked for still owed. Ribbons
+       * drawn before it would be drawn against the arcs it is about to move;
+       * a reorder that failed keeps this false and shows as `displayPhase`
+       * error, so a capture never commits the hairball
        */
       get ready() {
+        return this.loaded && !this.view.pendingAutoDiagonalize
+      },
+      /**
+       * #getter
+       * the fetch's error, or else the owed reorder's
+       */
+      get displayError(): unknown {
+        const { view } = this
         return (
-          self.features !== undefined &&
-          self.adapterNames !== undefined &&
-          // A reorder this launch asked for and has not finished leaves the
-          // ribbons drawn against the arcs it is about to move, so the display
-          // is not ready however complete its own fetch is. Only the reorder
-          // itself lowers the view's flag, so a pass that threw keeps this
-          // false and a capture times out rather than committing a hairball —
-          // the same rule `DiagonalizeProgressMixin` states for the two
-          // comparative views' `settled`.
-          !this.view.pendingAutoDiagonalize
+          self.error ??
+          (view.pendingAutoDiagonalize ? view.diagonalizeError : undefined)
         )
       },
       /**
@@ -166,7 +183,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       get svgReady() {
         return computeSvgReady(
           {
-            error: self.error,
+            error: this.displayError,
             regionTooLarge: false,
             extraTerminal: this.fetchInert,
             fetchCanceled: false,
@@ -179,7 +196,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
        */
       get displayPhase(): DisplayStatusPhase {
         return computeDisplayStatusPhase(
-          { regionTooLarge: false, error: self.error },
+          { regionTooLarge: false, error: this.displayError },
           () => (!this.fetchInert && !this.ready ? 'loading' : 'ready'),
         )
       },
@@ -269,6 +286,53 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
             ]
       },
     }))
+    .views(self => ({
+      /**
+       * #method
+       * the held alignments joining two assemblies on the circle, in canonical
+       * refNames and oriented reference side first, which is what the view's
+       * reorder reads instead of fetching the file again
+       */
+      alignmentsBetween(referenceAssembly: string, currentAssembly: string) {
+        const ref = self.adapterNames?.[referenceAssembly]
+        const cur = self.adapterNames?.[currentAssembly]
+        const out: AlignmentData[] = []
+        if (!ref || !cur || !self.features) {
+          return out
+        }
+        const refNames = invert(ref.refNameMap)
+        const curNames = invert(cur.refNameMap)
+        for (const feature of self.features) {
+          const mate = getMate(feature)
+          const own = {
+            assemblyName: feature.get('assemblyName') as string,
+            refName: feature.get('refName'),
+            start: feature.get('start'),
+            end: feature.get('end'),
+          }
+          const [r, q] =
+            own.assemblyName === ref.assemblyName &&
+            mate?.assemblyName === cur.assemblyName
+              ? [own, mate]
+              : own.assemblyName === cur.assemblyName &&
+                  mate?.assemblyName === ref.assemblyName
+                ? [mate, own]
+                : []
+          if (r && q) {
+            out.push({
+              refRefName: refNames[r.refName] ?? r.refName,
+              queryRefName: curNames[q.refName] ?? q.refName,
+              refStart: r.start,
+              refEnd: r.end,
+              queryStart: q.start,
+              queryEnd: q.end,
+              strand: feature.get('strand') ?? 1,
+            })
+          }
+        }
+        return out
+      },
+    }))
     .actions(self => ({
       /**
        * #action
@@ -285,7 +349,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       openErrorDialog() {
         getDialogHost(self).queueDialog(onClose => [
           ErrorMessageStackTraceDialog,
-          { onClose, error: self.error },
+          { onClose, error: self.displayError },
         ])
       },
       /**
@@ -302,9 +366,16 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #action
+       * refetch, and run a reorder this launch still owes, which is how the
+       * error ring's Retry reaches a reorder that failed
        */
       reload() {
+        self.setError(undefined)
         self.reloadCounter += 1
+        const { view } = self
+        if (view.pendingAutoDiagonalize && !view.awaitingAutoDiagonalize) {
+          void view.autoDiagonalize()
+        }
       },
     }))
     .actions(self => ({
@@ -332,6 +403,16 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
                 }
               : undefined
           },
+          // A ribbon is placed by the slice index, not by the fetch, so a
+          // reorder (which only moves and flips regions) reuses what is held
+          fetchKey: ({ adapterConfig, regions, assemblyNames }) =>
+            JSON.stringify([
+              adapterConfig,
+              assemblyNames,
+              regions
+                .map(r => `${r.assemblyName}:${r.refName}:${r.start}-${r.end}`)
+                .sort(),
+            ]),
           run: async (
             { sessionId, adapterConfig, regions, assemblyNames },
             ctx,

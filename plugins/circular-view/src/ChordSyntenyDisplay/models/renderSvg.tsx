@@ -9,6 +9,13 @@ import type { RibbonDisplayModel } from '../../chords/types.ts'
 // a message rect, which is why the on-screen path needs the circle-shaped
 // `<DisplayError>` instead.
 export async function renderSvg(display: RibbonDisplayModel) {
-  await awaitSvgReady(display)
+  await awaitSvgReady({
+    get svgReady() {
+      return display.svgReady
+    },
+    get error() {
+      return display.displayError
+    },
+  })
   return display.ready ? <Ribbons display={display} /> : null
 }

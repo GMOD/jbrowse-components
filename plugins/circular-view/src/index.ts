@@ -5,7 +5,6 @@ import DataUsageIcon from '@mui/icons-material/DataUsage'
 import ChordSyntenyDisplayF from './ChordSyntenyDisplay/index.ts'
 import ChordVariantDisplayF from './ChordVariantDisplay/index.ts'
 import CircularViewF from './CircularView/index.ts'
-import DiagonalizeCircularRpc from './DiagonalizeCircularRpc.ts'
 import LaunchCircularViewF from './LaunchCircularView/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -19,7 +18,6 @@ export default class CircularViewPlugin extends Plugin {
     LaunchCircularViewF(pluginManager)
     ChordVariantDisplayF(pluginManager)
     ChordSyntenyDisplayF(pluginManager)
-    pluginManager.addRpcMethod(() => new DiagonalizeCircularRpc(pluginManager))
   }
 
   configure(pluginManager: PluginManager) {

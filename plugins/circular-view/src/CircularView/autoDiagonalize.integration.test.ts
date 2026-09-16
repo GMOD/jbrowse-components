@@ -34,8 +34,12 @@ function assemblyConf(name: string, contigs: string[]) {
   }
 }
 
-async function launch(autoDiagonalize: boolean) {
+async function launch(
+  autoDiagonalize: boolean,
+  beforeLaunch?: (session: any) => void,
+) {
   const session = createTestSession() as any
+  beforeLaunch?.(session)
   session.addAssemblyConf(assemblyConf('A', ['a1', 'a2', 'a3']))
   session.addAssemblyConf(assemblyConf('B', ['b1', 'b2', 'b3']))
   session.addSessionTrackConf({
@@ -58,6 +62,15 @@ async function launch(autoDiagonalize: boolean) {
   view.setWidth(800)
   await when(() => view.pendingLaunch === undefined, { timeout: 30000 })
   return view
+}
+
+function ribbonDisplay(view: CircularViewModel) {
+  return view.tracks[0]!.displays[0]! as unknown as {
+    ready: boolean
+    displayPhase: string
+    displayError: unknown
+    reload: () => void
+  }
 }
 
 // Reverse order and each region flipped, which together are the mirror: b3 ends
@@ -135,4 +148,26 @@ test('the reorder is not offered without both halves', async () => {
     view.displayedRegions.filter(r => r.assemblyName === 'A'),
   )
   expect(view.canDiagonalize).toBe(false)
+}, 40000)
+
+// The reorder orders from the ribbons' own fetch, and moving regions does not
+// refetch them, so a launch that reorders reads the file once
+test('a reordering launch reads the alignments once', async () => {
+  const calls: string[] = []
+  const view = await launch(true, session => {
+    const call = session.rpcManager.call.bind(session.rpcManager)
+    jest.spyOn(session.rpcManager, 'call').mockImplementation((...args) => {
+      calls.push(args[1] as string)
+      return call(...args)
+    })
+  })
+  const reads = () => calls.filter(name => name === 'CoreGetFeatures').length
+  await when(() => ribbonDisplay(view).ready, { timeout: 30000 })
+  expect(view.displayedRegions.some(r => r.reversed)).toBe(true)
+  // a refetch would follow the reorder by the fetch's 300ms debounce, and
+  // nothing observable says it declined, so wait out several of those
+  await expect(when(() => reads() > 1, { timeout: 1500 })).rejects.toThrow(
+    'WHEN_TIMEOUT',
+  )
+  expect(reads()).toBe(1)
 }, 40000)

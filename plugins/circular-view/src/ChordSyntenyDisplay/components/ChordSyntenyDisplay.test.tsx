@@ -60,6 +60,7 @@ function ribbonModel(
 ): RibbonDisplayModel {
   return {
     error: undefined,
+    displayError: undefined,
     view: { offsetRadians: 0 },
     ready: phase === 'ready',
     displayPhase: phase,
@@ -111,7 +112,9 @@ test('an unpainted synteny track is pending, not absent', () => {
 
 test('the error terminal is finished rather than pending', () => {
   expect(
-    attrs(ribbonModel('error', { error: new Error('adapter fell over') })),
+    attrs(
+      ribbonModel('error', { displayError: new Error('adapter fell over') }),
+    ),
   ).toEqual({
     testid: 'circular-chord-display',
     id: 'paf-ChordSyntenyDisplay',

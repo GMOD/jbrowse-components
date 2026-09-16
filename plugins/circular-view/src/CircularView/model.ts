@@ -53,6 +53,7 @@ import type { CircularViewCommands } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ViewExportSvgOptions } from '@jbrowse/core/svg/exportViewSvg'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { AlignmentData } from '@jbrowse/core/util/diagonalizeRegions'
 import type { AssemblyNameResolver } from '@jbrowse/core/util/tracks'
 import type { Region } from '@jbrowse/core/util/types'
 import type { ViewStatus } from '@jbrowse/core/util/viewStatus'
@@ -114,13 +115,17 @@ interface CircularViewInitSelf extends IStateTreeNode {
   autoDiagonalize: () => Promise<void>
 }
 
-// A ribbon display, as a chromosome reorder reads it. Duck-typed for the reason
-// the display's own state model is lazily registered: naming its type here pulls
-// `@jbrowse/synteny-core` into the eager bundle of every product carrying this
-// view, the circular embed that ships no synteny plugin included (ADR-116).
+// A ribbon display, as a chromosome reorder reads it. Duck-typed because the
+// display's model names this view's type, so naming its type here would be a
+// circular reference.
 export interface ChordSyntenyDisplaySelf extends IStateTreeNode {
   type: string
-  adapterConfig: Record<string, unknown>
+  loaded: boolean
+  displayError: unknown
+  alignmentsBetween: (
+    referenceAssembly: string,
+    currentAssembly: string,
+  ) => AlignmentData[]
 }
 
 /**

@@ -18,6 +18,7 @@ function chordModel(
 ): ChordDisplayModel {
   return {
     error: undefined,
+    displayError: undefined,
     view: { offsetRadians: 0 },
     ready: phase === 'ready',
     displayPhase: phase,
@@ -78,7 +79,9 @@ test('a painted chord track publishes drawn beside its phase', () => {
 // families, which a capture would otherwise wait out in silence.
 test('the error terminal is finished rather than pending', () => {
   expect(
-    attrs(chordModel('error', { error: new Error('adapter fell over') })),
+    attrs(
+      chordModel('error', { displayError: new Error('adapter fell over') }),
+    ),
   ).toEqual({
     testid: 'circular-chord-display',
     id: 'sv-ChordVariantDisplay',

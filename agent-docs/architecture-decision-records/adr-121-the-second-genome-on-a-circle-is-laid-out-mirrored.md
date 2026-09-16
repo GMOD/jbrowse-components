@@ -7,6 +7,16 @@ summary: "A two-genome circle reorders its second genome with the same `diagonal
 
 ## Status
 
+**Amended 2026-09-16**: the reorder no longer has an RPC. The circle holds every
+alignment on the main thread already, so `runCircularDiagonalize` waits for the
+ribbon displays' fetch and runs `diagonalizeRegions` over
+`ChordSyntenyDisplay.alignmentsBetween`; `DiagonalizeCircularRpc` is gone. The
+ribbon fetch keys on the region set ignoring order and `reversed`, so the
+reorder's own region write does not refetch, and a two-genome launch reads the
+file once where it read it three times. A reorder that throws now shows in the
+ribbons' error ring, whose Retry runs it again, rather than leaving them on
+their loading ring with the reason only in a toast.
+
 Accepted (2026-09-10). Builds on
 [ADR-116](adr-116-a-synteny-alignment-is-a-ribbon-on-the-circle.md), which put
 two genomes on the circle and drew the alignments between them, and on
@@ -44,12 +54,8 @@ whole-genome scale that is a red ribbon beside a blue one all the way round.
 ### The reorder is the shared one; the mirror is the circle's
 
 `runCircularDiagonalize` is the third caller of `@jbrowse/core`'s
-`diagonalizeRegions`, beside the synteny cascade and the dotplot, over the same
-`DiagonalizeArgs` and behind its own `DiagonalizeCircular` RPC —
-`plugins/circular-view/src/DiagonalizeCircularRpc.ts`, three lines like the other
-two, registered separately because a method is only callable if the plugin
-registering it is loaded and circular-view ships in products carrying neither of
-the others. `autoDiagonalize` is the launch key and **Re-order chromosomes** the
+`diagonalizeRegions`, beside the synteny cascade and the dotplot. (It ran behind
+its own `DiagonalizeCircular` RPC until the amendment above.) `autoDiagonalize` is the launch key and **Re-order chromosomes** the
 menu item, both spelled as the comparative views spell them, and the shared
 `DiagonalizeProgressMixin`, `withDiagonalizeProgress`, `DiagonalizeDialog` and
 `DiagonalizeLoadingScreen` drive the wait, the bar, the cancel and the gate.
