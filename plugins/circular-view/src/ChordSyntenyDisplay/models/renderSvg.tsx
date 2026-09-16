@@ -1,4 +1,4 @@
-import { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
+import { awaitSvgReady, throwOnExportErrors } from '@jbrowse/core/svg/svgReady'
 
 import Ribbons from '../../chords/Ribbons.tsx'
 
@@ -9,13 +9,7 @@ import type { RibbonDisplayModel } from '../../chords/types.ts'
 // a message rect, which is why the on-screen path needs the circle-shaped
 // `<DisplayError>` instead.
 export async function renderSvg(display: RibbonDisplayModel) {
-  await awaitSvgReady({
-    get svgReady() {
-      return display.svgReady
-    },
-    get error() {
-      return display.displayError
-    },
-  })
+  await awaitSvgReady(display)
+  throwOnExportErrors([display.displayError])
   return display.ready ? <Ribbons display={display} /> : null
 }
