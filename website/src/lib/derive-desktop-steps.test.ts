@@ -110,3 +110,33 @@ test('a graph track with hand-set displays falls back to the paste box', () => {
     'Add track from pasted JSON',
   )
 })
+
+test('a relative track uri is named as the file to replace before pasting', () => {
+  const config = {
+    type: 'FeatureTrack',
+    trackId: 'genes',
+    name: 'Genes',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'Gff3TabixAdapter', uri: 'volvox.sort.gff3.gz' },
+  }
+  expect(flatten(desktopTrackNodes(config, JSON.stringify(config)))).toContain(
+    'volvox.sort.gff3.gz is relative to a config.json. Replace it with its URL or its path on this computer.',
+  )
+})
+
+test('absolute uris and local paths need no replacing', () => {
+  const config = {
+    type: 'FeatureTrack',
+    trackId: 'genes',
+    name: 'Genes',
+    assemblyNames: ['hg38'],
+    adapter: {
+      type: 'BigWigAdapter',
+      uri: 'https://example.com/a.bw',
+      index: { location: { uri: '/data/a.bw.tbi' } },
+    },
+  }
+  expect(
+    flatten(desktopTrackNodes(config, JSON.stringify(config))),
+  ).not.toContain('relative to a config.json')
+})

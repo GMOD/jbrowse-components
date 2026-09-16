@@ -105,6 +105,43 @@ const GRAPH_ADAPTERS: Record<
   },
 }
 
+function relativeUris(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.flatMap(relativeUris)
+  }
+  if (value === null || typeof value !== 'object') {
+    return []
+  }
+  return Object.entries(value).flatMap(([key, child]) =>
+    key === 'uri' &&
+    typeof child === 'string' &&
+    !/^(\w+:\/\/|\/)/.test(child)
+      ? [child]
+      : relativeUris(child),
+  )
+}
+
+// A relative uri resolves against the config.json it sits in, and a paste or a
+// form has none, so the reader's copy loads nothing until it names a real file.
+function relativeUriNote(config: unknown): RootContent[] {
+  const uris = [...new Set(relativeUris(config))]
+  return uris.length
+    ? [
+        paragraph([
+          ...uris.flatMap((uri, i) => [
+            ...(i > 0 ? [text(', ')] : []),
+            inline(uri),
+          ]),
+          text(
+            uris.length > 1
+              ? ' are relative to a config.json. Replace each with its URL or its path on this computer.'
+              : ' is relative to a config.json. Replace it with its URL or its path on this computer.',
+          ),
+        ]),
+      ]
+    : []
+}
+
 function field(label: string, value: string) {
   return [strong(label), text(': '), inline(value)]
 }
@@ -148,6 +185,7 @@ function graphFormNodes(
       field(GRAPH_FORM_LABELS.trackName, String(config.name ?? config.trackId)),
       field(GRAPH_FORM_LABELS.assembly, assembly),
     ]),
+    ...relativeUriNote(config),
     raw('</div>'),
   ]
 }
@@ -172,6 +210,7 @@ export function desktopTrackNodes(
       text(', and paste:'),
     ]),
     { type: 'code', lang: 'json', value: json } satisfies Code,
+    ...relativeUriNote(config),
     raw('</div>'),
   ]
 }
@@ -296,6 +335,7 @@ export function desktopAssemblyNodes(
             ? [moreOption(DESKTOP_UI_LABELS.cytobands, cytobandFile)]
             : []),
         ]),
+        ...relativeUriNote(config),
         raw('</div>'),
       ]
     : undefined
