@@ -293,39 +293,43 @@ still points at the TAF files; switching it is a two-line change per haplotype
 
 ## What the zoom-out tier is worth
 
-Built whole-genome and hosted on 2026-08-14 at
-`jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.summary.bed.gz` — 1.63 MB, 375,888
-rows, 464 haplotypes, 152 of the index's 195 contigs — wired by
+Rebuilt whole-genome from the v2.1 MAF and hosted on 2026-09-16 at
+`jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.summary.bed.gz` — 1.72 MB, 396,363
+rows, 464 haplotypes, **all 195 contigs** — wired by
 `test_data/hprc_maf_summary.json` and rebuilt by
-`scripts/build_hprc_maf_summary.sh`, whose header carries the three failure modes.
-A whole-chromosome read costs **828 bytes (chrM) to 127 kB (chr1)** against a
-5 MB budget, so the tier has two to three orders of magnitude of headroom
-everywhere. This is what it buys, read off the live session model on whole chr6
-rather than inferred from a picture:
+`scripts/build_hprc_maf_summary.sh`, whose header carries the surviving failure
+mode. A whole-chromosome read costs **73 kB (chrM) to 212 kB (chr1)** against a
+5 MB budget, so the tier has one to two orders of magnitude of headroom
+everywhere. This is what it buys on whole chr6, each side computed off the index
+the gate itself reads — `queryBlockSpan` for the alignment, `bytesForRegions`
+for the tier:
 
 | | no `summaryAdapter` | with it |
 | --- | --- | --- |
-| `regionTooLarge` | true, "Requested too much data (354 Mb)" | false |
-| `estimatedFetchBytes` | 353,902,971 | 250,801 |
-| rows drawn | 0 | 464 |
+| bytes for whole chr6 | 3,189,973,830 | 150,272 |
+| against a 5 MB budget | refused | drawn, 464 rows |
 
-**1,411x**, and the whole chromosome becomes navigable rather than a prompt. The
-354 Mb agrees to the byte with what `queryBlockSpan` computes for chr6 off the
-`.tai` (353,837,435 for the chromosome's own span, 353,902,971 with the gate's
-one-block cushion), so the banner's number and the index arithmetic are the same
-measurement. A whole chromosome of 464 haplotypes costs less than a quarter of
-what one gene-sized detail read does.
+**21,000x**, and the whole chromosome becomes navigable rather than a prompt.
+The v2.0 TAF build of this file was 1,411x on the same comparison, because the
+TAF asked a ninth of what the MAF asks for the same chromosome — the tier's
+value grew with the alignment it stands in front of.
 
-The alignment tier stays the better view where it is affordable: at C4 the
-detail read is ~1.2 MB against `LinearMafDisplay`'s 5 Mb budget.
+The alignment tier stays the better view where it is affordable: the tutorial's
+C4 window is 3.50 MB against `LinearMafDisplay`'s 5 MB budget.
 
-### Three things the build has to get right, all found the hard way
+### What the build has to get right, all found the hard way
 
 Written up at length in `scripts/build_hprc_maf_summary.sh`; the shape of each is
 worth carrying here because none is specific to HPRC.
 
-- **`taffy view -r` fails silently on a range past the contig's end** — stderr
-  message, empty MAF, exit 0. A first pass ended every range at
+**One survives, and two are retired by construction.** The build was a
+per-contig `taffy view -r` extraction until 2026-09-16; it is now a single
+sequential pass, which asks the index for nothing and so cannot be fooled by it.
+The two below marked *(retired)* are what that bought, and they are kept because
+the shape recurs wherever a build addresses a file by region.
+
+- **`taffy view -r` fails silently on a range past the contig's end** *(retired)*
+  — stderr message, empty MAF, exit 0. A first pass ended every range at
   last-index-entry + 10 Mb and lost **93 of 195 contigs, including chr1, chr2 and
   chrY**, while logging all 93 as "ok": the harness discarded stderr and tested
   `[ -s file ]`, which is true for a summary holding only its header. The
@@ -337,14 +341,15 @@ worth carrying here because none is specific to HPRC.
   the runs *overlap* and there is no gap to close: on chr14:18-20 Mb, raising the
   gap from 500 to 50,000 removed 0.04% of 854,467 rows. Collapsing each
   haplotype's overlapping runs into their union is what works — chr14 900,414
-  rows / 2.9 MB becomes 9,089 / 43 kB, genome-wide 4,824,912 becomes 375,888, and
-  GRCh38's own covered bases come out identical to the byte. That belongs
+  rows / 2.9 MB becomes 9,089 / 43 kB, genome-wide 11,068,425 becomes 396,363,
+  and GRCh38's own covered bases come out identical to the byte. That belongs
   upstream in `maf2bed`, since overlapping presence rows are redundant by
   construction for what the slot feeds.
-- **A contig with a single `.tai` entry cannot be extracted by region at all**,
-  even over 500 bp. That is what leaves 43 contigs out, all `chrUn_*` scaffolds
-  of 970 bp - 15 kb. It is a taffy extraction limit, *not* evidence the alignment
-  lacks them.
+- **A contig with a single `.tai` entry cannot be extracted by region at all**
+  *(retired)*, even over 500 bp. That left 43 contigs out of the v2.0 file, all
+  `chrUn_*` scaffolds of 970 bp - 15 kb. It was a taffy extraction limit and
+  never evidence the alignment lacked them, which the sequential build settles:
+  the v2.1 file carries all 195.
 
 **Which is why the tier is a separate config rather than switched on for
 `hprc_maf.json`, and that is a finding rather than a preference.** The summary
@@ -353,8 +358,7 @@ tier swaps on **span** — `coarseTierPastThreshold` is `aboveForceLoadFloor`,
 standing in for is **cost**. The tutorial's own figure is drawn at
 chr6:31,972,057-32,055,418, which is 83 kb, so wiring the summary onto that
 track silently replaces the per-haplotype base rows the figure exists to show
-with presence bands, for a detail read the budget would have allowed four times
-over. Verified: `coarseTierActive: true` at that locus with the summary configured.
+with presence bands, for a detail read the budget still allows. Verified: `coarseTierActive: true` at that locus with the summary configured.
 
 This is the gap [MAF_LARGE_BLOCKS.md](MAF_LARGE_BLOCKS.md) §"What the LOD lesson
 actually points at" predicted — "the per-species view built for see all 470
