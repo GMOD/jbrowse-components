@@ -12,10 +12,10 @@ the GPU. One bundle runs in Jupyter, JupyterLab, VS Code, marimo, and Google
 Colab, with two-way sync of the visible region between Python and the view: set
 `view.location` to navigate, read it back to get where the user panned.
 
-`LinearGenomeView` covers the common case. For comparative genomics,
-`JBrowseApp` drives the full app from a declarative `views` list, so a notebook
-can also hold a linear synteny view or a dotplot (`synteny_view`, `dotplot_view`
-build the specs). See the E. coli example below.
+`LinearGenomeView` covers the common case. `JBrowseApp` drives the full app from
+a `views` list, so a notebook can also hold a linear synteny view or a dotplot.
+Each entry is a view as a config's `defaultSession.views` writes it. See the E.
+coli example below.
 
 `jbrowse-anywidget` replaces the older Dash-based `jbrowse-jupyter` +
 `dash_jbrowse` stack with a prebuilt ESM bundle loaded by anywidget, so there is
@@ -46,33 +46,29 @@ to the view, so every track type and adapter works with no Python wrapper to
 keep in sync.
 
 ```python
-from jbrowse_anywidget import LinearGenomeView, make_assembly
+from jbrowse_anywidget import LinearGenomeView
 
 view = LinearGenomeView(
-    assembly=make_assembly("hg38", ".../hg38.fa.gz"),
-    location="10:29,838,565..29,838,850",
+    assembly={"name": "mygenome", "uri": ".../mygenome.fa.gz"},
+    location="chr1:1..20,000",
 )
 view.add_track({
     "type": "AlignmentsTrack",
     "trackId": "reads",
     "name": "reads",
-    "assemblyNames": ["hg38"],
-    "adapter": {"type": "CramAdapter", "uri": ".../reads.cram"},  # GPU pileup
+    "assemblyNames": ["mygenome"],
+    "adapter": {"type": "CramAdapter", "uri": ".../reads.cram"},
 })
 view            # display the widget
 view.location   # read back the current region after panning
 ```
 
-`add_features` turns an in-memory pandas DataFrame into a track with no file
-written, and `make_assembly` writes a little assembly boilerplate. Both express
-what plain JSON can't.
-
-For human and model-organism data, `fetch_hub("hg38")` (also `hg19`, `mm10`, or
-a GenArk `GCA_...`) returns a ready, CORS-enabled assembly config from
-[genomes.jbrowse.org](https://genomes.jbrowse.org) (sequence, refName aliases,
-cytobands, a gene-name search index, and a catalog of hosted tracks) as plain
-JSON you pass in. Because the assembly carries refName aliases, your own tracks
-line up even when they name chromosomes differently (`chr17` vs `17`).
+`assembly` also takes a hosted genome by name (`"hg38"`, `"mm39"`, or a GenArk
+`GCA_...`), which brings refName aliases, cytobands and gene-name search from
+[genomes.jbrowse.org](https://genomes.jbrowse.org), so your own tracks line up
+even when they name chromosomes differently (`chr17` vs `17`). `add_features`
+turns an in-memory pandas DataFrame into a track with no file written, which is
+the one thing plain JSON can't express.
 
 ## Example notebooks
 
