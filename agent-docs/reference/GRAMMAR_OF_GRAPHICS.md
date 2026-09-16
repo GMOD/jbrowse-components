@@ -34,14 +34,18 @@ different distances. Read anything below with the distinction in hand.
 declaration binding a shape — a hand-written shader, its Canvas2D painter,
 its hit test and its SVG export, held to each other by
 `sweepMarkAgainstHit` — to a display's region payload and render state. Every
-rendering plugin declares them (`grep -rl "defineMark(" plugins` is the
-census): alignments a dozen across its pileup, coverage and arc bands,
-variants three, canvas two, and dotplot, gwas, hic, synteny, multi-way
-synteny, maf, wiggle and the mark display one list each. All but two of those
-displays build their rendering backend from the list through
-`createMarkBackend`, and the `GpuXxxRenderer` / `Canvas2DXxxRenderer` pair
-that used to sit around a mark list is gone from hic, wiggle, dotplot,
-synteny, multi-way, LD, GWAS and MAF. The pair that remains is the alignments
+rendering plugin declares them (`grep -rlE "defineMark[(<]" --include='*.ts'
+plugins packages`, less the `esm/` build output, is the census — the bracket
+class because circular-view passes a type argument): alignments three lists
+across its pileup, its arcs and its coverage band, the last of them in
+`packages/alignments-core` rather than in the plugin; canvas two; variants
+three; and circular-view's rings, dotplot, gwas, hic, synteny, maf, wiggle and
+the mark display one list each. Multi-way synteny declares none of its own —
+`MULTIWAY_MARKS` spreads synteny's and canvas's. Every display holding a list
+builds its rendering backend from it through `createMarkBackend` bar one, and
+the `GpuXxxRenderer` / `Canvas2DXxxRenderer` pair that used to sit around a
+mark list is gone from hic, wiggle, dotplot, synteny, multi-way, LD, GWAS and
+MAF. The pair that remains is the alignments
 display's, and it remains on a measurement: three mark lists over two region
 payloads, drawn in three
 scissored bands per stacked section, up to 120 section blocks a frame, with
@@ -81,11 +85,11 @@ in full and of the format-typed displays only where it says so.
 
 | Stage | What the grammar means | Where the tree answers | How far |
 | --- | --- | --- | --- |
-| data | rows in memory | a feature adapter's `getFeaturesArray`, any format, and past the byte gate the adapter's `densityAdapter` sidecar as a mark's layer (ADR-117) | whole; the adapter is the format's, and the grammar has no lazy source of its own |
+| data | rows in memory | a feature adapter's `getFeaturesArray`, any format, and past the byte gate the adapter's `densityAdapter` sidecar as a mark's layer (ADR-117) | whole; the adapter is the format's, and the grammar has no lazy source of its own — nor does it pass `bpPerPx`, so an adapter holding a coarse tier answers at full resolution anyway |
 | transform | a declared step over rows before encoding | a typed step list — `filter`, `formula`, `flatten`, `bin`, `aggregate`, `coverage`, `stack` — run by `runTransforms` (`packages/core/src/util/featureTransforms.ts`), shared on the `CoreEncodeFeatures` request and then each layer's own; `filters: jexl[]` as sugar for leading filters | whole, layout included — `stack` is a pileup's packing as a step, and not the format-typed displays' ([ADR-118](../architecture-decision-records/adr-118-the-packers-share-a-rule-not-a-step.md)); a `bin`'s width may follow the zoom; `window` and `sample` are absent |
 | scale | domain → range, separate from the encoding | every channel on the encoding — `{ field, scale, domain, palette \| range \| ramp }` for colour and glyph, `{ field, scale, domain }` for y — read by `encodeFeatures` (`packages/core/src/util/markEncoding.ts`) and resolved either in the worker (categorical) or on the main thread against a domain uniform (y, and a quantitative ramp), with `ScoreScaleMixin` resolving the declaration rather than owning it | whole, declared in one place |
 | mark | a shape bound to channels | `defineMark` over a `MarkShape`, one declaration for three backends, export and hit test (`packages/render-core/src/marks/`) | whole, for the shapes the library has |
-| guide | axis and legend derived from a scale; a highlight derived from a selection | `colorScales` → legend (`packages/display-kit/src/legendHost.ts`), `valueScale` → axis, hatches and rules (`packages/display-kit/src/axisHost.ts`), `hoverInk` / `selectionInk` / `pinnedInk` → the highlight (`packages/display-kit/src/highlightHost.ts`), each instance's box read off its shape's `ink`; `DisplayChrome` places all three guides, and `renderDisplaySvg` exports the legend, the axis and the pinned highlight — a hover and a selection say where the reader's pointer was, a pin is what the figure is about | whole, for the displays that declare |
+| guide | axis and legend derived from a scale; a highlight derived from a selection | `colorScales` → legend (`packages/display-kit/src/LegendMixin.ts`), `valueScales` → axis, hatches and rules (`packages/wiggle-core/src/ScoreScaleMixin.ts`), `hoverInk` / `selectionInk` / `pinnedInk` / `soloInk` → the highlight (`packages/display-kit/src/highlightHost.ts`), each instance's box read off its shape's `ink`; `DisplayChrome` places all three guides, and `renderDisplaySvg` exports the legend, the axis and the pinned highlight — a hover, a selection and a solo are live-session UI, a pin is what the figure is about | whole, for the displays that declare |
 | layer | marks composed in z-order over shared scales | `marks[]` in config is draw order; marks share one y domain unless one declares `encoding.y.resolve: 'independent'`, which folds its own domain and takes a second axis on the right (`markValueScale`, `plugins/marks/src/LinearMarkDisplay/markList.ts`); a mark's `minBpPerPx`/`maxBpPerPx` is the zoom range it draws in, and the shared domain, legend and row count fold only the marks drawing | y resolves shared or independent; colour does not; semantic zoom per layer; a mark's `facet` stacks one section of rows per value of a field, with a chip |
 | coordinates | a transform of the plane | genomic x along a strip, and the circular view's ring pass over it: the view is a `RegionHost` whose axis is the circumference, a display renders its strip as into a linear track, and one pass per ring resamples the strip's canvas in polar coordinates (`plugins/circular-view/src/rings/`, [ADR-119](../architecture-decision-records/adr-119-the-circular-view-is-a-coordinate-stage-over-the-linear-displays.md)) | polar, as a resampling of the finished picture rather than a twin per shape — measured at 4.3 ms a ring against 5.4–6.8 ms for the twin, exact at every bin width; the dotplot stays a display |
 
@@ -145,18 +149,20 @@ box a place nothing painted, because it reads the same `ink` the hit test is
 derived from. Each guide has one source, and each source is tested against
 its consumer. The two backends are held to each other in a browser as well:
 the cross-backend gate's `Mark Display` suite
-(`products/jbrowse-web/browser-tests/suites/mark-display.ts`) renders eight
+(`products/jbrowse-web/browser-tests/suites/mark-display.ts`) renders nine
 `marks` configs — a categorical bar chart with its key and axis, a glyph
 scale, a stacked pileup over a BAM, two axes, a multiscale pair, a
-quantitative ramp and a variant strip — on Canvas2D and WebGL and blocks CI
-past 1.5% drift. Its first run found two fractional-pixel drifts nothing on
-jsdom could see, a span row height of `canvasHeight / rowCount` and the
+quantitative ramp, a variant strip and a pileup faceted by mismatch count — on
+Canvas2D and WebGL and blocks CI past 1.5% drift. Its first run found two
+fractional-pixel drifts nothing on jsdom could see, a span row height of
+`canvasHeight / rowCount` and the
 Canvas2D seam between abutting bars, at 1.93% and 4.07%; closed, the ramp is
 the CI scope's worst pair at 0.91%, against a 1.5% threshold
 ([CROSS_BACKEND_GATE.md](CROSS_BACKEND_GATE.md) §"What made a blocking gate
-possible" has the 2026-09-12 distribution). The same pass looked at the
-chrome-placed key and axis in a real browser for the first time and found the
-ramp key printing an unpinned domain end as the float it was measured as —
+possible" has the 2026-09-12 distribution, which predates the ninth scene).
+The same pass looked at the chrome-placed key and axis in a real browser for
+the first time and found the ramp key printing an unpinned domain end as the
+float it was measured as —
 Hi-C's `24.429380416870117` against a `0` with no gap — which is why a ramp's
 ends now print through `formatScore`, the rule the score caption already used.
 
@@ -183,8 +189,14 @@ The seams, named honestly:
   `startEnd`, `y`, `height`; the variant matrix's cell
   (`plugins/variants/src/LinearMultiSampleVariantMatrixDisplay/components/matrixCellMark.ts`)
   says `featureIndex`, `row`, `color`, its x a column index over equal
-  columns rather than a bp. ADR-106 §Consequences books converging the first
-  two as a lens change per display, still open; the third is a different x. The alignments pileup
+  columns rather than a bp. Converging the first two is not the small move it
+  looks: ADR-106 §Consequences measured the `startEnd` split and parked it,
+  because that array IS the worker payload — 18 modules and some 35 tests
+  address it by `2i` — so it is a payload and instance-struct change across
+  two pipelines, waiting on a consumer that wants two arrays; and canvas's
+  `y`/`height` are pixel geometry rather than the value `y` names elsewhere,
+  so renaming them converges nothing. The third is a different x. The
+  alignments pileup
   (`plugins/alignments/src/features/pileupShape.ts`) is on the mark list but
   keeps its rule codes as data, for a measured reason.
 - **The config rung covers one class, less the two it reaches now.** A `marks`
