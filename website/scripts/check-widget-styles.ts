@@ -49,6 +49,8 @@ const LAYER_ORDER = ['base', 'prose', 'widget']
 interface Widget {
   name: string
   find: string
+  // among the pages containing `find`, check the one this scores highest
+  rank?: (html: string) => number
   check: (page: Page) => Promise<string[]>
 }
 
@@ -76,24 +78,42 @@ async function expectStyle(
     : [`    ${selector} { ${prop}: ${got} } — expected ${want} (${why})`]
 }
 
-// Exactly one panel visible per tab group, and the radios that drive them
-// hidden. Shared by the fence widget and the recipe dialog, which is the point:
-// they are the same widget in two contexts, and the bug was that only one of
-// them was reachable.
+// Every tab, once selected, shows exactly its own panel, and the radios that
+// drive them stay hidden. Shared by the fence widget and the recipe dialog,
+// which is the point: they are the same widget in two contexts, and the bug was
+// that only one of them was reachable. Selecting each tab rather than reading
+// the default one is what catches a tab whose panel never shows: ten video
+// dialogs shipped a blank seventh tab while their first one passed.
 async function checkTabGroups(page: Page, scope: string) {
   const groups = await page.evaluate(sel => {
     const visible = (el: Element) => getComputedStyle(el).display !== 'none'
-    return [...document.querySelectorAll(sel)].map(w => ({
-      panels: [...w.querySelectorAll(':scope > .spec-panel')].length,
-      shown: [...w.querySelectorAll(':scope > .spec-panel')].filter(visible)
-        .length,
-      inputsShown: [...w.querySelectorAll(':scope > .spec-tab-input')].filter(
-        i => Number(getComputedStyle(i).opacity) > 0,
-      ).length,
-      labelStyled: [...w.querySelectorAll(':scope > .spec-tab-label')].every(
-        l => getComputedStyle(l).cursor === 'pointer',
-      ),
-    }))
+    return [...document.querySelectorAll(sel)].map(w => {
+      const inputs = [
+        ...w.querySelectorAll<HTMLInputElement>(':scope > .spec-tab-input'),
+      ]
+      const panels = [...w.querySelectorAll(':scope > .spec-panel')]
+      const initial = inputs.find(input => input.checked)
+      const broken = inputs.flatMap((input, index) => {
+        input.checked = true
+        const shown = panels.filter(visible)
+        return shown.length === 1 && shown[0] === panels[index]
+          ? []
+          : [
+              `tab ${index + 1} (${input.labels?.[0]?.textContent}) shows ${shown.length} of ${panels.length} panels`,
+            ]
+      })
+      if (initial) {
+        initial.checked = true
+      }
+      return {
+        broken,
+        inputsShown: inputs.filter(i => Number(getComputedStyle(i).opacity) > 0)
+          .length,
+        labelStyled: [...w.querySelectorAll(':scope > .spec-tab-label')].every(
+          l => getComputedStyle(l).cursor === 'pointer',
+        ),
+      }
+    })
   }, scope)
   if (groups.length === 0) {
     return [`    ${scope} — no tab group found`]
@@ -101,9 +121,9 @@ async function checkTabGroups(page: Page, scope: string) {
   return groups.flatMap((g, i) => {
     const at = `    ${scope}[${i}]`
     return [
-      g.shown === 1
-        ? ''
-        : `${at} shows ${g.shown} of ${g.panels} panels — exactly one must be visible`,
+      ...g.broken.map(
+        problem => `${at} ${problem} — exactly its own must be visible`,
+      ),
       g.inputsShown === 0
         ? ''
         : `${at} leaves ${g.inputsShown} radio input(s) visible — the labels are the tabs`,
@@ -240,6 +260,14 @@ const WIDGETS: Widget[] = [
       ]
     },
   },
+  {
+    // Whichever page carries the most tabs in one group, today a video's
+    // recipe dialog, since a tab past the first few is the one that breaks.
+    name: 'widest tab group',
+    find: 'class="spec-tabs',
+    rank: widestTabGroup,
+    check: page => checkTabGroups(page, '.spec-tabs'),
+  },
 ]
 
 // Layer positions are read from the page's own stylesheets in document order,
@@ -291,10 +319,34 @@ function layerOrderProblems(htmlPath: string) {
   return []
 }
 
-// The first built page containing `find`, so the checks follow the content
-// around rather than pinning page paths.
-function findPage(pages: string[], marker: string) {
-  return pages.find(p => readFileSync(p, 'utf8').includes(marker))
+function widestTabGroup(html: string) {
+  return Math.max(
+    ...html
+      .split('class="spec-tabs')
+      .slice(1)
+      .map(group => group.split('class="spec-tab-input"').length - 1),
+  )
+}
+
+// The first built page containing `find`, or the best-ranked one, so the checks
+// follow the content around rather than pinning page paths.
+function findPage(
+  pages: string[],
+  marker: string,
+  rank?: (html: string) => number,
+) {
+  const matching = pages
+    .map(path => ({ path, html: readFileSync(path, 'utf8') }))
+    .filter(({ html }) => html.includes(marker))
+  return rank
+    ? matching.reduce<{ path: string; score: number } | undefined>(
+        (best, { path, html }) => {
+          const score = rank(html)
+          return best && best.score >= score ? best : { path, score }
+        },
+        undefined,
+      )?.path
+    : matching[0]?.path
 }
 
 assertDirExists(distDir, 'run `pnpm build` first.')
@@ -318,7 +370,7 @@ await new Promise<void>(resolve => server.listen(PORT, resolve))
 
 try {
   for (const widget of WIDGETS) {
-    const file = findPage(pages, widget.find)
+    const file = findPage(pages, widget.find, widget.rank)
     if (file === undefined) {
       problems.push(
         `  ${widget.name}: no built page contains \`${widget.find}\`, so nothing here is checked.`,

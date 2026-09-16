@@ -110,30 +110,19 @@ function urlTab(url: string): Tab {
 // downstream. `gid` names one radio group and must be unique within the page:
 // two widgets sharing a group leave the first showing no panel at all, because
 // picking a tab in the second unchecks both of its inputs.
-//
-// Every input precedes every panel, which the stylesheet's `~` selectors
-// require. It pairs the nth input with `.spec-panel-n` and stops at 6, so a
-// widget cannot grow past that without a rule there.
 function tabWidget(gid: string, tabs: Tab[]) {
-  const inputs = tabs.map(
-    ({ label }, i) =>
-      `<input class="spec-tab-input" type="radio" name="${gid}" id="${gid}-${i}"${
-        i === 0 ? ' checked' : ''
-      }/>\n<label class="spec-tab-label" for="${gid}-${i}">${label}</label>`,
-  )
   return [
-    raw(
-      `<div class="spec-tabs config-cli-tabs">\n${inputs.join('\n')}\n` +
-        `<div class="spec-panel spec-panel-1">`,
-    ),
-    ...tabs[0]!.nodes,
-    ...tabs
-      .slice(1)
-      .flatMap(({ nodes }, i) => [
-        raw(`</div>\n<div class="spec-panel spec-panel-${i + 2}">`),
-        ...nodes,
-      ]),
-    raw(`</div>\n</div>`),
+    raw(`<div class="spec-tabs config-cli-tabs">`),
+    ...tabs.flatMap(({ label, nodes }, i) => [
+      raw(
+        `<input class="spec-tab-input" type="radio" name="${gid}" id="${gid}-${i}"${
+          i === 0 ? ' checked' : ''
+        }/>\n<label class="spec-tab-label" for="${gid}-${i}">${label}</label>\n<div class="spec-panel">`,
+      ),
+      ...nodes,
+      raw(`</div>`),
+    ]),
+    raw(`</div>`),
   ]
 }
 

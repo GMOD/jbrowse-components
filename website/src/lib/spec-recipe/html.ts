@@ -138,17 +138,12 @@ function dialogHtml(id: string, list: Panel[]): string {
     '<button class="spec-dialog-close" aria-label="Close">✕</button>',
     '</form>',
     '<div class="spec-tabs">',
-    // every input precedes every panel, so each panel is a following sibling of
-    // its own tab (the CSS pairs them by ordinal)
     ...list.map((panel, i) =>
       [
         `<input type="radio" name="${name}" id="${id}-t${i}" class="spec-tab-input"${i === 0 ? ' checked' : ''}/>`,
         `<label for="${id}-t${i}" class="spec-tab-label">${escapeAttr(panel.label)}</label>`,
+        `<div class="spec-panel">${panel.body}</div>`,
       ].join(''),
-    ),
-    ...list.map(
-      (panel, i) =>
-        `<div class="spec-panel spec-panel-${i + 1}">${panel.body}</div>`,
     ),
     '</div>',
     '</dialog>',
