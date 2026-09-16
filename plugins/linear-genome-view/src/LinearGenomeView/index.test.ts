@@ -39,15 +39,26 @@ type LGV = LinearGenomeViewModel
 // Minimal display state model used as a generic fixture in these LGV unit
 // tests (replaces the removed LinearBareDisplay). Composes the surviving
 // BaseDisplay + TrackHeightMixin so `type` and `height` behave normally.
+//
+// `resolution` mirrors the wiggle displays: a declared property with a setter
+// and no config slot, which is the shape the two settings paths answer
+// differently for.
 function stubDisplayStateModel(configSchema: AnyConfigurationSchemaType) {
-  return types.compose(
-    'LinearBareDisplay',
-    types.compose(BaseDisplay, TrackHeightMixin()),
-    types.model({
-      type: types.literal('LinearBareDisplay'),
-      configuration: ConfigurationReference(configSchema),
-    }),
-  )
+  return types
+    .compose(
+      'LinearBareDisplay',
+      types.compose(BaseDisplay, TrackHeightMixin()),
+      types.model({
+        type: types.literal('LinearBareDisplay'),
+        configuration: ConfigurationReference(configSchema),
+        resolution: 1,
+      }),
+    )
+    .actions(self => ({
+      setResolution(resolution: number) {
+        self.resolution = resolution
+      },
+    }))
 }
 
 // use initializer function to avoid having console.warn jest.fn in a global
@@ -2319,10 +2330,7 @@ describe('TrackInit with display configuration', () => {
     expect(console.warn).toHaveBeenCalledWith(ignored)
   })
 
-  // The two paths report the same list or they contradict each other: a key
-  // with a setter reads "a setScrollTop action exists" and would have been
-  // reported as one the display does not take.
-  test('a key the display has reaches no notification on either path', async () => {
+  function viewWithNoTracks() {
     const { Session, LinearGenomeModel, pluginManager } = initializeWithTracks()
     const session = Session.create({ configuration: {} }, { pluginManager })
     const model = session.setView(
@@ -2334,12 +2342,42 @@ describe('TrackInit with display configuration', () => {
       }),
     )
     model.setWidth(800)
+    return model
+  }
+
+  const warnings = () => jest.mocked(console.warn).mock.calls.flat().join('\n')
+
+  // The first show spreads the settings into the display's snapshot, so a
+  // declared property has already landed by the time applyDisplaySettings
+  // reports it took no slot — saying so would flag a correct call. Restyling a
+  // shown track spreads nothing, so the same key really did write nothing.
+  test('a declared prop lands on the first show and not on a restyle', async () => {
+    const model = viewWithNoTracks()
+
+    await model.launchTrack('track1', {}, { resolution: 5 })
+    const display = model.tracks[0]!.displays[0]! as unknown as {
+      resolution: number
+    }
+    expect(display.resolution).toBe(5)
+    expect(warnings()).not.toMatch(/resolution/)
+
+    await model.launchTrack('track1', {}, { resolution: 9 })
+    expect(display.resolution).toBe(5)
+    expect(warnings()).toMatch(/did not apply resolution/)
+    expect(warnings()).toMatch(/setResolution/)
+  })
+
+  // `scrollTop` is a volatile, so MST restores nothing for it from a snapshot
+  // and the key wrote nothing on either path. The display having a member of
+  // that name is not the same question as the write landing, and a filter that
+  // asks the first one drops this report on the floor.
+  test('a volatile the display has is still reported on the first show', async () => {
+    const model = viewWithNoTracks()
 
     await model.launchTrack('track1', {}, { scrollTop: 10 })
-    await model.launchTrack('track1', {}, { scrollTop: 20 })
-    expect(jest.mocked(console.warn).mock.calls.flat().join('\n')).not.toMatch(
-      /scrollTop/,
-    )
+    expect(model.tracks[0]!.displays[0]!.scrollTop).toBe(0)
+    expect(warnings()).toMatch(/did not apply scrollTop/)
+    expect(warnings()).toMatch(/setScrollTop/)
   })
 
   // The eval's agent wrote view.moveTrackToTop('volvox_test_vcf') and read

@@ -13,8 +13,10 @@ export { getRpcSessionId } from './parentWalk.ts'
 import {
   getParent,
   getSnapshot,
+  getType,
   hasParent,
   isAlive,
+  isModelType,
   isStateTreeNode,
 } from '@jbrowse/mobx-state-tree'
 import { observable, runInAction, untracked } from 'mobx'
@@ -33,7 +35,7 @@ import {
   objectHash,
 } from './mstUtils.ts'
 import { isViewModel } from './types/index.ts'
-import { unknownKeysMessage } from './unknownSnapshotKeys.ts'
+import { setterOnlyMessage, unknownKeysMessage } from './unknownSnapshotKeys.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
@@ -44,6 +46,7 @@ import type {
   PreFileLocation,
 } from './types/data.ts'
 import type { AbstractViewContainer } from './types/index.ts'
+import type { UnappliedSetting } from './unknownSnapshotKeys.ts'
 import type {
   IAnyStateTreeNode,
   IAnyType,
@@ -783,33 +786,38 @@ interface MinimalTrack extends IAnyType {
 }
 
 interface SettingsReport {
-  unapplied: string[]
+  unapplied: UnappliedSetting[]
   failed: { key: string; error: string }[]
 }
 
-// `unapplied` holds three kinds of entry and only one of them means the key
-// reached nothing at all: applyDisplaySettings annotates `type` and the "a
-// setter exists, pass allowSetters" case in parentheses, and the display node
-// settles the rest — on a first show the snapshot spread may already have
-// landed the key as a prop or a volatile (`resolution` on the wiggle displays).
-function reachedNothing(unapplied: string[], display: unknown) {
-  const node = display as Record<string, unknown> | undefined
-  return node
-    ? unapplied.filter(entry => !entry.includes(' (') && !(entry in node))
-    : []
+// The first-show path spreads the same settings into the display's `create()`
+// snapshot, so a DECLARED PROP (`resolution` on the wiggle displays) has
+// already landed by the time applyDisplaySettings reports it took no slot.
+// Only a declared prop: MST restores nothing else from a snapshot, so a
+// volatile or a getter of the same name (`scrollTop`) did not land and the
+// caller has to hear about it.
+function didNotLand(unapplied: UnappliedSetting[], display: unknown) {
+  const type = display ? getType(display) : undefined
+  const props = type && isModelType(type) ? Object.keys(type.properties) : []
+  return unapplied.filter(entry => !props.includes(entry.key))
 }
 
 function notifySettingsReport(
   session: { notifyError: (message: string) => void },
   trackId: string,
   displayType: string,
-  ignored: string[],
+  unapplied: UnappliedSetting[],
   failed: SettingsReport['failed'],
 ) {
-  if (ignored.length) {
-    session.notifyError(
-      unknownKeysMessage(`${displayType} for track "${trackId}"`, ignored),
-    )
+  const label = `${displayType} for track "${trackId}"`
+  const keys = (of: UnappliedSetting[]) => of.map(entry => entry.key)
+  const setterOnly = unapplied.filter(e => e.reason === 'setter-only')
+  const unknown = unapplied.filter(e => e.reason !== 'setter-only')
+  if (unknown.length) {
+    session.notifyError(unknownKeysMessage(label, keys(unknown)))
+  }
+  if (setterOnly.length) {
+    session.notifyError(setterOnlyMessage(label, keys(setterOnly)))
   }
   if (failed.length) {
     session.notifyError(
@@ -831,11 +839,13 @@ function restyleShown<T>(
   }
   if (Object.keys(settings).length && track.applyDisplaySettings) {
     const report = track.applyDisplaySettings(settings)
+    // no `didNotLand` here: this path spreads no snapshot, so every entry
+    // applyDisplaySettings reports really did write nothing
     notifySettingsReport(
       getSession(self),
       trackId,
       track.activeDisplay.type,
-      reachedNothing(report.unapplied, track.activeDisplay),
+      report.unapplied,
       report.failed,
     )
   }
@@ -1240,7 +1250,7 @@ export function showTrackGeneric(
       session,
       trackId,
       displayType,
-      reachedNothing(report.unapplied, drawn),
+      didNotLand(report.unapplied, drawn),
       report.failed,
     )
     // if this track came from a connection, persist its config so it survives

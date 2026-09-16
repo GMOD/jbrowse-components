@@ -262,8 +262,10 @@ enough:
   or `canceled` for a load the user stopped, which
   `track.activeDisplay.reload()` retries.
 - `applyDisplaySettings` answers `{ applied, unapplied, failed }`: `failed` is a
-  key the display knows and could not set (a wrongly typed value included),
-  `unapplied` a key that is not a config slot at all, misspellings included.
+  key the display knows and could not set (a wrongly typed value included).
+  `unapplied` holds `{ key, reason }` — `no-slot` for a key no slot covers,
+  misspellings included, and `setter-only` for one the display takes through a
+  `set<Key>` action, which you call yourself.
 - `jb.addView` goes through the same launcher a spec uses, a ProteinView's
   `connectedView` shorthand included.
 - `jb.addTrack` takes `settleMs: 0` to skip the settle, for several adds

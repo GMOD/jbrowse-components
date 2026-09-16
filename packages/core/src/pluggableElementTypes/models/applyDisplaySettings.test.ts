@@ -75,9 +75,21 @@ test('type, unknown, and empty keys report as unapplied instead of vanishing', (
   })
   expect(report.applied).toEqual([])
   expect(report.unapplied).toEqual([
-    'type (switch the display type instead)',
-    'nonsense',
-    '(empty key)',
+    { key: 'type', reason: 'display-type' },
+    { key: 'nonsense', reason: 'no-slot' },
+    { key: '', reason: 'no-slot' },
+  ])
+})
+
+// The reason, not a sentence: the two showTrackGeneric paths read this list and
+// need `setter-only` apart from `no-slot` to word their own report, and a
+// caller cannot recover a reason from prose without parsing it back out.
+test('a key with an action and no slot is setter-only, not unknown', () => {
+  const display = makeDisplay()
+  const report = display.applyDisplaySettings({ resolution: 64, nonsense: 1 })
+  expect(report.unapplied).toEqual([
+    { key: 'resolution', reason: 'setter-only' },
+    { key: 'nonsense', reason: 'no-slot' },
   ])
 })
 
@@ -85,7 +97,9 @@ test('a state setter fires only behind allowSetters', () => {
   const display = makeDisplay()
   const declined = display.applyDisplaySettings({ resolution: 64 })
   expect(display.resolution).toBe(1)
-  expect(declined.unapplied[0]).toContain('setResolution')
+  expect(declined.unapplied).toEqual([
+    { key: 'resolution', reason: 'setter-only' },
+  ])
 
   const report = display.applyDisplaySettings(
     { resolution: 64 },
@@ -122,7 +136,7 @@ test('a throwing SLOT lands in failed, separately from unapplied', () => {
   expect(report.applied).toEqual(['height'])
   // a key that is simply not a slot is NOT a failure — showTrackGeneric sees
   // MST display props here on every correct call
-  expect(report.unapplied).toEqual(['nonsense'])
+  expect(report.unapplied).toEqual([{ key: 'nonsense', reason: 'no-slot' }])
   expect(report.failed).toHaveLength(1)
   expect(report.failed[0]!.key).toBe('label')
 })

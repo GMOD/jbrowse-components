@@ -376,14 +376,15 @@ return {
   ],
   "result": {
     "applied": ["displayMode"],
-    "unapplied": ["colour"],
+    "unapplied": [{ "key": "colour", "reason": "no-slot" }],
     "failed": []
   }
 }
 ```
 
 - `unapplied` is the misspelling; `failed` is a key the display knows and could
-  not set.
+  not set. A `reason` of `setter-only` is neither: the display takes that
+  setting through a `set<Key>` action rather than a slot.
 - Anything a slot does not cover is an action on the display itself, listed by
   `docs topic:"model:<modelType>" section:"Actions"` with the type name from
   `jb.inspect(track.activeDisplay).modelType`.

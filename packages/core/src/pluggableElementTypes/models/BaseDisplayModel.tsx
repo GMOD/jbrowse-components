@@ -12,10 +12,12 @@ import {
   statusMessageText,
 } from '../../util/index.ts'
 import { ElementId } from '../../util/types/mst.ts'
+import { displaySetterName } from '../../util/unknownSnapshotKeys.ts'
 
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { MenuItem } from '../../ui/index.ts'
 import type { RpcStatus } from '../../util/progress.ts'
+import type { UnappliedSetting } from '../../util/unknownSnapshotKeys.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type React from 'react'
 
@@ -251,8 +253,9 @@ function stateModelFactory() {
        * were applied. Each key runs through the display config schema's
        * `preProcessSnapshot` (shorthand expansions and legacy-key migrations,
        * as `showTrackGeneric` applies to a session spec's inline track keys),
-       * then writes the matching config slot. Keys that are not slots are
-       * returned in `unapplied`, so a caller can see a key that did nothing.
+       * then writes the matching config slot. Keys that are not slots come
+       * back in `unapplied` as `{ key, reason }`, so a caller can tell a
+       * misspelling from a key that has an action instead of a slot.
        *
        * `allowSetters` also routes a non-slot key to a single-argument action
        * named `set<Key>`. It is off by default because session specs, share
@@ -262,11 +265,11 @@ function stateModelFactory() {
        * specific action can call it directly.
        *
        * A key whose write threw is reported in `failed`. Only `failed` means
-       * the caller passed a bad value and warrants a notification. At the
-       * `showTrackGeneric` call site `unapplied` also collects keys that
-       * function consumed itself (`type`) and MST display props the display
-       * snapshot already applied (`resolution`), so reporting `unapplied` keys
-       * as dropped would flag a correct call.
+       * the caller passed a bad value. `unapplied` needs the caller's own
+       * context to read: `showTrackGeneric` spreads the same settings into the
+       * display's snapshot, so a declared prop (`resolution`) has already
+       * landed by the time it reports here, while the restyle path spreads
+       * nothing and every entry there did nothing.
        *
        * A per-key error does not abort the remaining keys. A caller
        * mid-`showTrack` has already pushed the track, and one rejected value
@@ -281,14 +284,12 @@ function stateModelFactory() {
         // before it exists, hence the cast rather than a prop
         const { configuration } = self as unknown as DisplayModel
         const applied: string[] = []
-        const unapplied: string[] = []
+        const unapplied: UnappliedSetting[] = []
         const failed: { key: string; error: string }[] = []
         const slots = preProcessSlotValues(configuration, settings)
         for (const [key, value] of Object.entries(slots)) {
           if (!key || key === 'type') {
-            unapplied.push(
-              key ? 'type (switch the display type instead)' : '(empty key)',
-            )
+            unapplied.push({ key, reason: key ? 'display-type' : 'no-slot' })
             continue
           }
           try {
@@ -301,17 +302,15 @@ function stateModelFactory() {
               continue
             }
             const setter = (self as unknown as Record<string, unknown>)[
-              `set${key[0]!.toUpperCase()}${key.slice(1)}`
+              displaySetterName(key)
             ]
             if (typeof setter !== 'function') {
-              unapplied.push(key)
+              unapplied.push({ key, reason: 'no-slot' })
             } else if (options?.allowSetters) {
               ;(setter as (value: unknown) => void)(value)
               applied.push(`${key} (via setter)`)
             } else {
-              unapplied.push(
-                `${key} (not a config slot; a set${key[0]!.toUpperCase()}${key.slice(1)} action exists — call it, or pass { allowSetters: true })`,
-              )
+              unapplied.push({ key, reason: 'setter-only' })
             }
           } catch (e) {
             failed.push({ key, error: `${e}` })

@@ -19,6 +19,37 @@ export function unknownKeysMessage(label: string, keys: string[]) {
   return `${label} ignored unknown key(s): ${keys.join(', ')}`
 }
 
+/** Why a settings key `applyDisplaySettings` was handed wrote nothing. */
+export type UnappliedReason =
+  // nothing on the display takes this key, misspellings included
+  | 'no-slot'
+  // not a config slot, but a `set<Key>` action exists
+  | 'setter-only'
+  // `type` picks which display to build; it is not a setting
+  | 'display-type'
+
+export interface UnappliedSetting {
+  key: string
+  reason: UnappliedReason
+}
+
+/** The action `setter-only` names: `height` -> `setHeight`. */
+export function displaySetterName(key: string) {
+  return `set${key[0]!.toUpperCase()}${key.slice(1)}`
+}
+
+/**
+ * What a surface calls a key the display has an action for but no slot. Its own
+ * sentence rather than `unknownKeysMessage`'s: the display does take the
+ * setting, just not written this way, and saying "unknown key" over a key whose
+ * setter we name in the same breath contradicts itself.
+ */
+export function setterOnlyMessage(label: string, keys: string[]) {
+  return `${label} did not apply ${keys.join(', ')}: no config slot takes ${
+    keys.length > 1 ? 'them' : 'it'
+  }. Call ${keys.map(displaySetterName).join(', ')} on the display instead.`
+}
+
 /**
  * Name the keys a view was handed and could not place, from the partition
  * `withLaunchInput` runs on the snapshot.
