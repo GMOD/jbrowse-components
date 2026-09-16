@@ -31,6 +31,7 @@ export interface ContextLevel extends IStateTreeNode {
   windowWidthBp: number
   windowStartBp: number
   displayedRegions: Region[]
+  pendingLaunch?: unknown
   setWidth(width: number): void
   setDisplayedRegions(regions: Region[]): void
   setWindowFrame(windowWidthBp: number, windowStartBp: number): void
@@ -139,7 +140,9 @@ export function installContextLevels(self: LinearGenomeViewModel) {
         call.type === 'action' && call.id === call.rootId
           ? self.contextLevelViews.find(l => l === call.context)
           : undefined
-      if (!level) {
+      // a level's own launch navigates it, and that is not a gesture: the
+      // sync above puts it back under the host once the regions land
+      if (!level || level.pendingLaunch) {
         next(call)
       } else if (LEVEL_PANS.has(call.name)) {
         const px = call.args[0] as number
