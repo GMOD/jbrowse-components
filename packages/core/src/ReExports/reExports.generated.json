@@ -4741,16 +4741,7 @@
         "solveLabelRoomFactor",
         "squeezeFloorScale"
       ],
-      "worker": "stub",
-      "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/SvgIcon",
-        "@mui/material/Tooltip",
-        "@mui/x-data-grid",
-        "react-dom",
-        "react-dom/client"
-      ]
+      "worker": "real"
     },
     "@jbrowse/plugin-canvas/LinearBasicDisplay/baseStateModel": {
       "package": "@jbrowse/plugin-canvas",
@@ -4850,16 +4841,7 @@
       "names": [
         "default"
       ],
-      "worker": "stub",
-      "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/SvgIcon",
-        "@mui/material/Tooltip",
-        "@mui/x-data-grid",
-        "react-dom",
-        "react-dom/client"
-      ]
+      "worker": "real"
     },
     "@jbrowse/plugin-gff3": {
       "package": "@jbrowse/plugin-gff3",
@@ -5025,7 +5007,6 @@
         "@mui/material/IconButton",
         "@mui/material/SvgIcon",
         "@mui/material/Tooltip",
-        "@mui/x-data-grid",
         "react-dom",
         "react-dom/client"
       ]
@@ -5074,11 +5055,7 @@
       "uiVia": [
         "@mui/material",
         "@mui/material/IconButton",
-        "@mui/material/SvgIcon",
-        "@mui/material/Tooltip",
-        "@mui/x-data-grid",
-        "react-dom",
-        "react-dom/client"
+        "@mui/material/Tooltip"
       ]
     },
     "@jbrowse/plugin-trix": {
@@ -5099,16 +5076,7 @@
         "svTypeDisplayLabel",
         "svTypeFromToken"
       ],
-      "worker": "stub",
-      "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/SvgIcon",
-        "@mui/material/Tooltip",
-        "@mui/x-data-grid",
-        "react-dom",
-        "react-dom/client"
-      ]
+      "worker": "real"
     },
     "@jbrowse/plugin-wiggle": {
       "package": "@jbrowse/plugin-wiggle",
@@ -5122,16 +5090,7 @@
         "wiggleCommonExtraSlots",
         "wiggleMouseHandlers"
       ],
-      "worker": "stub",
-      "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/SvgIcon",
-        "@mui/material/Tooltip",
-        "@mui/x-data-grid",
-        "react-dom",
-        "react-dom/client"
-      ]
+      "worker": "real"
     },
     "@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel": {
       "package": "@jbrowse/plugin-wiggle",
@@ -6283,6 +6242,106 @@
         "react-dom",
         "react-dom/client"
       ]
+    },
+    "@jbrowse/tree-sidebar/clusterMatrix": {
+      "package": "@jbrowse/tree-sidebar",
+      "names": [
+        "MIN_CLUSTER_ROWS",
+        "clusterMatrix"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/tree-sidebar/clusterProvenance": {
+      "package": "@jbrowse/tree-sidebar",
+      "names": [
+        "CLUSTER_PROVENANCE_MIN_OVERLAP",
+        "clusterProvenanceDrifted",
+        "clusterProvenanceFromRegions",
+        "clusterProvenanceLocLabel",
+        "clusterProvenanceOverlap",
+        "describeClusterProvenance"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/tree-sidebar/clusterUtils": {
+      "package": "@jbrowse/tree-sidebar",
+      "names": [
+        "applyLayoutOverrides",
+        "applySubtreeFilter",
+        "buildClusteredLayout",
+        "buildTree",
+        "clusteredCladeLayout",
+        "computeClusterHierarchy",
+        "filterRowsBySubtree",
+        "getLeafNames",
+        "parseClusterOrder",
+        "parseClusterTree",
+        "pruneNewickToLeaves",
+        "reconcileLayout",
+        "subtreeCoversEveryRow",
+        "treeDescribesRows",
+        "validateClusterOrder"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/tree-sidebar/hierarchy": {
+      "package": "@jbrowse/tree-sidebar",
+      "names": [
+        "TREE_LEFT_PAD",
+        "assignBranchLengthY",
+        "assignDepthY",
+        "clusterLayout",
+        "descendants",
+        "eachAfter",
+        "hasIncrementalBranchLengths",
+        "hierarchy",
+        "leaves",
+        "links",
+        "maxNodeHeight",
+        "renderTreeSVG",
+        "treeHoverColors",
+        "treeLinkSegments",
+        "treeStroke"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/tree-sidebar/rowHeightConfigSchemaFields": {
+      "package": "@jbrowse/tree-sidebar",
+      "names": [
+        "rowHeightConfigSchemaFields"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/tree-sidebar/rowSortColumn": {
+      "package": "@jbrowse/tree-sidebar",
+      "names": [
+        "loadedRegionIndexAt",
+        "orderRowsByValueAt",
+        "regionCoversColumn",
+        "sortRowsAtColumn"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields": {
+      "package": "@jbrowse/tree-sidebar",
+      "names": [
+        "rowSeparatorsConfigSchemaFields",
+        "treeSidebarConfigSchemaFields"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/tree-sidebar/treeSidebarGeometry": {
+      "package": "@jbrowse/tree-sidebar",
+      "names": [
+        "MIN_TREE_AREA_WIDTH",
+        "TREE_RESIZE_HANDLE_WIDTH",
+        "clampTreeAreaWidth",
+        "treeContentHeight",
+        "treeIsShowing",
+        "treeSidebarOffset",
+        "treeSidebarRightEdge"
+      ],
+      "worker": "real"
     },
     "@jbrowse/web-core": {
       "package": "@jbrowse/web-core",

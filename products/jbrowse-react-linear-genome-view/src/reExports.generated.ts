@@ -168,13 +168,21 @@ import * as m162 from '@jbrowse/render-core/useRenderingBackend'
 import * as m163 from '@jbrowse/render-core/useTabVisibilityRerender'
 import * as m164 from '@jbrowse/sv-core'
 import * as m165 from '@jbrowse/tree-sidebar'
-import * as m166 from '@jbrowse/wiggle-core'
-import * as m167 from '@jbrowse/wiggle-core/chrome'
-import * as m168 from '@jbrowse/wiggle-core/constants'
-import * as m169 from '@jbrowse/wiggle-core/normalize'
-import * as m170 from '@jbrowse/wiggle-core/renderingBackendTypes'
-import * as m171 from '@jbrowse/wiggle-core/ScorePlotChrome'
-import * as m172 from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
+import * as m166 from '@jbrowse/tree-sidebar/clusterMatrix'
+import * as m167 from '@jbrowse/tree-sidebar/clusterProvenance'
+import * as m168 from '@jbrowse/tree-sidebar/clusterUtils'
+import * as m169 from '@jbrowse/tree-sidebar/hierarchy'
+import * as m170 from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
+import * as m171 from '@jbrowse/tree-sidebar/rowSortColumn'
+import * as m172 from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
+import * as m173 from '@jbrowse/tree-sidebar/treeSidebarGeometry'
+import * as m174 from '@jbrowse/wiggle-core'
+import * as m175 from '@jbrowse/wiggle-core/chrome'
+import * as m176 from '@jbrowse/wiggle-core/constants'
+import * as m177 from '@jbrowse/wiggle-core/normalize'
+import * as m178 from '@jbrowse/wiggle-core/renderingBackendTypes'
+import * as m179 from '@jbrowse/wiggle-core/ScorePlotChrome'
+import * as m180 from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
 
 const libs: Record<string, unknown> = {
   ...coreLibs,
@@ -344,13 +352,21 @@ const libs: Record<string, unknown> = {
   '@jbrowse/render-core/useTabVisibilityRerender': m163,
   '@jbrowse/sv-core': m164,
   '@jbrowse/tree-sidebar': m165,
-  '@jbrowse/wiggle-core': m166,
-  '@jbrowse/wiggle-core/chrome': m167,
-  '@jbrowse/wiggle-core/constants': m168,
-  '@jbrowse/wiggle-core/normalize': m169,
-  '@jbrowse/wiggle-core/renderingBackendTypes': m170,
-  '@jbrowse/wiggle-core/ScorePlotChrome': m171,
-  '@jbrowse/wiggle-core/ScorePlotSvgFrame': m172,
+  '@jbrowse/tree-sidebar/clusterMatrix': m166,
+  '@jbrowse/tree-sidebar/clusterProvenance': m167,
+  '@jbrowse/tree-sidebar/clusterUtils': m168,
+  '@jbrowse/tree-sidebar/hierarchy': m169,
+  '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields': m170,
+  '@jbrowse/tree-sidebar/rowSortColumn': m171,
+  '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields': m172,
+  '@jbrowse/tree-sidebar/treeSidebarGeometry': m173,
+  '@jbrowse/wiggle-core': m174,
+  '@jbrowse/wiggle-core/chrome': m175,
+  '@jbrowse/wiggle-core/constants': m176,
+  '@jbrowse/wiggle-core/normalize': m177,
+  '@jbrowse/wiggle-core/renderingBackendTypes': m178,
+  '@jbrowse/wiggle-core/ScorePlotChrome': m179,
+  '@jbrowse/wiggle-core/ScorePlotSvgFrame': m180,
 }
 
 export default libs

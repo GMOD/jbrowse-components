@@ -20,6 +20,17 @@
   },
   "author": "JBrowse Team",
   "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./clusterMatrix": "./src/clusterMatrix.ts",
+    "./clusterProvenance": "./src/clusterProvenance.ts",
+    "./clusterUtils": "./src/clusterUtils.ts",
+    "./hierarchy": "./src/hierarchy.ts",
+    "./rowHeightConfigSchemaFields": "./src/rowHeight/rowHeightConfigSchemaFields.ts",
+    "./rowSortColumn": "./src/rowSortColumn.ts",
+    "./treeSidebarConfigSchemaFields": "./src/treeSidebarConfigSchemaFields.ts",
+    "./treeSidebarGeometry": "./src/treeSidebarGeometry.ts"
+  },
   "files": [
     "esm"
   ],

@@ -1,11 +1,11 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
+import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
 import {
-  rowHeightConfigSchemaFields,
   rowSeparatorsConfigSchemaFields,
   treeSidebarConfigSchemaFields,
-} from '@jbrowse/tree-sidebar'
+} from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 

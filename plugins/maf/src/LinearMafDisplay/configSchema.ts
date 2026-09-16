@@ -1,10 +1,8 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { types } from '@jbrowse/mobx-state-tree'
-import {
-  rowHeightConfigSchemaFields,
-  treeSidebarConfigSchemaFields,
-} from '@jbrowse/tree-sidebar'
+import { rowHeightConfigSchemaFields } from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
+import { treeSidebarConfigSchemaFields } from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 
 import { CONSERVATION_MODE_VALUES } from './conservationModes.ts'
 import { DEFAULTS } from './displayDefaults.ts'

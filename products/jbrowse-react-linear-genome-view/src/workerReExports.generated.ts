@@ -68,8 +68,10 @@ import * as m80 from '@jbrowse/display-ui/yScaleTicks'
 import * as m81 from '@jbrowse/ld-core'
 import * as m82 from '@jbrowse/modifications-utils'
 import * as m87 from '@jbrowse/plugin-bed'
+import * as m88 from '@jbrowse/plugin-canvas'
 import * as m91 from '@jbrowse/plugin-config'
 import * as m92 from '@jbrowse/plugin-data-management'
+import * as m93 from '@jbrowse/plugin-gccontent'
 import * as m94 from '@jbrowse/plugin-gff3'
 import * as m95 from '@jbrowse/plugin-gtf'
 import * as m96 from '@jbrowse/plugin-gwas'
@@ -77,6 +79,8 @@ import * as m97 from '@jbrowse/plugin-legacy-jbrowse'
 import * as m100 from '@jbrowse/plugin-marks'
 import * as m101 from '@jbrowse/plugin-sequence'
 import * as m102 from '@jbrowse/plugin-trix'
+import * as m103 from '@jbrowse/plugin-variants'
+import * as m104 from '@jbrowse/plugin-wiggle'
 import * as m107 from '@jbrowse/render-core/blockClipUtils'
 import * as m108 from '@jbrowse/render-core/canvas2dUtils'
 import * as m109 from '@jbrowse/render-core/canvasContext'
@@ -134,10 +138,18 @@ import * as m160 from '@jbrowse/render-core/slangPass'
 import * as m161 from '@jbrowse/render-core/useGraphicsCapabilities'
 import * as m162 from '@jbrowse/render-core/useRenderingBackend'
 import * as m163 from '@jbrowse/render-core/useTabVisibilityRerender'
-import * as m166 from '@jbrowse/wiggle-core'
-import * as m168 from '@jbrowse/wiggle-core/constants'
-import * as m169 from '@jbrowse/wiggle-core/normalize'
-import * as m170 from '@jbrowse/wiggle-core/renderingBackendTypes'
+import * as m166 from '@jbrowse/tree-sidebar/clusterMatrix'
+import * as m167 from '@jbrowse/tree-sidebar/clusterProvenance'
+import * as m168 from '@jbrowse/tree-sidebar/clusterUtils'
+import * as m169 from '@jbrowse/tree-sidebar/hierarchy'
+import * as m170 from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
+import * as m171 from '@jbrowse/tree-sidebar/rowSortColumn'
+import * as m172 from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
+import * as m173 from '@jbrowse/tree-sidebar/treeSidebarGeometry'
+import * as m174 from '@jbrowse/wiggle-core'
+import * as m176 from '@jbrowse/wiggle-core/constants'
+import * as m177 from '@jbrowse/wiggle-core/normalize'
+import * as m178 from '@jbrowse/wiggle-core/renderingBackendTypes'
 
 const libs: Record<string, unknown> = {
   ...coreLibs,
@@ -229,12 +241,12 @@ const libs: Record<string, unknown> = {
   '@jbrowse/plugin-arc': uiNamespace(['addArcJexlFunctions', 'default'], true),
   '@jbrowse/plugin-authentication': uiStub,
   '@jbrowse/plugin-bed': { ...m87, __esModule: true },
-  '@jbrowse/plugin-canvas': uiNamespace(['HEIGHT_MULTIPLIERS', 'MAX_VISIBLE_CHEVRONS_PER_LINE', 'MIN_FIT_BOX_PX', 'SHOW_LABELS_MODES', 'STRAND_ARROW_LENGTH_PX', 'STRAND_COLOR_JEXL', 'UTR_HEIGHT_FRACTION', 'attributeColorJexl', 'buildFeatureFlatbushIndex', 'buildFeatureRenderData', 'centerShrink', 'computeLaidOutData', 'createContentHeightProbe', 'default', 'featureGlyphMarks', 'featureType', 'getSubfeatures', 'impliedUTRs', 'isCDS', 'isExon', 'isUTR', 'labelFontSize', 'layoutRegionKey', 'linearBasicDisplayConfigSchemaFactory', 'linearCanvasBaseDisplayConfigSchemaFactory', 'maxBottom', 'mergeSpans', 'minDrawnBoxHeight', 'modeCanShowDescription', 'modeCanShowName', 'paintFeatureBand', 'performMultiRegionHitDetection', 'resolveFitLadder', 'scaleLaidOutData', 'solveLabelRoomFactor', 'squeezeFloorScale'], true),
+  '@jbrowse/plugin-canvas': { ...m88, __esModule: true },
   '@jbrowse/plugin-canvas/LinearBasicDisplay/baseStateModel': uiNamespace(['default', 'defaultColorItem'], true),
   '@jbrowse/plugin-canvas/LinearBasicDisplay/stateModel': uiStub,
   '@jbrowse/plugin-config': { ...m91, __esModule: true },
   '@jbrowse/plugin-data-management': { ...m92, __esModule: true },
-  '@jbrowse/plugin-gccontent': uiStub,
+  '@jbrowse/plugin-gccontent': m93.default,
   '@jbrowse/plugin-gff3': m94.default,
   '@jbrowse/plugin-gtf': m95.default,
   '@jbrowse/plugin-gwas': m96.default,
@@ -244,8 +256,8 @@ const libs: Record<string, unknown> = {
   '@jbrowse/plugin-marks': m100.default,
   '@jbrowse/plugin-sequence': m101.default,
   '@jbrowse/plugin-trix': m102.default,
-  '@jbrowse/plugin-variants': uiNamespace(['PREDEFINED_SV_TYPES', 'VcfFeature', 'default', 'getSvTypeColor', 'getVariantSvType', 'svTypeDisplayLabel', 'svTypeFromToken'], true),
-  '@jbrowse/plugin-wiggle': uiNamespace(['LinearWiggleDisplayReactComponent', 'WiggleScoreConfigMixin', 'bedGraphFormatOptions', 'default', 'linearWiggleDisplayConfigSchema', 'summaryScoreModeConfigSchemaFields', 'wiggleCommonExtraSlots', 'wiggleMouseHandlers'], true),
+  '@jbrowse/plugin-variants': { ...m103, __esModule: true },
+  '@jbrowse/plugin-wiggle': { ...m104, __esModule: true },
   '@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel': uiStub,
   '@jbrowse/product-core': uiNamespace(['AboutDialog', 'AppReadyMarker', 'BaseRootModelFactory', 'BaseSessionModel', 'ConnectionManagementSessionMixin', 'DEFAULT_WEB_BASE_URL', 'Drawer', 'DrawerControls', 'DrawerHeader', 'DrawerWidget', 'DrawerWidgetSelector', 'DrawerWidgetSessionMixin', 'FormatAboutConfigSchemaFactory', 'FormatDetailsConfigSchemaFactory', 'HierarchicalConfigSchemaFactory', 'InternetAccountsRootModelMixin', 'MIGRATED_DISPLAY_INSTANCE_KEYS', 'ModalWidget', 'ModalWidgetAppBar', 'MultipleViewsSessionMixin', 'PreferencesConfigSchemaFactory', 'PreferencesDialog', 'PreferencesSessionMixin', 'ReferenceManagementSessionMixin', 'SessionTracksManagerSessionMixin', 'ThemeManagerSessionMixin', 'TrackMenuItemsSessionMixin', 'TrackMenuSessionMixin', 'TracksManagerSessionMixin', 'WidgetBody', 'WidgetHeading', 'aboutTrackMenuItem', 'analyzeWebPortability', 'asRoot', 'asSession', 'bakeSessionCascades', 'buildWebExportUrl', 'copyTrackSnapshot', 'createConfigModel', 'decodeSessionFromUrl', 'describeUnbuildableNodes', 'destroyViewState', 'drawerGridTemplateColumns', 'encodeSessionToUrl', 'exportSessionMenuItem', 'filterSessionInPlace', 'finalizeSession', 'getSessionSnapshot', 'getShareableSessionSnapshot', 'importSessionMenuItem', 'initializeWorker', 'isBaseSession', 'isLooseTrack', 'isRootModel', 'isSession', 'isSessionWithConnections', 'isSessionWithDrawerWidgets', 'isSessionWithMultipleViews', 'isSessionWithReferenceManagement', 'isSessionWithThemes', 'isSessionWithTracks', 'loadRuntimePlugins', 'mergeLocalFiles', 'migrateConfigSnapshot', 'migrateSessionSnapshot', 'newSessionMenuItem', 'normalizeAdapterSnapshots', 'observeSession', 'openConnectionMenuItem', 'openTrackMenuItem', 'openTracks', 'planWebExport', 'pluginExtraTrackItems', 'pluginStoreMenuItem', 'preferencesMenuItem', 'pruneUnbuildableNodes', 'reconcileTracks', 'redoMenuItem', 'registerLocalFiles', 'resolveAssemblies', 'resolveAssembly', 'resolveLocalFileUris', 'resolveTracks', 'scheduleDetachedDestroy', 'toPluginLoadRecord', 'trackActionItems', 'trackActionMenuItems', 'trackListMenuItems', 'undoMenuItem', 'useAsyncEngineLifecycle', 'useCreateOnce', 'useCreateOnceAsync', 'useDestroyOnUnmount', 'withAssemblyName', 'withHostOverrides', 'workspacesMenuItem']),
   '@jbrowse/render-core/blockClipUtils': m107,
@@ -307,11 +319,19 @@ const libs: Record<string, unknown> = {
   '@jbrowse/render-core/useTabVisibilityRerender': m163,
   '@jbrowse/sv-core': uiNamespace(['ARC_HIT_SLOP_PX', 'BREAKEND_COLOCATION_BP', 'BreakpointSplitViewChoiceDialog', 'HIDDEN_SEGMENT_DASH', 'SV_SYMBOLIC_ALLELES', 'bestArcMark', 'breakendKeepsDirections', 'breakendLocKey', 'breakendTickPx', 'breakpointBpPerPx', 'breakpointSplitViewId', 'getAssemblyName', 'getBreakendAssemblyRegions', 'getBreakendCoveringRegions', 'getBreakendMateLocString', 'hasBreakpointSplitView', 'hiddenSegmentsNote', 'junctionFromFeature', 'launchBreakpointSplitView', 'makeFeaturePair', 'makeFindJunctionsNear', 'makeTitle', 'navToLoc', 'navToMultiLevelBreak', 'navToSingleLevelBreak', 'nextJunctionFrom', 'openOrReuseSplitView', 'pairedEndsLocString', 'panelIsTurned', 'parseSvAlt', 'readTranslocationMate', 'safeParseBreakend', 'singleLevelEncompassingSnapshotFromBreakendFeature', 'singleLevelFocusedSnapshotFromBreakendFeature', 'splitRegionAtPosition', 'svMateLocus', 'walkBreakendChain']),
   '@jbrowse/tree-sidebar': uiNamespace(['CLUSTER_PROVENANCE_MIN_OVERLAP', 'ClusterDialog', 'ClusterModeSelector', 'ClusterProgress', 'ClusterProvenanceHint', 'ContextMenuMixin', 'DisplayContextMenu', 'DisplayCrosshairs', 'MIN_CLUSTER_ROWS', 'MIN_SEPARATOR_ROW_PX', 'MIN_TEXT_ROW_HEIGHT', 'RowHeightMixin', 'RowLabelsOverlay', 'RowSeparatorLines', 'SetColorDialog', 'StaleTreeHint', 'SubtreeFilterHint', 'SvgClusterProvenanceHint', 'SvgRowLabels', 'SvgTreePath', 'SvgTreeSidebar', 'TREE_SIDEBAR_LABEL', 'TreeSidebar', 'TreeSidebarMixin', 'applyClusterRun', 'applyLayoutOverrides', 'applySubtreeFilter', 'buildClusteredLayout', 'buildSpatialIndex', 'buildTree', 'clearSubtreeFilterMenuItems', 'clusterLayout', 'clusterMatrix', 'clusterProgressStatus', 'clusterProvenanceDrifted', 'clusterProvenanceFromRegions', 'clusterProvenanceLocLabel', 'clusterProvenanceMenuItems', 'clusterProvenanceOverlap', 'clusteredCladeLayout', 'clusteringMenuItem', 'compareRowValues', 'computeClusterHierarchy', 'describeClusterProvenance', 'extraColumns', 'filterRowsBySubtree', 'focusRowGroup', 'focusRows', 'generateClusterRScript', 'loadedRegionIndexAt', 'matrixToTsv', 'moveDown', 'moveUp', 'orderRowsByValueAt', 'paletteColorsByRow', 'parseClusterOrder', 'parseClusterTree', 'parseNewick', 'pickTreeNode', 'reconcileLayout', 'regionCoversColumn', 'resetRowOrderMenuItems', 'rowArrangementMenuItem', 'rowHeightConfigSchemaFields', 'rowHeightMenuItem', 'rowLabelsCarryText', 'rowSeparatorsConfigSchemaFields', 'setupRowSortAutorun', 'setupRunClusteringAutorun', 'setupTreeDrawingAutorun', 'setupTreeSidebarAutoruns', 'showRowLabelsMenuItem', 'showRowSeparatorsMenuItem', 'showTreeSidebarMenuItem', 'sortRowsAtColumn', 'sortRowsHereMenuItem', 'treeBranchLengthMenuItem', 'treeDescribesRows', 'treeIsShowing', 'treeSidebarConfigSchemaFields', 'treeSidebarOffset', 'treeSidebarRightEdge', 'treeSidebarShowMenuItems', 'updateRows', 'useClusterRun', 'validateClusterOrder']),
-  '@jbrowse/wiggle-core': m166,
+  '@jbrowse/tree-sidebar/clusterMatrix': m166,
+  '@jbrowse/tree-sidebar/clusterProvenance': m167,
+  '@jbrowse/tree-sidebar/clusterUtils': m168,
+  '@jbrowse/tree-sidebar/hierarchy': m169,
+  '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields': m170,
+  '@jbrowse/tree-sidebar/rowSortColumn': m171,
+  '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields': m172,
+  '@jbrowse/tree-sidebar/treeSidebarGeometry': m173,
+  '@jbrowse/wiggle-core': m174,
   '@jbrowse/wiggle-core/chrome': uiNamespace(['AxisGutter', 'CrossHatchLines', 'CrossHatches', 'ScoreDomainCaption', 'ScoreRuleLines', 'ScoreRules', 'SetMinMaxDialog', 'YScaleBar', 'YScaleBarOverlay', 'makePointSizeSubMenu', 'makeResolutionSubMenuItem', 'makeScatterPointSizeMenuItem']),
-  '@jbrowse/wiggle-core/constants': m168,
-  '@jbrowse/wiggle-core/normalize': m169,
-  '@jbrowse/wiggle-core/renderingBackendTypes': m170,
+  '@jbrowse/wiggle-core/constants': m176,
+  '@jbrowse/wiggle-core/normalize': m177,
+  '@jbrowse/wiggle-core/renderingBackendTypes': m178,
   '@jbrowse/wiggle-core/ScorePlotChrome': uiNamespace(['ScorePlotChrome']),
   '@jbrowse/wiggle-core/ScorePlotSvgFrame': uiNamespace(['ScorePlotSvgFrame']),
 }

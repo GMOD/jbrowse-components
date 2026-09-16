@@ -80,13 +80,13 @@ state-model mixin is always real in both realms.
 | `@jbrowse/plugin-authentication` | JBrowse 2 Authentication | 1 | none; a stub with its names |
 | `@jbrowse/plugin-bed` | JBrowse 2 bed adapters, tracks, etc. | 1 | all of it |
 | `@jbrowse/plugin-breakpoint-split-view` | JBrowse 2 breakpoint detail split view | 1 | none; a stub with its names |
-| `@jbrowse/plugin-canvas` | JBrowse 2 plugin for canvas features | 3 | none; a stub with its names |
+| `@jbrowse/plugin-canvas` | JBrowse 2 plugin for canvas features | 3 | 1 of 3 subpaths; the rest stubbed |
 | `@jbrowse/plugin-circular-view` | JBrowse 2 circular view | 1 | none; a stub with its names |
 | `@jbrowse/plugin-comparative-adapters` | JBrowse 2 comparative adapters | 1 | none; a stub with its names |
 | `@jbrowse/plugin-config` | JBrowse 2 config utilities | 1 | all of it |
 | `@jbrowse/plugin-data-management` | JBrowse 2 linear genome view | 1 | all of it |
 | `@jbrowse/plugin-dotplot-view` | JBrowse 2 dotplot view | 1 | none; a stub with its names |
-| `@jbrowse/plugin-gccontent` | JBrowse 2 gccontent concepts | 1 | none; a stub with its names |
+| `@jbrowse/plugin-gccontent` | JBrowse 2 gccontent concepts | 1 | all of it |
 | `@jbrowse/plugin-gff3` | JBrowse 2 gff3. | 1 | all of it |
 | `@jbrowse/plugin-grid-bookmark` | JBrowse 2 grid bookmark widget | 1 | none; a stub with its names |
 | `@jbrowse/plugin-gtf` | JBrowse 2 gtf feature adapter | 1 | all of it |
@@ -104,13 +104,13 @@ state-model mixin is always real in both realms.
 | `@jbrowse/plugin-spreadsheet-view` | JBrowse 2 spreadsheet view | 1 | all of it |
 | `@jbrowse/plugin-sv-inspector` | JBrowse 2 SV inspector view | 1 | none; a stub with its names |
 | `@jbrowse/plugin-trix` | JBrowse 2 trix text search adapter | 1 | all of it |
-| `@jbrowse/plugin-variants` | JBrowse 2 variant adapters, tracks, etc. | 1 | none; a stub with its names |
-| `@jbrowse/plugin-wiggle` | JBrowse 2 wiggle adapters, tracks, etc. | 2 | none; a stub with its names |
+| `@jbrowse/plugin-variants` | JBrowse 2 variant adapters, tracks, etc. | 1 | all of it |
+| `@jbrowse/plugin-wiggle` | JBrowse 2 wiggle adapters, tracks, etc. | 2 | 1 of 2 subpaths; the rest stubbed |
 | `@jbrowse/product-core` | JBrowse 2 code shared between products but not used by plugins | 1 | none; a stub with its names |
 | `@jbrowse/render-core` | GPU/Canvas2D rendering primitives for JBrowse displays: the HAL, the draw-lifecycle mixin, per-region/global backend bases, and the React backend hooks | 57 | all of it |
 | [`@jbrowse/sv-core`](/docs/api/sv-core) | VCF breakend / structural-variant parsing and the shared SV launch helpers | 1 | none; a stub with its names |
 | [`@jbrowse/synteny-core`](/docs/api/synteny-core) | Shared utilities for synteny and dotplot rendering | 1 | none; a stub with its names |
-| `@jbrowse/tree-sidebar` | Shared tree sidebar component for multi-sample displays | 1 | none; a stub with its names |
+| `@jbrowse/tree-sidebar` | Shared tree sidebar component for multi-sample displays | 9 | 8 of 9 subpaths; the rest stubbed |
 | `@jbrowse/web-core` | JBrowse 2 code shared between web-app type products | 1 | none; a stub with its names |
 | [`@jbrowse/wiggle-core`](/docs/api/wiggle-core) | Score-axis scale, autoscale, config mixins and plot chrome shared by wiggle, Manhattan, mark and coverage displays | 7 | 4 of 7 subpaths; the rest stubbed |
 

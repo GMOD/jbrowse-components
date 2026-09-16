@@ -4,7 +4,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import {
   rowSeparatorsConfigSchemaFields,
   treeSidebarConfigSchemaFields,
-} from '@jbrowse/tree-sidebar'
+} from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
 import { remapRetiredAutoscale } from '@jbrowse/wiggle-core'
 
 import { summaryScoreModeConfigSchemaFields } from '../shared/summaryScoreModeConfigSchemaFields.ts'

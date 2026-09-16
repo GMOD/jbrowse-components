@@ -1,4 +1,4 @@
-import { clusterMatrix } from '@jbrowse/tree-sidebar'
+import { clusterMatrix } from '@jbrowse/tree-sidebar/clusterMatrix'
 
 import { collectMultiRowMatrix } from './collectMultiRowMatrix.ts'
 
