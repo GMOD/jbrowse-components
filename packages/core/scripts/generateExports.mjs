@@ -65,6 +65,11 @@ const preservedExports = [
   // moved to util/tabix's header reader — but an external plugin decompressing
   // a bgzf file has no other entry point, so usage is not the test here.
   '@jbrowse/core/util/unzip',
+  // `applyDisplaySettings` returns `UnappliedSetting[]`, so every display model
+  // that composes BaseDisplay infers a type naming this module. In-repo nothing
+  // imports it by subpath, and without an entry here tsc has no portable path
+  // to write into the plugin's `.d.ts` and fails declaration emit with TS2883.
+  '@jbrowse/core/util/unknownSnapshotKeys',
 ]
 
 // The directories whose import sites decide what @jbrowse/core publishes.
