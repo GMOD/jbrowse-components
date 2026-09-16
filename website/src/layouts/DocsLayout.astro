@@ -8,6 +8,8 @@ import DocsSidebarNav from '../components/DocsSidebarNav.astro'
 import TableOfContents from '../components/TableOfContents.astro'
 import { baseUrl } from '../lib/base-url.ts'
 import { entrySlug } from '../lib/docs-sidebar.ts'
+import { renderMarkdown } from '../lib/markdown.ts'
+import { tutorialBetaNotice } from '../lib/tutorial-beta-notice.ts'
 import prose from '../styles/prose.module.css'
 
 import type { TocItem } from '../lib/rehype-collect-toc.ts'
@@ -41,6 +43,10 @@ const mdHref = isRealDoc
   : undefined
 // every tutorial gets the same feedback line, so no page carries its own copy
 const isTutorial = isRealDoc && currentSlug.startsWith('tutorials/')
+const betaNotice =
+  tutorialBetaNotice && (isTutorial || currentSlug === 'tutorials')
+    ? await renderMarkdown(tutorialBetaNotice)
+    : undefined
 // a single video gets a named jump link; several look like a second table of
 // contents duplicating the sidebar, so those just get a plain count instead
 const soleVideo = videos.length === 1 ? videos[0] : undefined
@@ -84,6 +90,7 @@ const soleVideo = videos.length === 1 ? videos[0] : undefined
         </p>
       )
     )}
+    {betaNotice && <Fragment set:html={betaNotice.html} />}
     <slot />
     {isTutorial && (
       <p class="tutorial-feedback">
@@ -92,7 +99,14 @@ const soleVideo = videos.length === 1 ? videos[0] : undefined
       </p>
     )}
   </article>
-  <CopyMarkdown markdown={rawMarkdown} title={title} />
+  <CopyMarkdown
+    markdown={
+      isTutorial && tutorialBetaNotice
+        ? `${tutorialBetaNotice}\n\n${rawMarkdown}`
+        : rawMarkdown
+    }
+    title={title}
+  />
   {toc.length > 0 && <TableOfContents toc={toc} />}
 </SidebarLayout>
 
