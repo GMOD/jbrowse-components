@@ -29,10 +29,7 @@ function App() {
       assemblies={[/* assemblies */]}
       tracks={[/* tracks */]}
       views={[
-        {
-          type: 'LinearGenomeView',
-          init: { assembly: 'volvox', loc: 'ctgA:1..50000' },
-        },
+        { type: 'LinearGenomeView', assembly: 'volvox', loc: 'ctgA:1..50000' },
       ]}
     />
   )
