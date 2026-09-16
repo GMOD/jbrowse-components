@@ -66,14 +66,14 @@ state-model mixin is always real in both realms.
 <!-- prettier-ignore -->
 | Package | What it provides | Subpaths | Real in the RPC worker |
 | --- | --- | --- | --- |
-| [`@jbrowse/add-track-core`](/docs/api/add-track-core) | The file-format table the add-track guessers and the CLI both read — no framework deps | 1 | all of it |
-| [`@jbrowse/alignments-core`](/docs/api/alignments-core) | Shared GPU rendering utilities for alignments and synteny displays | 2 | all of it |
-| [`@jbrowse/app-core`](/docs/api/app-core) | JBrowse 2 code shared between the 'full featured' apps e.g. jbrowse-web and jbrowse-desktop | 1 | none; a stub with its names |
+| `@jbrowse/add-track-core` | The file-format table the add-track guessers and the CLI both read — no framework deps | 1 | all of it |
+| `@jbrowse/alignments-core` | Shared GPU rendering utilities for alignments and synteny displays | 2 | all of it |
+| `@jbrowse/app-core` | JBrowse 2 code shared between the 'full featured' apps e.g. jbrowse-web and jbrowse-desktop | 1 | none; a stub with its names |
 | [`@jbrowse/cigar-utils`](/docs/api/cigar-utils) | Pure CIGAR / MD / mismatch parsers and types — no rendering or framework deps | 1 | all of it |
 | [`@jbrowse/core`](/docs/api/core) | JBrowse 2 core libraries used by plugins | 237 | 197 of 237 subpaths; the rest stubbed |
-| [`@jbrowse/display-kit`](/docs/api/display-kit) | The display integration layer a track type is built on: the fetch foundations, the byte gate, the display chrome, SVG export, and the RegionHost view contract | 72 | 54 of 72 subpaths; the rest stubbed |
+| `@jbrowse/display-kit` | The display integration layer a track type is built on: the fetch foundations, the byte gate, the display chrome, SVG export, and the RegionHost view contract | 72 | 54 of 72 subpaths; the rest stubbed |
 | [`@jbrowse/display-ui`](/docs/api/display-ui) | The UI a display draws that is not data: the swappable chrome contract, its toolkit-free implementations, and the track overlay layer | 3 | 2 of 3 subpaths; the rest stubbed |
-| [`@jbrowse/ld-core`](/docs/api/ld-core) | Pure linkage-disequilibrium parsers and math — PLINK .ld parsing and genotype r²/D' — no rendering or framework deps | 1 | all of it |
+| `@jbrowse/ld-core` | Pure linkage-disequilibrium parsers and math — PLINK .ld parsing and genotype r²/D' — no rendering or framework deps | 1 | all of it |
 | [`@jbrowse/modifications-utils`](/docs/api/modifications-utils) | Pure MM/ML base-modification tag parsers (methylation, etc.) | 1 | all of it |
 | `@jbrowse/plugin-alignments` | JBrowse 2 alignments adapters, tracks, etc. | 2 | none; a stub with its names |
 | `@jbrowse/plugin-arc` | JBrowse 2 arc adapters, tracks, etc. | 1 | none; a stub with its names |
@@ -106,12 +106,12 @@ state-model mixin is always real in both realms.
 | `@jbrowse/plugin-trix` | JBrowse 2 trix text search adapter | 1 | all of it |
 | `@jbrowse/plugin-variants` | JBrowse 2 variant adapters, tracks, etc. | 1 | none; a stub with its names |
 | `@jbrowse/plugin-wiggle` | JBrowse 2 wiggle adapters, tracks, etc. | 2 | none; a stub with its names |
-| [`@jbrowse/product-core`](/docs/api/product-core) | JBrowse 2 code shared between products but not used by plugins | 1 | none; a stub with its names |
-| [`@jbrowse/render-core`](/docs/api/render-core) | GPU/Canvas2D rendering primitives for JBrowse displays: the HAL, the draw-lifecycle mixin, per-region/global backend bases, and the React backend hooks | 57 | all of it |
+| `@jbrowse/product-core` | JBrowse 2 code shared between products but not used by plugins | 1 | none; a stub with its names |
+| `@jbrowse/render-core` | GPU/Canvas2D rendering primitives for JBrowse displays: the HAL, the draw-lifecycle mixin, per-region/global backend bases, and the React backend hooks | 57 | all of it |
 | [`@jbrowse/sv-core`](/docs/api/sv-core) | VCF breakend / structural-variant parsing and the shared SV launch helpers | 1 | none; a stub with its names |
 | [`@jbrowse/synteny-core`](/docs/api/synteny-core) | Shared utilities for synteny and dotplot rendering | 1 | none; a stub with its names |
-| [`@jbrowse/tree-sidebar`](/docs/api/tree-sidebar) | Shared tree sidebar component for multi-sample displays | 1 | none; a stub with its names |
-| [`@jbrowse/web-core`](/docs/api/web-core) | JBrowse 2 code shared between web-app type products | 1 | none; a stub with its names |
+| `@jbrowse/tree-sidebar` | Shared tree sidebar component for multi-sample displays | 1 | none; a stub with its names |
+| `@jbrowse/web-core` | JBrowse 2 code shared between web-app type products | 1 | none; a stub with its names |
 | [`@jbrowse/wiggle-core`](/docs/api/wiggle-core) | Score-axis scale, autoscale, config mixins and plot chrome shared by wiggle, Manhattan, mark and coverage displays | 6 | 3 of 6 subpaths; the rest stubbed |
 
 <!-- REEXPORT_MODULES END -->

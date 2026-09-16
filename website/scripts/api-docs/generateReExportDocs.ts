@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import path from 'node:path'
 
 import { markdownTable, rewriteMarkerBlock } from './util.ts'
@@ -62,6 +62,16 @@ function packageDir(name: string) {
   throw new Error(`${MANIFEST} names ${name}, which is not a workspace package`)
 }
 
+// Only a package with `#api`-tagged exports has a page, so linking every served
+// package produced nine dead links the website link check fails on.
+function apiPageFor(dir: string) {
+  const id = path.basename(dir)
+  return dir.startsWith('packages/') &&
+    existsSync(path.join('website/docs/api', `${id}.md`))
+    ? id
+    : undefined
+}
+
 export function collectReExports(): Row[] {
   const byPackage = new Map<string, Row>()
   for (const mod of Object.values(readManifest().modules)) {
@@ -73,7 +83,7 @@ export function collectReExports(): Row[] {
         description,
         subpaths: 0,
         stubbed: 0,
-        apiPage: dir.startsWith('packages/') ? path.basename(dir) : undefined,
+        apiPage: apiPageFor(dir),
       }
       byPackage.set(mod.package, row)
     }
