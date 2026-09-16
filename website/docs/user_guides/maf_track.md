@@ -43,6 +43,16 @@ Pointing a track at a summary file is covered in the
 
 <Figure src="/img/maf_summary_tier.png" caption="The UCSC hg38 470-way narrowed to ~30 representative mammals, over GAPDH at two zooms. At 180 kb (top) the track reads its summary file, one grey bar per species per aligned region. At 200 bp (bottom) it draws the alignment itself, one colored cell per base, with the coverage band above."/>
 
+A summary read costs the span on screen against the summary file, not against
+the alignment, so the tier holds at whole-chromosome scale on an alignment deep
+enough that the tier is the only way to see it at all. The HPRC pangenome is
+that case: a chromosome of human haplotypes draws here with no forced load,
+where the alignment beneath it is refused. Bars shade by score, and human
+haplotypes score at the top of the scale, so presence fills in solid and what
+the picture carries is absence.
+
+<Figure src="/img/maf_summary_hprc_chromosome.png" caption="The HPRC release 2 pangenome alignment across the whole of chr6, read from its summary file: one presence bar per haplotype per aligned run. The centromere runs clear across every row, and individual haplotypes drop out at scattered loci."/>
+
 ## Conservation and per-row identity
 
 The **Show conservation (% identity)** band plots, at each reference base, the
