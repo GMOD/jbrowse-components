@@ -53,9 +53,8 @@ const README = join(
 // They were raw.githubusercontent URLs into products/jbrowse-img/img, and that
 // stopped working the moment figure bytes left git. The site's own
 // /jb2/img/jbrowse-img/ path is not an option either: it 404s until a
-// production deploy, deploys currently go to /jb2-staging, and this README is
-// rendered by GitHub and npm — outside the site entirely — so it cannot depend
-// on one having happened.
+// production deploy, and this README is rendered by GitHub and npm — outside
+// the site entirely — so it cannot depend on one having happened.
 //
 // A store URL is content-addressed, which for a hand-edited file would be a
 // maintenance trap: the URL changes whenever the figure does, and a stale one
