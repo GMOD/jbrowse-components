@@ -468,7 +468,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
          * "hidden", or empty string "" (which results in the
          * LinearGenomeViewPlugin config default being used). the resolved value
          * is the `effectiveTrackLabels` getter. see LinearGenomeViewPlugin
-         * https://jbrowse.org/jb2/docs/config/lineargenomeviewplugin/ docs for
+         * https://jbrowse.org/jb2/docs/config/lineargenomeviewconfigschema/ docs for
          * how conf is used
          */
         trackLabels: types.optional(

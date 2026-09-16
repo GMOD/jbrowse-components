@@ -157,8 +157,8 @@ silently, and this is cheaper than a round trip through it.
 2. Then fetch that type's page for its slots:
    `https://jbrowse.org/jb2/docs/config/<lowercased type name>.md` (a few
    hundred tokens each). The index links them.
-3. `https://jbrowse.org/jb2/docs/llms.txt` indexes the rest of the docs if you
-   need concepts rather than slots.
+3. `https://jbrowse.org/jb2/llms.txt` indexes the rest of the docs if you need
+   concepts rather than slots.
 
 ## Opening what you authored
 
