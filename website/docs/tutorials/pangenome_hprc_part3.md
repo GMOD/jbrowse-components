@@ -117,7 +117,7 @@ HPRC's file ships no guide tree; **Reset row order** puts back whatever the file
 supplied. Then cut the window from the segments track with **Launch → Graph
 genome view (this region)** for the graph pane under all four.
 
-<Figure caption="The C4 locus on one axis: the NCBI RefSeq genes, the graph's rGFA segments, the callset's haplotypes clustered by genotype (grey reference, blue alt allele, red other alt, tan no call, purple insertion), a subtree of those haplotypes as alignment rows clustered by identity, grey where a haplotype aligns to GRCh38 and white where it has no aligned sequence, and the same window as a force-directed subgraph in reference-position colors with its bubbles haloed. The band marks the pseudogene pair between C4A and C4B, where the haplotypes that carry nothing there gather into a block." src="/img/maf_hprc_pangenome.png" />
+<Figure caption="The C4 locus on one axis: the NCBI RefSeq genes, the graph's rGFA segments, the callset's haplotypes clustered by genotype (grey reference, blue alt allele, red other alt, tan no call, purple insertion), a subtree of those haplotypes as alignment rows clustered by identity, grey where a haplotype aligns to GRCh38 and white where it has no aligned sequence, and the same window as a force-directed subgraph in reference-position colors with its bubbles haloed. The band marks the pseudogene pair between C4A and C4B; the haplotypes with no aligned sequence across the module gather into one block." src="/img/maf_hprc_pangenome.png" />
 
 The figure keeps thirty-two haplotype rows so each has the height for its name
 beside it; the track as configured above draws every haplotype. The
