@@ -1,6 +1,6 @@
 ---
 name: grammar-layer-zoom-and-rows
-description: The planned next phase of the grammar mark layer after ADR-125, ADR-126 and the mark-vs-wiggle measurement (2026-09-16), in order — the price of encoding a non-drawing layer, and line as the first new shape, with wiggle as its second consumer. Read before adding a mark shape or touching what a layer encodes off-screen.
+description: The planned next phase of the grammar mark layer after ADR-125, ADR-126 and the mark-vs-wiggle measurement (2026-09-16) — line as the first new shape, with wiggle as its second consumer, benched against the hand path before the mark display exposes it. Read before adding a mark shape.
 ---
 
 # The grammar layer: the first new shape
@@ -17,26 +17,16 @@ ADR-124's retirement of global autoscale, ADR-125's zoom rule (the adapter
 declares the bp/px range its answer serves, the payload carries it, and the
 displays send the view's `bpPerPx` and key nothing), ADR-126's row lane on
 `bar` and `point` (the band is the instance's row, the scale a uniform, and
-`facet: 'source'` over `MultiWiggleAdapter` is the multi-row xyplot), and the
+`facet: 'source'` over `MultiWiggleAdapter` is the multi-row xyplot), the
 measurement under `reference/MARK_ENCODING.md` §"The mark display over a
-BigWig, measured": the mark path over a BigWig is between one and four times
+BigWig, measured" (the mark path over a BigWig is between one and four times
 the wiggle path's worker work and under a millisecond a screen, a binned
 `mean` over a tier sits within a third of a percent of the raw section on
-average, and no `validCnt` and no BigWig fast path is worth asking for.
+average, and no `validCnt` and no BigWig fast path is worth asking for), and
+the price of the layer the zoom excludes, written at `layerRequests`: 28 ms
+per 100,000 features, so no empty slot and ADR-112 holds.
 
-## 1. Price the encode of a layer that does not draw
-
-`layerRequests` sends every mark, and the worker encodes a layer the view's
-zoom range excludes. Inside the byte budget that is 74 ns a feature bare and
-249 ns with the hover index (`reference/MARK_ENCODING.md`), so 5 to 25 ms a
-region against a parse in the hundreds; past the budget the non-density slot
-is already `EMPTY` (`densityLayer.ts`). Bench a multiscale pair at in-budget
-counts in `packages/core/benches/encodeFeatures.bench.ts` and write the number
-in a sentence at `layerRequests`. Build the empty slot only if it beats the
-refetch it would cost, since `markView.visible` would become an `rpcProps()`
-term. Expected result: decline, ADR-112 holds. 0.5 day, no ADR.
-
-## 2. `line` as a render-core shape, with wiggle as its second consumer
+## 1. `line` as a render-core shape, with wiggle as its second consumer
 
 The mark layer has `bar`, `point` and `span`. Wiggle's step line and centre
 line, with their bp gap rule, have no shape, and they are the one rendering
@@ -56,5 +46,6 @@ Then line stays wiggle's too.
 
 ## Tomorrow
 
-Step 1's bench, half a day, then step 2's port: the multi-row xyplot ADR-126
-made declarable is the second consumer a render-core `line` would draw for.
+The port's bench: `lineMark` against `wiggleLine.slang` and `drawLine`, the
+multi-row xyplot ADR-126 made declarable being the second consumer it would
+draw for.

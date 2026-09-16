@@ -35,8 +35,16 @@
 // check compares `count`, `x` and `y` across arms before any time is believed.
 // The feature list is built once and reused: the encoder never allocates per
 // feature, so there is no per-arm garbage to skew a later round.
+//
+// A second table prices the multiscale pair: a raw mark and a zoom-following
+// binned count declared together, as `defaultPlotMarks` writes them. The
+// display sends both layers whatever the zoom (`layerRequests`), so the worker
+// encodes the one the zoom range excludes. `raw` and `binned` are each layer
+// alone and `pair` is the request as sent; the excluded layer's price is the
+// arm the zoom leaves off-screen.
 import { performance } from 'node:perf_hooks'
 
+import { runTransforms } from '../src/util/featureTransforms.ts'
 import createJexlInstance from '../src/util/jexl.ts'
 import { encodeFeatures } from '../src/util/markEncoding.ts'
 import SimpleFeature from '../src/util/simpleFeature.ts'
@@ -170,5 +178,60 @@ for (const [i, { name }] of ARMS.entries()) {
     `  ${name.padEnd(11)} ${ms.toFixed(1).padStart(8)}ms  ` +
       `${((ms / n) * 1e6).toFixed(0).padStart(6)}ns/feature  ` +
       `${(ms / best[0]!).toFixed(2)}x native`,
+  )
+}
+
+const BAR_LANES: LaneName[] = ['y', 'row', 'color', 'colorValue', 'index']
+const BINNED = [
+  { type: 'bin' as const, step: 1000 },
+  {
+    type: 'aggregate' as const,
+    groupby: ['start', 'end'],
+    ops: [{ op: 'count' as const }],
+  },
+]
+const pairArms: { name: string; run: () => unknown }[] = [
+  {
+    name: 'raw',
+    run: () => encodeFeatures(features, { y: 'score' }, BAR_LANES, { jexl }),
+  },
+  {
+    name: 'binned',
+    run: () =>
+      encodeFeatures(
+        runTransforms(features, BINNED, jexl),
+        { y: 'count' },
+        BAR_LANES,
+        { jexl },
+      ),
+  },
+  {
+    name: 'pair',
+    run: () => [
+      encodeFeatures(features, { y: 'score' }, BAR_LANES, { jexl }),
+      encodeFeatures(
+        runTransforms(features, BINNED, jexl),
+        { y: 'count' },
+        BAR_LANES,
+        { jexl },
+      ),
+    ],
+  },
+]
+const pairBest = pairArms.map(() => Infinity)
+for (let r = 0; r < rounds; r++) {
+  for (const [i, { run }] of pairArms.entries()) {
+    const t0 = performance.now()
+    run()
+    pairBest[i] = Math.min(pairBest[i]!, performance.now() - t0)
+  }
+}
+console.log(
+  `\nthe multiscale pair over ${n.toLocaleString()} features: a bar of score and a 1 kb binned count`,
+)
+for (const [i, { name }] of pairArms.entries()) {
+  const ms = pairBest[i]!
+  console.log(
+    `  ${name.padEnd(7)} ${ms.toFixed(1).padStart(8)}ms  ${((ms / n) * 1e6).toFixed(0).padStart(6)}ns/feature`,
   )
 }

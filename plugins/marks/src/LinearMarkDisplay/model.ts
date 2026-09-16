@@ -513,7 +513,13 @@ export function stateModelFactory(
       /**
        * #getter
        * The worker request, one layer per mark: its encoding and the lanes
-       * its shape reads.
+       * its shape reads. Every mark is sent, the one outside its zoom range
+       * included, so the worker encodes a layer the view will not draw:
+       * measured at 280 ns a feature, 28 ms per 100,000, for the excluded
+       * half of the default multiscale pair (`encodeFeatures.bench.ts`, the
+       * pair table), against a parse in the hundreds of milliseconds. An
+       * empty slot for it would make the zoom a fetch input and refetch the
+       * pair on every crossing, so there is none (ADR-112).
        */
       get layerRequests(): LayerRequest[] {
         const { bpPerPx } = self.host
