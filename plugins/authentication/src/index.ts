@@ -72,19 +72,6 @@ const internetAccountTypes = [
 export default class AuthenticationPlugin extends Plugin {
   name = 'AuthenticationPlugin'
 
-  exports = {
-    OAuthConfigSchema,
-    OAuthInternetAccountModelFactory,
-    ExternalTokenConfigSchema,
-    ExternalTokenInternetAccountModelFactory,
-    HTTPBasicConfigSchema,
-    HTTPBasicInternetAccountModelFactory,
-    DropboxOAuthConfigSchema,
-    DropboxOAuthInternetAccountModelFactory,
-    GoogleDriveOAuthConfigSchema,
-    GoogleDriveOAuthInternetAccountModelFactory,
-  }
-
   install(pluginManager: PluginManager) {
     for (const makeAccountType of internetAccountTypes) {
       pluginManager.addInternetAccountType(makeAccountType)

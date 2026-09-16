@@ -15,7 +15,6 @@ import {
   MultiWiggleClusterScoreMatrix,
   MultiWiggleGetScoreMatrix,
 } from './WiggleRPC/rpcMethods.ts'
-import * as utils from './util.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
@@ -37,10 +36,6 @@ export default class WigglePlugin extends Plugin {
 
     pm.addRpcMethod(() => new MultiWiggleGetScoreMatrix(pm))
     pm.addRpcMethod(() => new MultiWiggleClusterScoreMatrix(pm))
-  }
-
-  exports = {
-    utils,
   }
 }
 

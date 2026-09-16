@@ -46,9 +46,10 @@ The LGV view type registers its component with `ReactComponent: lazy(() =>
 import('./components/LinearGenomeView.tsx'))` — and then the plugin class body
 listed the very same component in its `exports` object, for external plugins.
 `exports` is evaluated when the class is defined, so the `lazy()` bought
-nothing. Now in `plugins/linear-genome-view/src/lazyPluginExports.tsx`, behind
-`lazy()` plus a `Suspense` wrapper so an external plugin that renders one sees
-no change.
+nothing. It sat behind `lazy()` plus a `Suspense` wrapper for a while; on
+2026-09-16 the `exports` objects went altogether, since no published bundle
+reads one on v5 (PLUGIN_ABI_STABILITY.md §"The plugin `exports` objects are
+gone").
 
 **A `lazy()` at a registration site only holds if nothing else in an eagerly
 evaluated module names the same component.** A plugin `exports` object is the

@@ -1,7 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
-import baseLinearDisplayConfigSchema from '@jbrowse/display-kit/configSchema'
 import { types } from '@jbrowse/mobx-state-tree'
 import LineStyleIcon from '@mui/icons-material/LineStyle'
 
@@ -9,26 +8,12 @@ import FeatureTrackF from './FeatureTrack/index.ts'
 import LaunchLinearGenomeViewF from './LaunchLinearGenomeView/index.ts'
 import SequenceFeatureHoverHighlightExtensionF from './LinearGenomeView/components/SequenceFeatureHoverHighlightExtension.tsx'
 import LinearGenomeViewF from './LinearGenomeView/index.ts'
-import {
-  LinearGenomeView,
-  SearchBox,
-  ZoomControls,
-} from './lazyPluginExports.tsx'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractViewContainer } from '@jbrowse/core/util'
 
 export default class LinearGenomeViewPlugin extends Plugin {
   name = 'LinearGenomeViewPlugin'
-
-  // the three components here are lazy, see lazyPluginExports.tsx — naming a
-  // component in this object is enough to pin it into every host's first paint
-  exports = {
-    baseLinearDisplayConfigSchema,
-    SearchBox,
-    ZoomControls,
-    LinearGenomeView,
-  }
 
   /**
    * #config LinearGenomeViewConfigSchema
@@ -111,14 +96,9 @@ export {
   installLinkedViewSync,
   stateModelFactory as linearGenomeViewStateModelFactory,
 } from './LinearGenomeView/index.ts'
-// Deliberately the component itself, and deliberately not the same `SearchBox`
-// the `exports` object above hands runtime plugins — that one is lazy. An
-// in-tree consumer (comparative view, breakpoint split view) imports this
-// barrel and gets shaken out of every build that doesn't, which is all the
-// laziness it needs; a runtime plugin resolves `exports` at module scope, where
-// only `lazy()` keeps the component out of the host's first paint. Imported
-// straight from the component rather than through `LinearGenomeView/index.ts`
-// so the view registration module holds no React component at all.
+// Imported straight from the component rather than through
+// `LinearGenomeView/index.ts` so the view registration module holds no React
+// component at all; a consumer that never renders it shakes it out.
 export { default as SearchBox } from './LinearGenomeView/components/SearchBox.tsx'
 // The same two consumers, one composition further on: a header stacking several
 // views draws one search box per row beside the span it is showing, and

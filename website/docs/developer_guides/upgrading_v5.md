@@ -229,8 +229,19 @@ and calling it throws inside the reaching plugin's own `install`.
     to do
   - `SessionWithDialogs` — same file; the mixin it was an `Instance` of is gone
   - `SessionWithDialogsType` — same file; it was the `ReturnType` of that mixin
-- **`LinearGenomeViewPlugin.exports`**, reached at runtime as
-  `pluginManager.getPlugin('LinearGenomeViewPlugin').exports.X`:
+- **the plugin `exports` objects, all of them.** `AuthenticationPlugin`,
+  `DataManagementPlugin`, `LinearGenomeViewPlugin` and `WigglePlugin` carried
+  one; `pluginManager.getPlugin('X').exports` is now `undefined` on every
+  plugin. What they held is importable from the plugin package instead
+  (`baseLinearDisplayConfigSchema` from `@jbrowse/display-kit/configSchema`,
+  `SearchBox` and `ZoomControls` from `@jbrowse/plugin-linear-genome-view`,
+  `AssemblyManager` from `@jbrowse/plugin-data-management`), and that import
+  resolves to the host's copy: see
+  [](/docs/developer_guides/imports_and_reexports). Reading the store bundles
+  found no v5-era plugin reaching an `exports` object; the v4 bundles that did
+  (`gdc`, `icgc`, `gwas`, `quantseq`, `mafviewer`, `multilevel-linear-view2`)
+  each already break on v5 through a renderer-era name.
+- **`LinearGenomeViewPlugin.exports`**, before the object itself went:
   - `BaseLinearDisplay` — the legacy block-render state model, removed with the
     server-side render path. A v4 plugin composing `exports.BaseLinearDisplay()`
     throws while its `install` runs, so its track type never registers and the

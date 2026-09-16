@@ -19,10 +19,6 @@ const AssemblyManager = lazy(() => import('./AssemblyManager/index.ts'))
 export default class DataManagementPlugin extends Plugin {
   name = 'DataManagementPlugin'
 
-  exports = {
-    AssemblyManager,
-  }
-
   install(pluginManager: PluginManager) {
     UCSCTrackHubConnectionF(pluginManager)
     JB2TrackHubConnectionF(pluginManager)

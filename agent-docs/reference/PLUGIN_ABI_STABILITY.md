@@ -193,7 +193,8 @@ one either.
   - `isSessionWithDialogs` — same file. Every session that composes `BaseSessionModel` has the dialog members, so there is no longer a narrowing to do
   - `SessionWithDialogs` — same file; the mixin it was an `Instance` of is gone
   - `SessionWithDialogsType` — same file; it was the `ReturnType` of that mixin
-- **`LinearGenomeViewPlugin.exports`**, reached at runtime as `pluginManager.getPlugin('LinearGenomeViewPlugin').exports.X`:
+- **the plugin `exports` objects, all four.** `AuthenticationPlugin` (ten account schemas and factories), `DataManagementPlugin` (`AssemblyManager`), `LinearGenomeViewPlugin` (`baseLinearDisplayConfigSchema`, `SearchBox`, `ZoomControls`, `LinearGenomeView`) and `WigglePlugin` (`utils`). Measured 2026-09-16 over the 17 store bundles: the only readers were v4 bundles already dead on v5 through a renderer-era name, and `multilevel-linear-view2`, which takes the three LGV components. Apollo composes `InternetAccount` from core and never reached the authentication set. What an `exports` object held is a named export of the plugin package, which RFC-001 §7 made the route for new plugin code; `lazyPluginExports.tsx`, which existed only to keep the LGV object from pinning three components into first paint, went with it
+- **`LinearGenomeViewPlugin.exports`**, before the object itself went:
   - `BaseLinearDisplay` — the legacy block-render state model, removed with the server-side render path. A v4 plugin composing `exports.BaseLinearDisplay()` throws while its `install` runs, so its track type never registers and the user opens a saved session with the track simply absent
   - `BaseLinearDisplayComponent` — the React half of the same pair, and the last reader of the `DisplayMessageComponent` getter on `BaseDisplayModel`, which went with it. A display model no longer holds a React component at all
 - **`@jbrowse/plugin-linear-genome-view`'s type exports**, which a plugin built against the published package imports rather than looking up at runtime — so these break a build, not a session:
@@ -231,8 +232,8 @@ Runtime-loaded plugins **must** share the host's singletons (React, MST,
 
 | Surface | Where | How plugins reach it |
 | --- | --- | --- |
-| Core re-export registry | `packages/core/src/ReExports/list.ts` (~289 lines) | `jbrequire('@jbrowse/core/...')` |
-| Per-plugin `exports` object | each plugin's `exports = { … }` (e.g. `LinearGenomeViewPlugin.exports`) | `pluginManager.getPlugin('X').exports.Y` |
+| Core re-export registry | `packages/core/src/ReExports/list.ts` | `jbrequire('@jbrowse/core/...')`, or a bare import the plugin's build externalizes |
+| Per-plugin `exports` object, until 2026-09-16 | each plugin's `exports = { … }` | `pluginManager.getPlugin('X').exports.Y` |
 
 The delivery mechanism is **load-bearing and not removable** without killing
 no-build runtime plugins (a core JBrowse feature). But the mechanism is just the
