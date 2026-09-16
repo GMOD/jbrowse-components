@@ -43,7 +43,10 @@ export async function loadPluginRecords(defs: PluginDefinition[]) {
     ? await new PluginLoader(toLoad, {
         fetchESM: url => import(/* webpackIgnore:true */ url),
       })
-        .installGlobalReExports(window)
+        .installGlobalReExports(
+          window,
+          () => import('./reExports.generated.ts'),
+        )
         .loadSettled(window.location.href)
     : { records: [], failures: [] }
   const { records, failures } = loaded

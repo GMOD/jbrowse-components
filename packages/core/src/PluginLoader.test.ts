@@ -445,7 +445,7 @@ describe('runtime re-export ABI', () => {
     // quotes it verbatim, and it spent a while pointing at `ReExports.js` — a
     // file that stopped existing when the list moved to `ReExports/list.ts`
     expect(() => new Manager([]).jbrequire('@jbrowse/core/util')).toThrow(
-      /No jbrequire re-export defined .* add it to ReExports\/list\.ts/,
+      /No jbrequire re-export defined .* @jbrowse\/core\/ReExports\/list names/,
     )
     await new Loader([])
       .installGlobalReExports({} as WindowOrWorkerGlobalScope)

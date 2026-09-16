@@ -9,6 +9,7 @@ import corePlugins from './corePlugins.ts'
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 initializeWorker(corePlugins, {
   fetchESM: url => import(/* webpackIgnore:true */ url),
+  reExports: () => import('./workerReExports.generated.ts'),
 })
 
 export default function doNothing() {

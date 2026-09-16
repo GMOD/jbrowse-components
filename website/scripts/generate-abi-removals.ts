@@ -1,7 +1,7 @@
 // The three v5 ABI-removal tables, in `upgrading_v5.md` and
 // `PLUGIN_ABI_STABILITY.md`, from the baselines that already record the answer:
 //
-//   names     abiPreviousRelease.json (the 4.3.0 tarball) minus abiBaseline.json
+//   names     abiPreviousRelease.json (the 4.3.0 tarball) minus reExports.generated.json
 //   subpaths  that tarball's published `exports` map minus this repo's
 //   breaks    publishedPluginBreaks.json, which abi-watch.yml refreshes weekly
 //
@@ -200,11 +200,11 @@ function removedNames() {
     'packages/core/src/ReExports/abiPreviousRelease.json',
   ) as Previous
   const current = read(
-    'packages/core/src/ReExports/abiBaseline.json',
-  ) as Record<string, string[]>
+    'packages/core/src/ReExports/reExports.generated.json',
+  ) as { modules: Record<string, { names: string[] }> }
   const out = new Map<string, string[]>()
   for (const [mod, names] of Object.entries(previous.modules)) {
-    const served = new Set(current[mod] ?? [])
+    const served = new Set(current.modules[mod]?.names ?? [])
     for (const name of names.filter(n => !served.has(n))) {
       out.set(name, [...(out.get(name) ?? []), mod])
     }

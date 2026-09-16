@@ -2,11 +2,20 @@ import PluginLoader from '@jbrowse/core/PluginLoader'
 import { dropVendoredPlugins } from '@jbrowse/core/pluginDefinitions'
 import { resolveStorePluginRefs } from '@jbrowse/core/util'
 
-import type { LoadedPlugin } from '@jbrowse/core/PluginLoader'
+import type {
+  LoadedPlugin,
+  ReExportRegistryLoader,
+} from '@jbrowse/core/PluginLoader'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 
 export interface LoadPluginsArgs {
   fetchESM?: (url: string) => Promise<LoadedPlugin>
+  /**
+   * The product's `reExports.generated.ts`, so a plugin loaded here reads the
+   * host's copy of every `@jbrowse` package the product bundles. Without it
+   * the plugin is served only what `@jbrowse/core` can on its own.
+   */
+  reExports?: ReExportRegistryLoader
   /**
    * Resolve relative plugin urls against this instead of the page. A config
    * fetched from somewhere else names its plugins relative to itself, so pass
@@ -62,7 +71,7 @@ export async function loadRuntimePlugins(
   const base = args.baseUri ?? args.baseUrl
   return toLoad.length
     ? new PluginLoader(toLoad, args)
-        .installGlobalReExports(window)
+        .installGlobalReExports(window, args.reExports)
         .load(base ?? window.location.href)
     : []
 }

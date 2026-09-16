@@ -63,10 +63,10 @@
 // deep imports, multilevel-linear-view2 vendors the whole util barrel), so the
 // name appears in the bundle while being resolved locally. Only a read off an
 // identifier that traces back to a JBrowseExports lookup can break.
-// The served ABI is read from list.ts (the module paths) and abiBaseline.json
-// (the names in each), not from modules.ts: that module's graph reaches .tsx,
-// which --experimental-strip-types will not load. The two are kept in sync with
-// modules.ts by modules.test.ts and abi.test.ts respectively.
+// The served ABI is read from list.ts (the module paths) and
+// reExports.generated.json (the names in each), not from modules.ts: that
+// module's graph reaches .tsx, which --experimental-strip-types will not load.
+// Both are written by scripts/generateReExports.ts from the same run.
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
@@ -94,10 +94,12 @@ function removedNames() {
   const previous = read('abiPreviousRelease.json') as {
     modules: Record<string, string[]>
   }
-  const current = read('abiBaseline.json') as Record<string, string[]>
+  const current = read('reExports.generated.json') as {
+    modules: Record<string, { names: string[] }>
+  }
   const out: Record<string, Set<string>> = {}
   for (const [mod, names] of Object.entries(previous.modules)) {
-    const served = new Set(current[mod] ?? [])
+    const served = new Set(current.modules[mod]?.names ?? [])
     const gone = names.filter(n => !served.has(n))
     if (gone.length > 0) {
       out[mod] = new Set(gone)

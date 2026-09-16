@@ -8,6 +8,32 @@ export const uiStub: unknown = new Proxy(function stubTarget() {}, {
   construct: () => uiStub as object,
 })
 
-export function uiNamespace(names: readonly string[]): Record<string, unknown> {
-  return Object.fromEntries(names.map(name => [name, uiStub]))
+// `esModule` mirrors the `__esModule` the main thread sets on a namespace that
+// carries a default export beside named ones, so a bundler's interop reads the
+// stub's `default` the same way in both realms.
+export function uiNamespace(
+  names: readonly string[],
+  esModule = false,
+): Record<string, unknown> {
+  return {
+    ...(esModule ? { __esModule: true } : {}),
+    ...Object.fromEntries(names.map(name => [name, uiStub])),
+  }
 }
+
+// Own keys React puts on a component object, which are not export names and
+// so do not survive into a stub or the manifest.
+export const REACT_INTERNAL_KEYS = new Set([
+  '$$typeof',
+  '_debugInfo',
+  '_init',
+  '_payload',
+  'compare',
+  'contextTypes',
+  'defaultProps',
+  'displayName',
+  'muiName',
+  'propTypes',
+  'render',
+  'type',
+])

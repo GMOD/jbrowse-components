@@ -534,6 +534,10 @@ jobs:
         run: pnpm check-declaration-leaks
       - name: Check extension-point declarations reach their package entry
         run: pnpm check-extension-point-reachability
+      # The exemplar plugin, built the way the plugin template builds one,
+      # carries no second copy of workspace source — scripts/check-plugin-porosity.ts
+      - name: Check a runtime plugin build bundles no workspace source
+        run: pnpm check-plugin-porosity
       # 39 end-to-end jb2export renders (BAM/CRAM/VCF, dotplot, synteny,
       # circular, track modifiers, the failure paths) that gated nothing until
       # now. Lives here rather than in `test` because it runs the CLI from

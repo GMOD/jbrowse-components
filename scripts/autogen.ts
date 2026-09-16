@@ -96,6 +96,15 @@ const GENERATORS: Generator[] = [
     exclusive: true,
   },
   {
+    // The runtime plugin ABI — ReExports/list.ts, the generated module maps
+    // in core and each product, and the manifest the checkers read — from the
+    // served packages' exports maps.
+    name: 'runtime re-exports',
+    argv: rootScript('generateReExports.ts'),
+    independent: true,
+    needs: ['core exports'],
+  },
+  {
     // scripts/chromeBundleSizes.json, measured by bundling both entry points.
     name: 'chrome bundle sizes',
     argv: rootScript('measureChromeBundle.ts'),

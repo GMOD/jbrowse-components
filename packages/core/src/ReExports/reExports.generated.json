@@ -1,0 +1,6641 @@
+{
+  "framework": {
+    "@jbrowse/mobx-state-tree": [
+      "addDisposer",
+      "addMiddleware",
+      "applyAction",
+      "applyPatch",
+      "applySnapshot",
+      "cannotDetermineSubtype",
+      "cast",
+      "castFlowReturn",
+      "castToReferenceSnapshot",
+      "castToSnapshot",
+      "clone",
+      "createActionTrackingMiddleware",
+      "createActionTrackingMiddleware2",
+      "decorate",
+      "destroy",
+      "detach",
+      "escapeJsonPath",
+      "extendInstance",
+      "flow",
+      "getChildType",
+      "getEnv",
+      "getIdentifier",
+      "getLivelinessChecking",
+      "getMembers",
+      "getNodeId",
+      "getParent",
+      "getParentOfType",
+      "getPath",
+      "getPathParts",
+      "getPropertyMembers",
+      "getRelativePath",
+      "getRoot",
+      "getRunningActionContext",
+      "getSnapshot",
+      "getType",
+      "getUnionSubtypes",
+      "hasParent",
+      "hasParentOfType",
+      "isActionContextChildOf",
+      "isActionContextThisOrChildOf",
+      "isAlive",
+      "isArrayType",
+      "isFrozenType",
+      "isIdentifierType",
+      "isLateType",
+      "isLiteralType",
+      "isMapType",
+      "isModelType",
+      "isOptionalType",
+      "isPrimitiveType",
+      "isProtected",
+      "isReferenceType",
+      "isRefinementType",
+      "isRoot",
+      "isStateTreeNode",
+      "isType",
+      "isUnionType",
+      "isValidReference",
+      "joinJsonPath",
+      "onAction",
+      "onPatch",
+      "onSnapshot",
+      "protect",
+      "recordActions",
+      "recordPatches",
+      "resolveIdentifier",
+      "resolvePath",
+      "setDevMode",
+      "setLivelinessChecking",
+      "setLivelynessChecking",
+      "setTypeChecking",
+      "splitJsonPath",
+      "t",
+      "toGenerator",
+      "toGeneratorFunction",
+      "tryReference",
+      "tryResolve",
+      "typecheck",
+      "types",
+      "unescapeJsonPath",
+      "unprotect",
+      "walk"
+    ],
+    "@mui/material": [
+      "Accordion",
+      "AccordionActions",
+      "AccordionDetails",
+      "AccordionSummary",
+      "Alert",
+      "AlertTitle",
+      "Autocomplete",
+      "Avatar",
+      "AvatarGroup",
+      "Backdrop",
+      "Badge",
+      "Box",
+      "Breadcrumbs",
+      "Button",
+      "ButtonGroup",
+      "Card",
+      "CardActionArea",
+      "CardActions",
+      "CardContent",
+      "CardHeader",
+      "CardMedia",
+      "Checkbox",
+      "Chip",
+      "CircularProgress",
+      "ClickAwayListener",
+      "Collapse",
+      "Container",
+      "Dialog",
+      "DialogActions",
+      "DialogContent",
+      "DialogContentText",
+      "DialogTitle",
+      "Divider",
+      "Drawer",
+      "Fab",
+      "Fade",
+      "FilledInput",
+      "FormControl",
+      "FormControlLabel",
+      "FormGroup",
+      "FormHelperText",
+      "FormLabel",
+      "Grid",
+      "Grid2",
+      "Grow",
+      "Icon",
+      "IconButton",
+      "Input",
+      "InputAdornment",
+      "InputBase",
+      "InputLabel",
+      "LinearProgress",
+      "Link",
+      "List",
+      "ListItem",
+      "ListItemAvatar",
+      "ListItemButton",
+      "ListItemIcon",
+      "ListItemSecondaryAction",
+      "ListItemText",
+      "ListSubheader",
+      "Menu",
+      "MenuItem",
+      "MenuList",
+      "Modal",
+      "NativeSelect",
+      "OutlinedInput",
+      "Pagination",
+      "PaginationItem",
+      "Paper",
+      "Popover",
+      "Popper",
+      "Portal",
+      "Radio",
+      "RadioGroup",
+      "Rating",
+      "ScopedCssBaseline",
+      "Select",
+      "Skeleton",
+      "Slider",
+      "Snackbar",
+      "SnackbarContent",
+      "SpeedDial",
+      "SpeedDialAction",
+      "SpeedDialIcon",
+      "Stack",
+      "Step",
+      "StepButton",
+      "StepConnector",
+      "StepIcon",
+      "StepLabel",
+      "Stepper",
+      "SvgIcon",
+      "Switch",
+      "Tab",
+      "Table",
+      "TableBody",
+      "TableCell",
+      "TableContainer",
+      "TableFooter",
+      "TableHead",
+      "TablePagination",
+      "TableRow",
+      "TableSortLabel",
+      "Tabs",
+      "TextField",
+      "TextareaAutosize",
+      "ToggleButton",
+      "ToggleButtonGroup",
+      "Toolbar",
+      "Tooltip",
+      "Typography",
+      "alpha",
+      "createTheme",
+      "useTheme"
+    ],
+    "@mui/material/Accordion": [],
+    "@mui/material/AccordionActions": [],
+    "@mui/material/AccordionDetails": [],
+    "@mui/material/AccordionSummary": [],
+    "@mui/material/Alert": [],
+    "@mui/material/AlertTitle": [],
+    "@mui/material/Autocomplete": [],
+    "@mui/material/Avatar": [],
+    "@mui/material/AvatarGroup": [],
+    "@mui/material/Backdrop": [],
+    "@mui/material/Badge": [],
+    "@mui/material/Box": [],
+    "@mui/material/Breadcrumbs": [],
+    "@mui/material/Button": [],
+    "@mui/material/ButtonGroup": [],
+    "@mui/material/Card": [],
+    "@mui/material/CardActionArea": [],
+    "@mui/material/CardActions": [],
+    "@mui/material/CardContent": [],
+    "@mui/material/CardHeader": [],
+    "@mui/material/CardMedia": [],
+    "@mui/material/Checkbox": [],
+    "@mui/material/Chip": [],
+    "@mui/material/CircularProgress": [],
+    "@mui/material/ClickAwayListener": [],
+    "@mui/material/Collapse": [],
+    "@mui/material/Container": [],
+    "@mui/material/Dialog": [],
+    "@mui/material/DialogActions": [],
+    "@mui/material/DialogContent": [],
+    "@mui/material/DialogContentText": [],
+    "@mui/material/DialogTitle": [],
+    "@mui/material/Divider": [],
+    "@mui/material/Drawer": [],
+    "@mui/material/Fab": [],
+    "@mui/material/Fade": [],
+    "@mui/material/FilledInput": [],
+    "@mui/material/FormControl": [],
+    "@mui/material/FormControlLabel": [],
+    "@mui/material/FormGroup": [],
+    "@mui/material/FormHelperText": [],
+    "@mui/material/FormLabel": [],
+    "@mui/material/Grid": [],
+    "@mui/material/Grid2": [],
+    "@mui/material/Grow": [],
+    "@mui/material/Icon": [],
+    "@mui/material/IconButton": [],
+    "@mui/material/Input": [],
+    "@mui/material/InputAdornment": [],
+    "@mui/material/InputBase": [],
+    "@mui/material/InputLabel": [],
+    "@mui/material/LinearProgress": [],
+    "@mui/material/Link": [],
+    "@mui/material/List": [],
+    "@mui/material/ListItem": [],
+    "@mui/material/ListItemAvatar": [],
+    "@mui/material/ListItemButton": [],
+    "@mui/material/ListItemIcon": [],
+    "@mui/material/ListItemSecondaryAction": [],
+    "@mui/material/ListItemText": [],
+    "@mui/material/ListSubheader": [],
+    "@mui/material/Menu": [],
+    "@mui/material/MenuItem": [],
+    "@mui/material/MenuList": [],
+    "@mui/material/Modal": [],
+    "@mui/material/NativeSelect": [],
+    "@mui/material/OutlinedInput": [],
+    "@mui/material/Pagination": [],
+    "@mui/material/PaginationItem": [],
+    "@mui/material/Paper": [],
+    "@mui/material/Popover": [],
+    "@mui/material/Popper": [],
+    "@mui/material/Portal": [],
+    "@mui/material/Radio": [],
+    "@mui/material/RadioGroup": [],
+    "@mui/material/Rating": [],
+    "@mui/material/ScopedCssBaseline": [],
+    "@mui/material/Select": [],
+    "@mui/material/Skeleton": [],
+    "@mui/material/Slider": [],
+    "@mui/material/Snackbar": [],
+    "@mui/material/SnackbarContent": [],
+    "@mui/material/SpeedDial": [],
+    "@mui/material/SpeedDialAction": [],
+    "@mui/material/SpeedDialIcon": [],
+    "@mui/material/Stack": [],
+    "@mui/material/Step": [],
+    "@mui/material/StepButton": [],
+    "@mui/material/StepConnector": [],
+    "@mui/material/StepIcon": [],
+    "@mui/material/StepLabel": [],
+    "@mui/material/Stepper": [],
+    "@mui/material/styles": [
+      "CssVarsProvider",
+      "Experimental_CssVarsProvider",
+      "StyledEngineProvider",
+      "THEME_ID",
+      "ThemeProvider",
+      "adaptV4Theme",
+      "alpha",
+      "createColorScheme",
+      "createStyles",
+      "createTheme",
+      "css",
+      "darken",
+      "decomposeColor",
+      "duration",
+      "easing",
+      "emphasize",
+      "enhanceHighContrast",
+      "experimental_sx",
+      "extendTheme",
+      "getContrastRatio",
+      "getInitColorSchemeScript",
+      "getLuminance",
+      "getOverlayAlpha",
+      "hexToRgb",
+      "hslToRgb",
+      "keyframes",
+      "makeStyles",
+      "private_createTypography",
+      "private_excludeVariablesFromRoot",
+      "recomposeColor",
+      "responsiveFontSizes",
+      "rgbToHex",
+      "shouldSkipGeneratingVar",
+      "styled",
+      "unstable_createBreakpoints",
+      "unstable_createMuiStrictModeTheme",
+      "unstable_getUnit",
+      "unstable_toUnitless",
+      "useColorScheme",
+      "useTheme",
+      "useThemeProps",
+      "withStyles",
+      "withTheme"
+    ],
+    "@mui/material/SvgIcon": [
+      "createSvgIcon"
+    ],
+    "@mui/material/Switch": [],
+    "@mui/material/Tab": [],
+    "@mui/material/Table": [],
+    "@mui/material/TableBody": [],
+    "@mui/material/TableCell": [],
+    "@mui/material/TableContainer": [],
+    "@mui/material/TableFooter": [],
+    "@mui/material/TableHead": [],
+    "@mui/material/TablePagination": [],
+    "@mui/material/TableRow": [],
+    "@mui/material/TableSortLabel": [],
+    "@mui/material/Tabs": [],
+    "@mui/material/TextareaAutosize": [],
+    "@mui/material/TextField": [],
+    "@mui/material/ToggleButton": [],
+    "@mui/material/ToggleButtonGroup": [],
+    "@mui/material/Toolbar": [],
+    "@mui/material/Tooltip": [],
+    "@mui/material/Typography": [],
+    "@mui/material/utils": [
+      "capitalize",
+      "createChainedFunction",
+      "createSvgIcon",
+      "debounce",
+      "deprecatedPropType",
+      "getActiveElement",
+      "isMuiElement",
+      "mergeSlotProps",
+      "ownerDocument",
+      "ownerWindow",
+      "requirePropFactory",
+      "setRef",
+      "unstable_ClassNameGenerator",
+      "unstable_memoTheme",
+      "unstable_useEnhancedEffect",
+      "unstable_useId",
+      "unsupportedProp",
+      "useControlled",
+      "useEventCallback",
+      "useForkRef"
+    ],
+    "@mui/x-data-grid": [
+      "DataGrid",
+      "GridActionsCellItem",
+      "GridAddIcon",
+      "GridArrowDownwardIcon",
+      "GridArrowUpwardIcon",
+      "GridCellCheckboxForwardRef",
+      "GridCellCheckboxRenderer",
+      "GridCheckCircleIcon",
+      "GridCheckIcon",
+      "GridCloseIcon",
+      "GridColumnHeaderSeparator",
+      "GridColumnHeaderSortIcon",
+      "GridColumnIcon",
+      "GridColumnMenu",
+      "GridColumnMenuContainer",
+      "GridDragIcon",
+      "GridExpandMoreIcon",
+      "GridFilterAltIcon",
+      "GridFilterForm",
+      "GridFilterListIcon",
+      "GridFilterPanel",
+      "GridFooter",
+      "GridFooterContainer",
+      "GridHeader",
+      "GridHeaderCheckbox",
+      "GridKeyboardArrowRight",
+      "GridLoadIcon",
+      "GridLoadingOverlay",
+      "GridMenuIcon",
+      "GridMoreVertIcon",
+      "GridNoRowsOverlay",
+      "GridOverlay",
+      "GridPagination",
+      "GridPanel",
+      "GridPanelWrapper",
+      "GridRemoveIcon",
+      "GridRoot",
+      "GridRowCount",
+      "GridSearchIcon",
+      "GridSelectedRowCount",
+      "GridSeparatorIcon",
+      "GridTableRowsIcon",
+      "GridToolbarExportContainer",
+      "GridTripleDotsVerticalIcon",
+      "GridViewHeadlineIcon",
+      "GridViewStreamIcon"
+    ],
+    "mobx": [
+      "$mobx",
+      "FlowCancellationError",
+      "ObservableMap",
+      "ObservableSet",
+      "Reaction",
+      "_allowStateChanges",
+      "_allowStateChangesInsideComputed",
+      "_allowStateReadsEnd",
+      "_allowStateReadsStart",
+      "_autoAction",
+      "_autoActionBound",
+      "_endAction",
+      "_getAdministration",
+      "_getGlobalState",
+      "_interceptReads",
+      "_isComputingDerivation",
+      "_resetGlobalState",
+      "_startAction",
+      "action",
+      "actionBound",
+      "autorun",
+      "compareDefault",
+      "compareIdentity",
+      "compareShallow",
+      "compareStructural",
+      "computed",
+      "computedStruct",
+      "configure",
+      "createAtom",
+      "default",
+      "defineProperty",
+      "entries",
+      "extendObservable",
+      "flow",
+      "flowBound",
+      "flowResult",
+      "get",
+      "getAtom",
+      "getDebugName",
+      "getDependencyTree",
+      "getObserverTree",
+      "has",
+      "intercept",
+      "isAction",
+      "isBoxedObservable",
+      "isComputed",
+      "isComputedProp",
+      "isFlow",
+      "isFlowCancellationError",
+      "isObservable",
+      "isObservableArray",
+      "isObservableMap",
+      "isObservableObject",
+      "isObservableProp",
+      "isObservableSet",
+      "keys",
+      "makeAutoObservable",
+      "makeObservable",
+      "observable",
+      "observableDeep",
+      "observableRef",
+      "observableShallow",
+      "observableStruct",
+      "observe",
+      "onBecomeObserved",
+      "onBecomeUnobserved",
+      "onReactionError",
+      "override",
+      "ownKeys",
+      "reaction",
+      "remove",
+      "runInAction",
+      "set",
+      "spy",
+      "toJS",
+      "transaction",
+      "untracked",
+      "values",
+      "when"
+    ],
+    "mobx-react": [
+      "Observer",
+      "_observerFinalizationRegistry",
+      "clearTimers",
+      "default",
+      "enableStaticRendering",
+      "isUsingStaticRendering",
+      "observer",
+      "useLocalObservable"
+    ],
+    "mobx-state-tree": [
+      "addDisposer",
+      "addMiddleware",
+      "applyAction",
+      "applyPatch",
+      "applySnapshot",
+      "cannotDetermineSubtype",
+      "cast",
+      "castFlowReturn",
+      "castToReferenceSnapshot",
+      "castToSnapshot",
+      "clone",
+      "createActionTrackingMiddleware",
+      "createActionTrackingMiddleware2",
+      "decorate",
+      "destroy",
+      "detach",
+      "escapeJsonPath",
+      "extendInstance",
+      "flow",
+      "getChildType",
+      "getEnv",
+      "getIdentifier",
+      "getLivelinessChecking",
+      "getMembers",
+      "getNodeId",
+      "getParent",
+      "getParentOfType",
+      "getPath",
+      "getPathParts",
+      "getPropertyMembers",
+      "getRelativePath",
+      "getRoot",
+      "getRunningActionContext",
+      "getSnapshot",
+      "getType",
+      "getUnionSubtypes",
+      "hasParent",
+      "hasParentOfType",
+      "isActionContextChildOf",
+      "isActionContextThisOrChildOf",
+      "isAlive",
+      "isArrayType",
+      "isFrozenType",
+      "isIdentifierType",
+      "isLateType",
+      "isLiteralType",
+      "isMapType",
+      "isModelType",
+      "isOptionalType",
+      "isPrimitiveType",
+      "isProtected",
+      "isReferenceType",
+      "isRefinementType",
+      "isRoot",
+      "isStateTreeNode",
+      "isType",
+      "isUnionType",
+      "isValidReference",
+      "joinJsonPath",
+      "onAction",
+      "onPatch",
+      "onSnapshot",
+      "protect",
+      "recordActions",
+      "recordPatches",
+      "resolveIdentifier",
+      "resolvePath",
+      "setDevMode",
+      "setLivelinessChecking",
+      "setLivelynessChecking",
+      "setTypeChecking",
+      "splitJsonPath",
+      "t",
+      "toGenerator",
+      "toGeneratorFunction",
+      "tryReference",
+      "tryResolve",
+      "typecheck",
+      "types",
+      "unescapeJsonPath",
+      "unprotect",
+      "walk"
+    ],
+    "react": [
+      "Activity",
+      "Children",
+      "Component",
+      "Fragment",
+      "Profiler",
+      "PureComponent",
+      "StrictMode",
+      "Suspense",
+      "ViewTransition",
+      "__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE",
+      "__COMPILER_RUNTIME",
+      "act",
+      "addTransitionType",
+      "cache",
+      "cacheSignal",
+      "captureOwnerStack",
+      "cloneElement",
+      "createContext",
+      "createElement",
+      "createRef",
+      "default",
+      "forwardRef",
+      "isValidElement",
+      "lazy",
+      "memo",
+      "startTransition",
+      "unstable_useCacheRefresh",
+      "use",
+      "useActionState",
+      "useCallback",
+      "useContext",
+      "useDebugValue",
+      "useDeferredValue",
+      "useEffect",
+      "useEffectEvent",
+      "useId",
+      "useImperativeHandle",
+      "useInsertionEffect",
+      "useLayoutEffect",
+      "useMemo",
+      "useOptimistic",
+      "useReducer",
+      "useRef",
+      "useState",
+      "useSyncExternalStore",
+      "useTransition",
+      "version"
+    ],
+    "react-dom": [
+      "__DOM_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE",
+      "browser",
+      "createPortal",
+      "default",
+      "flushSync",
+      "preconnect",
+      "prefetchDNS",
+      "preinit",
+      "preinitModule",
+      "preload",
+      "preloadModule",
+      "requestFormReset",
+      "unstable_batchedUpdates",
+      "useFormState",
+      "useFormStatus",
+      "version"
+    ],
+    "react-dom/client": [
+      "createRoot",
+      "default",
+      "hydrateRoot",
+      "version"
+    ],
+    "react/jsx-runtime": [
+      "Fragment",
+      "default",
+      "jsx",
+      "jsxs"
+    ],
+    "tss-react": [
+      "cx",
+      "keyframes",
+      "makeStyles"
+    ],
+    "tss-react/mui": [
+      "cx",
+      "keyframes",
+      "makeStyles"
+    ]
+  },
+  "modules": {
+    "@jbrowse/add-track-core": {
+      "package": "@jbrowse/add-track-core",
+      "names": [
+        "adapterTypesToTrackTypeMap",
+        "formats",
+        "matchFormat",
+        "resolveIndexType",
+        "trackTypeForAdapter"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/alignments-core": {
+      "package": "@jbrowse/alignments-core",
+      "names": [
+        "DEFAULT_SNP_BASE_COLORS",
+        "INDICATOR_TRIANGLE_H",
+        "INDICATOR_TRIANGLE_HW",
+        "INSERTION_COLOR",
+        "INSERTION_SERIF_MIN_PX_PER_BP",
+        "LABEL_FADE_FLOOR",
+        "LABEL_FADE_HI_RATIO",
+        "LABEL_FADE_LO_RATIO",
+        "LONG_INSERTION_MIN_LENGTH",
+        "LONG_INSERTION_TEXT_THRESHOLD_PX",
+        "MIN_HEIGHT_FOR_TEXT",
+        "MIN_PX_PER_BP_FOR_TEXT",
+        "MIN_QUALITY_LETTER_OPACITY",
+        "MISMATCH_COLOR",
+        "PAIR_DIRECTION_LABELS",
+        "SERIF_HALF_W_PX",
+        "SERIF_H_PX",
+        "SNP_TOOLTIP_SNAP_FLOOR",
+        "buildConsensusTally",
+        "buildCoverageTooltipBin",
+        "buildReadVsRefNames",
+        "buildSyntheticAssembly",
+        "computeConsensus",
+        "computeConsensusVariants",
+        "computeCoverage",
+        "computeCoverageTicks",
+        "computeInterbaseCoverage",
+        "computeSNPCoverage",
+        "computeVisibleCoverageStats",
+        "countOfTotal",
+        "countSnpsAtPosition",
+        "covBarHeightPx",
+        "covSegTopPx",
+        "coverageBandMarks",
+        "coverageBarShape",
+        "coverageBinAt",
+        "coverageDepthDomain",
+        "coverageIndicatorShape",
+        "coverageInterbaseShape",
+        "coverageLayout",
+        "coverageModShape",
+        "coverageRows",
+        "coverageSegmentBuffers",
+        "coverageSnpShape",
+        "densityBinSize",
+        "densityToUniformBins",
+        "downsampleDenseMax",
+        "downsampleStatsBins",
+        "drawCoverageBins",
+        "drawIndicatorTriangle",
+        "drawIndicators",
+        "drawInsertionMarker",
+        "drawInsertionSerifs",
+        "drawInterbaseSegments",
+        "drawModCovSegments",
+        "drawSnpSegments",
+        "emptyInterbaseCoverage",
+        "emptySnpCoverage",
+        "fillSpanRect",
+        "findSignificantInBin",
+        "forEachAtPosition",
+        "formatBandLocation",
+        "formatInsertionLabel",
+        "formatLenRange",
+        "getInsertionType",
+        "hitCoverageBand",
+        "insertionBarWidth",
+        "insertionSerifsWidthPx",
+        "insertionSizeAlpha",
+        "interbaseBarHeightPx",
+        "interbaseDepthAt",
+        "interbaseEdgePx",
+        "isAbnormalPairDirection",
+        "labelFadeOpacity",
+        "labelFont",
+        "lowerBound",
+        "minAvailPxForLabel",
+        "normalizeDepthScalar",
+        "packCoverageBinsForGpu",
+        "packDensityRegion",
+        "packIndicatorInstances",
+        "packInterbaseInstances",
+        "packModCovSegmentsForGpu",
+        "packSnpInstances",
+        "pairDirection",
+        "pct",
+        "positionOrder",
+        "readIndicators",
+        "readInterbaseSegments",
+        "readModCovSegments",
+        "readSnpSegments",
+        "recordsWithin",
+        "spanRectLeftPx",
+        "spanRectWidthPx",
+        "splitInversion",
+        "splitJunctionKind",
+        "textWidthForNumber",
+        "variantsToVcf",
+        "walkConsensus"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/alignments-core/CoverageTooltipTables": {
+      "package": "@jbrowse/alignments-core",
+      "names": [
+        "CoverageTooltipTable",
+        "InterbaseTooltipTable",
+        "useTooltipTableStyles"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/app-core": {
+      "package": "@jbrowse/app-core",
+      "names": [
+        "App",
+        "AppReadyMarker",
+        "AppSessionMixin",
+        "AssembliesMixin",
+        "DEFAULT_SHARE_URL",
+        "DialogQueue",
+        "HistoryManagementMixin",
+        "JBrowseConfigF",
+        "JBrowseModelF",
+        "RootAppMenuMixin",
+        "WorkspaceLayoutMixin",
+        "addSessionTracks",
+        "buildLgvInit",
+        "buildLgvInitFromParams",
+        "createJbApi",
+        "deleteQueryParams",
+        "ensureReExports",
+        "hubConnectionSpec",
+        "isSessionWithWorkspaceLayout",
+        "loadSessionSpec",
+        "parseSessionSpecUrl",
+        "processMutableMenuActions",
+        "readAllQueryParams",
+        "readHubUrlParam",
+        "readNavParam",
+        "readQueryParams",
+        "readTracklistParam",
+        "resolveMenus",
+        "safeJson",
+        "sessionOf",
+        "setQueryParams",
+        "shortHubLabel",
+        "splitHighlights",
+        "undeliveredNotifications",
+        "useQueryParam",
+        "waitReady"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip"
+      ]
+    },
+    "@jbrowse/cigar-utils": {
+      "package": "@jbrowse/cigar-utils",
+      "names": [
+        "CHAR_FROM_CODE",
+        "CIGAR_D",
+        "CIGAR_EQ",
+        "CIGAR_H",
+        "CIGAR_I",
+        "CIGAR_INDEL_MASK",
+        "CIGAR_M",
+        "CIGAR_M_EQ_MASK",
+        "CIGAR_N",
+        "CIGAR_P",
+        "CIGAR_RUN",
+        "CIGAR_S",
+        "CIGAR_X",
+        "DELETION_TYPE",
+        "HARDCLIP_TYPE",
+        "INSERTION_TYPE",
+        "MISMATCH_TYPE",
+        "SAM_FLAG_DUPLICATE",
+        "SAM_FLAG_FAILS_QC",
+        "SAM_FLAG_FIRST_IN_PAIR",
+        "SAM_FLAG_MATE_REVERSE",
+        "SAM_FLAG_MATE_UNMAPPED",
+        "SAM_FLAG_PAIRED",
+        "SAM_FLAG_PROPER_PAIR",
+        "SAM_FLAG_REVERSE",
+        "SAM_FLAG_SECONDARY",
+        "SAM_FLAG_SECOND_IN_PAIR",
+        "SAM_FLAG_SUPPLEMENTARY",
+        "SAM_FLAG_UNMAPPED",
+        "SEQRET",
+        "SEQRET_NUMERIC_DECODER",
+        "SKIP_TYPE",
+        "SOFTCLIP_TYPE",
+        "buildReadVsRefFeatures",
+        "cigarToMismatches2",
+        "cigarWalkBp1",
+        "cigarWalkBp2",
+        "cigarWalkRev1",
+        "cigarWalkRev2",
+        "clipLengthAtStartOfReadNumeric",
+        "coarseCigarOwnAxis",
+        "coarsenCigar",
+        "connectionEndpointBps",
+        "csToCigar",
+        "encodeSeqNumeric",
+        "featurizeSA",
+        "featurizeSAEntries",
+        "flipCigar",
+        "flipCoarseCigar",
+        "flipCs",
+        "forEachCsMismatch",
+        "forEachCsOp",
+        "getClip",
+        "getLength",
+        "getLengthOnRef",
+        "getLengthSansClipping",
+        "getMismatches",
+        "getNextRefPos",
+        "mdToMismatches2",
+        "numericCigarHasSkip",
+        "numericCigarToString",
+        "orientAlignment",
+        "pafIdentity",
+        "parseCigar",
+        "parseCigar2",
+        "parseCigar2Typed",
+        "parseCoarseCigar",
+        "readLeadingBodyDir",
+        "readLeadingBp",
+        "readTrailingBodyDir",
+        "readTrailingBp",
+        "samFlagDescriptions",
+        "samFlagLabels",
+        "samFlagNames",
+        "splitSA",
+        "swapCoarseCigar",
+        "swapIndelCigar",
+        "visitCigarRenderedSegments"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/assemblyManager": {
+      "package": "@jbrowse/core",
+      "names": [
+        "assemblyConfigSchemaFactory",
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/assemblyManager/assembly": {
+      "package": "@jbrowse/core",
+      "names": [
+        "buildRefNameMaps",
+        "default",
+        "getSequenceAdapterConfig",
+        "lookupGeneticCodeId",
+        "refNameMismatchMessage"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/assemblyManager/assemblyConfigSchema": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default",
+        "expandAssemblySequenceAdapter",
+        "expandAssemblyShorthand"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/BaseFeatureWidget": {
+      "package": "@jbrowse/core",
+      "names": [
+        "configSchema",
+        "stateModelFactory"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail": {
+      "package": "@jbrowse/core",
+      "names": [
+        "BaseAttributes",
+        "BaseCard",
+        "BaseCoreDetails",
+        "FeatureDetails",
+        "FeatureWash",
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip"
+      ]
+    },
+    "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip"
+      ]
+    },
+    "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/FeatureDetails": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip"
+      ]
+    },
+    "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Formatter": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/SimpleField": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip"
+      ]
+    },
+    "@jbrowse/core/BaseFeatureWidget/SequenceFeatureDetails/dialogs/FeatureSequenceDialog": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip"
+      ]
+    },
+    "@jbrowse/core/checkPlugins": {
+      "package": "@jbrowse/core",
+      "names": [
+        "PLUGIN_STORE_URL",
+        "TRUSTED_PLUGIN_URL_PREFIXES",
+        "checkPlugins",
+        "checkPluginsAgainstStore",
+        "fetchPlugins"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/configuration": {
+      "package": "@jbrowse/core",
+      "names": [
+        "ConfigurationReference",
+        "ConfigurationSchema",
+        "DEFAULT_FORMAT_DETAILS_DEPTH",
+        "FormatAboutConfigSchemaFactory",
+        "FormatDetailsConfigSchemaFactory",
+        "evaluateJexl",
+        "expandTabixShorthand",
+        "fillLocations",
+        "fullConfSnapshot",
+        "getConf",
+        "getConfigurationSchemaDefinition",
+        "getConfigurationSchemaMetadata",
+        "getSlotDefinition",
+        "getTypeNamesFromExplicitlyTypedUnion",
+        "hydrateTrackConfig",
+        "isBareConfigurationSchemaType",
+        "isCallbackValue",
+        "isConfigurationModel",
+        "isConfigurationSchemaType",
+        "isConfigurationSlot",
+        "isConstantEntry",
+        "isSlotDefinitionEntry",
+        "makeSlotFacade",
+        "mergeFormatCallbacks",
+        "preProcessSlotValues",
+        "readConfObject",
+        "readConfSlot",
+        "readConfigValue",
+        "setConf",
+        "slotChoices",
+        "tabixIndexFields",
+        "tabixIndexSnapshot",
+        "toCallbackValue",
+        "toFixedValue"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/configuration/configurationSchema": {
+      "package": "@jbrowse/core",
+      "names": [
+        "ConfigurationReference",
+        "ConfigurationSchema",
+        "hydrateTrackConfig"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/data_adapters/adapterSessionRefcount": {
+      "package": "@jbrowse/core",
+      "names": [
+        "releaseAdapterSession",
+        "retainAdapterSession"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/data_adapters/BaseAdapter": {
+      "package": "@jbrowse/core",
+      "names": [
+        "BaseAdapter",
+        "BaseFeatureDataAdapter",
+        "BaseSequenceAdapter",
+        "cachedSetup",
+        "densityAdapterConfigSchemaFields",
+        "isFeatureAdapter",
+        "isRefNameAliasAdapter",
+        "isRegionsAdapter",
+        "isSequenceAdapter",
+        "isSubAdapterConfig",
+        "isTextSearchAdapter"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/data_adapters/BaseAdapter/getAdapterId": {
+      "package": "@jbrowse/core",
+      "names": [
+        "getAdapterId"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/data_adapters/BaseAdapter/stats": {
+      "package": "@jbrowse/core",
+      "names": [
+        "aggregateQuantitativeStats",
+        "blankStats",
+        "calculateFeatureDensityStats"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/data_adapters/BaseAdapter/types": {
+      "package": "@jbrowse/core",
+      "names": [],
+      "worker": "real"
+    },
+    "@jbrowse/core/data_adapters/BaseAdapter/zoomRange": {
+      "package": "@jbrowse/core",
+      "names": [],
+      "worker": "real"
+    },
+    "@jbrowse/core/data_adapters/dataAdapterCache": {
+      "package": "@jbrowse/core",
+      "names": [
+        "adapterConfigCacheKey",
+        "clearAdapterCache",
+        "freeAdapterResources",
+        "getAdapter"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/data_adapters/getFeatureAdapter": {
+      "package": "@jbrowse/core",
+      "names": [
+        "getFeatureAdapter",
+        "getFeatureAdapterOrThrow"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/data_adapters/getSequenceSubAdapter": {
+      "package": "@jbrowse/core",
+      "names": [
+        "getSequenceSubAdapter"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluggableElementTypes": {
+      "package": "@jbrowse/core",
+      "names": [
+        "AdapterType",
+        "AddTrackWorkflowType",
+        "BaseConnectionModelFactory",
+        "BaseDisplay",
+        "BaseInternetAccountConfig",
+        "BaseViewModel",
+        "ConnectionType",
+        "DisplayType",
+        "HighlightsMixin",
+        "InternetAccount",
+        "InternetAccountType",
+        "RpcMethodType",
+        "RpcMethodTypeWithRenameRegion",
+        "RpcMethodTypeWithRenameRegions",
+        "TextSearchAdapterType",
+        "TrackType",
+        "ViewType",
+        "WidgetType",
+        "addDisplayConfigMigration",
+        "addDisplayMenuItems",
+        "addViewMenuItems",
+        "baseConnectionConfig",
+        "createBaseTrackConfig",
+        "createBaseTrackModel",
+        "extendDisplayType",
+        "extendViewType",
+        "preprocessTrackConfigSnapshot",
+        "trackConfigActions"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluggableElementTypes/AdapterType": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluggableElementTypes/ConnectionType": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluggableElementTypes/DisplayType": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluggableElementTypes/InternetAccountType": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluggableElementTypes/models": {
+      "package": "@jbrowse/core",
+      "names": [
+        "BaseConnectionModelFactory",
+        "BaseDisplay",
+        "BaseInternetAccountConfig",
+        "BaseViewModel",
+        "HighlightsMixin",
+        "InternetAccount",
+        "addDisplayConfigMigration",
+        "baseConnectionConfig",
+        "createBaseTrackConfig",
+        "createBaseTrackModel",
+        "preprocessTrackConfigSnapshot",
+        "trackConfigActions"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluggableElementTypes/models/assertDisplayContract": {
+      "package": "@jbrowse/core",
+      "names": [
+        "assertDisplayContract",
+        "makeRetryContractCheck",
+        "noteFetchStarted",
+        "takeFetchStarted"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluggableElementTypes/models/BaseViewModel": {
+      "package": "@jbrowse/core",
+      "names": [
+        "BaseViewModelWithDisplayedRegions",
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluggableElementTypes/models/HighlightsMixin": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluggableElementTypes/RpcMethodType": {
+      "package": "@jbrowse/core",
+      "names": [
+        "convertFileHandleLocations",
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegion": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithRenameRegions": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluggableElementTypes/TextSearchAdapterType": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluggableElementTypes/TrackType": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluggableElementTypes/ViewType": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluggableElementTypes/WidgetType": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/Plugin": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/pluginDefinitions": {
+      "package": "@jbrowse/core",
+      "names": [
+        "dedupePlugins",
+        "desktopVendoredPluginNames",
+        "dropVendoredPlugins",
+        "isCJSPluginDefinition",
+        "isESMPluginDefinition",
+        "isPluginUrl",
+        "isStorePluginDefinition",
+        "isUMDPluginDefinition",
+        "maybePluginUrl",
+        "pluginDefinitionMetadata",
+        "pluginDescriptionString",
+        "pluginLabel",
+        "pluginName",
+        "pluginUrl",
+        "pluginsNotIn",
+        "samePlugin",
+        "storePluginName",
+        "vendoredPluginNames"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/PluginLoader": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default",
+        "workerScriptLoadMessage"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/PluginManager": {
+      "package": "@jbrowse/core",
+      "names": [
+        "corePluginRecords",
+        "default",
+        "pluggableElementTypeGroups",
+        "wrappedComponent"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/rpc/byteBudget": {
+      "package": "@jbrowse/core",
+      "names": [
+        "adapterByteLimit",
+        "isRegionRefused",
+        "largestRegionBytes",
+        "measureRegionBytes",
+        "measuredBytes",
+        "overByteBudget"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/rpc/RpcManager": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/rpc/RpcRegistry": {
+      "package": "@jbrowse/core",
+      "names": [],
+      "worker": "real"
+    },
+    "@jbrowse/core/rpc/WebWorkerRpcDriver": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/svg/constants": {
+      "package": "@jbrowse/core",
+      "names": [
+        "exportMargin"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/svg/exportViewSvg": {
+      "package": "@jbrowse/core",
+      "names": [
+        "exportViewSvg"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/svg/saveSvgAsImage": {
+      "package": "@jbrowse/core",
+      "names": [
+        "saveSvgAsImage",
+        "svgHtmlToPngBlob"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/svg/serializeSvg": {
+      "package": "@jbrowse/core",
+      "names": [
+        "normalizeSvgMarkup",
+        "serializeSvg"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/core/svg/SvgExport": {
+      "package": "@jbrowse/core",
+      "names": [
+        "SVGBackground",
+        "SVGExportRoot",
+        "SVGMessageBox",
+        "SvgChrome",
+        "SvgClipRect"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/svg/svgId": {
+      "package": "@jbrowse/core",
+      "names": [
+        "svgNodeId",
+        "svgSafeId"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/svg/svgReady": {
+      "package": "@jbrowse/core",
+      "names": [
+        "awaitSvgReady",
+        "awaitSvgRenders",
+        "awaitViewInitialized",
+        "computeSvgReady",
+        "throwOnExportErrors"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/svg/SvgThemeProviders": {
+      "package": "@jbrowse/core",
+      "names": [
+        "SvgThemeProviders"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/svg/trackNames": {
+      "package": "@jbrowse/core",
+      "names": [
+        "notifySkippedSvgTracks",
+        "svgTrackName"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/svg/wrapSvgExport": {
+      "package": "@jbrowse/core",
+      "names": [
+        "wrapSvgExport"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/core/TextSearch/BaseResults": {
+      "package": "@jbrowse/core",
+      "names": [
+        "RefSequenceResult",
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/TextSearch/TextSearchManager": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui": {
+      "package": "@jbrowse/core",
+      "names": [
+        "ActionLink",
+        "AssemblySelector",
+        "BaseExportSvgDialog",
+        "BaseTooltip",
+        "CONTEXT_MENU_Z_INDEX",
+        "CascadingMenu",
+        "CascadingMenuButton",
+        "ConfirmDialog",
+        "ContextMenu",
+        "CopyToClipboardButton",
+        "Crosshairs",
+        "Dialog",
+        "EditableTypography",
+        "ErrorBanner",
+        "ErrorBar",
+        "ErrorMessage",
+        "ErrorOverlay",
+        "ExportSvgDialog",
+        "ExternalLink",
+        "FatalErrorDialog",
+        "FileDropZone",
+        "FileSelector",
+        "GpuFallbackButton",
+        "INLINE_MENU_ROW_WIDTH",
+        "InfoDialog",
+        "JexlFilterDialog",
+        "LAUNCH_LABEL",
+        "LEGEND_ROW_HEIGHT",
+        "LEGEND_SVG_GUTTER_WIDTH",
+        "LEGEND_SWATCH",
+        "LabeledCheckbox",
+        "LegendSwatchGlyph",
+        "LoadingEllipses",
+        "LoadingOverlay",
+        "LoadingProgress",
+        "LogoFull",
+        "Logomark",
+        "MAX_LEGEND_ITEMS",
+        "Menu",
+        "MonospaceTextField",
+        "NumberTextField",
+        "PluggableComponent",
+        "PluggableComponents",
+        "PluggableElements",
+        "PrerenderedCanvas",
+        "ProgressChip",
+        "RefNameAutocomplete",
+        "RefNameAutocompleteEndAdornment",
+        "ReplaceCurrentViewButton",
+        "ResetToDefaultButton",
+        "ResizeHandle",
+        "SanitizedHTML",
+        "ScrollChrome",
+        "ScrollEdgeShadow",
+        "SettingsChangesTable",
+        "ShareLinkField",
+        "SingleSlider",
+        "SliderTooltip",
+        "StatusProgressBar",
+        "SubmitDialog",
+        "SubmitForm",
+        "SvgColorLegend",
+        "TOOLTIP_Z_INDEX",
+        "TagTextField",
+        "VIEW_HEADER_HEIGHT",
+        "VerticalScrollbar",
+        "ViewLoadingScreen",
+        "addExtensionElement",
+        "adornmentReservePx",
+        "checkboxItem",
+        "colorFwdStrand",
+        "colorInterchrom",
+        "colorLongInsert",
+        "colorLongreadInv",
+        "colorPairLL",
+        "colorPairLR",
+        "colorPairLRDark",
+        "colorPairRL",
+        "colorPairRR",
+        "colorRevStrand",
+        "colorScaleIsEmpty",
+        "colorShortInsert",
+        "colorSplitReadInversion",
+        "colorSupplementary",
+        "colorUnmappedMate",
+        "colorUnmappedMateDark",
+        "createJBrowseBaseTheme",
+        "createJBrowseTheme",
+        "createJBrowseThemeFromArgs",
+        "defaultThemes",
+        "getInputWidth",
+        "hoverBoxStyle",
+        "launchTargetsMenuItem",
+        "legendEntries",
+        "legendIsReadable",
+        "legendSpecOf",
+        "legendSwatches",
+        "makeSizeMenu",
+        "makeSizeSubMenu",
+        "matchesTrackSelector",
+        "measureLegendText",
+        "methylated5hmC",
+        "methylated5mC",
+        "nonEmptyLegendSections",
+        "pushIntoSubMenu",
+        "pushLaunchViewMenuItem",
+        "radioItems",
+        "replaceViewAction",
+        "resolveSubMenu",
+        "sliderScale",
+        "staysOpenOnClick",
+        "tagColorPalette",
+        "unmethylated5mC",
+        "useAssemblySelection",
+        "useCopyToClipboard",
+        "useExportSvgPreference",
+        "useMouseState",
+        "useMouseTracking",
+        "useRecentLocations",
+        "wrapComponent"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip"
+      ]
+    },
+    "@jbrowse/core/ui/AddCustomPluginDialog": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/AddGenomePane": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip"
+      ]
+    },
+    "@jbrowse/core/ui/AppLogo": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/BaseTooltip": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@floating-ui/react",
+        "react-dom"
+      ]
+    },
+    "@jbrowse/core/ui/buildExtraTrackMenuItems": {
+      "package": "@jbrowse/core",
+      "names": [
+        "addExtraTrackMenuItems",
+        "buildExtraTrackMenuItems"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/CascadingMenuButton": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip"
+      ]
+    },
+    "@jbrowse/core/ui/ColorPicker": {
+      "package": "@jbrowse/core",
+      "names": [
+        "ColorPopover",
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/colors": {
+      "package": "@jbrowse/core",
+      "names": [
+        "categoricalPalette",
+        "categoricalValueColor",
+        "category10",
+        "getQueryColor",
+        "hashString",
+        "paletteColors",
+        "refNameColor",
+        "refNamePaletteColorAt",
+        "set1"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/colorScale": {
+      "package": "@jbrowse/core",
+      "names": [
+        "colorScaleIsEmpty",
+        "legendSpecOf"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/ConfirmDialog": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/DataGridFlexContainer": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/Dialog": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/DraggableDialog": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/DropDownMenu": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip"
+      ]
+    },
+    "@jbrowse/core/ui/EditableTypography": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/ErrorBar": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/ErrorBoundary": {
+      "package": "@jbrowse/core",
+      "names": [
+        "ErrorBoundary"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/ErrorMessageStackTraceDialog": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/ErrorOverlay": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/filterMenuItems": {
+      "package": "@jbrowse/core",
+      "names": [
+        "activeCount",
+        "clearAll",
+        "filterMenuItems",
+        "undoItems"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/gpuFallback": {
+      "package": "@jbrowse/core",
+      "names": [
+        "GPU_FALLBACK_LABEL",
+        "GPU_FALLBACK_TOOLTIP",
+        "disableGpuRendering",
+        "shouldOfferGpuFallback"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/GpuFallbackButton": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/highlightChipReveal": {
+      "package": "@jbrowse/core",
+      "names": [
+        "OverlayPointerProvider",
+        "useHighlightChip"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/hoverBoxStyle": {
+      "package": "@jbrowse/core",
+      "names": [
+        "highlightBoxColors",
+        "hoverBoxStyle"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/HoverTooltip": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@floating-ui/react",
+        "react-dom"
+      ]
+    },
+    "@jbrowse/core/ui/Icons": {
+      "package": "@jbrowse/core",
+      "names": [
+        "Cable",
+        "DNA",
+        "Highlighter",
+        "Indexing",
+        "InfoIcon",
+        "TrackSelector"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material/SvgIcon"
+      ]
+    },
+    "@jbrowse/core/ui/InfoDialog": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/JexlFilterDialog": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/legendSpec": {
+      "package": "@jbrowse/core",
+      "names": [
+        "MAX_LEGEND_ITEMS",
+        "legendEntries",
+        "legendIsReadable",
+        "legendSwatches",
+        "nonEmptyLegendSections"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/LegendSwatchGlyph": {
+      "package": "@jbrowse/core",
+      "names": [
+        "LegendSwatchGlyph"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/LoadingEllipses": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/LoadingOverlay": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default",
+        "useDelayedFlag"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/Logo": {
+      "package": "@jbrowse/core",
+      "names": [
+        "LogoFull",
+        "Logomark"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/measureLegendText": {
+      "package": "@jbrowse/core",
+      "names": [
+        "measureLegendText"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/Menu": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/menuItems": {
+      "package": "@jbrowse/core",
+      "names": [
+        "checkboxItem",
+        "makeRadioSubMenu",
+        "radioItem",
+        "radioItems",
+        "resolveSubMenu",
+        "showLegendCheckboxItem",
+        "staysOpenOnClick",
+        "toggleItem",
+        "withHint",
+        "withSubHeader"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/multiTrackMenuItems": {
+      "package": "@jbrowse/core",
+      "names": [
+        "addMultiTrackMenuItems",
+        "buildMultiTrackMenuItems"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/palette": {
+      "package": "@jbrowse/core",
+      "names": [
+        "alpha",
+        "augmentColor",
+        "colorFwdStrand",
+        "colorInterchrom",
+        "colorLongInsert",
+        "colorLongreadInv",
+        "colorPairLL",
+        "colorPairLR",
+        "colorPairLRDark",
+        "colorPairRL",
+        "colorPairRR",
+        "colorRevStrand",
+        "colorShortInsert",
+        "colorSplitReadInversion",
+        "colorSupplementary",
+        "colorUnmappedMate",
+        "colorUnmappedMateDark",
+        "darken",
+        "featureDefaultColor",
+        "getContrastRatio",
+        "getContrastText",
+        "getLuminance",
+        "grey",
+        "lighten",
+        "methylated5hmC",
+        "methylated5mC",
+        "palettePresets",
+        "resolvePalette",
+        "tagColorPalette",
+        "unmethylated5mC",
+        "utrDefaultColor"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/PaletteContext": {
+      "package": "@jbrowse/core",
+      "names": [
+        "PaletteProvider",
+        "SessionPaletteProvider",
+        "StyleThemeProvider",
+        "usePalette",
+        "useSessionPalette",
+        "useStyleTheme"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/persistentScrollbarStyle": {
+      "package": "@jbrowse/core",
+      "names": [
+        "persistentScrollbarStyle"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/PluggableComponents": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/PluginStoreCard": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/PopoverPicker": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/ProgressChip": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/ResizeHandle": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/ReturnToImportFormDialog": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/SanitizedHTML": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/scrollZoomLabels": {
+      "package": "@jbrowse/core",
+      "names": [
+        "SCROLL_ZOOM_HELP",
+        "SCROLL_ZOOM_LABEL"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/ScrollZoomToggle": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/ShareLinkField": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/showSubMenu": {
+      "package": "@jbrowse/core",
+      "names": [
+        "makeShowSubMenu"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/Snackbar": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/SnackbarModel": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/StackTraceButton": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/core/ui/styleTheme": {
+      "package": "@jbrowse/core",
+      "names": [
+        "DEFAULT_BORDER_RADIUS",
+        "DEFAULT_FONT_FAMILY",
+        "DEFAULT_FONT_SIZE",
+        "DEFAULT_SPACING",
+        "HTML_FONT_SIZE",
+        "createSpacing",
+        "createTypography",
+        "defaultStyleTheme",
+        "resolveStyleTheme"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/SvgColorLegend": {
+      "package": "@jbrowse/core",
+      "names": [
+        "LEGEND_ROW_HEIGHT",
+        "LEGEND_SVG_GUTTER_WIDTH",
+        "LEGEND_SWATCH",
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/theme": {
+      "package": "@jbrowse/core",
+      "names": [
+        "colorFwdStrand",
+        "colorInterchrom",
+        "colorLongInsert",
+        "colorLongreadInv",
+        "colorPairLL",
+        "colorPairLR",
+        "colorPairLRDark",
+        "colorPairRL",
+        "colorPairRR",
+        "colorRevStrand",
+        "colorShortInsert",
+        "colorSplitReadInversion",
+        "colorSupplementary",
+        "colorUnmappedMate",
+        "colorUnmappedMateDark",
+        "createJBrowseBaseTheme",
+        "createJBrowseTheme",
+        "createJBrowseThemeFromArgs",
+        "defaultThemes",
+        "methylated5hmC",
+        "methylated5mC",
+        "tagColorPalette",
+        "unmethylated5mC"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/useCoalescedPointer": {
+      "package": "@jbrowse/core",
+      "names": [
+        "useCoalescedPointer"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/useMouseTracking": {
+      "package": "@jbrowse/core",
+      "names": [
+        "ClearTrackedPointerProvider",
+        "useClearTrackedPointer",
+        "useMouseSelector",
+        "useMouseState",
+        "useMouseTracking"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/VerticalScrollbar": {
+      "package": "@jbrowse/core",
+      "names": [
+        "VERTICAL_SCROLLBAR_CLEARANCE",
+        "VERTICAL_SCROLLBAR_WIDTH",
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/ui/zIndexes": {
+      "package": "@jbrowse/core",
+      "names": [
+        "CONTEXT_MENU_Z_INDEX",
+        "DRAWER_Z_INDEX",
+        "FAB_Z_INDEX",
+        "MUI_TOOLTIP_Z_INDEX",
+        "TOOLTIP_Z_INDEX"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util": {
+      "package": "@jbrowse/core",
+      "names": [
+        "AuthNeededError",
+        "BEZIER_CONNECTOR_MAX_REACH_PX",
+        "ENCODED_PREFIX",
+        "IUPAC_MOTIF_REGEX",
+        "IntervalTree",
+        "JSON_PREFIX",
+        "MAX_GLOB_REGIONS",
+        "MAX_ZOOM_RATE_PER_MS",
+        "SCROLL_ZOOM_FACTOR_DIVISOR",
+        "SHARE_PREFIX",
+        "SimpleFeature",
+        "UNKNOWN",
+        "UNSUPPORTED",
+        "UnknownRefNameError",
+        "ZOOM_ACTIVE_WINDOW_MS",
+        "accumulateScroll",
+        "adapterConfigFromSpec",
+        "adapterNeedsAddTrackComponent",
+        "addAdapterGuesser",
+        "addAddTrackComponent",
+        "addAndShowTrack",
+        "addOrReplaceView",
+        "addTrackFromWidget",
+        "addTrackTypeGuesser",
+        "aesDecrypt",
+        "aesEncrypt",
+        "animationAllowed",
+        "applyOrderWithin",
+        "applyZoomAccum",
+        "assembleLocString",
+        "assembleLocStringRaw",
+        "assembleLocStrings",
+        "avg",
+        "b64PadSuffix",
+        "bezierConnectorPath",
+        "bpSpanPx",
+        "bpToPx",
+        "bytesForRegions",
+        "calculateRedispatchRange",
+        "canReplaceView",
+        "canonicalizeViewRefName",
+        "capitalizeFirst",
+        "checkAbortSignal",
+        "clamp",
+        "clampToContig",
+        "clampToListedContig",
+        "clearFileFromCache",
+        "cmpStr",
+        "coarseStripHTML",
+        "codonTable",
+        "compareLocStrings",
+        "compareLocs",
+        "complement",
+        "complementTable",
+        "containerDisplaysAssembly",
+        "createAbortBreakpoint",
+        "createAbortRotation",
+        "createProgressReporter",
+        "createScrollLatch",
+        "createSharedSetup",
+        "createStatusChannel",
+        "createStatusFanOut",
+        "createStatusWindow",
+        "dedupe",
+        "defaultCodonTable",
+        "defaultStarts",
+        "diagonalizeRegions",
+        "diffTrackConfig",
+        "doesIntersect2",
+        "downloadPhase",
+        "downloadStatus",
+        "drawImageOntoCanvasContext",
+        "encodeSessionParam",
+        "ensureFileHandleReady",
+        "expandLooseTrackConfig",
+        "featureSpanPx",
+        "fetchAndMaybeUnzip",
+        "fetchAndMaybeUnzipText",
+        "fetchJson",
+        "fileToLocation",
+        "findFileHandleIds",
+        "findParentThat",
+        "findParentThatIs",
+        "finishAddTrack",
+        "flattenTrackConfigDelta",
+        "formatBytes",
+        "formatRelativeTime",
+        "fromUrlSafeB64",
+        "gatherOverlaps",
+        "generateCodonTable",
+        "generateUnknownTrackConf",
+        "generateUnsupportedTrackConf",
+        "getAssemblyHost",
+        "getBlob",
+        "getBlobMap",
+        "getBpDisplayStr",
+        "getConfAssemblyNames",
+        "getContainingDisplay",
+        "getContainingTrack",
+        "getContainingView",
+        "getDialogHost",
+        "getDisplayStr",
+        "getEnv",
+        "getFileFromCache",
+        "getFileHandle",
+        "getFileName",
+        "getFillProps",
+        "getFrame",
+        "getLocationUri",
+        "getNotificationSink",
+        "getNumberGrouping",
+        "getPaletteHost",
+        "getPluginUpdate",
+        "getRenderingServices",
+        "getRpcHost",
+        "getRpcSessionId",
+        "getSession",
+        "getSessionServices",
+        "getStr",
+        "getStrokeProps",
+        "getTickDisplayStr",
+        "getTrackAssemblyNames",
+        "getTrackName",
+        "getZoomNormalizer",
+        "groupBy",
+        "guessAdapter",
+        "guessTrackConf",
+        "guessTrackType",
+        "handleFetchError",
+        "hasFileHandlesInCache",
+        "hashCode",
+        "hideTrackGeneric",
+        "indexedDBAvailable",
+        "installablePlugins",
+        "installedVersionFromUrl",
+        "intersection2",
+        "isAbortException",
+        "isAbstractMenuManager",
+        "isActivelyZooming",
+        "isAppRootModel",
+        "isAuthNeededException",
+        "isBlobLocation",
+        "isDataCurrent",
+        "isDisplayModel",
+        "isElectron",
+        "isFeature",
+        "isFileHandleLocation",
+        "isFileSystemAccessSupported",
+        "isGeneLikeType",
+        "isGzip",
+        "isLocalPathLocation",
+        "isLooseTrackConfig",
+        "isNode",
+        "isObject",
+        "isPalindromic",
+        "isPluginInstalled",
+        "isRootModelWithInternetAccounts",
+        "isRpcResult",
+        "isSelectionContainer",
+        "isSequenceMatchType",
+        "isSessionModel",
+        "isSessionModelWithConfigEditing",
+        "isSessionModelWithConnectionEditing",
+        "isSessionModelWithConnections",
+        "isSessionModelWithWidgets",
+        "isSessionServices",
+        "isSessionWithAddAssembly",
+        "isSessionWithAddSessionTrack",
+        "isSessionWithAddTracks",
+        "isSessionWithDeleteTrackConf",
+        "isSessionWithMultipleViews",
+        "isSessionWithPermanentPlugins",
+        "isSessionWithPublishTrackConf",
+        "isSessionWithSessionPlugins",
+        "isSessionWithSessionTracks",
+        "isSessionWithShareURL",
+        "isSessionWithViewReplacement",
+        "isSupportedIndexingAdapter",
+        "isTrackModel",
+        "isTrackViewModel",
+        "isUriLocation",
+        "isValidTag",
+        "isViewContainer",
+        "isViewModel",
+        "isWebWorker",
+        "iupacToRegex",
+        "launchOrReplaceView",
+        "linkify",
+        "locStringsToRegions",
+        "localStorageAvailable",
+        "localStorageGetBoolean",
+        "localStorageGetItem",
+        "localStorageGetJSON",
+        "localStorageGetNumber",
+        "localStorageGetStringArray",
+        "localStorageRemoveItem",
+        "localStorageSetBoolean",
+        "localStorageSetItem",
+        "localStorageSetJSON",
+        "localStorageSetNumber",
+        "makeAbortError",
+        "makeIndex",
+        "makeIndexType",
+        "makeTrackId",
+        "matchRefNames",
+        "matchTrackId",
+        "max",
+        "maxFinite",
+        "measureGridWidth",
+        "measureText",
+        "measuredFont",
+        "mergeIntervals",
+        "mergeTrackConfig",
+        "min",
+        "minmax",
+        "namesTemporaryAssembly",
+        "normalizeWheelDelta",
+        "notEmpty",
+        "notifyFeatureDetailsMiss",
+        "notifyLocalStorageKey",
+        "objectHash",
+        "openFeatureWidget",
+        "parseBpString",
+        "parseLocString",
+        "parseLocStringOneBased",
+        "parseMotifList",
+        "parseRegionNames",
+        "pluralize",
+        "polarToCartesian",
+        "progressLabel",
+        "rIC",
+        "radToDeg",
+        "readSessionFromDynamo",
+        "reducePrecision",
+        "renameRegionIfNeeded",
+        "renameRegionsIfNeeded",
+        "reorder",
+        "reorderWithin",
+        "resolveNamedRegions",
+        "resolvePlugin",
+        "resolveSelectedIds",
+        "resolveStorePluginRefs",
+        "resolveStoreRefs",
+        "resolveUri",
+        "restoreFileHandles",
+        "restoreFileHandlesFromSnapshot",
+        "revcom",
+        "reverse",
+        "reverseComplementIupac",
+        "revlist",
+        "saveAs",
+        "saveSvgAsImage",
+        "scheduleDetachedDestroy",
+        "selectNamedRegions",
+        "sessionStorageAvailable",
+        "sessionStorageGetItem",
+        "sessionStorageRemoveItem",
+        "sessionStorageSetItem",
+        "setBlobMap",
+        "setFileInCache",
+        "setNumberGrouping",
+        "sha256",
+        "sha256Base64",
+        "sha256Base64Url",
+        "shareEndpoint",
+        "shorten",
+        "shorten2",
+        "showTrackGeneric",
+        "springAnimate",
+        "statusFraction",
+        "statusMessageText",
+        "statusProgressLabel",
+        "statusReading",
+        "statusSource",
+        "stitch",
+        "storeBlobLocation",
+        "storeFileHandle",
+        "storeFileHandleLocation",
+        "stringify",
+        "stripAlpha",
+        "stripFileExtension",
+        "stripTrackIds",
+        "subscribeToLocalStorageKey",
+        "sum",
+        "svgHtmlToPngBlob",
+        "tagRegex",
+        "testAdapter",
+        "throttleStatusEmits",
+        "toBase64",
+        "toBase64Url",
+        "toLocale",
+        "toUrlSafeB64",
+        "toggleTrackGeneric",
+        "truncateMiddle",
+        "updateStatus",
+        "useCreateOnce",
+        "useDebounce",
+        "useFinalUnmount",
+        "useLocalStorage",
+        "useWidthSetter",
+        "verifyPermission",
+        "wheelFrameElapsedMs",
+        "wheelZoomAccum",
+        "withAbortCheck",
+        "withFeatureDetails",
+        "withProgress"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/aborting": {
+      "package": "@jbrowse/core",
+      "names": [
+        "checkAbortSignal",
+        "createAbortBreakpoint",
+        "handleFetchError",
+        "isAbortException",
+        "makeAbortError",
+        "withAbortCheck"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/adapterConfigKey": {
+      "package": "@jbrowse/core",
+      "names": [
+        "adapterConfigKey"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/adapterMetadata": {
+      "package": "@jbrowse/core",
+      "names": [
+        "createAdapterMetadataFetch"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/addRelativeUris": {
+      "package": "@jbrowse/core",
+      "names": [
+        "addRelativeUris",
+        "stripBaseUris",
+        "withPageBaseUri"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/analytics": {
+      "package": "@jbrowse/core",
+      "names": [
+        "doAnalytics",
+        "writeAWSAnalytics",
+        "writeGAAnalytics"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/assemblyConfigUtils": {
+      "package": "@jbrowse/core",
+      "names": [
+        "adapterHasSequence",
+        "adapterLabels",
+        "adapterTypes",
+        "applyClassifiedFiles",
+        "applyPrimaryFile",
+        "applyTwoBitFile",
+        "buildAssemblyConf",
+        "classifyAssemblyFiles",
+        "classifyFilename",
+        "classifyLocations",
+        "clearFormFields",
+        "clearSequenceFiles",
+        "detectAdapterType",
+        "formHasSequence",
+        "getAdapterConfig",
+        "getAssemblyName",
+        "getAssemblyNameFromFilename",
+        "getBaseAssemblyConfig",
+        "getMissingSidecars",
+        "initialFormState",
+        "isBlank",
+        "isFormDirty",
+        "isFormReady",
+        "isSequenceRole",
+        "makeSetField",
+        "partitionExtraLocations",
+        "sidecarRoles",
+        "sidecars",
+        "urlTextToLocations"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/bandHeight": {
+      "package": "@jbrowse/core",
+      "names": [
+        "MIN_BAND_HEIGHT",
+        "boundBandHeight",
+        "clampBandHeight"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/bandLayout": {
+      "package": "@jbrowse/core",
+      "names": [
+        "reservedPx",
+        "stackBands"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/Base1DUtils": {
+      "package": "@jbrowse/core",
+      "names": [
+        "basePaintedAt",
+        "bpOffsetInRegion",
+        "bpToLinearBp",
+        "bpToOffset",
+        "bpToPx",
+        "clipToDisplayedRegions",
+        "compareBpOffsets",
+        "computeMoveToLayout",
+        "createOverviewLayout",
+        "getLayoutHighlightCoords",
+        "getOverviewRegionPxSpan",
+        "layoutBpToPx",
+        "moveTo",
+        "offsetBpToPx",
+        "pxToBp",
+        "regionBlocksPxExtent",
+        "transformPxSpan"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/Base1DViewModel": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/bgzfWorkerPool": {
+      "package": "@jbrowse/core",
+      "names": [
+        "sharedBgzfWorkerPool"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/blockTypes": {
+      "package": "@jbrowse/core",
+      "names": [
+        "BlockSet",
+        "wholeBaseRegion",
+        "wholeBaseRegions"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/cacheBudgets": {
+      "package": "@jbrowse/core",
+      "names": [
+        "decompressedBytesBudget"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/calculateDynamicBlocks": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/calculateStaticBlocks": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/chooseGridPitch": {
+      "package": "@jbrowse/core",
+      "names": [
+        "chooseGridPitch"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/color": {
+      "package": "@jbrowse/core",
+      "names": [
+        "emphasize",
+        "isNamedColor",
+        "makeContrasting",
+        "namedColorToHex",
+        "randomColor",
+        "relight"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/colorBits": {
+      "package": "@jbrowse/core",
+      "names": [
+        "abgrAlpha",
+        "abgrBlue",
+        "abgrGreen",
+        "abgrRed",
+        "abgrToCssRgba",
+        "alpha",
+        "blend",
+        "cssColorToABGR",
+        "cssColorToNormalizedRgb",
+        "cssColorToNormalizedRgba",
+        "cssColorToRgb",
+        "cssColorToRgba",
+        "darken",
+        "featureBedColor",
+        "featureItemRgb",
+        "formatHEX",
+        "formatHEXA",
+        "formatRGBA",
+        "getAlpha",
+        "getBlue",
+        "getGreen",
+        "getLuminance",
+        "getRed",
+        "lighten",
+        "newColor",
+        "normalizedRgbToABGR",
+        "normalizedRgbToCss",
+        "normalizedRgbToCssRgba",
+        "packAbgr",
+        "parse",
+        "parseCssColor",
+        "parseCssColorOr",
+        "setAbgrFill",
+        "toHSLA",
+        "toRGBA",
+        "withAbgrAlpha"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/colord": {
+      "package": "@jbrowse/core",
+      "names": [
+        "colord",
+        "hexToGLrgb"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/colorRamp": {
+      "package": "@jbrowse/core",
+      "names": [
+        "VIRIDIS_STOPS",
+        "buildColorRampLut",
+        "sampleColorRamp",
+        "stopsFromRampLut"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/convertCodingSequenceToPeptides": {
+      "package": "@jbrowse/core",
+      "names": [
+        "convertCodingSequenceToPeptides",
+        "translExceptProteinPositions"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/copyText": {
+      "package": "@jbrowse/core",
+      "names": [
+        "copyText",
+        "copyTextWithSession"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/createAbortRotation": {
+      "package": "@jbrowse/core",
+      "names": [
+        "createAbortRotation",
+        "createStatusChannel"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/createSvgRasterCanvas": {
+      "package": "@jbrowse/core",
+      "names": [
+        "createSvgRasterCanvas"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/deepEqual": {
+      "package": "@jbrowse/core",
+      "names": [
+        "deepEqual"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/deepMerge": {
+      "package": "@jbrowse/core",
+      "names": [
+        "deepMerge"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/diagonalizeRegions": {
+      "package": "@jbrowse/core",
+      "names": [
+        "diagonalizeRegions"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/eventPoint": {
+      "package": "@jbrowse/core",
+      "names": [
+        "eventPoint"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/expandLooseSearchIndex": {
+      "package": "@jbrowse/core",
+      "names": [
+        "expandLooseSearchIndex"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/featureTransforms": {
+      "package": "@jbrowse/core",
+      "names": [
+        "DEFAULT_BIN_AS",
+        "DEFAULT_COVERAGE_AS",
+        "DEFAULT_STACK_AS",
+        "DEFAULT_STACK_FIELDS",
+        "aggregateFieldName",
+        "facetRows",
+        "runTransforms"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/fetchContext": {
+      "package": "@jbrowse/core",
+      "names": [
+        "fanOutStatus",
+        "makeFetchContext"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/fetchHub": {
+      "package": "@jbrowse/core",
+      "names": [
+        "fetchHub",
+        "hubUrl"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/fetchPhases": {
+      "package": "@jbrowse/core",
+      "names": [],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/fileHandleStore": {
+      "package": "@jbrowse/core",
+      "names": [
+        "getFileHandle",
+        "isFileSystemAccessSupported",
+        "staleHandleIds",
+        "storeFileHandle",
+        "verifyPermission"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/FileSaver": {
+      "package": "@jbrowse/core",
+      "names": [
+        "saveAs"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/flatbush": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/formatFastaStrings": {
+      "package": "@jbrowse/core",
+      "names": [
+        "formatFastaLines",
+        "formatSeqFasta"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/frameCoalescer": {
+      "package": "@jbrowse/core",
+      "names": [
+        "createFrameCoalescer"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/freezeDeep": {
+      "package": "@jbrowse/core",
+      "names": [
+        "freezeDeep"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/geneticCodes": {
+      "package": "@jbrowse/core",
+      "names": [
+        "codonTable",
+        "defaultCodonTable",
+        "generateCodonTable",
+        "getGeneticCode",
+        "ncbiGeneticCodes",
+        "parseTranslExcept",
+        "parseTranslTable",
+        "relativizeTranslExcept"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/getRelativeX": {
+      "package": "@jbrowse/core",
+      "names": [
+        "getRelativeX"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/groupKeys": {
+      "package": "@jbrowse/core",
+      "names": [
+        "MAX_GROUPS",
+        "OVERFLOW_GROUP_KEY",
+        "capGroupKeys",
+        "compareGroupKeys",
+        "groupKeySpaceOf",
+        "overflowLabel"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/highlights": {
+      "package": "@jbrowse/core",
+      "names": [
+        "coerceHighlight",
+        "getHighlightColor",
+        "highlightKey",
+        "revealHighlightsOnGrowth"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/hooks": {
+      "package": "@jbrowse/core",
+      "names": [
+        "LGV_HEADER_HEIGHT_VAR",
+        "SCROLL_PORT_HEIGHT_VAR",
+        "VIEW_HEADER_HEIGHT_VAR",
+        "useChromeHeightVar",
+        "useCreateOnce",
+        "useCreateOnceAsync",
+        "useDebounce",
+        "useFinalUnmount",
+        "useFocusOnInteraction",
+        "useLocalStorage",
+        "useScrollPortHeightVar",
+        "useScrollPortOverflow",
+        "useWidthSetter"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/htmlText": {
+      "package": "@jbrowse/core",
+      "names": [
+        "escapeHTML",
+        "looksLikeHTML"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/indexCandidates": {
+      "package": "@jbrowse/core",
+      "names": [
+        "detectIndexLocation",
+        "indexCandidateNames",
+        "indexSpellings",
+        "siblingLocation"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/installClearHoverOnSurfaceMove": {
+      "package": "@jbrowse/core",
+      "names": [
+        "installClearHoverOnSurfaceMove"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/installFetch": {
+      "package": "@jbrowse/core",
+      "names": [
+        "installFetch",
+        "runFetchOnce"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/installInitAutorun": {
+      "package": "@jbrowse/core",
+      "names": [
+        "installInitAutorun"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/installPrerequisiteFetch": {
+      "package": "@jbrowse/core",
+      "names": [
+        "installPrerequisiteFetch"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/io": {
+      "package": "@jbrowse/core",
+      "names": [
+        "CachedFilehandle",
+        "RemoteFileWithRangeCache",
+        "getFetcher",
+        "openLocation",
+        "openTabixIndexFilehandle",
+        "resolveUriLocation"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/io/RemoteFileWithRangeCache": {
+      "package": "@jbrowse/core",
+      "names": [
+        "CachedFilehandle",
+        "RemoteFileWithRangeCache",
+        "clearCache",
+        "sweepIdleCache"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/isDataCurrent": {
+      "package": "@jbrowse/core",
+      "names": [
+        "isDataCurrent"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/jexl": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/jexlFilters": {
+      "package": "@jbrowse/core",
+      "names": [
+        "activeJexlFilters",
+        "configuredJexlFilters",
+        "jexlFilterNarrowing"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/jexlStrings": {
+      "package": "@jbrowse/core",
+      "names": [
+        "JEXL_PREFIX",
+        "ensureJexlPrefix",
+        "isJexl",
+        "stringToJexlExpression"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/layouts": {
+      "package": "@jbrowse/core",
+      "names": [
+        "GranularRectLayout",
+        "placeRect"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/layouts/GranularRectLayout": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/layouts/placeRect": {
+      "package": "@jbrowse/core",
+      "names": [
+        "placeRect"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/lazyAfterAttach": {
+      "package": "@jbrowse/core",
+      "names": [
+        "runLazyAfterAttach"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/leadingEdgeAutorun": {
+      "package": "@jbrowse/core",
+      "names": [
+        "leadingEdgeAutorun"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/legendCandidates": {
+      "package": "@jbrowse/core",
+      "names": [
+        "MAX_LEGEND_CANDIDATES",
+        "MAX_LEGEND_ENTRIES",
+        "createLegendCandidateCollector",
+        "unionLegendCandidates"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/librpc": {
+      "package": "@jbrowse/core",
+      "names": [
+        "RpcClient",
+        "RpcServer",
+        "deserializeError",
+        "isRpcResult",
+        "rpcResult",
+        "rpcResultWithArrayBuffers",
+        "serializeError",
+        "unwrapRpcResult"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/localStorage": {
+      "package": "@jbrowse/core",
+      "names": [
+        "localStorageAvailable",
+        "localStorageGetBoolean",
+        "localStorageGetItem",
+        "localStorageGetJSON",
+        "localStorageGetNumber",
+        "localStorageGetStringArray",
+        "localStorageRemoveItem",
+        "localStorageSetBoolean",
+        "localStorageSetItem",
+        "localStorageSetJSON",
+        "localStorageSetNumber",
+        "notifyLocalStorageKey",
+        "subscribeToLocalStorageKey"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/makeAssembly": {
+      "package": "@jbrowse/core",
+      "names": [
+        "assemblyNameFromUri",
+        "isSequenceUri",
+        "makeAssembly"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/markEncoding": {
+      "package": "@jbrowse/core",
+      "names": [
+        "DEFAULT_MARK_COLOR",
+        "NO_VALUE_LABEL",
+        "colorEvaluator",
+        "encodeFeatures",
+        "encodedChannelTransferables",
+        "valueField"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/mst-reflection": {
+      "package": "@jbrowse/core",
+      "names": [
+        "getDefaultValue",
+        "getEnumerationValues",
+        "getPropertyType",
+        "getSubType",
+        "getUnionSubTypes",
+        "resolveLateType"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/mstUtils": {
+      "package": "@jbrowse/core",
+      "names": [
+        "canonicalizeViewRefName",
+        "findParentThat",
+        "findParentThatIs",
+        "getAssemblyHost",
+        "getContainingDisplay",
+        "getContainingTrack",
+        "getContainingView",
+        "getEnv",
+        "getRenderingServices",
+        "getRpcSessionId",
+        "getSession",
+        "hashCode",
+        "launchOrReplaceView",
+        "objectHash"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/nanoid": {
+      "package": "@jbrowse/core",
+      "names": [
+        "nanoid"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/numericUtils": {
+      "package": "@jbrowse/core",
+      "names": [
+        "avg",
+        "clamp",
+        "formatScore",
+        "getDisplayStr",
+        "getNumberGrouping",
+        "max",
+        "maxFinite",
+        "min",
+        "minmax",
+        "polarToCartesian",
+        "radToDeg",
+        "reducePrecision",
+        "setNumberGrouping",
+        "sum",
+        "toLocale",
+        "toPrecision"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/offscreenCanvasPonyfill": {
+      "package": "@jbrowse/core",
+      "names": [
+        "drawImageOntoCanvasContext"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/openViews": {
+      "package": "@jbrowse/core",
+      "names": [
+        "openTracks",
+        "openViews",
+        "viewAndNested"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/paintLayer": {
+      "package": "@jbrowse/core",
+      "names": [
+        "PaintLayer"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/parseLineByLine": {
+      "package": "@jbrowse/core",
+      "names": [
+        "groupLinesByRef",
+        "makeFeatureIntervalTreeMap",
+        "parseLineByLine"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/progress": {
+      "package": "@jbrowse/core",
+      "names": [
+        "aggregateStatus",
+        "createProgressReporter",
+        "createStatusFanOut",
+        "createStatusWindow",
+        "downloadStatus",
+        "phaseOf",
+        "progressLabel",
+        "statusFraction",
+        "statusMessageText",
+        "statusProgressLabel",
+        "statusReading",
+        "statusSource",
+        "throttleStatusEmits",
+        "updateStatus",
+        "withProgress"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/range": {
+      "package": "@jbrowse/core",
+      "names": [
+        "calculateRedispatchRange",
+        "doesIntersect2",
+        "intersection2"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/renderToStaticMarkup": {
+      "package": "@jbrowse/core",
+      "names": [
+        "renderToStaticMarkup"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/core/util/resolveRowHeight": {
+      "package": "@jbrowse/core",
+      "names": [
+        "resolveRowHeight"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/rowStackGeometry": {
+      "package": "@jbrowse/core",
+      "names": [
+        "contentYAt",
+        "rowCoordAt",
+        "rowIndexAt",
+        "rowSpanAt",
+        "rowsUnderPointer"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/rxjs": {
+      "package": "@jbrowse/core",
+      "names": [
+        "ObservableCreate",
+        "subscribeToObservable"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/sameStrings": {
+      "package": "@jbrowse/core",
+      "names": [
+        "sameOptionalStrings",
+        "sameStrings"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/setStackTraceLimit": {
+      "package": "@jbrowse/core",
+      "names": [
+        "setStackTraceLimit"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/simpleFeature": {
+      "package": "@jbrowse/core",
+      "names": [
+        "buildJexlContext",
+        "default",
+        "isFeature",
+        "jexlFeatureProxy",
+        "unwrapFeature"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/starFusion": {
+      "package": "@jbrowse/core",
+      "names": [
+        "parseStarFusionBreakpoint",
+        "starFusionColumns"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/stats": {
+      "package": "@jbrowse/core",
+      "names": [
+        "blankStats",
+        "calcStdFromSums",
+        "rectifyStats",
+        "scoresToStats"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/SvgCanvas": {
+      "package": "@jbrowse/core",
+      "names": [
+        "SvgCanvas",
+        "withFreshSvgClipIds"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/svgColorProps": {
+      "package": "@jbrowse/core",
+      "names": [
+        "getFillProps",
+        "getStrokeProps",
+        "splitPaintAlpha",
+        "stripAlpha"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/tabix": {
+      "package": "@jbrowse/core",
+      "names": [
+        "readTabixHeaderLines",
+        "readTabixLines",
+        "readTabixLinesRedispatched"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/tickLabels": {
+      "package": "@jbrowse/core",
+      "names": [
+        "MIN_TICK_LABELS_PER_BLOCK",
+        "dropLoneTickLabels",
+        "tickLabelsWorthDrawing"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/TimeTraveller": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/tracks": {
+      "package": "@jbrowse/core",
+      "names": [
+        "UNKNOWN",
+        "UNSUPPORTED",
+        "addAdapterGuesser",
+        "addTrackTypeGuesser",
+        "allSessionTracks",
+        "annotationTrackIds",
+        "canonicalAssemblyNames",
+        "clearFileFromCache",
+        "ensureFileHandleReady",
+        "expandLooseTrackConfig",
+        "findFileHandleIds",
+        "generateUnknownTrackConf",
+        "generateUnsupportedTrackConf",
+        "getBlob",
+        "getBlobMap",
+        "getConfAssemblyNames",
+        "getConfAssemblyNamesOrNone",
+        "getFileFromCache",
+        "getFileName",
+        "getRpcSessionId",
+        "getTrackAssemblyNames",
+        "getTrackName",
+        "guessAdapter",
+        "guessTabixIndex",
+        "guessTrackConf",
+        "guessTrackConfForLocation",
+        "guessTrackType",
+        "hasFileHandlesInCache",
+        "hideTrackGeneric",
+        "isLooseTrackConfig",
+        "isSameAssemblyName",
+        "launchToggleTrackGeneric",
+        "launchTrackGeneric",
+        "makeIndex",
+        "makeIndexType",
+        "normalizeTrackInit",
+        "openAssemblyInLinearView",
+        "openMateLabel",
+        "pickDisplayForView",
+        "restoreFileHandles",
+        "restoreFileHandlesFromSnapshot",
+        "setBlobMap",
+        "setFileInCache",
+        "showTrackGeneric",
+        "storeBlobLocation",
+        "storeFileHandleLocation",
+        "stripFileExtension",
+        "stripTrackIds",
+        "toggleTrackGeneric",
+        "viewCanDisplayTrack",
+        "viewDisplayNames"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/tss-react": {
+      "package": "@jbrowse/core",
+      "names": [
+        "cx",
+        "keyframes",
+        "makeStyles"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/tss-react/types": {
+      "package": "@jbrowse/core",
+      "names": [],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/types": {
+      "package": "@jbrowse/core",
+      "names": [
+        "AuthNeededError",
+        "addOrReplaceView",
+        "canReplaceView",
+        "isAbstractMenuManager",
+        "isAppRootModel",
+        "isAuthNeededException",
+        "isBlobLocation",
+        "isDisplayModel",
+        "isFileHandleLocation",
+        "isLocalPathLocation",
+        "isRootModelWithInternetAccounts",
+        "isSelectionContainer",
+        "isSessionModel",
+        "isSessionModelWithConfigEditing",
+        "isSessionModelWithConnectionEditing",
+        "isSessionModelWithConnections",
+        "isSessionModelWithWidgets",
+        "isSessionServices",
+        "isSessionWithAddAssembly",
+        "isSessionWithAddSessionTrack",
+        "isSessionWithAddTracks",
+        "isSessionWithDeleteTrackConf",
+        "isSessionWithMultipleViews",
+        "isSessionWithPermanentPlugins",
+        "isSessionWithPublishTrackConf",
+        "isSessionWithSessionPlugins",
+        "isSessionWithSessionTracks",
+        "isSessionWithShareURL",
+        "isSessionWithViewReplacement",
+        "isTrackModel",
+        "isTrackViewModel",
+        "isUriLocation",
+        "isViewContainer",
+        "isViewModel"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/types/data": {
+      "package": "@jbrowse/core",
+      "names": [
+        "AuthNeededError",
+        "isAuthNeededException",
+        "isBlobLocation",
+        "isFileHandleLocation",
+        "isLocalPathLocation",
+        "isUriLocation"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/types/mst": {
+      "package": "@jbrowse/core",
+      "names": [
+        "BlobLocation",
+        "ElementId",
+        "FileHandleLocation",
+        "FileLocation",
+        "LocalPathLocation",
+        "NoAssemblyRegion",
+        "Region",
+        "UriLocation",
+        "UriLocationRaw",
+        "createElementId"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/unknownSnapshotKeys": {
+      "package": "@jbrowse/core",
+      "names": [
+        "displaySetterName",
+        "legacyInitMessage",
+        "reportLegacyInit",
+        "reportMalformedRows",
+        "reportUnknownKeys",
+        "setterOnlyMessage",
+        "unknownKeysMessage",
+        "viewLabel"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/unzip": {
+      "package": "@jbrowse/core",
+      "names": [
+        "unzip"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/useEventCallback": {
+      "package": "@jbrowse/core",
+      "names": [
+        "useEventCallback"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/useFetch": {
+      "package": "@jbrowse/core",
+      "names": [
+        "mutate",
+        "useFetch"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/useFetchPlugins": {
+      "package": "@jbrowse/core",
+      "names": [
+        "useFetchPlugins"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/useMeasure": {
+      "package": "@jbrowse/core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/usePanelVirtualScroll": {
+      "package": "@jbrowse/core",
+      "names": [
+        "usePanelVirtualScroll"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/usePanZoom": {
+      "package": "@jbrowse/core",
+      "names": [
+        "usePanZoom",
+        "useWheelZoom"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/usePointerDrag": {
+      "package": "@jbrowse/core",
+      "names": [
+        "usePointerDrag"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/useResizeDrag": {
+      "package": "@jbrowse/core",
+      "names": [
+        "useResizeDrag"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/useRowVirtualScroll": {
+      "package": "@jbrowse/core",
+      "names": [
+        "useRowVirtualScroll"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/viewStatus": {
+      "package": "@jbrowse/core",
+      "names": [
+        "assemblyErrorMessage",
+        "computeViewStatus"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/virtualRange": {
+      "package": "@jbrowse/core",
+      "names": [
+        "virtualRange"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/wheelZoom": {
+      "package": "@jbrowse/core",
+      "names": [
+        "MAX_ZOOM_RATE_PER_MS",
+        "SCROLL_ZOOM_FACTOR_DIVISOR",
+        "ZOOM_ACTIVE_WINDOW_MS",
+        "accumulateScroll",
+        "applyZoomAccum",
+        "createWheelZoomController",
+        "getZoomNormalizer",
+        "isActivelyZooming",
+        "normalizeWheelDelta",
+        "wheelFrameElapsedMs",
+        "wheelZoomAccum"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/whenViewSettled": {
+      "package": "@jbrowse/core",
+      "names": [
+        "viewSettled",
+        "whenViewSettled",
+        "whenViewsSettled"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/core/util/withLaunchInput": {
+      "package": "@jbrowse/core",
+      "names": [
+        "defineLaunchKeys",
+        "legacyInitMessage",
+        "pendingLaunch",
+        "snapshotSettings",
+        "unknownKeysMessage",
+        "withLaunchInput"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/BlockMsg": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/display-kit/BottomRightIndicators": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "react-dom"
+      ]
+    },
+    "@jbrowse/display-kit/ChromeHighlight": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/ChromeLegend": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "react-dom"
+      ]
+    },
+    "@jbrowse/display-kit/coarseTier": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "coarseTierCovers",
+        "resolveCoarseTier",
+        "resolveFetchSuspended"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/CoarseTierMixin": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/coarseTierPhase": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "coarseTierDisplayPhase",
+        "coarseTierPending",
+        "coarseTierSvgReady"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/configSchema": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/const": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "MIN_DISPLAY_HEIGHT"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/ContextMenuMixin": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "ContextMenuMixin"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/densityTier": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "DENSITY_TIER_MODES",
+        "coarseTierModeOf",
+        "densityZoomBucket",
+        "isDensityTierMode"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/densityTierConfigSchemaFields": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "densityTierConfigSchemaFields"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/densityTierMenu": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "densityTierMenuItems"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/DensityTierMixin": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/displayAutoruns": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "autorunOnReadyView",
+        "makeSettingsLoopGuard",
+        "onDisplayedRegionsChange"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/DisplayBackgroundProgress": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/display-kit/DisplayChrome": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "DisplayStatusChrome",
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "react-dom"
+      ]
+    },
+    "@jbrowse/display-kit/DisplayChromeBase": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "react-dom"
+      ]
+    },
+    "@jbrowse/display-kit/DisplayContextMenu": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "DisplayContextMenu",
+        "openContextMenuFromEvent"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip"
+      ]
+    },
+    "@jbrowse/display-kit/DisplayErrorBar": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/display-kit/DisplayLoadingOverlay": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/display-kit/DisplayRenderErrorOverlay": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/display-kit/DisplayStatusChromeBase": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "react-dom"
+      ]
+    },
+    "@jbrowse/display-kit/fetchEachRegion": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "callEachRegion",
+        "fetchAllRegions",
+        "fetchEachRegion",
+        "fetchRegionsBatched"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/fetchInputs": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "fetchInputsCurrent",
+        "makeFetchInputs",
+        "snapshotInputs"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/FetchMixin": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default",
+        "fetchMixinLifecycle",
+        "makeFetchContext"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/foundationDisplayPhase": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "foundationDisplayPhase",
+        "foundationDisplayStatusPhase"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/foundationPaintInert": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "foundationPaintInert"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/foundationSvgReady": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "foundationSvgReady"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/foundationView": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "containingHost",
+        "foundationCanRender"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/GlobalFetchMixin": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "blockKeySignature",
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/groupByMenu": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "groupByRadioMenuItem",
+        "hiddenGroupsItems"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/GroupLabelBox": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "GroupLabelBoxes",
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/GroupLabelChips": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "GroupLabelChips"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/display-kit/groupLabelChipStyles": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "useGroupLabelStyles"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/display-kit/groupLabelStyle": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "GROUP_LABEL_FONT_SIZE",
+        "GROUP_LABEL_FONT_WEIGHT",
+        "GROUP_LABEL_HEIGHT",
+        "GROUP_LABEL_ICON_SIZE",
+        "GROUP_LABEL_INSET_X",
+        "GROUP_LABEL_PADDING_X",
+        "GROUP_LABEL_RADIUS",
+        "GROUP_LABEL_TINT",
+        "groupChipTop",
+        "groupSectionLabel",
+        "sectionKey"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/heightMode": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "GROW_MAX_HEIGHT",
+        "HEIGHT_MODE_VALUES",
+        "getHeightModeOptions",
+        "heightModeLabel"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/heightModeConfigSchemaFields": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "heightModeConfigSchemaFields"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/heightModeMenu": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "heightModeMenuItems"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/HeightModeMixin": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default",
+        "installGrowExitBake"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/HiddenGroupsMixin": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "NO_HIDDEN_GROUPS",
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/highlightHost": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "isHighlightHost",
+        "isPinnedInkHost",
+        "mergeBounds"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/installClearHoverOnViewportChange": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "installClearHoverOnViewportChange"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/installGlobalFetchAutorun": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "installGlobalFetchAutorun"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/installPerRegionFetchAutoruns": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "installPerRegionFetchAutoruns"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/KeyedFetchMixin": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/legendHost": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "isLegendHost"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/LegendMixin": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default",
+        "legendCheckboxItem",
+        "legendMixinSlots",
+        "svgLegendGutterWidth"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/MultiRegionDisplayMixin": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "MAX_STORED_REGIONS",
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/planRegionFetch": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "isBlockCovered",
+        "planRegionFetch",
+        "regionAssemblyMismatchMessage",
+        "retryOutcomeForPlan"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/regionCommit": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "makeCommitChecks",
+        "payloadServesZoom"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/regionHost": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "contentRightEdgePx"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/regionTooLargeConfigSchemaFields": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "regionTooLargeConfigSchemaFields"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/RegionTooLargeMixin": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/regionTooLargeUtils": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "AUTO_FORCE_LOAD_BP",
+        "BASE_FETCH_SIZE_LIMIT",
+        "SUB_FLOOR_BYTE_BUDGET_FACTOR",
+        "TOO_MANY_FEATURES_REASON",
+        "bytesTooLargeReason",
+        "evaluateRegionTooLarge",
+        "heldDataAnswers",
+        "nextByteEstimate",
+        "nextGateState",
+        "resolveByteLimit"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/renderDisplaySvg": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "SvgLegend",
+        "SvgPinnedHighlight",
+        "SvgYAxis",
+        "renderDisplaySvg"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "react-dom"
+      ]
+    },
+    "@jbrowse/display-kit/rpcArgs": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "rpcArgs"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/rpcPropsCacheKey": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "serializeAdapterConfig",
+        "serializeRpcProps"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/SkippedFeaturesIndicator": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default",
+        "skippedFeatures"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip",
+        "react-dom"
+      ]
+    },
+    "@jbrowse/display-kit/squashToHeightMenuItem": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "squashToHeightCheckboxItem"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/stableIdentityComputed": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "stableIdentityComputed"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/StoredHoverMixin": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/subPixelBinBp": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "MIN_BINNED_BP_PER_PX",
+        "subPixelBinBp"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/TooLargeMessage": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "react-dom"
+      ]
+    },
+    "@jbrowse/display-kit/TrackControl": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip",
+        "react-dom"
+      ]
+    },
+    "@jbrowse/display-kit/trackHeightConfigSchemaFields": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "trackHeightConfigSchemaFields"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/TrackHeightIndicator": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip",
+        "react-dom"
+      ]
+    },
+    "@jbrowse/display-kit/TrackHeightMixin": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/triangleTransform": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "triangleDataToScreen",
+        "triangleScreenToData",
+        "triangleViewTransform"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/triangleYScalar": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "computeTriangleYScalar"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/types": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "svgLegendAreaReserved"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-kit/viewportEmpty": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "viewportEmpty"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-ui": {
+      "package": "@jbrowse/display-ui",
+      "names": [
+        "AXIS_GUTTER_WIDTH_PX",
+        "AXIS_RIGHT_INSET_PX",
+        "AxisGutter",
+        "BOTTOM_RIGHT_CONTROLS_ORDER",
+        "BottomRightCornerContext",
+        "COMPACT_AXIS_HEIGHT",
+        "CrossHatchLines",
+        "CrossHatches",
+        "DisplayChromeOverlayProvider",
+        "DisplayUIProvider",
+        "FLOATING_LEGEND_TOP_PX",
+        "FloatingLegend",
+        "FloatingSvgOverlay",
+        "PointerLayer",
+        "SCORE_CAPTION_HEIGHT",
+        "ScoreDomainCaption",
+        "ScoreRuleLines",
+        "ScoreRules",
+        "Tooltip",
+        "TrackControlProvider",
+        "TrackOverlayContext",
+        "TrackOverlayPortal",
+        "TrackOverlaySlot",
+        "YSCALEBAR_LABEL_OFFSET",
+        "YScaleBar",
+        "YScaleBarOverlay",
+        "axisDrawn",
+        "axisGutterLeft",
+        "axisPlotBox",
+        "clampStrokeInsideAxis",
+        "formatScore",
+        "isLiveModel",
+        "plainChromeOverlays",
+        "plainTrackControl",
+        "resolveOverlays",
+        "scoreToAxisY",
+        "tooLargeBannerText",
+        "useChromeOverlayOverride",
+        "useTooltip",
+        "useTrackControlMenu",
+        "useTrackControlOverride"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "react-dom"
+      ]
+    },
+    "@jbrowse/display-ui/embed": {
+      "package": "@jbrowse/display-ui",
+      "names": [
+        "LocationBox",
+        "RegionSeams",
+        "Scalebar",
+        "Track",
+        "TrackStack",
+        "ViewStatus",
+        "useLocationBox"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-ui/yAxisConstants": {
+      "package": "@jbrowse/display-ui",
+      "names": [
+        "YSCALEBAR_LABEL_OFFSET"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/ld-core": {
+      "package": "@jbrowse/ld-core",
+      "names": [
+        "DEFAULT_PLINK_LD_HEADER",
+        "LD_NOT_COMPUTED",
+        "bandedCellCount",
+        "isLDRecordSource",
+        "ldValueComputed",
+        "parsePlinkLDHeader",
+        "parsePlinkLDLine",
+        "resolvePlinkLDHeader"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/modifications-utils": {
+      "package": "@jbrowse/modifications-utils",
+      "names": [
+        "detectSimplexModifications",
+        "forEachModRefPos",
+        "getMethBins",
+        "getModPositions",
+        "getModProbabilities",
+        "getModProbabilityBytes",
+        "getModTypes",
+        "getTag",
+        "getTagAlt",
+        "isMethylationFillType",
+        "isSingleModType",
+        "matchesCytosineContext",
+        "modProbAt",
+        "modificationRegex",
+        "parseModHeader"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/plugin-alignments": {
+      "package": "@jbrowse/plugin-alignments",
+      "names": [
+        "COMPACTNESS_PRESETS",
+        "NO_HIDDEN_GROUPS",
+        "collapseGroupRowsItems",
+        "copyFeatureInfo",
+        "default",
+        "derivativeLetterSummary",
+        "getColorByMenuItem",
+        "getFeatureHeightMenuItem",
+        "getFiltersMenuItems",
+        "getHitMenuItems",
+        "getSortByMenuItem",
+        "groupByRadioMenuItem",
+        "hiddenGroupsItems",
+        "letterSegments",
+        "linearAlignmentsDisplayConfigSchemaFactory",
+        "pickColorOptions",
+        "pickGroupByOptions",
+        "queueReadVsRefDialog",
+        "segmentEntryBp",
+        "segmentExitBp",
+        "withContextMenuFeature"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip",
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/plugin-alignments/LinearAlignmentsDisplay/stateModel": {
+      "package": "@jbrowse/plugin-alignments",
+      "names": [
+        "ColorScheme",
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip",
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/plugin-arc": {
+      "package": "@jbrowse/plugin-arc",
+      "names": [
+        "addArcJexlFunctions",
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip",
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/plugin-authentication": {
+      "package": "@jbrowse/plugin-authentication",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material"
+      ]
+    },
+    "@jbrowse/plugin-bed": {
+      "package": "@jbrowse/plugin-bed",
+      "names": [
+        "BedTabixAdapter",
+        "bedTabixConfigSchema",
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/plugin-breakpoint-split-view": {
+      "package": "@jbrowse/plugin-breakpoint-split-view",
+      "names": [
+        "default",
+        "renderToSvg"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@floating-ui/react",
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip",
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/plugin-canvas": {
+      "package": "@jbrowse/plugin-canvas",
+      "names": [
+        "HEIGHT_MULTIPLIERS",
+        "MAX_VISIBLE_CHEVRONS_PER_LINE",
+        "MIN_FIT_BOX_PX",
+        "SHOW_LABELS_MODES",
+        "STRAND_ARROW_LENGTH_PX",
+        "STRAND_COLOR_JEXL",
+        "UTR_HEIGHT_FRACTION",
+        "attributeColorJexl",
+        "buildFeatureFlatbushIndex",
+        "buildFeatureRenderData",
+        "centerShrink",
+        "computeLaidOutData",
+        "createContentHeightProbe",
+        "default",
+        "featureGlyphMarks",
+        "featureType",
+        "getSubfeatures",
+        "impliedUTRs",
+        "isCDS",
+        "isExon",
+        "isUTR",
+        "labelFontSize",
+        "layoutRegionKey",
+        "linearBasicDisplayConfigSchemaFactory",
+        "linearCanvasBaseDisplayConfigSchemaFactory",
+        "maxBottom",
+        "mergeSpans",
+        "minDrawnBoxHeight",
+        "modeCanShowDescription",
+        "modeCanShowName",
+        "paintFeatureBand",
+        "performMultiRegionHitDetection",
+        "resolveFitLadder",
+        "scaleLaidOutData",
+        "solveLabelRoomFactor",
+        "squeezeFloorScale"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip",
+        "@mui/x-data-grid",
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/plugin-canvas/LinearBasicDisplay/baseStateModel": {
+      "package": "@jbrowse/plugin-canvas",
+      "names": [
+        "default",
+        "defaultColorItem"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip",
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/plugin-canvas/LinearBasicDisplay/stateModel": {
+      "package": "@jbrowse/plugin-canvas",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip",
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/plugin-circular-view": {
+      "package": "@jbrowse/plugin-circular-view",
+      "names": [
+        "Slice",
+        "default",
+        "renderToSvg"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@floating-ui/react",
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip",
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/plugin-comparative-adapters": {
+      "package": "@jbrowse/plugin-comparative-adapters",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@floating-ui/react",
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip",
+        "react-dom"
+      ]
+    },
+    "@jbrowse/plugin-config": {
+      "package": "@jbrowse/plugin-config",
+      "names": [
+        "ConfigurationEditor",
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/plugin-data-management": {
+      "package": "@jbrowse/plugin-data-management",
+      "names": [
+        "AssemblyManager",
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/plugin-dotplot-view": {
+      "package": "@jbrowse/plugin-dotplot-view",
+      "names": [
+        "DotplotHighlightBands",
+        "default",
+        "renderToSvg"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@floating-ui/react",
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip",
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/plugin-gccontent": {
+      "package": "@jbrowse/plugin-gccontent",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip",
+        "@mui/x-data-grid",
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/plugin-gff3": {
+      "package": "@jbrowse/plugin-gff3",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/plugin-grid-bookmark": {
+      "package": "@jbrowse/plugin-grid-bookmark",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@floating-ui/react",
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip",
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/plugin-gtf": {
+      "package": "@jbrowse/plugin-gtf",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/plugin-gwas": {
+      "package": "@jbrowse/plugin-gwas",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip",
+        "react-dom"
+      ]
+    },
+    "@jbrowse/plugin-hic": {
+      "package": "@jbrowse/plugin-hic",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/plugin-jobs-management": {
+      "package": "@jbrowse/plugin-jobs-management",
+      "names": [
+        "default",
+        "getOrCreateJobsListWidget"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material/SvgIcon"
+      ]
+    },
+    "@jbrowse/plugin-legacy-jbrowse": {
+      "package": "@jbrowse/plugin-legacy-jbrowse",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/plugin-linear-comparative-view": {
+      "package": "@jbrowse/plugin-linear-comparative-view",
+      "names": [
+        "LevelSyntenyCanvas",
+        "default",
+        "renderToSvg"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@floating-ui/react",
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip",
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/plugin-linear-genome-view": {
+      "package": "@jbrowse/plugin-linear-genome-view",
+      "names": [
+        "ConnectedHoverHighlight",
+        "DisplayChromeOverlayProvider",
+        "DisplayUIProvider",
+        "ExportSvgDialog",
+        "FloatingLegend",
+        "FloatingSvgOverlay",
+        "GetSequenceDialog",
+        "HeaderSearchBoxRow",
+        "HeaderSearchBoxes",
+        "HighlightBand",
+        "HighlightChip",
+        "HoverPositionHighlight",
+        "MultiLevelRubberband",
+        "OverviewHighlightBand",
+        "SVGHighlightBand",
+        "SVGHighlights",
+        "SVGHighlightsOverlay",
+        "SVGRowHeader",
+        "SVGTracks",
+        "SVGView",
+        "SearchBox",
+        "SearchResultsNotFoundError",
+        "SvgChrome",
+        "SvgClipRect",
+        "TrackControlProvider",
+        "TrackOverlayContext",
+        "TrackOverlayPortal",
+        "TrackOverlaySlot",
+        "applyInitHighlights",
+        "awaitSvgReady",
+        "awaitSvgRenders",
+        "containingLgv",
+        "default",
+        "defaultTextHeight",
+        "fetchResults",
+        "fitAllRegionsWindow",
+        "getRowHeaderLayout",
+        "installLinkedViewSync",
+        "labelBaselineFromTop",
+        "labelOffset",
+        "linearGenomeViewStateModelFactory",
+        "makeTicks",
+        "normalizeTrackInit",
+        "notifySkippedSvgTracks",
+        "plainChromeOverlays",
+        "plainTrackControl",
+        "renderToSvg",
+        "renderViewTracks",
+        "searchBoxMenuItems",
+        "showRegionsWithUndo",
+        "svgSafeId",
+        "totalHeight",
+        "trackBoxHeight",
+        "trackBoxOffsets",
+        "trackLabelLeftOffset",
+        "trackLabelMode",
+        "useSearchBoxPrefs",
+        "useTrackControlMenu",
+        "useViewSvgFigure"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip",
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/plugin-maf": {
+      "package": "@jbrowse/plugin-maf",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip",
+        "@mui/x-data-grid",
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/plugin-marks": {
+      "package": "@jbrowse/plugin-marks",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip",
+        "react-dom"
+      ]
+    },
+    "@jbrowse/plugin-menus": {
+      "package": "@jbrowse/plugin-menus",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/plugin-rdf": {
+      "package": "@jbrowse/plugin-rdf",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/plugin-sequence": {
+      "package": "@jbrowse/plugin-sequence",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/plugin-spreadsheet-view": {
+      "package": "@jbrowse/plugin-spreadsheet-view",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/plugin-sv-inspector": {
+      "package": "@jbrowse/plugin-sv-inspector",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip",
+        "@mui/x-data-grid",
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/plugin-trix": {
+      "package": "@jbrowse/plugin-trix",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/plugin-variants": {
+      "package": "@jbrowse/plugin-variants",
+      "names": [
+        "PREDEFINED_SV_TYPES",
+        "VcfFeature",
+        "default",
+        "getSvTypeColor",
+        "getVariantSvType",
+        "svTypeDisplayLabel",
+        "svTypeFromToken"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip",
+        "@mui/x-data-grid",
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/plugin-wiggle": {
+      "package": "@jbrowse/plugin-wiggle",
+      "names": [
+        "LinearWiggleDisplayReactComponent",
+        "WiggleScoreConfigMixin",
+        "bedGraphFormatOptions",
+        "default",
+        "linearWiggleDisplayConfigSchema",
+        "summaryScoreModeConfigSchemaFields",
+        "wiggleCommonExtraSlots",
+        "wiggleMouseHandlers"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip",
+        "@mui/x-data-grid",
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/plugin-wiggle/LinearWiggleDisplay/stateModel": {
+      "package": "@jbrowse/plugin-wiggle",
+      "names": [
+        "default"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip",
+        "react-dom"
+      ]
+    },
+    "@jbrowse/product-core": {
+      "package": "@jbrowse/product-core",
+      "names": [
+        "AboutDialog",
+        "AppReadyMarker",
+        "BaseRootModelFactory",
+        "BaseSessionModel",
+        "ConnectionManagementSessionMixin",
+        "DEFAULT_WEB_BASE_URL",
+        "Drawer",
+        "DrawerControls",
+        "DrawerHeader",
+        "DrawerWidget",
+        "DrawerWidgetSelector",
+        "DrawerWidgetSessionMixin",
+        "FormatAboutConfigSchemaFactory",
+        "FormatDetailsConfigSchemaFactory",
+        "HierarchicalConfigSchemaFactory",
+        "InternetAccountsRootModelMixin",
+        "MIGRATED_DISPLAY_INSTANCE_KEYS",
+        "ModalWidget",
+        "ModalWidgetAppBar",
+        "MultipleViewsSessionMixin",
+        "PreferencesConfigSchemaFactory",
+        "PreferencesDialog",
+        "PreferencesSessionMixin",
+        "ReferenceManagementSessionMixin",
+        "SessionTracksManagerSessionMixin",
+        "ThemeManagerSessionMixin",
+        "TrackMenuItemsSessionMixin",
+        "TrackMenuSessionMixin",
+        "TracksManagerSessionMixin",
+        "WidgetBody",
+        "WidgetHeading",
+        "aboutTrackMenuItem",
+        "analyzeWebPortability",
+        "asRoot",
+        "asSession",
+        "bakeSessionCascades",
+        "buildWebExportUrl",
+        "copyTrackSnapshot",
+        "createConfigModel",
+        "decodeSessionFromUrl",
+        "describeUnbuildableNodes",
+        "destroyViewState",
+        "drawerGridTemplateColumns",
+        "encodeSessionToUrl",
+        "exportSessionMenuItem",
+        "filterSessionInPlace",
+        "finalizeSession",
+        "getSessionSnapshot",
+        "getShareableSessionSnapshot",
+        "importSessionMenuItem",
+        "initializeWorker",
+        "isBaseSession",
+        "isLooseTrack",
+        "isRootModel",
+        "isSession",
+        "isSessionWithConnections",
+        "isSessionWithDrawerWidgets",
+        "isSessionWithMultipleViews",
+        "isSessionWithReferenceManagement",
+        "isSessionWithThemes",
+        "isSessionWithTracks",
+        "loadRuntimePlugins",
+        "mergeLocalFiles",
+        "migrateConfigSnapshot",
+        "migrateSessionSnapshot",
+        "newSessionMenuItem",
+        "normalizeAdapterSnapshots",
+        "observeSession",
+        "openConnectionMenuItem",
+        "openTrackMenuItem",
+        "openTracks",
+        "planWebExport",
+        "pluginExtraTrackItems",
+        "pluginStoreMenuItem",
+        "preferencesMenuItem",
+        "pruneUnbuildableNodes",
+        "reconcileTracks",
+        "redoMenuItem",
+        "registerLocalFiles",
+        "resolveAssemblies",
+        "resolveAssembly",
+        "resolveLocalFileUris",
+        "resolveTracks",
+        "scheduleDetachedDestroy",
+        "toPluginLoadRecord",
+        "trackActionItems",
+        "trackActionMenuItems",
+        "trackListMenuItems",
+        "undoMenuItem",
+        "useAsyncEngineLifecycle",
+        "useCreateOnce",
+        "useCreateOnceAsync",
+        "useDestroyOnUnmount",
+        "withAssemblyName",
+        "withHostOverrides",
+        "workspacesMenuItem"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip"
+      ]
+    },
+    "@jbrowse/render-core/blockClipUtils": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "bpRangeXTuple",
+        "clipBlock",
+        "splitPositionWithFrac",
+        "writeBpRangeUniforms"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/canvas2dUtils": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "CANVAS_SEAM_PX",
+        "CappedPath",
+        "MAX_CANVAS_DIM_PX",
+        "MAX_DPR",
+        "bpAtPx",
+        "bpAtPxExact",
+        "bpProjection",
+        "clampBlockScissor",
+        "clipBlockForCanvas",
+        "devicePxBand",
+        "devicePxSpan",
+        "fillBpSpan",
+        "forEachClippedBlock",
+        "getDpr",
+        "getPreparedCanvas2D",
+        "makeBpMapper",
+        "makeCellLeftMapper",
+        "makeRampFillStyleLut",
+        "maxCanvasCssPx",
+        "prepareCanvas",
+        "projectBp",
+        "pxPerBpOf",
+        "regionAtPixel",
+        "spanLeft",
+        "spanRect",
+        "strokeRectInside",
+        "syncCanvasSize",
+        "withClip"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/canvasContext": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "acquireCanvas2D",
+        "acquiredCanvasContext",
+        "canvasConfiguredBy",
+        "canvasContextError",
+        "noteCanvasConfigured",
+        "noteCanvasContext"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/colorRampLut": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "COLOR_RAMP_LUT_ENTRIES",
+        "uploadColorRampLut"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/computePipeline": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "makeComputePipelineCache"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/contractReports": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "contractReportsOn",
+        "enableContractReports",
+        "reportContractViolation",
+        "setContractReportSink"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/coverageBand": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "COVERAGE_BAND_LAYER_ORDER",
+        "COVERAGE_BAND_UNIFORMS_SIZE_BYTES",
+        "COVERAGE_BAR_PASS",
+        "COVERAGE_INDICATOR_PASS",
+        "COVERAGE_INTERBASE_PASS",
+        "COVERAGE_MOD_PASS",
+        "COVERAGE_SNP_PASS",
+        "orderCoverageBandLayers",
+        "writeCoverageBandUniforms"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/coverageBandBuffers": {
+      "package": "@jbrowse/render-core",
+      "names": [],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/createRenderingBackend": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "createCanvas2DBackend",
+        "createRenderingBackend",
+        "deriveSampleCount"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/displayPhase": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "computeActivityPhase",
+        "computeDisplayPhase",
+        "computeDisplayStatusPhase"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/encodeMemo": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "createEncodeMemo"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/gpuDevice": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "GPU_OVERRIDES",
+        "getBuiltRenderer",
+        "getGpuDevice",
+        "getGpuOverride",
+        "isGpuRenderingDisabled",
+        "onDeviceLost",
+        "resetGpuDeviceForTests",
+        "setBuiltRenderer",
+        "setGpuOverride"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/graphicsCapabilities": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "effectiveRenderer",
+        "getGraphicsCapabilities",
+        "isSoftwareRenderer"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/hal": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "MockHal",
+        "WebGL2Hal",
+        "WebGPUHal",
+        "assertUniquePassIds",
+        "createGpuHal"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/installUpload": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "installUpload",
+        "oneCell"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/instanceCache": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "createInstanceCache"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/instancePass": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "uploadPass"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/marks": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "abgrToCssRgba",
+        "appendGlyph",
+        "backToFront",
+        "barMark",
+        "defineMark",
+        "inkOfInstances",
+        "makeAbgrFill",
+        "nearestMarkHit",
+        "paintMarkBlocks",
+        "planMarks",
+        "pointInsetPx",
+        "pointMark",
+        "spanMark",
+        "valueWindow"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/marks/backend": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "Canvas2DMarkBackend",
+        "GpuMarkBackend",
+        "createMarkBackend",
+        "drawMarks",
+        "drawPlannedPasses",
+        "uploadMarks"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/marks/colorFill": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "abgrToCssRgba",
+        "makeAbgrFill"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/marks/drawAgainstHit": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "inkViolations",
+        "recordingContext",
+        "sweepMarkAgainstHit"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/marks/glyphPaint": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "appendGlyph",
+        "glyphBox",
+        "pointInsetPx"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/marks/hit": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "inkAtPoint",
+        "inkHitNearest",
+        "inkOnRect",
+        "nearestInk",
+        "shapeHitNearest"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/namedReactions": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "namedAutorun",
+        "reactionDependencies",
+        "recordNamedReaction"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/OverlayCanvas": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/perRegionRenderingBackend": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "Canvas2DPerRegionRenderingBackend",
+        "GpuPerRegionRenderingBackend"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/regionDataMap": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "isCheckedAtTheStore",
+        "regionDataMap"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/renderBlock": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "buildRenderBlocks",
+        "canvasWideBlock",
+        "canvasWideBlocks"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/RenderCanvas": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "default"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/renderingBackendBase": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "Canvas2DRenderingBackendBase",
+        "GpuRenderingBackendBase"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/RenderLifecycleMixin": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "RenderLifecycleMixin"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/scoreScale": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "SCALE_TYPE_LINEAR",
+        "SCALE_TYPE_LOG",
+        "SCALE_TYPE_SYMLOG",
+        "denormalizeScore",
+        "makeScoreNormalizer",
+        "scaleTypeCode"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/ScrollLockedOverlay": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "ScrollLockedOverlay"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/antialias": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "aaHalfPx",
+        "aaPx",
+        "aaRamp",
+        "edgeCoverage"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/barMarkIface": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "BINDINGS",
+        "INSTANCE_OFFSET_F32",
+        "INSTANCE_OFFSET_U32",
+        "INSTANCE_STRIDE_BYTES",
+        "INSTANCE_STRIDE_WORDS",
+        "TEXTURES",
+        "UNIFORMS_SIZE_BYTES",
+        "UNIFORM_OFFSET_F32",
+        "UNIFORM_OFFSET_I32",
+        "VERTEX_ATTRIBUTES",
+        "VERTS_PER_INSTANCE",
+        "getInstanceColor",
+        "getInstanceRow",
+        "getInstanceX",
+        "getInstanceX2",
+        "getInstanceY",
+        "packInstances",
+        "setInstanceColor",
+        "setInstanceRow",
+        "setInstanceX",
+        "setInstanceX2",
+        "setInstanceY",
+        "writeUniforms"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/capsule": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "capsuleDistPx"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/capsuleConsts": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "CAPSULE_MIN_LEN_PX"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/coverageBar": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "BINDINGS",
+        "GLSL_FRAGMENT",
+        "GLSL_VERTEX",
+        "INSTANCE_OFFSET_F32",
+        "INSTANCE_OFFSET_U32",
+        "INSTANCE_STRIDE_BYTES",
+        "INSTANCE_STRIDE_WORDS",
+        "UNIFORMS_SIZE_BYTES",
+        "UNIFORM_OFFSET_F32",
+        "UNIFORM_OFFSET_I32",
+        "UNIFORM_OFFSET_U32",
+        "VERTEX_ATTRIBUTES",
+        "VERTS_PER_INSTANCE",
+        "WGSL_SOURCE",
+        "getInstancePosition",
+        "getInstanceRelDepth",
+        "packInstances",
+        "setInstancePosition",
+        "setInstanceRelDepth",
+        "writeUniforms"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/coverageIndicator": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "BINDINGS",
+        "GLSL_FRAGMENT",
+        "GLSL_VERTEX",
+        "INSTANCE_OFFSET_F32",
+        "INSTANCE_OFFSET_U32",
+        "INSTANCE_STRIDE_BYTES",
+        "INSTANCE_STRIDE_WORDS",
+        "UNIFORMS_SIZE_BYTES",
+        "UNIFORM_OFFSET_F32",
+        "UNIFORM_OFFSET_I32",
+        "UNIFORM_OFFSET_U32",
+        "VERTEX_ATTRIBUTES",
+        "VERTS_PER_INSTANCE",
+        "WGSL_SOURCE",
+        "getInstanceColorType",
+        "getInstancePosition",
+        "packInstances",
+        "setInstanceColorType",
+        "setInstancePosition",
+        "writeUniforms"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/coverageInterbase": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "BINDINGS",
+        "GLSL_FRAGMENT",
+        "GLSL_VERTEX",
+        "INSTANCE_OFFSET_F32",
+        "INSTANCE_OFFSET_U32",
+        "INSTANCE_STRIDE_BYTES",
+        "INSTANCE_STRIDE_WORDS",
+        "UNIFORMS_SIZE_BYTES",
+        "UNIFORM_OFFSET_F32",
+        "UNIFORM_OFFSET_I32",
+        "UNIFORM_OFFSET_U32",
+        "VERTEX_ATTRIBUTES",
+        "VERTS_PER_INSTANCE",
+        "WGSL_SOURCE",
+        "getInstanceColorType",
+        "getInstancePosition",
+        "getInstanceSegHeight",
+        "getInstanceYOffset",
+        "packInstances",
+        "setInstanceColorType",
+        "setInstancePosition",
+        "setInstanceSegHeight",
+        "setInstanceYOffset",
+        "writeUniforms"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/coverageMod": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "BINDINGS",
+        "GLSL_FRAGMENT",
+        "GLSL_VERTEX",
+        "INSTANCE_OFFSET_F32",
+        "INSTANCE_OFFSET_U32",
+        "INSTANCE_STRIDE_BYTES",
+        "INSTANCE_STRIDE_WORDS",
+        "UNIFORMS_SIZE_BYTES",
+        "UNIFORM_OFFSET_F32",
+        "UNIFORM_OFFSET_I32",
+        "UNIFORM_OFFSET_U32",
+        "VERTEX_ATTRIBUTES",
+        "VERTS_PER_INSTANCE",
+        "WGSL_SOURCE",
+        "getInstancePackedColor",
+        "getInstancePosition",
+        "getInstanceRelDepth",
+        "getInstanceSegHeight",
+        "getInstanceYOffset",
+        "packInstances",
+        "setInstancePackedColor",
+        "setInstancePosition",
+        "setInstanceRelDepth",
+        "setInstanceSegHeight",
+        "setInstanceYOffset",
+        "writeUniforms"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/coverageSnp": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "BINDINGS",
+        "GLSL_FRAGMENT",
+        "GLSL_VERTEX",
+        "INSTANCE_OFFSET_F32",
+        "INSTANCE_OFFSET_U32",
+        "INSTANCE_STRIDE_BYTES",
+        "INSTANCE_STRIDE_WORDS",
+        "UNIFORMS_SIZE_BYTES",
+        "UNIFORM_OFFSET_F32",
+        "UNIFORM_OFFSET_I32",
+        "UNIFORM_OFFSET_U32",
+        "VERTEX_ATTRIBUTES",
+        "VERTS_PER_INSTANCE",
+        "WGSL_SOURCE",
+        "getInstanceColorType",
+        "getInstancePosition",
+        "getInstanceRelDepth",
+        "getInstanceSegHeight",
+        "getInstanceYOffset",
+        "packInstances",
+        "setInstanceColorType",
+        "setInstancePosition",
+        "setInstanceRelDepth",
+        "setInstanceSegHeight",
+        "setInstanceYOffset",
+        "writeUniforms"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/hpmath": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "extendToMinWidthPx",
+        "snapBoxCenterYPx",
+        "snapBoxHeightPx",
+        "snapBoxTopPx"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/pointGlyph": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "crispSquareTopLeftPx"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/pointGlyphConsts": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "SMALL_POINT_MAX_DIAMETER"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/pointMark": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "pointDrawsBar",
+        "pointYPx",
+        "valueToYPxScaled"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/pointMarkConsts": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "DIAMOND_GLYPH_SCALE",
+        "GLYPH_DIAMOND",
+        "GLYPH_DISC",
+        "GLYPH_TRIANGLE"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/pointMarkIface": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "BINDINGS",
+        "INSTANCE_OFFSET_F32",
+        "INSTANCE_OFFSET_U32",
+        "INSTANCE_STRIDE_BYTES",
+        "INSTANCE_STRIDE_WORDS",
+        "TEXTURES",
+        "UNIFORMS_SIZE_BYTES",
+        "UNIFORM_OFFSET_F32",
+        "UNIFORM_OFFSET_I32",
+        "VERTEX_ATTRIBUTES",
+        "VERTS_PER_INSTANCE",
+        "getInstanceColor",
+        "getInstanceGlyph",
+        "getInstanceRow",
+        "getInstanceX",
+        "getInstanceX2",
+        "getInstanceY",
+        "packInstances",
+        "setInstanceColor",
+        "setInstanceGlyph",
+        "setInstanceRow",
+        "setInstanceX",
+        "setInstanceX2",
+        "setInstanceY",
+        "writeUniforms"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/rowRect": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "drawnRowHeightPx",
+        "rowBandOffsetPx"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/rowRectConsts": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "MIN_DRAWN_ROW_PX",
+        "MULTI_ROW_MIN_CELL_PX"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/scoreScale": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "normalizeScore"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/shaders/spanMarkIface": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "BINDINGS",
+        "INSTANCE_OFFSET_U32",
+        "INSTANCE_STRIDE_BYTES",
+        "INSTANCE_STRIDE_WORDS",
+        "InstanceWriter",
+        "UNIFORMS_SIZE_BYTES",
+        "UNIFORM_OFFSET_F32",
+        "VERTEX_ATTRIBUTES",
+        "VERTS_PER_INSTANCE",
+        "getInstanceColor",
+        "getInstanceRow",
+        "getInstanceX",
+        "getInstanceX2",
+        "packInstances",
+        "setInstanceColor",
+        "setInstanceRow",
+        "setInstanceX",
+        "setInstanceX2",
+        "writeUniforms"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/sharedBackendKey": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "sharedBackendKey"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/slangPass": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "slangPass"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/useGraphicsCapabilities": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "useGraphicsCapabilities"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/useRenderingBackend": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "CONTEXT_LOST_REPORT_GRACE_MS",
+        "createGpuContextLostError",
+        "createGpuDeviceLostError",
+        "createGpuSurfaceLostError",
+        "isGpuContextLostError",
+        "useRenderingBackend"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/render-core/useTabVisibilityRerender": {
+      "package": "@jbrowse/render-core",
+      "names": [
+        "useTabVisibilityRerender"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/sv-core": {
+      "package": "@jbrowse/sv-core",
+      "names": [
+        "ARC_HIT_SLOP_PX",
+        "BREAKEND_COLOCATION_BP",
+        "BreakpointSplitViewChoiceDialog",
+        "HIDDEN_SEGMENT_DASH",
+        "SV_SYMBOLIC_ALLELES",
+        "bestArcMark",
+        "breakendKeepsDirections",
+        "breakendLocKey",
+        "breakendTickPx",
+        "breakpointBpPerPx",
+        "breakpointSplitViewId",
+        "getAssemblyName",
+        "getBreakendAssemblyRegions",
+        "getBreakendCoveringRegions",
+        "getBreakendMateLocString",
+        "hasBreakpointSplitView",
+        "hiddenSegmentsNote",
+        "junctionFromFeature",
+        "launchBreakpointSplitView",
+        "makeFeaturePair",
+        "makeFindJunctionsNear",
+        "makeTitle",
+        "navToLoc",
+        "navToMultiLevelBreak",
+        "navToSingleLevelBreak",
+        "nextJunctionFrom",
+        "openOrReuseSplitView",
+        "pairedEndsLocString",
+        "panelIsTurned",
+        "parseSvAlt",
+        "readTranslocationMate",
+        "safeParseBreakend",
+        "singleLevelEncompassingSnapshotFromBreakendFeature",
+        "singleLevelFocusedSnapshotFromBreakendFeature",
+        "splitRegionAtPosition",
+        "svMateLocus",
+        "walkBreakendChain"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip"
+      ]
+    },
+    "@jbrowse/synteny-core": {
+      "package": "@jbrowse/synteny-core",
+      "names": [
+        "ATTRIBUTE_PREFIX",
+        "AnchorsSelector",
+        "CIGAR_OP_D",
+        "CIGAR_OP_I",
+        "CIGAR_OP_N",
+        "COLOR_COLUMN",
+        "COLOR_MODES",
+        "ChromosomeFilter",
+        "ColorBySelector",
+        "ComparativeFetchMixin",
+        "ComparativeFetchStatus",
+        "ComparativeTooltip",
+        "DiagonalizeDialog",
+        "DiagonalizeLoadingScreen",
+        "DiagonalizeProgressMixin",
+        "HelpTooltip",
+        "ImportFormModeToggle",
+        "ImportFormModes",
+        "ImportFormOpenCustomTrack",
+        "ImportFormSyntenyChoiceRadioGroup",
+        "ImportFormSyntenyTrackPanel",
+        "ImportSyntenyOpenCustomTrack",
+        "LodTierInfoMixin",
+        "MAX_MIN_LENGTH_BP",
+        "MIN_LENGTH_HELP",
+        "MISSING_VALUE_COLOR",
+        "NO_CIGAR_OPS",
+        "NoSyntenyTrackMessage",
+        "PAN_BUFFER_PX",
+        "PRESET_ATTRIBUTES",
+        "PifGzSelector",
+        "PreConfiguredSyntenyTrackSelect",
+        "QuickStartPanel",
+        "SETTINGS_SURFACE_LABELS",
+        "SYNTENY_LANES",
+        "StandardFormatSelector",
+        "SwapAssemblies",
+        "TrackColorsMixin",
+        "TrackWarningsDialog",
+        "UNLABELLED_COLOR",
+        "UNNAMED",
+        "VALUE_MODES_LABEL",
+        "adapterAssemblyNames",
+        "allSessionTracks",
+        "applyQuickStartSelections",
+        "applySyntenyTrackSelections",
+        "assignTrackColors",
+        "attributeColorBy",
+        "attributeTooltipLines",
+        "bandGroundColor",
+        "bandInk",
+        "blockedByUnfinishedUpload",
+        "bpToCumBp",
+        "bucketBpPerPx",
+        "buildBpRegionIndex",
+        "canonicalizeSyntenyDictLanes",
+        "categoricalColor",
+        "clampBlockToRegions",
+        "clipLargeBlockToWindow",
+        "clipSyntenyFeature",
+        "coarseWalkIsApproximate",
+        "coerceColorBy",
+        "collectTrackWarnings",
+        "colorByAttributeName",
+        "colorByFallbackNote",
+        "colorByMenuItems",
+        "colorByMenuTargetFor",
+        "colorByScale",
+        "colorByShortLabel",
+        "colorSchemes",
+        "colorableColumns",
+        "comparativeDisplayPhase",
+        "comparativeSurfacePhase",
+        "comparativeSurfaceSettled",
+        "comparativeTooltipLines",
+        "connectedEndpoints",
+        "continuousRampConfig",
+        "createAbortRotation",
+        "createAttributeChannels",
+        "createComparativeColorFunction",
+        "cumBpAtGenomicCoord",
+        "cumBpInEntry",
+        "declaredAttributes",
+        "defaultCigarColors",
+        "defaultImportFormRows",
+        "defaultSyntenyFileFormats",
+        "displaysSettled",
+        "dnDsRatio",
+        "dotplotAxesFromRows",
+        "effectiveCoarseThreshold",
+        "extractAlignmentData",
+        "featureAttributes",
+        "fetchWindowSignature",
+        "findRegionEntry",
+        "getAdapterToCanonicalRefNameMap",
+        "getAlignmentOps",
+        "getCanonicalRefNameFn",
+        "getCigar",
+        "getCoarseBpPerPxThreshold",
+        "getCoarseCigar",
+        "getColorBySwatch",
+        "getConnectedAssemblies",
+        "getMate",
+        "getQueryColor",
+        "getSyntenyTracks",
+        "hasAlignmentString",
+        "hashString",
+        "installAssemblySwapCheck",
+        "installClearHoverOnSurfaceMove",
+        "installComparativeFetchAutorun",
+        "installLodTierInfoFetch",
+        "isAttributeLabels",
+        "isDataCurrent",
+        "isSyntenyTrack",
+        "launchSyntenyView",
+        "legendChipColor",
+        "lodMenuItems",
+        "lodTierAt",
+        "makeCategoricalColorFunction",
+        "makeContinuousColorFunction",
+        "makeNameColorFunction",
+        "makeStringDict",
+        "mcscanBlocksTypes",
+        "mcscanTypes",
+        "multiGenomePAFTypes",
+        "nameColorCss",
+        "packSyntenyLanes",
+        "pairwiseTypes",
+        "paletteColorAt",
+        "pickSyntenyTrackId",
+        "planSyntenyChain",
+        "prepareDiagonalizeAdapter",
+        "quickStartSyntenyTracks",
+        "rampNorm",
+        "readAttribute",
+        "readLodTierInfo",
+        "regionSignature",
+        "regionsCumBpSpan",
+        "regionsInAssemblyNamespace",
+        "releaseTemporaryAssemblies",
+        "remapImportFormSelections",
+        "remapSelectionsToPairs",
+        "renameDictLane",
+        "renameRegionsForAdapter",
+        "resolveCategoricalMode",
+        "resolveContinuousMode",
+        "resolveLodTier",
+        "resolveRowTrackAction",
+        "resolveSyntenyTrackActions",
+        "runDiagonalize",
+        "sameAssemblySet",
+        "splitSyntenyFeatureAtGaps",
+        "strandCigarColors",
+        "swappedAssembliesWarning",
+        "syntenyFetchRegions",
+        "syntenyLaneFields",
+        "syntenyPairStatuses",
+        "syntenyPairs",
+        "syntenyPanBufferPx",
+        "syntenyTrackPalette",
+        "syntenyTrackRows",
+        "syntenyTypes",
+        "trackHasLodTiers",
+        "unnamedNameId",
+        "useChromosomeFilters",
+        "useImportFormRows",
+        "useImportFormSyntenyChoices",
+        "useQuickStartState",
+        "widenAttributeRanges",
+        "withDiagonalizeProgress",
+        "writeAttribute",
+        "writeFeatureAttribute"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@floating-ui/react",
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip",
+        "react-dom"
+      ]
+    },
+    "@jbrowse/tree-sidebar": {
+      "package": "@jbrowse/tree-sidebar",
+      "names": [
+        "CLUSTER_PROVENANCE_MIN_OVERLAP",
+        "ClusterDialog",
+        "ClusterModeSelector",
+        "ClusterProgress",
+        "ClusterProvenanceHint",
+        "ContextMenuMixin",
+        "DisplayContextMenu",
+        "DisplayCrosshairs",
+        "MIN_CLUSTER_ROWS",
+        "MIN_SEPARATOR_ROW_PX",
+        "MIN_TEXT_ROW_HEIGHT",
+        "RowHeightMixin",
+        "RowLabelsOverlay",
+        "RowSeparatorLines",
+        "SetColorDialog",
+        "StaleTreeHint",
+        "SubtreeFilterHint",
+        "SvgClusterProvenanceHint",
+        "SvgRowLabels",
+        "SvgTreePath",
+        "SvgTreeSidebar",
+        "TREE_SIDEBAR_LABEL",
+        "TreeSidebar",
+        "TreeSidebarMixin",
+        "applyClusterRun",
+        "applyLayoutOverrides",
+        "applySubtreeFilter",
+        "buildClusteredLayout",
+        "buildSpatialIndex",
+        "buildTree",
+        "clearSubtreeFilterMenuItems",
+        "clusterLayout",
+        "clusterMatrix",
+        "clusterProgressStatus",
+        "clusterProvenanceDrifted",
+        "clusterProvenanceFromRegions",
+        "clusterProvenanceLocLabel",
+        "clusterProvenanceMenuItems",
+        "clusterProvenanceOverlap",
+        "clusteredCladeLayout",
+        "clusteringMenuItem",
+        "compareRowValues",
+        "computeClusterHierarchy",
+        "describeClusterProvenance",
+        "extraColumns",
+        "filterRowsBySubtree",
+        "focusRowGroup",
+        "focusRows",
+        "generateClusterRScript",
+        "loadedRegionIndexAt",
+        "matrixToTsv",
+        "moveDown",
+        "moveUp",
+        "orderRowsByValueAt",
+        "paletteColorsByRow",
+        "parseClusterOrder",
+        "parseClusterTree",
+        "parseNewick",
+        "pickTreeNode",
+        "reconcileLayout",
+        "regionCoversColumn",
+        "resetRowOrderMenuItems",
+        "rowArrangementMenuItem",
+        "rowHeightConfigSchemaFields",
+        "rowHeightMenuItem",
+        "rowLabelsCarryText",
+        "rowSeparatorsConfigSchemaFields",
+        "setupRowSortAutorun",
+        "setupRunClusteringAutorun",
+        "setupTreeDrawingAutorun",
+        "setupTreeSidebarAutoruns",
+        "showRowLabelsMenuItem",
+        "showRowSeparatorsMenuItem",
+        "showTreeSidebarMenuItem",
+        "sortRowsAtColumn",
+        "sortRowsHereMenuItem",
+        "treeBranchLengthMenuItem",
+        "treeDescribesRows",
+        "treeIsShowing",
+        "treeSidebarConfigSchemaFields",
+        "treeSidebarOffset",
+        "treeSidebarRightEdge",
+        "treeSidebarShowMenuItems",
+        "updateRows",
+        "useClusterRun",
+        "validateClusterOrder"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip",
+        "@mui/x-data-grid",
+        "react-dom",
+        "react-dom/client"
+      ]
+    },
+    "@jbrowse/web-core": {
+      "package": "@jbrowse/web-core",
+      "names": [
+        "BaseWebSession",
+        "BaseWebSessionModel",
+        "WebSessionConnectionsMixin",
+        "WebSessionManagementMixin",
+        "finalizeWebSession",
+        "isWebSessionWithConnections",
+        "sessionLastUsed"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/SvgIcon",
+        "@mui/material/Tooltip"
+      ]
+    },
+    "@jbrowse/wiggle-core": {
+      "package": "@jbrowse/wiggle-core",
+      "names": [
+        "AXIS_GUTTER_WIDTH_PX",
+        "AxisGutter",
+        "CrossHatchLines",
+        "CrossHatches",
+        "DEFAULT_AUTOSCALE_OPTIONS",
+        "DEFAULT_GAP_BREAK_MULTIPLE",
+        "DEFAULT_SCORE_FIELD",
+        "MIN_FILL_WIDTH_PX",
+        "NO_PREV_START",
+        "RENDERING_TYPE_DENSITY",
+        "RENDERING_TYPE_LINE",
+        "RENDERING_TYPE_LINE_CENTER",
+        "RENDERING_TYPE_SCATTER",
+        "RENDERING_TYPE_XYPLOT",
+        "SCALE_TYPE_LINEAR",
+        "SCALE_TYPE_LOG",
+        "SCALE_TYPE_SYMLOG",
+        "SCORE_CAPTION_HEIGHT",
+        "SMALL_POINT_MAX_DIAMETER_PX",
+        "ScoreDomainCaption",
+        "ScoreFieldConfigMixin",
+        "ScoreRuleLines",
+        "ScoreRules",
+        "ScoreScaleMixin",
+        "SetMinMaxDialog",
+        "WiggleScoreConfigMixin",
+        "YSCALEBAR_LABEL_OFFSET",
+        "YScaleBar",
+        "YScaleBarOverlay",
+        "appendPointMarker",
+        "autoscaleDomainFromStats",
+        "axisDrawn",
+        "axisPlotBox",
+        "clampStrokeInsideAxis",
+        "collectWiggleTransferables",
+        "computeAutoscaleDomain",
+        "computeScoreStats",
+        "computeYTicks",
+        "domainFromStats",
+        "gapBreakLimit",
+        "getEffectiveScores",
+        "getNiceDomain",
+        "getNiceScale",
+        "getScale",
+        "makeAutoscaleTypeSubMenu",
+        "makeCrossHatchItem",
+        "makePinCurrentRangeItem",
+        "makePointSizeSubMenu",
+        "makeResolutionSubMenuItem",
+        "makeScaleTypeSubMenu",
+        "makeScatterPointSizeMenuItem",
+        "makeScoreNormalizer",
+        "makeScoreSubMenu",
+        "makeSetMinMaxScoreItem",
+        "parseScoreRules",
+        "remapRetiredAutoscale",
+        "resolveRenderState",
+        "resolveSymlogConstant",
+        "scoreAxisConfigSchemaFields",
+        "scoreFieldConfigSchemaFields",
+        "scoreRuleMarks",
+        "scoreToAxisY",
+        "toP",
+        "visibleStatsDomain",
+        "widenRangeToRules",
+        "wiggleScoreConfigExtraSlots"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip",
+        "react-dom"
+      ]
+    },
+    "@jbrowse/wiggle-core/constants": {
+      "package": "@jbrowse/wiggle-core",
+      "names": [
+        "YSCALEBAR_LABEL_OFFSET"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/wiggle-core/normalize": {
+      "package": "@jbrowse/wiggle-core",
+      "names": [
+        "SCALE_TYPE_LINEAR",
+        "SCALE_TYPE_LOG",
+        "SCALE_TYPE_SYMLOG",
+        "makeScoreNormalizer",
+        "resolveSymlogConstant"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/wiggle-core/renderingBackendTypes": {
+      "package": "@jbrowse/wiggle-core",
+      "names": [
+        "MIN_FILL_WIDTH_PX",
+        "NO_PREV_START",
+        "RENDERING_TYPE_DENSITY",
+        "RENDERING_TYPE_LINE",
+        "RENDERING_TYPE_LINE_CENTER",
+        "RENDERING_TYPE_SCATTER",
+        "RENDERING_TYPE_XYPLOT"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/wiggle-core/ScorePlotChrome": {
+      "package": "@jbrowse/wiggle-core",
+      "names": [
+        "ScorePlotChrome"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "@mui/material",
+        "@mui/material/IconButton",
+        "@mui/material/Tooltip",
+        "react-dom"
+      ]
+    },
+    "@jbrowse/wiggle-core/ScorePlotSvgFrame": {
+      "package": "@jbrowse/wiggle-core",
+      "names": [
+        "ScorePlotSvgFrame"
+      ],
+      "worker": "stub",
+      "uiVia": [
+        "react-dom"
+      ]
+    }
+  },
+  "products": {
+    "jbrowse-web": [
+      "@jbrowse/add-track-core",
+      "@jbrowse/alignments-core",
+      "@jbrowse/app-core",
+      "@jbrowse/cigar-utils",
+      "@jbrowse/core",
+      "@jbrowse/display-kit",
+      "@jbrowse/display-ui",
+      "@jbrowse/ld-core",
+      "@jbrowse/modifications-utils",
+      "@jbrowse/plugin-alignments",
+      "@jbrowse/plugin-arc",
+      "@jbrowse/plugin-authentication",
+      "@jbrowse/plugin-bed",
+      "@jbrowse/plugin-breakpoint-split-view",
+      "@jbrowse/plugin-canvas",
+      "@jbrowse/plugin-circular-view",
+      "@jbrowse/plugin-comparative-adapters",
+      "@jbrowse/plugin-config",
+      "@jbrowse/plugin-data-management",
+      "@jbrowse/plugin-dotplot-view",
+      "@jbrowse/plugin-gccontent",
+      "@jbrowse/plugin-gff3",
+      "@jbrowse/plugin-grid-bookmark",
+      "@jbrowse/plugin-gtf",
+      "@jbrowse/plugin-gwas",
+      "@jbrowse/plugin-hic",
+      "@jbrowse/plugin-jobs-management",
+      "@jbrowse/plugin-legacy-jbrowse",
+      "@jbrowse/plugin-linear-comparative-view",
+      "@jbrowse/plugin-linear-genome-view",
+      "@jbrowse/plugin-maf",
+      "@jbrowse/plugin-marks",
+      "@jbrowse/plugin-menus",
+      "@jbrowse/plugin-rdf",
+      "@jbrowse/plugin-sequence",
+      "@jbrowse/plugin-spreadsheet-view",
+      "@jbrowse/plugin-sv-inspector",
+      "@jbrowse/plugin-trix",
+      "@jbrowse/plugin-variants",
+      "@jbrowse/plugin-wiggle",
+      "@jbrowse/product-core",
+      "@jbrowse/render-core",
+      "@jbrowse/sv-core",
+      "@jbrowse/synteny-core",
+      "@jbrowse/tree-sidebar",
+      "@jbrowse/web-core",
+      "@jbrowse/wiggle-core"
+    ],
+    "jbrowse-desktop": [
+      "@jbrowse/add-track-core",
+      "@jbrowse/alignments-core",
+      "@jbrowse/app-core",
+      "@jbrowse/cigar-utils",
+      "@jbrowse/core",
+      "@jbrowse/display-kit",
+      "@jbrowse/display-ui",
+      "@jbrowse/ld-core",
+      "@jbrowse/modifications-utils",
+      "@jbrowse/plugin-alignments",
+      "@jbrowse/plugin-arc",
+      "@jbrowse/plugin-authentication",
+      "@jbrowse/plugin-bed",
+      "@jbrowse/plugin-blat",
+      "@jbrowse/plugin-breakpoint-split-view",
+      "@jbrowse/plugin-canvas",
+      "@jbrowse/plugin-circular-view",
+      "@jbrowse/plugin-comparative-adapters",
+      "@jbrowse/plugin-config",
+      "@jbrowse/plugin-data-management",
+      "@jbrowse/plugin-dotplot-view",
+      "@jbrowse/plugin-gccontent",
+      "@jbrowse/plugin-gff3",
+      "@jbrowse/plugin-grid-bookmark",
+      "@jbrowse/plugin-gtf",
+      "@jbrowse/plugin-gwas",
+      "@jbrowse/plugin-hic",
+      "@jbrowse/plugin-jobs-management",
+      "@jbrowse/plugin-legacy-jbrowse",
+      "@jbrowse/plugin-linear-comparative-view",
+      "@jbrowse/plugin-linear-genome-view",
+      "@jbrowse/plugin-maf",
+      "@jbrowse/plugin-marks",
+      "@jbrowse/plugin-menus",
+      "@jbrowse/plugin-rdf",
+      "@jbrowse/plugin-sequence",
+      "@jbrowse/plugin-spreadsheet-view",
+      "@jbrowse/plugin-sv-inspector",
+      "@jbrowse/plugin-text-indexing",
+      "@jbrowse/plugin-trix",
+      "@jbrowse/plugin-variants",
+      "@jbrowse/plugin-wiggle",
+      "@jbrowse/product-core",
+      "@jbrowse/render-core",
+      "@jbrowse/sv-core",
+      "@jbrowse/synteny-core",
+      "@jbrowse/text-indexing",
+      "@jbrowse/text-indexing-core",
+      "@jbrowse/tree-sidebar",
+      "@jbrowse/wiggle-core"
+    ],
+    "jbrowse-react-linear-genome-view": [
+      "@jbrowse/add-track-core",
+      "@jbrowse/alignments-core",
+      "@jbrowse/cigar-utils",
+      "@jbrowse/core",
+      "@jbrowse/display-kit",
+      "@jbrowse/display-ui",
+      "@jbrowse/embedded-core",
+      "@jbrowse/ld-core",
+      "@jbrowse/modifications-utils",
+      "@jbrowse/plugin-alignments",
+      "@jbrowse/plugin-arc",
+      "@jbrowse/plugin-authentication",
+      "@jbrowse/plugin-bed",
+      "@jbrowse/plugin-canvas",
+      "@jbrowse/plugin-config",
+      "@jbrowse/plugin-data-management",
+      "@jbrowse/plugin-gccontent",
+      "@jbrowse/plugin-gff3",
+      "@jbrowse/plugin-gtf",
+      "@jbrowse/plugin-gwas",
+      "@jbrowse/plugin-legacy-jbrowse",
+      "@jbrowse/plugin-linear-genome-view",
+      "@jbrowse/plugin-maf",
+      "@jbrowse/plugin-marks",
+      "@jbrowse/plugin-sequence",
+      "@jbrowse/plugin-trix",
+      "@jbrowse/plugin-variants",
+      "@jbrowse/plugin-wiggle",
+      "@jbrowse/product-core",
+      "@jbrowse/render-core",
+      "@jbrowse/sv-core",
+      "@jbrowse/tree-sidebar",
+      "@jbrowse/wiggle-core"
+    ],
+    "jbrowse-react-app": [
+      "@jbrowse/add-track-core",
+      "@jbrowse/alignments-core",
+      "@jbrowse/app-core",
+      "@jbrowse/cigar-utils",
+      "@jbrowse/core",
+      "@jbrowse/display-kit",
+      "@jbrowse/display-ui",
+      "@jbrowse/ld-core",
+      "@jbrowse/modifications-utils",
+      "@jbrowse/plugin-alignments",
+      "@jbrowse/plugin-arc",
+      "@jbrowse/plugin-authentication",
+      "@jbrowse/plugin-bed",
+      "@jbrowse/plugin-breakpoint-split-view",
+      "@jbrowse/plugin-canvas",
+      "@jbrowse/plugin-circular-view",
+      "@jbrowse/plugin-comparative-adapters",
+      "@jbrowse/plugin-config",
+      "@jbrowse/plugin-data-management",
+      "@jbrowse/plugin-dotplot-view",
+      "@jbrowse/plugin-gccontent",
+      "@jbrowse/plugin-gff3",
+      "@jbrowse/plugin-grid-bookmark",
+      "@jbrowse/plugin-gtf",
+      "@jbrowse/plugin-gwas",
+      "@jbrowse/plugin-hic",
+      "@jbrowse/plugin-legacy-jbrowse",
+      "@jbrowse/plugin-linear-comparative-view",
+      "@jbrowse/plugin-linear-genome-view",
+      "@jbrowse/plugin-maf",
+      "@jbrowse/plugin-marks",
+      "@jbrowse/plugin-menus",
+      "@jbrowse/plugin-rdf",
+      "@jbrowse/plugin-sequence",
+      "@jbrowse/plugin-spreadsheet-view",
+      "@jbrowse/plugin-sv-inspector",
+      "@jbrowse/plugin-trix",
+      "@jbrowse/plugin-variants",
+      "@jbrowse/plugin-wiggle",
+      "@jbrowse/product-core",
+      "@jbrowse/render-core",
+      "@jbrowse/sv-core",
+      "@jbrowse/synteny-core",
+      "@jbrowse/tree-sidebar",
+      "@jbrowse/web-core",
+      "@jbrowse/wiggle-core"
+    ],
+    "jbrowse-react-circular-genome-view": [
+      "@jbrowse/add-track-core",
+      "@jbrowse/alignments-core",
+      "@jbrowse/cigar-utils",
+      "@jbrowse/core",
+      "@jbrowse/display-kit",
+      "@jbrowse/display-ui",
+      "@jbrowse/embedded-core",
+      "@jbrowse/ld-core",
+      "@jbrowse/plugin-authentication",
+      "@jbrowse/plugin-canvas",
+      "@jbrowse/plugin-circular-view",
+      "@jbrowse/plugin-config",
+      "@jbrowse/plugin-data-management",
+      "@jbrowse/plugin-linear-genome-view",
+      "@jbrowse/plugin-sequence",
+      "@jbrowse/plugin-variants",
+      "@jbrowse/product-core",
+      "@jbrowse/render-core",
+      "@jbrowse/sv-core",
+      "@jbrowse/synteny-core",
+      "@jbrowse/tree-sidebar",
+      "@jbrowse/wiggle-core"
+    ]
+  }
+}

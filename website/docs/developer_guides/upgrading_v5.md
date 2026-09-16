@@ -84,6 +84,33 @@ bottoms out in a registry lookup that throws
 `RpcMethodType 'X' is not registered`, names the method and lists what this
 build does register — which is also the answer to "which plugin is missing".
 
+## Every `@jbrowse` package is served to plugins
+
+The re-export list used to name 25 `@jbrowse/core` subpaths by hand. It is
+generated now, from the `exports` map of every `@jbrowse` package the host
+bundles: all 240 subpaths of core, the display layer (`@jbrowse/display-kit`,
+`@jbrowse/render-core`, `@jbrowse/display-ui`, `@jbrowse/wiggle-core`), the
+helper packages, and each core plugin's entry. A plugin importing
+`@jbrowse/display-kit/DisplayChrome` or `@jbrowse/plugin-linear-genome-view`
+gets the host's copy rather than bundling its own; a display mixin or a React
+context works no other way. [](/docs/developer_guides/imports_and_reexports) has
+the table.
+
+Two things follow for a plugin author:
+
+- **A rebuild raises the plugin's host floor.** The template externalizes
+  whatever the installed `@jbrowse/core`'s list names, so a plugin rebuilt
+  against v5 reads those keys off the host and needs a v5 host. A plugin built
+  earlier keeps working: the keys it reads are still served.
+- **A key the host lacks throws at the first read, naming the key.** A plugin
+  built against a newer core, or against a package the host does not bundle,
+  used to fail as `Cannot read properties of undefined` somewhere inside its own
+  module scope. jbrowse-web reports it as one notification and opens the session
+  without the plugin.
+
+The plugin `exports` objects went in the same change, since what they held is a
+named export of the plugin package — see the next section.
+
 ## Names removed from the re-export ABI
 
 Names left the `@jbrowse/core/*` re-export ABI — the modules an external plugin
@@ -118,15 +145,14 @@ v5 user as compatible whatever its state here.
 
 <!-- BEGIN GENERATED ABI_PLUGIN_BREAKS -->
 
-4 of the 14 plugins in the store break against this build.
+3 of the 13 plugins in the store break against this build.
 
 <!-- prettier-ignore -->
 | Plugin | What breaks |
 | --- | --- |
 | Apollo | `@jbrowse/core/util#isContainedWithin`<br />`@jbrowse/core/util/tracks#getParentRenderProps`<br />`worker eval: TypeError: Cannot read properties of undefined (reading 'createElement')` |
 | Ideogram | `worker eval: ReferenceError: window is not defined` |
-| MsaView | `@jbrowse/core/util#renderToStaticMarkup` |
-| TView | `@jbrowse/core/util#renderToStaticMarkup` |
+| Reactome | `worker eval: TypeError: Cannot read properties of undefined (reading 'createSvgIcon')` |
 
 <!-- END GENERATED ABI_PLUGIN_BREAKS -->
 

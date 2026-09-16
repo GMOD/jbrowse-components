@@ -50,6 +50,33 @@ export interface PluginRecord {
   definition: PluginDefinition
 }
 
+export type ReExportRegistryLoader = () => Promise<{
+  default: Record<string, unknown>
+}>
+
+// A bundle built against a newer core, or against a package this host does
+// not bundle, reads a key the map lacks — at module scope, so what it then
+// throws is `Cannot read properties of undefined` with no module named. A
+// plugin's own build tool only ever externalizes a key `ReExports/list.ts`
+// names, so every scoped-or-slashed read that misses is that case, and this
+// names it. Anything else missing reads `undefined` as it always did.
+function loudOnMissingModule(libs: Record<string, unknown>) {
+  return new Proxy(libs, {
+    get(target, key, receiver) {
+      if (
+        typeof key === 'string' &&
+        !(key in target) &&
+        (key.startsWith('@') || key.includes('/'))
+      ) {
+        throw new Error(
+          `This JBrowse does not serve '${key}' to plugins: the plugin was built against a newer @jbrowse/core, or against a package this host does not bundle`,
+        )
+      }
+      return Reflect.get(target, key, receiver)
+    },
+  })
+}
+
 export interface LoadedPlugin {
   default: PluginConstructor
 }
@@ -299,6 +326,7 @@ export default class PluginLoader {
   }
 
   private reExportTarget: WindowOrWorkerGlobalScope | undefined
+  private reExportRegistry: ReExportRegistryLoader | undefined
 
   /**
    * Ask for the runtime ABI (`JBrowseExports`) to be published on `target`
@@ -310,9 +338,18 @@ export default class PluginLoader {
    * put it in every host's first paint. It is a ~126 KB gzipped module (see
    * `ReExports/registry.ts` for why it cannot shrink) that only a runtime plugin
    * can use, and loading one is async anyway.
+   *
+   * `registry` is the product's generated map — `reExports.generated.ts` on
+   * the main thread, `workerReExports.generated.ts` in its worker — which
+   * serves every `@jbrowse` package the product bundles. Without one, only
+   * what `@jbrowse/core` can serve on its own is published.
    */
-  installGlobalReExports(target: WindowOrWorkerGlobalScope) {
+  installGlobalReExports(
+    target: WindowOrWorkerGlobalScope,
+    registry?: ReExportRegistryLoader,
+  ) {
     this.reExportTarget = target
+    this.reExportRegistry = registry
     return this
   }
 
@@ -323,12 +360,13 @@ export default class PluginLoader {
     }
     // a worker never renders: the same keys, with the UI ones stubbed, so a
     // plugin bundle evaluates there without fetching react-dom and Material UI
-    const { default: ReExports } = isWebWorker()
-      ? await import('./ReExports/workerModules.ts')
-      : await import('./ReExports/index.ts')
-    ;(target as unknown as Record<string, unknown>).JBrowseExports = {
-      ...ReExports,
-    }
+    const { default: ReExports } = this.reExportRegistry
+      ? await this.reExportRegistry()
+      : isWebWorker()
+        ? await import('./ReExports/workerModules.ts')
+        : await import('./ReExports/index.ts')
+    ;(target as unknown as Record<string, unknown>).JBrowseExports =
+      loudOnMissingModule({ ...ReExports })
     // the synchronous half: `pluginManager.jbrequire(name)` is what a CJS
     // plugin calls, and it cannot await
     setReExportRegistry(ReExports)

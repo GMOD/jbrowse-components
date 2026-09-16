@@ -1,80 +1,15 @@
-import { alpha, createTheme, useTheme } from '@mui/material'
-import SvgIcon, { createSvgIcon } from '@mui/material/SvgIcon'
-import * as MUIUtils from '@mui/material/utils'
-import * as mxreact from 'mobx-react'
-import * as ReactDom from 'react-dom'
-import * as ReactDomClient from 'react-dom/client'
+// The runtime plugin ABI @jbrowse/core alone can serve, on the main thread: the
+// framework singletons and Material UI from frameworkModules.ts, and every
+// subpath core's exports map publishes from the generated half. A product
+// spreads this under the packages it bundles beyond core — see each
+// product's reExports.generated.ts, and scripts/generateReExports.ts for how
+// both halves and list.ts are derived.
+import coreModules from './coreModules.generated.ts'
+import frameworkModules from './frameworkModules.ts'
 
-import { cx, keyframes, makeStyles } from '../util/tss-react/index.ts'
-import { BaseFeatureDetail } from './BaseFeatureDetails.tsx'
-import { DataGridEntries } from './MuiDataGridReExports.ts'
-import { Entries } from './MuiReExports.ts'
-import { MUIStyles } from './MuiStylesReExports.ts'
-import { lazyMap } from './lazify.tsx'
-import * as coreUi from './publicUi.tsx'
-import { sharedModules } from './sharedModules.ts'
-
-function makeLegacyMakeStyles() {
-  return (args: Parameters<ReturnType<typeof makeStyles>>[0]) => {
-    const useStyles = makeStyles()(args)
-    return () => useStyles().classes
-  }
-}
-
-const tssReact = { cx, keyframes, makeStyles }
-const legacyMakeStyles = makeLegacyMakeStyles()
-
-const muiMaterialLib = {
-  ...lazyMap(Entries),
-  alpha,
-  useTheme,
-  createTheme,
-}
-const muiStylesLib = { ...MUIStyles, makeStyles: legacyMakeStyles }
-
-const libs = {
-  ...sharedModules,
-  'mobx-react': mxreact,
-  'react-dom': ReactDom,
-  'react-dom/client': ReactDomClient,
-  // Only lazy component entries are re-exported. The grid *hooks*
-  // (useGridApiContext/useGridApiRef/useGridRootProps) are intentionally left
-  // out: statically importing them here pulled the entire ~1.2 MB
-  // @mui/x-data-grid package into the eager first-paint graph, defeating the
-  // lazy import('@mui/x-data-grid') in MuiDataGridReExports. First-party code
-  // that needs the hooks imports them directly from '@mui/x-data-grid'.
-  '@mui/x-data-grid': {
-    ...lazyMap(DataGridEntries),
-  },
-
-  '@mui/material/utils': MUIUtils,
-  'tss-react': tssReact,
-  'tss-react/mui': tssReact,
-
-  '@mui/material': muiMaterialLib,
-  ...lazyMap(Entries, '@mui/material/'),
-
-  // @mui/icons-material — bundled into external plugins — reads the
-  // `createSvgIcon` *named* export from @mui/material/SvgIcon, but lazyMap
-  // exposes only the component (its default). SvgIcon is a primitive that's
-  // eagerly loaded in practice, so expose it directly with createSvgIcon
-  // attached: a default import still lands on a usable component (rollup-plugin-
-  // external-globals substitutes the value itself, esbuild's globalExternals
-  // reads `.default`), while the named import and icons-material's CJS
-  // `require(...).createSvgIcon` both find the util. A shallow copy carries the
-  // forwardRef's $$typeof/render so the shared SvgIcon export isn't mutated.
-  // Overrides the lazy entry above; verified against both bundlers.
-  // GMOD/jbrowse-components#5606.
-  '@mui/material/SvgIcon': Object.assign({}, SvgIcon, { createSvgIcon }),
-
-  '@mui/material/styles': muiStylesLib,
-
-  '@jbrowse/core/ui': coreUi,
-  // the same lazy component publicUi.tsx puts on the namespace; published
-  // react-msaview deep-imports this path, apollo reads the namespace
-  '@jbrowse/core/ui/BaseTooltip': coreUi.BaseTooltip,
-
-  '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail': BaseFeatureDetail,
+const libs: Record<string, unknown> = {
+  ...frameworkModules,
+  ...coreModules,
 }
 
 export default libs

@@ -16,10 +16,23 @@ protect. Read alongside `ARCHITECTURE.md` "Display stacks".
 
 ## The surfaces checked today, and how to remove from them
 
-- **`ReExports/modules.ts`** — the `@jbrowse/core/*` modules external plugins
-  resolve against, pinned by `abi.test.ts` against `abiBaseline.json`. A removal
-  fails there. To drop a name, delete it from the baseline in the same commit
-  and say in the message which published plugins you checked.
+- **The runtime registry is the exports maps** ([ADR-128](../architecture-decision-records/adr-128-the-runtime-abi-is-the-exports-maps.md)).
+  `scripts/generateReExports.ts` writes `ReExports/list.ts`, the module maps
+  in core and in each product, and `reExports.generated.json`, from the
+  `exports` map of every `@jbrowse` package jbrowse-web bundles — 422 keys
+  over 47 packages where the hand list named 25 core subpaths. So a served
+  name is one an exports map publishes, a removal is a diff in a committed
+  generated file, and the two checks that read the manifest are the gates: the
+  `ABI_REMOVED_NAMES` table (`website/scripts/generate-abi-removals.ts`) fails
+  `pnpm autogen --check` on any name the previous release served that the
+  manifest no longer does until someone describes it, and
+  `scripts/check-published-plugins.ts` reads what the store bundles actually
+  take off `JBrowseExports`, weekly. `abi.test.ts` and its `abiBaseline.json`,
+  the `publicUtil`/`publicTracks`/`publicUi` allowlists and `barrelOnlyNames`
+  went with the hand list. `scripts/check-plugin-porosity.ts` is the check
+  that would have found the gap the hand list left: the exemplar plugin built
+  the way the template builds one, failing on any workspace source in its
+  bundle.
 - **A plugin's own `exports` object** and **the session** were pinned by
   removals-only baselines for one day (`pluginExportsBaseline.json`,
   `sessionExportsBaseline.json`) before we decided a hand-maintained baseline
@@ -753,12 +766,11 @@ author who lands on a behavior change can find the sentence that explains it.
 Smallest-useful-first; none committed — they need a scope decision and probably
 belong *inside* RFC-001 §7 rather than bolted beside it.
 
-- [ ] **Name the `@public` set.** Audit each plugin `exports` object +
-  `ReExports/list.ts`; tag entries `@public`/`@internal`. Output: a documented
-  list. (Design input for RFC-001 §7.)
-- [ ] **Snapshot the `@public` set + CI diff.** Minimal (a JSON snapshot + a
-  jest diff test), *not* a heavyweight `api-extractor` toolchain — keep it a net
-  simplification, not a new thing to maintain.
+- [x] **Name the `@public` set** and **snapshot it with a CI diff** — both
+  answered by ADR-128 the other way round: the set is every published
+  subpath, the snapshot is `reExports.generated.json`, and the diff is the
+  removals table's `assertCovers`. The plugin `exports` objects are gone, so
+  there is no second surface to name.
 - [ ] **Derive `preservedExports`.** `packages/core/scripts/generateExports.mjs`
   builds core's `exports` map from in-repo *subpath* usage, which is
   uncorrelated with what an external plugin needs, and the gap is carried by a

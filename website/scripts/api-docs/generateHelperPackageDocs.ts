@@ -119,12 +119,15 @@ export function collectHelperPackages(corpus: SourceCorpus): Pkg[] {
   )
 }
 
-// The "How to use it" cell is the actionable half: whether importing the
-// package normally is safe, or whether the host's copy has to be shared.
+// The "How to use it" cell is the actionable half. Every package here is one
+// the host serves (the re-export table above lists them), so a build-step
+// plugin gets the host's copy either way; what differs is whether a second
+// copy would be harmless, which is what a no-build plugin or a plugin bundling
+// deliberately needs to know.
 function howToUse(pkg: Pkg) {
   return pkg.shared.length
-    ? `Depends on ${pkg.shared.map(d => `\`${d}\``).join(', ')} — those resolve to the host's copy, so import it from a build-step plugin that externalizes them`
-    : 'No framework or `@jbrowse/core` dependency — `npm install` and import it like any other dependency (it gets bundled)'
+    ? `Served by the host, and it has to be: it depends on ${pkg.shared.map(d => `\`${d}\``).join(', ')}, so a bundled second copy would not interoperate. Import it and let the template externalize it`
+    : 'Served by the host, and safe to bundle too — no framework or `@jbrowse/core` dependency'
 }
 
 function renderTable(packages: Pkg[]) {

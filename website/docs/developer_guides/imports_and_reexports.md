@@ -13,7 +13,7 @@ so an import resolves one of two ways:
   must use the host's copy, not bundle its own.
 - Everything else is any other npm package. Your plugin bundles it normally.
 
-Import React, MobX, MST, MUI, and the `@jbrowse/core` APIs listed below normally
+Import React, MobX, MST, MUI and every `@jbrowse` package listed below normally
 (the plugin template externalizes them to the host's copy); everything else gets
 bundled into your plugin.
 
@@ -36,9 +36,10 @@ So JBrowse loads one copy of each and **re-exports** it to plugins.
 
 ## What is re-exported
 
-The canonical list lives in
+The list lives in
 [`packages/core/src/ReExports/list.ts`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ReExports/list.ts),
-and the table below is generated from it. The categories:
+generated from the packages' own `exports` maps, and the table below is
+generated from the same run. The categories:
 
 - Framework singletons - `react` (with `react/jsx-runtime`), `react-dom` (with
   `react-dom/client`), `mobx`, `mobx-react`, and `@jbrowse/mobx-state-tree`, our
@@ -46,39 +47,72 @@ and the table below is generated from it. The categories:
 - Styling - `@mui/material` and its per-component subpaths (e.g.
   `@mui/material/Button`), `@mui/material/styles`, `tss-react`,
   `@mui/x-data-grid`.
-- `@jbrowse/core` APIs - the building blocks for pluggable elements and shared
-  helpers:
+- Every `@jbrowse` package the host bundles, at every subpath its `exports` map
+  publishes — `@jbrowse/core`, the display layer (`@jbrowse/display-kit`,
+  `@jbrowse/render-core`, `@jbrowse/display-ui`), the helper packages, and each
+  core plugin's entry (`@jbrowse/plugin-linear-genome-view`, ...). Your editor's
+  completion on any of these is the list of what you can import.
+
+A plugin's one bundle is evaluated on the main thread and again in the RPC
+worker, where nothing renders. The worker serves a module for real unless the
+module reaches react-dom, a Material UI component, the data grid or floating-ui,
+in which case it serves a stub that carries the module's export names, so your
+module-scope reads and calls succeed there. The last column says how much of
+each package the worker serves for real; an adapter, an RPC method or a
+state-model mixin is always real in both realms.
 
 <!-- REEXPORT_MODULES START -->
 
 <!-- prettier-ignore -->
-| Module | What it provides |
-| --- | --- |
-| `@jbrowse/core/Plugin` | The base `Plugin` class your plugin extends |
-| `@jbrowse/core/pluggableElementTypes` | `ViewType`, `AdapterType`, `DisplayType`, `TrackType`, `WidgetType` in one import, for the `install` method that registers several |
-| `@jbrowse/core/pluggableElementTypes/ViewType` | Just the `ViewType` class, registered with `addViewType` |
-| `@jbrowse/core/pluggableElementTypes/AdapterType` | Just the `AdapterType` class, registered with `addAdapterType` |
-| `@jbrowse/core/pluggableElementTypes/DisplayType` | Just the `DisplayType` class, registered with `addDisplayType` |
-| `@jbrowse/core/pluggableElementTypes/TrackType` | Just the `TrackType` class, registered with `addTrackType` |
-| `@jbrowse/core/pluggableElementTypes/WidgetType` | Just the `WidgetType` class, registered with `addWidgetType` |
-| `@jbrowse/core/pluggableElementTypes/models` | Base MST models for tracks and displays to compose with |
-| `@jbrowse/core/configuration` | `ConfigurationSchema`, `ConfigurationReference`, `readConfObject`, `getConf` |
-| `@jbrowse/core/util/types/mst` | Reusable MST types like `ElementId` and `Region` |
-| `@jbrowse/core/ui` | Shared UI components — dialogs, menus, error and loading states |
-| `@jbrowse/core/ui/theme` | The JBrowse MUI theme |
-| `@jbrowse/core/ui/palette` | The same colors and `resolvePalette` without Material UI in the module graph, for worker and renderer code |
-| `@jbrowse/core/ui/BaseTooltip` | The hover tooltip, kept out of the `ui` barrel so @floating-ui stays off the startup path |
-| `@jbrowse/core/util` | Core helpers: `getSession`, `getContainingView`, `Feature`, region and coordinate utilities |
-| `@jbrowse/core/util/color` | Color parsing and manipulation helpers |
-| `@jbrowse/core/util/layouts` | Feature layout (packing) helpers |
-| `@jbrowse/core/util/tracks` | Track and adapter config helpers |
-| `@jbrowse/core/util/Base1DViewModel` | The 1D (bp↔px) view model the linear views are built on |
-| `@jbrowse/core/util/io` | `openLocation` and the file-handle helpers |
-| `@jbrowse/core/util/mst-reflection` | Helpers for inspecting MST types |
-| `@jbrowse/core/util/rxjs` | The RxJS re-exports an adapter's `getFeatures` stream is built from |
-| `@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail` | `FeatureDetails`, `BaseCard` and the other feature-detail building blocks |
-| `@jbrowse/core/data_adapters/BaseAdapter` | `BaseFeatureDataAdapter` and the adapter base classes |
-| `@jbrowse/core/data_adapters/dataAdapterCache` | `getAdapter`, the worker-side adapter cache an RPC method resolves its adapter through |
+| Package | What it provides | Subpaths | Real in the RPC worker |
+| --- | --- | --- | --- |
+| [`@jbrowse/add-track-core`](/docs/api/add-track-core) | The file-format table the add-track guessers and the CLI both read — no framework deps | 1 | all of it |
+| [`@jbrowse/alignments-core`](/docs/api/alignments-core) | Shared GPU rendering utilities for alignments and synteny displays | 2 | all of it |
+| [`@jbrowse/app-core`](/docs/api/app-core) | JBrowse 2 code shared between the 'full featured' apps e.g. jbrowse-web and jbrowse-desktop | 1 | none; a stub with its names |
+| [`@jbrowse/cigar-utils`](/docs/api/cigar-utils) | Pure CIGAR / MD / mismatch parsers and types — no rendering or framework deps | 1 | all of it |
+| [`@jbrowse/core`](/docs/api/core) | JBrowse 2 core libraries used by plugins | 237 | 197 of 237 subpaths; the rest stubbed |
+| [`@jbrowse/display-kit`](/docs/api/display-kit) | The display integration layer a track type is built on: the fetch foundations, the byte gate, the display chrome, SVG export, and the RegionHost view contract | 72 | 54 of 72 subpaths; the rest stubbed |
+| [`@jbrowse/display-ui`](/docs/api/display-ui) | The UI a display draws that is not data: the swappable chrome contract, its toolkit-free implementations, and the track overlay layer | 3 | 2 of 3 subpaths; the rest stubbed |
+| [`@jbrowse/ld-core`](/docs/api/ld-core) | Pure linkage-disequilibrium parsers and math — PLINK .ld parsing and genotype r²/D' — no rendering or framework deps | 1 | all of it |
+| [`@jbrowse/modifications-utils`](/docs/api/modifications-utils) | Pure MM/ML base-modification tag parsers (methylation, etc.) | 1 | all of it |
+| `@jbrowse/plugin-alignments` | JBrowse 2 alignments adapters, tracks, etc. | 2 | none; a stub with its names |
+| `@jbrowse/plugin-arc` | JBrowse 2 arc adapters, tracks, etc. | 1 | none; a stub with its names |
+| `@jbrowse/plugin-authentication` | JBrowse 2 Authentication | 1 | none; a stub with its names |
+| `@jbrowse/plugin-bed` | JBrowse 2 bed adapters, tracks, etc. | 1 | all of it |
+| `@jbrowse/plugin-breakpoint-split-view` | JBrowse 2 breakpoint detail split view | 1 | none; a stub with its names |
+| `@jbrowse/plugin-canvas` | JBrowse 2 plugin for canvas features | 3 | none; a stub with its names |
+| `@jbrowse/plugin-circular-view` | JBrowse 2 circular view | 1 | none; a stub with its names |
+| `@jbrowse/plugin-comparative-adapters` | JBrowse 2 comparative adapters | 1 | none; a stub with its names |
+| `@jbrowse/plugin-config` | JBrowse 2 config utilities | 1 | all of it |
+| `@jbrowse/plugin-data-management` | JBrowse 2 linear genome view | 1 | all of it |
+| `@jbrowse/plugin-dotplot-view` | JBrowse 2 dotplot view | 1 | none; a stub with its names |
+| `@jbrowse/plugin-gccontent` | JBrowse 2 gccontent concepts | 1 | none; a stub with its names |
+| `@jbrowse/plugin-gff3` | JBrowse 2 gff3. | 1 | all of it |
+| `@jbrowse/plugin-grid-bookmark` | JBrowse 2 grid bookmark widget | 1 | none; a stub with its names |
+| `@jbrowse/plugin-gtf` | JBrowse 2 gtf feature adapter | 1 | all of it |
+| `@jbrowse/plugin-gwas` | JBrowse 2 GWAS adapters, tracks, and Manhattan plot displays | 1 | none; a stub with its names |
+| `@jbrowse/plugin-hic` | JBrowse 2 hic adapters, tracks, etc. | 1 | all of it |
+| `@jbrowse/plugin-jobs-management` | JBrowse 2 jobs management | 1 | none; a stub with its names |
+| `@jbrowse/plugin-legacy-jbrowse` | JBrowse 2 plugin for connecting to and reading JBrowse 1 data | 1 | all of it |
+| `@jbrowse/plugin-linear-comparative-view` | JBrowse 2 linear comparative view | 1 | none; a stub with its names |
+| `@jbrowse/plugin-linear-genome-view` | JBrowse 2 linear genome view | 1 | none; a stub with its names |
+| `@jbrowse/plugin-maf` | JBrowse 2 multiple alignment format (MAF) viewer | 1 | none; a stub with its names |
+| `@jbrowse/plugin-marks` | JBrowse 2 config-authored mark display: bars, points and spans drawn from a declared encoding over any feature track | 1 | none; a stub with its names |
+| `@jbrowse/plugin-menus` | JBrowse 2 basic menus | 1 | all of it |
+| `@jbrowse/plugin-rdf` | JBrowse 2 RDF resources | 1 | all of it |
+| `@jbrowse/plugin-sequence` | JBrowse 2 sequence adapters, tracks, etc. | 1 | all of it |
+| `@jbrowse/plugin-spreadsheet-view` | JBrowse 2 spreadsheet view | 1 | all of it |
+| `@jbrowse/plugin-sv-inspector` | JBrowse 2 SV inspector view | 1 | none; a stub with its names |
+| `@jbrowse/plugin-trix` | JBrowse 2 trix text search adapter | 1 | all of it |
+| `@jbrowse/plugin-variants` | JBrowse 2 variant adapters, tracks, etc. | 1 | none; a stub with its names |
+| `@jbrowse/plugin-wiggle` | JBrowse 2 wiggle adapters, tracks, etc. | 2 | none; a stub with its names |
+| [`@jbrowse/product-core`](/docs/api/product-core) | JBrowse 2 code shared between products but not used by plugins | 1 | none; a stub with its names |
+| [`@jbrowse/render-core`](/docs/api/render-core) | GPU/Canvas2D rendering primitives for JBrowse displays: the HAL, the draw-lifecycle mixin, per-region/global backend bases, and the React backend hooks | 57 | all of it |
+| [`@jbrowse/sv-core`](/docs/api/sv-core) | VCF breakend / structural-variant parsing and the shared SV launch helpers | 1 | none; a stub with its names |
+| [`@jbrowse/synteny-core`](/docs/api/synteny-core) | Shared utilities for synteny and dotplot rendering | 1 | none; a stub with its names |
+| [`@jbrowse/tree-sidebar`](/docs/api/tree-sidebar) | Shared tree sidebar component for multi-sample displays | 1 | none; a stub with its names |
+| [`@jbrowse/web-core`](/docs/api/web-core) | JBrowse 2 code shared between web-app type products | 1 | none; a stub with its names |
+| [`@jbrowse/wiggle-core`](/docs/api/wiggle-core) | Score-axis scale, autoscale, config mixins and plot chrome shared by wiggle, Manhattan, mark and coverage displays | 6 | 3 of 6 subpaths; the rest stubbed |
 
 <!-- REEXPORT_MODULES END -->
 
@@ -88,33 +122,39 @@ Anything not in that list (`d3`, `lodash-es`, a file-format parser, your own
 helpers): `import` it normally and your bundler includes it in your plugin's
 output. Nothing breaks from having more than one copy, so these aren't shared.
 
+A `@jbrowse` subpath the exports map does not publish is not importable at all,
+so there is nothing of a served package that a plugin can end up bundling. What
+a host can lack is a whole package it does not bundle — the embedded
+circular-genome-view build serves fewer plugins than jbrowse-web — and a key a
+host lacks throws at the plugin's first read, naming the key, so the failure is
+one notification rather than an `undefined is not a function` somewhere later.
+
 ## Standalone helper packages
 
 JBrowse publishes several helper packages to npm alongside `@jbrowse/core`, so
-the parsing and scale math is already written. None of them is re-exported, and
-the third column says what each costs to depend on.
+the parsing and scale math is already written. The host serves each of them, and
+the third column says whether a second copy would also be safe, for a no-build
+plugin or one bundling deliberately.
 
 <!-- HELPER_PACKAGES START -->
 
 <!-- prettier-ignore -->
 | Package | What it provides | How to use it |
 | --- | --- | --- |
-| [`@jbrowse/cigar-utils`](/docs/api/cigar-utils) | Pure CIGAR / MD / mismatch parsers and types — no rendering or framework deps | No framework or `@jbrowse/core` dependency — `npm install` and import it like any other dependency (it gets bundled) |
-| [`@jbrowse/modifications-utils`](/docs/api/modifications-utils) | Pure MM/ML base-modification tag parsers (methylation, etc.) | Depends on `@jbrowse/core` — those resolve to the host's copy, so import it from a build-step plugin that externalizes them |
-| [`@jbrowse/wiggle-core`](/docs/api/wiggle-core) | Score-axis scale, autoscale, config mixins and plot chrome shared by wiggle, Manhattan, mark and coverage displays | Depends on `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx-react`, `react` — those resolve to the host's copy, so import it from a build-step plugin that externalizes them |
-| [`@jbrowse/display-ui`](/docs/api/display-ui) | The UI a display draws that is not data: the swappable chrome contract, its toolkit-free implementations, and the track overlay layer | Depends on `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx-react`, `react`, `react-dom` — those resolve to the host's copy, so import it from a build-step plugin that externalizes them |
-| [`@jbrowse/synteny-core`](/docs/api/synteny-core) | Shared utilities for synteny and dotplot rendering | Depends on `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx`, `mobx-react`, `react` — those resolve to the host's copy, so import it from a build-step plugin that externalizes them |
-| [`@jbrowse/sv-core`](/docs/api/sv-core) | VCF breakend / structural-variant parsing and the shared SV launch helpers | Depends on `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx`, `mobx-react`, `react`, `react-dom` — those resolve to the host's copy, so import it from a build-step plugin that externalizes them |
+| [`@jbrowse/cigar-utils`](/docs/api/cigar-utils) | Pure CIGAR / MD / mismatch parsers and types — no rendering or framework deps | Served by the host, and safe to bundle too — no framework or `@jbrowse/core` dependency |
+| [`@jbrowse/modifications-utils`](/docs/api/modifications-utils) | Pure MM/ML base-modification tag parsers (methylation, etc.) | Served by the host, and it has to be: it depends on `@jbrowse/core`, so a bundled second copy would not interoperate. Import it and let the template externalize it |
+| [`@jbrowse/wiggle-core`](/docs/api/wiggle-core) | Score-axis scale, autoscale, config mixins and plot chrome shared by wiggle, Manhattan, mark and coverage displays | Served by the host, and it has to be: it depends on `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx-react`, `react`, so a bundled second copy would not interoperate. Import it and let the template externalize it |
+| [`@jbrowse/display-ui`](/docs/api/display-ui) | The UI a display draws that is not data: the swappable chrome contract, its toolkit-free implementations, and the track overlay layer | Served by the host, and it has to be: it depends on `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx-react`, `react`, `react-dom`, so a bundled second copy would not interoperate. Import it and let the template externalize it |
+| [`@jbrowse/synteny-core`](/docs/api/synteny-core) | Shared utilities for synteny and dotplot rendering | Served by the host, and it has to be: it depends on `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx`, `mobx-react`, `react`, so a bundled second copy would not interoperate. Import it and let the template externalize it |
+| [`@jbrowse/sv-core`](/docs/api/sv-core) | VCF breakend / structural-variant parsing and the shared SV launch helpers | Served by the host, and it has to be: it depends on `@jbrowse/core`, `@jbrowse/mobx-state-tree`, `mobx`, `mobx-react`, `react`, `react-dom`, so a bundled second copy would not interoperate. Import it and let the template externalize it |
 
 <!-- HELPER_PACKAGES END -->
 
 A package with no framework dependency is safe to bundle: two copies of a pure
 parser are wasteful at worst. One that depends on `@jbrowse/core` or the
-React/MobX stack is not, for the reason in
-[`@jbrowse/core` paths not in the list](#jbrowsecore-paths-not-in-the-list)
-below — bundling a second copy of core gives you a second configuration system
-and a second set of model types, which the host does not recognize. Import those
-from a build-step plugin, whose template externalizes the shared set.
+React/MobX stack is not — a second copy of core is a second configuration system
+and a second set of model types, which the host does not recognize — and that is
+why the host serves it.
 
 The exported functions for each are documented on the linked API pages and
 mirrored into the package's README on npm.
@@ -146,13 +186,14 @@ import { SCORE_MARKS } from './scoreMarks.ts'
 ```
 
 The [plugin templates](/docs/developer_guides/simple_plugin) mark the re-export
-list as **external**, so every import above that appears in the table earlier on
-this page resolves to the host's copy at runtime: the `@jbrowse/core` subpaths,
-`@jbrowse/mobx-state-tree`, `mobx`. The other two,
-`@jbrowse/plugin-linear-genome-view` and `@jbrowse/render-core`, are not on the
-list, so they are bundled into the plugin, like any dependency that isn't —
-`d3-scale`, say. The build configs read `ReExports/list.ts` directly, so you do
-not maintain this set yourself.
+list as **external**, so every import above resolves to the host's copy at
+runtime: the `@jbrowse/core` subpaths, `@jbrowse/display-kit`,
+`@jbrowse/render-core`, `@jbrowse/mobx-state-tree`, `mobx`. A dependency that is
+not on the list — `d3-scale`, say — is bundled into the plugin. The build
+configs read `ReExports/list.ts` directly, so you do not maintain this set
+yourself; what it does mean is that a plugin rebuilt against a newer
+`@jbrowse/core` externalizes whatever that version's list names, and needs a
+host at least that new.
 
 ### What your tsconfig needs
 
@@ -205,9 +246,10 @@ const React = pluginManager.jbrequire('react')
 `jbrequire` only knows the re-export list. Requesting anything else throws:
 
 ```
-No jbrequire re-export defined for package 'd3-scale'. If this package must be
-shared between plugins, add it to ReExports/list.ts. If it does not need to be
-shared, just import it normally.
+No jbrequire re-export defined for 'd3-scale'. The host serves what
+@jbrowse/core/ReExports/list names: the framework singletons, Material UI, and
+every subpath the bundled @jbrowse packages publish. Anything else, bundle into
+the plugin.
 ```
 
 With no bundler, a non-re-exported dependency has to be loaded another way:
@@ -215,22 +257,22 @@ inline it into your single file, or switch to a build-step plugin.
 
 ## Quick reference
 
-| You need                                 | Build-step plugin                         | No-build plugin                                |
-| ---------------------------------------- | ----------------------------------------- | ---------------------------------------------- |
-| React, MobX, MST, MUI, tss-react         | `import` normally (template externalizes) | `pluginManager.jbrequire('react')`             |
-| `@jbrowse/core` APIs (in the list above) | `import` from `@jbrowse/core/...`         | `pluginManager.jbrequire('@jbrowse/core/...')` |
-| Any other npm package                    | `import` normally (gets bundled)          | inline it, or use a build-step plugin          |
+| You need                                   | Build-step plugin                         | No-build plugin                           |
+| ------------------------------------------ | ----------------------------------------- | ----------------------------------------- |
+| React, MobX, MST, MUI, tss-react           | `import` normally (template externalizes) | `pluginManager.jbrequire('react')`        |
+| `@jbrowse/*` packages (in the table above) | `import` from `@jbrowse/...`              | `pluginManager.jbrequire('@jbrowse/...')` |
+| Any other npm package                      | `import` normally (gets bundled)          | inline it, or use a build-step plugin     |
 
-## Importing an unlisted `@jbrowse/core` path {#jbrowsecore-paths-not-in-the-list}
+## A second copy of `@jbrowse/core` is the failure to avoid {#jbrowsecore-paths-not-in-the-list}
 
-`@jbrowse/core` exports far more than the re-exported subset. With a build step
-you _can_ import a core path that isn't re-exported, but the bundler copies that
-code into your plugin rather than sharing the host's. That's harmless for pure
-helpers, but risky for anything depending on shared identity or singletons
-(model types, registries, the configuration system), since you'd get two
-diverging copies. If you need such a module shared,
-[open a request](https://github.com/GMOD/jbrowse-components/discussions/new) to
-add it to the list.
+Before the list was generated from the exports maps it named 25 of core's
+subpaths, and a build-step plugin importing any other — or importing
+`@jbrowse/display-kit`, which reaches 33 of them — bundled a copy of that code
+beside the host's. One published plugin carried 84 files of core that way,
+including the blob map that carries a locally opened file to the worker and a
+React context the host's provider never reaches. Every published subpath is
+served now, so a plugin built against the current template cannot do this; a
+plugin built against an older list can, and its next rebuild fixes it.
 
 ## See also
 

@@ -48,8 +48,8 @@ listed the very same component in its `exports` object, for external plugins.
 `exports` is evaluated when the class is defined, so the `lazy()` bought
 nothing. It sat behind `lazy()` plus a `Suspense` wrapper for a while; on
 2026-09-16 the `exports` objects went altogether, since no published bundle
-reads one on v5 (PLUGIN_ABI_STABILITY.md §"The plugin `exports` objects are
-gone").
+reads one on v5 (PLUGIN_ABI_STABILITY.md §"What has left the session and the
+plugin `exports` objects").
 
 **A `lazy()` at a registration site only holds if nothing else in an eagerly
 evaluated module names the same component.** A plugin `exports` object is the
@@ -146,6 +146,18 @@ Pinned by three tests in `PluginLoader.test.ts`, including one that installs the
 repo's own no-build plugin fixture (`test_data/no_build_plugin/esmplugin.js`,
 five `jbrequire` calls at the top of `install()`) end to end. All three were
 confirmed to fail with the `publishReExports()` call removed.
+
+Since 2026-09-16 the registry is generated from the exports maps
+(`scripts/generateReExports.ts`, ADR-128) and serves every subpath of every
+`@jbrowse` package the product bundles — 422 keys where the hand list named
+25 — so the namespace spread above names far more than it did. It is the same
+lazy chunk, loaded only when a config names a runtime plugin, and each product
+holds its own generated map (`reExports.generated.ts`) so an embedded build
+serves only the packages it bundles. The worker's stub-or-real split is derived
+in the same run: a module is stubbed when its own source graph names react-dom,
+a Material UI component, the data grid or floating-ui, which is what put
+`ui/theme.ts` onto `@mui/material/styles` — its `@mui/material` barrel import
+had been marking a module every renderer reads as UI.
 
 ### 4. The `@jbrowse/core/ui` barrel, and two more elements in descriptors
 

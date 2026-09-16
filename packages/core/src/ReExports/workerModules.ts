@@ -1,19 +1,13 @@
-import reExportsList from './list.ts'
-import { sharedModules } from './sharedModules.ts'
-import { uiNamespace, uiStub } from './uiStub.ts'
-import { WORKER_NAMESPACE_NAMES } from './workerNamespaceNames.ts'
+// Same keys as modules.ts, as the RPC worker serves them: a module a plugin
+// reads only to render is a stub carrying the main thread's export names, so
+// the one bundle a plugin ships evaluates in both realms without the worker
+// fetching the UI graph. agent-docs/reference/EAGER_BUNDLE.md
+import coreWorkerModules from './coreWorkerModules.generated.ts'
+import frameworkWorkerModules from './frameworkWorkerModules.generated.ts'
 
-// Same keys as modules.ts; UI entries stubbed. agent-docs/reference/EAGER_BUNDLE.md
 const libs: Record<string, unknown> = {
-  ...Object.fromEntries(
-    reExportsList.map(name => [
-      name,
-      name in WORKER_NAMESPACE_NAMES
-        ? uiNamespace(WORKER_NAMESPACE_NAMES[name]!)
-        : uiStub,
-    ]),
-  ),
-  ...sharedModules,
+  ...frameworkWorkerModules,
+  ...coreWorkerModules,
 }
 
 export default libs

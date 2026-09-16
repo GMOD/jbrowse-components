@@ -2163,15 +2163,36 @@ importers:
       '@gmod/faidx':
         specifier: ^3.0.1
         version: 3.0.1
+      '@jbrowse/add-track-core':
+        specifier: workspace:^
+        version: link:../../packages/add-track-core
+      '@jbrowse/alignments-core':
+        specifier: workspace:^
+        version: link:../../packages/alignments-core
       '@jbrowse/app-core':
         specifier: workspace:^
         version: link:../../packages/app-core
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../../packages/cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
+      '@jbrowse/display-ui':
+        specifier: workspace:^
+        version: link:../../packages/display-ui
+      '@jbrowse/ld-core':
+        specifier: workspace:^
+        version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.1
         version: 6.5.1(mobx@7.0.3)
+      '@jbrowse/modifications-utils':
+        specifier: workspace:^
+        version: link:../../packages/modifications-utils
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2277,12 +2298,24 @@ importers:
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
+      '@jbrowse/sv-core':
+        specifier: workspace:^
+        version: link:../../packages/sv-core
+      '@jbrowse/synteny-core':
+        specifier: workspace:^
+        version: link:../../packages/synteny-core
       '@jbrowse/text-indexing':
         specifier: workspace:^
         version: link:../../packages/text-indexing
       '@jbrowse/text-indexing-core':
         specifier: workspace:^
         version: link:../../packages/text-indexing-core
+      '@jbrowse/tree-sidebar':
+        specifier: workspace:^
+        version: link:../../packages/tree-sidebar
+      '@jbrowse/wiggle-core':
+        specifier: workspace:^
+        version: link:../../packages/wiggle-core
       '@mui/icons-material':
         specifier: ^9.4.0
         version: 9.4.0(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@types/react@19.3.0)(react@19.3.0)
@@ -2429,15 +2462,36 @@ importers:
       '@emotion/styled':
         specifier: ^11.14.1
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1)
+      '@jbrowse/add-track-core':
+        specifier: workspace:^
+        version: link:../../packages/add-track-core
+      '@jbrowse/alignments-core':
+        specifier: workspace:^
+        version: link:../../packages/alignments-core
       '@jbrowse/app-core':
         specifier: workspace:^
         version: link:../../packages/app-core
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../../packages/cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
+      '@jbrowse/display-ui':
+        specifier: workspace:^
+        version: link:../../packages/display-ui
+      '@jbrowse/ld-core':
+        specifier: workspace:^
+        version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.1
         version: 6.5.1(mobx@7.0.3)
+      '@jbrowse/modifications-utils':
+        specifier: workspace:^
+        version: link:../../packages/modifications-utils
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2534,9 +2588,21 @@ importers:
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
+      '@jbrowse/sv-core':
+        specifier: workspace:^
+        version: link:../../packages/sv-core
+      '@jbrowse/synteny-core':
+        specifier: workspace:^
+        version: link:../../packages/synteny-core
+      '@jbrowse/tree-sidebar':
+        specifier: workspace:^
+        version: link:../../packages/tree-sidebar
       '@jbrowse/web-core':
         specifier: workspace:^
         version: link:../../packages/web-core
+      '@jbrowse/wiggle-core':
+        specifier: workspace:^
+        version: link:../../packages/wiggle-core
       '@mui/material':
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -2614,18 +2680,39 @@ importers:
       '@emotion/styled':
         specifier: ^11.14.1
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1)
+      '@jbrowse/add-track-core':
+        specifier: workspace:^
+        version: link:../../packages/add-track-core
+      '@jbrowse/alignments-core':
+        specifier: workspace:^
+        version: link:../../packages/alignments-core
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../../packages/cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
+      '@jbrowse/display-ui':
+        specifier: workspace:^
+        version: link:../../packages/display-ui
       '@jbrowse/embedded-core':
         specifier: workspace:^
         version: link:../../packages/embedded-core
+      '@jbrowse/ld-core':
+        specifier: workspace:^
+        version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.1
         version: 6.5.1(mobx@7.0.3)
       '@jbrowse/plugin-authentication':
         specifier: workspace:^
         version: link:../../plugins/authentication
+      '@jbrowse/plugin-canvas':
+        specifier: workspace:^
+        version: link:../../plugins/canvas
       '@jbrowse/plugin-circular-view':
         specifier: workspace:^
         version: link:../../plugins/circular-view
@@ -2635,6 +2722,9 @@ importers:
       '@jbrowse/plugin-data-management':
         specifier: workspace:^
         version: link:../../plugins/data-management
+      '@jbrowse/plugin-linear-genome-view':
+        specifier: workspace:^
+        version: link:../../plugins/linear-genome-view
       '@jbrowse/plugin-sequence':
         specifier: workspace:^
         version: link:../../plugins/sequence
@@ -2644,6 +2734,21 @@ importers:
       '@jbrowse/product-core':
         specifier: workspace:^
         version: link:../../packages/product-core
+      '@jbrowse/render-core':
+        specifier: workspace:^
+        version: link:../../packages/render-core
+      '@jbrowse/sv-core':
+        specifier: workspace:^
+        version: link:../../packages/sv-core
+      '@jbrowse/synteny-core':
+        specifier: workspace:^
+        version: link:../../packages/synteny-core
+      '@jbrowse/tree-sidebar':
+        specifier: workspace:^
+        version: link:../../packages/tree-sidebar
+      '@jbrowse/wiggle-core':
+        specifier: workspace:^
+        version: link:../../packages/wiggle-core
       '@mui/material':
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -2721,15 +2826,36 @@ importers:
       '@emotion/styled':
         specifier: ^11.14.1
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1)
+      '@jbrowse/add-track-core':
+        specifier: workspace:^
+        version: link:../../packages/add-track-core
+      '@jbrowse/alignments-core':
+        specifier: workspace:^
+        version: link:../../packages/alignments-core
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../../packages/cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
+      '@jbrowse/display-kit':
+        specifier: workspace:^
+        version: link:../../packages/display-kit
+      '@jbrowse/display-ui':
+        specifier: workspace:^
+        version: link:../../packages/display-ui
       '@jbrowse/embedded-core':
         specifier: workspace:^
         version: link:../../packages/embedded-core
+      '@jbrowse/ld-core':
+        specifier: workspace:^
+        version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.1
         version: 6.5.1(mobx@7.0.3)
+      '@jbrowse/modifications-utils':
+        specifier: workspace:^
+        version: link:../../packages/modifications-utils
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2793,6 +2919,15 @@ importers:
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
+      '@jbrowse/sv-core':
+        specifier: workspace:^
+        version: link:../../packages/sv-core
+      '@jbrowse/tree-sidebar':
+        specifier: workspace:^
+        version: link:../../packages/tree-sidebar
+      '@jbrowse/wiggle-core':
+        specifier: workspace:^
+        version: link:../../packages/wiggle-core
       '@mui/material':
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -2873,18 +3008,36 @@ importers:
       '@fontsource/roboto':
         specifier: ^5.3.0
         version: 5.3.0
+      '@jbrowse/add-track-core':
+        specifier: workspace:^
+        version: link:../../packages/add-track-core
+      '@jbrowse/alignments-core':
+        specifier: workspace:^
+        version: link:../../packages/alignments-core
       '@jbrowse/app-core':
         specifier: workspace:^
         version: link:../../packages/app-core
+      '@jbrowse/cigar-utils':
+        specifier: workspace:^
+        version: link:../../packages/cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
       '@jbrowse/display-kit':
         specifier: workspace:^
         version: link:../../packages/display-kit
+      '@jbrowse/display-ui':
+        specifier: workspace:^
+        version: link:../../packages/display-ui
+      '@jbrowse/ld-core':
+        specifier: workspace:^
+        version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.1
         version: 6.5.1(mobx@7.0.3)
+      '@jbrowse/modifications-utils':
+        specifier: workspace:^
+        version: link:../../packages/modifications-utils
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2984,9 +3137,21 @@ importers:
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
+      '@jbrowse/sv-core':
+        specifier: workspace:^
+        version: link:../../packages/sv-core
+      '@jbrowse/synteny-core':
+        specifier: workspace:^
+        version: link:../../packages/synteny-core
+      '@jbrowse/tree-sidebar':
+        specifier: workspace:^
+        version: link:../../packages/tree-sidebar
       '@jbrowse/web-core':
         specifier: workspace:^
         version: link:../../packages/web-core
+      '@jbrowse/wiggle-core':
+        specifier: workspace:^
+        version: link:../../packages/wiggle-core
       '@mui/icons-material':
         specifier: ^9.4.0
         version: 9.4.0(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@types/react@19.3.0)(react@19.3.0)
@@ -3009,9 +3174,6 @@ importers:
         specifier: ^19.3.0
         version: 19.3.0(react@19.3.0)
     devDependencies:
-      '@jbrowse/add-track-core':
-        specifier: workspace:*
-        version: link:../../packages/add-track-core
       '@jbrowse/browser-test-utils':
         specifier: workspace:*
         version: link:../../packages/browser-test-utils

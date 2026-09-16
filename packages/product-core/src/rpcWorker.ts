@@ -5,7 +5,10 @@ import { RpcServer, serializeError } from '@jbrowse/core/util/librpc'
 import { setStackTraceLimit } from '@jbrowse/core/util/setStackTraceLimit'
 
 import type { PluginConstructor } from '@jbrowse/core/Plugin'
-import type { LoadedPlugin } from '@jbrowse/core/PluginLoader'
+import type {
+  LoadedPlugin,
+  ReExportRegistryLoader,
+} from '@jbrowse/core/PluginLoader'
 import type { PluginDefinition } from '@jbrowse/core/pluginDefinitions'
 import type { RpcStatus } from '@jbrowse/core/util'
 
@@ -13,6 +16,18 @@ declare global {
   interface Window {
     rpcServer?: RpcServer
   }
+}
+
+export interface WorkerOptions {
+  fetchESM?: (url: string) => Promise<LoadedPlugin>
+  fetchCJS?: (url: string) => Promise<LoadedPlugin>
+  /**
+   * The product's `workerReExports.generated.ts`, so a runtime plugin loading
+   * here reads the host's copy of every `@jbrowse` package the product
+   * bundles. Without it the worker serves only what `@jbrowse/core` can on its
+   * own.
+   */
+  reExports?: ReExportRegistryLoader
 }
 
 interface WorkerConfiguration {
@@ -41,7 +56,7 @@ function receiveConfiguration() {
 
 async function getPluginManager(
   corePlugins: PluginConstructor[],
-  opts: { fetchESM?: (url: string) => Promise<LoadedPlugin> },
+  opts: WorkerOptions,
 ) {
   const config = await receiveConfiguration()
   // this realm formats its own strings — a jexl `mouseover` slot renders a
@@ -55,7 +70,7 @@ async function getPluginManager(
   // engine — needs its definition here, not just its instance.
   const runtimePlugins = config.plugins.length
     ? await new PluginLoader(config.plugins, opts)
-        .installGlobalReExports(self)
+        .installGlobalReExports(self, opts.reExports)
         .load(config.windowHref)
     : []
   return new PluginManager([
@@ -121,10 +136,7 @@ export function wrapForRpc(func: RpcFunc) {
 
 export async function initializeWorker(
   corePlugins: PluginConstructor[],
-  opts: {
-    fetchESM?: (url: string) => Promise<LoadedPlugin>
-    fetchCJS?: (url: string) => Promise<LoadedPlugin>
-  },
+  opts: WorkerOptions,
 ) {
   // a worker error's stack is captured here, not on the main thread, so the
   // frame limit has to be raised in this scope to deepen it

@@ -19,6 +19,7 @@
     "check-case-collisions": "node --experimental-strip-types scripts/check-case-collisions.ts",
     "check-declaration-leaks": "node --experimental-strip-types scripts/check-declaration-leaks.ts",
     "check-extension-point-reachability": "node --experimental-strip-types scripts/check-extension-point-reachability.ts",
+    "check-plugin-porosity": "node --experimental-strip-types scripts/check-plugin-porosity.ts",
     "check-gated-adapter-budgets": "node --experimental-strip-types scripts/check-gated-adapter-budgets.ts",
     "check-shell-pipefail": "node --experimental-strip-types scripts/check-shell-pipefail.ts",
     "check-mcp-text-caps": "node --experimental-strip-types scripts/check-mcp-text-caps.ts",

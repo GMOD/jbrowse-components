@@ -21,6 +21,7 @@
 pnpm-lock.yaml
 agent-docs
 *.generated.ts
+*.generated.json
 website/docs/developer_guide.md
 website/docs/config_guide.md
 website/docs/user_guide.md

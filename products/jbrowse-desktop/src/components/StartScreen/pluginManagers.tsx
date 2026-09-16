@@ -67,7 +67,10 @@ function makePluginLoader(definitions: PluginDefinition[]) {
     ? new PluginLoader(toLoad, {
         fetchESM: url => import(/* webpackIgnore:true */ url),
         fetchCJS,
-      }).installGlobalReExports(window)
+      }).installGlobalReExports(
+        window,
+        () => import('../../reExports.generated.ts'),
+      )
     : undefined
 }
 

@@ -95,10 +95,11 @@ export { default as SettingsChangesTable } from './SettingsChangesTable.tsx'
 export { default as ActionLink } from './ActionLink.tsx'
 export { default as ExternalLink } from './ExternalLink.tsx'
 export { default as SanitizedHTML } from './SanitizedHTML.tsx'
-// BaseTooltip is deliberately NOT re-exported here: it reaches @floating-ui
-// (~266KB), and this barrel is imported by eager plugin entries, so the
-// re-export alone held that dependency on the startup path. Every consumer
-// deep-imports '@jbrowse/core/ui/BaseTooltip' instead.
+// The eager BaseTooltip reaches @floating-ui (~266KB), and this barrel is
+// imported by eager plugin entries, so the barrel serves the lazy wrapper:
+// published apollo reads `BaseTooltip` off the served ui namespace. In-tree
+// consumers deep-import '@jbrowse/core/ui/BaseTooltip'.
+export { default as BaseTooltip } from './LazyBaseTooltip.tsx'
 export { default as PluggableComponent } from './PluggableComponent.tsx'
 export { default as PluggableComponents } from './PluggableComponents.tsx'
 export type { ComponentExtensionPointName } from './PluggableComponents.tsx'

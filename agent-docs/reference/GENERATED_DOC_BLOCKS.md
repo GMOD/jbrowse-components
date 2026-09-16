@@ -27,7 +27,7 @@ is hand-written:
 | `DISPLAY_CHROME_ADOPTION` | which displays render the shared chrome, on screen and on export (in [DISPLAYCHROME.md](DISPLAYCHROME.md), not here) | each LGV display registration: `ReactComponent` for the on-screen column, the state model's `renderSvg` for the export one |
 | `PALETTE_KEYS` | the settable theme palette keys | the `Palette` / `StringColors` interfaces |
 | `HELPER_PACKAGES` | the standalone npm helper packages | `packages/*/package.json` |
-| `REEXPORT_MODULES` | the `@jbrowse/core` subpaths a plugin gets the host's copy of | the `#reexport` comments in `ReExports/list.ts` |
+| `REEXPORT_MODULES` | the `@jbrowse` packages a plugin gets the host's copy of, with how much of each the RPC worker serves for real | `ReExports/reExports.generated.json`, itself generated from the exports maps |
 
 A row joins any of them by existing in the source, never by being written down.
 Every one replaced a hand-written table that had already drifted; what each of

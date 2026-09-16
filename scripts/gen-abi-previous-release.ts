@@ -11,11 +11,13 @@
 // .d.ts tree is the closest offline description of that -- tsc has already
 // resolved the `export *` chains that the source spreads over ~40 barrels.
 //
-// Two surfaces come out of the same tarball. `modules` is the `jbrequire`
-// re-export registry, name by name. `subpaths` is the published `exports` map,
-// which is what a plugin deep-importing `@jbrowse/core/util/QuickLRU` resolves
-// against -- a separate promise, generated in this repo from in-repo import
-// sites, so it can lose an entry with nobody deciding to drop it.
+// Two surfaces come out of the same tarball, and since the runtime registry
+// is generated from the exports map they are one list read two ways.
+// `subpaths` is the published `exports` map, which is what a plugin
+// deep-importing `@jbrowse/core/util/QuickLRU` resolves against; `modules` is
+// every subpath's runtime export names, which is what the served registry
+// carries for it (reExports.generated.json holds the current build's answer,
+// and check-published-plugins.ts and generate-abi-removals.ts diff the two).
 //
 // Type-only exports are dropped, because a plugin importing one gets nothing at
 // runtime and so can't be broken by its removal.
@@ -24,51 +26,7 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
-import reExportsList from '../packages/core/src/ReExports/list.ts'
-
 const OUT = 'packages/core/src/ReExports/abiPreviousRelease.json'
-
-// Module path -> the .d.ts that describes it, mirroring the `libs` map in
-// modules.ts. Only the modules whose runtime value is a namespace of the
-// barrel's own exports are listed; see SHAPE_MISMATCH below for the rest.
-const MODULE_ENTRY: Record<string, string> = {
-  '@jbrowse/core/configuration': 'configuration/index.d.ts',
-  '@jbrowse/core/data_adapters/BaseAdapter':
-    'data_adapters/BaseAdapter/index.d.ts',
-  '@jbrowse/core/pluggableElementTypes': 'pluggableElementTypes/index.d.ts',
-  '@jbrowse/core/pluggableElementTypes/models':
-    'pluggableElementTypes/models/index.d.ts',
-  '@jbrowse/core/ui': 'ui/index.d.ts',
-  '@jbrowse/core/ui/palette': 'ui/palette.d.ts',
-  '@jbrowse/core/ui/theme': 'ui/theme.d.ts',
-  '@jbrowse/core/util': 'util/index.d.ts',
-  '@jbrowse/core/util/color': 'util/color/index.d.ts',
-  '@jbrowse/core/util/io': 'util/io/index.d.ts',
-  '@jbrowse/core/util/layouts': 'util/layouts/index.d.ts',
-  '@jbrowse/core/util/mst-reflection': 'util/mst-reflection.d.ts',
-  '@jbrowse/core/util/rxjs': 'util/rxjs.d.ts',
-  '@jbrowse/core/util/tracks': 'util/tracks.d.ts',
-  '@jbrowse/core/util/types/mst': 'util/types/mst.d.ts',
-}
-
-// Modules served as something other than a namespace of their barrel, so the
-// .d.ts export names are not the runtime keys and comparing them reports
-// removals that never happened:
-//
-//   Plugin, AdapterType, DisplayType, TrackType, ViewType, WidgetType
-//     served as the class itself, so the only runtime key is whatever the
-//     bundler reads for a default import.
-//   util/Base1DViewModel
-//     served as an MST type, whose keys are MST internals (`properties`,
-//     `preProcessSnapshot`, ...) rather than exports.
-//   BaseFeatureWidget/BaseFeatureDetail
-//     served as lazyMap(..., '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/'),
-//     so its keys are fully-prefixed module paths, not bare component names.
-//
-// These are still checked for module-path presence, just not name by name.
-const SHAPE_MISMATCH = reExportsList
-  .filter(m => m.startsWith('@jbrowse/core/'))
-  .filter(m => !(m in MODULE_ENTRY))
 
 function resolveSpec(spec: string, from: string, root: string) {
   if (!spec.startsWith('.')) {
@@ -115,6 +73,11 @@ function valueExports(entry: string, root: string, seen = new Set<string>()) {
   )) {
     names.add(m[1]!)
   }
+  // `export default X` / `export default class` / `export { X as default }`
+  // (the last already lands above as `default`)
+  if (/^export\s+default\b/m.test(src)) {
+    names.add('default')
+  }
   for (const m of src.matchAll(/export\s+\*\s+from\s*['"]([^'"]+)['"]/g)) {
     const target = resolveSpec(m[1]!, entry, root)
     if (target) {
@@ -146,39 +109,40 @@ const root = path.join(tmp, 'package', 'esm')
 // The published `exports` map, whose keys are the deep-import subpaths an
 // external plugin can resolve. npm swaps `publishConfig.exports` in at publish
 // time, so this is the emitted map and not the workspace one.
-const subpaths = Object.keys(
+const exportsMap =
   (
     JSON.parse(
       fs.readFileSync(path.join(tmp, 'package', 'package.json'), 'utf8'),
-    ) as { exports?: Record<string, unknown> }
-  ).exports ?? {},
-).sort()
+    ) as {
+      exports?: Record<string, string | { import?: string; default?: string }>
+    }
+  ).exports ?? {}
+const subpaths = Object.keys(exportsMap).sort()
 
+// Each published subpath's `.d.ts`, beside its emitted `.js`. A registry-era
+// subpath (`ReExports/*`) is the host's own machinery, not something a plugin
+// links against, so it carries no names here.
 const modules: Record<string, string[]> = {}
-const addedSince: string[] = []
-for (const [name, entry] of Object.entries(MODULE_ENTRY)) {
-  // A module the previous release didn't serve (@jbrowse/core/ui/palette is new
-  // in v5) has nothing to check -- growing the ABI is always safe.
+for (const subpath of subpaths) {
+  if (subpath.includes('/ReExports/')) {
+    continue
+  }
+  const target = exportsMap[subpath]!
+  const js =
+    typeof target === 'string' ? target : (target.import ?? target.default)
+  const entry = path
+    .relative(root, path.join(tmp, 'package', js!))
+    .replace(/\.js$/, '.d.ts')
   if (fs.existsSync(path.join(root, entry))) {
-    modules[name] = [...valueExports(entry, root)].sort()
-  } else {
-    addedSince.push(name)
+    modules[`@jbrowse/core${subpath.slice(1)}`] = [
+      ...valueExports(entry, root),
+    ].sort()
   }
 }
 
 fs.writeFileSync(
   OUT,
-  `${JSON.stringify(
-    {
-      version,
-      addedSinceModules: addedSince.sort(),
-      shapeMismatchModules: SHAPE_MISMATCH.sort(),
-      subpaths,
-      modules,
-    },
-    null,
-    2,
-  )}\n`,
+  `${JSON.stringify({ version, subpaths, modules }, null, 2)}\n`,
 )
 fs.rmSync(tmp, { recursive: true, force: true })
 // JSON.stringify's array wrapping is not oxfmt's, and the Format job checks

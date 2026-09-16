@@ -1,4 +1,4 @@
-import { createTheme } from '@mui/material'
+import { createTheme } from '@mui/material/styles'
 
 import { deepMerge } from '../util/deepMerge.ts'
 import { palettePresets, resolvePalette } from './palette.ts'
