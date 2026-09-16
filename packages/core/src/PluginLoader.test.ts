@@ -118,6 +118,25 @@ test('load rethrows the first failure by definition order', async () => {
   await expect(loader.load()).rejects.toThrow(/first failed/)
 })
 
+// The RPC worker loads with `load`, so this message is the whole of what a user
+// gets when a plugin cannot evaluate there: the worker never boots and every
+// RPC on it fails. Without the label it reads as a bare `Cannot read properties
+// of undefined` from inside a bundle nobody can name.
+test('load names the plugin that failed, not just what it threw', async () => {
+  const loader = new PluginLoader(
+    [{ name: 'Reactome', esmUrl: 'https://example.com/reactome.esm.js' }],
+    {
+      fetchESM: () =>
+        Promise.reject(
+          new TypeError(
+            "Cannot read properties of undefined (reading 'createSvgIcon')",
+          ),
+        ),
+    },
+  )
+  await expect(loader.load()).rejects.toThrow(/plugin Reactome /)
+})
+
 // A plugin url resolves against the JBrowse instance, never against the config
 // that named it — so a config saying `url: 'plugin.js'` means something
 // different on every host that reads it, and on Desktop means nothing at all.

@@ -10,6 +10,7 @@ import {
   isUMDPluginDefinition,
   maybePluginUrl,
   pluginDescriptionString,
+  pluginLabel,
 } from './pluginDefinitions.ts'
 import { isElectron } from './util/index.ts'
 import { isWebWorker } from './util/isWebWorker.ts'
@@ -397,9 +398,20 @@ export default class PluginLoader {
   async load(baseUri?: string) {
     const { records, failures } = await this.loadSettled(baseUri)
     // rethrown by definition order rather than by which rejected first, so the
-    // error a strict caller sees doesn't depend on network timing
-    if (failures[0]) {
-      throw failures[0].error
+    // error a strict caller sees doesn't depend on network timing.
+    //
+    // Named, because the RPC worker calls this: a plugin that throws while
+    // evaluating takes the whole RpcServer with it, and the bare error is
+    // whatever the bundle's module scope said — `Cannot read properties of
+    // undefined`, or the missing ABI key — with nothing saying which plugin
+    // read it. The message is carried rather than the error, since this one
+    // crosses postMessage and `serializeError` cannot clone an arbitrary
+    // `cause`.
+    const failure = failures[0]
+    if (failure) {
+      const { definition, error } = failure
+      const detail = error instanceof Error ? error.message : String(error)
+      throw new Error(`plugin ${pluginLabel(definition)} failed: ${detail}`)
     }
     return records
   }
