@@ -599,6 +599,7 @@ export function guessTrackType(
 export interface LooseTrackInput {
   uri: string
   index?: string
+  baseUri?: string
   [key: string]: unknown
 }
 
@@ -618,12 +619,13 @@ export function guessTrackConf(
   pluginManager: PluginManager,
   assemblyName?: string,
 ) {
-  const { uri, index, ...extra } =
+  const { uri, index, baseUri, ...extra } =
     typeof input === 'string' ? { uri: input } : input
+  const base = baseUri ? { baseUri } : {}
   return {
     ...guessTrackConfForLocation(
-      { uri, locationType: 'UriLocation' },
-      index ? { uri: index, locationType: 'UriLocation' } : undefined,
+      { uri, locationType: 'UriLocation', ...base },
+      index ? { uri: index, locationType: 'UriLocation', ...base } : undefined,
       pluginManager,
       assemblyName,
     ),

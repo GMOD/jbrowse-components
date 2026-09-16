@@ -4,6 +4,7 @@ import {
   addTrackTypeGuesser,
   expandLooseTrackConfig,
   getFileName,
+  guessTrackConf,
 } from './tracks.ts'
 
 import type { FileLocation } from './types/data.ts'
@@ -66,6 +67,30 @@ test('keys written beside uri override the inference', () => {
     assemblyNames: ['hg38'],
     adapter: { index: { location: uri('reads.csi') } },
   })
+})
+
+test('a baseUri beside uri lands on the adapter locations, not the track', () => {
+  const baseUri = 'https://example.com/c/'
+  const pm = withBamGuessers()
+  const conf = guessTrackConf({ uri: 'reads.bam', baseUri }, pm)
+  expect(conf.adapter).toMatchObject({
+    bamLocation: { ...uri('reads.bam'), baseUri },
+  })
+  expect(conf).not.toHaveProperty('baseUri')
+
+  const indexed = guessTrackConf(
+    { uri: 'reads.bam', index: 'reads.csi', baseUri },
+    pm,
+  )
+  expect(indexed.adapter).toMatchObject({
+    index: { location: { ...uri('reads.csi'), baseUri } },
+  })
+})
+
+test('no baseUri adds no baseUri key', () => {
+  const conf = guessTrackConf({ uri: 'reads.bam' }, withBamGuessers())
+  expect(conf.adapter).toMatchObject({ bamLocation: uri('reads.bam') })
+  expect(conf.adapter).not.toHaveProperty('bamLocation.baseUri')
 })
 
 test('a full config and a non-object pass through untouched', () => {
