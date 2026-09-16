@@ -83,8 +83,8 @@ it manufactures junctions no transcript has, which is worth stating because it
 is what the first version of this comparison did. Against RANBP1's 13 isoforms
 it matched none of Tiberius's five correct junctions, and 18 of the 21 structure
 conflicts it reported were that arithmetic rather than the prediction. Every
-number on this page comes out of the run rather than off a keyboard, for the
-same reason: the paragraph you are reading would otherwise still say 21.
+number on this page comes out of the run, for the same reason: the paragraph you
+are reading would otherwise still say 21.
 
 Two rules keep merged models down to one entry. The comparison runs at exon
 level against genes on the same strand, and a fusion counts only when the genes
@@ -218,7 +218,7 @@ models the page cannot show, among
 ## Checking the merge against the raw data
 
 The claim was that _IL17REL_ and _TTLL8_ are separate genes with a gap. Read it
-out of GENCODE rather than off the picture:
+out of GENCODE:
 
 ```bash
 tabix https://jbrowse.org/genomes/GRCh38/gencode/gencode.v47.chr_patch_hapl_scaff.annotation.sorted.gff3.gz \

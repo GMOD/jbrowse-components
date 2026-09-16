@@ -98,8 +98,7 @@ What each setting does:
 
 The allele-frequency floor is not a display setting here. It is applied when the
 variants are picked for correlation, so it is a property of the file. That is
-also why the two cohorts below are a fair comparison rather than one filter
-applied twice.
+also why the two cohorts below are a fair comparison.
 
 The block is a selective sweep. The allele that keeps lactase switched on into
 adulthood, `rs4988235`, rose in frequency and carried its neighbouring variants

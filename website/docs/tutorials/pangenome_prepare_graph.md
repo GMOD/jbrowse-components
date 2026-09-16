@@ -63,9 +63,8 @@ here, so every command below can be checked against a published result.
 
 ## What your graph can produce
 
-Everything on this page rests on one question: does your graph state where each
-segment sits on a reference. The formats answer it differently, and the answer
-decides which of the two builders you run, not what you get afterwards.
+Whether your graph states where each segment sits on a reference decides which
+of the two builders you run. Both produce the same pair of indexes.
 
 | Your file                                                     | Where positions live                 | Builder               |
 | ------------------------------------------------------------- | ------------------------------------ | --------------------- |
@@ -248,9 +247,9 @@ decomposition:
 python3 snarls_to_bubble_bed.py graph_snarls.vcf.gz graph.bubbles.bed
 ```
 
-The path count in the file needs care whichever route wrote it: it counts routes
-combinatorially rather than haplotypes observed, and saturates at `2147483647`,
-which the track labels uncountable.
+Whichever route wrote the file, its path count counts routes combinatorially
+rather than haplotypes observed, and saturates at `2147483647`, which the track
+labels uncountable.
 
 ## A whole chromosome: the bubble tier
 
@@ -492,9 +491,9 @@ Both files go somewhere that serves range requests, and their two URLs are the
 
 The companion records the graph's path count and the reader refuses one built
 for a different graph, so a mismatched pair fails rather than drawing the wrong
-walks. `nodeLimit` is the guard on the other end: it fails a window rather than
-letting the display sit on a whole chromosome, and the failure names a zoom that
-would fit, so it has to clear the largest window you mean to open.
+walks. `nodeLimit` guards the other end. It fails a window rather than letting
+the display sit on a whole chromosome, and the failure names a zoom that would
+fit, so it has to clear the largest window you mean to open.
 
 What that track then does with the lanes, and what a window costs to read, is
 [the HPRC page's](/docs/tutorials/pangenome_hprc_part3#walks-from-the-graph)

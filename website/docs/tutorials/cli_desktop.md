@@ -21,9 +21,9 @@ The [`@jbrowse/cli`](/docs/cli) builds a JBrowse configuration from the command
 line. A few commands produce one folder, a `config.json` sitting next to your
 data files, that you can open directly in JBrowse Desktop _or_ serve on the web.
 
-It works in both places because the CLI records each file by a path _relative_
-to `config.json`: Desktop resolves those paths against the folder on disk, and a
-web server resolves them against the served config's URL.
+The folder works in both places because the CLI records each file by a path
+_relative_ to `config.json`. Desktop resolves those paths against the folder on
+disk, and a web server resolves them against the served config's URL.
 
 ## Install the CLI
 

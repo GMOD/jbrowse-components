@@ -169,7 +169,7 @@ which is a few pixels, so the same window typed into both panels would have
 looked lined up. Zoomed in, the offset fills the whole screen. The same
 coordinate is no longer the same sequence, because every upstream indel shifts
 one haplotype against the other. Following keeps the panels on the same
-sequence: it walks the top panel's window through the chain's CIGAR and sends
+sequence. It walks the top panel's window through the chain's CIGAR and sends
 the panel below there on every pan, so the ribbons stay near-vertical however
 far you go.
 

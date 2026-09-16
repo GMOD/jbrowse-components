@@ -164,9 +164,9 @@ Where do the two genomes run in opposite directions? Answer from the
 alignment file, not from the dotplot, and show me the numbers.
 ```
 
-The last clause avoids a real failure: a dotplot shows that two genomes are
-mostly colinear, but a reverse-strand block a few hundred kilobases wide is a
-few pixels at whole-genome zoom, and an agent asked to describe a picture will
+The last clause matters because a dotplot shows that two genomes are mostly
+colinear, but a reverse-strand block a few hundred kilobases wide is a few
+pixels at whole-genome zoom, and an agent asked to describe a picture will
 describe it. The same information is in the PAF as numbers. Aligned bases per
 arm, split by strand, at MAPQ 30 or better:
 

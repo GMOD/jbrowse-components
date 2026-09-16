@@ -263,7 +263,7 @@ beside a genome view of the TP53 locus with NCBI RefSeq and ClinVar loaded.
 }
 ```
 
-This is the short form: a UniProt accession plus a transcript ID, from which the
+The short form takes a UniProt accession plus a transcript ID, from which the
 plugin derives the AlphaFold structure, finds the transcript in the
 `connectedView` tracks at `loc`, and translates its CDS. The explicit form takes
 a structure `url`, feature and protein sequence, for a transcript no loaded

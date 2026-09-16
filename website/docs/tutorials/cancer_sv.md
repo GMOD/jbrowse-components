@@ -212,8 +212,8 @@ breakage-fusion-bridge cycles leave behind.
 The fold-back's row names the same chromosome twice, once inverted, and its
 strip draws two blocks of one color whose arrows point at each other. Rows tied
 on read count are ordered by segment count. More than one row means more than
-one allele: reads reaching the anchors from different directions describe
-different routes through the same breakpoints.
+one allele, because reads reaching the anchors from different directions
+describe different routes through the same breakpoints.
 
 The reads alone cannot confirm which route is correct, so the check comes from
 outside them. COLO829's multi-platform truth set was called on short reads, long

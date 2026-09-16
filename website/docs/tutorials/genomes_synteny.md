@@ -68,9 +68,9 @@ The panel you launched from keeps the tracks that view had on (**Copy this
 view's tracks into its panel** turns that off). The hs1 panel opens empty; the
 view header's track selector button lists one selector per panel.
 
-A locus no single chain block covers takes a second route: drag-select it on the
-scale bar and pick **Launch → Linear synteny view**, whose dialog offers every
-assembly the session's synteny datasets align to it. See
+For a locus no single chain block covers, drag-select it on the scale bar and
+pick **Launch → Linear synteny view**, whose dialog offers every assembly the
+session's synteny datasets align to it. See
 [the linear synteny view guide](/docs/user_guides/linear_synteny_view#from-a-locus-you-are-already-looking-at).
 
 ## Ribbon display settings

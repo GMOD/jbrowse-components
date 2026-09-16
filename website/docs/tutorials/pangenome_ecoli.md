@@ -66,8 +66,8 @@ CLI and concatenated into one PanSN-named FASTA for pggb.
 
 ## The linear projections
 
-A pangenome graph collapses many genomes into one structure: shared sequence is
-a single path every sample walks, and where samples differ the path branches.
+A pangenome graph collapses many genomes into one structure. Shared sequence is
+a single path every sample walks, and the path branches where samples differ.
 [pggb](https://github.com/pangenome/pggb),
 [Minigraph-Cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md),
 and [progressiveCactus](https://github.com/ComparativeGenomicsToolkit/cactus)
@@ -372,9 +372,9 @@ multi-sample display, one row per sample:
 
 Stacked over the MAF alignment (the figure under
 [Whole-genome alignment (MAF) projection](#whole-genome-alignment-maf-projection)),
-the calls sit over the alignment they were decomposed from. The row orders
-differ: the variant lane follows the VCF's sample columns and the MAF lane the
-tree the track loads.
+the calls sit over the alignment they were decomposed from. The variant lane's
+row order follows the VCF's sample columns; the MAF lane's follows the tree the
+track loads.
 
 ### Why the reference path takes a length
 

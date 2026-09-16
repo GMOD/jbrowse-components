@@ -81,7 +81,7 @@ node highlights its segment in the lane above, and the reverse.
 Inside the session, the segments track's menu has **Launch → Graph genome view
 (this region)**, and rubberbanding a span offers **Graph genome view (this
 selection)**, so a zoomed-in window reopens as a graph without the page. The
-graph reaches back the same way: hovering a node bands its interval across the
+graph reaches back the same way. Hovering a node bands its interval across the
 lanes above, right-clicking one offers **Highlight in hg38** and **Open in
 hg38**, and the view's own **Launch** menu reopens the whole window as a linear
 view. The HPRC tutorial walks

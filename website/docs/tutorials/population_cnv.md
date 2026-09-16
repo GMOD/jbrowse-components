@@ -280,8 +280,8 @@ The lab's
 one 30x 1000 Genomes CRAM through `count` and `est`, and for GRCh38 the k-mer
 index is
 [prebuilt](https://kiddlabshare.med.umich.edu/QuicK-mer/QuicK-mer2-refs/GRCh38/).
-It is a cluster-sized job: the tutorial reports 67 GB of reference files,
-roughly 50 GB of RAM, and about 25 minutes on six threads per sample.
+The tutorial reports 67 GB of reference files, roughly 50 GB of RAM, and about
+25 minutes on six threads per sample.
 
 `est` writes copy number in 1 kb windows, and its four columns are bedGraph once
 the decoy and EBV contigs are dropped:

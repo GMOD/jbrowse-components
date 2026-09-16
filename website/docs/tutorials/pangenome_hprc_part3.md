@@ -267,14 +267,14 @@ GRCh38, and the carriers' own annotations have no model there.
 
 <Figure caption="The CFH cluster's eight lanes read from the graph at load time, the non-carriers above the carriers, from two hosted files and no offline step. Each lane is one haplotype's walk aligned to hg38 as a CIGAR, and because the eight assemblies are in the session, each draws that haplotype's CAT genes at that haplotype's coordinates over it: a lane whose genes stop where hg38's CFHR3 and CFHR1 are is a haplotype that lacks them." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
 
-`GbzBaseSyntenyAdapter` answers a window: it locates the window on GRCh38's own
-path through the graph and emits one record per haplotype walk, in that
-haplotype's contig coordinates and carrying the walk's CIGAR. Upstream gbz-base
-reports `unknown#1`, `unknown#2` for those walks, so the companion file at
-`haplotypeIndexLocation` names them and carries anchors a named set can be
-walked from. The lanes in force, the track's own or whatever the reader picks
-from **Choose lanes...**, reach the adapter as the set to fetch. A lane hidden
-from its header menu stays in that set, so showing it again draws it at once.
+`GbzBaseSyntenyAdapter` locates a window on GRCh38's own path through the graph
+and emits one record per haplotype walk, in that haplotype's contig coordinates
+and carrying the walk's CIGAR. Upstream gbz-base reports `unknown#1`,
+`unknown#2` for those walks, so the companion file at `haplotypeIndexLocation`
+names them and carries anchors a named set can be walked from. The lanes in
+force, the track's own or whatever the reader picks from **Choose lanes...**,
+reach the adapter as the set to fetch. A lane hidden from its header menu stays
+in that set, so showing it again draws it at once.
 
 `context` defaults to 1000, the nodes read on either side of the window.
 `nodeLimit` refuses a window that would not fit and names a zoom that would.

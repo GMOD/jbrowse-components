@@ -281,7 +281,7 @@ and has no GRCh38 position, so it draws flat charcoal. Hovering a node bands its
 interval across the lanes above, and hovering a block in the lane lights its
 node.
 
-The view also draws the session's gene track onto the backbone: each gene's
+The view also draws the session's gene track onto the backbone. Each gene's
 exons are dark stretches along the reference nodes that carry them, with the
 gene name pinned under the backbone. Every bubble in the hosted index draws as a
 halo along its nodes, labelled with what it is. **View menu → Settings** turns
