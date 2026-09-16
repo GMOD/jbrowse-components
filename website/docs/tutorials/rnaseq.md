@@ -108,9 +108,9 @@ Paired end → First of pair strand**:
 
 Coloring answers the question one read at a time, and the coverage histogram
 answers it for a whole gene. Pick **Group by... → First-of-pair strand**, then
-turn off **Show... → Show pileup**. Each group gets its own band computed from
-only its reads, leaving two histograms, forward and reverse, on one autoscaled
-axis.
+turn off **Show... → Show pileup**. The display draws one band per group,
+computed from only that group's reads, leaving two histograms, forward and
+reverse, on one autoscaled axis.
 
 In the gene-dense MHC class III region, _NELFE_ and _SKIV2L_ sit back to back on
 opposite strands:

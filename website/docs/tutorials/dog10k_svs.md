@@ -400,7 +400,7 @@ on the breed group.
 }
 ```
 
-Each record draws at its own coordinates, so the two blocks sit against the
+Each record draws at the coordinates it names, so the two blocks sit against the
 exons. Every carrier is heterozygous: the parent gene's introns are still on
 both chromosomes, so a carrier's pileup is always a mixture.
 

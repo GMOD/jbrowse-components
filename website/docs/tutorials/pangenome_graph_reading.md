@@ -61,8 +61,8 @@ segments lane showing. Cut it from the segments track with **Launch → Graph
 genome view (this region)**, then pick **Force-directed layout** from the
 **Layout** dropdown. The drawing is seeded along the reference, so GRCh38 runs
 left to right under the linear view in the same colours, and every bubble the
-index holds is drawn as a halo along its own nodes with a label saying what kind
-of variation it is.
+index holds is drawn as a halo along the nodes it spans, with a label saying
+what kind of variation it is.
 
 <Figure caption="The LPA window with the RefSeq genes, the HPRC bubbles and the rGFA segments above the force-directed graph. The kringle array is the knot of loops in the middle and its halo names it as a repeat array; the small halos on the backbone are the deletions and the insertion the index lists beside it, and LPA is pinned under the backbone with its exons drawn along it." src="/img/pangenome/graph_kiv2_halos.png" />
 
@@ -84,10 +84,10 @@ Click the array's label, the purple one on the knot of loops. The view cuts the
 bubble's segments out of the graph on screen and lays them out on their own,
 with a button back to the window. No index row describes the inside of a bubble,
 so the popped graph derives its own bubbles from the way its nodes layer along
-the reference, and a bubble inside a bubble gets a label of its own to click in
+the reference, and a bubble inside a bubble gets a separate label to click in
 turn.
 
-<Figure caption="The array's segments popped out of the window and drawn on their own. Each loop is a run of kringle copies a haplotype walks and the reference misses, and the popped graph's label gives the number of routes it holds." src="/img/pangenome/graph_kiv2_popped.png" />
+<Figure caption="The array's segments popped out of the window and drawn separately. Each loop is a run of kringle copies a haplotype walks and the reference misses, and the popped graph's label gives the number of routes it holds." src="/img/pangenome/graph_kiv2_popped.png" />
 
 Every loop here is a different number of copies. The drawing shows that much and
 nothing more: the rGFA records which segments exist and how they link, and no

@@ -192,7 +192,7 @@ Stacked, each melanogaster arm's colour arrives as one bundle in every row.
 
 Gene order needs a window. A
 [multi-way synteny track](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
-draws a lane per fly in its own coordinates, the header naming the chromosome
+draws a lane per fly in that fly's coordinates, the header naming the chromosome
 that fly keeps these orthologs on.
 
 ```json session config=https://jbrowse.org/demos/orthofinder_drosophila/config.json
@@ -228,7 +228,7 @@ Every fly keeps all of the melanogaster genes in this 3L window, from _Bre1_ to
 _PXo_. The near relatives keep them in order; the distant ones reverse the
 block, and the header marks that `[rev]`.
 
-<Figure caption="A window on melanogaster 3L over four Drosophila lanes from one orthogroups track. simulans and yakuba draw the same genes in the same order on their own 3L; pseudoobscura and virilis draw them reversed, and the pseudoobscura lane names the X." src="/img/multiway_synteny/drosophila_lanes.png" />
+<Figure caption="A window on melanogaster 3L over four Drosophila lanes from one orthogroups track. simulans and yakuba draw the same genes in the same order on their 3L; pseudoobscura and virilis draw them reversed, and the pseudoobscura lane names the X." src="/img/multiway_synteny/drosophila_lanes.png" />
 
 Muller element D is melanogaster's 3L, and in the obscura lineage it is fused to
 the X, so the pseudoobscura lane sits on a chromosome the assembly calls X.

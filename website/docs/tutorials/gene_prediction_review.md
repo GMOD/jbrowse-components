@@ -52,7 +52,7 @@ under it, _IL17REL_ and _TTLL8_, with a gap between them. GENCODE's gene
 features carry `gene_name` but no `Name`, so the track labels them by accession:
 _IL17REL_ is `ENSG00000188263` and _TTLL8_ is `ENSG00000138892`.
 
-<Figure src="/img/gene_prediction_merge.png" caption="One Tiberius model spans IL17REL (ENSG00000188263) and TTLL8 (ENSG00000138892), which GENCODE annotates as separate genes. MLC1 on the right gets its own prediction." />
+<Figure src="/img/gene_prediction_merge.png" caption="One Tiberius model spans IL17REL (ENSG00000188263) and TTLL8 (ENSG00000138892), which GENCODE annotates as separate genes. MLC1 on the right gets a separate prediction." />
 
 The third gene on the right, _MLC1_, is the control sitting in the same frame:
 Tiberius gives it a model of its own, so whatever went wrong to the left is not

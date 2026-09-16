@@ -265,7 +265,7 @@ Between the last non-carrier and the first carrier the ribbon over _CFHR3_ and
 _CFHR1_ narrows to a point, because the carriers' walks skip that stretch of
 GRCh38, and the carriers' own annotations have no model there.
 
-<Figure caption="The CFH cluster's eight lanes read from the graph at load time, the non-carriers above the carriers, from two hosted files and no offline step. Each lane is one haplotype's walk aligned to hg38 as a CIGAR, and because the eight assemblies are in the session, each draws that haplotype's own CAT genes at its own coordinates over it: a lane whose genes stop where hg38's CFHR3 and CFHR1 are is a haplotype that lacks them." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
+<Figure caption="The CFH cluster's eight lanes read from the graph at load time, the non-carriers above the carriers, from two hosted files and no offline step. Each lane is one haplotype's walk aligned to hg38 as a CIGAR, and because the eight assemblies are in the session, each draws that haplotype's CAT genes at that haplotype's coordinates over it: a lane whose genes stop where hg38's CFHR3 and CFHR1 are is a haplotype that lacks them." src="/img/pangenome/hprc_gbz_cfhr_lanes.png" />
 
 `GbzBaseSyntenyAdapter` answers a window: it locates the window on GRCh38's own
 path through the graph and emits one record per haplotype walk, in that

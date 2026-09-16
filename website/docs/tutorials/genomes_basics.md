@@ -61,7 +61,7 @@ coordinates like `chr17:7,668,400-7,687,550` work too.
 
 <Figure src="/img/genomes_basics/search_tp53.png" caption="Top: TP53 typed into the location box, answered by the config's own name index. Middle: what Enter opens, as many transcripts as the track's height holds, the gene labelled TP53 +20 more for the ones it does not, and the isoform control circled. Bottom: the same view after picking Representative transcript from it." />
 
-RefSeq All draws each transcript on its own row, and TP53 has more than the
+RefSeq All draws each transcript on a separate row, and TP53 has more than the
 track's height holds. The gene name reads **TP53 +20 more**, and the circled
 chip at the bottom right reads `Isoforms trimmed`. Two ways to see more:
 

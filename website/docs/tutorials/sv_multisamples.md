@@ -104,7 +104,7 @@ The olive no-call column is a copy-number gain in the lane beneath it.
 <Video src="/media/sv/multisample_sort.mp4" caption="Both arrangements the section names, on the callset the figure above is of: a right-click on the deletion sorts the cohort by its genotype there and the callset order resolves into three bands, then the track menu's clustering re-keys the same rows on the whole window and draws the tree it built." />
 
 The olive stripe is `HGSV_1823`, a small copy-number record inside the deletion,
-uncalled in most of the cohort. A no-call gets its own color. Copy number is a
+uncalled in most of the cohort. A no-call has a separate color. Copy number is a
 continuous quantity per bin taken from the reads, so the column that is olive
 above is red below. The [copy-number tutorial](/docs/tutorials/population_cnv)
 reads the same store.

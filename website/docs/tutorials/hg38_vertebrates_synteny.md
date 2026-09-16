@@ -191,7 +191,7 @@ that is in the genome and how far the lane's frame reaches, with `[rev]` on the
 mouse lane, whose chain runs the other way against hg38 here. The lanes stack
 densest first, by how much of the window each places.
 
-<Figure caption="The TP53 neighbourhood on hg38 over eight UCSC genome lanes from one composed liftOver track, each lane drawing its own RefSeq gene models on its own chromosome. Every lane places the window from one chain; the white wedges in the ribbons are that chain's indels of 10 kb or more, few in the apes and many in mouse, cow and dog, and the mouse lane is reversed." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
+<Figure caption="The TP53 neighbourhood on hg38 over eight UCSC genome lanes from one composed liftOver track, each lane drawing the RefSeq gene models annotated on its chromosome. Every lane places the window from one chain; the white wedges in the ribbons are that chain's indels of 10 kb or more, few in the apes and many in mouse, cow and dog, and the mouse lane is reversed." src="/img/multiway_synteny/hg38_vertebrates_tp53.png" />
 
 Eight megabases toward the centromere the same stack looks different. No chain
 runs the window through: the region is a segmental-duplication hotspot, every

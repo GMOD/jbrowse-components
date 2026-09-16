@@ -4,7 +4,7 @@ sidebar_label: Synteny (pangenome graph lanes, HPRC)
 description:
   Stack eight HPRC haplotypes under GRCh38, whole genome, with the pairwise
   alignments unpacked from the Minigraph-Cactus graph's own projection and each
-  lane carrying its own CAT gene models
+  lane carrying that haplotype's CAT gene models
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
@@ -176,15 +176,16 @@ here the same haplotypes are placed by the graph's alignment, whole genome.
 ```
 
 Opened on hg38 over the cluster, each lane's header names the haplotype, the
-contig it sits on and where on it the window lands, and every lane draws its own
-CAT gene models at its own coordinates. In a non-carrier lane the alignment runs
-the whole window and the lane's annotation holds every gene the reference does.
-In a carrier lane the alignment stops at the start of _CFHR3_ and resumes past
-_CFHR1_, the ribbons leave that stretch of the reference unplaced, and the
-lane's own annotation has no model there to draw. The flanking genes, _CFH_ on
-one side and _CFHR4_ onward on the other, place in every lane.
+contig it sits on and where on it the window lands, and every lane draws that
+haplotype's CAT gene models in its contig's coordinates. In a non-carrier lane
+the alignment runs the whole window and the lane's annotation holds every gene
+the reference does. In a carrier lane the alignment stops at the start of
+_CFHR3_ and resumes past _CFHR1_, the ribbons leave that stretch of the
+reference unplaced, and the lane's own annotation has no model there to draw.
+The flanking genes, _CFH_ on one side and _CFHR4_ onward on the other, place in
+every lane.
 
-<Figure caption="The CFH cluster on hg38 over eight HPRC haplotype lanes placed by the graph's own alignment, each lane drawing its own CAT gene models on its own contig. The non-carrier lanes align straight through; in the carrier lanes the alignment stops before CFHR3 and resumes past CFHR1, and nothing is drawn in between." src="/img/multiway_synteny/hprc_cfh_haplotypes.png" />
+<Figure caption="The CFH cluster on hg38 over eight HPRC haplotype lanes placed by the graph's own alignment, each lane drawing that haplotype's CAT gene models on its contig. The non-carrier lanes align straight through; in the carrier lanes the alignment stops before CFHR3 and resumes past CFHR1, and nothing is drawn in between." src="/img/multiway_synteny/hprc_cfh_haplotypes.png" />
 
 The four carriers also sort together, at the bottom of this stack, because lane
 order is densest first over the fetched window and a lane whose alignment skips

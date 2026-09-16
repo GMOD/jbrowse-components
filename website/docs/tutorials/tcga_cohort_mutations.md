@@ -240,7 +240,7 @@ chr3    179199065  179234302  40.56      30.18  11.19            30.71
 chr17   7670683    7676564    19.44      39.64  80.42            32.28
 ```
 
-`BedGraphTabixAdapter` takes every column past `end` as its own signal, and a
+`BedGraphTabixAdapter` takes every column past `end` as a separate signal, and a
 [`MultiQuantitativeTrack`](/docs/config_guides/multiquantitative_track) draws
 one row per group.
 
