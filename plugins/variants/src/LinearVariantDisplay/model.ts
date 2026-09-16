@@ -12,6 +12,8 @@ import { JexlFilterDialog } from '../shared/lazyDialogs.ts'
 import {
   CONSEQUENCE_IMPACT_JEXL,
   IMPACT_TIERS,
+  UNANNOTATED_IMPACT,
+  getImpactColor,
 } from '../shared/variantConsequence.ts'
 import { VARIANT_FILTER_EXAMPLES } from '../shared/variantFilterExamples.ts'
 import {
@@ -124,11 +126,21 @@ export default function stateModelFactory(
               kind: 'categorical',
               id: 'consequenceImpact',
               title: 'Consequence impact',
-              entries: IMPACT_TIERS.map(t => ({
-                value: t.tier,
-                label: t.tier,
-                color: t.color,
-              })),
+              entries: [
+                ...IMPACT_TIERS.map(t => ({
+                  value: t.tier,
+                  label: t.tier,
+                  color: t.color,
+                })),
+                // The cells paint it through the shared `getVariantImpactColor`,
+                // so leaving it off listed a scale narrower than the one on the
+                // screen — and "nobody looked" read as MODIFIER's grey.
+                {
+                  value: UNANNOTATED_IMPACT,
+                  label: UNANNOTATED_IMPACT,
+                  color: getImpactColor(UNANNOTATED_IMPACT),
+                },
+              ],
             },
           ]
         }
