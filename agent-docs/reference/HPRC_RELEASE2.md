@@ -16,7 +16,7 @@ that plugin's repo, not this one — and does not overlap.
 | artifact | opens? |
 | --- | --- |
 | `v2.0/…/hprc-v2.0-mc-grch38.full.taf.gz` + `.tai` (5.96 GB, 464 haplotypes) | **yes**, `BgzipTaffyAdapter`, and this is the one the tutorial uses; also the source `demos/hprc_multiway` unpacks pairwise PAF from (below) |
-| `hprc-v2.1-mc-grch38.full.maf.gz` + `.tai` (53 GB, 464 haplotypes) | yes, `BgzipMafAdapter` — same alignment, different build |
+| `hprc-v2.1-mc-grch38.full.maf.gz` + `.tai` (53 GB, 464 haplotypes) | yes, `BgzipMafAdapter` — a different alignment, not a repackaging of the TAF |
 | `sv.gfa` (minigraph rGFA) | yes, graph view plugin |
 | `wave.vcf.gz` (464-haplotype callset) | yes, genotype matrix |
 | `hprc25272.aln.paf.gz` (complete all-vs-all, 310 GB) | yes in principle, never tried at that size |
@@ -44,18 +44,33 @@ per-build set, and what is in them changes which file to reach for.
   name sequences `GRCh38.chr6`, and the v2.0 TAF's header is
   `#taf run_length_encode_bases:1 version:1`, which `BgzipTaffyAdapter.ts` handles
   explicitly.
-- **The graph and the callset are v2.0**, so the TAF is the alignment of the same
-  build and the MAF is one revision on. That, not the size, is why the tutorial
-  reads the TAF.
+- **The TAF is the only reason anything here is still v2.0.** The graph, the
+  bubbles, the wave and pgbi callsets and the GBZ all read v2.1; the alignment
+  cannot, because v2.1 publishes it only as MAF. So the tutorial's alignment lane
+  sits one revision behind the rest of the page, and the read sizes below are what
+  buys that.
 - **Locus reads, measured with the repo's own `queryBlockSpan` over the two
   `.tai` files** (chr6): 10 kb is 134 KB from the TAF against 598 KB from the MAF,
   30 kb is 189 KB against 878 KB, 100 kb is 1.4 MB against 3.1 MB. That is the
   read for the window itself; the display fetches the wider LGV block region. The
   MAF spec carried `fetchSizeLimit: 50_000_000` to draw the C4 figure at all and
   the TAF one carries none and draws, which is the only end-to-end statement here.
-- **The v2.1 README lists fixes that apply to files this page uses**: a sample
-  name typo in `sv.gfa.gz`, and a missing-genotypes bug in vcfwave output. Worth
-  knowing before treating a v2.0 oddity as a JBrowse bug.
+- **What the gate would actually see if the tutorial moved to the v2.1 MAF**,
+  measured 2026-09-16 through `queryBlockSpan` over the buffered region the fetch
+  uses (the view plus half a screen each side), against the display's 5 MB
+  default: at the tutorial's own chr6:31,972,057-32,055,418 the MAF is 3.50 MB
+  and the TAF 425 KB, so **both draw and neither needs `fetchSizeLimit` raised** —
+  the historical 50 MB was over-generous rather than measured. What the MAF does
+  cost is range: the alignment tier first exceeds 5 MB at ~123 kb of view against
+  the TAF's ~632 kb. The harness reproduces this doc's whole-chr6 TAF figure
+  (353,902,971 bytes) to the byte.
+- **v2.1 is a re-run, so its alignment differs in content.** Its README
+  (`…/minigraph-cactus/v2.1/README`, no extension) lists minigraph construction
+  ordered per chromosome, "reduces underalingments" [sic], and assemblies patched
+  so centromeres align with rCRS — both of which move alignment columns, not just
+  packaging. It also fixes a sample-name typo in `sv.gfa.gz` and a
+  missing-genotypes bug in vcfwave output. Worth knowing before treating a v2.0
+  oddity as a JBrowse bug.
 - **The flat `wave.vcf.gz` is older than the one in `v2.0/`.** The flat copy is
   the March 2025 build (2,275,985,017 bytes); `v2.0/…wave.vcf.gz` is a January
   2026 rewave (2,261,483,979 bytes) with `-rewave.log` and a `.old` beside it. All

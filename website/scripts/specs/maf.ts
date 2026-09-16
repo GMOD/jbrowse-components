@@ -716,13 +716,12 @@ export const mafSpecs: ScreenshotSpec[] = [
   // human-pangenomics bucket by BgzipTaffyAdapter: a 5.96 GB TAF plus its taffy
   // .tai, no conversion step and no local copy.
   //
-  // TAF rather than the 53 GB MAF beside it, and the reason is the build rather
-  // than the size. The alignment is published as MAF only under v2.1, while the
-  // graph and the callset the tutorial pairs this with are v2.0 — and v2.0
-  // publishes the same alignment as `full.taf.gz` + `.tai`. So the TAF is the
-  // one that matches the rest of the page. Both index the same 195 GRCh38
-  // contigs and name sequences the same way (`GRCh38.chr6`), so the swap is the
-  // adapter and the URL.
+  // TAF rather than the 53 GB MAF beside it, and the reason is the read size.
+  // HPRC publishes the alignment in one format per build — TAF only under v2.0,
+  // MAF only under v2.1 — so this lane is the one thing here still on v2.0 while
+  // the graph and the callsets read v2.1. Both index the same 195 GRCh38 contigs
+  // and name sequences the same way (`GRCh38.chr6`), so the swap is the adapter
+  // and the URL.
   //
   // Measured off the two .tai files with the repo's own queryBlockSpan, chr6:
   // the 83 kb window below is a 292 KB read against the MAF's 878 KB, and a
