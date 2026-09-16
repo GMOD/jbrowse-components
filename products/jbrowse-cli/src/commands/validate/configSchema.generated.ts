@@ -12328,6 +12328,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
         "bezierRadiusRatio": {
           "type": "number"
         },
+        "colorBy": {
+          "enum": [
+            "default",
+            "chromosome",
+            "strand"
+          ]
+        },
         "heightPreConfig": {
           "deprecated": true,
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."

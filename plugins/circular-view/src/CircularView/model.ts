@@ -12,6 +12,7 @@ import {
 } from '@jbrowse/core/util'
 import { installInitAutorun } from '@jbrowse/core/util/installInitAutorun'
 import {
+  getTrackName,
   hideTrackGeneric,
   isSameAssemblyName,
   normalizeTrackInit,
@@ -1323,7 +1324,31 @@ function stateModelFactory(pluginManager: PluginManager) {
             },
             icon: TrackSelectorIcon,
           },
+          ...(self.tracks.length ? [this.tracksMenuItem()] : []),
         ]
+      },
+      /**
+       * #method
+       * each track's own menu, which on a linear view hangs off its label and
+       * on the circle has nowhere else to go
+       */
+      tracksMenuItem(): MenuItem {
+        const session = getSession(self)
+        return {
+          label: 'Tracks',
+          type: 'subMenu',
+          subMenu: self.tracks.map(track => ({
+            label: getTrackName(track.configuration, session),
+            type: 'subMenu' as const,
+            subMenu: [
+              ...(session.getTrackActionMenuItems?.({
+                config: track.configuration,
+                view: self,
+              }) ?? []),
+              ...track.trackMenuItems(),
+            ].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0)),
+          })),
+        }
       },
     }))
 

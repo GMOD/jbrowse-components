@@ -17,6 +17,7 @@ const Ribbon = observer(function Ribbon({
   sliceFor,
   radius,
   config,
+  restingFill,
   bezierRadius,
   selected,
   onClick,
@@ -25,6 +26,7 @@ const Ribbon = observer(function Ribbon({
   sliceFor: RibbonDisplayModel['sliceFor']
   radius: number
   config: AnyConfigurationModel
+  restingFill: RibbonDisplayModel['ribbonFill']
   bezierRadius: number
   selected: boolean
   onClick: (feat: Feature) => void
@@ -39,11 +41,12 @@ const Ribbon = observer(function Ribbon({
   if (!anchorBlock || !mateBlock || !mate) {
     return null
   }
-  const fill = readConfObject(
-    config,
-    hovered ? 'colorHover' : selected ? 'colorSelected' : 'color',
-    { feature },
-  )
+  const fill =
+    hovered || selected
+      ? readConfObject(config, hovered ? 'colorHover' : 'colorSelected', {
+          feature,
+        })
+      : restingFill(feature)
   return (
     <path
       data-testid={`ribbon-${feature.id()}`}

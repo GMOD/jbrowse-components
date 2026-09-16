@@ -37,6 +37,7 @@ export interface ChordDisplayModel extends ChordDisplayFrameModel {
 // `chr1`, and a refName-keyed table answers whichever was written last
 export interface RibbonDisplayModel extends ChordDisplayFrameModel {
   features: Feature[] | undefined
+  ribbonFill: (feature: Feature) => string
   selectedFeatureId: string | undefined
   bezierRadius: number
   sliceFor: (

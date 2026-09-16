@@ -1,3 +1,4 @@
+import { colord } from '@jbrowse/core/util/colord'
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
@@ -124,4 +125,22 @@ test('reload() rewakes the fetch after an error', async () => {
   await when(() => display.features === undefined)
   await when(() => display.ready)
   expect(display.features).toHaveLength(1)
+}, 20000)
+
+test('colorBy chromosome paints a ribbon the color of its first-genome arc', async () => {
+  const { session, display } = await setup(['volvox', 'volvox2'])
+  const [feature] = display.features!
+  const ideogram = session.assemblyManager
+    .get('volvox')!
+    .getRefNameColor('ctgA')!
+
+  display.setColorBy('chromosome')
+  expect(display.ribbonFill(feature)).toBe(
+    colord(ideogram).alpha(0.35).toRgbString(),
+  )
+
+  display.setColorBy('strand')
+  expect(display.ribbonFill(feature)).toBe(
+    colord('#00f').alpha(0.35).toRgbString(),
+  )
 }, 20000)

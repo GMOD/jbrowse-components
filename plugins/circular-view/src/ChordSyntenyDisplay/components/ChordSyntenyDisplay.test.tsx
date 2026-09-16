@@ -1,4 +1,5 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { SimpleFeature } from '@jbrowse/core/util'
 import { fireEvent, render } from '@testing-library/react'
 
@@ -68,6 +69,7 @@ function ribbonModel(
     features: [],
     selectedFeatureId: undefined,
     configuration,
+    ribbonFill: feature => readConfObject(configuration, 'color', { feature }),
     radiusPx: 1000,
     bezierRadius: 100,
     sliceFor: (assemblyName, refName) =>

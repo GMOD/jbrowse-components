@@ -1,6 +1,9 @@
 import { lazy } from 'react'
 
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { computeSvgReady } from '@jbrowse/core/svg/svgReady'
 import {
@@ -10,6 +13,7 @@ import {
   isFeature,
   openFeatureWidget,
 } from '@jbrowse/core/util'
+import { colord } from '@jbrowse/core/util/colord'
 import { fanOutStatus } from '@jbrowse/core/util/fetchContext'
 import { installFetch } from '@jbrowse/core/util/installFetch'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -17,6 +21,7 @@ import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import { computeDisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
 import {
   adapterAssemblyNames,
+  colorSchemes,
   getMate,
   regionsInAssemblyNamespace,
   renameRegionsForAdapter,
@@ -30,6 +35,7 @@ import type {
 } from '../../CircularView/model.ts'
 import type { Slice } from '../../CircularView/slices.ts'
 import type { ChordSyntenyDisplayConfigModel } from './configSchema.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { AlignmentData } from '@jbrowse/core/util/diagonalizeRegions'
 import type { DisplayStatusPhase } from '@jbrowse/render-core/displayPhase'
@@ -46,6 +52,20 @@ const ErrorMessageStackTraceDialog = lazy(
 interface AdapterNames {
   assemblyName: string
   refNameMap: Record<string, string>
+}
+
+const RIBBON_ALPHA = 0.35
+
+const COLOR_BY = [
+  { value: 'default', label: 'Track color' },
+  { value: 'chromosome', label: "First genome's chromosome" },
+  { value: 'strand', label: 'Strand' },
+] as const
+
+type RibbonColorBy = (typeof COLOR_BY)[number]['value']
+
+function translucent(color: string) {
+  return colord(color).alpha(RIBBON_ALPHA).toRgbString()
 }
 
 function invert(map: Record<string, string>) {
@@ -102,6 +122,19 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
          * #property
          */
         bezierRadiusRatio: types.stripDefault(types.number, 0.1),
+        /**
+         * #property
+         * what a ribbon's hue says: the `color` config slot, the chromosome
+         * of the circle's first genome it joins (that arc's ideogram color),
+         * or the strand. The strand is also the twist in every mode
+         */
+        colorBy: types.stripDefault(
+          types.enumeration<RibbonColorBy>(
+            'ChordSyntenyColorBy',
+            COLOR_BY.map(c => c.value),
+          ),
+          'default',
+        ),
         /**
          * #property
          */
@@ -258,6 +291,38 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
       /**
        * #getter
+       * the resting fill of each ribbon under `colorBy`
+       */
+      get ribbonFill(): (feature: Feature) => string {
+        const { configuration, colorBy } = self
+        const configured = (feature: Feature) =>
+          readConfObject(configuration, 'color', { feature })
+        if (colorBy === 'strand') {
+          const { posColor, negColor } = colorSchemes.strand
+          const pos = translucent(posColor)
+          const neg = translucent(negColor)
+          return feature => (feature.get('strand') === -1 ? neg : pos)
+        }
+        const first = this.view.assemblyNames[0]
+        const names =
+          first === undefined ? undefined : self.adapterNames?.[first]
+        if (colorBy !== 'chromosome' || first === undefined || !names) {
+          return configured
+        }
+        const assembly = getSession(self).assemblyManager.get(first)
+        const canonical = invert(names.refNameMap)
+        return feature => {
+          const mate = getMate(feature)
+          const refName =
+            mate && feature.get('assemblyName') !== names.assemblyName
+              ? mate.refName
+              : feature.get('refName')
+          const color = assembly?.getRefNameColor(canonical[refName] ?? refName)
+          return color ? translucent(color) : configured(feature)
+        }
+      },
+      /**
+       * #getter
        * the panel the linear synteny displays open for the same record, so a
        * ribbon clicked on the circle and a ribbon clicked in a synteny view
        * share one drawer entry
@@ -334,6 +399,12 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
     }))
     .actions(self => ({
+      /**
+       * #action
+       */
+      setColorBy(colorBy: RibbonColorBy) {
+        self.colorBy = colorBy
+      },
       /**
        * #action
        */
@@ -482,6 +553,25 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
       },
     }))
     .views(self => ({
+      /**
+       * #method
+       */
+      trackMenuItems(): MenuItem[] {
+        return [
+          {
+            label: 'Color by',
+            type: 'subMenu',
+            subMenu: COLOR_BY.map(({ value, label }) => ({
+              label,
+              type: 'radio' as const,
+              checked: self.colorBy === value,
+              onClick: () => {
+                self.setColorBy(value)
+              },
+            })),
+          },
+        ]
+      },
       /**
        * #method
        */

@@ -137,6 +137,7 @@ Members a composed model contributes are listed here too, so these tables are th
 | Member | Description |
 | --- | --- |
 | <span id="method-menuitems">**menuItems**</span><br><code>() =&gt; MenuItem[]</code> | return the view menu items |
+| <span id="method-tracksmenuitem">**tracksMenuItem**</span><br><code>() =&gt; MenuItem</code> | each track's own menu, which on a linear view hangs off its label and on the circle has nowhere else to go |
 
 ## Actions
 

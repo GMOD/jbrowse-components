@@ -12,6 +12,7 @@ const Ribbons = observer(function Ribbons({
   const {
     features,
     configuration,
+    ribbonFill,
     sliceFor,
     radiusPx,
     bezierRadius,
@@ -28,6 +29,7 @@ const Ribbons = observer(function Ribbons({
           key={feature.id()}
           feature={feature}
           config={configuration}
+          restingFill={ribbonFill}
           radius={radiusPx}
           bezierRadius={bezierRadius}
           sliceFor={sliceFor}

@@ -15,7 +15,10 @@ ribbon fetch keys on the region set ignoring order and `reversed`, so the
 reorder's own region write does not refetch, and a two-genome launch reads the
 file once where it read it three times. A reorder that throws now shows in the
 ribbons' error ring, whose Retry runs it again, rather than leaving them on
-their loading ring with the reason only in a toast.
+their loading ring with the reason only in a toast. And the chromosome palette
+the alternatives below parked landed as the display-model `colorBy` they
+proposed: `'chromosome'` fills a ribbon with its first-genome arc's ideogram
+color, `'strand'` with the strand pair, and `'default'` stays the flat fill.
 
 Accepted (2026-09-10). Builds on
 [ADR-116](adr-116-a-synteny-alignment-is-a-ribbon-on-the-circle.md), which put

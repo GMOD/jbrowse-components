@@ -5,10 +5,19 @@ import { RING_GAP_PX } from './ringHost.ts'
 
 import type { CircularViewModel } from '../CircularView/model.ts'
 import type { RingDisplay } from './ringHost.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 
 jest.mock('@jbrowse/web/makeWorkerInstance', () => () => {})
 
 const TWO_PI = 2 * Math.PI
+
+function subMenuOf(items: MenuItem[], label: string) {
+  const item = items.find(i => 'label' in i && i.label === label)
+  if (!item || !('subMenu' in item)) {
+    return []
+  }
+  return typeof item.subMenu === 'function' ? item.subMenu() : item.subMenu
+}
 const CTG_A_BP = 16000
 const CTG_B_BP = 8000
 
@@ -151,6 +160,19 @@ test('a bigwig-shaped track opens on the circle as a wiggle ring over the strip'
   // the strip fetched per slice
   await when(() => display.loadedRegions.size === 2)
   expect([...display.loadedRegions.keys()].sort()).toEqual([0, 1])
+}, 30000)
+
+// a ring has no label to hang its track menu off, so the view menu carries
+// it, and the wiggle's own settings are reachable on the circle
+test("a ring's track menu is under the view menu's Tracks item", async () => {
+  const { view } = await wiggleSession()
+  const [ring] = subMenuOf(view.menuItems(), 'Tracks')
+  expect(ring && 'label' in ring ? ring.label : undefined).toBe('ring')
+  expect(
+    subMenuOf(ring ? [ring] : [], 'ring').map(item =>
+      'label' in item ? item.label : undefined,
+    ),
+  ).toEqual(expect.arrayContaining(['Score']))
 }, 30000)
 
 test('a point on the wiggle ring unwarps to the strip column of its base', async () => {

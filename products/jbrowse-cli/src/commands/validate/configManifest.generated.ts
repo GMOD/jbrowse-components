@@ -3450,6 +3450,7 @@ export const configManifest: ConfigManifest = {
         "id",
         "type",
         "bezierRadiusRatio",
+        "colorBy",
         "configuration"
       ]
     },

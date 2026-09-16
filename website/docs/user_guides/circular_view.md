@@ -32,12 +32,13 @@ deletions and duplications load but don't produce an informative chord.
 
 A track whose display draws in the linear genome view draws on the circle as a
 ring: open it from the view's track selector, or name it in the view's `tracks`.
-Rings stack inward from the ideogram in the order the tracks were opened, each
-as tall as the display's height, and the chords and ribbons draw inside the
-innermost ring. Every setting the display has on a linear view — a wiggle's plot
-type and color, a mark display's `marks` — applies on the ring, and hovering or
-clicking a ring is the same hover and click as on the linear track: the tooltip
-and the feature details are the display's own.
+Each track's menu is under **Tracks** in the view menu, since a ring has no
+label to hang it off. Rings stack inward from the ideogram in the order the
+tracks were opened, each as tall as the display's height, and the chords and
+ribbons draw inside the innermost ring. Every setting the display has on a
+linear view — a wiggle's plot type and color, a mark display's `marks` — applies
+on the ring, and hovering or clicking a ring is the same hover and click as on
+the linear track: the tooltip and the feature details are the display's own.
 
 A ring is the display's linear rendering wrapped around the circle: the display
 draws a strip as long as the circumference, and the view resamples it so each
@@ -88,9 +89,11 @@ come out as a band of parallel arcs. It is the same pass the linear synteny view
 and the dotplot run, over the same alignment file, and it is offered on a
 two-genome circle carrying a synteny track and nowhere else.
 
-The ribbons are one flat translucent fill by default. `color` on the display is
-a `jexl:` expression over the feature, so a score, an identity or the strand can
-drive it instead — see
+The ribbons are one flat translucent fill by default. **Color by** in the
+track's menu paints each ribbon the color of the first genome's chromosome it
+joins, matching that arc of the ideogram, or by strand. `color` on the display
+is a `jexl:` expression over the feature, so a score or an identity can drive
+the default fill instead — see
 [the display's config schema](/docs/config/chordsyntenydisplay).
 
 ## Interacting with chords
