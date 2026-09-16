@@ -45,9 +45,7 @@ and the table below is generated from it. The categories:
   internal MST fork, which is also aliased from plain `mobx-state-tree`.
 - Styling - `@mui/material` and its per-component subpaths (e.g.
   `@mui/material/Button`), `@mui/material/styles`, `tss-react`,
-  `@mui/x-data-grid`. The legacy `@material-ui/core` paths are aliased to the
-  same MUI v5 modules for backward compatibility, and are derived from the same
-  subpath list rather than maintained separately.
+  `@mui/x-data-grid`.
 - `@jbrowse/core` APIs - the building blocks for pluggable elements and shared
   helpers:
 

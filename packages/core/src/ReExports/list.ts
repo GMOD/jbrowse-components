@@ -11,9 +11,8 @@ import { MUI_COMPONENT_NAMES } from './muiComponentNames.ts'
  * which a Object.keys(modules) would do
  */
 
-// Per-component MUI subpaths, and the legacy `@material-ui/core/*` aliases
-// below, both derived from the one name list — see muiComponentNames.ts for why
-// that list is its own MUI-free module.
+// Per-component MUI subpaths, derived from the one name list — see
+// muiComponentNames.ts for why that list is its own MUI-free module.
 const muiComponentSubpaths = MUI_COMPONENT_NAMES.map(n => `@mui/material/${n}`)
 
 export default [
@@ -27,25 +26,12 @@ export default [
   'mobx-react',
   '@mui/x-data-grid',
   '@mui/material/utils',
-  '@material-ui/core/utils',
   'tss-react',
   'tss-react/mui',
-  '@material-ui/core',
   '@mui/material',
 
   '@mui/material/styles',
-  '@material-ui/core/styles',
-
-  ...muiComponentSubpaths.map(p =>
-    p.replace('@mui/material/', '@material-ui/core/'),
-  ),
   ...muiComponentSubpaths,
-
-  '@material-ui/lab/ToggleButton',
-  '@material-ui/lab/ToggleButtonGroup',
-  '@material-ui/lab/Autocomplete',
-  '@material-ui/lab/Alert',
-  '@material-ui/lab',
 
   // The `@jbrowse/core` subpaths below are the ones a plugin may import and get
   // the host's copy of. Each carries a `#reexport <what it provides>` line,

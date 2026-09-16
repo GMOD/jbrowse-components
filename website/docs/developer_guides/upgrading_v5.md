@@ -134,6 +134,17 @@ A `worker eval:` line is a different failure from the rest of this page, and not
 one an ABI change can reach: the bundle threw while the RPC worker evaluated it,
 reading the DOM at module scope. Only the plugin can fix that.
 
+## The `@material-ui/*` aliases are gone
+
+The host no longer serves `@material-ui/core`, `@material-ui/core/<Component>`,
+`@material-ui/core/styles`, `@material-ui/core/utils` or `@material-ui/lab/*`.
+They were aliases onto the same `@mui/material` modules, kept since the v2
+migration for bundles built against Material UI v4. Of the plugins in the store,
+only `jbrowse-plugin-reactome` 1.0.1 still reads them, and it reads them at
+module scope, so it fails to load on v5 with a notification rather than
+degrading. A rebuild against the current template imports `@mui/material` and
+resolves to the host's copy as before.
+
 ## Subpaths removed from `@jbrowse/core`
 
 The deep-import surface: `import QuickLRU from '@jbrowse/core/util/QuickLRU'`

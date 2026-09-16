@@ -111,24 +111,10 @@ export const MUI_STYLES_NAMES = [
 
 export const TSS_REACT_NAMES = ['cx', 'keyframes', 'makeStyles']
 
-export const MATERIAL_UI_LAB_NAMES = [
-  'Alert',
-  'Autocomplete',
-  'ToggleButton',
-  'ToggleButtonGroup',
-]
-
 export const MUI_MATERIAL_NAMES = [
   ...MUI_COMPONENT_NAMES,
   'alpha',
   'createTheme',
-  'useTheme',
-]
-
-export const MATERIAL_UI_CORE_NAMES = [
-  ...MUI_COMPONENT_NAMES,
-  'alpha',
-  'makeStyles',
   'useTheme',
 ]
 
@@ -269,14 +255,10 @@ export const WORKER_NAMESPACE_NAMES: Record<string, readonly string[]> = {
   'react-dom/client': REACT_DOM_CLIENT_NAMES,
   'mobx-react': MOBX_REACT_NAMES,
   '@mui/material/utils': MUI_UTILS_NAMES,
-  '@material-ui/core/utils': MUI_UTILS_NAMES,
   'tss-react': TSS_REACT_NAMES,
   'tss-react/mui': TSS_REACT_NAMES,
   '@mui/material': MUI_MATERIAL_NAMES,
-  '@material-ui/core': MATERIAL_UI_CORE_NAMES,
   '@mui/material/styles': MUI_STYLES_NAMES,
-  '@material-ui/core/styles': MUI_STYLES_NAMES,
-  '@material-ui/lab': MATERIAL_UI_LAB_NAMES,
   '@mui/x-data-grid': DATA_GRID_NAMES,
   '@jbrowse/core/ui': CORE_UI_NAMES,
   // @mui/icons-material is NOT re-exported, so a plugin that wants an icon

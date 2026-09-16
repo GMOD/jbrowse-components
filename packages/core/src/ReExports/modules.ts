@@ -24,23 +24,11 @@ function makeLegacyMakeStyles() {
 const tssReact = { cx, keyframes, makeStyles }
 const legacyMakeStyles = makeLegacyMakeStyles()
 
-const materialUiCoreLib = {
-  ...lazyMap(Entries),
-  useTheme,
-  alpha,
-  makeStyles: legacyMakeStyles,
-}
 const muiMaterialLib = {
   ...lazyMap(Entries),
   alpha,
   useTheme,
   createTheme,
-}
-const materialUiLabLib = {
-  Alert: Entries.Alert,
-  Autocomplete: Entries.Autocomplete,
-  ToggleButton: Entries.ToggleButton,
-  ToggleButtonGroup: Entries.ToggleButtonGroup,
 }
 const muiStylesLib = { ...MUIStyles, makeStyles: legacyMakeStyles }
 
@@ -60,14 +48,11 @@ const libs = {
   },
 
   '@mui/material/utils': MUIUtils,
-  '@material-ui/core/utils': MUIUtils,
   'tss-react': tssReact,
   'tss-react/mui': tssReact,
 
-  '@material-ui/core': materialUiCoreLib,
   '@mui/material': muiMaterialLib,
   ...lazyMap(Entries, '@mui/material/'),
-  ...lazyMap(Entries, '@material-ui/core/'),
 
   // @mui/icons-material — bundled into external plugins — reads the
   // `createSvgIcon` *named* export from @mui/material/SvgIcon, but lazyMap
@@ -83,14 +68,6 @@ const libs = {
   '@mui/material/SvgIcon': Object.assign({}, SvgIcon, { createSvgIcon }),
 
   '@mui/material/styles': muiStylesLib,
-  '@material-ui/core/styles': muiStylesLib,
-
-  // these are core in @mui/material, but used to be in @material-ui/lab
-  '@material-ui/lab/ToggleButton': Entries.ToggleButton,
-  '@material-ui/lab/ToggleButtonGroup': Entries.ToggleButtonGroup,
-  '@material-ui/lab/Autocomplete': Entries.Autocomplete,
-  '@material-ui/lab/Alert': Entries.Alert,
-  '@material-ui/lab': materialUiLabLib,
 
   '@jbrowse/core/ui': coreUi,
   // the same lazy component publicUi.tsx puts on the namespace; published

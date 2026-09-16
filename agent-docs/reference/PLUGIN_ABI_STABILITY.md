@@ -738,6 +738,15 @@ author who lands on a behavior change can find the sentence that explains it.
   `exports` map — so there is no opt-out to describe and nothing to migrate.
   Supporting plugin drivers starts with exporting that class. ADR-086.
 
+- **The `@material-ui/*` aliases are no longer served.** `@material-ui/core`,
+  its per-component subpaths, `styles`, `utils` and `@material-ui/lab/*` were
+  doubled entries onto the `@mui/material` modules, kept for bundles built
+  against Material UI v4. Reading the 17 store bundles on 2026-09-16 found two
+  reaching them: `jbrowse-plugin-icgc`, already dead on v5 through
+  `BaseLinearDisplayComponent`, and `jbrowse-plugin-reactome` 1.0.1, which
+  reads them at module scope and so now fails to load with a notification.
+  **Opt-out: none; rebuild against `@mui/material`.**
+
 ## Follow-ups
 
 Smallest-useful-first; none committed — they need a scope decision and probably
