@@ -66,6 +66,14 @@ per-build set, and what is in them changes which file to reach for.
   packaging. It also fixes a sample-name typo in `sv.gfa.gz` and a
   missing-genotypes bug in vcfwave output. Worth knowing before treating a v2.0
   oddity as a JBrowse bug.
+- **How much the re-run moves, at C4.** The v2.1 MAF carries 464 haplotypes per
+  block either side of the module and 309 through it, dropping to 58 over
+  chr6:32,017,452-32,022,279, and HG00146.1 has no row at all across
+  chr6:31,996,844-32,029,366. The v2.0 TAF aligned that clade through the
+  module, so the figure's block of unaligned haplotypes is much wider than it
+  was. Read off the published MAF, not the picture. Which build is *right* here
+  is not settled by either: C4 is copy-number variable, so a haplotype carrying
+  a different copy count has no single correct projection onto GRCh38.
 - **The flat `wave.vcf.gz` is older than the one in `v2.0/`.** The flat copy is
   the March 2025 build (2,275,985,017 bytes); `v2.0/…wave.vcf.gz` is a January
   2026 rewave (2,261,483,979 bytes) with `-rewave.log` and a `.old` beside it. All
