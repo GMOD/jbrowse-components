@@ -1,4 +1,7 @@
-import { clampStrokeInsideAxis, scoreToAxisY } from '@jbrowse/display-ui'
+import {
+  clampStrokeInsideAxis,
+  scoreToAxisY,
+} from '@jbrowse/display-ui/yScaleTicks'
 
 import type { ScoreRuleMark } from '@jbrowse/display-ui'
 

@@ -49,12 +49,12 @@ import {
   WiggleScoreConfigMixin,
   axisPlotBox,
   makeCrossHatchItem,
-  makePointSizeSubMenu,
   makeScoreSubMenu,
   resolveRenderState,
   visibleStatsDomain,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
+import { makePointSizeSubMenu } from '@jbrowse/wiggle-core/chrome'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import { autorun } from 'mobx'

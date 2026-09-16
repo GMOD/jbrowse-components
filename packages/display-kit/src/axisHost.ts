@@ -1,4 +1,5 @@
-import { SCORE_CAPTION_HEIGHT, axisDrawn } from '@jbrowse/display-ui'
+import { axisDrawn } from '@jbrowse/display-ui/axisPlacement'
+import { SCORE_CAPTION_HEIGHT } from '@jbrowse/display-ui/yAxisConstants'
 
 import type { ScoreRuleMark, YAxis } from '@jbrowse/display-ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'

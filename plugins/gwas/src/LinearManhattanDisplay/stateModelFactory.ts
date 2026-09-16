@@ -29,7 +29,6 @@ import {
   ScoreFieldConfigMixin,
   axisPlotBox,
   makeCrossHatchItem,
-  makePointSizeSubMenu,
   makeScoreNormalizer,
   makeScoreSubMenu,
   resolveRenderState,
@@ -37,6 +36,7 @@ import {
   visibleStatsDomain,
   widenRangeToRules,
 } from '@jbrowse/wiggle-core'
+import { makePointSizeSubMenu } from '@jbrowse/wiggle-core/chrome'
 import HorizontalRuleIcon from '@mui/icons-material/HorizontalRule'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'

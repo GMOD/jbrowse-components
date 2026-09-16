@@ -114,7 +114,10 @@ export {
   scoreToAxisY,
 } from './yScaleTicks.ts'
 export type { YScaleTicks } from './yScaleTicks.ts'
-export { YSCALEBAR_LABEL_OFFSET } from './yAxisConstants.ts'
+export {
+  SCORE_CAPTION_HEIGHT,
+  YSCALEBAR_LABEL_OFFSET,
+} from './yAxisConstants.ts'
 export {
   AXIS_RIGHT_INSET_PX,
   COMPACT_AXIS_HEIGHT,
@@ -124,10 +127,7 @@ export {
 export { default as AxisGutter } from './AxisGutter.tsx'
 export { default as YScaleBar } from './YScaleBar.tsx'
 export { default as YScaleBarOverlay } from './YScaleBarOverlay.tsx'
-export {
-  default as ScoreDomainCaption,
-  SCORE_CAPTION_HEIGHT,
-} from './ScoreDomainCaption.tsx'
+export { default as ScoreDomainCaption } from './ScoreDomainCaption.tsx'
 export { formatScore } from '@jbrowse/core/util/numericUtils'
 export { CrossHatchLines, default as CrossHatches } from './CrossHatches.tsx'
 export { ScoreRuleLines, default as ScoreRules } from './ScoreRules.tsx'

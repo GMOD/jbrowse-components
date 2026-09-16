@@ -3,3 +3,6 @@
 // (which re-exports computeYTicks) and computeYTicks.ts need it — importing it
 // from index.ts would close a cycle.
 export const YSCALEBAR_LABEL_OFFSET = 5
+
+// The height one score caption occupies above the plot.
+export const SCORE_CAPTION_HEIGHT = 16

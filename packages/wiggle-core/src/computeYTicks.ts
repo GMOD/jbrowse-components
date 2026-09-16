@@ -1,8 +1,9 @@
-import { YSCALEBAR_LABEL_OFFSET, axisPlotBox } from '@jbrowse/display-ui'
+import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/display-ui/yAxisConstants'
+import { axisPlotBox } from '@jbrowse/display-ui/yScaleTicks'
 
 import { getScale } from './scale.ts'
 
-import type { YScaleTicks } from '@jbrowse/display-ui'
+import type { YScaleTicks } from '@jbrowse/display-ui/yScaleTicks'
 
 // Builds Y-axis tick positions for a wiggle-family display: tick values come
 // from d3's scale.ticks(4) at normal heights, or fall back to the domain

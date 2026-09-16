@@ -4522,6 +4522,16 @@
         "react-dom"
       ]
     },
+    "@jbrowse/display-ui/axisPlacement": {
+      "package": "@jbrowse/display-ui",
+      "names": [
+        "AXIS_RIGHT_INSET_PX",
+        "COMPACT_AXIS_HEIGHT",
+        "axisDrawn",
+        "axisGutterLeft"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-ui/embed": {
       "package": "@jbrowse/display-ui",
       "names": [
@@ -4538,7 +4548,18 @@
     "@jbrowse/display-ui/yAxisConstants": {
       "package": "@jbrowse/display-ui",
       "names": [
+        "SCORE_CAPTION_HEIGHT",
         "YSCALEBAR_LABEL_OFFSET"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/display-ui/yScaleTicks": {
+      "package": "@jbrowse/display-ui",
+      "names": [
+        "AXIS_GUTTER_WIDTH_PX",
+        "axisPlotBox",
+        "clampStrokeInsideAxis",
+        "scoreToAxisY"
       ],
       "worker": "real"
     },
@@ -4875,13 +4896,7 @@
       "names": [
         "default"
       ],
-      "worker": "stub",
-      "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/Tooltip",
-        "react-dom"
-      ]
+      "worker": "real"
     },
     "@jbrowse/plugin-hic": {
       "package": "@jbrowse/plugin-hic",
@@ -5020,13 +5035,7 @@
       "names": [
         "default"
       ],
-      "worker": "stub",
-      "uiVia": [
-        "@mui/material",
-        "@mui/material/IconButton",
-        "@mui/material/Tooltip",
-        "react-dom"
-      ]
+      "worker": "real"
     },
     "@jbrowse/plugin-menus": {
       "package": "@jbrowse/plugin-menus",
@@ -6298,9 +6307,6 @@
       "package": "@jbrowse/wiggle-core",
       "names": [
         "AXIS_GUTTER_WIDTH_PX",
-        "AxisGutter",
-        "CrossHatchLines",
-        "CrossHatches",
         "DEFAULT_AUTOSCALE_OPTIONS",
         "DEFAULT_GAP_BREAK_MULTIPLE",
         "DEFAULT_SCORE_FIELD",
@@ -6316,16 +6322,10 @@
         "SCALE_TYPE_SYMLOG",
         "SCORE_CAPTION_HEIGHT",
         "SMALL_POINT_MAX_DIAMETER_PX",
-        "ScoreDomainCaption",
         "ScoreFieldConfigMixin",
-        "ScoreRuleLines",
-        "ScoreRules",
         "ScoreScaleMixin",
-        "SetMinMaxDialog",
         "WiggleScoreConfigMixin",
         "YSCALEBAR_LABEL_OFFSET",
-        "YScaleBar",
-        "YScaleBarOverlay",
         "appendPointMarker",
         "autoscaleDomainFromStats",
         "axisDrawn",
@@ -6344,10 +6344,7 @@
         "makeAutoscaleTypeSubMenu",
         "makeCrossHatchItem",
         "makePinCurrentRangeItem",
-        "makePointSizeSubMenu",
-        "makeResolutionSubMenuItem",
         "makeScaleTypeSubMenu",
-        "makeScatterPointSizeMenuItem",
         "makeScoreNormalizer",
         "makeScoreSubMenu",
         "makeSetMinMaxScoreItem",
@@ -6363,6 +6360,24 @@
         "visibleStatsDomain",
         "widenRangeToRules",
         "wiggleScoreConfigExtraSlots"
+      ],
+      "worker": "real"
+    },
+    "@jbrowse/wiggle-core/chrome": {
+      "package": "@jbrowse/wiggle-core",
+      "names": [
+        "AxisGutter",
+        "CrossHatchLines",
+        "CrossHatches",
+        "ScoreDomainCaption",
+        "ScoreRuleLines",
+        "ScoreRules",
+        "SetMinMaxDialog",
+        "YScaleBar",
+        "YScaleBarOverlay",
+        "makePointSizeSubMenu",
+        "makeResolutionSubMenuItem",
+        "makeScatterPointSizeMenuItem"
       ],
       "worker": "stub",
       "uiVia": [

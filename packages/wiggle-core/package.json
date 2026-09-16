@@ -23,6 +23,7 @@
     ".": "./src/index.ts",
     "./ScorePlotChrome": "./src/ScorePlotChrome.tsx",
     "./ScorePlotSvgFrame": "./src/ScorePlotSvgFrame.tsx",
+    "./chrome": "./src/chrome.ts",
     "./constants": "./src/constants.ts",
     "./normalize": "./src/normalize.ts",
     "./renderingBackendTypes": "./src/renderingBackendTypes.ts"
@@ -59,6 +60,7 @@
       ".": "./esm/index.js",
       "./ScorePlotChrome": "./esm/ScorePlotChrome.js",
       "./ScorePlotSvgFrame": "./esm/ScorePlotSvgFrame.js",
+      "./chrome": "./esm/chrome.js",
       "./constants": "./esm/constants.js",
       "./normalize": "./esm/normalize.js",
       "./renderingBackendTypes": "./esm/renderingBackendTypes.js"

@@ -22,26 +22,21 @@ export {
 } from './autoscale.ts'
 export type { Dataset, FeatureArrays, ScoreStats } from './autoscale.ts'
 
-// The y-axis primitives live in `@jbrowse/display-ui`, where the chrome
-// places them for any display declaring `valueScales`; re-exported here so
-// their published names hold.
+// The y-axis geometry, named at its own subpaths rather than through the
+// `@jbrowse/display-ui` barrel: the barrel reaches react-dom, and reaching it
+// from here put the score math and the three config mixins behind a worker
+// stub. The components that draw the axis are `./chrome`.
+export { axisDrawn } from '@jbrowse/display-ui/axisPlacement'
+export {
+  SCORE_CAPTION_HEIGHT,
+  YSCALEBAR_LABEL_OFFSET,
+} from '@jbrowse/display-ui/yAxisConstants'
 export {
   AXIS_GUTTER_WIDTH_PX,
-  AxisGutter,
-  CrossHatchLines,
-  CrossHatches,
-  SCORE_CAPTION_HEIGHT,
-  ScoreDomainCaption,
-  ScoreRuleLines,
-  ScoreRules,
-  YSCALEBAR_LABEL_OFFSET,
-  YScaleBar,
-  YScaleBarOverlay,
-  axisDrawn,
   axisPlotBox,
   clampStrokeInsideAxis,
   scoreToAxisY,
-} from '@jbrowse/display-ui'
+} from '@jbrowse/display-ui/yScaleTicks'
 export type { ValueScale, YAxis, YScaleTicks } from '@jbrowse/display-ui'
 
 export { computeYTicks } from './computeYTicks.ts'
@@ -61,16 +56,10 @@ export {
   widenRangeToRules,
 } from './scoreRuleMarks.ts'
 export type { ScoreRule, ScoreRuleMark } from './scoreRuleMarks.ts'
-export { makeResolutionSubMenuItem } from './ResolutionStepper.tsx'
-export {
-  makePointSizeSubMenu,
-  makeScatterPointSizeMenuItem,
-} from './pointSizeMenu.tsx'
 export {
   SMALL_POINT_MAX_DIAMETER_PX,
   appendPointMarker,
 } from './pointMarker.ts'
-export { default as SetMinMaxDialog } from './SetMinMaxDialog.tsx'
 
 export { DEFAULT_AUTOSCALE_OPTIONS } from './autoscale.ts'
 export {

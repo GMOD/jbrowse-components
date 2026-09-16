@@ -20,8 +20,10 @@
   "main": "src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./axisPlacement": "./src/axisPlacement.ts",
     "./embed": "./src/embed/index.tsx",
-    "./yAxisConstants": "./src/yAxisConstants.ts"
+    "./yAxisConstants": "./src/yAxisConstants.ts",
+    "./yScaleTicks": "./src/yScaleTicks.ts"
   },
   "files": [
     "esm"

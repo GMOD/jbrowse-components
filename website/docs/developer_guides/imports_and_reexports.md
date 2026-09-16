@@ -72,7 +72,7 @@ state-model mixin is always real in both realms.
 | [`@jbrowse/cigar-utils`](/docs/api/cigar-utils) | Pure CIGAR / MD / mismatch parsers and types — no rendering or framework deps | 1 | all of it |
 | [`@jbrowse/core`](/docs/api/core) | JBrowse 2 core libraries used by plugins | 237 | 197 of 237 subpaths; the rest stubbed |
 | `@jbrowse/display-kit` | The display integration layer a track type is built on: the fetch foundations, the byte gate, the display chrome, SVG export, and the RegionHost view contract | 72 | 54 of 72 subpaths; the rest stubbed |
-| [`@jbrowse/display-ui`](/docs/api/display-ui) | The UI a display draws that is not data: the swappable chrome contract, its toolkit-free implementations, and the track overlay layer | 3 | 2 of 3 subpaths; the rest stubbed |
+| [`@jbrowse/display-ui`](/docs/api/display-ui) | The UI a display draws that is not data: the swappable chrome contract, its toolkit-free implementations, and the track overlay layer | 5 | 4 of 5 subpaths; the rest stubbed |
 | `@jbrowse/ld-core` | Pure linkage-disequilibrium parsers and math — PLINK .ld parsing and genotype r²/D' — no rendering or framework deps | 1 | all of it |
 | [`@jbrowse/modifications-utils`](/docs/api/modifications-utils) | Pure MM/ML base-modification tag parsers (methylation, etc.) | 1 | all of it |
 | `@jbrowse/plugin-alignments` | JBrowse 2 alignments adapters, tracks, etc. | 2 | none; a stub with its names |
@@ -90,14 +90,14 @@ state-model mixin is always real in both realms.
 | `@jbrowse/plugin-gff3` | JBrowse 2 gff3. | 1 | all of it |
 | `@jbrowse/plugin-grid-bookmark` | JBrowse 2 grid bookmark widget | 1 | none; a stub with its names |
 | `@jbrowse/plugin-gtf` | JBrowse 2 gtf feature adapter | 1 | all of it |
-| `@jbrowse/plugin-gwas` | JBrowse 2 GWAS adapters, tracks, and Manhattan plot displays | 1 | none; a stub with its names |
+| `@jbrowse/plugin-gwas` | JBrowse 2 GWAS adapters, tracks, and Manhattan plot displays | 1 | all of it |
 | `@jbrowse/plugin-hic` | JBrowse 2 hic adapters, tracks, etc. | 1 | all of it |
 | `@jbrowse/plugin-jobs-management` | JBrowse 2 jobs management | 1 | none; a stub with its names |
 | `@jbrowse/plugin-legacy-jbrowse` | JBrowse 2 plugin for connecting to and reading JBrowse 1 data | 1 | all of it |
 | `@jbrowse/plugin-linear-comparative-view` | JBrowse 2 linear comparative view | 1 | none; a stub with its names |
 | `@jbrowse/plugin-linear-genome-view` | JBrowse 2 linear genome view | 1 | none; a stub with its names |
 | `@jbrowse/plugin-maf` | JBrowse 2 multiple alignment format (MAF) viewer | 1 | none; a stub with its names |
-| `@jbrowse/plugin-marks` | JBrowse 2 config-authored mark display: bars, points and spans drawn from a declared encoding over any feature track | 1 | none; a stub with its names |
+| `@jbrowse/plugin-marks` | JBrowse 2 config-authored mark display: bars, points and spans drawn from a declared encoding over any feature track | 1 | all of it |
 | `@jbrowse/plugin-menus` | JBrowse 2 basic menus | 1 | all of it |
 | `@jbrowse/plugin-rdf` | JBrowse 2 RDF resources | 1 | all of it |
 | `@jbrowse/plugin-sequence` | JBrowse 2 sequence adapters, tracks, etc. | 1 | all of it |
@@ -112,7 +112,7 @@ state-model mixin is always real in both realms.
 | [`@jbrowse/synteny-core`](/docs/api/synteny-core) | Shared utilities for synteny and dotplot rendering | 1 | none; a stub with its names |
 | `@jbrowse/tree-sidebar` | Shared tree sidebar component for multi-sample displays | 1 | none; a stub with its names |
 | `@jbrowse/web-core` | JBrowse 2 code shared between web-app type products | 1 | none; a stub with its names |
-| [`@jbrowse/wiggle-core`](/docs/api/wiggle-core) | Score-axis scale, autoscale, config mixins and plot chrome shared by wiggle, Manhattan, mark and coverage displays | 6 | 3 of 6 subpaths; the rest stubbed |
+| [`@jbrowse/wiggle-core`](/docs/api/wiggle-core) | Score-axis scale, autoscale, config mixins and plot chrome shared by wiggle, Manhattan, mark and coverage displays | 7 | 4 of 7 subpaths; the rest stubbed |
 
 <!-- REEXPORT_MODULES END -->
 

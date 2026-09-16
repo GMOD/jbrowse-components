@@ -3,7 +3,7 @@ import { measureLegendText } from '@jbrowse/core/ui/measureLegendText'
 import { formatScore } from '@jbrowse/core/util/numericUtils'
 import { stripAlpha } from '@jbrowse/core/util/svgColorProps'
 
-export const SCORE_CAPTION_HEIGHT = 16
+import { SCORE_CAPTION_HEIGHT } from './yAxisConstants.ts'
 
 /**
  * The one-line `[min, max]` caption that stands in for a y axis where none can

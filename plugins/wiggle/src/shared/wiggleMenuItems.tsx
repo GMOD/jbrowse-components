@@ -1,11 +1,11 @@
 import { getSlotDefinition } from '@jbrowse/core/configuration'
 import { makeSizeMenu } from '@jbrowse/core/ui'
 import { makeRadioSubMenu, radioItems } from '@jbrowse/core/ui/menuItems'
+import { makeScoreSubMenu } from '@jbrowse/wiggle-core'
 import {
   makePointSizeSubMenu,
   makeResolutionSubMenuItem,
-  makeScoreSubMenu,
-} from '@jbrowse/wiggle-core'
+} from '@jbrowse/wiggle-core/chrome'
 import LineWeightIcon from '@mui/icons-material/LineWeight'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 
