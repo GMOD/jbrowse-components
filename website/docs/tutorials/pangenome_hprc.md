@@ -349,9 +349,8 @@ assembly as a 2bit and an alias file. GenArk names the sequences by the same
 GenBank accessions the graph uses: `NA20809#2#CM094351.1` in the graph is
 `CM094351.1` in the 2bit. A haplotype therefore loads with no name translation,
 and the alias file's `ucsc` column adds `chr6`. The
-[HPRC sample table](https://genomes.jbrowse.org/pangenomes/hprc) lists the
-accession for every haplotype; the one the details panel named is
-`GCA_044166615.1`.
+[HPRC sample table](https://genomes.jbrowse.org/hubs/HPRC) lists the accession
+for every haplotype; the one the details panel named is `GCA_044166615.1`.
 
 ```json addassembly
 {

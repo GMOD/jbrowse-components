@@ -2,25 +2,30 @@
 title: The HPRC pangenome on genomes.jbrowse.org
 sidebar_label: genomes.jbrowse.org (pangenome)
 description:
-  Draw any window of the HPRC release 2 graph, or a whole chromosome of it, from
-  a hosted page with nothing prepared beforehand
+  A click-path through the hosted pangenome pages on staging.genomes.jbrowse.org
+  — draw any window of the HPRC release 2 graph, or a whole chromosome of it,
+  with nothing prepared beforehand
 guide_category: Tutorials
 tutorial_category: genomes.jbrowse.org
 ---
 
-The HPRC section of genomes.jbrowse.org's pangenomes page draws the human
-pangenome graph on any GRCh38 region you type, beside a linear view of the same
-window, and switches to a bubble tier for a window too wide to draw segment by
-segment. Nothing is built by hand; the
-[HPRC pangenome tutorial](/docs/tutorials/pangenome_hprc) is where the files
-come from.
+This tutorial walks one hosted page,
+[staging.genomes.jbrowse.org/pangenomes/hprc](https://staging.genomes.jbrowse.org/pangenomes/hprc),
+and the sessions it launches. Everything it opens is already built and already
+served: you type a region and press a button. Nothing here is a file you fetch,
+a config you write or a tool you install.
+
+The HPRC page draws the human pangenome graph on any GRCh38 region you give it,
+beside a linear view of the same window, and switches to a bubble tier for a
+window too wide to draw segment by segment.
 
 :::caution Experimental
 
-The graph view is a beta plugin, and the page is on
-[staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org/pangenomes#hprc)
-until JBrowse 5 ships, because the plugin needs a build newer than the released
-hosts. We welcome your [feedback](/contact).
+The graph view is a beta plugin, so the pangenome pages live on **staging**,
+[staging.genomes.jbrowse.org](https://staging.genomes.jbrowse.org/pangenomes/),
+rather than on genomes.jbrowse.org, until JBrowse 5 ships — the plugin needs a
+build newer than the released hosts. Every page link below is a staging link. We
+welcome your [feedback](/contact).
 
 :::
 
@@ -34,26 +39,32 @@ hosts. We welcome your [feedback](/contact).
 
 ## Where the data comes from
 
-The page launches one hosted config,
-https://jbrowse.org/pangenome/hprc-grch38/config.json, whose tracks are tabix
-projections of the release 2 `sv.gfa` and the release's own variant callset:
+Every launch on the HPRC page opens one hosted config,
+https://jbrowse.org/pangenome/hprc-grch38/config.json, whose tracks read
+tabix-indexed projections published beside it; JBrowse reads only the window you
+asked for out of them. The page's own **Published files** table names those
+projections with their sizes, for anyone who does want a copy.
 
-- the SV-resolution graph the projections are cut from:
+The upstream HPRC release 2 files the projections were cut from, as provenance
+rather than as a download step:
+
+- the SV-resolution graph:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.sv.gfa.gz
-- the segment and link indexes, the bubble file, the allele inventory and the
-  bubble tier, with how each was built recorded beside them:
-  https://jbrowse.org/demos/hprc/README.txt
-- the 464-haplotype callset, read straight off S3:
+- the 464-haplotype callset, which the variant lane reads straight off S3:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.wave.vcf.gz
+- how each segment index, link index, bubble file, allele inventory and bubble
+  tier was built, recorded beside them:
+  https://jbrowse.org/demos/hprc/README.txt
 
 ## Two ways in
 
-The [HPRC section](https://genomes.jbrowse.org/pangenomes#hprc) of the
-pangenomes page is for when you have a region: its **Draw the graph** form takes
-a GRCh38 locstring. The rest of this page walks that route.
+The [HPRC page](https://staging.genomes.jbrowse.org/pangenomes/hprc) is for when
+you have a region: its **Draw the graph** form takes a GRCh38 locstring. The
+rest of this tutorial walks that route.
 
-The [variable loci explorer](https://genomes.jbrowse.org/pangenomes/explorer) is
-for when you have a gene: a catalog of GRCh38 loci where structure varies
+The
+[variable loci explorer](https://staging.genomes.jbrowse.org/pangenomes/explorer)
+is for when you have a gene: a catalog of GRCh38 loci where structure varies
 between haplotypes, each card carrying the same graph launch beside the variant
 summaries and genotype matrix for that locus.
 
@@ -65,7 +76,7 @@ draws well, followed by one per chromosome. Loci it collapses onto a single path
 (SMN1/2, RHD/RHCE, CYP2D6) are left out, because the graph there is a bare
 thread.
 
-<Figure caption="The HPRC section's Draw the graph form: a region box preloaded with the MHC class II window, the note on what the launch will cut, an Open in PangyPlot link for the same coordinates, and the catalog loci and chromosomes as presets." src="/img/pangenome/genomes_hprc_launcher.png" />
+<Figure caption="The HPRC page's Draw the graph form: a region box preloaded with the MHC class II window, the note on what the launch will cut, an Open in PangyPlot link for the same coordinates, and the catalog loci and chromosomes as presets." src="/img/pangenome/genomes_hprc_launcher.png" />
 
 Type any region and press **Draw as a graph**. The note under the box shows what
 the launch will cut.
@@ -104,6 +115,22 @@ layout and level-of-detail tiers server-side and navigates by the same
 `chrom:start-end`. PangyPlot serves the release 1.1 graph, so a locus can differ
 in detail from the release 2 launch. Both are on GRCh38, so the coordinates line
 up.
+
+## The other two graphs
+
+Each graph on staging has its own page, and all three are the same page shape:
+the same region form, the same projections table, the same caveats list.
+[/pangenomes/mouse](https://staging.genomes.jbrowse.org/pangenomes/mouse) is 18
+inbred and wild-derived strains on GRCm39, and
+[/pangenomes/bovine](https://staging.genomes.jbrowse.org/pangenomes/bovine) is
+the taurine, indicine, yak, bison and gaur super-pangenome on ARS-UCD1.2.
+[The pangenomes landing page](https://staging.genomes.jbrowse.org/pangenomes/)
+is the choice between the three. What differs is what each graph can say: the
+mouse graph was built with minigraph, which writes no haplotype paths, so it has
+no callset and cannot say which strain carries an allele. The
+[mouse](/docs/tutorials/pangenome_mouse) and
+[cattle](/docs/tutorials/pangenome_cattle) tutorials are how those two were
+built.
 
 ## Adding the same tracks to your own instance
 

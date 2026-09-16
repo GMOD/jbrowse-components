@@ -100,8 +100,9 @@ written about yet.
 [`generatePangenomeLoci.ts`](https://github.com/GMOD/jb2hubs/blob/main/website/generatePangenomeLoci.ts)
 in the genomes.jbrowse.org repo computes the ranking. That repo publishes the
 derived catalogues at
-[genomes.jbrowse.org/pangenomes](https://genomes.jbrowse.org/pangenomes) so a
-locus can be opened without building anything.
+[staging.genomes.jbrowse.org/pangenomes/mouse](https://staging.genomes.jbrowse.org/pangenomes/mouse)
+— staging, until the graph plugin's JBrowse 5 host ships — so a locus can be
+opened without building anything.
 
 ## One bubble, one label
 
