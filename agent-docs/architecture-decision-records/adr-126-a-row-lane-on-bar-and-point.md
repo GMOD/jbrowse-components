@@ -62,14 +62,31 @@ the multi-row xyplot a user picking the display from the menu expects.
 
 - `{ shape: 'bar', facet: 'source', encoding: { y: 'score' } }` over a
   `MultiWiggleAdapter` is the multi-row xyplot; `point` gives the same rows as
-  a scatter. `mark-display.ts` carries the scene beside the wiggle suite's
-  `bigwig-multibigwig-multirowxy`.
+  a scatter. `mark-display.ts` carries the scene, and no golden: the Mark
+  Display suite has none in `snapshots.lock`, where the wiggle suite's
+  `bigwig-multibigwig-multirowxy` has six, and CI runs `--gate-only`, so a
+  golden is never read. What stands behind the scene is the cross-backend
+  differential, which names the suite in `CI_GATE_SUITES`.
 - A `row` a config declares in `encoding` on a bar or a point bands it too,
   with no facet: a `stack` step's output, or any integer field.
 - `rowLane.test.ts` pins the band arithmetic and the rowless identity;
-  `drawAgainstHit.test.ts` sweeps both shapes with rows; `markList.test.ts`
-  pins the uniform and the packed row; `model.test.ts` pins the banded axis
-  and the single-row axis staying as it was.
+  `markList.test.ts` pins the uniform and the packed row; `model.test.ts`
+  pins the banded axis and the single-row axis staying as it was.
+  `drawAgainstHit.test.ts` sweeps both shapes with rows, but it holds `ink()`
+  to `hitNearest()` and both read `bandTopPx`, so it catches a painter the hit
+  test disagrees with rather than a band in the wrong place.
+  `MarkDisplayMultiWiggleRows.test.tsx` runs config to drawn band over a real
+  adapter, and is the only thing tying `valueScales`' band to the
+  `renderState.canvasHeight` the shapes draw on.
+- **The shader's band is a second spelling.** `barMark.slang` and
+  `pointMark.slang` place `rowHeight * row` themselves, `rowLane.ts`'s
+  `bandTopPx` places it again, and no jest test runs a vertex shader — the
+  `//! js-export` oracle strips entry points before it builds its twin — so
+  the cross-backend gate is the only thing that would see the two disagree.
+  The scale half of the same arithmetic is already one source, `barMark.ts`
+  importing `valueToYPxScaled` from the generated twin, so lifting `bandTop`
+  beside it is what closes the seam. Measure it first: `bandTopPx` runs per
+  instance in `paintBlock`.
 - The per-row axis draws only where a band clears `COMPACT_AXIS_HEIGHT`, as
   the multi-wiggle display's does; a track of forty sources at the default
   height shows the bands and the chips and no ticks.
