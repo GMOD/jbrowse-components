@@ -759,3 +759,57 @@ export function regionAtPixel<
  * and the rasterizer fills it once, so a shader grows no matching pad.
  */
 export const CANVAS_SEAM_PX = 0.8
+
+/**
+ * Shapes a `CappedPath` holds before it paints and reopens. Chrome's
+ * GPU-rasterized canvas, which is desktop Chrome with a GPU and headless Chrome
+ * with the GPU blocklist off, silently paints nothing for a path past about
+ * 16 MiB: 180,000 discs, 453,000 rects or 931,000 line segments.
+ * `pnpm check-canvas-path-limits` drives the painters past it in a real browser.
+ */
+const MAX_SHAPES_PER_PATH = 10_000
+
+export interface PathPaintContext {
+  beginPath(): void
+  fill(): void
+  stroke(): void
+}
+
+/**
+ * One batched Canvas2D path of many shapes, painted in pieces a browser will
+ * rasterize. Opens a path on construction; call `add()` before appending each
+ * shape and `flush()` to paint what it holds and reopen.
+ */
+export class CappedPath {
+  private shapes = 0
+  private readonly ctx: PathPaintContext
+  private readonly paint: 'fill' | 'stroke'
+
+  constructor(ctx: PathPaintContext, paint: 'fill' | 'stroke') {
+    this.ctx = ctx
+    this.paint = paint
+    ctx.beginPath()
+  }
+
+  /**
+   * True when the path was full and has been painted and reopened, so a
+   * polyline must `moveTo` its pen again.
+   */
+  add() {
+    if (this.shapes === MAX_SHAPES_PER_PATH) {
+      this.flush()
+      this.shapes = 1
+      return true
+    }
+    this.shapes++
+    return false
+  }
+
+  flush() {
+    if (this.shapes > 0) {
+      this.ctx[this.paint]()
+      this.ctx.beginPath()
+      this.shapes = 0
+    }
+  }
+}

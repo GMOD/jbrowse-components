@@ -1,6 +1,7 @@
 import { abgrToCssRgba, setAbgrFill } from '@jbrowse/core/util/colorBits'
 import {
   CANVAS_SEAM_PX,
+  CappedPath,
   makeBpMapper,
   spanLeft,
 } from '@jbrowse/render-core/canvas2dUtils'
@@ -194,7 +195,7 @@ export function drawLine({
     ctx.strokeStyle = rgb
   }
   ctx.lineWidth = lineWidth
-  ctx.beginPath()
+  const path = new CappedPath(ctx, 'stroke')
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
   const zeroY = scoreToY(0) + rowTop
   const positions = source.featurePositions
@@ -215,16 +216,16 @@ export function drawLine({
     if (colorsAbgr) {
       const c = colorsAbgr[i]!
       if (c !== lastAbgr) {
-        if (lastAbgr !== NO_COLOR) {
-          ctx.stroke()
-          ctx.beginPath()
-          if (inRun) {
-            ctx.moveTo(penX, penY)
-          }
+        path.flush()
+        if (inRun) {
+          ctx.moveTo(penX, penY)
         }
         ctx.strokeStyle = abgrToCssRgba(c)
         lastAbgr = c
       }
+    }
+    if (path.add() && inRun) {
+      ctx.moveTo(penX, penY)
     }
 
     if (inRun) {
@@ -246,7 +247,7 @@ export function drawLine({
       inRun = false
     }
   }
-  ctx.stroke()
+  path.flush()
 }
 
 // Point-to-point line: connects the score at each feature's bp midpoint to its
@@ -284,7 +285,7 @@ export function drawLineCenter({
   // Round joins/caps match the GPU capsule so sharp bends don't nick.
   ctx.lineJoin = 'round'
   ctx.lineCap = 'round'
-  ctx.beginPath()
+  const path = new CappedPath(ctx, 'stroke')
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType, symlogConstant)
   const positions = source.featurePositions
   const scores = source.featureScores
@@ -309,16 +310,16 @@ export function drawLineCenter({
     if (colorsAbgr) {
       const c = colorsAbgr[i]!
       if (c !== lastAbgr) {
-        if (lastAbgr !== NO_COLOR) {
-          ctx.stroke()
-          ctx.beginPath()
-          if (linked) {
-            ctx.moveTo(penX, penY)
-          }
+        path.flush()
+        if (linked) {
+          ctx.moveTo(penX, penY)
         }
         ctx.strokeStyle = abgrToCssRgba(c)
         lastAbgr = c
       }
+    }
+    if (path.add() && linked) {
+      ctx.moveTo(penX, penY)
     }
     if (linked) {
       ctx.lineTo(cx, cy)
@@ -331,7 +332,7 @@ export function drawLineCenter({
     penX = cx
     penY = cy
   }
-  ctx.stroke()
+  path.flush()
 }
 
 export function drawScatter({
@@ -357,25 +358,21 @@ export function drawScatter({
   const n = source.numFeatures
   // Every feature draws as a point marker (square/disc via appendPointMarker)
   // centered on the bp midpoint. Mirrors the GPU wiggle.slang scatter branch.
-  // Points don't connect, so a per-instance color change just flushes the
-  // accumulated batch and opens a fresh path.
-  ctx.beginPath()
+  const path = new CappedPath(ctx, 'fill')
   let lastAbgr = NO_COLOR
   for (let i = 0; i < n; i++) {
     if (colorsAbgr) {
       const c = colorsAbgr[i]!
       if (c !== lastAbgr) {
-        if (lastAbgr !== NO_COLOR) {
-          ctx.fill()
-          ctx.beginPath()
-        }
+        path.flush()
         setAbgrFill(ctx, c)
         lastAbgr = c
       }
     }
+    path.add()
     const cx = (toX(positions[i * 2]!) + toX(positions[i * 2 + 1]!)) / 2
     const scoreY = scoreToY(scores[i]!) + rowTop
     appendPointMarker(ctx, cx, scoreY, pointSize)
   }
-  ctx.fill()
+  path.flush()
 }

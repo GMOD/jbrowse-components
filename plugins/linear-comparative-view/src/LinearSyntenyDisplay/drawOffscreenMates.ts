@@ -1,4 +1,5 @@
 import { alpha, getContrastText } from '@jbrowse/core/ui/palette'
+import { CappedPath } from '@jbrowse/render-core/canvas2dUtils'
 
 import type { OffscreenMateData } from '../LinearSyntenyRPC/collectOffscreenMates.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
@@ -522,20 +523,22 @@ function fillMarks(ctx: Ctx2D, marks: LaneMarks[], markColor: string) {
   }
   for (const [fillStyle, group] of byColor) {
     ctx.fillStyle = fillStyle
-    ctx.beginPath()
+    const path = new CappedPath(ctx, 'fill')
     for (const { marks: m, list } of group) {
       const { xs, widths, strip, count } = m
       if (list) {
         for (const i of list) {
+          path.add()
           ctx.rect(xs[i]!, strip.markY, widths[i]!, strip.markHeight)
         }
       } else {
         for (let i = 0; i < count; i++) {
+          path.add()
           ctx.rect(xs[i]!, strip.markY, widths[i]!, strip.markHeight)
         }
       }
     }
-    ctx.fill()
+    path.flush()
   }
 }
 

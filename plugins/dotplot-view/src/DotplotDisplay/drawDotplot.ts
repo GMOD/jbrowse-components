@@ -4,6 +4,7 @@ import {
   abgrGreen,
   abgrRed,
 } from '@jbrowse/core/util/colorBits'
+import { CappedPath } from '@jbrowse/render-core/canvas2dUtils'
 
 import { cumBpToPxH, cumBpToPxV } from './dotplotProject.ts'
 
@@ -53,8 +54,7 @@ export function drawDotplotInstances(
   // per-segment strokeStyle write plus beginPath/stroke pair is the dominant
   // cost at 10^5+ segments, and in vector SVG export SvgCanvas emits one <path>
   // element per stroke() call, so batching divides the element count by the
-  // average run length. `currentAbgr === undefined` means no path is open, so
-  // the color switch and the trailing flush share one condition.
+  // average run length.
   //
   // Segments outside the plot are dropped: the fetch window is snapped and
   // padded well past the viewport, so most of a fetch is offscreen (87% on the
@@ -73,6 +73,7 @@ export function drawDotplotInstances(
   // alone across calls it would hand back the previous slider stop's opacity.
   const cssByAbgr = new Map<number, string>()
   let currentAbgr: number | undefined
+  const path = new CappedPath(ctx, 'stroke')
   for (let i = 0; i < instanceCount; i++) {
     const sx1 = cumBpToPxH(x1[i]!, viewBpH, bpPerPxHInv)
     const sy1 = cumBpToPxV(y1[i]!, viewBpV, bpPerPxVInv, viewHeight)
@@ -86,9 +87,7 @@ export function drawDotplotInstances(
     if (!offscreen) {
       const abgr = colors[i]!
       if (abgr !== currentAbgr) {
-        if (currentAbgr !== undefined) {
-          ctx.stroke()
-        }
+        path.flush()
         currentAbgr = abgr
         let css = cssByAbgr.get(abgr)
         if (css === undefined) {
@@ -98,13 +97,11 @@ export function drawDotplotInstances(
           cssByAbgr.set(abgr, css)
         }
         ctx.strokeStyle = css
-        ctx.beginPath()
       }
+      path.add()
       ctx.moveTo(sx1, sy1)
       ctx.lineTo(sx2, sy2)
     }
   }
-  if (currentAbgr !== undefined) {
-    ctx.stroke()
-  }
+  path.flush()
 }

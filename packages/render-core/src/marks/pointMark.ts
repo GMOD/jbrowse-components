@@ -1,5 +1,5 @@
 import { bpRangeXTuple } from '../blockClipUtils.ts'
-import { getDpr, makeBpMapper } from '../canvas2dUtils.ts'
+import { CappedPath, getDpr, makeBpMapper } from '../canvas2dUtils.ts'
 import { scaleTypeCode } from '../scoreScale.ts'
 import * as shader from '../shaders/pointMark.generated.ts'
 import { pointDrawsBar, pointYPx } from '../shaders/pointMark.js.generated.ts'
@@ -48,8 +48,6 @@ export interface PointParams extends RowParams {
   insetPx?: number
 }
 
-const MAX_INSTANCES_PER_PATH = 10_000
-
 export const pointMark: MarkShape<PointChannels, PointParams> = {
   id: 'point',
   pass: {
@@ -95,24 +93,17 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
     const st = scaleTypeCode(params.scaleType)
     const bpToPx = makeBpMapper(block)
 
-    // Batched by colour, each path capped: Chrome silently fills nothing for
-    // a path of about 180,000 discs
     let current = color[0]!
-    let inPath = 0
     ctx.fillStyle = abgrToCssRgba(current)
-    ctx.beginPath()
+    const path = new CappedPath(ctx, 'fill')
     for (let i = 0; i < count; i++) {
       const abgr = color[i]!
-      if (abgr !== current || inPath === MAX_INSTANCES_PER_PATH) {
-        ctx.fill()
-        if (abgr !== current) {
-          current = abgr
-          ctx.fillStyle = abgrToCssRgba(abgr)
-        }
-        ctx.beginPath()
-        inPath = 0
+      if (abgr !== current) {
+        path.flush()
+        current = abgr
+        ctx.fillStyle = abgrToCssRgba(abgr)
       }
-      inPath++
+      path.add()
       const xStart = bpToPx(x[i]!)
       const xEnd = bpToPx(x2[i]!)
       const yPx =
@@ -125,7 +116,7 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
         appendGlyph(ctx, glyph[i]!, xStart, yPx, diameterPx)
       }
     }
-    ctx.fill()
+    path.flush()
   },
 
   // A bar is the rect the painter fills, unpadded on every side; a glyph is
