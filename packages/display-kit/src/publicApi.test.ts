@@ -2,10 +2,10 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 // The `exports` map is this package's public API, the same doctrine as
-// render-core's publicApi.test.ts next door: static-import only, so a removal
-// breaks a compile rather than a deployment, and what is worth pinning is that
-// the surface only changes when someone means it to. Symmetric snapshot, so
-// additions show up too. Update with `jest -u` and say in the commit message
+// render-core's publicApi.test.ts next door: the host serves it to runtime
+// plugins (ADR-128), so a removal is `undefined` inside a published bundle, and
+// the surface should only change when someone means it to. Symmetric snapshot,
+// so additions show up too. Update with `jest -u` and say in the commit message
 // what moved and why.
 
 interface Manifest {

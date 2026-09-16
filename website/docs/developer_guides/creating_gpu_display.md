@@ -24,9 +24,10 @@ only the shape that guide names. If `spanMark`, `pointMark` or `barMark` draws
 your data, you need none of the steps below.
 
 `@jbrowse/render-core` and `@jbrowse/shader-tools` are on npm. Both are
-`@experimental`, so pin an exact version and expect to rebuild on upgrade.
-`render-core`'s GPU surface is static-import-only, which makes a GPU display a
-[build-step plugin](/docs/developer_guides/simple_plugin).
+`@experimental`: a plugin's build reads `render-core` off the host rather than
+bundling it, so build against the version your JBrowse release ships and expect
+to rebuild on upgrade. Shaders compile at build time, which makes a GPU display
+a [build-step plugin](/docs/developer_guides/simple_plugin).
 
 :::
 

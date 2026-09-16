@@ -28,9 +28,10 @@ Shader codegen (`packages/shader-tools/src/build-shaders.ts`, plus `slangPass` i
 render-core) and the display-integration layer (`MultiRegionDisplayMixin` /
 `GlobalFetchMixin` / `DisplayChrome`, in the LGV plugin) stay where they
 are. Per-display shaders/passes live per-plugin under
-`plugins/<plugin>/src/<display>/{shaders,passes}`. The GPU API is
-**static-import-only** — never exposed via the runtime `ReExports` registry. See
-[ADR-030](../architecture-decision-records/adr-030-render-core-package-static-import-only.md).
+`plugins/<plugin>/src/<display>/{shaders,passes}`. The host serves the GPU API to
+runtime plugins like every bundled `@jbrowse` package; see
+[ADR-128](../architecture-decision-records/adr-128-the-runtime-abi-is-the-exports-maps.md),
+which superseded ADR-030's static-import-only rule.
 
 HAL is the hardware abstraction layer (WebGL2 vs WebGPU). Full vocabulary +
 Canvas2D→GPU primer: [GPU_GLOSSARY.md](GPU_GLOSSARY.md), whose §8 maps standard

@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "Extract `@jbrowse/render-core`; GPU rendering API is static-import-only"
+summary: "Extract `@jbrowse/render-core`; GPU rendering API is static-import-only (decision 3 superseded by ADR-128, which serves it to runtime plugins)"
 ---
 
 # ADR-030: Extract `@jbrowse/render-core`; GPU rendering API is static-import-only
@@ -10,6 +10,10 @@ summary: "Extract `@jbrowse/render-core`; GPU rendering API is static-import-onl
 Accepted (2026-06). Sequel to [ADR-026](adr-026-displaychrome-layering-stays.md)
 (the chrome-stack layering audit) and the GPU public-API refinement pass that
 merged `useRenderer` into `useRenderingBackend`.
+
+Decision 3 is superseded by
+[ADR-128](adr-128-the-runtime-abi-is-the-exports-maps.md): the host serves
+render-core to runtime plugins like every bundled `@jbrowse` package.
 
 ## Context
 

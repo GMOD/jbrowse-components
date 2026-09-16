@@ -59,13 +59,12 @@ declare global {
  * button on the context-loss banner, which `packages/render-core/CLAUDE.md`
  * names as the only sanctioned fallback path once a backend is built.
  *
- * A statically-bundled plugin is the case this exists for. ADR-030 makes the
- * GPU surface static-import-only, so a third-party display carries its own copy
- * of this module by design; with module locals its `gpuOverride` would start
+ * A plugin that bundled render-core is the case this exists for. Every plugin
+ * built before ADR-128 did, so a third-party display can carry its own copy of
+ * this module; with module locals its `gpuOverride` would start
  * null and stay null, and the user who pins `?renderer=canvas2d` or clicks
  * "disable GPU" after a crash would watch the plugin ignore both and take
- * WebGPU anyway. Sharing the cell fixes that without putting anything in the
- * frozen `ReExports` ABI — which is the trade ADR-030 declined, and rightly.
+ * WebGPU anyway. Sharing the cell fixes that for every copy, served or bundled.
  *
  * **The shape is a cross-version contract.** Copies at different render-core
  * versions meet here, and whichever loads first wins the initialization, so a

@@ -682,9 +682,9 @@ The rendering primitives live in **`@jbrowse/render-core`**: the HAL,
 `RenderLifecycleMixin`, the backend base classes, the React backend hooks, and
 the clip/canvas/hp-math utilities. It is a leaf package (**no**
 `@jbrowse/core`), so a third-party display can depend on it directly, and the
-GPU API is **static-import-only** — never exposed via the runtime `ReExports`
-registry
-([ADR-030](architecture-decision-records/adr-030-render-core-package-static-import-only.md)).
+host serves it to runtime plugins like every bundled `@jbrowse` package
+([ADR-128](architecture-decision-records/adr-128-the-runtime-abi-is-the-exports-maps.md),
+superseding ADR-030's static-import-only rule).
 
 Full detail is [reference/GPU_RENDERING.md](reference/GPU_RENDERING.md):
 

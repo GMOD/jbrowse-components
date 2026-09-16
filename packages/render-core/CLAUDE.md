@@ -14,9 +14,9 @@ follows is this package's own.
   `pnpm autogen`.
 - **Must not depend on `@jbrowse/core`.** Don't put `Gpu` on a symbol that also
   drives the Canvas2D fallback.
-- **Module state must survive duplication, or live on the `globalThis` cell.**
-  ADR-030 makes this static-import-only, so two live copies on one page is the
-  shipping shape; `GpuDeviceCell`'s shape is a cross-version contract.
+- **Module state must survive duplication, or live on the `globalThis` cell.** A
+  plugin built before ADR-128 bundled its own copy, so two live copies on one
+  page still ship; `GpuDeviceCell`'s shape is a cross-version contract.
 - **The WebGL→Canvas2D ladder runs at backend construction only.** Later loss is
   `renderError`; `setGpuOverride` is the page-wide escape.
 - **`GpuRenderingBackendBase` / `Canvas2DRenderingBackendBase` own
