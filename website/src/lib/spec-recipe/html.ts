@@ -113,7 +113,7 @@ function panels(recipe: Recipe): Panel[] {
           {
             label: 'In a notebook',
             body: [
-              note('The same view with <a href="/docs/jbrowse_anywidget/">jbrowse-anywidget</a>. Point the adapter at your own file.'),
+              note('The same view with <a href="/docs/jbrowse_anywidget/">jbrowse-anywidget</a>, from the config the figure loads. Swap a track\'s <code>uri</code> for your own file.'),
               copyableBlock(recipe.python, 'spec-python'),
             ].join(''),
           },

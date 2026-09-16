@@ -11,9 +11,10 @@ import {
   specTracks,
 } from './decode.ts'
 import { IGNORED_FIELDS, trackFields, viewFields } from './fields.ts'
+import { configManifest } from '../../../../products/jbrowse-cli/src/commands/validate/configManifest.generated.ts'
 import { toProtocolUrl } from '../../../../products/jbrowse-desktop/electron/launchTarget.ts'
 
-import type { SpecTrackEntry, SpecView } from './decode.ts'
+import type { SessionSpec, SpecTrackEntry, SpecView } from './decode.ts'
 import type { FieldContext, FieldRecipe } from './fields.ts'
 
 // Turns a figure's session spec into an ordered "do this yourself" recipe.
@@ -48,6 +49,7 @@ export interface Recipe {
   config: string
   specJson: string
   steps: RecipeStep[]
+  // absent when a view needs a plugin the widget cannot load from the config
   python?: string
   // the `npx @jbrowse/capture` invocation that rebuilds this figure, for an
   // agent asked to make one like it
@@ -59,13 +61,6 @@ export interface Recipe {
   // spec fields with no verified click-path yet (surfaced by check-spec-recipes)
   unmapped: string[]
 }
-
-// jbrowse-anywidget drives a linear genome view only, so a synteny/dotplot/SV
-// figure gets no Python tab rather than a snippet that cannot work.
-const PYTHON_VIEW_TYPE = 'LinearGenomeView'
-// fetch_hub serves ready-made configs for these; anything else needs the reader
-// to describe their own assembly.
-const HUB_GENOMES = new Set(['hg38', 'hg19', 'mm10', 'mm39'])
 
 // The views a reader opens through a comparative import form. Rows (or axes)
 // and the dataset between each pair are picked in that one form and launched
@@ -346,50 +341,60 @@ function importFormSteps(
   return { steps, unmapped }
 }
 
-function pythonSnippet(
-  view: SpecView,
-  config: string,
-  sessionTracks?: RawTrack[],
-): string | undefined {
-  const assembly = view.assembly
-  if (view.type !== PYTHON_VIEW_TYPE || !assembly) {
+const PYTHON_LITERALS: Record<string, string> = {
+  true: 'True',
+  false: 'False',
+  null: 'None',
+}
+
+function pythonLiteral(value: unknown, indent: string) {
+  return JSON.stringify(value, null, 4)
+    .replaceAll(/"(?:[^"\\]|\\.)*"|\b(?:true|false|null)\b/g, token =>
+      token.startsWith('"') ? token : PYTHON_LITERALS[token]!,
+    )
+    .replaceAll('\n', `\n${indent}`)
+}
+
+function openedTrackIds(view: SpecView): string[] {
+  return [
+    ...specTracks(view).map(specTrackId),
+    ...(view.views ?? []).flatMap(openedTrackIds),
+  ]
+}
+
+// A config's plugins are UMD builds or relative ESM paths, and the widget loads
+// neither, so a figure needing one gets no snippet.
+function pythonSnippet(configUrl: string, config: string, spec: SessionSpec) {
+  const views = spec.views ?? []
+  const sessionTracks = spec.sessionTracks as RawTrack[] | undefined
+  const needsPlugin =
+    views.some(view => !view.type || !(view.type in configManifest.views)) ||
+    views.flatMap(openedTrackIds).some(trackId => {
+      const info = lookupTrack(config, trackId, sessionTracks)
+      return (
+        info !== undefined &&
+        !(
+          info.type in configManifest.tracks &&
+          info.adapterType in configManifest.adapters
+        )
+      )
+    })
+  if (needsPlugin) {
     return undefined
   }
-  const isHub = HUB_GENOMES.has(assembly)
-  const assemblyArg = isHub
-    ? `fetch_hub("${assembly}")`
-    : `make_assembly("${assembly}", "https://your-server/your-genome.fa.gz")`
-  const imports = isHub
-    ? 'from jbrowse_anywidget import LinearGenomeView, fetch_hub'
-    : 'from jbrowse_anywidget import LinearGenomeView, make_assembly'
-  const entries = specTracks(view)
-  const tracks = entries.map((entry, i) => {
-    const info = lookupTrack(config, specTrackId(entry), sessionTracks)
-    const type = info?.type || 'FeatureTrack'
-    const adapterType = info?.adapterType || 'BamAdapter'
-    // trackIds must be unique within a view, so a multi-track snippet can't
-    // reuse one placeholder name
-    const suffix = entries.length > 1 ? `_${i + 1}` : ''
-    return [
-      'view.add_track({',
-      `    "type": "${type}",`,
-      `    "trackId": "my_track${suffix}",`,
-      `    "name": "My track${suffix ? ` ${i + 1}` : ''}",`,
-      `    "assemblyNames": ["${assembly}"],`,
-      `    "adapter": {"type": "${adapterType}", "uri": "https://your-server/your-file"},`,
-      '})',
-    ].join('\n')
-  })
+  const tracks = spec.sessionTracks?.length
+    ? `config.get("tracks", []) + ${pythonLiteral(spec.sessionTracks, '    ')}`
+    : 'config.get("tracks", [])'
   return [
-    imports,
+    'from jbrowse_anywidget import JBrowseApp, fetch_hub',
     '',
-    'view = LinearGenomeView(',
-    `    assembly=${assemblyArg},`,
-    ...(view.loc ? [`    location="${view.loc}",`] : []),
+    `config = fetch_hub("${configUrl}")`,
+    'app = JBrowseApp(',
+    '    assemblies=config["assemblies"],',
+    `    tracks=${tracks},`,
+    `    views=${pythonLiteral(views, '    ')},`,
     ')',
-    ...(tracks.length ? ['', ...tracks] : []),
-    '',
-    'view  # display the widget',
+    'app  # display the widget',
   ].join('\n')
 }
 
@@ -515,8 +520,7 @@ export function deriveCliRecipe(sessionTracks: RawTrack[] | undefined) {
 // or fetch nothing. The spec goes to a file rather than inline: it is a whole
 // JSON document, and quoting one into a shell argument is the step an agent
 // most reliably gets wrong.
-function agentCommandFor(base: string, config: string, specJson: string) {
-  const configUrl = new URL(config, base).href
+function agentCommandFor(base: string, configUrl: string, specJson: string) {
   const instance = base.endsWith('/') ? base : `${base}/`
   return [
     "cat > session.json <<'JSON'",
@@ -562,9 +566,9 @@ export function buildRecipe(
   const collected = views.map(view =>
     viewSteps(view, config, sessionTracks, undefined, views.length > 1),
   )
-  const firstView = views[0]
   const desktopWebUrl = withSessionName(liveUrl, figureName)
   const specJson = JSON.stringify(spec, null, 2)
+  const configUrl = new URL(config, base).href
   return {
     liveUrl,
     desktopWebUrl,
@@ -596,10 +600,8 @@ export function buildRecipe(
         ]
       })
       .map(withWhere),
-    python: firstView
-      ? pythonSnippet(firstView, config, sessionTracks)
-      : undefined,
-    agentCommand: agentCommandFor(base, config, specJson),
+    python: pythonSnippet(configUrl, config, spec),
+    agentCommand: agentCommandFor(base, configUrl, specJson),
     cli: deriveCliRecipe(sessionTracks),
     unmapped: [...new Set(collected.flatMap(c => c.unmapped))],
   }
