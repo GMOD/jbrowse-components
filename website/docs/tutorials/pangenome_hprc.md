@@ -418,10 +418,10 @@ one more assembly:
 ```
 
 Cut `chr6:32,500,000-32,560,000` as a graph again and right-click the same 1.8
-kb allele. The menu now carries **Open in NA20809.2**, which adds a linear view
-of that haplotype's chr6 framed on the allele, with its CAT genes and the
-segments the graph records as contributed by it. Zoom that view out a few steps
-for the genes around it.
+kb allele. The menu now has **Open in NA20809.2**, which adds a linear view of
+that haplotype's chr6 framed on the allele, with its CAT genes and the segments
+the graph records as contributed by it. Zoom that view out a few steps for the
+genes around it.
 
 <Video src="/media/pangenome/hprc_out_to_haplotype.mp4" caption="The MHC class II cut with NA20809 haplotype 2 loaded: the allele hovered for its contributing assembly, its menu opened, the Open in NA20809.2 entry adding a view of that haplotype's chromosome 6, and that view zoomed out to the CAT genes around it." />
 

@@ -147,7 +147,7 @@ channels (pairs by orientation)**: the reads split into one band per orientation
 class, each with its own coverage curve and arcs.
 
 - The normal band holds the flat profile
-- The two same-strand bands each carry a bundle of arcs on one pair of
+- The two same-strand bands each draw a bundle of arcs on one pair of
   breakpoints, the inversion signature
 - The outward-pointing band, where a tandem duplication would go, stays near
   empty

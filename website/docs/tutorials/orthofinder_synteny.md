@@ -338,9 +338,9 @@ under rice's gene track:
 }
 ```
 
-A lane carries one refName, so the maize lane shows one of the two copies.
+A lane has one refName, so the maize lane shows one of the two copies.
 
-<Figure caption="A rice window over sorghum, brachypodium, setaria and maize lanes from one OrthoFinder orthogroups track, each lane carrying that grass's own gene models. The block is syntenic in all four, and the maize lane shows whichever of maize's two duplicated copies places more of the window." src="/img/multiway_synteny/grasses_rice_lanes.png" />
+<Figure caption="A rice window over sorghum, brachypodium, setaria and maize lanes from one OrthoFinder orthogroups track, each lane drawing that grass's gene models. The block is syntenic in all four, and the maize lane shows whichever of maize's two duplicated copies places more of the window." src="/img/multiway_synteny/grasses_rice_lanes.png" />
 
 The stacked view shows both maize copies at once. **Launch → Linear synteny view
 (visible region)** in the lane track's menu offers a full row per grass over the
@@ -548,7 +548,7 @@ one parse of one file, and reference names and lengths come from the FASTA index
 it writes.
 
 Column 2 also takes a proteome, which saves translating one Ensembl already
-publishes. Its headers then carry a `gene:<id>` tag that has to match the GFF3's
+publishes. Its headers then have a `gene:<id>` tag that has to match the GFF3's
 `ID=gene:<id>`. The run prints which of the two it read, and the share of ids it
 placed.
 

@@ -21,7 +21,7 @@ which a session spec does and the import form does not.
 ## Prerequisites
 
 - nothing to install to read along: the config, the blocks and the density
-  bigWig are hosted, and every figure carries a live link
+  bigWig are hosted, and every figure has a live link
 - a JBrowse to open them in ([Web](/docs/quickstart_web) or
   [Desktop](/docs/quickstart_desktop))
 - to build the files for another pair of genomes, `chain2paf`, htslib (`bgzip`,

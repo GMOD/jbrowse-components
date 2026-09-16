@@ -12,8 +12,8 @@ tutorial_category: Configuration & embedding
 We look at where the genes sit along human chromosome 1 and which transposons
 keep them company: Alu elements pile up where the genes are, and L1 elements
 where they are not. A whole chromosome holds more genes, and far more repeat
-copies, than a browser fetches at once, so each track carries a small bigWig of
-feature counts per kilobase, built once with `jbrowse make-density`, that the
+copies, than a browser fetches at once, so each track points at a small bigWig
+of feature counts per kilobase, built once with `jbrowse make-density`, that the
 track draws as a band wherever its features are too many to fetch and drops the
 moment they fit.
 

@@ -78,8 +78,8 @@ node highlights its segment in the lane above, and the reverse.
 
 <Figure caption="The MHC class II window drawn from the page: RefSeq genes, bubbles, rGFA segments and the allele inventory above, and the same window as a force-directed graph below, on the reference-position ramp." src="/img/pangenome/genomes_hprc_mhc_graph.png" />
 
-Inside the session, the segments track's menu carries **Launch → Graph genome
-view (this region)**, and rubberbanding a span offers **Graph genome view (this
+Inside the session, the segments track's menu has **Launch → Graph genome view
+(this region)**, and rubberbanding a span offers **Graph genome view (this
 selection)**, so a zoomed-in window reopens as a graph without the page. The
 graph reaches back the same way: hovering a node bands its interval across the
 lanes above, right-clicking one offers **Highlight in hg38** and **Open in

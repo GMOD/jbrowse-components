@@ -62,7 +62,7 @@ in the track menu. That splits the track on the `name` column, which is one row
 per repeat, so the second pick is **Partition by... → repClass** in the same
 menu, which lists the columns the loaded features carry. <!-- menu-path-ok -->
 
-<Figure src="/img/multirow/display_types_menu.png" caption="The track menu's Display types submenu on the UCSC RepeatMasker track. Any feature track carries the multi-row display beside its default one." />
+<Figure src="/img/multirow/display_types_menu.png" caption="The track menu's Display types submenu on the UCSC RepeatMasker track. Any feature track offers the multi-row display beside its default one." />
 
 <Video src="/media/repeats/painting_display_switch.mp4" caption="The RepeatMasker track from one packed lane to a labelled lane per class: the multi-row painting display, then the repeat class column picked out of the ones the file carries." />
 

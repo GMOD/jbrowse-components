@@ -160,7 +160,7 @@ Then, on each gene lane:
 - labels arrive at this zoom on a second track over the same GFF, cut to a few
   genes with **Filter by...**
 
-<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) at 8p23.1, colored by strand. The inverted block is the long blue bar in both panels, and the labeled lane beside the ribbons carries the same genes in opposite orders." src="/img/hg002_haplotypes_8p23_inversion.png" />
+<Figure caption="HG002 v1.2 maternal (top) against paternal (bottom) at 8p23.1, colored by strand. The inverted block is the long blue bar in both panels, and the labeled lane beside the ribbons shows the same genes in opposite orders." src="/img/hg002_haplotypes_8p23_inversion.png" />
 
 ## Why the panel below follows
 
@@ -174,9 +174,9 @@ the panel below there on every pan, so the ribbons stay near-vertical however
 far you go.
 
 The figure below is 70 kb typed into both panels with follow off. The maternal
-panel carries a chain block and the paternal panel's lane is empty, because
-those coordinates land in the gap past that block's end on the other haplotype.
-The follow button fills the lane and closes the ribbon. Turn it off to pan the
+panel has a chain block and the paternal panel's lane is empty, because those
+coordinates land in the gap past that block's end on the other haplotype. The
+follow button fills the lane and closes the ribbon. Turn it off to pan the
 paternal panel by hand, and right-click a chain block for **Move other panel to
 the matching region**, the same walk done once.
 

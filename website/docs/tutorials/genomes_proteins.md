@@ -63,9 +63,9 @@ Open [hg38 on genomes.jbrowse.org](https://genomes.jbrowse.org) and type `TP53`
 into the location box. The hosted config ships a name index, so gene symbols
 work with no setup.
 
-Right-click the gene. The menu carries **Launch protein view** from protein3d
-and **Launch MSA view** from msaview, which
-[the next section](#launching-an-msa) takes. Choose **Launch protein view**.
+Right-click the gene. The menu has **Launch protein view** from protein3d and
+**Launch MSA view** from msaview, which [the next section](#launching-an-msa)
+takes. Choose **Launch protein view**.
 
 The dialog opens on its **AlphaFoldDB search** tab with **Auto-detect using
 UniProt ID mapping API** selected. It maps the transcript's accession to UniProt
@@ -156,8 +156,8 @@ The view opens at residue zoom, a window on the N terminus of a long protein.
 alignment on screen, which is the zoom the domain blocks read at.
 
 Both launchers place their new view beside the ones already open. Each panel's
-menu carries **Global: tile horizontally**, which lines every open view up side
-by side so a hover reaches all three genome-linked views at once.
+menu has **Global: tile horizontally**, which lines every open view up side by
+side so a hover reaches all three genome-linked views at once.
 
 <Video src="/media/proteins/tiled_views.mp4" caption="TP53's gene menu launching both an alignment and a structure, then Global: tile horizontally arranging the genome, the alignment and the structure in three columns. One hover in the genome moves the highlighted column in the alignment and the highlighted residue on the structure together." />
 
@@ -201,7 +201,7 @@ nothing called over them; a generic death-domain call in place of the
 pyrin-specific one; and gap right across the frame, where the row begins further
 right. The third kind is the absent sequence.
 
-<Figure src="/img/genomes_msa/pyrin_residues.png" caption="NLRP1 orthologs zoomed out to the smallest cells that still draw residues, with the gappiest columns hidden. Under the pyrin columns, rows carrying the call sit beside rows with a generic death-domain call, rows with residues and nothing called, and rows that are gap." />
+<Figure src="/img/genomes_msa/pyrin_residues.png" caption="NLRP1 orthologs zoomed out to the smallest cells that still draw residues, with the gappiest columns hidden. Under the pyrin columns, rows with the call sit beside rows with a generic death-domain call, rows with residues and nothing called, and rows that are gap." />
 
 ### The same domains in genome coordinates
 

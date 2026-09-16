@@ -80,7 +80,7 @@ Its columns come from three places:
 - `subtype` is derived from those three; a tumor whose receptor calls do not
   resolve it stays `unknown`
 
-The table names more tumors than either track carries, since a case with no
+The table names more tumors than either track draws, since a case with no
 mutation calls still has receptor status. JBrowse reports the unmatched tumors
 when the track loads.
 
@@ -296,7 +296,7 @@ a threshold that isolates a hotspot empties that window.
 
 [`maf_to_vcf.py`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/maf_to_vcf.py)
 takes any directory of MAFs ([vcf2maf](https://github.com/mskcc/vcf2maf) output,
-cBioPortal study downloads, your own caller) whose rows carry `Chromosome`,
+cBioPortal study downloads, your own caller) whose rows have `Chromosome`,
 `Start_Position`, the two allele columns, `Tumor_Sample_Barcode`, and `CONTEXT`.
 For grouping, any TSV whose first column matches the VCF's sample names works.
 

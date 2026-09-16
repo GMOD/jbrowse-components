@@ -115,7 +115,7 @@ reverse, on one autoscaled axis.
 In the gene-dense MHC class III region, _NELFE_ and _SKIV2L_ sit back to back on
 opposite strands:
 
-<Figure caption="NELFE and SKIV2L, adjacent and on opposite strands, grouped by first-of-pair strand: each band carries signal over exactly one of the two genes." src="/img/rnaseq/strand_split_coverage.png" />
+<Figure caption="NELFE and SKIV2L, adjacent and on opposite strands, grouped by first-of-pair strand: each band shows signal over exactly one of the two genes." src="/img/rnaseq/strand_split_coverage.png" />
 
 Swapping to **Strand** groups on the read's own strand, which for a paired-end
 library sends the two mates of every pair to opposite bands, so neither band is

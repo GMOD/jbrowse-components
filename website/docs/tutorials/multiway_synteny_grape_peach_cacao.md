@@ -80,7 +80,7 @@ grape03	.	.
 ```
 
 A real cell holds the annotation's own gene id (`rna-XM_007225519.2` for NCBI).
-The table carries no coordinates; one `.bed` per genome places each id.
+The table has no coordinates; one `.bed` per genome places each id.
 
 ### One reference, or all against all
 
@@ -466,7 +466,7 @@ The same thing as a `defaultSession`:
 }
 ```
 
-<Figure caption="The grape gene track over the same locus as a multi-way lane stack, one lane per genome from a single MCScan blocks track. The peach and cacao lanes carry the gene models from those genomes' gene tracks, the lanes without one carry the table's gene spans as boxes, and a chain bridges past a lane that places nothing to end at the last lane that does." src="/img/multiway_synteny/lgv_track_lanes.png" />
+<Figure caption="The grape gene track over the same locus as a multi-way lane stack, one lane per genome from a single MCScan blocks track. The peach and cacao lanes draw the gene models from those genomes' gene tracks, the lanes without one draw the table's gene spans as boxes, and a chain bridges past a lane that places nothing to end at the last lane that does." src="/img/multiway_synteny/lgv_track_lanes.png" />
 
 ### What a lane header shows
 

@@ -41,7 +41,7 @@ coverage track is almost entirely zero. Pseudobulking pools every fragment
 belonging to a label into one profile, a dense track resembling a bulk ATAC
 experiment on that cell type. JBrowse stacks the files as rows of one track.
 
-PBMC markers are the check: at a T-cell marker the T-cell rows carry the signal,
+PBMC markers are the check: at a T-cell marker the T-cell rows show the signal,
 and at a B-cell marker the B-cell rows light up.
 
 The BigWigs can also be viewed inline from the clustering environment through

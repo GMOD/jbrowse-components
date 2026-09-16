@@ -241,7 +241,7 @@ prints the fraction per context for both regions.
 
 The RepeatMasker lane names the element: `META1_LTR#LTR/Copia`, an LTR
 retrotransposon, `AT1TE14315` in TAIR10's own transposable-element annotation.
-The gene track carries a pseudogene, `AT1G12935`, over the same interval. The
+The gene track annotates a pseudogene, `AT1G12935`, over the same interval. The
 lane comes from UCSC's GenArk hub for TAIR10, whose sequence names are the
 RefSeq accessions this assembly uses, so it loads with no aliasing.
 

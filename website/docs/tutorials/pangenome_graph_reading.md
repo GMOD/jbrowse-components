@@ -75,7 +75,7 @@ carry none.
 The halos are the bubble index drawn onto the graph. A deletion is a halo around
 the short arm of a bubble whose other arm is the backbone; an insertion is a
 halo around a loop hanging off one point; the array is the whole knot. Their
-labels carry the same numbers the bubbles lane above prints, so a bubble can be
+labels show the same numbers the bubbles lane above prints, so a bubble can be
 found in either picture from the other.
 
 ## Open the array

@@ -4,7 +4,7 @@ sidebar_label: Synteny (pangenome graph lanes, HPRC)
 description:
   Stack eight HPRC haplotypes under GRCh38, whole genome, with the pairwise
   alignments unpacked from the Minigraph-Cactus graph's own projection and each
-  lane carrying that haplotype's CAT gene models
+  lane drawing that haplotype's CAT gene models
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---

@@ -256,9 +256,9 @@ color separates the two things it draws. A bundle painted as reversed is a block
 that lane reads backwards from the lane above it, whether the mirroring left it
 drawn straight or crossed: one block runs down the middle of the frame with
 same-orientation flanks on either side of it, and one pair of lanes crosses near
-the right-hand edge. The headers carry the other fact: every lane sits at its
-own offset and its own scale, and a lane whose header names a multiple is
-holding the same genes over more sequence.
+the right-hand edge. The headers give the other fact: every lane sits at its own
+offset and its own scale, and a lane whose header names a multiple is holding
+the same genes over more sequence.
 
 <Figure caption="Four megabases of human chr17 over the seven primate lanes, ribbons colored by strand. Blue is a block read backwards from the lane above: one runs down the middle of the frame between same-orientation flanks, and the two bottom lanes cross where a block flips between them." src="/img/multiway_synteny/primate_chr17_inversions.png" />
 

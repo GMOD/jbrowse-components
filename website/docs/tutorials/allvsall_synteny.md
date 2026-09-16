@@ -301,7 +301,7 @@ a block came from:
 3. **Show... → Show coverage** adds a histogram of how many other strains cover
    each base. The rest of that menu is the one from alignments tracks.
 
-The figure below carries a second pane, the same window in the pangenome graph,
+The figure below adds a second pane, the same window in the pangenome graph,
 which [the next section](#the-same-gap-drawn-as-a-graph) picks up. The shaded
 band is K-12's phenylacetate (paa) operon: Sakai, CFT073 and IAI39 stop at its
 left edge where NCTC86 runs through.

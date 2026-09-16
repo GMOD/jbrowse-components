@@ -55,8 +55,8 @@ the bilaterians, cnidarians and sponges whose chromosomes carry them, and gave
 each a letter: A1a, A2, B1, and so on to R. A gene belongs to one of them or to
 none. odp ships the groups as a database of protein models, searches every
 proteome it is given against them, and writes the group each ortholog landed in
-beside the ortholog. That assignment is a column, and a column is something a
-synteny track can carry.
+beside the ortholog. That assignment is a column, and a synteny track can read a
+column.
 
 The dotplots use a jellyfish (`RES`, _Rhopilema esculentum_), a freshwater
 sponge (`EMU`, _Ephydatia muelleri_), a comb jelly (`HCA`, _Hormiphora

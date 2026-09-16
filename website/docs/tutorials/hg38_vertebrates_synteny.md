@@ -141,9 +141,9 @@ itself.
 }
 ```
 
-The track menu carries the pairwise synteny track's **Level of detail** entry
-beside the lane controls. It picks the stored tier a zoom reads, is offered once
-every child carries a coarse tier, and the `tabix -l` line above is how to tell
+The track menu has the pairwise synteny track's **Level of detail** entry beside
+the lane controls. It picks the stored tier a zoom reads, is offered once every
+child carries a coarse tier, and the `tabix -l` line above is how to tell
 whether a file does.
 
 ## One locus, nine genomes
@@ -196,7 +196,7 @@ densest first, by how much of the window each places.
 Eight megabases toward the centromere the same stack looks different. No chain
 runs the window through: the region is a segmental-duplication hotspot, every
 genome places it as several blocks, and most of those blocks run the other way
-against their neighbours, so five of the eight lanes carry `[rev]` in their
+against their neighbours, so five of the eight lanes show `[rev]` in their
 headers. The crossings are a separate fact from the marker. A mirrored lane
 draws its inversions straight; a ribbon crosses where one block runs against its
 neighbour inside a lane. The marmoset lane is the clearest case: its chain
@@ -207,7 +207,7 @@ the homologous chromosome, and some of this window aligns there too, so the chr5
 frame does not show everything the alignment places. **Show … in this lane** on
 that lane's header menu pins it onto the other contig.
 
-<Figure caption="hg38 chr17 near the PMP22 segmental duplications over the same eight lanes. Every genome places the window as several blocks and most run against their neighbours: five lanes carry a reversed marker in their headers, the crossed ribbons are where a block runs against its neighbour inside a lane, and the gorilla lane names a second chromosome that also places the window." src="/img/multiway_synteny/hg38_vertebrates_17p_break.png" />
+<Figure caption="hg38 chr17 near the PMP22 segmental duplications over the same eight lanes. Every genome places the window as several blocks and most run against their neighbours: five lanes show a reversed marker in their headers, the crossed ribbons are where a block runs against its neighbour inside a lane, and the gorilla lane names a second chromosome that also places the window." src="/img/multiway_synteny/hg38_vertebrates_17p_break.png" />
 
 **Color ribbons by → Strand** on the track menu colors each ribbon by the
 record's strand: the alignment's own strand between the anchor and the first

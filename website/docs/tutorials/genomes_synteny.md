@@ -62,7 +62,7 @@ default.
 **Open in new view** appends the result below the linear view; **Replace current
 view** puts it in that view's place.
 
-<Video src="/media/synteny/liftover_launch.mp4" caption="Launching from a chain block on the hg38 to Human (hs1) liftOver track at TNNT3: the block's right-click menu, the dialog that frames the second panel, and Replace current view putting the two-panel synteny view in the linear view's place. The hg38 panel arrives carrying the gene track that was open above; the hs1 panel arrives empty." />
+<Video src="/media/synteny/liftover_launch.mp4" caption="Launching from a chain block on the hg38 to Human (hs1) liftOver track at TNNT3: the block's right-click menu, the dialog that frames the second panel, and Replace current view putting the two-panel synteny view in the linear view's place. The hg38 panel arrives with the gene track that was open above; the hs1 panel arrives empty." />
 
 The panel you launched from keeps the tracks that view had on (**Copy this
 view's tracks into its panel** turns that off). The hs1 panel opens empty; the

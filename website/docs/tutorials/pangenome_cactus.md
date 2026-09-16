@@ -496,9 +496,9 @@ also shows: one row per strain, graph node order on the horizontal axis.
 
 <Figure caption="The five-strain Minigraph-Cactus graph drawn by odgi viz, one row per strain. The horizontal axis is graph node order, so nothing lines up with a gene or coordinate. The gold band marks the locus carried over to the figure below." src="/img/pangenome_cactus/graph.png" />
 
-The `odgi pav` track carries the same information. Drawing it on K12's
-coordinates in the raster's row order and colors leaves the horizontal axis as
-the only difference. The gold band marks `chr:1,000,000-1,100,000` in both.
+The `odgi pav` track shows the same information. Drawing it on K12's coordinates
+in the raster's row order and colors leaves the horizontal axis as the only
+difference. The gold band marks `chr:1,000,000-1,100,000` in both.
 
 <Figure caption="The same paths and the same colors on K12's coordinates. The gold band is the same 100 kb in both figures, and takes up a visibly smaller share of this axis than of the graph axis above." src="/img/pangenome_cactus/graph_correspondence.png" />
 

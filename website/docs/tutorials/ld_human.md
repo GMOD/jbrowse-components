@@ -93,8 +93,8 @@ What each setting does:
   sizes each cell by genomic distance, so the block's edges land under their
   coordinates
 - [`ldMetric`](/docs/config/ldtrackdisplay/#slot-ldmetric) picks which of the
-  file's columns to draw. This table carries both r² and D', so either reads; a
-  file without a `DP` column disables the D' row rather than drawing zeros
+  file's columns to draw. This table has both r² and D', so either reads; a file
+  without a `DP` column disables the D' row rather than drawing zeros
 
 The allele-frequency floor is not a display setting here. It is applied when the
 variants are picked for correlation, so it is a property of the file. That is

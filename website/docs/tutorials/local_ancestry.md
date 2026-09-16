@@ -79,7 +79,7 @@ BED file:
 
 ### Who goes in which panel
 
-The sample table carries a breed and a category per animal, from which the build
+The sample table gives a breed and a category per animal, from which the build
 script derives every list: European gray wolves for the wolf panel, and one dog
 from every breed for the dog panel, minus the targets and both wolfdog breeds.
 Each target's own dog background has to be in the dog panel for its ordinary
@@ -197,7 +197,7 @@ chr1	49135137	57939751	Wolf	0	.	49135137	57939751	230,159,0	Czechoslovakian 1 ha
 ```
 
 The last two columns are the row this block belongs to and the ancestry it was
-called. The `#` header names them, so the track config carries no `columnNames`.
+called. The `#` header names them, so the track config needs no `columnNames`.
 
 ## Loading the blocks as a multi-row track
 

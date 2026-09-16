@@ -314,12 +314,11 @@ curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/
 bash build_rgfa_alleles.sh out
 ```
 
-Each row carries a `CIGAR` against the reference span it replaces
-(`2062M63348I`), which makes the lane legible: an insertion consumes no
-reference, so its start and end cannot give its size, and a plain feature track
-would draw a 63 kb allele one pixel wide. An `AlignmentsTrack` walks the CIGAR
-instead and draws the insertion at its real magnitude, with the same glyph it
-draws for a read:
+Each row has a `CIGAR` against the reference span it replaces (`2062M63348I`),
+which makes the lane legible: an insertion consumes no reference, so its start
+and end cannot give its size, and a plain feature track would draw a 63 kb
+allele one pixel wide. An `AlignmentsTrack` walks the CIGAR instead and draws
+the insertion at its real magnitude, with the same glyph it draws for a read:
 
 ```json addtrack
 {

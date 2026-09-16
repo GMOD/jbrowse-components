@@ -209,7 +209,7 @@ Two things about the config above:
 - The BED's `#`-header line names its columns, so the adapter needs no
   `columnNames`, and `parenthap` is the one the display partitions on.
 - [`showLegend`](/docs/config/linearmultirowfeaturedisplay/#slot-showlegend) is
-  off, because the color and the row label already carry the same four
+  off, because the color and the row label already give the same four
   categories.
 
 ## Reading the painted crossovers
