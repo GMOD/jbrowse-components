@@ -14,7 +14,7 @@ Read [ADR-051](../architecture-decision-records/adr-051-shader-js-codegen-is-sca
 in the export set and what deliberately does not. This file says what the
 tree currently looks like against that standard.
 
-Scanned 43 shaders with entry points. 104 functions
+Scanned 42 shaders with entry points. 104 functions
 are inside the emitter's subset, of which **78 are exported**.
 
 ## Candidates
@@ -74,8 +74,8 @@ noticing in a diff.
 | Refused because | Functions | For example |
 | --- | --- | --- |
 | type 'vec2' is outside the supported scalar subset | 24 | `arcBandClipPos`, `buttSegmentCoverage`, `capsuleDist`, `capsuleFrame`, `capsuleQuadLocal`, `covFlippedQuad`, … |
-| member access (vector swizzle or struct field) is outside the supported scalar subset | 19 | `arcBandDestY`, `arcBandX`, `arcBandY`, `arcFlipX`, `arcStrokeHalfPx`, `arcsPointDown`, … |
 | type 'ptr' is outside the supported scalar subset | 18 | `bpToClipX`, `covAreaTop`, `covBaselinePx`, `covBpToClipX`, `covClipKindColor`, `covEffHeight`, … |
+| member access (vector swizzle or struct field) is outside the supported scalar subset | 16 | `arcBandDestY`, `arcBandX`, `arcBandY`, `arcFlipX`, `arcStrokeHalfPx`, `arcsPointDown`, … |
 | type 'vec4' is outside the supported scalar subset | 9 | `edgeSpan`, `fillEdges`, `isCulled`, `ribbonEdgeDeltas`, `ribbonEdges`, `ribbonWidths`, … |
 | type 'vec3' is outside the supported scalar subset | 6 | `arcColorByIndex`, `baseColor`, `bpRange`, `categoryPaletteColor`, `hueRampHalfSat`, `linkedReadColorByIndex` |
 | type 'Instance' is outside the supported scalar subset | 5 | `arcCurve`, `computeCorners`, `fillVsBegin`, `getReadColor`, `isClickedSilhouette` |
