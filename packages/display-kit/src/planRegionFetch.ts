@@ -38,6 +38,23 @@ export function isBlockCovered(
 }
 
 /**
+ * The visible blocks on the track's own assemblies. A view drawing several
+ * genomes (a two-genome circle) shows a single-genome track on its genome's
+ * regions only, and leaves the rest blank rather than failing the track.
+ */
+export function blocksOnTrackAssemblies<T extends { assemblyName: string }>(
+  blocks: readonly T[],
+  trackAssemblyNames: string[],
+  hasAssemblyName: RegionFetchSources['hasAssemblyName'],
+) {
+  return blocks.filter(
+    ({ assemblyName }) =>
+      trackAssemblyNames.includes(assemblyName) ||
+      trackAssemblyNames.some(name => hasAssemblyName(name, assemblyName)),
+  )
+}
+
+/**
  * Everything the plan needs once the cheap bail-outs are past: the track's
  * assemblies, the two region lists, and the two per-region lookups.
  */
@@ -255,19 +272,17 @@ export function planRegionFetch({
     isCacheValid,
   } = sources()
 
-  for (const block of visibleRegions) {
-    const regionAssemblyName = block.assemblyName
-    if (
-      !trackAssemblyNames.includes(regionAssemblyName) &&
-      !trackAssemblyNames.some(name =>
-        hasAssemblyName(name, regionAssemblyName),
-      )
-    ) {
-      return {
-        kind: 'assemblyMismatch',
-        regionAssemblyName,
-        trackAssemblyNames,
-      }
+  const drawn = blocksOnTrackAssemblies(
+    visibleRegions,
+    trackAssemblyNames,
+    hasAssemblyName,
+  )
+  const [foreign] = visibleRegions
+  if (drawn.length === 0 && foreign) {
+    return {
+      kind: 'assemblyMismatch',
+      regionAssemblyName: foreign.assemblyName,
+      trackAssemblyNames,
     }
   }
 
@@ -275,7 +290,7 @@ export function planRegionFetch({
     bufferedVisibleRegions.map(b => [b.displayedRegionIndex, b]),
   )
   const needed: IndexedRegion[] = []
-  for (const block of visibleRegions) {
+  for (const block of drawn) {
     // `&&` short-circuits, so on a run where the block is NOT covered
     // `isCacheValid`'s observables go untracked — the same shape as the
     // gated-trigger hazard in `installGlobalFetchAutorun`. It is safe here for a

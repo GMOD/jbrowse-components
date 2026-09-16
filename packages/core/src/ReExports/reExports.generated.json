@@ -4266,6 +4266,7 @@
     "@jbrowse/display-kit/planRegionFetch": {
       "package": "@jbrowse/display-kit",
       "names": [
+        "blocksOnTrackAssemblies",
         "isBlockCovered",
         "planRegionFetch",
         "regionAssemblyMismatchMessage",

@@ -1,4 +1,5 @@
-import { getSession } from '@jbrowse/core/util/mstUtils'
+import { getContainingTrack, getSession } from '@jbrowse/core/util/mstUtils'
+import { getConfAssemblyNamesOrNone } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import { regionDataMap } from '@jbrowse/render-core/regionDataMap'
@@ -13,7 +14,7 @@ import { foundationPaintInert } from './foundationPaintInert.ts'
 import { foundationSvgReady } from './foundationSvgReady.ts'
 import { containingHost, foundationCanRender } from './foundationView.ts'
 import { installPerRegionFetchAutoruns } from './installPerRegionFetchAutoruns.ts'
-import { isBlockCovered } from './planRegionFetch.ts'
+import { blocksOnTrackAssemblies, isBlockCovered } from './planRegionFetch.ts'
 import { makeCommitChecks, payloadServesZoom } from './regionCommit.ts'
 import { subPixelBinBp } from './subPixelBinBp.ts'
 import { viewportEmpty } from './viewportEmpty.ts'
@@ -155,6 +156,28 @@ export default function MultiRegionDisplayMixin() {
 
         /**
          * #getter
+         * The visible blocks on the track's own assemblies, the ones this
+         * display fetches and is judged against. A view of several genomes
+         * leaves a single-genome track's other regions blank.
+         */
+        get trackVisibleRegions() {
+          const { visibleRegions } = this.host
+          const names = getConfAssemblyNamesOrNone(
+            getContainingTrack(self).configuration,
+          )
+          const { assemblyManager } = getSession(self)
+          return names.length
+            ? blocksOnTrackAssemblies(
+                visibleRegions,
+                names,
+                (track, region) =>
+                  !!assemblyManager.get(track)?.hasName(region),
+              )
+            : visibleRegions
+        },
+
+        /**
+         * #getter
          * true when every visible block lies within an already-fetched region —
          * i.e. the viewport shows data we actually loaded, not the stale fringe
          * left after a zoom-out/pan. Drives the loading overlay through the
@@ -170,7 +193,7 @@ export default function MultiRegionDisplayMixin() {
         get viewportWithinLoadedData() {
           const view = this.host
           return view.initialized
-            ? view.visibleRegions.every(block =>
+            ? this.trackVisibleRegions.every(block =>
                 isBlockCovered(
                   self.loadedRegions.get(block.displayedRegionIndex),
                   block,
@@ -482,7 +505,7 @@ export default function MultiRegionDisplayMixin() {
           const settings = self.settingsFetchInputs
           return (
             host.initialized &&
-            host.visibleRegions.some(block => {
+            self.trackVisibleRegions.some(block => {
               const loaded = self.loadedRegions.get(block.displayedRegionIndex)
               return (
                 loaded !== undefined &&
@@ -523,7 +546,7 @@ export default function MultiRegionDisplayMixin() {
           return (
             self.viewportWithinLoadedData &&
             self.loadedRegions.size > 0 &&
-            self.host.visibleRegions.every(block =>
+            self.trackVisibleRegions.every(block =>
               self.isCacheValid(block.displayedRegionIndex),
             ) &&
             !self.dataSuperseded

@@ -1,7 +1,7 @@
 import { createTestSession } from '@jbrowse/web/testUtils'
 import { when } from 'mobx'
 
-import { RING_GAP_PX } from './ringHost.ts'
+import { RING_GAP_PX, ringAxisTicks } from './ringHost.ts'
 
 import type { CircularViewModel } from '../CircularView/model.ts'
 import type { RingDisplay } from './ringHost.ts'
@@ -29,34 +29,37 @@ const CTG_B_BP = 8000
 async function ringTestSession(
   track: Record<string, unknown>,
   displayType?: string,
+  assemblies = ['volvox'],
 ) {
   const session = createTestSession()
-  session.addAssemblyConf({
-    name: 'volvox',
-    sequence: {
-      trackId: 'volvox_refseq',
-      type: 'ReferenceSequenceTrack',
-      adapter: {
-        type: 'FromConfigSequenceAdapter',
-        features: [
-          {
-            refName: 'ctgA',
-            uniqueId: 'ctgA',
-            start: 0,
-            end: CTG_A_BP,
-            seq: 'a'.repeat(CTG_A_BP),
-          },
-          {
-            refName: 'ctgB',
-            uniqueId: 'ctgB',
-            start: 0,
-            end: CTG_B_BP,
-            seq: 'a'.repeat(CTG_B_BP),
-          },
-        ],
+  for (const name of assemblies) {
+    session.addAssemblyConf({
+      name,
+      sequence: {
+        trackId: `${name}_refseq`,
+        type: 'ReferenceSequenceTrack',
+        adapter: {
+          type: 'FromConfigSequenceAdapter',
+          features: [
+            {
+              refName: 'ctgA',
+              uniqueId: 'ctgA',
+              start: 0,
+              end: CTG_A_BP,
+              seq: 'a'.repeat(CTG_A_BP),
+            },
+            {
+              refName: 'ctgB',
+              uniqueId: 'ctgB',
+              start: 0,
+              end: CTG_B_BP,
+              seq: 'a'.repeat(CTG_B_BP),
+            },
+          ],
+        },
       },
-    },
-  })
+    })
+  }
   session.addSessionTrackConf({
     trackId: 'ring',
     name: 'ring',
@@ -64,7 +67,7 @@ async function ringTestSession(
     ...track,
   })
   const view = (await session.launchView('CircularView', {
-    assembly: 'volvox',
+    assembly: assemblies,
     tracks: [
       displayType
         ? { trackId: 'ring', displaySnapshot: { type: displayType } }
@@ -72,7 +75,9 @@ async function ringTestSession(
     ],
   })) as CircularViewModel
   view.setWidth(800)
-  await session.assemblyManager.waitForAssembly('volvox')
+  for (const name of assemblies) {
+    await session.assemblyManager.waitForAssembly(name)
+  }
   await when(() => view.tracks.length > 0)
   const display = view.tracks[0]!.displays[0] as RingDisplay & {
     host: unknown
@@ -81,6 +86,7 @@ async function ringTestSession(
     renderBlocks: { screenStartPx: number; screenEndPx: number }[]
     displayPhase: string
     error: unknown
+    viewportWithinLoadedData: boolean
   }
   return { session, view, display }
 }
@@ -160,10 +166,42 @@ test('a bigwig-shaped track opens on the circle as a wiggle ring over the strip'
   // the strip fetched per slice
   await when(() => display.loadedRegions.size === 2)
   expect([...display.loadedRegions.keys()].sort()).toEqual([0, 1])
+
+  // and its score axis, running from the ring's outer rim to its inner
+  await when(() => ringAxisTicks(ring!).length > 0)
+  const radii = ringAxisTicks(ring!).map(t => t.radius)
+  expect(Math.max(...radii)).toBeLessThanOrEqual(ring!.outerPx + 0.5)
+  expect(Math.min(...radii)).toBeGreaterThanOrEqual(ring!.innerPx - 0.5)
 }, 30000)
 
 // a ring has no label to hang its track menu off, so the view menu carries
 // it, and the wiggle's own settings are reachable on the circle
+// a gene density bigWig for one genome, opened on a circle of two: it draws on
+// its genome's arcs and leaves the other's blank, where it used to fail the
+// whole ring with an assembly mismatch
+test("a single-genome track draws on its genome's arcs of a two-genome circle", async () => {
+  const { view, display } = await ringTestSession(
+    {
+      type: 'QuantitativeTrack',
+      adapter: {
+        type: 'FromConfigAdapter',
+        features: [
+          ...scores('ctgA', CTG_A_BP, 100),
+          ...scores('ctgB', CTG_B_BP, 100),
+        ],
+      },
+    },
+    undefined,
+    ['volvox', 'volvox2'],
+  )
+  expect(view.assemblyNames).toEqual(['volvox', 'volvox2'])
+  await when(() => display.loadedRegions.size === 2)
+  expect([...display.loadedRegions.keys()].sort()).toEqual([0, 1])
+  expect(display.error).toBeUndefined()
+  // judged on its own genome's arcs, so the other genome's never hold it loading
+  expect(display.viewportWithinLoadedData).toBe(true)
+}, 30000)
+
 test("a ring's track menu is under the view menu's Tracks item", async () => {
   const { view } = await wiggleSession()
   const [ring] = subMenuOf(view.menuItems(), 'Tracks')

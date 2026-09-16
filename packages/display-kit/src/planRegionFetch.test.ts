@@ -429,19 +429,24 @@ describe('assembly mismatch', () => {
     })
   })
 
-  test('reports the first mismatching region, ahead of any fetch', () => {
+  // a two-genome circle shows a single-genome track on its genome's arcs
+  test('fetches only the regions of the track assemblies when some match', () => {
+    const result = plan({
+      sources: () =>
+        sources({
+          visibleRegions: [
+            { ...visible(0, 0, 100), assemblyName: 'mm10' },
+            { ...visible(1, 0, 100), assemblyName: 'test' },
+          ],
+          trackAssemblyNames: ['test'],
+        }),
+    })
+    expect(result.kind).toBe('fetch')
     expect(
-      plan({
-        sources: () =>
-          sources({
-            visibleRegions: [
-              { ...visible(0, 0, 100), assemblyName: 'test' },
-              { ...visible(1, 0, 100), assemblyName: 'mm10' },
-            ],
-            trackAssemblyNames: ['test'],
-          }),
-      }),
-    ).toMatchObject({ kind: 'assemblyMismatch', regionAssemblyName: 'mm10' })
+      result.kind === 'fetch'
+        ? result.needed.map(n => n.displayedRegionIndex)
+        : [],
+    ).toEqual([1])
   })
 
   test('the message names both sides', () => {
