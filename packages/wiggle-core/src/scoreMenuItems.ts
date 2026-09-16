@@ -6,7 +6,7 @@ import EqualizerIcon from '@mui/icons-material/Equalizer'
 
 import { DEFAULT_AUTOSCALE_OPTIONS } from './autoscale.ts'
 
-import type { MenuItem } from '@jbrowse/core/ui'
+import type { MenuItem, NormalMenuItem } from '@jbrowse/core/ui'
 import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 const SetMinMaxDialog = lazy(() => import('./SetMinMaxDialog.tsx'))
@@ -101,6 +101,25 @@ export function makeSetMinMaxScoreItem(self: ScoreScaleModel): MenuItem {
   }
 }
 
+// Freezes the axis where it is drawn, so a pan or a zoom no longer moves it:
+// the drawn domain, never the resolved `*Bound` pair, which on an autoscaled
+// track is `undefined` at both ends and would pin nothing. The caller hands
+// the domain in, since each display names its own (`coverageDomain` on the
+// alignments band), and `makeScoreSubMenu` offers the row only while it is
+// known.
+export function makePinCurrentRangeItem(
+  self: ScoreScaleModel,
+  domain: [number, number],
+): NormalMenuItem {
+  return {
+    label: 'Pin current min/max',
+    onClick: () => {
+      self.setMinScore(domain[0])
+      self.setMaxScore(domain[1])
+    },
+  }
+}
+
 // Only offered when a manual bound is set; resets both to the sentinel (same
 // path the dialog takes when its fields are cleared) so autoscale resumes.
 function makeClearMinMaxScoreItem(self: ScoreScaleModel): MenuItem {
@@ -143,6 +162,9 @@ export function makeScoreSubMenu(
     scaleType?: boolean
     autoscale?: boolean
     autoscaleOptions?: [string, string][]
+    // The domain drawn right now, which "Pin current min/max" copies into the
+    // slots; undefined before it resolves, and the row waits with it.
+    domain?: [number, number]
     leadingItems?: MenuItem[]
     trailingItems?: MenuItem[]
     // Greys the whole submenu out — for a display whose band can be hidden, where
@@ -158,6 +180,7 @@ export function makeScoreSubMenu(
     scaleType = true,
     autoscale = true,
     autoscaleOptions,
+    domain,
     leadingItems = [],
     trailingItems = [],
     disabled,
@@ -173,6 +196,7 @@ export function makeScoreSubMenu(
       ...(scaleType ? [makeScaleTypeSubMenu(self)] : []),
       ...(autoscale ? [makeAutoscaleTypeSubMenu(self, autoscaleOptions)] : []),
       makeSetMinMaxScoreItem(self),
+      ...(domain ? [makePinCurrentRangeItem(self, domain)] : []),
       ...(self.hasManualScoreBounds ? [makeClearMinMaxScoreItem(self)] : []),
       ...trailingItems,
     ],

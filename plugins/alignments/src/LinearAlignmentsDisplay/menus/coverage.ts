@@ -6,6 +6,7 @@ import type { ScoreScaleModel } from '@jbrowse/wiggle-core'
 interface CoverageModel extends ScoreScaleModel {
   numStdDev: number
   showCoverage: boolean
+  coverageDomain: [number, number] | undefined
   coverageSnpMinFrequency: number
   setCoverageSnpMinFrequency: (fraction: number) => void
 }
@@ -52,6 +53,7 @@ export function getCoverageMenuItem(model: CoverageModel) {
   const sigma = model.numStdDev
   return makeScoreSubMenu(model, {
     label: 'Coverage',
+    domain: model.coverageDomain,
     disabled: !model.showCoverage,
     disabledHelpText:
       'These settings scale the coverage band — turn on "Show coverage" first',

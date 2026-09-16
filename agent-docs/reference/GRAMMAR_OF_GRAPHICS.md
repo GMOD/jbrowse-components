@@ -228,8 +228,11 @@ The seams, named honestly:
   the shapes read as a uniform (ADR-113), so an unpinned ramp agrees across
   the loaded regions and a pan that widens it uploads no instance bytes. What
   remains is the dataset beyond the view: a value in no loaded region has
-  never been seen, so the domain still grows as the user pans, and a pinned
-  `domain` is what fixes a legend for a figure.
+  never been seen, so the domain still grows as the user pans. That is the
+  design and not a seam
+  ([ADR-124](../architecture-decision-records/adr-124-the-score-axis-autoscales-over-what-is-loaded.md)):
+  a pinned `domain` is what fixes a legend for a figure, and the Score menu's
+  "Pin current min/max" writes it from what is drawn.
 
 ## The facet stage
 

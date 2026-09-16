@@ -10,6 +10,7 @@ import LinearGenomeViewPlugin, {
 } from '@jbrowse/plugin-linear-genome-view'
 import WigglePlugin from '@jbrowse/plugin-wiggle'
 import { pointInsetPx } from '@jbrowse/render-core/marks'
+import { makePinCurrentRangeItem } from '@jbrowse/wiggle-core'
 import { render, screen, waitFor } from '@testing-library/react'
 
 import MarkFacetChips from './components/MarkFacetChips.tsx'
@@ -245,6 +246,22 @@ test('one end of a declared domain pins and the other autoscales', () => {
   const { display } = createDisplay()
   expect(display.minScoreBound).toBeUndefined()
   expect(display.maxScoreBound).toBe(50)
+})
+
+test('pinning the current range lands on the declaration', () => {
+  const { createDisplay } = createTestEnvironment([
+    { shape: 'bar', encoding: { y: 'score' } },
+  ])
+  const { display } = createDisplay()
+  display.setRpcData(0, result([{ y: [3, 40] }]), REGION)
+  const drawn = display.domain!
+  expect(drawn[1]).toBeGreaterThanOrEqual(40)
+  makePinCurrentRangeItem(display, drawn).onClick()
+  expect([...display.conf.marks[0]!.encoding.y.domain]).toEqual(
+    drawn.map(String),
+  )
+  expect(display.maxScore).toBe(Number.MAX_VALUE)
+  expect(display.hasManualScoreBounds).toBe(true)
 })
 
 test('the score menu edits the declaration, not a second pair of slots', () => {

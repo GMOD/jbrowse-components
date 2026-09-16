@@ -189,9 +189,11 @@ function makeSummaryScoreModeSubMenu(self: WithResolution): MenuItem[] {
 // The one Score submenu both wiggle displays build: summary score mode leads
 // it, then the shared scale-type / autoscale / min-max rows.
 export function makeWiggleScoreSubMenu(
-  self: WithResolution & ScoreScaleModel,
+  self: WithResolution &
+    ScoreScaleModel & { domain: [number, number] | undefined },
 ): MenuItem {
   return makeScoreSubMenu(self, {
+    domain: self.domain,
     leadingItems: makeSummaryScoreModeSubMenu(self),
   })
 }

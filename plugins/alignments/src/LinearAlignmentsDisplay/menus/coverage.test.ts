@@ -11,6 +11,7 @@ function menu(showCoverage: boolean, coverageSnpMinFrequency = 0) {
   return getCoverageMenuItem({
     numStdDev: 3,
     showCoverage,
+    coverageDomain: undefined,
     coverageSnpMinFrequency,
     setCoverageSnpMinFrequency: () => {},
     scaleType: 'linear',

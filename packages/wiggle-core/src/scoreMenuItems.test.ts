@@ -4,7 +4,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import { ScoreScaleMixin } from './ScoreScaleMixin.ts'
 import { scoreAxisConfigSchemaFields } from './scoreAxisConfigSchemaFields.ts'
-import { makeScoreSubMenu } from './scoreMenuItems.ts'
+import { makePinCurrentRangeItem, makeScoreSubMenu } from './scoreMenuItems.ts'
 
 import type { ScoreScaleModel } from './scoreMenuItems.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -60,6 +60,26 @@ describe('makeScoreSubMenu capability opt-outs', () => {
         makeScoreSubMenu(makeSelf(), { scaleType: false, autoscale: false }),
       ),
     ).toEqual(['Set min/max score...'])
+  })
+
+  it('offers the pin row while the drawn domain is known, and not before', () => {
+    const opts = { scaleType: false, autoscale: false }
+    expect(labels(makeScoreSubMenu(makeSelf(), opts))).toEqual([
+      'Set min/max score...',
+    ])
+    expect(
+      labels(makeScoreSubMenu(makeSelf(), { ...opts, domain: [-3, 47] })),
+    ).toEqual(['Set min/max score...', 'Pin current min/max'])
+  })
+
+  it('the pin writes the drawn domain, not the resolved bounds', () => {
+    const writes: (number | undefined)[] = []
+    const self = makeSelf({
+      setMinScore: n => writes.push(n),
+      setMaxScore: n => writes.push(n),
+    })
+    makePinCurrentRangeItem(self, [-3, 47]).onClick()
+    expect(writes).toEqual([-3, 47])
   })
 
   it('still offers the clear item when a manual bound is in force', () => {

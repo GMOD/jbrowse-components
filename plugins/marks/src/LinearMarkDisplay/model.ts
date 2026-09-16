@@ -1204,7 +1204,11 @@ export function stateModelFactory(
           },
           // The shared radio offers symlog, which the declared enum does not
           // admit; the scale type is config-only until it does.
-          makeScoreSubMenu(self, { scaleType: false, autoscale: false }),
+          makeScoreSubMenu(self, {
+            scaleType: false,
+            autoscale: false,
+            domain: self.domain,
+          }),
           ...makePointSizeSubMenu(self, {
             label: 'Point size',
             applies: self.hasPointMark,

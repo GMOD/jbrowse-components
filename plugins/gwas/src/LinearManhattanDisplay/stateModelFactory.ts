@@ -699,7 +699,11 @@ export function stateModelFactory(
             // is linear-only, and the domain is plain min/max over the loaded
             // regions with the manual bounds applied on top. Set min/max score
             // is the one score control that does anything here.
-            makeScoreSubMenu(self, { scaleType: false, autoscale: false }),
+            makeScoreSubMenu(self, {
+              scaleType: false,
+              autoscale: false,
+              domain: self.domain,
+            }),
             ...makePointSizeSubMenu(self, {
               label: 'Point size',
               applies: true,

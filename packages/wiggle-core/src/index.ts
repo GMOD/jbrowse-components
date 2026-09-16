@@ -76,6 +76,7 @@ export { DEFAULT_AUTOSCALE_OPTIONS } from './autoscale.ts'
 export {
   makeAutoscaleTypeSubMenu,
   makeCrossHatchItem,
+  makePinCurrentRangeItem,
   makeScaleTypeSubMenu,
   makeScoreSubMenu,
   makeSetMinMaxScoreItem,
