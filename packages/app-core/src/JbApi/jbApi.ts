@@ -1,4 +1,7 @@
-import { setReExportRegistry } from '@jbrowse/core/ReExports/registry'
+import {
+  getReExportRegistry,
+  setReExportRegistry,
+} from '@jbrowse/core/ReExports/registry'
 import {
   getConf,
   getConfigurationSchemaDefinition,
@@ -1268,13 +1271,17 @@ function describeSlots(
 // live model graph. The renderer already runs with nodeIntegration and the
 // bridge socket is user-only, so this grants what the surface as a whole
 // already grants — expressed directly instead of through a curated verb.
-// The re-export registry is what pluginManager.jbrequire serves: the same
-// pinned ABI module names external plugins link against (ReExports/modules.ts,
-// abiBaseline.json). It stays empty until a runtime plugin loads, so each
-// evaluate (re)installs it — import() is memoized, so this is one lookup and
-// an idempotent assignment, with no module-level flag to hold.
+// The re-export registry is what pluginManager.jbrequire serves, the modules
+// external plugins link against. It stays empty until a runtime plugin loads,
+// and a loaded plugin fills it with the product's map, which serves every
+// bundled @jbrowse package rather than core alone — so this fills only an
+// empty registry.
 export async function ensureReExports() {
-  setReExportRegistry((await import('@jbrowse/core/ReExports/modules')).default)
+  if (Object.keys(getReExportRegistry()).length === 0) {
+    setReExportRegistry(
+      (await import('@jbrowse/core/ReExports/modules')).default,
+    )
+  }
 }
 
 // The front door for an agent that just found `jb` and knows nothing else —

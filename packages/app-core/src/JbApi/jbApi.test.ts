@@ -1,4 +1,8 @@
 import PluginManager from '@jbrowse/core/PluginManager'
+import {
+  getReExportRegistry,
+  setReExportRegistry,
+} from '@jbrowse/core/ReExports/registry'
 import * as configuration from '@jbrowse/core/configuration'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import * as getFeatureAdapter from '@jbrowse/core/data_adapters/getFeatureAdapter'
@@ -10,6 +14,7 @@ import * as mobx from 'mobx'
 import {
   agentByteLimit,
   createJbApi,
+  ensureReExports,
   safeJson,
   sessionOf,
   undeliveredNotifications,
@@ -1639,4 +1644,15 @@ describe('setSession', () => {
       jb.setSession({ views: [{ id: 'x', type: 'Nope' }] }, 100),
     ).rejects.toThrow(/jb\.setSession refused the document: .*Nope/)
   })
+})
+
+// Desktop's run_javascript calls this before every evaluate. A runtime plugin
+// has already filled the registry with the product's map, which serves every
+// bundled @jbrowse package; core's map in its place would drop those keys from
+// jbrequire for the rest of the session.
+test('ensureReExports keeps the registry a runtime plugin installed', async () => {
+  const productMap = { '@jbrowse/display-kit/configSchema': {} }
+  setReExportRegistry(productMap)
+  await ensureReExports()
+  expect(getReExportRegistry()).toBe(productMap)
 })
