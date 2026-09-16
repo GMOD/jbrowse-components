@@ -16,10 +16,6 @@ const BaseFeatureDetail = observer(function BaseFeatureDetail({
   // annotated to shed the MST node brand types.frozen() carries on the instance
   const descriptions: Descriptors | undefined = model.descriptions
 
-  // A field is hidden by a formatDetails callback returning undefined (jexl
-  // can't produce null); every detail component filters with `!= null`, so a
-  // field set to undefined (live) or null (round-tripped through a snapshot) is
-  // dropped identically.
   if (error) {
     return <ErrorBanner error={error} />
   } else if (!featureData || isEmpty(featureData)) {

@@ -43,10 +43,26 @@ the panel:
 - **An existing key** replaces that row's value, core fields included:
   `{type: undefined}` removes the Type row, `{name: ...}` rewrites the Name row.
   `length` counts as one even though the panel computes it from `start`/`end`.
-- **`undefined` or `null`** hides the row. `null` survives a serialization
-  round-trip (saving a session turns `undefined` into `null` anyway).
-- **A non-object return drops the tier.** `"jexl:feature.name"` where
-  `"jexl:{name:feature.name}"` was meant produces no rows.
+- **`undefined` or `null`** hides the row.
+- **A non-object return is an error.** `"jexl:feature.name"` where
+  `"jexl:{name:feature.name}"` was meant replaces the panel with a message
+  naming the track.
+
+The merged feature is what every part of the panel reads, the sequence panel and
+a plugin's extra panels included, and a saved session keeps the raw feature and
+re-runs the callbacks on load, so editing a track's `formatDetails` reshapes an
+open panel in place.
+
+### What a callback can see
+
+- `feature` is the clicked feature, or in `subfeatures` the subfeature being
+  formatted.
+- `track` is the track's config, so one session-wide callback can link out per
+  assembly:
+  `"jexl:{ncbi:'https://www.ncbi.nlm.nih.gov/gene/?term='+feature.name+'+'+track.assemblyNames[0]}"`.
+- In `subfeatures`, `parent` is the feature this one sits in and `depth` how far
+  down, 1 for a gene's transcript and 2 for the transcript's exon, so a
+  transcript row can carry its gene's name: `"jexl:{gene:parent.name}"`.
 
 ### Values are HTML, and bare URLs become links {#bare-urls}
 

@@ -1,27 +1,28 @@
-import { addDisposer, types } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
+import { getEnv, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 
+import { hydrateTrackConfig } from '../configuration/index.ts'
 import { getSession } from '../util/index.ts'
 import { ElementId } from '../util/types/mst.ts'
 import { SequenceFeatureDetailsF } from './SequenceFeatureDetails/model.ts'
 import { applyFormatDetails, formatDetailsNumber } from './formatDetails.ts'
-import { nullReplacer } from './util.tsx'
 
 import type PluginManager from '../PluginManager.ts'
+import type { AnyConfigurationModel } from '../configuration/index.ts'
 import type {
   ParentFeatureSummary,
   SimpleFeatureSerialized,
 } from '../util/index.ts'
 import type { SequenceHoverPosition } from './SequenceFeatureDetails/model.ts'
+import type { FormatDetailsTiers } from './formatDetails.ts'
 import type { Descriptors, MaybeSerializedFeat } from './types.tsx'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #stateModel BaseFeatureWidget
- * displays data about features, allowing configuration callbacks to modify the
- * contents of what is displayed
- *
- * see: formatDetails-\>feature,formatDetails-\>subfeatures
+ * The feature-details panel. `featureData` is the clicked feature with the
+ * track's and the session's `formatDetails` callbacks applied, derived on read
+ * from the raw feature the widget was opened with, so the same widget follows a
+ * config edit and survives its track being closed.
  */
 export function stateModelFactory(pluginManager: PluginManager) {
   return types
@@ -38,14 +39,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       /**
        * #property
-       */
-      featureData: types.optional(
-        types.frozen<MaybeSerializedFeat>(),
-        undefined,
-      ),
-
-      /**
-       * #property
+       * the feature as the click handed it over, before any callback ran.
+       * Persisted as `featureData`
        */
       unformattedFeatureData: types.optional(
         types.frozen<MaybeSerializedFeat>(),
@@ -79,11 +74,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #property
        */
-      maxDepth: types.maybe(types.number),
-
-      /**
-       * #property
-       */
       sequenceFeatureDetails: types.optional(SequenceFeatureDetailsF(), {}),
 
       /**
@@ -105,14 +95,8 @@ export function stateModelFactory(pluginManager: PluginManager) {
       ),
     })
     .volatile<{
-      error: unknown
       sequenceHoverPosition: SequenceHoverPosition | undefined
     }>(() => ({
-      /**
-       * #volatile
-       */
-
-      error: undefined,
       /**
        * #volatile
        * genomic base currently hovered in this widget's sequence panel, read by
@@ -120,8 +104,91 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       sequenceHoverPosition: undefined,
     }))
-
+    .views(self => ({
+      /**
+       * #getter
+       * the config the track tier of `formatDetails` reads. The open track's
+       * own while it is open; after it is closed, the session's copy of the
+       * same config, which is why the widget records `trackId`
+       */
+      get trackConfiguration(): AnyConfigurationModel | undefined {
+        const { track, trackId } = self
+        if (track) {
+          return track.configuration
+        }
+        if (!trackId) {
+          return undefined
+        }
+        const conf = getSession(self).getTrackById(trackId)
+        return conf === undefined || isStateTreeNode(conf)
+          ? conf
+          : hydrateTrackConfig(getEnv(self).pluginManager, conf)
+      },
+    }))
+    .views(self => ({
+      get formatDetailsTiers(): FormatDetailsTiers {
+        return {
+          session: getSession(self).configuration,
+          track: self.trackConfiguration,
+        }
+      },
+    }))
+    .views(self => ({
+      get formatted(): { feature?: SimpleFeatureSerialized; error?: Error } {
+        const { unformattedFeatureData } = self
+        if (!unformattedFeatureData) {
+          return {}
+        }
+        try {
+          return {
+            feature: applyFormatDetails(
+              self.formatDetailsTiers,
+              unformattedFeatureData,
+            ),
+          }
+        } catch (e) {
+          const where = self.trackId
+            ? `track "${self.trackId}"`
+            : 'the session configuration'
+          const error = new Error(
+            `Error running the formatDetails callbacks for ${where}: ${e}`,
+            { cause: e },
+          )
+          console.error(error)
+          return { error }
+        }
+      },
+      /**
+       * #getter
+       * levels of subfeature card the panel renders; unset means no limit
+       */
+      get maxDepth() {
+        return formatDetailsNumber(self.formatDetailsTiers, 'maxDepth')
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * the feature with every `formatDetails` callback applied
+       */
+      get featureData() {
+        return self.formatted.feature
+      },
+      /**
+       * #getter
+       */
+      get error() {
+        return self.formatted.error
+      },
+    }))
     .actions(self => ({
+      afterAttach() {
+        const { track } = self
+        if (track) {
+          self.trackId = track.configuration.trackId
+          self.trackType = track.type
+        }
+      },
       /**
        * #action
        */
@@ -149,111 +216,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       clearFeatureData() {
-        self.featureData = undefined
-      },
-      /**
-       * #action
-       */
-      setFormattedData(feat: SimpleFeatureSerialized) {
-        self.featureData = feat
-      },
-      /**
-       * #action
-       */
-      setTrackInfo(type?: string, trackId?: string) {
-        self.trackId = trackId
-        self.trackType = type
-      },
-      /**
-       * #action
-       */
-      setMaxDepth(maxDepth?: number) {
-        self.maxDepth = maxDepth
-      },
-      /**
-       * #action
-       */
-      setError(e: unknown) {
-        self.error = e
-      },
-    }))
-    .actions(self => ({
-      afterCreate() {
-        addDisposer(
-          self,
-          autorun(
-            function featureWidgetAutorun() {
-              const { track } = self
-              // read before any config read so the catch below can attribute
-              // the failure without repeating one that may be what threw
-              let trackId: string | undefined
-              try {
-                const { unformattedFeatureData } = self
-                const session = getSession(self)
-                if (track) {
-                  trackId = track.configuration.trackId
-                  self.setTrackInfo(track.type, trackId)
-                }
-                // both tiers apply: a widget can outlive its track
-                // (safeReference) or never have had one, and the session-wide
-                // `configuration.formatDetails` still means something. The
-                // reads stay here in the autorun body rather than moving into
-                // an action, which would run untracked
-                const tiers = { session, track }
-                // an unset maxDepth is the meaningful value, not a missing one:
-                // the panel reads it as no nesting limit
-                self.setMaxDepth(formatDetailsNumber(tiers, 'maxDepth'))
-                if (unformattedFeatureData) {
-                  self.setFormattedData(
-                    applyFormatDetails(tiers, unformattedFeatureData),
-                  )
-                }
-              } catch (e) {
-                // jexl throws a bare parse/eval message with nothing naming the
-                // slot or the config it came from, and this banner replaces the
-                // whole panel -- say where to look
-                const where = trackId
-                  ? `track "${trackId}"`
-                  : 'the session configuration'
-                const err = new Error(
-                  `Error running the formatDetails callbacks for ${where}: ${e}`,
-                  { cause: e },
-                )
-                console.error(err)
-                self.setError(err)
-              }
-            },
-            { name: 'FeatureWidget' },
-          ),
-        )
+        self.unformattedFeatureData = undefined
       },
     }))
     .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
-      // old snapshots used `featureData`, new ones use `finalizedFeatureData`;
-      // accept both for backwards compat
-      const { featureData, finalizedFeatureData, ...rest } = (snap ?? {}) as {
-        featureData?: MaybeSerializedFeat
-        finalizedFeatureData?: MaybeSerializedFeat
-      } & Record<string, unknown>
-      return {
-        unformattedFeatureData: featureData,
-        featureData: finalizedFeatureData,
-        ...rest,
-      }
+      const { featureData, ...rest } = snap ?? {}
+      return { unformattedFeatureData: featureData, ...rest }
     })
     .postProcessSnapshot(snap => {
-      const { unformattedFeatureData, featureData, ...rest } = snap
-
+      const { unformattedFeatureData, ...rest } = snap
       // JSON.stringify can return empty if too large
-      const s2 = JSON.stringify(featureData, nullReplacer)
-      const featureTooLargeToBeSerialized = !s2 || s2.length > 2_000_000
-
-      // `finalizedFeatureData` is persisted (rather than `featureData`) so
-      // loading from snapshot doesn't re-run the formatter callbacks
+      const json = JSON.stringify(unformattedFeatureData)
+      const tooLargeToPersist = !json || json.length > 2_000_000
       return {
-        finalizedFeatureData: featureTooLargeToBeSerialized
-          ? undefined
-          : JSON.parse(s2),
+        featureData: tooLargeToPersist ? undefined : unformattedFeatureData,
         ...rest,
       }
     })

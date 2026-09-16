@@ -96,8 +96,8 @@ describe('getAboutDialogConfig', () => {
   })
 
   // `jexl:config.name` where `jexl:{Name:config.name}` was meant. Spread, the
-  // string became dialog rows keyed 0, 1, 2
-  it('drops a callback that returns something other than an object', () => {
+  // string became dialog rows keyed 0, 1, 2; dropped, it did nothing
+  it('refuses a callback that returns something other than an object', () => {
     const config = TrackConf.create(
       {
         trackId: 't1',
@@ -106,13 +106,13 @@ describe('getAboutDialogConfig', () => {
       },
       { pluginManager: corePluginManager },
     )
-    const out = getAboutDialogConfig({
-      config,
-      session: makeSession(),
-      pluginManager: passthroughPluginManager,
-    })
-    expect(out.config).not.toHaveProperty('0')
-    expect(out.config.name).toBe('Track 1')
+    expect(() =>
+      getAboutDialogConfig({
+        config,
+        session: makeSession(),
+        pluginManager: passthroughPluginManager,
+      }),
+    ).toThrow('returned a string')
   })
 
   // the two formatAbout slots fold differently: `config` is a merge a track can

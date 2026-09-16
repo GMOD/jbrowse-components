@@ -9,6 +9,7 @@ export type {
   ShowCoordinatesMode,
 } from './SequenceFeatureDetails/model.ts'
 
+export type { FormatDetailsTiers } from './formatDetails.ts'
 export { stateModelFactory } from './stateModelFactory.ts'
 export type {
   BaseFeatureWidgetModel,

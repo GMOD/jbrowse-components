@@ -1,5 +1,3 @@
-import type { SerializedFeat } from './types.tsx'
-
 export interface Feat {
   start: number
   end: number
@@ -43,29 +41,4 @@ export function ellipses(slug: string) {
 
 export function getStrandStr(strand: number | undefined) {
   return strand === -1 ? '(-)' : strand === 1 ? '(+)' : ''
-}
-
-// JSON only serializes null, not undefined; feature fields are hidden by a
-// formatDetails callback returning undefined (jexl can't produce null), so when
-// persisting we round-trip undefined to null to keep the field hidden after
-// reload (detail components filter with `!= null`). see config guide.
-export const nullReplacer = (_: string, v: unknown) =>
-  v === undefined ? null : v
-
-// `depth` is how many levels of subfeature the `formatDetails.subfeatures`
-// callback runs on, counted from the clicked feature. The caller resolves it
-// across the session and track tiers and passes 0 when neither declares one, so
-// a config with no formatDetails schema formats nothing rather than every level
-export function formatSubfeatures(
-  obj: SerializedFeat,
-  depth: number,
-  parse: (obj: Record<string, unknown>) => void,
-  currentDepth = 0,
-) {
-  if (currentDepth < depth) {
-    for (const sub of obj.subfeatures ?? []) {
-      formatSubfeatures(sub, depth, parse, currentDepth + 1)
-      parse(sub)
-    }
-  }
 }

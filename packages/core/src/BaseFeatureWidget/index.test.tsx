@@ -102,7 +102,12 @@ test('a feature swap washes the panel, and a re-format of the same feature does 
     {
       widget: {
         type: 'BaseFeatureWidget',
-        featureData: { uniqueId: 'one', refName: 'ctgA', start: 2, end: 102 },
+        unformattedFeatureData: {
+          uniqueId: 'one',
+          refName: 'ctgA',
+          start: 2,
+          end: 102,
+        },
       },
     },
     { pluginManager },
@@ -154,7 +159,7 @@ test('the panel names the feature it was reached through', async () => {
     {
       widget: {
         type: 'BaseFeatureWidget',
-        featureData: {
+        unformattedFeatureData: {
           uniqueId: 'mRNA1',
           refName: 'ctgA',
           start: 2,
@@ -188,7 +193,12 @@ test('the panel says nothing about a parent it was not given', async () => {
     {
       widget: {
         type: 'BaseFeatureWidget',
-        featureData: { uniqueId: 'gene1', refName: 'ctgA', start: 2, end: 102 },
+        unformattedFeatureData: {
+          uniqueId: 'gene1',
+          refName: 'ctgA',
+          start: 2,
+          end: 102,
+        },
       },
     },
     { pluginManager },

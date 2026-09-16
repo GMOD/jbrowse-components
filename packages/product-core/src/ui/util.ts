@@ -44,14 +44,15 @@ declare module '@jbrowse/core/PluginManager' {
 // #endregion
 
 /**
- * Build what a track's About dialog shows: the base config merged with session-
- * and track-level `formatAbout` overrides and passed through the
- * `Core-customizeAbout` extension point, plus the resolved `hideUris`.
+ * What a track's About dialog shows: the config with the session's and the
+ * track's `formatAbout` callbacks merged over it and passed through
+ * `Core-customizeAbout`, plus the resolved `hideUris`. The two slots fold
+ * differently on purpose: `config` is a merge the track can win key-by-key,
+ * `hideUris` an OR a track cannot turn back off.
  *
- * Both `formatAbout` slots are two-tier and resolve here together, so the
- * dialog reads one thing rather than re-deriving half the rule at the call
- * site. They fold differently on purpose: `config` is a merge the track can win
- * key-by-key, `hideUris` is an OR a track cannot turn back off.
+ * The dialog hydrates a plain `session.tracks` entry before calling this, so a
+ * plain object arrives only for a config no registered track type can build,
+ * whose callback slots then cannot be evaluated either.
  */
 export function getAboutDialogConfig({
   config,
@@ -74,8 +75,6 @@ export function getAboutDialogConfig({
   const sessionFormatAbout = getConf(session, ['formatAbout', 'config'], {
     config: conf,
   })
-  // same two-tier merge the feature-details panel runs on `formatDetails`,
-  // session first so a track can override individual keys
   const merged: { config: Record<string, unknown> } = {
     config: {
       ...conf,
@@ -89,8 +88,6 @@ export function getAboutDialogConfig({
       merged,
       { session, config },
     ),
-    // OR'd, not merged: a deployment that hides file locations session-wide
-    // can't have a track turn them back on. Documented on the slot
     hideUris: Boolean(
       getConf(session, ['formatAbout', 'hideUris']) ||
       readConfSlot<boolean>(config, ['formatAbout', 'hideUris']),

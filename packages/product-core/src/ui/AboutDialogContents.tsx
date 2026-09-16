@@ -50,7 +50,7 @@ const AboutDialogContents = observer(function AboutDialogContents({
     : (config as Record<string, unknown>)
 
   const { config: shown, hideUris } = getAboutDialogConfig({
-    config,
+    config: live ?? config,
     session,
     pluginManager,
   })

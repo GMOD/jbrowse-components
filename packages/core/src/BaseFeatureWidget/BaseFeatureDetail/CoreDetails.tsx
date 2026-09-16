@@ -1,25 +1,19 @@
 import { toLocale } from '../../util/index.ts'
 import Position from './Position.tsx'
 import SimpleField from './SimpleField.tsx'
-import { applyFeatureFormatting, isFormattedField } from './util.ts'
 
 import type { BaseProps } from '../types.tsx'
 
 export default function CoreDetails(props: BaseProps) {
   const { feature } = props
-  const formattedFeat = applyFeatureFormatting(feature)
-  const { start, end } = formattedFeat
-
+  const { start, end } = feature
+  // Length is derived from the coordinates unless a formatDetails callback
+  // named it, which is the only way a `length` key reaches the feature: an
+  // adapter's own bookkeeping field of that name is in Attributes' globalOmit
+  const length = 'length' in feature ? feature.length : end - start
   const displayedDetails: Record<string, unknown> = {
-    ...formattedFeat,
-    // Length is derived, so it is computed rather than read off the feature --
-    // but a formatDetails callback that names `length` still wins (and
-    // `length: null` hides the row), like every other core field. The raw
-    // feature's own `length`, if any, stays ignored: it is in Attributes'
-    // globalOmit precisely because adapters use it as bookkeeping.
-    length: isFormattedField(feature, 'length')
-      ? formattedFeat.length
-      : toLocale(end - start),
+    ...feature,
+    length: typeof length === 'number' ? toLocale(length) : length,
   }
 
   // array (not object) so the display order is explicit, not reliant on JS key
@@ -32,10 +26,7 @@ export default function CoreDetails(props: BaseProps) {
   ]
   return (
     <>
-      <SimpleField
-        name="Position"
-        value={<Position {...props} feature={formattedFeat} />}
-      />
+      <SimpleField name="Position" value={<Position {...props} />} />
       {coreRenderedDetails
         .filter(([key]) => displayedDetails[key] != null)
         .map(([key, name]) => {

@@ -117,16 +117,6 @@ describe('Attributes', () => {
     expect(queryByText('gone')).toBeNull()
   })
 
-  test('__jbrowsefmt overrides the raw value for the same key', () => {
-    const { getByText, queryByText } = renderWithTheme(
-      <Attributes
-        attributes={{ score: 'raw', __jbrowsefmt: { score: 'fmt' } }}
-      />,
-    )
-    expect(getByText('fmt')).toBeTruthy()
-    expect(queryByText('raw')).toBeNull()
-  })
-
   test('nested object renders its label with a dotted prefix path', () => {
     const { getByText } = renderWithTheme(
       <Attributes attributes={{ outer: { inner: 'v' } }} />,

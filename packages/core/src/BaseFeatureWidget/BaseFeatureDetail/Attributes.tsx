@@ -9,7 +9,7 @@ import {
 import ArrayValue, { isObjectArray } from './ArrayValue.tsx'
 import SimpleField from './SimpleField.tsx'
 import UriAttribute from './UriField.tsx'
-import { accessNested, applyFeatureFormatting } from './util.ts'
+import { accessNested } from './util.ts'
 
 import type { Descriptors, FeatureFormatter } from '../types.tsx'
 
@@ -42,7 +42,6 @@ function isHomogeneousObjectArray(
 
 // these are always omitted as too detailed
 const globalOmit = [
-  '__jbrowsefmt',
   'length',
   'position',
   'subfeatures',
@@ -87,9 +86,7 @@ function measureLabels(
   let widest = 0
   const measure = (key: string) =>
     measureText([...prefix, key].join('.'), FIELD_NAME_FONT_SIZE)
-  for (const [key, value] of Object.entries(
-    applyFeatureFormatting(attributes),
-  )) {
+  for (const [key, value] of Object.entries(attributes)) {
     if (value == null || omits.has(key)) {
       continue
     }
@@ -129,10 +126,7 @@ function widestLabel(
 }
 
 export default function Attributes(props: {
-  attributes: {
-    [key: string]: unknown
-    __jbrowsefmt?: Record<string, unknown>
-  }
+  attributes: Record<string, unknown>
   omit?: string[]
   omitSingleLevel?: string[]
   formatter?: FeatureFormatter
@@ -157,9 +151,9 @@ export default function Attributes(props: {
   } = props
 
   const omits = new Set([...omit, ...globalOmit, ...omitSingleLevel])
-  const filteredFormattedAttributes = Object.entries(
-    applyFeatureFormatting(attributes),
-  ).filter(([k, v]) => v != null && !omits.has(k))
+  const shown = Object.entries(attributes).filter(
+    ([k, v]) => v != null && !omits.has(k),
+  )
   // Measured over the whole subtree on the outermost call, then handed down, so
   // one card has one label column. Per-level measurement put `type`/`trackId` in
   // a narrow column, `adapter.type` in a wider one and `adapter.craiLocation` in
@@ -182,7 +176,7 @@ export default function Attributes(props: {
 
   return (
     <>
-      {filteredFormattedAttributes.map(([key, value]) => {
+      {shown.map(([key, value]) => {
         const description = accessNested([...prefix, key], descriptions)
         if (Array.isArray(value)) {
           // Only use the data grid when schemas are homogeneous enough;

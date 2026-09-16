@@ -1,97 +1,60 @@
-/**
- * @module
- * Resolving the `formatDetails` config hook across its two tiers, on behalf of
- * the feature-details widget's autorun. Plain functions rather than model
- * members: an MST action runs untracked, so folding these into one would leave
- * the autorun with no observable reads and fire it exactly once.
- */
 import {
   DEFAULT_FORMAT_DETAILS_DEPTH,
-  getConf,
   mergeFormatCallbacks,
+  readConfObject,
 } from '../configuration/index.ts'
-import { isObject } from '../util/index.ts'
-import { isEmpty } from './BaseFeatureDetail/util.ts'
-import { formatSubfeatures } from './util.tsx'
+import { isPlainObject } from '../util/objectUtils.ts'
 
 import type { AnyConfigurationModel } from '../configuration/index.ts'
-import type { SimpleFeatureSerialized } from '../util/index.ts'
-import type { IStateTreeNode } from '@jbrowse/mobx-state-tree'
+import type {
+  SimpleFeatureSerialized,
+  SimpleFeatureSerializedNoId,
+} from '../util/index.ts'
 
 /**
- * Anything carrying a `formatDetails` sub-schema: the session (whose
- * `configuration.formatDetails` applies to every track) and the clicked
- * feature's track. The track is absent when the widget was opened without one,
- * or outlived the one it had -- it is a `safeReference` -- and the session-wide
- * tier still has to run in that case.
+ * The two config nodes carrying a `formatDetails` sub-schema. The session's
+ * applies to every track; the track's is absent when the widget was opened
+ * without one. The track's object spreads over the session's, and its numbers
+ * win.
  */
-export interface FormatDetailsHolder extends IStateTreeNode {
-  configuration: AnyConfigurationModel
-}
-
 export interface FormatDetailsTiers {
-  session: FormatDetailsHolder
-  track?: FormatDetailsHolder
+  session: AnyConfigurationModel
+  track?: AnyConfigurationModel
 }
 
-/** Both tiers of one slot, session first, so a spread puts the track on top. */
 function readTiers(
   { session, track }: FormatDetailsTiers,
   slot: string,
   args?: Record<string, unknown>,
 ) {
   return [
-    getConf(session, ['formatDetails', slot], args),
-    track ? getConf(track, ['formatDetails', slot], args) : undefined,
+    readConfObject(session, ['formatDetails', slot], args),
+    track ? readConfObject(track, ['formatDetails', slot], args) : undefined,
   ]
 }
 
 /**
- * Whether either tier **declares** a callback for `slot`, read RAW off the
- * config node.
- *
- * Deliberately not `readTiers`: "is anything configured here" and "what does
- * this produce for this feature" are different questions, and an arg-less read
- * of a `jexl:` slot answers the second one badly — it evaluates the user's
- * expression against a context where `feature` is undefined (see
- * `configuration/CLAUDE.md`), which is a throw or a junk value, per tier, just
- * to find out the slot exists.
- *
- * Both callback slots default to `{}`, so a config that never mentions
- * `formatDetails` answers false for both and `applyFormatDetails` can hand the
- * feature straight back. That is the whole point of asking: the walk it skips
- * is proportional to the subfeature tree, and the tree can be very large (a
- * RefSeq BRCA1 is 368 transcripts, ~16k nodes) while the config that formats
- * none of it is the overwhelmingly common one.
+ * Whether either tier sets `slot`, read raw off the node: an arg-less read of
+ * a `jexl:` slot evaluates it against an empty context just to find out it
+ * exists. Both callback slots default to `{}`, so a config that never mentions
+ * `formatDetails` answers false and the walk below is skipped entirely, which
+ * matters on a RefSeq gene with 16k nested nodes.
  */
 function declaresCallback(
   { session, track }: FormatDetailsTiers,
   slot: string,
 ) {
-  return [session, track].some(holder => {
-    // raw property access, not a reader: see above
-    const sub = holder?.configuration.formatDetails as
-      | Record<string, unknown>
-      | undefined
-    const value = sub?.[slot]
-    // a `jexl:` slot is a string; a plain-object slot counts only when it has
-    // keys, since `{}` is the schema default and merges to nothing
+  return [session, track].some(conf => {
+    const value = (
+      conf?.formatDetails as Record<string, unknown> | undefined
+    )?.[slot]
     return typeof value === 'string'
       ? value !== ''
-      : isObject(value) && !isEmpty(value)
+      : isPlainObject(value) && Object.keys(value).length > 0
   })
 }
 
-/**
- * `depth` or `maxDepth`: the track's value when the track sets one, else the
- * session's, else unset.
- *
- * These override rather than merge, unlike the callback objects. That is only
- * expressible because both are `maybeNumber` slots with no `defaultValue` --
- * given a schema default the track reported a value whether or not anyone set
- * one, so the session-wide tier could never apply to a track, and every real
- * config has a track.
- */
+/** `depth` or `maxDepth`: the track's value when set, else the session's. */
 export function formatDetailsNumber(tiers: FormatDetailsTiers, slot: string) {
   const [fromSession, fromTrack] = readTiers(tiers, slot)
   return typeof fromTrack === 'number'
@@ -102,47 +65,61 @@ export function formatDetailsNumber(tiers: FormatDetailsTiers, slot: string) {
 }
 
 /**
- * A copy of the feature with each tier's callback output merged onto it (and
- * onto its subfeatures, down to `depth`) as `__jbrowsefmt`, which the detail
- * components spread over the raw fields at render.
- *
- * `__jbrowsefmt` is attached only where a callback produced something, so a
- * config with no `formatDetails` at all leaves the feature exactly as it came
- * in rather than stamping empty objects through the persisted snapshot.
+ * The feature as the details panel shows it: each tier's `feature` callback
+ * output spread over the clicked feature, and `subfeatures` output over each
+ * subfeature down to `depth`. A key set to null or undefined hides that row,
+ * since every detail component filters with `!= null`. A config declaring no
+ * callback gets the input back untouched.
  */
 export function applyFormatDetails(
   tiers: FormatDetailsTiers,
-  featureData: SimpleFeatureSerialized,
-) {
-  const hasFeature = declaresCallback(tiers, 'feature')
-  const hasSubfeatures = declaresCallback(tiers, 'subfeatures')
-  // Nothing declared by either tier: the result is the input, so return the
-  // input. The clone and the per-node walk below are both proportional to the
-  // subfeature tree and both produce nothing here, and this is the default
-  // config -- most tracks never set `formatDetails` at all.
-  if (!hasFeature && !hasSubfeatures) {
-    return featureData
+  feature: SimpleFeatureSerialized,
+): SimpleFeatureSerialized {
+  const formatsFeature = declaresCallback(tiers, 'feature')
+  const formatsSubfeatures = declaresCallback(tiers, 'subfeatures')
+  if (!formatsFeature && !formatsSubfeatures) {
+    return feature
   }
-  const feature = structuredClone(featureData)
-  if (hasFeature) {
-    const fmt = mergeFormatCallbacks(
-      ...readTiers(tiers, 'feature', { feature }),
-    )
-    if (!isEmpty(fmt)) {
-      feature.__jbrowsefmt = fmt
+  const depth = formatsSubfeatures
+    ? (formatDetailsNumber(tiers, 'depth') ?? DEFAULT_FORMAT_DETAILS_DEPTH)
+    : 0
+  const track = tiers.track ? readConfObject(tiers.track) : undefined
+
+  function format<T extends SimpleFeatureSerializedNoId>(
+    node: T,
+    level: number,
+    fmt: Record<string, unknown>,
+  ): T {
+    const { subfeatures } = node
+    return {
+      ...node,
+      ...(subfeatures && level < depth
+        ? {
+            subfeatures: subfeatures.map(sub =>
+              format(
+                sub,
+                level + 1,
+                mergeFormatCallbacks(
+                  ...readTiers(tiers, 'subfeatures', {
+                    feature: sub,
+                    parent: node,
+                    depth: level + 1,
+                    track,
+                  }),
+                ),
+              ),
+            ),
+          }
+        : {}),
+      ...fmt,
     }
   }
-  if (hasSubfeatures) {
-    const depth =
-      formatDetailsNumber(tiers, 'depth') ?? DEFAULT_FORMAT_DETAILS_DEPTH
-    formatSubfeatures(feature, depth, sub => {
-      const subFmt = mergeFormatCallbacks(
-        ...readTiers(tiers, 'subfeatures', { feature: sub }),
-      )
-      if (!isEmpty(subFmt)) {
-        sub.__jbrowsefmt = subFmt
-      }
-    })
-  }
-  return feature
+
+  return format(
+    feature,
+    0,
+    formatsFeature
+      ? mergeFormatCallbacks(...readTiers(tiers, 'feature', { feature, track }))
+      : {},
+  )
 }

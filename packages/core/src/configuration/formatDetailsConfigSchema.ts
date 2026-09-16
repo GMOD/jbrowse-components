@@ -2,8 +2,8 @@ import { ConfigurationSchema } from './configurationSchema.ts'
 
 /**
  * Levels of subfeature the `subfeatures` callback runs on when no tier sets
- * `depth`. Lives here rather than as the slot's `defaultValue` because the slot
- * has to be able to say "unset": see the `depth` slot's own comment.
+ * `depth`. Applied by the reader rather than as the slot's `defaultValue`, so
+ * the slot can still read as unset and the session's value reach a track.
  */
 export const DEFAULT_FORMAT_DETAILS_DEPTH = 2
 
@@ -42,23 +42,27 @@ export function FormatDetailsConfigSchemaFactory() {
     /**
      * #slot formatDetails.feature
      * callback returning an object of fields to merge onto the clicked feature.
-     * A plain object works too, for fields that are the same on every feature
+     * `track` is the track's config, so one session-wide callback can link out
+     * per assembly or name the track. A plain object works too, for fields
+     * that are the same on every feature
      */
     feature: {
       type: 'frozen',
       description: 'adds extra fields to the feature details',
       defaultValue: {},
-      contextVariable: ['feature'],
+      contextVariable: ['feature', 'track'],
     },
     /**
      * #slot formatDetails.subfeatures
-     * the same, applied to each subfeature down to `depth`
+     * the same, applied to each subfeature down to `depth`. `parent` is the
+     * feature it sits in and `depth` how far down, 1 for a gene's transcript
+     * and 2 for the transcript's exon
      */
     subfeatures: {
       type: 'frozen',
       description: 'adds extra fields to the subfeatures of a feature',
       defaultValue: {},
-      contextVariable: ['feature'],
+      contextVariable: ['feature', 'parent', 'depth', 'track'],
     },
     /**
      * #slot formatDetails.depth
@@ -68,11 +72,6 @@ export function FormatDetailsConfigSchemaFactory() {
      * session's
      */
     depth: {
-      // `maybeNumber`, so unset is expressible. With a `defaultValue` the two
-      // tiers cannot be told apart -- a plain number slot reads back its own
-      // default, so "the track set 2" and "the track set nothing" are the same
-      // read, and the session-wide value can never apply to a track. The
-      // resolved default is DEFAULT_FORMAT_DETAILS_DEPTH, applied by the reader
       type: 'maybeNumber',
       description:
         'levels of subfeature the formatDetails.subfeatures callback runs on, default 2',
@@ -84,8 +83,6 @@ export function FormatDetailsConfigSchemaFactory() {
      * limit. A track's value wins over the session's
      */
     maxDepth: {
-      // `maybeNumber` for the same reason as `depth`, and here unset is also
-      // the meaningful value: no limit at all
       type: 'maybeNumber',
       description: 'hide subfeatures nested deeper than this, default no limit',
     },
