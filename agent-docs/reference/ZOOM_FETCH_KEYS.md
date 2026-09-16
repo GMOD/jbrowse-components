@@ -13,8 +13,8 @@ No display writes the cache predicate. `MultiRegionDisplayMixin` computes
 `isCacheValid(idx)` from two terms: `regionHasData(idx)`, and whether the
 `fetchInputs` stamped on that region still equal the current ones — the
 settings tier (`rpcProps()` and the adapter config) and the zoom tier
-(`zoomFetchArgs()`, or the `zoomFetchKey` string on a display not yet stating
-its zoom inputs as an object) — the same three axes the global family's `currentFetchKey` carries, so a
+(the `zoomFetchKey` string, or a `zoomFetchArgs()` object where a display
+states its zoom inputs as one) — the same three axes the global family's `currentFetchKey` carries, so a
 settings change reads as stale through this compare and `SettingsInvalidate`
 keeps the coverage map: the scrim comes from `staleSettingsDrawn`, which
 compares the settings half alone and so stays down on a zoom.

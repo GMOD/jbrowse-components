@@ -23,6 +23,14 @@ import { closure } from './moduleClosure.ts'
 // component that draws it, so a file describing plain data measured 375.
 // `menuItems.ts` is the whole builder family in one closure, and its ceiling is
 // what keeps a builder from taking a type off a module that renders.
+//
+// `markEncodingTypes.ts` gets no headroom at all, because it is the file whose
+// own header promises this check: it exists so `RpcRegistry.ts` can name
+// CoreEncodeFeatures' wire shape without pulling render-core's graph through
+// it, and every leaf that reaches the registry pays for an edge added here.
+// Its two are itself and `BaseAdapter/zoomRange.ts`, which is a module for one
+// interface for this reason — `types.ts` beside it carries the status and
+// abort graph through `BaseOptions`.
 
 const root = join(__dirname, '..')
 
@@ -70,9 +78,14 @@ const CEILINGS = [
   { entry: 'packages/core/src/ui/MenuTypes.ts', runtime: 5, types: 10 },
   // 7 runtime / 8 type
   { entry: 'packages/core/src/ui/menuItems.ts', runtime: 12, types: 15 },
-  // 1 runtime / 5 type, and the ceiling is the cost: the file describes plain
-  // data, and each of the five is a type it names.
-  { entry: 'packages/core/src/ui/legendSpec.ts', runtime: 5, types: 5 },
+  // 1 runtime / 5 type
+  { entry: 'packages/core/src/ui/legendSpec.ts', runtime: 5, types: 8 },
+  // 1 runtime / 2 type
+  {
+    entry: 'packages/core/src/util/markEncodingTypes.ts',
+    runtime: 5,
+    types: 2,
+  },
 ]
 
 test.each(CEILINGS)('$entry stays a leaf', ({ entry, runtime, types }) => {

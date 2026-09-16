@@ -35,7 +35,10 @@ export interface FetchInputsHost extends IStateTreeNode {
    * compares the same two again in `dataSuperseded`).
    *
    * A display that has not been converted leaves this undefined and its
-   * `zoomFetchKey` string is the zoom tier instead.
+   * `zoomFetchKey` string is the zoom tier instead — which since ADR-125 is
+   * every display in the tree, the adapter's `getZoomRange` having taken the
+   * zoom off the wiggle and mark displays. The hook stays for a plugin display
+   * over an adapter that reads `bpPerPx`.
    */
   zoomFetchArgs?: () => object
   zoomFetchKey: string
