@@ -8238,6 +8238,9 @@
           "allOf": [
             {
               "$ref": "#/$defs/MultiLinearWiggleDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearMarkDisplaySlots"
             }
           ],
           "properties": {},

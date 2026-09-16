@@ -7,22 +7,24 @@ import { slangPass } from '../slangPass.ts'
 import { makeAbgrFill } from './colorFill.ts'
 import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
 import { valueWindow } from './nearestMarkHit.ts'
+import { bandHeightPx, bandTopPx, rowLane } from './rowLane.ts'
 
 import type { ColorChannel } from './markRamp.ts'
+import type { RowChannel, RowParams } from './rowLane.ts'
 import type { MarkRamp, MarkShape, MarkValueScaleType } from './types.ts'
 
 /**
  * The `bar` shape's channels: a rectangle from `x` to `x2` standing between
- * the baseline and `y` on the value scale.
+ * the baseline and `y` on the value scale, in the band of its `row`.
  */
-export interface BarChannels extends ColorChannel {
+export interface BarChannels extends ColorChannel, RowChannel {
   x: Uint32Array
   x2: Uint32Array
   y: Float32Array
   count: number
 }
 
-export interface BarParams {
+export interface BarParams extends RowParams {
   /** `[min, max]` `y` and `origin` are read through. */
   domain: [number, number]
   /** How that domain is read; linear when absent. */
@@ -47,22 +49,18 @@ function barRect(
   x: number,
   x2: number,
   y: number,
+  bandTop: number,
+  band: number,
   params: BarParams,
-  canvasHeight: number,
 ) {
   const xa = bpToPx(x)
   const xb = bpToPx(x2)
   const width = Math.max(params.minWidthPx, Math.abs(xb - xa))
   const [domainMin, domainMax] = params.domain
   const st = scaleTypeCode(params.scaleType)
-  const valueY = valueToYPxScaled(y, domainMin, domainMax, canvasHeight, st)
-  const originY = valueToYPxScaled(
-    params.origin,
-    domainMin,
-    domainMax,
-    canvasHeight,
-    st,
-  )
+  const valueY = bandTop + valueToYPxScaled(y, domainMin, domainMax, band, st)
+  const originY =
+    bandTop + valueToYPxScaled(params.origin, domainMin, domainMax, band, st)
   const top = Math.min(valueY, originY)
   const height = Math.abs(valueY - originY)
   return height === 0
@@ -74,7 +72,11 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
   id: 'bar',
   pass: {
     ...slangPass({ id: 'bar', mod: shader }),
-    pack: c => shader.packInstances({ ...c, color: colorBits(c) }, c.count),
+    pack: c =>
+      shader.packInstances(
+        { ...c, color: colorBits(c), row: rowLane(c.row, c.count) },
+        c.count,
+      ),
   },
 
   writeUniforms(scratch, clip, block, frame, params) {
@@ -86,6 +88,7 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
       valueScaleType: scaleTypeCode(params.scaleType),
       ...rampUniforms(params.ramp),
       origin: params.origin,
+      rowHeight: bandHeightPx(params, frame.canvasHeight),
       zero: 0,
       minCellDenomPx: clip.scissorW,
       minWidthPx: params.minWidthPx,
@@ -94,18 +97,20 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
   },
 
   paintBlock(ctx, channels, block, frame, params) {
-    const { x, x2, y, count } = channels
+    const { x, x2, y, row, count } = channels
     const color = paintColors(channels, count, params.ramp)
     const bpToPx = makeBpMapper(block)
     const setFill = makeAbgrFill(ctx)
+    const band = bandHeightPx(params, frame.canvasHeight)
     for (let i = 0; i < count; i++) {
       const r = barRect(
         bpToPx,
         x[i]!,
         x2[i]!,
         y[i]!,
+        bandTopPx(row, i, band),
+        band,
         params,
-        frame.canvasHeight,
       )
       if (r) {
         setFill(color[i]!)
@@ -115,14 +120,16 @@ export const barMark: MarkShape<BarChannels, BarParams> = {
   },
 
   ink(channels, block, frame, params, i) {
-    const { x, x2, y } = channels
+    const { x, x2, y, row } = channels
+    const band = bandHeightPx(params, frame.canvasHeight)
     return barRect(
       makeBpMapper(block),
       x[i]!,
       x2[i]!,
       y[i]!,
+      bandTopPx(row, i, band),
+      band,
       params,
-      frame.canvasHeight,
     )
   },
 

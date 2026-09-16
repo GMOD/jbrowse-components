@@ -83,6 +83,17 @@ const suite: TestSuite = {
       config,
       snapshotSelector: withChrome,
     }),
+    // A multi-BigWig's rows are its `source` field, so `facet: 'source'` on
+    // a bar is the multi-row xyplot beside `bigwig-multibigwig-multirowxy`,
+    // the shared axis ruling each band.
+    lgvSnapshotTest({
+      name: 'bars faceted by source over a MultiBigWig, one band per source',
+      snapshot: 'mark-multi-rows',
+      loc: 'ctgA:1-4000',
+      tracks: ['marks_multi_rows'],
+      config,
+      snapshotSelector: withChrome,
+    }),
     // The chips are the chrome's overlay, so the display's paint does not gate
     // them — the capture waits on a chip.
     lgvSnapshotTest({

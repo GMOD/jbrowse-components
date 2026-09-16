@@ -7,6 +7,10 @@
 // point shape centres a glyph on the value, this one grows from the baseline to
 // it, and both read one `valueToYPxScaled`.
 //
+// The band is the instance's `row`: `rowHeight` px per row, the value scale
+// ruling each band on its own. A caller with one row sends the canvas height,
+// so its bars stand where they always did (ADR-126).
+//
 // The two HORIZONTAL cuts are antialiased analytically, as wiggle's xyplot bar
 // does: the top cut IS the datum, so it must not quantise to the output grid,
 // and the band is the difference of the two cuts' ramps so a bar thinner than a
@@ -34,6 +38,7 @@ struct BarMarkInstance {
   uint  x2    : ATTR1;
   float y     : ATTR2;
   uint  color : ATTR3;
+  uint  row   : ATTR4;
 };
 
 struct Uniforms {
@@ -50,6 +55,8 @@ struct Uniforms {
   float  rampMax;
   // The baseline value bars grow from, on the same scale as `y`.
   float  origin;
+  // CSS px per row band; the canvas height where every instance is on row 0.
+  float  rowHeight;
   float  zero;
   // The CSS width `minWidthPx` is measured against; see rowRect's
   // `minCellDenomPx` for why it has to be a CSS width.
@@ -86,8 +93,9 @@ VsOut vs_main(BarMarkInstance inst, uint vid : SV_VertexID) {
   sx2 = extendToMinWidthX(sx1, sx2, u.minWidthPx, u.minCellDenomPx);
   float2 q = quadLocal(vid);
 
-  float valueY = valueToYPxScaled(inst.y, u.domainMin, u.domainMax, u.canvasHeight, u.valueScaleType);
-  float originY = valueToYPxScaled(u.origin, u.domainMin, u.domainMax, u.canvasHeight, u.valueScaleType);
+  float bandTop = u.rowHeight * float(inst.row);
+  float valueY = bandTop + valueToYPxScaled(inst.y, u.domainMin, u.domainMax, u.rowHeight, u.valueScaleType);
+  float originY = bandTop + valueToYPxScaled(u.origin, u.domainMin, u.domainMax, u.rowHeight, u.valueScaleType);
   float topPx = min(valueY, originY);
   float botPx = max(valueY, originY);
   float padPx = barAaPx();

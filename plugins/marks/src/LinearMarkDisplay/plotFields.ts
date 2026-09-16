@@ -30,7 +30,11 @@ const ALWAYS_CATEGORICAL = new Set(['strand'])
 export interface PlotFields {
   numeric: string[]
   categorical: string[]
+  /** The `source` field where the features carry more than one, a row each. */
+  facet?: string
 }
+
+const FACET_FIELD = 'source'
 
 function isNumericValue(v: unknown) {
   return typeof v === 'number'
@@ -46,9 +50,13 @@ function isNumericValue(v: unknown) {
  */
 export function scanPlotFields(features: Feature[]): PlotFields {
   const numeric = new Map<string, boolean>()
+  const sources = new Set<unknown>()
   const n = Math.min(features.length, PLOT_FIELD_SAMPLE)
   for (let i = 0; i < n; i++) {
     for (const [field, value] of Object.entries(features[i]!.toJSON())) {
+      if (field === FACET_FIELD) {
+        sources.add(value)
+      }
       if (
         NON_PLOT_FIELDS.has(field) ||
         value === undefined ||
@@ -65,6 +73,7 @@ export function scanPlotFields(features: Feature[]): PlotFields {
   return {
     numeric: fields.filter(f => numeric.get(f)!),
     categorical: fields.filter(f => !numeric.get(f)!),
+    ...(sources.size > 1 ? { facet: FACET_FIELD } : {}),
   }
 }
 
@@ -89,6 +98,7 @@ export const EMPTY_PLOT_SPEC: PlotSpec = {
 interface MarkSnapshot {
   shape: string
   encoding: Record<string, unknown>
+  facet?: string
   transform?: Record<string, unknown>[]
   minBpPerPx?: number
   maxBpPerPx?: number
@@ -109,6 +119,7 @@ export function plotMarks(spec: PlotSpec, fields: PlotFields): MarkSnapshot[] {
   const plot: MarkSnapshot = {
     shape: spec.shape,
     encoding: { y: spec.field, ...(color ? { color } : {}) },
+    ...(fields.facet ? { facet: fields.facet } : {}),
     ...(spec.binned ? { maxBpPerPx: BINNED_BP_PER_PX } : {}),
   }
   return spec.binned

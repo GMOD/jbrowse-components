@@ -35,7 +35,7 @@ inference.
 - [QuantitativeTrack](https://jbrowse.org/jb2/docs/config/quantitativetrack.md)
   — displays: LinearWiggleDisplay, LinearMarkDisplay
 - [MultiQuantitativeTrack](https://jbrowse.org/jb2/docs/config/multiquantitativetrack.md)
-  — displays: MultiLinearWiggleDisplay
+  — displays: MultiLinearWiggleDisplay, LinearMarkDisplay
 - [GCContentTrack](https://jbrowse.org/jb2/docs/config/gccontenttrack.md) —
   displays: LinearGCContentTrackDisplay
 - [MafTrack](https://jbrowse.org/jb2/docs/config/maftrack.md) — displays:

@@ -1,7 +1,11 @@
 import { getFeatureAdapterOrThrow } from '../../data_adapters/getFeatureAdapter.ts'
 import RpcMethodTypeWithRenameRegion from '../../pluggableElementTypes/RpcMethodTypeWithRenameRegion.ts'
 import { checkAbortSignal } from '../../util/aborting.ts'
-import { facetRows, runTransforms } from '../../util/featureTransforms.ts'
+import {
+  DEFAULT_STACK_AS,
+  facetRows,
+  runTransforms,
+} from '../../util/featureTransforms.ts'
 import { rpcResult } from '../../util/librpc.ts'
 import {
   encodeFeatures,
@@ -15,8 +19,9 @@ import type { RpcExecuteArgs } from '../RpcRegistry.ts'
 
 /**
  * Fetch a region's features once, run the shared transform steps over them,
- * then each layer's own, stack the facet groups a layer declares, and
- * evaluate the layer's encoding over what is left
+ * then each layer's own, stack the facet groups a layer declares (the facet's
+ * row is the layer's `row` where it names none), and evaluate the layer's
+ * encoding over what is left
  * in the worker, where the `Feature` objects are, filling the lanes its shape
  * reads. The colours come back packed, the scale tables resolved, and the
  * main thread reads the same table for its legend that the colours were
@@ -85,8 +90,12 @@ export default class CoreEncodeFeatures extends RpcMethodTypeWithRenameRegion<'C
         const stepped = own ? runTransforms(shared, own, jexl) : shared
         const faceted = facet ? facetRows(stepped, facet) : undefined
         const features = faceted?.features ?? stepped
+        const rowed =
+          facet && encoding.row === undefined
+            ? { ...encoding, row: facet.as ?? DEFAULT_STACK_AS }
+            : encoding
         return {
-          ...encodeFeatures(features, encoding, lanes, {
+          ...encodeFeatures(features, rowed, lanes, {
             jexl,
             report: createProgressReporter({
               label: 'Encoding features',

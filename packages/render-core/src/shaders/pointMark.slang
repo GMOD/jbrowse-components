@@ -25,6 +25,7 @@ struct PointMarkInstance {
   float y     : ATTR2;
   uint  color : ATTR3;
   uint  glyph : ATTR4;
+  uint  row   : ATTR5;
 };
 
 struct Uniforms {
@@ -42,6 +43,9 @@ struct Uniforms {
   float  zero;
   float  viewportWidth;
   float  radiusPx;
+  // CSS px per row band, the value scale ruling each on its own; the canvas
+  // height where every instance is on row 0 (ADR-126).
+  float  rowHeight;
   // Ends of the value range, inset by `glyphPaint`'s `pointInsetPx` where the
   // display wants its edge glyphs whole; 0 centres a point on the plot's edge.
   float  insetPx;
@@ -119,7 +123,7 @@ VsOut vs_main(PointMarkInstance inst, uint vid : SV_VertexID) {
 
   float startClipX = bpToClipX(inst.x, u);
   float endClipX = bpToClipX(inst.x2, u);
-  float yPx = pointYPx(inst.y, u.domainMin, u.domainMax, u.canvasHeight, u.valueScaleType, u.insetPx);
+  float yPx = u.rowHeight * float(inst.row) + pointYPx(inst.y, u.domainMin, u.domainMax, u.rowHeight, u.valueScaleType, u.insetPx);
   float centerClipY = yPxToClipY(yPx, u.canvasHeight);
 
   // Genomic span in CSS px (clip width spans -1..1 across viewportWidth).

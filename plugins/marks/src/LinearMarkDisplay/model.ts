@@ -69,7 +69,12 @@ import {
 import { fetchPlotFields, plotScanRegions } from './fetchPlotFields.ts'
 import { sameMarkHit } from './findMarkHit.ts'
 import { buildMarkLegend, colorSection, markColorScales } from './legend.ts'
-import { SHAPE_LANES, buildMarkList, markDrawsAt } from './markList.ts'
+import {
+  SHAPE_LANES,
+  buildMarkList,
+  markDrawsAt,
+  markRowHeightPx,
+} from './markList.ts'
 import {
   EMPTY_PLOT_SPEC,
   defaultPlotMarks,
@@ -763,18 +768,36 @@ export function stateModelFactory(
           self.conf.marks[self.valueMarkIndex]?.encoding.y.field
         // A point stands at its centre and needs glyph room at both ends; a
         // bar's top edge is its datum and wants the plot box itself.
-        const axisOffset = (indices: readonly number[]) =>
-          YSCALEBAR_LABEL_OFFSET +
-          (indices.length > 0 &&
+        const glyphInset = (indices: readonly number[]) =>
+          indices.length > 0 &&
           indices.every(i => self.markShapes[i] === 'point')
             ? pointInsetPx(self.scatterPointSize)
-            : 0)
+            : 0
+        // One band per row where the marks stand in rows, the scale ruling
+        // each on its own the way the multi-wiggle display's does; the whole
+        // plot box otherwise.
+        const rowCount = this.rowCount
+        const { yTop, plotHeight } = axisPlotBox(height)
+        const rowHeight = markRowHeightPx(plotHeight, rowCount)
+        const band = (indices: readonly number[]) =>
+          rowCount > 1
+            ? {
+                height: rowHeight,
+                offset: glyphInset(indices),
+                bandTops: Array.from(
+                  { length: rowCount },
+                  (_, row) => yTop + row * rowHeight,
+                ),
+              }
+            : {
+                height,
+                offset: YSCALEBAR_LABEL_OFFSET + glyphInset(indices),
+              }
         return [
           {
             domain: self.domain,
             scaleType: self.scaleType,
-            height,
-            offset: axisOffset(self.sharedMarkIndices),
+            ...band(self.sharedMarkIndices),
             minimalTicks,
             // Captioned only where a second axis is drawn: with one axis
             // there is nothing to tell it apart from.
@@ -785,8 +808,7 @@ export function stateModelFactory(
                 {
                   domain: second.domain,
                   scaleType: second.scaleType,
-                  height,
-                  offset: axisOffset([self.independentMarkIndex]),
+                  ...band([self.independentMarkIndex]),
                   minimalTicks,
                   side: 'right' as const,
                   caption: second.field,

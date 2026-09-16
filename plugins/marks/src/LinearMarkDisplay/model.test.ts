@@ -4,7 +4,7 @@ import { setConf } from '@jbrowse/core/configuration'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
-import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/display-ui'
+import { YSCALEBAR_LABEL_OFFSET, axisPlotBox } from '@jbrowse/display-ui'
 import LinearGenomeViewPlugin, {
   linearGenomeViewStateModelFactory,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -161,7 +161,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
           },
           glyph: 'disc',
         },
-        lanes: ['y', 'color', 'colorValue', 'index'],
+        lanes: ['y', 'row', 'color', 'colorValue', 'index'],
       },
       {
         encoding: {
@@ -172,7 +172,7 @@ test('the config reaches the worker as one encoding per mark, jexl unevaluated',
           color: "jexl:get(feature,'name')=='a'?'red':'blue'",
           glyph: 'triangle',
         },
-        lanes: ['y', 'color', 'colorValue', 'glyph', 'index'],
+        lanes: ['y', 'row', 'color', 'colorValue', 'glyph', 'index'],
       },
       {
         encoding: {
@@ -1033,6 +1033,50 @@ function facetResult(rows: number[]) {
 function rowsOf(display: LinearMarkDisplayModel, region = 0) {
   return [...(display.rpcDataMap.get(region)!.layers[0]!.row ?? [])]
 }
+
+test('bars faceted by a field stand in a band each, the axis ruling every band', () => {
+  const { createDisplay } = createTestEnvironment([
+    { shape: 'bar', facet: 'source', encoding: { y: 'score' } },
+  ])
+  const { display } = createDisplay()
+  expect(display.rpcProps().layers[0]!.lanes).toContain('row')
+  expect(display.rpcProps().layers[0]!.facet).toEqual({ field: 'source' })
+  display.setRpcData(
+    0,
+    result([
+      {
+        y: [3, 8, 5],
+        row: [0, 1, 2],
+        facet: [
+          { key: 'a', label: 'source: a', firstRow: 0, rowCount: 1 },
+          { key: 'b', label: 'source: b', firstRow: 1, rowCount: 1 },
+          { key: 'c', label: 'source: c', firstRow: 2, rowCount: 1 },
+        ],
+      },
+    ]),
+    REGION,
+  )
+  expect(display.rowCount).toBe(3)
+  const { plotHeight, yTop } = axisPlotBox(display.height)
+  const rowHeight = Math.floor(plotHeight / 3)
+  expect(display.renderState.rowCount).toBe(3)
+  const [axis] = display.valueScales
+  expect(axis).toMatchObject({
+    height: rowHeight,
+    offset: 0,
+    bandTops: [yTop, yTop + rowHeight, yTop + 2 * rowHeight],
+  })
+  // the one-row display keeps the plot box as its axis
+  const single = createTestEnvironment([
+    { shape: 'bar', encoding: { y: 'score' } },
+  ]).createDisplay().display
+  single.setRpcData(0, result([{ y: [3, 8] }]), REGION)
+  expect(single.valueScales[0]).toMatchObject({
+    height: single.height,
+    offset: YSCALEBAR_LABEL_OFFSET,
+  })
+  expect(single.valueScales[0]!.bandTops).toBeUndefined()
+})
 
 test('a faceted mark declares the facet to the worker and bands the plot by its sections', () => {
   const { createDisplay } = createTestEnvironment(FACET_MARKS)

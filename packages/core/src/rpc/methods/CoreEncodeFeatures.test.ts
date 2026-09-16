@@ -101,6 +101,49 @@ test('the zoom reaches the adapter, so one with zoom levels answers at it', asyn
   )
 })
 
+test('a faceted layer that names no row reads the facet section it stacked into', async () => {
+  const sourced = ['k2', 'k1', 'k2'].map(
+    (source, i) =>
+      new SimpleFeature({
+        uniqueId: `s${i}`,
+        refName: 'ctgA',
+        start: i * 10,
+        end: i * 10 + 5,
+        score: i,
+        source,
+      }),
+  )
+  jest.mocked(getAdapter).mockResolvedValue({
+    dataAdapter: {
+      getFeatures: () => {},
+      getFeaturesArray: async () => sourced,
+      getZoomRange: async () => undefined,
+      setSequenceAdapterConfig: () => {},
+    },
+  } as unknown as Awaited<ReturnType<typeof getAdapter>>)
+  const method = new CoreEncodeFeatures({
+    jexl: createJexlInstance(),
+  } as PluginManager)
+  const result = await method.invoke({
+    sessionId: 'test',
+    adapterConfig: { type: 'AnyAdapter' },
+    region: { refName: 'ctgA', start: 0, end: 1000, assemblyName: 'volvox' },
+    layers: [
+      {
+        encoding: { y: 'score' },
+        lanes: ['y', 'row'],
+        facet: { field: 'source' },
+      },
+    ],
+  })
+  const [layer] = (result as RpcResult<EncodedFeaturesResult>).value.layers
+  expect([...layer!.row!]).toEqual([1, 0, 1])
+  expect(layer!.facet).toEqual([
+    { key: 'k1', label: 'source: k1', firstRow: 0, rowCount: 1 },
+    { key: 'k2', label: 'source: k2', firstRow: 1, rowCount: 1 },
+  ])
+})
+
 test("a layer's own transform runs after the shared one, and the other layer sees neither", async () => {
   jest.mocked(getAdapter).mockResolvedValue({
     dataAdapter: {

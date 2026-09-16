@@ -33,8 +33,8 @@ export interface StoredLayer extends EncodedChannels {
  * `color` and `colorValue` the colour declaration calls for.
  */
 export const SHAPE_LANES = {
-  bar: ['y', 'color', 'colorValue', 'index'],
-  point: ['y', 'color', 'colorValue', 'glyph', 'index'],
+  bar: ['y', 'row', 'color', 'colorValue', 'index'],
+  point: ['y', 'row', 'color', 'colorValue', 'glyph', 'index'],
   span: ['row', 'color', 'index'],
 } as const satisfies Record<MarkShapeName, readonly LaneName[]>
 
@@ -92,7 +92,7 @@ export interface MarkRenderState extends MarkFrame {
   origin: number
   minWidthPx: number
   pointDiameterPx: number
-  /** The highest `row` any loaded layer carries, plus one. */
+  /** The bands the plot is split into: the facet's, or the highest `row` any loaded layer carries plus one. */
   rowCount: number
 }
 
@@ -116,7 +116,7 @@ export function markValueScale(state: MarkRenderState, i: number) {
     : { domain: state.domainY, scaleType: state.scaleTypeY }
 }
 
-/** The px each band of a span mark gets: the plot split by the row count. */
+/** The px each row band gets: the plot split by the row count. */
 export function markRowHeightPx(canvasHeight: number, rowCount: number) {
   return Math.max(1, Math.floor(canvasHeight / rowCount))
 }
@@ -155,6 +155,7 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
             origin: s.origin,
             minWidthPx: s.minWidthPx,
             seamPx: CANVAS_SEAM_PX,
+            rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
           }),
           texture: (s: MarkRenderState) => s.colorRamps[i]?.lut,
           enabled,
@@ -170,6 +171,7 @@ export function buildMarkList(entries: readonly MarkEntry[]): DisplayMark[] {
             ramp: s.colorRamps[i],
             diameterPx: s.pointDiameterPx,
             insetPx: pointInsetPx(s.pointDiameterPx),
+            rowHeight: markRowHeightPx(s.canvasHeight, s.rowCount),
           }),
           texture: (s: MarkRenderState) => s.colorRamps[i]?.lut,
           enabled,

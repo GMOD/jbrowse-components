@@ -1,3 +1,4 @@
+import { INSTANCE_STRIDE_BYTES } from '../shaders/barMark.generated.ts'
 import { barMark } from './barMark.ts'
 import { abgrToCssRgba } from './colorFill.ts'
 import { recordingContext as mockCtx } from './drawAgainstHit.ts'
@@ -56,7 +57,7 @@ test('the colour lane carries the value bits, so a ramp adds no instance byte', 
   const copy = Uint32Array.from(bits as Uint32Array)
   const back = new Float32Array(copy.buffer, copy.byteOffset, copy.length)
   expect([...back]).toEqual([0, 50, 100])
-  expect(barMark.pass.pack(c).byteLength).toBe(3 * 16)
+  expect(barMark.pass.pack(c).byteLength).toBe(3 * INSTANCE_STRIDE_BYTES)
 })
 
 test('a packed colour lane is passed through untouched', () => {

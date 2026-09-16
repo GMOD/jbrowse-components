@@ -8797,6 +8797,9 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "allOf": [
             {
               "$ref": "#/$defs/MultiLinearWiggleDisplaySlots"
+            },
+            {
+              "$ref": "#/$defs/LinearMarkDisplaySlots"
             }
           ],
           "properties": {},

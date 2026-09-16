@@ -32,6 +32,7 @@ _See the **Config slots** section below for all available configuration fields._
 
 ## Related links
 
+- **Display:** [LinearMarkDisplay](../linearmarkdisplay) ([state model](../../models/linearmarkdisplay))
 - **Display:** [MultiLinearWiggleDisplay](../multilinearwiggledisplay) ([state model](../../models/multilinearwiggledisplay))
 - **Adapter:** [MultiWiggleAdapter](../multiwiggleadapter)
 - **Base config:** [BaseTrack](../basetrack)

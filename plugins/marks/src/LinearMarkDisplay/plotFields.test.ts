@@ -42,6 +42,29 @@ test('the default is a bar of score, and nothing where the features carry none',
   ).toBeUndefined()
 })
 
+test('features from more than one source band the default plot by source', () => {
+  const multi = scanPlotFields(
+    features([
+      { score: 5, source: 'k1' },
+      { score: 7, source: 'k2' },
+    ]),
+  )
+  expect(multi.facet).toBe('source')
+  expect(defaultPlotMarks(multi)).toEqual([
+    { shape: 'bar', facet: 'source', encoding: { y: 'score' } },
+  ])
+  const single = scanPlotFields(
+    features([
+      { score: 5, source: 'k1' },
+      { score: 7, source: 'k1' },
+    ]),
+  )
+  expect(single.facet).toBeUndefined()
+  expect(defaultPlotMarks(single)).toEqual([
+    { shape: 'bar', encoding: { y: 'score' } },
+  ])
+})
+
 test('a colour field takes a palette or a ramp by what it holds', () => {
   const fields = { numeric: ['score', 'depth'], categorical: ['repClass'] }
   expect(

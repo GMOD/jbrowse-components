@@ -296,6 +296,46 @@ describe('bar: every drawn rect answers its own hit, in both orientations', () =
   })
 })
 
+// Rows: the same bars and points banded three ways, each band the value
+// scale's own, so a hit in a band answers the instance in that band.
+test('bar and point: rows band the plot and a hit lands in its own band', () => {
+  const rows = Uint32Array.from([0, 1, 2, 1, 0])
+  for (const reversed of [false, true]) {
+    expect(
+      sweepMarkAgainstHit(
+        defineMark({
+          shape: barMark,
+          channels: (c: BarChannels) => c,
+          params: () => ({
+            domain: [-1, 1] as [number, number],
+            origin: 0,
+            minWidthPx: 2,
+            seamPx: 0,
+            rowHeight: 40,
+          }),
+        }),
+        { ...bars, row: rows },
+        { ...block, reversed },
+        { canvasWidth: 60, canvasHeight: 120 },
+        { maxDistSq: Number.MIN_VALUE },
+      ),
+    ).toEqual([])
+    expect(
+      sweepMarkAgainstHit(
+        defineMark({
+          shape: pointMark,
+          channels: (c: PointChannels) => c,
+          params: () => ({ ...pointParams, rowHeight: 40 }),
+        }),
+        { ...points, row: Uint32Array.from([0, 1, 2]) },
+        { ...block, reversed },
+        { canvasWidth: 60, canvasHeight: 120 },
+        { maxDistSq: Number.MIN_VALUE },
+      ),
+    ).toEqual([])
+  }
+})
+
 // A bar whose value sits on the origin has no height: the painter fills
 // nothing and the hit test answers nothing, which the sweep can only see
 // through `sliceOne` (the batch paints fewer rects than it has instances).

@@ -120,6 +120,67 @@ test('a layer without the lanes its shape reads packs nothing', () => {
   expect(span!.pass.pack(withRow).byteLength).toBeGreaterThan(0)
 })
 
+test('a bar and a point take the row lane, each band the plot split by rowCount', () => {
+  const [bar, point] = buildMarkList(entries('bar', 'point'))
+  const hal = new MockHal([bar!.pass, point!.pass])
+  const clip = clipBlock(block, state.canvasWidth, state.canvasHeight, {
+    x: 1,
+    y: 1,
+  })!
+  const data: MarkRegionData = {
+    layers: [
+      layer([100, 500], [5, 5], [RED, BLUE], {
+        row: new Uint32Array([0, 1]),
+      }),
+      layer([100, 500], [5, 5], [RED, BLUE], {
+        row: new Uint32Array([1, 0]),
+      }),
+    ],
+  }
+  const stacked = { ...state, rowCount: 2 }
+  bar!.drawRegion(
+    hal,
+    new ArrayBuffer(bar!.pass.uniformByteSize),
+    block,
+    clip,
+    data,
+    stacked,
+    0,
+  )
+  expect(
+    hal.getLastUniformsF32()![barShader.UNIFORM_OFFSET_F32.rowHeight],
+  ).toBe(200)
+  const packed = new Uint32Array(bar!.pass.pack(data) as ArrayBuffer)
+  expect(
+    packed[barShader.INSTANCE_STRIDE_WORDS + barShader.INSTANCE_OFFSET_U32.row],
+  ).toBe(1)
+  point!.drawRegion(
+    hal,
+    new ArrayBuffer(point!.pass.uniformByteSize),
+    block,
+    clip,
+    data,
+    stacked,
+    0,
+  )
+  expect(
+    hal.getLastUniformsF32()![pointShader.UNIFORM_OFFSET_F32.rowHeight],
+  ).toBe(200)
+  // one row: the band is the plot, which is what every bar drew in before
+  bar!.drawRegion(
+    hal,
+    new ArrayBuffer(bar!.pass.uniformByteSize),
+    block,
+    clip,
+    data,
+    state,
+    0,
+  )
+  expect(
+    hal.getLastUniformsF32()![barShader.UNIFORM_OFFSET_F32.rowHeight],
+  ).toBe(state.canvasHeight)
+})
+
 test('a span mark stacks on the row lane, the bands dividing the plot by rowCount', () => {
   const [mark] = buildMarkList(entries('span'))
   const hal = new MockHal([mark!.pass])

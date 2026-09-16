@@ -2425,7 +2425,8 @@ export const configManifest: ConfigManifest = {
         }
       ],
       "displayTypes": [
-        "MultiLinearWiggleDisplay"
+        "MultiLinearWiggleDisplay",
+        "LinearMarkDisplay"
       ]
     },
     "GCContentTrack": {

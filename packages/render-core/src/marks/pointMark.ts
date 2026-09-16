@@ -9,8 +9,10 @@ import { appendGlyph, glyphBox } from './glyphPaint.ts'
 import { inkAtPoint, inkOnRect, nearestInk } from './markHit.ts'
 import { colorBits, paintColors, rampUniforms } from './markRamp.ts'
 import { valueWindow } from './nearestMarkHit.ts'
+import { bandHeightPx, bandTopPx, rowLane } from './rowLane.ts'
 
 import type { ColorChannel } from './markRamp.ts'
+import type { RowChannel, RowParams } from './rowLane.ts'
 import type { MarkRamp, MarkShape, MarkValueScaleType } from './types.ts'
 
 /**
@@ -21,7 +23,7 @@ import type { MarkRamp, MarkShape, MarkValueScaleType } from './types.ts'
  * one array holds SNPs (`x2 === x + 1`) and structural variants together, and
  * the shader, the painter and the hit test all take the same branch off it.
  */
-export interface PointChannels extends ColorChannel {
+export interface PointChannels extends ColorChannel, RowChannel {
   x: Uint32Array
   x2: Uint32Array
   y: Float32Array
@@ -29,7 +31,7 @@ export interface PointChannels extends ColorChannel {
   count: number
 }
 
-export interface PointParams {
+export interface PointParams extends RowParams {
   /** `[min, max]` `y` is read through. */
   domain: [number, number]
   /** How that domain is read; linear when absent. */
@@ -50,7 +52,11 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
   id: 'point',
   pass: {
     ...slangPass({ id: 'point', mod: shader }),
-    pack: c => shader.packInstances({ ...c, color: colorBits(c) }, c.count),
+    pack: c =>
+      shader.packInstances(
+        { ...c, color: colorBits(c), row: rowLane(c.row, c.count) },
+        c.count,
+      ),
   },
 
   writeUniforms(scratch, clip, block, frame, params) {
@@ -67,20 +73,21 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       // stretched ellipses on hi-DPI.
       viewportWidth: clip.scissorW,
       radiusPx: params.diameterPx / 2,
+      rowHeight: bandHeightPx(params, frame.canvasHeight),
       insetPx: params.insetPx ?? 0,
       devicePixelRatio: getDpr(),
     })
   },
 
   paintBlock(ctx, channels, block, frame, params) {
-    const { x, x2, y, glyph, count } = channels
+    const { x, x2, y, glyph, row, count } = channels
     if (count === 0) {
       return
     }
     const color = paintColors(channels, count, params.ramp)
     const { diameterPx, domain, insetPx = 0 } = params
     const r = diameterPx / 2
-    const canvasHeight = frame.canvasHeight
+    const band = bandHeightPx(params, frame.canvasHeight)
     const domainMin = domain[0]
     const domainMax = domain[1]
     const st = scaleTypeCode(params.scaleType)
@@ -101,14 +108,9 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
       }
       const xStart = bpToPx(x[i]!)
       const xEnd = bpToPx(x2[i]!)
-      const yPx = pointYPx(
-        y[i]!,
-        domainMin,
-        domainMax,
-        canvasHeight,
-        st,
-        insetPx,
-      )
+      const yPx =
+        bandTopPx(row, i, band) +
+        pointYPx(y[i]!, domainMin, domainMax, band, st, insetPx)
       const widthPx = Math.abs(xEnd - xStart)
       if (pointDrawsBar(widthPx, r)) {
         ctx.rect(Math.min(xStart, xEnd), yPx - r, widthPx, diameterPx)
@@ -122,20 +124,23 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
   // A bar is the rect the painter fills, unpadded on every side; a glyph is
   // the box `appendGlyph` paints inside.
   ink(channels, block, frame, params, i) {
-    const { x, x2, y, glyph } = channels
+    const { x, x2, y, glyph, row } = channels
     const { diameterPx, domain, insetPx = 0 } = params
     const bpToPx = makeBpMapper(block)
     const xStart = bpToPx(x[i]!)
     const xEnd = bpToPx(x2[i]!)
     const r = diameterPx / 2
-    const cy = pointYPx(
-      y[i]!,
-      domain[0],
-      domain[1],
-      frame.canvasHeight,
-      scaleTypeCode(params.scaleType),
-      insetPx,
-    )
+    const band = bandHeightPx(params, frame.canvasHeight)
+    const cy =
+      bandTopPx(row, i, band) +
+      pointYPx(
+        y[i]!,
+        domain[0],
+        domain[1],
+        band,
+        scaleTypeCode(params.scaleType),
+        insetPx,
+      )
     const lo = Math.min(xStart, xEnd)
     const hi = Math.max(xStart, xEnd)
     return pointDrawsBar(hi - lo, r)
@@ -148,24 +153,19 @@ export const pointMark: MarkShape<PointChannels, PointParams> = {
   // one under the cursor is the nearest CENTRE, which no box can say. A bar
   // is grabbed anywhere inside the rect it fills, as the derived test would.
   hitNearest(channels, block, frame, params, xPx, yPx, candidates, maxDistSq) {
-    const { x, x2, y } = channels
+    const { x, x2, y, row } = channels
     const bpToPx = makeBpMapper(block)
     const { diameterPx, domain, insetPx = 0 } = params
     const domainMin = domain[0]
     const domainMax = domain[1]
-    const canvasHeight = frame.canvasHeight
+    const band = bandHeightPx(params, frame.canvasHeight)
     const st = scaleTypeCode(params.scaleType)
     return nearestInk(candidates, maxDistSq, i => {
       const xStart = bpToPx(x[i]!)
       const xEnd = bpToPx(x2[i]!)
-      const cy = pointYPx(
-        y[i]!,
-        domainMin,
-        domainMax,
-        canvasHeight,
-        st,
-        insetPx,
-      )
+      const cy =
+        bandTopPx(row, i, band) +
+        pointYPx(y[i]!, domainMin, domainMax, band, st, insetPx)
       const lo = Math.min(xStart, xEnd)
       const hi = Math.max(xStart, xEnd)
       return pointDrawsBar(hi - lo, diameterPx / 2)
