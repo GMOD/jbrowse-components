@@ -73,8 +73,8 @@ export interface VariantCellData {
   featureColors: Uint32Array
   // `1 << CELL_*` for every cell-color category this pass actually painted, and
   // the cell scale's domain values it painted an alt cell for. The legend is
-  // built from these, so an entry means "on screen" rather than "the site could
-  // carry one".
+  // built from these, so an entry means "in the fetched cell data" rather than
+  // "the site could carry one".
   paintedCategories: number
   paintedDomain: string[]
 }

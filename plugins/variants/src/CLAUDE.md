@@ -82,8 +82,9 @@ categories present, and its swatches come from the same functions the cells do.
 `hasSecondaryAlt`, `hasUnphased`, `hasNoCall` and `paintedDomain` are the cell
 loops' own record of what they emitted (`paintedCategories`, one bit per
 `CELL_*`), merged across regions in `paintedLegendFlags`. "The site is
-multiallelic" is not the same claim as "a secondary-alt cell is on screen", and
-the legend makes the second one.
+multiallelic" is not the same claim as "a secondary-alt cell is in the fetched
+cell data", and the legend makes the second one. Fetched, not visible: the
+regular display fetches wider than the viewport.
 
 ## Mixed ploidy: five consumers, one contract
 

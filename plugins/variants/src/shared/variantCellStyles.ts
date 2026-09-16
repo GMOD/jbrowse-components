@@ -24,7 +24,8 @@ export interface VariantCellStyle {
   altDosage: number
   // Which value of the cell-color scale this cell paints, as a `CELL_*` index.
   // The cell loops OR `1 << category` into one mask as they emit, so the legend
-  // lists what is on screen rather than what the site could in principle carry.
+  // lists what is in the fetched cell data rather than what the site could in
+  // principle carry.
   category: number
 }
 

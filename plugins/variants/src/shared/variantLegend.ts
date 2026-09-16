@@ -40,7 +40,8 @@ function entry(label: string, color?: string): CategoricalEntry {
 export interface VariantLegendInputs {
   renderingMode: string
   // Painted, not possible: each is true only where the cell loops emitted a
-  // cell of that category (see `paintedLegendFlags`).
+  // cell of that category anywhere in the fetched cell data (see
+  // `paintedLegendFlags`).
   hasSecondaryAlt: boolean
   hasUnphased: boolean
   hasNoCall: boolean
@@ -72,16 +73,18 @@ function absentDataEntries({
 }
 
 // What a one-member alt domain spends its entries on. In allele-count mode
-// lightness carries the dosage, so the key shows the ramp's two readable stops
+// lightness carries the dosage, so the key shows the ramp's two named stops
 // rather than one swatch a reader would have to infer them from; in phased mode
-// a row is a haplotype and there is no dosage to show.
+// a row is a haplotype and there is no dosage to show. The labels name the
+// dosage, not the zygosity: the ramp is continuous, and a triploid `0/0/1`
+// paints at a third, which "Heterozygous alt" did not list.
 function altEntries(hue: string, inputs: VariantLegendInputs) {
   if (inputs.renderingMode === 'phased' || !inputs.shadeByDosage) {
     return [entry('Alt allele', hue)]
   }
   return [
-    entry('Heterozygous alt', shadeByDosage(hue, 0.5)),
-    entry('Homozygous alt', shadeByDosage(hue, 1)),
+    entry('Alt, half dosage (het)', shadeByDosage(hue, 0.5)),
+    entry('Alt, full dosage (hom)', shadeByDosage(hue, 1)),
   ]
 }
 

@@ -127,12 +127,14 @@ interface CellDataBase {
   hasPhasedOrHaploid: boolean
   // What the cell loops actually painted: a secondary-alt fill, a black
   // unphased fill, a no-call fill. Each drives its legend entry, so the entry
-  // means the reader can see one rather than that the data could produce one.
+  // means one is in the fetched cell data rather than that the data could
+  // produce one. Merged across every fetched region, which for the regular
+  // display is wider than the viewport.
   hasSecondaryAlt: boolean
   hasUnphased: boolean
   hasNoCall: boolean
-  // The cell scale's domain values an alt cell was painted for — the impact
-  // tiers or SV classes the legend lists.
+  // The cell scale's domain values an alt cell was painted for in the fetched
+  // cell data — the impact tiers or SV classes the legend lists.
   paintedDomain: string[]
   // Whether any visible variant carries a SnpEff/VEP annotation, gating the
   // "Color by...→Consequence impact" menu option.

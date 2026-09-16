@@ -77,7 +77,7 @@ test('the genotype color key exports, titled by its one scale', () => {
   const model = createDisplay([{ name: 'HG001' }, { name: 'HG002' }])
   const { getByText } = renderKey(model)
   getByText('Homozygous reference')
-  getByText('Homozygous alt')
+  getByText('Alt, full dosage (hom)')
   getByText('Genotypes')
 })
 

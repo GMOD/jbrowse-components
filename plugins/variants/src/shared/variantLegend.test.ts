@@ -40,15 +40,15 @@ describe('getGenotypeEntries', () => {
   it('alleleCount mode: the ramp, and no-call only when one was painted', () => {
     expect(getGenotypeEntries(inputs()).map(i => i.label)).toEqual([
       'Homozygous reference',
-      'Heterozygous alt',
-      'Homozygous alt',
+      'Alt, half dosage (het)',
+      'Alt, full dosage (hom)',
     ])
     expect(
       getGenotypeEntries(inputs({ hasNoCall: true })).map(i => i.label),
     ).toEqual([
       'Homozygous reference',
-      'Heterozygous alt',
-      'Homozygous alt',
+      'Alt, half dosage (het)',
+      'Alt, full dosage (hom)',
       'No call',
     ])
   })
@@ -293,8 +293,8 @@ describe('getVariantColorScales', () => {
     })
     expect(entriesOf(section)!.map(i => [i.label, i.color])).toEqual([
       ['Homozygous reference', REFERENCE_COLOR],
-      ['Heterozygous alt', shadeByDosage('#E69F00', 0.5)],
-      ['Homozygous alt', '#E69F00'],
+      ['Alt, half dosage (het)', shadeByDosage('#E69F00', 0.5)],
+      ['Alt, full dosage (hom)', '#E69F00'],
     ])
   })
 

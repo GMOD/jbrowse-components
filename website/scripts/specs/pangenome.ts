@@ -140,7 +140,7 @@ export const pangenomeSpecs: ScreenshotSpec[] = [
     actions: [
       // The variant lane's own key, dismissed through the button it carries.
       // Two reasons it is the one legend in the set that can go: its allele-count
-      // vocabulary ("Homozygous alt", "Heterozygous") describes a diploid callset
+      // vocabulary (half and full alt dosage) describes a diploid callset
       // and these are four haploid strains, and this lane is context under the
       // MAF projection the figure is actually about. A missing selector throws
       // the regen, so this cannot fail into a silently clipped legend the way a

@@ -579,8 +579,8 @@ export default function MultiSampleVariantBaseModelF(
          * #getter
          * Whether the worker painted a secondary-alt cell (drives the "Other
          * alt allele" legend entry). Painted, not possible: a multiallelic site
-         * nobody in view carries the second alt at raised this when the color
-         * was nowhere on the screen.
+         * nobody carries the second alt at raised this when the color was
+         * nowhere in the fetched cell data.
          */
         get hasSecondaryAlt() {
           return self.cellData?.hasSecondaryAlt ?? false
@@ -603,8 +603,8 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
-         * The cell scale's domain values an alt cell was painted for — the
-         * impact tiers or SV classes the legend lists.
+         * The cell scale's domain values an alt cell was painted for in the
+         * fetched cell data — the impact tiers or SV classes the legend lists.
          */
         get paintedDomain(): string[] {
           return self.cellData?.paintedDomain ?? []
