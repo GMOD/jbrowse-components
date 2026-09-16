@@ -639,10 +639,10 @@ distinct reasons, not to be conflated:
   `plugins/circular-view/src/chords/`) switched on the model's own
   `displayPhase` — `computeDisplayStatusPhase` over `error` and `!ready`, the
   ranking every other display publishes, carried as `data-display-phase` on the
-  chord group so the census sees it. **`ready`, not `features`**: `blocksForRefs` falls
-  back to untranslated refNames while the refName map is in flight, so drawing as
-  soon as the features land flashes a chordless circle whenever the adapter's
-  names differ from the assembly's (`1` vs `chr1`). It keeps its own `Loading`
+  chord group so the census sees it. **`ready`, not `features`**: `sliceIndex`
+  falls back to untranslated refNames while the refName map is in flight, so
+  drawing as soon as the features land flashes a chordless circle whenever the
+  adapter's names differ from the assembly's (`1` vs `chr1`). It keeps its own `Loading`
   and `DisplayError` components, because the rectangular LGV banners don't fit a
   radial view. Arc is an *LGV* SVG display and so can reuse them; circular's
   medium is why it can't.
