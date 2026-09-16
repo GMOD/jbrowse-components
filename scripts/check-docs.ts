@@ -263,6 +263,10 @@ const VALIDATORS: Validator[] = [
     argv: web('check-menu-labels.ts'),
   },
   {
+    name: 'Python and R blocks name what jbrowse-anywidget and JBrowseR provide',
+    argv: web('check-embedding-docs.ts'),
+  },
+  {
     // Ratchets a tracked list, like check-spec-recipes above: `--check` fails
     // when a caption newly runs long, the bare run records the current set.
     name: 'no new over-length figure captions',

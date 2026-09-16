@@ -26,8 +26,9 @@ remotes::install_github("GMOD/JBrowseR")
 
 ## A declarative API
 
-You describe the browser with plain values; helper constructors build the
-config.
+Assemblies, tracks and views are JBrowse's own
+[config objects](/docs/config_guide), written as R lists, so any track or view
+type JBrowse has works with nothing added to the package.
 
 Name a hosted genome and the assembly, reference-name aliases, cytobands, and
 gene-name search all come preconfigured, and `location` can be a gene symbol:
@@ -44,9 +45,9 @@ inferred from the extension:
 ```r
 JBrowseR(
   "hg38",
-  tracks = tracks(
-    track(
-      "https://jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram",
+  tracks = list(
+    list(
+      uri = "https://jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram",
       name = "NA12878 Exome"
     )
   ),
@@ -54,38 +55,59 @@ JBrowseR(
 )
 ```
 
-`track_data_frame()` turns an in-memory data frame into a track (no file, no
-server), and `assembly()` writes a little assembly boilerplate from a FASTA URL.
-Both express what a plain config file can't. For full control, hand a whole
-JBrowse `config.json` to `JBrowseR(config = ...)`.
+`track_data_frame()` turns an in-memory data frame into a track with no file or
+server, which is the one thing a config file can't express. A genome of your own
+is `list(name = "mygenome", uri = "https://.../mygenome.fa.gz")`.
 
 ## Comparing genomes
 
 `JBrowseR()` shows a single linear genome view. `JBrowseRApp()` drives the full
-app from a declarative `views` list, where each entry can be a `linear_view()`,
-a `synteny_view()`, or a `dotplot_view()`, so a comparative figure (several
-genomes stacked with the blocks each pair shares drawn between the rows, or a
-whole-genome dotplot) is one call:
+app from a `views` list, each entry a view as a config's `defaultSession.views`
+writes it, so a linear synteny view or a dotplot is one call:
 
 ```r
+base <- "https://jbrowse.org/demos/ecoli_pangenome"
+strains <- c("K12", "Sakai", "CFT073", "NCTC86")
+
 JBrowseRApp(
-  assemblies = list(assembly(hg38_fa), assembly(mm39_fa)),
-  tracks = list(synteny_track(paf_url, "hg38", "mm39", track_id = "hg38-mm39")),
-  views = list(synteny_view(c("hg38", "mm39"), tracks = "hg38-mm39"))
+  assemblies = list(
+    list(name = "K12", uri = paste0(base, "/K12.fa.gz")),
+    list(name = "Sakai", uri = paste0(base, "/Sakai.fa.gz"))
+  ),
+  tracks = list(
+    list(
+      type = "SyntenyTrack",
+      trackId = "ecoli_ava",
+      name = "E. coli all-vs-all",
+      assemblyNames = as.list(strains),
+      adapter = list(
+        type = "AllVsAllPAFAdapter",
+        assemblyNames = as.list(strains),
+        pafLocation = list(uri = paste0(base, "/all_vs_all.paf.gz"))
+      )
+    )
+  ),
+  views = list(
+    list(
+      type = "DotplotView",
+      views = list(list(assembly = "K12"), list(assembly = "Sakai")),
+      tracks = list("ecoli_ava")
+    )
+  )
 )
 ```
 
 The
 [comparative-synteny vignette](https://gmod.github.io/JBrowseR/articles/comparative-synteny.html)
-walks through four _E. coli_ strains from one all-vs-all alignment, the same
-hosted data as the
-[all-vs-all synteny tutorial](/docs/tutorials/allvsall_synteny).
+stacks four strains from the same alignment in a linear synteny view, the hosted
+data of the [all-vs-all synteny tutorial](/docs/tutorials/allvsall_synteny).
 
 ## Reacting to clicks in Shiny
 
-Rendered inside Shiny, clicking a feature sets `input$selectedFeature` to the
-feature's data, so tables, plots, and links can follow the current selection.
-Use `JBrowseROutput()` in the UI and `renderJBrowseR()` on the server.
+Rendered inside Shiny, clicking a feature sets
+`input$<outputId>_selected_feature` to the feature's data, so tables, plots, and
+links can follow the current selection. Pair `JBrowseROutput()` with
+`renderJBrowseR()`, or `JBrowseRAppOutput()` with `renderJBrowseRApp()`.
 
 ## Run in Colab
 
