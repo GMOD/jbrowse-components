@@ -720,6 +720,9 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
+      # Needs no build: it bundles the painters itself.
+      - name: Check batched Canvas2D paths stay under Chrome's path size limit
+        run: pnpm check-canvas-path-limits
       - name: Build jbrowse-web
         uses: ./.github/actions/build-jbrowse-web
       - name: Run cross-backend render gate
