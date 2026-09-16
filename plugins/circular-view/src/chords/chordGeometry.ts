@@ -44,11 +44,11 @@ export function chordControlRadius({
  */
 export function getEndpoint(
   feature: Feature,
-  blocksForRefs: Record<string, Slice>,
+  sliceForRef: (refName: string) => Slice | undefined,
   startBlock: Slice,
 ) {
   const mate = svMateLocus(feature)
   return mate
-    ? { endBlock: blocksForRefs[mate.refName], endPosition: mate.pos }
+    ? { endBlock: sliceForRef(mate.refName), endPosition: mate.pos }
     : { endBlock: startBlock, endPosition: feature.get('end') }
 }

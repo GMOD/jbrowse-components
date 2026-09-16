@@ -21,14 +21,17 @@ export interface ChordDisplayFrameModel {
   reload: () => void
 }
 
-// the part of a chord display's model that the chord components read
+// the part of a chord display's model that the chord components read. A slice
+// is looked up by the assembly AND refName a feature carries, since two genomes
+// on one circle can each carry a `chr1`
 export interface ChordDisplayModel extends ChordDisplayFrameModel {
   features: Feature[] | undefined
-  // keyed by the *adapter's* refName, so a feature straight off the wire finds
-  // its slice without further translation
-  blocksForRefs: Record<string, Slice>
   selectedFeatureId: string | undefined
   bezierRadius: number
+  sliceFor: (
+    assemblyName: string | undefined,
+    refName: string,
+  ) => Slice | undefined
   onChordClick: (feature: Feature) => void
 }
 

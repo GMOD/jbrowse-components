@@ -12,7 +12,9 @@ answers the rejected alternative's question the dotplot's way — two rows at
 most, the synteny track picked for the pair, and a Quick start from any track —
 so a circle of three is still authored. `displayedRegionNames` also takes a
 record keyed by assembly, which is what the form's per-row chromosome boxes
-write.
+write. Both chord displays now compose `BaseChordDisplay`, so the variant
+chords take the per-assembly slice index too, and a track fetches and draws
+only the arcs of its own assemblies.
 
 Accepted (2026-09-10). Builds on the chord machinery
 [ADR-019](adr-019-synteny-cpu-picking.md) and the GPU synteny stack do not

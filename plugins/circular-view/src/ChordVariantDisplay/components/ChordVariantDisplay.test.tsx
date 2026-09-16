@@ -24,7 +24,7 @@ function chordModel(
     displayPhase: phase,
     svgReady: phase !== 'loading',
     features: [],
-    blocksForRefs: {},
+    sliceFor: () => undefined,
     selectedFeatureId: undefined,
     configuration,
     radiusPx: 100,

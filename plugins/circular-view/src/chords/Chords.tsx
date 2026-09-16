@@ -12,7 +12,7 @@ const Chords = observer(function Chords({
   const {
     features,
     configuration,
-    blocksForRefs,
+    sliceFor,
     radiusPx,
     bezierRadius,
     selectedFeatureId,
@@ -31,7 +31,7 @@ const Chords = observer(function Chords({
           config={configuration}
           radius={radiusPx}
           bezierRadius={bezierRadius}
-          blocksForRefs={blocksForRefs}
+          sliceFor={sliceFor}
           selected={selectedFeatureId === feature.id()}
           onClick={onChordClick}
         />

@@ -14,7 +14,8 @@ function block(refName: string) {
 const chr1 = block('chr1')
 const chr2 = block('chr2')
 const chr3 = block('chr3')
-const blocksForRefs = { chr1, chr2, chr3 }
+const slices: Record<string, Slice> = { chr1, chr2, chr3 }
+const sliceForRef = (refName: string) => slices[refName]
 
 test('falls back to the feature end in its own block', () => {
   const feature = new SimpleFeature({
@@ -23,7 +24,7 @@ test('falls back to the feature end in its own block', () => {
     start: 100,
     end: 200,
   })
-  expect(getEndpoint(feature, blocksForRefs, chr1)).toEqual({
+  expect(getEndpoint(feature, sliceForRef, chr1)).toEqual({
     endBlock: chr1,
     endPosition: 200,
   })
@@ -37,7 +38,7 @@ test('uses an explicit mate field (already 0-based)', () => {
     end: 200,
     mate: { refName: 'chr2', start: 500, end: 600 },
   })
-  expect(getEndpoint(feature, blocksForRefs, chr1)).toEqual({
+  expect(getEndpoint(feature, sliceForRef, chr1)).toEqual({
     endBlock: chr2,
     endPosition: 500,
   })
@@ -51,7 +52,7 @@ test('converts a VCF breakend ALT mate from 1-based to 0-based', () => {
     end: 200,
     ALT: ['A[chr3:900['],
   })
-  expect(getEndpoint(feature, blocksForRefs, chr1)).toEqual({
+  expect(getEndpoint(feature, sliceForRef, chr1)).toEqual({
     endBlock: chr3,
     endPosition: 899,
   })
@@ -66,7 +67,7 @@ test('converts a symbolic translocation (INFO END/CHR2) to 0-based', () => {
     ALT: ['<TRA>'],
     INFO: { END: [900], CHR2: ['chr3'] },
   })
-  expect(getEndpoint(feature, blocksForRefs, chr1)).toEqual({
+  expect(getEndpoint(feature, sliceForRef, chr1)).toEqual({
     endBlock: chr3,
     endPosition: 899,
   })

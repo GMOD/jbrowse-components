@@ -8,13 +8,13 @@ import { bpToRadians } from '../CircularView/slices.ts'
 import { chordControlRadius, getEndpoint } from './chordGeometry.ts'
 import { chordLabel } from './chordLabel.ts'
 
-import type { Slice } from '../CircularView/slices.ts'
+import type { ChordDisplayModel } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
 
 const Chord = observer(function Chord({
   feature,
-  blocksForRefs,
+  sliceFor,
   radius,
   config,
   bezierRadius,
@@ -22,7 +22,7 @@ const Chord = observer(function Chord({
   onClick,
 }: {
   feature: Feature
-  blocksForRefs: Record<string, Slice>
+  sliceFor: ChordDisplayModel['sliceFor']
   radius: number
   config: AnyConfigurationModel
   bezierRadius: number
@@ -30,14 +30,15 @@ const Chord = observer(function Chord({
   onClick: (feat: Feature) => void
 }) {
   const [hovered, setHovered] = useState(false)
-  const startBlock = blocksForRefs[feature.get('refName')]
+  const sliceForRef = (refName: string) => sliceFor(undefined, refName)
+  const startBlock = sliceForRef(feature.get('refName'))
   if (!startBlock) {
     return null
   }
   const startPos = feature.get('start')
   const { endBlock, endPosition } = getEndpoint(
     feature,
-    blocksForRefs,
+    sliceForRef,
     startBlock,
   )
   if (!endBlock) {
