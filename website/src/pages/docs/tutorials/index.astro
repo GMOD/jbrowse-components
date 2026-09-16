@@ -48,8 +48,21 @@ const rank = (key: string) => {
 const key = (id: string) =>
   id.startsWith('tutorials/') ? id.slice('tutorials/'.length) : id
 
+interface TutorialCard {
+  key: string
+  href: string
+  title: string
+  description?: string
+  category: string
+  external: boolean
+  parts?: { label: string; href: string }[]
+}
+
 const docs = await getCollection('docs')
-const cardFrom = (entry: (typeof docs)[number], category: string) => ({
+const cardFrom = (
+  entry: (typeof docs)[number],
+  category: string,
+): TutorialCard => ({
   key: key(entry.id),
   href: `${baseUrl}/docs/${entrySlug(entry.id)}/`,
   title: entry.data.title,
@@ -61,7 +74,7 @@ const cardFrom = (entry: (typeof docs)[number], category: string) => ({
 // Live example sites linked straight from the section, so readers who want to
 // embed can jump to runnable examples rather than only the prose tutorial. Its
 // thumbnail is a capture of the examples site itself.
-const EXTERNAL_CARDS = [
+const EXTERNAL_CARDS: TutorialCard[] = [
   {
     key: 'embedding_examples',
     href: 'https://jbrowse.org/storybook/lgv/',
@@ -82,7 +95,10 @@ const partOf = new Map(
   ),
 )
 
-const seriesCard = (entry: (typeof docs)[number], category: string) => {
+const seriesCard = (
+  entry: (typeof docs)[number],
+  category: string,
+): TutorialCard => {
   const { series } = partOf.get(key(entry.id))!
   return {
     ...cardFrom(entry, category),
@@ -207,7 +223,7 @@ const HAS_THUMB = new Set(
                 )}
               </span>
             </a>
-            {'parts' in tutorial && (
+            {tutorial.parts && (
               <div class="tut-parts">
                 {tutorial.parts.map(part => (
                   <a class="tut-part" href={part.href}>
