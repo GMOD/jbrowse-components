@@ -352,3 +352,87 @@ describe('phase-set coloring', () => {
     expect(run(true).cellColors[3]).not.toBe(primary)
   })
 })
+
+// The matrix twin of computeVariantCells.test.ts' painted-record block: the
+// legend is built from these two fields, so an entry claims a cell of that kind
+// is in the fetched data.
+describe('the painted record reports what this pass emitted', () => {
+  const sources: ProcessedSource[] = [
+    { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
+    { name: 'S1 HP1', sampleName: 'S1', HP: 1 },
+  ]
+  const run = (gt: string) => {
+    const feature = makeFeature({
+      genotypes: { S1: gt },
+      FORMAT: [],
+      ALT: ['A', 'T'],
+      REF: 'G',
+      name: 'v1',
+      description: '',
+      type: 'SNV',
+      start: 100,
+      end: 101,
+    })
+    return computeVariantMatrixCells({
+      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      sources,
+      renderingMode: 'phased',
+      ...genotypeArgs([feature]),
+    })
+  }
+
+  test('a multiallelic site nobody carries the second alt at paints no secondary', async () => {
+    const { CELL_ALT_SECONDARY } =
+      await import('../../shared/variantCellStyles.ts')
+    const bit = 1 << CELL_ALT_SECONDARY
+    expect(run('1|1').paintedCategories & bit).toBe(0)
+    expect(run('1|2').paintedCategories & bit).toBe(bit)
+  })
+
+  test('a painted no-call sets its category bit', async () => {
+    const { CELL_NO_CALL } = await import('../../shared/variantCellStyles.ts')
+    const bit = 1 << CELL_NO_CALL
+    expect(run('1|1').paintedCategories & bit).toBe(0)
+    expect(run('1|.').paintedCategories & bit).toBe(bit)
+  })
+
+  test('a domain value whose only carriers are hom-ref stays off the list', () => {
+    const carried = makeFeature(
+      {
+        genotypes: { S1: '0/1' },
+        ALT: ['A'],
+        REF: 'G',
+        name: 'v1',
+        description: '',
+        type: 'SNV',
+        start: 100,
+        end: 101,
+      },
+      'carried',
+    )
+    const homRef = makeFeature(
+      {
+        genotypes: { S1: '0/0' },
+        ALT: ['A'],
+        REF: 'G',
+        name: 'v2',
+        description: '',
+        type: 'SNV',
+        start: 200,
+        end: 201,
+      },
+      'homRef',
+    )
+    const result = computeVariantMatrixCells({
+      filteredVariants: [
+        { feature: carried, mostFrequentAlt: '1' },
+        { feature: homRef, mostFrequentAlt: '1' },
+      ],
+      sources: [{ name: 'S1', sampleName: 'S1' }],
+      renderingMode: 'alleleCount',
+      featureDomain: f => (f.id() === 'carried' ? 'HIGH' : 'MODERATE'),
+      ...genotypeArgs([carried, homRef]),
+    })
+    expect(result.paintedDomain).toEqual(['HIGH'])
+  })
+})

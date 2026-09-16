@@ -1031,3 +1031,116 @@ test('phase-set coloring honors referenceDrawingMode: skip', () => {
   expect(result.refCellCount).toBe(0)
   expect(result.cellRowIndices[0]).toBe(0)
 })
+
+// `paintedCategories` and `paintedDomain` are what the legend is built from, so
+// each entry claims a cell of that kind is in the fetched data. The claims below
+// are the ones that were only ever asserted through the legend's own inputs.
+describe('the painted record reports what this pass emitted', () => {
+  const sources: ProcessedSource[] = [
+    { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
+    { name: 'S1 HP1', sampleName: 'S1', HP: 1 },
+  ]
+  const run = (gt: string, mostFrequentAlt = '1') => {
+    const feature = makeFeature({
+      genotypes: { S1: gt },
+      FORMAT: [],
+      ALT: ['A', 'T'],
+      REF: 'G',
+      name: 'v1',
+      description: '',
+      type: 'SNV',
+      start: 100,
+      end: 101,
+    })
+    return computeVariantCells({
+      filteredVariants: [{ feature, mostFrequentAlt }],
+      sources,
+      renderingMode: 'phased',
+      referenceDrawingMode: 'skip',
+      ...genotypeArgs([feature]),
+    })
+  }
+
+  test('a multiallelic site nobody carries the second alt at paints no secondary', async () => {
+    const { CELL_ALT_SECONDARY } =
+      await import('../../shared/variantCellStyles.ts')
+    const bit = 1 << CELL_ALT_SECONDARY
+    expect(run('1|1').paintedCategories & bit).toBe(0)
+    expect(run('1|2').paintedCategories & bit).toBe(bit)
+  })
+
+  test('a painted no-call sets its category bit', async () => {
+    const { CELL_NO_CALL } = await import('../../shared/variantCellStyles.ts')
+    const bit = 1 << CELL_NO_CALL
+    expect(run('1|1').paintedCategories & bit).toBe(0)
+    expect(run('1|.').paintedCategories & bit).toBe(bit)
+  })
+
+  test('a domain value whose only carriers are hom-ref stays off the list', () => {
+    const carried = makeFeature(
+      {
+        genotypes: { S1: '0/1' },
+        ALT: ['A'],
+        REF: 'G',
+        name: 'v1',
+        description: '',
+        type: 'SNV',
+        start: 100,
+        end: 101,
+      },
+      'carried',
+    )
+    const homRef = makeFeature(
+      {
+        genotypes: { S1: '0/0' },
+        ALT: ['A'],
+        REF: 'G',
+        name: 'v2',
+        description: '',
+        type: 'SNV',
+        start: 200,
+        end: 201,
+      },
+      'homRef',
+    )
+    const result = computeVariantCells({
+      filteredVariants: [
+        { feature: carried, mostFrequentAlt: '1' },
+        { feature: homRef, mostFrequentAlt: '1' },
+      ],
+      sources: [{ name: 'S1', sampleName: 'S1' }],
+      renderingMode: 'alleleCount',
+      referenceDrawingMode: 'draw',
+      featureDomain: f => (f.id() === 'carried' ? 'HIGH' : 'MODERATE'),
+      ...genotypeArgs([carried, homRef]),
+    })
+    expect(result.paintedDomain).toEqual(['HIGH'])
+  })
+})
+
+// The lane mark takes the hue of the cells under it. Under phase-set coloring
+// those cells are PS hues, so the primary-alt teal would name nothing.
+test('the lane falls back to the plain alt hue under phase-set coloring', async () => {
+  const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
+  const { ALT_HUE } = await import('../../shared/cellFill.ts')
+  const { PRIMARY_ALT_COLOR } = await import('../../shared/constants.ts')
+  const sources: ProcessedSource[] = [
+    { name: 'S1 HP0', sampleName: 'S1', HP: 0 },
+    { name: 'S1 HP1', sampleName: 'S1', HP: 1 },
+  ]
+  const feature = vcfFeature('1\t101\tv1\tG\tA\t60\tPASS\t.\tGT:PS\t1|0:77', [
+    'S1',
+  ])
+  const run = (colorByPhaseSet: boolean) =>
+    computeVariantCells({
+      filteredVariants: [{ feature, mostFrequentAlt: '1' }],
+      sources,
+      renderingMode: 'phased',
+      referenceDrawingMode: 'skip',
+      colorByPhaseSet,
+      ...genotypeArgs([feature]),
+    }).featureColors[0]
+
+  expect(run(true)).toBe(getCachedABGR(ALT_HUE))
+  expect(run(false)).toBe(getCachedABGR(PRIMARY_ALT_COLOR))
+})

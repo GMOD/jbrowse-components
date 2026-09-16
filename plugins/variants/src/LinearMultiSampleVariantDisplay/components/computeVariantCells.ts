@@ -168,9 +168,13 @@ export function computeVariantCells({
   const featureColors = new Uint32Array(filteredVariants.length)
   // The lane's hue where no override resolves: the same constant the alt cells
   // under the mark take, so a record and its column stay one color. Packed once
-  // rather than per variant.
+  // rather than per variant. Under phase-set coloring the cells are PS hues and
+  // the primary-alt teal names nothing, so the lane falls back to ALT_HUE —
+  // "alt, no further meaning", as in the default mode.
   const defaultFeatureAbgr = getCachedABGR(
-    renderingMode === 'phased' ? PRIMARY_ALT_COLOR : ALT_HUE,
+    renderingMode === 'phased' && !colorByPhaseSet
+      ? PRIMARY_ALT_COLOR
+      : ALT_HUE,
   )
 
   const featureGenotypeMap: Record<string, VariantFeatureInfo> = {}
