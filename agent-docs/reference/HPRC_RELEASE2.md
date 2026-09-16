@@ -15,8 +15,8 @@ that plugin's repo, not this one — and does not overlap.
 
 | artifact | opens? |
 | --- | --- |
-| `v2.0/…/hprc-v2.0-mc-grch38.full.taf.gz` + `.tai` (5.96 GB, 464 haplotypes) | **yes**, `BgzipTaffyAdapter`, and this is the one the tutorial uses; also the source `demos/hprc_multiway` unpacks pairwise PAF from (below) |
-| `hprc-v2.1-mc-grch38.full.maf.gz` + `.tai` (53 GB, 464 haplotypes) | yes, `BgzipMafAdapter` — a different alignment, not a repackaging of the TAF |
+| `v2.0/…/hprc-v2.0-mc-grch38.full.taf.gz` + `.tai` (5.96 GB, 464 haplotypes) | yes, `BgzipTaffyAdapter` — a quarter of the MAF's bytes per locus, and the source `demos/hprc_multiway` unpacks pairwise PAF from (below) |
+| `v2.1/…/hprc-v2.1-mc-grch38.full.maf.gz` + `.tai` (53 GB, 464 haplotypes) | **yes**, `BgzipMafAdapter`, and this is the one the tutorial uses — a different alignment, not a repackaging of the TAF |
 | `sv.gfa` (minigraph rGFA) | yes, graph view plugin |
 | `wave.vcf.gz` (464-haplotype callset) | yes, genotype matrix |
 | `hprc25272.aln.paf.gz` (complete all-vs-all, 310 GB) | yes in principle, never tried at that size |
@@ -44,26 +44,21 @@ per-build set, and what is in them changes which file to reach for.
   name sequences `GRCh38.chr6`, and the v2.0 TAF's header is
   `#taf run_length_encode_bases:1 version:1`, which `BgzipTaffyAdapter.ts` handles
   explicitly.
-- **The TAF is the only reason anything here is still v2.0.** The graph, the
-  bubbles, the wave and pgbi callsets and the GBZ all read v2.1; the alignment
-  cannot, because v2.1 publishes it only as MAF. So the tutorial's alignment lane
-  sits one revision behind the rest of the page, and the read sizes below are what
-  buys that.
-- **Locus reads, measured with the repo's own `queryBlockSpan` over the two
-  `.tai` files** (chr6): 10 kb is 134 KB from the TAF against 598 KB from the MAF,
-  30 kb is 189 KB against 878 KB, 100 kb is 1.4 MB against 3.1 MB. That is the
-  read for the window itself; the display fetches the wider LGV block region. The
-  MAF spec carried `fetchSizeLimit: 50_000_000` to draw the C4 figure at all and
-  the TAF one carries none and draws, which is the only end-to-end statement here.
-- **What the gate would actually see if the tutorial moved to the v2.1 MAF**,
-  measured 2026-09-16 through `queryBlockSpan` over the buffered region the fetch
-  uses (the view plus half a screen each side), against the display's 5 MB
-  default: at the tutorial's own chr6:31,972,057-32,055,418 the MAF is 3.50 MB
-  and the TAF 425 KB, so **both draw and neither needs `fetchSizeLimit` raised** —
-  the historical 50 MB was over-generous rather than measured. What the MAF does
-  cost is range: the alignment tier first exceeds 5 MB at ~123 kb of view against
-  the TAF's ~632 kb. The harness reproduces this doc's whole-chr6 TAF figure
-  (353,902,971 bytes) to the byte.
+- **Everything here reads v2.1 since 2026-09-16**, the alignment included. The
+  TAF was the last holdout, on the read sizes below; the re-run beat them.
+- **What the gate sees, measured 2026-09-16** through `queryBlockSpan` over the
+  buffered region the fetch uses (the view plus half a screen each side), against
+  the display's 5 MB default: at the tutorial's own chr6:31,972,057-32,055,418 the
+  MAF is 3.50 MB and the TAF 425 KB, so **both draw and neither needs
+  `fetchSizeLimit`** — the 50 MB an earlier MAF spec carried was over-generous
+  rather than measured. What the MAF costs is range: the alignment tier first
+  exceeds 5 MB at ~123 kb of view against the TAF's ~632 kb. Narrower windows
+  scale with span rather than landing in whole blocks the way the TAF's did —
+  a 30 kb core is 1.47 MB against the 83 kb module's 3.50 MB. The harness
+  reproduces this doc's whole-chr6 TAF figure (353,902,971 bytes) to the byte.
+- **A C4 read served from the MAF**, as a check that the URL and the index agree
+  at the figure's locus: the 1,850,227 bytes the index asks for decode to 51
+  blocks over `GRCh38.chr6:31,963,151-32,075,542`, carrying all 464 haplotypes.
 - **v2.1 is a re-run, so its alignment differs in content.** Its README
   (`…/minigraph-cactus/v2.1/README`, no extension) lists minigraph construction
   ordered per chromosome, "reduces underalingments" [sic], and assemblies patched
