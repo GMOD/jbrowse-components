@@ -154,6 +154,26 @@ export const TASKS: EvalTask[] = [
         },
       }`,
   },
+  // The defect class a green suite cannot see: a settings key that writes
+  // nothing. `resolution` on a wiggle display is a model property with a
+  // `setResolution` action and no config slot, so applyDisplaySettings applies
+  // nothing and reports it `setter-only`. The setup shows the track first on
+  // purpose — on a FIRST show the snapshot spread lands a declared property, so
+  // only restyling one already on screen reaches the report at all.
+  //
+  // Graded on state, so the agent has to act on the report rather than describe
+  // it: reading the report, or jb.inspect, is how it learns the key needs an
+  // action. Three defects in this path shipped while every other grader here
+  // stayed green, because each of them asserts a key that worked.
+  {
+    name: 'setter-only-setting',
+    prompt: 'Set the resolution of the volvox_microarray track to 5.',
+    setup: `return jb.addTrack({ trackId: 'volvox_microarray' })`,
+    grade: `
+      const t = ${shownTrack('volvox_microarray')}
+      const resolution = t?.activeDisplay?.resolution
+      return { pass: resolution === 5, detail: { shown: !!t, resolution } }`,
+  },
   {
     name: 'two-views',
     prompt:

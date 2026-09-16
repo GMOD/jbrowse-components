@@ -82,8 +82,12 @@ Desktop's MCP server — `run_javascript`, `docs`, `open`, `screenshot` — and
   client.
 - **Before cutting a helper, drive the route you would name instead.**
   `view.launchTrack` drops settings written in its second slot and checks no
-  assembly; `jb.setSession` is `applySnapshot`, so it runs no view launcher. Two
-  reviews proposed cuts onto both without driving either.
+  assembly; `jb.setSession` is `applySnapshot`, so it runs no view launcher;
+  `getConf` is not `readConfObject` with extra steps, because readConfObject
+  handed a model reads the MODEL's member (`getConf.test.ts`). Three reviews
+  proposed cuts onto these without driving any. `jb.rootModel` is a fourth: only
+  Desktop passes rootModel as a call argument, so on Web that getter is the
+  browser agent's handle.
 
 ## Names
 
@@ -109,8 +113,10 @@ Desktop's MCP server — `run_javascript`, `docs`, `open`, `screenshot` — and
   executed on their last run — holds a changed file; a comment- or type-only
   edit runs nothing. **Add `--with-web` before landing anything that moves a
   config slot, a menu, a label or a snapshot shape**: jbrowse-web suites are
-  otherwise left out unless the change is in jbrowse-web.
-  `reference/TEST_INFRASTRUCTURE.md` §"Which suites a change runs".
+  otherwise left out unless the change is in jbrowse-web. Where the full set is
+  not worth the wait, run the single web suite that names your subject instead;
+  it is seconds against 174. `reference/TEST_INFRASTRUCTURE.md` §"Which suites a
+  change runs".
 - **An agent's jest run prints nothing for a passing suite.** jest 30 swaps in
   `AgentReporter` once it detects an agent environment (`CLAUDECODE` is one),
   and it prints only files that fail — so every `console.log`/`warn`/`error` a
