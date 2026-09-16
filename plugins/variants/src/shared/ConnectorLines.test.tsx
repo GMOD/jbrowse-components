@@ -22,6 +22,8 @@ function matrixCellData(starts: number[]): CellDataResult {
     hasSvType: false,
     hasPhaseSet: false,
     svTypeColors: {},
+    paintedCategories: 0,
+    paintedDomain: [],
     simplifiedFeatures: starts.map((start, i) => ({
       id: `v${i}`,
       data: { start, end: start + 1, refName: 'ctgA', name: `v${i}` },

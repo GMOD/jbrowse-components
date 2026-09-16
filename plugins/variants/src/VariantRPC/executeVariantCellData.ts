@@ -125,14 +125,15 @@ interface CellDataBase {
   // phased painter uses (`isPhasedOrHaploid`) and so the one that gates the
   // "Phased" rendering-mode entry — see computeSampleInfo.
   hasPhasedOrHaploid: boolean
-  // Whether any variant site is multiallelic (drives the "Other alt allele"
-  // legend entry), whether any genotype call is unphased (drives the "Unphased"
-  // legend entry in phased mode), and whether any genotype is a no-call (drives
-  // the "No call" legend entry in phased mode). Computed here because the
-  // simplified features sent to the client no longer carry ALT/genotypes.
+  // What the cell loops actually painted: a secondary-alt fill, a black
+  // unphased fill, a no-call fill. Each drives its legend entry, so the entry
+  // means the reader can see one rather than that the data could produce one.
   hasSecondaryAlt: boolean
   hasUnphased: boolean
   hasNoCall: boolean
+  // The cell scale's domain values an alt cell was painted for — the impact
+  // tiers or SV classes the legend lists.
+  paintedDomain: string[]
   // Whether any visible variant carries a SnpEff/VEP annotation, gating the
   // "Color by...→Consequence impact" menu option.
   hasConsequence: boolean

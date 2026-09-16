@@ -33,6 +33,8 @@ function matrixCellData(codesBySample: Record<number, number>): CellDataResult {
     hasSvType: false,
     hasPhaseSet: false,
     svTypeColors: {},
+    paintedCategories: 0,
+    paintedDomain: [],
     simplifiedFeatures: [
       { id: 'v0', data: { start: 100, end: 101, refName: 'ctgA', name: 'v0' } },
     ],

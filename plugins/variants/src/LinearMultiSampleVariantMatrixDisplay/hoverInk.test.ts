@@ -31,6 +31,8 @@ function matrixCellData(): MatrixCellDataResult {
     hasSvType: false,
     hasPhaseSet: false,
     svTypeColors: {},
+    paintedCategories: 0,
+    paintedDomain: [],
     simplifiedFeatures: [0, 1000].map((start, i) => ({
       id: `v${i}`,
       data: { start, end: start + 1, refName: 'ctgA', name: `v${i}` },

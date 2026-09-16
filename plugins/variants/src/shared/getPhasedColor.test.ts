@@ -1,3 +1,6 @@
+import { colord } from '@jbrowse/core/util/colord'
+
+import { NO_CALL_COLOR } from './constants.ts'
 import {
   featureHasPhaseSet,
   getPhasedColor,
@@ -31,9 +34,22 @@ test('consecutive phase sets still land far apart on the wheel', () => {
 })
 
 test('a non-numeric phase set falls back to hue 0 rather than NaN', () => {
-  expect(getPhasedColor(['1', '0'], 0, '1', 'notanumber')).toBe(
-    'hsl(0, 50%, 50%)',
-  )
+  expect(getPhasedColor(['1', '0'], 0, '1', 'notanumber')).toMatch(/^hsl\(0, /)
+})
+
+// The wheel and the absent-data colors are different scales, so no turn of it
+// may land on one. It could: no-call is hsl(50,50%,50%) and the wheel used to
+// spin at 50%/50%, so a phase set hashing to hue 50 painted a called haplotype
+// the color the key reserves for a missing call.
+test('no phase set can paint the no-call color', () => {
+  const colors = new Set<string>()
+  for (let ps = 1; ps <= 50000; ps++) {
+    colors.add(getPhasedColor(['1', '0'], 0, '1', String(ps)))
+  }
+  colors.add(getPhasedColor(['1', '0'], 0, '1', 'notanumber'))
+  for (const color of colors) {
+    expect(colord(color).toHex()).not.toBe(colord(NO_CALL_COLOR).toHex())
+  }
 })
 
 // FORMAT is a colon-separated field list, so the PS test has to be an exact

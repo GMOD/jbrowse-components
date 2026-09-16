@@ -1,14 +1,19 @@
+import { ALT_HUE, shadeByDosage } from './cellFill.ts'
 import { NO_CALL_COLOR, REFERENCE_COLOR } from './constants.ts'
 import { PHASE_SET_COLOR } from './getPhasedColor.ts'
-import { CONSEQUENCE_IMPACT_JEXL } from './variantConsequence.ts'
+import {
+  CONSEQUENCE_IMPACT_JEXL,
+  UNANNOTATED_IMPACT,
+} from './variantConsequence.ts'
 import {
   getGenotypeEntries,
   getSampleGroupEntries,
   getVariantColorScales,
 } from './variantLegend.ts'
-import { SV_TYPE_COLOR } from './variantSvType.ts'
+import { NON_SV_TYPE, SV_TYPE_COLOR } from './variantSvType.ts'
 
 import type { Source } from './types.ts'
+import type { VariantLegendInputs } from './variantLegend.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 
 // Every scale these build is categorical; the narrowing is what the type asks.
@@ -16,15 +21,27 @@ function entriesOf(scale: ColorScale | undefined) {
   return scale?.kind === 'categorical' ? scale.entries : undefined
 }
 
+const inputs = (over: Partial<VariantLegendInputs> = {}): VariantLegendInputs =>
+  ({
+    renderingMode: 'alleleCount',
+    hasSecondaryAlt: false,
+    hasUnphased: false,
+    hasNoCall: false,
+    paintedDomain: [],
+    shadeByDosage: true,
+    ...over,
+  }) satisfies VariantLegendInputs
+
 describe('getGenotypeEntries', () => {
-  it('alleleCount mode: dosage shades + no call', () => {
-    const items = getGenotypeEntries({
-      renderingMode: 'alleleCount',
-      hasSecondaryAlt: false,
-      hasUnphased: false,
-      hasNoCall: false,
-    })
-    expect(items.map(i => i.label)).toEqual([
+  it('alleleCount mode: the ramp, and no-call only when one was painted', () => {
+    expect(getGenotypeEntries(inputs()).map(i => i.label)).toEqual([
+      'Homozygous reference',
+      'Heterozygous alt',
+      'Homozygous alt',
+    ])
+    expect(
+      getGenotypeEntries(inputs({ hasNoCall: true })).map(i => i.label),
+    ).toEqual([
       'Homozygous reference',
       'Heterozygous alt',
       'Homozygous alt',
@@ -32,42 +49,49 @@ describe('getGenotypeEntries', () => {
     ])
   })
 
-  it('alleleCount mode: adds other-alt when multiallelic', () => {
-    const items = getGenotypeEntries({
-      renderingMode: 'alleleCount',
-      hasSecondaryAlt: true,
-      hasUnphased: false,
-      hasNoCall: false,
-    })
-    expect(items.map(i => i.label)).toContain('Other alt allele')
+  it('alleleCount mode has no secondary-alt swatch: which alt is not on hue', () => {
+    expect(
+      getGenotypeEntries(inputs({ hasSecondaryAlt: true })).map(i => i.label),
+    ).not.toContain('Other alt allele')
+  })
+
+  it('the ramp swatches are the ones the cells take', () => {
+    const items = getGenotypeEntries(inputs())
+    expect(items[1]!.color).toBe(shadeByDosage(ALT_HUE, 0.5))
+    expect(items[2]!.color).toBe(ALT_HUE)
+  })
+
+  it('shading off collapses the ramp to one flat alt swatch', () => {
+    const items = getGenotypeEntries(inputs({ shadeByDosage: false }))
+    expect(items.map(i => i.label)).toEqual([
+      'Homozygous reference',
+      'Alt allele',
+    ])
+    expect(items[1]!.color).toBe(ALT_HUE)
   })
 
   it('phased mode: ref + alt, plus unphased when present', () => {
-    const items = getGenotypeEntries({
-      renderingMode: 'phased',
-      hasSecondaryAlt: false,
-      hasUnphased: true,
-      hasNoCall: false,
-    })
-    expect(items.map(i => i.label)).toEqual([
-      'Reference',
-      'Alt allele',
-      'Unphased',
-    ])
+    expect(
+      getGenotypeEntries(
+        inputs({ renderingMode: 'phased', hasUnphased: true }),
+      ).map(i => i.label),
+    ).toEqual(['Reference', 'Alt allele', 'Unphased'])
   })
 
   it('phased mode: adds no-call when present, distinct from unphased', () => {
-    const items = getGenotypeEntries({
-      renderingMode: 'phased',
-      hasSecondaryAlt: false,
-      hasUnphased: false,
-      hasNoCall: true,
-    })
-    expect(items.map(i => i.label)).toEqual([
-      'Reference',
-      'Alt allele',
-      'No call',
-    ])
+    expect(
+      getGenotypeEntries(
+        inputs({ renderingMode: 'phased', hasNoCall: true }),
+      ).map(i => i.label),
+    ).toEqual(['Reference', 'Alt allele', 'No call'])
+  })
+
+  it('phased mode names the other alt only when one was painted', () => {
+    expect(
+      getGenotypeEntries(
+        inputs({ renderingMode: 'phased', hasSecondaryAlt: true }),
+      ).map(i => i.label),
+    ).toContain('Other alt allele')
   })
 })
 
@@ -127,10 +151,7 @@ describe('getVariantColorScales', () => {
 
   it('only the genotype section when colorBy is unset', () => {
     const sections = getVariantColorScales({
-      renderingMode: 'alleleCount',
-      hasSecondaryAlt: false,
-      hasUnphased: false,
-      hasNoCall: false,
+      ...inputs(),
       featureColor: '',
       colorBy: '',
       sources,
@@ -140,10 +161,7 @@ describe('getVariantColorScales', () => {
 
   it('adds a title-cased group section when colorBy is set', () => {
     const sections = getVariantColorScales({
-      renderingMode: 'alleleCount',
-      hasSecondaryAlt: false,
-      hasUnphased: false,
-      hasNoCall: false,
+      ...inputs(),
       featureColor: '',
       colorBy: 'population',
       sources,
@@ -153,35 +171,42 @@ describe('getVariantColorScales', () => {
     expect(entriesOf(sections[1])!.map(i => i.label)).toEqual(['EUR', 'AFR'])
   })
 
-  it('replaces the genotype section with an impact key for the consequence preset', () => {
+  it('lists only the impact tiers a cell was painted for', () => {
     const sections = getVariantColorScales({
-      renderingMode: 'alleleCount',
-      hasSecondaryAlt: false,
-      hasUnphased: false,
-      hasNoCall: false,
-      featureColor: 'jexl:impactColor(feature)',
+      ...inputs({ paintedDomain: ['MODIFIER', 'HIGH'] }),
+      featureColor: CONSEQUENCE_IMPACT_JEXL,
       colorBy: '',
       sources,
     })
     expect(sections.map(s => s.id)).toEqual(['consequenceImpact'])
     expect(entriesOf(sections[0])!.map(i => i.label)).toEqual([
+      // severity order, not the order they were met
       'HIGH',
-      'MODERATE',
-      'LOW',
       'MODIFIER',
-      // the override only reaches alt-carrying cells, so the ref fill is still
-      // on screen and still has to be named
+      // the hue only reaches alt-carrying cells, so the ref fill is still on
+      // screen and still has to be named
       'Homozygous reference',
     ])
   })
 
-  it('builds an SV-type section from the shipped color map', () => {
+  it('names unannotated records as their own tier, in its own color', () => {
+    const [section] = getVariantColorScales({
+      ...inputs({ paintedDomain: ['MODIFIER', UNANNOTATED_IMPACT] }),
+      featureColor: CONSEQUENCE_IMPACT_JEXL,
+      colorBy: '',
+      sources,
+    })
+    const entries = entriesOf(section)!
+    const modifier = entries.find(i => i.label === 'MODIFIER')!
+    const unannotated = entries.find(i => i.label === UNANNOTATED_IMPACT)!
+    expect(unannotated).toBeDefined()
+    expect(unannotated.color).not.toBe(modifier.color)
+  })
+
+  it('builds an SV-type section from the painted classes', () => {
     const sections = getVariantColorScales({
-      renderingMode: 'alleleCount',
-      hasSecondaryAlt: false,
-      hasUnphased: false,
-      hasNoCall: false,
-      featureColor: 'svType',
+      ...inputs({ paintedDomain: ['INVDUP', 'DEL'] }),
+      featureColor: SV_TYPE_COLOR,
       svTypeColors: { DEL: '#e41a1c', DUP: '#377eb8', INVDUP: '#1f77b4' },
       colorBy: '',
       sources,
@@ -189,8 +214,7 @@ describe('getVariantColorScales', () => {
     expect(sections.map(s => s.id)).toEqual(['svType'])
     expect(entriesOf(sections[0])!).toEqual([
       { value: 'DEL', label: 'Deletion', color: '#e41a1c' },
-      { value: 'DUP', label: 'Duplication', color: '#377eb8' },
-      { value: 'INVDUP', label: 'INVDUP', color: '#1f77b4' }, // unrecognized token: raw label
+      { value: 'INVDUP', label: 'INVDUP', color: '#1f77b4' }, // raw token label
       {
         value: 'Homozygous reference',
         label: 'Homozygous reference',
@@ -199,19 +223,31 @@ describe('getVariantColorScales', () => {
     ])
   })
 
-  it('names the no-call fill in an SV-type key when one is drawn', () => {
+  it('lists the non-structural class as a member of the SV scale', () => {
     const [section] = getVariantColorScales({
-      renderingMode: 'alleleCount',
-      hasSecondaryAlt: false,
-      hasUnphased: false,
-      hasNoCall: true,
-      featureColor: 'svType',
+      ...inputs({ paintedDomain: ['DEL', NON_SV_TYPE] }),
+      featureColor: SV_TYPE_COLOR,
+      svTypeColors: { DEL: '#e41a1c', [NON_SV_TYPE]: '#808080' },
+      colorBy: '',
+      sources,
+    })
+    expect(entriesOf(section)!.map(i => i.value)).toEqual([
+      'DEL',
+      NON_SV_TYPE,
+      'Homozygous reference',
+    ])
+  })
+
+  it('names the no-call fill in an SV-type key when one was painted', () => {
+    const [section] = getVariantColorScales({
+      ...inputs({ hasNoCall: true, paintedDomain: ['DEL'] }),
+      featureColor: SV_TYPE_COLOR,
       svTypeColors: { DEL: '#e41a1c' },
       colorBy: '',
       sources,
     })
-    // an SV-type override paints alt cells only; a no-call keeps the no-call
-    // yellow, and a key that omits it leaves a whole column unexplained
+    // an SV-type hue paints alt cells only; a no-call keeps the no-call yellow,
+    // and a key that omits it leaves a whole column unexplained
     expect(entriesOf(section)!).toEqual([
       { value: 'DEL', label: 'Deletion', color: '#e41a1c' },
       {
@@ -225,17 +261,18 @@ describe('getVariantColorScales', () => {
 
   it('keeps a genotype key for a plain CSS feature color, recolored', () => {
     const sections = getVariantColorScales({
-      renderingMode: 'phased',
-      hasSecondaryAlt: true,
-      hasUnphased: false,
-      hasNoCall: true,
+      ...inputs({
+        renderingMode: 'phased',
+        hasSecondaryAlt: true,
+        hasNoCall: true,
+      }),
       featureColor: '#E69F00',
       colorBy: '',
       sources,
     })
     expect(sections.map(s => s.id)).toEqual(['genotypes'])
-    // one alt entry in the override color: the secondary-alt color is
-    // overridden too, so listing it would describe a swatch nothing paints
+    // one alt entry in the chosen hue: the secondary-alt color is replaced too,
+    // so listing it would describe a swatch nothing paints
     expect(entriesOf(sections[0])!).toEqual([
       { value: 'Reference', label: 'Reference', color: REFERENCE_COLOR },
       { value: 'Alt allele', label: 'Alt allele', color: '#E69F00' },
@@ -243,12 +280,23 @@ describe('getVariantColorScales', () => {
     ])
   })
 
+  it('shades a plain CSS feature color in allele-count mode', () => {
+    const [section] = getVariantColorScales({
+      ...inputs(),
+      featureColor: '#E69F00',
+      colorBy: '',
+      sources,
+    })
+    expect(entriesOf(section)!.map(i => [i.label, i.color])).toEqual([
+      ['Homozygous reference', REFERENCE_COLOR],
+      ['Heterozygous alt', shadeByDosage('#E69F00', 0.5)],
+      ['Homozygous alt', '#E69F00'],
+    ])
+  })
+
   it('drops the cell legend for an arbitrary custom feature color', () => {
     const sections = getVariantColorScales({
-      renderingMode: 'alleleCount',
-      hasSecondaryAlt: false,
-      hasUnphased: false,
-      hasNoCall: false,
+      ...inputs(),
       featureColor: 'jexl:get(feature,"foo")',
       colorBy: 'population',
       sources,
@@ -259,9 +307,7 @@ describe('getVariantColorScales', () => {
 
 describe('phase-set legend section', () => {
   const base = {
-    hasSecondaryAlt: false,
-    hasUnphased: false,
-    hasNoCall: false,
+    ...inputs(),
     svTypeColors: {},
     colorBy: '',
     sources: undefined,
@@ -304,10 +350,7 @@ describe('phase-set legend section', () => {
 
 describe('getVariantColorScales insertion marker', () => {
   const base = {
-    renderingMode: 'alleleCount',
-    hasSecondaryAlt: false,
-    hasUnphased: false,
-    hasNoCall: false,
+    ...inputs(),
     featureColor: '',
     svTypeColors: {},
     colorBy: '',

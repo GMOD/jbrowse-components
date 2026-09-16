@@ -323,11 +323,9 @@ describe('computeSampleInfo phasing flags', () => {
   it('takes an uncalled genotype as evidence of neither', () => {
     // A bare '.' is how plenty of files spell a missing diploid call, so
     // counting it as haploid evidence would offer phased mode on any unphased
-    // callset with a hole in it. `hasUnphased` already declines './.' for the
-    // same reason.
+    // callset with a hole in it.
     const result = flags(['S1', 'S2'], ['./.', '.'])
     expect(result.hasPhasedOrHaploid).toBe(false)
-    expect(result.hasUnphased).toBe(false)
   })
 
   it('reports a mixed-ploidy phased file as both', () => {

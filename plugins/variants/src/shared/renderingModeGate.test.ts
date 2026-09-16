@@ -25,6 +25,7 @@ function cellData(flags: {
     hasSecondaryAlt: false,
     hasUnphased: false,
     hasNoCall: false,
+    paintedDomain: [],
     hasConsequence: false,
     hasSvType: false,
     hasPhaseSet: false,

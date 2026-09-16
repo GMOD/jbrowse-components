@@ -335,26 +335,35 @@ describe('computeVariantCells featureColor override', () => {
     end: 101,
   })
 
-  test('every alt-carrying cell takes the flat override; ref and no-call keep theirs', async () => {
-    const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
-    const { REFERENCE_COLOR } = await import('../../shared/constants.ts')
-    const override = 'rgb(1,2,3)'
-    const result = computeVariantCells({
+  const cellsWithOverride = (shadeDosage: boolean) =>
+    computeVariantCells({
       filteredVariants: [{ feature, mostFrequentAlt: '1' }],
       sources,
       renderingMode: 'alleleCount',
       referenceDrawingMode: 'draw',
       featureColor: () => override,
+      shadeDosage,
       ...genotypeArgs([feature]),
     })
-    const colors = [...result.cellColors]
-    const overrideAbgr = getCachedABGR(override)
-    const refAbgr = getCachedABGR(REFERENCE_COLOR)
-    // both the het (0/1) and hom-alt (1/1) cells take the exact override,
-    // regardless of dosage; ref keeps its color, no-call is neither
-    expect(colors.filter(c => c === overrideAbgr)).toHaveLength(2)
-    expect(colors).toContain(refAbgr)
-    expect(result.numCells).toBe(4)
+  const override = 'rgb(1,2,3)'
+
+  test('the override is the hue, and dosage shades it', async () => {
+    const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
+    const { REFERENCE_COLOR } = await import('../../shared/constants.ts')
+    const { shadeByDosage } = await import('../../shared/cellFill.ts')
+    const colors = [...cellsWithOverride(true).cellColors]
+    // the hom-alt cell is the hue itself and the het a lighter version of it;
+    // ref keeps its color, no-call is neither
+    expect(colors).toContain(getCachedABGR(override))
+    expect(colors).toContain(getCachedABGR(shadeByDosage(override, 0.5)))
+    expect(colors).toContain(getCachedABGR(REFERENCE_COLOR))
+    expect(cellsWithOverride(true).numCells).toBe(4)
+  })
+
+  test('shading off paints every alt cell the flat class color', async () => {
+    const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
+    const colors = [...cellsWithOverride(false).cellColors]
+    expect(colors.filter(c => c === getCachedABGR(override))).toHaveLength(2)
   })
 })
 
@@ -896,9 +905,9 @@ describe('computeVariantCells cellAltDosage', () => {
       ],
       'alleleCount',
     )
-    // `.` counts toward the denominator: the sample carries the sequence on the
-    // one haplotype that was called, which is half dosage.
-    expect(byRow.get(0)).toBe(128) // `./1`
+    // Dosage is over CALLED alleles, so `./1` is a full dose on the one
+    // haplotype that was called; how many went uncalled is missingness.
+    expect(byRow.get(0)).toBe(255) // `./1`
     expect(byRow.get(1)).toBe(0) // `./0`
   })
 })
