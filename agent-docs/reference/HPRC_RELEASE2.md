@@ -294,10 +294,9 @@ because minigraph-cactus clipped the telomeres out of the walks.
 `hprc_multiway_gfa.pif.gz{,.csi}`, `<sample>.<hap>.gfa.chrom.sizes` and
 `README_gfa.txt` (`UPLOAD=1`, an `aws s3 sync --size-only` limited to those
 names, so nothing already there is touched). `demos/hprc_multiway/config.json`
-still points at the TAF files; switching it is a two-line change per haplotype
-(`.graph.chrom.sizes` → `.gfa.chrom.sizes`, `hprc_multiway_graph.pif.gz` →
-`hprc_multiway_gfa.pif.gz`) plus the track name, deployed with
-`scripts/deploy-demo.sh` from the checked-in copy.
+serves the GFA build — `hprc_multiway_gfa.pif.gz` and eight
+`<sample>.<hap>.gfa.chrom.sizes` — and the TAF-route files stay hosted beside
+it.
 
 ## What the zoom-out tier is worth
 

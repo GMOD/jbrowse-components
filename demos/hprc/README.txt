@@ -28,7 +28,8 @@ Source
 
   The release 2.0 projections (hprc-v2.0-mc-grch38.*) built 2026-07-23 from
   the top-level sv.gfa.gz stay hosted unchanged for anything pinned to them;
-  GRCh38 coordinates agree between the two, segment ids do not.
+  GRCh38 coordinates agree between the two, segment ids do not. Everything
+  JBrowse serves reads 2.1 as of 2026-09-16, the multiple alignment included.
 
   HPRC data is released under CC0. See
   https://github.com/human-pangenomics/hpp_pangenome_resources for the release
@@ -102,12 +103,19 @@ Files
                                              under "The graph view from the
                                              GBZ, for a chosen set"
 
-  hprc-v2.0-mc-grch38.summary.bed.gz{,.tbi}  the MAF summary, by
+  hprc-v2.1-mc-grch38.summary.bed.gz{,.tbi}  the MAF summary, by
                                              scripts/build_hprc_maf_summary.sh
-                                             over the v2.0 TAF. v2.1 publishes
-                                             its alignment as a 53 GB MAF and
-                                             no TAF, and the graph and callset
-                                             are both v2.0 builds
+                                             over the v2.1 MAF, in one
+                                             streaming pass. 396,363 rows, 464
+                                             haplotypes, all 195 contigs. This
+                                             is the one the tutorial's track
+                                             reads
+
+  hprc-v2.0-mc-grch38.summary.bed.gz{,.tbi}  the same tier over the v2.0 TAF,
+                                             kept for anything pinned to it.
+                                             152 of 195 contigs: the 43 absent
+                                             are chrUn_* scaffolds taffy could
+                                             not extract by region
 
   Stable names are PanSN (GRCh38#0#chr1), so a JBrowse track on an ordinary
   hg38 assembly needs assemblyNameToPanSN: { "hg38": "GRCh38" }, and one on
