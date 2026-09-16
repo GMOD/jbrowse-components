@@ -36,7 +36,7 @@ UCSC and the companion index we host.
 **The alignment and the assemblies**
 
 - the multiple alignment the graph and the callset are both derived from:
-  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz
+  https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz
 - the release's all-vs-GRCh38 alignment, which the panel's build script slices:
   https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/impg/pafs/hprc465vsgrch38.aln.paf.gz
 - the CAT gene annotation index, one GFF3 per haplotype:
@@ -78,7 +78,7 @@ axis:
 ## The alignment the graph and callset came from {#the-alignment-underneath-both}
 
 The graph and the callset are both derived from the multiple alignment, and
-release 2 publishes that too: `hprc-v2.0-mc-grch38.full.taf.gz`, 5.9 GB, 464
+release 2.1 publishes that too: `hprc-v2.1-mc-grch38.full.maf.gz`, 53 GB, 464
 haplotypes, beside a `.tai` index written by
 [taffy](https://github.com/ComparativeGenomicsToolkit/taffy). The index makes it
 addressable, so a locus is a ranged read rather than a download:
@@ -90,18 +90,18 @@ addressable, so a locus is a ranged read rather than a download:
   "name": "HPRC release 2 pangenome alignment (464 haplotypes)",
   "assemblyNames": ["hg38"],
   "adapter": {
-    "type": "BgzipTaffyAdapter",
-    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz"
+    "type": "BgzipMafAdapter",
+    "uri": "https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz"
   }
 }
 ```
 
-The `uri` shorthand resolves the sibling `.tai`, which downloads once. The same
-alignment is published as a 53 GB MAF under `v2.1/`, which `BgzipMafAdapter`
-reads with the same shorthand, and the v2.0 TAF is the build
-[the graph](/docs/tutorials/pangenome_hprc#add-the-graph-track) and
+The `uri` shorthand resolves the sibling `.tai`, which downloads once. This is
+the build [the graph](/docs/tutorials/pangenome_hprc#add-the-graph-track) and
 [the callset](/docs/tutorials/pangenome_hprc_part2#the-variant-callset) come
-from.
+from. Release 2.0 publishes the same alignment as a 5.9 GB TAF, which
+`BgzipTaffyAdapter` reads with the same shorthand — a quarter of the bytes per
+locus, but an earlier build, with more underalignment and unpatched centromeres.
 
 Type `chr6:31,980,000-32,050,000`, the C4 window from part 1's table, and show
 four lanes: the genes, the segments, the callset with part 2's structural

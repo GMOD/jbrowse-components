@@ -215,8 +215,8 @@ const HPRC_MAF_TRACK = {
   name: 'HPRC release 2 pangenome alignment (464 haplotypes)',
   assemblyNames: ['hg38'],
   adapter: {
-    type: 'BgzipTaffyAdapter',
-    uri: 'https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.0/hprc-v2.0-mc-grch38/hprc-v2.0-mc-grch38.full.taf.gz',
+    type: 'BgzipMafAdapter',
+    uri: 'https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38/hprc-v2.1-mc-grch38.full.maf.gz',
   },
 }
 
@@ -713,21 +713,20 @@ export const mafSpecs: ScreenshotSpec[] = [
     parts: ['maf_summary_zoomed_out', 'maf_summary_zoomed_in'],
   },
   // HPRC release 2's minigraph-cactus multiple alignment, read straight off the
-  // human-pangenomics bucket by BgzipTaffyAdapter: a 5.96 GB TAF plus its taffy
+  // human-pangenomics bucket by BgzipMafAdapter: a 53 GB MAF plus its taffy
   // .tai, no conversion step and no local copy.
   //
-  // TAF rather than the 53 GB MAF beside it, and the reason is the read size.
-  // HPRC publishes the alignment in one format per build — TAF only under v2.0,
-  // MAF only under v2.1 — so this lane is the one thing here still on v2.0 while
-  // the graph and the callsets read v2.1. Both index the same 195 GRCh38 contigs
-  // and name sequences the same way (`GRCh38.chr6`), so the swap is the adapter
-  // and the URL.
+  // v2.1's MAF rather than v2.0's 5.96 GB TAF, because HPRC publishes the
+  // alignment in one format per build and v2.1 is a re-run rather than a
+  // repackaging — minigraph ordered per chromosome to reduce underalignments,
+  // centromeres patched against rCRS. The graph and the callsets on this page
+  // are v2.1, so the TAF drew a different build's alignment beside them.
   //
-  // Measured off the two .tai files with the repo's own queryBlockSpan, chr6:
-  // the 83 kb window below is a 292 KB read against the MAF's 878 KB, and a
-  // 10 kb locus is 134 KB against 598 KB. That is also why no fetchSizeLimit is
-  // set here any more: the read is well under the 1 MB default the byte gate
-  // uses, where the MAF needed the gate raised to draw at all.
+  // The MAF costs reads. Measured through queryBlockSpan over the buffered
+  // region the fetch uses (the view plus half a screen each side): the window
+  // below is 3.50 MB against the TAF's 425 KB, both inside the display's 5 MB
+  // default, so no fetchSizeLimit. What it costs is range — the alignment tier
+  // first exceeds that default at ~123 kb of view against the TAF's ~632 kb.
   //
   // The locus is C4, which is the example HPRCv2's own README reaches for, and
   // the window is the README's own: GRCh38#0#chr6:31972057-32055418. It used to
@@ -735,13 +734,14 @@ export const mafSpecs: ScreenshotSpec[] = [
   // was a guess and a costly one — C4A is chr6:31,982,057-32,002,681 and C4B is
   // chr6:32,014,795-32,035,418, so the narrow window held C4A alone while the
   // figure's whole claim (and its caption) is about copy number ACROSS C4A and
-  // C4B. Widening to the full module costs 103 KB more, measured above, because
-  // the read is bgzf-block granular rather than proportional to span: 70 kb and
-  // 90 kb both resolve to the same 292 KB. C4A/C4B are copy-number variable in
-  // humans, so the thing to see is not phylogeny — every row is a human — but
-  // which haplotypes carry which copies. The 470-way figures above are the
-  // contrast: there a missing row means a species diverged past alignment, here
-  // it means a person does not have that segment.
+  // C4B. On the MAF the read tracks span rather than landing in whole blocks
+  // the way the TAF's did, so widening to the full module costs 1.47 MB -> 3.50
+  // MB at the gate — still inside the 5 MB default, and the figure's claim does
+  // not survive the narrow window at any price. C4A/C4B are copy-number
+  // variable in humans, so the thing to see is not phylogeny — every row is a
+  // human — but which haplotypes carry which copies. The 470-way figures above
+  // are the contrast: a missing row there means a species diverged past
+  // alignment, here it means a person does not have that segment.
   //
   // THE UCSC NCBI RefSeq SET, NOT MANE, AND THE REASON IS THE LABELS (review:
   // "need to use ncbi gene track, this has NM_ transcriptid instead of gene
