@@ -25,6 +25,9 @@ const TWO_PI = 2 * Math.PI
 /** CSS px between the ruler's arc and the first ring, and between rings. */
 export const RING_GAP_PX = 4
 
+/** The share of the radius the rings may take before they shrink. */
+export const MAX_RINGS_RADIUS_FRACTION = 0.5
+
 /**
  * A ring's display: the height and paint count every linear display carries
  * through `TrackHeightMixin` and `RenderLifecycleMixin`, and its component.
@@ -121,20 +124,34 @@ export function stripBlocks(
 
 /**
  * Where the rings sit: stacked inward from the ruler, each taking its
- * display's height as its band, with a gap between.
+ * display's height as its band, with a gap between. Past
+ * `MAX_RINGS_RADIUS_FRACTION` of the radius every band shrinks in proportion,
+ * so a small circle keeps an interior for its chords and ribbons.
  */
 export function layoutRings(
   displays: readonly RingDisplay[],
   radiusPx: number,
 ): Ring[] {
+  const heights = displays.reduce((sum, d) => sum + d.height, 0)
+  const gaps = displays.length * RING_GAP_PX
+  const scale = Math.min(
+    1,
+    Math.max(0, radiusPx * MAX_RINGS_RADIUS_FRACTION - gaps) / heights,
+  )
   const rings: Ring[] = []
   let outerPx = radiusPx - RING_GAP_PX
   for (const display of displays) {
-    const innerPx = Math.max(0, outerPx - display.height)
+    const innerPx = Math.max(0, outerPx - display.height * scale)
     rings.push({ display, innerPx, outerPx })
     outerPx = innerPx - RING_GAP_PX
   }
   return rings
+}
+
+/** Strip px per ring px, above 1 on a ring that `layoutRings` shrank. */
+function stripPerRingPx({ display, innerPx, outerPx }: Ring) {
+  const band = outerPx - innerPx
+  return band > 0 ? display.height / band : 1
 }
 
 /**
@@ -156,7 +173,11 @@ export function ringHit(
   }
   let a = Math.atan2(dy, dx) - offsetRadians
   a -= Math.floor(a / TWO_PI) * TWO_PI
-  return { ring, x: a * stripRadiusPx, y: ring.outerPx - r }
+  return {
+    ring,
+    x: a * stripRadiusPx,
+    y: (ring.outerPx - r) * stripPerRingPx(ring),
+  }
 }
 
 /**
@@ -482,8 +503,9 @@ export const RingHost = types
             ? { image: canvas, width: canvas.width, height: canvas.height }
             : undefined
         const box = canvasBox(el, canvas)
-        const outerPx = ring.outerPx - box.top
-        const innerPx = Math.max(ring.innerPx, outerPx - box.height)
+        const scale = stripPerRingPx(ring)
+        const outerPx = ring.outerPx - box.top / scale
+        const innerPx = Math.max(ring.innerPx, outerPx - box.height / scale)
         const key = [
           index,
           innerPx,

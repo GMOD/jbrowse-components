@@ -139,10 +139,13 @@ test('a bigwig-shaped track opens on the circle as a wiggle ring over the strip'
   const [a, b] = display.renderBlocks
   expect(b!.screenStartPx - a!.screenEndPx).toBeCloseTo(view.effectiveSpacingPx)
 
-  // the ring is the display's height, under the ruler
+  // the ring is the display's height, under the ruler, shrunk to leave the
+  // small test circle half its radius
   const [ring] = host.rings
   expect(ring!.outerPx).toBe(view.radiusPx - RING_GAP_PX)
-  expect(ring!.innerPx).toBe(ring!.outerPx - display.height)
+  expect(ring!.innerPx).toBeCloseTo(
+    ring!.outerPx - Math.min(display.height, view.radiusPx / 2 - RING_GAP_PX),
+  )
   expect(host.chordRadiusPx).toBe(ring!.innerPx - RING_GAP_PX)
 
   // the strip fetched per slice

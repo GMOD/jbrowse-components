@@ -90,9 +90,25 @@ test('rings stack inward from the ruler, each its display height, a gap between'
     [500 - RING_GAP_PX, 500 - RING_GAP_PX - 100],
     [500 - 2 * RING_GAP_PX - 100, 500 - 2 * RING_GAP_PX - 140],
   ])
-  expect(
-    layoutRings([display('a', 2000), display('b', 1)], 500)[1]!.innerPx,
-  ).toBe(0)
+})
+
+// two default-height rings on a small circle used to take the whole interior,
+// leaving the ribbons a dot
+test('rings past half the radius shrink in proportion, keeping the interior', () => {
+  const rings = layoutRings([display('a', 100), display('b', 50)], 150)
+  const bands = rings.map(r => r.outerPx - r.innerPx)
+  expect(bands[0]! / bands[1]!).toBeCloseTo(2)
+  expect(rings[1]!.innerPx).toBeCloseTo(75)
+})
+
+// the strip is still drawn at the display's height, so a point on a shrunk
+// ring unwarps to the strip row the warp put there
+test('a point on a shrunk ring unwarps to its strip row', () => {
+  const [ring] = layoutRings([display('a', 300)], 200)
+  const band = ring!.outerPx - ring!.innerPx
+  const r = ring!.outerPx - band / 2
+  const hit = ringHit([ring!], r, 0, 0, 200)!
+  expect(hit.y).toBeCloseTo(150)
 })
 
 test('a point on a ring unwarps to the strip x its angle covers and the y from the outer rim', () => {
