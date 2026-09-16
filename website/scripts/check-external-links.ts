@@ -71,10 +71,16 @@ const PREFIXES: [string, string][] = [
     'https://jbrowse.org/demos/ecoli_pangenome/ecoli_pggb.tier50',
     '.segs.bed.gz',
   ],
-  ['https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38', '.segs.bed.gz'],
+  ['https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38', '.segs.bed.gz'],
   [
-    'https://jbrowse.org/demos/hprc/hprc-v2.0-mc-grch38.tier10000',
+    'https://jbrowse.org/demos/hprc/hprc-v2.1-mc-grch38.tier10000',
     '.segs.bed.gz',
+  ],
+  // an HPRC release directory, which S3 does not list — the scripts append a
+  // filename to it
+  [
+    'https://s3-us-west-2.amazonaws.com/human-pangenomics/pangenomes/freeze/release2/minigraph-cactus/v2.1/hprc-v2.1-mc-grch38',
+    '/hprc-v2.1-mc-grch38.gbz',
   ],
   // zarr store roots — the adapter reads objects inside
   ['https://jbrowse.org/demos/tcga/tcga_brca_cnv.zarr', '/zarr.json'],
