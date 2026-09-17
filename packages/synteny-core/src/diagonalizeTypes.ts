@@ -11,6 +11,17 @@ export interface DiagonalizeStats {
  * dialog and the auto-diagonalize path can drive either view's runner.
  */
 export interface DiagonalizeRunOpts {
+  /**
+   * Row the sweep starts from, and the one row it leaves alone: rows below it
+   * are ordered against the row above them, rows above it against the row
+   * below. Defaults to the top row, which is the plain top-down cascade.
+   *
+   * It matters wherever the top row is not the one whose order means
+   * something: `linkage_groups/alg_stack` stacks six genomes whose linkage
+   * groups are the jellyfish row's chromosomes, and anchored on the top row
+   * every row below is ordered off a comb jelly instead.
+   */
+  anchorRow?: number
   signal?: AbortSignal
   statusCallback?: StatusCallback
   /**

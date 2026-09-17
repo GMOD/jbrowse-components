@@ -146,3 +146,40 @@ test('a run in flight offers Stop instead of Close', () => {
   expect(screen.getByText('Stop')).toBeTruthy()
   expect(screen.queryByText('Close')).toBeNull()
 })
+
+// The stacked-rows case: more than two rows name themselves in a picker, and
+// the row picked is handed back so the view can keep it.
+test('the anchor picker lists the rows and reports the one picked', async () => {
+  const onChange = jest.fn()
+  render(
+    <DiagonalizeDialog
+      model={{ finishAutoDiagonalize: () => {} }}
+      handleClose={() => {}}
+      description="reorders rows"
+      anchor={{
+        rows: ['BIN', 'HCA', 'RES'],
+        value: 0,
+        onChange,
+      }}
+      run={async () => undefined}
+    />,
+  )
+  fireEvent.mouseDown(screen.getByRole('combobox'))
+  fireEvent.click(await screen.findByRole('option', { name: 'RES' }))
+  expect(onChange).toHaveBeenCalledWith(2)
+})
+
+// A pairwise view has nothing to choose: the row that is not the anchor is the
+// only row that can move.
+test('two rows get no picker', () => {
+  render(
+    <DiagonalizeDialog
+      model={{ finishAutoDiagonalize: () => {} }}
+      handleClose={() => {}}
+      description="reorders rows"
+      anchor={{ rows: ['hg38', 'mm39'], value: 0, onChange: () => {} }}
+      run={async () => undefined}
+    />,
+  )
+  expect(screen.queryByTestId('diagonalize-anchor-row')).toBeNull()
+})

@@ -121,6 +121,37 @@ describe('runDiagonalize cascade', () => {
     expect(seenTargets).toEqual(['cacao', 'grape'])
   })
 
+  // The anchor row is the one row the sweep leaves alone, and the rows above it
+  // are ordered against the row BELOW them — same level, axes the other way
+  // round. Anchored on the top row (the default) every row below a comb jelly
+  // is ordered off it, which is what linkage_groups/alg_stack came back from
+  // review for.
+  test('an anchor row sweeps outward, ordering the rows above it too', async () => {
+    const { seenReferenceRegions, seenTargets, call } = setupRpc()
+    const comb = makeView([region('b1', 'comb'), region('b2', 'comb')])
+    const jelly = makeView([region('j1', 'jelly'), region('j2', 'jelly')])
+    const sponge = makeView([region('s1', 'sponge'), region('s2', 'sponge')])
+    const model = {
+      views: [comb, jelly, sponge],
+      levels: [makeLevel(), makeLevel()],
+    }
+
+    await runDiagonalize(model as unknown as LinearSyntenyViewModel, {
+      anchorRow: 1,
+    })
+
+    expect(call).toHaveBeenCalledTimes(2)
+    // downward first: level 1 orders sponge against the untouched jellyfish row
+    expect(seenReferenceRegions[0]!.map(r => r.refName)).toEqual(['j1', 'j2'])
+    // then upward: level 0 orders the comb jelly against that same row
+    expect(seenReferenceRegions[1]!.map(r => r.refName)).toEqual(['j1', 'j2'])
+    expect(seenTargets).toEqual(['sponge', 'comb'])
+    // the anchor keeps its order; both neighbours are reordered
+    expect(jelly.displayedRegions.map(r => r.refName)).toEqual(['j1', 'j2'])
+    expect(sponge.displayedRegions.map(r => r.refName)).toEqual(['s2', 's1'])
+    expect(comb.displayedRegions.map(r => r.refName)).toEqual(['b2', 'b1'])
+  })
+
   // Only a stacked view prefixes at all, so this is where the sentinel goes
   // through the rewrite. `statusMessageText` reads `''` as "no phase" and every
   // other spelling as one that is running, so a prefixed sentinel is a status

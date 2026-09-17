@@ -285,6 +285,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         followAnchorIndex: types.stripDefault(types.number, 0),
         /**
          * #property
+         * Which genome row "Re-order chromosomes" keeps as it is, ordering the
+         * rows below it against the row above them and the rows above it
+         * against the row below. The top row by default, which is the plain
+         * top-down cascade; a stack whose linkage groups are one row's
+         * chromosomes anchors on that row instead.
+         */
+        diagonalizeAnchorRow: types.stripDefault(types.number, 0),
+        /**
+         * #property
          * While following, flip a row whose placing alignment runs the other
          * way from the anchor's, so the two pan in the same direction. Off by
          * default: the crossing ribbons are the picture of an inversion, and
@@ -1217,6 +1226,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setSameScale(sameScale: boolean) {
         self.sameScale = sameScale
+      },
+      /**
+       * #action
+       */
+      setDiagonalizeAnchorRow(row: number) {
+        self.diagonalizeAnchorRow = row
       },
       /**
        * #action

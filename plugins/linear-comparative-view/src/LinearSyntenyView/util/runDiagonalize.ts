@@ -45,13 +45,18 @@ function levelStatusCallback(
 // Shared by the menu dialog (UI wrapper) and the init autorun (autoDiagonalize
 // flag).
 //
-// Levels run top-down and each result is applied before the next level, so a
-// stacked N-way view cascades the diagonal down the whole stack: the worker
-// orders each query chromosome by its best-hit's *index* in referenceRegions,
-// so level i+1 must diagonalize against the row that level i just reordered —
-// not its original order. Running the levels concurrently would race on that
-// shared middle row and leave the lower band undiagonalized (a single downward
-// Sugiyama layer-sweep, focus row pinned at the top).
+// Levels run OUTWARD FROM THE ANCHOR ROW and each result is applied before the
+// next, so a stacked N-way view cascades the diagonal away from the one row
+// whose order is left alone: the worker orders each query chromosome by its
+// best-hit's *index* in referenceRegions, so a level must diagonalize against
+// the row the previous level just reordered — not its original order. Running
+// the levels concurrently would race on that shared middle row and leave the
+// far band undiagonalized (a Sugiyama layer-sweep, focus row pinned at the
+// anchor).
+//
+// The pair is symmetric, so a row above the anchor is ordered by handing the
+// RPC the row BELOW it as the reference: same level, same adapters, the two
+// axes the other way round.
 export async function runDiagonalize(
   model: LinearSyntenyViewModel,
   opts: DiagonalizeRunOpts = {},
@@ -62,7 +67,20 @@ export async function runDiagonalize(
   const { assemblyManager, rpcManager } = getSession(model)
   let totalReversed = 0
   let totalReordered = 0
-  for (let i = 0; i < model.levels.length; i++) {
+  const anchor = Math.min(
+    Math.max(opts.anchorRow ?? 0, 0),
+    model.views.length - 1,
+  )
+  // levels below the anchor, top-down; then levels above it, bottom-up
+  const order = [
+    ...Array.from(
+      { length: model.levels.length - anchor },
+      (_, k) => anchor + k,
+    ).filter(i => i < model.levels.length),
+    ...Array.from({ length: anchor }, (_, k) => anchor - 1 - k),
+  ]
+  for (const i of order) {
+    const downward = i >= anchor
     const level = model.levels[i]!
     const displays = level.linearSyntenyDisplays
     if (displays.length > 0) {
@@ -77,8 +95,10 @@ export async function runDiagonalize(
       // assemblyManager): the reference regions are renamed for the fetch, and
       // per-axis adapter->canonical maps let the worker translate fetched
       // alignments back to canonical.
-      const referenceRegions = model.views[i]!.displayedRegions
-      const currentRegions = model.views[i + 1]!.displayedRegions
+      const referenceIndex = downward ? i : i + 1
+      const currentIndex = downward ? i + 1 : i
+      const referenceRegions = model.views[referenceIndex]!.displayedRegions
+      const currentRegions = model.views[currentIndex]!.displayedRegions
       const adapters = await Promise.all(
         displays.map(d =>
           prepareDiagonalizeAdapter({
@@ -94,7 +114,7 @@ export async function runDiagonalize(
         adapters,
         referenceRegions,
         currentRegions,
-        bpPerPx: model.views[i]!.bpPerPx,
+        bpPerPx: model.views[referenceIndex]!.bpPerPx,
         signal: opts.signal,
         statusCallback: levelStatusCallback(
           opts.statusCallback,
@@ -103,7 +123,7 @@ export async function runDiagonalize(
         ),
       })
       if (result) {
-        model.views[i + 1]!.setDisplayedRegions(result.newRegions)
+        model.views[currentIndex]!.setDisplayedRegions(result.newRegions)
         totalReversed += result.stats.regionsReversed
         totalReordered += result.stats.regionsReordered
         // committed, not merely computed: the next level diagonalizes against

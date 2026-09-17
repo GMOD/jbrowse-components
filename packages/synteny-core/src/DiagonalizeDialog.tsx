@@ -7,7 +7,14 @@ import {
   statusProgressLabel,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
+import {
+  Button,
+  DialogActions,
+  DialogContent,
+  MenuItem,
+  TextField,
+  Typography,
+} from '@mui/material'
 
 import type {
   DiagonalizeRunOpts,
@@ -21,6 +28,10 @@ const useStyles = makeStyles()({
   },
   progress: {
     marginTop: 16,
+  },
+  anchor: {
+    marginTop: 8,
+    minWidth: 260,
   },
 })
 
@@ -62,6 +73,10 @@ function summarizeStopped({ totalReordered, totalReversed }: DiagonalizeStats) {
  * its auto-diagonalize path calls) and `description` the view's wording for
  * which axis/row moves.
  *
+ * `anchor` is the stacked-rows case: a view with more than two rows names them
+ * here, and the row picked keeps its order while the rest are ordered outward
+ * from it. A two-row view and the dotplot pass none, and the picker is absent.
+ *
  * A run that finishes or that the user stops lowers the view's auto-reorder
  * gate, which a failed automatic reorder leaves raised.
  *
@@ -74,11 +89,17 @@ export default function DiagonalizeDialog({
   handleClose,
   description,
   run,
+  anchor,
 }: {
   model: { finishAutoDiagonalize: () => void }
   handleClose: () => void
   description: string
   run: (opts: DiagonalizeRunOpts) => Promise<DiagonalizeStats | undefined>
+  anchor?: {
+    rows: string[]
+    value: number
+    onChange: (row: number) => void
+  }
 }) {
   const { classes } = useStyles()
   const [state, setState] = useState<RunState>({ phase: 'idle' })
@@ -158,6 +179,25 @@ export default function DiagonalizeDialog({
         <Typography variant="body2" color="text.secondary" gutterBottom>
           {description}
         </Typography>
+        {anchor && anchor.rows.length > 2 && state.phase === 'idle' ? (
+          <TextField
+            select
+            size="small"
+            className={classes.anchor}
+            label="Row to keep as it is"
+            value={anchor.value}
+            data-testid="diagonalize-anchor-row"
+            onChange={event => {
+              anchor.onChange(+event.target.value)
+            }}
+          >
+            {anchor.rows.map((row, idx) => (
+              <MenuItem key={row} value={idx}>
+                {row}
+              </MenuItem>
+            ))}
+          </TextField>
+        ) : null}
         {state.phase === 'running' ? (
           <>
             <Typography>{statusProgressLabel(state.status)}</Typography>

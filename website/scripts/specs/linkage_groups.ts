@@ -82,6 +82,12 @@ export const linkageGroupsSpecs: ScreenshotSpec[] = [
           colorBy: 'attribute:gene_group',
           hideUnlabelled: true,
           autoDiagonalize: true,
+          // The jellyfish row, whose chromosomes ARE the linkage groups this
+          // figure is about (review: the reorder "sweeps top-down from
+          // Bolinopsis in its own file order, so every row below, the jellyfish
+          // included, is ordered off a comb jelly"). Anchored here the sweep
+          // runs outward both ways from it.
+          diagonalizeAnchorRow: 2,
           drawCurves: true,
           fadeThinAlignmentsMode: 'off',
           alpha: 0.45,

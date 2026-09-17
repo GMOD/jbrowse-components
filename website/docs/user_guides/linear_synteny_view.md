@@ -278,7 +278,11 @@ inside **Rows**:
 - **Rows** - **Add assembly row** to compare three or more assemblies stacked
   vertically, **Remove bottom row**, **Re-order chromosomes**, and one entry per
   genome opening that row's own view menu (which is otherwise reachable only
-  from that row's header, and a collapsed row has none)
+  from that row's header, and a collapsed row has none). On three rows or more
+  the re-order dialog asks which row to keep as it is: that row's order stands
+  and every other row is sorted against its neighbour nearer it, so a stack
+  whose groups are one genome's chromosomes is anchored on that genome
+  (`diagonalizeAnchorRow` on the view)
 - **Show...** for the header's own search boxes
 - **Export SVG**
 
