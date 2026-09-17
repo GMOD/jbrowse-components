@@ -216,7 +216,7 @@ The lower frame is all block, so the lanes around it carry the comparison:
 
 ## The haplotypes behind the triangle
 
-The same VCF draws the haplotypes one lane below the triangle: a
+The six-population VCF draws the haplotypes one lane below the triangle: a
 [`LinearMultiSampleVariantMatrixDisplay`](/docs/config/linearmultisamplevariantmatrixdisplay/)
 in
 [`renderingMode: 'phased'`](/docs/config/linearmultisamplevariantmatrixdisplay/#slot-renderingmode)
