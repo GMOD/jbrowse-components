@@ -39,6 +39,20 @@ export default function JexlF(/* config?: any*/) {
     return p ? jexlFeatureProxy(p) : undefined
   })
   j.addFunction('id', (feature: Feature) => unwrapFeature(feature).id())
+  /**
+   * #jexlFunction Feature operations - getInherited | getInherited(feature, 'gene_biotype') | the attribute from the feature, or from its nearest ancestor that has it, so a CDS reads its gene's value
+   */
+  j.addFunction('getInherited', (feature: Feature, name: string) => {
+    let cur: Feature | undefined = unwrapFeature(feature)
+    while (cur !== undefined) {
+      const value: unknown = cur.get(name)
+      if (value !== undefined) {
+        return value
+      }
+      cur = cur.parent?.()
+    }
+    return undefined
+  })
 
   // let user cast a jexl type into a javascript type
   j.addFunction('cast', (arg: unknown) => arg)

@@ -446,7 +446,9 @@ describe('color routing', () => {
       const { snap } = buildDisplaySnapshot(category, [
         'color:attribute:gene_biotype',
       ])
-      expect(snap.color).toBe("jexl:randomColor(get(feature,'gene_biotype'))")
+      expect(snap.color).toBe(
+        "jexl:randomColor(getInherited(feature,'gene_biotype'))",
+      )
     }
   })
 

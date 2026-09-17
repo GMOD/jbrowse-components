@@ -214,7 +214,7 @@ export function relight(
  * A value that is absent gets NO_CATEGORY_COLOR rather than a hue, and that is
  * the difference between this being usable on real data and not. The everyday
  * caller is the Color-by-attribute dialog, which writes
- * `jexl:randomColor(get(feature,'<attr>'))` over a whole track — and most files
+ * `jexl:randomColor(getInherited(feature,'<attr>'))` over a whole track — and most files
  * have the attribute on some features and not others, so most of the time this
  * is handed `undefined`. It used to throw on that (`str.length` of undefined),
  * once per feature, and what a reader saw was every unlabelled feature in one

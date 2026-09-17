@@ -250,6 +250,33 @@ describe('jexlFeatureProxy', () => {
     expect(ev("get(parent(feature),'type')", child)).toEqual('mRNA')
   })
 
+  test('getInherited reads the nearest ancestor that has the attribute', () => {
+    const gene = new SimpleFeature({
+      uniqueId: 'g',
+      refName: 't1',
+      start: 0,
+      end: 1000,
+      type: 'gene',
+      gene_biotype: 'protein_coding',
+    })
+    const mrna = new SimpleFeature({
+      id: 'm',
+      data: { refName: 't1', start: 0, end: 1000, type: 'mRNA', source: 'x' },
+      parent: gene,
+    })
+    const cds = new SimpleFeature({
+      id: 'c',
+      data: { refName: 't1', start: 100, end: 200, type: 'CDS' },
+      parent: mrna,
+    })
+    expect(ev("getInherited(feature,'gene_biotype')", cds)).toEqual(
+      'protein_coding',
+    )
+    expect(ev("getInherited(feature,'source')", cds)).toEqual('x')
+    expect(ev("getInherited(feature,'type')", cds)).toEqual('CDS')
+    expect(ev("getInherited(feature,'missing')", cds)).toBeUndefined()
+  })
+
   test('object-literal lookup by attribute', () => {
     expect(ev("{gene:'blue',CDS:'red'}[feature.type] || 'gray'", f)).toEqual(
       'blue',

@@ -19,9 +19,9 @@ export const STRAND_COLOR_JEXL =
 // name back out of the stored slot, and the generic return type lets a caller
 // outside this package pin its own copy against this one at compile time.
 //
-// Keeps `get(feature,'…')` where STRAND_COLOR_JEXL drops it, because the
-// attribute name is user-supplied and `feature.<name>` is legal jexl only for a
-// bare identifier.
+// `getInherited` because the slot is evaluated per painted box, and a gene's
+// CDS and exons carry none of the gene's attributes: `get` painted every one
+// of them the missing-value grey while its section read the gene's value.
 export function attributeColorJexl<T extends string>(attribute: T) {
-  return `jexl:randomColor(get(feature,'${attribute}'))` as const
+  return `jexl:randomColor(getInherited(feature,'${attribute}'))` as const
 }

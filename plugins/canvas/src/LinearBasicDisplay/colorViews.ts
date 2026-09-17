@@ -75,7 +75,7 @@ export function colorViews(self: ColorHost) {
       if (this.colorByMode !== 'attribute' || raw === undefined) {
         return ''
       }
-      return /get\(feature,'([^']+)'\)/.exec(raw)?.[1] ?? ''
+      return /get(?:Inherited)?\(feature,'([^']+)'\)/.exec(raw)?.[1] ?? ''
     },
   }
 }

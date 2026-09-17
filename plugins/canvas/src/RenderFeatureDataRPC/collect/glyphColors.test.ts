@@ -1,7 +1,12 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import { randomColor } from '@jbrowse/core/util/color'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
-import { FEATURE_DEFAULT_COLOR, UTR_DEFAULT_COLOR } from '../featureColors.ts'
+import {
+  FEATURE_DEFAULT_COLOR,
+  UTR_DEFAULT_COLOR,
+  attributeColorJexl,
+} from '../featureColors.ts'
 import { mockDisplayConfig } from '../testUtils.ts'
 import { boxColor } from './glyphColors.ts'
 
@@ -131,6 +136,40 @@ describe('boxColor (a per-transcript attribute read from the box)', () => {
     expect(
       fill(orphan, mockDisplayConfig({ color: 'jexl:feature.parent.dtu' })),
     ).toBe('magenta')
+  })
+})
+
+describe('boxColor (color by attribute)', () => {
+  const gene = new SimpleFeature({
+    uniqueId: 'gene1',
+    refName: 'chr1',
+    start: 0,
+    end: 100,
+    type: 'gene',
+    gene_biotype: 'protein_coding',
+    subfeatures: [
+      {
+        uniqueId: 'tx1',
+        refName: 'chr1',
+        start: 0,
+        end: 100,
+        type: 'mRNA',
+        subfeatures: [
+          { uniqueId: 'e1', refName: 'chr1', start: 0, end: 100, type: 'exon' },
+          { uniqueId: 'c1', refName: 'chr1', start: 20, end: 80, type: 'CDS' },
+        ],
+      },
+    ],
+  })
+  const config = mockDisplayConfig({
+    color: attributeColorJexl('gene_biotype'),
+  })
+
+  it("paints every box of a gene in the gene's value color", () => {
+    const transcript = gene.get('subfeatures')![0]!
+    for (const box of [transcript, ...transcript.get('subfeatures')!]) {
+      expect(fill(box, config)).toBe(randomColor('protein_coding'))
+    }
   })
 })
 
