@@ -14,12 +14,10 @@ export const uiStub: unknown = new Proxy(function stubTarget() {}, {
 export function uiNamespace(
   names: readonly string[],
   esModule = false,
-  real: Record<string, unknown> = {},
 ): Record<string, unknown> {
   return {
     ...(esModule ? { __esModule: true } : {}),
     ...Object.fromEntries(names.map(name => [name, uiStub])),
-    ...real,
   }
 }
 

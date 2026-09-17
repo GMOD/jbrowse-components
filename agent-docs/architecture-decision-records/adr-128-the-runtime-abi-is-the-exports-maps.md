@@ -1,6 +1,6 @@
 ---
 status: Accepted
-summary: "The runtime plugin ABI is generated from the exports maps: a runtime plugin externalizes every subpath every bundled @jbrowse package publishes, each product serves what it bundles, the worker's stub-or-real split is derived per export from the graph of the module that declares it, and a key a host lacks throws naming itself. Supersedes ADR-030 §3 — the built jbrowse-plugin-arg carried 84 files of core, 29 of display-kit and 21 of render-core beside 100 KB of its own code, and nothing in the repo could see it"
+summary: "The runtime plugin ABI is generated from the exports maps: a runtime plugin externalizes every subpath every bundled @jbrowse package publishes, each product serves what it bundles, the worker's stub-or-real split is derived from each module's own graph, and a key a host lacks throws naming itself. Supersedes ADR-030 §3 — the built jbrowse-plugin-arg carried 84 files of core, 29 of display-kit and 21 of render-core beside 100 KB of its own code, and nothing in the repo could see it"
 ---
 
 # ADR-128: The runtime ABI is the exports maps
@@ -171,18 +171,3 @@ metafile.
   and the pluggable-element barrel as UI — three modules every adapter plugin
   needs real in the worker. The walk stops at third-party specifiers and names
   the four packages that mean rendering.
-
-## Amendment (2026-09): the worker split is per export
-
-The module-level split stubbed data along with components. A runtime plugin's
-worker adapter read `clipSyntenyFeature` off `@jbrowse/synteny-core`, whose
-barrel also exports React components, and got a stub back: its records carried
-empty coordinates and nothing named the cause. The generator now follows each
-export of a rendering module to the module that declares it and serves the
-export for real when that module's graph names none of the four packages and no
-module on the way both renders and runs code of its own. The worker imports
-those exports by name from the key's own specifier, since a product may name
-only published specifiers, and `sideEffects: false` keeps the rest of the
-graph out. `reExports.generated.json` marks such a module `mixed` and lists
-what it still stubs. EAGER_BUNDLE.md §"A rendering module's data names are real
-in the worker" has the measurement and the cost.

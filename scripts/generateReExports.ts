@@ -26,12 +26,11 @@
 // The worker serves a module for real unless the module's own source graph —
 // followed through workspace packages, stopped at third-party specifiers —
 // names react-dom, a Material UI component, the data grid or floating-ui.
-// Such a module still serves for real each export declared by a module that
-// does not render, imported by name so the bundler prunes the rest; a stub
-// with the export's name stands in for each other one, so the plugin's
-// module-scope reads succeed without the worker fetching the UI graph.
-// agent-docs/reference/EAGER_BUNDLE.md §"3. The runtime re-export registry" is
-// the measurement behind the split.
+// Those are the modules a plugin reads only to render, and a stub with the
+// module's own export names stands in so the plugin's module-scope reads
+// succeed without the worker fetching the UI graph. agent-docs/reference/
+// EAGER_BUNDLE.md §"3. The runtime re-export registry" is the measurement
+// behind the split.
 import { execFileSync } from 'node:child_process'
 import {
   existsSync,
@@ -234,19 +233,10 @@ function resolveSpecifier(from: string, spec: string) {
 
 // ---- one parse per file: its value edges and its runtime export names --------
 
-interface Binding {
-  spec: string
-  name: string
-}
-
 interface Parsed {
   edges: string[]
   names: Set<string>
   stars: string[]
-  imports: Map<string, Binding>
-  reexports: Map<string, Binding>
-  exportedLocals: Map<string, string>
-  evaluates: boolean
 }
 
 const parsed = new Map<string, Parsed>()
@@ -269,54 +259,6 @@ function bindingNames(name: ts.BindingName, out: Set<string>) {
   }
 }
 
-const isInertInitializer = (init: ts.Expression | undefined) =>
-  !init ||
-  ts.isLiteralExpression(init) ||
-  ts.isArrowFunction(init) ||
-  ts.isFunctionExpression(init) ||
-  init.kind === ts.SyntaxKind.TrueKeyword ||
-  init.kind === ts.SyntaxKind.FalseKeyword
-
-// Whether a bundler must run the statement, which keeps its module and every
-// import that module names even when only a re-export through it is used.
-function evaluates(stmt: ts.Statement) {
-  if (hasModifier(stmt, ts.SyntaxKind.DeclareKeyword)) {
-    return false
-  }
-  if (ts.isImportDeclaration(stmt)) {
-    return !stmt.importClause
-  }
-  if (ts.isVariableStatement(stmt)) {
-    return !stmt.declarationList.declarations.every(d =>
-      isInertInitializer(d.initializer),
-    )
-  }
-  if (ts.isExportAssignment(stmt)) {
-    return !ts.isIdentifier(stmt.expression)
-  }
-  if (ts.isClassDeclaration(stmt)) {
-    return (
-      (ts.getDecorators(stmt) ?? []).length > 0 ||
-      (stmt.heritageClauses ?? []).some(h =>
-        h.types.some(t => !ts.isIdentifier(t.expression)),
-      ) ||
-      stmt.members.some(
-        m =>
-          ts.isClassStaticBlockDeclaration(m) ||
-          (ts.isPropertyDeclaration(m) &&
-            hasModifier(m, ts.SyntaxKind.StaticKeyword) &&
-            !isInertInitializer(m.initializer)),
-      )
-    )
-  }
-  return !(
-    ts.isExportDeclaration(stmt) ||
-    ts.isFunctionDeclaration(stmt) ||
-    ts.isTypeAliasDeclaration(stmt) ||
-    ts.isInterfaceDeclaration(stmt)
-  )
-}
-
 function parse(file: string): Parsed {
   const cached = parsed.get(file)
   if (cached) {
@@ -328,15 +270,7 @@ function parse(file: string): Parsed {
     ts.ScriptTarget.Latest,
     true,
   )
-  const out: Parsed = {
-    edges: [],
-    names: new Set(),
-    stars: [],
-    imports: new Map(),
-    reexports: new Map(),
-    exportedLocals: new Map(),
-    evaluates: source.statements.some(evaluates),
-  }
+  const out: Parsed = { edges: [], names: new Set(), stars: [] }
   parsed.set(file, out)
   for (const stmt of source.statements) {
     if (ts.isImportDeclaration(stmt)) {
@@ -346,19 +280,6 @@ function parse(file: string): Parsed {
         out.edges.push(spec)
       } else if (!clause.isTypeOnly) {
         const bindings = clause.namedBindings
-        if (clause.name) {
-          out.imports.set(clause.name.text, { spec, name: 'default' })
-        }
-        if (bindings && ts.isNamespaceImport(bindings)) {
-          out.imports.set(bindings.name.text, { spec, name: '*' })
-        } else if (bindings) {
-          for (const el of bindings.elements) {
-            out.imports.set(el.name.text, {
-              spec,
-              name: (el.propertyName ?? el.name).text,
-            })
-          }
-        }
         const allTypeOnly =
           !clause.name &&
           bindings &&
@@ -381,19 +302,12 @@ function parse(file: string): Parsed {
         out.edges.push(spec!)
       } else if (ts.isNamespaceExport(clause)) {
         out.names.add(clause.name.text)
-        out.reexports.set(clause.name.text, { spec: spec!, name: '*' })
         out.edges.push(spec!)
       } else {
         let value = false
         for (const el of clause.elements) {
           if (!el.isTypeOnly) {
-            const local = (el.propertyName ?? el.name).text
             out.names.add(el.name.text)
-            if (spec) {
-              out.reexports.set(el.name.text, { spec, name: local })
-            } else {
-              out.exportedLocals.set(el.name.text, local)
-            }
             value = true
           }
         }
@@ -403,9 +317,6 @@ function parse(file: string): Parsed {
       }
     } else if (ts.isExportAssignment(stmt)) {
       out.names.add('default')
-      if (ts.isIdentifier(stmt.expression)) {
-        out.exportedLocals.set('default', stmt.expression.text)
-      }
     } else if (hasModifier(stmt, ts.SyntaxKind.ExportKeyword)) {
       if (hasModifier(stmt, ts.SyntaxKind.DeclareKeyword)) {
         continue
@@ -462,76 +373,34 @@ function runtimeExportNames(
 
 // The third-party specifiers a module's graph names, through workspace edges.
 const reachCache = new Map<string, Set<string>>()
-function reachedSpecifiers(file: string) {
+function reachedSpecifiers(
+  file: string,
+  trail = new Set<string>(),
+): Set<string> {
   const cached = reachCache.get(file)
   if (cached) {
     return cached
   }
   const out = new Set<string>()
-  const seen = new Set([file])
-  const pending = [file]
-  while (pending.length > 0) {
-    const from = pending.pop()!
-    for (const spec of parse(from).edges) {
-      const target = resolveSpecifier(from, spec)
-      if (!target) {
-        out.add(spec)
-      } else if (!seen.has(target)) {
-        seen.add(target)
-        pending.push(target)
+  // a cycle contributes nothing on its own; the caller that closed it holds
+  // the rest of the graph
+  if (trail.has(file)) {
+    return out
+  }
+  trail.add(file)
+  for (const spec of parse(file).edges) {
+    const target = resolveSpecifier(file, spec)
+    if (target) {
+      for (const s of reachedSpecifiers(target, trail)) {
+        out.add(s)
       }
+    } else {
+      out.add(spec)
     }
   }
+  trail.delete(file)
   reachCache.set(file, out)
   return out
-}
-
-const uiVia = (file: string) =>
-  [...reachedSpecifiers(file)].filter(s => UI_SPECIFIER.test(s)).sort()
-
-// Whether importing export `name` of `file` by name reaches a rendering
-// library once a bundler has pruned what `sideEffects: false` lets it. The
-// module that declares the name decides, unless a module the name passes
-// through both renders and runs code of its own, which keeps that module's
-// whole graph. A name re-exported from a third-party specifier is judged by
-// the specifier, a namespace re-export by the module it gathers.
-function declaredInUi(
-  file: string,
-  name: string,
-  trail = new Set<string>(),
-): boolean {
-  const { reexports, exportedLocals, imports, names, stars, evaluates } =
-    parse(file)
-  trail.add(file)
-  const local = exportedLocals.get(name)
-  const binding =
-    reexports.get(name) ??
-    (local === undefined ? undefined : imports.get(local))
-  if (
-    (binding !== undefined || !names.has(name)) &&
-    evaluates &&
-    uiVia(file).length > 0
-  ) {
-    return true
-  }
-  if (binding) {
-    const target = resolveSpecifier(file, binding.spec)
-    if (!target) {
-      return UI_SPECIFIER.test(binding.spec)
-    }
-    return binding.name === '*' || trail.has(target)
-      ? uiVia(target).length > 0
-      : declaredInUi(target, binding.name, trail)
-  }
-  if (!names.has(name)) {
-    for (const spec of stars) {
-      const target = resolveSpecifier(file, spec)!
-      if (!trail.has(target) && runtimeExportNames(target).has(name)) {
-        return declaredInUi(target, name, trail)
-      }
-    }
-  }
-  return uiVia(file).length > 0
 }
 
 interface Served {
@@ -539,16 +408,16 @@ interface Served {
   pkg: string
   file: string
   names: string[]
+  ui: boolean
   uiVia: string[]
-  stubbed: string[]
 }
 
 const servedModules: Served[] = entries.map(entry => {
   const names = [...runtimeExportNames(entry.file)].sort()
-  const via = uiVia(entry.file)
-  const stubbed =
-    via.length > 0 ? names.filter(name => declaredInUi(entry.file, name)) : []
-  return { ...entry, names, uiVia: via, stubbed }
+  const uiVia = [...reachedSpecifiers(entry.file)]
+    .filter(s => UI_SPECIFIER.test(s))
+    .sort()
+  return { ...entry, names, ui: uiVia.length > 0, uiVia }
 })
 
 // ---- the framework half, evaluated ----------------------------------------
@@ -618,28 +487,6 @@ function stubExpression(names: string[]) {
   return `uiNamespace([${names.map(q).join(', ')}]${hasDefault ? ', true' : ''})`
 }
 
-function workerExpression(
-  m: Served,
-  alias: string,
-  specifier: string,
-  imports: string[],
-) {
-  const real = m.names.filter(name => !m.stubbed.includes(name))
-  if (real.length === 0) {
-    return stubExpression(m.names)
-  }
-  imports.push(
-    `import { ${real.map(name => `${name} as ${alias}_${name}`).join(', ')} } from ${q(specifier)}`,
-  )
-  const hasDefault = m.names.includes('default')
-  if (hasDefault && m.names.length === 1) {
-    return `${alias}_default`
-  }
-  return `uiNamespace([${m.stubbed.map(q).join(', ')}], ${hasDefault}, { ${real
-    .map(name => `${name}: ${alias}_${name}`)
-    .join(', ')} })`
-}
-
 function relativeImport(from: string, file: string) {
   const rel = path.relative(path.dirname(from), file).replaceAll(path.sep, '/')
   return rel.startsWith('.') ? rel : `./${rel}`
@@ -664,7 +511,7 @@ function emitMap(
   if (base) {
     imports.push(`import ${base.name} from ${q(base.specifier)}`)
   }
-  if (worker && modules.some(m => m.uiVia.length > 0)) {
+  if (worker && modules.some(m => m.ui)) {
     imports.push(
       `import { uiNamespace, uiStub } from ${q(
         file.startsWith(CORE_REEXPORTS)
@@ -674,13 +521,11 @@ function emitMap(
     )
   }
   modules.forEach((m, i) => {
-    const ns = `m${i}`
-    if (worker && m.uiVia.length > 0) {
-      lines.push(
-        `  ${q(m.key)}: ${workerExpression(m, ns, specifierOf(m), imports)},`,
-      )
+    if (worker && m.ui) {
+      lines.push(`  ${q(m.key)}: ${stubExpression(m.names)},`)
       return
     }
+    const ns = `m${i}`
     imports.push(`import * as ${ns} from ${q(specifierOf(m))}`)
     lines.push(`  ${q(m.key)}: ${servedExpression(ns, m.names)},`)
   })
@@ -731,16 +576,8 @@ const manifest = {
       {
         package: m.pkg,
         names: m.names,
-        worker:
-          m.uiVia.length === 0
-            ? 'real'
-            : m.stubbed.length === m.names.length
-              ? 'stub'
-              : 'mixed',
-        ...(m.uiVia.length > 0 ? { uiVia: m.uiVia } : {}),
-        ...(m.stubbed.length > 0 && m.stubbed.length < m.names.length
-          ? { stubbed: m.stubbed }
-          : {}),
+        worker: m.ui ? 'stub' : 'real',
+        ...(m.ui ? { uiVia: m.uiVia } : {}),
       },
     ]),
   ),
@@ -849,5 +686,5 @@ checkOrWriteAll(
   'run `pnpm autogen`',
 )
 console.log(
-  `${servedModules.length} @jbrowse keys over ${served.length} packages, ${framework.length} framework keys; the worker stubs ${servedModules.reduce((n, m) => n + m.stubbed.length, 0)} of the names in ${servedModules.filter(m => m.uiVia.length > 0).length} rendering modules and serves the other ${servedModules.reduce((n, m) => n + (m.uiVia.length > 0 ? m.names.length - m.stubbed.length : 0), 0)} for real`,
+  `${servedModules.length} @jbrowse keys over ${served.length} packages (${servedModules.filter(m => m.ui).length} stubbed in the worker), ${framework.length} framework keys`,
 )
