@@ -1381,8 +1381,16 @@ export const syntenySpecs: ScreenshotSpec[] = [
             type: 'LinearGenomeView',
             assembly: 'K12',
             loc: 'chr:1,443,000-1,466,000',
+            // The anchor lane is the only lane the view's own gridlines are
+            // true at, so with them on the top lane reads as ruled and the four
+            // below as not (review: "i can see gridlines near the top row of
+            // the multiwaysyntenydisplay, but not on the rest"). Each lane's own
+            // ticks stay.
+            showGridlines: false,
             tracks: [
-              { trackId: 'ecoli_pggb_depth', height: 60 },
+              // 120, not 60: the drop is from five genomes to two on a 0-5
+              // axis, which at 60 px is a 24 px step read as a hairline
+              { trackId: 'ecoli_pggb_depth', height: 120 },
               {
                 trackId: 'ecoli_ava',
                 type: 'MultiWaySyntenyDisplay',
@@ -1397,7 +1405,26 @@ export const syntenySpecs: ScreenshotSpec[] = [
     readySelector: displaySettled('multiway-synteny-display'),
     readyTimeout: 120000,
     settleMs: 12000,
-    viewportHeight: 640,
+    viewportHeight: 700,
+    // What the lane stack cannot say on its own: the step in the wiggle above
+    // is the count of genomes whose paths cross this stretch, and the lanes
+    // below name which ones they are.
+    annotations: [
+      {
+        type: 'text',
+        text: 'graph depth: the genomes whose paths cross this stretch',
+        fontSize: 17,
+        maxWidth: 320,
+        leader: true,
+        anchor: {
+          track: 'ecoli_pggb_depth',
+          locus: 'chr:1,452,000',
+          fracY: 0.62,
+        },
+        dx: 40,
+        dy: -70,
+      },
+    ],
   },
 
   // The deep-time case: the human HOXD cluster over four vertebrate lanes
