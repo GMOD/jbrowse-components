@@ -249,7 +249,7 @@ depends on the kind of entry:
 - **A nested sub-schema or a constant replaces the base entry wholesale.** They
   have no fields to fold.
 
-To turn an inherited field off, state it:
+To turn an inherited field off, state it rather than omitting it:
 `mySlot: { type: 'number', defaultValue: 4, advanced: false }` still inherits
 the base slot's `description` and `validate`, and is not advanced here.
 
@@ -366,7 +366,7 @@ getter:
 Use `readConfObject` when you hold the **config model itself** — an entry from
 `session.tracks`, or a sub-config you resolved yourself. The multi-wiggle
 "combine selected tracks" menu item works on the track selector's selection,
-which holds configs:
+which holds configs rather than models:
 
 <!-- include: plugins/wiggle/src/CreateMultiWiggleExtension/index.ts#readConfObject -->
 
@@ -517,8 +517,8 @@ mentions is `undefined`, and hands back the fallout as the setting. Nothing
 throws at the reader, and the two ways it goes wrong look nothing alike:
 
 - the expression touches a member of the missing value (`get(feature,…)`) and
-  throws out of whatever getter did the read, which appears to the reader as the
-  display erroring;
+  throws out of whatever getter did the read, which shows up as the display
+  erroring;
 - every function in it is total (`split(feature.name,…)`), and a plausible wrong
   value comes back — `''`, `NaN` — and travels on as a real setting.
 

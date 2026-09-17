@@ -148,10 +148,10 @@ carries, since it keeps every other field:
 
 <!-- END GENERATED MEASUREMENT pif-coarse-tier-bytes -->
 
-The table above prices carrying both copies. Reading the coarse copy saves a
-different amount, measured on a real hosted alignment — a human/mouse liftOver
-chain converted to a PIF — by counting the bytes the server actually sent for
-one whole-genome pass:
+The table above gives what carrying both copies adds to the file. Reading the
+coarse copy saves a different amount, measured on a real hosted alignment — a
+human/mouse liftOver chain converted to a PIF — by counting the bytes the server
+actually sent for one whole-genome pass:
 
 <!-- BEGIN GENERATED MEASUREMENT pif-tier-wire-bytes -->
 
@@ -185,13 +185,13 @@ Under 7% of rows carry a fold at all, and most of a fold's bytes are indels
 between 5 and 10 kb — too small to change a whole-genome view, kept anyway
 because the format bounds every run to within `--coarse` of the true path.
 
-Back in the file-size table, the last column prices carrying both copies, and
-the `coarse/fine bytes` column beside it prices reading just the coarse copy.
-With 1.5 kb alignment blocks it gives up indel detail for almost nothing; at 5
-Mb it is the difference between reading the CIGARs and not. **The coarse copy
-makes each alignment cheaper and does not make them fewer**, so it suits a few
-huge alignments with megabase CIGARs, and does little for a dense all-vs-all
-comparison, where the cost is the number of alignments.
+Back in the file-size table, the last column is what carrying both copies adds
+to the file, and the `coarse/fine bytes` column beside it is what reading only
+the coarse copy saves. With 1.5 kb alignment blocks it gives up indel detail for
+almost nothing; at 5 Mb it is the difference between reading the CIGARs and not.
+**The coarse copy makes each alignment cheaper and does not make them fewer**,
+so it suits a few huge alignments with megabase CIGARs, and does little for a
+dense all-vs-all comparison, where the cost is the number of alignments.
 
 Binning alignments together as they are read is the obvious answer to that, and
 it is capped. Profiling a whole-genome fetch of a human-vs-mouse-scale PIF puts

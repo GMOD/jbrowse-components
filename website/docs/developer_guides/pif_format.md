@@ -227,9 +227,9 @@ pair.
 pair from both ends, so A against B and B against A are both present, and both
 are anchored on A when A is the row being drawn. Drawn as they arrive the same
 ribbon gets two coats. The adapter keeps one, testing agreement on both spans
-and on the same diagonal, since the two passes need not chain a homology into
-the same blocks. A file holding one direction per pair (`minimap2 -X`, a curated
-PAF) has nothing to drop.
+and on the same diagonal rather than the same direction, since the two passes
+need not chain a homology into the same blocks. A file holding one direction per
+pair (`minimap2 -X`, a curated PAF) has nothing to drop.
 
 ## Preprocessing with rustybam
 
@@ -316,7 +316,8 @@ pair when a file stores each pair once. That needs a modified index format and
 its own reader. PIF folds only a perspective letter into the key and writes each
 record twice, so stock tabix and every existing reader work unchanged, at the
 cost of a larger file. PIF records are also strand-aware intervals with an
-alignment string, so they need the CIGAR reorientation and the coarse tier.
+alignment string rather than point pairs, so they need the CIGAR reorientation
+and the coarse tier.
 
 ## See also
 

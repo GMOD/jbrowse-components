@@ -85,10 +85,11 @@ total memory somewhere that can see the whole process.
 
 ## GPU memory guards {#gpu-memory-is-guarded-per-object-not-per-session}
 
-Nothing sums uploaded bytes across displays, so OOM there is reportable; both
-backends route through `OomReporter` to a zoom-in-or-reduce-height message.
-WebGPU refuses past the adapter's own `maxBufferSize`, WebGL2 past a fixed 256
-MiB, so a region can banner on WebGL2 while rendering on WebGPU.
+Nothing sums uploaded bytes across displays, so OOM there is reportable rather
+than preventable; both backends route through `OomReporter` to a
+zoom-in-or-reduce-height message. WebGPU refuses past the adapter's own
+`maxBufferSize`, WebGL2 past a fixed 256 MiB, so a region can banner on WebGL2
+while rendering on WebGPU.
 
 The largest allocation is the render target: `WebGPUHal` holds one 4x MSAA color
 attachment per display, sized from canvas area, so an empty tall track costs

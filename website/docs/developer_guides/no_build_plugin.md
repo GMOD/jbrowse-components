@@ -209,7 +209,7 @@ includes a bundler and type checking.
 This guide uses ESM modules (a plain exported class), supported by all modern
 browsers. For legacy browsers you can use UMD modules instead. See
 [this example](https://github.com/GMOD/jbrowse-components/blob/76ce3660c9192f071d23e2478c756fff42ec533a/test_data/volvox/umd_plugin.js#L1-L127),
-which defines a global variable.
+which defines a global variable instead of exporting a class.
 
 ## Note: Plugins in embedded React components
 

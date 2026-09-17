@@ -10,7 +10,7 @@ Your plugin runs _inside_ the host JBrowse app, sharing its JavaScript runtime,
 so an import resolves one of two ways:
 
 - Re-exports are a fixed set of libraries the host already loaded. Your plugin
-  must use the host's copy.
+  must use the host's copy instead of bundling one.
 - Everything else is any other npm package. Your plugin bundles it normally.
 
 Import React, MobX, MST, MUI and every `@jbrowse` package listed below normally
@@ -135,7 +135,7 @@ so there is nothing of a served package that a plugin can end up bundling. What
 a host can lack is a whole package it does not bundle — the embedded
 circular-genome-view build serves fewer plugins than jbrowse-web — and a key a
 host lacks throws at the plugin's first read, naming the key, so the failure is
-one notification.
+one notification rather than an `undefined is not a function` somewhere later.
 
 ## Standalone helper packages
 
@@ -224,7 +224,7 @@ Both [plugin templates](/docs/developer_guides/simple_plugin) already set it, so
 a plugin started from one never meets this. Leaving `moduleResolution` out
 entirely also works, because TypeScript now defaults to `bundler`. The error
 reaches you only from a tsconfig naming `"node"` explicitly, which was the
-default years ago, so an older plugin still carries it. TypeScript 6 deprecates
+default years ago and which older plugins still carry. TypeScript 6 deprecates
 that setting and TypeScript 7 removes it.
 
 ### No-build plugins

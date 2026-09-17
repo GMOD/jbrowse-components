@@ -195,10 +195,10 @@ can call is the one the point's shape calls for.
 
 There is a fourth fire method, `evaluateAsyncExtensionPointStrict`, which is
 `evaluateAsyncExtensionPoint` without the swallow-and-continue: a callback that
-throws propagates to the producer. Every `LaunchView-` point is fired that way,
-so a launcher that throws surfaces as an error to the user. Producers of
-accumulating points want the plain runner, where one plugin failing does not
-cost the others their entries.
+throws propagates to the producer instead of being logged. Every `LaunchView-`
+point is fired that way, so a launcher that throws reaches the user as an error
+rather than as an empty session. Producers of accumulating points want the plain
+runner, where one plugin failing does not cost the others their entries.
 
 These are the only signatures on this page that are not generated from source;
 they name placeholder arguments so the seven read side by side.
@@ -439,20 +439,21 @@ pluginManager.listenToExtensionPoint(
 ```
 
 Every callback registered on a notification point runs, since there is no value
-for a later one to overwrite. The listing below marks this the `notify` shape.
+for a later one to overwrite. The `notify` shape in the listing below means
+this.
 
 `addToExtensionPoint` rejects these names because of the promise handling. An
 `async` callback's promise is the point's completion signal, and two of them are
 **joined**, so a producer waiting on the folded value learns when every handler
 has finished. A hand-written callback that returns its own promise gets that
 wrong, and gets it wrong invisibly: the symptom is a producer that stops waiting
-early, which reads as a race.
+early, which reads as a race rather than as the wrong registration method.
 
 `Core-handleUnrecognizedAssembly` works that way — a handler supplies the
 assembly out of band, and its promise lets `waitForAssembly` stop waiting on an
-event. The producer there fires the point with the **sync** runner and awaits
-the folded value itself; only `evaluateAsyncExtensionPoint` awaits each callback
-in turn.
+event rather than on a clock. The producer there fires the point with the
+**sync** runner and awaits the folded value itself; only
+`evaluateAsyncExtensionPoint` awaits each callback in turn.
 
 ## Extension point listing
 
@@ -562,7 +563,7 @@ error instead of an extension that stops applying without one.
 
 `extendViewType` and `extendDisplayType` both take an array of names as well as
 one, which is how a contribution reaches a family of displays — a family here is
-a shared mixin set, so there is no parent type to name.
+a shared mixin set rather than a chain, so there is no parent type to name.
 
 For the commonest reason to reach for these — adding an entry to somebody else's
 menu — go one level higher still and use `addViewMenuItems` /
@@ -1145,7 +1146,8 @@ reports that by name.
 
 Register one to make your own view type launchable — see
 [](/docs/developer_guides/creating_view). A second callback on a built-in one
-sees the launch args the chain passes along.
+sees the launch args the chain passes along, rather than the view the first
+callback created.
 
 Each launcher's args are that view type's spec fields, documented once in the
 URL parameter guide and typed by the `Launch*Args` interface exported beside the
