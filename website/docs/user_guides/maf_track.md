@@ -51,7 +51,7 @@ where the alignment beneath it is refused. Bars shade by score, and human
 haplotypes score at the top of the scale, so presence fills in solid and what
 the picture carries is absence.
 
-<Figure src="/img/maf_summary_hprc_chromosome.png" caption="The HPRC release 2 pangenome alignment across the whole of chr6, read from its summary file: one presence bar per haplotype per aligned run. The centromere runs clear across every row, and individual haplotypes drop out at scattered loci."/>
+<Figure src="/img/maf_summary_hprc_chromosome.png" caption="The HPRC release 2 pangenome alignment across the whole of chr6, read from its summary file: one presence bar per haplotype per aligned run. The gap that runs clear across every row sits under the ideogram's centromere, and individual haplotypes drop out at scattered loci."/>
 
 ## Conservation and per-row identity
 

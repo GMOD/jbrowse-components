@@ -179,6 +179,29 @@ export const settingsVideoFixtures = {
 // What videos/ui.ts films. The tour ends where these stills already are, so it
 // opens on the session they were captured from rather than one written again.
 export const uiVideoFixtures = {
+  // The reads the context-levels tour builds its stack over: the same COLO829
+  // window the context_levels figure ends on, with no levels yet, since the
+  // tour adds both of them.
+  contextLevelsSession: sessionSpec(
+    encodeURIComponent('https://jbrowse.org/demos/cancer_sv/config.json'),
+    {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr17:7,676,000-7,677,000',
+          tracks: [
+            {
+              trackId: 'COLO829_tumor_ont',
+              type: 'LinearAlignmentsDisplay',
+              height: 260,
+              forceLoad: true,
+            },
+          ],
+        },
+      ],
+    },
+  ),
   bookmarkSession: lgvSession(DEMO_CONFIG, {
     assembly: 'hg19',
     loc: PTEN_WINDOW,

@@ -211,8 +211,6 @@ gene-scale.
 With the slots at `subtype`, the rows band by receptor status
 ([TCGA 2012](https://doi.org/10.1038/nature11412)):
 
-<Figure caption="TP53's exons with rows grouped and colored by receptor subtype, introns collapsed. The triple-negative band is visibly the dense one and the much larger HR+/HER2- band above it is sparse, with the calls spread the length of the coding sequence." src="/img/tcga/mutations_tp53_subtype.png" />
-
 The bottom band is the tumors whose receptor calls do not resolve a subtype.
 Hovering a column names its mutation and consequence; clicking opens the variant
 popup with per-tumor read counts.

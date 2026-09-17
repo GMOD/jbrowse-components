@@ -906,38 +906,12 @@ export const tcgaSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // TP53 grouped by receptor subtype: the same mechanic as the CDH1 figure
-  // pointed at a different clinical column, and the page's second grouping
-  // claim, which it otherwise only asserts.
-  //
-  // TP53 rather than PIK3CA, which the same sentence names. PIK3CA's contrast
-  // is carried by two hotspot codons, so at 979 sub-pixel rows it is a handful
-  // of columns in a frame of empty grey (built and rejected). TP53 is mutated
-  // in most triple-negative tumors and a minority of HR+/HER2- ones, so its
-  // contrast is a density difference across the whole gene, which is what a
-  // matrix of sub-pixel rows is able to draw: the triple-negative band reads as
-  // the dark one.
-  //
-  // Introns collapsed for the same reason as CDH1: with introns in frame every
-  // private intronic call takes a column of its own and spreads the coding ones
-  // thin.
-  {
-    mode: 'url',
-    name: 'tcga/mutations_tp53_subtype',
-    url: mutationFigure({
-      loc: '17:7,668,000-7,688,000',
-      facetField: 'subtype',
-      colorBy: 'subtype',
-      lineZoneHeight: LINE_ZONE_HEIGHT,
-      height: MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT,
-    }),
-    readySelector: MATRIX_DONE,
-    readyTimeout: 180000,
-    actions: collapseIntrons('TP53'),
-    hideSelectors: ['.MuiSnackbar-root'],
-    viewportWidth: 1500,
-    viewportHeight:
-      MATRIX_ROWS_HEIGHT + LINE_ZONE_HEIGHT + MATRIX_CHROME_HEIGHT,
-    settleMs: 10000,
-  },
+  // tcga/mutations_tp53_subtype was here and is DELETED (review: "unclear
+  // what this figure indicates. might delete?"). It made the CDH1 figure's
+  // claim a second time, on a gene whose contrast is a density difference
+  // rather than a block of cells: 979 tumors over a 520 px lane is half a
+  // pixel a row, so the triple-negative band being denser than the
+  // HR+/HER2- one above it is a wash a reader has to be told to see. The
+  // grouping mechanic is carried by mutations_cdh1_histology, where
+  // truncating calls crowd one band and leave the other empty.
 ]

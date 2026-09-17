@@ -1,3 +1,5 @@
+import { displayPainted } from '@jbrowse/browser-test-utils'
+
 // The tours over the general-usage guides, where the subject IS a route through
 // the app rather than a dataset.
 import {
@@ -11,6 +13,7 @@ import type { VideoSpec } from '../video-spec-types.ts'
 
 const {
   addTrackSession,
+  contextLevelsSession,
   addTrackUrl,
   bookmarkSession,
   bookmarkSpan,
@@ -125,6 +128,86 @@ export const uiVideos: VideoSpec[] = [
         say: 'Click the saved row to navigate back',
       },
       { type: 'waitForAppSettled', timeout: 120000 },
+    ],
+    tailMs: 4000,
+  },
+
+  // CONTEXT LEVELS, WHICH ARE BUILT RATHER THAN CONFIGURED. basic_usage.md's
+  // figure holds the finished stack — 5 Mb of coverage over 200 kb of genes
+  // over a kilobase of reads — and the route to it is three separate things a
+  // still cannot hold: the menu item, the empty level it adds, and the track
+  // selector that level opens for itself. The last frame is the payoff the
+  // prose asserts: the levels stay centred, so a navigation in the reads moves
+  // every level with it.
+  {
+    name: 'ui/context_levels',
+    description:
+      'A context level added from the view menu, given the gene track through its own track selector, a second wider level over it, and a navigation in the reads that carries both levels along',
+    url: contextLevelsSession,
+    // the reads at 260, two levels at 80 each with their trapezoids, and the
+    // drawer that opens beside them
+    viewportHeight: 900,
+    readySelector: displayPainted('pileup-display'),
+    readyTimeout: 180000,
+    settleMs: 15000,
+    steps: [
+      { type: 'hover', selector: '[aria-label="JBrowse"]', hold: 0 },
+      { type: 'delay', ms: 2000 },
+      {
+        type: 'click',
+        selector: '[data-testid="view_menu_icon"]',
+        say: 'Stack a wider view of the same locus over the reads',
+        hold: 900,
+      },
+      { type: 'waitForText', text: 'Add context level' },
+      { type: 'click', text: 'Add context level', hold: 1600 },
+      // The level arrives empty, ten times as wide as the view under it, and
+      // offers its own track selector — which is the half the prose skips.
+      { type: 'waitForText', text: 'Open track selector' },
+      {
+        type: 'click',
+        text: 'Open track selector',
+        say: 'Each level carries its own tracks',
+        hold: 1000,
+      },
+      { type: 'waitForText', text: 'NCBI RefSeq genes' },
+      { type: 'click', text: 'NCBI RefSeq genes' },
+      { type: 'waitForAppSettled', timeout: 120000 },
+      { type: 'delay', ms: 1500 },
+      // The drawer takes a third of the window while it is open, and Escape
+      // does not close it.
+      { type: 'click', selector: 'button[aria-label="Close drawer"]' },
+      { type: 'waitForAppSettled', timeout: 120000 },
+      { type: 'delay', ms: 1500 },
+      {
+        type: 'click',
+        selector: '[data-testid="view_menu_icon"]',
+        say: 'A second level, ten times wider again',
+        hold: 900,
+      },
+      { type: 'waitForText', text: 'Add context level' },
+      { type: 'click', text: 'Add context level', hold: 1600 },
+      { type: 'waitForText', text: 'Open track selector' },
+      { type: 'click', text: 'Open track selector', hold: 1000 },
+      { type: 'waitForText', text: 'COLO829 tumour coverage' },
+      { type: 'click', text: 'COLO829 tumour coverage' },
+      { type: 'waitForAppSettled', timeout: 120000 },
+      { type: 'delay', ms: 1500 },
+      { type: 'click', selector: 'button[aria-label="Close drawer"]' },
+      { type: 'waitForAppSettled', timeout: 120000 },
+      { type: 'delay', ms: 2000 },
+      // The claim, performed: the levels are centred on the view, so a
+      // navigation in the reads moves both of them.
+      {
+        type: 'type',
+        selector: LOCATION_BOX,
+        value: 'chr17:7,687,400-7,688,400',
+        clear: true,
+        say: 'Both levels follow the view',
+      },
+      { type: 'press', key: 'Enter' },
+      { type: 'waitForAppSettled', timeout: 120000 },
+      { type: 'delay', ms: 3000 },
     ],
     tailMs: 4000,
   },

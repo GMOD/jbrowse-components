@@ -294,9 +294,10 @@ gives an arbitrary slice of bands.
 ### Context levels
 
 **Add context level** in the view's hamburger menu stacks a wider view of the
-same locus above the tracks: a gene track at 50 kb over a coverage track at 10
-kb over the reads at 1 kb, for instance, the way Ensembl's region-in-detail page
-is laid out. Each level has its own tracks and its own zoom, and a trapezoid
+same locus above the tracks: a coverage track at megabase scale over a gene
+track at 200 kb over the reads at a kilobase, for instance, the way Ensembl's
+region-in-detail page is laid out. Each level arrives ten times wider than the
+widest one there is and empty, with its own track selector, and a trapezoid
 joins it to the level below.
 
 The levels stay centred on the view. Drag or pan a level and the view moves by
@@ -306,7 +307,9 @@ hamburger menu removes it.
 
 <Figure caption="The Add context level item in the view menu." src="/img/context_levels_menu.png" />
 
-<Figure caption="A linear genome view with two context levels: the gene track at 50 kb, a coverage track at 10 kb, and the alignments at 1 kb. The trapezoids show where each level sits in the one above." src="/img/context_levels.png" />
+<Figure caption="A linear genome view of COLO829 with two context levels: tumour coverage at 5 Mb, the gene track at 200 kb, and the ONT reads at a kilobase of TP53. The trapezoids show where each level sits in the one above." src="/img/context_levels.png" />
+
+<Video src="/media/ui/context_levels.mp4" caption="Building that stack: Add context level from the view menu, the gene track picked in the new level's own track selector, a second level ten times wider again with the coverage track, and a navigation in the reads that both levels follow." />
 
 ### Track label positioning
 
