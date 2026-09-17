@@ -290,19 +290,19 @@ export function variantTrackMenuItems(
             },
           },
         ]),
-    // The ordering half of the same metadata, beside the coloring half: both
+    // The banding half of the same metadata, beside the coloring half: both
     // are config slots a session can set, and only the coloring one had a way
     // in from the menu.
     ...(self.colorByAttributes.length
       ? [
           {
-            label: 'Group by...',
+            label: 'Group rows by...',
             icon: WorkspacesIcon,
             subMenu: sampleAttributeItems(
               self.colorByAttributes,
-              self.groupBy,
+              self.facetField,
               arg => {
-                self.setGroupBy(arg)
+                self.setFacet(arg)
               },
             ),
           },

@@ -1,4 +1,4 @@
-import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { ConfigurationSchema, liftField } from '@jbrowse/core/configuration'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import { densityTierConfigSchemaFields } from '@jbrowse/display-kit/densityTierConfigSchemaFields'
 import { jexlFilterConfigSchemaFields } from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
@@ -172,18 +172,6 @@ const markGlyphSchema = ConfigurationSchema(
   },
   { preProcessSnapshot: liftValue },
 )
-
-// `y: 'score'` is the bare-field form every other channel takes; the object
-// form spells the scale out. One sub-schema holds both, so the string is
-// lifted into `field`.
-function liftField(snap: unknown) {
-  const obj: Record<string, unknown> =
-    typeof snap === 'string' ? { field: snap } : { ...(snap as object) }
-  if (Array.isArray(obj.domain)) {
-    obj.domain = obj.domain.map(String)
-  }
-  return obj
-}
 
 const markValueSchema = ConfigurationSchema(
   'MarkValue',

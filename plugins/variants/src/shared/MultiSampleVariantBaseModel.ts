@@ -1,6 +1,7 @@
 import {
   ConfigurationReference,
   getConf,
+  readConfObject,
   setConf,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -14,6 +15,7 @@ import {
 } from '@jbrowse/core/util'
 import { createAdapterMetadataFetch } from '@jbrowse/core/util/adapterMetadata'
 import { deepEqual } from '@jbrowse/core/util/deepEqual'
+import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
 import {
   activeJexlFilters,
   configuredJexlFilters,
@@ -27,7 +29,13 @@ import StoredHoverMixin from '@jbrowse/display-kit/StoredHoverMixin'
 import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { fetchRegionsBatched } from '@jbrowse/display-kit/fetchEachRegion'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
-import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  cast,
+  getEnv,
+  getSnapshot,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import {
   RowHeightMixin,
@@ -125,6 +133,7 @@ function warnMissingAttribute(
 }
 
 type SetSlotFn = (slotName: string, value: unknown) => void
+type SetSubschemaFn = (slotName: string, data: Record<string, unknown>) => void
 
 /**
  * What a right-click on a genotype cell or a lane mark resolved to: the record
@@ -136,7 +145,8 @@ export interface VariantContextMenuInfo extends ContextMenuAnchor {
 
 // Config slots ported onto the *other* variant display's config when the
 // user switches display type via the track menu (see getPortableSettings).
-// `featureColor` is deliberately absent — it is ported separately, raw.
+// `featureColor` is deliberately absent — it is ported separately, raw — and
+// so is `facet`, a sub-schema node rather than a leaf slot.
 //
 // `height` and `rowHeight` are config slots too (TrackHeightMixin,
 // RowHeightMixin), so they are ported here and not through the instance
@@ -158,7 +168,6 @@ const PORTABLE_CONFIG_KEYS = [
   'referenceDrawingMode',
   'shadeByDosage',
   'colorBy',
-  'groupBy',
 ] as const
 
 // Loaded features in genomic order plus their interned genotype codes: what an
@@ -187,75 +196,73 @@ function getOrderedGenotypeCodes(cellData: CellDataResult) {
   }
 }
 
-// Group sample rows by a metadata attribute (e.g. 'super_pop'), so every member
-// of a group is contiguous and a group-restricted genotype pattern reads as a
-// solid band instead of being scattered across the matrix. Groups are ordered by
-// size (largest first) rather than alphabetically — the big groups are the ones
-// carrying visible structure, and a stable size order keeps the figure the same
-// across reruns. Sources missing the attribute sort last, in their original
-// order. Sorting is stable within a group, so a prior arrangement survives.
+// Band the sample rows by a metadata attribute (e.g. 'super_pop'), so every
+// member of a value is contiguous and a group-restricted genotype pattern reads
+// as a solid band instead of being scattered across the matrix. Bands order the
+// way every in-track facet orders — `domain` first, then sorted — and a source
+// whose value is missing or not a string files under '', which that comparator
+// puts last. Sorting is stable within a band, so a prior arrangement survives.
 export function sortSourcesByAttribute<S extends Record<string, unknown>>(
   sources: S[],
   attribute: string,
+  domain?: readonly string[],
 ): S[] {
-  const counts = new Map<string, number>()
-  for (const source of sources) {
+  const compare = groupKeyComparator(domain)
+  const keyOf = (source: S) => {
     const v = source[attribute]
-    if (typeof v === 'string') {
-      counts.set(v, (counts.get(v) ?? 0) + 1)
-    }
+    return typeof v === 'string' ? v : ''
   }
-  const rank = new Map<string, number>()
-  const ordered = [...counts.entries()].sort((a, b) =>
-    b[1] === a[1] ? a[0].localeCompare(b[0]) : b[1] - a[1],
-  )
-  for (let i = 0; i < ordered.length; i++) {
-    rank.set(ordered[i]![0], i)
-  }
+  const ordered = [...new Set(sources.map(keyOf))].sort(compare)
+  const rank = new Map(ordered.map((key, i) => [key, i]))
   return sources
-    .map((source, idx) => {
-      const v = source[attribute]
-      return {
-        source,
-        idx,
-        rank: typeof v === 'string' ? rank.get(v)! : ordered.length,
-      }
-    })
+    .map((source, idx) => ({ source, idx, rank: rank.get(keyOf(source))! }))
     .sort((a, b) => (a.rank === b.rank ? a.idx - b.idx : a.rank - b.rank))
     .map(d => d.source)
 }
 
-// Reorder by `groupBy` when the attribute is present, else leave the order
-// alone. Mirrors maybeApplyColorByPalette: an unset or unknown attribute is a
-// no-op rather than an error, so a config naming a column the metadata doesn't
-// have degrades to ungrouped instead of breaking the display.
-export function maybeApplyGroupBy<S extends Record<string, unknown>>(
-  groupBy: string,
+// Reorder by the facet field when the attribute is present, else leave the
+// order alone. Mirrors maybeApplyColorByPalette: an unset or unknown attribute
+// is a no-op rather than an error, so a config naming a column the metadata
+// doesn't have degrades to unfaceted instead of breaking the display.
+export function maybeApplyFacet<S extends Record<string, unknown>>(
+  field: string,
+  domain: readonly string[],
   sources: S[],
 ): S[] | undefined {
-  if (!groupBy) {
+  if (!field) {
     return undefined
   }
-  if (sources.some(source => groupBy in source)) {
-    return sortSourcesByAttribute(sources, groupBy)
+  if (sources.some(source => field in source)) {
+    return sortSourcesByAttribute(sources, field, domain)
   }
   return undefined
 }
 
-// Apply the active colorBy palette and groupBy ordering in one pass: color
-// first, then group the colored rows so a track can set both and get
-// grouped-and-colored together. Returns `[]` when neither applies, the "no
+// The facet channel as the model reads it: the attribute banding the rows and
+// the band order it declares.
+interface Facet {
+  field: string
+  domain: string[]
+}
+
+// Apply the active colorBy palette and the facet's band order in one pass:
+// color first, then band the colored rows so a track can set both and get
+// banded-and-colored together. Returns `[]` when neither applies, the "no
 // arrangement" layout. Its one caller is `applyArrangement`, which is in turn
-// the one thing setSources / setColorBy / setGroupBy / clearLayout / setPhasedMode
+// the one thing setSources / setColorBy / setFacet / clearLayout / setPhasedMode
 // all arrange through — which is why none of them can drift (a recolor dropping
-// an active grouping, a mode switch dropping the coloring).
+// an active facet, a mode switch dropping the coloring).
 function arrangeSources(
   colorBy: string,
-  groupBy: string,
+  facet: Facet,
   sources: Source[],
 ): Source[] {
   const colored = maybeApplyColorByPalette(colorBy, sources)
-  return maybeApplyGroupBy(groupBy, colored ?? sources) ?? colored ?? []
+  return (
+    maybeApplyFacet(facet.field, facet.domain, colored ?? sources) ??
+    colored ??
+    []
+  )
 }
 
 // Drop the palette colors a previous `colorBy` wrote, leaving order and every
@@ -285,9 +292,9 @@ interface ArrangeableModel {
 }
 
 /**
- * Re-apply the active `colorBy` palette and `groupBy` ordering and persist the
+ * Re-apply the active `colorBy` palette and `facet` band order and persist the
  * result as the layout. The single implementation behind `setColorBy` and
- * `setGroupBy`.
+ * `setFacet`.
  *
  * With an arrangement already on screen it re-arranges that arrangement.
  * Re-deriving from `sourcesVolatile` would make "Color by… → Population"
@@ -297,12 +304,12 @@ interface ArrangeableModel {
  *
  * Persists through the mixin's `setLayout`, never a direct `self.layout =`, so
  * a loaded dendrogram is dropped exactly when the rows move: a recolor over an
- * unchanged order keeps its tree, and a regroup loses it.
+ * unchanged order keeps its tree, and a refacet loses it.
  */
 function applyArrangement(
   self: ArrangeableModel,
   colorBy: string,
-  groupBy: string,
+  facet: Facet,
 ) {
   const sources = self.sourcesVolatile
   if (!sources) {
@@ -311,18 +318,18 @@ function applyArrangement(
   if (colorBy && !sources.some(source => colorBy in source)) {
     warnMissingAttribute('colorBy', colorBy, sources)
   }
-  if (groupBy && !sources.some(source => groupBy in source)) {
-    warnMissingAttribute('groupBy', groupBy, sources)
+  if (facet.field && !sources.some(source => facet.field in source)) {
+    warnMissingAttribute('facet', facet.field, sources)
   }
   if (self.layout.length === 0) {
     // Nothing arranged yet, so adapter order is the thing to arrange. `[]` —
     // what `arrangeSources` returns when neither axis applies — is the right
     // answer here: it *means* "no arrangement".
-    self.setLayout(arrangeSources(colorBy, groupBy, sources))
+    self.setLayout(arrangeSources(colorBy, facet, sources))
     return
   }
   // Merge the layout back over the adapter metadata that the palette and the
-  // grouping read (`layout` is only an ordering/override hint).
+  // facet read (`layout` is only an ordering/override hint).
   // `renderingMode: 'alleleCount'` is "merge, don't expand further" — the
   // layout rows already carry whatever granularity they were built at.
   const current = getSources({
@@ -331,7 +338,7 @@ function applyArrangement(
     renderingMode: 'alleleCount',
   })
   const base = colorBy ? current : stripPaletteColors(current)
-  const next = arrangeSources(colorBy, groupBy, base)
+  const next = arrangeSources(colorBy, facet, base)
   // Neither axis applies — but there is an arrangement here, and clearing both
   // must not throw away the order the user is looking at.
   self.setLayout(next.length ? next : base)
@@ -748,11 +755,19 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
-         * Sample-metadata attribute the rows are grouped (reordered) by; ''
-         * leaves the existing order alone.
+         * Sample-metadata attribute whose values band the rows; '' leaves the
+         * existing order alone.
          */
-        get groupBy(): string {
-          return getConf(self, 'groupBy')
+        get facetField(): string {
+          return readConfObject(self.configuration.facet, 'field')
+        },
+        /**
+         * #getter
+         * The band order the facet declares: the values listed come first, in
+         * this order, and the rest follow sorted.
+         */
+        get facetDomain(): string[] {
+          return [...readConfObject(self.configuration.facet, 'domain')]
         },
         /**
          * #getter
@@ -833,14 +848,17 @@ export default function MultiSampleVariantBaseModelF(
               if (layoutIsStale) {
                 self.clearLayout()
               } else if (self.layout.length === 0) {
-                // Seeds the configured colorBy palette and groupBy order on
+                // Seeds the configured colorBy palette and facet band order on
                 // first load, and only then: an empty layout means the user has
                 // not arranged anything yet, and this fires once per adapter.
                 // Every LATER re-seed is its own action's job — setColorBy,
-                // setGroupBy, clearLayout and setPhasedMode each call
+                // setFacet, clearLayout and setPhasedMode each call
                 // `applyArrangement` themselves precisely because this will not
                 // fire again. Widening the guard here does not give them back.
-                applyArrangement(self, self.colorBy, self.groupBy)
+                applyArrangement(self, self.colorBy, {
+                  field: self.facetField,
+                  domain: self.facetDomain,
+                })
               }
             }
           },
@@ -849,27 +867,33 @@ export default function MultiSampleVariantBaseModelF(
            * Recolor sample rows by a metadata attribute (e.g. 'population'), or
            * pass '' to clear the coloring. Persists the arrangement as the layout
            * and records the choice in the `colorBy` config slot so it survives a
-           * data refetch and serializes into the session. Re-applies `groupBy` in
-           * the same pass so recoloring doesn't drop an existing grouping, and
+           * data refetch and serializes into the session. Re-applies the facet in
+           * the same pass so recoloring doesn't drop an existing banding, and
            * recolors the rows in place (see `applyArrangement`) so it doesn't drop
            * an existing order either.
            */
           setColorBy(colorBy: string) {
             setConf(self, 'colorBy', colorBy)
-            applyArrangement(self, colorBy, self.groupBy)
+            applyArrangement(self, colorBy, {
+              field: self.facetField,
+              domain: self.facetDomain,
+            })
           },
           /**
            * #action
-           * Reorder sample rows so each value of a metadata attribute (e.g.
-           * 'population') is contiguous, or pass '' to clear the grouping.
+           * Band the sample rows so each value of a metadata attribute (e.g.
+           * 'population') is contiguous, or pass '' to clear the facet.
            * Persists the arrangement as the layout and records the choice in the
-           * `groupBy` config slot so it survives a data refetch and serializes
-           * into the session. Re-applies `colorBy` in the same pass so grouping
-           * doesn't drop an existing palette.
+           * `facet.field` config slot so it survives a data refetch and
+           * serializes into the session. Re-applies `colorBy` in the same pass
+           * so faceting doesn't drop an existing palette.
            */
-          setGroupBy(groupBy: string) {
-            setConf(self, 'groupBy', groupBy)
-            applyArrangement(self, self.colorBy, groupBy)
+          setFacet(field: string) {
+            setConf({ configuration: self.configuration.facet }, 'field', field)
+            applyArrangement(self, self.colorBy, {
+              field,
+              domain: self.facetDomain,
+            })
           },
           /**
            * #action
@@ -900,7 +924,7 @@ export default function MultiSampleVariantBaseModelF(
               // set here matched nothing and blanked the display.
               //
               // Same reset as `clearLayout`, so the configured `colorBy` palette
-              // and `groupBy` order come back on the new row names. Clearing
+              // and facet band order come back on the new row names. Clearing
               // without re-arranging dropped the row coloring on every mode
               // switch while the menu still showed it checked — nothing else
               // re-seeds `layout` (`setSources` fires once per adapter).
@@ -965,7 +989,10 @@ export default function MultiSampleVariantBaseModelF(
            */
           clearLayout() {
             superClearLayout()
-            applyArrangement(self, self.colorBy, self.groupBy)
+            applyArrangement(self, self.colorBy, {
+              field: self.facetField,
+              domain: self.facetDomain,
+            })
           },
         }
       })
@@ -973,7 +1000,7 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * Overrides the mixin's `layout.length > 0`: here a configured
-         * `colorBy` / `groupBy` seeds `layout` on first load, so a non-empty
+         * `colorBy` / `facet` seeds `layout` on first load, so a non-empty
          * layout is the ordinary state of a track nobody has rearranged, and
          * `clearLayout` puts that same arrangement straight back. "Reset row
          * order" is offered only once the layout has moved away from what the
@@ -988,7 +1015,11 @@ export default function MultiSampleVariantBaseModelF(
               deepEqual(
                 withoutSampleName(self.layout),
                 withoutSampleName(
-                  arrangeSources(self.colorBy, self.groupBy, sources),
+                  arrangeSources(
+                    self.colorBy,
+                    { field: self.facetField, domain: self.facetDomain },
+                    sources,
+                  ),
                 ),
               )
             )
@@ -1469,7 +1500,7 @@ export default function MultiSampleVariantBaseModelF(
          * blank every sidebar swatch, with the menu still showing Population
          * ticked. Nothing re-seeds the palette afterwards — `setSources`
          * short-circuits on `deepEqual`, and `applyArrangement` is reachable
-         * only from `setColorBy` / `setGroupBy` / `clearLayout` /
+         * only from `setColorBy` / `setFacet` / `clearLayout` /
          * `setPhasedMode`.
          */
         sortByGenotype(featureId: string) {
@@ -1644,12 +1675,25 @@ export default function MultiSampleVariantBaseModelF(
         getPortableSettings(newDisplayId?: string) {
           if (newDisplayId) {
             const displays = getContainingTrack(self).configuration
-              .displays as { displayId: string; setSlot: SetSlotFn }[]
+              .displays as {
+              displayId: string
+              setSlot: SetSlotFn
+              setSubschema: SetSubschemaFn
+            }[]
             const target = displays.find(d => d.displayId === newDisplayId)
             if (target) {
               for (const key of PORTABLE_CONFIG_KEYS) {
                 target.setSlot(key, getConf(self, key))
               }
+              // `facet` is a sub-schema node, so it travels whole through
+              // setSubschema — setSlot refuses a sub-schema by name.
+              target.setSubschema(
+                'facet',
+                getSnapshot(self.configuration.facet) as Record<
+                  string,
+                  unknown
+                >,
+              )
               // Raw, never through getConf: featureColor can hold a `jexl:...`
               // string, and getConf evaluates one on read with no `feature`
               // bound — so the consequence-impact preset
