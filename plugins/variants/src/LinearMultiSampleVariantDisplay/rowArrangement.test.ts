@@ -1,7 +1,7 @@
 import { createTestEnvironment } from './testEnv.ts'
 
 // Sample metadata as samplesTsv supplies it: `population` is what "Color by…"
-// and "Group by…" key on.
+// and "Group rows by…" key on.
 const SOURCES = [
   { name: 'S0', population: 'AFR' },
   { name: 'S1', population: 'EUR' },
@@ -69,29 +69,29 @@ describe('recoloring does not disturb the arrangement', () => {
   })
 })
 
-describe('regrouping invalidates the tree it reorders under', () => {
-  // `setLayout` decides from the rows, not from which action ran: a grouping
+describe('refaceting invalidates the tree it reorders under', () => {
+  // `setLayout` decides from the rows, not from which action ran: a facet
   // that lands on the order the tree already describes keeps it.
-  it('keeps the tree when the grouping agrees with the clustered order', () => {
+  it('keeps the tree when the facet agrees with the clustered order', () => {
     const display = clusteredDisplay()
-    display.setGroupBy('population')
+    display.setFacet('population')
 
-    // AFR (S2, S0) leads EUR (S1) by size, which is the clustered order already
+    // AFR (S2, S0) sorts before EUR (S1), which is the clustered order already
     expect(rowNames(display)).toEqual(['S2', 'S0', 'S1'])
-    expect(display.groupBy).toBe('population')
+    expect(display.facetField).toBe('population')
     expect(display.clusterTree).toBe(CLUSTERED_TREE)
   })
 
-  it('drops the cluster tree when the grouping order differs from it', () => {
+  it('drops the cluster tree when the facet order differs from it', () => {
     const { display } = createTestEnvironment().createDisplay()
     display.setSources(SOURCES)
-    // clustered in adapter order, which grouping will not preserve
+    // clustered in adapter order, which the facet will not preserve
     display.setLayoutAndClusterTree(
       [{ name: 'S0' }, { name: 'S1' }, { name: 'S2' }],
       '((S0,S1),S2);',
     )
 
-    display.setGroupBy('population')
+    display.setFacet('population')
 
     expect(rowNames(display)).toEqual(['S0', 'S2', 'S1'])
     expect(display.clusterTree).toBeUndefined()

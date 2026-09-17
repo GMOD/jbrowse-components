@@ -2,7 +2,7 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 import {
   maybeApplyColorByPalette,
-  maybeApplyGroupBy,
+  maybeApplyFacet,
   sortSourcesByAttribute,
 } from './MultiSampleVariantBaseModel.ts'
 import sharedVariantConfigFactory from './SharedVariantConfigSchema.ts'
@@ -190,8 +190,8 @@ describe('maybeApplyColorByPalette', () => {
   })
 })
 
-// Guards the groupBy wiring (setSources / setGroupBy -> maybeApplyGroupBy): rows
-// are reordered so each attribute value is contiguous, which is what makes a
+// Guards the facet wiring (setSources / setFacet -> maybeApplyFacet): rows are
+// reordered so each attribute value is contiguous, which is what makes a
 // group-restricted genotype pattern read as one band rather than scattered rows.
 describe('sortSourcesByAttribute', () => {
   const sources = [
@@ -202,7 +202,7 @@ describe('sortSourcesByAttribute', () => {
     { name: 's5', pop: 'AFR' },
   ]
 
-  it('makes each group contiguous, largest group first', () => {
+  it('makes each band contiguous, in sorted value order', () => {
     expect(sortSourcesByAttribute(sources, 'pop').map(s => s.name)).toEqual([
       's2',
       's4',
@@ -212,7 +212,7 @@ describe('sortSourcesByAttribute', () => {
     ])
   })
 
-  it('is stable within a group (preserves prior arrangement)', () => {
+  it('is stable within a band (preserves prior arrangement)', () => {
     const result = sortSourcesByAttribute(sources, 'pop')
     expect(result.filter(s => s.pop === 'AFR').map(s => s.name)).toEqual([
       's2',
@@ -221,15 +221,34 @@ describe('sortSourcesByAttribute', () => {
     ])
   })
 
-  it('breaks equal-size groups by name so the order is deterministic', () => {
-    const even = [
+  it('orders by value, not by band size', () => {
+    const lopsided = [
       { name: 'a', pop: 'ZZZ' },
-      { name: 'b', pop: 'AAA' },
+      { name: 'b', pop: 'ZZZ' },
+      { name: 'c', pop: 'AAA' },
     ]
-    expect(sortSourcesByAttribute(even, 'pop').map(s => s.name)).toEqual([
-      'b',
+    expect(sortSourcesByAttribute(lopsided, 'pop').map(s => s.name)).toEqual([
+      'c',
       'a',
+      'b',
     ])
+  })
+
+  it('puts a domain value first, whatever it sorts as', () => {
+    expect(
+      sortSourcesByAttribute(sources, 'pop', ['EUR']).map(s => s.name),
+    ).toEqual(['s1', 's3', 's2', 's4', 's5'])
+  })
+
+  it('leaves the values a domain does not list sorted behind it', () => {
+    const three = [
+      { name: 'a', pop: 'EUR' },
+      { name: 'b', pop: 'SAS' },
+      { name: 'c', pop: 'AFR' },
+    ]
+    expect(
+      sortSourcesByAttribute(three, 'pop', ['SAS']).map(s => s.name),
+    ).toEqual(['b', 'c', 'a'])
   })
 
   it('sorts sources missing the attribute last, in original order', () => {
@@ -248,19 +267,27 @@ describe('sortSourcesByAttribute', () => {
   })
 })
 
-describe('maybeApplyGroupBy', () => {
+describe('maybeApplyFacet', () => {
   const sources = [
     { name: 's1', pop: 'EUR' },
     { name: 's2', pop: 'AFR' },
     { name: 's3', pop: 'EUR' },
   ]
 
-  it('returns undefined when groupBy is unset (order untouched)', () => {
-    expect(maybeApplyGroupBy('', sources)).toBeUndefined()
+  it('returns undefined when the field is unset (order untouched)', () => {
+    expect(maybeApplyFacet('', [], sources)).toBeUndefined()
   })
 
-  it('groups by the requested attribute', () => {
-    expect(maybeApplyGroupBy('pop', sources)!.map(s => s.name)).toEqual([
+  it('bands by the requested attribute', () => {
+    expect(maybeApplyFacet('pop', [], sources)!.map(s => s.name)).toEqual([
+      's2',
+      's1',
+      's3',
+    ])
+  })
+
+  it("stacks the domain's values first", () => {
+    expect(maybeApplyFacet('pop', ['EUR'], sources)!.map(s => s.name)).toEqual([
       's1',
       's3',
       's2',
@@ -270,7 +297,7 @@ describe('maybeApplyGroupBy', () => {
   // silent for the reason maybeApplyColorByPalette's absent case is
   it('returns undefined, silently, when the attribute is absent', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    expect(maybeApplyGroupBy('nonexistent', sources)).toBeUndefined()
+    expect(maybeApplyFacet('nonexistent', [], sources)).toBeUndefined()
     expect(warn).not.toHaveBeenCalled()
     warn.mockRestore()
   })

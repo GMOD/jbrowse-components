@@ -64,7 +64,7 @@ describe('applyClusterOrder', () => {
   })
 
   // A phased run almost always starts with a layout already in place: `colorBy`
-  // or `groupBy` seeds one through `applyArrangement` on the very first
+  // or `facet` seeds one through `applyArrangement` on the very first
   // `setSources`, and that one is at SAMPLE granularity. Those rows are
   // superseded by the haplotypes and must not come back — appended, they expand
   // a second time on the way to `sources` (3 samples -> 9 layout rows -> 12 drawn

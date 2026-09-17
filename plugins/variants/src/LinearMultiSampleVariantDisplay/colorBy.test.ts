@@ -5,7 +5,7 @@ import stateModelFactory from './model.ts'
 
 // Runtime "Color by...→Samples" wiring: setColorBy writes colorBy directly onto
 // the display's config and recolors the sample rows (persisted as `layout`);
-// colorByAttributes lists the samplesTsv metadata keys the user can group by.
+// colorByAttributes lists the samplesTsv metadata keys the user can band by.
 describe('multi-sample variant colorBy', () => {
   const sources = [
     { name: 'HG001', population: 'EUR', sex: 'M' },
@@ -46,16 +46,16 @@ describe('multi-sample variant colorBy', () => {
     expect(byName.HG001).not.toBe(byName.HG002)
   })
 
-  it('preserves an active groupBy ordering when recoloring', () => {
+  it('preserves an active facet ordering when recoloring', () => {
     const model = makeModel()
     model.setSources(sources)
-    // group by population: EUR (2 members) sorts ahead of AFR (1)
-    model.setGroupBy('population')
-    expect(model.layout.map(s => s.name)).toEqual(['HG001', 'HG003', 'HG002'])
+    // band by population: with no domain the bands sort, AFR ahead of EUR
+    model.setFacet('population')
+    expect(model.layout.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
 
-    // recoloring must keep the grouped order, not revert to adapter order
+    // recoloring must keep the banded order, not revert to adapter order
     model.setColorBy('sex')
-    expect(model.layout.map(s => s.name)).toEqual(['HG001', 'HG003', 'HG002'])
+    expect(model.layout.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
   })
 
   // Set to empty, the palette goes and the arrangement stays: a recolor is not
@@ -64,12 +64,12 @@ describe('multi-sample variant colorBy', () => {
   it('strips the palette when set to empty, keeping the order', () => {
     const model = makeModel()
     model.setSources(sources)
-    model.setGroupBy('population')
+    model.setFacet('population')
     model.setColorBy('population')
     model.setColorBy('')
 
     expect(model.colorBy).toBe('')
-    expect(model.layout.map(s => s.name)).toEqual(['HG001', 'HG003', 'HG002'])
+    expect(model.layout.map(s => s.name)).toEqual(['HG002', 'HG001', 'HG003'])
     expect(model.layout.some(s => s.labelColor)).toBe(false)
   })
 
