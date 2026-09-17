@@ -101,13 +101,14 @@ Only the last is on the figure, because it is the one a gesture interacts with.
 A pan back over a region the display still holds does no work at all; a pan onto
 a new region re-enters at the top.
 
-The two lower layers hold a byte range and what that range decoded to, and
-neither answer changes while the session runs — they are evicted, never
-invalidated, and what evicts them is [](/docs/developer_guides/memory).
-`rpcDataMap` is the one that can hold a wrong answer: it keeps what the worker
-computed under one set of settings, so `SettingsInvalidate` watches the
-serialized `rpcProps()` and refetches every region when that string changes,
-drawing the old answer under a scrim until the new one lands.
+`RemoteFileWithRangeCache` and the parser's own chunk cache hold a byte range
+and what that range decoded to, and neither answer changes while the session
+runs. Both are evicted, never invalidated, and what evicts them is
+[](/docs/developer_guides/memory). `rpcDataMap` is the one that can hold a wrong
+answer: it keeps what the worker computed under one set of settings, so
+`SettingsInvalidate` watches the serialized `rpcProps()` and refetches every
+region when that string changes, drawing the old answer under a scrim until the
+new one lands.
 [The cache key](/docs/developer_guides/data_fetching#rpcprops-the-cache-key)
 says what may go in it.
 

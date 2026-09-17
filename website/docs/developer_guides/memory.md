@@ -11,7 +11,7 @@ per-file ceiling multiplies by the open track count and bounds nothing. Those
 ceilings bound retained bytes; a tab's peak is made of things they do not reach.
 
 [](/docs/developer_guides/optimizations) is where a track's _time_ goes; this
-page is what stays resident afterwards.
+page describes what stays resident afterward.
 
 ## What retains
 

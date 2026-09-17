@@ -10,7 +10,7 @@ Your plugin runs _inside_ the host JBrowse app, sharing its JavaScript runtime,
 so an import resolves one of two ways:
 
 - Re-exports are a fixed set of libraries the host already loaded. Your plugin
-  must use the host's copy, not bundle its own.
+  must use the host's copy.
 - Everything else is any other npm package. Your plugin bundles it normally.
 
 Import React, MobX, MST, MUI and every `@jbrowse` package listed below normally
@@ -135,7 +135,7 @@ so there is nothing of a served package that a plugin can end up bundling. What
 a host can lack is a whole package it does not bundle — the embedded
 circular-genome-view build serves fewer plugins than jbrowse-web — and a key a
 host lacks throws at the plugin's first read, naming the key, so the failure is
-one notification rather than an `undefined is not a function` somewhere later.
+one notification.
 
 ## Standalone helper packages
 
