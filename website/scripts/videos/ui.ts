@@ -39,6 +39,13 @@ const sequenceType = (mode: string) => `[data-testid="sequence_type_${mode}"]`
 // carries the same `data-field`.
 const BOOKMARK_LINK_CELL = '.MuiDataGrid-cell[data-field="locString"]'
 
+// The Add context level dialog's track picker, and the button that takes the
+// dialog. The picker is an Autocomplete, so the testid is on the control and
+// the typing goes into the input inside it; the button is named `Add` there,
+// which is the prefix of the menu item that opened the dialog.
+const CONTEXT_LEVEL_TRACKS = '[data-testid="context-level-tracks"] input'
+const DIALOG_SUBMIT = 'form button[type="submit"]'
+
 export const uiVideos: VideoSpec[] = [
   // A LOOP, which is what bookmark_widget.md is about and what neither of its
   // two figures can be. The page's first sentence says a bookmark is "shown as a
@@ -135,17 +142,18 @@ export const uiVideos: VideoSpec[] = [
   // CONTEXT LEVELS, WHICH ARE BUILT RATHER THAN CONFIGURED. basic_usage.md's
   // figure holds the finished stack — 5 Mb of coverage over 200 kb of genes
   // over a kilobase of reads — and the route to it is three separate things a
-  // still cannot hold: the menu item, the empty level it adds, and the track
-  // selector that level opens for itself. The last frame is the payoff the
-  // prose asserts: the levels stay centred, so a navigation in the reads moves
-  // every level with it.
+  // still cannot hold: the menu item, the dialog that names a level's span and
+  // tracks, and the side of the tracks the stack sits on, which the second
+  // level's dialog switches with the first level already standing. The last
+  // frame is the payoff the prose asserts: the levels stay centred, so a
+  // navigation in the reads moves every level with it.
   {
     name: 'ui/context_levels',
     description:
-      'A context level added from the view menu, given the gene track through its own track selector, a second wider level over it, and a navigation in the reads that carries both levels along',
+      'A context level added from the view menu with the gene track named in its dialog, a second wider level the same dialog sends under the reads, and a navigation the whole stack follows',
     url: contextLevelsSession,
-    // the reads at 260, two levels at 80 each with their trapezoids, and the
-    // drawer that opens beside them
+    // the reads at 260, two levels at 80 each with their trapezoids, and room
+    // for the dialog that opens over them
     viewportHeight: 900,
     readySelector: displayPainted('pileup-display'),
     readyTimeout: 180000,
@@ -160,25 +168,21 @@ export const uiVideos: VideoSpec[] = [
         hold: 900,
       },
       { type: 'waitForText', text: 'Add context level' },
-      { type: 'click', text: 'Add context level', hold: 1600 },
-      // The level arrives empty, ten times as wide as the view under it, and
-      // offers its own track selector — which is the half the prose skips.
-      { type: 'waitForText', text: 'Open track selector' },
+      { type: 'click', text: 'Add context level', hold: 1200 },
+      // The dialog is where the span, the tracks and the side are named, which
+      // is the half the prose skips.
+      { type: 'waitForText', text: 'Level width (bp)' },
       {
-        type: 'click',
-        text: 'Open track selector',
-        say: 'Each level carries its own tracks',
-        hold: 1000,
+        type: 'type',
+        selector: CONTEXT_LEVEL_TRACKS,
+        value: 'NCBI RefSeq genes',
+        say: 'Name the tracks the level carries',
       },
       { type: 'waitForText', text: 'NCBI RefSeq genes' },
-      { type: 'click', text: 'NCBI RefSeq genes' },
+      { type: 'click', text: 'NCBI RefSeq genes', hold: 800 },
+      { type: 'click', selector: DIALOG_SUBMIT },
       { type: 'waitForAppSettled', timeout: 120000 },
-      { type: 'delay', ms: 1500 },
-      // The drawer takes a third of the window while it is open, and Escape
-      // does not close it.
-      { type: 'click', selector: 'button[aria-label="Close drawer"]' },
-      { type: 'waitForAppSettled', timeout: 120000 },
-      { type: 'delay', ms: 1500 },
+      { type: 'delay', ms: 2000 },
       {
         type: 'click',
         selector: '[data-testid="view_menu_icon"]',
@@ -186,16 +190,26 @@ export const uiVideos: VideoSpec[] = [
         hold: 900,
       },
       { type: 'waitForText', text: 'Add context level' },
-      { type: 'click', text: 'Add context level', hold: 1600 },
-      { type: 'waitForText', text: 'Open track selector' },
-      { type: 'click', text: 'Open track selector', hold: 1000 },
+      { type: 'click', text: 'Add context level', hold: 1200 },
+      { type: 'waitForText', text: 'Level width (bp)' },
+      {
+        type: 'type',
+        selector: CONTEXT_LEVEL_TRACKS,
+        value: 'COLO829 tumour coverage',
+      },
       { type: 'waitForText', text: 'COLO829 tumour coverage' },
-      { type: 'click', text: 'COLO829 tumour coverage' },
+      { type: 'click', text: 'COLO829 tumour coverage', hold: 800 },
+      // The side is the stack's, so this takes the level already standing with
+      // it, and the trapezoids turn over.
+      {
+        type: 'click',
+        text: 'Below the tracks',
+        say: 'The stack can sit under the tracks instead',
+        hold: 1200,
+      },
+      { type: 'click', selector: DIALOG_SUBMIT },
       { type: 'waitForAppSettled', timeout: 120000 },
-      { type: 'delay', ms: 1500 },
-      { type: 'click', selector: 'button[aria-label="Close drawer"]' },
-      { type: 'waitForAppSettled', timeout: 120000 },
-      { type: 'delay', ms: 2000 },
+      { type: 'delay', ms: 2500 },
       // The claim, performed: the levels are centred on the view, so a
       // navigation in the reads moves both of them.
       {

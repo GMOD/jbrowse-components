@@ -97,9 +97,9 @@ const AddContextLevelDialog = observer(function AddContextLevelDialog({
     >
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
         <Typography>
-          A context level is a second view of this same locus at a wider span,
-          with tracks of its own, joined to the tracks by a trapezoid. It stays
-          centred on this view, and zooming it changes its span alone.
+          A context level is a second view of this locus at a wider span, with
+          tracks of its own. It stays centred on this view, and zooming it
+          changes its span alone.
         </Typography>
         <TextField
           label="Level width (bp)"
@@ -120,6 +120,7 @@ const AddContextLevelDialog = observer(function AddContextLevelDialog({
         />
         <Autocomplete
           multiple
+          data-testid="context-level-tracks"
           options={options}
           value={tracks}
           getOptionLabel={option => option.name}

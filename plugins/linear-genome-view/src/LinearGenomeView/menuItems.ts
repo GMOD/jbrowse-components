@@ -21,6 +21,7 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import SearchIcon from '@mui/icons-material/Search'
+import SwapVertIcon from '@mui/icons-material/SwapVert'
 import SyncAltIcon from '@mui/icons-material/SyncAlt'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomInIcon from '@mui/icons-material/ZoomIn'
@@ -67,10 +68,10 @@ export function showAllRegionsMenuItem(self: LinearGenomeViewModel): MenuItem {
 }
 
 /**
- * A view offers to grow a context level beside itself; a level offers to go.
- * Adding stops once the widest level — or this view when it has none — is
- * already zoomed all the way out, since a level wider than that would show the
- * same thing.
+ * A view offers to grow a context level beside itself, and to move the stack it
+ * has to the other side of the tracks; a level offers to go. Adding stops once
+ * the widest level — or this view when it has none — is already zoomed all the
+ * way out, since a level wider than that would show the same thing.
  *
  * Only a view of its own offers to add one. A row of a comparative stack is
  * already part of somebody's figure: the synteny ribbons and the breakpoint
@@ -111,6 +112,22 @@ function contextLevelMenuItem(self: LinearGenomeViewModel): MenuItem[] {
         ])
       },
     },
+    // The dialog names the side for the level it is adding, and the side
+    // belongs to the whole stack — so a stack already built is moved from
+    // here, rather than by adding a level nobody wanted to get at the radio.
+    ...(self.contextLevelViews.length
+      ? [
+          {
+            label: self.contextLevelsBelow
+              ? 'Move context levels above tracks'
+              : 'Move context levels below tracks',
+            icon: SwapVertIcon,
+            onClick: () => {
+              self.setContextLevelsBelow(!self.contextLevelsBelow)
+            },
+          },
+        ]
+      : []),
   ]
 }
 

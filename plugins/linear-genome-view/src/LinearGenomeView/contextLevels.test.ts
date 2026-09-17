@@ -261,6 +261,37 @@ test('a view already zoomed all the way out offers no level above it', () => {
   expect(addItem(view)).toMatchObject({ disabled: true })
 })
 
+// The dialog names the side for the level it adds, so a stack already standing
+// needs a way over that does not involve adding one
+test('only a view with a stack is offered the move to the other side', () => {
+  const { view } = setup()
+  const moveItem = (v: LinearGenomeViewModel) =>
+    v
+      .menuItems()
+      .find(
+        m =>
+          'onClick' in m &&
+          typeof m.label === 'string' &&
+          m.label.startsWith('Move context'),
+      )
+  expect(moveItem(view)).toBeUndefined()
+  view.addContextLevel()
+  expect(moveItem(view)).toMatchObject({
+    label: 'Move context levels below tracks',
+  })
+  const level = levels(view)[0]!
+  expect(moveItem(level)).toBeUndefined()
+
+  const item = moveItem(view)!
+  if ('onClick' in item) {
+    item.onClick()
+  }
+  expect(view.contextLevelsBelow).toBe(true)
+  expect(moveItem(view)).toMatchObject({
+    label: 'Move context levels above tracks',
+  })
+})
+
 test('the connector band is one height for the stack, with a floor', () => {
   const { view } = setup()
   view.addContextLevel()
