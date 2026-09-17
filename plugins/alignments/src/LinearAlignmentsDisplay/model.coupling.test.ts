@@ -1388,7 +1388,6 @@ describe('per-lane state belongs to one grouping key space', () => {
     expect(rows().map(r => ('label' in r ? r.label : undefined))).toEqual([
       'HP: 1',
       'HP: 2',
-      undefined,
       'Reset section order',
     ])
     const moveDown = menuSubItems(rows(), 'HP: 1')[1] as { onClick: () => void }
@@ -1399,7 +1398,7 @@ describe('per-lane state belongs to one grouping key space', () => {
       domain: ['2', '1'],
     })
     expect(display.groupOrder.map(g => g.key)).toEqual(['2', '1'])
-    ;(rows()[3] as { onClick: () => void }).onClick()
+    ;(rows()[2] as { onClick: () => void }).onClick()
     expect(display.groupBy).toEqual({ type: 'tag', tag: 'HP' })
   })
 

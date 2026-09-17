@@ -169,7 +169,6 @@ test('the Sections menu moves a section and writes the drawn order as the domain
   expect(rows().map(labelOf)).toEqual([
     'biotype: lncRNA',
     'biotype: protein_coding',
-    undefined,
     'Reset section order',
   ])
   const first = rows()[0] as Parameters<typeof resolveSubMenu>[0]
@@ -180,7 +179,7 @@ test('the Sections menu moves a section and writes the drawn order as the domain
     'protein_coding',
     'lncRNA',
   ])
-  const reset = rows()[3] as { onClick: () => void }
+  const reset = rows()[2] as { onClick: () => void }
   reset.onClick()
   expect(display.channelSpec.facet).toEqual({ field: 'biotype' })
 })

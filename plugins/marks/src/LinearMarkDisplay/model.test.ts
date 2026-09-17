@@ -1146,7 +1146,6 @@ test('the Sections menu moves a section and writes the drawn order onto the face
   expect(rows().map(r => ('label' in r ? r.label : undefined))).toEqual([
     'sample: a',
     'sample: b',
-    undefined,
     'Reset section order',
   ])
   const first = rows()[0] as Parameters<typeof resolveSubMenu>[0]
@@ -1157,7 +1156,7 @@ test('the Sections menu moves a section and writes the drawn order onto the face
     domain: ['b', 'a'],
   })
   expect(display.facetLayout.sections.map(s => s.key)).toEqual(['b', 'a'])
-  ;(rows()[3] as { onClick: () => void }).onClick()
+  ;(rows()[2] as { onClick: () => void }).onClick()
   expect(display.facetDomain).toEqual([])
 })
 

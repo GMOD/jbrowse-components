@@ -73,7 +73,7 @@ test('Move down on a lane writes the drawn order as the domain', () => {
   seedSections(display, ['volvox_random', 'volvox_two'])
   expect(
     sectionRows(display).map(i => ('label' in i ? i.label : undefined)),
-  ).toEqual(['volvox_random', 'volvox_two', undefined, 'Reset section order'])
+  ).toEqual(['volvox_random', 'volvox_two', 'Reset section order'])
 
   const moveDown = subMenu(sectionRows(display), 'volvox_random')[1] as {
     onClick: () => void

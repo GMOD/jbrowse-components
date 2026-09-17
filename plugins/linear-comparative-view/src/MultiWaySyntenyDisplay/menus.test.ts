@@ -152,7 +152,7 @@ test('the track menu is Show, Color by and Lanes', () => {
   ])
   expect(labelsOf(showSubMenuItems(model))).toEqual([
     'Show lane ticks',
-    'Show ribbons as curves',
+    'Curved lines',
     'Show ribbons across gaps',
   ])
 })
@@ -262,12 +262,11 @@ test('a lane names its other contigs and offers each, and a pin offers its relea
   }
   const { model, calls } = headerModel()
   const items = laneHeaderMenuItems(model, twoCopies)
-  expect(labelsOf(items).slice(6)).toEqual([
-    '—',
+  expect(labelsOf(items).slice(5)).toEqual([
     'Show Pp5 in this lane',
     'Show Pp7 in this lane',
   ])
-  click(items[7])
+  click(items[5])
   expect(calls).toEqual(['pin peach pp5'])
 
   const pinnedModel = headerModel({ pinned: 'pp5' })
@@ -275,12 +274,11 @@ test('a lane names its other contigs and offers each, and a pin offers its relea
     ...twoCopies,
     frame: { ...twoCopies.frame, refName: 'pp5', alsoOn: ['pp1'] },
   })
-  expect(labelsOf(pinnedItems).slice(6)).toEqual([
-    '—',
+  expect(labelsOf(pinnedItems).slice(5)).toEqual([
     'Show Pp1 in this lane',
     'Let the lane choose its contig (pinned to Pp5)',
   ])
-  click(pinnedItems[8])
+  click(pinnedItems[6])
   expect(pinnedModel.calls).toEqual(['pin peach undefined'])
 })
 
@@ -299,12 +297,11 @@ test('a mate lane header opens its assembly elsewhere or re-anchors the track on
     'Move up',
     'Move down',
     'Hide lane',
-    '—',
     'Open peach at the matching region',
     'Re-anchor on peach',
   ])
+  click(items[3])
   click(items[4])
-  click(items[5])
   expect(calls).toEqual([
     'open peach Pp1:101..2000',
     'reanchor peach Pp1:101..2000',
@@ -322,13 +319,12 @@ test('a source aligned to one anchor offers no re-anchor', () => {
     'Move up',
     'Move down',
     'Hide lane',
-    '—',
     'Open peach at the matching region',
   ])
 })
 
 test('the two hops are dead without a frame, and without the genome in the session', () => {
-  const hops = (items: MenuItem[]) => disabledOf(items).slice(4)
+  const hops = (items: MenuItem[]) => disabledOf(items).slice(3)
   expect(hops(laneHeaderMenuItems(headerModel().model, peach))).toEqual([
     false,
     false,

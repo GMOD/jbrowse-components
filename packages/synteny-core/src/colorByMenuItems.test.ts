@@ -220,7 +220,6 @@ test('each track row carries its swatch and a way back to automatic', () => {
   expect(labels(colors)).toEqual([
     'track 0',
     'track 1',
-    '<divider>',
     'Reset all to automatic',
   ])
   const first = colors[0]!

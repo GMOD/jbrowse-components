@@ -119,7 +119,6 @@ function trackColorItems({
   clearTrackColors,
 }: NonNullable<ColorByMenuTarget['trackColors']>): MenuItem[] {
   return [
-    { type: 'divider' },
     {
       label: 'Track colors',
       helpText:
@@ -155,7 +154,6 @@ function trackColorItems({
             </span>
           ),
         })),
-        { type: 'divider' as const },
         {
           label: 'Reset all to automatic',
           disabled: !tracks.some(t => t.pinned),

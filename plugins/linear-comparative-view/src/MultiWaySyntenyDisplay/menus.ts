@@ -97,7 +97,6 @@ export function laneHeaderMenuItems(
       name,
       'lane',
     ),
-    { type: 'divider' },
     {
       label: openMateLabel(name),
       disabled: loc === undefined || !held,
@@ -116,12 +115,8 @@ export function laneHeaderMenuItems(
           },
         ]
       : []),
-    ...withDivider(laneContigMenuItems(model, lane)),
+    ...laneContigMenuItems(model, lane),
   ]
-}
-
-function withDivider(items: MenuItem[]): MenuItem[] {
-  return items.length ? [{ type: 'divider' }, ...items] : []
 }
 
 function laneContigMenuItems(
@@ -168,7 +163,7 @@ function hiddenLanesMenuItems(model: MultiWayMenuModel): MenuItem[] {
 export function showSubMenuItems(model: MultiWayMenuModel): MenuItem[] {
   return [
     toggleItem('Show lane ticks', model.showLaneTicks, model.setShowLaneTicks),
-    toggleItem('Show ribbons as curves', model.drawCurves, model.setDrawCurves),
+    toggleItem('Curved lines', model.drawCurves, model.setDrawCurves),
     toggleItem(
       'Show ribbons across gaps',
       model.bridgeSkippedLanes,

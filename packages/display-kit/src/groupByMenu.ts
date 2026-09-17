@@ -250,7 +250,6 @@ export function sectionOrderMenuItems(model: SectionOrderModel): MenuItem[] {
           label,
           subMenu: sectionRowMenuItems(model, key, 'section'),
         })),
-        { type: 'divider' },
         {
           label: 'Reset section order',
           disabled: model.domain.length === 0,

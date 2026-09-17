@@ -61,7 +61,6 @@ test('moving one section pins every drawn section, in the order now shown', () =
     'PEACH',
     'CACAO',
     'GRAPE',
-    '—',
     'Reset section order',
   ])
   expect(labelsOf(subMenuOf(rows[1]))).toEqual([
@@ -71,7 +70,7 @@ test('moving one section pins every drawn section, in the order now shown', () =
   ])
   clickOf(subMenuOf(rows[1])[0])
   expect(written).toEqual([['hidden', 'cacao', 'peach', 'grape']])
-  clickOf(rows[4])
+  clickOf(rows[3])
   expect(written[1]).toEqual([])
 })
 
@@ -83,10 +82,10 @@ test('the ends cannot move past themselves, reset is dead with nothing pinned, a
     hideGroup: () => {},
   }
   const rows = subMenuOf(sectionOrderMenuItems(model)[0])
-  expect(labelsOf(rows)).toEqual(['PEACH', 'CACAO', '—', 'Reset section order'])
+  expect(labelsOf(rows)).toEqual(['PEACH', 'CACAO', 'Reset section order'])
   expect(subMenuOf(rows[0]).map(disabledOf)).toEqual([true, false, false])
   expect(subMenuOf(rows[1]).map(disabledOf)).toEqual([false, true, false])
-  expect(disabledOf(rows[3])).toBe(true)
+  expect(disabledOf(rows[2])).toBe(true)
   expect(
     sectionOrderMenuItems({ ...model, sections: sections('peach') }),
   ).toEqual([])
