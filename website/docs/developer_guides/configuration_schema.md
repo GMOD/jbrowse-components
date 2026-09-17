@@ -264,7 +264,7 @@ snapshot. `createBaseTrackConfig` declares two of the four — `actions` and
 on top of the base's.
 
 Pass the type `ConfigurationSchema()` returned, and nothing else. The slot table
-lives in a registry keyed by that exact type, so a `types.late` wrapper or a
+is kept in a registry keyed by that exact type, so a `types.late` wrapper or a
 union from `pluginManager.pluggableConfigSchemaType(…)` carries none of it: both
 type-check, and both throw at construction.
 
@@ -459,9 +459,9 @@ it.)
 
 ## Config callbacks (jexl)
 
-Any slot can hold a callback instead of a plain value. A slot's
-`contextVariable` field lists the arguments the callback expects; the calling
-code supplies them as the third argument to `readConfObject`:
+Any slot can hold a callback or a plain value. A slot's `contextVariable` field
+lists the arguments the callback expects; the calling code supplies them as the
+third argument to `readConfObject`:
 
 <!-- include: plugins/arc/src/LinearArcDisplay/configSchema.ts#contextVariableSlot -->
 
@@ -522,12 +522,12 @@ throws at the reader, and the two ways it goes wrong look nothing alike:
 - every function in it is total (`split(feature.name,…)`), and a plausible wrong
   value comes back — `''`, `NaN` — and travels on as a real setting.
 
-A value that something downstream will still bind a feature to — anything going
-into `rpcProps()`, a renderer, or a worker — must therefore be read **raw**
-(`self.conf.someSlot`), not through a reader. A value being used on the main
-thread here and now — a swatch, a menu label, arithmetic — is a resolving read,
-and needs either a feature in the third argument or an `isJexl` guard and a
-fallback, since no single swatch can show a per-feature expression.
+A value going into `rpcProps()`, a renderer, or a worker is one something
+downstream will still bind a feature to. Read it **raw** (`self.conf.someSlot`),
+not through a reader. A value used on the main thread here and now, such as a
+swatch, a menu label, or arithmetic, is a resolving read instead, and needs
+either a feature in the third argument or an `isJexl` guard and a fallback,
+since no single swatch can show a per-feature expression.
 
 :::
 

@@ -29,7 +29,7 @@ export interface BaseTextSearchAdapter extends BaseAdapter {
 }
 ```
 
-Everything the search box knows about the query arrives in that one argument:
+Everything the search box passes about the query is in that one argument:
 
 <!-- include: packages/core/src/data_adapters/BaseAdapter/types.ts#textSearchArgs -->
 
