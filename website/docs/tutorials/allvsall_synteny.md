@@ -346,7 +346,7 @@ builds from these same strains.
           {
             "trackId": "ecoli_ava",
             "type": "MultiWaySyntenyDisplay",
-            "rowOrder": ["NCTC86", "CFT073", "Sakai", "IAI39"],
+            "domain": ["NCTC86", "CFT073", "Sakai", "IAI39"],
             "height": 340
           }
         ]

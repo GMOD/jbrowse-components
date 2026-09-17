@@ -2,8 +2,11 @@ import { makeRadioSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { assembleLocStringRaw } from '@jbrowse/core/util'
 import { openMateLabel } from '@jbrowse/core/util/tracks'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
+import {
+  sectionOrderMenuItems,
+  sectionRowMenuItems,
+} from '@jbrowse/display-kit/groupByMenu'
 
-import { moveLaneTo } from './laneDrag.ts'
 import { laneRegion } from './laneHeader.ts'
 import { ribbonColorModeOptions } from './ribbonColorModes.ts'
 
@@ -11,13 +14,24 @@ import type { LaneFilter } from './laneSelection.ts'
 import type { Lane } from './laneStack.ts'
 import type { MultiWayRibbonColorBy } from './ribbonColorModes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
+import type { SectionOrderModel } from '@jbrowse/display-kit/groupByMenu'
 
 export interface LaneOrderModel {
   rowAssemblies: string[]
-  rowOrder: readonly string[]
-  setRowOrder: (order: string[]) => void
-  resetRowOrder: () => void
+  domain: readonly string[]
+  setDomain: (domain: string[]) => void
   hideLane: (assemblyName: string) => void
+}
+
+// The lane stack as the shared section-order menu reads it: a lane's key is
+// its label, and a lane is a section.
+function laneSections(model: LaneOrderModel): SectionOrderModel {
+  return {
+    sections: model.rowAssemblies.map(name => ({ key: name, label: name })),
+    domain: model.domain,
+    setDomain: model.setDomain,
+    hideGroup: model.hideLane,
+  }
 }
 
 export interface LaneHeaderModel extends LaneOrderModel {
@@ -78,64 +92,6 @@ export interface LaneSettingsModel {
 }
 
 /**
- * The lanes a reorder names, plus the pinned lanes it could not see.
- *
- * A move writes back `rowAssemblies`, the lanes the window places and the
- * selection keeps, so a lane hidden or panned away from would drop out of
- * `rowOrder` on the next move and come back densest-first at the bottom. Each
- * one is spliced back at the index it held.
- */
-export function mergeRowOrder(previous: string[], next: string[]) {
-  const named = new Set(next)
-  const out = [...next]
-  previous.forEach((name, i) => {
-    if (!named.has(name)) {
-      out.splice(Math.min(i, out.length), 0, name)
-    }
-  })
-  return out
-}
-
-/** Move up / Move down / Hide lane for one mate lane, off the order it is in now */
-export function laneRowMenuItems(
-  model: LaneOrderModel,
-  name: string,
-): MenuItem[] {
-  const lanes = model.rowAssemblies
-  const i = lanes.indexOf(name)
-  // `keepMenuOpen`, because moving a lane two places is two clicks and the
-  // default dismisses an action row: reordering by menu was a fresh trip
-  // through the track menu per place moved. The rows' own disabled marks
-  // update live, since the menu re-reads this
-  return [
-    {
-      label: 'Move up',
-      disabled: i <= 0,
-      keepMenuOpen: true,
-      onClick: () => {
-        model.setRowOrder(moveLaneTo(lanes, name, i - 1))
-      },
-    },
-    {
-      label: 'Move down',
-      disabled: i < 0 || i === lanes.length - 1,
-      keepMenuOpen: true,
-      onClick: () => {
-        model.setRowOrder(moveLaneTo(lanes, name, i + 1))
-      },
-    },
-    {
-      label: 'Hide lane',
-      disabled: lanes.length < 2,
-      keepMenuOpen: true,
-      onClick: () => {
-        model.hideLane(name)
-      },
-    },
-  ]
-}
-
-/**
  * The menu a lane's header raises. A mate lane gets the track menu's own row
  * plus the two hops off it: its assembly in a view of its own at the frame the
  * lane is drawing (the same jump a synteny track and a MAF row offer a mate),
@@ -169,7 +125,7 @@ export function laneHeaderMenuItems(
   const loc = region && assembleLocStringRaw(region)
   const held = model.holdsAssembly(name)
   return [
-    ...laneRowMenuItems(model, name),
+    ...sectionRowMenuItems(laneSections(model), name, 'lane'),
     { type: 'divider' },
     {
       label: openMateLabel(name),
@@ -225,43 +181,14 @@ function laneContigMenuItems(
 }
 
 /**
- * Reorder or hide the mate lanes, or nothing while there is one lane.
- *
- * Worth a row per lane because a ribbon joins ADJACENT lanes only: moving a
- * near-empty lane out from mid-stack reconnects the chains it was cutting
- * through every denser lane below it, and that is the one edit densest-first
- * cannot make for itself.
- *
- * A move writes back the WHOLE order it is looking at, not the one lane it
- * moved. `rowOrder` pins the lanes it names to the top in its own order and
- * leaves the rest densest-first, so pinning one lane would leave the others
- * free to re-sort under it as a pan changed the counts — the second move would
- * be made against a stack that had shifted since the first.
+ * Reorder or hide the mate lanes: the shared section-order menu with lanes as
+ * its sections. Worth a row per lane because a ribbon joins ADJACENT lanes
+ * only: moving a near-empty lane out from mid-stack reconnects the chains it
+ * was cutting through every denser lane below it, and that is the one edit
+ * densest-first cannot make for itself.
  */
-export function laneOrderMenuItem(model: LaneOrderModel): MenuItem[] {
-  const lanes = model.rowAssemblies
-  if (lanes.length < 2) {
-    return []
-  }
-  return [
-    {
-      label: 'Lanes',
-      subMenu: [
-        ...lanes.map(name => ({
-          label: name,
-          subMenu: laneRowMenuItems(model, name),
-        })),
-        { type: 'divider' },
-        {
-          label: 'Reset lane order',
-          disabled: model.rowOrder.length === 0,
-          onClick: () => {
-            model.resetRowOrder()
-          },
-        },
-      ],
-    },
-  ]
+export function laneOrderMenuItems(model: LaneOrderModel): MenuItem[] {
+  return sectionOrderMenuItems(laneSections(model), 'lane')
 }
 
 /**

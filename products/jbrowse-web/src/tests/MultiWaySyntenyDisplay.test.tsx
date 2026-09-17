@@ -232,7 +232,7 @@ test('MultiWaySyntenyDisplay seeds the lane chain where the anchor lane draws', 
   )
 }, 40000)
 
-// Lane order was densest-first with no way in but hand-authoring `rowOrder`,
+// Lane order was densest-first with no way in but hand-authoring `domain`,
 // and it is the one edit a reader wants in front of the picture: a ribbon joins
 // ADJACENT lanes only, so a sparse lane mid-stack cuts every chain below it.
 // Driven through the menu item's own onClick rather than `setRowOrder`, since
@@ -275,11 +275,11 @@ test('MultiWaySyntenyDisplay reorders its lanes from the track menu', async () =
   }
 
   click(rowNamed(subMenuOf(rowNamed(laneOrder(), 'cacao')), 'Move up'))
-  expect([...display.rowOrder]).toEqual(['cacao', 'peach'])
+  expect([...display.domain]).toEqual(['cacao', 'peach'])
   expect(display.rowAssemblies).toEqual(['cacao', 'peach'])
 
   click(rowNamed(laneOrder(), 'Reset lane order'))
-  expect([...display.rowOrder]).toEqual([])
+  expect([...display.domain]).toEqual([])
   expect(display.rowAssemblies).toEqual(['peach', 'cacao'])
 
   click(rowNamed(subMenuOf(rowNamed(laneOrder(), 'peach')), 'Hide lane'))
@@ -393,7 +393,7 @@ test('MultiWaySyntenyDisplay reorders a lane by dragging its label onto another'
   expect(queryByTestId('multiway-lane-drop')).toBeTruthy()
   fireEvent.mouseUp(window, { clientY: peach!.bandStart + 1 })
   expect(queryByTestId('multiway-lane-drop')).toBeNull()
-  expect([...display.rowOrder]).toEqual(['cacao', 'peach'])
+  expect([...display.domain]).toEqual(['cacao', 'peach'])
   expect(display.rowAssemblies).toEqual(['cacao', 'peach'])
 
   // a drop on the anchor's band is the top of the mate lanes — once the

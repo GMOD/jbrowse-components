@@ -2,7 +2,10 @@ import { filterMenuItems, undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import { radioItems, toggleItem, withHint } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
-import { hiddenGroupsItems } from '@jbrowse/display-kit/groupByMenu'
+import {
+  hiddenGroupsItems,
+  sectionOrderMenuItems,
+} from '@jbrowse/display-kit/groupByMenu'
 import { heightModeMenuItems } from '@jbrowse/display-kit/heightModeMenu'
 import HeightIcon from '@mui/icons-material/Height'
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -13,6 +16,7 @@ import { STRAND_COLOR_JEXL } from '../RenderFeatureDataRPC/featureColors.ts'
 import { SHOW_LABELS_OPTIONS } from './showLabelsMode.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
+import type { FeatureGroupBy } from './groupBy.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Reversibles } from '@jbrowse/core/ui/filterMenuItems'
@@ -70,6 +74,10 @@ interface FeatureHeightSelf extends HeightModeMenuModel {
 
 interface GroupByMenuSelf {
   openGroupByDialog: () => void
+  groupBy: FeatureGroupBy | undefined
+  groupSections: readonly { key: string; label: string }[]
+  setGroupBy: (groupBy?: FeatureGroupBy) => void
+  hideGroup: (key: string) => void
 }
 
 interface TrackMenuSelf extends GroupByMenuSelf {
@@ -81,7 +89,10 @@ interface TrackMenuSelf extends GroupByMenuSelf {
   openFilterDialog: () => void
 }
 
+// The Sections submenu is the runtime half of `groupBy.domain`: a move
+// writes the grouping back with the drawn order as its domain.
 export function groupByMenuItems(self: GroupByMenuSelf): MenuItem[] {
+  const { groupBy } = self
   return [
     {
       label: 'Group by...',
@@ -90,6 +101,19 @@ export function groupByMenuItems(self: GroupByMenuSelf): MenuItem[] {
         self.openGroupByDialog()
       },
     },
+    ...(groupBy
+      ? sectionOrderMenuItems(
+          {
+            sections: self.groupSections,
+            domain: groupBy.domain ?? [],
+            setDomain: domain => {
+              self.setGroupBy({ ...groupBy, domain })
+            },
+            hideGroup: self.hideGroup,
+          },
+          'section',
+        )
+      : []),
   ]
 }
 

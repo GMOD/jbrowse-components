@@ -1,6 +1,6 @@
 ---
 name: ordering-synteny-lanes-by-similarity
-description: Reordering MultiWaySyntenyDisplay's lanes so similar genomes sit adjacent. The display side is already built — `rowOrder` is a slot with a densest-first default — and what is missing is the N x N similarity. Two things decide whether it can be had: a ribbon only ever joins ADJACENT lanes, so the objective is seriation and a dendrogram's leaf order is a heuristic for a different problem; and the similarity's fetch cost depends entirely on the source, free from per-lane gene groups and O(N^2) adapter calls from an all-vs-all PAF. A star denies the matrix but not an order — `diagonalizeRegions` is the in-tree proof that star-shaped data sorts by projection, and the lane counterpart is a profile ordering. Read before wiring TreeSidebarMixin into this display, or before reaching for diagonalization as the seriation it is not.
+description: Reordering MultiWaySyntenyDisplay's lanes so similar genomes sit adjacent. The display side is already built — `domain` is a slot with a densest-first default — and what is missing is the N x N similarity. Two things decide whether it can be had: a ribbon only ever joins ADJACENT lanes, so the objective is seriation and a dendrogram's leaf order is a heuristic for a different problem; and the similarity's fetch cost depends entirely on the source, free from per-lane gene groups and O(N^2) adapter calls from an all-vs-all PAF. A star denies the matrix but not an order — `diagonalizeRegions` is the in-tree proof that star-shaped data sorts by projection, and the lane counterpart is a profile ordering. Read before wiring TreeSidebarMixin into this display, or before reaching for diagonalization as the seriation it is not.
 ---
 
 # Ordering synteny lanes by similarity
@@ -16,11 +16,11 @@ alignment. This file is the ORDER of whatever set that picks.
 
 ## The display side is done
 
-`rowOrder` is already a slot on `MultiWaySyntenyDisplay`'s model
+`domain` is already a slot on `MultiWaySyntenyDisplay`'s model
 (`types.array(types.string)`): lanes it names pin to the top in its order, and
 lanes it does not follow densest-first. `layoutMultiWay`'s `preferred` argument
 reads it. So nothing needs building to CONSUME an order — the open question is
-only where one comes from, and a first cut can write `rowOrder` from a track
+only where one comes from, and a first cut can write `domain` from a track
 menu item without touching the layout at all.
 
 ## A ribbon joins adjacent lanes, so this is seriation
@@ -157,7 +157,7 @@ lever rather than a cap.
 
 1. **Gene-group seriation, main thread, behind a track menu item.** Build the
    N x N shared-group matrix off the placements already fetched, seriate, write
-   `rowOrder`. No RPC, no new fetch, and it is the case a comparative stack of
+   `domain`. No RPC, no new fetch, and it is the case a comparative stack of
    annotated assemblies actually hits. As of 2026-09-04 the motivating demos
    exist at both scales: the gene-symbol tutorials stack eight primates and
    forty-four E. coli, and the 44-way page says out loud what densest-first

@@ -527,7 +527,7 @@ per strain:
       "type": "LinearMultiRowFeatureDisplay",
       "partitionField": "strain",
       "lengthField": "delta",
-      "rowOrder": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
+      "domain": ["K12", "Sakai", "CFT073", "NCTC86", "IAI39"]
     }
   ]
 }

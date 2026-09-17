@@ -113,7 +113,7 @@ own coordinates.
           {
             "trackId": "vertebrates_orthogroups",
             "type": "MultiWaySyntenyDisplay",
-            "rowOrder": ["chicken", "frog", "gar", "zebrafish"],
+            "domain": ["chicken", "frog", "gar", "zebrafish"],
             "height": 320
           }
         ]
@@ -214,7 +214,7 @@ that fly keeps these orthologs on.
           {
             "trackId": "drosophila_orthogroups",
             "type": "MultiWaySyntenyDisplay",
-            "rowOrder": ["simulans", "yakuba", "pseudoobscura", "virilis"],
+            "domain": ["simulans", "yakuba", "pseudoobscura", "virilis"],
             "height": 320
           }
         ]
@@ -274,7 +274,7 @@ orthologs in its own coordinates, with the scale it took printed in the header.
           {
             "trackId": "solanaceae_orthogroups",
             "type": "MultiWaySyntenyDisplay",
-            "rowOrder": ["potato", "pepper", "tobacco", "coffee"],
+            "domain": ["potato", "pepper", "tobacco", "coffee"],
             "height": 320
           }
         ]
@@ -328,7 +328,7 @@ under rice's gene track:
           {
             "trackId": "grasses_orthogroups",
             "type": "MultiWaySyntenyDisplay",
-            "rowOrder": ["sorghum", "brachypodium", "setaria", "maize"],
+            "domain": ["sorghum", "brachypodium", "setaria", "maize"],
             "height": 320
           }
         ]
@@ -462,9 +462,9 @@ One track backs every band of the stack, the same as the
 
 `blockAssemblies` and `bedLocations` follow the table's columns (OrthoFinder's
 proteome scan, alphabetical here), and the track draws every genome they name.
-What order it draws them in is the display's `rowOrder`, densest-first where
-that is unset. Take the column order from what the conversion printed; a
-mismatch is reported as a track error naming both lists.
+What order it draws them in is the display's `domain`, densest-first where that
+is unset. Take the column order from what the conversion printed; a mismatch is
+reported as a track error naming both lists.
 
 An orthogroup is a set, so any two filled columns are a direct statement about
 that pair and row order in the stack is free, unlike a

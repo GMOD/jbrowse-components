@@ -96,7 +96,7 @@ test('a reverse-strand link between two mate lanes draws a crossed ribbon', asyn
       {
         trackId: 'three_way_rev',
         type: 'MultiWaySyntenyDisplay',
-        rowOrder: ['peach', 'cacao'],
+        domain: ['peach', 'cacao'],
       },
     ],
   })
@@ -178,7 +178,7 @@ test('a link record outside a lane frame draws no ribbon off the canvas', async 
       {
         trackId: 'three_way_far',
         type: 'MultiWaySyntenyDisplay',
-        rowOrder: ['peach', 'cacao'],
+        domain: ['peach', 'cacao'],
       },
     ],
   })
@@ -238,7 +238,7 @@ test('flipping the view horizontally does not twist the ribbons', async () => {
       {
         trackId: 'multiway_blocks',
         type: 'MultiWaySyntenyDisplay',
-        rowOrder: ['peach', 'cacao'],
+        domain: ['peach', 'cacao'],
       },
     ],
   })

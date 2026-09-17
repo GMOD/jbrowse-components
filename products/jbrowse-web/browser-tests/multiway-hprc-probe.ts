@@ -60,7 +60,7 @@ try {
             {
               trackId: 'vertebrates_orthogroups',
               type: 'MultiWaySyntenyDisplay',
-              rowOrder: ['chicken', 'frog', 'gar', 'zebrafish'],
+              domain: ['chicken', 'frog', 'gar', 'zebrafish'],
               height: 320,
             },
           ],

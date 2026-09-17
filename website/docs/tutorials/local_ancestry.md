@@ -202,7 +202,7 @@ called. The `#` header names them, so the track config needs no `columnNames`.
 ## Loading the blocks as a multi-row track
 
 `LinearMultiRowFeatureDisplay` draws one row per distinct value of
-`partitionField`, here `sample`, and `rowOrder` sets their order. A BED carrying
+`partitionField`, here `sample`, and `domain` sets their order. A BED carrying
 `itemRgb` is painted with it automatically.
 
 ```json addtrack
@@ -220,7 +220,7 @@ called. The `#` header names them, so the track config needs no `columnNames`.
     {
       "type": "LinearMultiRowFeatureDisplay",
       "partitionField": "sample",
-      "rowOrder": [
+      "domain": [
         "Gray wolf 7 hap1",
         "Gray wolf 7 hap2",
         "Saarloos 1 hap1",
@@ -235,9 +235,9 @@ called. The `#` header names them, so the track config needs no `columnNames`.
 }
 ```
 
-`rowOrder` is abbreviated here; the build script writes all sixty-four rows in
+`domain` is abbreviated here; the build script writes all sixty-four rows in
 descending order of chr1 wolf fraction from FLARE's summary. A second BED holds
-all 243 animals, loaded the same way with an empty `rowOrder`; at 486 rows there
+all 243 animals, loaded the same way with an empty `domain`; at 486 rows there
 is no room for labels, so the small painting carries the labels and the big one
 the extent.
 

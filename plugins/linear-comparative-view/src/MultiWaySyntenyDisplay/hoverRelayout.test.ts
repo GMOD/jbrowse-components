@@ -121,7 +121,7 @@ test('a lane reorder drops the hover and a direct-link click', async () => {
   expect(display.clickedFeatureId).toBe(idx + 1)
 
   const viewport = viewportOf(display)
-  display.setRowOrder([MATES[1]!, MATES[0]!])
+  display.setDomain([MATES[1]!, MATES[0]!])
   expect(display.rowAssemblies).toEqual([MATES[1], MATES[0]])
   expect(viewportOf(display)).toEqual(viewport)
   expect(display.hoverTarget).toBeUndefined()

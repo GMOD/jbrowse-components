@@ -1,6 +1,7 @@
 import { createElement } from 'react'
 
 import { setConf } from '@jbrowse/core/configuration'
+import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { DEFAULT_MARK_COLOR } from '@jbrowse/core/util/markEncoding'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { createDisplayTestEnvironment } from '@jbrowse/display-test-utils'
@@ -1116,6 +1117,33 @@ test('a facet domain reaches the worker and orders the folded sections', () => {
     rowCount: 3,
   })
   expect(rowsOf(display)).toEqual([2, 0, 1])
+})
+
+test('the Sections menu moves a section and writes the drawn order onto the facet', () => {
+  const { createDisplay } = createTestEnvironment(FACET_MARKS)
+  const { display } = createDisplay()
+  const sectionsItem = () =>
+    display.trackMenuItems().find(i => 'label' in i && i.label === 'Sections')
+  expect(sectionsItem()).toBeUndefined()
+  display.setRpcData(0, facetResult([0, 1, 2]), REGION)
+  const rows = () =>
+    resolveSubMenu(sectionsItem() as Parameters<typeof resolveSubMenu>[0])
+  expect(rows().map(r => ('label' in r ? r.label : undefined))).toEqual([
+    'sample: a',
+    'sample: b',
+    undefined,
+    'Reset section order',
+  ])
+  const first = rows()[0] as Parameters<typeof resolveSubMenu>[0]
+  ;(resolveSubMenu(first)[1] as { onClick: () => void }).onClick()
+  expect(display.facetDomain).toEqual(['b', 'a'])
+  expect(display.rpcProps().layers[0]!.facet).toEqual({
+    field: 'sample',
+    domain: ['b', 'a'],
+  })
+  expect(display.facetLayout.sections.map(s => s.key)).toEqual(['b', 'a'])
+  ;(rows()[3] as { onClick: () => void }).onClick()
+  expect(display.facetDomain).toEqual([])
 })
 
 test('two regions fold into one row space, the deeper pack setting each band', () => {

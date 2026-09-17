@@ -1363,6 +1363,33 @@ describe('per-lane state belongs to one grouping key space', () => {
     expect(display.groupBy).toEqual({ type: 'tag', tag: 'RG' })
   })
 
+  test('the Sections menu moves a lane and writes the drawn order as the domain', () => {
+    const display = createDisplay({ withRegions: true })
+    expect(hasMenuItem(display.trackMenuItems(), 'Sections')).toBe(false)
+    display.setGroupBy({ type: 'tag', tag: 'HP' })
+    seedGroups(display, [
+      { key: '1', label: 'HP: 1' },
+      { key: '2', label: 'HP: 2' },
+    ])
+    const rows = () => menuSubItems(display.trackMenuItems(), 'Sections')
+    expect(rows().map(r => ('label' in r ? r.label : undefined))).toEqual([
+      'HP: 1',
+      'HP: 2',
+      undefined,
+      'Reset section order',
+    ])
+    const moveDown = menuSubItems(rows(), 'HP: 1')[1] as { onClick: () => void }
+    moveDown.onClick()
+    expect(display.rpcProps().groupBy).toEqual({
+      type: 'tag',
+      tag: 'HP',
+      domain: ['2', '1'],
+    })
+    expect(display.groupOrder.map(g => g.key)).toEqual(['2', '1'])
+    ;(rows()[3] as { onClick: () => void }).onClick()
+    expect(display.groupBy).toEqual({ type: 'tag', tag: 'HP' })
+  })
+
   // Chain mode degrades a per-read dimension to ungrouped (`groupByForMode`)
   // with the slot untouched, so the fetch comes back as one '' lane while the
   // menu still reads "Group by MAPQ".

@@ -241,7 +241,7 @@ export function groupSpansLanes(group: MultiWayGroup) {
 // window outranks one whose alignment breaks into two shorter records, where a
 // count of placements had put the broken one on top. Weighed over the whole
 // fetched block set rather than the viewport, so the order holds still across
-// the pans that keep one fetch. `preferred` (the display's rowOrder) pins the
+// the pans that keep one fetch. `preferred` (the display's domain) pins the
 // lanes it names to the top, in its order — through `isSameName`, because a
 // session spec spells an assembly the way the session does while a placement
 // spells it the way the table's BED did.

@@ -28,7 +28,7 @@ async function openMultiWay(trackId: string, config?: Record<string, unknown>) {
       {
         trackId,
         type: 'MultiWaySyntenyDisplay',
-        rowOrder: ['volvox_ins', 'volvox_del'],
+        domain: ['volvox_ins', 'volvox_del'],
       },
     ],
   })

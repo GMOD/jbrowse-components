@@ -1,3 +1,5 @@
+import { moveSectionTo } from '@jbrowse/display-kit/groupByMenu'
+
 import type { Lane } from './laneStack.ts'
 
 /** a press that travels less than this is a click, and shows no drop bar */
@@ -14,17 +16,6 @@ export function dropRowAt(lanes: Lane[], y: number) {
  * the anchor's band is `to = -1` and lands the lane at the top of the mate
  * lanes, where "above the anchor" cannot be granted
  */
-export function moveLaneTo(order: string[], name: string, to: number) {
-  const from = order.indexOf(name)
-  if (from < 0) {
-    return order
-  }
-  const out = [...order]
-  out.splice(from, 1)
-  out.splice(Math.max(0, Math.min(to, out.length)), 0, name)
-  return out
-}
-
 export function sameLaneOrder(a: string[], b: string[]) {
   return a.length === b.length && a.every((name, i) => name === b[i])
 }
@@ -40,7 +31,7 @@ export function laneOrderAfterDrop(
   name: string,
   row: number | undefined,
 ) {
-  const moved = row === undefined ? order : moveLaneTo(order, name, row - 1)
+  const moved = row === undefined ? order : moveSectionTo(order, name, row - 1)
   return sameLaneOrder(moved, order) ? undefined : moved
 }
 

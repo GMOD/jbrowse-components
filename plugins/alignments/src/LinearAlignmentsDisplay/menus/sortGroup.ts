@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { capitalizeFirst, getDialogHost } from '@jbrowse/core/util'
+import { sectionOrderMenuItems } from '@jbrowse/display-kit/groupByMenu'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
 import {
@@ -10,7 +11,7 @@ import {
 import { isInterbaseType } from '../../shared/types.ts'
 import { groupByRadioMenuItem } from './groupByMenu.ts'
 
-import type { SortedBy } from '../../shared/types.ts'
+import type { GroupBy, SortedBy } from '../../shared/types.ts'
 import type { GroupByDialogModel } from '../dialogs/GroupByDialog.tsx'
 import type { RadioMenuItem } from '@jbrowse/core/ui'
 
@@ -180,6 +181,34 @@ const GROUP_OPTIONS = pickGroupByOptions(
 // passed on to GroupByDialog, so it has to be a superset.
 export interface GroupByMenuModel extends GroupByDialogModel {
   isChainMode: boolean
+}
+
+export interface SectionOrderMenuModel {
+  effectiveGroupBy: GroupBy | undefined
+  groupOrder: readonly { key: string; label: string }[]
+  setGroupBy: (groupBy?: GroupBy) => void
+  hideGroup: (key: string) => void
+}
+
+// The Sections submenu is the runtime half of `groupBy.domain`: a move writes
+// the grouping back with the drawn order as its domain, which refetches, since
+// the worker caps in that order. Absent while chain mode degrades the grouping
+// to one section.
+export function getSectionOrderMenuItems(model: SectionOrderMenuModel) {
+  const groupBy = model.effectiveGroupBy
+  return groupBy
+    ? sectionOrderMenuItems(
+        {
+          sections: model.groupOrder,
+          domain: groupBy.domain ?? [],
+          setDomain: domain => {
+            model.setGroupBy({ ...groupBy, domain })
+          },
+          hideGroup: model.hideGroup,
+        },
+        'section',
+      )
+    : []
 }
 
 // Every offered dimension selects directly except `tag`, which needs a tag name

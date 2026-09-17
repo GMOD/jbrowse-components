@@ -189,7 +189,7 @@ every lane.
 
 The four carriers also sort together, at the bottom of this stack, because lane
 order is densest first over the fetched window and a lane whose alignment skips
-the cluster places less of it; `rowOrder` pins an order that has to hold.
+the cluster places less of it; `domain` pins an order that has to hold.
 
 ## The whole chromosome
 

@@ -138,13 +138,15 @@ export default function configSchemaF() {
       },
       /**
        * #slot
-       * Optional explicit row order; rows listed here come first, remaining
-       * partition values are appended sorted.
+       * Optional row order, the row facet's domain: the partition values
+       * listed come first, in this order, and the rest follow sorted. Left
+       * off, the rows are every value the data holds, sorted.
        */
-      rowOrder: {
+      domain: {
         type: 'stringArray',
         defaultValue: [],
-        description: 'optional explicit row order (by partition value)',
+        description:
+          'optional row order; listed partition values first, the rest sorted; left off, every value the data holds, sorted',
       },
       ...rowHeightConfigSchemaFields({
         rowHeight:

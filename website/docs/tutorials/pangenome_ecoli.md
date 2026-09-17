@@ -318,7 +318,7 @@ Load the result as a `FeatureTrack` with a `LinearMultiRowFeatureDisplay`:
     {
       "type": "LinearMultiRowFeatureDisplay",
       "partitionField": "strain",
-      "rowOrder": ["Sakai", "CFT073", "NCTC86", "IAI39"],
+      "domain": ["Sakai", "CFT073", "NCTC86", "IAI39"],
       "legend": [
         { "label": "Same orientation as K12", "color": "rgb(153,153,153)" },
         { "label": "Inverted", "color": "rgb(214,39,40)" }

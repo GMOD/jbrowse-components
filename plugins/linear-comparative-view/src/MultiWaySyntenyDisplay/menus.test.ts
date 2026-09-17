@@ -3,10 +3,8 @@ import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
 import { laneRegion } from './laneHeader.ts'
 import {
   laneHeaderMenuItems,
-  laneOrderMenuItem,
-  laneRowMenuItems,
+  laneOrderMenuItems,
   laneSelectionMenuItems,
-  mergeRowOrder,
 } from './menus.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -19,90 +17,13 @@ function subMenuOf(item: MenuItem | undefined) {
   return item && 'subMenu' in item ? resolveSubMenu(item) : []
 }
 
-// A move writes back `rowAssemblies`, which holds neither a hidden lane nor
-// one the fetched window does not reach — so without the merge the next move
-// on any other lane silently deleted it from `rowOrder`, and it came back
-// densest-first at the bottom rather than where the reader left it.
-test('a reorder keeps the pinned lanes it could not see, at their own index', () => {
-  // cacao hidden, so the caller only names peach and poplar
-  expect(
-    mergeRowOrder(['peach', 'cacao', 'poplar'], ['poplar', 'peach']),
-  ).toEqual(['poplar', 'cacao', 'peach'])
-  // nothing dropped: the incoming order wins outright
-  expect(mergeRowOrder(['a', 'b'], ['b', 'a'])).toEqual(['b', 'a'])
-  // a first-time order has nothing to keep
-  expect(mergeRowOrder([], ['a', 'b'])).toEqual(['a', 'b'])
-  // an absent lane pinned first stays first
-  expect(mergeRowOrder(['gone', 'a'], ['a'])).toEqual(['gone', 'a'])
-})
-
-// The order written back is the WHOLE stack, not the one lane that moved:
-// `rowOrder` pins what it names and leaves the rest densest-first, so pinning
-// one lane would let the others re-sort under it between two moves.
-test('moving one lane pins every lane, in the order now shown', () => {
-  const written: string[][] = []
-  const items = laneOrderMenuItem({
-    rowAssemblies: ['peach', 'cacao', 'grape'],
-    rowOrder: [],
-    setRowOrder: order => {
-      written.push(order)
-    },
-    resetRowOrder: () => {},
-    hideLane: () => {},
-  })
-  const lanes = subMenuOf(items[0])
-  expect(labelsOf(lanes)).toEqual([
-    'peach',
-    'cacao',
-    'grape',
-    '—',
-    'Reset lane order',
-  ])
-
-  const cacao = subMenuOf(lanes[1])
-  expect(labelsOf(cacao)).toEqual(['Move up', 'Move down', 'Hide lane'])
-  ;(cacao[0] as { onClick: () => void }).onClick()
-  expect(written).toEqual([['cacao', 'peach', 'grape']])
-})
-
-test('the ends of the stack cannot move past themselves, and reset is dead with nothing pinned', () => {
-  const items = laneOrderMenuItem({
-    rowAssemblies: ['peach', 'cacao'],
-    rowOrder: [],
-    setRowOrder: () => {},
-    resetRowOrder: () => {},
-    hideLane: () => {},
-  })
-  const lanes = subMenuOf(items[0])
-  const disabled = (item: MenuItem | undefined) =>
-    item && 'disabled' in item ? item.disabled : undefined
-  expect(subMenuOf(lanes[0]).map(disabled)).toEqual([true, false, false])
-  expect(subMenuOf(lanes[1]).map(disabled)).toEqual([false, true, false])
-  expect(disabled(lanes[3])).toBe(true)
-})
-
-test('one lane has no order to edit', () => {
-  expect(
-    laneOrderMenuItem({
-      rowAssemblies: ['peach'],
-      rowOrder: [],
-      setRowOrder: () => {},
-      resetRowOrder: () => {},
-      hideLane: () => {},
-    }),
-  ).toEqual([])
-})
-
 function headerModel(held = true, pinned?: string, canReanchor = true) {
   const calls: string[] = []
   const model = {
     rowAssemblies: ['peach', 'cacao'],
-    rowOrder: [],
-    setRowOrder: (order: string[]) => {
-      calls.push(`order ${order.join(',')}`)
-    },
-    resetRowOrder: () => {
-      calls.push('reset')
+    domain: [] as string[],
+    setDomain: (domain: string[]) => {
+      calls.push(`order ${domain.join(',')}`)
     },
     hideLane: (name: string) => {
       calls.push(`hide ${name}`)
@@ -132,33 +53,34 @@ const disabledOf = (items: MenuItem[]) =>
     'label' in item ? !!(item as { disabled?: boolean }).disabled : undefined,
   )
 
+// The lane menu is the shared section-order menu with lanes as sections, so
+// the track submenu and the header menu carry one row per lane, and a lane's
+// moves and hide reach the display's own domain and hide.
 test('the track submenu and the header menu share one row per lane', () => {
   const { model, calls } = headerModel()
-  const row = laneRowMenuItems(model, 'cacao')
+  const items = laneOrderMenuItems(model)
+  expect(labelsOf(items)).toEqual(['Lanes'])
+  const lanes = subMenuOf(items[0])
+  expect(labelsOf(lanes)).toEqual(['peach', 'cacao', '—', 'Reset lane order'])
+  const row = subMenuOf(lanes[1])
   expect(labelsOf(row)).toEqual(['Move up', 'Move down', 'Hide lane'])
   expect(disabledOf(row)).toEqual([false, true, false])
   click(row[0])
   click(row[2])
   expect(calls).toEqual(['order cacao,peach', 'hide cacao'])
-  expect(
-    labelsOf(subMenuOf(subMenuOf(laneOrderMenuItem(model)[0])[1])),
-  ).toEqual(labelsOf(row))
-})
-
-test('a lane the stack does not hold has no direction to move in', () => {
-  const { model } = headerModel()
-  expect(disabledOf(laneRowMenuItems(model, 'nobody'))).toEqual([
-    true,
-    true,
-    false,
-  ])
+  expect(labelsOf(laneHeaderMenuItems(model, peach).slice(0, 3))).toEqual(
+    labelsOf(row),
+  )
 })
 
 test('the last lane drawn cannot be hidden', () => {
   const { model } = headerModel()
   expect(
     disabledOf(
-      laneRowMenuItems({ ...model, rowAssemblies: ['peach'] }, 'peach'),
+      laneHeaderMenuItems({ ...model, rowAssemblies: ['peach'] }, peach).slice(
+        0,
+        3,
+      ),
     ),
   ).toEqual([true, true, true])
 })

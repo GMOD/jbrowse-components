@@ -117,7 +117,7 @@ strand. `weight` is anchor bp for a nameless record and one per gene for a named
 one (`voteEvidence`).
 
 **Lanes.** `rowAssembliesOf` orders mate assemblies by summed group weight over
-the whole fetched block set, then pins `rowOrder`; the model's `rowAssemblies`
+the whole fetched block set, then pins `domain`; the model's `rowAssemblies`
 keeps the lanes `laneUniverse` marks `drawn`, compared on canonical names
 (`laneKey`).
 `laneFilter` holds the reader's choice as `{ only }`, which the picker writes and
@@ -403,7 +403,7 @@ what made every band a direct pair, at 2N-1 rows.
 Two more things about that route are worth knowing. The rows came from the
 `SyntenyDiscoverMates` RPC over the dataset
 (`LaunchSyntenyView/discoverMates.ts:41-81`), not from the display's lane
-selection or `rowOrder` — the launch forgot what the reader chose, and on a GBZ
+selection or `domain` — the launch forgot what the reader chose, and on a GBZ
 track it was a second full-cohort window fetch that proposed every haplotype the
 window places as a panel; `lanePanelsForRegion` replaced it (§4.4). And each
 level instantiates its own copy of the synteny track, display and canvas
@@ -416,7 +416,7 @@ so an eight-mate launch is eight 40 px bands.
 | | MultiWay lanes (one track) | LinearSyntenyView (one LGV per row) |
 | --- | --- | --- |
 | **Control** | Order by drag/menu, hide, pick, pin contig, re-anchor; no per-lane zoom, no extra tracks, no per-lane locstring | Full LGV per row: any tracks, independent navigation, rubberband, feature detail; order by moving views; no densest-first, no bridging, no lane picker |
-| **State** | `rowOrder`, `laneFilter`, `lodMode` on one display; features volatile | N `LinearGenomeView` models plus N-1 `LinearSyntenyLevel` models, each level holding its own full track model, display and rendering backend (`LinearSyntenyView`'s `levels` and `reconcileLevels`; `LinearSyntenyViewHelper`); every row's tracks persist |
+| **State** | `domain`, `laneFilter`, `lodMode` on one display; features volatile | N `LinearGenomeView` models plus N-1 `LinearSyntenyLevel` models, each level holding its own full track model, display and rendering backend (`LinearSyntenyView`'s `levels` and `reconcileLevels`; `LinearSyntenyViewHelper`); every row's tracks persist |
 | **Fetches** | 1 star fetch (+ N children inside the adapter) + N lane-gene RPCs + (N-1) link RPCs for nameless non-star sources | N-1 synteny fetches (one per level, each its own display) + each row's own track fetches; each level refetches independently on its own pair of viewports |
 | **Performance** | One canvas, ~10 GPU draw calls per lane (§3), 22 px per lane floor | N LGV React trees and rulers, a synteny canvas per level; rows are ≥ ruler height each, so 8 rows fill a screen and 44 do not fit |
 | **Correctness** | Lane frames are affine fits (§4.1); composed links interpolate; ordering by placement count (§4.3) | CIGAR-exact ribbons and per-base detail on each level; but for a star only levels touching the anchor draw, and a level with an unstated pair is either blank (MultiPairwise) or an error (MultiGenome) |

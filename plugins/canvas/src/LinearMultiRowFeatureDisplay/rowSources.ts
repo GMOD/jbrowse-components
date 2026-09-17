@@ -83,13 +83,12 @@ export function resolveRowColorStrings(
 
 /**
  * The row axis is a facet with one row per value, so its order is the facet
- * order: `rowOrder` is the domain, listed values first, the rest sorted the
- * way every in-track grouping sorts, digits by magnitude and the `''` row
- * last.
+ * order: `domain` lists the values that come first, the rest sorted the way
+ * every in-track grouping sorts, digits by magnitude and the `''` row last.
  */
 export function orderPartitionValues(
   values: Set<string>,
-  rowOrder: readonly string[],
+  domain: readonly string[],
 ): string[] {
-  return [...values].sort(groupKeyComparator(rowOrder))
+  return [...values].sort(groupKeyComparator(domain))
 }

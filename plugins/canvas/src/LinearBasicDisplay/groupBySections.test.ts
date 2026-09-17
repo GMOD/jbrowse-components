@@ -145,6 +145,40 @@ test('reordering the sections keeps the hidden ones hidden', () => {
   expect(display.groupSections.map(s => s.key)).toEqual(['protein_coding'])
 })
 
+test('the Sections menu moves a section and writes the drawn order as the domain', () => {
+  const { createDisplay } = createTestEnvironment()
+  const { display } = createDisplay()
+  display.setRpcData(0, strandedRegionData(), ctgA)
+  expect(
+    display.trackMenuItems().find(i => 'label' in i && i.label === 'Sections'),
+  ).toBeUndefined()
+  display.setGroupBy({ type: 'attribute', attribute: 'biotype' })
+  const rows = () => {
+    const item = display
+      .trackMenuItems()
+      .find(i => 'label' in i && i.label === 'Sections')!
+    return resolveSubMenu(item as Parameters<typeof resolveSubMenu>[0])
+  }
+  const labelOf = (i: { label?: string }) => i.label
+  expect(rows().map(labelOf)).toEqual([
+    'biotype: lncRNA',
+    'biotype: protein_coding',
+    undefined,
+    'Reset section order',
+  ])
+  const first = rows()[0] as Parameters<typeof resolveSubMenu>[0]
+  const moveDown = resolveSubMenu(first)[1] as { onClick: () => void }
+  moveDown.onClick()
+  expect(display.groupBy?.domain).toEqual(['protein_coding', 'lncRNA'])
+  expect(display.groupSections.map(s => s.key)).toEqual([
+    'protein_coding',
+    'lncRNA',
+  ])
+  const reset = rows()[3] as { onClick: () => void }
+  reset.onClick()
+  expect(display.groupBy).toEqual({ type: 'attribute', attribute: 'biotype' })
+})
+
 test('re-picking the same attribute from the dialog keeps a curated domain', () => {
   const { createDisplay } = createTestEnvironment()
   const { display } = createDisplay()

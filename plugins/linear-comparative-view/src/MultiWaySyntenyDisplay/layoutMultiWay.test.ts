@@ -234,7 +234,7 @@ test('groups by anchor gene, dedupes repeated mates, sorts by anchor position', 
 // manager; a fixture spelling every name canonically needs only equality
 const exactName = (a: string, b: string) => a === b
 
-test('row assemblies come out densest lane first, rowOrder pinning over that', () => {
+test('row assemblies come out densest lane first, domain pinning over that', () => {
   expect(rowAssembliesOf(groupFeatures(features), [], exactName)).toEqual([
     'peach',
     'cacao',
@@ -244,12 +244,12 @@ test('row assemblies come out densest lane first, rowOrder pinning over that', (
   ).toEqual(['cacao', 'peach'])
 })
 
-// `rowOrder` is authored in a session spec or a config defaultSession, so it
+// `domain` is authored in a session spec or a config defaultSession, so it
 // spells an assembly the way the session does, while the lane it has to match
 // is spelled the way the synteny table's BED did. Comparing those raw is the
 // `===` the assembly-name rule forbids, and it fails by silently pinning
 // nothing.
-test('rowOrder pins a lane it names through an alias', () => {
+test('domain pins a lane it names through an alias', () => {
   const canonical = (name: string) =>
     name === 'Theobroma_cacao' ? 'cacao' : name
   expect(

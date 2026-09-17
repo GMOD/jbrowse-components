@@ -2,7 +2,6 @@ import {
   DRAG_SLOP_PX,
   dropRowAt,
   laneOrderAfterDrop,
-  moveLaneTo,
   pastDragSlop,
   sameLaneOrder,
 } from './laneDrag.ts'
@@ -21,16 +20,6 @@ test('a y lands on the band that holds it, and nowhere past the stack', () => {
   expect(dropRowAt(lanes, 149)).toBe(2)
   expect(dropRowAt(lanes, 150)).toBeUndefined()
   expect(dropRowAt(lanes, -1)).toBeUndefined()
-})
-
-test('a lane moves to the row dropped on, and a drop on the anchor puts it first', () => {
-  expect(moveLaneTo(['a', 'b', 'c'], 'a', 2)).toEqual(['b', 'c', 'a'])
-  expect(moveLaneTo(['a', 'b', 'c'], 'c', 0)).toEqual(['c', 'a', 'b'])
-  expect(moveLaneTo(['a', 'b', 'c'], 'c', -1)).toEqual(['c', 'a', 'b'])
-  expect(moveLaneTo(['a', 'b', 'c'], 'b', 1)).toEqual(['a', 'b', 'c'])
-  expect(moveLaneTo(['a', 'b', 'c'], 'a', 1)).toEqual(['b', 'a', 'c'])
-  expect(moveLaneTo(['a', 'b'], 'b', 2)).toEqual(['a', 'b'])
-  expect(moveLaneTo(['a', 'b'], 'nobody', 0)).toEqual(['a', 'b'])
 })
 
 // A plain click on a label is a press and a release on the lane's own row, and

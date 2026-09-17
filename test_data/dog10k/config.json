@@ -356,7 +356,7 @@
           "displayId": "dog10k_cyp1a2_cn-LinearMultiRowFeatureDisplay",
           "partitionField": "sample",
           "color": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
-          "rowOrder": [
+          "domain": [
             "Greenland Dog",
             "Springer Spaniel 1",
             "Springer Spaniel 2",
@@ -515,7 +515,7 @@
           "displayId": "dog10k_cyp1a2_breed_cn-LinearMultiRowFeatureDisplay",
           "partitionField": "sample",
           "color": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
-          "rowOrder": [
+          "domain": [
             "Wolf 1",
             "Wolf 2",
             "Wolf 3",
@@ -655,7 +655,7 @@
           "displayId": "dog10k_slc28a3_breed_cn-LinearMultiRowFeatureDisplay",
           "partitionField": "sample",
           "color": "jexl:'rgb(' + get(feature,'itemRgb') + ')'",
-          "rowOrder": [
+          "domain": [
             "Grand Basset Griffon Vendeen 1",
             "Grand Basset Griffon Vendeen 2",
             "Grand Basset Griffon Vendeen 3",
@@ -721,7 +721,7 @@
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "dog10k_wolfdog_ancestry-LinearMultiRowFeatureDisplay",
           "partitionField": "sample",
-          "rowOrder": []
+          "domain": []
         }
       ]
     },
@@ -740,7 +740,7 @@
           "type": "LinearMultiRowFeatureDisplay",
           "displayId": "dog10k_wolfdog_named-LinearMultiRowFeatureDisplay",
           "partitionField": "sample",
-          "rowOrder": [
+          "domain": [
             "Gray wolf 7 hap1",
             "Gray wolf 7 hap2",
             "Gray wolf 3 hap1",

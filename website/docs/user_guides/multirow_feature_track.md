@@ -176,7 +176,7 @@ per row.
 Rows start in file order. Three ways to change that:
 
 - **Edit colors/arrangement...** reorders or hand-picks rows in a dialog, and
-  [`rowOrder`](/docs/config/linearmultirowfeaturedisplay/#slot-roworder) pins an
+  [`domain`](/docs/config/linearmultirowfeaturedisplay/#slot-domain) pins an
   explicit order in config.
 - Right-click a position and choose **Sort rows by color here** to order rows by
   the value each carries at that exact base, the analogue of an alignments

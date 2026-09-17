@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { ContextMenu } from '@jbrowse/core/ui'
 import { usePalette } from '@jbrowse/core/ui/PaletteContext'
+import { mergeDomain } from '@jbrowse/display-kit/groupByMenu'
 import { observer } from 'mobx-react'
 
 import { dropRowAt, laneOrderAfterDrop, pastDragSlop } from '../laneDrag.ts'
@@ -110,7 +111,7 @@ const LaneHeaders = observer(function LaneHeaders({
           )
         : undefined
       if (order) {
-        model.setRowOrder(order)
+        model.setDomain(mergeDomain([...model.domain], order))
       }
     }
     window.addEventListener('mousemove', move)

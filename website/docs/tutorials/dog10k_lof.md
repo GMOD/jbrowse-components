@@ -219,7 +219,7 @@ The upper lane is whole groups: every Golden Retriever, Labrador Retriever and
 Boxer in the collection, plus the four wolves the figure above draws. Every
 Golden carries the expansion, every Boxer carries two copies, and the Labradors
 split one dog to the next. Row labels come from the sample column, the order
-from `rowOrder`. The wolves rest on callset depth alone, since none of the dogs
+from `domain`. The wolves rest on callset depth alone, since none of the dogs
 with published reads is a wolf.
 
 The white stripes through both lanes are windows with no call. A window whose

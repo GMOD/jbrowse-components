@@ -240,7 +240,7 @@ assemblies already in:
           {
             "trackId": "hprc_v2_1_gbz_lanes",
             "type": "MultiWaySyntenyDisplay",
-            "rowOrder": [
+            "domain": [
               "HG00097.1",
               "HG00099.1",
               "HG00128.1",
@@ -259,7 +259,7 @@ assemblies already in:
 }
 ```
 
-`rowOrder` puts every non-carrier above every carrier, making the deletion
+`domain` puts every non-carrier above every carrier, making the deletion
 readable. Every lane sits at a different coordinate on a different contig.
 Between the last non-carrier and the first carrier the ribbon over _CFHR3_ and
 _CFHR1_ narrows to a point, because the carriers' walks skip that stretch of

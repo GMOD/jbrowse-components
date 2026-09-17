@@ -26,4 +26,8 @@ export type {
 export { getReadConnectionsMenuItem } from './readConnections.ts'
 export { getReadsMenuItems } from './reads.ts'
 export { getSashimiMenuItem } from './sashimi.ts'
-export { getGroupByMenuItem, getSortByMenuItem } from './sortGroup.ts'
+export {
+  getGroupByMenuItem,
+  getSectionOrderMenuItems,
+  getSortByMenuItem,
+} from './sortGroup.ts'

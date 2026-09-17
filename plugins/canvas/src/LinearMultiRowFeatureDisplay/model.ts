@@ -244,10 +244,10 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * Optional explicit row order from config.
+       * The row facet's declared order, off config.
        */
-      get rowOrder(): string[] {
-        return readConfObject(self.conf, 'rowOrder')
+      get domain(): string[] {
+        return readConfObject(self.conf, 'domain')
       },
       /**
        * #getter
@@ -292,7 +292,7 @@ export default function stateModelFactory(
           }
         }
         const unanswered = `(no ${effectivePartitionField(self)})`
-        return orderPartitionValues(values, self.rowOrder).map(name =>
+        return orderPartitionValues(values, self.domain).map(name =>
           name === '' ? { name, label: unanswered } : { name },
         )
       })
@@ -300,7 +300,7 @@ export default function stateModelFactory(
         /**
          * #getter
          * The distinct partition values across all loaded regions, ordered by
-         * the config `rowOrder` then sorted.
+         * the config `domain` then sorted.
          */
         get sourcesWithoutLayout(): MultiRowSource[] {
           return sourcesWithoutLayout.get()

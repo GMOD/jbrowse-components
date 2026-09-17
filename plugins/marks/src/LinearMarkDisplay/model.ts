@@ -40,6 +40,7 @@ import TrackHeightMixin from '@jbrowse/display-kit/TrackHeightMixin'
 import { coarseTierModeOf } from '@jbrowse/display-kit/densityTier'
 import { densityTierMenuItems } from '@jbrowse/display-kit/densityTierMenu'
 import { fetchEachRegion } from '@jbrowse/display-kit/fetchEachRegion'
+import { sectionOrderMenuItems } from '@jbrowse/display-kit/groupByMenu'
 import { rpcArgs } from '@jbrowse/display-kit/rpcArgs'
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/display-ui'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
@@ -1098,6 +1099,17 @@ export function stateModelFactory(
       },
       /**
        * #action
+       * The Sections menu's reorder lands on the declaration: the mark that
+       * names the facet owns its domain, so the drawn order writes there.
+       */
+      setFacetDomain(domain: string[]) {
+        const facet = facetConfigOf(self.conf.marks)
+        if (facet) {
+          setConf({ configuration: facet }, 'domain', domain)
+        }
+      },
+      /**
+       * #action
        * The score menu's pin lands on the declaration: `encoding.y` owns the
        * value scale, so an edited bound writes there and not on a second
        * pair of display slots. `end` is 0 for the minimum, 1 for the
@@ -1256,6 +1268,19 @@ export function stateModelFactory(
               ])
             },
           }),
+          ...sectionOrderMenuItems(
+            {
+              sections: self.facetLayout.sections,
+              domain: self.facetDomain,
+              setDomain: domain => {
+                self.setFacetDomain(domain)
+              },
+              hideGroup: key => {
+                self.hideGroup(key)
+              },
+            },
+            'section',
+          ),
           ...densityTierMenuItems(self),
           ...makeShowSubMenu([
             makeCrossHatchItem(self),

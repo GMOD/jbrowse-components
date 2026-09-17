@@ -131,7 +131,7 @@ third is exactly the set a grammar would call encoding and scale: `height`,
 `color`, `colorBy`, `groupBy`, a y-scale spelled `minScore` / `maxScore` /
 `scaleType` / `autoscale`, a mark spelled `defaultRendering`, a filter spelled
 `jexlFilters`, and row order spelled `runClustering` / `sortRowsBy` /
-`rowOrder`. The names are flat and per-display, but the concepts are shared and
+`domain`. The names are flat and per-display, but the concepts are shared and
 the census shows authors using them as shared.
 
 **The long tail names mechanisms, not aesthetics.** The keys used on one
@@ -145,7 +145,7 @@ Two pairs that look like drift are not: `jexlFilters` is the config slot and
 `jexlFiltersSetting` the display's session override (`core/util/jexlFilters.ts`
 says which wins), and `color` versus `featureColor` on the multi-sample variant
 display is a real distinction (row color versus the per-variant override). The
-pairs that are just two spellings — `sortedBy` / `sortRowsBy` / `rowOrder`
+pairs that are just two spellings — `sortedBy` / `sortRowsBy` / `domain`
 for a row ordering, `showTree` / `showRowLabels` for sidebar chrome — are a
 naming sweep through `legacyKeys` in a `preProcessSnapshot`, which the manifest
 already reports as stale rather than wrong. That is a rename, and it needs no

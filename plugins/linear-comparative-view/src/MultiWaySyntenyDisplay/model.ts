@@ -76,10 +76,9 @@ import {
 } from './layoutMultiWay.ts'
 import { laneColorKey, ribbonColorScale } from './legend.ts'
 import {
-  laneOrderMenuItem,
+  laneOrderMenuItems,
   laneSelectionMenuItems,
   laneSettingsMenuItems,
-  mergeRowOrder,
 } from './menus.ts'
 import {
   BANDS_KEY,
@@ -304,13 +303,14 @@ export function stateModelFactory(
         ),
         /**
          * #property
-         * lanes to pin to the top, in order; lanes it does not name follow
-         * densest-first, so the chain a ribbon draws through adjacent lanes is
-         * cut as late as possible and most stacks need no order authored at
-         * all. A declared property, so it is authorable from a session spec or
-         * a config defaultSession
+         * the lane facet's domain: lanes to pin to the top, in order. Lanes
+         * it does not name follow densest-first, so the chain a ribbon draws
+         * through adjacent lanes is cut as late as possible and most stacks
+         * need no order authored at all. A declared property, so it is
+         * authorable from a session spec or a config defaultSession, and what
+         * the Lanes menu and a header drag write
          */
-        rowOrder: types.array(types.string),
+        domain: types.array(types.string),
         /**
          * #property
          * the reader's lanes, by assembly name: `only` the ones the picker
@@ -506,18 +506,11 @@ export function stateModelFactory(
         },
         /**
          * #action
+         * The whole pinned order; empty is back to densest-first. A caller
+         * that saw only some lanes merges first (`mergeDomain`).
          */
-        setRowOrder(order: string[]) {
-          self.rowOrder.replace(mergeRowOrder([...self.rowOrder], order))
-        },
-        /**
-         * #action
-         * back to densest-first. Its own action rather than `setRowOrder([])`,
-         * which now means "here is the order of the lanes I can see" and would
-         * keep every lane the caller could not
-         */
-        resetRowOrder() {
-          self.rowOrder.clear()
+        setDomain(domain: string[]) {
+          self.domain.replace(domain)
         },
         /**
          * #action
@@ -926,7 +919,7 @@ export function stateModelFactory(
       /**
        * #getter
        * mate assemblies densest-first, one lane each below the anchor lane,
-       * with any `rowOrder` lanes pinned above them, narrowed to the lanes
+       * with any `domain` lanes pinned above them, narrowed to the lanes
        * the stack draws. A paralogy record's mate is the anchor assembly
        * itself; those draw on the anchor's own axis rather than as a lane
        */
@@ -937,7 +930,7 @@ export function stateModelFactory(
             .filter(lane => lane.drawn)
             .map(lane => self.laneKey(lane.name)),
         )
-        return rowAssembliesOf(self.groups, [...self.rowOrder], (a, b) =>
+        return rowAssembliesOf(self.groups, [...self.domain], (a, b) =>
           isSameAssemblyName(a, b, assemblyManager),
         ).filter(assemblyName => drawn.has(self.laneKey(assemblyName)))
       },
@@ -2008,7 +2001,7 @@ export function stateModelFactory(
             ...laneSettingsMenuItems(self),
             ...lodMenuItems(self),
             ...laneSelectionMenuItems(self),
-            ...laneOrderMenuItem(self),
+            ...laneOrderMenuItems(self),
           ]
         },
       }

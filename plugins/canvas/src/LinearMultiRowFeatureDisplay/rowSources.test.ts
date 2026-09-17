@@ -35,7 +35,7 @@ test("resolveRowColorStrings: a row's own color (dialog) beats sampleColorMap", 
   ).toEqual(['black', 'blue'])
 })
 
-test('empty rowOrder = sorted', () => {
+test('empty domain = sorted', () => {
   expect(orderPartitionValues(new Set(['c', 'a', 'b']), [])).toEqual([
     'a',
     'b',
@@ -43,20 +43,20 @@ test('empty rowOrder = sorted', () => {
   ])
 })
 
-test('rowOrder values come first in order, rest sorted', () => {
+test('domain values come first in order, rest sorted', () => {
   expect(
     orderPartitionValues(new Set(['c', 'a', 'b', 'd']), ['d', 'b']),
   ).toEqual(['d', 'b', 'a', 'c'])
 })
 
-test('rowOrder entries not present in data are skipped', () => {
+test('domain entries not present in data are skipped', () => {
   expect(orderPartitionValues(new Set(['a', 'b']), ['z', 'b'])).toEqual([
     'b',
     'a',
   ])
 })
 
-test('duplicate rowOrder entries are de-duplicated (no blank row)', () => {
+test('duplicate domain entries are de-duplicated (no blank row)', () => {
   expect(orderPartitionValues(new Set(['a', 'b']), ['a', 'a', 'b'])).toEqual([
     'a',
     'b',
@@ -86,6 +86,6 @@ test('the features carrying no value file last, after every real value', () => {
   ])
 })
 
-test('rowOrder may still pin the empty value where it says', () => {
+test('domain may still pin the empty value where it says', () => {
   expect(orderPartitionValues(new Set(['', 'a']), ['', 'a'])).toEqual(['', 'a'])
 })
