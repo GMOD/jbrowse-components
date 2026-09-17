@@ -41,23 +41,27 @@ const useStyles = makeStyles()(theme => ({
  * two levels instead. The upper level is scrolled, where the header overview
  * never is, so its left edge is what its origin is shifted by.
  *
- * Its height is `upper`'s to keep, and dragging the band is how it is set. The
- * band is a picture of a ratio — a level ten times wider than the row below
- * narrows to a tenth of the width over the band's height — and how steep that
- * reads is the figure's to decide, not ours.
+ * Its height belongs to the stack rather than to this pair, so a drag on any
+ * band moves all of them: the bands are a ladder the eye reads down, and one
+ * rung of its own height reads as a difference in the data. The height is worth
+ * dragging at all because the band is a picture of a ratio — a level ten times
+ * wider than the row below narrows to a tenth of the width over it — and how
+ * steep that reads is the figure's to decide, not ours.
  */
 const LevelConnector = observer(function LevelConnector({
+  host,
   upper,
   lower,
 }: {
+  host: LinearGenomeViewModel
   upper: LinearGenomeViewModel
   lower: LinearGenomeViewModel
 }) {
   const { classes } = useStyles()
-  const height = upper.contextConnectorHeight
+  const height = host.contextConnectorHeight
   const handleProps = useResizeDrag({
     onDrag: delta => {
-      upper.setContextConnectorHeight(upper.contextConnectorHeight + delta)
+      host.setContextConnectorHeight(host.contextConnectorHeight + delta)
     },
   })
   return upper.initialized && lower.initialized ? (
@@ -91,7 +95,11 @@ const ContextLevels = observer(function ContextLevels({
       {levels.map((level, i) => (
         <Fragment key={level.id}>
           <LinearGenomeView model={level} />
-          <LevelConnector upper={level} lower={levels[i + 1] ?? model} />
+          <LevelConnector
+            host={model}
+            upper={level}
+            lower={levels[i + 1] ?? model}
+          />
         </Fragment>
       ))}
     </div>

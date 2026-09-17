@@ -227,26 +227,28 @@ test('a view already zoomed all the way out offers no level above it', () => {
   expect(addItem(view)).toMatchObject({ disabled: true })
 })
 
-test("the connector band is the level's own height, and has a floor", () => {
+test('the connector band is one height for the stack, with a floor', () => {
   const { view } = setup()
   view.addContextLevel()
-  const [level] = levels(view)
-  level!.setContextConnectorHeight(level!.contextConnectorHeight + 40)
-  expect(level!.contextConnectorHeight).toBe(56)
-  level!.setContextConnectorHeight(-10)
-  expect(level!.contextConnectorHeight).toBe(4)
+  view.addContextLevel()
+  view.setContextConnectorHeight(view.contextConnectorHeight + 40)
+  expect(view.contextConnectorHeight).toBe(56)
+  // a level keeps no height of its own, so every band moves together
+  expect(levels(view).map(l => l.contextConnectorHeight)).toEqual([16, 16])
+  view.setContextConnectorHeight(-10)
+  expect(view.contextConnectorHeight).toBe(4)
 })
 
-test('the SVG export draws each connector at the height it was dragged to', async () => {
+test('the SVG export draws the connectors at the height they were dragged to', async () => {
   const { view } = setup()
   view.addContextLevel()
-  const [level] = levels(view)
-  level!.setContextConnectorHeight(64)
+  view.addContextLevel()
+  view.setContextConnectorHeight(64)
   const svg = await renderToSvg(view, {})
-  // the trapezoid's two bottom corners sit on the band's floor
-  expect(svg).toContain(',64 ')
-  // and it fades from the narrow end down, rather than filling flat
-  expect(svg).toContain('<linearGradient')
+  // two bottom corners each, both trapezoids on the band's floor
+  expect(svg.split(',64 ').length - 1).toBe(4)
+  // and they fade from the narrow end down, rather than filling flat
+  expect(svg.split('<linearGradient').length - 1).toBe(2)
 })
 
 test('centring a level on a coordinate centres the host there', () => {

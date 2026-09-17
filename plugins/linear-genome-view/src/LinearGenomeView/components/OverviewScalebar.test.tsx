@@ -44,6 +44,14 @@ function renderOverview(numRegions: number) {
   )
 }
 
+// Width of the trapezoid's top edge, i.e. the span it claims the row below
+// shows. The points are wound bottom-left, bottom-right, top-right, top-left.
+function topEdgeWidth(container: HTMLElement) {
+  const points = container.querySelector('polygon')!.getAttribute('points')!
+  const xs = points.split(' ').map(p => Number(p.split(',')[0]))
+  return xs[2]! - xs[3]!
+}
+
 describe('OverviewScalebar tick labels', () => {
   it('numbers a single region that fills the overview', () => {
     const { container } = renderOverview(1)
@@ -57,5 +65,40 @@ describe('OverviewScalebar tick labels', () => {
     const { container } = renderOverview(4)
     expect(container.textContent).toContain('ctg0')
     expect(container.textContent).not.toContain('M')
+  })
+})
+
+// The trapezoid joins the chromosome to whatever is drawn directly under it,
+// and with context levels that is the widest of them rather than the view: the
+// view's own window is several rows further down, and the levels' connectors
+// are what walk the reader there.
+describe('OverviewScalebar "you are here" trapezoid', () => {
+  // mid-contig, so the ten-times-wider level below still lands whole inside the
+  // region and its span is exactly ten times the view's
+  function overviewAt(windowWidthBp: number) {
+    const model = overview(1)
+    model.setWindow(windowWidthBp, 100_000_000)
+    return model
+  }
+
+  function renderPolygon(model: ReturnType<typeof overviewAt>) {
+    return render(
+      <ThemeProvider theme={createJBrowseTheme()}>
+        <OverviewScalebar model={model}>
+          <div />
+        </OverviewScalebar>
+      </ThemeProvider>,
+    ).container
+  }
+
+  it('describes the view when it has no context levels', () => {
+    // 2.5Mb of the 250Mb overview, drawn 800px wide
+    expect(topEdgeWidth(renderPolygon(overviewAt(2_500_000)))).toBeCloseTo(8, 0)
+  })
+
+  it('describes the widest context level once there is one', () => {
+    const model = overviewAt(2_500_000)
+    model.addContextLevel()
+    expect(topEdgeWidth(renderPolygon(model))).toBeCloseTo(80, 0)
   })
 })

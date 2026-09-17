@@ -447,9 +447,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * Height of the band holding the trapezoid down to the row below,
-         * dragged by the band itself. A context level's only other state of
-         * its own; nothing draws a connector under a view that is not one.
+         * Height of the bands the trapezoids between this view's context levels
+         * are drawn in, dragged by any one of them. One number for the stack:
+         * the bands are a ladder the eye reads down, and a rung of its own
+         * height reads as a difference in the data rather than in the drawing.
          */
         contextConnectorHeight: types.stripDefault(
           types.number,
@@ -1492,9 +1493,9 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #action
-       * Set the height of the band this level's trapezoid is drawn in. Floored
-       * at the drag surface's own height rather than at 0: the band IS the
-       * handle, so a band dragged shut could never be dragged open again.
+       * Set the height of every band between this view's context levels.
+       * Floored at the drag surface's own height rather than at 0: the band IS
+       * the handle, so a band dragged shut could never be dragged open again.
        */
       setContextConnectorHeight(height: number) {
         self.contextConnectorHeight = Math.max(

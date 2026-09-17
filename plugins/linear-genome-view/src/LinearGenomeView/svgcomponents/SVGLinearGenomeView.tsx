@@ -154,16 +154,16 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
       },
       {
         key: `connector-${level.id}`,
-        // the band the reader set by dragging it, since how steep the connector
-        // reads is the whole of what that drag is for
-        height: level.contextConnectorHeight,
+        // the band the reader set by dragging one of them, since how steep the
+        // connectors read is the whole of what that drag is for
+        height: model.contextConnectorHeight,
         node: (
           <g transform={`translate(${exportMargin + trackLabelOffset} 0)`}>
             <OverviewScalebarPolygon
               model={levels[i + 1] ?? model}
               overview={level}
               overviewOffsetPx={-level.offsetPx}
-              height={level.contextConnectorHeight}
+              height={model.contextConnectorHeight}
               gradient
             />
           </g>

@@ -290,8 +290,14 @@ const OverviewScalebar = observer(function OverviewScalebar({
       />
       <div className={classes.overview}>
         <svg height={HEADER_BAR_HEIGHT} className={classes.overviewSvg}>
+          {/* The trapezoid joins the chromosome to the row drawn directly
+          beneath it, which is the widest context level when there is one and
+          this view when there is not. Pointed at this view unconditionally it
+          claimed the 1kb the reads show opens into the row below, while the row
+          below was a 45kb view of the same locus — a false adjacency, and the
+          levels' own connectors say the true one for every pair after it. */}
           <OverviewScalebarPolygon
-            model={model}
+            model={(model.contextLevelViews[0] as LGV | undefined) ?? model}
             overview={overview}
             overviewOffsetPx={model.cytobandOffset}
           />
