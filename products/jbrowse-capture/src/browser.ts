@@ -35,10 +35,11 @@ export function findChromeExecutable(): string | undefined {
   return process.env.CHROME_PATH ?? CHROME_PATHS.find(p => fs.existsSync(p))
 }
 
-// GPU/WebGL lifecycle chatter that isn't a real error. Real GPU failures
-// (`context LOST`, `GL error`) are deliberately NOT suppressed.
+// Console chatter that isn't a real error. Real GPU failures (`context LOST`,
+// `GL error`) are deliberately NOT suppressed.
 const NOISE_NEEDLES = [
   'favicon',
+  'window.jb drives this app programmatically',
   'GPU stall',
   '[GPU] WebGPU not supported',
   '[GPU] No compatible GPU adapter',
