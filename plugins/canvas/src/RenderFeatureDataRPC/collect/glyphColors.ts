@@ -118,12 +118,14 @@ export interface ClassedColor {
 /**
  * Unpacked, because `emitCodonRects` lightens the CSS string. `colorKey` is
  * the color channel's scale when it has one, which paints in the `color`
- * slot's place and records what it painted.
+ * slot's place from `level`'s value and records a value only where its color
+ * is the one drawn.
  */
 export function boxColor(
   feature: Feature,
   ctx: RenderContext,
   colorKey?: ColorKey,
+  level: Feature = feature,
 ): ClassedColor {
   const { config, colorByCDS, jexl } = ctx
   // An unset slot lets the file's own color speak and any set value beats it.
@@ -133,20 +135,15 @@ export function boxColor(
   // default.
   const isUtrBox = isUTR(feature)
   const slot = isUtrBox && config.utrColor !== undefined ? 'utrColor' : 'color'
+  const scaled =
+    slot === 'color' ? colorKey?.valueOf(feature, level) : undefined
 
-  const fill =
-    slot === 'color' && colorKey
-      ? colorKey.paint(feature)
-      : config[slot] === undefined
-        ? (inheritedBedColor(feature) ??
-          BOX_COLOR_SLOTS[isUtrBox ? 'utrColor' : 'color'])
-        : readConfigValueSafe<string>(
-            config,
-            slot,
-            feature,
-            jexl,
-            INVALID_COLOR,
-          )
+  const fill = scaled
+    ? scaled.css
+    : config[slot] === undefined
+      ? (inheritedBedColor(feature) ??
+        BOX_COLOR_SLOTS[isUtrBox ? 'utrColor' : 'color'])
+      : readConfigValueSafe<string>(config, slot, feature, jexl, INVALID_COLOR)
 
   const featureStrand = feature.get('strand')
   const featurePhase = feature.get('phase')
@@ -170,6 +167,9 @@ export function boxColor(
     }
   }
 
+  if (scaled) {
+    colorKey?.record(scaled)
+  }
   return { color: fill, colorClass: LITERAL }
 }
 

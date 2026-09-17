@@ -1,6 +1,7 @@
 import { legendIsReadable } from '@jbrowse/core/ui/legendSpec'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { compareGroupKeys } from '@jbrowse/core/util/groupKeys'
+import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
 
 import { colorValueLabel } from '../RenderFeatureDataRPC/featureColors.ts'
 
@@ -13,8 +14,8 @@ import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 
 /**
  * The key a color channel's scale derives from what the worker painted: every
- * value in `regions` sorted, the scale's domain ahead of the rest, less a
- * value only a hidden section painted. No key while the values are one color
+ * value in `regions` sorted, the scale's domain ahead of the rest and the
+ * no-value row last, less a value only a hidden section painted. No key while the values are one color
  * or too many to read.
  */
 export function derivedColorKey(
@@ -32,7 +33,11 @@ export function derivedColorKey(
     }
   }
   const entries = [...colors]
-    .sort(([a], [b]) => compareGroupKeys(a, b))
+    .sort(
+      ([a], [b]) =>
+        Number(a === NO_VALUE_LABEL) - Number(b === NO_VALUE_LABEL) ||
+        compareGroupKeys(a, b),
+    )
     .map(([value, color]) => ({
       value,
       label: colorValueLabel(scale.field, value),

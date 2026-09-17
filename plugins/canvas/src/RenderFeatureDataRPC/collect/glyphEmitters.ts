@@ -62,6 +62,7 @@ function emitExonRects(
           height,
           flatbushIdx,
           labelRowsAbove,
+          level: transcriptFeature,
         },
         ctx,
         collector,
@@ -92,7 +93,12 @@ function emitExonRects(
       emitCodonRects(
         {
           aminoAcids,
-          baseColor: boxColor(childFeature, ctx, collector.colorKey),
+          baseColor: boxColor(
+            childFeature,
+            ctx,
+            collector.colorKey,
+            transcriptFeature,
+          ),
           topPx: baseTopPx,
           height,
           strand,
@@ -109,6 +115,7 @@ function emitExonRects(
           height,
           flatbushIdx,
           labelRowsAbove,
+          level: transcriptFeature,
         },
         ctx,
         collector,
@@ -686,11 +693,11 @@ function emitGlyph(
 
 // A multi-valued attribute joins, so two features carrying the same list land
 // in one section; a missing one is the '' catch-all.
-function groupKeyOf(feature: Feature, attribute: string | undefined) {
-  if (attribute === undefined) {
+function groupKeyOf(feature: Feature, ctx: RenderContext) {
+  if (ctx.readGroupKey === undefined) {
     return undefined
   }
-  const value: unknown = feature.get(attribute)
+  const value = ctx.readGroupKey(feature)
   return value === undefined || value === null
     ? ''
     : Array.isArray(value)
@@ -735,6 +742,7 @@ export function processFeatureRecord(
     })
   }
 
+  const groupKey = groupKeyOf(feature, ctx)
   collector.flatbushItems.push({
     kind: 'feature',
     featureId: feature.id(),
@@ -747,7 +755,7 @@ export function processFeatureRecord(
     tooltip: featureTooltip(feature, ctx),
     name,
     strand: strand !== 0 ? strand : undefined,
-    groupKey: groupKeyOf(feature, ctx.config.groupByAttribute),
+    groupKey,
     // A standalone transcript registers no SubfeatureInfo, so its exon bounds
     // ride here instead.
     transcript: transcriptCoords(layout),
@@ -760,7 +768,7 @@ export function processFeatureRecord(
 
   collector.colorKey?.enterRecord({
     strand: strand !== 0 ? strand : undefined,
-    groupKey: groupKeyOf(feature, ctx.config.groupByAttribute),
+    groupKey,
   })
 
   emitGlyph(

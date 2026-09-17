@@ -1,8 +1,10 @@
 import {
   categoricalColor,
+  categoricalColorScale,
   categoricalPalette,
   categoricalScale,
   categoricalValueColor,
+  similarColors,
 } from './colors.ts'
 
 const BIOTYPES = [
@@ -61,15 +63,13 @@ describe('categoricalScale', () => {
   })
 
   it('spends the range in domain order, then the fallback it lacks', () => {
-    const scale = categoricalScale(
-      ['x', 'y', 'z'],
-      ['red', '#1F77B4'],
-      ['#1f77b4', 'green'],
-    )
+    const scale = categoricalScale(['x', 'y', 'z'], ['red', '#1F77B4'], {
+      fallback: ['#1f77b4', 'green'],
+    })
     expect(['x', 'y', 'z'].map(scale)).toEqual(['red', '#1F77B4', 'green'])
   })
 
-  it('never paints an unlisted value a listed color while the range has room', () => {
+  it('never paints an unlisted value a listed entry while the list has room', () => {
     for (const listedCount of [1, 4, 10, 25]) {
       const domain = BIOTYPES.slice(0, listedCount)
       const scale = categoricalScale(domain, categoricalPalette)
@@ -80,27 +80,24 @@ describe('categoricalScale', () => {
     }
   })
 
-  it('sends unlisted values past a spent palette into the fallback, not onto it', () => {
-    const palette = ['#1f77b4', '#ff7f0e']
-    const scale = categoricalScale(
-      ['protein_coding', 'lncRNA'],
-      palette,
-      categoricalPalette,
-    )
-    for (const value of BIOTYPES.slice(2)) {
-      expect(palette).not.toContain(scale(value))
-      expect(categoricalPalette).toContain(scale(value))
-    }
-  })
-
-  it('moves an unlisted value only when a new listed value takes its slot', () => {
-    const before = categoricalScale(BIOTYPES.slice(0, 5), categoricalPalette)
-    const after = categoricalScale(BIOTYPES.slice(0, 6), categoricalPalette)
-    const claimed = after(BIOTYPES[5]!)
-    for (const value of BIOTYPES.slice(6)) {
-      if (before(value) !== claimed) {
-        expect(after(value)).toBe(before(value))
-      }
+  it('moves an unlisted value only when a new listed value takes its slot, at any domain length', () => {
+    for (const [palette, from] of [
+      [['#1f77b4', '#ff7f0e'], 1],
+      [[], 5],
+      [[], 39],
+    ] as const) {
+      const values = [...BIOTYPES, ...BIOTYPES.map(b => `${b}_2`)]
+      const before = categoricalColorScale(values.slice(0, from), palette)
+      const after = categoricalColorScale(values.slice(0, from + 1), palette)
+      const claimed = after(values[from]!)
+      const moved = values
+        .slice(from + 1)
+        .filter(
+          value =>
+            before(value) !== after(value) &&
+            !similarColors(before(value), claimed),
+        )
+      expect(moved).toEqual([])
     }
   })
 
@@ -129,22 +126,41 @@ describe('categoricalScale', () => {
   })
 })
 
+describe('categoricalColorScale', () => {
+  it('sends unlisted values past a spent palette into the wide one, never onto it', () => {
+    const palette = ['#1f77b4', '#ff7f0e']
+    const scale = categoricalColorScale(['protein_coding', 'lncRNA'], palette)
+    for (const value of BIOTYPES.slice(2)) {
+      expect(palette.some(c => similarColors(c, scale(value)))).toBe(false)
+      expect(categoricalPalette).toContain(scale(value))
+    }
+  })
+
+  it('keeps unlisted values off any color that reads the same as a listed one', () => {
+    const domain = BIOTYPES.slice(0, 10)
+    const scale = categoricalColorScale(domain)
+    const listed = domain.map(scale)
+    for (let i = 0; i < 2000; i++) {
+      const color = scale(`value${i}`)
+      expect(listed.some(c => similarColors(c, color))).toBe(false)
+    }
+  })
+})
+
 describe('categoricalColor', () => {
   it('spends the palette in domain order', () => {
     expect(categoricalColor('b', ['a', 'b'], ['red', 'blue'])).toBe('blue')
     expect(categoricalColor('b', ['a', 'b'])).toBe(categoricalPalette[1])
   })
 
-  it('is categoricalScale over the default palette', () => {
-    const scale = categoricalScale(
-      ['protein_coding'],
-      ['red'],
-      categoricalPalette,
-    )
+  it('is categoricalColorScale, whichever declarations alternate', () => {
+    const one = categoricalColorScale(['protein_coding'], ['red'])
+    const two = categoricalColorScale(['lncRNA'])
     for (const value of BIOTYPES) {
       expect(categoricalColor(value, ['protein_coding'], ['red'])).toBe(
-        scale(value),
+        one(value),
       )
+      expect(categoricalColor(value, ['lncRNA'])).toBe(two(value))
     }
   })
 

@@ -1,4 +1,6 @@
+import * as convert from '../util/color-bits/convert.ts'
 import { NO_CATEGORY_COLOR, relight } from '../util/color/index.ts'
+import { cssColorToNormalizedRgb } from '../util/colorBits.ts'
 
 const category10 = [
   '#1f77b4',
@@ -151,71 +153,144 @@ function valueSlot(value: string, n: number) {
     : hashString(value) % n
 }
 
-// Rehashing rather than stepping to the next slot, so the unlisted values
-// that land on the listed prefix spread over the free slots instead of piling
-// onto the first one.
-function unlistedSlot(value: string, spent: number, size: number) {
-  let slot = valueSlot(value, size)
-  for (let salt = 1; slot < spent && salt <= size; salt++) {
-    slot = hashString(`${salt}:${value}`) % size
-  }
-  return slot < spent ? spent + (hashString(value) % (size - spent)) : slot
-}
-
 function entryKey(entry: unknown) {
   return typeof entry === 'string' ? entry.toLowerCase() : entry
+}
+
+// The first slot derived from the value that `taken` does not hold, trying
+// rehashes before walking, so the values landing on a taken slot spread over
+// the free ones instead of piling onto the next.
+function freeSlot(value: string, size: number, taken: ReadonlySet<number>) {
+  let slot = valueSlot(value, size)
+  for (let salt = 1; taken.has(slot) && salt <= size; salt++) {
+    slot = hashString(`${salt}:${value}`) % size
+  }
+  for (let step = 0; taken.has(slot) && step < size; step++) {
+    slot = (slot + 1) % size
+  }
+  return slot
 }
 
 /**
  * The categorical rule every scaled channel resolves through. With no
  * `domain` a value takes `categoricalValueColor`'s slot in `range`. With one,
  * the listed values take `range` in order, continuing into the `fallback`
- * entries `range` lacks once it runs out, and any other value takes a slot
- * derived from itself that no listed value holds. Unlisted values hash into
- * `range` while the domain leaves some of it unspent, and into the fallback
- * past that. A value's entry depends only on the value and the declaration,
- * so every region agrees on it, and adding a listed value moves only the
- * unlisted values on the slot it takes.
+ * entries `range` lacks past its end, and any other value takes a slot of the
+ * whole list derived from itself that no listed value holds, nor one
+ * `isNear` calls the same. A value's entry depends only on the value and the
+ * declaration, so every region agrees on it, and adding a listed value moves
+ * only the unlisted values on the slots it takes.
  */
 export function categoricalScale<T>(
   domain: readonly (string | number)[] | undefined,
   range: readonly T[],
-  fallback: readonly T[] = [],
+  {
+    fallback = [],
+    isNear,
+  }: {
+    fallback?: readonly T[]
+    isNear?: (a: T, b: T) => boolean
+  } = {},
 ): (value: string) => T {
   const base = range.length ? range : fallback
   const listed = [...new Set((domain ?? []).map(String))].filter(v => v !== '')
   if (listed.length === 0) {
     return value => base[valueSlot(value, base.length)]!
   }
-  const inBase = new Set(base.map(entryKey))
+  const seen = new Set(base.map(entryKey))
   const entries = [
     ...base,
     ...fallback.filter(entry => {
       const key = entryKey(entry)
-      return inBase.has(key) ? false : (inBase.add(key), true)
+      return seen.has(key) ? false : (seen.add(key), true)
     }),
   ]
+  const size = entries.length
   const rank = new Map(listed.map((value, i) => [value, i]))
-  const spent = listed.length
-  const size = spent < base.length ? base.length : entries.length
+  const listedSlots = new Set(listed.map((_, i) => i % size))
+  const taken = new Set(
+    entries.flatMap((entry, i) =>
+      listedSlots.has(i) ||
+      (isNear && [...listedSlots].some(j => isNear(entries[j]!, entry)))
+        ? [i]
+        : [],
+    ),
+  )
   return value => {
     const i = rank.get(value)
-    return i !== undefined
-      ? entries[i % entries.length]!
-      : entries[
-          spent >= size
-            ? valueSlot(value, size)
-            : unlistedSlot(value, spent, size)
-        ]!
+    return entries[
+      i !== undefined
+        ? i % size
+        : taken.size < size
+          ? freeSlot(value, size, taken)
+          : valueSlot(value, size)
+    ]!
   }
 }
 
-let lastScale: { key: string; scale: (value: string) => string } | undefined
+const oklabByColor = new Map<string, [number, number, number]>()
+
+function oklabOf(color: string) {
+  let lab = oklabByColor.get(color)
+  if (lab === undefined) {
+    lab = convert.xyzd65ToOklab(
+      ...convert.xyzd50ToD65(
+        ...convert.srgbToXyzd50(...cssColorToNormalizedRgb(color)),
+      ),
+    )
+    oklabByColor.set(color, lab)
+  }
+  return lab
+}
+
+/**
+ * Whether two CSS colors read as one: under 0.05 apart in OKLab, where the
+ * wide palette's tableau and category10 oranges sit 0.003 apart.
+ */
+export function similarColors(a: string, b: string) {
+  const [l1, a1, b1] = oklabOf(a)
+  const [l2, a2, b2] = oklabOf(b)
+  return Math.hypot(l1 - l2, a1 - a2, b1 - b2) < 0.05
+}
+
+/**
+ * `categoricalScale` for a color channel: `palette` (the wide palette when
+ * empty) spent in `domain` order and continued into the wide palette, and an
+ * unlisted value never on a listed value's color or one that reads the same.
+ */
+export function categoricalColorScale(
+  domain: readonly (string | number)[] | undefined,
+  palette: readonly string[] = [],
+) {
+  return categoricalScale(domain, palette, {
+    fallback: categoricalPalette,
+    isNear: similarColors,
+  })
+}
+
+const MAX_CACHED_SCALES = 16
+const scaleCache = new Map<string, (value: string) => string>()
+
+function cachedColorScale(
+  domain: readonly string[],
+  palette: readonly string[],
+) {
+  const key = `${domain.join('\u001f')}\u001e${palette.join('\u001f')}`
+  let scale = scaleCache.get(key)
+  if (scale === undefined) {
+    if (scaleCache.size >= MAX_CACHED_SCALES) {
+      scaleCache.delete(scaleCache.keys().next().value!)
+    }
+    scale = categoricalColorScale(domain, palette)
+    scaleCache.set(key, scale)
+  }
+  return scale
+}
 
 /**
  * The color one value of a categorical color channel paints, by
- * `categoricalScale` over the default palette. A value-less feature is
- * neutral grey, and an array value joins the way a group key does.
+ * `categoricalColorScale`. A value-less feature is neutral grey, and an array
+ * value joins the way a group key does.
  */
 export function categoricalColor(
   value: unknown,
@@ -228,17 +303,9 @@ export function categoricalColor(
   const label = Array.isArray(value)
     ? value.map(String).join(',')
     : String(value)
-  if (domain.length === 0 && palette.length === 0) {
-    return categoricalValueColor(label)
-  }
-  const key = JSON.stringify([domain, palette])
-  if (lastScale?.key !== key) {
-    lastScale = {
-      key,
-      scale: categoricalScale(domain, palette, categoricalPalette),
-    }
-  }
-  return lastScale.scale(label)
+  return domain.length === 0 && palette.length === 0
+    ? categoricalValueColor(label)
+    : cachedColorScale(domain, palette)(label)
 }
 
 // only category10 and set1 are imported by name; the rest are reached through

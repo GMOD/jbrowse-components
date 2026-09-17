@@ -3,8 +3,7 @@ import {
   isJexl,
   stringToJexlExpression,
 } from '@jbrowse/core/util/jexlStrings'
-
-import { STRAND_FIELD } from '../RenderFeatureDataRPC/featureColors.ts'
+import { STRAND_FIELD } from '@jbrowse/core/util/strandScale'
 
 import type { ColorScaleSettings } from '../RenderFeatureDataRPC/featureColors.ts'
 import type { FeatureGroupBy } from './groupBy.ts'

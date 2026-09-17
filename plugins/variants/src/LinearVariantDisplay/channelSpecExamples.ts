@@ -1,13 +1,13 @@
-// The VCF vocabulary for Edit as JSON...: a field is a record field or an INFO
-// key, as the Group by and Color by attribute dialogs read them.
+// The VCF vocabulary for Edit as JSON...: a field is a record field, or a path
+// into INFO.
 export const VARIANT_CHANNEL_SPEC_EXAMPLES = [
   {
     spec: '{ "color": { "field": "type" } }',
     description: 'one color per variant class: SNV, deletion, insertion',
   },
   {
-    spec: '{ "color": { "field": "SVTYPE" } }',
-    description: 'one color per structural variant type, read from INFO',
+    spec: '{ "color": { "field": "INFO.SVTYPE" } }',
+    description: 'one color per structural variant type',
   },
   { spec: '{ "facet": "FILTER" }', description: 'a section per FILTER value' },
   {

@@ -4,8 +4,8 @@ import {
   groupKeyComparator,
   overflowLabel,
 } from '@jbrowse/core/util/groupKeys'
+import { STRAND_FIELD } from '@jbrowse/core/util/strandScale'
 
-import { STRAND_FIELD } from '../RenderFeatureDataRPC/featureColors.ts'
 import { isPlacedRow } from './rowPlacement.ts'
 
 import type {

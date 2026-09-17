@@ -141,7 +141,7 @@ describe('boxColor (color by a field)', () => {
     uniqueId: 'gene1',
     refName: 'chr1',
     start: 0,
-    end: 100,
+    end: 300,
     type: 'gene',
     gene_biotype: 'protein_coding',
     subfeatures: [
@@ -151,49 +151,100 @@ describe('boxColor (color by a field)', () => {
         start: 0,
         end: 100,
         type: 'mRNA',
+        strand: 1,
         subfeatures: [
           { uniqueId: 'e1', refName: 'chr1', start: 0, end: 100, type: 'exon' },
-          { uniqueId: 'c1', refName: 'chr1', start: 20, end: 80, type: 'CDS' },
+          {
+            uniqueId: 'c1',
+            refName: 'chr1',
+            start: 20,
+            end: 80,
+            type: 'CDS',
+            strand: 1,
+            phase: 0,
+            protein_id: 'P1',
+          },
         ],
+      },
+      {
+        uniqueId: 'tx2',
+        refName: 'chr1',
+        start: 200,
+        end: 300,
+        type: 'lnc_RNA',
+        transcript_biotype: 'lncRNA',
       },
     ],
   })
-  const transcript = gene.get('subfeatures')![0]!
-  const boxes = [transcript, ...transcript.get('subfeatures')!]
+  const [transcript, childless] = gene.get('subfeatures')!
+  const parts = transcript!.get('subfeatures')!
 
-  function paintAll(colorField: string, extra: Partial<DisplayConfig> = {}) {
+  function painter(
+    colorField: string,
+    extra: Partial<DisplayConfig> = {},
+    colorByCDS = false,
+  ) {
     const config = mockDisplayConfig({ colorField, ...extra })
     const colorKey = createColorKey(config, jexl)!
     colorKey.enterRecord({ strand: undefined, groupKey: undefined })
-    const fills = boxes.map(
-      box => boxColor(box, { config, colorByCDS: false, jexl }, colorKey).color,
-    )
-    return { fills, candidates: colorKey.candidates }
+    const ctx = { config, colorByCDS, jexl }
+    return {
+      paint: (box: Feature, level?: Feature) =>
+        boxColor(box, ctx, colorKey, level).color,
+      labels: () => colorKey.candidates.map(c => c.label),
+    }
   }
 
-  it("paints every box of a gene in the gene's value color, over the color slot", () => {
-    const { fills, candidates } = paintAll('gene_biotype', { color: 'red' })
-    expect(new Set(fills)).toEqual(
-      new Set([categoricalColor('protein_coding')]),
-    )
-    expect(candidates.map(c => c.label)).toEqual(['protein_coding'])
+  it("paints a transcript and its parts in the gene's value, over the color slot", () => {
+    const { paint, labels } = painter('gene_biotype', { color: 'red' })
+    for (const part of parts) {
+      expect(paint(part, transcript)).toBe(categoricalColor('protein_coding'))
+    }
+    expect(paint(transcript!)).toBe(categoricalColor('protein_coding'))
+    expect(labels()).toEqual(['protein_coding'])
   })
 
-  it("paints a transcript's parts in the transcript's own value, not each part's", () => {
-    const { fills, candidates } = paintAll('type')
-    expect(new Set(fills)).toEqual(new Set([categoricalColor('mRNA')]))
-    expect(candidates.map(c => c.label)).toEqual(['mRNA'])
+  it("paints a transcript's parts in the transcript's value, not each part's", () => {
+    const { paint, labels } = painter('type')
+    for (const part of parts) {
+      expect(paint(part, transcript)).toBe(categoricalColor('mRNA'))
+    }
+    expect(labels()).toEqual(['mRNA'])
   })
 
-  it('paints a value-less feature grey and names nothing for it', () => {
-    const { fills, candidates } = paintAll('missing')
-    expect(new Set(fills)).toEqual(new Set([categoricalColor(undefined)]))
-    expect(candidates).toEqual([])
+  it('paints a transcript with no parts in its own value', () => {
+    const { paint } = painter('transcript_biotype')
+    expect(paint(childless!)).toBe(categoricalColor('lncRNA'))
+    expect(painter('type').paint(childless!)).toBe(categoricalColor('lnc_RNA'))
+  })
+
+  it('reads a field only the parts carry off the part', () => {
+    const { paint } = painter('protein_id')
+    expect(paint(parts[1]!, transcript)).toBe(categoricalColor('P1'))
+    expect(paint(parts[0]!, transcript)).toBe(categoricalColor(undefined))
+  })
+
+  it('names a value-less box the no-value row', () => {
+    const { paint, labels } = painter('missing')
+    expect(paint(parts[0]!, transcript)).toBe(categoricalColor(undefined))
+    expect(labels()).toEqual(['(no value)'])
+  })
+
+  it('names nothing for a CDS the reading frame paints instead', () => {
+    const { paint, labels } = painter('protein_id', {}, true)
+    expect(paint(parts[1]!, transcript)).toBeUndefined()
+    expect(labels()).toEqual([])
+  })
+
+  it('paints a feature with no strand as unstranded', () => {
+    const { paint } = painter('strand')
+    expect(paint(childless!)).toBe('goldenrod')
+    expect(paint(parts[1]!, transcript)).toBe('tomato')
   })
 
   it('reads a jexl field', () => {
-    const { fills } = paintAll("jexl:get(feature,'type') + '!'")
-    expect(new Set(fills)).toEqual(new Set([categoricalColor('mRNA!')]))
+    const { paint } = painter("jexl:get(feature,'type') + '!'")
+    expect(paint(parts[0]!, transcript)).toBe(categoricalColor('mRNA!'))
   })
 })
 

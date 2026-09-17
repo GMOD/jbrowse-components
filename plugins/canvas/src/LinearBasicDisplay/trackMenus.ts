@@ -1,6 +1,7 @@
 import { filterMenuItems, undoItems } from '@jbrowse/core/ui/filterMenuItems'
 import { radioItems, toggleItem, withHint } from '@jbrowse/core/ui/menuItems'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
+import { STRAND_FIELD } from '@jbrowse/core/util/strandScale'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
 import {
   hiddenGroupsItems,
@@ -12,7 +13,6 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import WorkspacesIcon from '@mui/icons-material/Workspaces'
 
 import { DISPLAY_MODE_OPTIONS } from '../RenderFeatureDataRPC/displayModes.ts'
-import { STRAND_FIELD } from '../RenderFeatureDataRPC/featureColors.ts'
 import { SHOW_LABELS_OPTIONS } from './showLabelsMode.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'

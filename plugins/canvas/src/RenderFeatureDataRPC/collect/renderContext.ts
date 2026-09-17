@@ -19,6 +19,8 @@ export interface RenderContext {
   colorByCDS: boolean
   peptideDataMap?: Map<string, PeptideData>
   jexl: JexlInstance
+  // Reads `config.groupByAttribute`, built once per walk.
+  readGroupKey?: (feature: Feature) => unknown
 }
 
 export interface GlyphPlacement {

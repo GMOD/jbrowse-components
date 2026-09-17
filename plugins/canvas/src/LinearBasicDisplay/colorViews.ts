@@ -1,9 +1,9 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
+import { STRAND_FIELD } from '@jbrowse/core/util/strandScale'
 
 import {
   FEATURE_DEFAULT_COLOR,
-  STRAND_FIELD,
   UTR_DEFAULT_COLOR,
   featureColorScale,
 } from '../RenderFeatureDataRPC/featureColors.ts'

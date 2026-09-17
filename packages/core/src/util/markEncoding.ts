@@ -4,9 +4,10 @@ import {
 } from '@jbrowse/render-core/scoreScale'
 import { GLYPH_DISC } from '@jbrowse/render-core/shaders/pointMarkConsts'
 
-import { categoricalPalette, categoricalScale } from '../ui/colors.ts'
+import { categoricalColorScale, categoricalScale } from '../ui/colors.ts'
 import { cssColorToABGR, cssColorToRgba, packAbgr } from './colorBits.ts'
 import { VIRIDIS_STOPS, buildColorRampLut } from './colorRamp.ts'
+import { fieldReader } from './fieldReader.ts'
 import Flatbush from './flatbush/index.ts'
 import { GLYPH_CODES, GLYPH_NAMES } from './glyphNames.ts'
 import { groupKeyComparator } from './groupKeys.ts'
@@ -67,8 +68,6 @@ export const DEFAULT_MARK_COLOR = '#0068d1'
 // vanishing.
 const FALLBACK_COLOR = cssColorToABGR('#808080')
 
-const DEFAULT_PALETTE = categoricalPalette.map(cssColorToABGR)
-
 /**
  * #api
  * The key row a feature with nothing in a categorical field lands on, so the
@@ -119,18 +118,11 @@ function jexlExpression(ref: string, jexl: JexlInstance | undefined) {
   return stringToJexlExpression(ref, jexl)
 }
 
-function fieldReader(
+function channelReader(
   ref: FieldRef | ChannelReader,
   jexl: JexlInstance | undefined,
 ): ChannelReader {
-  if (typeof ref === 'function') {
-    return ref
-  }
-  if (isJexl(ref)) {
-    const expr = jexlExpression(ref, jexl)
-    return feature => expr.eval(buildJexlContext({ feature }))
-  }
-  return feature => feature.get(ref)
+  return typeof ref === 'function' ? ref : fieldReader(ref, jexl)
 }
 
 /**
@@ -196,7 +188,7 @@ function categoryOrder(
 
 // The categorical arm `color` and `glyph` share: the walk records which
 // distinct value each admitted instance carried, and `resolve` hands every
-// value its entry through `categoricalScale`, so two regions that met
+// value its entry through a categorical scale, so two regions that met
 // different value sets still agree on every value they share.
 function categoricalChannel(read: ChannelReader, n: number) {
   const categories = new Map<string, number>()
@@ -219,12 +211,10 @@ function categoricalChannel(read: ChannelReader, n: number) {
     },
     resolve<T>(
       domain: (string | number)[] | undefined,
-      range: readonly T[],
-      fallback: readonly T[] = [],
+      entryOf: (label: string) => T,
     ) {
       const ofIndex: T[] = Array.from({ length: categories.size })
       const entries: { label: string; value: T }[] = []
-      const entryOf = categoricalScale(domain, range, fallback)
       categoryOrder(categories, domain).forEach(label => {
         const value = entryOf(label)
         const index = categories.get(label)
@@ -267,19 +257,19 @@ export function encodeFeatures<L extends LaneName>(
   const { jexl, report } = ctx
   const n = features.length
   const has = (lane: LaneName) => (lanes as readonly LaneName[]).includes(lane)
-  const readX = fieldReader(encoding.x ?? 'start', jexl)
-  const readX2 = fieldReader(encoding.x2 ?? 'end', jexl)
+  const readX = channelReader(encoding.x ?? 'start', jexl)
+  const readX2 = channelReader(encoding.x2 ?? 'end', jexl)
   const { y: yEncoding } = encoding
   const readY =
     has('y') && yEncoding !== undefined
-      ? fieldReader(
+      ? channelReader(
           typeof yEncoding === 'object' ? valueField(yEncoding) : yEncoding,
           jexl,
         )
       : undefined
   const readRow =
     has('row') && encoding.row !== undefined
-      ? fieldReader(encoding.row, jexl)
+      ? channelReader(encoding.row, jexl)
       : undefined
 
   const x = new Uint32Array(n)
@@ -314,7 +304,7 @@ export function encodeFeatures<L extends LaneName>(
       ? colorEncoding
       : scaled === undefined
         ? colorEvaluator(colorEncoding as string, jexl)
-        : fieldReader(scaled.field, jexl)
+        : channelReader(scaled.field, jexl)
   // A scaled channel resolves after the walk, once the table is known: the
   // category per admitted instance, or a ramp's raw value, kept here.
   const colorCategories =
@@ -329,7 +319,7 @@ export function encodeFeatures<L extends LaneName>(
   const glyphScaled =
     glyph && typeof glyphEncoding === 'object' ? glyphEncoding : undefined
   const glyphCategories = glyphScaled
-    ? categoricalChannel(fieldReader(glyphScaled.field, jexl), n)
+    ? categoricalChannel(channelReader(glyphScaled.field, jexl), n)
     : undefined
   const readGlyph = glyph
     ? glyphReader(
@@ -382,11 +372,9 @@ export function encodeFeatures<L extends LaneName>(
 
   let scale: ColorScaleTable | undefined
   if (scaled?.scale === 'categorical' && colorCategories && color) {
-    const palette = scaled.palette?.map(cssColorToABGR) ?? DEFAULT_PALETTE
-    const { ofIndex, entries } = colorCategories.resolve(
-      scaled.domain,
-      palette,
-      DEFAULT_PALETTE,
+    const colorOf = categoricalColorScale(scaled.domain, scaled.palette)
+    const { ofIndex, entries } = colorCategories.resolve(scaled.domain, label =>
+      cssColorToABGR(colorOf(label)),
     )
     const { indexOf } = colorCategories
     for (let i = 0; i < count; i++) {
@@ -436,7 +424,7 @@ export function encodeFeatures<L extends LaneName>(
   if (glyphScaled && glyphCategories && glyph) {
     const { ofIndex, entries } = glyphCategories.resolve(
       glyphScaled.domain,
-      glyphScaled.range ?? GLYPH_NAMES,
+      categoricalScale(glyphScaled.domain, glyphScaled.range ?? GLYPH_NAMES),
     )
     const codeOfIndex = Uint8Array.from(ofIndex, name => GLYPH_CODES[name])
     const { indexOf } = glyphCategories

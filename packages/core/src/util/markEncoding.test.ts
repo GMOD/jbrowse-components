@@ -137,7 +137,7 @@ test('a categorical domain pins the order, a palette the colours, and numbers so
       color: {
         field: 'strand',
         scale: 'categorical',
-        domain: [1],
+        domain: [1, -1],
         palette: ['red', 'blue'],
       },
     },

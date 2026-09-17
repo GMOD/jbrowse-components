@@ -1,3 +1,5 @@
+import { fieldReader } from '@jbrowse/core/util/fieldReader'
+
 import { createColorKey } from './collect/colorKey.ts'
 import { processFeatureRecord } from './collect/glyphEmitters.ts'
 import { createCollector } from './collect/renderContext.ts'
@@ -17,11 +19,18 @@ export function collectRenderData(
     regionEnd: number
   },
 ) {
-  const { layouts, regionStart, regionEnd } = args
-  const collector = createCollector(createColorKey(args.config, args.jexl))
+  const { layouts, regionStart, regionEnd, config, jexl } = args
+  const collector = createCollector(createColorKey(config, jexl))
+  const ctx = {
+    ...args,
+    readGroupKey:
+      config.groupByAttribute === undefined
+        ? undefined
+        : fieldReader(config.groupByAttribute, jexl),
+  }
 
   for (const layout of layouts) {
-    processFeatureRecord(layout, args, collector)
+    processFeatureRecord(layout, ctx, collector)
   }
 
   const packed = packRenderArrays(
