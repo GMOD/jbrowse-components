@@ -45,12 +45,12 @@ GRCh38:
 
 ## The window
 
-30 kb of an _EFCAB8_ intron on chromosome 20, where the callset says NA12878
-carries one copy of a 3.9 kb deletion.
+The window covers 30 kb of an _EFCAB8_ intron on chromosome 20, where the
+callset says NA12878 carries one copy of a 3.9 kb deletion.
 
 ## Depth as a coverage step
 
-A `bar` mark over a `coverage` transform, which replaces the reads with runs of
+A `bar` mark over a `coverage` transform replaces the reads with runs of
 constant depth.
 
 ```json addtrack
@@ -84,7 +84,8 @@ constant depth.
 }
 ```
 
-Open it at `chr20:32,925,000-32,955,000`.
+The dip in coverage is easiest to see over the intron; open the track at
+`chr20:32,925,000-32,955,000`.
 
 <Figure src="/img/read_marks/depth.png" caption="Thirty kilobases of an EFCAB8 intron in NA12878, the read depth as bars. Between 32,937,500 and 32,941,500 the depth runs at about half of what it is on either side." />
 
@@ -92,10 +93,10 @@ The CRAM decodes against the assembly the track is added to.
 
 ## Insert size as a point per pair
 
-A `point` per pair with `template_length` on y, coloured by mapping quality on a
-ramp pinned to 0 to 60. A `filter` keeps the leftmost mate, where the template
-length is positive, so each pair counts once. Depth moves to its own axis with
-`"resolve": "independent"`.
+A `point` mark plots `template_length` per pair on y, coloured by mapping
+quality on a ramp pinned to 0 to 60. A `filter` keeps the leftmost mate, where
+the template length is positive, so each pair counts once. Depth moves to a
+separate axis with `"resolve": "independent"`.
 
 ```json
 "marks": [
@@ -128,7 +129,7 @@ length is positive, so each pair counts once. Depth moves to its own axis with
 ]
 ```
 
-<Figure src="/img/read_marks/insert_size.png" caption="The same window with each pair's insert size as a point on the left axis and the depth on its own axis on the right. The pairs sit in a band under 1,000 bases, and over the left edge of the dip a second group appears between 4,300 and 4,700 bases, in the full blue of a mapping quality of 60." />
+<Figure src="/img/read_marks/insert_size.png" caption="The same window with each pair's insert size as a point on the left axis and the depth on a separate axis on the right. The pairs sit in a band under 1,000 bases, and over the left edge of the dip a second group appears between 4,300 and 4,700 bases, in the full blue of a mapping quality of 60." />
 
 Each pair in the upper group straddles the missing 3.9 kb. `score` is the
 mapping quality on every track type. Hover a point for its values; click it to
@@ -161,12 +162,13 @@ spanning pair red.
 ]
 ```
 
-Zoom to the left edge of the dip, `chr20:32,936,200-32,939,200`.
+The left breakpoint sits at the edge of the dip; zoom to
+`chr20:32,936,200-32,939,200` to see it.
 
 <Figure src="/img/read_marks/pileup.png" caption="The left breakpoint at 3 kb, the reads stacked and coloured by their pair's insert. The red reads end together at 32,937,680, where their mates lie 4 kb to the right; the pale reads run across it, and thin out on the far side." />
 
-Pin the `domain`: an unpinned ramp spans the values on screen, so a window with
-no spanning pair would paint its longest ordinary insert red.
+An unpinned ramp spans the values on screen, so a window with no spanning pair
+would paint its longest ordinary insert red; pin the `domain` to avoid that.
 
 ## Scanning the chromosome for the same signature
 
@@ -189,8 +191,8 @@ samtools view -q 20 -F 0x904 --input-fmt-option required_fields=0x1DF NA12878.fi
 tabix -p bed NA12878.chr20.discordant_pairs.bed.gz
 ```
 
-11,327 rows, small enough to fetch whole at any zoom. A `FeatureTrack` with two
-marks:
+The BED holds 11,327 rows, small enough to fetch whole at any zoom. A
+`FeatureTrack` carries two marks:
 
 - **a `point` per pair**, `tlen` on y, coloured by `score`. `x2: start` draws
   the pair at its leftmost read; a `filter` under 20 kb keeps the centromere's
@@ -297,9 +299,10 @@ Pairs of 2 to 10 kb in the 100 kb window around each call:
 | 54.03 Mb        | 10.9 kb | 0/1      |                   not in range |
 | 55.86 Mb        |  6.0 kb | 0/1      |                             16 |
 
-Every callset deletion in range is a bar, the two homozygous ones tallest. Five
-other windows hold ten or more such pairs with no call: the chromosome start and
-1.4, 2.8, 32.7 and 48.5 Mb. Read the first window out of the file directly:
+Every callset deletion in range is a bar, and the two homozygous ones are
+tallest. Five other windows hold ten or more such pairs with no call: the
+chromosome start and 1.4, 2.8, 32.7 and 48.5 Mb; read the first out of the file
+directly:
 
 ```bash
 samtools coverage -r chr20:32937680-32941583 NA12878.final.cram | cut -f 1-3,7
