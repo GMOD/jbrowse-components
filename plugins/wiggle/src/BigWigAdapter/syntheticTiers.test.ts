@@ -758,3 +758,55 @@ describe('against a real file', () => {
     })
   })
 })
+
+// synthetic_tiers_a.bw backs the BigWig Tracks browser tests, drawn 1268px
+// wide: ctgA:1001-17000 and ctgA:8001-13000
+describe('the browser-test fixture', () => {
+  const adapter = () =>
+    new BigWigAdapter(
+      configSchema.create({
+        bigWigLocation: {
+          localPath:
+            require.resolve('../../../../test_data/volvox/synthetic_tiers_a.bw'),
+          locationType: 'LocalPathLocation',
+        },
+      }),
+    )
+
+  test('1bp records under a 34bp first level keep both tiers', async () => {
+    const bw = adapter()
+    const source = await bw.setup()
+    expect(source.fileLevels[0]).toBe(34)
+    expect(await sampleMeanRecordSpan(source)).toBe(1)
+  })
+
+  test.each([
+    { start: 1000, end: 17000, bin: 16, range: [8, 17] },
+    { start: 8000, end: 13000, bin: 4, range: [2, 8] },
+  ])(
+    'ctgA:$start-$end reads $bin bp bins',
+    async ({ start, end, bin, range }) => {
+      const bw = adapter()
+      const bpPerPx = (end - start) / 1268
+      expect(await bw.getZoomRange({ bpPerPx })).toEqual({
+        minBpPerPx: range[0],
+        maxBpPerPx: range[1],
+      })
+      const [rows] = await bw.getFeatureArraysMulti(
+        [{ refName: 'ctgA', start, end, assemblyName: 'volvox' }],
+        { bpPerPx },
+      )
+      const { starts, ends, scores, minScores, maxScores, count } = rows!
+      expect(count).toBeGreaterThan(0)
+      // the data runs 1000-17000, off the 16bp grid at both ends
+      const spans = Array.from(starts, (s, i) => ends[i]! - s).slice(1, -1)
+      expect(starts.slice(1).every(s => s % bin === 0)).toBe(true)
+      expect(spans.every(s => s % bin === 0)).toBe(true)
+      expect(spans.filter(s => s === bin).length).toBeGreaterThan(count * 0.9)
+      expect(Math.max(...maxScores!)).toBe(120)
+      expect(Math.min(...minScores!)).toBe(-110)
+      expect(Math.max(...scores)).toBeLessThan(120)
+      expect(Math.min(...scores)).toBeGreaterThan(-110)
+    },
+  )
+})
