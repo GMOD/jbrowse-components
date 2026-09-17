@@ -68,7 +68,8 @@ keeps the palindromes those blocks are drawn as well.
 
 <Figure caption="T2T-CHM13v2 chrY aligned to itself over the euchromatic male-specific region, at a 25 kb minimum length. Boxed on the diagonal, the TSPY tandem array; boxed off it, the P1 to P5 Yq palindrome family, each arm meeting its own inverted copy." src="/img/dotplot_self_chry.png" />
 
-Both structures are described in the T2T-CHM13 Y chromosome paper
+The tandem array and the inverted repeats are both described in the T2T-CHM13 Y
+chromosome paper
 ([Rhie et al. 2023](https://www.nature.com/articles/s41586-023-06457-y)), which
 is where the coordinates the boxes use come from.
 
