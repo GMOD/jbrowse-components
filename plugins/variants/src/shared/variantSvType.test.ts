@@ -8,6 +8,7 @@ import {
   getVariantSvType,
   getVariantSvTypeColor,
   svTypeDisplayLabel,
+  svTypeLegendEntries,
 } from './variantSvType.ts'
 
 function feat(data: Record<string, unknown>) {
@@ -98,6 +99,24 @@ describe('getVariantSvTypeColor (single-variant fixed-color jexl)', () => {
   it('returns neutral grey for a non-SV or unrecognized token', () => {
     expect(getVariantSvTypeColor(feat({ ALT: ['A'] }))).toBe('#808080') // SNV
     expect(getVariantSvTypeColor(feat({ ALT: ['<WEIRD>'] }))).toBe('#808080')
+  })
+})
+
+describe('svTypeLegendEntries', () => {
+  const colors = () => svTypeLegendEntries().map(e => e.color)
+
+  it('names every predefined class colour the painter hands out', () => {
+    for (const alt of ['<DEL>', '<DUP>', '<INS>', '<INV>', '<CNV>', '<BND>']) {
+      expect(colors()).toContain(getVariantSvTypeColor(feat({ ALT: [alt] })))
+    }
+  })
+
+  it('names the grey a non-SV or unrecognized record paints, last', () => {
+    const rows = svTypeLegendEntries()
+    const grey = getVariantSvTypeColor(feat({ ALT: ['A'] }))
+    expect(rows.at(-1)).toMatchObject({ color: grey, missing: true })
+    expect(rows.at(-1)!.label).toMatch(/SNV/)
+    expect(getVariantSvTypeColor(feat({ ALT: ['<WEIRD>'] }))).toBe(grey)
   })
 })
 

@@ -3,6 +3,7 @@ import { set1 } from '@jbrowse/core/ui/colors'
 import { isBreakend } from '../VcfFeature/util.ts'
 import { ALT_HUE } from './cellFill.ts'
 
+import type { CategoricalEntry } from '@jbrowse/core/ui/colorScale'
 import type { Feature } from '@jbrowse/core/util'
 
 // The `featureColor` slot sentinel that selects SV-type cell coloring. Unlike
@@ -21,7 +22,13 @@ export const SV_TYPE_COLOR_JEXL = 'jexl:svTypeColor(feature)'
 
 // Fallback for a variant that isn't a recognized SV class (a plain SNV/indel, or
 // an unrecognized token) when painting by SV type on the single-variant display.
-const OTHER_SV_COLOR = '#808080'
+export const OTHER_SV_COLOR = '#808080'
+
+// What the key calls that grey. It covers two things the multi-sample palette
+// tells apart — a record with no structural class, and a token this pure
+// function cannot place — so the row says both rather than borrowing
+// `NON_SV_TYPE`'s name for half of what it paints.
+export const OTHER_SV_LABEL = 'SNV/indel or unrecognized'
 
 /**
  * The domain value a record with no structural class takes when the multi-sample
@@ -196,6 +203,29 @@ export function getSvTypeColor(type: string) {
   return isCopyNumberType(type)
     ? copyNumberColor(copyNumberValue(type))
     : (PREDEFINED_COLOR[type] ?? OTHER_SV_COLOR)
+}
+
+/**
+ * The SV-type key's rows for the display painting through `getSvTypeColor`:
+ * the predefined classes, then the grey everything that function cannot place
+ * takes. A copy-number state's rainbow color is the one thing the painter
+ * hands out that this cannot list, there being no present set to enumerate —
+ * `assignSvTypeColors` is the multi-sample path that has one.
+ */
+export function svTypeLegendEntries(): CategoricalEntry[] {
+  return [
+    ...PREDEFINED_SV_TYPES.map(t => ({
+      value: t.label,
+      label: t.label,
+      color: t.color,
+    })),
+    {
+      value: OTHER_SV_LABEL,
+      label: OTHER_SV_LABEL,
+      color: OTHER_SV_COLOR,
+      missing: true,
+    },
+  ]
 }
 
 /**
