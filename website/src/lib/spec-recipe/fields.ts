@@ -1000,6 +1000,15 @@ export const trackFields: Record<string, FieldRecipe> = {
       ? { path: `${TRACK_MENU} → Color ribbons by → ${label}` }
       : undefined
   },
+  laneFilter: (value, { displayType }) => {
+    const only = asRecord(value)?.only
+    return Array.isArray(only) && displayType === 'MultiWaySyntenyDisplay'
+      ? {
+          path: `${TRACK_MENU} → Choose lanes...`,
+          note: `Tick the ${only.length} lane${only.length === 1 ? '' : 's'} this figure draws.`,
+        }
+      : undefined
+  },
   hideSelfAlignments: (value, { displayType }) =>
     typeof value === 'boolean' && displayType === 'LGVSyntenyDisplay'
       ? {
