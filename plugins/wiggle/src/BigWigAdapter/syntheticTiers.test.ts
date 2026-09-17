@@ -43,7 +43,8 @@ function bin(
 }
 
 // Every base as its own sample: the mean over covered bases, the extremes, and
-// the covered extent per bin, then identical neighbours merged.
+// the covered extent per bin, then identical neighbours merged and the rows
+// outside the region dropped.
 function perBaseOracle(
   records: Rec[],
   regionStart: number,
@@ -99,7 +100,7 @@ function perBaseOracle(
       }
     }
   }
-  return rows
+  return rows.filter(r => r.end > regionStart && r.start < regionEnd)
 }
 
 function randomRecords(seed: number, count: number, maxSpan: number) {
@@ -310,6 +311,25 @@ describe('binRawRegion', () => {
       { start: 128, end: 160, score: Math.fround(74 / 32), min: 2, max: 3 },
       { start: 160, end: 200, score: 3, min: 3, max: 3 },
     ])
+  })
+
+  test("an edge bin's data outside the region is dropped, and a row reaching into it keeps the whole bin's values", () => {
+    const records = [
+      { start: 2, end: 3, score: 9 },
+      { start: 4, end: 5, score: 1 },
+      { start: 20, end: 21, score: 4 },
+      { start: 38, end: 39, score: 5 },
+      { start: 45, end: 46, score: 7 },
+    ]
+    expect(bin(records, 15, 40, 16)).toEqual([
+      { start: 20, end: 21, score: 4, min: 4, max: 4 },
+      { start: 38, end: 46, score: 6, min: 5, max: 7 },
+    ])
+    expect(bin(records, 4, 30, 16)).toEqual([
+      { start: 2, end: 5, score: 5, min: 1, max: 9 },
+      { start: 20, end: 21, score: 4, min: 4, max: 4 },
+    ])
+    expect(bin(records, 6, 12, 16)).toEqual([])
   })
 
   test('records overlapping or out of order come back raw', () => {

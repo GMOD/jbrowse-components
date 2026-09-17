@@ -159,7 +159,9 @@ function rawSlice(
  * min and max are over those records. A row spans the bases its bin covers,
  * not the whole bin, so a bin holding one record reproduces that record, and a
  * bin with no data (or only NaN) emits nothing. Adjacent rows with identical
- * mean, min and max merge, which keeps a long record one row.
+ * mean, min and max merge, which keeps a long record one row. A row whose
+ * bases all fall outside the region is dropped: an edge bin's data can sit
+ * wholly in the bin-aligned margin.
  *
  * The region's raw records come back instead, with no min/max, only when the
  * records overlap or run out of order, which a BigWig's raw section forbids.
@@ -229,6 +231,12 @@ export function binRawRegion(
       outEnds[last] = e
       return n
     }
+    if (s >= regionEnd) {
+      return n
+    }
+    if (last >= 0 && outEnds[last]! <= regionStart) {
+      n = last
+    }
     if (n === capacity) {
       return -1
     }
@@ -296,6 +304,9 @@ export function binRawRegion(
     if (n < 0) {
       return rawSlice(starts, ends, scores, rawLo, rawHi)
     }
+  }
+  if (n > 0 && outEnds[n - 1]! <= regionStart) {
+    n--
   }
 
   return {
