@@ -272,7 +272,7 @@ Some of what a display can get wrong is an **ordering** no type states and no
 test of yours can see — a `afterAttach` that chains to `super` and so installs
 every fetch autorun twice, a `reload()` that clears the error without
 invalidating anything the fetch gate reads, two live SVG figures of one view
-minting the same ids. Each of those draws a plausible picture and says nothing.
+minting the same ids. Each of those renders correctly and reports no error.
 
 JBrowse checks all of them at runtime and reports each as a sentence naming the
 fix. In a JBrowse you build yourself the report is a `console.error`; in a
@@ -289,8 +289,7 @@ runs — nothing is listening until you say so. Three things turn it on:
 
 A violation then appears as a warning notification in the session the broken
 display is in, alongside the console message. It names the fix, and it says
-which of the three turned it on, because the notice is about your code rather
-than about the reader's data.
+which of the three turned it on, because the notice is about your code.
 
 If you are building your own chrome rather than using a JBrowse app, the
 notification needs a `<Snackbar session={session} />` somewhere in your tree —
