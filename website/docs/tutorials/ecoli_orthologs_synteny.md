@@ -32,12 +32,12 @@ Forty-four RefSeq assemblies, each fetched by accession with the `datasets` CLI:
 the classic reference strains across phylogroups A, B1, B2, D and E, four
 Shigella, and complete genomes picked by striding a `datasets summary` listing.
 Every field comes from the zip `datasets` writes: it carries an assembly report,
-and each lane's name is that report's strain field (MG1655 rather than "K-12
-substr. MG1655", `Sflexneri_301` for the Shigella so it does not read as an E.
-coli strain), and the report's organism name is a screen of its own: three
-accessions the listing handed over turned out to be a Leclercia, a Salmonella
-and a suppressed _Shigella_ sp., and the build drops them and reports it. The
-five strains the [pangenome graph](/docs/tutorials/pangenome_ecoli) and
+and each lane's name is that report's strain field (MG1655, and `Sflexneri_301`
+for the Shigella so it does not read as an E. coli strain), and the report's
+organism name is another screen: three accessions the listing handed over turned
+out to be a Leclercia, a Salmonella and a suppressed _Shigella_ sp., and the
+build drops them and reports it. The five strains the
+[pangenome graph](/docs/tutorials/pangenome_ecoli) and
 [all-vs-all](/docs/tutorials/allvsall_synteny) pages build from are all here
 under the same accessions (MG1655 is the strain those pages call K12), so the
 three pages read one set of genomes three ways. The
@@ -99,8 +99,8 @@ The helper reports how much of each column it filled, and that number is the
 screen a strain has to pass. Older PGAP runs named genes by locus tag alone, so
 a genome can be complete, current and join nothing; of a hundred accessions
 tried for this page, a quarter of those that still downloaded were like that,
-and two were phage genomes. Counting the named genes in an annotation says which
-before anything is built:
+and two were phage genomes. Counting the named genes in an annotation shows
+which genomes will fail the join before anything is built:
 
 <!-- from: scripts/build_ecoli_orthologs.sh -->
 
