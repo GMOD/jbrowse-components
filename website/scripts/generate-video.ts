@@ -122,7 +122,7 @@ function log(msg: string) {
 function buildJbrowseWeb() {
   log('Building jbrowse-web')
   try {
-    execFileSync('pnpm', ['--filter', 'jbrowse-web', 'build'], {
+    execFileSync('pnpm', ['--filter', '@jbrowse/web', 'build'], {
       stdio: 'inherit',
     })
   } catch {
