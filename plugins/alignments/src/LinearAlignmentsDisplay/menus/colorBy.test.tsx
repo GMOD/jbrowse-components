@@ -13,7 +13,7 @@ import type { MenuItem } from '@jbrowse/core/ui'
 function makeModel() {
   return {
     colorBy: { type: 'normal' } as ColorBy,
-    setColorScheme(cb: ColorBy) {
+    setColorBy(cb: ColorBy) {
       this.colorBy = cb
     },
     modificationsReady: false,

@@ -134,7 +134,7 @@ try {
     const track = view?.tracks?.find((t: any) =>
       t.configuration.trackId.includes('wgbs'),
     )
-    track?.displays?.[0]?.setColorScheme({
+    track?.displays?.[0]?.setColorBy({
       type: 'bisulfite',
       modifications: { twoColor: true },
     })

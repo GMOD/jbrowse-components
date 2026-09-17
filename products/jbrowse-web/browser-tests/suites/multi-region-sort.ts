@@ -27,7 +27,7 @@ const pileup = 'pileup-display'
 // drag in the whole PileupDataResult to say it.
 interface Display extends Pick<
   LinearAlignmentsDisplayModel,
-  'setColorScheme' | 'setSortedByAtPosition'
+  'setColorBy' | 'setSortedByAtPosition'
 > {
   // One entry per stacked group; ungrouped (this suite) is the single section.
   sourceSections: {
@@ -64,7 +64,7 @@ async function reshapeToTwoRegions(page: Page, sort: boolean) {
     ])
     view.showAllRegions()
     const display = view.tracks[0]!.displays[0]!
-    display.setColorScheme({ type: 'strand' })
+    display.setColorBy({ type: 'strand' })
     if (doSort) {
       display.setSortedByAtPosition({
         type: 'strand',

@@ -40,7 +40,7 @@ export interface GroupByDialogModel extends IStateTreeNode {
   colorBy: ColorBy
   groupBy?: GroupBy
   setGroupBy: (groupBy?: GroupBy) => void
-  setColorScheme: (colorBy: ColorBy) => void
+  setColorBy: (colorBy: ColorBy) => void
 }
 
 // Reads are currently colored by exactly this tag.
@@ -145,7 +145,7 @@ const GroupByDialog = observer(function GroupByDialog(props: {
     model.setGroupBy({ type: 'tag', tag: groupByTag })
     const scheme = nextColorScheme(model.colorBy, groupByTag, colorByTag)
     if (scheme) {
-      model.setColorScheme(scheme)
+      model.setColorBy(scheme)
     }
     handleClose()
   }

@@ -20,7 +20,7 @@ import type { CytosineContext } from '@jbrowse/modifications-utils'
 // MM/ML submenu's — so this reads and writes the slot and nothing else.
 interface BisulfiteModel {
   colorBy: ColorBy
-  setColorScheme: (colorBy: ColorBy) => void
+  setColorBy: (colorBy: ColorBy) => void
 }
 
 const DIVIDER: MenuItem = { type: 'divider' }
@@ -35,7 +35,7 @@ export function bisulfiteItem(model: BisulfiteModel): MenuItem {
     nextContext: CytosineContext,
     nextTwoColor: boolean,
   ) => {
-    model.setColorScheme({
+    model.setColorBy({
       type: 'bisulfite',
       modifications: {
         ...(nextContext === 'CG' ? {} : { cytosineContext: nextContext }),

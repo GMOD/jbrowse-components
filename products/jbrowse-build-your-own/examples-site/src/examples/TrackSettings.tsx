@@ -35,7 +35,7 @@ const Settings = observer(function Settings({
         <select
           value={display.colorBy.type}
           onChange={event => {
-            display.setColorScheme({
+            display.setColorBy({
               type: event.target.value as (typeof schemes)[number]['type'],
             })
           }}

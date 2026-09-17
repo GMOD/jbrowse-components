@@ -70,7 +70,7 @@ async function syntenyDisplay() {
   const display = session.views[0].tracks[0].displays[0] as {
     trackMenuItems: () => MenuItem[]
     colorBy: { type: string }
-    setColorScheme: (colorBy: { type: string }) => void
+    setColorBy: (colorBy: { type: string }) => void
   }
   return display
 }
@@ -103,6 +103,6 @@ test('drops the read-oriented schemes it inherits from the alignments model', as
 
 test('picking Query name stores the scheme through the config slot', async () => {
   const display = await syntenyDisplay()
-  display.setColorScheme({ type: 'mateRefName' })
+  display.setColorBy({ type: 'mateRefName' })
   expect(display.colorBy).toEqual({ type: 'mateRefName' })
 })

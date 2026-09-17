@@ -17,7 +17,7 @@ const ColorByTagDialog = observer(function ColorByTagDialog({
 }: {
   model: {
     colorBy?: { tag?: string }
-    setColorScheme: (arg: Tag) => void
+    setColorBy: (arg: Tag) => void
   }
   handleClose: () => void
 }) {
@@ -31,7 +31,7 @@ const ColorByTagDialog = observer(function ColorByTagDialog({
       onCancel={handleClose}
       onSubmit={() => {
         if (tag !== undefined) {
-          model.setColorScheme({ type: 'tag', tag })
+          model.setColorBy({ type: 'tag', tag })
           handleClose()
         }
       }}

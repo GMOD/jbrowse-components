@@ -3269,7 +3269,7 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setColorScheme(colorBy: ColorBy) {
+          setColorBy(colorBy: ColorBy) {
             setConf(self, 'colorBy', colorBy)
           },
 

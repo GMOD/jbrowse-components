@@ -23,7 +23,7 @@ const ColorByTagDialog = lazy(() => import('../dialogs/ColorByTagDialog.tsx'))
 
 interface ColorByModel {
   colorBy: ColorBy
-  setColorScheme: (colorBy: ColorBy) => void
+  setColorBy: (colorBy: ColorBy) => void
 }
 
 // The MM/ML submenu's own surface plus the two readiness flags that decide
@@ -100,7 +100,7 @@ function colorRadio(
   { label, type }: ColorOption,
 ): MenuItem {
   return radioItem(label, model.colorBy.type === type, () => {
-    model.setColorScheme({ type })
+    model.setColorBy({ type })
   })
 }
 

@@ -40,7 +40,7 @@ import type { CytosineContext } from '@jbrowse/modifications-utils'
 // this submenu is built at all) extends it.
 export interface ModificationsMenuModel {
   colorBy: ColorBy
-  setColorScheme: (colorBy: ColorBy) => void
+  setColorBy: (colorBy: ColorBy) => void
   detectedModificationTypes: string[]
   modificationThreshold: number
 }
@@ -69,7 +69,7 @@ function patchMods(
   const m = { ...currentMods(model), ...patch }
   const keepThreshold =
     m.threshold !== undefined && m.threshold !== DEFAULT_MODIFICATION_THRESHOLD
-  model.setColorScheme({
+  model.setColorBy({
     type: 'modifications',
     modifications: {
       ...(m.twoColor ? { twoColor: true } : {}),

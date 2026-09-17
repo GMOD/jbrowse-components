@@ -644,7 +644,7 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setColorScheme({ type: 'perBaseQuality' })
+    display.setColorBy({ type: 'perBaseQuality' })
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
 
@@ -664,7 +664,7 @@ describe('FetchVisibleRegions autorun', () => {
     mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display, view } = createDisplay()
 
-    display.setColorScheme({ type: 'perBaseLetter' })
+    display.setColorBy({ type: 'perBaseLetter' })
     view.zoomTo(8)
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
@@ -733,7 +733,7 @@ describe('FetchVisibleRegions autorun', () => {
       'pairOrientation',
       'normal',
     ] as const) {
-      display.setColorScheme({ type })
+      display.setColorBy({ type })
       jest.advanceTimersByTime(800)
       await jest.runAllTimersAsync()
     }

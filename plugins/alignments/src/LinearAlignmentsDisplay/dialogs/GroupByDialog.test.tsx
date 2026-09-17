@@ -25,7 +25,7 @@ afterEach(() => {
 // verdict itself is unit-tested below.
 function renderDialog(state: { colorBy: ColorBy; groupBy?: GroupBy }) {
   const setGroupBy = jest.fn()
-  const setColorScheme = jest.fn()
+  const setColorBy = jest.fn()
   const model = {
     id: 'display1',
     colorBy: state.colorBy,
@@ -33,14 +33,14 @@ function renderDialog(state: { colorBy: ColorBy; groupBy?: GroupBy }) {
     filterBy: {},
     resolvedByteLimit: () => undefined,
     setGroupBy,
-    setColorScheme,
+    setColorBy,
   } as unknown as GroupByDialogModel
   render(
     <ThemeProvider theme={createJBrowseTheme()}>
       <GroupByDialog model={model} handleClose={() => {}} />
     </ThemeProvider>,
   )
-  return { setGroupBy, setColorScheme }
+  return { setGroupBy, setColorBy }
 }
 
 const checkbox = () => screen.getByRole('checkbox') as HTMLInputElement
@@ -72,7 +72,7 @@ function submit() {
 // (there was no groupBy to compare against), and unticked means "don't color by
 // this tag", so submitting reset the HP coloring the user could see.
 test('typing the tag the reads are already colored by keeps that coloring', async () => {
-  const { setGroupBy, setColorScheme } = renderDialog({
+  const { setGroupBy, setColorBy } = renderDialog({
     colorBy: { type: 'tag', tag: 'HP' },
   })
   expect(checkbox().checked).toBe(false)
@@ -81,34 +81,34 @@ test('typing the tag the reads are already colored by keeps that coloring', asyn
   await settleScan()
   submit()
   expect(setGroupBy).toHaveBeenCalledWith({ type: 'tag', tag: 'HP' })
-  expect(setColorScheme).toHaveBeenCalledWith({ type: 'tag', tag: 'HP' })
+  expect(setColorBy).toHaveBeenCalledWith({ type: 'tag', tag: 'HP' })
 })
 
 // A different tag's colors are in force, so the box stays a genuine offer to
 // replace them and does nothing unless taken.
 test('a different tag colouring leaves the box unticked and untouched', async () => {
-  const { setColorScheme } = renderDialog({
+  const { setColorBy } = renderDialog({
     colorBy: { type: 'tag', tag: 'RG' },
   })
   typeTag('HP')
   expect(checkbox().checked).toBe(false)
   await settleScan()
   submit()
-  expect(setColorScheme).not.toHaveBeenCalled()
+  expect(setColorBy).not.toHaveBeenCalled()
 })
 
 // Every scheme but the plain one PAINTS something the checkbox would replace, so
 // grouping by HP over a methylation or insert-size view used to turn that
 // picture off on Submit.
 test('a non-tag colour scheme is not replaced by default', async () => {
-  const { setColorScheme } = renderDialog({
+  const { setColorBy } = renderDialog({
     colorBy: { type: 'modifications' },
   })
   typeTag('HP')
   expect(checkbox().checked).toBe(false)
   await settleScan()
   submit()
-  expect(setColorScheme).not.toHaveBeenCalled()
+  expect(setColorBy).not.toHaveBeenCalled()
 })
 
 // The guard this dialog exists for reads a scan that has not landed yet, so a
@@ -124,18 +124,18 @@ test('Submit is held until the scan settles', async () => {
 // Grouping by a tag usually pairs with coloring by it, so an uncolored track
 // opts in by default.
 test('an uncolored track defaults to coloring by the grouped tag', async () => {
-  const { setColorScheme } = renderDialog({ colorBy: { type: 'normal' } })
+  const { setColorBy } = renderDialog({ colorBy: { type: 'normal' } })
   typeTag('HP')
   expect(checkbox().checked).toBe(true)
   await settleScan()
   submit()
-  expect(setColorScheme).toHaveBeenCalledWith({ type: 'tag', tag: 'HP' })
+  expect(setColorBy).toHaveBeenCalledWith({ type: 'tag', tag: 'HP' })
 })
 
 // Unticking is still how you drop the coloring this dialog would set, and it
 // pins: the default no longer re-ticks the box as the tag is edited.
 test('unticking drops the matching coloring and stays unticked', async () => {
-  const { setColorScheme } = renderDialog({
+  const { setColorBy } = renderDialog({
     colorBy: { type: 'tag', tag: 'HP' },
     groupBy: { type: 'tag', tag: 'HP' },
   })
@@ -146,7 +146,7 @@ test('unticking drops the matching coloring and stays unticked', async () => {
   expect(checkbox().checked).toBe(false)
   await settleScan()
   submit()
-  expect(setColorScheme).toHaveBeenCalledWith({ type: 'normal' })
+  expect(setColorBy).toHaveBeenCalledWith({ type: 'normal' })
 })
 
 // The scan's verdict, unit-tested rather than driven through the dialog: the

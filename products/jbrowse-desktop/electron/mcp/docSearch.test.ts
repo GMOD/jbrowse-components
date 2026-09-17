@@ -10,7 +10,7 @@ const docs: SearchableDoc[] = [
   {
     topic: 'model:LinearAlignmentsDisplay',
     name: 'LinearAlignmentsDisplay',
-    text: `# LinearAlignmentsDisplay (display model)\n\n## Actions\n\n- \`setColorScheme(c)\`: colorBy the reads\n`,
+    text: `# LinearAlignmentsDisplay (display model)\n\n## Actions\n\n- \`setColorBy(c)\`: colorBy the reads\n`,
   },
   {
     topic: 'config:BamAdapter',

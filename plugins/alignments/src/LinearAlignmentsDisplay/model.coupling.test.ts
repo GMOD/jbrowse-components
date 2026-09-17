@@ -147,7 +147,7 @@ describe('alignments display cross-feature coupling', () => {
   })
 })
 
-// `setColorScheme` used to also manage a discovered-value map: clear it when
+// `setColorBy` used to also manage a discovered-value map: clear it when
 // the scheme changed, and — a second rule patching the first — NOT clear it
 // when the radio already showing was re-picked, since that refetches nothing
 // and an emptied map left the legend blank until the next pan. Both rules went
@@ -155,22 +155,22 @@ describe('alignments display cross-feature coupling', () => {
 // (`colorTagUtils.test.ts` pins that, including the one thing that is not: the
 // scheme picks which function runs). What has to survive is that re-picking the
 // scheme in use is still inert.
-describe('setColorScheme', () => {
+describe('setColorBy', () => {
   test('re-picking the scheme in use changes nothing', () => {
     const display = createDisplay()
-    display.setColorScheme({ type: 'mateRefName' })
+    display.setColorBy({ type: 'mateRefName' })
     const before = display.readColorContext
 
-    display.setColorScheme({ type: 'mateRefName' })
+    display.setColorBy({ type: 'mateRefName' })
     expect(display.readColorContext).toStrictEqual(before)
   })
 
   test('a different scheme reaches the bake', () => {
     const display = createDisplay()
-    display.setColorScheme({ type: 'tag', tag: 'HP' })
+    display.setColorBy({ type: 'tag', tag: 'HP' })
     const before = display.readColorContext
 
-    display.setColorScheme({ type: 'tag', tag: 'RG' })
+    display.setColorBy({ type: 'tag', tag: 'RG' })
     expect(display.readColorContext).not.toStrictEqual(before)
   })
 })
@@ -190,7 +190,7 @@ describe('setLinkedReads color scheme preservation', () => {
 
   test('entering pairs preserves an explicit non-pairing color scheme', () => {
     const display = createDisplay()
-    display.setColorScheme({ type: 'tag', tag: 'HP' })
+    display.setColorBy({ type: 'tag', tag: 'HP' })
 
     display.setLinkedReads('normal')
     expect(display.colorBy.type).toBe('tag')
@@ -210,7 +210,7 @@ describe('setLinkedReads color scheme preservation', () => {
   test('leaving pairs preserves an explicit non-pairing color scheme', () => {
     const display = createDisplay()
     display.setLinkedReads('normal')
-    display.setColorScheme({ type: 'tag', tag: 'HP' })
+    display.setColorBy({ type: 'tag', tag: 'HP' })
 
     display.setLinkedReads('off')
     expect(display.linkedReads).toBe('off')
@@ -1081,7 +1081,7 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     const display = createDisplay()
     // Tag coloring is the CPU-baked scheme `colorTagMap` feeds; set it before
     // seeding, since colorBy is an rpcProps (tier-1) setting and clears data.
-    display.setColorScheme({ type: 'tag', tag: 'HP' })
+    display.setColorBy({ type: 'tag', tag: 'HP' })
     display.setRpcData(
       0,
       {
@@ -1134,7 +1134,7 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     const beforeLayout = display.laidOutByGroupUncolored
     const before = region0(display)
 
-    display.setColorScheme({ type: 'tag', tag: 'HP' })
+    display.setColorBy({ type: 'tag', tag: 'HP' })
 
     const after = region0(display)
     // Layout memoized across the recolor…
