@@ -75,7 +75,8 @@ JBrowse also loads [MUMmer](https://github.com/mummer4/mummer) `.delta` and UCSC
 
 ## Loading the assemblies and the alignment
 
-Both genomes are added as assemblies before the alignment that references them:
+The 26695 and J99 assemblies are added before the alignment that references
+them:
 
 <!-- from: scripts/build_hpylori_synteny.sh -->
 
