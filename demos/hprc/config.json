@@ -527,6 +527,16 @@
           "height": 600
         }
       ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "hprc_abca7_trgt",
+      "name": "TRGT repeat genotypes at ABCA7, 100 HPRC samples",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "uri": "https://jbrowse.org/demos/hprc/hprc_abca7_trgt.vcf.gz"
+      }
     }
   ]
 }

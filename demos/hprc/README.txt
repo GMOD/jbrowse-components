@@ -7,8 +7,10 @@ built so that JBrowse can query a locus without downloading the graph.
 
 The hprc-v2.*-mc-grch38.* files below are that set. This prefix also serves two
 other demos' files, which have their own provenance: hprc_cfhr_* is the CFH
-panel that build_hprc_cfhr_synteny.sh cuts, and hprc2_pclai_chr1.bed.gz is a
-chr1 slice nothing in the repo reads any more.
+panel that build_hprc_cfhr_synteny.sh cuts, hprc_abca7_trgt.vcf.gz is PacBio's
+TRGT genotypes at the ABCA7 VNTR (Zenodo 8329210) that
+build_hprc_abca7_trgt.sh writes, and hprc2_pclai_chr1.bed.gz is a chr1 slice
+nothing in the repo reads any more.
 
 Source
 ------
