@@ -11,11 +11,11 @@ export {
   treeSidebarOffset,
   treeSidebarRightEdge,
 } from './treeSidebarGeometry.ts'
+export { SvgRowLabels } from './SvgRowLabels.tsx'
 export {
   MIN_TEXT_ROW_HEIGHT,
-  SvgRowLabels,
   rowLabelsCarryText,
-} from './SvgRowLabels.tsx'
+} from './rowLabelsCarryText.ts'
 export { RowLabelsOverlay } from './RowLabelsOverlay.tsx'
 export {
   MIN_SEPARATOR_ROW_PX,

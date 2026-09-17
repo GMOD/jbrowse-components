@@ -139,7 +139,7 @@ export { default as Crosshairs } from './Crosshairs.tsx'
 export { hoverBoxStyle } from './hoverBoxStyle.ts'
 export { useMouseState, useMouseTracking } from './useMouseTracking.ts'
 export type { MouseState, MouseTracker } from './useMouseTracking.ts'
-export const VIEW_HEADER_HEIGHT = 28
+export { VIEW_HEADER_HEIGHT } from './viewHeaderHeight.ts'
 export {
   LEGEND_ROW_HEIGHT,
   LEGEND_SVG_GUTTER_WIDTH,

@@ -12,6 +12,7 @@ import {
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { FLOATING_LEGEND_TOP_PX } from './floatingLegendTop.ts'
 import Tooltip from './tooltip/Tooltip.tsx'
 import { TrackOverlayPortal } from './trackOverlay/TrackOverlayPortal.tsx'
 
@@ -20,9 +21,6 @@ import type {
   LegendItem,
   LegendSection,
 } from '@jbrowse/core/ui/legendSpec'
-
-// The key's own inset from the display's top-right corner.
-export const FLOATING_LEGEND_TOP_PX = 10
 
 const useStyles = makeStyles()(theme => ({
   legend: {
