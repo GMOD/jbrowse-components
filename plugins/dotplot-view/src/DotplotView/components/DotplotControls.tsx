@@ -132,7 +132,6 @@ const DotplotControls = observer(function DotplotControls({
             helpText:
               'Reorders and reorients chromosomes so the alignments fall along the diagonal, making rearrangements, inversions and translocations stand out.',
           },
-          { type: 'divider' },
           toggleItem(
             'Lock aspect ratio (same bp/px)',
             model.lockAspectRatio,

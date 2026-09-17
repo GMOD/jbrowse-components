@@ -248,7 +248,7 @@ const ATTRIBUTE_COLOR_HELP =
   'One color per distinct label, or the color the file put beside it. A pair without one keeps the ribbon color.'
 
 /**
- * Checkboxes, a divider, then the submenus — the order the synteny view's
+ * Checkboxes, then the submenus — the order the synteny view's
  * settings menu uses. The display appends Level of detail after these.
  */
 export function laneSettingsMenuItems(model: LaneSettingsModel): MenuItem[] {
@@ -271,7 +271,6 @@ export function laneSettingsMenuItems(model: LaneSettingsModel): MenuItem[] {
         "Each lane's own coordinate ticks, at one interval shared by every lane. Equal spacing between two lanes means equal bp-per-pixel; a lane whose ticks crowd together is zoomed out.",
     }),
     ...(model.hasLegendKey ? [legendCheckboxItem(model)] : []),
-    { type: 'divider' },
     {
       label: 'Color ribbons by',
       helpText: 'What colors each ribbon.',

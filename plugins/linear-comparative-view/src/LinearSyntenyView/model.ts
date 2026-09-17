@@ -1476,8 +1476,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * two share only Export SVG. This one is the synteny surface; the app
          * menubar's is the generic view one.
          *
-         * SIX ROWS WHATEVER THE STACK HOLDS: the zoom actions, a divider, the
-         * submenus, a divider, Export SVG. `ViewOptionsMenuButton` passes the
+         * SIX ROWS WHATEVER THE STACK HOLDS: the zoom actions, the submenus,
+         * then Export SVG. `ViewOptionsMenuButton` passes the
          * "Show..." submenu as `extraSubMenus`, because the search box prefs
          * it carries are React state rather than the model's. The menu
          * answers what the view IS — where the rows point, which genomes it
@@ -1541,7 +1541,6 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               ],
             },
             ...extraSubMenus,
-            { type: 'divider' },
             exportSvgMenuItem,
           ]
         },

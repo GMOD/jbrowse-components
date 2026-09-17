@@ -30,8 +30,8 @@ const MIN_IDENTITY_HELP =
 
 /**
  * Every setting that decides what the plot looks like and how much detail feeds
- * it, in the shape the synteny view's settings menu uses: the checkboxes, a
- * divider, then the submenus (choices before values). Lock aspect ratio frames
+ * it, in the shape the synteny view's settings menu uses: the checkboxes, then
+ * the submenus (choices before values). Lock aspect ratio frames
  * the plot rather than draws it, so it stays in the ⋮ menu.
  */
 const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
@@ -70,7 +70,6 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
                 "Carry each axis' ruler ticks across the plot. An axis with no room to number itself draws none.",
             },
           ),
-          { type: 'divider' },
           ...lodMenuItems(model),
           makeSizeSubMenu({
             label: 'opacity',

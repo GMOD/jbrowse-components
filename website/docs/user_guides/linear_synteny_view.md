@@ -227,10 +227,9 @@ out without spending the color channel.
 ## Display settings
 
 The sliders button in the header opens a menu of every setting that decides what
-the ribbons look like. The checkboxes come first, then a divider, then the rows
-that open a submenu of options or a slider. The hamburger menu next to it
-answers what the view _is_ — which genomes it stacks, where they point, what
-leaves it.
+the ribbons look like. The checkboxes come first, then the rows that open a
+submenu of options or a slider. The hamburger menu next to it answers what the
+view _is_ — which genomes it stacks, where they point, what leaves it.
 
 - **Identity fade** is described above
 - **Curved lines** draws ribbons as bezier curves, which reads far better at

@@ -19,8 +19,8 @@ import type { MenuItem } from '@jbrowse/core/ui'
  * feeds them. The header menu answers what the view IS; this one answers what
  * it LOOKS LIKE.
  *
- * Grouped by row shape, not by subject: the checkboxes, a divider, then the
- * submenus (choices before values). Subject sections mixed the two shapes in
+ * Grouped by row shape, not by subject: the checkboxes, then the submenus
+ * (choices before values). Subject sections mixed the two shapes in
  * each section, so the eye had to switch between flipping and opening on
  * every other row. The dotplot's settings menu uses the same order.
  *
@@ -68,7 +68,6 @@ export function syntenySettingsMenuItems(
           'Mark alignments whose other end is off screen or on a contig the facing panel is not showing. Costs a second query per panel pair on an indexed file.',
       },
     ),
-    { type: 'divider' },
     ...(hasCigarData
       ? [
           {

@@ -277,10 +277,8 @@ test('the header menu opens the same six rows at any row count', async () => {
     'Square view - average bp per pixel',
     'Show all regions - each row fit to width',
     'Show all regions - same bp per pixel',
-    'divider',
     'Sync rows',
     'Rows',
-    'divider',
     'Export SVG',
   ])
 })

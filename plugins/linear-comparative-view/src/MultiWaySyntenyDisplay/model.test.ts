@@ -179,7 +179,6 @@ test('the stacked-synteny launcher is under Launch on the track menu, over the i
     'Curved lines',
     'Bridge lanes that place nothing',
     'Show lane ticks',
-    undefined,
     'Color ribbons by',
   ])
   const [launch] = items
