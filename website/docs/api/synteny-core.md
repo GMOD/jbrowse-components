@@ -118,9 +118,10 @@ with nothing after it never reaches here — coerceColorBy rejects it.
 
 ## colorByMenuItems
 
-The palette-button menu shared by the dotplot and linear-synteny headers: the
-structural mode radios, the measurements one hop in, and the per-track
-swatches once more than one track is overlaid.
+The color-by menu shared by the dotplot and linear-synteny palette buttons
+and the multi-way synteny track's Color by...: the structural modes the
+surface paints, the measurements one hop in, the text-column rows while one
+is painting, and the per-track swatches once more than one track overlays.
 
 ```js
 // type signature
@@ -132,9 +133,9 @@ swatches once more than one track is overlaid.
 ## colorByMenuTargetFor
 
 Project a view carrying `TrackColorsMixin` onto the menu builder's input.
-Both palette menus were building this by hand, walking the model's tracks a
-third time (after `colorableTracks` and the legend) and repeating the same
-setter lambdas.
+`track` is offered once two tracks overlay, and `reference` only across a
+stack of two or more levels, since below that it degenerates to query or
+target.
 
 ```js
 // type signature

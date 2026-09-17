@@ -118,7 +118,7 @@ real in both realms.
 | `@jbrowse/product-core` | JBrowse 2 code shared between products but not used by plugins | 1 | 69 of 96 exports; the rest stubbed |
 | `@jbrowse/render-core` | GPU/Canvas2D rendering primitives for JBrowse displays: the HAL, the draw-lifecycle mixin, per-region/global backend bases, and the React backend hooks | 57 | all of it |
 | [`@jbrowse/sv-core`](/docs/api/sv-core) | VCF breakend / structural-variant parsing and the shared SV launch helpers | 1 | 36 of 37 exports; the rest stubbed |
-| [`@jbrowse/synteny-core`](/docs/api/synteny-core) | Shared utilities for synteny and dotplot rendering | 1 | 150 of 173 exports; the rest stubbed |
+| [`@jbrowse/synteny-core`](/docs/api/synteny-core) | Shared utilities for synteny and dotplot rendering | 1 | 154 of 177 exports; the rest stubbed |
 | `@jbrowse/text-indexing` | JBrowse 2 text indexing for desktop | 2 | all of it |
 | `@jbrowse/text-indexing-core` | JBrowse 2 core text indexing routines for parsing GFF3 and VCF files | 1 | all of it |
 | `@jbrowse/tree-sidebar` | Shared tree sidebar component for multi-sample displays | 9 | 131 of 142 exports; the rest stubbed |

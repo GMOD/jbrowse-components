@@ -3777,6 +3777,10 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
+          "name": "hideUnlabelled",
+          "type": "(JexlString | boolean)"
+        },
+        {
           "name": "ribbonColorDomain",
           "type": "(JexlString | string[])"
         },

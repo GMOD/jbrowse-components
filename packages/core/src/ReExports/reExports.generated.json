@@ -6250,6 +6250,7 @@
         "dotplotAxesFromRows",
         "effectiveCoarseThreshold",
         "extractAlignmentData",
+        "featureAttributeRanges",
         "featureAttributes",
         "fetchWindowSignature",
         "findRegionEntry",
@@ -6285,6 +6286,7 @@
         "mcscanTypes",
         "multiGenomePAFTypes",
         "nameColorCss",
+        "orderAttributeLabels",
         "packSyntenyLanes",
         "pairwiseTypes",
         "paletteColorAt",
@@ -6294,6 +6296,7 @@
         "quickStartSyntenyTracks",
         "rampNorm",
         "readAttribute",
+        "readChannelValue",
         "readLodTierInfo",
         "regionSignature",
         "regionsCumBpSpan",
@@ -6330,7 +6333,8 @@
         "widenAttributeRanges",
         "withDiagonalizeProgress",
         "writeAttribute",
-        "writeFeatureAttribute"
+        "writeFeatureAttribute",
+        "writeFeatureChannels"
       ],
       "worker": "mixed",
       "uiVia": [
