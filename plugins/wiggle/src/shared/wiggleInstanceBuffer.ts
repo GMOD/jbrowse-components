@@ -183,9 +183,6 @@ export function packLineInstances(sources: SourceRenderData[]) {
   return buf
 }
 
-// A line plot's whiskers band: each bin's min and max, both sign colours, and
-// for the interpolated ribbon the previous linked bin's span and scores, so a
-// bin draws the trapezoid from that bin's midpoint to its own.
 export function packBandInstances(sources: SourceRenderData[]) {
   const buf = new ArrayBuffer(totalOf(sources, true) * BAND_STRIDE_BYTES)
   const u32 = new Uint32Array(buf)

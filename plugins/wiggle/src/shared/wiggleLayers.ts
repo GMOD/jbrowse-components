@@ -268,10 +268,8 @@ export function makeSummaryLayers({
   return renderingType === RENDERING_TYPE_SCATTER ? layers.reverse() : layers
 }
 
-// Every summary mode on a line plot draws one continuous line through all the
-// bins, coloured by which side of the pivot it passes, never the worker's
-// pos/neg split: split, the positive line would chord across every negative
-// stretch. Whiskers adds the min-to-max band under it.
+// One line through every bin in any mode, never the worker's pos/neg split,
+// which chorded the positive line across every negative stretch.
 export function lineLayers(
   data: FeatureArrays,
   summaryScoreMode: string,

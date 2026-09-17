@@ -166,10 +166,8 @@ export function drawDensity({
   }
 }
 
-// A polyline pen that keeps only the part of each segment on one side of the
-// pivot, cut at the crossing, so a line stroked once per side changes colour
-// exactly where it crosses. The shader makes the same call per fragment from
-// the stroke's centre line. A point on the pivot counts as above it.
+// Keeps the part of each segment on one side of the pivot, cut at the crossing,
+// so a line stroked once per side changes colour where the shader's does.
 class PivotSidePen {
   private x = 0
   private y = 0
@@ -232,8 +230,6 @@ class PivotSidePen {
   }
 }
 
-// Strokes `trace` once per pivot side in that side's colour, or once whole
-// when the two colours match (solid colour, overlay).
 function strokeBySide(
   ctx: MarkContext2D,
   pivotY: number,
@@ -256,10 +252,6 @@ function strokeBySide(
   }
 }
 
-// Single connected polyline per contiguous run of features: a rise from the
-// zero line into the first bin, across each bin top with the vertical step at
-// each junction, and a drop to the zero line wherever the next bin doesn't
-// touch this one.
 export function drawLine({
   ctx,
   source,
@@ -355,15 +347,11 @@ export function drawLineCenter({
   })
 }
 
-// Bins per closed polygon, so a long run still fits `CappedPath`'s per-path
-// shape budget; consecutive polygons abut inside one fill, which leaves no seam.
+// Keeps a long run inside CappedPath's per-path budget.
 const BAND_BINS_PER_POLYGON = 1000
 
-// The whiskers band as one polygon per run: along each bin's max, back along
-// its min. Runs break where the stroke over them does — bp adjacency for the
-// step line, `gapLimitBp` for the interpolated one. A band crossing the pivot
-// fills twice, clipped above in `color` and below in `negColor`, with the
-// clip on a device pixel so the two fills meet without a seam.
+// One polygon per run, broken where the line over it breaks. The pivot clip
+// sits on a device pixel so the two colours meet without a seam.
 export function drawWhiskerBand({
   ctx,
   source,

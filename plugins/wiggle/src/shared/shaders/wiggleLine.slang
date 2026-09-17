@@ -57,12 +57,9 @@ struct VsOut {
   float4 position : SV_Position;
   nointerpolation float4 color    : COLOR0;
   nointerpolation float4 negColor : COLOR1;
-  // Where the stroke's centre line sits, so a fragment takes the colour of the
-  // pivot side its centre line is on rather than its own pixel's: a stroke
-  // lying on the pivot stays one colour, and every segment overlapping a joint
-  // picks the same one. Step: (min, max) of the segment in CSS px, clamped
-  // against `yPx`. Center-line: (centre y, tangent y), walked along
-  // `localPos.x`.
+  // The centre line's position — step: its y range; center-line: centre y and
+  // tangent y — so colour follows the line's side of the pivot, not the
+  // pixel's. A line on the pivot stays one colour and overlapping capsules agree.
   nointerpolation float2 centerLine : TEXCOORD2;
   nointerpolation float pivotYPx : TEXCOORD3;
   float yPx : TEXCOORD4;
@@ -194,7 +191,6 @@ VsOut vs_main(WiggleLineInstance inst, uint vid : SV_VertexID) {
   return o;
 }
 
-// A score on the pivot counts as positive, as it does everywhere else.
 float4 pivotSideColor(VsOut fragIn, float centerYPx) {
   return centerYPx > fragIn.pivotYPx ? fragIn.negColor : fragIn.color;
 }

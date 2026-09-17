@@ -15,10 +15,9 @@ rendering shared a shader every fill buffer carried those 20 bytes for nothing â
 164MB rather than 82MB at 1000 sources, against a 256MB `maxBufferSize` floor,
 which is a zoom ceiling rather than waste.
 
-`wiggleBand.slang` fills a line plot's whiskers range on a 44-byte record of its
-own, drawn before either stroke. **The band is translucent so the interpolated
-stroke's max blend stays valid over it**: a same-hue stroke exceeds the band in
-every premultiplied channel, where an opaque lightened band would erase it.
+`wiggleBand.slang` fills a line plot's whiskers band on a 44-byte record, drawn
+before the lines. **It is translucent so the interpolated line's max blend still
+works over it**; an opaque lighter band would erase the line.
 
 `wiggleCommon.slang` holds what they must agree on: the uniform struct and the
 fill record are shared, the **binding is not**, and each re-imports
@@ -165,17 +164,12 @@ gradient per layer. Scatter keeps each band whole with per-instance colors.
 ## A line plot is one line, coloured by the side of the pivot it is on
 
 Every summary mode on `line`/`linecenter` draws one layer through all the bins
-(`lineLayers`), never the worker's avg split, which drew a positive line that
-chorded across every negative stretch. The layer carries `color` and `negColor`,
-and **the colour is decided where the ink is, not per bin**: the shader compares
-each fragment's centre-line y with the pivot, Canvas2D strokes twice through
-`PivotSidePen`, cut at the crossing. Centre line rather than pixel, so a stroke
-lying on the pivot stays one colour and every capsule overlapping a joint picks
-the same one under max blend; per-bin colours made magenta joints there.
-
-Whiskers adds a `band` layer (`featureScores` the max, `band.minScores` the min)
-under that line. The band splits at the pivot per pixel, in the shader and by
-clip in Canvas2D.
+(`lineLayers`), never the worker's avg split. **Colour comes from the line's
+side of the pivot, not the bin**: the shader tests each fragment's centre-line
+y, Canvas2D strokes once per side through `PivotSidePen`. Centre line rather
+than pixel, so capsules overlapping at a joint agree under max blend; per-bin
+colours blended those joints to magenta. Whiskers adds a `band` layer under the
+line.
 
 ## The colour key takes the mode, not `isDensityMode`
 

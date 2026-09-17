@@ -32,9 +32,8 @@ export function getRowTop(rowIndex: number, rowHeight: number) {
   return rowIndex * rowHeight
 }
 
-// The interpolated line's break rule, in bp: bin `i` joins bin `i - 1` unless
-// their centers sit further apart than `gapLimitBp`. The stroke and the band
-// read it on both backends, so all four break in the same places.
+// The interpolated line's break rule, shared by its line and band on both
+// backends.
 export function centerLinksToPrevious(
   positions: Uint32Array,
   i: number,

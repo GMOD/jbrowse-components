@@ -111,9 +111,7 @@ export interface SourceRenderData {
   // feature in both backends; `color` stays the single-color fallback (and the
   // legend/first-color source).
   colorsAbgr?: Uint32Array
-  // A line plot's colour below the pivot, where `color` is its colour above.
-  // Chosen by where the line or band sits, not per bin, so a line crossing the
-  // pivot changes colour at the crossing.
+  // A line plot's colour below the pivot; `color` is above.
   negColor?: [number, number, number]
   // Center-to-center bp distance past which the interpolated (linecenter) line
   // treats the span as a hole and starts a new run instead of drawing a chord
@@ -122,8 +120,7 @@ export interface SourceRenderData {
   // — the Canvas2D path reads it directly, the GPU path has it baked into the
   // instance buffer as a NO_PREV_START sentinel. `undefined` never breaks.
   gapLimitBp?: number
-  // A line plot's whiskers range: `featureScores` holds each bin's max and
-  // `minScores` its min.
+  // A line plot's whiskers band, whose `featureScores` are the maxima.
   band?: {
     minScores: Float32Array
   }

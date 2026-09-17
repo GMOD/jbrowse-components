@@ -1,11 +1,6 @@
-// The whiskers range on a line plot: min to max filled behind the mean stroke.
-// RENDERING_TYPE_LINE draws each bin as a quad over its span,
-// RENDERING_TYPE_LINE_CENTER a trapezoid from the previous bin's midpoint to
-// this one's, so consecutive instances tile the step or interpolated ribbon.
-//
-// The fill is translucent so the interpolated stroke's max-blend pass still
-// composes over it: a stroke's premultiplied colour is at least the band's in
-// every channel wherever they share a hue.
+// A line plot's whiskers band: a quad per bin under the step line, a trapezoid
+// between bin midpoints under the interpolated one. Translucent, so the
+// interpolated line's max blend still composes over it.
 //! targets: wgsl, glsl
 //! coverage: analytic
 //! export-consts: WHISKER_BAND_OPACITY
@@ -37,8 +32,7 @@ struct VsOut {
   float4 position : SV_Position;
   nointerpolation float4 posColor : COLOR0;
   nointerpolation float4 negColor : COLOR1;
-  // CSS px inside the top edge (.x) and the bottom edge (.y), perpendicular to
-  // each; affine in screen space, so interpolation carries them exactly.
+  // perpendicular CSS px inside the top (.x) and bottom (.y) edges
   float2 inkPx : TEXCOORD0;
   float belowPivotPx : TEXCOORD1;
 };
@@ -47,7 +41,6 @@ float rowScoreToYPx(float score, float rowTop, float rowHeight) {
   return scoreToY(score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType, u.symlogConstant) + rowTop;
 }
 
-// Perpendicular px per vertical px for an edge rising `dyPx` over `dxPx`.
 float edgePerp(float dyPx, float dxPx) {
   float slope = abs(dxPx) > 1e-6 ? dyPx / dxPx : 0.0;
   return 1.0 / sqrt(1.0 + slope * slope);
@@ -67,8 +60,7 @@ VsOut vs_main(WiggleBandInstance inst, uint vid : SV_VertexID) {
   float top0 = top;
   float bottom0 = bottom;
   if (u.renderingType == RENDERING_TYPE_LINE_CENTER) {
-    // Averaged in clip space from the span, exactly as the neighbour computes
-    // its own x1, so adjacent trapezoids share their vertical edge bit for bit.
+    // averaged in clip space, as the neighbour does, so the two share this edge
     x1 = (startX + endX) * 0.5;
     if (inst.prevStartEnd.x != NO_PREV_START) {
       x0 = (bpToClipX(inst.prevStartEnd.x, u) + bpToClipX(inst.prevStartEnd.y, u)) * 0.5;
@@ -99,8 +91,6 @@ VsOut vs_main(WiggleBandInstance inst, uint vid : SV_VertexID) {
   return o;
 }
 
-// A band's coverage as the difference of its two edge ramps: exact area for a
-// horizontal band at any height, sub-pixel included.
 float bandCoverage(float insideTopPx, float insideBottomPx) {
   return max(
     edgeCoverage(insideTopPx, u.devicePixelRatio)
@@ -108,9 +98,8 @@ float bandCoverage(float insideTopPx, float insideBottomPx) {
     0.0);
 }
 
-// The pivot cuts the band into an above half in posColor and a below half in
-// negColor, each covered on its own, so a band edge lying on the pivot leaks no
-// ink into the other colour.
+// Covered separately above and below the pivot, so an edge lying on the pivot
+// takes none of the other colour.
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
   float above = bandCoverage(
