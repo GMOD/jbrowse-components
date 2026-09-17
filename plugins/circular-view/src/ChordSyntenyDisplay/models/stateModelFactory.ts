@@ -132,7 +132,7 @@ const stateModelFactory = (configSchema: ChordSyntenyDisplayConfigModel) => {
        */
       get legendColor(): string | undefined {
         const value: unknown = self.configuration.color
-        return self.colorBy === 'default' &&
+        return this.colorBy === 'default' &&
           typeof value === 'string' &&
           !isJexl(value)
           ? value
