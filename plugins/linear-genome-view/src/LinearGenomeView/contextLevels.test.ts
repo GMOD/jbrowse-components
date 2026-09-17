@@ -1,5 +1,6 @@
 import { getMembers, getSnapshot } from '@jbrowse/mobx-state-tree'
 import { createTestSession } from '@jbrowse/web/testUtils'
+import { autorun } from 'mobx'
 
 import { LEVEL_NAVIGATIONS, LEVEL_OWN, LEVEL_PANS } from './contextLevels.ts'
 import { renderToSvg } from './svgcomponents/SVGLinearGenomeView.tsx'
@@ -153,6 +154,30 @@ test('an arrow-key slide on a level moves the host by a fraction of the level', 
   expect(centerBp(level!)).toBe(centerBp(view))
 })
 
+test('a level restored from a snapshot redirects its gestures too', () => {
+  const { session } = setup()
+  // the middleware rides on the level, so its install runs off the level's own
+  // afterAttach — which for a stored stack is inside the host's construction
+  const view = session.addView('LinearGenomeView', {
+    displayedRegions: CTG_A,
+    contextLevels: [
+      {
+        type: 'LinearGenomeView',
+        hideHeader: true,
+        displayedRegions: CTG_A,
+        windowWidthBp: 80_000,
+      },
+    ],
+  }) as LinearGenomeViewModel
+  view.setWidth(800)
+  view.setWindow(8000, 400_000)
+  const [level] = levels(view)
+  const before = centerBp(view)
+  level!.horizontalScroll(10)
+  expect(centerBp(view)).toBe(before + 10 * level!.bpPerPx)
+  expect(centerBp(level!)).toBe(centerBp(view))
+})
+
 test('every navigation-shaped action of a level is classified', () => {
   const { view } = setup()
   const notNavigation = new Set([
@@ -179,6 +204,10 @@ test('every navigation-shaped action of a level is classified', () => {
   for (const set of [LEVEL_PANS, LEVEL_NAVIGATIONS, LEVEL_OWN]) {
     expect([...set].filter(name => !actions.includes(name))).toEqual([])
   }
+  // and in exactly one of them: a name in two is a gesture whose redirect and
+  // whose "this stays the level's own" both look deliberate
+  const classified = [...LEVEL_PANS, ...LEVEL_NAVIGATIONS, ...LEVEL_OWN]
+  expect(classified.length).toBe(new Set(classified).size)
 })
 
 const polygons = (svg: string) => svg.split('<polygon').length - 1
@@ -258,4 +287,29 @@ test('centring a level on a coordinate centres the host there', () => {
   level!.centerAt(100_000, 'ctgA')
   expect(centerBp(view)).toBeCloseTo(100_000, -2)
   expect(centerBp(level!)).toBe(centerBp(view))
+})
+
+test('a level moved off the host centre without a width change snaps back', () => {
+  const { view } = setup()
+  view.addContextLevel()
+  const [level] = levels(view)
+  // LEVEL_OWN, so the middleware passes it through: the level writes its own
+  // window, at the width it already had
+  level!.setWindow(level!.windowWidthBp, level!.windowStartBp + 10_000)
+  expect(centerBp(level!)).toBe(centerBp(view))
+})
+
+test('dispatching a level action does not make the caller depend on the stack', () => {
+  const { view } = setup()
+  view.addContextLevel()
+  const [level] = levels(view)
+  let runs = 0
+  const stop = autorun(() => {
+    runs++
+    level!.horizontalScroll(0)
+  })
+  expect(runs).toBe(1)
+  view.addContextLevel()
+  expect(runs).toBe(1)
+  stop()
 })

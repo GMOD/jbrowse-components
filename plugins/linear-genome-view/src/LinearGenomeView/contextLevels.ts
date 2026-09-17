@@ -5,7 +5,7 @@ import {
   hasParent,
   types,
 } from '@jbrowse/mobx-state-tree'
-import { autorun } from 'mobx'
+import { autorun, untracked } from 'mobx'
 
 import type { LinearGenomeViewModel } from './model.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -58,8 +58,13 @@ export function contextLevelType(pluginManager: PluginManager) {
  * widening the whole model.
  */
 export interface ContextLevelHost extends IStateTreeNode {
+  bpPerPx: number
+  windowWidthBp: number
   contextLevelViews: ContextLevel[]
   removeContextLevel(level: ContextLevel): void
+  horizontalScroll(distance: number): number
+  slide(viewWidths: number): void
+  scrollToBp(startBp: number): number
 }
 
 export function contextLevelHost(
@@ -131,13 +136,15 @@ export const LEVEL_OWN = new Set([
  * it.
  */
 function syncContextLevels(self: LinearGenomeViewModel) {
-  const { volatileWidth, displayedRegions, windowStartBp, windowWidthBp } = self
+  // The stack first and alone, so a view with no levels — which is every view
+  // in the session but the one someone built a stack on — depends on this
+  // array and nothing else, and its own pans and zooms wake nothing here.
   const levels = self.contextLevelViews
-  if (
-    volatileWidth === undefined ||
-    !displayedRegions.length ||
-    !levels.length
-  ) {
+  if (!levels.length) {
+    return
+  }
+  const { volatileWidth, displayedRegions, windowStartBp, windowWidthBp } = self
+  if (volatileWidth === undefined || !displayedRegions.length) {
     return
   }
   const centerBp = windowStartBp + windowWidthBp / 2
@@ -147,10 +154,100 @@ function syncContextLevels(self: LinearGenomeViewModel) {
     if (level.displayedRegions !== displayedRegions) {
       level.setDisplayedRegions(displayedRegions)
     }
-    const width = Math.max(level.windowWidthBp, floor)
-    level.setWindowFrame(width, centerBp - width / 2)
+    // BOTH of the level's own window numbers are read, not just its width, and
+    // that is what makes this the thing holding a level under its host rather
+    // than the gesture sets below. An action that moves a level without
+    // resizing it — one the sets do not cover, or one added later that nobody
+    // classified — otherwise never wakes this autorun, and the level sits off
+    // the centre for good with nothing to put it back. Read, it snaps back, so
+    // a miss costs that gesture rather than the stack.
+    const { windowWidthBp: levelWidth, windowStartBp: levelStart } = level
+    const width = Math.max(levelWidth, floor)
+    const start = centerBp - width / 2
+    if (width !== levelWidth || start !== levelStart) {
+      level.setWindowFrame(width, start)
+    }
     floor = level.windowWidthBp
   }
+}
+
+/**
+ * Replay a gesture made on a level onto its host, or answer false to let it
+ * through. Every read here is of the live tree, which is why the caller runs it
+ * untracked.
+ */
+function redirectLevelGesture(
+  self: LinearGenomeViewModel,
+  host: ContextLevelHost,
+  call: { name: string; args: unknown[] },
+  abort: (value: unknown) => void,
+) {
+  // a level's own launch navigates it, and that is not a gesture: the sync
+  // above puts it back under the host once the regions land
+  if (self.pendingLaunch) {
+    return false
+  }
+  if (LEVEL_PANS.has(call.name)) {
+    const arg = call.args[0] as number
+    const ratio = self.bpPerPx / host.bpPerPx
+    if (call.name === 'horizontalScroll') {
+      abort(host.horizontalScroll(arg * ratio) / ratio)
+    } else if (call.name === 'slide') {
+      // a fraction of the level's window is that many of its bases, which is
+      // `ratio` widths of the host
+      host.slide(arg * ratio)
+      abort(undefined)
+    } else {
+      const centerBp = arg * self.bpPerPx + self.windowWidthBp / 2
+      host.scrollToBp(centerBp - host.windowWidthBp / 2)
+      abort(arg)
+    }
+    return true
+  }
+  if (LEVEL_REPLAYS.has(call.name)) {
+    const target = host as unknown as Record<
+      string,
+      (...args: unknown[]) => unknown
+    >
+    abort(target[call.name]!(...call.args))
+    return true
+  }
+  return false
+}
+
+/**
+ * The gesture redirect, installed on the LEVEL rather than on the view holding
+ * it. MST collects a call's middleware by walking from the action's own node up
+ * to the root, so one installed on the host runs for every action of every
+ * track and display beneath it — a tax on views that will never hold a level,
+ * which is nearly all of them — where one installed here sees this level's
+ * subtree and nothing else. It also makes the identity check an identity check
+ * rather than a search through the host's array.
+ */
+function installLevelGestures(
+  self: LinearGenomeViewModel,
+  host: ContextLevelHost,
+) {
+  addDisposer(
+    self,
+    addMiddleware(self, (call, next, abort) => {
+      const mine =
+        call.type === 'action' &&
+        call.id === call.rootId &&
+        call.context === self
+      // A middleware handler runs in whatever context dispatched the action,
+      // and one of those is `syncContextLevels` — an autorun that dispatches
+      // level actions. A `pendingLaunch` or `bpPerPx` read registered there
+      // re-runs the whole sync whenever anything in the stack moves.
+      // eslint-disable-next-line no-restricted-syntax -- effect input: the two scales a gesture is replayed at, read where an autorun may be the caller
+      const handled = untracked(
+        () => mine && redirectLevelGesture(self, host, call, abort),
+      )
+      if (!handled) {
+        next(call)
+      }
+    }),
+  )
 }
 
 export function installContextLevels(self: LinearGenomeViewModel) {
@@ -163,41 +260,8 @@ export function installContextLevels(self: LinearGenomeViewModel) {
       { name: 'LGVContextLevels' },
     ),
   )
-  addDisposer(
-    self,
-    addMiddleware(self, (call, next, abort) => {
-      const level =
-        call.type === 'action' && call.id === call.rootId
-          ? self.contextLevelViews.find(l => l === call.context)
-          : undefined
-      // a level's own launch navigates it, and that is not a gesture: the
-      // sync above puts it back under the host once the regions land
-      if (!level || level.pendingLaunch) {
-        next(call)
-      } else if (LEVEL_PANS.has(call.name)) {
-        const arg = call.args[0] as number
-        const ratio = level.bpPerPx / self.bpPerPx
-        if (call.name === 'horizontalScroll') {
-          abort(self.horizontalScroll(arg * ratio) / ratio)
-        } else if (call.name === 'slide') {
-          // a fraction of the level's window is that many of its bases, which
-          // is `ratio` widths of the host
-          self.slide(arg * ratio)
-          abort(undefined)
-        } else {
-          const centerBp = arg * level.bpPerPx + level.windowWidthBp / 2
-          self.scrollToBp(centerBp - self.windowWidthBp / 2)
-          abort(arg)
-        }
-      } else if (LEVEL_REPLAYS.has(call.name)) {
-        const host = self as unknown as Record<
-          string,
-          (...args: unknown[]) => unknown
-        >
-        abort(host[call.name]!(...call.args))
-      } else {
-        next(call)
-      }
-    }),
-  )
+  const host = contextLevelHost(self)
+  if (host) {
+    installLevelGestures(self, host)
+  }
 }
