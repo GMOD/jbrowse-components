@@ -463,6 +463,10 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     src: 'pangenome/graph_kiv2_halos.png',
     band: [0.62, 1],
   },
+  pangenome_hprc_part5: {
+    src: 'pangenome/hprc_abca7_repeat_units.png',
+    band: [0.4, 0.8],
+  },
   pangenome_mouse: {
     // The Dock2 bubble as one haloed superbubble, the graph pane only.
     src: 'pangenome/graph_mouse_dock2_halos.png',

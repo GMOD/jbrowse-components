@@ -1050,6 +1050,35 @@ export const hprcVideoFixtures = {
   mhcSelection: { start: 'chr6:32,500,000', end: 'chr6:32,545,000' },
 }
 
+const ABCA7_CONFIG = encodeURIComponent(
+  'https://jbrowse.org/demos/hprc/config.json',
+)
+const ABCA7_REPEAT_KEY = 'chr19:1049406-1050096'
+
+function abca7Views(repeatKey: string) {
+  return [
+    {
+      type: 'LinearGenomeView',
+      assembly: 'hg38',
+      loc: 'chr19:1,049,000-1,050,500',
+      tracks: ['hg38_ncbiRefSeq_ucsc', 'hprc_abca7_trgt'],
+    },
+    {
+      type: 'GraphGenomeView',
+      loadedTrackId: 'hprc_v2_1_gbz_lanes',
+      loadedRegion: {
+        refName: 'chr19',
+        assemblyName: 'hg38',
+        start: 1049407,
+        end: 1050096,
+      },
+      layoutMode: 'walkrows',
+      repeatKey,
+      paneHeight: 600,
+    },
+  ]
+}
+
 export const hprcGraphSpecs: ScreenshotSpec[] = [
   // All 249 Mb of GRCh38 chr1 off the hosted bubble tier
   // (hprc-v2.1-mc-grch38.tier10000.*, one node per bubble: 474 for chr1). At
@@ -2460,6 +2489,34 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         anchor: { view: 1, graphNode: CHM13_NODE },
         radius: 20,
         strokeWidth: 3,
+      },
+    ],
+  },
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_abca7_walk_rows',
+    url: sessionSpec(ABCA7_CONFIG, { views: abca7Views('') }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 240000,
+    viewportWidth: 1400,
+    viewportHeight: 1100,
+    hideTooltip: true,
+    actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
+  },
+  {
+    mode: 'url',
+    name: 'pangenome/hprc_abca7_repeat_units',
+    url: sessionSpec(ABCA7_CONFIG, { views: abca7Views(ABCA7_REPEAT_KEY) }),
+    readySelector: TOOLBAR_READY,
+    readyTimeout: 240000,
+    viewportWidth: 1400,
+    viewportHeight: 1100,
+    hideTooltip: true,
+    actions: [{ type: 'waitForAppSettled', timeout: 180000 }],
+    annotations: [
+      {
+        type: 'box',
+        anchor: { selector: '[data-testid="graph-repeat-select"]' },
       },
     ],
   },
