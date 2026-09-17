@@ -1358,7 +1358,7 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     }),
     // Bare names, not glosses: the prose above the figure carries what each one
     // means, and a gloss ran the pill off the pane. Neither deletion gets a
-    // callout: the renderer writes "32.7 kb deletion" across the arc itself.
+    // callout: the renderer writes "32.7 kb del" across the arc itself.
     // Each pill sits toward the pane's edge, and each leader arrives at its node
     // near a right angle, so no leader reads as a piece of the graph and no
     // arrow ends at another label. Positions come from `node
