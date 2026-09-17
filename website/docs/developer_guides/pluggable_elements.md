@@ -52,7 +52,8 @@ Elements are composable: adapters can wrap other adapters (`MultiWiggleAdapter`
 takes a `subadapters` array), and views can contain sub-views (`SvInspectorView`
 holds a `SpreadsheetView` and a `CircularView`).
 
-The three you will meet first relate like this:
+A view, a track and a display are the three you will meet first, and relate like
+this:
 
 - A view is a container that typically _has tracks_
 - A track controls _what_ data (adapter) and _how_ it's shown (display)
