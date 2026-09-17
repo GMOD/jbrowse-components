@@ -29,12 +29,11 @@ In **JBrowse Web**, open
 In **JBrowse Desktop**, choose **File → Session → Open JBrowse Web link...** and
 paste that same URL, or **File → Session → Open config.json or .jbrowse
 file...** and give it
-`https://jbrowse.org/code/jb2/main/test_data/volvox/config.json`. Desktop reads
-a config you open and leaves it alone, saving your edits to a session of its
-own.
+`https://jbrowse.org/code/jb2/main/test_data/volvox/config.json`. Desktop leaves
+a config you open unchanged and saves your edits to a separate session file.
 
-Either way you get a pileup of short reads, drawn at the default height in the
-default gray.
+In either app the track opens as a pileup of short reads at the default height,
+in the default gray.
 
 ## Change three settings
 
@@ -56,16 +55,15 @@ of paired rows fits.
 Two menu clicks and a drag changed three settings, and each one has a name you
 can type into a config.
 
-In **JBrowse Web**, click **Share**, take **Plaintext JSON** from the settings
-icon in the dialog, and tick the **Show readable JSON** box that arrives with
-it. In **JBrowse Desktop**, choose **File → Session → Save session as...**, save
-a `volvox.jbrowse` file, and open it in a text editor.
+In **JBrowse Web**, click **Share**, choose **Plaintext JSON** from the settings
+icon in the dialog, and tick the **Show readable JSON** box that appears below
+the link.
 
-<Video src="/media/config/settings_to_json.mp4" caption="Two settings taken from the volvox-sv (cram) track menu, then the share dialog's settings icon, Plaintext JSON, and the readable session panel that arrives with it." />
+<Video src="/media/config/settings_to_json.mp4" caption="Two settings chosen from the volvox-sv (cram) track menu, then Plaintext JSON chosen from the share dialog's settings icon, with Show readable JSON ticked to display the session." />
 
-Both hold the same JSON. Each of the three is a write to the track's own config,
-so they arrive together under `trackConfigDeltas`, keyed by the track id you
-edited:
+The session JSON in that box lists the three settings under `trackConfigDeltas`,
+keyed by the id of the track you edited, because JBrowse Web saves an edit to a
+configured track as only the settings that changed:
 
 ```json
 "trackConfigDeltas": {
@@ -82,12 +80,18 @@ edited:
 }
 ```
 
-`height`, `linkedReads` and `colorBy` are the setting names, and every route
-below spells them the same way.
+In **JBrowse Desktop**, choose **File → Session → Save session as...**, save a
+`volvox.jbrowse` file, and open it in a text editor. A `.jbrowse` file is a
+whole config with the session under `defaultSession`, and Desktop writes a track
+edit into that config, so the same three keys appear in the `volvox_sv_cram`
+entry of the file's `tracks` array.
 
-Change one more setting in the app, wait a second, and read `volvox.jbrowse`
-again: Desktop autosaves the open session about a second after each edit, and
-reopening that file brings the settings back.
+`height`, `linkedReads` and `colorBy` are the setting names in both apps, and
+every route below spells them the same way.
+
+Desktop autosaves the open session to `volvox.jbrowse` about a second after each
+edit, so a setting you change now shows up when you reread the file, and
+reopening the file restores every setting.
 
 The [config schema docs](/docs/config_guide) list the same names per display
 (e.g. [](/docs/config/linearalignmentsdisplay),
@@ -96,9 +100,9 @@ to go for a setting you have not clicked yet.
 
 ## Put the settings in displayDefaults
 
-A session remembers settings for one session. The same keys in a track's
-`displayDefaults` travel with the track, so it opens that way every time it is
-loaded, and from a served `config.json` it does so for every visitor:
+Settings saved in a session apply when that session opens. The same keys in a
+track's `displayDefaults` apply every time the track loads, and in a served
+`config.json` they apply for every visitor:
 
 ```json addtrack
 {
@@ -128,8 +132,8 @@ The track then opens paired and colored, with no clicking.
 
 ## Precedence when config and session disagree
 
-Now both places are set, so make them disagree. The config above asks for
-`height: 250`. Load a session that asks for 100 on the same track:
+A session can set a key that `displayDefaults` also sets. The config above sets
+`height: 250`, and this session sets 100 on the same track:
 
 ```json live config=test_data/volvox/config.json
 {
@@ -150,8 +154,8 @@ Now both places are set, so make them disagree. The config above asks for
 }
 ```
 
-The track comes up 100px tall. The session wins, and it wins per setting: a key
-the session does not mention still comes from `displayDefaults`.
+The track opens 100px tall. A session value overrides `displayDefaults` one key
+at a time, so a key the session does not set still comes from `displayDefaults`.
 
 Each entry in a view's `tracks` array is either a plain `trackId` string or an
 object with `trackId` plus settings written alongside it, as above. The settings
@@ -170,7 +174,7 @@ for track-config fields.
 
 `?session=` URLs are a JBrowse Web feature, since Desktop has no session-URL
 server; Desktop's nearest equivalent is **File → Session → Export session to
-web...**, which uploads the session and hands you a web link with the settings
+web...**, which uploads the session and gives you a web link with the settings
 encoded in it.
 
 [URL parameters](/docs/urlparams) has the full session-spec format, including
