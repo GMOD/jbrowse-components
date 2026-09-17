@@ -244,13 +244,6 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * The row facet's declared order, off config.
-       */
-      get domain(): string[] {
-        return readConfObject(self.conf, 'domain')
-      },
-      /**
-       * #getter
        * The colour key's declared order, off config. The blocks are painted
        * per feature, so this orders the key and nothing else.
        */
@@ -300,7 +293,7 @@ export default function stateModelFactory(
           }
         }
         const unanswered = `(no ${effectivePartitionField(self)})`
-        return orderPartitionValues(values, self.domain).map(name =>
+        return orderPartitionValues(values, self.rowDomain).map(name =>
           name === '' ? { name, label: unanswered } : { name },
         )
       })

@@ -136,18 +136,6 @@ export default function configSchemaF() {
         description:
           'map of partition value to color; overrides the color slot for matching features',
       },
-      /**
-       * #slot
-       * Optional row order, the row facet's domain: the partition values
-       * listed come first, in this order, and the rest follow sorted. Left
-       * off, the rows are every value the data holds, sorted.
-       */
-      domain: {
-        type: 'stringArray',
-        defaultValue: [],
-        description:
-          'optional row order; listed partition values first, the rest sorted; left off, every value the data holds, sorted',
-      },
       ...rowHeightConfigSchemaFields({
         rowHeight:
           'fixed row height in px; 0 (the default) auto-fits all rows to the display height, so adding rows shrinks them instead of growing the track',
@@ -250,6 +238,9 @@ export default function configSchemaF() {
       ...treeSidebarConfigSchemaFields({
         tree: 'show the cluster tree sidebar',
         rowLabels: 'draw the row name over the left of each row',
+        // The one display whose unlisted rows ARE sorted: its rows are the
+        // partition's values, which arrive in no order of their own.
+        rows: 'optional row order; listed partition values first, the rest sorted; left off, every value the data holds, sorted',
       }),
       /**
        * #slot
