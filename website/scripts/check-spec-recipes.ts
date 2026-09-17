@@ -239,7 +239,9 @@ if (unrendered.size > 0) {
   console.error(
     '\nClick paths in spec-recipe/fields.ts name a row nothing renders:',
   )
-  for (const [segment, count] of [...unrendered].sort()) {
+  for (const [segment, count] of [...unrendered].sort(([a], [b]) =>
+    a < b ? -1 : 1,
+  )) {
     console.error(
       `  ${JSON.stringify(segment)} — in ${count} path(s); no source renders it`,
     )

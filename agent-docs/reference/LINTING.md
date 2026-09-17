@@ -14,7 +14,7 @@ Four tools, and the split is deliberate.
 | `oxlint` (`pnpm lint:fast`) | pre-commit, CI | correctness, react, unicorn subset, jest, import | 2.5s whole tree |
 | `oxlint --type-aware` (`pnpm lint`) | pre-commit, CI | everything above plus tsgolint's type-aware set | 8s whole tree, ~1s for one commit |
 | `eslint` (`pnpm lint:eslint`) | CI only | react-compiler, @eslint-react, unicorn denylist, the `no-restricted-syntax` guards, astro | 30s at `--concurrency=4` |
-| `oxfmt` / `prettier` | pre-commit, CI | all formatting, and import order | 5s whole tree |
+| `oxfmt` | pre-commit, CI | all formatting, and import order | 5s whole tree |
 
 `eslint.config.mjs` carries the long-form reasoning for its own half. This
 file holds what does not fit in a config comment, plus the facts about
@@ -65,12 +65,25 @@ error stays. Put the prose first and the directive last.
 Counts are from a full run; each was read site by site before rejecting. Do not
 re-propose these without new evidence.
 
-- **`unicorn/no-useless-spread`** (7) — its fix is wrong on every site *and* it
-  is autofixable, so `--fix` applies all seven silently. Six are
+- **`unicorn/no-useless-spread`** (7) — its fix was wrong on every site read,
+  *and* it is autofixable, so `--fix` applies it silently. Six were
   `[...someUint32Array.slice(0, n)]`, where the spread is the point: it turns a
   TypedArray into a `number[]` so `expect(…).toEqual([…])` matches. The rule
-  reads `.slice()` as returning an Array. The seventh is a snapshot taken around
-  a `Map.delete` inside its own loop.
+  reads `.slice()` as returning an Array. The seventh was a snapshot taken
+  around a `Map.delete` inside its own loop.
+- **`unicorn/no-unsafe-string-replacement`** (28) — a non-literal replacement
+  can hit `$&`/`$1`. Two sites could meet a `$` in data (`siblingLocation`'s
+  file name, `generateConfigManifest`'s JSON) and now take a replacer function.
+  The rest replace with a constant or deliberately use `$1`.
+- **`unicorn/prefer-combined-guards`** (33) — the fixer declines every run of
+  guards where each carries its own comment, which is most of them, and
+  `||`-merging the rest fuses unrelated exits (a mouse button and a gesture
+  owner) into one condition.
+- **`unicorn/no-immediate-mutation`** (34) — unicorn 75 extended it to
+  `const xs = []; if (c) xs.push(y)`, and the only rewrite is
+  `[...(c ? [y] : [])]`, which unicorn itself will not apply in a `.ts` file.
+- **`unicorn/prefer-iterator-zip`** (3) — neither Node 24 nor TypeScript's lib
+  has `Iterator.zip`.
 - **`unicorn/require-post-message-target-origin`** (3) — two are
   `Worker.postMessage`, whose second parameter is the transfer list, so the
   suggested `, instance.location.origin` fix throws. The third is a real
@@ -89,6 +102,16 @@ re-propose these without new evidence.
   `expect` inside `beforeAll`, which is how three suites fail fast on setup;
   `no-export` flags two files exporting a never-called type-level assertion so
   tsc keeps checking its body. Five rules are on, the rest off.
+
+## Array sort comparators are oxlint's
+
+`typescript/require-array-sort-compare` is on in `.oxlintrc.json`, with tests
+exempt; `unicorn/require-array-sort-compare` is off. The type-aware rule skips
+`string[]`, and the untyped one flags every sort it cannot type — 334 sites,
+nearly all string sorts. Production source had no site at all; the 56 the typed
+rule found were 51 tests and 5 scripts. A test is exempt because a lexicographic
+sort of numbers fails its `toEqual` visibly rather than passing wrongly, and
+most of those 51 sort an `any[]` of strings, where a comparator adds nothing.
 
 ## oxlint's react-compiler port: triaged, and off
 

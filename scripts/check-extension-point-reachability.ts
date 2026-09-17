@@ -139,7 +139,7 @@ if (declaringTotal === 0) {
 
 if (unreachable.size > 0) {
   const detail = [...unreachable]
-    .sort()
+    .sort(([a], [b]) => (a < b ? -1 : 1))
     .map(([pkg, files]) => `  ${pkg}\n    ${files.sort().join('\n    ')}`)
     .join('\n')
   console.error(

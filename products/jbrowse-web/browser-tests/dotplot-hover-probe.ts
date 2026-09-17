@@ -211,7 +211,9 @@ try {
     return view.dotplotDisplays.map((d: any) => ({
       segments: d.instanceData?.instanceCount ?? 0,
       cigarWords: d.rpcData?.cigarData.length ?? 0,
-      ops: [...new Set<number>(d.instanceData?.segmentOps ?? [])].sort(),
+      ops: [...new Set<number>(d.instanceData?.segmentOps ?? [])].sort(
+        (a, b) => a - b,
+      ),
       drawCigar: view.drawCigar,
     }))
   })

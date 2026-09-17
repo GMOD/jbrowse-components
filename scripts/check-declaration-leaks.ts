@@ -50,7 +50,7 @@ for (const workspaceDir of workspaceDirs) {
 
 if (found.size > 0) {
   const detail = [...found]
-    .sort()
+    .sort(([a], [b]) => (a < b ? -1 : 1))
     .map(([s, files]) => `  ${s}\n    named by ${[...files].sort().join(', ')}`)
     .join('\n')
   console.error(

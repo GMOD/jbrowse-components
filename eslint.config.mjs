@@ -11,7 +11,7 @@ import tseslint from 'typescript-eslint'
 // CI-only backstop (`pnpm lint:eslint`). The primary linter is oxlint
 // (`pnpm lint:fast` untyped / `pnpm lint` type-aware), which owns correctness,
 // react-hooks, the full type-aware
-// rule set (via tsgolint), and the portable core rules. Prettier owns
+// rule set (via tsgolint), and the portable core rules. oxfmt owns
 // formatting + import ordering. This config runs ONLY the rules oxlint can't
 // yet do, and deliberately carries NO type information (no
 // `parserOptions.project`) so it stays fast and needs only one TypeScript
@@ -337,6 +337,21 @@ const noPayloadThroughAProp = {
     "Do not hand a whole worker payload to a React prop. React 19.2's dev-only performance track diffs a changed prop by walking it, and it walks a typed array element by element with no cap — `rpcData` is all typed arrays, so this costs one property row per element, twice, on every re-render where the payload changed. Hic's tooltip did exactly this and a single pan with the cursor over the track spent 6.8s and ~1GB. Pass what the child actually reads (the formatted strings, the numbers) instead of the object they came off — plugins/hic/src/LinearHicDisplay/components/ReactComponent.tsx is the worked example.",
 }
 
+// useEffectEvent returns a stale closure inside mobx-react observer() components
+// (its useInsertionEffect impl-swap does not run under observer's reactive
+// render), and nearly every JBrowse component is an observer.
+const noUseEffectEvent = {
+  name: 'react',
+  importNames: ['useEffectEvent'],
+  message:
+    'useEffectEvent reads stale state inside mobx-react observer() components. Use useEventCallback from @jbrowse/core/util/useEventCallback instead.',
+}
+const noSrcImport = {
+  group: ['@jbrowse/*/src', '@jbrowse/*/src/**'],
+  message:
+    'Do not import from the src directory of another package. Use the package public API instead.',
+}
+
 const sourceRestrictedSyntax = [
   ...restrictedSyntax,
   noOneSidedViewWait,
@@ -447,16 +462,17 @@ export default defineConfig(
   // block below explicitly turns OFF the ones we reject or are deferring. This
   // way, when a new unicorn version ships new rules, they light up on the next
   // lint/upgrade and force a conscious keep-or-disable decision instead of
-  // being silently ignored. `// N` comments are the violation count at the time
-  // of deferral — treat the "Deferred" section as a to-do list to burn down.
+  // being silently ignored. `// N` comments are the violation count at the last
+  // whole-tree re-measure — treat the "Deferred" section as a to-do list to
+  // burn down.
   eslintPluginUnicorn.configs.recommended,
   ...eslintPluginAstro.configs.recommended,
   {
     rules: {
       // === Rejected outright ===
-      // Abbreviation nannying — we use camelCase abbreviations freely.
-      'unicorn/prevent-abbreviations': 'off',
-      'unicorn/name-replacements': 'off', // 6976 (err->error, e->event, etc.)
+      // Abbreviation nannying (err->error, e->event, etc.) — we use camelCase
+      // abbreviations freely.
+      'unicorn/name-replacements': 'off', // 17282
       'unicorn/prefer-dom-node-html-methods': 'off',
       // We mix PascalCase (React components) with camelCase; no single case.
       'unicorn/filename-case': 'off',
@@ -470,18 +486,13 @@ export default defineConfig(
       'unicorn/single-line-block-comment-style': 'off',
 
       // === Opinionated / high-churn, intentionally not adopted ===
-      'unicorn/no-null': 'off', // 1035 — null is intentional in JSON/DOM/MST
-      'unicorn/consistent-boolean-name': 'off', // 811 — would rename serialized config-slot/prop names
-      'unicorn/numeric-separators-style': 'off', // 2051 — purely cosmetic churn
-      'unicorn/no-this-outside-of-class': 'off', // 351 — conflicts with MST `self` patterns
+      'unicorn/no-null': 'off', // 1725 — null is intentional in JSON/DOM/MST
+      'unicorn/consistent-boolean-name': 'off', // 1885 — would rename serialized config-slot/prop names
+      'unicorn/numeric-separators-style': 'off', // 6286 — purely cosmetic churn
+      'unicorn/no-this-outside-of-class': 'off', // 928 — conflicts with MST `self` patterns
 
       // Uint8Array toBase64()/fromBase64() aren't widely-available baseline yet.
       'unicorn/prefer-uint8array-base64': 'off',
-      // Fires on `const drained = queue.splice(0)`, where the returned array
-      // IS the point — an atomic drain-and-clear. `.length = 0` would throw
-      // the elements away. The rule's premise only holds when the return value
-      // is discarded, and it does not check that.
-      'unicorn/no-unnecessary-splice': 'off',
       // Neither Node 24 nor TypeScript's lib has Iterator.zip yet.
       'unicorn/prefer-iterator-zip': 'off',
       // 34 — unicorn 75 extended it to `const xs = []; if (c) xs.push(y)`, and
@@ -489,164 +500,148 @@ export default defineConfig(
       // apply to a .ts file because the spread loses contextual typing. The
       // flagged push is also just the first of a run of `if`s that read alike.
       'unicorn/no-immediate-mutation': 'off',
+      // Off here because oxlint owns it: `typescript/require-array-sort-compare`
+      // knows the element type, so it skips string arrays, which are nearly all
+      // of this untyped rule's hits.
+      'unicorn/require-array-sort-compare': 'off', // 334
+      // Off after reading all 28: the two that could meet a `$` in data now take
+      // a replacer function. The rest replace with a constant, or mean `$1`.
+      'unicorn/no-unsafe-string-replacement': 'off', // 26
 
       // === Conflicts with repo conventions (nest / ternaries over early return) ===
       // 33 — one guard per reason, and most carry their own comment saying why;
       // `||`-merging them fuses unrelated exits (a mouse button and a gesture
       // owner) into one condition.
       'unicorn/prefer-combined-guards': 'off',
-      'unicorn/prefer-early-return': 'off', // 74 — we prefer nesting over early return
-      'unicorn/no-useless-else': 'off', // 93 — pushes early-return de-nesting
-      'unicorn/no-lonely-if': 'off', // 6 — nesting preference
-      'unicorn/no-negated-condition': 'off', // 180
-      'unicorn/no-nested-ternary': 'off', // 166 — nested ternaries are fine here
+      'unicorn/prefer-early-return': 'off', // 385 — we prefer nesting over early return
+      'unicorn/no-useless-else': 'off', // 113 — pushes early-return de-nesting
+      'unicorn/no-lonely-if': 'off', // 11 — nesting preference
+      'unicorn/no-negated-condition': 'off', // 206
+      'unicorn/no-nested-ternary': 'off', // 518 — nested ternaries are fine here
 
-      // === Deferred: valid rules not adopted in this first pass. Enable
-      // incrementally; the number is the violation count at deferral time. ===
-      // These five surfaced when the config started matching `**/*.ts` — the
-      // counts are from that first full run, not from a rule upgrade.
-      'unicorn/no-duplicate-loops': 'off', // 11 — `for (const x of xs.filter(…))`; a perf claim, not a correctness one
-      'unicorn/prefer-then-catch': 'off', // 7 — NOT a safe rewrite: `.then(a, b)` does not route a's own throw to b, `.then(a).catch(b)` does. Each site needs reading
-      // Off, and do NOT try again: its fix is wrong on every remaining site.
-      // Six are `[...someUint32Array.slice(0, n)]`, where the spread is the
-      // whole point — it turns a TypedArray into a `number[]` so `toEqual([…])`
-      // can match it — and the rule reads `.slice()` as returning an Array.
-      // The seventh is `for (const x of [...this.drafts])` around a
-      // `this.drafts.delete()`, where the snapshot is the guard. This one is
-      // autofixable, so `--fix` applies all seven silently.
-      'unicorn/no-useless-spread': 'off',
-      // Off: both sites are `el.querySelectorAll('svg > g > g')` in tests,
-      // where nothing is ambiguous about which subtree is being searched.
-      'unicorn/prefer-scoped-selector': 'off',
+      // === Deferred: valid rules not adopted yet. Enable incrementally. ===
+      'unicorn/no-duplicate-loops': 'off', // 34 — `for (const x of xs.filter(…))`; a perf claim, not a correctness one
+      'unicorn/prefer-then-catch': 'off', // 16 — NOT a safe rewrite: `.then(a, b)` does not route a's own throw to b, `.then(a).catch(b)` does. Each site needs reading
+      // Off, and do NOT try again: its autofix breaks two shapes the tree
+      // relies on, and `--fix` applies it silently. `[...someUint32Array.slice(0,
+      // n)]` spreads to turn a TypedArray into a `number[]` so `toEqual([…])`
+      // matches, and the rule reads `.slice()` as returning an Array. `for
+      // (const x of [...this.drafts])` around a `this.drafts.delete()` iterates
+      // a snapshot because the loop mutates the collection.
+      'unicorn/no-useless-spread': 'off', // 31
+      // Off: the sites are test queries from a known root, where nothing is
+      // ambiguous about which subtree is being searched.
+      'unicorn/prefer-scoped-selector': 'off', // 8
       // Off: it is the nested-ternary family, and the four entries above
       // already reject that. Its one site is the shader literal formatter,
       // whose branches carry a comment each.
       'unicorn/no-unnecessary-nested-ternary': 'off',
-      'unicorn/number-literal-case': 'off', // 618
-      'unicorn/prefer-global-this': 'off', // 253
-      'unicorn/catch-error-name': 'off', // 246
-      'unicorn/prefer-await': 'off', // 233
-      'unicorn/switch-case-braces': 'off', // 207
-      'unicorn/no-useless-undefined': 'off', // 207
-      'unicorn/no-useless-template-literals': 'off', // 161
-      'unicorn/explicit-length-check': 'off', // 158
-      'unicorn/prefer-code-point': 'off', // 134
-      'unicorn/consistent-function-scoping': 'off', // 129
-      'unicorn/max-nested-calls': 'off', // 114
-      'unicorn/no-array-sort': 'off', // 113
-      'unicorn/no-for-loop': 'off', // 96
-      'unicorn/no-break-in-nested-loop': 'off', // 83
-      'unicorn/prefer-spread': 'off', // 83
-      'unicorn/consistent-conditional-object-spread': 'off', // 64
-      'unicorn/prefer-iterator-to-array': 'off', // 57
-      'unicorn/no-top-level-assignment-in-function': 'off', // 57
-      'unicorn/no-computed-property-existence-check': 'off', // 55
-      'unicorn/no-await-expression-member': 'off', // 55 — mostly NOT auto-fixable, churn is largely test files
-      'unicorn/no-unsafe-property-key': 'off', // 4 — legacy dynamic string-key access; proper fix needs type-level work
-      'unicorn/prefer-continue': 'off', // 53
-      'unicorn/no-return-array-push': 'off', // 53
-      'unicorn/prefer-number-coercion': 'off', // 53
-      // HIGH-VALUE bug-catcher: bare .sort() sorts numbers lexicographically
-      // (1,10,2). Priority burndown — needs a per-site comparator each, not
-      // auto-fixable, and string-sort sites may move snapshots.
-      'unicorn/require-array-sort-compare': 'off', // 81
-      'unicorn/consistent-class-member-order': 'off', // 52
-      'unicorn/no-global-object-property-assignment': 'off', // 43
-      'unicorn/prefer-switch': 'off', // 41
-      'unicorn/prefer-global-number-constants': 'off', // 41
-      'unicorn/no-array-callback-reference': 'off', // 37
-      'unicorn/no-declarations-before-early-exit': 'off', // 31
-      'unicorn/consistent-compound-words': 'off', // 28
-      'unicorn/no-new-array': 'off', // 27
-      'unicorn/no-unreadable-for-of-expression': 'off', // 25
-      'unicorn/prefer-at': 'off', // 23
-      'unicorn/prefer-math-trunc': 'off', // 23
-      'unicorn/prefer-includes-over-repeated-comparisons': 'off', // 22
-      'unicorn/no-top-level-side-effects': 'off', // 22
-      'unicorn/no-non-function-verb-prefix': 'off', // 21
-      'unicorn/better-dom-traversing': 'off', // 21
-      'unicorn/operator-assignment': 'off', // 18
-      'unicorn/isolated-functions': 'off', // 16
-      'unicorn/no-process-exit': 'off', // 15
-      'unicorn/prefer-direct-iteration': 'off', // 14
-      'unicorn/prefer-optional-catch-binding': 'off', // 13
-      'unicorn/prefer-export-from': 'off', // 13
-      'unicorn/no-unreadable-array-destructuring': 'off', // 12
-      'unicorn/prefer-add-event-listener': 'off', // 12
-      'unicorn/prefer-minimal-ternary': 'off', // 12
-      'unicorn/prefer-number-is-safe-integer': 'off', // 12
-      'unicorn/logical-assignment-operators': 'off', // 11
-      'unicorn/no-array-reverse': 'off', // 11
+      'unicorn/number-literal-case': 'off', // 1035
+      'unicorn/prefer-global-this': 'off', // 637
+      'unicorn/catch-error-name': 'off', // 393
+      'unicorn/prefer-await': 'off', // 505
+      'unicorn/switch-case-braces': 'off', // 300
+      'unicorn/no-useless-undefined': 'off', // 545
+      'unicorn/explicit-length-check': 'off', // 594
+      'unicorn/prefer-code-point': 'off', // 262
+      'unicorn/consistent-function-scoping': 'off', // 895
+      'unicorn/max-nested-calls': 'off', // 769
+      'unicorn/no-array-sort': 'off', // 669
+      'unicorn/no-for-loop': 'off', // 313
+      'unicorn/no-break-in-nested-loop': 'off', // 314
+      'unicorn/prefer-spread': 'off', // 170
+      'unicorn/consistent-conditional-object-spread': 'off', // 270
+      'unicorn/prefer-iterator-to-array': 'off', // 397
+      'unicorn/no-top-level-assignment-in-function': 'off', // 237
+      'unicorn/no-computed-property-existence-check': 'off', // 151
+      'unicorn/no-await-expression-member': 'off', // 214 — mostly NOT auto-fixable, churn is largely test files
+      'unicorn/no-unsafe-property-key': 'off', // 3 — legacy dynamic string-key access; proper fix needs type-level work
+      'unicorn/prefer-continue': 'off', // 479
+      'unicorn/no-return-array-push': 'off', // 161
+      'unicorn/prefer-number-coercion': 'off', // 66
+      'unicorn/consistent-class-member-order': 'off', // 62
+      'unicorn/no-global-object-property-assignment': 'off', // 115
+      'unicorn/prefer-switch': 'off', // 89
+      'unicorn/prefer-global-number-constants': 'off', // 227
+      'unicorn/no-array-callback-reference': 'off', // 312
+      'unicorn/no-declarations-before-early-exit': 'off', // 88
+      'unicorn/consistent-compound-words': 'off', // 123
+      'unicorn/no-new-array': 'off', // 83
+      'unicorn/no-unreadable-for-of-expression': 'off', // 267
+      'unicorn/prefer-at': 'off', // 25
+      'unicorn/prefer-math-trunc': 'off', // 62
+      'unicorn/prefer-includes-over-repeated-comparisons': 'off', // 103
+      'unicorn/no-top-level-side-effects': 'off', // 37
+      'unicorn/better-dom-traversing': 'off', // 36
+      'unicorn/operator-assignment': 'off', // 10
+      'unicorn/no-process-exit': 'off', // 223
+      'unicorn/prefer-direct-iteration': 'off', // 29
+      'unicorn/prefer-optional-catch-binding': 'off', // 2
+      'unicorn/prefer-export-from': 'off', // 72
+      'unicorn/no-unreadable-array-destructuring': 'off', // 25
+      'unicorn/prefer-add-event-listener': 'off', // 11
+      'unicorn/prefer-minimal-ternary': 'off', // 38
+      'unicorn/prefer-number-is-safe-integer': 'off', // 42
+      'unicorn/logical-assignment-operators': 'off', // 7
+      'unicorn/no-array-reverse': 'off', // 51
       'unicorn/no-useless-coercion': 'off', // 10
-      'unicorn/prefer-module': 'off', // 10
-      'unicorn/prefer-type-error': 'off', // 9
-      'unicorn/prefer-object-iterable-methods': 'off', // 9
-      'unicorn/no-for-each': 'off', // 9
-      'unicorn/prefer-ternary': 'off', // 8
-      'unicorn/prefer-add-event-listener-options': 'off', // 8
-      'unicorn/text-encoding-identifier-case': 'off', // 8
-      'unicorn/prefer-top-level-await': 'off', // 8
-      'unicorn/no-negated-array-predicate': 'off', // 7
-      'unicorn/no-unsafe-string-replacement': 'off', // 12 — real correctness (non-literal replacement can hit $&/$1 specials)
-      'unicorn/prefer-boolean-return': 'off', // 6
-      'unicorn/prefer-array-from-map': 'off', // 6
-      'unicorn/prefer-promise-with-resolvers': 'off', // 6
-      'unicorn/prefer-else-if': 'off', // 6
-      'unicorn/prefer-response-static-json': 'off', // 6
-      'unicorn/prefer-string-raw': 'off', // 6
-      'unicorn/prefer-split-limit': 'off', // 5
-      'unicorn/prefer-set-methods': 'off', // 5
-      'unicorn/no-subtraction-comparison': 'off', // 4
-      'unicorn/prefer-logical-operator-over-ternary': 'off', // 4
-      'unicorn/prefer-single-call': 'off', // 4
-      'unicorn/prefer-iterator-helpers': 'off', // 4
-      'unicorn/prefer-hoisting-branch-code': 'off', // 4
-      'unicorn/prefer-https': 'off', // 4
-      'unicorn/relative-url-style': 'off', // 4
-      'unicorn/no-negated-comparison': 'off', // 3
-      'unicorn/no-abusive-eslint-disable': 'off', // 3
-      'unicorn/prefer-query-selector': 'off', // 3
-      'unicorn/no-array-reduce': 'off', // 3
-      'unicorn/consistent-json-file-read': 'off', // 3
+      'unicorn/prefer-module': 'off', // 283
+      'unicorn/prefer-type-error': 'off', // 43
+      'unicorn/prefer-object-iterable-methods': 'off', // 5
+      'unicorn/no-for-each': 'off', // 85
+      'unicorn/prefer-ternary': 'off', // 370
+      'unicorn/prefer-add-event-listener-options': 'off', // 12
+      'unicorn/text-encoding-identifier-case': 'off', // 10
+      'unicorn/prefer-top-level-await': 'off', // 26
+      'unicorn/no-negated-array-predicate': 'off', // 72
+      'unicorn/prefer-boolean-return': 'off', // 3
+      'unicorn/prefer-array-from-map': 'off', // 20
+      'unicorn/prefer-promise-with-resolvers': 'off', // 36
+      'unicorn/prefer-else-if': 'off', // 15
+      'unicorn/prefer-response-static-json': 'off', // 22
+      'unicorn/prefer-string-raw': 'off', // 72
+      'unicorn/prefer-split-limit': 'off', // 202
+      'unicorn/prefer-set-methods': 'off', // 11
+      'unicorn/no-subtraction-comparison': 'off', // 8
+      'unicorn/prefer-logical-operator-over-ternary': 'off', // 11
+      'unicorn/prefer-single-call': 'off', // 12
+      'unicorn/prefer-iterator-helpers': 'off', // 17
+      'unicorn/prefer-https': 'off', // 33
+      'unicorn/relative-url-style': 'off', // 6
+      'unicorn/no-negated-comparison': 'off', // 1
+      'unicorn/no-abusive-eslint-disable': 'off', // 1
+      'unicorn/prefer-query-selector': 'off', // 46
+      'unicorn/no-array-reduce': 'off', // 26
+      'unicorn/consistent-json-file-read': 'off', // 5
       'unicorn/no-object-as-default-parameter': 'off', // 3
-      'unicorn/consistent-existence-index-check': 'off', // 3
-      'unicorn/no-unnecessary-global-this': 'off', // 2
-      'unicorn/prefer-unary-minus': 'off', // 2
-      'unicorn/prefer-structured-clone': 'off', // 2
+      'unicorn/consistent-existence-index-check': 'off', // 29
+      'unicorn/no-unnecessary-global-this': 'off', // 43
+      'unicorn/prefer-unary-minus': 'off', // 1
+      'unicorn/prefer-structured-clone': 'off', // 13
       'unicorn/prefer-smaller-scope': 'off', // 2
-      'unicorn/no-unnecessary-array-flat-map': 'off', // 2
-      'unicorn/prefer-url-href': 'off', // 2
-      'unicorn/prefer-blob-reading-methods': 'off', // 2
-      'unicorn/no-empty-file': 'off', // 1
-      'unicorn/prefer-dom-node-text-content': 'off', // 1
-      'unicorn/prefer-string-repeat': 'off', // 1
-      'unicorn/class-reference-in-static-methods': 'off', // 1
+      'unicorn/prefer-url-href': 'off', // 4
+      'unicorn/prefer-blob-reading-methods': 'off', // 1
+      'unicorn/prefer-dom-node-text-content': 'off', // 8
+      'unicorn/prefer-string-repeat': 'off', // 18
       'unicorn/prefer-has-check': 'off', // 1
-      'unicorn/prefer-string-slice': 'off', // 1
-      'unicorn/prefer-unicode-code-point-escapes': 'off', // 1
-      'unicorn/no-unnecessary-fetch-options': 'off', // 1
-      'unicorn/no-late-current-target-access': 'off', // 1
-      'unicorn/no-useless-recursion': 'off', // 1
-      'unicorn/no-useless-override': 'off', // 1
-      'unicorn/prefer-array-find': 'off', // 1
-      'unicorn/prefer-observer-apis': 'off', // 1
-      'unicorn/prefer-type-literal-last': 'off', // 1
-      'unicorn/default-export-style': 'off', // 1
-      'unicorn/no-error-property-assignment': 'off', // 1
-      'unicorn/prefer-promise-try': 'off', // 1
-      'unicorn/prefer-math-min-max': 'off', // 1
-      'unicorn/no-useless-collection-argument': 'off', // 1
-      'unicorn/no-exports-in-scripts': 'off', // 1
-      'unicorn/prefer-native-coercion-functions': 'off', // 1
+      'unicorn/prefer-string-slice': 'off', // 3
+      'unicorn/prefer-unicode-code-point-escapes': 'off', // 31
+      'unicorn/no-useless-recursion': 'off', // 7
+      'unicorn/prefer-array-find': 'off', // 8
+      'unicorn/prefer-observer-apis': 'off', // 3
+      'unicorn/prefer-type-literal-last': 'off', // 4
+      'unicorn/no-error-property-assignment': 'off', // 16
+      'unicorn/prefer-promise-try': 'off', // 3
+      'unicorn/prefer-math-min-max': 'off', // 55
+      'unicorn/no-useless-collection-argument': 'off', // 8
+      'unicorn/no-exports-in-scripts': 'off', // 6
       'unicorn/no-useless-continue': 'off', // 1
-      'unicorn/template-indent': 'off', // 1
-      'unicorn/prefer-iterable-in-constructor': 'off', // 1
       'unicorn/prefer-location-assign': 'off', // 1
     },
   },
   {
     rules: {
-      // Core rules oxlint doesn't own for us and prettier doesn't cover.
+      // Core rules oxlint doesn't own for us and oxfmt doesn't cover.
       'no-console': ['error', { allow: ['error', 'warn'] }],
       curly: 'error',
       'object-shorthand': 'error',
@@ -948,30 +943,13 @@ export default defineConfig(
       'no-console': 'off',
     },
   },
-  // useEffectEvent returns a stale closure inside mobx-react observer()
-  // components (its useInsertionEffect impl-swap does not run under observer's
-  // reactive render), and nearly every JBrowse component is an observer. Use
-  // useEventCallback instead. See key_pattern_useeffectevent_observer_hazard.
   {
     rules: {
       'no-restricted-imports': [
         'error',
         {
-          paths: [
-            {
-              name: 'react',
-              importNames: ['useEffectEvent'],
-              message:
-                'useEffectEvent reads stale state inside mobx-react observer() components. Use useEventCallback from @jbrowse/core/util/useEventCallback instead.',
-            },
-          ],
-          patterns: [
-            {
-              group: ['@jbrowse/*/src', '@jbrowse/*/src/**'],
-              message:
-                'Do not import from the src directory of another package. Use the package public API instead.',
-            },
-          ],
+          paths: [noUseEffectEvent],
+          patterns: [noSrcImport],
         },
       ],
     },
@@ -990,20 +968,9 @@ export default defineConfig(
       'no-restricted-imports': [
         'error',
         {
-          paths: [
-            {
-              name: 'react',
-              importNames: ['useEffectEvent'],
-              message:
-                'useEffectEvent reads stale state inside mobx-react observer() components. Use useEventCallback from @jbrowse/core/util/useEventCallback instead.',
-            },
-          ],
+          paths: [noUseEffectEvent],
           patterns: [
-            {
-              group: ['@jbrowse/*/src', '@jbrowse/*/src/**'],
-              message:
-                'Do not import from the src directory of another package. Use the package public API instead.',
-            },
+            noSrcImport,
             {
               group: ['./index.ts'],
               message:
@@ -1024,14 +991,7 @@ export default defineConfig(
       'no-restricted-imports': [
         'error',
         {
-          paths: [
-            {
-              name: 'react',
-              importNames: ['useEffectEvent'],
-              message:
-                'useEffectEvent reads stale state inside mobx-react observer() components. Use useEventCallback from @jbrowse/core/util/useEventCallback instead.',
-            },
-          ],
+          paths: [noUseEffectEvent],
         },
       ],
     },

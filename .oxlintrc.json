@@ -54,7 +54,7 @@
       "error",
       { "considerDefaultExhaustiveForUnions": true }
     ],
-    "typescript/require-array-sort-compare": "off",
+    "typescript/require-array-sort-compare": "error",
     "typescript/consistent-type-imports": "error",
     "typescript/consistent-type-exports": "error",
     "typescript/dot-notation": "error",
@@ -97,7 +97,8 @@
     {
       "files": ["**/*.test.{ts,tsx}"],
       "rules": {
-        "react/globals": "off"
+        "react/globals": "off",
+        "typescript/require-array-sort-compare": "off"
       }
     },
     {

@@ -125,7 +125,9 @@ export function collectGatedAdapterBudgets(): Record<string, string> {
     const limit = declaredLimit(join(dir, 'configSchema.ts'))
     found[basename(dir)] = limit === undefined ? 'display' : `own:${limit}`
   }
-  return Object.fromEntries(Object.entries(found).sort())
+  return Object.fromEntries(
+    Object.entries(found).sort(([a], [b]) => (a < b ? -1 : 1)),
+  )
 }
 
 // A display opts into the byte gate by overriding this to true. Matched as a
