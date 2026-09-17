@@ -28,6 +28,7 @@ import { createCanvas } from 'canvas'
 
 import BigWigAdapter from '../src/BigWigAdapter/BigWigAdapter.ts'
 import configSchema from '../src/BigWigAdapter/configSchema.ts'
+import { syntheticReductionLevels } from '../src/BigWigAdapter/syntheticTiers.ts'
 import { tierSpanRange } from '../src/BigWigAdapter/tierSpanRange.ts'
 import { buildSourceRenderData } from '../src/shared/buildSourceRenderData.ts'
 import {
@@ -54,7 +55,6 @@ import {
 } from '../src/util.ts'
 import {
   buildRowColorTable,
-  decimateRaw,
   packBand36,
   packCenterLine28,
   packFill16,
@@ -96,8 +96,9 @@ async function fetchRaw(file: string) {
     [{ refName, start, end, assemblyName: 'bench' }],
     { bpPerPx },
   )
+  const fileLevels = header.zoomLevels.map(z => z.reductionLevel)
   const [lo] = tierSpanRange(
-    header.zoomLevels.map(z => z.reductionLevel),
+    [...syntheticReductionLevels(fileLevels), ...fileLevels],
     bpPerPx,
   )
   return {
@@ -388,13 +389,6 @@ const memory = {
   colorTableBytes: buildRowColorTable(xyProps).byteLength,
 }
 
-// ---- decimation ----
-
-const firstTier = first.firstTier
-const binBp = 2 ** Math.ceil(Math.log2(Math.max(1, bpPerPx / 2)))
-const decimated = raws.map(r => decimateRaw(r, binBp))
-const decimatedFeatures = decimated.reduce((t, r) => t + r.count, 0)
-
 // ---- Canvas2D ----
 
 const paintLayers = lineLayers.filter(l => l.rowIndex < paintSources)
@@ -464,15 +458,6 @@ const arms: Record<string, () => void> = {
   'worker-nobicolor': () => {
     for (const r of raws) {
       sink += processFeaturesFromArrays(r, pivot, false).numFeatures
-    }
-  },
-  'worker-decimate': () => {
-    for (const r of raws) {
-      sink += processFeaturesFromArrays(
-        decimateRaw(r, binBp),
-        pivot,
-        true,
-      ).numFeatures
     }
   },
   'build-xy': () => {
@@ -592,19 +577,11 @@ const header = {
   bpPerPx,
   screenPx,
   tier: first.tier,
-  firstTier,
+  firstTier: first.firstTier,
   sources: numSources,
   sign,
   rounds,
   paintSources,
-  decimation: {
-    binBp,
-    featuresBefore: features,
-    featuresAfter: decimatedFeatures,
-    perPxAfter: +(decimatedFeatures / numSources / (viewBp / bpPerPx)).toFixed(
-      2,
-    ),
-  },
 }
 if (asJson) {
   console.log(JSON.stringify({ header, memory, timings }))

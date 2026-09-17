@@ -25,7 +25,6 @@ import {
 } from '../src/shared/wiggleComponentUtils.ts'
 
 import type { WiggleGpuProps } from '../src/shared/buildSourceRenderData.ts'
-import type { RawFeatureArrays } from '../src/util.ts'
 import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
 function countOf(sources: SourceRenderData[], band: boolean) {
@@ -183,60 +182,4 @@ export function packBand36(sources: SourceRenderData[]) {
     }
   }
   return buf
-}
-
-// Worker-side decimation into power-of-two bins, span-weighted mean plus
-// min/max, for the raw section below a BigWig's first zoom level. Output rows
-// are bins with any coverage; a bin's span is clipped to the covered extent.
-export function decimateRaw(raw: RawFeatureArrays, binBp: number) {
-  const { starts, ends, scores, count } = raw
-  const outStarts = new Uint32Array(count)
-  const outEnds = new Uint32Array(count)
-  const outMean = new Float32Array(count)
-  const outMin = new Float32Array(count)
-  const outMax = new Float32Array(count)
-  let n = -1
-  let bin = -1
-  let sum = 0
-  let weight = 0
-  for (let i = 0; i < count; i++) {
-    const s = starts[i]!
-    const e = ends[i]!
-    const score = scores[i]!
-    const b = Math.floor(s / binBp)
-    if (b !== bin) {
-      if (n >= 0) {
-        outMean[n] = sum / weight
-      }
-      n++
-      bin = b
-      sum = 0
-      weight = 0
-      outStarts[n] = s
-      outMin[n] = score
-      outMax[n] = score
-    }
-    const w = e - s
-    sum += score * w
-    weight += w
-    outEnds[n] = e
-    if (score < outMin[n]!) {
-      outMin[n] = score
-    }
-    if (score > outMax[n]!) {
-      outMax[n] = score
-    }
-  }
-  if (n >= 0) {
-    outMean[n] = sum / weight
-  }
-  const len = n + 1
-  return {
-    starts: outStarts.subarray(0, len),
-    ends: outEnds.subarray(0, len),
-    scores: outMean.subarray(0, len),
-    minScores: outMin.subarray(0, len),
-    maxScores: outMax.subarray(0, len),
-    count: len,
-  }
 }
