@@ -153,16 +153,17 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        * In-track stacked grouping: `{ type: "strand" }` packs forward-strand
        * features into one labelled section above the reverse-strand ones,
        * with unstranded features last; `{ type: "attribute", attribute:
-       * "biotype" }` packs one section per value of a feature attribute. A
-       * `domain` on either is the section order: the values it lists stack
-       * first, in that order, and the rest follow sorted. `null` (the
-       * default) is ungrouped.
+       * "biotype" }` packs one section per value of a feature attribute. An
+       * optional `domain` on either is the section order: the values it
+       * lists stack first, in that order, and the rest follow sorted; left
+       * off, the sections are every value the data holds, sorted. `null`
+       * (the default) is ungrouped.
        */
       groupBy: {
         type: 'frozen',
         defaultValue: null,
         description:
-          'In-track stacked grouping, e.g. `{ type: "strand" }` to pack each strand into its own labelled section, or `{ type: "attribute", attribute: "biotype", domain: ["protein_coding", "lncRNA"] }` for one section per attribute value in the listed order (null = ungrouped)',
+          'In-track stacked grouping, e.g. `{ type: "strand" }` to pack each strand into its own labelled section, or `{ type: "attribute", attribute: "biotype" }` for one section per attribute value, sorted; an optional `domain: ["protein_coding", "lncRNA"]` stacks the listed values first, in that order (null = ungrouped)',
         advanced: true,
       },
       /**

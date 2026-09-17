@@ -143,10 +143,11 @@ describes that binding:
 
 - **categorical** — `{ "field": "strand", "scale": "categorical" }` hands a
   palette entry to each distinct value, derived from the value itself so every
-  region paints it the same way. `palette` lists CSS colours to draw from;
-  `domain` lists the values in legend order and walks the palette from the first
-  entry, for when the colours should be spent deliberately; values it leaves out
-  follow sorted, the same order a facet stacks its sections in.
+  region paints it the same way. `palette` lists CSS colours to draw from. An
+  optional `domain` lists the values in legend order and walks the palette from
+  the first entry, for when the colours should be spent deliberately; values it
+  leaves out follow sorted, the same order a facet stacks its sections in, and
+  with no `domain` the legend is every value the region holds, sorted.
 - **linear** or **log** —
   `{ "field": "signal", "scale": "linear", "domain": [0, 50], "ramp": ["white", "red"] }`
   reads the value through `domain` into the ramp. `ramp` is `["viridis"]` or two

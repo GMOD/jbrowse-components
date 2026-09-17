@@ -263,14 +263,16 @@ const markFacetSchema = ConfigurationSchema(
     },
     /**
      * #slot marks.facet.domain
-     * The section order: the values listed stack first, in this order, and
-     * the rest follow sorted. A listed value the data lacks takes no
+     * Optional section order: the values listed stack first, in this order,
+     * and the rest follow sorted. Left off, the sections are every value
+     * the data holds, sorted. A listed value the data lacks takes no
      * section.
      */
     domain: {
       type: 'stringArray',
       defaultValue: [],
-      description: 'section order; listed values first, the rest sorted',
+      description:
+        'optional section order; listed values first, the rest sorted; left off, every value the data holds, sorted',
     },
   },
   { preProcessSnapshot: liftField },

@@ -3557,7 +3557,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "normal"
         },
         "groupBy": {
-          "description": "In-track stacked grouping, e.g. \`{ type: \\"strand\\" }\` to pack each strand into its own labelled section, or \`{ type: \\"attribute\\", attribute: \\"biotype\\", domain: [\\"protein_coding\\", \\"lncRNA\\"] }\` for one section per attribute value in the listed order (null = ungrouped). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "In-track stacked grouping, e.g. \`{ type: \\"strand\\" }\` to pack each strand into its own labelled section, or \`{ type: \\"attribute\\", attribute: \\"biotype\\" }\` for one section per attribute value, sorted; an optional \`domain: [\\"protein_coding\\", \\"lncRNA\\"]\` stacks the listed values first, in that order (null = ungrouped). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "default": null
         },
         "geneGlyphMode": {
@@ -3966,7 +3966,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "groupBy": {
-          "description": "In-track stacked grouping, e.g. \`{ type: \\"strand\\" }\` to pre-group reads by strand, or \`{ type: \\"tag\\", tag: \\"HP\\", domain: [\\"2\\", \\"1\\"] }\` for one section per tag value with the listed values stacked first in that order (null = ungrouped). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "In-track stacked grouping, e.g. \`{ type: \\"strand\\" }\` to pre-group reads by strand, or \`{ type: \\"tag\\", tag: \\"HP\\" }\` for one section per tag value, sorted; an optional \`domain: [\\"2\\", \\"1\\"]\` stacks the listed values first, in that order (null = ungrouped). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "default": null
         },
         "collapseGroupRows": {
@@ -4509,7 +4509,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           }
         },
         "groupBy": {
-          "description": "In-track stacked grouping, e.g. \`{ type: \\"strand\\" }\` to pre-group reads by strand, or \`{ type: \\"tag\\", tag: \\"HP\\", domain: [\\"2\\", \\"1\\"] }\` for one section per tag value with the listed values stacked first in that order (null = ungrouped). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "In-track stacked grouping, e.g. \`{ type: \\"strand\\" }\` to pre-group reads by strand, or \`{ type: \\"tag\\", tag: \\"HP\\" }\` for one section per tag value, sorted; an optional \`domain: [\\"2\\", \\"1\\"]\` stacks the listed values first, in that order (null = ungrouped). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "default": null
         },
         "collapseGroupRows": {
@@ -5106,7 +5106,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": "normal"
         },
         "groupBy": {
-          "description": "In-track stacked grouping, e.g. \`{ type: \\"strand\\" }\` to pack each strand into its own labelled section, or \`{ type: \\"attribute\\", attribute: \\"biotype\\", domain: [\\"protein_coding\\", \\"lncRNA\\"] }\` for one section per attribute value in the listed order (null = ungrouped). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
+          "description": "In-track stacked grouping, e.g. \`{ type: \\"strand\\" }\` to pack each strand into its own labelled section, or \`{ type: \\"attribute\\", attribute: \\"biotype\\" }\` for one section per attribute value, sorted; an optional \`domain: [\\"protein_coding\\", \\"lncRNA\\"]\` stacks the listed values first, in that order (null = ungrouped). Any JSON value: the slot is \`frozen\`, so its shape is not checked here.",
           "default": null
         },
         "geneGlyphMode": {
@@ -7506,7 +7506,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
               "default": ""
             },
             "domain": {
-              "description": "section order; listed values first, the rest sorted.",
+              "description": "optional section order; listed values first, the rest sorted; left off, every value the data holds, sorted.",
               "anyOf": [
                 {
                   "type": "array",
