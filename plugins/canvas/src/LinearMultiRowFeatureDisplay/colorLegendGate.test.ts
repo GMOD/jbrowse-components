@@ -71,6 +71,24 @@ describe('the color key waits for a painting to key', () => {
     expect(display.legendSpec.sections).toHaveLength(1)
   })
 
+  // The blocks take their colour per feature, so the domain is a claim about
+  // the key's order alone.
+  it('lists the colorDomain labels first, the rest sorted', () => {
+    const { display } = createTestEnvironment({
+      displayConfig: {
+        legend: [...LEGEND, { label: 'SAS', color: 'green' }],
+        colorDomain: ['SAS'],
+      },
+    }).createDisplay()
+    display.setRpcData(0, painted(), ctgA)
+
+    expect(display.legendSpec.sections![0]!.items.map(i => i.label)).toEqual([
+      'SAS',
+      'AFR',
+      'EUR',
+    ])
+  })
+
   it('drops it again while the density band stands in for the features', () => {
     const { display, view } = createTestEnvironment({
       densityAdapter: DENSITY_ADAPTER,

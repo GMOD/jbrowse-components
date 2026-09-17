@@ -210,6 +210,24 @@ export default function configSchemaF() {
       },
       /**
        * #slot
+       * The order the colour key lists its categories in: the labels listed
+       * here first, the rest sorted. The blocks take their colour per feature,
+       * from `itemRgb` or the `color` jexl, so this orders the key alone and
+       * paints nothing differently.
+       *
+       * #example
+       * ```js
+       * colorDomain: ['Pathogenic', 'Likely pathogenic', 'Benign']
+       * ```
+       */
+      colorDomain: {
+        type: 'stringArray',
+        defaultValue: [],
+        description:
+          'optional legend order for the color categories; listed labels first, the rest sorted',
+      },
+      /**
+       * #slot
        * An array of `{ match, group, color }` tagging rows by a regex on their
        * name, pulling matched rows into contiguous blocks (except under a
        * cluster tree, which already owns the row order) and tinting their

@@ -159,6 +159,10 @@ segment mean copy number:
 **Categories** submenu beside it hides individual categories, so you can drop
 the states or classes you aren't reading and leave the rest painted. The submenu
 counts what is hidden and offers **Show all categories** to put them back.
+[`colorDomain`](/docs/config/linearmultirowfeaturedisplay/#slot-colordomain)
+sets the order those rows read in — the labels it lists first, the rest sorted —
+the same word and rule `domain` orders the track's rows by. The blocks take
+their color per feature, so it moves the key and nothing on the plot.
 
 You can also recolor a single row by hand from **Edit colors/arrangement...**;
 that overrides every source above for that row and applies at render time, with

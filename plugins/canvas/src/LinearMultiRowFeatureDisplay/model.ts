@@ -251,6 +251,14 @@ export default function stateModelFactory(
       },
       /**
        * #getter
+       * The colour key's declared order, off config. The blocks are painted
+       * per feature, so this orders the key and nothing else.
+       */
+      get colorDomain(): string[] {
+        return readConfObject(self.conf, 'colorDomain')
+      },
+      /**
+       * #getter
        * Raw `color` slot, forwarded to the worker which resolves it per feature.
        */
       get colorConfig(): string | undefined {
@@ -633,6 +641,7 @@ export default function stateModelFactory(
             kind: 'categorical' as const,
             id: 'features',
             title: 'Feature colors',
+            domain: self.colorDomain,
             entries: self.colorLegend.map(e => ({
               value: e.label,
               label: e.label,
