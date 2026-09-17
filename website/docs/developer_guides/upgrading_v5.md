@@ -301,8 +301,8 @@ and calling it throws inside the reaching plugin's own `install`.
     (`minX`/`minY`/`maxX`/`maxY`/`name`), declared in the same file and never
     exported past it or read anywhere
 
-Neither surface is checked against a published bundle: the removals table and
-`scripts/check-published-plugins.ts` both work from module exports, so neither
+The removals table above and `scripts/check-published-plugins.ts` both work from
+module exports, and neither is checked against a published bundle, so neither
 reaches a plugin `exports` object or the session.
 `pluginFacingSessionApi.test.ts` pins the fifteen session members published
 bundles actually call, and performs the call rather than just asserting the

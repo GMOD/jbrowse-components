@@ -23,8 +23,8 @@ They are otherwise the same: pnpm, vitest unit tests, and Puppeteer end-to-end
 tests against a nightly JBrowse build. Pick esbuild for faster builds; rollup is
 older and more widely referenced in existing examples.
 
-Both ship a custom **view** (`src/HelloView`) as their worked example. For a
-custom track/display, scaffold from a template and then follow
+The two templates ship a custom **view** (`src/HelloView`) as their worked
+example. For a custom track/display, scaffold from a template and then follow
 [](/docs/developer_guides/plotting_features). Its complete plugin lives in
 `example-plugins/score-example/`, and every code block in that guide is
 generated from that source.
