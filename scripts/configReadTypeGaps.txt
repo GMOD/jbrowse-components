@@ -32,8 +32,8 @@
 #     taken from `pluginManager.getDisplayType(…).configSchema` poisons the
 #     whole schema through GetBase and has to be re-plumbed first.
 #
-# 138 unchecked in source, 147 in tests,
-# of 970 total config accessor calls. The gate counts source only.
+# 137 unchecked in source, 147 in tests,
+# of 985 total config accessor calls. The gate counts source only.
 
 packages/app-core/src/Assemblies/AssembliesMixin.ts  (1)
   166	readConfObject('name')
@@ -136,11 +136,11 @@ packages/product-core/src/Session/SessionTracks.ts  (3)
   84	readConfObject('aliases')
   89	readConfObject('assemblyNames')
 packages/product-core/src/Session/Themes.ts  (5)
-  45	getConf('extraThemes')
-  63	getConf('theme')
-  64	getConf('extraThemes')
-  127	getConf('theme')
-  166	getConf('theme')
+  48	getConf('extraThemes')
+  66	getConf('theme')
+  67	getConf('extraThemes')
+  130	getConf('theme')
+  169	getConf('theme')
 packages/product-core/src/ui/AssemblyInfoPanel.tsx  (1)
   99	readConfObject('name')
 packages/product-core/src/ui/DescriptionPanel.tsx  (1)
@@ -176,8 +176,8 @@ plugins/alignments/src/LinearAlignmentsDisplay/configSlotViews.ts  (3)
   158	getConf('filterBy')
   232	getConf('groupBy')
 plugins/alignments/src/LinearAlignmentsDisplay/model.ts  (2)
-  725	getConf('sortedBy')
-  2397	getConf('showOutline')
+  724	getConf('sortedBy')
+  2396	getConf('showOutline')
 plugins/alignments/src/ReadVsRefDialog/fetchPrimaryAlignment.ts  (2)
   130	getConf('assemblyNames')
   140	getConf('adapter')
@@ -187,8 +187,6 @@ plugins/breakpoint-split-view/src/BreakpointSplitView/components/importFormUtils
   46	readConfObject('trackId')
 plugins/breakpoint-split-view/src/BreakpointSplitView/components/importFormUtils.ts  (1)
   28	readConfObject('assemblyNames')
-plugins/canvas/src/LinearBasicDisplay/baseModel.ts  (1)
-  423	getConf('groupBy')
 plugins/canvas/src/LinearBasicDisplay/CollapseIntronsDialog/util.ts  (1)
   134	readConfObject('trackId')
 plugins/canvas/src/LinearBasicDisplay/collapseIntronsMenu.ts  (1)
