@@ -33,9 +33,10 @@ const useStyles = makeStyles()({
  * two levels instead. The upper level is scrolled, where the header overview
  * never is, so its left edge is what its origin is shifted by.
  *
- * Its height is `upper`'s to keep, and dragging the band is how it is set: the
- * band's height is the slope of the connector, which is the one thing about the
- * figure the data does not decide.
+ * Its height is `upper`'s to keep, and dragging the band is how it is set. The
+ * band is a picture of a ratio — a level ten times wider than the row below
+ * narrows to a tenth of the width over the band's height — and how steep that
+ * reads is the figure's to decide, not ours.
  */
 const LevelConnector = observer(function LevelConnector({
   upper,
