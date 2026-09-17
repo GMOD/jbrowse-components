@@ -1,4 +1,4 @@
-import { readConfObject } from '@jbrowse/core/configuration'
+import { readConfObject, setConf } from '@jbrowse/core/configuration'
 import { getContainingTrack } from '@jbrowse/core/util'
 
 import matrixConfigSchemaFactory from '../LinearMultiSampleVariantMatrixDisplay/configSchema.ts'
@@ -95,6 +95,16 @@ describe('getPortableSettings', () => {
     display.setShowLegend(false)
     display.getPortableSettings(targetId)
     expect(readConfObject(target, 'showLegend')).toBe(false)
+  })
+
+  // The row `domain` is derived at read time rather than written into
+  // `layout`, so a switch that left the slot behind would drop the configured
+  // order with nothing in the ported layout to stand in for it.
+  it('ports the row domain', () => {
+    const { display, target, targetId } = setup('')
+    setConf(display, 'domain', ['HG002', 'HG001'])
+    display.getPortableSettings(targetId)
+    expect([...readConfObject(target, 'domain')]).toEqual(['HG002', 'HG001'])
   })
 
   // The tree's provenance and the subtree filter are the two pieces of
