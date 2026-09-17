@@ -416,6 +416,7 @@ export default [
   '@jbrowse/display-kit/installClearHoverOnViewportChange',
   '@jbrowse/display-kit/installGlobalFetchAutorun',
   '@jbrowse/display-kit/installPerRegionFetchAutoruns',
+  '@jbrowse/display-kit/jexlFilterConfigSchemaFields',
   '@jbrowse/display-kit/KeyedFetchMixin',
   '@jbrowse/display-kit/legendHost',
   '@jbrowse/display-kit/LegendMixin',

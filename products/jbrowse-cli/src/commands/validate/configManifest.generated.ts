@@ -2862,10 +2862,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
-          "name": "jexlFilters",
-          "type": "(JexlString | string[])"
-        },
-        {
           "name": "heightMode",
           "type": "(JexlString | heightMode)"
         },
@@ -2880,6 +2876,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "densityTierBpPerPx",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "(JexlString | string[])"
         },
         {
           "name": "maxFeatureScreenDensity",
@@ -3056,10 +3056,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
-          "name": "jexlFilters",
-          "type": "(JexlString | string[])"
-        },
-        {
           "name": "partitionField",
           "type": "(JexlString | string)"
         },
@@ -3172,10 +3168,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "mouseover",
           "type": "(JexlString | string)"
-        },
-        {
-          "name": "jexlFilters",
-          "type": "(JexlString | string[])"
         },
         {
           "name": "featureHeight",
@@ -3515,10 +3507,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
-          "name": "jexlFilters",
-          "type": "(JexlString | string[])"
-        },
-        {
           "name": "featureHeight",
           "type": "(JexlString | number)"
         },
@@ -3753,10 +3741,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
-          "name": "jexlFilters",
-          "type": "(JexlString | string[])"
-        },
-        {
           "name": "color",
           "type": "(JexlString | string)"
         },
@@ -3866,10 +3850,6 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
-          "name": "jexlFilters",
-          "type": "(JexlString | string[])"
-        },
-        {
           "name": "heightMode",
           "type": "(JexlString | heightMode)"
         },
@@ -3884,6 +3864,10 @@ export const configManifest: ConfigManifest = {
         {
           "name": "densityTierBpPerPx",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "(JexlString | string[])"
         },
         {
           "name": "maxFeatureScreenDensity",
@@ -4049,12 +4033,12 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
-          "name": "jexlFilters",
-          "type": "(JexlString | string[])"
-        },
-        {
           "name": "lineZoneHeight",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "(JexlString | string[])"
         },
         {
           "name": "rowHeight",
@@ -4178,12 +4162,12 @@ export const configManifest: ConfigManifest = {
           "type": "(JexlString | string)"
         },
         {
-          "name": "jexlFilters",
-          "type": "(JexlString | string[])"
-        },
-        {
           "name": "lineZoneHeight",
           "type": "(JexlString | number)"
+        },
+        {
+          "name": "jexlFilters",
+          "type": "(JexlString | string[])"
         },
         {
           "name": "rowHeight",
@@ -4289,10 +4273,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "mouseover",
           "type": "(JexlString | string)"
-        },
-        {
-          "name": "jexlFilters",
-          "type": "(JexlString | string[])"
         },
         {
           "name": "lineZoneHeight",
@@ -4858,10 +4838,6 @@ export const configManifest: ConfigManifest = {
         {
           "name": "mouseover",
           "type": "(JexlString | string)"
-        },
-        {
-          "name": "jexlFilters",
-          "type": "(JexlString | string[])"
         },
         {
           "name": "rowHeight",
@@ -6081,7 +6057,6 @@ export const configManifest: ConfigManifest = {
       "filterBy",
       "filterBySetting",
       "hideMismatchesSetting",
-      "jexlFilters",
       "trackMaxHeight"
     ],
     "LinearMultiSampleVariantDisplay": [

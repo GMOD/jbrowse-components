@@ -3415,10 +3415,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
-        "jexlFilters": {
-          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        },
         "heightMode": {
           "description": "Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the \\"Track sizing\\" menu). \`fixed\` (the default) keeps a scrollable fixed height, \`grow\` expands the track to show all features, \`fit\` squeezes features to fill the current height. Orthogonal to the per-feature size set by \`displayMode\`. Unifies the former \`autoHeight\` (grow) + \`squeezeToDisplayHeight\` (fit) settings.",
           "anyOf": [
@@ -3460,6 +3456,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 0
+        },
+        "jexlFilters": {
+          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "maxFeatureScreenDensity": {
           "description": "maximum features per pixel before showing a \\"too many features\\" message.",
@@ -3735,10 +3735,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
-        "jexlFilters": {
-          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        },
         "partitionField": {
           "description": "feature attribute that assigns each feature to a row, or a jexl expression deriving one. Empty = pick one off the data (repClass if present, else name).",
           "$ref": "#/$defs/StringOrJexl",
@@ -3880,10 +3876,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "text to display when the cursor hovers over a feature.",
           "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
-        },
-        "jexlFilters": {
-          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "featureHeight": {
           "description": "Height of each feature (read) in pixels. Defaults to 7.",
@@ -4424,10 +4416,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:lgvSyntenyTooltip(feature)"
         },
-        "jexlFilters": {
-          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        },
         "featureHeight": {
           "description": "Height of each feature (read) in pixels. Defaults to 7.",
           "$ref": "#/$defs/NumberOrJexl",
@@ -4813,10 +4801,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
-        "jexlFilters": {
-          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        },
         "color": {
           "description": "the fill color of the gene glyphs, matching the canvas gene track default.",
           "$ref": "#/$defs/StringOrJexl",
@@ -4964,10 +4948,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
-        "jexlFilters": {
-          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        },
         "heightMode": {
           "description": "Track-sizing strategy — how the track responds when there are more features than fit (shared vocabulary with the alignments display, exposed in the \\"Track sizing\\" menu). \`fixed\` (the default) keeps a scrollable fixed height, \`grow\` expands the track to show all features, \`fit\` squeezes features to fill the current height. Orthogonal to the per-feature size set by \`displayMode\`. Unifies the former \`autoHeight\` (grow) + \`squeezeToDisplayHeight\` (fit) settings.",
           "anyOf": [
@@ -5009,6 +4989,10 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "in \\"auto\\" mode, also draw the density band from this many bp per pixel outward, before the region is too large to fetch; 0 leaves the swap to the fetch-size gate alone.",
           "$ref": "#/$defs/NumberOrJexl",
           "default": 0
+        },
+        "jexlFilters": {
+          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "maxFeatureScreenDensity": {
           "description": "maximum features per pixel before showing a \\"too many features\\" message.",
@@ -5274,13 +5258,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
-        "jexlFilters": {
-          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        },
         "lineZoneHeight": {
           "$ref": "#/$defs/NumberOrJexl",
           "default": 0
+        },
+        "jexlFilters": {
+          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "rowHeight": {
           "description": "per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them.",
@@ -5460,13 +5444,13 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
         },
-        "jexlFilters": {
-          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "$ref": "#/$defs/StringArrayOrJexl"
-        },
         "lineZoneHeight": {
           "$ref": "#/$defs/NumberOrJexl",
           "default": 20
+        },
+        "jexlFilters": {
+          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
+          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "rowHeight": {
           "description": "per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them.",
@@ -5613,10 +5597,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "text to display when the cursor hovers over a feature.",
           "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
-        },
-        "jexlFilters": {
-          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "lineZoneHeight": {
           "$ref": "#/$defs/NumberOrJexl",
@@ -6586,10 +6566,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "text to display when the cursor hovers over a feature.",
           "$ref": "#/$defs/StringOrJexl",
           "default": "jexl:get(feature,'_mouseOver')||get(feature,'name')||get(feature,'function')||get(feature,'id')"
-        },
-        "jexlFilters": {
-          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
-          "$ref": "#/$defs/StringArrayOrJexl"
         },
         "rowHeight": {
           "description": "per-row height in px, scrolling the rows that do not fit; 0 (the default) fits the rows to the display height instead, dividing it between them.",
@@ -7769,7 +7745,7 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "default": true
         },
         "jexlFilters": {
-          "description": "feature filters, without the jexl prefix.",
+          "description": "default set of jexl filters to apply to a track. note: these do not use the jexl prefix because they have a deferred evaluation system.",
           "$ref": "#/$defs/StringArrayOrJexl"
         }
       }
@@ -12242,10 +12218,6 @@ export const configJsonSchema: Record<string, unknown> = JSON.parse(`
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
         },
         "hideMismatchesSetting": {
-          "deprecated": true,
-          "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
-        },
-        "jexlFilters": {
           "deprecated": true,
           "description": "Legacy display-instance key: a session migration lifts it onto the config slot that replaced it."
         },

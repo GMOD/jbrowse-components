@@ -4236,6 +4236,13 @@
       ],
       "worker": "real"
     },
+    "@jbrowse/display-kit/jexlFilterConfigSchemaFields": {
+      "package": "@jbrowse/display-kit",
+      "names": [
+        "jexlFilterConfigSchemaFields"
+      ],
+      "worker": "real"
+    },
     "@jbrowse/display-kit/KeyedFetchMixin": {
       "package": "@jbrowse/display-kit",
       "names": [

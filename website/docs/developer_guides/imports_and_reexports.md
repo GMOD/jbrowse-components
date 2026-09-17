@@ -74,7 +74,7 @@ in both realms.
 | `@jbrowse/app-core` | JBrowse 2 code shared between the 'full featured' apps e.g. jbrowse-web and jbrowse-desktop | 1 | none; a stub with its names |
 | [`@jbrowse/cigar-utils`](/docs/api/cigar-utils) | Pure CIGAR / MD / mismatch parsers and types — no rendering or framework deps | 1 | all of it |
 | [`@jbrowse/core`](/docs/api/core) | JBrowse 2 core libraries used by plugins | 237 | 197 of 237 subpaths; the rest stubbed |
-| `@jbrowse/display-kit` | The display integration layer a track type is built on: the fetch foundations, the byte gate, the display chrome, SVG export, and the RegionHost view contract | 72 | 54 of 72 subpaths; the rest stubbed |
+| `@jbrowse/display-kit` | The display integration layer a track type is built on: the fetch foundations, the byte gate, the display chrome, SVG export, and the RegionHost view contract | 73 | 55 of 73 subpaths; the rest stubbed |
 | [`@jbrowse/display-ui`](/docs/api/display-ui) | The UI a display draws that is not data: the swappable chrome contract, its toolkit-free implementations, and the track overlay layer | 5 | 4 of 5 subpaths; the rest stubbed |
 | `@jbrowse/embedded-core` | JBrowse 2 code shared between embedded products | 1 | none; a stub with its names |
 | `@jbrowse/ld-core` | Pure linkage-disequilibrium parsers and math — PLINK .ld parsing and genotype r²/D' — no rendering or framework deps | 1 | all of it |
