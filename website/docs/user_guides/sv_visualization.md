@@ -406,7 +406,7 @@ For large or inter-chromosomal SVs:
   matter.
 - Use the SV inspector for whole-genome triage before drilling in.
 
-<Figure caption="COLO829 melanoma tumor (red) and matched normal (blue) whole-genome coverage as a multi-quantitative BigWig track. Copy-number changes are visible at chromosome scale." src="/img/cnv.png" />
+<Figure caption="COLO829 melanoma tumor (red) and matched normal (blue) whole-genome coverage as a multi-quantitative BigWig track. Copy-number changes are visible at chromosome scale from the BigWig alone, with no reads loaded." src="/img/cnv.png" />
 
 ## Whole-genome assembly comparison
 
