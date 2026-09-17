@@ -91,8 +91,9 @@ beside it is base-level and is not. Point the wrong builder at a file and
 `gfatools` projects a tagless graph to no segments at all.
 
 A third format turns up on published human graphs. A `.gbz` is vg's indexed form
-and carries a walk per haplotype, so it answers a different question and gets
-[its own section](#every-haplotypes-walk-a-gbz-base-database) at the end.
+and carries a walk per haplotype rather than tags, so it answers a different
+question and gets [its own section](#every-haplotypes-walk-a-gbz-base-database)
+at the end.
 
 ## The two indexes a graph track reads
 
@@ -304,8 +305,9 @@ unchanged, since `maxGraphNodes` counts what actually came back.
 
 The bubbles report where the graph varies. One row per allele, anchored on the
 reference and carrying its size, reports what the variation is. It is derived
-from the two indexes, so it costs seconds off a small pair, and it works on
-somebody else's hosted index with no graph in hand at all:
+from the two indexes rather than from the graph, so it costs seconds off a small
+pair rather than a re-read of the whole file, and it works on somebody else's
+hosted index with no graph in hand at all:
 
 ```bash
 curl -fO https://raw.githubusercontent.com/GMOD/jbrowse-components/main/scripts/build_rgfa_alleles.sh

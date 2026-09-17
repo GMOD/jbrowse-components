@@ -81,10 +81,10 @@ track menu keys every row on the whole window and draws the dendrogram.
 Dark blue is no copy of _RHD_, light blue one, grey two, and the olive stripe is
 a separate nested call.
 
-A matrix cell marks that a sample carries something at that column. Loading the
-same VCF again in the ordinary variant display puts each record on its own row
-with its id, class and size. Cell coloring by **SV type** is the other way to
-ask, shown in the
+A matrix cell marks that a sample carries something at that column, not which
+call. Loading the same VCF again in the ordinary variant display puts each
+record on its own row with its id, class and size. Cell coloring by **SV type**
+is the other way to ask, shown in the
 [multi-variant track guide](/docs/user_guides/multivariant_track).
 
 Three lanes read below, over NCBI RefSeq genes:

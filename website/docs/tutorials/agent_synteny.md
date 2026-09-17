@@ -12,8 +12,8 @@ tutorial_category: Synteny & comparative genomics
 Four sentences typed at an AI agent are enough to align two fruit fly species
 that nobody has aligned to each other, build the comparison in JBrowse Desktop,
 and answer where the two genomes run in opposite directions by totalling up the
-alignment file. The sections below cover what to ask for, what the agent does
-with it, and the two places it needs telling.
+alignment file rather than describing the picture. The sections below cover what
+to ask for, what the agent does with it, and the two places it needs telling.
 
 ## Prerequisites
 
@@ -105,7 +105,8 @@ The alignment should finish before anything opens. Two genomes side by side with
 nothing between them look like the finished comparison, and an alignment that
 appears afterwards reads as a correction.
 
-Indexing the PAF lets the browser read a region out of it:
+Indexing the PAF lets the browser read a region out of it instead of parsing all
+of it:
 
 <!-- from: scripts/build_fly_agent_synteny.sh -->
 
@@ -150,8 +151,9 @@ Restrict both dotplot axes to chr2L, chr2R, chr3L, chr3R, chr4 and chrX.
 ```
 
 The alias names work because the merged config kept each assembly's chromAlias
-file. Ask it to quantify what restricting the axes drops. Set the coloring to
-strand while you are there, so a block that runs backwards is a different color:
+file. Ask it to quantify what restricting the axes drops, not just apply the
+change. Set the coloring to strand while you are there, so a block that runs
+backwards is a different color rather than a bend in a black line:
 
 <Figure caption="The alignment as a dotplot, both axes cut to the six chromosome arms. One forward diagonal in red, and a short reverse segment in blue where chr2R begins." src="/img/agent_synteny/dotplot_arms.png" />
 

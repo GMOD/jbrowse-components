@@ -224,8 +224,9 @@ awk -v OFS='\t' '{
 ```
 
 **portcullis** writes a header row naming its columns, so the recipe reads them
-by name. `nb_raw_aln` is the raw supporting-read count, `canonical_ss` is `C`,
-`S` or `N` for canonical, semi-canonical and non-canonical:
+by name rather than by position. `nb_raw_aln` is the raw supporting-read count,
+`canonical_ss` is `C`, `S` or `N` for canonical, semi-canonical and
+non-canonical:
 
 ```bash
 awk -F'\t' -v OFS='\t' '

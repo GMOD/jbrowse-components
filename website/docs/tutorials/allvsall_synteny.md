@@ -297,8 +297,9 @@ a block came from:
    **Move up**, **Move down** and **Hide section**, and **Reset section order**
    returns them to the sorted order.
 2. **Group by... → Hide self-alignment lane** drops the lane for the strain you
-   are viewing. That lane holds K-12's own internal repeats, since `minimap2 -X`
-   skipped each genome's own diagonal. The figures below have it ticked.
+   are viewing. That lane holds K-12's own internal repeats rather than its
+   diagonal, since `minimap2 -X` skipped each genome's own diagonal. The figures
+   below have it ticked.
 3. **Show... → Show coverage** adds a histogram of how many other strains cover
    each base. The rest of that menu is the one from alignments tracks.
 
@@ -321,9 +322,9 @@ ordinary linear genome views. For a real pangenome, index first with
 On K-12's axis a stretch of a strain with no alignment to the backbone is a
 white gap, and the lane cannot show what that strain carries instead. **Display
 types → Multi-way synteny display** redraws the track with each strain's lane in
-its own coordinates, the reading
-[the ortholog-table tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
-walks through on gene names. With no gene names:
+its own coordinates.
+[The ortholog-table tutorial](/docs/tutorials/multiway_synteny_grape_peach_cacao#each-genome-in-its-own-coordinates)
+walks through the same reading, there for gene names. With no gene names:
 
 - each PAF record is its own ribbon, keyed by the adapter's `syntenyId`
 - the gutters carry each **adjacent** pair's direct alignments from the same
@@ -369,10 +370,10 @@ of it beside the alignment. The ringed segment, `s502`, is the long node
 carrying the island.
 
 The lower band is blank across the island, which is a substitution: each strain
-carries an island of its own there, the phenylacetate operon and a prophage on
+carries a distinct island there, the phenylacetate operon and a prophage on
 K-12, a set of nleG effector genes on Sakai.
 
-<Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it. Each strain's own island is shaded in its own row and the band between them is blank across both, as a substitution appears from either side. Below, the same window as a graph on the same reference-position ramp, the two rings marking one segment in both." src="/img/pangenome/rgfa_paa_bubble.png" />
+<Figure caption="Above, the phenylacetate operon window with NCTC86 over K12 and Sakai under it. Each strain's island is shaded in its own row and the band between them is blank across both, as a substitution appears from either side. Below, the same window as a graph on the same reference-position ramp, the two rings marking one segment in both." src="/img/pangenome/rgfa_paa_bubble.png" />
 
 ### Launching a stacked view at one locus
 
