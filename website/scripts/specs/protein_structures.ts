@@ -6,12 +6,8 @@ import type { ScreenshotSpec } from '../screenshot-spec-types.ts'
 // The tutorials/tp53_structures page: one session holding TP53's AlphaFold
 // model, the DNA-bound core domain (1TUP) and the p53 peptide on MDM2 (1YCR),
 // every structure mapped to the same RefSeq transcript. `structures` on
-// LaunchView-ProteinView (protein3d >= 0.11.0) builds it from one link.
-//
-// The genome view sits above the protein view rather than beside it: the
-// alignment panels are what these figures are read for and they get the whole
-// width, and the genome view carries only the gene's translated exon at the
-// codon, so beside a 1500 px protein column it was mostly empty track area.
+// LaunchView-ProteinView (protein3d >= 0.11.0) builds it from one link, with
+// the genome view on the left and the protein view on the right.
 const R248_CODON = 'chr17:7,674,219-7,674,221'
 const GENES = 'hg38-ncbiRefSeq'
 
@@ -23,7 +19,7 @@ function tp53Session(structures: object[]) {
         structures,
         transcriptId: 'NM_000546.6',
         height: 340,
-        sideBySide: false,
+        sideBySide: true,
         zoomToBaseLevel: false,
         connectedView: {
           assembly: 'hg38',
@@ -66,6 +62,7 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
       { pdbId: '1YCR' },
     ]),
     ...READY,
+    viewportWidth: 2000,
     viewportHeight: 1530,
     annotations: [
       {
@@ -86,8 +83,8 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
         anchor: {
           selector: `${panel('1TUP')} span[style*="rgba(0, 120, 255, 0.3)"]`,
         },
-        dx: -260,
-        dy: -60,
+        dx: -560,
+        dy: -45,
       },
       {
         type: 'text',
@@ -119,6 +116,7 @@ export const proteinStructuresSpecs: ScreenshotSpec[] = [
       { pdbId: '1YCR' },
     ]),
     ...READY,
+    viewportWidth: 2000,
     viewportHeight: 1530,
     actions: [
       {

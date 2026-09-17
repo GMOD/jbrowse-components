@@ -14,25 +14,22 @@ const HIDE_LEGEND = {
   selector: '[aria-label="Hide legend"]',
 } as const
 
-function resDotplot(
-  vertical: string,
-  displayName: string,
-  callout: { text: string; vLocus?: string },
-) {
-  const anchor = { hLocus: 'RES2', vLocus: callout.vLocus }
-  return {
+const A1A_BLOCK = { hLocus: 'RES2', vLocus: 'EMU19' }
+
+export const linkageGroupsSpecs: ScreenshotSpec[] = [
+  {
     mode: 'url',
-    name: `linkage_groups/alg_dotplot_res_${vertical.toLowerCase()}`,
+    name: 'linkage_groups/alg_dotplot_res_emu',
     url: sessionSpec(ODP_CONFIG, {
       views: [
         {
           type: 'DotplotView',
-          displayName,
+          displayName: 'Rhopilema (jellyfish) vs Ephydatia (sponge)',
           views: [
             { assembly: 'RES' },
-            { assembly: vertical, displayedRegionNames: [`${vertical}*`] },
+            { assembly: 'EMU', displayedRegionNames: ['EMU*'] },
           ],
-          tracks: [`RES_${vertical}`],
+          tracks: ['RES_EMU'],
           colorBy: 'attribute:gene_group',
           autoDiagonalize: true,
           lineWidth: 4,
@@ -47,33 +44,18 @@ function resDotplot(
     viewportHeight: 1030,
     actions: [HIDE_LEGEND],
     annotations: [
-      { type: 'box', anchor, pad: callout.vLocus ? undefined : 0 },
+      { type: 'box', anchor: A1A_BLOCK },
       {
         type: 'text',
-        text: callout.text,
+        text: 'A1a: one sponge chromosome',
         fontSize: 18,
         leader: true,
-        anchor: callout.vLocus
-          ? { ...anchor, alignY: 'top' }
-          : { ...anchor, alignX: 'right', alignY: 'top' },
-        dx: callout.vLocus ? 10 : 160,
-        dy: callout.vLocus ? -400 : 20,
+        anchor: { ...A1A_BLOCK, alignY: 'top' },
+        dx: 10,
+        dy: -400,
       },
     ],
-  } satisfies ScreenshotSpec
-}
-
-export const linkageGroupsSpecs: ScreenshotSpec[] = [
-  resDotplot('EMU', 'Rhopilema (jellyfish) vs Ephydatia (sponge)', {
-    text: 'A1a: one sponge chromosome',
-    vLocus: 'EMU19',
-  }),
-  resDotplot('HCA', 'Rhopilema (jellyfish) vs Hormiphora (comb jelly)', {
-    text: 'A1a: several comb jelly chromosomes',
-  }),
-  resDotplot('COW', 'Rhopilema (jellyfish) vs Capsaspora', {
-    text: 'A1a: several Capsaspora chromosomes',
-  }),
+  },
   {
     mode: 'url',
     name: 'linkage_groups/alg_stack',

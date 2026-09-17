@@ -2,8 +2,8 @@
 title: Structural variants from Hi-C
 sidebar_label: SVs from Hi-C
 description:
-  Read contact domains and loops off an ENCODE Hi-C matrix, then find a
-  translocation by opening two chromosomes in one view
+  Find a translocation in ENCODE Hi-C by opening two chromosomes in one view,
+  and read the domain, loop and compartment calls over the same matrices
 guide_category: Tutorials
 tutorial_category: Structural variation
 ---
@@ -41,12 +41,6 @@ loop and compartment calls over the same two matrices.
   https://encode-public.s3.amazonaws.com/2021/10/28/5b488af0-df49-4b9b-9feb-8ad671b7eaef/ENCFF661LPK.bigWig
 - K562 compartment eigenvector:
   https://encode-public.s3.amazonaws.com/2021/10/28/1180b7b2-99fd-429a-bfe1-f76cc8aa751a/ENCFF699RSL.bigWig
-- pseudobulk ATAC-seq by blood lineage beside the MYC domain (10x 5k-PBMC,
-  SnapATAC2), rehosted for the
-  [scATAC pseudobulk tutorial](/docs/tutorials/scatac_pseudobulk). One bigWig
-  per cell type, so CD14 monocytes are
-  https://jbrowse.org/demos/scatac_pbmc5k/CD14_Mono.bw and naive CD4 T cells
-  https://jbrowse.org/demos/scatac_pbmc5k/CD4_Naive.bw
 
 ## What Hi-C measures, and what it looks like
 
@@ -65,27 +59,10 @@ ENCODE publishes both as annotation files derived from the matrix:
   of convergent CTCF sites. ENCODE calls them with
   [HiCCUPS](https://github.com/aidenlab/juicer/wiki/HiCCUPS), also a BEDPE.
 
-<Figure src="/img/hic/loops_and_domains.png" caption="Bands on the two corners of one MYC contact domain, with its Arrowhead arc, its bounding HiCCUPS loop and the denser triangle in the matrix all ending on them, under twelve single-cell ATAC pseudobulks." links="Open this view=hic/loops_and_domains" />
-
-The loop holds the domain together, so the block in the matrix, the Arrowhead
-arc and the HiCCUPS arc all end on the domain's two corners. _MYC_ is at the
-left one. A loop anchored at both corners of a domain is what
-[Rao et al. 2014](https://doi.org/10.1016/j.cell.2014.11.021) called a loop
-domain, and found across the genome. The ATAC lane comes from outside the
-contact map: GM12878 is a B-lymphoblastoid line, and all twelve lineages are
-more accessible inside the domain than outside it.
-
-The window was chosen by taking every Arrowhead domain whose two corners carry a
-HiCCUPS loop and ranking by that loop's contact count; the
-[scoring script](https://github.com/GMOD/jbrowse-components/blob/main/scripts/hic_pick_loop.py)
-prints that ranking.
-
 JBrowse picks the largest binsize no coarser than twice the current
-bp-per-pixel, which at this width renders the triangle as red speckle. The
-figure sets
-[`resolutionBias`](/docs/config/linearhicdisplay/#slot-resolutionbias) to `2`,
-stepping two levels coarser. If a Hi-C track looks like noise, change this
-first; see
+bp-per-pixel, which over a wide window can render the triangle as red speckle.
+[`resolutionBias`](/docs/config/linearhicdisplay/#slot-resolutionbias) steps to
+coarser bins; if a Hi-C track looks like noise, change it first. See
 [adjusting resolution](/docs/user_guides/hic_track#adjusting-resolution).
 
 ## Two chromosomes in one view

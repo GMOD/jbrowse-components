@@ -336,13 +336,11 @@ export const marksSpecs: ScreenshotSpec[] = [
 
 // The Alu tutorial (docs/tutorials/alu_age.md). The config carries the tracks:
 // the copies as a mark display, and the per-megabase BED build_alu_age.sh
-// writes, plotted twice, as the AluY share against the genome-wide share and
-// as the plus-strand share against a half, the split that should come out flat.
+// writes, plotted as the AluY share against the genome-wide share.
 const ALU_AGE_CONFIG = 'test_data/alu_age/config.json'
 const ALU_AGE_TRACKS = [
   { trackId: 'alu_age', type: 'LinearMarkDisplay', height: 110 },
   { trackId: 'alu_young_share', type: 'LinearMarkDisplay', height: 90 },
-  { trackId: 'alu_strand_share', type: 'LinearMarkDisplay', height: 90 },
 ]
 
 function aluAgeSpec(
@@ -397,23 +395,10 @@ export const aluAgeSpecs: ScreenshotSpec[] = [
     },
   ),
   aluAgeSpec('alu_age/chromosome', 'chr1', ALU_AGE_TRACKS, {
-    viewportHeight: 580,
-    annotations: [
-      {
-        type: 'text',
-        text: 'Control: the strand split stays level',
-        fontSize: 18,
-        maxWidth: 500,
-        anchor: {
-          track: 'alu_strand_share',
-          locus: 'chr1:134,000,000',
-          fracY: 0.2,
-        },
-      },
-    ],
+    viewportHeight: 465,
   }),
   aluAgeSpec('alu_age/binned', BINNED_LOC, ALU_AGE_TRACKS, {
-    viewportHeight: 580,
+    viewportHeight: 465,
     annotations: [
       {
         type: 'text',

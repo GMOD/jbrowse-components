@@ -3,8 +3,8 @@ title: Synteny by ancestral linkage group (sponge, comb jelly, jellyfish)
 sidebar_label: Synteny (ancestral linkage groups)
 description:
   Load the ortholog tables odp colors by ancestral linkage group, sort each
-  genome's chromosomes against the other's, and watch the groups hold across
-  three animals and come apart in a single-celled outgroup
+  genome's chromosomes against the other's, and follow the groups across six
+  animal genomes
 guide_category: Tutorials
 tutorial_category: Synteny & comparative genomics
 ---
@@ -16,10 +16,9 @@ compares, a table of their orthologs with the set each one belongs to and a
 color for it. JBrowse loads that table as a synteny track, paints every ortholog
 with its set's color, and sorts one genome's chromosomes by where their
 orthologs land on the other. In a sponge the colors fall in one block per
-chromosome along a diagonal; in a comb jelly each group is spread over several
-chromosomes; in a single-celled relative of animals the spread is everywhere.
-The color mode is a column of the table, so any label a pipeline puts beside an
-ortholog can drive it.
+chromosome along a diagonal, and in a comb jelly each group is spread over
+several chromosomes. The color mode is a column of the table, so any label a
+pipeline puts beside an ortholog can drive it.
 
 ## Prerequisites
 
@@ -58,16 +57,14 @@ proteome it is given against them, and writes the group each ortholog landed in
 beside the ortholog. That assignment is a column, and a synteny track can read a
 column.
 
-The dotplots use a jellyfish (`RES`, _Rhopilema esculentum_), a freshwater
-sponge (`EMU`, _Ephydatia muelleri_), a comb jelly (`HCA`, _Hormiphora
-californensis_) and _Capsaspora owczarzaki_ (`COW`), a single-celled holozoan
-that sits outside animals altogether. The stack at the end adds a second comb
-jelly (`BIN`, _Bolinopsis microptera_), amphioxus (`BFL`, _Branchiostoma
-floridae_) and a second sponge (`CLAa`, a cladorhizid). odp compares genomes two
-at a time, so the deposit holds one table per pair. Each is every reciprocal
-best protein hit between the two, and a pair keeps several times the orthologs a
-table requiring a gene in all four genomes at once would, which keeps the plots
-dense enough to show a pattern.
+The dotplot uses a jellyfish (`RES`, _Rhopilema esculentum_) and a freshwater
+sponge (`EMU`, _Ephydatia muelleri_). The stack at the end adds two comb jellies
+(`HCA`, _Hormiphora californensis_, and `BIN`, _Bolinopsis microptera_),
+amphioxus (`BFL`, _Branchiostoma floridae_) and a second sponge (`CLAa`, a
+cladorhizid). odp compares genomes two at a time, so the deposit holds one table
+per pair. Each is every reciprocal best protein hit between the two, and a pair
+keeps several times the orthologs a table requiring a gene in all six genomes at
+once would, which keeps the plots dense enough to show a pattern.
 
 A table's row is the gene pair, the group, where each gene sits, and the color:
 
@@ -177,21 +174,6 @@ so that each one is a jellyfish chromosome. The row structure is not: the sponge
 was one of the genomes the groups were built on, but its chromosomes were free
 to disagree, and they largely do not.
 
-## Outside the genomes the groups were built on
-
-The comb jelly and _Capsaspora_ are in neither table's definition, so the
-vertical axis is free; the columns are still the jellyfish's. Swapping the
-vertical genome is the whole change.
-
-<Figure caption="The jellyfish against Hormiphora, sorted and colored the same way. The groups still favor particular comb jelly chromosomes, and each one is spread over several of them." src="/img/linkage_groups/alg_dotplot_res_hca.png" />
-
-<Figure caption="The jellyfish against Capsaspora, sorted and colored the same way. Each group spreads over several Capsaspora chromosomes, and fewer of the points gather into clusters than in the comb jelly." src="/img/linkage_groups/alg_dotplot_res_cow.png" />
-
-The sponge holding the groups whole while the comb jelly holds them loosely is
-the pattern Schultz et al. use to argue that the comb jellies branched off
-before the sponges did. The other two figures are read against this outgroup
-frame.
-
 ## Six genomes stacked
 
 The paper's first figure is the same tables stacked: one row per genome, the
@@ -262,27 +244,24 @@ awk -F'\t' 'NR>1 && $4=="A1a" {print $5}' \
   | sort | uniq -c | sort -rn
 ```
 
-Running that over the six largest groups, in each of the three jellyfish tables,
-gives how many of a group's orthologs there are and how many sit on the one
-chromosome that holds most of them:
+Running that over the six largest groups, in the sponge and comb jelly tables
+against the jellyfish, gives how many of a group's orthologs there are and how
+many sit on the one chromosome that holds most of them:
 
-| group | sponge    | comb jelly | _Capsaspora_ |
-| ----- | --------- | ---------- | ------------ |
-| A1a   | 229 / 229 | 48 / 176   | 43 / 160     |
-| D     | 205 / 205 | 44 / 162   | 22 / 150     |
-| G     | 201 / 201 | 58 / 160   | 20 / 124     |
-| H     | 189 / 189 | 56 / 148   | 36 / 119     |
-| F     | 162 / 162 | 25 / 116   | 20 / 97      |
-| M     | 152 / 152 | 26 / 122   | 22 / 101     |
+| group | sponge    | comb jelly |
+| ----- | --------- | ---------- |
+| A1a   | 229 / 229 | 48 / 176   |
+| D     | 205 / 205 | 44 / 162   |
+| G     | 201 / 201 | 58 / 160   |
+| H     | 189 / 189 | 56 / 148   |
+| F     | 162 / 162 | 25 / 116   |
+| M     | 152 / 152 | 26 / 122   |
 
 The sponge column shows every ortholog on its group's chromosome because the
 group database was built with the sponge in it: an ortholog assigned to a group
-is on that group's sponge chromosome by definition. The other two columns are
-what the figures are about. In both, the chromosome holding most of a group
-holds a minority of it, and the comb jelly leads _Capsaspora_ by a margin that
-varies from group to group. A group at a time, the comb jelly and the outgroup
-are hard to tell apart; the difference the second and third figures show is a
-property of the table as a whole.
+is on that group's sponge chromosome by definition. In the comb jelly the
+chromosome holding most of a group holds a minority of it, which is the fan in
+the stack's second band.
 
 ## Reproduce it end to end
 

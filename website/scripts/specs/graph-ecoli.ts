@@ -1007,41 +1007,9 @@ function localSubgraphSpec(): ScreenshotSpec {
     // whatever the viewport says.
     viewportHeight,
     hideTooltip: true,
-    // The blunt end, named in both halves. Review, twice: "why is it blunt? why
-    // wouldn't an insertion be a loop?" and then "if needed, add text
-    // annotation to say why it is blunt. also, it is not clear the size in the
-    // 'backbone' visualizations."
-    //
-    // Segment 20 is 93 bp of CFT073 (CFT073:1,048,515-1,048,608) and carries
-    // exactly one link inside this file. In the WHOLE graph it carries two, and
-    // the second one lands 7 kb outside the `odgi extract -r
-    // K12#1#chr:1004500-1004900` this figure was cut with -- so the free end is
-    // where the cut fell, not a dead end in the graph, and the event it belongs
-    // to is a 7 kb deletion whose far anchor went with the cut.
-    //
-    // "IF WE EXTRACTED MORE DATA, IT WOULD RECOVER POTENTIALLY? I WANT TO NOT
-    // HAVE BLUNTED ENDS JUST AS A RESULT OF EXTRACTING TOO SMALL OF A WINDOW"
-    // (review). Measured against the hosted graph rather than estimated, and the
-    // answer is no. In `ecoli_pggb.segs.bed.gz` this node is segment 176693,
-    // rank 1, CFT073 only; `ecoli_pggb.links.bed.gz` gives its two links as
-    // 176689 at K12:1,004,686 and 178029 at K12:997,566. So the far anchor is
-    // 7.1 kb away on the reference and the window that reaches it is
-    // K12:997,566-1,004,961. Extracting it: `-E` over K12:1,000,500-1,008,900 is
-    // 6,361 segments and over 997,500-1,011,900 is 6,763, against the 48 here.
-    // That is the base-level graph's ~17 bp per segment, not a bad choice of
-    // window, and 6,000 nodes in this pane is a thread rather than a drawing.
-    // `-c 1` would add the far anchor alone without the 6,000 between, and it is
-    // worse: the anchor's own two ends are then blunt, and the anchored layout
-    // places it at K12:997,566, which is 7 kb off the left of the linear view
-    // this pane is under.
-    //
-    // The end is therefore an EVENT and the label says so, rather than saying
-    // the window was too small and inviting the same question again.
-    //
-    // Ringed AND labelled in the anchored half too, which is the other half of
-    // the note: on the backbone the rank-1 nodes are unlabelled marks under the
-    // reference row, so nothing there says how big one is. Anchored by segment
-    // id (probe-graph-nodes.ts), so neither layout has to hold still.
+    // Segment 20 (93 bp of CFT073) has a second link 7 kb outside the
+    // extracted region, in ecoli_pggb.links.bed.gz. A region wide enough to
+    // reach it holds ~6,000 segments against the 48 here.
     annotations: [
       {
         type: 'circle',
@@ -1051,33 +1019,10 @@ function localSubgraphSpec(): ScreenshotSpec {
       },
       {
         type: 'text',
-        // The sentence goes on the force half, which has the room; the anchored
-        // half gets the size alone. Its pane has a pinned aspect ratio -- row
-        // spacing is a fraction of the reference span -- so it is two rows tall
-        // whatever the viewport is, and a three-line pill anywhere inside it
-        // lands on the rows it is annotating (tried: below the ring it fell
-        // through the pane's own border into the composite's padding). The size
-        // beside the ring is what the note asked that half for anyway.
-        // WHY THE NODE HAS A LOOSE END, which is the one thing here a reader
-        // cannot get from the frame: every other end in the drawing joins
-        // something, and this one stops because the window stops, not because
-        // the graph does. It used to read a bare "93 bp" — a specific value, and
-        // one the surrounding prose and the caption both already give, so the
-        // pill spent its space saying the size a third time.
-        //
-        // "the cut" was denied as jargon (reviewer: "a person not familiar with
-        // graphs might not understand what is meant by 'the cut', use precise
-        // language please"), so this says the extracted window instead.
-        text: 'one end open: its partner falls outside the extracted window',
+        text: "Open end: this node's other link is outside the extracted region. Extract a wider region to close it.",
         anchor: { view: 1, graphNode: '20+' },
-        // -34 put the pill's own row across the backbone's node labels, which
-        // the shorter "93 bp" cleared by being narrow rather than by being
-        // placed. Raised into the empty band the anchored layout leaves between
-        // the toolbar and the chain, which is where a two-line pill fits.
-        dy: -72,
-        // Narrower than the 330 the old three-line sentence needed, so the pill
-        // ends well left of the backbone's own "158 bp" label.
-        maxWidth: 260,
+        dy: -80,
+        maxWidth: 340,
         fontSize: 17,
       },
     ],

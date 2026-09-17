@@ -363,20 +363,9 @@ tolerance ball for "did this figure move".
   context for. The mirror-image trap is `geneGlyphMode: 'all'` on a grow track,
   where it is not a lane setting but a lane SIZE (one gene with ~25 transcripts
   took `qc/smn_vs_t2t`'s hg38 lane past 400 px and pushed the band off frame).
-- **A Hi-C figure's locus should be scored out of the call files, not picked.**
-  `scripts/hic_pick_loop.py` (new) ranks every 250-900 kb Arrowhead domain by
-  the strongest HiCCUPS loop sitting on its two corners, which is the pair worth
-  drawing: the domain, the arc and the block in the matrix are then one object
-  seen three ways. 1,142 GM12878 domains carry such a loop. Its `--window` mode
-  prints what a candidate frame contains, which is the check that matters — a
-  domain crossing the frame edge draws as a bar rather than a box, and a loop
-  with one anchor outside adds an arc going nowhere. That is what the old chr18
-  window of `hic/loops_and_domains` was: four edge-to-edge bars and a forty-arc
-  fan (review: "where is the 'logic'?").
 - **`LinearPairedArcDisplay` has no filter slot, so colour is the filter.**
   `color: "jexl:get(feature,'observed')>200?'#8b1a1a':'rgba(0,0,0,0)'"` draws
-  the weak calls fully transparent. Used in `hic/loops_and_domains` to drop the
-  calls whose other anchor is off-frame.
+  the weak calls fully transparent.
 - **A raw matrix cannot argue for compartments, so don't spend a lane on it.**
   `hic/compartment_switch` carried a 300 px squashed matrix under four lanes
   that state the answer outright, and the guide's own paragraph says why it

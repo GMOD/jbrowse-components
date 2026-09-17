@@ -304,12 +304,10 @@ and both tracks pin the same `domain`.
 }
 ```
 
-The strand track is the same config with `strandLog2` in both places.
+<Figure src="/img/alu_age/young_share.png" caption="Top, chromosome 1 end to end: Alu copies from the density sidecar and the AluY share per megabase against the genome-wide share. Under the wedge, the same two tracks over a stretch where Alu-sparse megabases meet Alu-dense ones, with the copies now counted per bin in grey and AluY in red." links="Chromosome 1=alu_age/chromosome,The stretch under the wedge=alu_age/binned" />
 
-<Figure src="/img/alu_age/young_share.png" caption="Top, chromosome 1 end to end: Alu copies from the density sidecar, the AluY share per megabase against the genome-wide share, and the plus-strand share against a half. Under the wedge, the same three tracks over a stretch where Alu-sparse megabases meet Alu-dense ones, with the copies now counted per bin in grey and AluY in red." links="Chromosome 1=alu_age/chromosome,The stretch under the wedge=alu_age/binned" />
-
-Where Alu is sparse the young share runs red, where it is dense it turns blue,
-and the strand lane stays level across both.
+Where Alu is sparse the young share runs red, and where it is dense it turns
+blue.
 
 ## Is the pattern more than noise
 

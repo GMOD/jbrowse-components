@@ -5,11 +5,7 @@
 #
 # Adding a name here is a coverage regression — prefer a verified click-path in
 # src/lib/spec-recipe/fields.ts. Removing one is the win.
-allowedGappyness
-arcHeight
 autoscale
-colWidth
-color
 colorDomain
 connectedView
 connectedViewId
@@ -17,18 +13,14 @@ contextLevels
 displayMode
 domain
 fadeThinAlignmentsMode
-followAnchorIndex
-followSynteny
 height
 hideUnlabelled
 jexlFiltersSetting
-label
 legend
 lineWidth
-orthologParams
 paneHeight
 readConnections
-rowHeight
+rowGroups
 sampleColorMap
 showBranchLength
 showBubbles
@@ -37,8 +29,6 @@ showLegend
 showVariantLane
 sideBySide
 structures
-thickness
 transcriptId
-treeAreaWidth
 uniprotId
 zoomToBaseLevel

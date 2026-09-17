@@ -231,12 +231,17 @@ them out in order. The merged file is hosted, so the whole track is:
 Red is active TSS, yellow enhancer, green transcription, grey Polycomb, and
 speckled olive bivalent.
 
-<Figure src="/img/chromhmm.png" caption="127 Roadmap epigenomes over HOXA, one row each, ordered by Cluster rows by similarity. One block of epigenomes opens the cluster; the rest hold it repressed. The stripe left of the painting is each row's Roadmap tissue group."/>
+A `domain` of six epigenome names narrows the same track to lung fibroblasts,
+foreskin fibroblasts and ES cells over HOXA, which reproduces the chromatin
+domains [Rinn et al. 2007](https://doi.org/10.1016/j.cell.2007.05.022) mapped in
+fibroblasts from different parts of the body.
+
+<Figure src="/img/chromhmm.png" caption="Lung fibroblasts, foreskin fibroblasts and ES cells over HOXA. Lung fibroblasts keep HOXA1-A7 (red box) active and HOXA9-A13 (blue box) Polycomb-repressed, foreskin fibroblasts the reverse, and ES cells hold the whole cluster repressed."/>
+
+Without a `domain`, **Cluster rows by similarity...** derives the row order of
+all 127 from the data at whatever locus is in view.
 
 <Video src="/media/epigenomics/chromhmm_cluster.mp4" caption="Clustering the 127-epigenome ChromHMM track over HOXA. The rows open in Roadmap's tissue order; the track menu's Cluster rows by similarity re-lays them out into blocks and draws the dendrogram beside them." />
-
-That config has no `domain`; **Cluster rows by similarity...** derives the row
-order from the data at whatever locus is in view.
 
 At this scale a row is a few pixels tall and carries no text, so the tissue
 names live in the stripe beside the painting. The

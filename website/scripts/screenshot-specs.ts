@@ -181,10 +181,8 @@ export const screenshotLiveLabels: Record<string, string> = Object.fromEntries(
 // `readyTimeout` covers getting to a session, but a session spec that launches
 // work — an MsaView building an alignment out of NCBI and EBI, an rGFA graph
 // assembling itself — reaches "ready" quickly and then waits on the result in an
-// action. Reading readyTimeout alone classified genomes_msa/pyrin_residues as
-// slow only by luck (its 120000 is the ~570-track UCSC config, not the ~3 minute
-// alignment), and would have said "fast" outright for the same spec against a
-// cheaper config.
+// action. Reading readyTimeout alone classifies such a spec by its config's
+// load time rather than by the ~3 minute alignment.
 const SLOW_TIMEOUT_MS = 120000
 
 // The longest an action is allowed to wait, across a spec's own actions and

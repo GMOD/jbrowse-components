@@ -89,13 +89,6 @@ phyloP scores each base against the neutral rate the alignment implies. The
 score is signed: blue above the line changes more slowly than neutral, red below
 it faster.
 
-<Figure src="/img/genomes_basics/phylop_tp53.png" caption="The TP53 transcript over the gene body with phyloP under it, as the track opens. Exons 5-8 are shaded." />
-
-The peaks are the width of the coding exons. Exons 5-8 carry the codons this
-gene is most often mutated at in cancer, and phyloP is high across all four. The
-introns drop to the pivot, and so does the 3' UTR, an exon as wide as any coding
-one: the score follows the protein, not the transcript.
-
 ## Checking the score against the raw data
 
 Zoom in until the sequence appears. The exon below is exon 7, which covers G245,

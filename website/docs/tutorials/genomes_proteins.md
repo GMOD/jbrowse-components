@@ -186,24 +186,6 @@ Annotations → How to get a domain file...** opens the
 [walkthrough](https://gmod.org/JBrowseMSA/tutorials/protein_family), which also
 covers `interpro`, the instant path when the rows are UniProt accessions.
 
-### Checking the overlay against the residues
-
-A whole-protein view cannot tell "no domain annotated" from "no sequence", so
-read the residues. Scroll back to the zoom the view opened at, or use the
-alignment's **Zoom in** button until the letters return.
-
-An alignment is as long as its longest row, so its leftmost columns belong to
-whichever protein reaches furthest past the others. **Hide columns w/ >N%
-gaps**, the slider in the alignment's toolbar, brings the columns the panel
-shares (the pyrin among them) to the left edge.
-
-The rows without a pyrin block come in three kinds: ordinary residues with
-nothing called over them; a generic death-domain call in place of the
-pyrin-specific one; and gap right across the frame, where the row begins further
-right. The third kind is the absent sequence.
-
-<Figure src="/img/genomes_msa/pyrin_residues.png" caption="NLRP1 orthologs zoomed out to the smallest cells that still draw residues, with the gappiest columns hidden. Under the pyrin columns, rows with the call sit beside rows with a generic death-domain call, rows with residues and nothing called, and rows that are gap." />
-
 ### The same domains in genome coordinates
 
 UniProt annotates the same proteins independently of NCBI's conserved-domain

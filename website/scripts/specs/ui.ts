@@ -248,30 +248,22 @@ export const uiVideoFixtures = {
   },
 }
 
-// The 127-epigenome ChromHMM track, and the 500 kb of HOXA the `chromhmm` figure
-// below is taken over. Named once because the figure and the tour in
-// videos/epigenomics.ts have to be of the same app.
+// The 127-epigenome ChromHMM track over 500 kb of HOXA, unclustered, which the
+// clustering tour in videos/epigenomics.ts opens on. The demo config pins the
+// track's `domain` in Roadmap's GROUP order, so the stack opens as contiguous
+// tissue blocks.
 const CHROMHMM_TRACK_ID = 'roadmap_chromhmm_multirow_hg19'
 const CHROMHMM_HOXA_WINDOW = 'chr7:26,950,000-27,450,000'
 
-// What videos/epigenomics.ts films: the `chromhmm` figure's own session MINUS its
-// `runClustering`, so the row order that figure is the result of is still to
-// happen.
-//
-// `runClustering` is an init flag rather than a saved order — the autorun
-// consumes it as the display first reports ready (`setupRunClusteringAutorun`)
-// and then clears it — so on the figure's session the rows are in similarity
-// order before a camera could be on. Everything else is that spec's session: the
-// same hg19 window, the same gene lane at names-only with the pseudogene filter
-// on it, the same multi-row painting at 520.
-//
-// Unclustered is not unordered here, and that is what the tour opens on. The demo
-// config's own copy of this track pins a 127-line `domain` in Roadmap's GROUP
-// order, and `rowGroups` partitions the rows into contiguous tissue blocks for as
-// long as no cluster tree names them (`sources`, in
-// LinearMultiRowFeatureDisplay/model.ts) — so the stack opens with a clean tissue
-// stripe down its left and a painting with no block in it, and the run trades the
-// first for the second.
+const HOXA_FIBROBLAST_ROWS = [
+  'NHLF Lung Fibroblast Primary Cells',
+  'IMR90 fetal lung fibroblasts Cell Line',
+  'Foreskin Fibroblast Primary Cells skin01',
+  'Foreskin Fibroblast Primary Cells skin02',
+  'H1 Cells',
+  'H9 Cells',
+]
+
 export const chromhmmVideoFixtures = {
   trackId: CHROMHMM_TRACK_ID,
   unclusteredHoxa: lgvSession(DEMO_CONFIG, {
@@ -2316,106 +2308,35 @@ export const uiSpecs: ScreenshotSpec[] = [
     allowUnsettled: true,
   },
 
+  // Rinn et al. 2007 (Cell 129:1311), Fig. 3: lung fibroblasts keep the 3'
+  // half of HOXA (HOXA1-A7) active and the 5' half (HOXA9-A13) Polycomb-
+  // repressed, distal fibroblasts the reverse. Roadmap's lung and foreskin
+  // fibroblasts carry the same split, and ES cells hold both halves repressed.
   {
     mode: 'url',
     name: 'chromhmm',
-    // Roadmap 127-epigenome ChromHMM chromatin states as a multi-row feature
-    // heatmap over the HOXA cluster. It was one of a pair, the other being the
-    // nine-cell-type Broad track at the same window; the reviewer kept this one
-    // ("chromhmm screenshot is the visual interest that i care about") and the
-    // nine-row twin is deleted. The window it used to be shot on
-    // (chr11:5.87-6.78Mb) had no structure the extra rows revealed: it read as
-    // one green transcribed block against grey, so 127 rows looked like nine
-    // rows with more noise, which is the opposite of the point.
-    //
-    // HOXA separates the epigenomes into blocks, because the anterior half of
-    // the cluster is active only in lineages with a matching positional
-    // identity, and it is the same column boundary in every one of them.
-    //
-    // WHICH epigenomes those are is the sidebar's job, and the answer comes
-    // from the config rather than from here: the track's `rowGroups` carries one
-    // entry per Roadmap tissue group in Roadmap's own group color, so the
-    // sidebar draws a swatch stripe beside the dendrogram and the key names it
-    // (review: "use labelColor to categorize the cell types in the treesidebar
-    // to see the pattern of the cell types that are open and close"). The
-    // entries are generated from `EID_metadata.tab` by
-    // scripts/build_chromhmm_roadmap.sh, which also asserts that all 127 rows
-    // match exactly one group; nothing here is hand-assigned.
-    //
-    // Two things had to be true for that to work and both are measured. A
-    // `rowGroups` partition used to reorder the rows out from under a cluster
-    // tree, which silently replaced the dendrogram with `StaleTreeHint`; it now
-    // declines to partition while a tree names the rows. And the swatch is
-    // floored to a whole pixel, which is why the slot's own docs say to mark the
-    // small group only -- at 127 rows in 520px a row is 4.1px and the floor
-    // never bites, so every group can be declared and the stripe stays
-    // proportional.
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
-      // The cluster and about 40 kb either side. A 500 kb window with the
-      // pseudogene desert on both flanks gave the domain an edge, and came back
-      // from review as noisy: the flanks' scattered calls took half the width
-      // and squeezed each HOXA column to a few pixels. At this width the
-      // columns are wide enough that the anterior and posterior halves read as
-      // separate blocks of rows, and EVX1 past the posterior box is the edge.
-      loc: 'chr7:27,070,000-27,310,000',
+      loc: 'chr7:27,110,000-27,265,000',
       tracks: [
         {
           trackId: 'ncbi_gff_hg19',
           type: 'LinearBasicDisplay',
-          // NAMES ONLY (review: "might hide descriptions on the gene track, so
-          // more genes are seen"). This started as `showDescriptions: false`,
-          // meaning "names suffice here"; that pairing has no home on the
-          // unified labels enum, so migrateBasicConfigSnapshot resolved it to
-          // 'auto', which brings descriptions back at low density — and 500 kb
-          // of HOXA is low density. So the lane drew "HOXA cluster antisense
-          // RNA 2" under HOXA-AS2 and stacked three rows to fit it.
-          //
-          // A description is the widest thing in the lane and the least of what
-          // is being read: the figure's subject is a column boundary, and what
-          // says where the boundary falls is which GENE is left of it. Names
-          // alone pack the same set into fewer rows, which is what the height
-          // below comes down by.
           showLabels: 'name',
-          // the flanks are a pseudogene desert (RPL7AP38, HMGB3P20, NHP2P2,
-          // TPM3P4, RPL35P4), which is exactly why the window extends into them
-          // — but drawn, they crowd the lane with names that have nothing to do
-          // with the boundary the figure is about. NOT `showOnlyGenes`, whose
-          // gene-like set admits `pseudogene` by name (featureAdmission.ts) and
-          // so changes nothing here; the type filter is what drops them,
-          // leaving HOXA1-A13, HOTAIRM1, the HOXA antisense transcripts, EVX1.
           jexlFiltersSetting: ["jexl:feature.type!='pseudogene'"],
-          height: 120,
+          height: 110,
         },
         {
           trackId: 'roadmap_chromhmm_multirow_hg19',
           type: 'LinearMultiRowFeatureDisplay',
-          // clustered, not in `domain`: at 127 rows a pixel-high row carries
-          // no label, so the only thing that can group the epigenomes is where
-          // the display puts them. Unclustered the same window is 127 rows of
-          // scattered red with no block in it.
-          runClustering: true,
-          // 520, not the config's 700: 127 rows fill whatever height they are
-          // given, so most of that extra bought no detail, only more area of the
-          // same painting to take in at once. The 40px over the 480 this used to
-          // be is the KEY rather than the painting: it now carries two sections,
-          // 15 states and 19 tissue groups, and `SvgColorLegend` collapses
-          // whatever does not fit in `floor(height / 14)` rows into a "+N more"
-          // line. At 480 that hid three groups, i.e. three colors on screen that
-          // nothing named.
-          height: 520,
+          domain: HOXA_FIBROBLAST_ROWS,
+          subtreeFilter: HOXA_FIBROBLAST_ROWS,
+          // tissue grouping would reorder the rows out of `domain`
+          rowGroups: [],
+          height: 240,
         },
       ],
     }),
-    // The two domains, boxed and NAMED. Boxed alone they are two colored
-    // rectangles a reader has to go to the caption to identify, and the caption
-    // is where the nine-row twin's on-image labels went when it was deleted —
-    // so this figure inherited its coordinates and not its key. HOXA1 txStart to
-    // HOXA7 txEnd, then HOXA9 txStart to HOTTIP txEnd, hg19 refGene.
-    //
-    // Labels sit just above the track rather than inside it: 127 rows at 480px
-    // is 3.7px a row, so anything drawn over the painting covers a dozen
-    // epigenomes, and the strip above the boxes is the gene lane's own gutter.
     annotations: [
       {
         type: 'box',
@@ -2434,94 +2355,12 @@ export const uiSpecs: ScreenshotSpec[] = [
         pad: 2,
         color: '#1565c0',
       },
-      {
-        type: 'text',
-        text: 'anterior HOXA1-A7',
-        fontSize: 18,
-        textAlign: 'end',
-        anchor: {
-          track: 'roadmap_chromhmm_multirow_hg19',
-          locus: 'chr7:27,132,613',
-          alignX: 'left',
-          fracY: 0,
-        },
-        dx: -8,
-        dy: -8,
-      },
-      {
-        type: 'text',
-        text: 'posterior HOXA9-A13',
-        fontSize: 18,
-        color: '#1565c0',
-        textAlign: 'start',
-        anchor: {
-          track: 'roadmap_chromhmm_multirow_hg19',
-          locus: 'chr7:27,246,878',
-          alignX: 'right',
-          fracY: 0,
-        },
-        dx: 8,
-        dy: -8,
-      },
-      // WHAT TO READ OFF IT (reviewer: "this screenshot 'looks cool' but does
-      // it mean anything? is there anything we should interpret from it?").
-      // The result was in the caption and nowhere on the picture, which is the
-      // wrong way round for a figure whose whole content is a shape. The shape
-      // is that the clustering cuts the 127 epigenomes in two: an upper block
-      // where the boxes carry active-TSS red and transcription green, and a
-      // lower block where the same two boxes are Polycomb orange and quiescent
-      // grey. That is HOX regulation -- the cluster is held repressed in most
-      // tissues and opened in the ones that use it -- and it is the reason the
-      // figure exists rather than a pattern that happens to look good.
-      //
-      // Over the dendrogram and the left flank, clear of both boxes. Anchored
-      // by fracY rather than by pixel, so they follow the clustering's own
-      // split if a rebuild moves it.
-      {
-        type: 'text',
-        text: 'these epigenomes open HOXA',
-        fontSize: 17,
-        anchor: {
-          track: 'roadmap_chromhmm_multirow_hg19',
-          locus: 'chr7:27,072,000',
-          alignX: 'left',
-          fracY: 0.22,
-        },
-      },
-      {
-        type: 'text',
-        text: 'these keep it repressed',
-        fontSize: 17,
-        anchor: {
-          track: 'roadmap_chromhmm_multirow_hg19',
-          locus: 'chr7:27,072,000',
-          alignX: 'left',
-          fracY: 0.72,
-        },
-      },
-    ],
-    // clustering 127 rows is real WASM compute, and a settle long enough to
-    // cover it on a slow runner is one that is wrong on a fast one — a 15s
-    // settle shot the run mid-cluster, chip and all. So wait on the run's own
-    // progress chip clearing, which the autorun's `finally` does. The short
-    // delay ahead of it is only to let the `delay: 500` autorun fire, not a
-    // guess at how long the cluster takes: waiting for `hidden` on a chip that
-    // has not gone up yet passes instantly.
-    actions: [
-      { type: 'delay', ms: 2000 },
-      {
-        type: 'waitForSelector',
-        selector: '[data-testid="progress-chip"]',
-        hidden: true,
-        timeout: 180000,
-      },
     ],
     readyText: 'ChromHMM',
     readyTimeout: 120000,
     settleMs: 6000,
-    // 880, tracking the display's own 520 (was 840 for 480). The painting grows
-    // to its content here, so a track height change is a page height change.
-    viewportHeight: 880,
+    viewportHeight: 620,
+    hideSelectors: ['[data-testid="subtree_filter_hint"]'],
   },
 
   // The "Display types" submenu, with the multi-row display boxed: the

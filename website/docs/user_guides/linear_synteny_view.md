@@ -143,8 +143,6 @@ nothing aligns to the anchor's window at all — a haplotype-specific insertion,
 centromere, a panel off the end of the alignments — where the other panels hold
 their position.
 
-<Figure caption="The follow button's warning form, on the two haplotypes of T2T-HG002 with the chain blocks drawn on each panel's own coordinates. The paternal row anchors in a gap between two chains, so its chain lane is empty, and the hovered button says the maternal row is holding its window." src="/img/synteny_follow_unaligned.png" />
-
 A followed panel can still be panned by hand; it returns to the matching region
 once it settles. Turn following off to keep it where you put it.
 
@@ -359,8 +357,6 @@ was just sent to, and the notification says so. That undo restores the previous
 anchor too.
 
 <Figure caption="Peach chromosome 1 over grape chromosome 1, from MCScan blocks. Above, the ribbons alone. Below, the same view marking the alignments it has no second endpoint for — most of this peach chromosome is syntenic to grape chromosomes other than the one stacked under it." src="/img/synteny_offscreen_mates.png" />
-
-<Figure caption="A window of peach chromosome 1 where the grape chromosome stacked under it has no alignments. Above, a hovered mark names the grape chromosome its alignments go to and what a click does. Below, the click has added that chromosome to the grape panel at the mate's locus, and the mark is a ribbon." src="/img/synteny_offscreen_mates_click.png" />
 
 ### Alignments anchored on the lower panel
 

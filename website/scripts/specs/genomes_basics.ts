@@ -216,9 +216,9 @@ export const genomesBasicsVideoFixtures = {
       },
     ],
   }),
-  // phylop_tp53's session with its second track taken out, since adding that
-  // track through the selector is the route. Collapsed, like every frame at a
-  // locus on this page, so the transcript the lane is read against is one row.
+  // The gene track alone, since adding phyloP through the selector is the
+  // route. Collapsed, like every frame at a locus on this page, so the
+  // transcript the lane is read against is one row.
   geneTrackOnly: sessionSpec(UCSC_HG38_CONFIG, {
     views: [
       {
@@ -400,64 +400,6 @@ export const genomesBasicsSpecs: ScreenshotSpec[] = [
           { type: 'delay', ms: 1500 },
           PARK_CURSOR,
         ],
-      },
-    ],
-  },
-
-  // The result of the two clicks the section describes, declared as a session
-  // rather than clicked together: the figure the tutorial reads, and the one
-  // its card is cut from.
-  //
-  // One shaded block, exons 5-8, where the gene's cancer mutations sit (R175,
-  // G245, R248, R249, R273, R282). Bounds are exon 8's start to exon 5's end
-  // for NM_000546.6 off api.genome.ucsc.edu's ncbiRefSeqCurated: minus strand,
-  // so 5' order runs right to left. The section below zooms into exon 7 of it.
-  // The 3' UTR used to be shaded too, as a flat exon for contrast; review
-  // asked for it gone ("we still have utr highlighted"), and the introns
-  // between the shaded exons are the contrast now.
-  {
-    mode: 'url',
-    name: 'genomes_basics/phylop_tp53',
-    url: sessionSpec(UCSC_HG38_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: TP53_TRANSCRIPT_WINDOW,
-          highlight: [
-            {
-              refName: 'chr17',
-              assemblyName: 'hg38',
-              label: 'exons 5-8',
-              start: 7673700,
-              end: 7675236,
-            },
-          ],
-          // gene track first, phyloP second: a track opened from the selector
-          // is appended below what is already there. Collapsed, so the exon
-          // structure the peaks are read against is one row.
-          tracks: [GENE_TRACK_COLLAPSED, PHYLOP_TRACK],
-        },
-      ],
-    }),
-    readyText: 'TP53',
-    readyTimeout: 120000,
-    settleMs: 8000,
-    viewportHeight: 460,
-    diffThreshold: 0.02,
-    // In the gene lane, whose collapsed row leaves it empty below the glyph.
-    annotations: [
-      {
-        type: 'text',
-        anchor: {
-          track: 'hg38-ncbiRefSeq',
-          locus: 'chr17:7,668,420',
-          fracY: 0.45,
-          alignX: 'left',
-        },
-        text: "phyloP is high across exons 5-8, where most of TP53's cancer mutations land,\nand flat in the introns between them.",
-        fontSize: 15,
-        maxWidth: 660,
       },
     ],
   },

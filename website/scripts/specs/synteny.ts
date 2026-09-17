@@ -816,17 +816,6 @@ function peachGrapeChr1({
   )
 }
 
-// A window of peach chr1 where the stacked grape chromosome has NO anchors at
-// all and one other grape chromosome has every anchor in it. Zoomed to it the
-// band is empty, which is the reading the whole feature exists to correct — at
-// whole-chromosome scale the strip of marks sits beside ribbons and can be taken
-// for a fringe on them, and here there is nothing for it to be a fringe on.
-const PEACH_EMPTY_WINDOW = 'NC_034009.1:18,000,000-22,000,000'
-
-// A run of top-strip marks inside PEACH_EMPTY_WINDOW, all naming the grape
-// chromosome those anchors go to.
-const OFFSCREEN_MARK_LOCUS = 'NC_034009.1:20,371,000'
-
 export const syntenySpecs: ScreenshotSpec[] = [
   // The two halves of the off-screen mate figure. Same view, same window; the
   // second turns the marks on. Parts of `synteny_offscreen_mates`, so neither is
@@ -856,90 +845,6 @@ export const syntenySpecs: ScreenshotSpec[] = [
     mode: 'compose',
     name: 'synteny_offscreen_mates',
     parts: ['synteny_offscreen_mates_off', 'synteny_offscreen_mates_on'],
-  },
-
-  // What clicking a mark does, driven rather than declared: the hover's tooltip
-  // says what the click will do, and the second frame is the click's own
-  // result, the facing panel on the mate's locus with the marks turned into
-  // ribbons. Zoomed to a window the stacked grape chromosome has no anchors in,
-  // so the band in the first frame holds nothing but marks.
-  {
-    mode: 'url',
-    name: 'synteny_offscreen_mates_click',
-    url: peachGrapeChr1({ marks: true, peachLoc: PEACH_EMPTY_WINDOW }),
-    viewportWidth: 1400,
-    viewportHeight: 424,
-    readySelector: displayPainted('synteny_canvas'),
-    readyTimeout: 120000,
-    settleMs: 12000,
-    hideSelectors: ['.MuiSnackbar-root'],
-    stages: [
-      {
-        actions: [
-          {
-            type: 'hover',
-            anchor: {
-              view: [0, 0],
-              locus: OFFSCREEN_MARK_LOCUS,
-              fracY: 1,
-              dy: 3,
-            },
-          },
-          { type: 'waitForText', text: 'Click to add it' },
-        ],
-        annotations: [
-          {
-            type: 'text',
-            text: '(1) Hover a mark',
-            anchor: {
-              selector: '[data-testid="app-bar"]',
-              alignX: 'left',
-              alignY: 'top',
-              dx: 24,
-              dy: 30,
-            },
-            fontSize: 22,
-          },
-        ],
-      },
-      {
-        actions: [
-          {
-            type: 'click',
-            anchor: {
-              view: [0, 0],
-              locus: OFFSCREEN_MARK_LOCUS,
-              fracY: 1,
-              dy: 3,
-            },
-          },
-          { type: 'waitForAppSettled', timeout: 120000 },
-          {
-            type: 'hover',
-            anchor: {
-              view: [0, 1],
-              locus: 'NC_081809.1:25,590,000',
-              fracY: 0.5,
-            },
-          },
-          { type: 'delay', ms: 1000 },
-        ],
-        annotations: [
-          {
-            type: 'text',
-            text: '(2) Click it: the grape panel moves to that mate',
-            anchor: {
-              selector: '[data-testid="app-bar"]',
-              alignX: 'left',
-              alignY: 'top',
-              dx: 24,
-              dy: 30,
-            },
-            fontSize: 22,
-          },
-        ],
-      },
-    ],
   },
 
   // Human vs chimp synteny (hosted liftOver chain, zoomed to an RB1 intron with

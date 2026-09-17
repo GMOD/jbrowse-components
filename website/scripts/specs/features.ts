@@ -679,16 +679,11 @@ export const featuresSpecs: ScreenshotSpec[] = [
   // translation from `uniprotId` + `transcriptId`. PROTEIN3D_CONFIG loads
   // protein3d from the plugin store's `latest/` path, so a release can change
   // this figure with no commit here.
-  //
-  // Stacked rather than side by side: the genome half holds one gene track, and
-  // beside a structure it was a column of empty track area (review: "improve
-  // y-screen real estate"). ClinVar is gone for the same review, as noise next to
-  // the one thing the figure shows, a motif clicked on the protein lighting its
-  // codons and its residues.
   {
     mode: 'url',
     name: 'protein/connected',
-    viewportHeight: 1005,
+    viewportWidth: 2000,
+    viewportHeight: 890,
     url: sessionSpec(PROTEIN3D_CONFIG, {
       views: [
         {
@@ -696,7 +691,7 @@ export const featuresSpecs: ScreenshotSpec[] = [
           uniprotId: 'P04637',
           transcriptId: 'NM_000546.6',
           height: 340,
-          sideBySide: false,
+          sideBySide: true,
           zoomToBaseLevel: false,
           connectedView: {
             assembly: 'hg38',

@@ -110,8 +110,7 @@ const MULTIHOP_HEIGHT = 1126
 // Same budget rule as before: a panel's gene lane is paid for four times, so the
 // frame absorbs the growth rather than the pileups.
 const MULTIHOP_CHAIN_HEIGHT = 1325
-const MULTIHOP_WIDTH = 900
-const MULTIHOP_NARROW_WIDTH = 700
+const MULTIHOP_WIDTH = 1000
 
 // Per PANEL, so worth four times what it reads as, which is why it was 45 and
 // why the chain frame is 100px taller for it. 45 fitted one packed row: the
@@ -596,9 +595,7 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
     mode: 'url',
     name: 'cancer_sv/multihop_tumour_vs_normal',
     viewportHeight: MULTIHOP_HEIGHT,
-    // the narrower of the two halves: a 3.4 kb window with two pileups in it
-    // says what it has to say in less page than the four-panel chain does
-    viewportWidth: MULTIHOP_NARROW_WIDTH,
+    viewportWidth: MULTIHOP_WIDTH,
     url: lgvSession(CONFIG, {
       assembly: 'hg38',
       // tight enough that both chr3 breakpoints (25,359,111 and 25,359,568) sit
@@ -643,41 +640,18 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         },
       ],
     }),
-    // THE ROUTE FROM THIS HALF TO THE OTHER ONE, on the image (review: "need
-    // more info on how you got from left side to right side"). The two halves
-    // are one event twice and the caption said so, but nothing on the frame
-    // said the right half is something this view PRODUCES rather than a second
-    // window somebody opened. It is four clicks and they are the four the other
-    // spec's `actions` drive, so the pill and the capture cannot drift apart.
-    //
-    // Over the matched-normal pileup, which is the one lane here whose content
-    // is that it has no content: it is a grey wall by construction, and no
-    // individual read in it is the subject. The arrow runs to the frame's right
-    // edge, where the other half is appended.
     annotations: [
       {
         type: 'text',
         text: `${DERIVATIVE_ROUTE_LABEL} → Draw as: breakpoint split view`,
         fontSize: 17,
         maxWidth: 420,
+        leader: true,
         anchor: {
-          track: NORMAL,
-          locus: 'chr3:25,358,500',
-          fracY: 0.4,
+          selector: `[data-testid="track_menu_icon"][data-trackid="${TUMOUR}"]`,
         },
-      },
-      {
-        type: 'arrow',
-        fromAnchor: {
-          track: NORMAL,
-          locus: 'chr3:25,360,150',
-          fracY: 0.4,
-        },
-        anchor: {
-          track: NORMAL,
-          locus: 'chr3:25,360,900',
-          fracY: 0.4,
-        },
+        dx: 40,
+        dy: 70,
       },
     ],
   },
@@ -740,6 +714,14 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
       'cancer_sv/multihop_split_view',
     ],
     direction: 'horizontal',
+    annotations: [
+      {
+        type: 'arrow',
+        strokeWidth: 10,
+        fromAnchor: { selector: '[data-part="0"]', alignX: 'right', dx: -160 },
+        anchor: { selector: '[data-part="1"]', alignX: 'left', dx: 100 },
+      },
+    ],
   },
 
   // The in-app reconstruction, in two frames: the candidate list the track menu
@@ -1389,9 +1371,8 @@ export const cancerSvSpecs: ScreenshotSpec[] = [
         anchor: {
           view: [0, 0],
           track: GENES,
-          alignX: 'left',
-          dx: 10,
-          fracY: 0.8,
+          locus: 'chr3:25,358,800',
+          fracY: 0.75,
         },
       },
       {

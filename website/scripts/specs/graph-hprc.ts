@@ -1890,10 +1890,18 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
     }),
     readySelector: TOOLBAR_READY,
     readyTimeout: 180000,
-    allowUnsettled: true,
     // the graph's own fetch is ~7 s here and the node box is anchored through the
     // view's nodePositions, so a shorter settle can capture before there are any
     settleMs: 14000,
+    // the force layout's "Computing layout" overlay can go up after readiness
+    actions: [
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="loading-overlay"]',
+        hidden: true,
+        timeout: 180000,
+      },
+    ],
     viewportWidth: 1000,
     // 1112, off the run's own reports, after three height cuts asked for by the
     // same review note: the graph pane 420 -> 320, the repeat lane to one

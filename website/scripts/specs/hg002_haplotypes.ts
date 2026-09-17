@@ -399,33 +399,6 @@ const FOLLOW_SCROLL_PANELS = haplotypeSession(
   { drawLocationMarkers: true },
 )
 
-// WHERE THE FOLLOW HAS NOTHING TO DO, which is a state the linear synteny view
-// guide asserts and nothing pictures: the toggle changes to a warning form
-// wherever nothing aligns to the anchor's window, and the other rows hold.
-// FollowSyntenyToggle's own comment is that a row which stops tracking with
-// nothing said "looks exactly like a broken follow", so the unsaid version is
-// the one a reader meets first.
-//
-// IT IS THE GAP BETWEEN TWO CHAINS, ANCHORED ON THE PATERNAL ROW, and the
-// window is one the page already relies on: DRIFT_WINDOW_PAT_BEFORE sits past
-// this block's paternal end (7,681,207) and before the inversion's (7,774,085),
-// which is why the figure above opens with that panel's chain lane empty. An
-// anchor there has nothing under it to walk, which is the guide's general case
-// -- a haplotype-specific insertion is a gap in the chain, not a missing
-// contig.
-//
-// NOT chrX, and the reason is now history rather than a constraint. HG002 is
-// male, so chrX is maternal and chrY paternal and neither has a counterpart to
-// chain to, which reads like the obvious unaligned window -- and it cost a
-// capture, because the lane sat at "Loading..." forever. That was never about
-// the refName: an alignments display with the coverage band off reported
-// nothing drawn whenever its fetch landed on no reads, so ANY empty window did
-// it (fixed in GpuAlignmentsRenderer.drawSection / drawAlignmentBlocks). The
-// gap between two chains stays the frame anyway: it is the general case the
-// linear synteny view guide describes, where a haplotype-specific insertion is
-// a gap in the chain rather than a missing contig.
-const UNALIGNED_ANCHOR_PAT = DRIFT_WINDOW_PAT_BEFORE
-
 // One large indel in an otherwise collinear chain, so the markers visibly fan
 // in around it: a 9,112 bp maternal-only insertion at chr11_MATERNAL:24,508,905
 // (paternal 24,521,725). The chain has no other gap of 50 bp or more within
@@ -433,7 +406,9 @@ const UNALIGNED_ANCHOR_PAT = DRIFT_WINDOW_PAT_BEFORE
 // is the largest one a single chain carries. The insertion sits right of
 // centre, clear of the settings menu.
 const MARKER_WINDOW_MAT = 'chr11_MATERNAL:24,474,000-24,534,000'
-const MARKER_WINDOW_PAT_BEFORE = 'chr11_PATERNAL:24,474,000-24,534,000'
+// the same 60 kb span, so both rows draw at one bp/px, starting where the
+// insertion sits at the same fraction of the row
+const MARKER_WINDOW_PAT = 'chr11_PATERNAL:24,486,820-24,546,820'
 
 // Both frames wait on the same synteny-canvas signal and pay the same remote
 // fetch (a whole-genome chain read in one go), so the capture settings are
@@ -755,37 +730,6 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
     ],
   },
 
-  // The warning form of the follow toggle, which the linear synteny view guide
-  // describes. One frame, because the icon alone reads as the control's normal
-  // look; the hovered tooltip is what says the other row is holding.
-  {
-    ...CAPTURE,
-    name: 'synteny_follow_unaligned',
-    url: haplotypeSession(
-      DRIFT_WINDOW_MAT,
-      UNALIGNED_ANCHOR_PAT,
-      [CHAIN_BLOCKS],
-      [CHAIN_BLOCKS],
-      { followSynteny: true, followAnchorIndex: 1 },
-    ),
-    viewportHeight: 445,
-    actions: [
-      { type: 'waitForAppSettled', timeout: 120000 },
-      {
-        type: 'hover',
-        selector: '[data-testid="follow-synteny-toggle"]',
-      },
-      { type: 'waitForText', text: 'nothing aligns here' },
-    ],
-    annotations: [
-      {
-        type: 'box',
-        anchor: { selector: '[data-testid="follow-synteny-toggle"]' },
-        strokeWidth: 3,
-      },
-    ],
-  },
-
   // The markers, in ONE frame with the menu that turned them on still open
   // (review: "ideally just show fig 4 with the menu from fig 3 open"). They were
   // frames 3 and 4 of the four-up above -- a control, then a ribbon -- and a
@@ -796,17 +740,12 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
   // The menu opens from the view's own settings button at the top RIGHT and the
   // markers are drawn across the ribbon, so unlike the submenu in the old frame
   // 3 the two do not fight for the same pixels.
-  //
-  // It FOLLOWS FIRST, and that is not optional: markers pair a point on one
-  // panel with the point it maps to on the other, which says nothing while the
-  // two panels are still on the drifted windows the session opens at. So this
-  // frame is the state the figure above ends in, plus the markers.
   {
     ...CAPTURE,
     name: 'hg002_haplotypes_location_markers',
     url: haplotypeSession(
       MARKER_WINDOW_MAT,
-      MARKER_WINDOW_PAT_BEFORE,
+      MARKER_WINDOW_PAT,
       [CHAIN_BLOCKS],
       [CHAIN_BLOCKS],
       // the markers are drawn down the ribbon, so the ribbon is the figure and
@@ -822,11 +761,6 @@ export const hg002HaplotypeSpecs: ScreenshotSpec[] = [
     viewportHeight: 560,
     hideTooltip: true,
     actions: [
-      { type: 'click', selector: '[data-testid="follow-synteny-toggle"]' },
-      // the follow's exact pass is an RPC per level off the anchor's SETTLED
-      // window, so this waits on a worker round trip and then on the moved
-      // panel refetching at its new window
-      { type: 'delay', ms: 10000 },
       { type: 'click', selector: '[aria-label="Synteny display settings"]' },
       { type: 'waitForText', text: 'Location markers' },
       { type: 'click', text: 'Location markers' },

@@ -462,9 +462,8 @@ export const qcSpecs: ScreenshotSpec[] = [
         },
       ],
     })}&sessionName=Screenshot`,
-    // 780 - 40 for the ENCODE lane, then -50 across the coverage and callset
-    // lanes
-    viewportHeight: 690,
+    // sized to the app's bottom edge, so the compose's zoom wedge starts on it
+    viewportHeight: 622,
     hideSelectors: HIDE_ISOFORM_CHIP,
     // TWO PILLS, ONE MESSAGE. The previous pair said "coverage returns at
     // ENCODE's edge, 350 kb past GIAB's", which the review rejected on both

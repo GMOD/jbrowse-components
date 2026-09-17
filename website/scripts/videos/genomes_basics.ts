@@ -147,8 +147,8 @@ export const genomesBasicsVideos: VideoSpec[] = [
     description:
       'A UCSC track found and opened from the hg38 catalog: the track selector, phyloP typed into Filter tracks, the 100-way vertebrate alignment ticked under Comparative Genomics, and the conservation lane drawn under the TP53 transcript',
     url: geneTrackOnly,
-    // Sized to the END state, which is phylop_tp53's own 460px app plus room
-    // for the caption chip, since that chip is fixed off the FRAME's bottom
+    // Sized to the END state, a 460px app with phyloP under the transcript,
+    // plus room for the caption chip, since that chip is fixed off the FRAME's bottom
     // rather than the app's. The drawer is laid out to the window whatever is
     // in it, so it takes the whole of this and reports its own height
     // separately. Even, per the encode.

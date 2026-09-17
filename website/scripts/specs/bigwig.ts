@@ -248,15 +248,8 @@ export const bigwigSpecs: ScreenshotSpec[] = [
     // origin track(50) + content(~100) + taller skew(160) + headers/ruler/
     // overview; crop off the empty viewport below the three tracks
     crop: { x: 0, y: 0, width: 1500, height: 640 },
-    // Name the two-arm skew profile: the leading replichore (origin→terminus)
-    // runs mostly positive (blue), the lagging one mostly negative (red). Each
-    // arm label is anchored on a locus inside the arm it names (the leading arm
-    // runs oriC→0→terminus), above or below the zero line as its curve is.
-    //
-    // A third callout names the origin itself (review: "might add third text
-    // annotation saying replication origin"), since the feature track calls it
-    // oriC (dnaA). Its pill sits above the zero line in the lagging arm, where
-    // the curve is all below it.
+    // The skew changes sign at both landmarks: + to − at the terminus, − to +
+    // at the origin (the leading arm wraps through 0).
     annotations: [
       {
         type: 'text',
@@ -280,14 +273,29 @@ export const bigwigSpecs: ScreenshotSpec[] = [
       },
       {
         type: 'text',
-        text: 'Replication origin',
+        text: 'Terminus: skew flips from + to −',
+        leader: true,
+        anchor: {
+          track: 'gc_skew_hpylori',
+          locus: 'NC_018939.1:814,000',
+          fracY: 0.45,
+        },
+        dx: 60,
+        dy: -45,
+        maxWidth: 220,
+      },
+      {
+        type: 'text',
+        text: 'Origin: skew flips from − to +',
         leader: true,
         anchor: {
           track: 'gc_skew_hpylori',
           locus: 'NC_018939.1:1,608,000',
-          fracY: 0.3,
+          fracY: 0.45,
         },
         dx: -60,
+        dy: -45,
+        maxWidth: 220,
       },
     ],
   },

@@ -284,11 +284,11 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.3, 0.75],
   },
   hic_structural_variants: {
-    // Same split as sv_visualization_cgiab above: the translocation comparison
-    // carries the callout arrow and pills, and this one is a clean render — the
-    // arcs over the contact matrix, with the gene lane cropped off the top.
-    src: 'hic/loops_and_domains.png',
-    band: [0.27, 1],
+    // the K562 fusion wedge, clear of the two pills on the left
+    src: 'hic/bcr_abl1_translocation.png',
+    band: [0.6, 1],
+    xband: [0.28, 0.72],
+    position: 'center',
   },
   mappability_qc: {
     // The SMN1 half of the two-locus figure: the mappability lane mostly empty,
@@ -305,15 +305,15 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     // The structure itself, in the Mol* canvas under the alignment panel: the
     // folded ribbon is the one card in the set that isn't a genome browser.
     src: 'protein/connected.png',
-    band: [0.71, 1],
-    xband: [0.36, 0.64],
+    band: [0.62, 0.98],
+    xband: [0.6, 0.95],
   },
   tp53_structures: {
     // The canvas with the two crystal fragments on the model, the part of the
     // frame that says "three structures" without reading a panel.
     src: 'protein/tp53_hotspot.png',
-    band: [0.77, 1],
-    xband: [0.38, 0.64],
+    band: [0.75, 0.97],
+    xband: [0.58, 0.96],
   },
   synteny_visualization: {
     // gene-level ribbons, not the near-empty dotplot the hand-made thumb used
@@ -446,17 +446,10 @@ const THUMB_SPECS: Record<string, ThumbSpec> = {
     band: [0.28, 0.95],
   },
   genomes_basics: {
-    // The finished phyloP-over-TP53 view. The click-path figure above it on
-    // the page is two frames of app chrome with a track drawer down one side,
-    // unreadable at card size.
-    src: 'genomes_basics/phylop_tp53.png',
-    // the stacked transcript rows and the phyloP band under them, which is the
-    // pairing the page is about, starting below the app header and the ruler
-    band: [0.36, 0.93],
-    // the coding exons and the peaks over them; the left third of the figure is
-    // the 3' UTR and one lone exon, which is the page's control rather than its
-    // picture
-    xband: [0.45, 1],
+    // phyloP bars over the top of the 470-way alignment they were scored from
+    src: 'genomes_basics/multiz_alignment.png',
+    band: [0.27, 0.72],
+    xband: [0.05, 0.95],
   },
   pangenome_hprc: {
     // The CFHR3/CFHR1 deletion arc under the reference row, the graph pane only.
