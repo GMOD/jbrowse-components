@@ -126,9 +126,10 @@ Diversity is the same three steps with `--window-pi 2000`, reading `$5` of
 `pi_all.windowed.pi`, with `--keep` restricting it to one arrangement. `$4` of
 the same table is the called-variant count the figure below stacks under π.
 
-The two groups are very unequal, since the inverted arrangement is the rarer
-one. Hudson's estimator is the usual recommendation where groups differ this
-much ([Bhatia et al. 2013](https://doi.org/10.1101/gr.154831.113));
+The inverted and standard groups are very unequal in size, since the inverted
+arrangement is the rarer one. Hudson's estimator is the usual recommendation
+where groups differ this much
+([Bhatia et al. 2013](https://doi.org/10.1101/gr.154831.113));
 [](/docs/tutorials/dog10k_selection) scans with that one.
 
 Tajima's D ([Tajima 1989](https://doi.org/10.1093/genetics/123.3.585)) reports
