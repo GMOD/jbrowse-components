@@ -248,10 +248,14 @@ The seams, named honestly:
   worker walk recorded with a section stamp apiece, so a hidden section's
   colours leave the key; Manhattan hands it the entries of the scale table
   `encodeFeatures` resolved; synteny and the mark display map their own
-  resolved tables but place the rows through the same `legendSpecOf`. The
-  multi-row feature display keeps the bare union, because its colours are
-  `itemRgb` and per-feature `jexl:` — there is no channel behind them to carry
-  a field name or a domain. **The no-value row is a `missing` flag on the
+  resolved tables — already in their channel's order, and the mark's rows
+  carrying a glyph swatch — but place the rows through the same
+  `legendSpecOf`. Two keys stay outside it and both are the same exception:
+  the multi-row feature display's and the multiway lane glyphs'
+  (`laneColorKey`) read colours off `itemRgb` and per-feature `jexl:`, so
+  there is no channel behind them to carry a field name or a domain. They
+  still run the union's rule — a row IS a colour, named by the first feature
+  carrying it. **The no-value row is a `missing` flag on the
   entry, not a label a comparator recognises**, and `legendSpecOf` places it
   last whatever else orders the key: it used to sort by its own name, so a
   declared `domain` floated `(no value)` above every value the domain did not
