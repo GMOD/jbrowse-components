@@ -1,5 +1,6 @@
 import { processFeatureRecord } from './collect/glyphEmitters.ts'
 import { createCollector } from './collect/renderContext.ts'
+import { attributeColorOf } from './featureColors.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
 
 import type { RenderContext } from './collect/renderContext.ts'
@@ -17,7 +18,7 @@ export function collectRenderData(
   },
 ) {
   const { layouts, regionStart, regionEnd } = args
-  const collector = createCollector()
+  const collector = createCollector(attributeColorOf(args.config.color))
 
   for (const layout of layouts) {
     processFeatureRecord(layout, args, collector)
@@ -44,6 +45,7 @@ export function collectRenderData(
     floatingLabelsData: collector.floatingLabelsData,
     flatbushItems: collector.flatbushItems,
     subfeatureInfos: collector.subfeatureInfos,
+    legendCandidates: collector.legend?.collect.candidates,
     aminoAcidOverlay:
       collector.aminoAcidOverlay.length > 0
         ? collector.aminoAcidOverlay

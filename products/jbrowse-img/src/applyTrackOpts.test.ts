@@ -447,7 +447,7 @@ describe('color routing', () => {
         'color:attribute:gene_biotype',
       ])
       expect(snap.color).toBe(
-        "jexl:randomColor(getInherited(feature,'gene_biotype'))",
+        "jexl:categoricalColor(getInherited(feature,'gene_biotype'))",
       )
     }
   })

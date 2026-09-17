@@ -5,6 +5,7 @@ import {
   FEATURE_DEFAULT_COLOR,
   STRAND_COLOR_JEXL,
   UTR_DEFAULT_COLOR,
+  attributeColorOf,
 } from '../RenderFeatureDataRPC/featureColors.ts'
 
 import type { LinearCanvasBaseDisplayConfigModel } from './baseConfigSchema.ts'
@@ -71,11 +72,7 @@ export function colorViews(self: ColorHost) {
      * #getter
      */
     get colorByAttribute() {
-      const raw = self.conf.color
-      if (this.colorByMode !== 'attribute' || raw === undefined) {
-        return ''
-      }
-      return /get(?:Inherited)?\(feature,'([^']+)'\)/.exec(raw)?.[1] ?? ''
+      return attributeColorOf(self.conf.color)?.attribute ?? ''
     },
   }
 }

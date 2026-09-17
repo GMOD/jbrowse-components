@@ -160,7 +160,7 @@ const STRAND_COLOR_JEXL_LOCAL =
 // same way — upstream's is generic so its return type is the exact template, and
 // `satisfies` on the whole function type fails if that template changes.
 const attributeColorJexlLocal = (<T extends string>(attribute: T) =>
-  `jexl:randomColor(getInherited(feature,'${attribute}'))` as const) satisfies typeof attributeColorJexl
+  `jexl:categoricalColor(getInherited(feature,'${attribute}'))` as const) satisfies typeof attributeColorJexl
 
 // The canvas displays' `color` slot holds a CSS color or a jexl expression. Two
 // named modes map onto the exact expressions the display reads back; anything

@@ -1780,6 +1780,7 @@
     "@jbrowse/core/ui/colors": {
       "package": "@jbrowse/core",
       "names": [
+        "categoricalColor",
         "categoricalPalette",
         "categoricalValueColor",
         "category10",
@@ -2829,6 +2830,7 @@
     "@jbrowse/core/util/color": {
       "package": "@jbrowse/core",
       "names": [
+        "NO_CATEGORY_COLOR",
         "emphasize",
         "isNamedColor",
         "makeContrasting",

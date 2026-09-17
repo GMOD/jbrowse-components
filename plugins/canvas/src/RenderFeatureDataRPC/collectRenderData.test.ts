@@ -2,6 +2,7 @@ import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { collectRenderData } from './collectRenderData.ts'
+import { attributeColorJexl } from './featureColors.ts'
 import { findGlyph } from './glyphs/findGlyph.ts'
 import { layoutSubfeatures } from './glyphs/subfeatures.ts'
 import { mockDisplayConfig } from './testUtils.ts'
@@ -807,5 +808,53 @@ describe('collectRenderData transcript coords', () => {
       strand: 1,
       coding: [50, 450],
     })
+  })
+})
+
+describe('legend candidates', () => {
+  const genes = [
+    mockFeature({
+      type: 'gene',
+      id: 'g1',
+      start: 0,
+      end: 100,
+      attributes: { biotype: 'protein_coding' },
+    }),
+    mockFeature({
+      type: 'gene',
+      id: 'g2',
+      start: 200,
+      end: 300,
+      attributes: { biotype: 'lncRNA' },
+    }),
+    mockFeature({ type: 'gene', id: 'g3', start: 400, end: 500 }),
+  ]
+
+  function collectAll(color: string | undefined) {
+    return collectRenderData({
+      layouts: genes.map(boxLayout),
+      regionStart: 0,
+      regionEnd: 1000,
+      config: mockDisplayConfig({ color }),
+      colorByCDS: false,
+      peptideDataMap: undefined,
+      jexl,
+    })
+  }
+
+  it('name each value with the color its features paint', () => {
+    const result = collectAll(
+      attributeColorJexl('biotype', ['lncRNA'], ['#123456']),
+    )
+    expect(result.legendCandidates).toEqual([
+      { rowIndex: 0, label: 'protein_coding', color: result.rectColors[0] },
+      { rowIndex: 0, label: 'lncRNA', color: cssColorToABGR('#123456') },
+    ])
+    expect(result.rectColors[1]).toBe(cssColorToABGR('#123456'))
+  })
+
+  it('are not collected for any other color', () => {
+    expect(collectAll('red').legendCandidates).toBeUndefined()
+    expect(collectAll(undefined).legendCandidates).toBeUndefined()
   })
 })

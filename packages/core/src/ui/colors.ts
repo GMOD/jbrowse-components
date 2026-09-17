@@ -1,4 +1,4 @@
-import { relight } from '../util/color/index.ts'
+import { NO_CATEGORY_COLOR, relight } from '../util/color/index.ts'
 
 const category10 = [
   '#1f77b4',
@@ -146,6 +146,29 @@ export function categoricalValueColor(
   return value !== '' && Number.isInteger(num) && num >= 0
     ? palette[(num + n - 1) % n]!
     : palette[hashString(value) % n]!
+}
+
+/**
+ * The color one value of a categorical color channel paints: a value its
+ * `domain` lists takes the palette entry at that position, and any other
+ * value takes `categoricalValueColor`'s. A value-less feature is neutral grey.
+ * An array value joins the way a group key does, so a feature filed under a
+ * section paints that section's color.
+ */
+export function categoricalColor(
+  value: unknown,
+  domain: readonly string[] = [],
+  palette: readonly string[] = [],
+) {
+  if (value === undefined || value === null || value === '') {
+    return NO_CATEGORY_COLOR
+  }
+  const colors = palette.length ? palette : categoricalPalette
+  const key = Array.isArray(value) ? value.map(String).join(',') : String(value)
+  const i = domain.indexOf(key)
+  return i === -1
+    ? categoricalValueColor(key, colors)
+    : colors[i % colors.length]!
 }
 
 // only category10 and set1 are imported by name; the rest are reached through

@@ -1,3 +1,6 @@
+import { createLegendCandidateCollector } from '@jbrowse/core/util/legendCandidates'
+
+import type { AttributeColor } from '../featureColors.ts'
 import type { ArrowData, LineData, RectData } from '../packRenderArrays.ts'
 import type { DisplayConfig } from '../renderConfig.ts'
 import type {
@@ -43,9 +46,15 @@ export interface Collector {
   flatbushItems: FlatbushItem[]
   subfeatureInfos: SubfeatureInfo[]
   aminoAcidOverlay: AminoAcidOverlayItem[]
+  // Set when the `color` slot colors by an attribute: each top-level feature's
+  // value and the color it paints, for the key the main thread derives.
+  legend?: {
+    color: AttributeColor
+    collect: ReturnType<typeof createLegendCandidateCollector>
+  }
 }
 
-export function createCollector(): Collector {
+export function createCollector(color?: AttributeColor): Collector {
   return {
     rects: [],
     lines: [],
@@ -54,5 +63,9 @@ export function createCollector(): Collector {
     flatbushItems: [],
     subfeatureInfos: [],
     aminoAcidOverlay: [],
+    legend: color && {
+      color,
+      collect: createLegendCandidateCollector(),
+    },
   }
 }

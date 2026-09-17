@@ -119,7 +119,8 @@ returns the default color.
 **Edit as JSON...**, at the foot of the Group by and Color by attribute dialogs,
 opens the track's grouping, color and filter as three channels. `facet` stacks a
 section per value of a field, in the order its `domain` lists; `color` is a CSS
-color or a jexl expression, or `{ "field": … }` for one color per value;
+color or a jexl expression, or `{ "field": … }` for one color per value, whose
+`domain` hands out the `palette` in order and whose key the track draws;
 `filter` is the list of jexl expressions **Filter by...** edits. Applying a spec
 changes only the channels it names, and `null` clears one. Each of these pastes
 as it is:
@@ -128,6 +129,8 @@ as it is:
 - `{ "facet": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"] } }`
   a section per biotype, these two first
 - `{ "color": { "field": "source" } }` one color per source
+- `{ "color": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"], "palette": ["#1f77b4", "#ff7f0e"] } }`
+  those two biotypes blue and orange, and a key saying so
 - `{ "color": "#1f77b4" }` one color for everything
 - `{ "filter": ["feature.type == 'gene'"] }` genes only
 - `{ "facet": null, "color": null }` ungrouped, default color

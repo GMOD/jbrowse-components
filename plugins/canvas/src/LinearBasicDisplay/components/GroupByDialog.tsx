@@ -13,7 +13,7 @@ import {
 import { observer } from 'mobx-react'
 
 import { facetOf } from '../channelSpec.ts'
-import { FEATURE_GROUP_BY_DIMENSIONS, groupColorJexl } from '../groupBy.ts'
+import { FEATURE_GROUP_BY_DIMENSIONS, isGroupColor } from '../groupBy.ts'
 
 import type { FeatureGroupBy, FeatureGroupByType } from '../groupBy.ts'
 import type { ChannelSpec } from '@jbrowse/display-kit/channelSpec'
@@ -52,7 +52,7 @@ const GroupByDialog = observer(function GroupByDialog({
   const groupBy = groupByOf(choice, attribute.trim())
   const alsoColor =
     colorChoice ??
-    (color === undefined || color === groupColorJexl(groupBy ?? model.groupBy))
+    (color === undefined || isGroupColor(color, groupBy ?? model.groupBy))
 
   return (
     <SubmitDialog

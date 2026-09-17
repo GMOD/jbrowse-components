@@ -1,5 +1,5 @@
+import { categoricalColor } from '@jbrowse/core/ui/colors'
 import { SimpleFeature } from '@jbrowse/core/util'
-import { randomColor } from '@jbrowse/core/util/color'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import {
@@ -168,7 +168,7 @@ describe('boxColor (color by attribute)', () => {
   it("paints every box of a gene in the gene's value color", () => {
     const transcript = gene.get('subfeatures')![0]!
     for (const box of [transcript, ...transcript.get('subfeatures')!]) {
-      expect(fill(box, config)).toBe(randomColor('protein_coding'))
+      expect(fill(box, config)).toBe(categoricalColor('protein_coding'))
     }
   })
 })

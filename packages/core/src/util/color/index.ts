@@ -101,7 +101,7 @@ export { isNamedColor, namedColorToHex } from './cssColorsLevel4.ts'
 // What a value-less feature is painted. Neutral and unsaturated on purpose: it
 // has to read as "not in a category" beside a palette whose every member is
 // equally light and equally colorful, so it cannot be one more hue.
-const NO_CATEGORY_COLOR = '#afafaf'
+export const NO_CATEGORY_COLOR = '#afafaf'
 
 const RANDOM_COLOR_TIERS = [
   { lightness: 0.66, chroma: 0.15 },

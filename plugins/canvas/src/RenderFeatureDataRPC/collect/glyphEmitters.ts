@@ -1,3 +1,4 @@
+import { categoricalColor } from '@jbrowse/core/ui/colors'
 import { cssColorToABGR as colorToUint32 } from '@jbrowse/core/util/colorBits'
 
 import { LITERAL } from '../colorClasses.ts'
@@ -757,6 +758,16 @@ export function processFeatureRecord(
     isoformStack: layout.isoformStack,
   })
   const flatbushIdx = collector.flatbushItems.length - 1
+
+  if (collector.legend) {
+    const { color, collect } = collector.legend
+    const value = groupKeyOf(feature, color.attribute) ?? ''
+    collect.add(
+      0,
+      value,
+      colorToUint32(categoricalColor(value, color.domain, color.palette)),
+    )
+  }
 
   emitGlyph(
     layout,

@@ -34,12 +34,14 @@ test('facet, color and filter land on the slots the menus write', () => {
     attribute: 'subtrack',
     domain: ['key5', 'key2', 'key3'],
   })
-  expect(d.conf.color).toBe(attributeColorJexl('subtrack'))
+  expect(d.conf.color).toBe(
+    attributeColorJexl('subtrack', ['key5', 'key2', 'key3']),
+  )
   expect(d.colorByAttribute).toBe('subtrack')
   expect(d.activeFilters()).toEqual(["jexl:feature.type == 'gene'"])
   expect(d.channelSpec).toEqual({
     facet: { field: 'subtrack', domain: ['key5', 'key2', 'key3'] },
-    color: { field: 'subtrack' },
+    color: { field: 'subtrack', domain: ['key5', 'key2', 'key3'] },
     filter: ["feature.type == 'gene'"],
   })
 })
@@ -132,4 +134,22 @@ test('the gene track guide prints every example the dialog lists', () => {
   for (const { spec, description } of CHANNEL_SPEC_EXAMPLES) {
     expect(guide).toContain(`\`${spec}\` ${description}`)
   }
+})
+
+test('a color by another field keeps its own order, and a later reorder leaves it', () => {
+  const d = display()
+  d.applyChannelSpec({
+    facet: { field: 'biotype', domain: ['b', 'a'] },
+    color: { field: 'source', palette: ['red', 'blue'] },
+  })
+  expect(d.channelSpec.color).toEqual({
+    field: 'source',
+    palette: ['red', 'blue'],
+  })
+  d.applyChannelSpec({
+    facet: { field: 'source', domain: ['x'] },
+    color: { field: 'source', domain: ['y', 'x'] },
+  })
+  d.applyChannelSpec({ facet: { field: 'source', domain: ['z'] } })
+  expect(d.channelSpec.color).toEqual({ field: 'source', domain: ['y', 'x'] })
 })

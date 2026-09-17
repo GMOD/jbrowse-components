@@ -118,6 +118,10 @@ test('grouping with its color writes the grouping color, and unticking takes it 
   display.applyGroupBy({ type: 'attribute', attribute: 'biotype' }, false)
   expect(display.colorByMode).toBe('default')
 
+  display.setFeatureColor(attributeColorJexl('biotype', ['b', 'a']))
+  display.applyGroupBy({ type: 'attribute', attribute: 'biotype' }, false)
+  expect(display.colorByMode).toBe('default')
+
   display.applyGroupBy({ type: 'strand' }, true)
   display.applyGroupBy(undefined, false)
   expect(display.colorByMode).toBe('default')

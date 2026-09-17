@@ -69,6 +69,7 @@ import {
   facetOf,
   filterOf,
   groupByOf,
+  withFacetDomain,
 } from './channelSpec.ts'
 import { colorViews } from './colorViews.ts'
 import {
@@ -100,6 +101,7 @@ import { fitDrops, fitLadderNote, labelsFitHint } from './fitNotes.ts'
 import {
   featureGroupSections,
   groupColorJexl,
+  isGroupColor,
   normalizeFeatureGroupBy,
   sectionIdsOf,
 } from './groupBy.ts'
@@ -1435,8 +1437,7 @@ export default function baseStateModelFactory(
         const { color } = self.conf
         const nextJexl = groupColorJexl(groupBy)
         const wasGroupColor =
-          color !== undefined &&
-          (color === groupColorJexl(self.groupBy) || color === nextJexl)
+          isGroupColor(color, self.groupBy) || isGroupColor(color, groupBy)
         self.setGroupBy(groupBy)
         if (colorByGroup && nextJexl) {
           self.setFeatureColor(nextJexl)
@@ -1454,7 +1455,7 @@ export default function baseStateModelFactory(
       get channelSpec(): ChannelSpec {
         return {
           facet: facetOf(self.groupBy),
-          color: colorOf(self.conf.color, self.colorByAttribute),
+          color: colorOf(self.conf.color),
           filter: filterOf(self.activeFilters()),
         }
       },
@@ -1480,8 +1481,13 @@ export default function baseStateModelFactory(
        * Writes each channel the spec changes onto the slot its menu writes,
        * and clears one the spec names `null`.
        */
-      applyChannelSpec(spec: ChannelSpec) {
-        const { sets, clears } = channelSpecChanges(spec, self.channelSpec)
+      applyChannelSpec(written: ChannelSpec) {
+        const current = self.channelSpec
+        const spec = withFacetDomain(
+          written,
+          written.facet === undefined ? current.facet : written.facet,
+        )
+        const { sets, clears } = channelSpecChanges(spec, current)
         const changed = new Set([...sets, ...clears])
         if (changed.has('facet')) {
           self.setGroupBy(spec.facet ? groupByOf(spec.facet) : undefined)

@@ -4,6 +4,7 @@ import type {
   GatedFetchArgs,
   RegionTooLargeResult,
 } from '@jbrowse/core/rpc/byteBudget'
+import type { LegendCandidate } from '@jbrowse/core/util/legendCandidates'
 import type { SimpleFeatureSerialized } from '@jbrowse/core/util/simpleFeature'
 
 export interface LabelItem {
@@ -132,6 +133,9 @@ export interface FeatureDataResult {
   labelKinds?: LabelKinds
 
   aminoAcidOverlay?: AminoAcidOverlayItem[]
+
+  // Undefined unless the `color` slot colors by an attribute.
+  legendCandidates?: LegendCandidate[]
 
   featureCount: number
 

@@ -7,6 +7,7 @@ import {
 import {
   STRAND_COLOR_JEXL,
   attributeColorJexl,
+  attributeColorOf,
 } from '../RenderFeatureDataRPC/featureColors.ts'
 
 import type { FeatureGroupBy } from './groupBy.ts'
@@ -26,6 +27,10 @@ export const CHANNEL_SPEC_EXAMPLES = [
   {
     spec: '{ "color": { "field": "source" } }',
     description: 'one color per source',
+  },
+  {
+    spec: '{ "color": { "field": "gene_biotype", "domain": ["protein_coding", "lncRNA"], "palette": ["#1f77b4", "#ff7f0e"] } }',
+    description: 'those two biotypes blue and orange, and a key saying so',
   },
   { spec: '{ "color": "#1f77b4" }', description: 'one color for everything' },
   {
@@ -57,17 +62,21 @@ export function groupByOf(
     : { type: 'attribute', attribute: facet.field, domain }
 }
 
-export function colorOf(
-  color: string | undefined,
-  colorByAttribute: string,
-): ChannelSpec['color'] {
-  return color === undefined
-    ? null
-    : color === STRAND_COLOR_JEXL
-      ? { field: STRAND }
-      : colorByAttribute && color === attributeColorJexl(colorByAttribute)
-        ? { field: colorByAttribute }
-        : color
+export function colorOf(color: string | undefined): ChannelSpec['color'] {
+  if (color === undefined) {
+    return null
+  }
+  if (color === STRAND_COLOR_JEXL) {
+    return { field: STRAND }
+  }
+  const byField = attributeColorOf(color)
+  return byField
+    ? {
+        field: byField.attribute,
+        ...(byField.domain.length ? { domain: byField.domain } : {}),
+        ...(byField.palette.length ? { palette: byField.palette } : {}),
+      }
+    : color
 }
 
 export function colorSlotOf(color: NonNullable<ChannelSpec['color']>) {
@@ -75,7 +84,28 @@ export function colorSlotOf(color: NonNullable<ChannelSpec['color']>) {
     ? color
     : color.field === STRAND
       ? STRAND_COLOR_JEXL
-      : attributeColorJexl(color.field)
+      : attributeColorJexl(color.field, color.domain, color.palette)
+}
+
+/**
+ * A color by the facet's own field that names no domain takes the facet's,
+ * so the sections and their colors list in one order. Copied when the spec is
+ * applied rather than read at paint time, so a later Sections move reorders
+ * the sections and leaves the colors where they are.
+ */
+export function withFacetDomain(
+  spec: ChannelSpec,
+  facet: ChannelSpec['facet'],
+): ChannelSpec {
+  const { color } = spec
+  return color &&
+    typeof color !== 'string' &&
+    color.field !== STRAND &&
+    !color.domain &&
+    facet?.domain &&
+    facet.field === color.field
+    ? { ...spec, color: { ...color, domain: facet.domain } }
+    : spec
 }
 
 export function filterOf(activeFilters: string[]) {
@@ -85,12 +115,11 @@ export function filterOf(activeFilters: string[]) {
 }
 
 function colorScaleProblems(color: ChannelSpec['color']) {
-  return color && typeof color !== 'string' && (color.domain || color.palette)
-    ? [
-        color.field === STRAND
-          ? "color: strand's colors are fixed, so it takes no domain or palette"
-          : 'color: domain and palette are not taken on this track yet',
-      ]
+  return color &&
+    typeof color !== 'string' &&
+    color.field === STRAND &&
+    (color.domain || color.palette)
+    ? ["color: strand's colors are fixed, so it takes no domain or palette"]
     : []
 }
 

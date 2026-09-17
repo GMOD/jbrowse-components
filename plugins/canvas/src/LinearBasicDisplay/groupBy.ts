@@ -8,6 +8,7 @@ import {
 import {
   STRAND_COLOR_JEXL,
   attributeColorJexl,
+  attributeColorOf,
 } from '../RenderFeatureDataRPC/featureColors.ts'
 import { isPlacedRow } from './rowPlacement.ts'
 
@@ -71,6 +72,17 @@ export const FEATURE_GROUP_BY_DIMENSIONS: {
         : { key: '', label: `${attribute}: none` },
     colorJexl: ({ attribute }) => attributeColorJexl(attribute),
   },
+}
+
+export function isGroupColor(
+  color: string | undefined,
+  groupBy: FeatureGroupBy | undefined,
+) {
+  return groupBy === undefined || color === undefined
+    ? false
+    : groupBy.type === 'attribute'
+      ? attributeColorOf(color)?.attribute === groupBy.attribute
+      : color === STRAND_COLOR_JEXL
 }
 
 export function groupColorJexl(groupBy: FeatureGroupBy | undefined) {
