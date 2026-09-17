@@ -55,7 +55,7 @@ of paired rows fits.
 Two menu clicks and a drag changed three settings, and each one has a name you
 can type into a config.
 
-In **JBrowse Web**, click **Share**, choose **Plaintext JSON** from the settings
+Click **Share** in **JBrowse Web**, choose **Plaintext JSON** from the settings
 icon in the dialog, and tick the **Show readable JSON** box that appears below
 the link.
 
