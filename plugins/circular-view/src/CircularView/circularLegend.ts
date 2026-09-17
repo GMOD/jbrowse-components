@@ -26,7 +26,7 @@ export interface CircularLegendHost extends IStateTreeNode {
 }
 
 function itemsFor(display: CircularLegendSource, name: string): LegendItem[] {
-  const ramp = display.legendSpec?.sections
+  const ramp = (display.legendSpec?.sections ?? [])
     .flatMap(s => s.items)
     .find(item => item.gradient)
   if (ramp) {
