@@ -253,8 +253,8 @@ since an all-vs-all file has a direct alignment for every pair.
 
 <Figure caption="Five E. coli strains stacked from one minimap2 all-vs-all PAF, short alignments hidden with minAlignmentLength. The continuous ribbons are the backbone shared by all five; the bottom band crosses because IAI39 is inverted against the others." src="/img/multiway_synteny/ecoli_pangenome.png" />
 
-Sakai's largest gap carries its prophage Shiga-toxin genes, and CFT073's carries
-its pathogenicity islands.
+The gaps mark where the strains differ: Sakai's largest carries its prophage
+Shiga-toxin genes, and CFT073's carries its pathogenicity islands.
 
 ## Adding gene tracks
 

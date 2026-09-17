@@ -60,9 +60,10 @@ The projections are hosted beside the graph:
 [Preparing your own graph](/docs/tutorials/pangenome_prepare_graph) describes
 what each of those files holds and how a graph produces them.
 
-`minigraph` writes no path lines, so this graph records no carriage, and
-`firstSeenIn` in the allele file is construction order.
-[](/docs/tutorials/pangenome_cattle) is the panel where path lines recover it.
+`minigraph` writes no path lines, so this graph records no carriage, meaning
+nothing in it records which strain carries a given allele, and `firstSeenIn` in
+the allele file is construction order. [](/docs/tutorials/pangenome_cattle) is
+the panel where path lines recover it.
 
 ## Nnt: a deletion that appears as an insertion
 
