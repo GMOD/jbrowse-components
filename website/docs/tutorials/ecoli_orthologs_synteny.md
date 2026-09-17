@@ -31,14 +31,13 @@ where the page ends.
 Forty-four RefSeq assemblies, each fetched by accession with the `datasets` CLI:
 the classic reference strains across phylogroups A, B1, B2, D and E, four
 Shigella, and complete genomes picked by striding a `datasets summary` listing.
-Nothing about a genome is typed by hand: the zip `datasets` writes carries an
-assembly report, and each lane's name is that report's strain field (MG1655
-rather than "K-12 substr. MG1655", `Sflexneri_301` for the Shigella so it does
-not read as an E. coli strain), and the report's organism name is a screen of
-its own: three accessions the listing handed over turned out to be a Leclercia,
-a Salmonella and a suppressed _Shigella_ sp., and the build drops them and
-reports it. The five strains the
-[pangenome graph](/docs/tutorials/pangenome_ecoli) and
+Every field comes from the zip `datasets` writes: it carries an assembly report,
+and each lane's name is that report's strain field (MG1655 rather than "K-12
+substr. MG1655", `Sflexneri_301` for the Shigella so it does not read as an E.
+coli strain), and the report's organism name is a screen of its own: three
+accessions the listing handed over turned out to be a Leclercia, a Salmonella
+and a suppressed _Shigella_ sp., and the build drops them and reports it. The
+five strains the [pangenome graph](/docs/tutorials/pangenome_ecoli) and
 [all-vs-all](/docs/tutorials/allvsall_synteny) pages build from are all here
 under the same accessions (MG1655 is the strain those pages call K12), so the
 three pages read one set of genomes three ways. The
@@ -159,10 +158,10 @@ color is a hash of the symbol and holds nothing else: two genes share a color
 because they share a name, never because they are in a family together. The key
 in the top right turns one back into a name. It lists the symbols the K-12 lane
 draws in the window, left to right, and _Show legend_ on the track menu puts it
-away. The display leaves it out where it would be a list rather than a key,
-which is any window holding more than thirty colors. Lanes stack densest first,
-so the genomes placing the most of the window sit at the top and the reduced
-Shigella genomes fall toward the bottom without anything naming them.
+away. The display leaves it out where it would run to a list, which is any
+window holding more than thirty colors. Lanes stack densest first, so the
+genomes placing the most of the window sit at the top and the reduced Shigella
+genomes fall toward the bottom without anything naming them.
 
 ```json session config=https://jbrowse.org/demos/ecoli_orthologs/config.json
 {
