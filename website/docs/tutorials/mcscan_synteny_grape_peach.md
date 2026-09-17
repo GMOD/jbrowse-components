@@ -226,9 +226,9 @@ is one point and a block a run of them. The axes start in index order;
 
 Reordering puts each peach chromosome's strongest grape partner on the diagonal,
 and its other partners stay off it. The [script](#reproduce-it-end-to-end)
-prints the same pairings off `.anchors.simple`. Both genomes descend from the
-ancestral eudicot hexaploidy (Jaillon et al.) and have rearranged differently
-since.
+prints the same pairings off `.anchors.simple`. Grape and peach both descend
+from the ancestral eudicot hexaploidy (Jaillon et al.) and have rearranged
+differently since.
 
 ## Coming from MCScanX
 
