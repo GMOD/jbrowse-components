@@ -1,6 +1,6 @@
 {
   "id": "session-spec-vocabulary",
-  "measured": "2026-08-25",
+  "measured": "2026-09-17",
   "published": false,
   "source": {
     "kind": "bench",
@@ -29,42 +29,49 @@
     {
       "values": {
         "key": "height",
-        "uses": 391,
-        "displays": 16
+        "uses": 477,
+        "displays": 19
       }
     },
     {
       "values": {
         "key": "displayMode",
-        "uses": 79,
+        "uses": 92,
         "displays": 3
       }
     },
     {
       "values": {
         "key": "showLabels",
-        "uses": 67,
+        "uses": 80,
         "displays": 2
       }
     },
     {
       "values": {
         "key": "heightMode",
-        "uses": 51,
+        "uses": 52,
+        "displays": 2
+      }
+    },
+    {
+      "values": {
+        "key": "color",
+        "uses": 52,
         "displays": 3
       }
     },
     {
       "values": {
         "key": "forceLoad",
-        "uses": 51,
-        "displays": 7
+        "uses": 52,
+        "displays": 8
       }
     },
     {
       "values": {
         "key": "featureHeight",
-        "uses": 49,
+        "uses": 47,
         "displays": 2
       }
     },
@@ -84,13 +91,6 @@
     },
     {
       "values": {
-        "key": "color",
-        "uses": 43,
-        "displays": 3
-      }
-    },
-    {
-      "values": {
         "key": "defaultRendering",
         "uses": 42,
         "displays": 2
@@ -99,50 +99,43 @@
     {
       "values": {
         "key": "colorBy",
-        "uses": 30,
+        "uses": 26,
         "displays": 3
       }
     },
     {
       "values": {
-        "key": "scatterPointSize",
+        "key": "groupBy",
         "uses": 18,
         "displays": 3
       }
     },
     {
       "values": {
-        "key": "jexlFiltersSetting",
+        "key": "summaryScoreMode",
         "uses": 16,
         "displays": 2
       }
     },
     {
       "values": {
-        "key": "groupBy",
+        "key": "jexlFiltersSetting",
         "uses": 15,
         "displays": 2
       }
     },
     {
       "values": {
-        "key": "summaryScoreMode",
+        "key": "scatterPointSize",
         "uses": 15,
-        "displays": 2
+        "displays": 3
       }
     },
     {
       "values": {
         "key": "runClustering",
-        "uses": 13,
+        "uses": 14,
         "displays": 5
-      }
-    },
-    {
-      "values": {
-        "key": "displayCrossHatches",
-        "uses": 13,
-        "displays": 2
       }
     },
     {
@@ -154,16 +147,16 @@
     },
     {
       "values": {
-        "key": "resolution",
+        "key": "showTree",
         "uses": 11,
-        "displays": 2
+        "displays": 3
       }
     },
     {
       "values": {
-        "key": "showTree",
-        "uses": 10,
-        "displays": 3
+        "key": "displayCrossHatches",
+        "uses": 11,
+        "displays": 2
       }
     },
     {
@@ -176,22 +169,29 @@
     {
       "values": {
         "key": "subtreeFilter",
+        "uses": 9,
+        "displays": 2
+      }
+    },
+    {
+      "values": {
+        "key": "resolution",
         "uses": 8,
         "displays": 2
       }
     },
     {
       "values": {
-        "key": "autoscale",
-        "uses": 6,
+        "key": "jexlFilters",
+        "uses": 7,
         "displays": 3
       }
     },
     {
       "values": {
-        "key": "jexlFilters",
-        "uses": 6,
-        "displays": 2
+        "key": "autoscale",
+        "uses": 5,
+        "displays": 3
       }
     },
     {
@@ -203,15 +203,15 @@
     },
     {
       "values": {
-        "key": "featureHighlights",
+        "key": "scaleType",
         "uses": 4,
-        "displays": 2
+        "displays": 3
       }
     },
     {
       "values": {
-        "key": "scaleType",
-        "uses": 3,
+        "key": "featureHighlights",
+        "uses": 4,
         "displays": 2
       }
     },

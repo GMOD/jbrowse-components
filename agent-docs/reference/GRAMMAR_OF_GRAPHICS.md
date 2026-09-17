@@ -292,9 +292,9 @@ The four displays composing `TreeSidebarMixin` (`packages/tree-sidebar`) share
 a layout ComplexHeatmap states outright: a body, and beside it marginal
 annotations that each read a field of a row table. ggtree draws the same
 picture with the tree as the body and `gheatmap`, `msaplot` and `facet_plot`
-as the panels; react-msaview (`~/src/react-msaview`, whose
-`agent-docs/ideas/panels-and-marks.md` works the same correspondence from its
-side) names it the other way round, the alignment as the body and the tree as
+as the panels; react-msaview (`~/src/react-msaview`, whose panels-and-marks
+idea works the same correspondence from its side) names it the other way
+round, the alignment as the body and the tree as
 the first row panel, and its `rowData` table is what every row panel reads.
 Here the rows are samples, species or subtracks, the tree is the sidebar, and
 the row table is `layout`. The table is the correspondence, so a proposal on
