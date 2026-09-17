@@ -245,8 +245,8 @@ node build_signal_zarr.ts \
   --levels 1000,10000
 ```
 
-That is the command behind the hosted store, all 2504 samples over the windows
-its figures visit; the store lands at 2.4 MB.
+The command above is the one behind the hosted store, run over all 2504 samples
+and the windows its figures visit; the store lands at 2.4 MB.
 
 `--levels` is the resolution pyramid: one samples-by-bins array per entry,
 coarser ones averaged from the finest. The adapter reads the coarsest level
