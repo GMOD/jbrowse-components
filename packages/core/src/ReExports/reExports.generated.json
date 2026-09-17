@@ -4632,6 +4632,7 @@
         "getFeatureHeightMenuItem",
         "getFiltersMenuItems",
         "getHitMenuItems",
+        "getSectionOrderMenuItems",
         "getSortByMenuItem",
         "groupByRadioMenuItem",
         "hiddenGroupsItems",
