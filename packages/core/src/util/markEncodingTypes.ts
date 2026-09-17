@@ -132,7 +132,12 @@ export type ColorScaleTable =
   | {
       kind: 'categorical'
       field: string
-      entries: { label: string; color: number }[]
+      /**
+       * `missing` marks the one row that names the absence of a value rather
+       * than one of them, so a key can place it after the values however it
+       * orders them.
+       */
+      entries: { label: string; color: number; missing?: boolean }[]
     }
   | {
       kind: 'ramp'
@@ -155,7 +160,7 @@ export type ColorScaleTable =
 export interface GlyphScaleTable {
   kind: 'glyph'
   field: string
-  entries: { label: string; glyph: GlyphName }[]
+  entries: { label: string; glyph: GlyphName; missing?: boolean }[]
 }
 
 /**

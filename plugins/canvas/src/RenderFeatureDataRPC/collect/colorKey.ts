@@ -17,6 +17,7 @@ export interface PaintedValue {
   label: string
   css: string
   packed: number
+  missing?: boolean
 }
 
 function labelOf(value: unknown) {
@@ -46,6 +47,7 @@ export function createColorKey(config: DisplayConfig, jexl: JexlInstance) {
     label: NO_VALUE_LABEL,
     css: NO_CATEGORY_COLOR,
     packed: cssColorToABGR(NO_CATEGORY_COLOR),
+    missing: true,
   }
   const rows: SectionStamp[] = []
   const rowOf = new Map<string, number>()
@@ -99,8 +101,8 @@ export function createColorKey(config: DisplayConfig, jexl: JexlInstance) {
       }
       return value
     },
-    record({ label, packed }: PaintedValue) {
-      collector.add(row, label, packed)
+    record({ label, packed, missing }: PaintedValue) {
+      collector.add(row, label, packed, missing)
     },
   }
 }

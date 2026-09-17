@@ -1,3 +1,9 @@
+import { legendIsReadable } from '../ui/legendSpec.ts'
+import { abgrToCssRgba } from './colorBits.ts'
+import { groupKeyComparator } from './groupKeys.ts'
+
+import type { ColorScale } from '../ui/colorScale.ts'
+
 // One (row, name, color) combination a worker found while packing its features,
 // and the whole of what a DERIVED color key is built from — the key a display
 // reads off its data, as opposed to one an admin declared in a config slot.
@@ -10,12 +16,15 @@ export interface LegendCandidate {
   label: string
   // ABGR-packed, as the worker baked it into the painting
   color: number
+  // The row naming the absence of a value rather than one of them
+  missing?: boolean
 }
 
 // One row of a derived key: a color, named by the first label seen in it.
 export interface LegendEntry {
   label: string
   color: number
+  missing?: boolean
 }
 
 // How many distinct colors a derived key may name and still BE a key. Past this
@@ -52,7 +61,7 @@ export function createLegendCandidateCollector(
   const colorsSeen = new Map<number, Map<string, Set<number>>>()
   return {
     candidates,
-    add(rowIndex: number, label: string, color: number) {
+    add(rowIndex: number, label: string, color: number, missing?: boolean) {
       if (label !== '' && candidates.length < maxCandidates) {
         let byLabel = colorsSeen.get(rowIndex)
         if (byLabel === undefined) {
@@ -66,7 +75,11 @@ export function createLegendCandidateCollector(
         }
         if (!colors.has(color)) {
           colors.add(color)
-          candidates.push({ rowIndex, label, color })
+          candidates.push(
+            missing
+              ? { rowIndex, label, color, missing }
+              : { rowIndex, label, color },
+          )
         }
       }
     },
@@ -107,7 +120,7 @@ export function unionLegendCandidates<T>(
   const seenLabels = new Set<string>()
   for (const region of regions) {
     const { candidates, rowPaintsCandidateColor } = resolve(region)
-    for (const { rowIndex, label, color } of candidates) {
+    for (const { rowIndex, label, color, missing } of candidates) {
       if (
         rowPaintsCandidateColor(rowIndex) &&
         !seenLabels.has(label) &&
@@ -115,7 +128,7 @@ export function unionLegendCandidates<T>(
       ) {
         seenLabels.add(label)
         seenColors.add(color)
-        entries.push({ label, color })
+        entries.push(missing ? { label, color, missing } : { label, color })
         if (entries.length > maxEntries) {
           return []
         }
@@ -123,4 +136,55 @@ export function unionLegendCandidates<T>(
     }
   }
   return entries
+}
+
+/**
+ * What a display says about the categorical color channel it derived a key
+ * from, beside the painted values themselves.
+ */
+export interface DerivedColorScaleSpec {
+  /** The scale's id, which is what a dismissed section is remembered by. */
+  id: string
+  /** The channel's field, which titles the key. */
+  field?: string
+  /** The channel's declared order. */
+  domain?: readonly string[]
+  /** How the key names a value, where the field has names of its own. */
+  labelOf?: (value: string) => string
+  /** How many rows this display's key may have and still be one. */
+  maxItems?: number
+}
+
+/**
+ * The one categorical key a color channel derives from what a worker painted:
+ * the union above over the loaded regions, each color named by the first label
+ * seen in it, ordered by the channel's `domain`, and the whole scale dropped
+ * where it says nothing (`legendIsReadable`). The entries are ordered here as
+ * well as in `legendSpecOf`, because a caller reads them for what the key
+ * lists — the feature display pins its color domain off them.
+ *
+ * A display resolving its own colors hands the candidates its packer recorded
+ * and a predicate for which of its rows paint them; one resolved by
+ * `encodeFeatures` hands the entries of the scale table that came back. Either
+ * way the key lists what the painting holds, because the candidates are the
+ * packed colors themselves. The no-value row carries its `missing` flag from
+ * whichever resolved it, and `legendSpecOf` is where that flag places it.
+ */
+export function derivedColorScale<T>(
+  regions: Iterable<T>,
+  resolve: (region: T) => LegendCandidateSource,
+  { id, field, domain, labelOf, maxItems }: DerivedColorScaleSpec,
+): ColorScale[] {
+  const compare = groupKeyComparator(domain)
+  const entries = unionLegendCandidates(regions, resolve)
+    .map(({ label, color, missing }) => ({
+      value: label,
+      label: labelOf?.(label) ?? label,
+      color: abgrToCssRgba(color),
+      ...(missing ? { missing } : {}),
+    }))
+    .sort((a, b) => compare(a.value, b.value))
+  return legendIsReadable(entries, maxItems)
+    ? [{ kind: 'categorical', id, title: field, domain, entries }]
+    : []
 }

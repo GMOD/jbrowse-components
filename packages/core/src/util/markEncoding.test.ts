@@ -124,7 +124,11 @@ test('an unpinned categorical scale colours by value, so two regions agree, and 
     field: 'type',
     entries: [
       { label: 'gene', color: of('gene') },
-      { label: NO_VALUE_LABEL, color: cssColorToABGR('#808080') },
+      {
+        label: NO_VALUE_LABEL,
+        color: cssColorToABGR('#808080'),
+        missing: true,
+      },
     ],
   })
   expect(other.color[1]).toBe(cssColorToABGR('#808080'))
@@ -390,7 +394,7 @@ test('an unpinned glyph scale derives each glyph from the value, so two regions 
   expect(other.glyph[1]).toBe(GLYPH_DISC)
   expect(other.glyphScale?.entries).toEqual([
     { label: 'exon', glyph: of('exon') },
-    { label: NO_VALUE_LABEL, glyph: 'disc' },
+    { label: NO_VALUE_LABEL, glyph: 'disc', missing: true },
   ])
 })
 

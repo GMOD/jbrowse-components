@@ -859,6 +859,7 @@ describe('color key', () => {
           rowIndex: 0,
           label: NO_VALUE_LABEL,
           color: cssColorToABGR(NO_CATEGORY_COLOR),
+          missing: true,
         },
       ],
       rows: [

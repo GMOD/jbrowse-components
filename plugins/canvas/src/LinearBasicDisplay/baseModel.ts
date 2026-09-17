@@ -21,7 +21,6 @@ import {
   jexlFilterNarrowing,
 } from '@jbrowse/core/util/jexlFilters'
 import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
-import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
 import { STRAND_FIELD } from '@jbrowse/core/util/strandScale'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
@@ -1479,13 +1478,10 @@ export default function baseStateModelFactory(
         const listed = new Set(colorDomain)
         const keyed = this.derivedColorScales.flatMap(scale =>
           scale.kind === 'categorical'
-            ? scale.entries.map(entry => entry.value)
+            ? scale.entries.filter(e => !e.missing).map(entry => entry.value)
             : [],
         )
-        return [
-          ...colorDomain,
-          ...keyed.filter(v => v !== NO_VALUE_LABEL && !listed.has(v)),
-        ]
+        return [...colorDomain, ...keyed.filter(v => !listed.has(v))]
       },
       /**
        * #method

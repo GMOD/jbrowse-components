@@ -1,6 +1,5 @@
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { stopsFromRampLut } from '@jbrowse/core/util/colorRamp'
-import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
 
 import type { MarkRegionData, StoredLayer } from './markList.ts'
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
@@ -119,19 +118,7 @@ export function buildMarkLegend(
       CHANNELS.findIndex(c => c.channel === a.channel) -
         CHANNELS.findIndex(c => c.channel === b.channel),
   )
-  for (const { scale } of sections) {
-    if (scale.kind !== 'ramp') {
-      missingRowLast(scale.entries)
-    }
-  }
   return sections
-}
-
-function missingRowLast(entries: { label: string }[]) {
-  const missing = entries.findIndex(e => e.label === NO_VALUE_LABEL)
-  if (missing !== -1 && missing !== entries.length - 1) {
-    entries.push(...entries.splice(missing, 1))
-  }
 }
 
 // A mark's glyph table over the same field its categorical colour reads:
@@ -185,13 +172,14 @@ export function markColorScales(sections: MarkLegendSection[]): ColorScale[] {
             entries: scale.entries.map(e => {
               const color = abgrToCssRgba(e.color)
               const g = glyphOf(e.label)
-              return g
+              const row = g
                 ? {
                     value: e.label,
                     label: e.label,
                     swatches: [{ color, glyph: g }],
                   }
                 : { value: e.label, label: e.label, color }
+              return e.missing ? { ...row, missing: true } : row
             }),
           },
         ]
@@ -206,6 +194,7 @@ export function markColorScales(sections: MarkLegendSection[]): ColorScale[] {
               value: e.label,
               label: e.label,
               swatches: [{ color: 'currentColor', glyph: e.glyph }],
+              ...(e.missing ? { missing: true } : {}),
             })),
           },
         ]

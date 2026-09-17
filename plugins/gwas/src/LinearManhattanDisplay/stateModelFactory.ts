@@ -8,9 +8,11 @@ import {
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { makeShowSubMenu } from '@jbrowse/core/ui/showSubMenu'
 import { getDialogHost, openFeatureWidget, toLocale } from '@jbrowse/core/util'
-import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { groupKeyComparator } from '@jbrowse/core/util/groupKeys'
+import {
+  MAX_LEGEND_ENTRIES,
+  derivedColorScale,
+} from '@jbrowse/core/util/legendCandidates'
 import { ContextMenuMixin } from '@jbrowse/display-kit/ContextMenuMixin'
 import LegendMixin, {
   legendCheckboxItem,
@@ -64,7 +66,7 @@ import type {
 } from './manhattanRenderingBackendTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { CategoricalEntry, ColorScale } from '@jbrowse/core/ui/colorScale'
+import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 import type { Region } from '@jbrowse/core/util/types/data'
 import type { SkippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
 import type {
@@ -111,36 +113,6 @@ const SetSignificanceLineDialog = lazy(
 const SetColorFieldDialog = lazy(
   () => import('./components/SetColorFieldDialog.tsx'),
 )
-
-// The color scale under field coloring: every value any loaded region met,
-// each with the color the worker packed for it. One value can arrive from
-// several regions and always with the same color (`categoricalScale` is a
-// function of the value and `colorDomain`), so the union is a plain first-wins merge, ordered by
-// the display's `colorDomain` — listed values first, the rest sorted, numbers
-// by magnitude so `chr2` files before `chr10`.
-function categoryEntries(
-  entries: Iterable<ManhattanRpcResult>,
-  domain: string[],
-): CategoricalEntry[] {
-  const byValue = new Map<string, number>()
-  for (const { scale } of entries) {
-    if (scale?.kind === 'categorical') {
-      for (const { label, color } of scale.entries) {
-        if (!byValue.has(label)) {
-          byValue.set(label, color)
-        }
-      }
-    }
-  }
-  const compare = groupKeyComparator(domain)
-  return [...byValue]
-    .sort(([a], [b]) => compare(a, b))
-    .map(([value, color]) => ({
-      value,
-      label: value,
-      color: abgrToCssRgba(color),
-    }))
-}
 
 // The LD key's rows: the index swatch, the r² bins high to low, the no-data
 // grey — and, where nothing matched the index SNP, a note saying so, or an
@@ -606,18 +578,25 @@ export function stateModelFactory(
           }
           if (self.colorBy === 'field') {
             const domain = self.colorDomain
-            const entries = categoryEntries(self.rpcDataMap.values(), domain)
-            return entries.length
-              ? [
-                  {
-                    kind: 'categorical',
-                    id: 'field',
-                    title: self.colorField,
-                    entries,
-                    domain: domain.length ? domain : undefined,
-                  },
-                ]
-              : []
+            // Every point of a region carries the same table, so the region is
+            // its own source and every entry paints: the display has no rows
+            // to hide a color behind.
+            return derivedColorScale(
+              self.rpcDataMap.values(),
+              ({ scale }) => ({
+                candidates:
+                  scale?.kind === 'categorical'
+                    ? scale.entries.map(entry => ({ rowIndex: 0, ...entry }))
+                    : [],
+                rowPaintsCandidateColor: () => true,
+              }),
+              {
+                id: 'field',
+                field: self.colorField,
+                domain: domain.length ? domain : undefined,
+                maxItems: MAX_LEGEND_ENTRIES,
+              },
+            )
           }
           return []
         },

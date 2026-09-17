@@ -1,5 +1,6 @@
 import { setConf } from '@jbrowse/core/configuration'
 import { resolveSubMenu } from '@jbrowse/core/ui/menuItems'
+import { NO_CATEGORY_COLOR } from '@jbrowse/core/util/color'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
 
@@ -117,8 +118,62 @@ describe('derived color key', () => {
     return display
   }
 
+  // What the worker's walk records: a colour per value, and the no-value row
+  // marked as one rather than named as one — `derivedColorScale` places it by
+  // the flag, so a fixture that only spells the label is not staging a
+  // value-less feature.
+  function paintedData(labels: string[]) {
+    return makeFeatureData({
+      colorKey: {
+        candidates: labels.map((label, i) =>
+          label === NO_VALUE_LABEL
+            ? {
+                rowIndex: 0,
+                label,
+                color: cssColorToABGR(NO_CATEGORY_COLOR),
+                missing: true,
+              }
+            : {
+                rowIndex: 0,
+                label,
+                color: cssColorToABGR(`hsl(${i * 40}, 70%, 50%)`),
+              },
+        ),
+        rows: [{ strand: undefined, groupKey: undefined }],
+      },
+    })
+  }
+
   const keyValues = (display: ReturnType<typeof coloredDisplay>) =>
     display.legendSpec.sections?.[0]?.items.map(i => i.value)
+
+  it('keeps the no-value row last under a declared domain', () => {
+    const display = coloredDisplay({ field: 'biotype', domain: ['snoRNA'] })
+    display.setRpcData(
+      0,
+      paintedData([NO_VALUE_LABEL, 'protein_coding', 'snoRNA']),
+      ctgA,
+    )
+    expect(keyValues(display)).toEqual([
+      'snoRNA',
+      'protein_coding',
+      NO_VALUE_LABEL,
+    ])
+  })
+
+  it('keeps the no-value row last with no domain', () => {
+    const display = coloredDisplay({ field: 'biotype' })
+    display.setRpcData(
+      0,
+      paintedData([NO_VALUE_LABEL, 'protein_coding', 'lncRNA']),
+      ctgA,
+    )
+    expect(keyValues(display)).toEqual([
+      'lncRNA',
+      'protein_coding',
+      NO_VALUE_LABEL,
+    ])
+  })
 
   it('lists the painted values in the color domain order', () => {
     const display = coloredDisplay({ field: 'biotype', domain: ['lncRNA'] })
@@ -188,20 +243,7 @@ describe('derived color key', () => {
       display: ReturnType<typeof coloredDisplay>,
       labels: string[],
     ) {
-      display.setRpcData(
-        0,
-        makeFeatureData({
-          colorKey: {
-            candidates: labels.map((label, i) => ({
-              rowIndex: 0,
-              label,
-              color: cssColorToABGR(`hsl(${i * 40}, 70%, 50%)`),
-            })),
-            rows: [{ strand: undefined, groupKey: undefined }],
-          },
-        }),
-        ctgA,
-      )
+      display.setRpcData(0, paintedData(labels), ctgA)
     }
 
     it('is offered only while a field paints', () => {

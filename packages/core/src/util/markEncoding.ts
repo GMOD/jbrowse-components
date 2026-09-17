@@ -10,7 +10,7 @@ import { VIRIDIS_STOPS, buildColorRampLut } from './colorRamp.ts'
 import { fieldReader } from './fieldReader.ts'
 import Flatbush from './flatbush/index.ts'
 import { GLYPH_CODES, GLYPH_NAMES } from './glyphNames.ts'
-import { groupKeyComparator } from './groupKeys.ts'
+import { NO_VALUE_LABEL, groupKeyComparator } from './groupKeys.ts'
 import { isJexl, stringToJexlExpression } from './jexlStrings.ts'
 import { buildJexlContext } from './simpleFeature.ts'
 
@@ -61,20 +61,17 @@ export type {
   ValueEncoding,
 } from './markEncodingTypes.ts'
 
+// Declared in groupKeys.ts, beside the catch-all section chip it is the key's
+// spelling of; re-exported because `@jbrowse/core/util/markEncoding` is a
+// plugin ABI module and nothing is dropped from one.
+export { NO_VALUE_LABEL } from './groupKeys.ts'
+
 export const DEFAULT_MARK_COLOR = '#0068d1'
 
 // What a feature paints when its colour field is missing or a `jexl:` colour
 // yields a non-string: visible, so a misconfiguration surfaces rather than
 // vanishing.
 const FALLBACK_COLOR = cssColorToABGR('#808080')
-
-/**
- * #api
- * The key row a feature with nothing in a categorical field lands on, so the
- * legend says why a mark is grey, or a disc, rather than listing a blank
- * value.
- */
-export const NO_VALUE_LABEL = '(no value)'
 
 /**
  * #api
@@ -387,7 +384,7 @@ export function encodeFeatures<L extends LaneName>(
       entries: [
         ...entries.map(e => ({ label: e.label, color: e.value })),
         ...(hasMissing(indexOf, count)
-          ? [{ label: NO_VALUE_LABEL, color: FALLBACK_COLOR }]
+          ? [{ label: NO_VALUE_LABEL, color: FALLBACK_COLOR, missing: true }]
           : []),
       ],
     }
@@ -438,7 +435,7 @@ export function encodeFeatures<L extends LaneName>(
       entries: [
         ...entries.map(e => ({ label: e.label, glyph: e.value })),
         ...(hasMissing(indexOf, count)
-          ? [{ label: NO_VALUE_LABEL, glyph: 'disc' as const }]
+          ? [{ label: NO_VALUE_LABEL, glyph: 'disc' as const, missing: true }]
           : []),
       ],
     }

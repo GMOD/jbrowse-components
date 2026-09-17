@@ -131,6 +131,15 @@ export function facetSectionLabel(field: string, key: string) {
 }
 
 /**
+ * #api
+ * The key row a feature with nothing in a categorical field lands on, so the
+ * legend says why a mark is grey, or a disc, rather than listing a blank
+ * value. The same catch-all `facetSectionLabel` chips `field: none`, named for
+ * a key rather than for a section.
+ */
+export const NO_VALUE_LABEL = '(no value)'
+
+/**
  * Which section each key stacks into once the cap applies: the first
  * `MAX_GROUPS` keys in `domain` order keep their own, the rest fold into the
  * overflow section, so a key the domain places never merges behind one it

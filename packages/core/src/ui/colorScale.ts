@@ -20,6 +20,10 @@ export interface CategoricalEntry {
   color?: string
   swatches?: LegendSwatch[]
   hidden?: boolean
+  // The row naming the absence of a value rather than one of them. It sorts
+  // after every value, whatever orders them — its label is an ordinary string
+  // to a comparator, and `(no value)` sorts ahead of every letter and digit.
+  missing?: boolean
 }
 
 /**
@@ -94,10 +98,18 @@ function sectionOf(scale: ColorScale, lone: boolean): LegendSection {
     return { id: scale.id, title: scale.title, items: [rampItem(scale, lone)] }
   }
   const items = scale.entries.map(entry => ({ ...entry }))
-  if (scale.domain?.length) {
-    const compare = groupKeyComparator(scale.domain)
-    items.sort((a, b) => compare(a.value, b.value))
-  }
+  const compare = scale.domain?.length
+    ? groupKeyComparator(scale.domain)
+    : undefined
+  // The no-value row goes last in every key, declared order included: a
+  // domain never lists it, so ordering by the domain alone ranks it with the
+  // values the domain leaves out and its bracket floats it above them all.
+  // The sort is stable, so entries a display ordered itself stay put.
+  items.sort(
+    (a, b) =>
+      Number(a.missing ?? false) - Number(b.missing ?? false) ||
+      (compare ? compare(a.value, b.value) : 0),
+  )
   return {
     id: scale.id,
     title: scale.title,

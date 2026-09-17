@@ -1,7 +1,4 @@
-import { legendIsReadable } from '@jbrowse/core/ui/legendSpec'
-import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
-import { compareGroupKeys } from '@jbrowse/core/util/groupKeys'
-import { NO_VALUE_LABEL } from '@jbrowse/core/util/markEncoding'
+import { derivedColorScale } from '@jbrowse/core/util/legendCandidates'
 
 import { colorValueLabel } from '../RenderFeatureDataRPC/featureColors.ts'
 
@@ -13,45 +10,30 @@ import type {
 import type { ColorScale } from '@jbrowse/core/ui/colorScale'
 
 /**
- * The key a color channel's scale derives from what the worker painted: every
- * value in `regions` sorted, the scale's domain ahead of the rest and the
- * no-value row last, less a value only a hidden section painted. No key while the values are one color
- * or too many to read.
+ * The key a color channel's scale derives from what the worker painted, less a
+ * color only a hidden section carries: `derivedColorScale` over the candidates
+ * the walk recorded, which is the same derivation every channel-backed key
+ * runs.
  */
 export function derivedColorKey(
   scale: FeatureColorScale,
   regions: Iterable<Pick<FeatureDataResult, 'colorKey'>>,
   isHidden?: (section: SectionStamp) => boolean,
 ): ColorScale[] {
-  const colors = new Map<string, string>()
-  for (const { colorKey } of regions) {
-    for (const { rowIndex, label, color } of colorKey?.candidates ?? []) {
-      const section = colorKey!.rows[rowIndex]
-      if (!colors.has(label) && !(isHidden && section && isHidden(section))) {
-        colors.set(label, abgrToCssRgba(color))
-      }
-    }
-  }
-  const entries = [...colors]
-    .sort(
-      ([a], [b]) =>
-        Number(a === NO_VALUE_LABEL) - Number(b === NO_VALUE_LABEL) ||
-        compareGroupKeys(a, b),
-    )
-    .map(([value, color]) => ({
-      value,
-      label: colorValueLabel(scale.field, value),
-      color,
-    }))
-  return legendIsReadable(entries)
-    ? [
-        {
-          kind: 'categorical',
-          id: 'color',
-          title: scale.field,
-          domain: scale.domain,
-          entries,
-        },
-      ]
-    : []
+  return derivedColorScale(
+    regions,
+    ({ colorKey }) => ({
+      candidates: colorKey?.candidates ?? [],
+      rowPaintsCandidateColor: rowIndex => {
+        const section = colorKey?.rows[rowIndex]
+        return !(isHidden && section && isHidden(section))
+      },
+    }),
+    {
+      id: 'color',
+      field: scale.field,
+      domain: scale.domain,
+      labelOf: value => colorValueLabel(scale.field, value),
+    },
+  )
 }
