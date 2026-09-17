@@ -13,7 +13,8 @@ nothing about the DNA event underneath. Load STAR-Fusion's short-read calls
 beside long RNA reads from the same cell line, count the molecules that cross
 each junction, then find where the chromosome actually broke: K562's BCR-ABL1
 breaks 122 kb before the junction the caller reports, inside _ABL1_'s first
-intron, and the other junction of the same amplicon breaks on top of its own.
+intron, and the amplicon's other junction, NUP214-XKR3, breaks almost exactly
+where the caller placed it.
 
 ## Prerequisites
 
@@ -64,10 +65,10 @@ the t(9;22) that fuses _BCR_ to _ABL1_. Its transcripts here are long RNA reads,
 its fusion calls come from DepMap's short-read pipeline, and its DNA breakpoints
 from a linked-read run.
 
-Both DepMap tables cover every line in the release. `depmap_to_jbrowse.py`
-filters to one line and writes a STAR-Fusion TSV from the fusion table and a
-bedGraph from the copy-number segments. K562 is model `ACH-000551`, and its WGS
-copy-number profile is `PR-aheaZL`:
+The fusion and copy-number tables both cover every line in the release.
+`depmap_to_jbrowse.py` filters to one line and writes a STAR-Fusion TSV from the
+fusion table and a bedGraph from the copy-number segments. K562 is model
+`ACH-000551`, and its WGS copy-number profile is `PR-aheaZL`:
 
 <!-- from: scripts/build_cancer_sv_demo.sh -->
 
