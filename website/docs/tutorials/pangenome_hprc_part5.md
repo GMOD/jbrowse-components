@@ -141,19 +141,20 @@ purple where it does not.
 With the TRGT track in the session, a **Repeat** dropdown appears beside
 **Walk**. Pick the _ABCA7_ record. The bars now start and end at the record's
 flanks and are divided into motif-length units, and each readout gives its copy
-count. Because the record carries each sample's genotype, every walk of a sample
-TRGT called also gets a black tick at each allele length TRGT called for that
-sample, and its readout turns red when neither call is within 10% of the walk.
+count. The record also carries each sample's genotype, so each walk gets a black
+tick at the allele TRGT called for it. A VCF lists a sample's alleles in the
+genotype's order, which is the genotyper's own and says nothing about which
+assembled haplotype is which, so the walks and the alleles are paired by length.
+A readout turns red where its walk and its allele are more than 10% apart.
 
-<Figure caption="The same rows with the TRGT record picked in the Repeat dropdown, boxed. Each bar is tiled by the motif, and a black tick marks each allele length TRGT called for that sample. A red readout is a walk no call matches." src="/img/pangenome/hprc_abca7_repeat_units.png" />
+<Figure caption="The same rows with the TRGT record picked in the Repeat dropdown, boxed. Each bar is tiled by the motif, and a black tick marks the allele TRGT called for that walk. A red readout is a walk far from its allele." src="/img/pangenome/hprc_abca7_repeat_units.png" />
 
 ## The samples where they disagree
 
 The rows run longest first, so a sample's two haplotypes land far apart. The
 session below keeps the whole cut and shows seven samples' walks in pairs, named
-in `walkRowSamples`: two where the calls match both walks, three where TRGT
-called one length twice, one where TRGT called a long allele no walk carries,
-and a short homozygote.
+in `walkRowSamples`: three where the calls land on both walks, two where reads
+and assemblies part, and two carrying a walk the view declines to score.
 
 ```json session config=https://jbrowse.org/demos/hprc/config.json
 {
@@ -187,11 +188,11 @@ and a short homozygote.
         "walkRowSamples": [
           "HG00099",
           "HG03688",
+          "HG00741",
+          "HG02647",
+          "HG01943",
           "HG02559",
-          "HG02809",
-          "HG00323",
-          "HG04199",
-          "HG00741"
+          "HG04199"
         ],
         "paneHeight": 360
       }
@@ -200,21 +201,31 @@ and a short homozygote.
 }
 ```
 
-HG00099 and HG03688 carry a tick at the end of each bar. HG02559 and HG02809
-each have one long walk with both ticks far short of it: TRGT reported the short
-allele twice. HG00323 is the reverse, with the long allele reported twice and
-its short walk in red. HG04199's ticks include one far past both of its walks,
-and its second walk is partial: that assembly does not span the repeat, so here
-it is the graph that may be missing the long allele.
+HG00099, HG03688 and HG00741 carry a tick at the end of each bar. Reads and
+assemblies agree on both haplotypes there, across a sample whose two alleles lie
+far apart, one whose two are both long, and one short homozygote.
 
-<Figure caption="Seven samples' walks through the ABCA7 VNTR in pairs, each with TRGT's called allele lengths as black ticks. Where a tick sits at the end of its bar the two agree; a red readout is a walk no call matches." src="/img/pangenome/hprc_abca7_disagreements.png" />
+HG02647 and HG01943 are where reads and assemblies part. TRGT called each of
+them close to homozygous, with reads spanning both alleles, while the graph
+gives them haplotypes those calls come nowhere near, so their readouts turn red.
+
+The last two samples each carry a walk the view leaves unscored, because one
+side of that comparison is not a measurement. HG02559's tick is grey: no read
+spanned its second allele, so TRGT reported the first one twice and that length
+says nothing about the haplotype the graph draws beside it. HG04199's second
+walk is partial — that assembly does not span the repeat — and TRGT's long
+allele sits far past where the bar stops, so here it is the graph that may be
+missing an allele.
+
+<Figure caption="Seven samples' walks through the ABCA7 VNTR in pairs, each bar carrying the allele TRGT called for it as a tick. A tick at the end of its bar is agreement, a red readout is a walk far from its allele, and a grey tick is an allele no read spanned." src="/img/pangenome/hprc_abca7_disagreements.png" />
 
 ## Check it against TRGT's genotypes
 
 Click the TRGT record in the linear view. Its sample table gives each sample's
-`AL`, the two allele lengths the ticks are drawn from, and `SD`, the reads
-spanning each allele. HG02559's second allele has no spanning read at all, so
-TRGT's second call is a copy of its first.
+`AL`, the allele lengths the ticks are drawn from, and `SD`, the reads spanning
+each allele. HG02559's second allele has no spanning read at all, so its tick is
+grey: TRGT's second call copies the first, and the walk it landed on takes no
+verdict.
 
 ## Reproduce it end to end
 

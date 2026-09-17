@@ -2475,14 +2475,18 @@ export const hprcGraphSpecs: ScreenshotSpec[] = [
         {
           ...abca7Views(ABCA7_REPEAT_KEY)[1],
           repeatTrackId: 'hprc_abca7_trgt',
+          // three samples whose calls land on both walks, two where reads and
+          // assemblies part, and two carrying a walk the view leaves unscored:
+          // HG02559's second allele has no spanning read, HG04199's second walk
+          // does not span the array
           walkRowSamples: [
             'HG00099',
             'HG03688',
-            'HG02559',
-            'HG02809',
-            'HG00323',
-            'HG04199',
             'HG00741',
+            'HG02647',
+            'HG01943',
+            'HG02559',
+            'HG04199',
           ],
           paneHeight: 360,
         },
