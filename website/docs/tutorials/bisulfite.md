@@ -44,8 +44,8 @@ Bisulfite sequencing (WGBS) and its enzymatic cousin EM-seq read DNA methylation
 from short reads. A chemical (sodium bisulfite) or enzymatic (APOBEC) step
 converts every unmethylated cytosine to uracil, which reads as T, while a
 methylated cytosine still reads as C. Comparing each read to the reference
-recovers the methylation: a C→T change means unmethylated, a retained C means
-methylated. JBrowse 2 makes that comparison per read at render time.
+recovers the methylation: a C→T change means unmethylated, and a retained C
+means methylated. JBrowse 2 makes that comparison per read at render time.
 
 Plants methylate in three sequence contexts: CpG, CHG, and CHH (H is A, C, or
 T). JBrowse restricts the coloring to any one of them, so all three read off the

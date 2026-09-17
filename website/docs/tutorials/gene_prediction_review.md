@@ -17,11 +17,11 @@ Tiberius is the predictor here and GENCODE the reference, both hosted for hg38,
 and what comes out is a review portal linking each disagreement back into
 JBrowse.
 
-Tiberius predicts from sequence alone, so the reference is a check on the
-prediction rather than an input to it. That also says where the method applies:
-re-annotating a genome whose species has an established annotation, or comparing
-a new predictor against one. A first annotation of a new assembly has nothing to
-disagree with, and there the RNA-seq evidence below is the sort key instead.
+Tiberius predicts from sequence alone, so the reference only checks the
+prediction. That also says where the method applies: re-annotating a genome
+whose species has an established annotation, or comparing a new predictor
+against one. A first annotation of a new assembly has nothing to disagree with,
+and there the RNA-seq evidence below is the sort key instead.
 
 ## Prerequisites
 

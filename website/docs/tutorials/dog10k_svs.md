@@ -416,11 +416,10 @@ needs the other side of the junction, from a different callset.
 
 ### The retrocopy itself, as sequence {#the-retrocopy-itself-as-sequence}
 
-Both copies were amplified, Sanger-sequenced and deposited, as
-[MF040222](https://www.ncbi.nlm.nih.gov/nuccore/MF040222) for the CFA18
-insertion and [MF040221](https://www.ncbi.nlm.nih.gov/nuccore/MF040221) for the
-CFA12 one. One alignment per retrocopy, against the parent locus cut out as its
-own FASTA:
+The CFA18 and CFA12 retrocopies were amplified, Sanger-sequenced and deposited
+as [MF040222](https://www.ncbi.nlm.nih.gov/nuccore/MF040222) and
+[MF040221](https://www.ncbi.nlm.nih.gov/nuccore/MF040221). One alignment per
+retrocopy, against the parent locus cut out as its own FASTA:
 
 <!-- from: scripts/build_dog10k_fgf4_synteny.sh -->
 
@@ -465,13 +464,14 @@ Set the synteny view's indel drawing to **Transparent indels**. Colored indels
 name each CIGAR operation from the side it is read, so one gap is a deletion
 above the parent row and an insertion below it.
 
-The two records agree at 207 codons but differ in how much UTR they took.
-Neither places the insertion: the deposited sequence ends at the poly(A) tail.
+The two GenBank records agree at 207 codons but differ in how much UTR they
+took. Neither places the insertion: the deposited sequence ends at the poly(A)
+tail.
 
 ### Genotypes across the collection
 
-The same two records genotyped over every canid the callset carries, printed by
-the build script:
+The same two intron records genotyped over every canid the callset carries,
+printed by the build script:
 
 ```
 Genotype counts per group, at the intron 1 record (chr18:48869782):

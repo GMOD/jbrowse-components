@@ -242,11 +242,12 @@ study; here they carry part of the haplotype.
 
 ## Where to go next
 
-Both halves take the same two inputs, a pair of groups and a region, so any
-trait the sample table records can be substituted: change the breed lists and
-the scan reports its own peaks, then change the region and the metadata column
-to draw one of them. The Dog10K paper's own selection scan (its Fig. 8) lists
-peaks for five ancestry components, and the structural-variant paper lists more.
+The Fst scan and the IGF1 slice take the same two inputs, a pair of groups and a
+region, so any trait the sample table records can be substituted: change the
+breed lists and rerun the scan for its own peaks, then change the region and the
+metadata column to draw one of them. The Dog10K paper's selection scan (its
+Fig. 8) lists peaks for five ancestry components, and the structural-variant
+paper lists more.
 
 ## Reproduce it end to end
 
