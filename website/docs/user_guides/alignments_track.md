@@ -385,7 +385,7 @@ plus one supplementary per additional locus, the whole set recorded in each
 record's `SA` tag, drawn as separate rows in the pileup.
 
 Right-click any of them and choose **Launch → Linear read vs ref** to put them
-back together. The read is drawn as a single assembly along one lane, every
+back together. The read becomes an assembly of its own along one lane, every
 reference locus it touches lies along the other, and each alignment segment is a
 ribbon between them in the order the read visits them. An insertion shows as a
 gap in the diagonal. Dragging over the read lane extracts that sequence.

@@ -170,7 +170,8 @@ how many there are, so the arcs count the support as well as locate it.
 Hover any arc for its classification. A read can have a grey LR fill and still
 carry a colored arc: the read itself crosses the breakpoint, splits into a
 primary and a strand-flipped supplementary alignment, and the arc joining those
-takes the magenta split-read color. That is evidence from one molecule.
+takes the magenta split-read color. That is evidence from one molecule rather
+than from a pair.
 
 ### SV channels
 

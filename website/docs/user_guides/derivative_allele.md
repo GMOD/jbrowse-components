@@ -84,7 +84,7 @@ as a proposal to check against the reads.
   properties of the allele.
 - **Read the segment sizes.** A route whose segments are each about one read
   long is an aligner splitting a short read across the genome; the segment strip
-  drawn to scale beside each row shows the sizes to check.
+  drawn to scale beside each row tells that apart from an allele.
 - **A row marked "part of a longer route in this list"** crosses a run of
   another row's junctions and stops, so it is consistent with the longer route.
 - **Dozens of routes means a repetitive window.** The picker says how many it
