@@ -57,18 +57,9 @@
     "main": "esm/index.js",
     "types": "esm/index.d.ts",
     "exports": {
-      ".": {
-        "types": "./esm/index.d.ts",
-        "import": "./esm/index.js"
-      },
-      "./LinearBasicDisplay/stateModel": {
-        "types": "./esm/LinearBasicDisplay/model.d.ts",
-        "import": "./esm/LinearBasicDisplay/model.js"
-      },
-      "./LinearBasicDisplay/baseStateModel": {
-        "types": "./esm/LinearBasicDisplay/baseModel.d.ts",
-        "import": "./esm/LinearBasicDisplay/baseModel.js"
-      }
+      ".": "./esm/index.js",
+      "./LinearBasicDisplay/stateModel": "./esm/LinearBasicDisplay/model.js",
+      "./LinearBasicDisplay/baseStateModel": "./esm/LinearBasicDisplay/baseModel.js"
     }
   },
   "sideEffects": false,

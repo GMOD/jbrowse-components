@@ -67,14 +67,8 @@
     "main": "esm/index.js",
     "types": "esm/index.d.ts",
     "exports": {
-      ".": {
-        "types": "./esm/index.d.ts",
-        "import": "./esm/index.js"
-      },
-      "./LinearAlignmentsDisplay/stateModel": {
-        "types": "./esm/LinearAlignmentsDisplay/model.d.ts",
-        "import": "./esm/LinearAlignmentsDisplay/model.js"
-      }
+      ".": "./esm/index.js",
+      "./LinearAlignmentsDisplay/stateModel": "./esm/LinearAlignmentsDisplay/model.js"
     }
   },
   "sideEffects": false

@@ -1,4 +1,4 @@
-// Derives each listed package's `publishConfig.exports` from the `exports` map
+// Derives each package's `publishConfig.exports` from the `exports` map
 // it already declares, so the surface a third party installs is the same one
 // the workspace enforces.
 //
@@ -42,26 +42,40 @@
 //
 // Run with `--check` in CI (via `pnpm autogen --check`) to fail on drift
 // instead of rewriting.
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-// Packages whose `exports` map is hand-curated and richer than a single
-// barrel. Everything else in the monorepo exports only `.`, where the two maps
-// are too small to drift.
-const PACKAGES = [
-  'packages/display-kit',
-  'packages/render-core',
-  'packages/text-indexing',
-  'packages/wiggle-core',
-]
-
 interface PackageJson {
+  private?: boolean
   exports?: Record<string, string>
   publishConfig?: Record<string, unknown>
 }
 
 const check = process.argv.includes('--check')
 const root = join(import.meta.dirname, '..')
+
+// Every public package whose `exports` map names its own sources. A hand list
+// here drifted twice: display-ui and tree-sidebar grew subpaths their tarballs
+// did not publish, and only the packed-artifact jobs noticed. Core's two maps
+// are written together by packages/core/scripts/generateExports.mjs.
+const PACKAGES = ['packages', 'plugins', 'products'].flatMap(group =>
+  readdirSync(join(root, group)).flatMap(dir => {
+    const pkg = `${group}/${dir}`
+    const manifestPath = join(root, pkg, 'package.json')
+    if (pkg === 'packages/core' || !existsSync(manifestPath)) {
+      return []
+    }
+    const manifest = JSON.parse(
+      readFileSync(manifestPath, 'utf8'),
+    ) as PackageJson
+    const targets = Object.values(manifest.exports ?? {})
+    return !manifest.private &&
+      targets.length > 0 &&
+      targets.every(t => typeof t === 'string' && t.startsWith('./src/'))
+      ? [pkg]
+      : []
+  }),
+)
 
 // './src/shaders/hpmath.js.generated.ts' -> 'shaders/hpmath.js.generated'
 //
@@ -90,7 +104,9 @@ for (const pkg of PACKAGES) {
   const publishExports: Record<string, string> = {}
 
   for (const [subpath, srcPath] of Object.entries(exports)) {
-    publishExports[subpath] = `./esm/${emittedStem(srcPath)}.js`
+    publishExports[subpath] = /\.tsx?$/.test(srcPath)
+      ? `./esm/${emittedStem(srcPath)}.js`
+      : srcPath.replace(/^\.\/src\//, './esm/')
   }
 
   manifest.publishConfig = {

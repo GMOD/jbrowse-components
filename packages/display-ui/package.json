@@ -51,8 +51,10 @@
     "types": "esm/index.d.ts",
     "exports": {
       ".": "./esm/index.js",
+      "./axisPlacement": "./esm/axisPlacement.js",
       "./embed": "./esm/embed/index.js",
-      "./yAxisConstants": "./esm/yAxisConstants.js"
+      "./yAxisConstants": "./esm/yAxisConstants.js",
+      "./yScaleTicks": "./esm/yScaleTicks.js"
     }
   },
   "sideEffects": false

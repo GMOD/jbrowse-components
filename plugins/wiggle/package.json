@@ -58,14 +58,8 @@
     "main": "esm/index.js",
     "types": "esm/index.d.ts",
     "exports": {
-      ".": {
-        "types": "./esm/index.d.ts",
-        "import": "./esm/index.js"
-      },
-      "./LinearWiggleDisplay/stateModel": {
-        "types": "./esm/LinearWiggleDisplay/model.d.ts",
-        "import": "./esm/LinearWiggleDisplay/model.js"
-      }
+      ".": "./esm/index.js",
+      "./LinearWiggleDisplay/stateModel": "./esm/LinearWiggleDisplay/model.js"
     }
   },
   "sideEffects": false,

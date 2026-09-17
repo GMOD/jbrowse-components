@@ -31,7 +31,7 @@
   ],
   "scripts": {
     "build": "pnpm run /^build:/",
-    "build:css": "node ../../scripts/flattenCss.ts src/styles.css dist/styles.css",
+    "build:css": "node ../../scripts/flattenCss.ts src/styles.css esm/styles.css",
     "build:esm": "node ../../node_modules/typescript7/bin/tsc --build tsconfig.build.esm.json",
     "build:webpack": "webpack -c webpack.config.mjs",
     "clean": "rimraf esm *.tsbuildinfo",
@@ -106,7 +106,7 @@
     "types": "esm/index.d.ts",
     "exports": {
       ".": "./esm/index.js",
-      "./styles.css": "./dist/styles.css",
+      "./styles.css": "./esm/styles.css",
       "./esm/makeWorkerInstance": "./esm/makeWorkerInstance.js",
       "./esm/makeWorkerInstance.js": "./esm/makeWorkerInstance.js",
       "./esm/rpcWorker": "./esm/rpcWorker.js",
