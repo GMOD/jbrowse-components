@@ -85,9 +85,9 @@ drawing that is not instances of a shape.
 
 ## Display foundations
 
-LGV displays compose one **foundation mixin** on `BaseDisplay`, all sharing
-`baseLinearDisplayConfigSchema`. The foundation answers how the display
-_fetches_; how it _renders_ is a separate axis on top.
+LGV (LinearGenomeView) displays compose one **foundation mixin** on
+`BaseDisplay`, all sharing `baseLinearDisplayConfigSchema`. The foundation
+answers how the display _fetches_; how it _renders_ is a separate axis on top.
 
 <!-- DISPLAY_FOUNDATIONS START -->
 
@@ -100,7 +100,8 @@ _fetches_; how it _renders_ is a separate axis on top.
 
 <!-- DISPLAY_FOUNDATIONS END -->
 
-Both walkthroughs use `MultiRegionDisplayMixin`, the common case. The
+The two walkthroughs below both use `MultiRegionDisplayMixin`, the common case.
+The
 [architecture spec](https://github.com/GMOD/jbrowse-components/blob/main/agent-docs/ARCHITECTURE.md#display-stacks)
 goes further into why fetch and render are split.
 
@@ -114,8 +115,8 @@ stored hit goes on naming what used to be there.
 
 Orthogonal to the foundation — compose any of them on top of whichever one you
 picked. Each is one mixin with one overridable hook, and composing it **is** the
-opt-in: a display that never overrides the hook gets the default and pays
-nothing. Reach for one before writing the behavior yourself; **Composed by** is
+opt-in: a display that never overrides the hook gets the default at no extra
+cost. Reach for one before writing the behavior yourself; **Composed by** is
 read off the `types.compose(...)` calls, so it also answers "does anything else
 already do this?"
 
