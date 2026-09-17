@@ -638,7 +638,11 @@ export function stateModelFactory(
        */
       get facetSections(): FacetSection[] {
         return self.facetField
-          ? foldFacetSections(self.featurePayloads, self.facetDomain)
+          ? foldFacetSections(
+              self.featurePayloads,
+              self.facetField,
+              self.facetDomain,
+            )
           : []
       },
     }))

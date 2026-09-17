@@ -2,6 +2,7 @@ import {
   OVERFLOW_GROUP_KEY,
   capGroupKeys,
   facetSectionLabel,
+  facetSectionOrder,
   groupKeyComparator,
   overflowLabel,
 } from './groupKeys.ts'
@@ -384,10 +385,10 @@ function coverage(features: readonly Feature[], step: CoverageStep) {
  * #api
  * Stack the facet groups themselves: `stack`'s `groupby` numbers every group
  * from 0, so the sections overlap until each one's rows are offset by the
- * rows of the groups above it. The order is the facet's `domain` and the
- * tail past the cap merges into one overflow section, the same two rules the
- * chip row reads, so a layout and a reading of it agree without sharing
- * state.
+ * rows of the groups above it. The order is `facetSectionOrder` over the
+ * facet's `domain` and the tail past the cap merges into one overflow
+ * section, the same two rules the chip row reads, so a layout and a reading
+ * of it agree without sharing state.
  *
  * A group's height is its own highest row plus one, which is right whether or
  * not the `stack` grouped by this field — an ungrouped pack simply leaves one
@@ -397,6 +398,7 @@ export function facetRows(
   features: readonly Feature[],
   { field, domain, as = DEFAULT_STACK_AS }: FacetSpec,
 ) {
+  const order = facetSectionOrder(field, domain)
   const labels = new Map<string, string>()
   const rows = features.map(f => {
     const raw = f.get(field)
@@ -406,7 +408,7 @@ export function facetRows(
     }
     return { feature: f, key, row: Number(f.get(as)) || 0 }
   })
-  const { sectionOf, mergedCount } = capGroupKeys(labels.keys(), domain)
+  const { sectionOf, mergedCount } = capGroupKeys(labels.keys(), order)
   const heights = new Map<string, number>()
   for (const r of rows) {
     r.key = sectionOf(r.key)
@@ -415,7 +417,7 @@ export function facetRows(
   const sections: FacetSection[] = []
   const firstRows = new Map<string, number>()
   let next = 0
-  for (const key of [...heights.keys()].sort(groupKeyComparator(domain))) {
+  for (const key of [...heights.keys()].sort(groupKeyComparator(order))) {
     const rowCount = heights.get(key)!
     const label =
       key === OVERFLOW_GROUP_KEY

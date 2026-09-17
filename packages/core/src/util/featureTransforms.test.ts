@@ -364,6 +364,25 @@ test('a facet stacks its domain first and the rest sorted behind it', () => {
   ])
 })
 
+test('a strand facet stacks forward, reverse, unstranded with no domain named', () => {
+  const { sections } = facetRows(
+    stacked(
+      [
+        feature(0, 10, { strand: 0 }),
+        feature(0, 10, { strand: -1 }),
+        feature(0, 10, { strand: 1 }),
+      ],
+      'strand',
+    ),
+    { field: 'strand' },
+  )
+  expect(sections.map(s => [s.key, s.label, s.firstRow])).toEqual([
+    ['1', 'Forward strand', 0],
+    ['-1', 'Reverse strand', 1],
+    ['0', 'No strand', 2],
+  ])
+})
+
 test('a facet merges the tail past the cap into one section', () => {
   const many = Array.from({ length: MAX_GROUPS + 5 }, (_, i) =>
     feature(0, 10, { sample: `s${String(i).padStart(3, '0')}` }),

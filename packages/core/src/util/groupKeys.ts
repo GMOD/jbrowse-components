@@ -1,4 +1,4 @@
-import { STRAND_FIELD, strandLabel } from './strandScale.ts'
+import { STRAND_DOMAIN, STRAND_FIELD, strandLabel } from './strandScale.ts'
 
 /**
  * The ordering every in-track group-by shares, whatever partitioned the
@@ -138,6 +138,20 @@ export function facetSectionLabel(field: string, key: string) {
  * a key rather than for a section.
  */
 export const NO_VALUE_LABEL = '(no value)'
+
+/**
+ * The order a facet stacks its sections in, its defaults filled in: the
+ * declared `domain`, or forward, reverse and unstranded for a strand facet
+ * that declares none. Raw strand keys sort `-1, 0, 1` under
+ * `compareGroupKeys`, which stacks the reverse band first and reads as an
+ * accident of the encoding.
+ */
+export function facetSectionOrder(
+  field: string,
+  domain: readonly string[] = [],
+) {
+  return domain.length === 0 && field === STRAND_FIELD ? STRAND_DOMAIN : domain
+}
 
 /**
  * Which section each key stacks into once the cap applies: the first

@@ -2,10 +2,11 @@ import {
   OVERFLOW_GROUP_KEY,
   capGroupKeys,
   facetSectionLabel,
+  facetSectionOrder,
   groupKeyComparator,
   overflowLabel,
 } from '@jbrowse/core/util/groupKeys'
-import { STRAND_DOMAIN, STRAND_FIELD } from '@jbrowse/core/util/strandScale'
+import { STRAND_FIELD } from '@jbrowse/core/util/strandScale'
 
 import { isPlacedRow } from './rowPlacement.ts'
 
@@ -23,14 +24,6 @@ import type { GroupId } from '@jbrowse/core/util/groupKeys'
 export interface FeatureFacet {
   field: string
   domain: readonly string[]
-}
-
-/**
- * The order sections stack in: the domain, or forward, reverse and unstranded
- * for a strand facet that names none.
- */
-export function facetOrder({ field, domain }: FeatureFacet) {
-  return domain.length === 0 && field === STRAND_FIELD ? STRAND_DOMAIN : domain
 }
 
 // Read off the hit item rather than the feature: the worker stamps what a
@@ -66,7 +59,10 @@ export function sectionIdsOf(
       }
     }
   }
-  const { sectionOf, mergedCount } = capGroupKeys(ids.keys(), facetOrder(facet))
+  const { sectionOf, mergedCount } = capGroupKeys(
+    ids.keys(),
+    facetSectionOrder(facet.field, facet.domain),
+  )
   const merged: GroupId = {
     key: OVERFLOW_GROUP_KEY,
     label: overflowLabel(mergedCount),
@@ -106,7 +102,9 @@ export function featureGroupSections(
       }
     }
   }
-  const compare = groupKeyComparator(facetOrder(facet))
+  const compare = groupKeyComparator(
+    facetSectionOrder(facet.field, facet.domain),
+  )
   const ordered = [...bounds].sort(([a], [b]) => compare(a, b))
   return ordered.map(([key, b], i) => {
     const top = b.top - chipPx
