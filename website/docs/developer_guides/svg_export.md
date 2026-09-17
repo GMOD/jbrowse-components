@@ -104,8 +104,9 @@ The surface comes from `opts`:
   this vector output; do that for text and labels so they stay crisp.
 
 Anything draw-shaped should go through it. Hand-rolled
-`<rect>`/`<path>`/`<line>` is a red flag, the exceptions being trivial chrome
-and React-SVG overlays shared with the on-screen path.
+`<rect>`/`<path>`/`<line>` usually means the code should go through `PaintLayer`
+instead, the exceptions being trivial chrome and React-SVG overlays shared with
+the on-screen path.
 
 ## Implementing renderSvg
 
