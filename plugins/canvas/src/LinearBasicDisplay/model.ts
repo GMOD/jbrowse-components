@@ -7,6 +7,7 @@ import { legendIsReadable } from '@jbrowse/core/ui'
 import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { isGeneLikeType, pluralize } from '@jbrowse/core/util'
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+import { compareGroupKeys } from '@jbrowse/core/util/groupKeys'
 import { types } from '@jbrowse/mobx-state-tree'
 import { containingLgv } from '@jbrowse/plugin-linear-genome-view'
 import SegmentIcon from '@mui/icons-material/Segment'
@@ -289,11 +290,9 @@ export default function stateModelFactory(
             }
           }
         }
-        const entries = [...colors].map(([value, color]) => ({
-          value,
-          label: value,
-          color,
-        }))
+        const entries = [...colors]
+          .sort(([a], [b]) => compareGroupKeys(a, b))
+          .map(([value, color]) => ({ value, label: value, color }))
         return legendIsReadable(entries)
           ? [
               {

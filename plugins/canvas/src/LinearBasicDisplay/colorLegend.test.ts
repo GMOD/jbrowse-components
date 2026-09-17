@@ -103,12 +103,21 @@ describe('derived color key', () => {
         kind: 'categorical',
         title: 'biotype',
         domain: ['lncRNA'],
-        entries: [
+        entries: expect.arrayContaining([
           expect.objectContaining({ value: 'protein_coding' }),
           expect.objectContaining({ value: 'lncRNA' }),
-        ],
+        ]),
       }),
     ])
+    expect(display.legendSpec.sections![0]!.items.map(i => i.value)).toEqual([
+      'lncRNA',
+      'protein_coding',
+    ])
+  })
+
+  it('sorts the values the way sections sort when the color names no domain', () => {
+    const display = coloredDisplay()
+    setConf(display, 'color', attributeColorJexl('biotype'))
     expect(display.legendSpec.sections![0]!.items.map(i => i.value)).toEqual([
       'lncRNA',
       'protein_coding',
