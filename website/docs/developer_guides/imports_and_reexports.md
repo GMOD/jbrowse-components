@@ -73,14 +73,14 @@ always real in both realms.
 | `@jbrowse/alignments-core` | Shared GPU rendering utilities for alignments and synteny displays | 2 | all of it |
 | `@jbrowse/app-core` | JBrowse 2 code shared between the 'full featured' apps e.g. jbrowse-web and jbrowse-desktop | 1 | 30 of 36 exports; the rest stubbed |
 | [`@jbrowse/cigar-utils`](/docs/api/cigar-utils) | Pure CIGAR / MD / mismatch parsers and types — no rendering or framework deps | 1 | all of it |
-| [`@jbrowse/core`](/docs/api/core) | JBrowse 2 core libraries used by plugins | 237 | 1225 of 1325 exports; the rest stubbed |
-| `@jbrowse/display-kit` | The display integration layer a track type is built on: the fetch foundations, the byte gate, the display chrome, SVG export, and the RegionHost view contract | 75 | 122 of 147 exports; the rest stubbed |
+| [`@jbrowse/core`](/docs/api/core) | JBrowse 2 core libraries used by plugins | 237 | 1228 of 1325 exports; the rest stubbed |
+| `@jbrowse/display-kit` | The display integration layer a track type is built on: the fetch foundations, the byte gate, the display chrome, SVG export, and the RegionHost view contract | 75 | 123 of 147 exports; the rest stubbed |
 | [`@jbrowse/display-ui`](/docs/api/display-ui) | The UI a display draws that is not data: the swappable chrome contract, its toolkit-free implementations, and the track overlay layer | 5 | 52 of 58 exports; the rest stubbed |
 | `@jbrowse/embedded-core` | JBrowse 2 code shared between embedded products | 1 | 1 of 4 exports; the rest stubbed |
 | `@jbrowse/ld-core` | Pure linkage-disequilibrium parsers and math — PLINK .ld parsing and genotype r²/D' — no rendering or framework deps | 1 | all of it |
 | [`@jbrowse/modifications-utils`](/docs/api/modifications-utils) | Pure MM/ML base-modification tag parsers (methylation, etc.) | 1 | all of it |
-| `@jbrowse/plugin-alignments` | JBrowse 2 alignments adapters, tracks, etc. | 2 | 17 of 24 exports; the rest stubbed |
-| `@jbrowse/plugin-arc` | JBrowse 2 arc adapters, tracks, etc. | 1 | none; a stub with its names |
+| `@jbrowse/plugin-alignments` | JBrowse 2 alignments adapters, tracks, etc. | 2 | 19 of 24 exports; the rest stubbed |
+| `@jbrowse/plugin-arc` | JBrowse 2 arc adapters, tracks, etc. | 1 | all of it |
 | `@jbrowse/plugin-authentication` | JBrowse 2 Authentication | 1 | none; a stub with its names |
 | `@jbrowse/plugin-bed` | JBrowse 2 bed adapters, tracks, etc. | 1 | all of it |
 | `@jbrowse/plugin-blat` | JBrowse 2 UCSC BLAT client | 1 | none; a stub with its names |
@@ -112,10 +112,10 @@ always real in both realms.
 | `@jbrowse/plugin-trix` | JBrowse 2 trix text search adapter | 1 | all of it |
 | `@jbrowse/plugin-variants` | JBrowse 2 variant adapters, tracks, etc. | 1 | all of it |
 | `@jbrowse/plugin-wiggle` | JBrowse 2 wiggle adapters, tracks, etc. | 2 | 8 of 9 exports; the rest stubbed |
-| `@jbrowse/product-core` | JBrowse 2 code shared between products but not used by plugins | 1 | 63 of 96 exports; the rest stubbed |
+| `@jbrowse/product-core` | JBrowse 2 code shared between products but not used by plugins | 1 | 69 of 96 exports; the rest stubbed |
 | `@jbrowse/render-core` | GPU/Canvas2D rendering primitives for JBrowse displays: the HAL, the draw-lifecycle mixin, per-region/global backend bases, and the React backend hooks | 57 | all of it |
 | [`@jbrowse/sv-core`](/docs/api/sv-core) | VCF breakend / structural-variant parsing and the shared SV launch helpers | 1 | 36 of 37 exports; the rest stubbed |
-| [`@jbrowse/synteny-core`](/docs/api/synteny-core) | Shared utilities for synteny and dotplot rendering | 1 | 149 of 173 exports; the rest stubbed |
+| [`@jbrowse/synteny-core`](/docs/api/synteny-core) | Shared utilities for synteny and dotplot rendering | 1 | 150 of 173 exports; the rest stubbed |
 | `@jbrowse/text-indexing` | JBrowse 2 text indexing for desktop | 2 | all of it |
 | `@jbrowse/text-indexing-core` | JBrowse 2 core text indexing routines for parsing GFF3 and VCF files | 1 | all of it |
 | `@jbrowse/tree-sidebar` | Shared tree sidebar component for multi-sample displays | 9 | 126 of 142 exports; the rest stubbed |

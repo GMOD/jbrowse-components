@@ -147,7 +147,7 @@ lambdas.
 (model: TrackColorsModel, { pointBased, showReference, }: { pointBased: boolean; showReference: boolean; }) => ColorByMenuTarget
 ```
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorByMenuItems.tsx)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorByMenuTarget.ts)
 
 ### colorByScale
 
