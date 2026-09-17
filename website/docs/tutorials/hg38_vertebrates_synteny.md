@@ -64,9 +64,9 @@ lane takes verbatim.
 The [primate page](/docs/tutorials/primate_orthologs_synteny) and the
 [E. coli page](/docs/tutorials/ecoli_orthologs_synteny) fill their lanes from a
 gene table, joining genes across genomes by name, so a lane holds genes and
-nothing between them. An alignment file places sequence instead: every base of
-the human window that a chain reaches has a position in the other genome, gene
-or not, and the lanes on this page are drawn from that.
+nothing between them. An alignment file places sequence: every base of the human
+window that a chain reaches has a position in the other genome, gene or not, and
+the lanes on this page are drawn from that.
 
 UCSC's chains are one alignment per genome, each between hg38 and that genome
 alone. Composed, they make a star with hg38 at the centre: hg38 against
@@ -200,10 +200,10 @@ against their neighbours, so five of the eight lanes show `[rev]` in their
 headers. The crossings are a separate fact from the marker. A mirrored lane
 draws its inversions straight; a ribbon crosses where one block runs against its
 neighbour inside a lane. The marmoset lane is the clearest case: its chain
-covers the left of the window forwards and then stops, and the rest of the
-window is placed by a reversed block further along the same chromosome. The
-gorilla lane names chr17 in its header beside the chr5 frame it drew. chr17 is
-the homologous chromosome, and some of this window aligns there too, so the chr5
+covers the left of the window forwards and then stops, and a reversed block
+further along the same chromosome places the rest of the window. The gorilla
+lane names chr17 in its header beside the chr5 frame it drew. chr17 is the
+homologous chromosome, and some of this window aligns there too, so the chr5
 frame does not show everything the alignment places. **Show … in this lane** on
 that lane's header menu pins it onto the other contig.
 
