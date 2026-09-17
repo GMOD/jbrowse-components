@@ -156,8 +156,8 @@
     "name": "multisv",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T03:46:39.723Z",
-    "hash": "9a2d1fc22534ebdfe5ad0a2532be7b0c79b31612"
+    "reviewedAt": "2026-09-17T16:28:57.654Z",
+    "hash": "3fb1caa2b5021d26704f829426438b33b9a66bea"
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
@@ -183,15 +183,15 @@
     "name": "inverted_duplication",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T03:41:13.755Z",
-    "hash": "478022dde33279da7b8dd4c26f7416b3fb42a516"
+    "reviewedAt": "2026-09-17T16:26:14.065Z",
+    "hash": "115da95f1d349cc66070cdf48dc521c9f3a9a45e"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-16T18:35:11.813Z",
-    "hash": "60a850299e201d0fbf0697253aba73a61c1161ac"
+    "reviewedAt": "2026-09-17T16:40:48.762Z",
+    "hash": "9e7487422a917c614528a963421743b6e7978b67"
   },
   "sv_cgiab/cnv_show_all_regions": {
     "name": "sv_cgiab/cnv_show_all_regions",
@@ -425,8 +425,8 @@
     "name": "customized_feature_details",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T13:52:23.507Z",
-    "hash": "aae29fc9c3979c24b4e064bdc8ca7cd03e44ad80"
+    "reviewedAt": "2026-09-17T16:24:36.322Z",
+    "hash": "7fb785bcd5fc76205cea7bfbbd3abc91e32a82cd"
   },
   "customized_theme": {
     "name": "customized_theme",
@@ -581,17 +581,17 @@
   },
   "track_menu": {
     "name": "track_menu",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-14T04:12:39.144Z",
-    "hash": "842d2442c511cce3c96079546ae1ad2495daabba"
+    "status": "answered",
+    "note": "The box around the menu is gone; the two rings on the menu icons stay, and the label's is tight enough to stay off the menu hanging under it.",
+    "reviewedAt": "2026-09-17T19:12:22.698Z",
+    "hash": "dd07a4fd0bdd9e911e67bfee36da556bcf5c241f"
   },
   "tracklabels": {
     "name": "tracklabels",
     "status": "good",
-    "note": "re-reviewed after the settings-menu refactor re-shoot (2026-08-24): Show... submenu open, Track labels radio group (Overlapping/Offset/Hidden) visible and boxed, menu reads correctly.",
-    "reviewedAt": "2026-09-14T04:12:41.170Z",
-    "hash": "055f06438aa1f74153c31ed894c1aae52500f35c"
+    "note": "",
+    "reviewedAt": "2026-09-17T16:42:07.705Z",
+    "hash": "32cd55ae93df15e91d2739f5e940072ebb20d845"
   },
   "trio-basic": {
     "name": "trio-basic",
@@ -834,10 +834,10 @@
   },
   "scroll_zoom_toggle": {
     "name": "scroll_zoom_toggle",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:47:12.790Z",
-    "hash": "211e0b83a4dd1e7f35e7f04e44f2794fd590cc37"
+    "status": "answered",
+    "note": "A rectangle around the control, and the pill says what it turns on rather than where it applies: the scroll wheel zooms instead of scrolling the page.",
+    "reviewedAt": "2026-09-17T19:12:23.009Z",
+    "hash": "e3308b4e78537450d8dc20a9e3ea36363990b56b"
   },
   "alignments/haplotype": {
     "name": "alignments/haplotype",
@@ -884,8 +884,8 @@
     "name": "sv_cgiab/deletion_sv_inspector_search",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-16T18:35:06.409Z",
-    "hash": "2ca5318dd13d7f282c6b07286aab72ce4a4578c3"
+    "reviewedAt": "2026-09-17T16:39:52.044Z",
+    "hash": "43adcd5b7c8c9e619b0be98733962f95330f5071"
   },
   "sv_cgiab/translocation_breakpoint_split": {
     "name": "sv_cgiab/translocation_breakpoint_split",
@@ -909,10 +909,10 @@
   },
   "trio-crossover-maternal": {
     "name": "trio-crossover-maternal",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-14T04:12:42.533Z",
-    "hash": "2d4e50cceac5321c1a3ef4f89fdb8bdad1a3b6b8"
+    "status": "answered",
+    "note": "Back to blue. The phased alt fill moved off set1 yesterday so that red would mean deletion in SV mode and nothing elsewhere; it is set1 blue again, and the secondary alt keeps the pink that is off the SV scale.",
+    "reviewedAt": "2026-09-17T19:12:23.312Z",
+    "hash": "3b4d539f845b04b214813134affe3e4511ce421f"
   },
   "maf_track": {
     "name": "maf_track",
@@ -1116,9 +1116,9 @@
   "chromhmm": {
     "name": "chromhmm",
     "status": "answered",
-    "note": "Rebuilt as a reproduction of Rinn et al. 2007 (Cell 129:1311) Fig. 3 on six of the 127 Roadmap epigenomes. Lung fibroblasts keep HOXA1-A7 active and HOXA9-A13 Polycomb-repressed, foreskin fibroblasts the reverse, and ES cells hold both halves repressed. The 127-row clustering stays in the tutorial's video, so nothing covers the tree any more.",
-    "reviewedAt": "2026-09-17T08:24:55.576Z",
-    "hash": "9d453d3a8f0add5908469dcc71c15ff6cae4d6c8"
+    "note": "Rebuilt as Roadmap Epigenomics 2015 (Nature 518:317) Fig. 3a: all 127 epigenomes over the chr9 stretch from FAM205A to ALDH1B1, in the paper's own tissue-group order with the group stripe beside the rows. Promoter columns run through nearly every row and PAX5 is transcribed only in the B cell rows, which is the density the six-row HOXA figure could not carry. That one stays as chromhmm_hoxa_fibroblasts for the domain paragraph. A single-cell version is possible but not on data we host: CATlas (Zhang et al. 2021) publishes 222 per-cell-type hg38 bigWigs, 105 GB in all, and the figure would be a marker-gene staircase over 100+ rows.",
+    "reviewedAt": "2026-09-17T19:12:23.594Z",
+    "hash": "4dabbaae1ff9f9e155d3b8dedeb3434a21d7bdbc"
   },
   "jbrowse-img/hic": {
     "name": "jbrowse-img/hic",
@@ -1171,24 +1171,24 @@
   },
   "gc_content": {
     "name": "gc_content",
-    "status": "answered",
-    "note": "Yes. Reading left to right the skew flips from + to - at the terminus and from - to + at the origin, where the leading arm wraps through position 0. Both flips are now called out.",
-    "reviewedAt": "2026-09-17T08:24:55.981Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-17T16:24:54.494Z",
     "hash": "684eeb5f1801f5c839fa4264b13e7d344681b1e8"
   },
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-11T05:31:54.089Z",
-    "hash": "1280fff6d370cd5347ccbad65a5baff1e67f4332"
+    "reviewedAt": "2026-09-17T16:39:56.173Z",
+    "hash": "4b9f18b7eea14fe7c8ca164aa2a59a7d26b76b5d"
   },
   "variants/consequence_impact_1000g": {
     "name": "variants/consequence_impact_1000g",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T04:12:49.309Z",
-    "hash": "45d9d2569dd5697d806235f866f18a94be104e4f"
+    "reviewedAt": "2026-09-17T16:42:33.842Z",
+    "hash": "64b8a4c0681f170f67c071ec7603a074915a00e9"
   },
   "sv_cgiab/driver_smad4_loh": {
     "name": "sv_cgiab/driver_smad4_loh",
@@ -1215,8 +1215,8 @@
     "name": "search_feature_highlight",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T04:08:09.543Z",
-    "hash": "6df920c5948c4a4f5e5f0b970b421edb4043f815"
+    "reviewedAt": "2026-09-17T16:39:09.071Z",
+    "hash": "3e6168fa517cc495e1feffc26869c939224da0f3"
   },
   "display_settings_url_snapshot": {
     "name": "display_settings_url_snapshot",
@@ -1310,8 +1310,8 @@
     "name": "inversion_long_read",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:40:18.607Z",
-    "hash": "252eb79d7a690bb1a2d8807ddd2b018fc3754312"
+    "reviewedAt": "2026-09-17T16:26:12.099Z",
+    "hash": "f97c98644eb5f0cb4e168814a5c9ff2e05f8548d"
   },
   "methylation/chromatin_accessibility_6ma": {
     "name": "methylation/chromatin_accessibility_6ma",
@@ -1323,9 +1323,9 @@
   "multiway_synteny/ecoli_import_form": {
     "name": "multiway_synteny/ecoli_import_form",
     "status": "good",
-    "note": "DONE, the Launch callout is gone. The arrow that crossed the frame to reach the submit button was the largest thing in the figure, and the label it carried ('...then Launch') was doing two jobs; it now reads 'Every assembly in the track becomes a row' and points at the rows box the sentence is about. The Quick start callout stays — which mode the form opens in is not obvious. viewportHeight 340 -> 356 so the button the figure no longer points at is at least fully in frame.",
-    "reviewedAt": "2026-09-14T03:46:55.501Z",
-    "hash": "0ce49eca13f613e0ee6fa8f8fab8c4de3b0cde7c"
+    "note": "",
+    "reviewedAt": "2026-09-17T16:29:44.997Z",
+    "hash": "87e2a4a41231d9d85f3b2888a14dafccbe8a04c1"
   },
   "rnaseq/basic": {
     "name": "rnaseq/basic",
@@ -1379,8 +1379,8 @@
     "name": "qtl/bxd_tyrp1_locus",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T04:07:35.675Z",
-    "hash": "931dc0862396dcaad585ce61f3faa8fa43fb1400"
+    "reviewedAt": "2026-09-17T16:38:31.491Z",
+    "hash": "4f4cf7fec38a6718aaec02af29c9ba7aa971633b"
   },
   "encode_hic_loops_arcs": {
     "name": "encode_hic_loops_arcs",
@@ -1425,8 +1425,8 @@
     "name": "methylation/arabidopsis_wgbs_contexts",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:43:12.643Z",
-    "hash": "f5aef25c35c08742500f04457fa5daff5534044f"
+    "reviewedAt": "2026-09-17T16:28:52.258Z",
+    "hash": "1ef31b2b585e7ad2b9fc59e161b109c6c2e859a2"
   },
   "methylation/arabidopsis_wgbs_chh": {
     "name": "methylation/arabidopsis_wgbs_chh",
@@ -1465,10 +1465,10 @@
   },
   "multiway_synteny/ecoli_one_vs_all": {
     "name": "multiway_synteny/ecoli_one_vs_all",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-14T03:47:52.858Z",
-    "hash": "1fe0fea6f0194f6b806e1fe95117f77a2ffb78b8"
+    "status": "answered",
+    "note": "The rGFA segments lane sits under the gene track in the graph pane's own reference-position ramp, so a node below and its span above share a hue.",
+    "reviewedAt": "2026-09-17T19:12:23.878Z",
+    "hash": "c00615aea0211d4ff51744ec5fa50b9ce0a55565"
   },
   "popgen/genotype_matrix_in2lt": {
     "name": "popgen/genotype_matrix_in2lt",
@@ -1494,8 +1494,8 @@
     "name": "qtl/bxd_painting_sorted",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T04:07:33.454Z",
-    "hash": "6cdb6111769d575e15ae94dcedf451146bf1bb27"
+    "reviewedAt": "2026-09-17T16:38:29.051Z",
+    "hash": "d176cfcc19113dd74e975fddf032c7b644e050c7"
   },
   "rnaseq/pkm_mutually_exclusive": {
     "name": "rnaseq/pkm_mutually_exclusive",
@@ -1532,10 +1532,10 @@
   },
   "multiway_synteny/grape_peach_cacao_gene_orthologs": {
     "name": "multiway_synteny/grape_peach_cacao_gene_orthologs",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-14T03:48:01.998Z",
-    "hash": "063efcbe9d19699f8186f1f0d297bffda84303ef"
+    "status": "answered",
+    "note": "All three windows run past the array, and the pill leads to it rather than sitting over it.",
+    "reviewedAt": "2026-09-17T19:12:24.207Z",
+    "hash": "77dba347eaf5561de4e8c988084b92e79643fe94"
   },
   "sv_cgiab/cnv_chr17_loh": {
     "name": "sv_cgiab/cnv_chr17_loh",
@@ -1590,8 +1590,8 @@
     "name": "methylation/hg002_snrpn_combined",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:43:19.736Z",
-    "hash": "cbdcef6019348ae7da50be4e84dc9ac42a9145a5"
+    "reviewedAt": "2026-09-17T16:28:54.329Z",
+    "hash": "b3df1d4dcbcdc848e5f2cfc839b3a03227122dbd"
   },
   "ld/lct_haplotype_matrix": {
     "name": "ld/lct_haplotype_matrix",
@@ -1620,10 +1620,10 @@
   },
   "multisv_svtype": {
     "name": "multisv_svtype",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-14T03:46:44.819Z",
-    "hash": "a1e64e65c178dc481b7bea9cc1ef88301b9f3083"
+    "status": "answered",
+    "note": "Copy number is teal. Pink was the obvious set1 spare and would have been worse: a het insertion shades from purple to magenta, which is the colour the reader would have matched it to.",
+    "reviewedAt": "2026-09-17T19:12:24.497Z",
+    "hash": "d4028cf49628b4604da75f7f935492a1a47e7a10"
   },
   "pangenome_cactus/depth": {
     "name": "pangenome_cactus/depth",
@@ -1676,8 +1676,8 @@
   "sv_cgiab/cnv_depth_baf": {
     "name": "sv_cgiab/cnv_depth_baf",
     "status": "answered",
-    "note": "DONE: Two red callouts sit in the empty part of the depth lane: 'p-arm: one copy left, heterozygosity lost' and 'q-arm: two copies, both alleles'.",
-    "reviewedAt": "2026-09-14T05:29:51.635Z",
+    "note": "The GRCh38_GIABv3 assembly in the hosted cgiab config carries UCSC hg38 cytobands now, so the ideogram bands the arms, and a cytoband track draws them in the view as well. NOT RE-RENDERED: the page crashed the renderer here, so this figure is the sweep's.",
+    "reviewedAt": "2026-09-17T19:12:24.767Z",
     "hash": "b61d12620b1163ab7b7fb09709185ca58bb8a84a"
   },
   "tcga/cohort_cnv_erbb2": {
@@ -1698,8 +1698,8 @@
     "name": "variants/potato_missingness",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T04:12:50.615Z",
-    "hash": "140c99b8da48cb95bdaa0546d38da250873b5c31"
+    "reviewedAt": "2026-09-17T16:42:31.756Z",
+    "hash": "f73fbc09bc8f919e92409478bb7d00dfdef6cc43"
   },
   "sv_cgiab/dotplot_hap1": {
     "name": "sv_cgiab/dotplot_hap1",
@@ -1877,8 +1877,8 @@
     "name": "multiway_synteny/ecoli_one_vs_all_whole_genome",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:43:56.107Z",
-    "hash": "f0191ecaa2a9bb9127a8cd201f82583d5e53df1c"
+    "reviewedAt": "2026-09-17T16:30:11.660Z",
+    "hash": "d6bb9dcec8cb0f68d6aae8c388e4f68dc1228843"
   },
   "pangenome/hprc_mhc_bandage": {
     "name": "pangenome/hprc_mhc_bandage",
@@ -1897,16 +1897,16 @@
   "pangenome/rgfa_subgraph_launch": {
     "name": "pangenome/rgfa_subgraph_launch",
     "status": "answered",
-    "note": "DONE: the graph viewer now defaults to 6 px nodes and 2 px links (graphgenomeviewer 7b0b583, published as 9e4b88cead0d), and every figure with a graph view was re-shot on it, 44 of them.",
-    "reviewedAt": "2026-09-14T13:10:25.740Z",
-    "hash": "ca6c23e7daaca814246d4311a1785b864be1aed5"
+    "note": "The reference-position legend names the span's length beside its two ends, and every bubble label is the short notation now: 135 bp del, 49 bp del, 12 kb ref to 8.6-13 kb with 9 alleles. Published as plugin c14f18b.",
+    "reviewedAt": "2026-09-17T19:12:25.062Z",
+    "hash": "c73b89ac3811914056d4045e5f3cce49ca2e2cc4"
   },
   "genomes_synteny/launch_sequence": {
     "name": "genomes_synteny/launch_sequence",
-    "status": "answered",
-    "note": "QUESTION: Two calls, both yours. Defaults: .review-visuals/launch_sequence/ has the launched hg38/panTro6 view at the FTO L1HS with today's straight ribbons and colored indels, and with curves plus transparent indels; at this zoom the transparent gap is what lines up with the L1HS, while at whole-chromosome zoom a colored indel is the only thing marking one. One step: the chain block's Launch item could open the view directly with the dialog's defaults (CIGAR mapping, copy tracks, 1 kb padding) and keep the dialog behind a 'Linear synteny view with panTro6...' item; mockup_one_step_figure.png is the two-frame figure that would leave. The chimp panel still opens with no tracks, so a true one step also needs the mate assembly's default tracks turned on. Say which and I will build it; the figure is unchanged until then.",
-    "reviewedAt": "2026-09-14T05:22:00.845Z",
-    "hash": "1b8336da29c4a55516d2de70e1cda0a934ff2626"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-17T16:24:58.179Z",
+    "hash": "9bd3241c174b664709e3f0f8bc446aa2dd47eafd"
   },
   "pangenome/pangenome_variants": {
     "name": "pangenome/pangenome_variants",
@@ -2044,9 +2044,9 @@
   "pangenome/rgfa_launch_out_menu": {
     "name": "pangenome/rgfa_launch_out_menu",
     "status": "answered",
-    "note": "DONE: the menu frame is cropped to the graph pane and its cascade (820 to 360 css px), and the synteny frame reloads its own session at its own height so all five panels fit with no blank under them.",
-    "reviewedAt": "2026-09-14T05:41:01.985Z",
-    "hash": "37321f279a100908d50c9f9adb746aca71326f44"
+    "note": "The graph is coloured by reference position and the segments track it carries into the launched K12 panel is painted in the same ramp, so the same rainbow is in both frames.",
+    "reviewedAt": "2026-09-17T19:12:25.478Z",
+    "hash": "c79367947d6f63ed0cf0e48c0d35bcc0c8b2b7e9"
   },
   "pangenome/hprc_lpa_kiv2": {
     "name": "pangenome/hprc_lpa_kiv2",
@@ -2069,10 +2069,10 @@
   },
   "pangenome/rgfa_hover_sync": {
     "name": "pangenome/rgfa_hover_sync",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:45:58.917Z",
-    "hash": "85133a86e67cd4fdd4ef6de35ff9e1df86e4e3d4"
+    "status": "answered",
+    "note": "The pane is capped at 420 px and the bubble halos and gene overlay are off, which is what was covering the hues; the gene lane above still names the genes.",
+    "reviewedAt": "2026-09-17T19:12:25.885Z",
+    "hash": "19c66f5e716df28cf2f6f26da5b52f4ee8c56f72"
   },
   "pangenome/rgfa_sample_rows": {
     "name": "pangenome/rgfa_sample_rows",
@@ -2176,8 +2176,8 @@
     "name": "ld/anopheles_2la",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T13:57:21.945Z",
-    "hash": "b8a61f316e0b36dcebc68594d87e71850ffb7d0a"
+    "reviewedAt": "2026-09-17T16:26:15.997Z",
+    "hash": "e775a56e522747fa8a4aeceba800472bb502ff85"
   },
   "ld/lct_pooled_vs_panel": {
     "name": "ld/lct_pooled_vs_panel",
@@ -2204,8 +2204,8 @@
     "name": "multiway_synteny/blocks_one_vs_all",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T03:46:47.010Z",
-    "hash": "b680b201bbe2c181557c4325cc239ead12aac68a"
+    "reviewedAt": "2026-09-17T16:29:27.632Z",
+    "hash": "6082163fe937bcf829395f9ccf26908464a981c7"
   },
   "sv_synteny/ortholog_colors": {
     "name": "sv_synteny/ortholog_colors",
@@ -2223,10 +2223,10 @@
   },
   "pangenome/rgfa_paa_bubble": {
     "name": "pangenome/rgfa_paa_bubble",
-    "status": "answered",
-    "note": "DONE: bubble labels are off on this figure, so nothing calls the island a deletion; the ringed node and the synteny rows carry it, and the grey-routes callout is a short leader. The same wording is on every graph figure, so I prototyped plugin labels that name a bubble '3 alleles, 0 bp-1.2 kb' and an arc 'skips 22.2 kb' (.review-visuals/deletion_label_*); that is plugin branch fig-pangenome-labels, unpushed, and needs its tests updated and a deploy if you want it.",
-    "reviewedAt": "2026-09-14T05:41:01.985Z",
-    "hash": "a2e75521df9f83b617fc528901837571e7dd82dd"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-17T16:35:02.801Z",
+    "hash": "cf854aaa9e3377ad5a052d3f5903b9efb61944bf"
   },
   "pangenome/hprc_cfhr_deletion": {
     "name": "pangenome/hprc_cfhr_deletion",
@@ -2280,8 +2280,8 @@
     "name": "tcga/mutations_cdh1_histology",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:49:14.269Z",
-    "hash": "1bb2add9b17a0c5c37d1fed454dc0510e37bf216"
+    "reviewedAt": "2026-09-17T16:41:11.025Z",
+    "hash": "d5b19e674da948da57044a95eb5e45f2a5c57fa4"
   },
   "scrna/ms4a1_bcell": {
     "name": "scrna/ms4a1_bcell",
@@ -2320,9 +2320,9 @@
   },
   "desktop-open-genome-steps": {
     "name": "desktop-open-genome-steps",
-    "status": "answered",
-    "note": "Removed the outline boxes around both controls; the numbered badges and labels stay.",
-    "reviewedAt": "2026-09-17T08:24:57.144Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-17T16:24:39.560Z",
     "hash": "3abe3aafbffce2345539d0feaeb334ac28d68c12"
   },
   "pangenome/hprc_inversion": {
@@ -2441,15 +2441,15 @@
     "name": "orthofinder_synteny/wheat_4a",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T03:52:15.344Z",
-    "hash": "a353b67d16a8f591997e1feaa520965d3e09ee3c"
+    "reviewedAt": "2026-09-17T16:31:27.398Z",
+    "hash": "c78c4d2216755181f6aa8eb072f18b34f0333104"
   },
   "pangenome_cactus/builders": {
     "name": "pangenome_cactus/builders",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:44:48.096Z",
-    "hash": "16e5fb8a915bcdca68ba2257b83cf898283e5f6f"
+    "reviewedAt": "2026-09-17T16:31:31.804Z",
+    "hash": "7fd730e85657107e1719d0c3aaac4fc6efdfdda5"
   },
   "pangenome/long_reads": {
     "name": "pangenome/long_reads",
@@ -2464,13 +2464,6 @@
     "note": "",
     "reviewedAt": "2026-09-14T04:08:05.293Z",
     "hash": "fcd1fe0b7612889996dd34b70aa61976fefe853f"
-  },
-  "tcga/mutations_tp53_subtype": {
-    "name": "tcga/mutations_tp53_subtype",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:49:19.664Z",
-    "hash": "4d3d780d7f72b0ea57349f9ac71d364a27031139"
   },
   "cancer_sv/derivative_autogenerated": {
     "name": "cancer_sv/derivative_autogenerated",
@@ -2532,8 +2525,8 @@
     "name": "multisv_rhd",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T03:46:42.045Z",
-    "hash": "9747fe412eb8cbaf53bbf5eb03e72214bf448466"
+    "reviewedAt": "2026-09-17T16:28:59.448Z",
+    "hash": "a6caa0be6b807f4935f9bfbe652e2fb500a7e687"
   },
   "alignments/strand_split_coverage": {
     "name": "alignments/strand_split_coverage",
@@ -2546,8 +2539,8 @@
     "name": "hic/bcr_abl1_translocation",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:39:50.823Z",
-    "hash": "5e42cf64d098dc0739d4f7ee8309ae7ca06980de"
+    "reviewedAt": "2026-09-17T16:26:09.677Z",
+    "hash": "9ff88d98ccbfefaf04148bdc04bc7dcbc985fe2a"
   },
   "hic/compartment_switch": {
     "name": "hic/compartment_switch",
@@ -2600,10 +2593,10 @@
   },
   "ld/lct_haploblock": {
     "name": "ld/lct_haploblock",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-14T13:57:43.610Z",
-    "hash": "3ab4d043598722f3ab220a4364f8bea5191626da"
+    "status": "answered",
+    "note": "Clustered over the highlighted LCT/MCM6 stretch alone rather than over the whole r-squared block. NOT RE-RENDERED: the page crashed the renderer here on the old spec as well as the new one, so this figure is the sweep's.",
+    "reviewedAt": "2026-09-17T19:12:26.517Z",
+    "hash": "55a1a9bf013d0cd1c1d442d3cb6e1e438e78f044"
   },
   "rnaseq/strand_split_coverage": {
     "name": "rnaseq/strand_split_coverage",
@@ -2637,8 +2630,8 @@
     "name": "multisv_rhd_dosage",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-08-24T05:43:49.826Z",
-    "hash": "f95fa29af5092611d40d82f8bfba561fdda66c92"
+    "reviewedAt": "2026-09-17T16:29:01.535Z",
+    "hash": "8ed6fed74beec5098d8a002f88a75c7f8b15c134"
   },
   "genomes_msa/launch_sequence": {
     "name": "genomes_msa/launch_sequence",
@@ -2650,8 +2643,8 @@
   "cancer_sv/multihop_reads": {
     "name": "cancer_sv/multihop_reads",
     "status": "answered",
-    "note": "Both halves are 1000 px wide, the route label sits next to the tumour track menu it starts from, and a separate arrow crosses the seam.",
-    "reviewedAt": "2026-09-17T08:25:01.783Z",
+    "note": "The fourth panel is gone. A breakpoint split view opens one panel per visited window rather than per segment, so the fold-back's return to the chr3 junction it starts from shares the first panel, which is where the split view was attaching those alignments anyway. NOT RE-RENDERED: the split-view half loses its WebGL contexts on this machine, so the committed PNG is the old one and the sweep will draw it.",
+    "reviewedAt": "2026-09-17T19:12:26.828Z",
     "hash": "d520c9ac24e48f76db0779db0425bb838bf3538e"
   },
   "feature_plotting_threads": {
@@ -2724,10 +2717,10 @@
   },
   "pangenome/pggb_untangle_rows": {
     "name": "pangenome/pggb_untangle_rows",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:45:56.202Z",
-    "hash": "40970f3c33b9ad440e6cd03690862eac40b23bc1"
+    "status": "answered",
+    "note": "Combined, by another pass landing first: the rows and the dotplot are one multipart figure, pangenome/pggb_untangle_inversion, with the same arm boxed in both halves, so neither caption points at the other any more.",
+    "reviewedAt": "2026-09-17T19:12:27.435Z",
+    "hash": "9c713e207e67928bae3c231a8d2416e19903fe80"
   },
   "qc/smn_problematic_regions": {
     "name": "qc/smn_problematic_regions",
@@ -2873,9 +2866,9 @@
   "sv_cgiab/three_ways": {
     "name": "sv_cgiab/three_ways",
     "status": "answered",
-    "note": "DONE: The frame now says which row matters. A callout on the 65-read top row says it is the benchmark junction and also on the tumor assembly contig, and one beside the lower rows says they are reads mismapped in chromosome-end repeats. The rule for picking a row is to take the one an independent callset or assembly agrees with, and the user guide's checklist now starts with that. Whether the dialog should collapse the tail is a product question I left for you.",
-    "reviewedAt": "2026-09-14T05:29:51.634Z",
-    "hash": "9cf94bcce33e07457e73e3ea02028a51841743b6"
+    "note": "The picker collapses every route with under a quarter of the top route's reads behind one row that says so, and the callout points at that row. Here that hides six of the seven.",
+    "reviewedAt": "2026-09-17T19:12:27.782Z",
+    "hash": "892c1b6137af0fad8fc0af64e3a5396b91ef991f"
   },
   "cancer_sv/k562_fusion_inspector_all": {
     "name": "cancer_sv/k562_fusion_inspector_all",
@@ -2907,9 +2900,9 @@
   },
   "pangenome/rgfa_insertion_synteny": {
     "name": "pangenome/rgfa_insertion_synteny",
-    "status": "answered",
-    "note": "DONE: two short red labels. 'insertion site in K12' points at the join between the flanks, and 'sequence only CFT073 carries' sits in the ribbonless gap.",
-    "reviewedAt": "2026-09-14T05:41:01.987Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-17T16:33:59.983Z",
     "hash": "b69b9173f9393aab48d3f52980b14dcac4678dd8"
   },
   "sv_synteny/color_by_attribute_steps": {
@@ -3104,9 +3097,9 @@
   "pangenome_cactus/graph_bubble": {
     "name": "pangenome_cactus/graph_bubble",
     "status": "answered",
-    "note": "Kept as is. The dashed edge is the route the other four strains take around the IS1 node; without it the insertion looks like the only path and the callout points at nothing.",
-    "reviewedAt": "2026-09-17T08:25:03.153Z",
-    "hash": "e02aaf6cc6573d6271a290f99171a858ca34c078"
+    "note": "Deletion edges are a setting now, off by default, so this figure draws the node and its two neighbours with no dashed arc. The five figures whose captions read the arc set it true, and the cactus tutorial names the menu item instead of describing an edge that is no longer there.",
+    "reviewedAt": "2026-09-17T19:12:28.142Z",
+    "hash": "477b618f7bc7dbc46afbfe9c72fdd3db9a1df191"
   },
   "fetch_chain": {
     "name": "fetch_chain",
@@ -3138,9 +3131,9 @@
   },
   "hg002_haplotypes_location_markers": {
     "name": "hg002_haplotypes_location_markers",
-    "status": "answered",
-    "note": "Both rows now open on the same 60 kb span, so they share one bp/px, aligned at the insertion.",
-    "reviewedAt": "2026-09-17T08:25:03.544Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-17T16:25:04.178Z",
     "hash": "33d32f5098dc33aef3f47c5c822a732b3dd0fa09"
   },
   "inversion_pair_orientation": {
@@ -3160,9 +3153,9 @@
   "popgen/in2lt_inversion": {
     "name": "popgen/in2lt_inversion",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-14T04:05:24.676Z",
-    "hash": "a8bca870fa28de93df4ce2d60239bf05baaf2449"
+    "note": "might benefit from using a true multi-level linear",
+    "reviewedAt": "2026-09-17T16:37:59.776Z",
+    "hash": "0295c8bc19d0085c69eef508405e820da5838877"
   },
   "gallery/inverted_duplication": {
     "name": "gallery/inverted_duplication",
@@ -3222,9 +3215,9 @@
   },
   "sv_cgiab/cnv_callset_comparison": {
     "name": "sv_cgiab/cnv_callset_comparison",
-    "status": "answered",
-    "note": "DONE: I kept it at chr9p21.3, because zoomed out to all of chr9 every callset just reads CN 1 and the story disappears. Depth is now a filled plot on a fixed axis in place of 1 px points, and the BAF lane, which added nothing, is gone. Three callouts say what to look at: both copies of CDKN2A are gone, DRAGEN makes no focal call because its minimum segment is 50 kb, and Wakhan's 50 kb bins show only the arm. Height is down from 1235 to 935.",
-    "reviewedAt": "2026-09-14T05:29:51.635Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-17T16:39:13.277Z",
     "hash": "13ebc21f74f0d0a7d63923d661055ac4de2dcbe6"
   },
   "sv_cgiab/methylation_cdkn2b": {
@@ -3250,10 +3243,10 @@
   },
   "synteny_offscreen_mates": {
     "name": "synteny_offscreen_mates",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-08-24T05:48:56.669Z",
-    "hash": "42129875e61ddf4503a66994f1289738a9191539"
+    "status": "answered",
+    "note": "One frame instead of two. The pair differed by a strip a few pixels tall, so the marks are on and a pill names them: peach alignments whose grape end is on another chromosome.",
+    "reviewedAt": "2026-09-17T19:12:28.458Z",
+    "hash": "f42c3e68d2e8d1996e9bbd2a5f531e4178d21dc2"
   },
   "alphagenome/accessibility_shared_axis": {
     "name": "alphagenome/accessibility_shared_axis",
@@ -3322,8 +3315,8 @@
     "name": "circular_synteny/ribbon_hover",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T03:33:42.062Z",
-    "hash": "829fc7e3d92e6f6c799a6cca5eb975ec809e7c70"
+    "reviewedAt": "2026-09-17T16:23:24.617Z",
+    "hash": "bd8e5cddf0f69d190295629c298ec2f00697ad7b"
   },
   "circular_synteny/ribbons": {
     "name": "circular_synteny/ribbons",
@@ -3334,24 +3327,24 @@
   },
   "circular_synteny/rings": {
     "name": "circular_synteny/rings",
-    "status": "bad",
-    "note": "is this a hand-made legend that was added in by generate-screenshots specs? needs to be a built-in feature...",
-    "reviewedAt": "2026-09-14T13:51:48.859Z",
-    "hash": "11d08377180bb8807a4ce3089b101e014dae2714"
+    "status": "answered",
+    "note": "Built in now: Show legend on the circular view menu draws a key naming each ring, chord and ribbon track beside the colour or density ramp it draws in, and the SVG export draws the same key. The overlay is gone from all three circular figures, and this figure's density ring is orange so the ring and the ribbons no longer share one blue.",
+    "reviewedAt": "2026-09-17T19:12:28.807Z",
+    "hash": "f6d92df9b82cc738f36aeab2545d8b6f7aa9a578"
   },
   "circular_view/coverage_ring_chords": {
     "name": "circular_view/coverage_ring_chords",
     "status": "answered",
-    "note": "Coverage is at the bigWig's own resolution now: the ngmlr_cov track no longer sets resolutionMultiplier 10. The legend is still an overlay, as on circular_synteny/rings.",
-    "reviewedAt": "2026-09-17T08:25:03.913Z",
-    "hash": "ff7e761202d13bd78329e2504397d3709ea54d9f"
+    "note": "The same built-in key, off the tracks themselves.",
+    "reviewedAt": "2026-09-17T19:12:29.252Z",
+    "hash": "6d25b0017b486d009f5b1153123a5da99b1904f1"
   },
   "circular_synteny/x_control": {
     "name": "circular_synteny/x_control",
     "status": "answered",
-    "note": "DONE: The same key as the rings figure names the gene density ring and the ribbons, and the two halves of the circle are labelled Human (hg38) and Mouse (mm39).",
-    "reviewedAt": "2026-09-14T05:08:45.186Z",
-    "hash": "43390c04de1123bad4e1f61504ca138a46b92b0d"
+    "note": "The same built-in key, and the gene density ring is orange against the steel-blue ribbons.",
+    "reviewedAt": "2026-09-17T19:12:29.653Z",
+    "hash": "7ec9a554ef3ffa17b62c1576c61a1b0aeecc6896"
   },
   "display_autoruns": {
     "name": "display_autoruns",
@@ -3376,17 +3369,17 @@
   },
   "linkage_groups/alg_dotplot_res_emu": {
     "name": "linkage_groups/alg_dotplot_res_emu",
-    "status": "answered",
-    "note": "The comb jelly and Capsaspora plots were sparse because the BCnS groups were defined on sponge, cnidarian and bilaterian chromosomes, and those two genomes do not keep them. Both plots are deleted; the six-genome stack carries the comb jelly fan-out.",
-    "reviewedAt": "2026-09-17T08:25:04.351Z",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-17T16:27:08.715Z",
     "hash": "cbf612b57ab766f6017a70cb0b46aed750e08191"
   },
   "linkage_groups/alg_stack": {
     "name": "linkage_groups/alg_stack",
     "status": "answered",
-    "note": "Not ideal. autoDiagonalize sweeps top-down from Bolinopsis in its own file order, so every row below, the jellyfish included, is ordered off a comb jelly. The clean order pins the jellyfish row, whose chromosomes are the linkage groups, and sorts outward both ways; Re-order chromosomes has no anchor row yet, so that is an app change, not made in this pass.",
-    "reviewedAt": "2026-09-17T08:25:04.746Z",
-    "hash": "325420f589fe74103dd19c36af43894643f3d361"
+    "note": "Resolved. Re-order chromosomes takes an anchor row: the row picked keeps its order and the sweep runs outward both ways from it, so this stack anchors on the jellyfish whose chromosomes are the linkage groups. The dialog asks for it on three rows or more.",
+    "reviewedAt": "2026-09-17T19:12:29.922Z",
+    "hash": "2941116ff7103bfbe855b8b724680e380b63fed5"
   },
   "maf_row_menu": {
     "name": "maf_row_menu",
@@ -3425,31 +3418,31 @@
   },
   "multiway_synteny/ecoli_alignment_menu": {
     "name": "multiway_synteny/ecoli_alignment_menu",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-14T03:46:53.322Z",
-    "hash": "b1f2649188aa68506a8755dbdf7a1775c7ea9e34"
+    "status": "answered",
+    "note": "The three ways out sit in a Launch submenu now, in this menu and everywhere LGVSyntenyDisplay draws one.",
+    "reviewedAt": "2026-09-17T19:12:30.186Z",
+    "hash": "892352eeb87e9838abcc7b0245236299d5eb2cff"
   },
   "multiway_synteny/ecoli_island_lanes": {
     "name": "multiway_synteny/ecoli_island_lanes",
-    "status": "bad",
-    "note": "it is somewhat unclear what i am even looking at here. does each row need positive and negative strand plot? it just feels like random yellow blobs, and random grey connecting lines. it does not look good. also, i can see gridlines near the top row of the multiwaysyntenydisplay, but not on the rest, which looks odd. maybe that is 'biologically real' though as other rows arent in the gridline system...but still...odd to see\n\nprevious notes:\nDONE: your guess was right. A lane packs its genes in one row, and each strand arrow drew past its gene's end, so converging genes crossed arrows in the gap and an arrow sat on the next gene's box. Lane arrows now sit inside the box; the feature track keeps them outside, where its layout reserves room. Before/after for this figure and primate_tp53_lanes are in .review-visuals/ecoli_island_lanes/. Both figures are republished; the other lane figures pick it up at the next sweep, and one commit reverts it if you would rather not.",
-    "reviewedAt": "2026-09-14T14:19:42.189Z",
-    "hash": "b48e54db3172824aca0430ca9a953742e1c5a991"
+    "status": "answered",
+    "note": "The gridlines were the view's own, true only at the anchor lane's scale, so they are off and each lane's own ticks are what is left. The depth wiggle is 120 px rather than 60, where the drop from five genomes to two was a 24 px step, and one pill says what the step counts.",
+    "reviewedAt": "2026-09-17T19:12:30.458Z",
+    "hash": "a87ba87756e29331181d6559b2795934a57dbdac"
   },
   "multiway_synteny/ecoli_symbol_atp_operon": {
     "name": "multiway_synteny/ecoli_symbol_atp_operon",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T03:47:57.024Z",
-    "hash": "2533986d61d1edfa0f0c2dec053d98763b3111cd"
+    "reviewedAt": "2026-09-17T16:30:14.006Z",
+    "hash": "aba2a6e5f910e5b429eb6ecef21a3c6ca0acf72a"
   },
   "multiway_synteny/ecoli_symbol_oantigen": {
     "name": "multiway_synteny/ecoli_symbol_oantigen",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T03:47:59.215Z",
-    "hash": "0d768b1896be6ef1ceb80c2952f4bc7f65e003dc"
+    "reviewedAt": "2026-09-17T16:30:17.412Z",
+    "hash": "c9ef9d11d81caabada358de31554fa24aa4433ec"
   },
   "multiway_synteny/grasses_rice_lanes": {
     "name": "multiway_synteny/grasses_rice_lanes",
@@ -3707,8 +3700,8 @@
     "name": "sv_channels",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-09-14T14:04:01.687Z",
-    "hash": "4cf4b4cf3ebd164e4797247339b984fac2f559d3"
+    "reviewedAt": "2026-09-17T16:40:51.050Z",
+    "hash": "b3d0d096dbee37f7bf4a54852e09d672f6888c32"
   },
   "alu_age/young_share": {
     "name": "alu_age/young_share",
@@ -3747,17 +3740,17 @@
   },
   "cancer_sv/multihop_split_view": {
     "name": "cancer_sv/multihop_split_view",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-09-14T14:18:07.461Z",
-    "hash": "74ddaa6ca7efee89b40d96edd6a0fb1452f30707"
+    "status": "answered",
+    "note": "Same change as cancer_sv/multihop_reads: three panels, not four, and the panels are 160 px of pileup each so three fill the frame. NOT RE-RENDERED here.",
+    "reviewedAt": "2026-09-17T19:12:27.123Z",
+    "hash": "c8c1262df4e162f98ef4e6f81b67dfcf0f94cd67"
   },
   "pangenome/hprc_gbz_cfhr_lanes": {
     "name": "pangenome/hprc_gbz_cfhr_lanes",
-    "status": "bad",
-    "note": "this just has solid grey rows across every comparison in the multiwaysyntenydisplay. this seems like a bug. the origin/main screenshot did not have this",
-    "reviewedAt": "2026-09-14T14:22:01.287Z",
-    "hash": "4d0fee5250dad9afa4341d75b0084efb6759dd99"
+    "status": "answered",
+    "note": "Fixed by the plugin publish. The graph plugin bundles its own clip code rather than taking it from the worker's synteny-core stub, and its copy has splitAtGapBp, so the lanes draw their genes and the ribbon narrows to nothing across the CFHR3-CFHR1 deletion instead of going solid grey.",
+    "reviewedAt": "2026-09-17T19:12:30.737Z",
+    "hash": "65f5fef4e4e110d9bcf3d73c8b9f83fd5ca3af50"
   },
   "agent_synteny/dotplot_arms": {
     "name": "agent_synteny/dotplot_arms",
@@ -3793,5 +3786,54 @@
     "note": "",
     "reviewedAt": "2026-09-17T06:35:22.407Z",
     "hash": "001d028ba8ad5d3577f361443a23b8ff83529a99"
+  },
+  "context_levels": {
+    "name": "context_levels",
+    "status": "answered",
+    "note": "Human, and filmed. Three levels of COLO829 on hg38: tumour coverage at 5 Mb over the gene track at 200 kb over the ONT reads at a kilobase of TP53. ui/context_levels films the route to that stack, since each level arrives empty and picks its own track.",
+    "reviewedAt": "2026-09-17T19:12:30.991Z",
+    "hash": "1263ca7550f0e684f71e0f69585f1642d77d7bd2"
+  },
+  "context_levels_menu": {
+    "name": "context_levels_menu",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-17T16:24:32.633Z",
+    "hash": "a706fe3cb3c51b5b4b0e20024087f18c6e4f09d8"
+  },
+  "maf_summary_hprc_chromosome": {
+    "name": "maf_summary_hprc_chromosome",
+    "status": "answered",
+    "note": "Kept, with the reference it was missing: the assembly carries cytobands now, so the gap that runs clear across every row sits under the ideogram's centromere. The black is the summary tier's own shading, since human haplotypes score at the top of the scale, and absence is what the figure is of.",
+    "reviewedAt": "2026-09-17T19:12:31.235Z",
+    "hash": "9add968c9d293750200dffca456e30e796afbaf5"
+  },
+  "mark_display/facet": {
+    "name": "mark_display/facet",
+    "status": "answered",
+    "note": "Brainstorm, nothing built. Mismatches fit the same grammar as soon as something emits one feature per mismatch: a transform on the alignments adapter, beside the coverage transform the circular guide already names, would hand the mark display a feature per mismatch carrying base, quality and strand. Then colour by base, facet by base and plot quality are the channels that already exist, and the work is the transform rather than the view. Without it the display can only draw one mark per read, which is the read-level view this figure has.",
+    "reviewedAt": "2026-09-17T19:12:31.482Z",
+    "hash": "b94cb0bfd9a64169be8cf293cc9140f88baadbf4"
+  },
+  "mark_display/plot_field": {
+    "name": "mark_display/plot_field",
+    "status": "answered",
+    "note": "Answered, nothing built. Two JSON routes exist already: Share, then the settings icon and Plaintext JSON, prints the session JSON a reader can paste back, and jb.applyChannelSpec takes a channel spec for an agent. A paste box in this dialog would be a third spelling of the same state, so if you want one the place for it is the display's own settings dialog, where it would cover every channel rather than this dialog's three fields.",
+    "reviewedAt": "2026-09-17T19:12:31.715Z",
+    "hash": "1bf40d30390b81f03c0b97cf826f7f1303d4afe0"
+  },
+  "paper/cohort_cnv": {
+    "name": "paper/cohort_cnv",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-17T16:35:58.362Z",
+    "hash": "991199868fa84c44b583a6c248df8c94ed930efd"
+  },
+  "paper/cohort_views": {
+    "name": "paper/cohort_views",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-09-17T16:36:00.281Z",
+    "hash": "2880e28bef56ec443f6f6ea29a30271387104500"
   }
 }

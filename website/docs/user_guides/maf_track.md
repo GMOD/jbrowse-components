@@ -74,11 +74,11 @@ where individual bases are no longer legible, and zooming in swaps them back for
 the ordinary base coloring; uncheck **Show bases when zoomed in** to keep the
 plot on at every zoom level.
 
-This works on large alignments: with all ~470 species of the UCSC hg38 470-way
-shown at once, the heatmap gives a per-base conservation view across the full
-set of species. Fit-to-display-height mode takes every species into one display,
-so each row goes near-1px and the alignment reads as a texture, with the guide
-tree (dendrogram) down the left.
+The heatmap works on large alignments: with all ~470 species of the UCSC hg38
+470-way shown at once, the heatmap gives a per-base conservation view across the
+full set of species. Fit-to-display-height mode takes every species into one
+display, so each row goes near-1px and the alignment reads as a texture, with
+the guide tree (dendrogram) down the left.
 
 <Figure src="/img/maf_470way.png" caption="The UCSC hg38 470-way multiz over the GAPDH locus, every species at once. Conserved coding columns run blue top-to-bottom across the whole phylogeny; gaps and less-conserved regions break up as red and white streaks."/>
 
@@ -190,7 +190,7 @@ window, so reaching a species' genome needs no selection.
 
 ## Comparing a species against the reference
 
-The same selection — or the visible window, from the track menu's **Launch**
+A drag-selected span — or the visible window, from the track menu's **Launch**
 submenu — opens as a two-row
 [linear synteny view](/docs/user_guides/linear_synteny_view): **Linear synteny
 view, \<ref\> vs...** lists the same species, and picking one opens the

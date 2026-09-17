@@ -714,8 +714,8 @@ No in-tree plugin registers on either: a track that wants to change its own
 About dialog sets the `formatAbout` config slot. These are the programmatic
 equivalent, for tracks you do not own.
 
-Both are declared together — one accumulates an array, the other threads a
-single component:
+`Core-extraAboutPanel` and `Core-replaceAbout` are declared together — one
+accumulates an array, the other threads a single component:
 
 <!-- include: packages/product-core/src/ui/util.ts#aboutRegistry -->
 

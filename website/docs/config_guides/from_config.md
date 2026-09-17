@@ -101,7 +101,7 @@ place in the config, and each feature is just an interval:
 }
 ```
 
-Names and lengths from a file, rather than written inline, use a
+Names and lengths from a file use a
 [`ChromSizesAdapter`](/docs/config/chromsizesadapter) over a `.chrom.sizes`.
 
 ## See also

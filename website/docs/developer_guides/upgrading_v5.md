@@ -444,8 +444,8 @@ data that is never coming.
 
 A view carried two authoring shapes in v4, and which one was correct depended on
 where you were writing. Flat on the view is what a session spec, a URL and a
-jbrowse-img spec took; nested under `init` is what a `defaultSession` took.
-Nothing said so at the point of writing.
+jbrowse-img spec took; nested under `init` is what a `defaultSession` took. v4's
+docs never said which shape to use where.
 
 v5 keeps the flat shape. Every view type takes every setting directly on the
 view object:

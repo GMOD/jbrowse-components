@@ -50,7 +50,7 @@ track sits:
 
 ## The shortest track
 
-The same track written short:
+The repeats track above, written short:
 
 ```json
 {

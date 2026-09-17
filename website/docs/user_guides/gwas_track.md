@@ -51,7 +51,7 @@ requires BED, so a conversion step is needed before loading. See the
 
 ## LD data
 
-With an LD file loaded, points are colored by r² to an index SNP, revealing
+With an LD file loaded, points are colored by r² to an index SNP, so you can see
 which nearby variants are in linkage with the lead signal (see
 [Add GWAS track workflow](#add-gwas-track-workflow) for how the index is
 chosen).

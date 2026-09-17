@@ -358,8 +358,8 @@ zoom is the drawing mark's.
 `"step": "auto"` on a `bin` picks the width from the view instead: the bin
 targets four pixels of screen and snaps up to the next 1, 2 or 5 — 200 bp, 500
 bp, 1 kb — so the bars stay the same width however far you zoom out, and one
-mark replaces the three a config used to write for three resolutions. The width
-is resolved before the fetch and is part of what the fetch is keyed on, so
+mark replaces the three a config otherwise writes for three resolutions. The
+width is resolved before the fetch and is part of what the fetch is keyed on, so
 zooming within a rung re-uses what is loaded and crossing one re-reads at the
 new width, the way a BigWig picks a summary level.
 

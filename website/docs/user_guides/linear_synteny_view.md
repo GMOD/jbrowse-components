@@ -366,7 +366,7 @@ any alignment reaching a long way off screen, so it becomes a mark too.
 
 ### Smaller insertions
 
-The same human/chimp synteny plus RepeatMasker resolves a lineage-specific
+The human/chimp synteny alignment plus RepeatMasker resolves a lineage-specific
 insertion an order of magnitude smaller than the L1HS above, and it is still a
 gap in the alignment with the element named at the indel:
 

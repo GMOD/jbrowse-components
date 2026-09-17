@@ -152,8 +152,8 @@ is a robust band around the typical insert.[^mad]
 
 **Insert size and orientation** combines both. A short insert paints pink
 whatever its orientation, an abnormal orientation wins over a normal insert, and
-a large insert with normal orientation paints red, the classic deletion. It is
-usually the most informative single setting for a first scan.
+a large insert with normal orientation paints red, the classic deletion. It
+combines both signals, so it is the usual first setting to try.
 
 ### Read arcs
 

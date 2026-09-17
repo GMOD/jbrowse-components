@@ -494,11 +494,11 @@ an arm is, and the reference-position ramp shows _where_ each segment sits.
 
 **Requires the source assemblies.**
 
-The two indexes record what the graph contains, not who carries what, because
-rGFA's `SR` tag is build order and not sample. minigraph can recompute the walks
-by aligning each assembly back to the graph (`minigraph -cxasm --call`). The
-call writes one line per bubble per sample, with the path that sample takes and
-its length.
+The `.segs.bed.gz` and `.links.bed.gz` indexes record what the graph contains,
+not who carries what, because rGFA's `SR` tag is build order and not sample.
+minigraph can recompute the walks by aligning each assembly back to the graph
+(`minigraph -cxasm --call`). The call writes one line per bubble per sample,
+with the path that sample takes and its length.
 [`build_minigraph_paths.sh`](https://github.com/GMOD/jbrowse-components/blob/main/scripts/build_minigraph_paths.sh)
 runs the call for every strain and projects the results into one tabix-indexed
 BED, with a row per bubble per strain:
