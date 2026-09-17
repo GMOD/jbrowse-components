@@ -133,10 +133,10 @@ python3 kaks_from_pairs.py oat.pairs.tsv oat.cds.fa.gz \
 aligns each pair as protein, back-translates to codons, and runs Nei-Gojobori.
 `--key record` reads the CDS by transcript id.
 
-It reports the pairs it could not measure: dS past about 2, where the correction
-saturates, and dS of 0, where the ratio has no denominator. `--min-syn-subs` is
-a floor on the synonymous count, since a pair with one or two differences can
-return any ratio at all.
+`kaks_from_pairs.py` reports the pairs it could not measure: dS past about 2,
+where the correction saturates, and dS of 0, where the ratio has no denominator.
+`--min-syn-subs` is a floor on the synonymous count, since a pair with one or
+two differences can return any ratio at all.
 
 ## Loading the blocks table in JBrowse
 
