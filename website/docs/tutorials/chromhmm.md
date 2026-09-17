@@ -94,7 +94,7 @@ jbrowse sort-bed multirow.bed | bgzip > multirow.bed.gz
 tabix -p bed multirow.bed.gz
 ```
 
-Both merged files are also hosted as bigBeds (see
+The ENCODE and Roadmap merged files are also hosted as bigBeds (see
 [Where the data comes from](#where-the-data-comes-from)), which take a
 [`BigBedAdapter`](/docs/config/bigbedadapter), as the second track config below
 does.
