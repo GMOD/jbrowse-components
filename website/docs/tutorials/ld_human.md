@@ -212,7 +212,8 @@ The lower frame is all block, so the lanes around it carry the comparison:
   independently
 - **The two triangles.** The haplotype swept in Europe. Pooling that panel with
   populations it never reached makes every pair of variants look less correlated
-  than it is inside either group: the paler, patchier upper triangle
+  than it is inside either group, which shows as the paler, patchier upper
+  triangle
 
 ## The haplotypes behind the triangle
 
@@ -344,4 +345,5 @@ correlated rather than only filtered by frequency.
     alphas; on an earlier plink2 the flag is simply absent, which is why the r²
     step here is PLINK 1.9's. JBrowse's
     [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter) reads either
-    spelling: it resolves the columns from the header rather than by position.
+    spelling: it resolves the columns from the header by name, so a build with
+    reordered columns still loads.
