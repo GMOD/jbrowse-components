@@ -94,12 +94,12 @@ auto-picked resolution is finer than anything the file holds for that pair, the
 cross-block is absent while the intra-chromosomal triangles still draw. Step
 **Coarser** until it appears.
 
-The same thing scales to the whole genome. **View → Navigation → Show all
-regions in assembly** puts every chromosome in the view at once, which makes the
-fetch every chromosome against every other one and the drawing a block diagonal:
-each chromosome is a triangle along the bottom edge, each pair of chromosomes is
-the block between their two triangles, and the whole pyramid is the genome
-against itself.
+The same pairwise geometry scales to the whole genome. **View → Navigation →
+Show all regions in assembly** puts every chromosome in the view at once, which
+makes the fetch every chromosome against every other one and the drawing a block
+diagonal: each chromosome is a triangle along the bottom edge, each pair of
+chromosomes is the block between their two triangles, and the whole pyramid is
+the genome against itself.
 
 <Figure caption="GM12878 in situ Hi-C at its coarsest 2.5 Mb binsize, hg38 chr1 to chrY in one view. The white bands crossing it are centromeres and the acrocentric short arms, where there is nothing to contact." src="/img/hic/whole_genome.png" />
 
@@ -168,8 +168,8 @@ Two things about that figure are worth copying whenever you compare compartments
 between samples, since getting either wrong invents a difference.
 
 **Pin both eigenvector tracks to the same scale.** Left to autoscale, each track
-fills its own lane from its own extremes and the two stop being comparable. Set
-the min and max score by hand, from the track menu or in config.
+scales to its own min and max, so the two stop being comparable. Set the min and
+max score by hand, from the track menu or in config.
 
 **An eigenvector identifies A only up to a sign.** The decomposition that
 produces it is equally valid negated, so which sign means "active" is a property
