@@ -118,7 +118,7 @@ independently:
 
 ### Making the panels move together
 
-**Link views** in the hamburger menu couples the panels. **Independent** is the
+**Sync rows** in the hamburger menu couples the panels. **Independent** is the
 default; the other two couple them differently:
 
 - **Locked together** replays a pan or zoom in one panel onto the others, so
@@ -227,26 +227,19 @@ out without spending the color channel.
 ## Display settings
 
 The sliders button in the header opens a menu of every setting that decides what
-the ribbons look like, in three groups — how one alignment is drawn, how much of
-it is loaded, and which alignments are drawn at all. Every row is the same
-shape: a boolean is a checkbox, and a choice or a continuous value opens a
-submenu holding its options or its slider. Within a group the checkboxes come
-first, then the choices, then the values. The hamburger menu next to it answers
-what the view _is_ — which genomes it stacks, where they point, what leaves it.
-
-**Ribbons** — how one alignment is drawn.
+the ribbons look like. The checkboxes come first, then a divider, then the rows
+that open a submenu of options or a slider. The hamburger menu next to it
+answers what the view _is_ — which genomes it stacks, where they point, what
+leaves it.
 
 - **Identity fade** is described above
 - **Curved lines** draws ribbons as bezier curves, which reads far better at
   whole-genome scale where straight crossings stack into noise
 - **Location markers** continues the top panel's scalebar grid down through the
   ribbons, so each tick shows where a round coordinate up there lands below
-- **Opacity** is how much dense overlapping alignments show through each other
-
-**Detail** — how much of each alignment is loaded and painted.
-
-- **CIGAR indels** is how per-base insertions and deletions inside one are
-  shown:
+- **Off-screen mates** marks the alignments this view cannot draw (below)
+- **CIGAR indels** is how per-base insertions and deletions inside an alignment
+  are shown:
   - **Colored indels** paints them
   - **Transparent indels** leaves them as see-through gaps in the ribbon
   - **Off - don't draw CIGAR indels** draws each alignment as one solid block.
@@ -254,16 +247,13 @@ what the view _is_ — which genomes it stacks, where they point, what leaves it
     tell them apart, and a gap inside a block is painted as though it matched
     across
 - **Level of detail** picks which stored tier is fetched
+- **Opacity** is how much dense overlapping alignments show through each other
+- **Min length** hides alignments shorter than it, clearing the hairball of
+  short spurious chains at whole-genome zoom
 
-Both rows are gated on the data: a CIGAR-less PAF has no indels to draw, and an
-adapter with one stored tier has nothing to switch between. A file that is both
-takes the whole section with it.
-
-**Scope** — which alignments make it into the picture at all.
-
-- **Off-screen mates** marks the ones this view cannot draw (below)
-- **Min length** hides ones shorter than it, clearing the hairball of short
-  spurious chains at whole-genome zoom
+CIGAR indels and Level of detail are gated on the data: a CIGAR-less PAF has no
+indels to draw, and an adapter with one stored tier has nothing to switch
+between.
 
 Ribbons thinner than a pixel fade by their on-screen width once the view is
 dense enough to tangle, so an unfiltered whole-genome view does not read as a
@@ -284,13 +274,14 @@ inside **Rows**:
   larger one. The two show-all-regions rows are settings rather than one-off
   buttons: whichever is marked stays in force, so after zooming into a locus,
   zooming back out returns to the same shared scale
-- **Link views** decides whether panning one row pans the others, and by what —
+- **Sync rows** decides whether panning one row pans the others, and by what —
   pixels, or the alignment. Following also picks which row is the anchor
 - **Rows** - **Add assembly row** to compare three or more assemblies stacked
   vertically, **Remove bottom row**, **Re-order chromosomes**, and one entry per
   genome opening that row's own view menu (which is otherwise reachable only
   from that row's header, and a collapsed row has none)
-- **Export SVG**, and **Show...** for the header's own search boxes
+- **Show...** for the header's own search boxes
+- **Export SVG**
 
 <Figure caption="Human (hg38) vs chimp (panTro6) across an RB1 intron, from a UCSC liftOver chain with RepeatMasker on both genomes. A full-length L1HS present in human is absent at the orthologous chimp intron, which the 'Colored indels' mode paints as a wedge in the ribbon." src="/img/synteny_human_chimp_cigar_modes.png" />
 

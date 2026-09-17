@@ -86,9 +86,7 @@ test('the ⋮ menu keeps what the view is, not what it looks like', async () => 
   openViewMenu()
   expect(screen.getByText('Lock aspect ratio (same bp/px)')).toBeInTheDocument()
   expect(screen.queryByText('Show...')).not.toBeInTheDocument()
-  expect(
-    screen.queryByText('Draw CIGAR insertions/deletions'),
-  ).not.toBeInTheDocument()
+  expect(screen.queryByText('CIGAR indels')).not.toBeInTheDocument()
   expect(screen.queryByText(/^Gridlines/)).not.toBeInTheDocument()
 })
 

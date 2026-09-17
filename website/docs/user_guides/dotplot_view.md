@@ -47,11 +47,11 @@ below uses the second:
 
 The settings menu, the sliders button in the header, holds the rest of what the
 plot looks like: **Opacity** and **Line width** for how each alignment draws,
-**Draw CIGAR insertions/deletions** for whether per-base indels are drawn inside
-one, **Level of detail** for how much of a tiered file is loaded, and
-**Gridlines**, which carries each axis' ruler ticks across the plot. At
-whole-genome zoom neither axis has room to number itself, so the gridlines row
-says **none at this zoom** while it stays ticked.
+**CIGAR indels** for whether per-base indels are drawn inside one, **Level of
+detail** for how much of a tiered file is loaded, and **Gridlines**, which
+carries each axis' ruler ticks across the plot. At whole-genome zoom neither
+axis has room to number itself, so the gridlines row says **none at this zoom**
+while it stays ticked.
 
 <Figure caption="Grape (Y-axis) against peach (X-axis), with a minimum alignment length already applied. These two are divergent enough that every block still draws as a single dot and no diagonal survives. The horizontal band across grape chr12 is a repeat-rich region rather than synteny." src="/img/dotplot.png" />
 

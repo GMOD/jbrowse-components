@@ -131,6 +131,7 @@ export function navigationMenuItems(model: NavigationModel): MenuItem[] {
     ...radioItems(SHOW_ALL_REGIONS_MODES, sameScale ? 'same' : 'fit', m => {
       model.showAllRegionsAcrossRows(m === 'same')
     }),
+    { type: 'divider' },
     makeRadioSubMenu({
       // "Sync rows" over "Link views": the group holds all three couplings,
       // and someone looking for the follow does not open a menu named after

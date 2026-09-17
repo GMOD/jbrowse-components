@@ -176,10 +176,11 @@ test('the stacked-synteny launcher is under Launch on the track menu, over the i
   expect(items.map(i => ('label' in i ? i.label : undefined))).toEqual([
     'Launch',
     undefined,
-    'Color ribbons by',
-    'Draw curved ribbons',
+    'Curved lines',
     'Bridge lanes that place nothing',
     'Show lane ticks',
+    undefined,
+    'Color ribbons by',
   ])
   const [launch] = items
   const subMenu =

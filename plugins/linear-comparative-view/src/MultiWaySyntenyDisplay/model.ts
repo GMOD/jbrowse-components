@@ -2013,13 +2013,18 @@ export function stateModelFactory(
           })) {
             pushLaunchViewMenuItem(items, item)
           }
+          const laneItems = [
+            ...laneSelectionMenuItems(self),
+            ...laneOrderMenuItems(self),
+          ]
           return [
             ...items,
             { type: 'divider' },
             ...laneSettingsMenuItems(self),
             ...lodMenuItems(self),
-            ...laneSelectionMenuItems(self),
-            ...laneOrderMenuItems(self),
+            ...(laneItems.length > 0
+              ? [{ type: 'divider' } as const, ...laneItems]
+              : []),
           ]
         },
       }

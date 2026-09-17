@@ -54,6 +54,7 @@ const DotplotControls = observer(function DotplotControls({
         onClick={() => {
           model.zoomOut()
         }}
+        title="Zoom out"
       >
         <ZoomOut />
       </IconButton>
@@ -62,6 +63,7 @@ const DotplotControls = observer(function DotplotControls({
         onClick={() => {
           model.zoomIn()
         }}
+        title="Zoom in"
       >
         <ZoomIn />
       </IconButton>
@@ -97,7 +99,7 @@ const DotplotControls = observer(function DotplotControls({
             },
             helpText: model.lockAspectRatio
               ? 'No effect while the aspect ratio is locked — the lock already keeps both axes at the same bp/px.'
-              : 'Makes both views use the same zoom level (bp per pixel), adjusting to the average of each. This ensures features are displayed at comparable scales for easier visual comparison.',
+              : 'Puts both axes on the same bp per pixel, the average of the two.',
           },
           {
             label: 'Rectangular view - same total bp',
@@ -106,17 +108,14 @@ const DotplotControls = observer(function DotplotControls({
             },
             helpText: model.lockAspectRatio
               ? 'Overridden while the aspect ratio is locked — the lock re-equalizes bp/px immediately after.'
-              : 'Adjusts zoom levels proportionally so both views show the same total number of base pairs. This accounts for different view widths while maintaining the same total genomic span.',
+              : 'Zooms both axes to show the same total bp, whatever their widths.',
           },
-          // beside the two view-shape commands above rather than filed by its
-          // first word: all three are ways of setting zoom across both axes.
           {
             label: 'Show all regions',
             onClick: () => {
               model.showAllRegions()
             },
-            helpText:
-              'Zooms out to display all genome assemblies in their entirety. Useful for getting a high-level overview or resetting the view after zooming into specific regions.',
+            helpText: 'Zooms out to show every assembly whole.',
           },
           {
             label: 'Re-order chromosomes',
@@ -131,12 +130,9 @@ const DotplotControls = observer(function DotplotControls({
               ])
             },
             helpText:
-              'Diagonalization algorithmically reorders and reorients chromosomes to minimize crossing synteny lines, creating a more diagonal pattern. This makes it easier to identify large-scale genomic rearrangements, inversions, and translocations. The process runs on the webworker for better performance.',
+              'Reorders and reorients chromosomes so the alignments fall along the diagonal, making rearrangements, inversions and translocations stand out.',
           },
-          // top level rather than under a "Show..." submenu holding it alone:
-          // the two rows that shared that submenu draw the plot, so they went to
-          // the settings menu, and a submenu for the one row left is a hop that
-          // buys nothing. The label carries what the submenu used to.
+          { type: 'divider' },
           toggleItem(
             'Lock aspect ratio (same bp/px)',
             model.lockAspectRatio,

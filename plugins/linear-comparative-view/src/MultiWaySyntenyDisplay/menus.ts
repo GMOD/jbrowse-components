@@ -1,4 +1,4 @@
-import { makeRadioSubMenu, toggleItem } from '@jbrowse/core/ui/menuItems'
+import { radioItems, toggleItem } from '@jbrowse/core/ui/menuItems'
 import { assembleLocStringRaw } from '@jbrowse/core/util'
 import { openMateLabel } from '@jbrowse/core/util/tracks'
 import { legendCheckboxItem } from '@jbrowse/display-kit/LegendMixin'
@@ -236,22 +236,24 @@ export function laneSelectionMenuItems(model: LaneSelectionModel): MenuItem[] {
   ]
 }
 
+const RIBBON_COLOR_HELP: Record<string, string> = {
+  default: "The track's ribbon color.",
+  strand:
+    "Each record's strand against the lane above, in the synteny view's forward and reverse colors. It is the record's strand, not the drawn twist, so a lane drawn flipped shows straight ribbons that are all inversions.",
+  identity:
+    "Each pair's identity on the synteny view's viridis ramp. A pair without one keeps the ribbon color.",
+}
+
+const ATTRIBUTE_COLOR_HELP =
+  'One color per distinct label, or the color the file put beside it. A pair without one keeps the ribbon color.'
+
 /**
- * The two drawing settings, which were config-only: a reader deciding whether
- * the ticks help or crowd is making that call in front of the picture, and
- * config is the wrong distance from it.
+ * Checkboxes, a divider, then the submenus — the order the synteny view's
+ * settings menu uses. The display appends Level of detail after these.
  */
 export function laneSettingsMenuItems(model: LaneSettingsModel): MenuItem[] {
   return [
-    makeRadioSubMenu({
-      label: 'Color ribbons by',
-      value: model.ribbonColorBy,
-      onChange: model.setRibbonColorBy,
-      options: ribbonColorModeOptions(model.ribbonColorAttributes),
-      helpText:
-        "Default is the ribbon color. Strand reads each record's strand against the lane above, in the synteny view's forward and reverse colors: it is the record's strand, not the drawn twist, so a lane drawn flipped shows straight ribbons that are all inversions. Identity paints each pair's identity attribute on the same viridis ramp as the synteny view, and leaves a pair without one at the ribbon color. A column the track declares paints one color per distinct label, or the color the file put beside it, and leaves a pair without one at the ribbon color.",
-    }),
-    toggleItem('Draw curved ribbons', model.drawCurves, model.setDrawCurves, {
+    toggleItem('Curved lines', model.drawCurves, model.setDrawCurves, {
       helpText:
         "Bezier curves rather than straight chords. Straight is the default: a chord's slant reads directly as the offset between two lanes drawn in different coordinate frames, which is exactly what a curve hides.",
     }),
@@ -269,5 +271,21 @@ export function laneSettingsMenuItems(model: LaneSettingsModel): MenuItem[] {
         "Each lane's own coordinate ticks, at one interval shared by every lane. Equal spacing between two lanes means equal bp-per-pixel; a lane whose ticks crowd together is zoomed out.",
     }),
     ...(model.hasLegendKey ? [legendCheckboxItem(model)] : []),
+    { type: 'divider' },
+    {
+      label: 'Color ribbons by',
+      helpText: 'What colors each ribbon.',
+      subMenu: radioItems(
+        ribbonColorModeOptions(model.ribbonColorAttributes).map(
+          ([value, label]) => ({
+            value,
+            label,
+            helpText: RIBBON_COLOR_HELP[value] ?? ATTRIBUTE_COLOR_HELP,
+          }),
+        ),
+        model.ribbonColorBy,
+        model.setRibbonColorBy,
+      ),
+    },
   ]
 }

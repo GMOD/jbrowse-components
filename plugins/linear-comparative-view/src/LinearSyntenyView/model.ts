@@ -1476,9 +1476,10 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * two share only Export SVG. This one is the synteny surface; the app
          * menubar's is the generic view one.
          *
-         * SIX ROWS WHATEVER THE STACK HOLDS — seven on screen, where
-         * `ViewOptionsMenuButton` appends the "Show..." row carrying the search
-         * box prefs, whose state is React's rather than the model's. The menu
+         * SIX ROWS WHATEVER THE STACK HOLDS: the zoom actions, a divider, the
+         * submenus, a divider, Export SVG. `ViewOptionsMenuButton` passes the
+         * "Show..." submenu as `extraSubMenus`, because the search box prefs
+         * it carries are React state rather than the model's. The menu
          * answers what the view IS — where the rows point, which genomes it
          * stacks, what leaves it — and nothing about how the ribbons are drawn:
          * every render setting is in the header's settings menu, and
@@ -1490,7 +1491,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
          * about, and charged a popup for it. LGV's menu had one too, and it
          * went the same way.
          */
-        headerMenuItems(): MenuItem[] {
+        headerMenuItems(extraSubMenus: MenuItem[] = []): MenuItem[] {
           return [
             ...navigationMenuItems(self),
             {
@@ -1539,6 +1540,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 ...rowMenuItems(self),
               ],
             },
+            ...extraSubMenus,
+            { type: 'divider' },
             exportSvgMenuItem,
           ]
         },

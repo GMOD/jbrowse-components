@@ -122,7 +122,7 @@ async function openMenu(adapter: Record<string, unknown> = PAF) {
 test('one menu holds every setting that decides what the plot looks like', async () => {
   await openMenu(PIF)
   for (const label of [
-    'Draw CIGAR insertions/deletions',
+    'CIGAR indels',
     /^Gridlines/,
     'Level of detail',
     'Opacity',
@@ -183,7 +183,7 @@ function isTicked(name: string | RegExp) {
 // both polarities, since a row rendering its glyph from a constant passes
 // either one alone.
 test.each([
-  ['Draw CIGAR insertions/deletions', 'setDrawCigar', 'drawCigar'],
+  ['CIGAR indels', 'setDrawCigar', 'drawCigar'],
   // matched loosely because the label carries `withHint`, which appends an
   // aside at a zoom with no ruler to cast
   [/^Gridlines/, 'setShowGridlines', 'showGridlines'],

@@ -45,7 +45,7 @@ const DotplotSettingsMenu = observer(function DotplotSettingsMenu({
       menuItems={() =>
         [
           toggleItem(
-            'Draw CIGAR insertions/deletions',
+            'CIGAR indels',
             model.drawCigar,
             flag => {
               model.setDrawCigar(flag)
