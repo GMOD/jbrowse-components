@@ -124,9 +124,10 @@ sorts the rest under `LC_ALL=C`, so the adapter can read the column names off
 the file and the order does not shift with your locale.
 
 Then configure a `FeatureTrack` whose `LinearMultiRowFeatureDisplay` partitions
-on the `sample` column and colors each block from its `itemRgb` field. Both
-tracks reference the `mm10` assembly, so set that up first if you haven't. See
-the [assemblies configuration guide](/docs/config_guides/assemblies).
+on the `sample` column and colors each block from its `itemRgb` field. The
+painting and Manhattan tracks both reference the `mm10` assembly, so set that up
+first if you haven't. See the
+[assemblies configuration guide](/docs/config_guides/assemblies).
 
 ```json addtrack
 {
