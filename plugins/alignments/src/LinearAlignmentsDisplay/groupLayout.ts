@@ -97,7 +97,7 @@ export function someAcrossGroups(
 // Max pileup rows a layout may produce before overflow reads collapse to the
 // bottom. Hard-capped below the Uint16 ceiling so row indices (stored in
 // `readYs`) and the overflow sentinel never wrap.
-function maxRowsFor(maxHeight: number, rowHeight: number) {
+export function maxRowsFor(maxHeight: number, rowHeight: number) {
   return Math.max(
     1,
     Math.min(65534, Math.floor(maxHeight / Math.max(1, rowHeight))),
@@ -432,13 +432,25 @@ export function layoutGroupRowCounts(
   return counts
 }
 
+// How many rows the uncollapsed groups need, laid out uncapped. `maxHeight`
+// bounds the counting pass only — NOT the current read height, so the fit
+// autorun that writes `featureHeight` can't feed back into the count it is
+// derived from. Its own computed on the model because a drag frame moves the
+// pitch and the target while the overlaps, and so this count, stay put.
+export function fitRowCount(
+  ctx: GroupLayoutContext,
+  maxHeight: number,
+  collapsedKeys: ReadonlySet<string>,
+): number {
+  const counts = layoutGroupRowCounts(ctx, maxRowsFor(maxHeight, 1))
+  return ctx.order
+    .filter(g => !collapsedKeys.has(g.key))
+    .reduce((sum, { key }) => sum + (counts.get(key) ?? 0), 0)
+}
+
 export interface FittedReadPitchInput {
-  ctx: GroupLayoutContext
-  // The display-wide ceiling, used only to bound the counting pass — NOT the
-  // current read height, so the fit autorun that writes `featureHeight` can't
-  // feed back into the count it is derived from.
-  maxHeight: number
-  collapsedKeys: ReadonlySet<string>
+  // `fitRowCount`
+  rows: number
   // The fit slot, never the reactive `height` getter: the same anti-cycle rule
   // `layoutGroupsToViewport`'s caller follows.
   fitTargetHeight: number
@@ -452,8 +464,7 @@ export interface FittedReadPitchInput {
 
 /**
  * The row pitch that makes every uncollapsed group's reads fill the display
- * without scrolling. Row count is fixed by read overlaps, so the groups are laid
- * out uncapped and the pileup space divided by the total.
+ * without scrolling: the pileup space divided by the row count.
  *
  * Fractional (not floored): the pileup then fills the display exactly rather
  * than leaving up to a row of slack at the bottom. Clamped up to a 1px floor —
@@ -472,11 +483,7 @@ export interface FittedReadPitchInput {
  * scrolls/pads for the shortfall).
  */
 export function fittedReadPitch(input: FittedReadPitchInput) {
-  const { ctx, maxHeight, collapsedKeys, fitTargetHeight } = input
-  const counts = layoutGroupRowCounts(ctx, maxRowsFor(maxHeight, 1))
-  const rows = ctx.order
-    .filter(g => !collapsedKeys.has(g.key))
-    .reduce((sum, { key }) => sum + (counts.get(key) ?? 0), 0)
+  const { rows, fitTargetHeight } = input
   const pileupSpace = fitTargetHeight - input.totalOverhead
   return rows > 0 && pileupSpace > 0
     ? Math.min(NORMAL_PITCH, Math.max(1, pileupSpace / rows))
@@ -487,8 +494,10 @@ export function fittedReadPitch(input: FittedReadPitchInput) {
 // apart from `GroupLayoutContext` because these drive the row caps rather than
 // the layout mechanics.
 export interface FitViewportInput {
-  rowHeight: number
-  maxHeight: number
+  // The display-wide ceiling in rows, resolved by the caller for the reason
+  // `defaultCap` gives: under a fit drag the pitch it divides moves a fraction
+  // of a px per frame (`fitCeilingRows`).
+  maxRows: number
   // The cap a lane on the shared fit budget lays out under, already resolved:
   // the viewport slice when grouped (`fitGroupMaxRows`), the display-wide
   // ceiling when not.
@@ -519,8 +528,7 @@ export function layoutGroupsToViewport(
   ctx: GroupLayoutContext,
   fit: FitViewportInput,
 ): LaidOutByGroup {
-  const { rowHeight, collapsedKeys, overrideCaps, defaultCap } = fit
-  const maxHeightRows = maxRowsFor(fit.maxHeight, rowHeight)
+  const { maxRows, collapsedKeys, overrideCaps, defaultCap } = fit
   const grouped = ctx.order.length > 1
   const pass = buildLaidOutByGroup(ctx, defaultCap, overrideCaps, collapsedKeys)
   if (!grouped) {
@@ -551,7 +559,7 @@ export function layoutGroupsToViewport(
   const bonusCaps = reclaimFitRows({
     outcomes,
     defaultMaxRows: defaultCap.rows,
-    maxRows: maxHeightRows,
+    maxRows,
   })
   // Only the truncated groups get a raised cap; every other group's layout is
   // byte-identical to pass 1, so reuse it and re-lay-out just the changed ones.
@@ -615,16 +623,15 @@ export function resolveFitDefaultCap({
   visibleGroupCount,
   rowHeight,
   totalOverhead,
-  maxHeight,
+  maxRows,
 }: {
   grouped: boolean
   height: number
   visibleGroupCount: number
   rowHeight: number
   totalOverhead: number
-  maxHeight: number
+  maxRows: number
 }) {
-  const maxRows = maxRowsFor(maxHeight, rowHeight)
   return grouped
     ? fitGroupMaxRows({
         height,

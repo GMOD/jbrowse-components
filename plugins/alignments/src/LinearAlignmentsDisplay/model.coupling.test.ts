@@ -1147,6 +1147,19 @@ describe('upload tiers: what a settings change does to the laid-out payloads', (
     expect(after.readTagColors).not.toBe(before.readTagColors)
   })
 
+  test('a fit-mode drag frame that changes no row count keeps the layout', () => {
+    const display = displayWithOneRead()
+    display.setHeightMode('fit')
+    const beforeLayout = display.laidOutByGroupUncolored
+    const pitch = display.rowHeight
+
+    // The fit autorun rewrites the pitch by a fraction of a px per drag frame.
+    display.setFittedHeightPx(display.fittedHeightPx + 0.25)
+
+    expect(display.rowHeight).not.toBe(pitch)
+    expect(display.laidOutByGroupUncolored).toBe(beforeLayout)
+  })
+
   test('a relayout replaces the layout arrays', () => {
     const display = displayWithOneRead()
     const before = region0(display)

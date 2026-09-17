@@ -105,9 +105,11 @@ import {
   applyChainStrandFrames,
   applyReadColorsByGroup,
   collectAcrossGroups,
+  fitRowCount,
   fittedReadPitch,
   groupRowCapSignature,
   layoutGroupsToViewport,
+  maxRowsFor,
   nextGroupHeightOverride,
   parseGroupRowCaps,
   resolveFitDefaultCap,
@@ -1448,8 +1450,35 @@ export default function stateModelFactory(
             ).length,
             rowHeight: this.rowHeight,
             totalOverhead: this.totalBandOverhead,
-            maxHeight: self.maxHeight,
+            maxRows: this.fitCeilingRows,
           })
+        },
+
+        /**
+         * #getter
+         * How many rows the uncollapsed groups need, laid out uncapped. Reads
+         * the overlaps and the ceiling only, so a fit drag leaves it alone.
+         */
+        get fitRows(): number {
+          return fitRowCount(
+            this.groupLayoutContext,
+            self.maxHeight,
+            self.collapsedGroups,
+          )
+        },
+
+        /**
+         * #getter
+         * The `maxHeight` ceiling in rows. Fitting, the pitch it divides is
+         * `fittedHeightPx`, which a drag moves a fraction of a px per frame, and
+         * the quotient crosses an integer nearly as often; clamping to the rows
+         * the pileup needs makes the two agree whenever the ceiling does not
+         * bind, which is what keeps the layout from re-placing every row per
+         * drag frame.
+         */
+        get fitCeilingRows(): number {
+          const ceiling = maxRowsFor(self.maxHeight, this.rowHeight)
+          return this.isFitting ? Math.min(ceiling, this.fitRows) : ceiling
         },
 
         /**
@@ -1465,14 +1494,14 @@ export default function stateModelFactory(
          */
         get laidOutByGroupUncolored() {
           return layoutGroupsToViewport(this.groupLayoutContext, {
-            rowHeight: this.rowHeight,
-            maxHeight: self.maxHeight,
             collapsedKeys: self.collapsedGroups,
-            // Both caps arrive resolved, and neither the track height nor the
-            // band overhead they came from is read here: those move a px per
-            // drag frame while the caps move a row at a time, so reading them
-            // re-placed every row and re-baked every color to arrive at arrays
-            // that were already correct (`fitDefaultCap`, `groupRowCaps`).
+            // The caps arrive resolved, and neither the track height, the row
+            // pitch nor the band overhead they came from is read here: those
+            // move a px per drag frame while the caps move a row at a time, so
+            // reading them re-placed every row and re-baked every color to
+            // arrive at arrays that were already correct (`fitDefaultCap`,
+            // `fitCeilingRows`, `groupRowCaps`).
+            maxRows: this.fitCeilingRows,
             defaultCap: this.fitDefaultCap,
             overrideCaps: this.groupRowCaps,
           })
@@ -2652,9 +2681,7 @@ export default function stateModelFactory(
          */
         get fittedFeatureHeight() {
           return fittedReadPitch({
-            ctx: self.groupLayoutContext,
-            maxHeight: self.maxHeight,
-            collapsedKeys: self.collapsedGroups,
+            rows: self.fitRows,
             fitTargetHeight: self.fitTargetHeight,
             totalOverhead: self.totalBandOverhead,
           })

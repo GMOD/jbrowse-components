@@ -1,5 +1,5 @@
 import { makePileupDataResult } from '../RenderAlignmentDataRPC/testPileupData.ts'
-import { fittedReadPitch } from './groupLayout.ts'
+import { fitRowCount, fittedReadPitch } from './groupLayout.ts'
 import { NORMAL_PITCH } from './menus/compactnessPresets.ts'
 
 import type { GroupLayoutContext } from './groupLayout.ts'
@@ -43,9 +43,7 @@ function pitch(
   },
 ) {
   return fittedReadPitch({
-    ctx: context(groups),
-    maxHeight: 10000,
-    collapsedKeys: opts.collapsedKeys ?? new Set(),
+    rows: fitRowCount(context(groups), 10000, opts.collapsedKeys ?? new Set()),
     fitTargetHeight: opts.fitTargetHeight,
     totalOverhead: opts.totalOverhead ?? 0,
   })
