@@ -1,26 +1,17 @@
 {
   "extends": "../../tsconfig.base.esm.json",
   "references": [
-    { "path": "../../packages/add-track-core/tsconfig.build.esm.json" },
-    { "path": "../../packages/alignments-core/tsconfig.build.esm.json" },
-    { "path": "../../packages/cigar-utils/tsconfig.build.esm.json" },
     { "path": "../../packages/core/tsconfig.build.esm.json" },
     { "path": "../../packages/display-kit/tsconfig.build.esm.json" },
     { "path": "../../packages/display-ui/tsconfig.build.esm.json" },
     { "path": "../../packages/embedded-core/tsconfig.build.esm.json" },
-    { "path": "../../packages/ld-core/tsconfig.build.esm.json" },
     { "path": "../../packages/product-core/tsconfig.build.esm.json" },
     { "path": "../../packages/render-core/tsconfig.build.esm.json" },
-    { "path": "../../packages/sv-core/tsconfig.build.esm.json" },
     { "path": "../../packages/synteny-core/tsconfig.build.esm.json" },
-    { "path": "../../packages/tree-sidebar/tsconfig.build.esm.json" },
-    { "path": "../../packages/wiggle-core/tsconfig.build.esm.json" },
     { "path": "../../plugins/authentication/tsconfig.build.esm.json" },
-    { "path": "../../plugins/canvas/tsconfig.build.esm.json" },
     { "path": "../../plugins/circular-view/tsconfig.build.esm.json" },
     { "path": "../../plugins/config/tsconfig.build.esm.json" },
     { "path": "../../plugins/data-management/tsconfig.build.esm.json" },
-    { "path": "../../plugins/linear-genome-view/tsconfig.build.esm.json" },
     { "path": "../../plugins/sequence/tsconfig.build.esm.json" },
     { "path": "../../plugins/variants/tsconfig.build.esm.json" }
   ]

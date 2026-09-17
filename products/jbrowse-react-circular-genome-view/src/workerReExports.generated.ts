@@ -3,180 +3,143 @@
 // Regenerate with `pnpm autogen`.
 import coreLibs from '@jbrowse/core/ReExports/workerModules'
 import { uiNamespace, uiStub } from '@jbrowse/core/ReExports/uiStub'
-import * as m0 from '@jbrowse/add-track-core'
-import * as m1 from '@jbrowse/alignments-core'
-import * as m2 from '@jbrowse/alignments-core/CoverageTooltipTables'
-import * as m3 from '@jbrowse/cigar-utils'
-import * as m6 from '@jbrowse/display-kit/channelSpec'
-import * as m8 from '@jbrowse/display-kit/ChromeHighlight'
-import * as m10 from '@jbrowse/display-kit/coarseTier'
-import * as m11 from '@jbrowse/display-kit/CoarseTierMixin'
-import * as m12 from '@jbrowse/display-kit/coarseTierPhase'
-import * as m13 from '@jbrowse/display-kit/configSchema'
-import * as m14 from '@jbrowse/display-kit/const'
-import * as m15 from '@jbrowse/display-kit/ContextMenuMixin'
-import * as m16 from '@jbrowse/display-kit/densityTier'
-import * as m17 from '@jbrowse/display-kit/densityTierConfigSchemaFields'
-import * as m18 from '@jbrowse/display-kit/densityTierMenu'
-import * as m19 from '@jbrowse/display-kit/DensityTierMixin'
-import * as m20 from '@jbrowse/display-kit/displayAutoruns'
-import * as m29 from '@jbrowse/display-kit/fetchEachRegion'
-import * as m30 from '@jbrowse/display-kit/fetchInputs'
-import * as m31 from '@jbrowse/display-kit/FetchMixin'
-import * as m32 from '@jbrowse/display-kit/foundationDisplayPhase'
-import * as m33 from '@jbrowse/display-kit/foundationPaintInert'
-import * as m34 from '@jbrowse/display-kit/foundationSvgReady'
-import * as m35 from '@jbrowse/display-kit/foundationView'
-import * as m36 from '@jbrowse/display-kit/GlobalFetchMixin'
-import * as m37 from '@jbrowse/display-kit/groupByMenu'
-import * as m38 from '@jbrowse/display-kit/GroupLabelBox'
-import * as m41 from '@jbrowse/display-kit/groupLabelStyle'
-import * as m42 from '@jbrowse/display-kit/heightMode'
-import * as m43 from '@jbrowse/display-kit/heightModeConfigSchemaFields'
-import * as m44 from '@jbrowse/display-kit/heightModeMenu'
-import * as m45 from '@jbrowse/display-kit/HeightModeMixin'
-import * as m46 from '@jbrowse/display-kit/HiddenGroupsMixin'
-import * as m47 from '@jbrowse/display-kit/highlightHost'
-import * as m48 from '@jbrowse/display-kit/installClearHoverOnViewportChange'
-import * as m49 from '@jbrowse/display-kit/installGlobalFetchAutorun'
-import * as m50 from '@jbrowse/display-kit/installPerRegionFetchAutoruns'
-import * as m51 from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
-import * as m52 from '@jbrowse/display-kit/KeyedFetchMixin'
-import * as m53 from '@jbrowse/display-kit/legendHost'
-import * as m54 from '@jbrowse/display-kit/LegendMixin'
-import * as m55 from '@jbrowse/display-kit/MultiRegionDisplayMixin'
-import * as m56 from '@jbrowse/display-kit/planRegionFetch'
-import * as m57 from '@jbrowse/display-kit/regionCommit'
-import * as m58 from '@jbrowse/display-kit/regionHost'
-import * as m59 from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
-import * as m60 from '@jbrowse/display-kit/RegionTooLargeMixin'
-import * as m61 from '@jbrowse/display-kit/regionTooLargeUtils'
-import * as m63 from '@jbrowse/display-kit/rpcArgs'
-import * as m64 from '@jbrowse/display-kit/rpcPropsCacheKey'
-import { skippedFeatures as m65_skippedFeatures } from '@jbrowse/display-kit/SkippedFeaturesIndicator'
-import * as m66 from '@jbrowse/display-kit/squashToHeightMenuItem'
-import * as m67 from '@jbrowse/display-kit/stableIdentityComputed'
-import * as m68 from '@jbrowse/display-kit/StoredHoverMixin'
-import * as m69 from '@jbrowse/display-kit/subPixelBinBp'
-import * as m72 from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
-import * as m74 from '@jbrowse/display-kit/TrackHeightMixin'
-import * as m75 from '@jbrowse/display-kit/triangleTransform'
-import * as m76 from '@jbrowse/display-kit/triangleYScalar'
-import * as m77 from '@jbrowse/display-kit/types'
-import * as m78 from '@jbrowse/display-kit/viewportEmpty'
-import { AXIS_GUTTER_WIDTH_PX as m79_AXIS_GUTTER_WIDTH_PX, AXIS_RIGHT_INSET_PX as m79_AXIS_RIGHT_INSET_PX, AxisGutter as m79_AxisGutter, BOTTOM_RIGHT_CONTROLS_ORDER as m79_BOTTOM_RIGHT_CONTROLS_ORDER, BottomRightCornerContext as m79_BottomRightCornerContext, COMPACT_AXIS_HEIGHT as m79_COMPACT_AXIS_HEIGHT, CrossHatchLines as m79_CrossHatchLines, CrossHatches as m79_CrossHatches, DisplayChromeOverlayProvider as m79_DisplayChromeOverlayProvider, FLOATING_LEGEND_TOP_PX as m79_FLOATING_LEGEND_TOP_PX, PointerLayer as m79_PointerLayer, SCORE_CAPTION_HEIGHT as m79_SCORE_CAPTION_HEIGHT, ScoreDomainCaption as m79_ScoreDomainCaption, ScoreRuleLines as m79_ScoreRuleLines, ScoreRules as m79_ScoreRules, Tooltip as m79_Tooltip, TrackControlProvider as m79_TrackControlProvider, TrackOverlayContext as m79_TrackOverlayContext, TrackOverlaySlot as m79_TrackOverlaySlot, YSCALEBAR_LABEL_OFFSET as m79_YSCALEBAR_LABEL_OFFSET, YScaleBar as m79_YScaleBar, YScaleBarOverlay as m79_YScaleBarOverlay, axisDrawn as m79_axisDrawn, axisGutterLeft as m79_axisGutterLeft, axisPlotBox as m79_axisPlotBox, clampStrokeInsideAxis as m79_clampStrokeInsideAxis, formatScore as m79_formatScore, isLiveModel as m79_isLiveModel, plainChromeOverlays as m79_plainChromeOverlays, scoreToAxisY as m79_scoreToAxisY, tooLargeBannerText as m79_tooLargeBannerText, useChromeOverlayOverride as m79_useChromeOverlayOverride, useTooltip as m79_useTooltip, useTrackControlMenu as m79_useTrackControlMenu, useTrackControlOverride as m79_useTrackControlOverride } from '@jbrowse/display-ui'
-import * as m80 from '@jbrowse/display-ui/axisPlacement'
-import * as m81 from '@jbrowse/display-ui/embed'
-import * as m82 from '@jbrowse/display-ui/yAxisConstants'
-import * as m83 from '@jbrowse/display-ui/yScaleTicks'
-import { EmbeddedSessionThemeMixin as m84_EmbeddedSessionThemeMixin, EmbeddedViewContainer as m84_EmbeddedViewContainer, createEmbeddedRootModel as m84_createEmbeddedRootModel } from '@jbrowse/embedded-core'
-import * as m85 from '@jbrowse/ld-core'
-import * as m87 from '@jbrowse/plugin-canvas'
-import { Slice as m90_Slice } from '@jbrowse/plugin-circular-view'
-import * as m91 from '@jbrowse/plugin-config'
-import * as m92 from '@jbrowse/plugin-data-management'
-import { ConnectedHoverHighlight as m93_ConnectedHoverHighlight, DisplayChromeOverlayProvider as m93_DisplayChromeOverlayProvider, GetSequenceDialog as m93_GetSequenceDialog, HoverPositionHighlight as m93_HoverPositionHighlight, SVGHighlightBand as m93_SVGHighlightBand, SearchResultsNotFoundError as m93_SearchResultsNotFoundError, TrackControlProvider as m93_TrackControlProvider, TrackOverlayContext as m93_TrackOverlayContext, TrackOverlaySlot as m93_TrackOverlaySlot, applyInitHighlights as m93_applyInitHighlights, awaitSvgReady as m93_awaitSvgReady, awaitSvgRenders as m93_awaitSvgRenders, containingLgv as m93_containingLgv, defaultTextHeight as m93_defaultTextHeight, fetchResults as m93_fetchResults, fitAllRegionsWindow as m93_fitAllRegionsWindow, getRowHeaderLayout as m93_getRowHeaderLayout, installLinkedViewSync as m93_installLinkedViewSync, labelBaselineFromTop as m93_labelBaselineFromTop, labelOffset as m93_labelOffset, makeTicks as m93_makeTicks, normalizeTrackInit as m93_normalizeTrackInit, notifySkippedSvgTracks as m93_notifySkippedSvgTracks, plainChromeOverlays as m93_plainChromeOverlays, renderViewTracks as m93_renderViewTracks, searchBoxMenuItems as m93_searchBoxMenuItems, showRegionsWithUndo as m93_showRegionsWithUndo, svgSafeId as m93_svgSafeId, totalHeight as m93_totalHeight, trackBoxHeight as m93_trackBoxHeight, trackBoxOffsets as m93_trackBoxOffsets, trackLabelLeftOffset as m93_trackLabelLeftOffset, trackLabelMode as m93_trackLabelMode, useSearchBoxPrefs as m93_useSearchBoxPrefs, useTrackControlMenu as m93_useTrackControlMenu } from '@jbrowse/plugin-linear-genome-view'
-import * as m94 from '@jbrowse/plugin-sequence'
-import * as m95 from '@jbrowse/plugin-variants'
-import { AppReadyMarker as m96_AppReadyMarker, BaseRootModelFactory as m96_BaseRootModelFactory, BaseSessionModel as m96_BaseSessionModel, ConnectionManagementSessionMixin as m96_ConnectionManagementSessionMixin, DEFAULT_WEB_BASE_URL as m96_DEFAULT_WEB_BASE_URL, DrawerWidgetSessionMixin as m96_DrawerWidgetSessionMixin, FormatAboutConfigSchemaFactory as m96_FormatAboutConfigSchemaFactory, FormatDetailsConfigSchemaFactory as m96_FormatDetailsConfigSchemaFactory, HierarchicalConfigSchemaFactory as m96_HierarchicalConfigSchemaFactory, InternetAccountsRootModelMixin as m96_InternetAccountsRootModelMixin, MIGRATED_DISPLAY_INSTANCE_KEYS as m96_MIGRATED_DISPLAY_INSTANCE_KEYS, MultipleViewsSessionMixin as m96_MultipleViewsSessionMixin, PreferencesConfigSchemaFactory as m96_PreferencesConfigSchemaFactory, PreferencesSessionMixin as m96_PreferencesSessionMixin, ReferenceManagementSessionMixin as m96_ReferenceManagementSessionMixin, SessionTracksManagerSessionMixin as m96_SessionTracksManagerSessionMixin, ThemeManagerSessionMixin as m96_ThemeManagerSessionMixin, TracksManagerSessionMixin as m96_TracksManagerSessionMixin, analyzeWebPortability as m96_analyzeWebPortability, asRoot as m96_asRoot, asSession as m96_asSession, bakeSessionCascades as m96_bakeSessionCascades, buildWebExportUrl as m96_buildWebExportUrl, copyTrackSnapshot as m96_copyTrackSnapshot, createConfigModel as m96_createConfigModel, decodeSessionFromUrl as m96_decodeSessionFromUrl, describeUnbuildableNodes as m96_describeUnbuildableNodes, destroyViewState as m96_destroyViewState, drawerGridTemplateColumns as m96_drawerGridTemplateColumns, encodeSessionToUrl as m96_encodeSessionToUrl, filterSessionInPlace as m96_filterSessionInPlace, finalizeSession as m96_finalizeSession, getSessionSnapshot as m96_getSessionSnapshot, getShareableSessionSnapshot as m96_getShareableSessionSnapshot, initializeWorker as m96_initializeWorker, isBaseSession as m96_isBaseSession, isLooseTrack as m96_isLooseTrack, isRootModel as m96_isRootModel, isSession as m96_isSession, isSessionWithConnections as m96_isSessionWithConnections, isSessionWithDrawerWidgets as m96_isSessionWithDrawerWidgets, isSessionWithMultipleViews as m96_isSessionWithMultipleViews, isSessionWithReferenceManagement as m96_isSessionWithReferenceManagement, isSessionWithThemes as m96_isSessionWithThemes, isSessionWithTracks as m96_isSessionWithTracks, loadRuntimePlugins as m96_loadRuntimePlugins, mergeLocalFiles as m96_mergeLocalFiles, migrateConfigSnapshot as m96_migrateConfigSnapshot, migrateSessionSnapshot as m96_migrateSessionSnapshot, normalizeAdapterSnapshots as m96_normalizeAdapterSnapshots, observeSession as m96_observeSession, openTracks as m96_openTracks, planWebExport as m96_planWebExport, pluginExtraTrackItems as m96_pluginExtraTrackItems, pruneUnbuildableNodes as m96_pruneUnbuildableNodes, reconcileTracks as m96_reconcileTracks, registerLocalFiles as m96_registerLocalFiles, resolveAssemblies as m96_resolveAssemblies, resolveAssembly as m96_resolveAssembly, resolveLocalFileUris as m96_resolveLocalFileUris, resolveTracks as m96_resolveTracks, scheduleDetachedDestroy as m96_scheduleDetachedDestroy, toPluginLoadRecord as m96_toPluginLoadRecord, useAsyncEngineLifecycle as m96_useAsyncEngineLifecycle, useCreateOnce as m96_useCreateOnce, useCreateOnceAsync as m96_useCreateOnceAsync, useDestroyOnUnmount as m96_useDestroyOnUnmount, withAssemblyName as m96_withAssemblyName, withHostOverrides as m96_withHostOverrides } from '@jbrowse/product-core'
-import * as m97 from '@jbrowse/render-core/blockClipUtils'
-import * as m98 from '@jbrowse/render-core/canvas2dUtils'
-import * as m99 from '@jbrowse/render-core/canvasContext'
-import * as m100 from '@jbrowse/render-core/colorRampLut'
-import * as m101 from '@jbrowse/render-core/computePipeline'
-import * as m102 from '@jbrowse/render-core/contractReports'
-import * as m103 from '@jbrowse/render-core/coverageBand'
-import * as m104 from '@jbrowse/render-core/coverageBandBuffers'
-import * as m105 from '@jbrowse/render-core/createRenderingBackend'
-import * as m106 from '@jbrowse/render-core/displayPhase'
-import * as m107 from '@jbrowse/render-core/encodeMemo'
-import * as m108 from '@jbrowse/render-core/gpuDevice'
-import * as m109 from '@jbrowse/render-core/graphicsCapabilities'
-import * as m110 from '@jbrowse/render-core/hal'
-import * as m111 from '@jbrowse/render-core/installUpload'
-import * as m112 from '@jbrowse/render-core/instanceCache'
-import * as m113 from '@jbrowse/render-core/instancePass'
-import * as m114 from '@jbrowse/render-core/marks'
-import * as m115 from '@jbrowse/render-core/marks/backend'
-import * as m116 from '@jbrowse/render-core/marks/colorFill'
-import * as m117 from '@jbrowse/render-core/marks/drawAgainstHit'
-import * as m118 from '@jbrowse/render-core/marks/glyphPaint'
-import * as m119 from '@jbrowse/render-core/marks/hit'
-import * as m120 from '@jbrowse/render-core/namedReactions'
-import * as m121 from '@jbrowse/render-core/OverlayCanvas'
-import * as m122 from '@jbrowse/render-core/perRegionRenderingBackend'
-import * as m123 from '@jbrowse/render-core/regionDataMap'
-import * as m124 from '@jbrowse/render-core/renderBlock'
-import * as m125 from '@jbrowse/render-core/RenderCanvas'
-import * as m126 from '@jbrowse/render-core/renderingBackendBase'
-import * as m127 from '@jbrowse/render-core/RenderLifecycleMixin'
-import * as m128 from '@jbrowse/render-core/scoreScale'
-import * as m129 from '@jbrowse/render-core/ScrollLockedOverlay'
-import * as m130 from '@jbrowse/render-core/shaders/antialias'
-import * as m131 from '@jbrowse/render-core/shaders/barMarkIface'
-import * as m132 from '@jbrowse/render-core/shaders/capsule'
-import * as m133 from '@jbrowse/render-core/shaders/capsuleConsts'
-import * as m134 from '@jbrowse/render-core/shaders/coverageBar'
-import * as m135 from '@jbrowse/render-core/shaders/coverageIndicator'
-import * as m136 from '@jbrowse/render-core/shaders/coverageInterbase'
-import * as m137 from '@jbrowse/render-core/shaders/coverageMod'
-import * as m138 from '@jbrowse/render-core/shaders/coverageSnp'
-import * as m139 from '@jbrowse/render-core/shaders/hpmath'
-import * as m140 from '@jbrowse/render-core/shaders/pointGlyph'
-import * as m141 from '@jbrowse/render-core/shaders/pointGlyphConsts'
-import * as m142 from '@jbrowse/render-core/shaders/pointMark'
-import * as m143 from '@jbrowse/render-core/shaders/pointMarkConsts'
-import * as m144 from '@jbrowse/render-core/shaders/pointMarkIface'
-import * as m145 from '@jbrowse/render-core/shaders/rowRect'
-import * as m146 from '@jbrowse/render-core/shaders/rowRectConsts'
-import * as m147 from '@jbrowse/render-core/shaders/scoreScale'
-import * as m148 from '@jbrowse/render-core/shaders/spanMarkIface'
-import * as m149 from '@jbrowse/render-core/sharedBackendKey'
-import * as m150 from '@jbrowse/render-core/slangPass'
-import * as m151 from '@jbrowse/render-core/useGraphicsCapabilities'
-import * as m152 from '@jbrowse/render-core/useRenderingBackend'
-import * as m153 from '@jbrowse/render-core/useTabVisibilityRerender'
-import { ARC_HIT_SLOP_PX as m154_ARC_HIT_SLOP_PX, BREAKEND_COLOCATION_BP as m154_BREAKEND_COLOCATION_BP, HIDDEN_SEGMENT_DASH as m154_HIDDEN_SEGMENT_DASH, SV_SYMBOLIC_ALLELES as m154_SV_SYMBOLIC_ALLELES, bestArcMark as m154_bestArcMark, breakendKeepsDirections as m154_breakendKeepsDirections, breakendLocKey as m154_breakendLocKey, breakendTickPx as m154_breakendTickPx, breakpointBpPerPx as m154_breakpointBpPerPx, breakpointSplitViewId as m154_breakpointSplitViewId, getAssemblyName as m154_getAssemblyName, getBreakendAssemblyRegions as m154_getBreakendAssemblyRegions, getBreakendCoveringRegions as m154_getBreakendCoveringRegions, getBreakendMateLocString as m154_getBreakendMateLocString, hasBreakpointSplitView as m154_hasBreakpointSplitView, hiddenSegmentsNote as m154_hiddenSegmentsNote, junctionFromFeature as m154_junctionFromFeature, launchBreakpointSplitView as m154_launchBreakpointSplitView, makeFeaturePair as m154_makeFeaturePair, makeFindJunctionsNear as m154_makeFindJunctionsNear, makeTitle as m154_makeTitle, navToLoc as m154_navToLoc, navToMultiLevelBreak as m154_navToMultiLevelBreak, navToSingleLevelBreak as m154_navToSingleLevelBreak, nextJunctionFrom as m154_nextJunctionFrom, openOrReuseSplitView as m154_openOrReuseSplitView, pairedEndsLocString as m154_pairedEndsLocString, panelIsTurned as m154_panelIsTurned, parseSvAlt as m154_parseSvAlt, readTranslocationMate as m154_readTranslocationMate, safeParseBreakend as m154_safeParseBreakend, singleLevelEncompassingSnapshotFromBreakendFeature as m154_singleLevelEncompassingSnapshotFromBreakendFeature, singleLevelFocusedSnapshotFromBreakendFeature as m154_singleLevelFocusedSnapshotFromBreakendFeature, splitRegionAtPosition as m154_splitRegionAtPosition, svMateLocus as m154_svMateLocus, walkBreakendChain as m154_walkBreakendChain } from '@jbrowse/sv-core'
-import { ATTRIBUTE_PREFIX as m155_ATTRIBUTE_PREFIX, CIGAR_OP_D as m155_CIGAR_OP_D, CIGAR_OP_I as m155_CIGAR_OP_I, CIGAR_OP_N as m155_CIGAR_OP_N, COLOR_COLUMN as m155_COLOR_COLUMN, COLOR_MODES as m155_COLOR_MODES, ComparativeFetchMixin as m155_ComparativeFetchMixin, DiagonalizeProgressMixin as m155_DiagonalizeProgressMixin, ImportFormSyntenyMixin as m155_ImportFormSyntenyMixin, LodTierInfoMixin as m155_LodTierInfoMixin, MAX_MIN_LENGTH_BP as m155_MAX_MIN_LENGTH_BP, MIN_LENGTH_HELP as m155_MIN_LENGTH_HELP, MISSING_VALUE_COLOR as m155_MISSING_VALUE_COLOR, NO_CIGAR_OPS as m155_NO_CIGAR_OPS, PAN_BUFFER_PX as m155_PAN_BUFFER_PX, PRESET_ATTRIBUTES as m155_PRESET_ATTRIBUTES, SETTINGS_SURFACE_LABELS as m155_SETTINGS_SURFACE_LABELS, SYNTENY_LANES as m155_SYNTENY_LANES, TrackColorsMixin as m155_TrackColorsMixin, UNLABELLED_COLOR as m155_UNLABELLED_COLOR, UNNAMED as m155_UNNAMED, VALUE_MODES_LABEL as m155_VALUE_MODES_LABEL, adapterAssemblyNames as m155_adapterAssemblyNames, allSessionTracks as m155_allSessionTracks, applyQuickStartSelections as m155_applyQuickStartSelections, applySyntenyTrackSelections as m155_applySyntenyTrackSelections, assignTrackColors as m155_assignTrackColors, attributeColorBy as m155_attributeColorBy, attributeTooltipLines as m155_attributeTooltipLines, bandGroundColor as m155_bandGroundColor, bandInk as m155_bandInk, blockedByUnfinishedUpload as m155_blockedByUnfinishedUpload, bpToCumBp as m155_bpToCumBp, bucketBpPerPx as m155_bucketBpPerPx, buildBpRegionIndex as m155_buildBpRegionIndex, canonicalizeSyntenyDictLanes as m155_canonicalizeSyntenyDictLanes, categoricalColor as m155_categoricalColor, clampBlockToRegions as m155_clampBlockToRegions, clipLargeBlockToWindow as m155_clipLargeBlockToWindow, clipSyntenyFeature as m155_clipSyntenyFeature, coarseWalkIsApproximate as m155_coarseWalkIsApproximate, coerceColorBy as m155_coerceColorBy, collectTrackWarnings as m155_collectTrackWarnings, colorByAttributeName as m155_colorByAttributeName, colorByFallbackNote as m155_colorByFallbackNote, colorByMenuTargetFor as m155_colorByMenuTargetFor, colorByScale as m155_colorByScale, colorByShortLabel as m155_colorByShortLabel, colorSchemes as m155_colorSchemes, colorableColumns as m155_colorableColumns, comparativeDisplayPhase as m155_comparativeDisplayPhase, comparativeSurfacePhase as m155_comparativeSurfacePhase, comparativeSurfaceSettled as m155_comparativeSurfaceSettled, comparativeTooltipLines as m155_comparativeTooltipLines, connectedEndpoints as m155_connectedEndpoints, continuousRampConfig as m155_continuousRampConfig, createAbortRotation as m155_createAbortRotation, createAttributeChannels as m155_createAttributeChannels, createComparativeColorFunction as m155_createComparativeColorFunction, cumBpAtGenomicCoord as m155_cumBpAtGenomicCoord, cumBpInEntry as m155_cumBpInEntry, declaredAttributes as m155_declaredAttributes, defaultCigarColors as m155_defaultCigarColors, defaultImportFormRows as m155_defaultImportFormRows, displaysSettled as m155_displaysSettled, dnDsRatio as m155_dnDsRatio, dotplotAxesFromRows as m155_dotplotAxesFromRows, effectiveCoarseThreshold as m155_effectiveCoarseThreshold, extractAlignmentData as m155_extractAlignmentData, featureAttributeRanges as m155_featureAttributeRanges, featureAttributes as m155_featureAttributes, fetchWindowSignature as m155_fetchWindowSignature, findRegionEntry as m155_findRegionEntry, getAdapterToCanonicalRefNameMap as m155_getAdapterToCanonicalRefNameMap, getAlignmentOps as m155_getAlignmentOps, getCanonicalRefNameFn as m155_getCanonicalRefNameFn, getCigar as m155_getCigar, getCoarseBpPerPxThreshold as m155_getCoarseBpPerPxThreshold, getCoarseCigar as m155_getCoarseCigar, getColorBySwatch as m155_getColorBySwatch, getConnectedAssemblies as m155_getConnectedAssemblies, getMate as m155_getMate, getQueryColor as m155_getQueryColor, getSyntenyTracks as m155_getSyntenyTracks, hasAlignmentString as m155_hasAlignmentString, hashString as m155_hashString, installAssemblySwapCheck as m155_installAssemblySwapCheck, installClearHoverOnSurfaceMove as m155_installClearHoverOnSurfaceMove, installComparativeFetchAutorun as m155_installComparativeFetchAutorun, installLodTierInfoFetch as m155_installLodTierInfoFetch, isAttributeLabels as m155_isAttributeLabels, isDataCurrent as m155_isDataCurrent, isSyntenyTrack as m155_isSyntenyTrack, launchSyntenyView as m155_launchSyntenyView, legendChipColor as m155_legendChipColor, lodMenuItems as m155_lodMenuItems, lodTierAt as m155_lodTierAt, makeCategoricalColorFunction as m155_makeCategoricalColorFunction, makeContinuousColorFunction as m155_makeContinuousColorFunction, makeNameColorFunction as m155_makeNameColorFunction, makeStringDict as m155_makeStringDict, mcscanBlocksTypes as m155_mcscanBlocksTypes, mcscanTypes as m155_mcscanTypes, multiGenomePAFTypes as m155_multiGenomePAFTypes, nameColorCss as m155_nameColorCss, orderAttributeLabels as m155_orderAttributeLabels, packSyntenyLanes as m155_packSyntenyLanes, pairwiseTypes as m155_pairwiseTypes, paletteColorAt as m155_paletteColorAt, pickSyntenyTrackId as m155_pickSyntenyTrackId, planSyntenyChain as m155_planSyntenyChain, prepareDiagonalizeAdapter as m155_prepareDiagonalizeAdapter, quickStartSyntenyTracks as m155_quickStartSyntenyTracks, rampNorm as m155_rampNorm, readAttribute as m155_readAttribute, readChannelValue as m155_readChannelValue, readLodTierInfo as m155_readLodTierInfo, regionSignature as m155_regionSignature, regionsCumBpSpan as m155_regionsCumBpSpan, regionsInAssemblyNamespace as m155_regionsInAssemblyNamespace, releaseTemporaryAssemblies as m155_releaseTemporaryAssemblies, remapImportFormSelections as m155_remapImportFormSelections, remapSelectionsToPairs as m155_remapSelectionsToPairs, renameDictLane as m155_renameDictLane, renameRegionsForAdapter as m155_renameRegionsForAdapter, resolveCategoricalMode as m155_resolveCategoricalMode, resolveContinuousMode as m155_resolveContinuousMode, resolveLodTier as m155_resolveLodTier, resolveRowTrackAction as m155_resolveRowTrackAction, resolveSyntenyTrackActions as m155_resolveSyntenyTrackActions, runDiagonalize as m155_runDiagonalize, sameAssemblySet as m155_sameAssemblySet, splitSyntenyFeatureAtGaps as m155_splitSyntenyFeatureAtGaps, strandCigarColors as m155_strandCigarColors, swappedAssembliesWarning as m155_swappedAssembliesWarning, syntenyFetchRegions as m155_syntenyFetchRegions, syntenyLaneFields as m155_syntenyLaneFields, syntenyPairStatuses as m155_syntenyPairStatuses, syntenyPairs as m155_syntenyPairs, syntenyPanBufferPx as m155_syntenyPanBufferPx, syntenyTrackPalette as m155_syntenyTrackPalette, syntenyTrackRows as m155_syntenyTrackRows, syntenyTypes as m155_syntenyTypes, trackHasLodTiers as m155_trackHasLodTiers, unnamedNameId as m155_unnamedNameId, useChromosomeFilters as m155_useChromosomeFilters, useImportFormRows as m155_useImportFormRows, useImportFormSyntenyChoices as m155_useImportFormSyntenyChoices, useQuickStartState as m155_useQuickStartState, widenAttributeRanges as m155_widenAttributeRanges, withDiagonalizeProgress as m155_withDiagonalizeProgress, writeAttribute as m155_writeAttribute, writeFeatureAttribute as m155_writeFeatureAttribute, writeFeatureChannels as m155_writeFeatureChannels } from '@jbrowse/synteny-core'
-import { CLUSTER_PROVENANCE_MIN_OVERLAP as m156_CLUSTER_PROVENANCE_MIN_OVERLAP, ClusterProvenanceHint as m156_ClusterProvenanceHint, ContextMenuMixin as m156_ContextMenuMixin, DisplayCrosshairs as m156_DisplayCrosshairs, MIN_CLUSTER_ROWS as m156_MIN_CLUSTER_ROWS, MIN_SEPARATOR_ROW_PX as m156_MIN_SEPARATOR_ROW_PX, MIN_TEXT_ROW_HEIGHT as m156_MIN_TEXT_ROW_HEIGHT, RowHeightMixin as m156_RowHeightMixin, RowSeparatorLines as m156_RowSeparatorLines, StaleTreeHint as m156_StaleTreeHint, SubtreeFilterHint as m156_SubtreeFilterHint, TREE_SIDEBAR_LABEL as m156_TREE_SIDEBAR_LABEL, TreeSidebarMixin as m156_TreeSidebarMixin, applyClusterRun as m156_applyClusterRun, applyLayoutOverrides as m156_applyLayoutOverrides, applySubtreeFilter as m156_applySubtreeFilter, buildClusteredLayout as m156_buildClusteredLayout, buildSpatialIndex as m156_buildSpatialIndex, buildTree as m156_buildTree, clearSubtreeFilterMenuItems as m156_clearSubtreeFilterMenuItems, clusterLayout as m156_clusterLayout, clusterMatrix as m156_clusterMatrix, clusterProgressStatus as m156_clusterProgressStatus, clusterProvenanceDrifted as m156_clusterProvenanceDrifted, clusterProvenanceFromRegions as m156_clusterProvenanceFromRegions, clusterProvenanceLocLabel as m156_clusterProvenanceLocLabel, clusterProvenanceMenuItems as m156_clusterProvenanceMenuItems, clusterProvenanceOverlap as m156_clusterProvenanceOverlap, clusteredCladeLayout as m156_clusteredCladeLayout, clusteringMenuItem as m156_clusteringMenuItem, computeClusterHierarchy as m156_computeClusterHierarchy, describeClusterProvenance as m156_describeClusterProvenance, extraColumns as m156_extraColumns, filterRowsBySubtree as m156_filterRowsBySubtree, focusRowGroup as m156_focusRowGroup, focusRows as m156_focusRows, generateClusterRScript as m156_generateClusterRScript, getLeafNames as m156_getLeafNames, loadedRegionIndexAt as m156_loadedRegionIndexAt, matrixToTsv as m156_matrixToTsv, moveDown as m156_moveDown, moveUp as m156_moveUp, orderRowsByDomain as m156_orderRowsByDomain, orderRowsByValueAt as m156_orderRowsByValueAt, paletteColorsByRow as m156_paletteColorsByRow, parseClusterOrder as m156_parseClusterOrder, parseClusterTree as m156_parseClusterTree, parseNewick as m156_parseNewick, pickTreeNode as m156_pickTreeNode, reconcileLayout as m156_reconcileLayout, regionCoversColumn as m156_regionCoversColumn, resetRowOrderMenuItems as m156_resetRowOrderMenuItems, rotateClusterRun as m156_rotateClusterRun, rotateNewickByDomain as m156_rotateNewickByDomain, rowArrangementMenuItem as m156_rowArrangementMenuItem, rowHeightConfigSchemaFields as m156_rowHeightConfigSchemaFields, rowHeightMenuItem as m156_rowHeightMenuItem, rowLabelsCarryText as m156_rowLabelsCarryText, rowSeparatorsConfigSchemaFields as m156_rowSeparatorsConfigSchemaFields, setupRowSortAutorun as m156_setupRowSortAutorun, setupRunClusteringAutorun as m156_setupRunClusteringAutorun, setupTreeDrawingAutorun as m156_setupTreeDrawingAutorun, setupTreeSidebarAutoruns as m156_setupTreeSidebarAutoruns, showRowLabelsMenuItem as m156_showRowLabelsMenuItem, showRowSeparatorsMenuItem as m156_showRowSeparatorsMenuItem, showTreeSidebarMenuItem as m156_showTreeSidebarMenuItem, sortRowsAtColumn as m156_sortRowsAtColumn, sortRowsHereMenuItem as m156_sortRowsHereMenuItem, treeBranchLengthMenuItem as m156_treeBranchLengthMenuItem, treeDescribesRows as m156_treeDescribesRows, treeIsShowing as m156_treeIsShowing, treeSidebarConfigSchemaFields as m156_treeSidebarConfigSchemaFields, treeSidebarOffset as m156_treeSidebarOffset, treeSidebarRightEdge as m156_treeSidebarRightEdge, treeSidebarShowMenuItems as m156_treeSidebarShowMenuItems, updateRows as m156_updateRows, useClusterRun as m156_useClusterRun, validateClusterOrder as m156_validateClusterOrder } from '@jbrowse/tree-sidebar'
-import * as m157 from '@jbrowse/tree-sidebar/clusterMatrix'
-import * as m158 from '@jbrowse/tree-sidebar/clusterProvenance'
-import * as m159 from '@jbrowse/tree-sidebar/clusterUtils'
-import * as m160 from '@jbrowse/tree-sidebar/hierarchy'
-import * as m161 from '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields'
-import * as m162 from '@jbrowse/tree-sidebar/rowSortColumn'
-import * as m163 from '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields'
-import * as m164 from '@jbrowse/tree-sidebar/treeSidebarGeometry'
-import * as m165 from '@jbrowse/wiggle-core'
-import { AxisGutter as m166_AxisGutter, CrossHatchLines as m166_CrossHatchLines, CrossHatches as m166_CrossHatches, ScoreDomainCaption as m166_ScoreDomainCaption, ScoreRuleLines as m166_ScoreRuleLines, ScoreRules as m166_ScoreRules, YScaleBar as m166_YScaleBar, YScaleBarOverlay as m166_YScaleBarOverlay } from '@jbrowse/wiggle-core/chrome'
-import * as m167 from '@jbrowse/wiggle-core/constants'
-import * as m168 from '@jbrowse/wiggle-core/normalize'
-import * as m169 from '@jbrowse/wiggle-core/renderingBackendTypes'
-import * as m171 from '@jbrowse/wiggle-core/ScorePlotSvgFrame'
+import * as m2 from '@jbrowse/display-kit/channelSpec'
+import * as m4 from '@jbrowse/display-kit/ChromeHighlight'
+import * as m6 from '@jbrowse/display-kit/coarseTier'
+import * as m7 from '@jbrowse/display-kit/CoarseTierMixin'
+import * as m8 from '@jbrowse/display-kit/coarseTierPhase'
+import * as m9 from '@jbrowse/display-kit/configSchema'
+import * as m10 from '@jbrowse/display-kit/const'
+import * as m11 from '@jbrowse/display-kit/ContextMenuMixin'
+import * as m12 from '@jbrowse/display-kit/densityTier'
+import * as m13 from '@jbrowse/display-kit/densityTierConfigSchemaFields'
+import * as m14 from '@jbrowse/display-kit/densityTierMenu'
+import * as m15 from '@jbrowse/display-kit/DensityTierMixin'
+import * as m16 from '@jbrowse/display-kit/displayAutoruns'
+import * as m25 from '@jbrowse/display-kit/fetchEachRegion'
+import * as m26 from '@jbrowse/display-kit/fetchInputs'
+import * as m27 from '@jbrowse/display-kit/FetchMixin'
+import * as m28 from '@jbrowse/display-kit/foundationDisplayPhase'
+import * as m29 from '@jbrowse/display-kit/foundationPaintInert'
+import * as m30 from '@jbrowse/display-kit/foundationSvgReady'
+import * as m31 from '@jbrowse/display-kit/foundationView'
+import * as m32 from '@jbrowse/display-kit/GlobalFetchMixin'
+import * as m33 from '@jbrowse/display-kit/groupByMenu'
+import * as m34 from '@jbrowse/display-kit/GroupLabelBox'
+import * as m37 from '@jbrowse/display-kit/groupLabelStyle'
+import * as m38 from '@jbrowse/display-kit/heightMode'
+import * as m39 from '@jbrowse/display-kit/heightModeConfigSchemaFields'
+import * as m40 from '@jbrowse/display-kit/heightModeMenu'
+import * as m41 from '@jbrowse/display-kit/HeightModeMixin'
+import * as m42 from '@jbrowse/display-kit/HiddenGroupsMixin'
+import * as m43 from '@jbrowse/display-kit/highlightHost'
+import * as m44 from '@jbrowse/display-kit/installClearHoverOnViewportChange'
+import * as m45 from '@jbrowse/display-kit/installGlobalFetchAutorun'
+import * as m46 from '@jbrowse/display-kit/installPerRegionFetchAutoruns'
+import * as m47 from '@jbrowse/display-kit/jexlFilterConfigSchemaFields'
+import * as m48 from '@jbrowse/display-kit/KeyedFetchMixin'
+import * as m49 from '@jbrowse/display-kit/legendHost'
+import * as m50 from '@jbrowse/display-kit/LegendMixin'
+import * as m51 from '@jbrowse/display-kit/MultiRegionDisplayMixin'
+import * as m52 from '@jbrowse/display-kit/planRegionFetch'
+import * as m53 from '@jbrowse/display-kit/regionCommit'
+import * as m54 from '@jbrowse/display-kit/regionHost'
+import * as m55 from '@jbrowse/display-kit/regionTooLargeConfigSchemaFields'
+import * as m56 from '@jbrowse/display-kit/RegionTooLargeMixin'
+import * as m57 from '@jbrowse/display-kit/regionTooLargeUtils'
+import * as m59 from '@jbrowse/display-kit/rpcArgs'
+import * as m60 from '@jbrowse/display-kit/rpcPropsCacheKey'
+import * as m62 from '@jbrowse/display-kit/squashToHeightMenuItem'
+import * as m63 from '@jbrowse/display-kit/stableIdentityComputed'
+import * as m64 from '@jbrowse/display-kit/StoredHoverMixin'
+import * as m65 from '@jbrowse/display-kit/subPixelBinBp'
+import * as m68 from '@jbrowse/display-kit/trackHeightConfigSchemaFields'
+import * as m70 from '@jbrowse/display-kit/TrackHeightMixin'
+import * as m71 from '@jbrowse/display-kit/triangleTransform'
+import * as m72 from '@jbrowse/display-kit/triangleYScalar'
+import * as m73 from '@jbrowse/display-kit/types'
+import * as m74 from '@jbrowse/display-kit/viewportEmpty'
+import * as m76 from '@jbrowse/display-ui/axisPlacement'
+import * as m77 from '@jbrowse/display-ui/embed'
+import * as m78 from '@jbrowse/display-ui/yAxisConstants'
+import * as m79 from '@jbrowse/display-ui/yScaleTicks'
+import * as m80 from '@jbrowse/render-core/blockClipUtils'
+import * as m81 from '@jbrowse/render-core/canvas2dUtils'
+import * as m82 from '@jbrowse/render-core/canvasContext'
+import * as m83 from '@jbrowse/render-core/colorRampLut'
+import * as m84 from '@jbrowse/render-core/computePipeline'
+import * as m85 from '@jbrowse/render-core/contractReports'
+import * as m86 from '@jbrowse/render-core/coverageBand'
+import * as m87 from '@jbrowse/render-core/coverageBandBuffers'
+import * as m88 from '@jbrowse/render-core/createRenderingBackend'
+import * as m89 from '@jbrowse/render-core/displayPhase'
+import * as m90 from '@jbrowse/render-core/encodeMemo'
+import * as m91 from '@jbrowse/render-core/gpuDevice'
+import * as m92 from '@jbrowse/render-core/graphicsCapabilities'
+import * as m93 from '@jbrowse/render-core/hal'
+import * as m94 from '@jbrowse/render-core/installUpload'
+import * as m95 from '@jbrowse/render-core/instanceCache'
+import * as m96 from '@jbrowse/render-core/instancePass'
+import * as m97 from '@jbrowse/render-core/marks'
+import * as m98 from '@jbrowse/render-core/marks/backend'
+import * as m99 from '@jbrowse/render-core/marks/colorFill'
+import * as m100 from '@jbrowse/render-core/marks/drawAgainstHit'
+import * as m101 from '@jbrowse/render-core/marks/glyphPaint'
+import * as m102 from '@jbrowse/render-core/marks/hit'
+import * as m103 from '@jbrowse/render-core/namedReactions'
+import * as m104 from '@jbrowse/render-core/OverlayCanvas'
+import * as m105 from '@jbrowse/render-core/perRegionRenderingBackend'
+import * as m106 from '@jbrowse/render-core/regionDataMap'
+import * as m107 from '@jbrowse/render-core/renderBlock'
+import * as m108 from '@jbrowse/render-core/RenderCanvas'
+import * as m109 from '@jbrowse/render-core/renderingBackendBase'
+import * as m110 from '@jbrowse/render-core/RenderLifecycleMixin'
+import * as m111 from '@jbrowse/render-core/scoreScale'
+import * as m112 from '@jbrowse/render-core/ScrollLockedOverlay'
+import * as m113 from '@jbrowse/render-core/shaders/antialias'
+import * as m114 from '@jbrowse/render-core/shaders/barMarkIface'
+import * as m115 from '@jbrowse/render-core/shaders/capsule'
+import * as m116 from '@jbrowse/render-core/shaders/capsuleConsts'
+import * as m117 from '@jbrowse/render-core/shaders/coverageBar'
+import * as m118 from '@jbrowse/render-core/shaders/coverageIndicator'
+import * as m119 from '@jbrowse/render-core/shaders/coverageInterbase'
+import * as m120 from '@jbrowse/render-core/shaders/coverageMod'
+import * as m121 from '@jbrowse/render-core/shaders/coverageSnp'
+import * as m122 from '@jbrowse/render-core/shaders/hpmath'
+import * as m123 from '@jbrowse/render-core/shaders/pointGlyph'
+import * as m124 from '@jbrowse/render-core/shaders/pointGlyphConsts'
+import * as m125 from '@jbrowse/render-core/shaders/pointMark'
+import * as m126 from '@jbrowse/render-core/shaders/pointMarkConsts'
+import * as m127 from '@jbrowse/render-core/shaders/pointMarkIface'
+import * as m128 from '@jbrowse/render-core/shaders/rowRect'
+import * as m129 from '@jbrowse/render-core/shaders/rowRectConsts'
+import * as m130 from '@jbrowse/render-core/shaders/scoreScale'
+import * as m131 from '@jbrowse/render-core/shaders/spanMarkIface'
+import * as m132 from '@jbrowse/render-core/sharedBackendKey'
+import * as m133 from '@jbrowse/render-core/slangPass'
+import * as m134 from '@jbrowse/render-core/useGraphicsCapabilities'
+import * as m135 from '@jbrowse/render-core/useRenderingBackend'
+import * as m136 from '@jbrowse/render-core/useTabVisibilityRerender'
 
 const libs: Record<string, unknown> = {
   ...coreLibs,
-  '@jbrowse/add-track-core': m0,
-  '@jbrowse/alignments-core': m1,
-  '@jbrowse/alignments-core/CoverageTooltipTables': m2,
-  '@jbrowse/cigar-utils': m3,
   '@jbrowse/display-kit/BlockMsg': uiStub,
   '@jbrowse/display-kit/BottomRightIndicators': uiStub,
-  '@jbrowse/display-kit/channelSpec': m6,
+  '@jbrowse/display-kit/channelSpec': m2,
   '@jbrowse/display-kit/ChannelSpecDialog': uiStub,
-  '@jbrowse/display-kit/ChromeHighlight': m8.default,
+  '@jbrowse/display-kit/ChromeHighlight': m4.default,
   '@jbrowse/display-kit/ChromeLegend': uiStub,
-  '@jbrowse/display-kit/coarseTier': m10,
-  '@jbrowse/display-kit/CoarseTierMixin': m11.default,
-  '@jbrowse/display-kit/coarseTierPhase': m12,
-  '@jbrowse/display-kit/configSchema': m13.default,
-  '@jbrowse/display-kit/const': m14,
-  '@jbrowse/display-kit/ContextMenuMixin': m15,
-  '@jbrowse/display-kit/densityTier': m16,
-  '@jbrowse/display-kit/densityTierConfigSchemaFields': m17,
-  '@jbrowse/display-kit/densityTierMenu': m18,
-  '@jbrowse/display-kit/DensityTierMixin': m19.default,
-  '@jbrowse/display-kit/displayAutoruns': m20,
+  '@jbrowse/display-kit/coarseTier': m6,
+  '@jbrowse/display-kit/CoarseTierMixin': m7.default,
+  '@jbrowse/display-kit/coarseTierPhase': m8,
+  '@jbrowse/display-kit/configSchema': m9.default,
+  '@jbrowse/display-kit/const': m10,
+  '@jbrowse/display-kit/ContextMenuMixin': m11,
+  '@jbrowse/display-kit/densityTier': m12,
+  '@jbrowse/display-kit/densityTierConfigSchemaFields': m13,
+  '@jbrowse/display-kit/densityTierMenu': m14,
+  '@jbrowse/display-kit/DensityTierMixin': m15.default,
+  '@jbrowse/display-kit/displayAutoruns': m16,
   '@jbrowse/display-kit/DisplayBackgroundProgress': uiStub,
   '@jbrowse/display-kit/DisplayChrome': uiNamespace(['DisplayStatusChrome', 'default'], true),
   '@jbrowse/display-kit/DisplayChromeBase': uiStub,
@@ -185,149 +148,118 @@ const libs: Record<string, unknown> = {
   '@jbrowse/display-kit/DisplayLoadingOverlay': uiStub,
   '@jbrowse/display-kit/DisplayRenderErrorOverlay': uiStub,
   '@jbrowse/display-kit/DisplayStatusChromeBase': uiStub,
-  '@jbrowse/display-kit/fetchEachRegion': m29,
-  '@jbrowse/display-kit/fetchInputs': m30,
-  '@jbrowse/display-kit/FetchMixin': { ...m31, __esModule: true },
-  '@jbrowse/display-kit/foundationDisplayPhase': m32,
-  '@jbrowse/display-kit/foundationPaintInert': m33,
-  '@jbrowse/display-kit/foundationSvgReady': m34,
-  '@jbrowse/display-kit/foundationView': m35,
-  '@jbrowse/display-kit/GlobalFetchMixin': { ...m36, __esModule: true },
-  '@jbrowse/display-kit/groupByMenu': m37,
-  '@jbrowse/display-kit/GroupLabelBox': { ...m38, __esModule: true },
+  '@jbrowse/display-kit/fetchEachRegion': m25,
+  '@jbrowse/display-kit/fetchInputs': m26,
+  '@jbrowse/display-kit/FetchMixin': { ...m27, __esModule: true },
+  '@jbrowse/display-kit/foundationDisplayPhase': m28,
+  '@jbrowse/display-kit/foundationPaintInert': m29,
+  '@jbrowse/display-kit/foundationSvgReady': m30,
+  '@jbrowse/display-kit/foundationView': m31,
+  '@jbrowse/display-kit/GlobalFetchMixin': { ...m32, __esModule: true },
+  '@jbrowse/display-kit/groupByMenu': m33,
+  '@jbrowse/display-kit/GroupLabelBox': { ...m34, __esModule: true },
   '@jbrowse/display-kit/GroupLabelChips': uiNamespace(['GroupLabelChips']),
   '@jbrowse/display-kit/groupLabelChipStyles': uiNamespace(['useGroupLabelStyles']),
-  '@jbrowse/display-kit/groupLabelStyle': m41,
-  '@jbrowse/display-kit/heightMode': m42,
-  '@jbrowse/display-kit/heightModeConfigSchemaFields': m43,
-  '@jbrowse/display-kit/heightModeMenu': m44,
-  '@jbrowse/display-kit/HeightModeMixin': { ...m45, __esModule: true },
-  '@jbrowse/display-kit/HiddenGroupsMixin': { ...m46, __esModule: true },
-  '@jbrowse/display-kit/highlightHost': m47,
-  '@jbrowse/display-kit/installClearHoverOnViewportChange': m48,
-  '@jbrowse/display-kit/installGlobalFetchAutorun': m49,
-  '@jbrowse/display-kit/installPerRegionFetchAutoruns': m50,
-  '@jbrowse/display-kit/jexlFilterConfigSchemaFields': m51,
-  '@jbrowse/display-kit/KeyedFetchMixin': m52.default,
-  '@jbrowse/display-kit/legendHost': m53,
-  '@jbrowse/display-kit/LegendMixin': { ...m54, __esModule: true },
-  '@jbrowse/display-kit/MultiRegionDisplayMixin': { ...m55, __esModule: true },
-  '@jbrowse/display-kit/planRegionFetch': m56,
-  '@jbrowse/display-kit/regionCommit': m57,
-  '@jbrowse/display-kit/regionHost': m58,
-  '@jbrowse/display-kit/regionTooLargeConfigSchemaFields': m59,
-  '@jbrowse/display-kit/RegionTooLargeMixin': m60.default,
-  '@jbrowse/display-kit/regionTooLargeUtils': m61,
+  '@jbrowse/display-kit/groupLabelStyle': m37,
+  '@jbrowse/display-kit/heightMode': m38,
+  '@jbrowse/display-kit/heightModeConfigSchemaFields': m39,
+  '@jbrowse/display-kit/heightModeMenu': m40,
+  '@jbrowse/display-kit/HeightModeMixin': { ...m41, __esModule: true },
+  '@jbrowse/display-kit/HiddenGroupsMixin': { ...m42, __esModule: true },
+  '@jbrowse/display-kit/highlightHost': m43,
+  '@jbrowse/display-kit/installClearHoverOnViewportChange': m44,
+  '@jbrowse/display-kit/installGlobalFetchAutorun': m45,
+  '@jbrowse/display-kit/installPerRegionFetchAutoruns': m46,
+  '@jbrowse/display-kit/jexlFilterConfigSchemaFields': m47,
+  '@jbrowse/display-kit/KeyedFetchMixin': m48.default,
+  '@jbrowse/display-kit/legendHost': m49,
+  '@jbrowse/display-kit/LegendMixin': { ...m50, __esModule: true },
+  '@jbrowse/display-kit/MultiRegionDisplayMixin': { ...m51, __esModule: true },
+  '@jbrowse/display-kit/planRegionFetch': m52,
+  '@jbrowse/display-kit/regionCommit': m53,
+  '@jbrowse/display-kit/regionHost': m54,
+  '@jbrowse/display-kit/regionTooLargeConfigSchemaFields': m55,
+  '@jbrowse/display-kit/RegionTooLargeMixin': m56.default,
+  '@jbrowse/display-kit/regionTooLargeUtils': m57,
   '@jbrowse/display-kit/renderDisplaySvg': uiNamespace(['SvgLegend', 'SvgPinnedHighlight', 'SvgYAxis', 'renderDisplaySvg']),
-  '@jbrowse/display-kit/rpcArgs': m63,
-  '@jbrowse/display-kit/rpcPropsCacheKey': m64,
-  '@jbrowse/display-kit/SkippedFeaturesIndicator': uiNamespace(['default'], true, { skippedFeatures: m65_skippedFeatures }),
-  '@jbrowse/display-kit/squashToHeightMenuItem': m66,
-  '@jbrowse/display-kit/stableIdentityComputed': m67,
-  '@jbrowse/display-kit/StoredHoverMixin': m68.default,
-  '@jbrowse/display-kit/subPixelBinBp': m69,
+  '@jbrowse/display-kit/rpcArgs': m59,
+  '@jbrowse/display-kit/rpcPropsCacheKey': m60,
+  '@jbrowse/display-kit/SkippedFeaturesIndicator': uiNamespace(['default', 'skippedFeatures'], true),
+  '@jbrowse/display-kit/squashToHeightMenuItem': m62,
+  '@jbrowse/display-kit/stableIdentityComputed': m63,
+  '@jbrowse/display-kit/StoredHoverMixin': m64.default,
+  '@jbrowse/display-kit/subPixelBinBp': m65,
   '@jbrowse/display-kit/TooLargeMessage': uiStub,
   '@jbrowse/display-kit/TrackControl': uiStub,
-  '@jbrowse/display-kit/trackHeightConfigSchemaFields': m72,
+  '@jbrowse/display-kit/trackHeightConfigSchemaFields': m68,
   '@jbrowse/display-kit/TrackHeightIndicator': uiStub,
-  '@jbrowse/display-kit/TrackHeightMixin': m74.default,
-  '@jbrowse/display-kit/triangleTransform': m75,
-  '@jbrowse/display-kit/triangleYScalar': m76,
-  '@jbrowse/display-kit/types': m77,
-  '@jbrowse/display-kit/viewportEmpty': m78,
-  '@jbrowse/display-ui': uiNamespace(['DisplayUIProvider', 'FloatingLegend', 'FloatingSvgOverlay', 'TrackOverlayPortal', 'plainTrackControl', 'resolveOverlays'], false, { AXIS_GUTTER_WIDTH_PX: m79_AXIS_GUTTER_WIDTH_PX, AXIS_RIGHT_INSET_PX: m79_AXIS_RIGHT_INSET_PX, AxisGutter: m79_AxisGutter, BOTTOM_RIGHT_CONTROLS_ORDER: m79_BOTTOM_RIGHT_CONTROLS_ORDER, BottomRightCornerContext: m79_BottomRightCornerContext, COMPACT_AXIS_HEIGHT: m79_COMPACT_AXIS_HEIGHT, CrossHatchLines: m79_CrossHatchLines, CrossHatches: m79_CrossHatches, DisplayChromeOverlayProvider: m79_DisplayChromeOverlayProvider, FLOATING_LEGEND_TOP_PX: m79_FLOATING_LEGEND_TOP_PX, PointerLayer: m79_PointerLayer, SCORE_CAPTION_HEIGHT: m79_SCORE_CAPTION_HEIGHT, ScoreDomainCaption: m79_ScoreDomainCaption, ScoreRuleLines: m79_ScoreRuleLines, ScoreRules: m79_ScoreRules, Tooltip: m79_Tooltip, TrackControlProvider: m79_TrackControlProvider, TrackOverlayContext: m79_TrackOverlayContext, TrackOverlaySlot: m79_TrackOverlaySlot, YSCALEBAR_LABEL_OFFSET: m79_YSCALEBAR_LABEL_OFFSET, YScaleBar: m79_YScaleBar, YScaleBarOverlay: m79_YScaleBarOverlay, axisDrawn: m79_axisDrawn, axisGutterLeft: m79_axisGutterLeft, axisPlotBox: m79_axisPlotBox, clampStrokeInsideAxis: m79_clampStrokeInsideAxis, formatScore: m79_formatScore, isLiveModel: m79_isLiveModel, plainChromeOverlays: m79_plainChromeOverlays, scoreToAxisY: m79_scoreToAxisY, tooLargeBannerText: m79_tooLargeBannerText, useChromeOverlayOverride: m79_useChromeOverlayOverride, useTooltip: m79_useTooltip, useTrackControlMenu: m79_useTrackControlMenu, useTrackControlOverride: m79_useTrackControlOverride }),
-  '@jbrowse/display-ui/axisPlacement': m80,
-  '@jbrowse/display-ui/embed': m81,
-  '@jbrowse/display-ui/yAxisConstants': m82,
-  '@jbrowse/display-ui/yScaleTicks': m83,
-  '@jbrowse/embedded-core': uiNamespace(['EmbeddedSessionMixin'], false, { EmbeddedSessionThemeMixin: m84_EmbeddedSessionThemeMixin, EmbeddedViewContainer: m84_EmbeddedViewContainer, createEmbeddedRootModel: m84_createEmbeddedRootModel }),
-  '@jbrowse/ld-core': m85,
-  '@jbrowse/plugin-authentication': uiStub,
-  '@jbrowse/plugin-canvas': { ...m87, __esModule: true },
-  '@jbrowse/plugin-canvas/LinearBasicDisplay/baseStateModel': uiNamespace(['default', 'defaultColorItem'], true),
-  '@jbrowse/plugin-canvas/LinearBasicDisplay/stateModel': uiStub,
-  '@jbrowse/plugin-circular-view': uiNamespace(['default', 'renderToSvg'], true, { Slice: m90_Slice }),
-  '@jbrowse/plugin-config': { ...m91, __esModule: true },
-  '@jbrowse/plugin-data-management': { ...m92, __esModule: true },
-  '@jbrowse/plugin-linear-genome-view': uiNamespace(['DisplayUIProvider', 'ExportSvgDialog', 'FloatingLegend', 'FloatingSvgOverlay', 'HeaderSearchBoxRow', 'HeaderSearchBoxes', 'HighlightBand', 'HighlightChip', 'MultiLevelRubberband', 'OverviewHighlightBand', 'SVGHighlights', 'SVGHighlightsOverlay', 'SVGRowHeader', 'SVGTracks', 'SVGView', 'SearchBox', 'SvgChrome', 'SvgClipRect', 'TrackOverlayPortal', 'default', 'linearGenomeViewStateModelFactory', 'plainTrackControl', 'renderToSvg', 'useViewSvgFigure'], true, { ConnectedHoverHighlight: m93_ConnectedHoverHighlight, DisplayChromeOverlayProvider: m93_DisplayChromeOverlayProvider, GetSequenceDialog: m93_GetSequenceDialog, HoverPositionHighlight: m93_HoverPositionHighlight, SVGHighlightBand: m93_SVGHighlightBand, SearchResultsNotFoundError: m93_SearchResultsNotFoundError, TrackControlProvider: m93_TrackControlProvider, TrackOverlayContext: m93_TrackOverlayContext, TrackOverlaySlot: m93_TrackOverlaySlot, applyInitHighlights: m93_applyInitHighlights, awaitSvgReady: m93_awaitSvgReady, awaitSvgRenders: m93_awaitSvgRenders, containingLgv: m93_containingLgv, defaultTextHeight: m93_defaultTextHeight, fetchResults: m93_fetchResults, fitAllRegionsWindow: m93_fitAllRegionsWindow, getRowHeaderLayout: m93_getRowHeaderLayout, installLinkedViewSync: m93_installLinkedViewSync, labelBaselineFromTop: m93_labelBaselineFromTop, labelOffset: m93_labelOffset, makeTicks: m93_makeTicks, normalizeTrackInit: m93_normalizeTrackInit, notifySkippedSvgTracks: m93_notifySkippedSvgTracks, plainChromeOverlays: m93_plainChromeOverlays, renderViewTracks: m93_renderViewTracks, searchBoxMenuItems: m93_searchBoxMenuItems, showRegionsWithUndo: m93_showRegionsWithUndo, svgSafeId: m93_svgSafeId, totalHeight: m93_totalHeight, trackBoxHeight: m93_trackBoxHeight, trackBoxOffsets: m93_trackBoxOffsets, trackLabelLeftOffset: m93_trackLabelLeftOffset, trackLabelMode: m93_trackLabelMode, useSearchBoxPrefs: m93_useSearchBoxPrefs, useTrackControlMenu: m93_useTrackControlMenu }),
-  '@jbrowse/plugin-sequence': m94.default,
-  '@jbrowse/plugin-variants': { ...m95, __esModule: true },
-  '@jbrowse/product-core': uiNamespace(['AboutDialog', 'Drawer', 'DrawerControls', 'DrawerHeader', 'DrawerWidget', 'DrawerWidgetSelector', 'ModalWidget', 'ModalWidgetAppBar', 'PreferencesDialog', 'TrackMenuItemsSessionMixin', 'TrackMenuSessionMixin', 'WidgetBody', 'WidgetHeading', 'aboutTrackMenuItem', 'exportSessionMenuItem', 'importSessionMenuItem', 'newSessionMenuItem', 'openConnectionMenuItem', 'openTrackMenuItem', 'pluginStoreMenuItem', 'preferencesMenuItem', 'redoMenuItem', 'trackActionItems', 'trackActionMenuItems', 'trackListMenuItems', 'undoMenuItem', 'workspacesMenuItem'], false, { AppReadyMarker: m96_AppReadyMarker, BaseRootModelFactory: m96_BaseRootModelFactory, BaseSessionModel: m96_BaseSessionModel, ConnectionManagementSessionMixin: m96_ConnectionManagementSessionMixin, DEFAULT_WEB_BASE_URL: m96_DEFAULT_WEB_BASE_URL, DrawerWidgetSessionMixin: m96_DrawerWidgetSessionMixin, FormatAboutConfigSchemaFactory: m96_FormatAboutConfigSchemaFactory, FormatDetailsConfigSchemaFactory: m96_FormatDetailsConfigSchemaFactory, HierarchicalConfigSchemaFactory: m96_HierarchicalConfigSchemaFactory, InternetAccountsRootModelMixin: m96_InternetAccountsRootModelMixin, MIGRATED_DISPLAY_INSTANCE_KEYS: m96_MIGRATED_DISPLAY_INSTANCE_KEYS, MultipleViewsSessionMixin: m96_MultipleViewsSessionMixin, PreferencesConfigSchemaFactory: m96_PreferencesConfigSchemaFactory, PreferencesSessionMixin: m96_PreferencesSessionMixin, ReferenceManagementSessionMixin: m96_ReferenceManagementSessionMixin, SessionTracksManagerSessionMixin: m96_SessionTracksManagerSessionMixin, ThemeManagerSessionMixin: m96_ThemeManagerSessionMixin, TracksManagerSessionMixin: m96_TracksManagerSessionMixin, analyzeWebPortability: m96_analyzeWebPortability, asRoot: m96_asRoot, asSession: m96_asSession, bakeSessionCascades: m96_bakeSessionCascades, buildWebExportUrl: m96_buildWebExportUrl, copyTrackSnapshot: m96_copyTrackSnapshot, createConfigModel: m96_createConfigModel, decodeSessionFromUrl: m96_decodeSessionFromUrl, describeUnbuildableNodes: m96_describeUnbuildableNodes, destroyViewState: m96_destroyViewState, drawerGridTemplateColumns: m96_drawerGridTemplateColumns, encodeSessionToUrl: m96_encodeSessionToUrl, filterSessionInPlace: m96_filterSessionInPlace, finalizeSession: m96_finalizeSession, getSessionSnapshot: m96_getSessionSnapshot, getShareableSessionSnapshot: m96_getShareableSessionSnapshot, initializeWorker: m96_initializeWorker, isBaseSession: m96_isBaseSession, isLooseTrack: m96_isLooseTrack, isRootModel: m96_isRootModel, isSession: m96_isSession, isSessionWithConnections: m96_isSessionWithConnections, isSessionWithDrawerWidgets: m96_isSessionWithDrawerWidgets, isSessionWithMultipleViews: m96_isSessionWithMultipleViews, isSessionWithReferenceManagement: m96_isSessionWithReferenceManagement, isSessionWithThemes: m96_isSessionWithThemes, isSessionWithTracks: m96_isSessionWithTracks, loadRuntimePlugins: m96_loadRuntimePlugins, mergeLocalFiles: m96_mergeLocalFiles, migrateConfigSnapshot: m96_migrateConfigSnapshot, migrateSessionSnapshot: m96_migrateSessionSnapshot, normalizeAdapterSnapshots: m96_normalizeAdapterSnapshots, observeSession: m96_observeSession, openTracks: m96_openTracks, planWebExport: m96_planWebExport, pluginExtraTrackItems: m96_pluginExtraTrackItems, pruneUnbuildableNodes: m96_pruneUnbuildableNodes, reconcileTracks: m96_reconcileTracks, registerLocalFiles: m96_registerLocalFiles, resolveAssemblies: m96_resolveAssemblies, resolveAssembly: m96_resolveAssembly, resolveLocalFileUris: m96_resolveLocalFileUris, resolveTracks: m96_resolveTracks, scheduleDetachedDestroy: m96_scheduleDetachedDestroy, toPluginLoadRecord: m96_toPluginLoadRecord, useAsyncEngineLifecycle: m96_useAsyncEngineLifecycle, useCreateOnce: m96_useCreateOnce, useCreateOnceAsync: m96_useCreateOnceAsync, useDestroyOnUnmount: m96_useDestroyOnUnmount, withAssemblyName: m96_withAssemblyName, withHostOverrides: m96_withHostOverrides }),
-  '@jbrowse/render-core/blockClipUtils': m97,
-  '@jbrowse/render-core/canvas2dUtils': m98,
-  '@jbrowse/render-core/canvasContext': m99,
-  '@jbrowse/render-core/colorRampLut': m100,
-  '@jbrowse/render-core/computePipeline': m101,
-  '@jbrowse/render-core/contractReports': m102,
-  '@jbrowse/render-core/coverageBand': m103,
-  '@jbrowse/render-core/coverageBandBuffers': m104,
-  '@jbrowse/render-core/createRenderingBackend': m105,
-  '@jbrowse/render-core/displayPhase': m106,
-  '@jbrowse/render-core/encodeMemo': m107,
-  '@jbrowse/render-core/gpuDevice': m108,
-  '@jbrowse/render-core/graphicsCapabilities': m109,
-  '@jbrowse/render-core/hal': m110,
-  '@jbrowse/render-core/installUpload': m111,
-  '@jbrowse/render-core/instanceCache': m112,
-  '@jbrowse/render-core/instancePass': m113,
-  '@jbrowse/render-core/marks': m114,
-  '@jbrowse/render-core/marks/backend': m115,
-  '@jbrowse/render-core/marks/colorFill': m116,
-  '@jbrowse/render-core/marks/drawAgainstHit': m117,
-  '@jbrowse/render-core/marks/glyphPaint': m118,
-  '@jbrowse/render-core/marks/hit': m119,
-  '@jbrowse/render-core/namedReactions': m120,
-  '@jbrowse/render-core/OverlayCanvas': m121.default,
-  '@jbrowse/render-core/perRegionRenderingBackend': m122,
-  '@jbrowse/render-core/regionDataMap': m123,
-  '@jbrowse/render-core/renderBlock': m124,
-  '@jbrowse/render-core/RenderCanvas': m125.default,
-  '@jbrowse/render-core/renderingBackendBase': m126,
-  '@jbrowse/render-core/RenderLifecycleMixin': m127,
-  '@jbrowse/render-core/scoreScale': m128,
-  '@jbrowse/render-core/ScrollLockedOverlay': m129,
-  '@jbrowse/render-core/shaders/antialias': m130,
-  '@jbrowse/render-core/shaders/barMarkIface': m131,
-  '@jbrowse/render-core/shaders/capsule': m132,
-  '@jbrowse/render-core/shaders/capsuleConsts': m133,
-  '@jbrowse/render-core/shaders/coverageBar': m134,
-  '@jbrowse/render-core/shaders/coverageIndicator': m135,
-  '@jbrowse/render-core/shaders/coverageInterbase': m136,
-  '@jbrowse/render-core/shaders/coverageMod': m137,
-  '@jbrowse/render-core/shaders/coverageSnp': m138,
-  '@jbrowse/render-core/shaders/hpmath': m139,
-  '@jbrowse/render-core/shaders/pointGlyph': m140,
-  '@jbrowse/render-core/shaders/pointGlyphConsts': m141,
-  '@jbrowse/render-core/shaders/pointMark': m142,
-  '@jbrowse/render-core/shaders/pointMarkConsts': m143,
-  '@jbrowse/render-core/shaders/pointMarkIface': m144,
-  '@jbrowse/render-core/shaders/rowRect': m145,
-  '@jbrowse/render-core/shaders/rowRectConsts': m146,
-  '@jbrowse/render-core/shaders/scoreScale': m147,
-  '@jbrowse/render-core/shaders/spanMarkIface': m148,
-  '@jbrowse/render-core/sharedBackendKey': m149,
-  '@jbrowse/render-core/slangPass': m150,
-  '@jbrowse/render-core/useGraphicsCapabilities': m151,
-  '@jbrowse/render-core/useRenderingBackend': m152,
-  '@jbrowse/render-core/useTabVisibilityRerender': m153,
-  '@jbrowse/sv-core': uiNamespace(['BreakpointSplitViewChoiceDialog'], false, { ARC_HIT_SLOP_PX: m154_ARC_HIT_SLOP_PX, BREAKEND_COLOCATION_BP: m154_BREAKEND_COLOCATION_BP, HIDDEN_SEGMENT_DASH: m154_HIDDEN_SEGMENT_DASH, SV_SYMBOLIC_ALLELES: m154_SV_SYMBOLIC_ALLELES, bestArcMark: m154_bestArcMark, breakendKeepsDirections: m154_breakendKeepsDirections, breakendLocKey: m154_breakendLocKey, breakendTickPx: m154_breakendTickPx, breakpointBpPerPx: m154_breakpointBpPerPx, breakpointSplitViewId: m154_breakpointSplitViewId, getAssemblyName: m154_getAssemblyName, getBreakendAssemblyRegions: m154_getBreakendAssemblyRegions, getBreakendCoveringRegions: m154_getBreakendCoveringRegions, getBreakendMateLocString: m154_getBreakendMateLocString, hasBreakpointSplitView: m154_hasBreakpointSplitView, hiddenSegmentsNote: m154_hiddenSegmentsNote, junctionFromFeature: m154_junctionFromFeature, launchBreakpointSplitView: m154_launchBreakpointSplitView, makeFeaturePair: m154_makeFeaturePair, makeFindJunctionsNear: m154_makeFindJunctionsNear, makeTitle: m154_makeTitle, navToLoc: m154_navToLoc, navToMultiLevelBreak: m154_navToMultiLevelBreak, navToSingleLevelBreak: m154_navToSingleLevelBreak, nextJunctionFrom: m154_nextJunctionFrom, openOrReuseSplitView: m154_openOrReuseSplitView, pairedEndsLocString: m154_pairedEndsLocString, panelIsTurned: m154_panelIsTurned, parseSvAlt: m154_parseSvAlt, readTranslocationMate: m154_readTranslocationMate, safeParseBreakend: m154_safeParseBreakend, singleLevelEncompassingSnapshotFromBreakendFeature: m154_singleLevelEncompassingSnapshotFromBreakendFeature, singleLevelFocusedSnapshotFromBreakendFeature: m154_singleLevelFocusedSnapshotFromBreakendFeature, splitRegionAtPosition: m154_splitRegionAtPosition, svMateLocus: m154_svMateLocus, walkBreakendChain: m154_walkBreakendChain }),
-  '@jbrowse/synteny-core': uiNamespace(['AnchorsSelector', 'ChromosomeFilter', 'ColorBySelector', 'ComparativeFetchStatus', 'ComparativeTooltip', 'DiagonalizeDialog', 'DiagonalizeLoadingScreen', 'HelpTooltip', 'ImportFormModeToggle', 'ImportFormModes', 'ImportFormOpenCustomTrack', 'ImportFormSyntenyChoiceRadioGroup', 'ImportFormSyntenyTrackPanel', 'ImportSyntenyOpenCustomTrack', 'NoSyntenyTrackMessage', 'PifGzSelector', 'PreConfiguredSyntenyTrackSelect', 'QuickStartPanel', 'StandardFormatSelector', 'SwapAssemblies', 'TrackWarningsDialog', 'colorByMenuItems', 'defaultSyntenyFileFormats'], false, { ATTRIBUTE_PREFIX: m155_ATTRIBUTE_PREFIX, CIGAR_OP_D: m155_CIGAR_OP_D, CIGAR_OP_I: m155_CIGAR_OP_I, CIGAR_OP_N: m155_CIGAR_OP_N, COLOR_COLUMN: m155_COLOR_COLUMN, COLOR_MODES: m155_COLOR_MODES, ComparativeFetchMixin: m155_ComparativeFetchMixin, DiagonalizeProgressMixin: m155_DiagonalizeProgressMixin, ImportFormSyntenyMixin: m155_ImportFormSyntenyMixin, LodTierInfoMixin: m155_LodTierInfoMixin, MAX_MIN_LENGTH_BP: m155_MAX_MIN_LENGTH_BP, MIN_LENGTH_HELP: m155_MIN_LENGTH_HELP, MISSING_VALUE_COLOR: m155_MISSING_VALUE_COLOR, NO_CIGAR_OPS: m155_NO_CIGAR_OPS, PAN_BUFFER_PX: m155_PAN_BUFFER_PX, PRESET_ATTRIBUTES: m155_PRESET_ATTRIBUTES, SETTINGS_SURFACE_LABELS: m155_SETTINGS_SURFACE_LABELS, SYNTENY_LANES: m155_SYNTENY_LANES, TrackColorsMixin: m155_TrackColorsMixin, UNLABELLED_COLOR: m155_UNLABELLED_COLOR, UNNAMED: m155_UNNAMED, VALUE_MODES_LABEL: m155_VALUE_MODES_LABEL, adapterAssemblyNames: m155_adapterAssemblyNames, allSessionTracks: m155_allSessionTracks, applyQuickStartSelections: m155_applyQuickStartSelections, applySyntenyTrackSelections: m155_applySyntenyTrackSelections, assignTrackColors: m155_assignTrackColors, attributeColorBy: m155_attributeColorBy, attributeTooltipLines: m155_attributeTooltipLines, bandGroundColor: m155_bandGroundColor, bandInk: m155_bandInk, blockedByUnfinishedUpload: m155_blockedByUnfinishedUpload, bpToCumBp: m155_bpToCumBp, bucketBpPerPx: m155_bucketBpPerPx, buildBpRegionIndex: m155_buildBpRegionIndex, canonicalizeSyntenyDictLanes: m155_canonicalizeSyntenyDictLanes, categoricalColor: m155_categoricalColor, clampBlockToRegions: m155_clampBlockToRegions, clipLargeBlockToWindow: m155_clipLargeBlockToWindow, clipSyntenyFeature: m155_clipSyntenyFeature, coarseWalkIsApproximate: m155_coarseWalkIsApproximate, coerceColorBy: m155_coerceColorBy, collectTrackWarnings: m155_collectTrackWarnings, colorByAttributeName: m155_colorByAttributeName, colorByFallbackNote: m155_colorByFallbackNote, colorByMenuTargetFor: m155_colorByMenuTargetFor, colorByScale: m155_colorByScale, colorByShortLabel: m155_colorByShortLabel, colorSchemes: m155_colorSchemes, colorableColumns: m155_colorableColumns, comparativeDisplayPhase: m155_comparativeDisplayPhase, comparativeSurfacePhase: m155_comparativeSurfacePhase, comparativeSurfaceSettled: m155_comparativeSurfaceSettled, comparativeTooltipLines: m155_comparativeTooltipLines, connectedEndpoints: m155_connectedEndpoints, continuousRampConfig: m155_continuousRampConfig, createAbortRotation: m155_createAbortRotation, createAttributeChannels: m155_createAttributeChannels, createComparativeColorFunction: m155_createComparativeColorFunction, cumBpAtGenomicCoord: m155_cumBpAtGenomicCoord, cumBpInEntry: m155_cumBpInEntry, declaredAttributes: m155_declaredAttributes, defaultCigarColors: m155_defaultCigarColors, defaultImportFormRows: m155_defaultImportFormRows, displaysSettled: m155_displaysSettled, dnDsRatio: m155_dnDsRatio, dotplotAxesFromRows: m155_dotplotAxesFromRows, effectiveCoarseThreshold: m155_effectiveCoarseThreshold, extractAlignmentData: m155_extractAlignmentData, featureAttributeRanges: m155_featureAttributeRanges, featureAttributes: m155_featureAttributes, fetchWindowSignature: m155_fetchWindowSignature, findRegionEntry: m155_findRegionEntry, getAdapterToCanonicalRefNameMap: m155_getAdapterToCanonicalRefNameMap, getAlignmentOps: m155_getAlignmentOps, getCanonicalRefNameFn: m155_getCanonicalRefNameFn, getCigar: m155_getCigar, getCoarseBpPerPxThreshold: m155_getCoarseBpPerPxThreshold, getCoarseCigar: m155_getCoarseCigar, getColorBySwatch: m155_getColorBySwatch, getConnectedAssemblies: m155_getConnectedAssemblies, getMate: m155_getMate, getQueryColor: m155_getQueryColor, getSyntenyTracks: m155_getSyntenyTracks, hasAlignmentString: m155_hasAlignmentString, hashString: m155_hashString, installAssemblySwapCheck: m155_installAssemblySwapCheck, installClearHoverOnSurfaceMove: m155_installClearHoverOnSurfaceMove, installComparativeFetchAutorun: m155_installComparativeFetchAutorun, installLodTierInfoFetch: m155_installLodTierInfoFetch, isAttributeLabels: m155_isAttributeLabels, isDataCurrent: m155_isDataCurrent, isSyntenyTrack: m155_isSyntenyTrack, launchSyntenyView: m155_launchSyntenyView, legendChipColor: m155_legendChipColor, lodMenuItems: m155_lodMenuItems, lodTierAt: m155_lodTierAt, makeCategoricalColorFunction: m155_makeCategoricalColorFunction, makeContinuousColorFunction: m155_makeContinuousColorFunction, makeNameColorFunction: m155_makeNameColorFunction, makeStringDict: m155_makeStringDict, mcscanBlocksTypes: m155_mcscanBlocksTypes, mcscanTypes: m155_mcscanTypes, multiGenomePAFTypes: m155_multiGenomePAFTypes, nameColorCss: m155_nameColorCss, orderAttributeLabels: m155_orderAttributeLabels, packSyntenyLanes: m155_packSyntenyLanes, pairwiseTypes: m155_pairwiseTypes, paletteColorAt: m155_paletteColorAt, pickSyntenyTrackId: m155_pickSyntenyTrackId, planSyntenyChain: m155_planSyntenyChain, prepareDiagonalizeAdapter: m155_prepareDiagonalizeAdapter, quickStartSyntenyTracks: m155_quickStartSyntenyTracks, rampNorm: m155_rampNorm, readAttribute: m155_readAttribute, readChannelValue: m155_readChannelValue, readLodTierInfo: m155_readLodTierInfo, regionSignature: m155_regionSignature, regionsCumBpSpan: m155_regionsCumBpSpan, regionsInAssemblyNamespace: m155_regionsInAssemblyNamespace, releaseTemporaryAssemblies: m155_releaseTemporaryAssemblies, remapImportFormSelections: m155_remapImportFormSelections, remapSelectionsToPairs: m155_remapSelectionsToPairs, renameDictLane: m155_renameDictLane, renameRegionsForAdapter: m155_renameRegionsForAdapter, resolveCategoricalMode: m155_resolveCategoricalMode, resolveContinuousMode: m155_resolveContinuousMode, resolveLodTier: m155_resolveLodTier, resolveRowTrackAction: m155_resolveRowTrackAction, resolveSyntenyTrackActions: m155_resolveSyntenyTrackActions, runDiagonalize: m155_runDiagonalize, sameAssemblySet: m155_sameAssemblySet, splitSyntenyFeatureAtGaps: m155_splitSyntenyFeatureAtGaps, strandCigarColors: m155_strandCigarColors, swappedAssembliesWarning: m155_swappedAssembliesWarning, syntenyFetchRegions: m155_syntenyFetchRegions, syntenyLaneFields: m155_syntenyLaneFields, syntenyPairStatuses: m155_syntenyPairStatuses, syntenyPairs: m155_syntenyPairs, syntenyPanBufferPx: m155_syntenyPanBufferPx, syntenyTrackPalette: m155_syntenyTrackPalette, syntenyTrackRows: m155_syntenyTrackRows, syntenyTypes: m155_syntenyTypes, trackHasLodTiers: m155_trackHasLodTiers, unnamedNameId: m155_unnamedNameId, useChromosomeFilters: m155_useChromosomeFilters, useImportFormRows: m155_useImportFormRows, useImportFormSyntenyChoices: m155_useImportFormSyntenyChoices, useQuickStartState: m155_useQuickStartState, widenAttributeRanges: m155_widenAttributeRanges, withDiagonalizeProgress: m155_withDiagonalizeProgress, writeAttribute: m155_writeAttribute, writeFeatureAttribute: m155_writeFeatureAttribute, writeFeatureChannels: m155_writeFeatureChannels }),
-  '@jbrowse/tree-sidebar': uiNamespace(['ClusterDialog', 'ClusterModeSelector', 'ClusterProgress', 'DisplayContextMenu', 'RowLabelsOverlay', 'SetColorDialog', 'SvgClusterProvenanceHint', 'SvgRowLabels', 'SvgTreePath', 'SvgTreeSidebar', 'TreeSidebar'], false, { CLUSTER_PROVENANCE_MIN_OVERLAP: m156_CLUSTER_PROVENANCE_MIN_OVERLAP, ClusterProvenanceHint: m156_ClusterProvenanceHint, ContextMenuMixin: m156_ContextMenuMixin, DisplayCrosshairs: m156_DisplayCrosshairs, MIN_CLUSTER_ROWS: m156_MIN_CLUSTER_ROWS, MIN_SEPARATOR_ROW_PX: m156_MIN_SEPARATOR_ROW_PX, MIN_TEXT_ROW_HEIGHT: m156_MIN_TEXT_ROW_HEIGHT, RowHeightMixin: m156_RowHeightMixin, RowSeparatorLines: m156_RowSeparatorLines, StaleTreeHint: m156_StaleTreeHint, SubtreeFilterHint: m156_SubtreeFilterHint, TREE_SIDEBAR_LABEL: m156_TREE_SIDEBAR_LABEL, TreeSidebarMixin: m156_TreeSidebarMixin, applyClusterRun: m156_applyClusterRun, applyLayoutOverrides: m156_applyLayoutOverrides, applySubtreeFilter: m156_applySubtreeFilter, buildClusteredLayout: m156_buildClusteredLayout, buildSpatialIndex: m156_buildSpatialIndex, buildTree: m156_buildTree, clearSubtreeFilterMenuItems: m156_clearSubtreeFilterMenuItems, clusterLayout: m156_clusterLayout, clusterMatrix: m156_clusterMatrix, clusterProgressStatus: m156_clusterProgressStatus, clusterProvenanceDrifted: m156_clusterProvenanceDrifted, clusterProvenanceFromRegions: m156_clusterProvenanceFromRegions, clusterProvenanceLocLabel: m156_clusterProvenanceLocLabel, clusterProvenanceMenuItems: m156_clusterProvenanceMenuItems, clusterProvenanceOverlap: m156_clusterProvenanceOverlap, clusteredCladeLayout: m156_clusteredCladeLayout, clusteringMenuItem: m156_clusteringMenuItem, computeClusterHierarchy: m156_computeClusterHierarchy, describeClusterProvenance: m156_describeClusterProvenance, extraColumns: m156_extraColumns, filterRowsBySubtree: m156_filterRowsBySubtree, focusRowGroup: m156_focusRowGroup, focusRows: m156_focusRows, generateClusterRScript: m156_generateClusterRScript, getLeafNames: m156_getLeafNames, loadedRegionIndexAt: m156_loadedRegionIndexAt, matrixToTsv: m156_matrixToTsv, moveDown: m156_moveDown, moveUp: m156_moveUp, orderRowsByDomain: m156_orderRowsByDomain, orderRowsByValueAt: m156_orderRowsByValueAt, paletteColorsByRow: m156_paletteColorsByRow, parseClusterOrder: m156_parseClusterOrder, parseClusterTree: m156_parseClusterTree, parseNewick: m156_parseNewick, pickTreeNode: m156_pickTreeNode, reconcileLayout: m156_reconcileLayout, regionCoversColumn: m156_regionCoversColumn, resetRowOrderMenuItems: m156_resetRowOrderMenuItems, rotateClusterRun: m156_rotateClusterRun, rotateNewickByDomain: m156_rotateNewickByDomain, rowArrangementMenuItem: m156_rowArrangementMenuItem, rowHeightConfigSchemaFields: m156_rowHeightConfigSchemaFields, rowHeightMenuItem: m156_rowHeightMenuItem, rowLabelsCarryText: m156_rowLabelsCarryText, rowSeparatorsConfigSchemaFields: m156_rowSeparatorsConfigSchemaFields, setupRowSortAutorun: m156_setupRowSortAutorun, setupRunClusteringAutorun: m156_setupRunClusteringAutorun, setupTreeDrawingAutorun: m156_setupTreeDrawingAutorun, setupTreeSidebarAutoruns: m156_setupTreeSidebarAutoruns, showRowLabelsMenuItem: m156_showRowLabelsMenuItem, showRowSeparatorsMenuItem: m156_showRowSeparatorsMenuItem, showTreeSidebarMenuItem: m156_showTreeSidebarMenuItem, sortRowsAtColumn: m156_sortRowsAtColumn, sortRowsHereMenuItem: m156_sortRowsHereMenuItem, treeBranchLengthMenuItem: m156_treeBranchLengthMenuItem, treeDescribesRows: m156_treeDescribesRows, treeIsShowing: m156_treeIsShowing, treeSidebarConfigSchemaFields: m156_treeSidebarConfigSchemaFields, treeSidebarOffset: m156_treeSidebarOffset, treeSidebarRightEdge: m156_treeSidebarRightEdge, treeSidebarShowMenuItems: m156_treeSidebarShowMenuItems, updateRows: m156_updateRows, useClusterRun: m156_useClusterRun, validateClusterOrder: m156_validateClusterOrder }),
-  '@jbrowse/tree-sidebar/clusterMatrix': m157,
-  '@jbrowse/tree-sidebar/clusterProvenance': m158,
-  '@jbrowse/tree-sidebar/clusterUtils': m159,
-  '@jbrowse/tree-sidebar/hierarchy': m160,
-  '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields': m161,
-  '@jbrowse/tree-sidebar/rowSortColumn': m162,
-  '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields': m163,
-  '@jbrowse/tree-sidebar/treeSidebarGeometry': m164,
-  '@jbrowse/wiggle-core': m165,
-  '@jbrowse/wiggle-core/chrome': uiNamespace(['SetMinMaxDialog', 'makePointSizeSubMenu', 'makeResolutionSubMenuItem', 'makeScatterPointSizeMenuItem'], false, { AxisGutter: m166_AxisGutter, CrossHatchLines: m166_CrossHatchLines, CrossHatches: m166_CrossHatches, ScoreDomainCaption: m166_ScoreDomainCaption, ScoreRuleLines: m166_ScoreRuleLines, ScoreRules: m166_ScoreRules, YScaleBar: m166_YScaleBar, YScaleBarOverlay: m166_YScaleBarOverlay }),
-  '@jbrowse/wiggle-core/constants': m167,
-  '@jbrowse/wiggle-core/normalize': m168,
-  '@jbrowse/wiggle-core/renderingBackendTypes': m169,
-  '@jbrowse/wiggle-core/ScorePlotChrome': uiNamespace(['ScorePlotChrome']),
-  '@jbrowse/wiggle-core/ScorePlotSvgFrame': m171,
+  '@jbrowse/display-kit/TrackHeightMixin': m70.default,
+  '@jbrowse/display-kit/triangleTransform': m71,
+  '@jbrowse/display-kit/triangleYScalar': m72,
+  '@jbrowse/display-kit/types': m73,
+  '@jbrowse/display-kit/viewportEmpty': m74,
+  '@jbrowse/display-ui': uiNamespace(['AXIS_GUTTER_WIDTH_PX', 'AXIS_RIGHT_INSET_PX', 'AxisGutter', 'BOTTOM_RIGHT_CONTROLS_ORDER', 'BottomRightCornerContext', 'COMPACT_AXIS_HEIGHT', 'CrossHatchLines', 'CrossHatches', 'DisplayChromeOverlayProvider', 'DisplayUIProvider', 'FLOATING_LEGEND_TOP_PX', 'FloatingLegend', 'FloatingSvgOverlay', 'PointerLayer', 'SCORE_CAPTION_HEIGHT', 'ScoreDomainCaption', 'ScoreRuleLines', 'ScoreRules', 'Tooltip', 'TrackControlProvider', 'TrackOverlayContext', 'TrackOverlayPortal', 'TrackOverlaySlot', 'YSCALEBAR_LABEL_OFFSET', 'YScaleBar', 'YScaleBarOverlay', 'axisDrawn', 'axisGutterLeft', 'axisPlotBox', 'clampStrokeInsideAxis', 'formatScore', 'isLiveModel', 'plainChromeOverlays', 'plainTrackControl', 'resolveOverlays', 'scoreToAxisY', 'tooLargeBannerText', 'useChromeOverlayOverride', 'useTooltip', 'useTrackControlMenu', 'useTrackControlOverride']),
+  '@jbrowse/display-ui/axisPlacement': m76,
+  '@jbrowse/display-ui/embed': m77,
+  '@jbrowse/display-ui/yAxisConstants': m78,
+  '@jbrowse/display-ui/yScaleTicks': m79,
+  '@jbrowse/render-core/blockClipUtils': m80,
+  '@jbrowse/render-core/canvas2dUtils': m81,
+  '@jbrowse/render-core/canvasContext': m82,
+  '@jbrowse/render-core/colorRampLut': m83,
+  '@jbrowse/render-core/computePipeline': m84,
+  '@jbrowse/render-core/contractReports': m85,
+  '@jbrowse/render-core/coverageBand': m86,
+  '@jbrowse/render-core/coverageBandBuffers': m87,
+  '@jbrowse/render-core/createRenderingBackend': m88,
+  '@jbrowse/render-core/displayPhase': m89,
+  '@jbrowse/render-core/encodeMemo': m90,
+  '@jbrowse/render-core/gpuDevice': m91,
+  '@jbrowse/render-core/graphicsCapabilities': m92,
+  '@jbrowse/render-core/hal': m93,
+  '@jbrowse/render-core/installUpload': m94,
+  '@jbrowse/render-core/instanceCache': m95,
+  '@jbrowse/render-core/instancePass': m96,
+  '@jbrowse/render-core/marks': m97,
+  '@jbrowse/render-core/marks/backend': m98,
+  '@jbrowse/render-core/marks/colorFill': m99,
+  '@jbrowse/render-core/marks/drawAgainstHit': m100,
+  '@jbrowse/render-core/marks/glyphPaint': m101,
+  '@jbrowse/render-core/marks/hit': m102,
+  '@jbrowse/render-core/namedReactions': m103,
+  '@jbrowse/render-core/OverlayCanvas': m104.default,
+  '@jbrowse/render-core/perRegionRenderingBackend': m105,
+  '@jbrowse/render-core/regionDataMap': m106,
+  '@jbrowse/render-core/renderBlock': m107,
+  '@jbrowse/render-core/RenderCanvas': m108.default,
+  '@jbrowse/render-core/renderingBackendBase': m109,
+  '@jbrowse/render-core/RenderLifecycleMixin': m110,
+  '@jbrowse/render-core/scoreScale': m111,
+  '@jbrowse/render-core/ScrollLockedOverlay': m112,
+  '@jbrowse/render-core/shaders/antialias': m113,
+  '@jbrowse/render-core/shaders/barMarkIface': m114,
+  '@jbrowse/render-core/shaders/capsule': m115,
+  '@jbrowse/render-core/shaders/capsuleConsts': m116,
+  '@jbrowse/render-core/shaders/coverageBar': m117,
+  '@jbrowse/render-core/shaders/coverageIndicator': m118,
+  '@jbrowse/render-core/shaders/coverageInterbase': m119,
+  '@jbrowse/render-core/shaders/coverageMod': m120,
+  '@jbrowse/render-core/shaders/coverageSnp': m121,
+  '@jbrowse/render-core/shaders/hpmath': m122,
+  '@jbrowse/render-core/shaders/pointGlyph': m123,
+  '@jbrowse/render-core/shaders/pointGlyphConsts': m124,
+  '@jbrowse/render-core/shaders/pointMark': m125,
+  '@jbrowse/render-core/shaders/pointMarkConsts': m126,
+  '@jbrowse/render-core/shaders/pointMarkIface': m127,
+  '@jbrowse/render-core/shaders/rowRect': m128,
+  '@jbrowse/render-core/shaders/rowRectConsts': m129,
+  '@jbrowse/render-core/shaders/scoreScale': m130,
+  '@jbrowse/render-core/shaders/spanMarkIface': m131,
+  '@jbrowse/render-core/sharedBackendKey': m132,
+  '@jbrowse/render-core/slangPass': m133,
+  '@jbrowse/render-core/useGraphicsCapabilities': m134,
+  '@jbrowse/render-core/useRenderingBackend': m135,
+  '@jbrowse/render-core/useTabVisibilityRerender': m136,
 }
 
 export default libs

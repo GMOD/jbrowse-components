@@ -18,10 +18,12 @@
 //   products/<p>/src/reExports.generated.ts             what that product serves beyond core
 //   products/<p>/src/workerReExports.generated.ts       the same in its worker
 //
-// A served package is one any product bundles, and a served key is a subpath
-// its `exports` map publishes (its `main` where it has no map). A product
-// serves the keys of the packages it bundles, and must name each of them as a
-// direct dependency so its generated file can resolve the import.
+// The served packages are `SERVED`: core and the display toolkit a plugin
+// builds on. No plugin's code is served, so a runtime plugin never runs against
+// another plugin's internals. A served key is a subpath a served package's
+// `exports` map publishes (its `main` where it has no map), and each product
+// names the served packages as direct dependencies so its generated file can
+// resolve the import.
 //
 // The worker serves a module for real unless the module's own source graph —
 // followed through workspace packages, stopped at third-party specifiers —
@@ -118,25 +120,12 @@ function closure(direct: Iterable<string>) {
   return out
 }
 
-const isServable = (name: string) =>
-  name.startsWith('@jbrowse/') &&
-  name !== '@jbrowse/mobx-state-tree' &&
-  !workspace.get(name)!.manifest.private
-
-// The union over the products, not jbrowse-web's closure alone: a package only
-// Desktop or an embedded build bundles is one those hosts serve, and reading it
-// off web's closure left it out of `list.ts` with nothing to say so — the
-// `missing` check below cannot see it, since it only looks at packages already
-// in this set.
-const served = [
-  ...new Set(
-    PRODUCTS.flatMap(product => [
-      ...closure(Object.keys(readProduct(product).dependencies!)),
-    ]),
-  ),
-]
-  .filter(isServable)
-  .sort()
+const SERVED = new Set([
+  CORE,
+  '@jbrowse/display-kit',
+  '@jbrowse/display-ui',
+  '@jbrowse/render-core',
+])
 
 interface Entry {
   key: string
@@ -158,7 +147,7 @@ function targetFile(
 
 const entries: Entry[] = []
 const entryByKey = new Map<string, Entry>()
-for (const pkg of served) {
+for (const pkg of SERVED) {
   const { dir, manifest } = workspace.get(pkg)!
   if (manifest.exports) {
     for (const [sub, target] of Object.entries(manifest.exports)) {
@@ -585,7 +574,7 @@ const manifest = {
     PRODUCTS.map(product => [
       product,
       [...closure(Object.keys(readProduct(product).dependencies!))]
-        .filter(isServable)
+        .filter(name => SERVED.has(name))
         .sort(),
     ]),
   ),
@@ -650,7 +639,7 @@ for (const product of PRODUCTS) {
       path: main,
       content: emitMap(
         main,
-        `What ${product} serves to a runtime plugin beyond @jbrowse/core: every subpath of every @jbrowse package it bundles.`,
+        `What ${product} serves to a runtime plugin beyond @jbrowse/core: every subpath of the display toolkit.`,
         modules,
         {
           worker: false,
@@ -686,5 +675,5 @@ checkOrWriteAll(
   'run `pnpm autogen`',
 )
 console.log(
-  `${servedModules.length} @jbrowse keys over ${served.length} packages (${servedModules.filter(m => m.ui).length} stubbed in the worker), ${framework.length} framework keys`,
+  `${servedModules.length} @jbrowse keys over ${SERVED.size} packages (${servedModules.filter(m => m.ui).length} stubbed in the worker), ${framework.length} framework keys`,
 )

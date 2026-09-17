@@ -2163,18 +2163,9 @@ importers:
       '@gmod/faidx':
         specifier: ^3.0.1
         version: 3.0.1
-      '@jbrowse/add-track-core':
-        specifier: workspace:^
-        version: link:../../packages/add-track-core
-      '@jbrowse/alignments-core':
-        specifier: workspace:^
-        version: link:../../packages/alignments-core
       '@jbrowse/app-core':
         specifier: workspace:^
         version: link:../../packages/app-core
-      '@jbrowse/cigar-utils':
-        specifier: workspace:^
-        version: link:../../packages/cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -2184,15 +2175,9 @@ importers:
       '@jbrowse/display-ui':
         specifier: workspace:^
         version: link:../../packages/display-ui
-      '@jbrowse/ld-core':
-        specifier: workspace:^
-        version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.1
         version: 6.5.1(mobx@7.0.3)
-      '@jbrowse/modifications-utils':
-        specifier: workspace:^
-        version: link:../../packages/modifications-utils
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2298,24 +2283,12 @@ importers:
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
-      '@jbrowse/sv-core':
-        specifier: workspace:^
-        version: link:../../packages/sv-core
-      '@jbrowse/synteny-core':
-        specifier: workspace:^
-        version: link:../../packages/synteny-core
       '@jbrowse/text-indexing':
         specifier: workspace:^
         version: link:../../packages/text-indexing
       '@jbrowse/text-indexing-core':
         specifier: workspace:^
         version: link:../../packages/text-indexing-core
-      '@jbrowse/tree-sidebar':
-        specifier: workspace:^
-        version: link:../../packages/tree-sidebar
-      '@jbrowse/wiggle-core':
-        specifier: workspace:^
-        version: link:../../packages/wiggle-core
       '@mui/icons-material':
         specifier: ^9.4.0
         version: 9.4.0(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@types/react@19.3.0)(react@19.3.0)
@@ -2462,18 +2435,9 @@ importers:
       '@emotion/styled':
         specifier: ^11.14.1
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1)
-      '@jbrowse/add-track-core':
-        specifier: workspace:^
-        version: link:../../packages/add-track-core
-      '@jbrowse/alignments-core':
-        specifier: workspace:^
-        version: link:../../packages/alignments-core
       '@jbrowse/app-core':
         specifier: workspace:^
         version: link:../../packages/app-core
-      '@jbrowse/cigar-utils':
-        specifier: workspace:^
-        version: link:../../packages/cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -2483,15 +2447,9 @@ importers:
       '@jbrowse/display-ui':
         specifier: workspace:^
         version: link:../../packages/display-ui
-      '@jbrowse/ld-core':
-        specifier: workspace:^
-        version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.1
         version: 6.5.1(mobx@7.0.3)
-      '@jbrowse/modifications-utils':
-        specifier: workspace:^
-        version: link:../../packages/modifications-utils
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2588,21 +2546,9 @@ importers:
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
-      '@jbrowse/sv-core':
-        specifier: workspace:^
-        version: link:../../packages/sv-core
-      '@jbrowse/synteny-core':
-        specifier: workspace:^
-        version: link:../../packages/synteny-core
-      '@jbrowse/tree-sidebar':
-        specifier: workspace:^
-        version: link:../../packages/tree-sidebar
       '@jbrowse/web-core':
         specifier: workspace:^
         version: link:../../packages/web-core
-      '@jbrowse/wiggle-core':
-        specifier: workspace:^
-        version: link:../../packages/wiggle-core
       '@mui/material':
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -2680,15 +2626,6 @@ importers:
       '@emotion/styled':
         specifier: ^11.14.1
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1)
-      '@jbrowse/add-track-core':
-        specifier: workspace:^
-        version: link:../../packages/add-track-core
-      '@jbrowse/alignments-core':
-        specifier: workspace:^
-        version: link:../../packages/alignments-core
-      '@jbrowse/cigar-utils':
-        specifier: workspace:^
-        version: link:../../packages/cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -2701,18 +2638,12 @@ importers:
       '@jbrowse/embedded-core':
         specifier: workspace:^
         version: link:../../packages/embedded-core
-      '@jbrowse/ld-core':
-        specifier: workspace:^
-        version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.1
         version: 6.5.1(mobx@7.0.3)
       '@jbrowse/plugin-authentication':
         specifier: workspace:^
         version: link:../../plugins/authentication
-      '@jbrowse/plugin-canvas':
-        specifier: workspace:^
-        version: link:../../plugins/canvas
       '@jbrowse/plugin-circular-view':
         specifier: workspace:^
         version: link:../../plugins/circular-view
@@ -2722,9 +2653,6 @@ importers:
       '@jbrowse/plugin-data-management':
         specifier: workspace:^
         version: link:../../plugins/data-management
-      '@jbrowse/plugin-linear-genome-view':
-        specifier: workspace:^
-        version: link:../../plugins/linear-genome-view
       '@jbrowse/plugin-sequence':
         specifier: workspace:^
         version: link:../../plugins/sequence
@@ -2737,18 +2665,9 @@ importers:
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
-      '@jbrowse/sv-core':
-        specifier: workspace:^
-        version: link:../../packages/sv-core
       '@jbrowse/synteny-core':
         specifier: workspace:^
         version: link:../../packages/synteny-core
-      '@jbrowse/tree-sidebar':
-        specifier: workspace:^
-        version: link:../../packages/tree-sidebar
-      '@jbrowse/wiggle-core':
-        specifier: workspace:^
-        version: link:../../packages/wiggle-core
       '@mui/material':
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -2826,15 +2745,6 @@ importers:
       '@emotion/styled':
         specifier: ^11.14.1
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1)
-      '@jbrowse/add-track-core':
-        specifier: workspace:^
-        version: link:../../packages/add-track-core
-      '@jbrowse/alignments-core':
-        specifier: workspace:^
-        version: link:../../packages/alignments-core
-      '@jbrowse/cigar-utils':
-        specifier: workspace:^
-        version: link:../../packages/cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -2847,15 +2757,9 @@ importers:
       '@jbrowse/embedded-core':
         specifier: workspace:^
         version: link:../../packages/embedded-core
-      '@jbrowse/ld-core':
-        specifier: workspace:^
-        version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.1
         version: 6.5.1(mobx@7.0.3)
-      '@jbrowse/modifications-utils':
-        specifier: workspace:^
-        version: link:../../packages/modifications-utils
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -2919,15 +2823,6 @@ importers:
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
-      '@jbrowse/sv-core':
-        specifier: workspace:^
-        version: link:../../packages/sv-core
-      '@jbrowse/tree-sidebar':
-        specifier: workspace:^
-        version: link:../../packages/tree-sidebar
-      '@jbrowse/wiggle-core':
-        specifier: workspace:^
-        version: link:../../packages/wiggle-core
       '@mui/material':
         specifier: ^9.4.0
         version: 9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -3011,15 +2906,9 @@ importers:
       '@jbrowse/add-track-core':
         specifier: workspace:^
         version: link:../../packages/add-track-core
-      '@jbrowse/alignments-core':
-        specifier: workspace:^
-        version: link:../../packages/alignments-core
       '@jbrowse/app-core':
         specifier: workspace:^
         version: link:../../packages/app-core
-      '@jbrowse/cigar-utils':
-        specifier: workspace:^
-        version: link:../../packages/cigar-utils
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -3029,15 +2918,9 @@ importers:
       '@jbrowse/display-ui':
         specifier: workspace:^
         version: link:../../packages/display-ui
-      '@jbrowse/ld-core':
-        specifier: workspace:^
-        version: link:../../packages/ld-core
       '@jbrowse/mobx-state-tree':
         specifier: ^6.5.1
         version: 6.5.1(mobx@7.0.3)
-      '@jbrowse/modifications-utils':
-        specifier: workspace:^
-        version: link:../../packages/modifications-utils
       '@jbrowse/plugin-alignments':
         specifier: workspace:^
         version: link:../../plugins/alignments
@@ -3137,21 +3020,9 @@ importers:
       '@jbrowse/render-core':
         specifier: workspace:^
         version: link:../../packages/render-core
-      '@jbrowse/sv-core':
-        specifier: workspace:^
-        version: link:../../packages/sv-core
-      '@jbrowse/synteny-core':
-        specifier: workspace:^
-        version: link:../../packages/synteny-core
-      '@jbrowse/tree-sidebar':
-        specifier: workspace:^
-        version: link:../../packages/tree-sidebar
       '@jbrowse/web-core':
         specifier: workspace:^
         version: link:../../packages/web-core
-      '@jbrowse/wiggle-core':
-        specifier: workspace:^
-        version: link:../../packages/wiggle-core
       '@mui/icons-material':
         specifier: ^9.4.0
         version: 9.4.0(@mui/material@9.4.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react@19.3.0)(supports-color@8.1.1))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@types/react@19.3.0)(react@19.3.0)
@@ -3453,25 +3324,25 @@ packages:
     resolution: {integrity: sha512-IY3ZD9Tmooqr3TUhc3DUWxiuo8xx1DWLhd5M7hQ+ZWJamqM2BbalrBJb2MisSLoYorOj75U03qULCxQTY9r3hg==}
     engines: {node: '>=6.9.0'}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/helper-create-class-features-plugin@8.0.5':
     resolution: {integrity: sha512-ckUE7tmolBbW4QV02lD874sWSPy8da2A09i/h0qS+IWolR+WiNhpq7C/rHZm00uOIkUb0Cp6+0Cy1ku/wj5uQQ==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/helper-create-regexp-features-plugin@8.0.5':
     resolution: {integrity: sha512-TWnIgw21pAv/FbBKB8ks26DMxQ+A3aBdi1HUBp+QhqSE8QdOqJgSK/FEvdMYPTZcHBBJPZ5pN6DDKmC5ZYPJbg==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/helper-define-polyfill-provider@1.0.0':
     resolution: {integrity: sha512-9jzVaTeZyXRDKTgUnNzcPQMO8y0ga3o+Z4fKjNet9Fcx7slgKa83qRbz0EwROSd6qO6CoEe/HQszqSPKb5lhkw==}
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/helper-globals@7.29.7':
     resolution: {integrity: sha512-3nQVUAtvkKH9zahfWgw96Jc/uFOmjACE1kQz82E2lqWmHBgjzbNlsC22nuQTfahmWeQtTq5nQ/4Nnd2A1wj4zA==}
@@ -3501,7 +3372,7 @@ packages:
     resolution: {integrity: sha512-lUsSqMD0l5cJKl+3vlTV/hPDA/IvNkcHWVI3zFud2Vur+C9bCKdpqbpkN9eABembedbdWwF0qow6nbdIpNlpcw==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/helper-optimise-call-expression@7.29.7':
     resolution: {integrity: sha512-+kmGVjcT9RGYzoDwdwEqEvGgKe3BYq+O1iGzjFubaNgZHwYHP6lsF2Yghf4kEuv9BV7tYDZ913aBW9am6YKong==}
@@ -3519,25 +3390,25 @@ packages:
     resolution: {integrity: sha512-3PKFgjTyPlhFhorfP+SjKQxLViIL++zWjFOO4hGriYU+Bsm983DxEM1JmDRJVWXV0O9npu+xXRqz7Pbd3mh70g==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/helper-remap-async-to-generator@8.0.1':
     resolution: {integrity: sha512-baAKuLEMmu6BCSY3tuiU7qglM1qOZt6F1SrFScA241oNqksxkxfEZEKztlGRmoVns9AQ5UgArH7RsUEjxWnzgQ==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/helper-replace-supers@7.29.7':
     resolution: {integrity: sha512-atfGXWSeCiF4DnKZIfmJfQRkSw9b9gNNXR1kqKjbhG4pGYCOnkp8OcTB8E3NXjBu8NpheSnOeNKz8KT7UNFTmQ==}
     engines: {node: '>=6.9.0'}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/helper-replace-supers@8.0.1':
     resolution: {integrity: sha512-B1SZADIcy3tmH8CmWvj4SHi/oAPom4UL3uknTc2QRNsPVLFk/sPnZvQL/8kj7Y5omvjMqie0vklvs6XM4OLW5Q==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/helper-skip-transparent-expression-wrappers@7.29.7':
     resolution: {integrity: sha512-brcMGQaVzIeUb+6/bs1Av0f8YuNNjKY2JyvfRCsFuFsdKccEQ5Ges2y74D74NZ1Rz8lKJ9ksJkfqwQFJ/iNEyQ==}
@@ -3589,518 +3460,518 @@ packages:
     resolution: {integrity: sha512-Ytgjjne4RnG3Oig7ik+NfY4ebRY30BPptVkkyu1f72eINJXRM3/bkU++tIc5aPvyLmo4KH20avq0xJ2o+9aEnw==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-bugfix-safari-class-field-initializer-scope@8.0.1':
     resolution: {integrity: sha512-X7pAMBhuKluA7UfwZNvKN0XVVu/AGeo84Z75eJl85rcb8J2aBzLK92btahM1X5h0oi0QIrbe0qIMA/0+4Buk7w==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-bugfix-safari-id-destructuring-collision-in-function-expression@8.0.1':
     resolution: {integrity: sha512-DJviKTxYfH0hFwnMiW4dnPyMGzS3Hrr4zUfXl1zwQ0QiGlGlNYklLoPSYEQr8S7nau0/K7NdQjTh0qbYuyFjCA==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-bugfix-safari-rest-destructuring-rhs-array@8.0.5':
     resolution: {integrity: sha512-e5eeoBASO+893sCNdFE/vQ9STIxkSRtIcQwBmLdfDOWn1nnXDY+/ngqFC5zTSUTRl0yWR3inkPRlOQD4MMHeFg==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-bugfix-v8-spread-parameters-in-optional-chaining@8.0.1':
     resolution: {integrity: sha512-x8bi0LFVD2xkULjfNn+hCMg16yAFHAM9fS/ThSFeYBi+0MP9K6qcY2BZb4urUwC7PYtEy5wPe6TKjOEjXrCGFA==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-bugfix-v8-static-class-fields-redefine-readonly@8.0.1':
     resolution: {integrity: sha512-P8+RN2n7ts2s1vnE+lXdHYf+dhnmcGSen/kWzBsVluT9Sey5AqmcRXYWlHqgQxaNlKTD5YMa1tf5z4d1v8W88w==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-proposal-private-methods@7.18.6':
     resolution: {integrity: sha512-nutsvktDItsNn4rpGItSNV2sz1XwS+nfU0Rg8aCx3W3NOKVzdMjJRu0O5OkgDp3ZGICSTbgRpxZoWsxoKRvbeA==}
     engines: {node: '>=6.9.0'}
     deprecated: This proposal has been merged to the ECMAScript standard and thus this plugin is no longer maintained. Please use @babel/plugin-transform-private-methods instead.
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-syntax-async-generators@7.8.4':
     resolution: {integrity: sha512-tycmZxkGfZaxhMRbXlPXuVFpdWlXpir2W4AMhSJgRKzk/eDlIXOhb2LHWoLpDF7TEHylV5zNhykX6KAgHJmTNw==}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-syntax-bigint@7.8.3':
     resolution: {integrity: sha512-wnTnFlG+YxQm3vDxpGE57Pj0srRU4sHE/mDkt1qv2YJJSeUAec2ma4WLUnUPeKjyrfntVwe/N6dCXpU+zL3Npg==}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-syntax-class-properties@7.12.13':
     resolution: {integrity: sha512-fm4idjKla0YahUNgFNLCB0qySdsoPiZP3iQE3rky0mBUtMZ23yDJ9SJdg6dXTSDnulOVqiF3Hgr9nbXvXTQZYA==}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-syntax-class-static-block@7.14.5':
     resolution: {integrity: sha512-b+YyPmr6ldyNnM6sqYeMWE+bgJcJpO6yS4QD7ymxgH34GBPNDM/THBh8iunyvKIZztiwLH4CJZ0RxTk9emgpjw==}
     engines: {node: '>=6.9.0'}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-syntax-import-attributes@7.29.7':
     resolution: {integrity: sha512-zGYcYfq/WmZ4V+kBIXQon9dSSc8ircGZqw9ZaNhhGj9nZkeBu1jHLBDQqYYi5WA9uawvA2sIMbry2nCFhf5Djg==}
     engines: {node: '>=6.9.0'}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-syntax-import-meta@7.10.4':
     resolution: {integrity: sha512-Yqfm+XDx0+Prh3VSeEQCPU81yC+JWZ2pDPFSS4ZdpfZhp4MkFMaDC1UqseovEKwSUpnIL7+vK+Clp7bfh0iD7g==}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-syntax-json-strings@7.8.3':
     resolution: {integrity: sha512-lY6kdGpWHvjoe2vk4WrAapEuBR69EMxZl+RoGRhrFGNYVK8mOPAW8VfbT/ZgrFbXlDNiiaxQnAtgVCZ6jv30EA==}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-syntax-jsx@7.29.7':
     resolution: {integrity: sha512-TSu8+mHCoEaaCDEZ0I3+6mvTBYR4PCxQwf2z9/r5Tbztv6NaLR3B9thGTTxX2WGuGHJqRiAbKPeGTJ5XWXVg6A==}
     engines: {node: '>=6.9.0'}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-syntax-jsx@8.0.1':
     resolution: {integrity: sha512-n0jtCOxEovhU7METqSQjcZO9pX53nu9uNIjMS+hEt+Nt9jA7oOZoBIgbCxhhASmF6T6rPDGge5UAvh6Z4eFz/g==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-syntax-logical-assignment-operators@7.10.4':
     resolution: {integrity: sha512-d8waShlpFDinQ5MtvGU9xDAOzKH47+FFoney2baFIoMr952hKOLp1HR7VszoZvOsV/4+RRszNY7D17ba0te0ig==}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-syntax-nullish-coalescing-operator@7.8.3':
     resolution: {integrity: sha512-aSff4zPII1u2QD7y+F8oDsz19ew4IGEJg9SVW+bqwpwtfFleiQDMdzA/R+UlWDzfnHFCxxleFT0PMIrR36XLNQ==}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-syntax-numeric-separator@7.10.4':
     resolution: {integrity: sha512-9H6YdfkcK/uOnY/K7/aA2xpzaAgkQn37yzWUMRK7OaPOqOpGS1+n0H5hxT9AUw9EsSjPW8SVyMJwYRtWs3X3ug==}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-syntax-object-rest-spread@7.8.3':
     resolution: {integrity: sha512-XoqMijGZb9y3y2XskN+P1wUGiVwWZ5JmoDRwx5+3GmEplNyVM2s2Dg8ILFQm8rWM48orGy5YpI5Bl8U1y7ydlA==}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-syntax-optional-catch-binding@7.8.3':
     resolution: {integrity: sha512-6VPD0Pc1lpTqw0aKoeRTMiB+kWhAoT24PA+ksWSBrFtl5SIRVpZlwN3NNPQjehA2E/91FV3RjLWoVTglWcSV3Q==}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-syntax-optional-chaining@7.8.3':
     resolution: {integrity: sha512-KoK9ErH1MBlCPxV0VANkXW2/dw4vlbGDrFgz8bmUsBGYkFRcbRwMh6cIJubdPrkxRwuGdtCk0v/wPTKbQgBjkg==}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-syntax-private-property-in-object@7.14.5':
     resolution: {integrity: sha512-0wVnp9dxJ72ZUJDV27ZfbSj6iHLoytYZmh3rFcxNnvsJF3ktkzLDZPy/mA17HGsaQT3/DQsWYX1f1QGWkCoVUg==}
     engines: {node: '>=6.9.0'}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-syntax-top-level-await@7.14.5':
     resolution: {integrity: sha512-hx++upLv5U1rgYfwe1xBQUhRmU41NEvpUvrp8jkrSCdvGSnM5/qdRMtylJ6PG5OFkBaHkbTAKTnd3/YyESRHFw==}
     engines: {node: '>=6.9.0'}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-syntax-typescript@7.29.7':
     resolution: {integrity: sha512-ngr+82Sh0xMz25TPCZi+nC2iTzjfCdWS2ONXTp/PtSCHCgaCNBpdMqgvJ2ccdLlClVZ7sisIgB914j/JFe+RZA==}
     engines: {node: '>=6.9.0'}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-syntax-typescript@8.0.3':
     resolution: {integrity: sha512-jmTPwps7oSQSZaV1SxkQ3C12UWyufGysGc5OzDpZzvPAIX4mO7dJT3hoqkWVrSImvkcMiknir1iLN1SNV/CZzg==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-arrow-functions@8.0.1':
     resolution: {integrity: sha512-o/gr7kRlq3PKLLuYth4udOsrC7geBerti+QtwPeyxMOsEQO1d8kDHqk9r2PtMx2y9i8FG7tzyTerfv1yMLSMsQ==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-async-generator-functions@8.0.1':
     resolution: {integrity: sha512-kqnSMF1YHBzuiQrl68675i5Ma1oljvo+SJsNEZFZVBu5BUrVIZm9KId3ui2PdtLK2sv2zM8sJnjPDfgLxQlEqQ==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-async-to-generator@8.0.1':
     resolution: {integrity: sha512-e1jmmEU4p2Lx64sA1+EF8e8/RxPuegzbXcEbmFp5alDyLE+f2ViUpZ77bRWMXzihTwgVVmn/TOpqDbAuS5g1Ew==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-block-scoped-functions@8.0.1':
     resolution: {integrity: sha512-0V97/gcf7LIgPieEiK1YT0eXa18XJFSLOTZjzEZhA9SJIqZhD/IwGUrCitBzXSmnGCP7hchwC6svHtJ/Eidcpg==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-block-scoping@8.0.5':
     resolution: {integrity: sha512-czkN3g76Ns2wMe1C0IuceKUCqCe/yJ1by0qz4h4znq74K/Ks7K2Fx6Dplq9ecS65Z3rJHxT9a/kDSF2LbEov8w==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-class-properties@8.0.1':
     resolution: {integrity: sha512-tORnYiVhIHnKj90TgbSZXrO24f9oEpA6MgFxpIDSKKlHv7AzBIRhkMlYevanueLNYaQXqZWarfCgXM4bWTfNiw==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-class-static-block@8.0.5':
     resolution: {integrity: sha512-hyqluKOSy6PVOoHDEb4xsjFbtOSy+FFNzHNCrAHS5T+LxS8BtZHBCIVYFAcWzhBf/wRYsYu2uEpUvRmHYeOf8A==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-classes@8.0.5':
     resolution: {integrity: sha512-GKFgovQQzZfEDFxclYFDOiw/Pszxa1epcs7RasL7yyeqi6rxL61Vbqt0uSDPc2M7XXCmNZnQZaK19333v6rabA==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-computed-properties@8.0.1':
     resolution: {integrity: sha512-i4l3OGLO8DUDcwdnyraOvILbhqdUf4QgfzhVxSOSzRy49XKXrY7pwaSg9gDSKmhZfNPrEMciBSJSciQh/CjB1A==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-destructuring@8.0.5':
     resolution: {integrity: sha512-evjxc5fGvpXG2WMGSalpX8IJZVumLIDgk5r5eRhvXRDqFX/GPWq1BeRfJalPCcwJfrR5A/wvegUhx9W5Nr7/mg==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-dotall-regex@8.0.1':
     resolution: {integrity: sha512-czOUoSaZljJ92yu+bYlXqb/UBN8K9daNCob/B6/7nthSvfGP6YhCnfqD64XWfyb2dN4ypxALNplApoJrsMd4fw==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-duplicate-keys@8.0.1':
     resolution: {integrity: sha512-kNnVLkxFUEcTtCyB5PFVQ5Xoy88Bk1lU/ZgDu97CW8eNhRH2Wsiy8Sq5l5dFnwtIUYjzsXHU77jUy1W5AtGSIw==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-duplicate-named-capturing-groups-regex@8.0.1':
     resolution: {integrity: sha512-Tv43P47o6fuHgBL7HLHQg3WKXohW9CEUGjLtnCDW27yJLK0zKUdTTqREbZbycNHA83hewMjde5tF6ekrHu9bAA==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-dynamic-import@8.0.1':
     resolution: {integrity: sha512-AS9GlgKc43tJNRu7yOvLaTko4qmdOb+8M69uNS8i421WLO20eVez7LdG5khKdi8E0LIQpYzzzdGIrdXWnO753g==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-explicit-resource-management@8.0.5':
     resolution: {integrity: sha512-Vr20jk/ZxRGu30o0jYvcKl2Pf0tiyr8H9q2ZGxYD6yjOpv9DdP6//I85q0cSOdADZhsu/ZZoApjGVCfl4xnVJw==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-exponentiation-operator@8.0.1':
     resolution: {integrity: sha512-DsZvUUklUmDQ7d2vp+VjqgUWD51mGxhZZ1FPdPP9Hcj0vsgGUKX+zEBGp/vzB1O5PZUxWT/Euq5fu39M9dm9wg==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-export-namespace-from@8.0.1':
     resolution: {integrity: sha512-bFzznm46bvWGaTYKle3iolbBJ+oPBfUjwCPesxlFE3SQ7DaY9EHf/8Y5ZzrodKJi8JDdcAyaVWaDUSVyhULh0g==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-for-of@8.0.1':
     resolution: {integrity: sha512-rpeXtgELjpIBQH/+YmyFlD9timPEVCyqY+TNednzoeoTYvXSBEeUvYnYE+BK8rB8m6hHiNK7aL9QWKhGifEJCw==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-function-name@8.0.1':
     resolution: {integrity: sha512-H1L/JfPf3CqmubuaiZaquXKQ8MRs4YWSsgRllkTviM8TafcCNnlvc4/fJZ3rXP8HmFM+/Bg+TlsPehUI9BtDFA==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-json-strings@8.0.1':
     resolution: {integrity: sha512-Mowp8X0J6p7ZehLU82B5e65te2uuSeDHyxrEROwEAS2VKXNXssfw5ZMqhY7k9iXTsOv1Xs/49G3lDCj9Vvw8qQ==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-literals@8.0.1':
     resolution: {integrity: sha512-ai7kfPRcfyUV1EszXoF1PvL3IuJoCuH08WSEPoRcJTWfZZ55VL/rcfvbVY16QLA3jjbzzSneQSoCtD3L6OyUjw==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-logical-assignment-operators@8.0.1':
     resolution: {integrity: sha512-Emvtr5zkEGyCNAmt+qKD5EUh8G0RbxV9EZWrDdX0LuVy5tBq1B3fOIslvVF9aCJmpnwS/AvAT53b9LxAZyXlng==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-member-expression-literals@8.0.1':
     resolution: {integrity: sha512-3Axi9abnyGsm/hh6DsKPZ1Cr9fTtKqS7w0Ig5g12mU269YclpH8pV3xMln2vPLexXgUp6S6L+I06d9/YOLfRKA==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-modules-amd@8.0.1':
     resolution: {integrity: sha512-FDdhET8y1YFDNRuoynqSf23WTzbBBpbIB2oRrlFX7YYm9uWtFvJDSD1r/epBSjfPkOjeaaLgRW9xNnt3JGx46A==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-modules-commonjs@8.0.1':
     resolution: {integrity: sha512-PMuzulWrrzFNmY3lXSk/tV9NRb7y0eZZLJY4UEo2TKszroxvUZHAPPi+T9FDyrQhod+TQA+t+8/QYaaMpiEuhA==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-modules-systemjs@8.0.1':
     resolution: {integrity: sha512-0NEHanXmnFEnfT2dLKTXnu7m8GXFsnxRgteBC2aH21hYMBwAgxu5dcTdi/Eg+ToI1HbZe0CHwz4XRLgRNQhYoQ==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-modules-umd@8.0.1':
     resolution: {integrity: sha512-XKTa2J2MdkmbVEeChq9f7Or0VYcsF0NyVBgytRyeN9F+J+ETAB2SHhfkG4toz/ssuU0i+h/QgJ6ddo5YakSQcA==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-named-capturing-groups-regex@8.0.1':
     resolution: {integrity: sha512-zCHu+Jr2gTdJE48lN9SV/kXueCW2M79mKtKJc/ttfzzr/jvgdQdCd17RADMqFRQc/25MLxdtjTmlD0HSAMOlIQ==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-new-target@8.0.1':
     resolution: {integrity: sha512-QSQxVg1x4PuOuhWUs4Y9u+x9Y+ER8z6G3tC+bDLBzvoOrNLJrEBQLRnwrTP8e5klihAw6Z+e9X5RjdAKcAGapA==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-nullish-coalescing-operator@8.0.1':
     resolution: {integrity: sha512-AgCJAmQLF7+PtsK79wJqr4xJ2StHCXlz7JL5CVFP4HejJx25Tk6yl1ZrXvi0cKh3VGDVnfVxefxnrpsBirgpyQ==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-numeric-separator@8.0.1':
     resolution: {integrity: sha512-it2DmUyLIA1GQUXlFDEnI+/G89mTgxndnAiZYpW8xYR6LboblfirMqiWJeTna5uypQJg7viTT4D1iEURRtFcfw==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-object-rest-spread@8.0.1':
     resolution: {integrity: sha512-VmxkDu6bBdbxRzqn6E93hYucug4OVa6svSO19W//vVzNUGAmQzk3QRyHyyEtfcjSLR3NWfRsWwVM9zExLmd+2w==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-object-super@8.0.1':
     resolution: {integrity: sha512-fDkPXRTRKGm25bAq01q82UM4ypPqdVXCwphUUm4t1dL01fGIG0v8KRvT+4BjhMAtRxtPuI34t5Vs7yjRgs3ZgQ==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-optional-catch-binding@8.0.1':
     resolution: {integrity: sha512-b2OQ74uGliyATcasTjxGy2O/86UI/n+EN4juB4EMfEwTi9j9uq70PuP0L8fW77vfRY66gO/YoTo/WbIdQ/Si1g==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-optional-chaining@8.0.5':
     resolution: {integrity: sha512-w8ouIDKdmUc2oyvBx4S/WtiQM7bMww5LGjB2A4L1+sDWZGw37XxzqOqfgHnPm+2ldINmAqrf2ekzpeJ/sS9poQ==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-parameters@8.0.5':
     resolution: {integrity: sha512-oXsstDkzuE+gOqBz2+e1VFqDew0KlGgd9GT4MGptmcIq3uDbxcowHRSaqMCvp3nbiZws4wTm8Phuk9ZJO3NtTg==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-private-methods@8.0.1':
     resolution: {integrity: sha512-TrFCGcXaVDh6S5IRhmLSRTY9H80VTCMQWnZtzBRg4RWg3KCLmdmsmj4M15kZAPZfoPkWL/SJb4em3Py/vOiX8g==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-private-property-in-object@8.0.5':
     resolution: {integrity: sha512-OilYoElZMdD/My3fJTh0jLOPy8Y9Jfpcb9nPXG0Bpy4oRbZeeVX39P1cXKsPwnXTBZg7qEKk8TQ0lzpJvdK3yw==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-property-literals@8.0.1':
     resolution: {integrity: sha512-Z/qx4cxUtYR1nt7XWRutObPxDks98fEYsjWbVeKEqZH6y3AGknmgzCqmHf2FHWZCl1DfoPeuJY+3hZ+35D+2tg==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-react-display-name@8.0.1':
     resolution: {integrity: sha512-soLishXlkyu6jcICPyO3HEP7A3GCzKEnn7XfvYrImuWEOwFAz93qShmWSYPf5ww0ZkO4By0zsN2bVIDF54fSdA==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-react-jsx-development@8.0.1':
     resolution: {integrity: sha512-Hb+HUZpV9KFHjm+F+P3aLDMi8QXU9l3ROCQv20z18Me2sGyW5nNNR5YTevNlgHvCpFek3BnAwhDGq/BRndXViw==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-react-jsx-self@7.29.7':
     resolution: {integrity: sha512-TL0hMc9xzy86VD31nUiwzd5otRAcyEPcsegCxolO0PvcXuH1v0kECe/UIznYFihpkvU5wg/jk4v0TTEFfm53fw==}
     engines: {node: '>=6.9.0'}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-react-jsx-source@7.29.7':
     resolution: {integrity: sha512-06IyK09H3wi4cGbhDBwp5gUGo0IKtnYa8tyTiephirPCK6fbobVGiXMMI5zLQ4aKEYP3wZ3ArU44o+8KMrSG/Q==}
     engines: {node: '>=6.9.0'}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-react-jsx@8.0.1':
     resolution: {integrity: sha512-NgkoF7Uq+30TmOPDdNUimT0Nta02uVjqJRFNlVWKrbOCu/CkzfHa4aMnIs0lMpkMmZmWA1e42Va+F04i/pY1zw==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-react-pure-annotations@8.0.1':
     resolution: {integrity: sha512-7/8UwU8hoPBurXa9tUiTTC8aACTRy5tCqLUtqikHp2eGiWoEB57AduOdbQ71OOMTEvawKrGhv3WfzkDpI+/oSg==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-regenerator@8.0.5':
     resolution: {integrity: sha512-eSjLoICd0l8SkUAyV7hnVrsDycTVK7DRKXi3Pr1oqAVe37vdd4sesp8t6aZ/Wa23rV2ZQbnYJWDn7pOIf9Z/Jw==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-regexp-modifiers@8.0.1':
     resolution: {integrity: sha512-02ITRDBesPdTYU0oShAzERwEPzozOUQSXlz3qrt8JGuhalBJQv9z5NjgHJPC9sS3Fsam8gDtfAEpBnqZwUIdjQ==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-reserved-words@8.0.1':
     resolution: {integrity: sha512-+aykZi7ZP3U84veqfJXm3HhPZGddWFi64g7jr0ni6tb1zel+1ey+SL+IRKPoZXFyFqvYEsoqrmx4PyEJRlHl/Q==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-shorthand-properties@8.0.1':
     resolution: {integrity: sha512-JddANd9yPVH8dYgVoNkqAH5BftnsDxFpG51Zas7sc6F3poz5QWcejHNGO8a/57IX5ByjGSzEmYk9Z7ZMa5MWaw==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-spread@8.0.5':
     resolution: {integrity: sha512-thqaGFTViCmJxUPJ3IivfaGHz8eodOL7UbsZ2gMOybSi8uQFXFEoabnnILMl4ZCok0vVrKD4HKq9MJWSj5qqxw==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-sticky-regex@8.0.1':
     resolution: {integrity: sha512-IsVP6WrZZQdaG2zLmeKwWiI+ua2NB5L1+f77C2/8z2NCDz7uxlIA/lnwocYOJk9PXcOC2sZgRls3LN4XpNduzQ==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-template-literals@8.0.1':
     resolution: {integrity: sha512-JXvtj5+BJA9Qv3prDzW2z2DkGTJNmG0BObTdUD03STiu1Jr4fNQkQy3hYZgPL46a2RjcuhwBMYf49BOuJ98gnA==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-typeof-symbol@8.0.1':
     resolution: {integrity: sha512-+wJoxgxP2gtey0UMUOMhzMMji2XHO/Uu6MXUh/r5Yhc2jngKzK/wFxY2WNe4UCaRcMvCb4gcnB8wIgFXJsocXg==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-typescript@8.0.5':
     resolution: {integrity: sha512-o6XW6OngFfpEQat3J1MxUDEd94Rjh80BZQqWmOXa9YTtoyDnk8Zim3NXcx3RTgGiOgkoayCMYp+Xk5NxEmzoMg==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-unicode-escapes@8.0.1':
     resolution: {integrity: sha512-TAXJepIJ6vZphytTwcf+LuXi2M2ZWI43VCqNw+1ZZLPP/38Z1A8j4Mahvg8kqDgMOSM/cakk+hedTJCiw3jQuQ==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-unicode-property-regex@8.0.1':
     resolution: {integrity: sha512-zjBN9tSMSuomNDfurL69Gf7+v4D2t5uI1mSZaYJDo88SKpbduhCXqtxH7Tx66iCF6caWYwnBzSM0tnCozmQq5Q==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-unicode-regex@8.0.1':
     resolution: {integrity: sha512-v0oO83cvT5lwbcIVRShpx4vaHD8AvM9IBowsQuTeP+kGmhh3recJQs33Bl6dlo3/2g9amlznLbFGn4VJbPCJqA==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/plugin-transform-unicode-sets-regex@8.0.1':
     resolution: {integrity: sha512-MlQeyS0K7gh0XNeLBMS/3Z07HjDOKhA7xm2L18GyxOXyiFHI9E+ZuQ4mFYmcLjluXsE/Wf6dABIqZvKpKw0Z3w==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/preset-env@8.0.5':
     resolution: {integrity: sha512-0ZiW2jOnEQ3+FV3ro3uh6B5afBT0C2yJHCKvw+s1BOKKXg7VfCvTpGBylN5UFeO2SFtkVJB2KY0tEpdnUjjguw==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/preset-modules@0.2.0':
     resolution: {integrity: sha512-yz0RBN2fx4fjCeFcTWsWgL7PxSRltvTa0Qg14HkWCU3qS8MO7ZSJlBVbGceynd5C9NsJwwUHNQD3dc6tYO+jqQ==}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/preset-react@8.0.1':
     resolution: {integrity: sha512-jrFuPp/pTddFZbtmWhdLNAYc6UMcpboeUPnw0BBrm4nOmcAko/1TRcFi1PzWCeOFRU+VaSiKmat87W1HvR7mIg==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/preset-typescript@8.0.1':
     resolution: {integrity: sha512-qrPhQIN1NLrPmzgazF9XKQqXrOcp/WJly+K+6ReFonn24FZqRJO7clxOJo6Ni75L+2vAqI3cHVU2OJLBxoPp5A==}
     engines: {node: ^22.18.0 || >=24.11.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   '@babel/runtime@7.29.7':
     resolution: {integrity: sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw==}
@@ -6773,13 +6644,13 @@ packages:
     resolution: {integrity: sha512-ge1xUVZS91ml09YRMgRGgeKJ4YJpcOiuwteAxFBYLugQyp7cRw+hHej6Ho0vPjvLrjq60bb7JPHH9LAMA1/krA==}
     engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   babel-loader@10.1.1:
     resolution: {integrity: sha512-JwKSzk2kjIe7mgPK+/lyZ2QAaJcpahNAdM+hgR2HI8D0OJVkdj8Rl6J3kaLYki9pwF7P2iWnD8qVv80Lq1ABtg==}
     engines: {node: ^18.20.0 || ^20.10.0 || >=22.0.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
       '@rspack/core': ^1.0.0 || ^2.0.0-0
       webpack: '>=5.61.0'
     peerDependenciesMeta:
@@ -6804,7 +6675,7 @@ packages:
     resolution: {integrity: sha512-yIkslVjbmml2Xjb6XhFW7lISXHsqk6cesxTdDsXoMom4Lnb99DbD3OQbSOoM5Z+ASh8YXYaLAsRQrU2Jeh3Qig==}
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   babel-plugin-react-compiler@1.0.0:
     resolution: {integrity: sha512-Ixm8tFfoKKIPYdCCKYTsqv+Fd4IJ0DQqMyEimo+pxUOMUR9cVPlwTrFt9Avu+3cb6Zp3mAzl+t1MrG2fxxKsxw==}
@@ -6812,13 +6683,13 @@ packages:
   babel-preset-current-node-syntax@1.2.0:
     resolution: {integrity: sha512-E/VlAEzRrsLEb2+dv8yp3bo4scof3l9nR4lrld+Iy5NyVqgVYUJnDAmunkhPMisRI32Qc4iRiz425d8vM++2fg==}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   babel-preset-jest@30.5.0:
     resolution: {integrity: sha512-ZGPn5ClP4lBDpuOK8W1yQIOy359HmbnZv3suucAlIe+SEE9yDsxV4S2PjSbH2Vc97U+WmzYD7vw3kr8NsQ/i6w==}
     engines: {node: ^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0}
     peerDependencies:
-      '@babel/core': ^8.0.1
+      '@babel/core': ^8.0.5
 
   bail@2.0.2:
     resolution: {integrity: sha512-0xO6mYd7JB2YesxDKplafRpsiOzPt9V02ddPCLbY1xYGPOX24NTyN50qnUxgCPcSoYMhKpAuBTjQoRZCAkUDRw==}

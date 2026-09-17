@@ -82,9 +82,7 @@ test('every value in a stubbed namespace is the stub', () => {
 // in the worker. A module whose graph reaches react-dom, a Material UI
 // component, the data grid or floating-ui is stubbed there, and a stub answers
 // every read and call with itself — so a demotion costs a plugin silent zeros,
-// not an error. One `export … from` naming a package barrel is enough to do it:
-// `computeYTicks.ts` reaching the @jbrowse/display-ui barrel is what had the
-// whole of @jbrowse/wiggle-core stubbed, config mixins included.
+// not an error. One `export … from` naming a package barrel is enough to do it.
 test('the modules a worker-side plugin reads are served for real', () => {
   const modules: Record<string, { worker: string; uiVia?: string[] }> =
     manifest.modules
@@ -129,26 +127,6 @@ test('the modules a worker-side plugin reads are served for real', () => {
     '@jbrowse/render-core/perRegionRenderingBackend',
     '@jbrowse/render-core/renderBlock',
     '@jbrowse/render-core/slangPass',
-    // score math and the config mixins a wiggle-derived display composes
-    '@jbrowse/wiggle-core',
-    '@jbrowse/wiggle-core/constants',
-    '@jbrowse/wiggle-core/normalize',
-    '@jbrowse/wiggle-core/renderingBackendTypes',
-    // cluster math an RPC method runs
-    '@jbrowse/tree-sidebar/clusterMatrix',
-    '@jbrowse/tree-sidebar/clusterProvenance',
-    '@jbrowse/tree-sidebar/clusterUtils',
-    '@jbrowse/tree-sidebar/hierarchy',
-    '@jbrowse/tree-sidebar/rowHeightConfigSchemaFields',
-    '@jbrowse/tree-sidebar/rowSortColumn',
-    '@jbrowse/tree-sidebar/treeSidebarConfigSchemaFields',
-    '@jbrowse/tree-sidebar/treeSidebarGeometry',
-    // plugin entries whose config schemas and mixins a derived plugin composes
-    '@jbrowse/plugin-canvas',
-    '@jbrowse/plugin-gwas',
-    '@jbrowse/plugin-marks',
-    '@jbrowse/plugin-variants',
-    '@jbrowse/plugin-wiggle',
   ]
   expect(
     workerSide
